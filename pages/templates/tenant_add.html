@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+{% endblock %}
+
+{% block content %}
+
+<h2><center>ALIVENTE ONLINE - TENANTS</center></h2>
+<h4><center>ADD NEW TENANT</center></h4>
+<br/>
+
+<form action = "{% url 'tenant_commit' %}" method="post">
+  {% csrf_token %}
+  <div style="display: flex ; justify-content: flex-end">
+      <button class="btn btn-info" style="margin-right:16px" type="submit">Save</button>
+      <a href="{% url 'tenant' %}" class="btn btn-info" style="margin-right:16px" role="button">Back</a>
+  </div>
+
+  <div class="form-row">
+	  <div class="form-group col-md-4">
+      <label for="tenant_type"><strong>Tenant Type</strong></label>
+      <select id="tenant_type" class="form-control" name="tenant_type" required>
+        <option value="" disabled selected>Select Tenant Type</option>
+        <option value="Company">Company</option>
+        <option value="Individual">Individual</option>
+      </select>
+    </div>
+    <div class="form-group col-md-4">
+      <label for="tenant_name"><strong>Tenant</strong></label>
+      <input type="text" class="form-control" id="tenant_name" name="tenant_name" placeholder="Company or Tenant Name" required>
+    </div>
+  </div>
+  <div class="form-row">
+    <div class="form-group col-md-4">
+      <label for="tenant_contact_person"><strong>Contact Person</strong></label>
+      <input type="text" class="form-control" id="tenant_contact_person" name="tenant_contact_person" placeholder="Name of Contact Person" required>
+    </div>
+    <div class="form-group col-md-4">
+      <label for="tenant_contact_number"><strong>Contact Number</strong></label>
+      <input type="text" class="form-control" id="tenant_contact_number" name="tenant_contact_number" placeholder="Contact Number" required>
+    </div>
+    <div class="form-group col-md-4">
+      <label for="tenant_email"><strong>Email Address</strong></label>
+      <input type="text" class="form-control" id="tenant_email" name="tenant_email" placeholder="Tenant Email Address">
+    </div>
+  </div>
+  <div class="form-row">
+      <div class="form-group col-md-4">
+      <label for="tenant_lease_start_date"><strong>Lease Start Date</strong></label>
+      <input type="date" class="form-control" id="tenant_lease_start_date" name="tenant_lease_start_date" placeholder="Lease Start Date" required>
+    </div>
+    <div class="form-group col-md-4">
+      <label for="tenant_lease_end_date"><strong>Lease End Date</strong></label>
+      <input type="date" class="form-control" id="tenant_lease_end_date" name="tenant_lease_end_date" placeholder="Lease End Date" required>
+    </div>
+    <div class="form-group col-md-4">
+      <label for="tenant_rental_type"><strong>Rental Type</strong></label>
+      <select id="tenant_rental_type" class="form-control" name="tenant_rental_type" required>
+        <option value="" disabled selected>Select Rental Type</option>
+        <option value="Weekly">Weekly</option>
+        <option value="Monthly">Monthly</option>
+        <option value="Annual">Annual</option>
+      </select>
+    </div>
+  </div>
+  <div class="form-row">
+    <div class="form-group col-md-4">
+      <label for="tenant_deposit"><strong>Deposit</strong></label>
+      <input type="number" class="form-control" id="tenant_deposit" name="tenant_deposit" placeholder="Deposit Amount" required>
+    </div>
+    <div class="form-group col-md-4">
+      <label for="tenant_rent"><strong>Rental</strong></label>
+      <input type="number" class="form-control" id="tenant_rent" name="tenant_rent" placeholder="Rental Amount" required>
+    </div>
+    <div class="form-group col-md-4">
+      <label for="tenant_levies"><strong>Levies</strong></label>
+      <input type="number" class="form-control" id="tenant_levies" name="tenant_levies" placeholder="Monthly Levy Amount" required>
+    </div>
+  </div>
+  <div class="form-row">
+    <div class="form-group col-md-4">
+      <label for="tenant_payment_terms"><strong>Rental Payment Terms (Days)</strong></label>
+      <input type="number" class="form-control" id="tenant_payment_terms" name="tenant_payment_terms" placeholder="Payment Terms (Days)" required>
+    </div>
+    <div class="form-group col-md-4">
+      <label for="tenant_renewal"><strong>Renewal Option</strong></label>
+      <select id="tenant_renewal" class="form-control" name="tenant_renewal" required>
+        <option value="" disabled selected>Select if Lease is Renewable</option>
+        <option value="Yes">Yes</option>
+        <option value="No">No</option>
+      </select>
+    </div>    
+    <div class="form-group col-md-4">
+      <label for="tenant_renewal_period"><strong>Renewal Period (Days)</strong></label>
+      <input type="number" class="form-control" id="tenant_renewal_period" name="tenant_renewal_period" placeholder="Renewal Period (Days)" required>
+    </div>
+  </div>
+  <div class="form-row">
+  	<div class="form-group col-md-4">
+      <label for="tenant_current"><strong>Tenant Status</strong></label>
+      <select id="tenant_current" class="form-control" name="tenant_current" required>
+        <option value="" disabled selected>Select Active or Inactive</option>
+        <option value="Yes">Active</option>
+        <option value="No">Inactive</option>
+      </select>
+    </div>    
+    <div class="form-group col-md-4">
+      <label for="prop"><strong>Property</strong></label>
+      <select id="prop" class="form-control" name="prop" required>
+        <option value="" disabled selected>Select Property</option>
+        {% for results in props %}
+          <option value={{results.prop_id}}>{{results.prop_name}}</option>
+        {% endfor %}
+      </select>
+    </div>    
+   </div>
+  </div>
+</form>
+
+{% endblock %}

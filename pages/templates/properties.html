@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+{% endblock %}
+
+{% block content %}
+
+<h2><center>ALIVENTE ONLINE - PROPERTIES</center></h2>
+<br/>
+
+  {% for msg in messages %}
+    <div class="alert alert-secondary alert-dismissible fade show auto-dismiss" role="alert">
+      <strong></strong> <center>{{ msg }}</center>
+      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    <script>
+      // Automatically close the alert after 3 seconds (3000 milliseconds)
+      setTimeout(function() {
+        document.querySelectorAll('.auto-dismiss').forEach(alert => {
+          alert.classList.remove('show'); // Hide alert visually
+          alert.classList.add('fade'); // Add fade effect
+          setTimeout(() => alert.remove(), 500); // Remove from DOM after fade
+        });
+      }, 2000);
+    </script>
+  {% endfor %}
+  
+<body>
+  
+  <div style="display: flex ; justify-content: flex-end">
+    <a href="{% url 'properties_add' %}" class="btn btn-info" style="margin-right:16px" type="button">Add New</a>
+    <a href="{% url 'home' %}" class="btn btn-info" style="margin-right:16px" role="button">Back</a>
+  </div>
+
+  <div class="form-row">
+      <div class="form-group col-md-5">
+          <form action = "{% url 'properties' %}" method="post">
+            {% csrf_token %}
+            <div class="input-group">
+                <select name = "propname" class="custom-select" id="inputGroupSelect08" aria-label="Example select with button addon" onchange="this.form.submit()">
+                  <option disabled selected value="All">Select Property</option>
+                  <option value="All">All Properties</option>
+                  {% for results in props %}
+                    <option value="{{results.prop_name}}">{{results.prop_name}}</option>
+                  {% endfor %}
+              </select>
+              <select name = "country" class="custom-select" id="inputGroupSelect08" aria-label="Example select with button addon" onchange="this.form.submit()">
+                  <option disabled selected value="All">Select Country</option>
+                  <option value="All">All Countries</option>
+                  <option value="Cyprus">Cyprus</option>
+                  <option value="Greece">Greece</option>
+                  <option value="Spain">Spain</option>
+               </select>
+                <select name = "act" class="custom-select" id="inputGroupSelect08" aria-label="Example select with button addon" onchange="this.form.submit()">
+                  <option disabled selected value="All">Select Status</option>
+                  <option value="All">All Statuses</option>
+                    <option value="Active">Active</option>
+                    <option value="Inactive">Inactive</option>                    
+                </select>
+            </div>
+        </form>
+    </div>
+  </div>
+
+<form action = "" method="">
+  {% csrf_token %}
+  <div>
+  <table class="table table-bordered table-striped text-center">
+  <thead>
+    <tr>
+      <th text-align="left">Property</th>
+      <th align="center">Country</th>
+      <th align="center">Status</th>
+      <th align="center">Edit</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for results in props %}
+	    <tr>
+    		<td align="left">{{results.prop_name}}</td>
+            <td align="center">{{results.prop_country}}</td>
+            <td align="center">{{results.prop_status}}</td>
+            <td align="center"><button type ="button" class="btn btn-light" style="border-color:black;"><a href="{% url 'properties_edit' results.prop_id %}">Edit</a></button></td>    
+        </tr>
+    {% endfor %}
+  </tbody>
+  </table>    
+  </div>
+  
+</form>
+</body>
+
+
+{% endblock %}

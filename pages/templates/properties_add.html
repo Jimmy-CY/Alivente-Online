@@ -1,0 +1,124 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+{% endblock %}
+
+{% block content %}
+
+<h2><center>ALIVENTE ONLINE - PROPERTIES</center></h2>
+<h4><center>ADD NEW PROPERTY</center></h4>
+<br/>
+
+<form action = "{% url 'properties_commit' %}" method="post">
+  {% csrf_token %}
+  <div style="display: flex ; justify-content: flex-end">
+      <button class="btn btn-info" style="margin-right:16px" type="submit">Save</button>
+      <a href="{% url 'properties' %}" class="btn btn-info" style="margin-right:16px" role="button">Back</a>
+  </div>
+
+  <div class="form-row">
+    <div class="form-group col-md-4">
+      <label for="prop_name"><strong>Property Name</strong></label>
+      <input type="text" class="form-control" id="prop_name" name="prop_name" placeholder="Property Name" required>
+    </div>
+  </div>
+  <div class="form-row">
+    <div class="form-group col-md-4">
+      <label for="prop_address1"><strong>Address</strong></label>
+      <input type="text" class="form-control" id="prop_address1" name="prop_address1" placeholder="Address 1" required>
+    </div>
+    <div class="form-group col-md-4">
+      <label for="prop_address2"><strong>Address</strong></label>
+      <input type="text" class="form-control" id="prop_address2" name="prop_address2" placeholder="Address 2">
+    </div>
+    <div class="form-group col-md-4">
+      <label for="prop_suburb"><strong>Suburb</strong></label>
+      <input type="text" class="form-control" id="prop_suburb" name="prop_suburb" placeholder="Suburb">
+    </div>
+  </div>
+  <div class="form-row">
+      <div class="form-group col-md-4">
+      <label for="prop_city"><strong>City</strong></label>
+      <input type="text" class="form-control" id="prop_city" name="prop_city" placeholder="City" required>
+    </div>
+    <div class="form-group col-md-4">
+      <label for="prop_province"><strong>Province</strong></label>
+      <input type="text" class="form-control" id="prop_province" name="prop_province" placeholder="Province">
+    </div>
+    <div class="form-group col-md-2">
+      <label for="prop_country"><strong>Country</strong></label>
+      <input type="text" class="form-control" id="prop_country" name="prop_country" placeholder="Country" required>
+    </div>
+    <div class="form-group col-md-2">
+      <label for="prop_pcode"><strong>Post Code</strong></label>
+      <input type="text" class="form-control" id="prop_pcode" name="prop_pcode" placeholder="Post Code" required>
+    </div>
+  </div>
+  <div class="form-row">
+    <div class="form-group col-md-4">
+      <label for="prop_floor_area"><strong>Floor Area</strong></label>
+      <input type="number" class="form-control" id="prop_floor_area" name="prop_floor_area" placeholder="Floor Area">
+    </div>
+    <div class="form-group col-md-4">
+      <label for="prop_year_built"><strong>Year Built</strong></label>
+      <input type="number" class="form-control" id="prop_year_built" name="prop_year_built" placeholder="Year Built">
+    </div>
+  </div>
+  <div class="form-row">
+    <div class="form-group col-md-4">
+      <label for="prop_status"><strong>Status</strong></label>
+      <select id="prop_status" class="form-control" name="prop_status" required>
+        <option value="" disabled selected>Select Property Status</option>
+        <option value="Active">Active</option>
+        <option value="Inactive">Inactive</option>
+      </select>
+    </div>    
+    <div class="form-group col-md-4">
+      <label for="prop_available_for_rent"><strong>Available For Rent</strong></label>
+      <select id="prop_available_for_rent" class="form-control" name="prop_available_for_rent" required>
+        <option value="" disabled selected>Select if Available for Rent</option>
+        <option value="Yes">Yes</option>
+        <option value="No">No</option>
+      </select>
+    </div>    
+    <div class="form-group col-md-4">
+      <label for="prop_title_deed_status"><strong>Title Deed Available</strong></label>
+      <select id="prop_title_deed_status" class="form-control" name="prop_title_deed_status" required>
+        <option value="" disabled selected>Select if Title Deed is Available</option>
+        <option value="Yes">Yes</option>
+        <option value="No">No</option>
+      </select>
+    </div>
+  </div> 
+  <div class="form-row">
+    <div class="form-group col-md-4">
+      <label for="prop_electricity"><strong>Electricity Details</strong></label>
+      <input type="text" class="form-control" id="prop_electricity" name="prop_electricity" placeholder="Electricity Details">
+    </div>
+    <div class="form-group col-md-4">
+      <label for="prop_water"><strong>Water Details</strong></label>
+      <input type="text" class="form-control" id="prop_water" name="prop_water" placeholder="Water Details">
+    </div>
+    <div class="form-group col-md-4">
+      <label for="prop_refuse"><strong>Refuse Details</strong></label>
+      <input type="text" class="form-control" id="prop_refuse" name="prop_refuse" placeholder="Refuse Details">
+    </div>
+  </div>
+  <div class="form-row">
+    <div class="form-group col-md-4">
+      <label for="prop_property_tax"><strong>Property Tax Details</strong></label>
+      <input type="text" class="form-control" id="prop_property_tax" name="prop_property_tax" placeholder="Property Tax Details">
+    </div>
+    <div class="form-group col-md-4">
+      <label for="prop_sewerage"><strong>Sewerage Details</strong></label>
+      <input type="text" class="form-control" id="prop_sewerage" name="prop_sewerage" placeholder="Sewerage Details">
+    </div>
+    <div class="form-group col-md-4">
+      <label for="prop_insurance"><strong>Insurance Details</strong></label>
+      <input type="text" class="form-control" id="prop_insurance" name="prop_insurance" placeholder="Insurance Details">
+    </div>
+  </div>
+</form>
+
+{% endblock %}

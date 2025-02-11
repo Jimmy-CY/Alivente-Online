@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+{% endblock %}
+
+{% block content %}
+
+<h2><center>ALIVENTE ONLINE - SUPPLIERS</center></h2>
+<h4><center>EDIT EXISTING SUPPLIER</center></h4>
+<br/>
+
+{% for sresults in supplier %}
+<form action = "{% url 'suppliers_edit_commit' sresults.supplier_id %}" method="post">
+  {% csrf_token %}
+  <div style="display: flex ; justify-content: flex-end">
+      <button class="btn btn-info" style="margin-right:16px" type="submit">Save</button>
+      <a href="{% url 'suppliers' %}" class="btn btn-info" style="margin-right:16px" role="button">Back</a>
+  </div>
+  <div class="form-row">
+    <div class="form-group col-md-4">
+      <label for="supplier_contact_person"><strong>Contact Person</strong></label>
+      <input type="text" class="form-control" id="supplier_contact_person" name="supplier_contact_person" placeholder="Name of Contact Person" value= "{{sresults.supplier_contact_person}}" required>
+    </div>
+    <div class="form-group col-md-4">
+      <label for="supplier_contact_number"><strong>Contact Number</strong></label>
+      <input type="text" class="form-control" id="supplier_contact_number" name="supplier_contact_number" placeholder="Contact Number" value= "{{sresults.supplier_contact_number}}" required>
+    </div>
+    <div class="form-group col-md-4">
+      <label for="supplier_email"><strong>Email Address</strong></label>
+      <input type="text" class="form-control" id="supplier_email" name="supplier_email" placeholder="Supplier Email Address" value= "{{sresults.supplier_email}}">
+    </div>
+  </div>
+  <div class="form-row">
+    <div class="form-group col-md-4">
+      <label for="supplier_company_name"><strong>Company Name</strong></label>
+      <input type="text" class="form-control" id="supplier_company_name" name="supplier_company_name" placeholder="Name of Comapny" value= "{{sresults.supplier_company_name}}">
+    </div>
+    <div class="form-group col-md-4">
+      <label for="supplier_role"><strong>Role / Service</strong></label>
+      <input type="text" class="form-control" id="supplier_role" name="supplier_role" placeholder="Role or Service" value= "{{sresults.supplier_role}}" required>
+    </div>
+    <div class="form-group col-md-4">
+      <label for="supplier_country"><strong>Country</strong></label>
+      <input type="text" class="form-control" id="supplier_country" name="supplier_country" placeholder="Country" value= "{{sresults.supplier_country}}" required>
+    </div>
+  </div>
+</form>
+{% endfor %}
+{% endblock %}

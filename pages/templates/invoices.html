@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+{% endblock %}
+
+{% block content %}
+
+<h2><center>ALIVENTE ONLINE - OPEN INVOICES</center></h2>
+<br/>
+<br/>
+	
+<body>
+	
+	<div style="display: flex ; justify-content: flex-end">
+		<a href="{% url 'home' %}" class="btn btn-info" style="margin-right:16px" role="button">Back</a>
+	</div>
+
+	<div class="form-row">
+	    <div class="form-group col-md-5">
+	      	<form action = "{% url 'invoices' %}" method="post">
+		        {% csrf_token %}
+		        <div class="input-group">
+		          	<select name = "propname" class="custom-select" id="inputGroupSelect08" aria-label="Example select with button addon" onchange="this.form.submit()">
+		            	<option selected value="All">Select Property</option>
+		            	<option value="All">All Properties</option>
+		            	{% for results in props %}
+		            		<option value="{{results.prop_name}}">{{results.prop_name}}</option>
+		            	{% endfor %}
+		        	</select>
+		       	 	<select name = "tenantname" class="custom-select" id="inputGroupSelect08" aria-label="Example select with button addon" onchange="this.form.submit()">
+	            		<option selected value="All">Select Tenant</option>
+	            		<option value="All">All Tenants</option>
+	            			{% for tresults in tenant %}
+	              				<option value="{{tresults.tenant_name}}">{{tresults.tenant_name}}</option>
+	            			{% endfor %}
+	          		</select>
+		        </div>
+		    </form>
+		</div>
+	</div>
+
+<form action = "" method="">
+	{% csrf_token %}
+	<div>
+	<table class="table table-bordered table-striped text-center">
+	<thead>
+		<tr>
+			<th text-align="left">Property</th>
+			<th text-align="left">Tenant</th>
+			<th align="center">Invoice Date</th>
+			<th align="center">Mark as Paid</th>
+		</tr>
+	</thead>
+	<tbody>
+		{% for results in props %}
+			{% for tresults in tenant %}
+				{% for iresults in invoices %}
+					{% if iresults.tenant_id == tresults.tenant_id and tresults.prop_id == results.prop_id %}
+						<tr>
+							<td align="left">{{results.prop_name}}</td>
+							<td align="left">{{tresults.tenant_name}}</td>
+							<td align="center">{{iresults.invoice_date}}</td>
+							<td align="center"><button type ="button" class="btn btn-light" style="border-color:black;"><a href="{% url 'invoices_commit' iresults.invoice_id %}">Paid</a></button></td>		
+						</tr>
+					{% endif %}
+				{% endfor %}
+			{% endfor %}
+		{% endfor %}
+	</tbody>
+	</table>    
+	</div>
+	
+</form>
+</body>
+
+{% endblock %}

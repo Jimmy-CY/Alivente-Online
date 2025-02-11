@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+{% endblock %}
+
+{% block content %}
+
+<h2><center>ALIVENTE ONLINE - PETTY CASH</center></h2>
+<h4><center>ADD TRANSACTION</center></h4>
+<br/>
+  
+<form action = "{% url 'petty_cash_commit' %}" method="post">
+  
+  {% csrf_token %}
+  <div style="display: flex ; justify-content: flex-end">
+      <button class="btn btn-info" style="margin-right:16px" type="submit">Save</button>
+      <a href="{% url 'petty_cash' %}" class="btn btn-info" style="margin-right:16px" role="button">Back</a>
+  </div>
+<br/>
+  <div class="form-row">
+	  <div class="form-group col-md-2">
+      <label for="petty_cash_date"><strong>Date</strong></label>
+      <input placeholder="Transaction Date" type="date" id="petty_cash_date" class="form-control" name="petty_cash_date" required>
+    </div>
+    <div class="form-group col-md-6">
+      <label for="petty_cash_description"><strong>Transaction Description</strong></label>
+      <input type="text" class="form-control" id="petty_cash_description" name="petty_cash_description" placeholder="Transaction Description" maxlength="55" required>
+    </div>
+    <div class="form-group col-md-2">
+      <label for="petty_cash_amount"><strong>Amount</strong></label>
+      <input type="number" class="form-control" id="petty_cash_amount" name="petty_cash_amount" placeholder="Amount" align="margin-right" required>
+    </div>
+    <div class="form-group col-md-2">
+      <label for="petty_cash_dr_cr"><strong>Income / Expense</strong></label>
+      <select id="petty_cash_dr_cr" class="form-control" name="petty_cash_dr_cr" required>
+        <option value="" disabled selected>Income / Expense</option>
+        <option value="DR">Income</option>
+        <option value="CR">Expense</option>
+      </select>
+    </div>
+  </div>
+
+</form>
+
+{% endblock %}

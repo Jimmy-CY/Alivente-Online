@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+{% endblock %}
+
+{% block content %}
+
+<h2><center>ALIVENTE ONLINE - ISSUES (COMMENTS)</center></h2>
+<br/>
+
+  {% for msg in messages %}
+    <div class="alert alert-secondary alert-dismissible fade show auto-dismiss" role="alert">
+      <strong></strong> <center>{{ msg }}</center>
+      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    <script>
+      // Automatically close the alert after 2 seconds (2000 milliseconds)
+      setTimeout(function() {
+        document.querySelectorAll('.auto-dismiss').forEach(alert => {
+          alert.classList.remove('show'); // Hide alert visually
+          alert.classList.add('fade'); // Add fade effect
+          setTimeout(() => alert.remove(), 500); // Remove from DOM after fade
+        });
+      }, 2000);
+    </script>
+  {% endfor %}
+
+<form action = "{% url 'fsr_commit_status_change' %}" method="post">
+  {% csrf_token %}
+  <div style="display: flex ; justify-content: flex-end">
+      <a href="{% url 'fsr' %}" class="btn btn-info" style="margin-right:16px" role="button">Back</a>
+  </div>
+<br/>
+{% for results in props %}
+  {% for isresults in issues %}
+    {% if results.prop_id == isresults.prop_id %}
+      <form action = "{% url 'fsr_commit_status_change' %}" method="post">
+      {% csrf_token %}
+        <div class="form-row">
+          <div class="form-group col-md-3">
+            <label for="prop_name"><strong>Property Name</strong></label>
+            <input placeholder="Property Name" type="text" id="prop_name" class="form-control" name="prop_name" value="{{results.prop_name}}" readonly>
+          </div>    
+          <div class="form-group col-md-6">
+            <label for="issues_heading"><strong>Issue Heading</strong></label>
+            <input placeholder="Issue Heading" type="text" id="issues_heading" class="form-control" name="issues_heading" value="{{isresults.issues_heading}}" readonly>
+          </div>
+          <div class="form-group col-md-1">
+            <input placeholder="ID" type="hidden" id="issues_id" class="form-control" name="issues_id" value="{{isresults.issues_id}}" readonly>
+          </div>
+
+            <div class="form-group col-md-2">
+              <label for="issues_status"><strong>Issue Status</strong></label>
+              <select name = "issues_status" class="custom-select" id="issues_status" aria-label="Example select with button addon" onchange="this.form.submit()">
+                <option disabled>Select Issue Status</option>
+                  {% if isresults.issues_status == "Resolved" %}
+                    <option selected value="Resolved">Resolved</option>
+                  {% else %}
+                    <option value="Resolved">Resolved</option>
+                  {% endif %}
+                  {% if isresults.issues_status == "Unresolved" %}
+                    <option selected value="Unresolved">Unresolved</option>
+                  {% else %}
+                    <option value="Unresolved">Unresolved</option>
+                  {% endif %}
+                  {% if isresults.issues_status == "Issue" %}
+                    <option selected value="Issue">Issue</option>
+                  {% else %}
+                    <option value="Issue">Issue</option>
+                  {% endif %}
+              </select>
+            </div>
+          </form>
+        </div>
+        <div class="form-row">
+          <div class="form-group col-md-12">
+            <label for="issues_description"><strong>Issue Description</strong></label>
+            <input placeholder="Issue Description" type="text" id="issues_description" class="form-control" name="issues_description" value="{{isresults.issues_description}}" readonly>
+          </div>
+        </div>
+        <hr>
+      <form action = "{% url 'fsr_comment_add' isresults.issues_id %}" method="post">
+      {% csrf_token %}
+        <div class="form-row">
+          <div class="form-group col-md-10">
+            <input placeholder="Enter New Comment" type="text" id="issues_details_comment" class="form-control" name="issues_details_comment" maxlength="250" required>
+          </div>
+          <div style="display: flex ; justify-content: flex-end">
+            <button class="btn btn-info" style="margin-right:16px; height:39px;" type="submit">Save New Comment</button>
+          </div>
+          <br/>
+        </div>
+      </form>
+       <strong>Issue Comments</strong>
+        <br/>
+        {% for idresults in issues_details %}
+          {% if idresults.issues_id == isresults.issues_id %}
+            {{idresults.issues_details_date}} ({{idresults.issues_details_user}}) - {{idresults.issues_details_comment}}
+            <br/>
+        {% endif %}
+      {% endfor %}
+    {% endif %}
+  {% endfor %}
+{% endfor %}
+
+</form>
+
+{% endblock %}

@@ -1,0 +1,400 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+{% endblock %}
+
+{% block content %}
+
+{% if user.is_authenticated %}
+  <h2><center>ALIVENTE ONLINE - DASHBOARD</center></h2>
+  <br/>
+  
+  {% for msg in messages %}
+    <div class="alert alert-secondary alert-dismissible fade show auto-dismiss" role="alert">
+      <strong></strong> <center>{{ msg }}</center>
+      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    <script>
+      // Automatically close the alert after 3 seconds (3000 milliseconds)
+      setTimeout(function() {
+        document.querySelectorAll('.auto-dismiss').forEach(alert => {
+          alert.classList.remove('show'); // Hide alert visually
+          alert.classList.add('fade'); // Add fade effect
+          setTimeout(() => alert.remove(), 500); // Remove from DOM after fade
+        });
+      }, 2000);
+    </script>
+  {% endfor %}
+
+  <div class="form-row">
+    <div class="form-group col-md-5">
+      <h5>Tenant Report</h5>
+      <form action = "{% url 'tenant_rep' %}" method="post">
+        {% csrf_token %}
+        <div class="input-group">
+          <select name="propname" class="custom-select" id="inputGroupSelect01" aria-label="Example select with button addon">
+            <option disabled selected>Select Property</option>
+            <option value="All">All Properties</option>
+            {% for results in props %}
+              {% if results.prop_available_for_rent == "Yes" %}
+                <option value="{{ results.prop_name }}">{{ results.prop_name }}</option>
+              {% endif %}
+            {% endfor %}
+          </select>
+          <select name="d_e" class="custom-select" id="inputGroupSelect02" aria-label="Example select with button addon">
+            <option disabled selected>Display / Email</option>
+            <option value="Display">Display</option>
+            <option value="Email">Email</option>
+          </select>
+          <div class="input-group-append">
+            <button class="btn btn-info" type="submit" id="generateBtn01" disabled>Generate</button>
+          </div>
+        </div>
+        <script>
+          document.addEventListener("DOMContentLoaded", function () {
+            const propname = document.getElementById("inputGroupSelect01");
+            const d_e = document.getElementById("inputGroupSelect02");
+            const generateBtn = document.getElementById("generateBtn01");
+            function checkFields() {
+              if (propname.value !== "Select Property" && d_e.value !== "Display / Email") {
+                generateBtn.removeAttribute("disabled");
+              } else {
+                generateBtn.setAttribute("disabled", "true");
+              }
+            }
+
+            propname.addEventListener("change", checkFields);
+            d_e.addEventListener("change", checkFields);
+          });
+        </script>
+      </form>
+    </div>
+    <div class="form-group col-md-5">
+      <h5>Lease Agreements</h5>
+      <form action = "{% url 'lease_agreements' %}" method="post">
+        {% csrf_token %}
+
+        <div class="input-group">
+          <select name="propname" class="custom-select" id="inputGroupSelect03" aria-label="Example select with button addon">
+            <option disabled selected>Select Property</option>         
+            {% for results in props %}
+              {% if results.prop_available_for_rent == "Yes" %}
+                <option value="{{ results.prop_name }}">{{ results.prop_name }}</option>
+              {% endif %}
+            {% endfor %}
+          </select>
+          <select name="d_e" class="custom-select" id="inputGroupSelect04" aria-label="Example select with button addon">
+            <option disabled selected>Display / Email</option>
+            <option value="Display">Display</option>
+            <option value="Email">Email</option>
+          </select>
+          <div class="input-group-append">
+            <button class="btn btn-info" type="submit" id="generateBtn02" disabled>Generate</button>
+          </div>
+        </div>
+        <script>
+          document.addEventListener("DOMContentLoaded", function () {
+            const propname = document.getElementById("inputGroupSelect03");
+            const d_e = document.getElementById("inputGroupSelect04");
+            const generateBtn = document.getElementById("generateBtn02");
+            function checkFields() {
+              if (propname.value !== "Select Property" && d_e.value !== "Display / Email") {
+                generateBtn.removeAttribute("disabled");
+              } else {
+                generateBtn.setAttribute("disabled", "true");
+              }
+            }
+
+            propname.addEventListener("change", checkFields);
+            d_e.addEventListener("change", checkFields);
+          });
+        </script>
+
+      </form>
+    </div>
+  </div>
+  <br/>
+  <div class="form-row">
+    <div class="form-group col-md-5">
+      <h5>Outstanding Invoices</h5>
+      <form action = "{% url 'open_invoices' %}" method="post">
+        {% csrf_token %}
+
+        <div class="input-group">
+          <select name="d_e" class="custom-select" id="inputGroupSelect05" aria-label="Example select with button addon">
+            <option disabled selected>Display / Email</option>
+            <option value="Display">Display</option>
+            <option value="Email">Email</option>
+          </select>
+          <div class="input-group-append">
+            <button class="btn btn-info" type="submit" id="generateBtn03" disabled>Generate</button>
+          </div>
+        </div>
+        <script>
+          document.addEventListener("DOMContentLoaded", function () {
+            const d_e = document.getElementById("inputGroupSelect05");
+            const generateBtn = document.getElementById("generateBtn03");
+            function checkFields() {
+              if (d_e.value !== "Display / Email") {
+                generateBtn.removeAttribute("disabled");
+              } else {
+                generateBtn.setAttribute("disabled", "true");
+              }
+            }
+
+            d_e.addEventListener("change", checkFields);
+          });
+        </script>
+
+      </form>
+    </div>
+      <div class="form-group col-md-5">
+      <h5>Lease Renewal Report</h5>
+      <form action = "{% url 'lease_renewal' %}" method="post">
+        {% csrf_token %}
+
+        <div class="input-group">
+          <select name="d_e" class="custom-select" id="inputGroupSelect06" aria-label="Example select with button addon">
+            <option disabled selected>Display / Email</option>
+            <option value="Display">Display</option>
+            <option value="Email">Email</option>
+          </select>
+          <div class="input-group-append">
+            <button class="btn btn-info" type="submit" id="generateBtn04" disabled>Generate</button>
+          </div>
+        </div>
+        <script>
+          document.addEventListener("DOMContentLoaded", function () {
+            const d_e = document.getElementById("inputGroupSelect06");
+            const generateBtn = document.getElementById("generateBtn04");
+            function checkFields() {
+              if (d_e.value !== "Display / Email") {
+                generateBtn.removeAttribute("disabled");
+              } else {
+                generateBtn.setAttribute("disabled", "true");
+              }
+            }
+
+            d_e.addEventListener("change", checkFields);
+          });
+        </script>
+
+      </form>
+    </div>
+  </div>
+      <br/>
+  <div class="form-row">
+    <div class="form-group col-md-5">
+      <h5>Property Report</h5>
+      <form action = "{% url 'prop_rep' %}" method="post">
+        {% csrf_token %}
+
+        <div class="input-group">
+          <select name="propname" class="custom-select" id="inputGroupSelect07" aria-label="Example select with button addon">
+            <option disabled selected>Select Property</option>
+            <option value="All">All Properties</option>
+           {% for results in props %}
+              <option value="{{results.prop_name}}">{{results.prop_name}}</option>
+            {% endfor %}
+          </select>
+          <select name="d_e" class="custom-select" id="inputGroupSelect08" aria-label="Example select with button addon">
+            <option disabled selected>Display / Email</option>
+            <option value="Display">Display</option>
+            <option value="Email">Email</option>
+          </select>
+          <div class="input-group-append">
+            <button class="btn btn-info" type="submit" id="generateBtn05" disabled>Generate</button>
+          </div>
+        </div>
+        <script>
+          document.addEventListener("DOMContentLoaded", function () {
+            const propname = document.getElementById("inputGroupSelect07");
+            const d_e = document.getElementById("inputGroupSelect08");
+            const generateBtn = document.getElementById("generateBtn05");
+            function checkFields() {
+              if (propname.value !== "Select Property" && d_e.value !== "Display / Email") {
+                generateBtn.removeAttribute("disabled");
+              } else {
+                generateBtn.setAttribute("disabled", "true");
+              }
+            }
+
+            propname.addEventListener("change", checkFields);
+            d_e.addEventListener("change", checkFields);
+          });
+        </script>
+
+      </form>
+    </div>
+    <div class="form-group col-md-5">
+      <h5>Title Deeds</h5>
+      <form action = "{% url 'title_deeds' %}" method="post">
+        {% csrf_token %}
+
+        <div class="input-group">
+          <select name="propname" class="custom-select" id="inputGroupSelect09" aria-label="Example select with button addon">
+            <option disabled selected>Select Property</option>
+            <option value="All">All Properties</option>
+           {% for results in props %}
+              <option value="{{results.prop_name}}">{{results.prop_name}}</option>
+            {% endfor %}
+          </select>
+          <select name="d_e" class="custom-select" id="inputGroupSelect10" aria-label="Example select with button addon">
+            <option disabled selected>Display / Email</option>
+            <option value="Display">Display</option>
+            <option value="Email">Email</option>
+          </select>
+          <div class="input-group-append">
+            <button class="btn btn-info" type="submit" id="generateBtn06" disabled>Generate</button>
+          </div>
+        </div>
+        <script>
+          document.addEventListener("DOMContentLoaded", function () {
+            const propname = document.getElementById("inputGroupSelect09");
+            const d_e = document.getElementById("inputGroupSelect10");
+            const generateBtn = document.getElementById("generateBtn06");
+            function checkFields() {
+              if (propname.value !== "Select Property" && d_e.value !== "Display / Email") {
+                generateBtn.removeAttribute("disabled");
+              } else {
+                generateBtn.setAttribute("disabled", "true");
+              }
+            }
+
+            propname.addEventListener("change", checkFields);
+            d_e.addEventListener("change", checkFields);
+          });
+        </script>
+
+      </form>
+    </div>
+  </div>
+  <br/>
+  <div class="form-row">
+    <div class="form-group col-md-5">
+      <h5>Petty Cash Report</h5>
+      <form action = "{% url 'petty_cash_rep' %}" method="post">
+        {% csrf_token %}
+
+        <div class="input-group">
+          <select name="d_e" class="custom-select" id="inputGroupSelect11" aria-label="Example select with button addon">
+            <option disabled selected>Display / Email</option>
+            <option value="Display">Display</option>
+            <option value="Email">Email</option>
+          </select>
+          <div class="input-group-append">
+            <button class="btn btn-info" type="submit" id="generateBtn07" disabled>Generate</button>
+          </div>
+        </div>
+        <script>
+          document.addEventListener("DOMContentLoaded", function () {
+            const d_e = document.getElementById("inputGroupSelect11");
+            const generateBtn = document.getElementById("generateBtn07");
+            function checkFields() {
+              if (d_e.value !== "Display / Email") {
+                generateBtn.removeAttribute("disabled");
+              } else {
+                generateBtn.setAttribute("disabled", "true");
+              }
+            }
+
+            d_e.addEventListener("change", checkFields);
+          });
+        </script>
+
+      </form>
+    </div>
+    <div class="form-group col-md-5">
+      <h5>Friday Status Report</h5>
+      <form action = "{% url 'fsr_rep' %}" method="post">
+        {% csrf_token %}
+
+        <div class="input-group">
+          <select name = "d_s" class="custom-select" id="inputGroupSelect12" aria-label="Example select with button addon">
+            <option disabled selected>Detail / Summary</option>
+            <option value="Detailed">Detail</option>
+            <option value="Summarised">Summary</option>
+          </select>
+          <select name="d_e" class="custom-select" id="inputGroupSelect13" aria-label="Example select with button addon">
+            <option disabled selected>Display / Email</option>
+            <option value="Display">Display</option>
+            <option value="Email">Email</option>
+          </select>
+          <div class="input-group-append">
+            <button class="btn btn-info" type="submit" id="generateBtn08" disabled>Generate</button>
+          </div>
+        </div>
+        <script>
+          document.addEventListener("DOMContentLoaded", function () {
+            const d_s = document.getElementById("inputGroupSelect12");
+            const d_e = document.getElementById("inputGroupSelect13");
+            const generateBtn = document.getElementById("generateBtn08");
+            function checkFields() {
+              if (d_s.value !== "Detail / Summary" && d_e.value !== "Display / Email") {
+                generateBtn.removeAttribute("disabled");
+              } else {
+                generateBtn.setAttribute("disabled", "true");
+              }
+            }
+
+            d_s.addEventListener("change", checkFields);
+            d_e.addEventListener("change", checkFields);
+          });
+        </script>
+
+      </form>
+    </div>
+  </div>
+  <br/>
+  <div class="form-row">
+    <div class="form-group col-md-5">
+      <h5>Supplier Report</h5>
+      <form action = "{% url 'suppliers_rep' %}" method="post">
+        {% csrf_token %}
+
+        <div class="input-group">
+          <select name = "supname" class="custom-select" id="inputGroupSelect14" aria-label="Example select with button addon">
+            <option disabled selected>Select Supplier</option>
+            <option value="All">All Suppliers</option>
+            {% for sresults in supplier %}
+              <option value="{{sresults.supplier_contact_person}}">{{sresults.supplier_contact_person}}</option>
+            {% endfor %}
+          </select>
+          <select name="d_e" class="custom-select" id="inputGroupSelect15" aria-label="Example select with button addon">
+            <option disabled selected>Display / Email</option>
+            <option value="Display">Display</option>
+            <option value="Email">Email</option>
+          </select>
+          <div class="input-group-append">
+            <button class="btn btn-info" type="submit" id="generateBtn09" disabled>Generate</button>
+          </div>
+        </div>
+        <script>
+          document.addEventListener("DOMContentLoaded", function () {
+            const supname = document.getElementById("inputGroupSelect14");
+            const d_e = document.getElementById("inputGroupSelect15");
+            const generateBtn = document.getElementById("generateBtn09");
+            function checkFields() {
+              if (supname.value !== "Select Supplier" && d_e.value !== "Display / Email") {
+                generateBtn.removeAttribute("disabled");
+              } else {
+                generateBtn.setAttribute("disabled", "true");
+              }
+            }
+
+            supname.addEventListener("change", checkFields);
+            d_e.addEventListener("change", checkFields);
+          });
+        </script>
+
+      </form>
+    </div>
+  </div>
+{% else %}
+  <center><img src="{% static 'images/alivente_online_logo.png' %}" alt="Alivente" width="480" height="300"></center>
+{% endif %}
+
+{% endblock %}

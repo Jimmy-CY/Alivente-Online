@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+{% endblock %}
+
+{% block content %}
+
+<h2><center>ALIVENTE ONLINE - PETTY CASH</center></h2>
+<br/>
+
+  {% for msg in messages %}
+    <div class="alert alert-secondary alert-dismissible fade show auto-dismiss" role="alert">
+      <strong></strong> <center>{{ msg }}</center>
+      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    <script>
+      // Automatically close the alert after 3 seconds (3000 milliseconds)
+      setTimeout(function() {
+        document.querySelectorAll('.auto-dismiss').forEach(alert => {
+          alert.classList.remove('show'); // Hide alert visually
+          alert.classList.add('fade'); // Add fade effect
+          setTimeout(() => alert.remove(), 500); // Remove from DOM after fade
+        });
+      }, 2000);
+    </script>
+  {% endfor %}
+  
+	<div style="display: flex ; justify-content: flex-end">
+	   	<a href="{% url 'petty_cash_add' %}" class="btn btn-info" style="margin-right:16px" type="button">Add New</a>
+		<a href="{% url 'home' %}" class="btn btn-info" style="margin-right:16px" role="button">Back</a>
+	</div>
+
+
+<br/>
+
+<body>
+<div>
+<table class="table table-bordered table-striped text-center">
+<thead>
+	<tr><th align="center">Date</th><th align="left">Description</th><th align="center">Amount</th><th align="center">Income / Expense</th></tr>
+</thead>
+<tbody>
+	{% for presults in petty %}
+		{% if presults.petty_cash_dr_cr == "DR" %}
+			<tr><td align="center">{{presults.petty_cash_date}}</td><td align="left">{{presults.petty_cash_description}}</td><td align="right">{{presults.petty_cash_amount}}</td><td align="center">Income</td></tr>
+		{% else %}
+			<tr><td align="center">{{presults.petty_cash_date}}</td><td align="left">{{presults.petty_cash_description}}</td><td align="right">- {{presults.petty_cash_amount}}</td><td align="center">Expense</td></tr>
+		{% endif %}
+	{% endfor %}
+	<tr><td></td><td style="font-weight:bold" align="left">CLOSING BALANCE</td><td style="font-weight:bold" align="right">{{balance}}</td><td ></td></tr>
+</tbody>
+</table>    
+</div>
+</body>
+
+{% endblock %}

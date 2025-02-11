@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+{% endblock %}
+
+{% block content %}
+
+<h2><center>ALIVENTE ONLINE - ISSUES</center></h2>
+<h4><center>ADD ISSUE</center></h4>
+<br/>
+  
+<form action = "{% url 'fsr_commit' %}" method="post">
+  {% csrf_token %}
+  <div style="display: flex ; justify-content: flex-end">
+      <button class="btn btn-info" style="margin-right:16px" type="submit">Save</button>
+      <a href="{% url 'fsr' %}" class="btn btn-info" style="margin-right:16px" role="button">Back</a>
+  </div>
+<br/>
+  <div class="form-row">
+	  <div class="form-group col-md-3">
+      <label for="prop"><strong>Property Name</strong></label>
+      <select id="prop" class="form-control" name="prop" required>
+        <option value = "" disabled selected value="">Select Property</option>
+        {% for results in props %}
+          <option value="{{results.prop_id}}">{{results.prop_name}}</option>
+        {% endfor %}
+      </select>
+    </div>    
+    <div class="form-group col-md-2">
+      <label for="issues_date_logged"><strong>Date Logged</strong></label>
+      <input placeholder="Date Logged" type="date" id="issues_date_logged" class="form-control" name="issues_date_logged" value="{{log_date|date:'Y-m-d'}}" readonly>
+    </div>
+    <div class="form-group col-md-2">
+      <label for="issues_status"><strong>Issue Status</strong></label>
+      <input placeholder="Issue Status" type="text" id="issues_status" class="form-control" name="issues_status" value="Unresolved" readonly>
+    </div>
+  </div>
+  <div class="form-row">
+    <div class="form-group col-md-3">
+      <label for="issues_heading"><strong>Issue Heading</strong></label>
+      <input placeholder="Issue Heading" type="text" id="issues_heading" class="form-control" name="issues_heading" maxlength="35" required>
+    </div>
+    <div class="form-group col-md-4">
+      <label for="issues_description"><strong>Issue Description</strong></label>
+      <input placeholder="Issue Description" type="text" id="issues_description" class="form-control" name="issues_description" maxlength="50" required>
+    </div>
+    <div class="form-group col-md-1">
+      <input placeholder="Date" type="hidden" id="issues_resolution_date" class="form-control" name="issues_resolution_date" value="1900-01-01" readonly>
+    </div>
+ </div>
+ 
+</form>
+
+{% endblock %}

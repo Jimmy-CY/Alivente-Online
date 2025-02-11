@@ -1,0 +1,162 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+{% endblock %}
+
+{% block content %}
+
+<h2><center>ALIVENTE ONLINE - TENANTS</center></h2>
+<h4><center>EDIT EXISTING TENANT</center></h4>
+<br/>
+
+{% for tresults in tenant %}
+<form action = "{% url 'tenant_edit_commit' tresults.tenant_id %}" method="post">
+  {% csrf_token %}
+  <div style="display: flex ; justify-content: flex-end">
+      <button class="btn btn-info" style="margin-right:16px" type="submit">Save</button>
+      <a href="{% url 'tenant' %}" class="btn btn-info" style="margin-right:16px" role="button">Back</a>
+  </div>
+
+  <div class="form-row">
+	  <div class="form-group col-md-4">
+      <label for="tenant_type"><strong>Tenant Type</strong></label>
+      <select id="tenant_type" class="form-control" name="tenant_type" required>
+        <option disabled>Select Tenant Type</option>
+          {% if tesults.tenant_type == "Company" %}
+            <option selected value="Company">Company</option>
+          {% else %}
+            <option value="Company">Company</option>
+          {% endif %}
+          {% if tresults.tenant_type == "Individual" %}
+            <option selected value="Individual">Individual</option>
+          {% else %}
+            <option value="Individual">Individual</option>
+          {% endif %}
+      </select>
+    </div>
+    <div class="form-group col-md-4">
+      <label for="tenant_name"><strong>Tenant</strong></label>
+      <input type="text" class="form-control" id="tenant_name" name="tenant_name" placeholder="Company or Tenant Name" value= "{{tresults.tenant_name}}" required>
+    </div>
+  </div>
+  <div class="form-row">
+    <div class="form-group col-md-4">
+      <label for="tenant_contact_person"><strong>Contact Person</strong></label>
+      <input type="text" class="form-control" id="tenant_contact_person" name="tenant_contact_person" placeholder="Name of Contact Person" value= "{{tresults.tenant_contact_person}}" required>
+    </div>
+    <div class="form-group col-md-4">
+      <label for="tenant_contact_number"><strong>Contact Number</strong></label>
+      <input type="text" class="form-control" id="tenant_contact_number" name="tenant_contact_number" placeholder="Contact Number" value= "{{tresults.tenant_contact_number}}" required>
+    </div>
+    <div class="form-group col-md-4">
+      <label for="tenant_email"><strong>Email Address</strong></label>
+      <input type="text" class="form-control" id="tenant_email" name="tenant_email" placeholder="Tenant Email Address" value= "{{tresults.tenant_email}}">
+    </div>
+  </div>
+  <div class="form-row">
+      <div class="form-group col-md-4">
+      <label for="tenant_lease_start_date"><strong>Lease Start Date</strong></label>
+      <input type="date" class="form-control" id="tenant_lease_start_date" name="tenant_lease_start_date" placeholder="Lease Start Date" value= "{{tresults.tenant_lease_start_date|date:'Y-m-d'}}" required>
+    </div>
+    <div class="form-group col-md-4">
+      <label for="tenant_lease_end_date"><strong>Lease End Date</strong></label>
+      <input type="date" class="form-control" id="tenant_lease_end_date" name="tenant_lease_end_date" placeholder="Lease End Date" value= "{{tresults.tenant_lease_end_date|date:'Y-m-d'}}" required>
+    </div>
+    <div class="form-group col-md-4">
+      <label for="tenant_rental_type"><strong>Rental Type</strong></label>
+      <select id="tenant_rental_type" class="form-control" name="tenant_rental_type" required>
+        <option disabled>Select Rental Type</option>
+          {% if tesults.tenant_rental_type == "Weekly" %}
+            <option selected value="Weekly">Weekly</option>
+          {% else %}
+            <option value="Weekly">Weekly</option>
+          {% endif %}
+          {% if tresults.tenant_rental_type == "Monthly" %}
+            <option selected value="Monthly">Monthly</option>
+          {% else %}
+            <option value="Monthly">Monthly</option>
+          {% endif %}
+          {% if tresults.tenant_rental_type == "Annual" %}
+            <option selected value="Annual">Annual</option>
+          {% else %}
+            <option value="Annual">Annual</option>
+          {% endif %}
+      </select>
+    </div>
+  </div>
+  <div class="form-row">
+    <div class="form-group col-md-4">
+      <label for="tenant_deposit"><strong>Deposit</strong></label>
+      <input type="number" class="form-control" id="tenant_deposit" name="tenant_deposit" placeholder="Deposit Amount" value= "{{tresults.tenant_deposit}}" required>
+    </div>
+    <div class="form-group col-md-4">
+      <label for="tenant_rent"><strong>Rental</strong></label>
+      <input type="number" class="form-control" id="tenant_rent" name="tenant_rent" placeholder="Rental Amount" value= "{{tresults.tenant_rent}}" required>
+    </div>
+    <div class="form-group col-md-4">
+      <label for="tenant_levies"><strong>Levies</strong></label>
+      <input type="number" class="form-control" id="tenant_levies" name="tenant_levies" placeholder="Monthly Levy Amount" value= "{{tresults.tenant_levies}}" required>
+    </div>
+  </div>
+  <div class="form-row">
+    <div class="form-group col-md-4">
+      <label for="tenant_payment_terms"><strong>Rental Payment Terms</strong></label>
+      <input type="number" class="form-control" id="tenant_payment_terms" name="tenant_payment_terms" placeholder="Payment Terms (Days)" value= "{{tresults.tenant_payment_terms}}" required>
+    </div>
+    <div class="form-group col-md-4">
+      <label for="tenant_renewal"><strong>Renewal Option</strong></label>
+      <select id="tenant_renewal" class="form-control" name="tenant_renewal" required>
+        <option disabled>Select if Lease is Renewable</option>
+          {% if tesults.tenant_renewal == "Yes" %}
+            <option selected value="Yes">Yes</option>
+          {% else %}
+            <option value="Yes">Yes</option>
+          {% endif %}
+          {% if tresults.tenant_renewal == "No" %}
+            <option selected value="No">No</option>
+          {% else %}
+            <option value="No">No</option>
+          {% endif %}
+      </select>
+    </div>    
+    <div class="form-group col-md-4">
+      <label for="tenant_renewal_period"><strong>Renewal Period</strong></label>
+      <input type="number" class="form-control" id="tenant_renewal_period" name="tenant_renewal_period" placeholder="Renewal Period (Days)" value= "{{tresults.tenant_renewal_period}}" required>
+    </div>
+  </div>
+  <div class="form-row">
+  	<div class="form-group col-md-4">
+      <label for="tenant_current"><strong>Tenant Status</strong></label>
+      <select id="tenant_current" class="form-control" name="tenant_current" required>
+        <option disabled>Select Active or Inactive</option>
+          {% if tesults.tenant_current == "Active" %}
+            <option selected value="Active">Active</option>
+          {% else %}
+            <option value="Yes">Active</option>
+          {% endif %}
+          {% if tresults.tenant_renewal == "Inactive" %}
+            <option selected value="Inactive">Inactive</option>
+          {% else %}
+            <option value="No">Inactive</option>
+          {% endif %}
+      </select>
+    </div>    
+    <div class="form-group col-md-4">
+      <label for="prop"><strong>Property</strong></label>
+      <select id="prop" class="form-control" name="prop" required>
+        <option disabled>Select Property</option>
+        {% for results in props %}
+          {% if results.prop_id == tresults.prop_id %}
+            <option selected value={{results.prop_id}}>{{results.prop_name}}</option>
+          {% else %}
+            <option value={{results.prop_id}}>{{results.prop_name}}</option>
+          {% endif %}
+        {% endfor %}
+      </select>
+    </div>    
+   </div>
+  </div>
+</form>
+{% endfor %}
+{% endblock %}
