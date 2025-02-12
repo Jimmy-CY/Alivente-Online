@@ -152,6 +152,7 @@ def invoices_commit(request, invoice_id):
 	inv_tbp = invoices.objects.filter(pk=invoice_id).update(invoice_paid="Yes")
 	return redirect('invoices')
 
+
 ### PROPERTIES ###
 def properties_page(request):
 	prop_output = request.POST.get('propname')
@@ -198,6 +199,7 @@ def properties_edit_commit(request, prop_id):
 	messages.success(request, "Property Edited Successfully")
 	return render (request, "properties.html", {"props":results})
 
+
 ### PETTY CASH ###
 def petty_cash(request):
 	presults = petty.objects.all().order_by('petty_cash_date')
@@ -230,6 +232,7 @@ def petty_cash_commit(request):
 def petty_cash_add(request):
 	presults = petty.objects.all().order_by('petty_cash_date')
 	return render(request, "petty_cash_add.html", {"petty":presults})
+
 
 ### ISSUES - FRIDAY STATUS REPORT ###
 def fsr(request):
@@ -423,6 +426,7 @@ def lease_renewal(request):
 	lease_renewal.lease_renewal(rep_output, check, email, fname)
 	messages.success(request, "Report Created Successfully")
 	return redirect('home')
+
 
 ### USER ADMIN AND LOGIN AND LOGOUT ###
 def login_user(request):
