@@ -1,9 +1,5 @@
-[
-build
-]
+[build]
 builder = "nixpacks"
 
-[
-deploy
-]
+[deploy]
 startCommand = "gunicorn mysite.wsgi:application"
