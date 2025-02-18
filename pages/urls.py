@@ -9,6 +9,7 @@ urlpatterns = [
     path('login/', views.login_user, name='login'),
     path('logout/', views.logout_user, name='logout'),
     path('tenant/', views.tenant_page, name='tenant'),
+
     #
     #Reports - Dashboard
     path('title_deeds/', views.title_deeds, name='title_deeds'),
