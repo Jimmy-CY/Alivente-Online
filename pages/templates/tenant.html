@@ -43,7 +43,9 @@
                   <option disabled selected value="All">Select Property</option>
                   <option value="All">All Properties</option>
                   {% for results in props %}
-                    <option value="{{results.prop_name}}">{{results.prop_name}}</option>
+                    {% if results.prop_available_for_rent == "Yes" %}
+                      <option value="{{results.prop_name}}">{{results.prop_name}}</option>
+                    {% endif %}
                   {% endfor %}
               </select>
               <select name = "tenantname" class="custom-select" id="inputGroupSelect08" aria-label="Example select with button addon" onchange="this.form.submit()">

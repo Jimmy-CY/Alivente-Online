@@ -20,6 +20,7 @@ urlpatterns = [
     path('open_invoices/', views.open_invoices, name='open_invoices'),
     path('lease_renewal/', views.lease_renewal, name='lease_renewal'),
     path('lease_agreements/', views.lease_agreements, name='lease_agreements'),
+    path('issues_rep/', views.issues_rep, name='issues_rep'),
     #
     # Tenants
     path('tenant_add/', views.tenant_add, name='tenant_add'),

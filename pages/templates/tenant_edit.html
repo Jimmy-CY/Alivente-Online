@@ -150,7 +150,9 @@
           {% if results.prop_id == tresults.prop_id %}
             <option selected value={{results.prop_id}}>{{results.prop_name}}</option>
           {% else %}
-            <option value={{results.prop_id}}>{{results.prop_name}}</option>
+            {% if results.prop_available_for_rent == "Yes" %}
+              <option value={{results.prop_id}}>{{results.prop_name}}</option>
+            {% endif %}
           {% endif %}
         {% endfor %}
       </select>

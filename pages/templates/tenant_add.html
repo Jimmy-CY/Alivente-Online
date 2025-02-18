@@ -46,7 +46,7 @@
     </div>
   </div>
   <div class="form-row">
-      <div class="form-group col-md-4">
+    <div class="form-group col-md-4">
       <label for="tenant_lease_start_date"><strong>Lease Start Date</strong></label>
       <input type="date" class="form-control" id="tenant_lease_start_date" name="tenant_lease_start_date" placeholder="Lease Start Date" required>
     </div>
@@ -110,7 +110,9 @@
       <select id="prop" class="form-control" name="prop" required>
         <option value="" disabled selected>Select Property</option>
         {% for results in props %}
-          <option value={{results.prop_id}}>{{results.prop_name}}</option>
+          {% if results.prop_available_for_rent == "Yes" %}
+            <option value={{results.prop_id}}>{{results.prop_name}}</option>
+          {% endif %}
         {% endfor %}
       </select>
     </div>    

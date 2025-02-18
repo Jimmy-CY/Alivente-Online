@@ -4,7 +4,7 @@ from django.contrib import messages
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm, PasswordChangeForm
 from django.http import HttpResponse
 from .models import props, petty, issues, issues_details, tenant, invoices, supplier
-from datetime import date
+from datetime import date, datetime
 from . import forms
 from .forms import PropForm, TenantForm, PettyForm, InvoicesForm, IssuesForm, DetailsForm, SupplierForm
 
@@ -298,6 +298,7 @@ def fsr_commit_status_change(request):
 	issue_update = issues.objects.filter(pk=is_id).update(issues_status=is_status)
 	isresults = issues.objects.all().order_by('issues_date_logged','issues_status')
 	isvalues = issues.objects.values()
+	today_date = date.today()
 	for x in isvalues:
 		if int(x['issues_id']) == int(is_id):
 			if x['issues_status'] == "Resolved":
@@ -305,7 +306,7 @@ def fsr_commit_status_change(request):
 					lname = request.user.last_name
 					fname = request.user.first_name
 					user_initials = fname[:1]+lname[:1]
-				issue_update = issues.objects.filter(pk=is_id).update(issues_resolution_date='2025-01-30')
+				issue_update = issues.objects.filter(pk=is_id).update(issues_resolution_date=today_date)
 				issue_update = issues.objects.filter(pk=is_id).update(issues_resolving_user=user_initials)
 			else:
 				issue_update = issues.objects.filter(pk=is_id).update(issues_resolution_date='1900-01-01')
@@ -402,6 +403,23 @@ def fsr_rep(request):
 		email = request.user.email
 		fname = request.user.first_name
 	fsr.fsr_report(rep_type, rep_date, rep_output, email, fname)
+	messages.success(request, "Report Created Successfully")
+	return redirect('home')
+
+def issues_rep(request):
+	import issues
+	f_d = request.POST.get('from_date')
+	f_date = datetime.strptime(f_d, "%Y-%m-%d")
+	from_date = f_date.date()
+	t_d = request.POST.get('to_date')
+	t_date = datetime.strptime(t_d, "%Y-%m-%d")
+	to_date = t_date.date()
+	rep_output = request.POST.get('d_e')
+	rep_date = date.today()
+	if request.user.is_authenticated:
+		email = request.user.email
+		fname = request.user.first_name
+	issues.issues_report(from_date, to_date, rep_output, email, fname)
 	messages.success(request, "Report Created Successfully")
 	return redirect('home')
 

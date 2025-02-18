@@ -30,7 +30,7 @@
   {% endfor %}
 
   <div class="form-row">
-    <div class="form-group col-md-5">
+    <div class="form-group col-md-6">
       <h5>Tenant Report</h5>
       <form action = "{% url 'tenant_rep' %}" method="post">
         {% csrf_token %}
@@ -72,7 +72,7 @@
         </script>
       </form>
     </div>
-    <div class="form-group col-md-5">
+    <div class="form-group col-md-6">
       <h5>Lease Agreements</h5>
       <form action = "{% url 'lease_agreements' %}" method="post">
         {% csrf_token %}
@@ -118,7 +118,7 @@
   </div>
   <br/>
   <div class="form-row">
-    <div class="form-group col-md-5">
+    <div class="form-group col-md-6">
       <h5>Outstanding Invoices</h5>
       <form action = "{% url 'open_invoices' %}" method="post">
         {% csrf_token %}
@@ -151,7 +151,7 @@
 
       </form>
     </div>
-      <div class="form-group col-md-5">
+      <div class="form-group col-md-6">
       <h5>Lease Renewal Report</h5>
       <form action = "{% url 'lease_renewal' %}" method="post">
         {% csrf_token %}
@@ -187,7 +187,7 @@
   </div>
       <br/>
   <div class="form-row">
-    <div class="form-group col-md-5">
+    <div class="form-group col-md-6">
       <h5>Property Report</h5>
       <form action = "{% url 'prop_rep' %}" method="post">
         {% csrf_token %}
@@ -229,7 +229,7 @@
 
       </form>
     </div>
-    <div class="form-group col-md-5">
+    <div class="form-group col-md-6">
       <h5>Title Deeds</h5>
       <form action = "{% url 'title_deeds' %}" method="post">
         {% csrf_token %}
@@ -274,7 +274,7 @@
   </div>
   <br/>
   <div class="form-row">
-    <div class="form-group col-md-5">
+    <div class="form-group col-md-6">
       <h5>Petty Cash Report</h5>
       <form action = "{% url 'petty_cash_rep' %}" method="post">
         {% csrf_token %}
@@ -307,7 +307,7 @@
 
       </form>
     </div>
-    <div class="form-group col-md-5">
+    <div class="form-group col-md-6">
       <h5>Friday Status Report</h5>
       <form action = "{% url 'fsr_rep' %}" method="post">
         {% csrf_token %}
@@ -350,7 +350,7 @@
   </div>
   <br/>
   <div class="form-row">
-    <div class="form-group col-md-5">
+    <div class="form-group col-md-6">
       <h5>Supplier Report</h5>
       <form action = "{% url 'suppliers_rep' %}" method="post">
         {% csrf_token %}
@@ -390,6 +390,43 @@
           });
         </script>
 
+      </form>
+    </div>
+    <div class="form-group col-md-6">
+      <h5>Resolved Issues Report</h5>
+      <form action = "{% url 'issues_rep' %}" method="post">
+        {% csrf_token %}
+        <div class="input-group">
+          <input name = "from_date" placeholder="Date From" class="form-control" type="text" onfocus="(this.type='date')" onblur="(this.type='text')" id="from_date">
+          <input name = "to_date" placeholder="Date To" class="form-control" type="text" onfocus="(this.type='date')" onblur="(this.type='text')" id="to_date">
+          <select name="d_e" class="custom-select" id="inputGroupSelect17" aria-label="Example select with button addon">
+            <option disabled selected>Display / Email</option>
+            <option value="Display">Display</option>
+            <option value="Email">Email</option>
+          </select>
+          <div class="input-group-append">
+            <button class="btn btn-info" type="submit" id="generateBtn10" disabled>Generate</button>
+          </div>
+        </div>
+        <script>
+          document.addEventListener("DOMContentLoaded", function () {
+            const from_date = document.getElementById("from_date");
+            const t0_date = document.getElementById("to_date");
+            const d_e = document.getElementById("inputGroupSelect17");
+            const generateBtn = document.getElementById("generateBtn10");
+            function checkFields() {
+              if (from_date.value !== "" && to_date.value !== "" && d_e.value !== "Display / Email") {
+                generateBtn.removeAttribute("disabled");
+              } else {
+                generateBtn.setAttribute("disabled", "true");
+              }
+            }
+
+            from_date.addEventListener("change", checkFields);
+            to_date.addEventListener("change", checkFields);
+            d_e.addEventListener("change", checkFields);
+          });
+        </script>
       </form>
     </div>
   </div>
