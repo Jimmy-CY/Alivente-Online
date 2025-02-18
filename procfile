@@ -1,4 +1,4 @@
-web: gunicorn djangoproject.wsgi --log-file
+web: gunicorn mysite.wsgi:application
 
 # stuff for database
-web: python manage.py migrate && gunicorn djangoproject.wsg
+web: python manage.py migrate && gunicorn mysite.wsg
