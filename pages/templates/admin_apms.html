@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+{% endblock %}
+
+{% block content %}
+
+{% if user.is_authenticated %}
+  <h2><center>ALIVENTE ONLINE - ADMINISTRATION</center></h2>
+  <br/>
+  
+  {% for msg in messages %}
+    <div class="alert alert-secondary alert-dismissible fade show auto-dismiss" role="alert">
+      <strong></strong> <center>{{ msg }}</center>
+      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    <script>
+      // Automatically close the alert after 3 seconds (3000 milliseconds)
+      setTimeout(function() {
+        document.querySelectorAll('.auto-dismiss').forEach(alert => {
+          alert.classList.remove('show'); // Hide alert visually
+          alert.classList.add('fade'); // Add fade effect
+          setTimeout(() => alert.remove(), 500); // Remove from DOM after fade
+        });
+      }, 2000);
+    </script>
+  {% endfor %}
+
+  <div class="form-row">
+    <div class="form-group col-md-3">
+      <h5>Reports</h5>
+      <form action = "{% url 'admin_clear' %}" method="post">
+        {% csrf_token %}
+        <div class="input-group">
+          <button class="btn btn-info" type="submit" id="generateBtn01">Clear Old Reports</button>
+        </div>
+      </form>
+    </div>
+    <div class="form-group col-md-3">
+      <h5>Lease Agreements</h5>
+      <form action = "{% url 'admin_renewals' %}" method="post">
+        {% csrf_token %}
+        <div class="input-group">
+          <button class="btn btn-info" type="submit" id="generateBtn01">Lease Renewals</button>
+        </div>
+      </form>
+    </div>
+    <div class="form-group col-md-3">
+      <h5>Outstanding Invoices</h5>
+      <form action = "{% url 'admin_unpaid' %}" method="post">
+        {% csrf_token %}
+        <div class="input-group">
+          <button class="btn btn-info" type="submit" id="generateBtn01">Outstanding Invoices</button>
+        </div>
+      </form>
+    </div>
+    <div class="form-group col-md-3">
+      <h5>New Invoices</h5>
+      <form action = "{% url 'admin_invoices' %}" method="post">
+        {% csrf_token %}
+        <div class="input-group">
+          <button class="btn btn-info" type="submit" id="generateBtn01">Generate Invoices</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  <br/>
+
+{% else %}
+  <center><img src="{% static 'images/alivente_online_logo.png' %}" alt="Alivente" width="480" height="300"></center>
+{% endif %}
+
+{% endblock %}

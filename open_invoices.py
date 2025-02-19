@@ -114,7 +114,6 @@ def create_invoices(M,Y):
 		password = "Smiles123$",
 		database = "alivente",
 		auth_plugin = "mysql_native_password",
-
 		)
 
 	# CREATE CURSOR INSTANCE
@@ -122,22 +121,29 @@ def create_invoices(M,Y):
 
 	my_cursor.execute("SELECT prop.prop_id, prop.prop_name, prop.prop_country, prop.prop_status, tenant.tenant_id FROM alivente.tenant JOIN alivente.prop ON prop.prop_id = tenant.prop_id WHERE tenant.tenant_current = 'Yes' and prop.prop_status = 'Active' ORDER BY tenant.tenant_id ASC")
 	result = my_cursor.fetchall()
+	my_cursor.execute("SELECT  invoice.invoice_id, invoice.tenant_id, invoice.invoice_date, invoice.invoice_paid FROM alivente.invoice WHERE invoice.invoice_paid = 'No' ORDER BY invoice.invoice_date ASC")
+	result_invoices = my_cursor.fetchall()
 
 	months = (('January','01'),('February','02'),('March','03'),('April','04'),('May','05'),('June','06'),('July','07'),('August','08'),('September','09'),('October','10'),('November','11'),('December','12'))
 	
 	for num in months:
 		if num [0] == M:
 			temp_date = '01-'+num[1]+'-'+str(Y)
-			new_invoice_date = datetime.strptime(temp_date, '%m-%d-%Y').date()
-	
+			new_invoice_date = datetime.strptime(temp_date, '%d-%m-%Y').date()
+
 	# INSERT INDIVIDUAL INVOICES INTO INVOICE TABLE
 	for row in result:
-		sqlStuff = "INSERT INTO invoice (tenant_id,invoice_date,invoice_paid) VALUES (%s, %s, %s)"
-		records = [
-			(row[4],new_invoice_date,'No'),
-		]
-		my_cursor.executemany(sqlStuff, records)
-		mydb.commit()
+		inv_count = 0
+		for inv in result_invoices:
+			if row[4] == inv[1] and inv[2]==new_invoice_date:
+				inv_count = inv_count + 1
+		if inv_count == 0:
+			sqlStuff = "INSERT INTO invoice (tenant_id,invoice_date,invoice_paid) VALUES (%s, %s, %s)"
+			records = [
+				(row[4],new_invoice_date,'No'),
+			]
+			my_cursor.executemany(sqlStuff, records)
+			mydb.commit()
 
 	if mydb.is_connected():
 		my_cursor.close()

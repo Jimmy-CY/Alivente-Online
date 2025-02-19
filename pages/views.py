@@ -15,6 +15,40 @@ def home(request):
 	sresults = supplier.objects.all().order_by('supplier_country','supplier_contact_person')
 	return render (request, "home.html", {"props":results, "tenant":tresults, "supplier":sresults})
 
+def admin_apms(request):
+	return render (request, "admin_apms.html", {})
+
+def admin_clear(request):
+	import os
+	import glob
+	file_path = "C:/Users/DemetrisManias/Desktop/code/djangoproject/static/reports/*.pdf"
+	files = glob.glob(file_path)
+	for f in files:
+		os.remove(f)
+	return render (request, "admin_apms.html", {})
+
+def admin_unpaid(request):
+	import open_invoices
+	rep_output = "Email"
+	check = "Yes"
+	email = "demetrimanias@gmail.com"
+	fname = "Demetri"
+	open_invoices.open_invoices(rep_output, check, email, fname)
+#	email = "stella.simitopoulos@alivente.com"
+#	fname = "Stella"
+#	open_invoices.open_invoices(rep_output, check, email, fname)
+	return render (request, "admin_apms.html", {})
+
+def admin_renewals(request):
+	return render (request, "admin_apms.html", {})
+
+def admin_invoices(request):
+	import open_invoices
+	today = date.today()
+	months = ('Month','January','February','March','April','May','June','July','August','September','October','November','December')
+	open_invoices.create_invoices(months[today.month],today.year)
+	return render (request, "admin_apms.html", {})
+
 ### TENANTS ###
 def tenant_page(request):
 	prop_output = request.POST.get('propname')
@@ -133,7 +167,7 @@ def invoices_page(request):
 	tenant_output = request.POST.get('tenantname')
 	results = props.objects.all().order_by('prop_country','prop_name')
 	tresults = tenant.objects.all().order_by('tenant_name')
-	iresults = invoices.objects.filter(invoice_paid="No")
+	iresults = invoices.objects.filter(invoice_paid="No").order_by('invoice_date')
 	if tenant_output is None:
 		tresults = tenant.objects.all().order_by('tenant_name')
 	elif tenant_output == "All":

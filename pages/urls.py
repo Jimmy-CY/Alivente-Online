@@ -4,10 +4,16 @@ from . import views
 urlpatterns = [
     # Home
     path('', views.home, name='home'),
+ 
     #
     # User Admin
     path('login/', views.login_user, name='login'),
     path('logout/', views.logout_user, name='logout'),
+    path('admin_apms/', views.admin_apms, name='admin_apms'),
+    path('admin_clear/', views.admin_clear, name='admin_clear'),
+    path('admin_unpaid/', views.admin_unpaid, name='admin_unpaid'),
+    path('admin_renewals/', views.admin_renewals, name='admin_renewals'),
+    path('admin_invoices/', views.admin_invoices, name='admin_invoices'),
     path('tenant/', views.tenant_page, name='tenant'),
 
     #
