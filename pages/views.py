@@ -8,13 +8,14 @@ from datetime import date, datetime
 from . import forms
 from .forms import PropForm, TenantForm, PettyForm, InvoicesForm, IssuesForm, DetailsForm, SupplierForm
 
-###  HOME ###
+### HOME ###
 def home(request):
 	results = props.objects.all().order_by('prop_country','prop_name')
 	tresults = tenant.objects.filter(tenant_current="Yes")
 	sresults = supplier.objects.all().order_by('supplier_country','supplier_contact_person')
 	return render (request, "home.html", {"props":results, "tenant":tresults, "supplier":sresults})
 
+### ADMIN ###
 def admin_apms(request):
 	return render (request, "admin_apms.html", {})
 
