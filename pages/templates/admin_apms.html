@@ -29,45 +29,36 @@
     </script>
   {% endfor %}
 
-  <div class="form-row">
-    <div class="form-group col-md-3">
-      <h5>Reports</h5>
-      <form action = "{% url 'admin_clear' %}" method="post">
-        {% csrf_token %}
-        <div class="input-group">
-          <button class="btn btn-info" type="submit" id="generateBtn01">Clear Old Reports</button>
-        </div>
-      </form>
-    </div>
-    <div class="form-group col-md-3">
-      <h5>Lease Agreements</h5>
-      <form action = "{% url 'admin_renewals' %}" method="post">
-        {% csrf_token %}
-        <div class="input-group">
-          <button class="btn btn-info" type="submit" id="generateBtn01">Lease Renewals</button>
-        </div>
-      </form>
-    </div>
-    <div class="form-group col-md-3">
-      <h5>Outstanding Invoices</h5>
-      <form action = "{% url 'admin_unpaid' %}" method="post">
-        {% csrf_token %}
-        <div class="input-group">
-          <button class="btn btn-info" type="submit" id="generateBtn01">Outstanding Invoices</button>
-        </div>
-      </form>
-    </div>
-    <div class="form-group col-md-3">
-      <h5>New Invoices</h5>
-      <form action = "{% url 'admin_invoices' %}" method="post">
-        {% csrf_token %}
-        <div class="input-group">
-          <button class="btn btn-info" type="submit" id="generateBtn01">Generate Invoices</button>
-        </div>
-      </form>
-    </div>
+<body>  
+  <div style="display: flex ; justify-content: flex-end">
+    <a href="{% url 'home' %}" class="btn btn-info" style="margin-right:16px" role="button">Back</a>
   </div>
-  <br/>
+
+  <form action = "" method="">
+    {% csrf_token %}
+    <br/>
+    <div>
+    <table class="table table-bordered table-striped text-center">
+    <thead>
+      <tr>
+        <th text-align="left">Reports</th>
+        <th text-align="left">Lease Agreements</th>
+        <th align="center">Outstanding Invoices</th>
+        <th align="center">New Invoices</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td align="center"><button type ="button" class="btn btn-light" style="border-color:black;"><a href="{% url 'admin_clear' %}">Clear Old Reports</a></button></td>
+        <td align="center"><button type ="button" class="btn btn-light" style="border-color:black;"><a href="{% url 'admin_renewals' %}">Lease Renewals</a></button></td>
+        <td align="center"><button type ="button" class="btn btn-light" style="border-color:black;"><a href="{% url 'admin_unpaid' %}">Outstanding Invoices</a></button></td>
+        <td align="center"><button type ="button" class="btn btn-light" style="border-color:black;"><a href="{% url 'admin_invoices' %}">Generate Invoices</a></button></td>    
+      </tr>
+    </tbody>
+    </table>    
+    </div>
+  </form>
+</body>
 
 {% else %}
   <center><img src="{% static 'images/alivente_online_logo.png' %}" alt="Alivente" width="480" height="300"></center>

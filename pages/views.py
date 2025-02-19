@@ -25,7 +25,7 @@ def admin_clear(request):
 	files = glob.glob(file_path)
 	for f in files:
 		os.remove(f)
-	return render (request, "admin_apms.html", {})
+	return redirect("admin_apms")
 
 def admin_unpaid(request):
 	import open_invoices
@@ -37,17 +37,26 @@ def admin_unpaid(request):
 #	email = "stella.simitopoulos@alivente.com"
 #	fname = "Stella"
 #	open_invoices.open_invoices(rep_output, check, email, fname)
-	return render (request, "admin_apms.html", {})
+	return redirect("admin_apms")
 
 def admin_renewals(request):
-	return render (request, "admin_apms.html", {})
+	import lease_renewal
+	rep_output = "Email"
+	check = "Yes"
+	email = "demetrimanias@gmail.com"
+	fname = "Demetri"
+	lease_renewal.lease_renewal(rep_output,check, email, fname)
+#	email = "stella.simitopoulos@alivente.com"
+#	fname = "Stella"
+#	lease_renewal.lease_renewal(rep_output,check, email, fname)
+	return redirect("admin_apms")
 
 def admin_invoices(request):
 	import open_invoices
 	today = date.today()
 	months = ('Month','January','February','March','April','May','June','July','August','September','October','November','December')
 	open_invoices.create_invoices(months[today.month],today.year)
-	return render (request, "admin_apms.html", {})
+	return redirect("admin_apms")
 
 ### TENANTS ###
 def tenant_page(request):
