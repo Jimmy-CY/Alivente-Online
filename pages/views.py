@@ -322,10 +322,6 @@ def fsr_commit(request):
 			messages.success(request, "Issue Added Successfully")
 	temp_results = issues.objects.all().order_by('-issues_id')
 	is_id = temp_results[0].issues_id
-#	results = props.objects.all().order_by('prop_country','prop_name')
-#	isresults = issues.objects.all().order_by('issues_date_logged','issues_status')
-#	idresults = issues_details.objects.all().order_by('issues_details_date','issues_details_id')
-#	return render(request, "fsr.html", {"props":results, "issues":isresults, "issues_details":idresults})
 	return redirect("fsr_details", is_id)
 
 def fsr_details(request, issues_id):
@@ -357,7 +353,6 @@ def fsr_commit_status_change(request):
 				issue_update = issues.objects.filter(pk=is_id).update(issues_resolving_user='')
 	messages.success(request, "Status Updated Successfully")
 	return redirect("fsr")
-#	return redirect("fsr_details", issues_id=is_id)
 
 def fsr_comment_add(request, issues_id):
 	iss_det = request.POST.get('issues_details_comment')
@@ -370,7 +365,6 @@ def fsr_comment_add(request, issues_id):
 	issue_update=issues_details.objects.create (issues_details_comment=iss_det, issues_details_user=user_initials, issues_details_date=comm_date, issues_id=issues_id)
 	return redirect("fsr_details", issues_id)
 
-	#return redirect("fsr_details", issues_id)
 
 ### REPORTS - DASHBOARD (FROM HOME PAGE) ###
 def petty_cash_rep(request):
