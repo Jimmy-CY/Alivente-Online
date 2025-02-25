@@ -5,6 +5,7 @@ def tenant_report (property, rep_output, email, fname):
 	import send_email
 	import pdf_display
 
+
 	# CONNECT TO DATBASE (FIRST HAVE TO LEAVE database line off until have created database)
 	mydb = mysql.connector.connect(
 		host = "localhost",
