@@ -6,7 +6,7 @@ from django.http import HttpResponse
 from .models import props, petty, issues, issues_details, tenant, invoices, supplier
 from datetime import date, datetime
 from . import forms
-from .forms import PropForm, TenantForm, PettyForm, InvoicesForm, IssuesForm, DetailsForm, SupplierForm
+from .forms import PropForm, TenantForm, PettyForm, InvoicesForm, IssuesForm, DetailsForm, SupplierForm, MonthSelectForm
 
 ### HOME ###
 def home(request):
@@ -14,6 +14,18 @@ def home(request):
 	tresults = tenant.objects.filter(tenant_current="Yes")
 	sresults = supplier.objects.all().order_by('supplier_country','supplier_contact_person')
 	return render (request, "home.html", {"props":results, "tenant":tresults, "supplier":sresults})
+
+### MONTH SELECT ###
+def month_select_view(request):
+    if request.method == 'POST':
+        form = MonthSelectForm(request.POST)
+        if form.is_valid():
+            selected_months = form.cleaned_data['months']
+            # Do something with the selected months
+            return render(request, 'success.html', {'selected_months': selected_months})
+    else:
+        form = MonthSelectForm()
+    return render(request, 'month_select.html', {'form': form})
 
 ### ADMIN ###
 def admin_apms(request):

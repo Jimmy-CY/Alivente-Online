@@ -35,3 +35,24 @@ class DetailsForm(forms.ModelForm):
 	class Meta:
 		model = models.issues_details
 		fields = ["issues","issues_details_comment","issues_details_user","issues_details_date"]
+
+class MonthSelectForm(forms.Form):
+	MONTH_CHOICES = [
+		('1', 'January'),
+		('2', 'February'),
+		('3', 'March'),
+		('4', 'April'),
+		('5', 'May'),
+		('6', 'June'),
+		('7', 'July'),
+		('8', 'August'),
+		('9', 'September'),
+		('10', 'October'),
+		('11', 'November'),
+		('12', 'December'),
+	]
+	months = forms.MultipleChoiceField(
+		choices = MONTH_CHOICES,
+		widget = forms.SelectMultiple(attrs={'class': 'form-control'}),
+		label = "Select Months"
+	)
