@@ -87,10 +87,16 @@ DATABASES = {
         "PASSWORD": "WyvJcOHrgJOuRnfldlqwvaWNRSkdIDHA",
         "HOST": "hopper.proxy.rlwy.net",
         "PORT": "17296",
-        "AUTH_PLUGIN": "mysql_native_password",
-        "OPTIONS":{
-            'init_command':"SET sql_mode='STRICT_TRANS_TABLES'"
-        },
+        "AUTH_PLUGIN": "mysql_native_password"
+    },
+    "local": {
+        "ENGINE": "django.db.backends.mysql",
+        "NAME": "railway",
+        "USER": "root",
+        "PASSWORD": "Smiles123$",
+        "HOST": "127.0.0.1",
+        "PORT": "3306",
+        "AUTH_PLUGIN": "mysql_native_password"
     }
 }
 
