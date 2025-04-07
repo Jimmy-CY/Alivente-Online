@@ -5,10 +5,11 @@ def db_lease_insert (tenant_identification, file_location):
 	import mysql.connector
 
 	mydb = mysql.connector.connect(
-			host = "localhost",
+			host = "hopper.proxy.rlwy.net",
+      port = "17296",
 			user = "root",
-			password = "Smiles123$",
-			database = "alivente",
+			password = "WyvJcOHrgJOuRnfldlqwvaWNRSkdIDHA",
+			database = "railway",
 			auth_plugin = "mysql_native_password",
 			)
 
@@ -45,10 +46,11 @@ def db_title_insert (property_identification, file_location):
 	import mysql.connector
 
 	mydb = mysql.connector.connect(
-			host = "localhost",
+			host = "hopper.proxy.rlwy.net",
+  port = "17296",
 			user = "root",
-			password = "Smiles123$",
-			database = "alivente",
+			password = "WyvJcOHrgJOuRnfldlqwvaWNRSkdIDHA",
+			database = "railway",
 			auth_plugin = "mysql_native_password",
 			)
 

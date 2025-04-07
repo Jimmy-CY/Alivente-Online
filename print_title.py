@@ -7,10 +7,11 @@ def title_report (property, rep_output, email, fname):
 
 	# CONNECT TO DATBASE (FIRST HAVE TO LEAVE database line off until have created database)
 	mydb = mysql.connector.connect(
-		host = "localhost",
+		host = "hopper.proxy.rlwy.net",
+    port = "17296",
 		user = "root",
-		password = "Smiles123$",
-		database = "alivente",
+		password = "WyvJcOHrgJOuRnfldlqwvaWNRSkdIDHA",
+		database = "railway",
 		auth_plugin = "mysql_native_password",
 		)
 
