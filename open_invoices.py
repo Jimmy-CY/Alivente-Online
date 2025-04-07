@@ -32,9 +32,9 @@ def open_invoices (rep_output,check,email,fname):
 	pdf.set_left_margin (10)
 
 	# just before the ODER BY, paste this: WHERE tenant.tenant_current = 'Yes' 
-	my_cursor.execute("SELECT prop.prop_name,prop.prop_country, tenant.tenant_id, tenant.tenant_name,tenant.tenant_contact_person,tenant.tenant_contact_number,tenant.tenant_email,tenant.tenant_rent,tenant.tenant_payment_terms,tenant.tenant_current FROM alivente.tenant JOIN alivente.prop ON prop.prop_id = tenant.prop_id ORDER BY prop.prop_country ASC, prop.prop_name ASC")
+	my_cursor.execute("SELECT prop.prop_name,prop.prop_country, tenant.tenant_id, tenant.tenant_name,tenant.tenant_contact_person,tenant.tenant_contact_number,tenant.tenant_email,tenant.tenant_rent,tenant.tenant_payment_terms,tenant.tenant_current FROM railway.tenant JOIN railway.prop ON prop.prop_id = tenant.prop_id ORDER BY prop.prop_country ASC, prop.prop_name ASC")
 	result = my_cursor.fetchall()
-	my_cursor.execute("SELECT  invoice.invoice_id, invoice.tenant_id, invoice.invoice_date, invoice.invoice_paid FROM alivente.invoice WHERE invoice.invoice_paid = 'No' ORDER BY invoice.invoice_date ASC")
+	my_cursor.execute("SELECT  invoice.invoice_id, invoice.tenant_id, invoice.invoice_date, invoice.invoice_paid FROM railway.invoice WHERE invoice.invoice_paid = 'No' ORDER BY invoice.invoice_date ASC")
 	result_invoices = my_cursor.fetchall()
 	
 	today = date.today()
@@ -121,9 +121,9 @@ def create_invoices(M,Y):
 	# CREATE CURSOR INSTANCE
 	my_cursor = mydb.cursor()
 
-	my_cursor.execute("SELECT prop.prop_id, prop.prop_name, prop.prop_country, prop.prop_status, tenant.tenant_id FROM alivente.tenant JOIN alivente.prop ON prop.prop_id = tenant.prop_id WHERE tenant.tenant_current = 'Yes' and prop.prop_status = 'Active' ORDER BY tenant.tenant_id ASC")
+	my_cursor.execute("SELECT prop.prop_id, prop.prop_name, prop.prop_country, prop.prop_status, tenant.tenant_id FROM railway.tenant JOIN railway.prop ON prop.prop_id = tenant.prop_id WHERE tenant.tenant_current = 'Yes' and prop.prop_status = 'Active' ORDER BY tenant.tenant_id ASC")
 	result = my_cursor.fetchall()
-	my_cursor.execute("SELECT  invoice.invoice_id, invoice.tenant_id, invoice.invoice_date, invoice.invoice_paid FROM alivente.invoice WHERE invoice.invoice_paid = 'No' ORDER BY invoice.invoice_date ASC")
+	my_cursor.execute("SELECT  invoice.invoice_id, invoice.tenant_id, invoice.invoice_date, invoice.invoice_paid FROM railway.invoice WHERE invoice.invoice_paid = 'No' ORDER BY invoice.invoice_date ASC")
 	result_invoices = my_cursor.fetchall()
 
 	months = (('January','01'),('February','02'),('March','03'),('April','04'),('May','05'),('June','06'),('July','07'),('August','08'),('September','09'),('October','10'),('November','11'),('December','12'))

@@ -36,13 +36,13 @@ def tenant_report (property, rep_output, email, fname):
 	pdf.set_font("Arial", size=14)
 	pdf.set_left_margin (10)
 
-	my_cursor.execute("SELECT prop.prop_name, prop.prop_country, tenant.tenant_type, tenant.tenant_name, tenant.tenant_contact_person, tenant.tenant_contact_number, tenant.tenant_email, tenant.tenant_deposit, tenant.tenant_lease_start_date, tenant.tenant_lease_end_date, tenant.tenant_rental_type, tenant.tenant_renewal, tenant.tenant_renewal_period, tenant.tenant_rent, tenant.tenant_levies, tenant.tenant_payment_terms, tenant.tenant_current FROM alivente.tenant JOIN alivente.prop ON prop.prop_id = tenant.prop_id ORDER BY prop.prop_country ASC, prop.prop_name ASC")
+	my_cursor.execute("SELECT prop.prop_name, prop.prop_country, tenant.tenant_type, tenant.tenant_name, tenant.tenant_contact_person, tenant.tenant_contact_number, tenant.tenant_email, tenant.tenant_deposit, tenant.tenant_lease_start_date, tenant.tenant_lease_end_date, tenant.tenant_rental_type, tenant.tenant_renewal, tenant.tenant_renewal_period, tenant.tenant_rent, tenant.tenant_levies, tenant.tenant_payment_terms, tenant.tenant_current FROM railway.tenant JOIN railway.prop ON prop.prop_id = tenant.prop_id ORDER BY prop.prop_country ASC, prop.prop_name ASC")
 	result = my_cursor.fetchall()
-	my_cursor.execute("SELECT tenant.tenant_name FROM alivente.tenant WHERE tenant.tenant_current = 'Yes' ORDER BY tenant.tenant_name ASC")
+	my_cursor.execute("SELECT tenant.tenant_name FROM railway.tenant WHERE tenant.tenant_current = 'Yes' ORDER BY tenant.tenant_name ASC")
 	result_tenants = my_cursor.fetchall()
-	my_cursor.execute("SELECT prop.prop_name FROM alivente.tenant JOIN alivente.prop ON prop.prop_id = tenant.prop_id WHERE tenant.tenant_current = 'Yes' ORDER BY prop.prop_country ASC, prop.prop_name ASC")
+	my_cursor.execute("SELECT prop.prop_name FROM railway.tenant JOIN railway.prop ON prop.prop_id = tenant.prop_id WHERE tenant.tenant_current = 'Yes' ORDER BY prop.prop_country ASC, prop.prop_name ASC")
 	prop_active_tenant = my_cursor.fetchall()
-	my_cursor.execute("SELECT prop.prop_name FROM alivente.prop WHERE prop.prop_status = 'Active' and prop.prop_available_for_rent = 'Yes' ORDER BY prop.prop_country ASC, prop.prop_name ASC")
+	my_cursor.execute("SELECT prop.prop_name FROM railway.prop WHERE prop.prop_status = 'Active' and prop.prop_available_for_rent = 'Yes' ORDER BY prop.prop_country ASC, prop.prop_name ASC")
 	active_prop = my_cursor.fetchall()
 	
 	page_break = 0

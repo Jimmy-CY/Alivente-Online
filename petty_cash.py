@@ -22,7 +22,7 @@ def petty_cash(rep_output, email, fname):
 	today = date.today()
 
 	# TABLE JOINS ON PRIMARY KEY (FOR PROP, ISSUES AND ISSUES_DETAILS TABLES)
-	my_cursor.execute("SELECT * FROM alivente.petty_cash ORDER BY petty_cash.petty_cash_date ASC")
+	my_cursor.execute("SELECT * FROM railway.petty_cash ORDER BY petty_cash.petty_cash_date ASC")
 	result_transactions = my_cursor.fetchall()
 
 	import fpdf

@@ -22,16 +22,16 @@ def fsr_report(rep_type, rep_date, rep_output, email, fname):
 	today = date.today()
 
 	# TABLE JOINS ON PRIMARY KEY (FOR PROP, ISSUES AND ISSUES_DETAILS TABLES)
-	my_cursor.execute("SELECT prop.prop_name, issues.issues_heading, issues.issues_description, issues.issues_status, issues_details.issues_details_comment, issues_details.issues_details_user, issues_details.issues_details_date, issues.issues_resolution_date FROM alivente.issues JOIN alivente.prop ON prop.prop_id = issues.prop_id JOIN alivente.issues_details ON issues_details.issues_id = issues.issues_id ORDER BY issues.issues_id ASC, issues_details.issues_details_id DESC")
+	my_cursor.execute("SELECT prop.prop_name, issues.issues_heading, issues.issues_description, issues.issues_status, issues_details.issues_details_comment, issues_details.issues_details_user, issues_details.issues_details_date, issues.issues_resolution_date FROM railway.issues JOIN railway.prop ON prop.prop_id = issues.prop_id JOIN railway.issues_details ON issues_details.issues_id = issues.issues_id ORDER BY issues.issues_id ASC, issues_details.issues_details_id DESC")
 	result = my_cursor.fetchall()
-	my_cursor.execute("SELECT issues.issues_heading FROM alivente.issues ORDER BY issues.issues_date_logged ASC")
+	my_cursor.execute("SELECT issues.issues_heading FROM railway.issues ORDER BY issues.issues_date_logged ASC")
 	result_issue_heading = my_cursor.fetchall()
-	my_cursor.execute("SELECT issues.issues_description FROM alivente.issues ORDER BY issues.issues_date_logged DESC")
+	my_cursor.execute("SELECT issues.issues_description FROM railway.issues ORDER BY issues.issues_date_logged DESC")
 	result_issue_description = my_cursor.fetchall()
-	my_cursor.execute("SELECT prop.prop_name FROM alivente.prop ORDER BY prop.prop_country ASC, prop.prop_name ASC")
+	my_cursor.execute("SELECT prop.prop_name FROM railway.prop ORDER BY prop.prop_country ASC, prop.prop_name ASC")
 	result_properties = my_cursor.fetchall()
 	result_status = ['Resolved','Unresolved','Issue']
-	my_cursor.execute("SELECT * FROM alivente.petty_cash ORDER BY petty_cash.petty_cash_date ASC")
+	my_cursor.execute("SELECT * FROM railway.petty_cash ORDER BY petty_cash.petty_cash_date ASC")
 	result_transactions = my_cursor.fetchall()
 
 	import fpdf

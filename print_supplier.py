@@ -35,7 +35,7 @@ def supplier_report (supplier, rep_output, email, fname):
 	pdf.set_font("Arial", size=14)
 	pdf.set_left_margin (10)
 
-	my_cursor.execute("SELECT supplier.supplier_contact_person, supplier.supplier_contact_number, supplier.supplier_email, supplier.supplier_company_name, supplier.supplier_role, supplier.supplier_country FROM alivente.supplier ORDER BY supplier.supplier_contact_person ASC")
+	my_cursor.execute("SELECT supplier.supplier_contact_person, supplier.supplier_contact_number, supplier.supplier_email, supplier.supplier_company_name, supplier.supplier_role, supplier.supplier_country FROM railway.supplier ORDER BY supplier.supplier_contact_person ASC")
 	result = my_cursor.fetchall()
 
 	for row in result:

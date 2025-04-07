@@ -31,7 +31,7 @@ def prop_report (property, rep_output, email, fname):
 
 	pdf.set_font("Arial", size=14)
 	pdf.set_left_margin (10)
-	my_cursor.execute("SELECT prop.prop_name, prop.prop_address1, prop.prop_address2, prop.prop_suburb, prop.prop_city, prop.prop_province, prop.prop_country, prop.prop_pcode, prop.prop_floor_area, prop.prop_year_built, prop.prop_status, prop.prop_available_for_rent, prop.prop_title_deed, prop.prop_title_deed_status, prop.prop_electricity, prop.prop_water, prop.prop_refuse, prop.prop_property_tax, prop.prop_sewerage, prop.prop_insurance FROM alivente.prop ORDER BY prop.prop_country ASC, prop.prop_name ASC")
+	my_cursor.execute("SELECT prop.prop_name, prop.prop_address1, prop.prop_address2, prop.prop_suburb, prop.prop_city, prop.prop_province, prop.prop_country, prop.prop_pcode, prop.prop_floor_area, prop.prop_year_built, prop.prop_status, prop.prop_available_for_rent, prop.prop_title_deed, prop.prop_title_deed_status, prop.prop_electricity, prop.prop_water, prop.prop_refuse, prop.prop_property_tax, prop.prop_sewerage, prop.prop_insurance FROM railway.prop ORDER BY prop.prop_country ASC, prop.prop_name ASC")
 #	my_cursor.execute("SELECT * FROM prop ORDER BY prop.prop_country ASC, prop.prop_name ASC")
 	result = my_cursor.fetchall()
 	print(result)
