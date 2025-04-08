@@ -2,16 +2,17 @@
 
 def db_lease_insert (tenant_identification, file_location):
 
+	from django.conf import settings
 	import mysql.connector
 
 	mydb = mysql.connector.connect(
-			host = "hopper.proxy.rlwy.net",
-      port = "17296",
-			user = "root",
-			password = "WyvJcOHrgJOuRnfldlqwvaWNRSkdIDHA",
-			database = "railway",
-			auth_plugin = "mysql_native_password",
-			)
+		host = settings.DATABASES['default']['HOST'],
+		port = settings.DATABASES['default']['PORT'],
+		user = settings.DATABASES['default']['USER'],
+		password = settings.DATABASES['default']['PASSWORD'],
+		database = settings.DATABASES['default']['NAME'],
+		auth_plugin = settings.DATABASES['default']['AUTH_PLUGIN'],
+	)
 
 	my_cursor = mydb.cursor()
 
@@ -44,15 +45,16 @@ def db_lease_insert (tenant_identification, file_location):
 def db_title_insert (property_identification, file_location):
 
 	import mysql.connector
+	from django.conf import settings
 
 	mydb = mysql.connector.connect(
-			host = "hopper.proxy.rlwy.net",
-  port = "17296",
-			user = "root",
-			password = "WyvJcOHrgJOuRnfldlqwvaWNRSkdIDHA",
-			database = "railway",
-			auth_plugin = "mysql_native_password",
-			)
+		host = settings.DATABASES['default']['HOST'],
+		port = settings.DATABASES['default']['PORT'],
+		user = settings.DATABASES['default']['USER'],
+		password = settings.DATABASES['default']['PASSWORD'],
+		database = settings.DATABASES['default']['NAME'],
+		auth_plugin = settings.DATABASES['default']['AUTH_PLUGIN'],
+	)
 
 	my_cursor = mydb.cursor()
 

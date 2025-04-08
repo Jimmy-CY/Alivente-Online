@@ -9,16 +9,17 @@ import print_lease
 import petty_cash
 import lease_renewal
 import open_invoices
+from django.conf import settings
 
 # CONNECT TO DATBASE (FIRST HAVE TO LEAVE database line off until have created database)
 mydb = mysql.connector.connect(
-	host = "hopper.proxy.rlwy.net",
-  port = "17296",
-	user = "root",
-	password = "WyvJcOHrgJOuRnfldlqwvaWNRSkdIDHA",
-	database = "railway",
-	auth_plugin = "mysql_native_password",
-	)
+	host = settings.DATABASES['default']['HOST'],
+	port = settings.DATABASES['default']['PORT'],
+	user = settings.DATABASES['default']['USER'],
+	password = settings.DATABASES['default']['PASSWORD'],
+	database = settings.DATABASES['default']['NAME'],
+	auth_plugin = settings.DATABASES['default']['AUTH_PLUGIN'],
+)
 
 def add_new_petty(transdatev, transdescv, transamountv, transdrcrv):
 	my_cursor = mydb.cursor()

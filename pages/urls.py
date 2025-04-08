@@ -4,7 +4,6 @@ from . import views
 urlpatterns = [
     # Home
     path('', views.home, name='home'),
-    path('month_select/', views.month_select_view, name='month_select'),
  
     #
     # User Admin

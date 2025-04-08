@@ -5,16 +5,17 @@ def petty_cash(rep_output, email, fname):
 	import fpdf
 	import send_email
 	import pdf_display
+	from django.conf import settings
 
 	# CONNECT TO DATBASE (FIRST HAVE TO LEAVE database line off until have created database)
 	mydb = mysql.connector.connect(
-		host = "hopper.proxy.rlwy.net",
-    port = "17296",
-		user = "root",
-		password = "WyvJcOHrgJOuRnfldlqwvaWNRSkdIDHA",
-		database = "railway",
-		auth_plugin = "mysql_native_password",
-		)
+		host = settings.DATABASES['default']['HOST'],
+		port = settings.DATABASES['default']['PORT'],
+		user = settings.DATABASES['default']['USER'],
+		password = settings.DATABASES['default']['PASSWORD'],
+		database = settings.DATABASES['default']['NAME'],
+		auth_plugin = settings.DATABASES['default']['AUTH_PLUGIN'],
+	)
 
 	# CREATE CURSOR INSTANCE
 	my_cursor = mydb.cursor()
