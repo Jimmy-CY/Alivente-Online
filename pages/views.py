@@ -6,7 +6,7 @@ from django.http import HttpResponse
 from .models import props, petty, issues, issues_details, tenant, invoices, supplier
 from datetime import date, datetime
 from . import forms
-from .forms import PropForm, TenantForm, PettyForm, InvoicesForm, IssuesForm, DetailsForm, SupplierForm, MonthSelectForm
+from .forms import PropForm, TenantForm, PettyForm, InvoicesForm, IssuesForm, DetailsForm, SupplierForm
 
 ### HOME ###
 def home(request):
