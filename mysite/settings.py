@@ -88,10 +88,12 @@ DATABASES = {
         "ENGINE": "django.db.backends.mysql",
         "NAME": "railway",
         "USER": "root",
-        "PASSWORD": ${{MYSQLPASSWORD}},
+        "PASSWORD": os.environ.get("MYSQLPASSWORD", ""),  # Using environment variable
         "HOST": "hopper.proxy.rlwy.net",
         "PORT": "17296",
-        "AUTH_PLUGIN": "mysql_native_password"
+        "OPTIONS": {
+            "auth_plugin": "mysql_native_password"  # Moved to OPTIONS dict
+        }
     },
     "local": {
         "ENGINE": "django.db.backends.mysql",
@@ -100,7 +102,9 @@ DATABASES = {
         "PASSWORD": "Smiles123$",
         "HOST": "127.0.0.1",
         "PORT": "3306",
-        "AUTH_PLUGIN": "mysql_native_password"
+        "OPTIONS": {
+            "auth_plugin": "mysql_native_password"  # Moved to OPTIONS dict
+        }
     }
 }
 
