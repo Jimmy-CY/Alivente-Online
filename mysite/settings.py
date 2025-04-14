@@ -12,6 +12,9 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -86,22 +89,13 @@ WSGI_APPLICATION = "mysite.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.mysql",
-        "NAME": "railway",
-        "USER": "root",
-        "PASSWORD": os.getenv("MYSQLPASSWORD"),  # Reads from Railway's env var
-        "HOST": "hopper.proxy.rlwy.net",
-        "PORT": "17296",
+        "NAME": os.getenv("MYSQLDATABASE"),
+        "USER": os.getenv("MYSQLUSER"),
+        "PASSWORD": os.getenv("MYSQLPASSWORD"),
+        "HOST": os.getenv("MYSQLHOST"),
+        "PORT": os.getenv("MYSQLPORT"),
         "AUTH_PLUGIN": "mysql_native_password"
-    },
-    "local": {
-        "ENGINE": "django.db.backends.mysql",
-        "NAME": "railway",
-        "USER": "root",
-        "PASSWORD": "Smiles123$",
-        "HOST": "127.0.0.1",
-        "PORT": "3306",
-        "AUTH_PLUGIN": "mysql_native_password"
-   }
+    }
 }
 
 #DATABASES = {
