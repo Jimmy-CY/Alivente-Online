@@ -88,7 +88,7 @@ DATABASES = {
         "ENGINE": "django.db.backends.mysql",
         "NAME": "railway",
         "USER": "root",
-        "PASSWORD": "WyvJcOHrgJOuRnfldlqwvaWNRSkdIDHA",
+        "PASSWORD": ${{MYSQLPASSWORD}},
         "HOST": "hopper.proxy.rlwy.net",
         "PORT": "17296",
         "AUTH_PLUGIN": "mysql_native_password"
@@ -103,6 +103,27 @@ DATABASES = {
         "AUTH_PLUGIN": "mysql_native_password"
     }
 }
+
+#DATABASES = {
+#    "default": {
+#        "ENGINE": "django.db.backends.mysql",
+#        "NAME": "railway",
+#        "USER": "root",
+#        "PASSWORD": "WyvJcOHrgJOuRnfldlqwvaWNRSkdIDHA",
+#        "HOST": "hopper.proxy.rlwy.net",
+#        "PORT": "17296",
+#        "AUTH_PLUGIN": "mysql_native_password"
+#    },
+#    "local": {
+#        "ENGINE": "django.db.backends.mysql",
+#        "NAME": "railway",
+#        "USER": "root",
+#        "PASSWORD": "Smiles123$",
+#        "HOST": "127.0.0.1",
+#        "PORT": "3306",
+#        "AUTH_PLUGIN": "mysql_native_password"
+#    }
+#}
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
