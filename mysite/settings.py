@@ -88,7 +88,7 @@ DATABASES = {
         "ENGINE": "django.db.backends.mysql",
         "NAME": "railway",
         "USER": "root",
-        "PASSWORD": os.environ.get("MYSQLPASSWORD", ""),  # Using environment variable
+        "PASSWORD": os.getenv("MYSQLPASSWORD"),  # Reads from Railway's env var
         "HOST": "hopper.proxy.rlwy.net",
         "PORT": "17296",
         "AUTH_PLUGIN": "mysql_native_password"
