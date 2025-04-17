@@ -29,12 +29,18 @@ SECRET_KEY = "django-insecure-3plz%&tdip9d0vwc6io8y2yk$a9km2-891cbl==n#v1u&3%gy8
 DEBUG = True
 
 ALLOWED_HOSTS = ['alivente-online-production.up.railway.app', 'alivente.online', 'localhost', '127.0.0.1']
+
 CSRF_TRUSTED_ORIGINS = [
     'https://alivente.online', 'https://alivente-online-production.up.railway.app'
 ]
 
-# Application definition
+# Allow embedding in same origin
+X_FRAME_OPTIONS = 'SAMEORIGIN'
 
+# Or allow specific domains (e.g., your own)
+CSP_FRAME_ANCESTORS = ["'self'", "https://alivente.online"]
+
+# Application definition
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
@@ -153,7 +159,8 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
-STATIC_URL = "static/"
+#STATIC_URL = "https://alivente.online/static/"
+STATIC_URL = "/static/"
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
 ]

@@ -8,10 +8,17 @@ def lease_report (property, rep_output, email, fname):
 	from django.conf import settings
 	from django.templatetags.static import static
 
+	def get_static_file_path(relative_path):
+		if settings.DEBUG:
+        	# Development - serve from STATICFILES_DIRS
+			return os.path.join(settings.BASE_DIR, 'static', relative_path)
+		else:
+			# Production - serve from STATIC_ROOT
+			return os.path.join(settings.STATIC_ROOT, relative_path)
 
 	mydb = None
 	try:
-		# CONNECT TO DATBASE (FIRST HAVE TO LEAVE database line off until have created database)
+		# CONNECT TO DATABASE
 		mydb = mysql.connector.connect(
 			host = settings.DATABASES['default']['HOST'],
 			port = settings.DATABASES['default']['PORT'],
@@ -29,7 +36,17 @@ def lease_report (property, rep_output, email, fname):
 #	file_path = "C:/Users/DemetrisManias/Desktop/code/djangoproject/static/lease_agreements/"
 #	report_name = file_path+property+" - Lease Agreement.pdf"
 
-		report_name = os.path.join(settings.STATIC_ROOT, property + " - Lease Agreement.pdf")
+		lease_agreements_dir = get_static_file_path("lease_agreements")
+		print ("la_dir")
+		print(lease_agreements_dir)
+
+		lease_agreement_url = static ("lease_agreements/" + property + " - Lease Agreements.pdf")
+		print ("URL")
+		print (lease_agreement_url)
+
+		report_name = os.path.join(settings.STATIC_ROOT, "lease_agreements/" + property + " - Lease Agreement.pdf")
+		print("rn")
+		print(report_name)
 		
 		# send email to (email address, email subject, report name and "file path and name") - fixed body text for email
 		if rep_output == "Email":
