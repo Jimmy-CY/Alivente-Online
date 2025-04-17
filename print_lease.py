@@ -36,17 +36,7 @@ def lease_report (property, rep_output, email, fname):
 #	file_path = "C:/Users/DemetrisManias/Desktop/code/djangoproject/static/lease_agreements/"
 #	report_name = file_path+property+" - Lease Agreement.pdf"
 
-		lease_agreements_dir = get_static_file_path("lease_agreements")
-		print ("la_dir")
-		print(lease_agreements_dir)
-
-		lease_agreement_url = static ("lease_agreements/" + property + " - Lease Agreements.pdf")
-		print ("URL")
-		print (lease_agreement_url)
-
 		report_name = os.path.join(settings.STATIC_ROOT, "lease_agreements/" + property + " - Lease Agreement.pdf")
-		print("rn")
-		print(report_name)
 		
 		# send email to (email address, email subject, report name and "file path and name") - fixed body text for email
 		if rep_output == "Email":
@@ -54,6 +44,7 @@ def lease_report (property, rep_output, email, fname):
 
 		# display pdf file in new window - send file_name
 		if rep_output == "Display":
+#			views.lease_display(property + " - Lease Agreements.pdf")
 			pdf_display.pdf_display(report_name)
 
 	finally:

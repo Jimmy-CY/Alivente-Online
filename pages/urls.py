@@ -28,12 +28,16 @@ urlpatterns = [
     path('lease_renewal/', views.lease_renewal, name='lease_renewal'),
     path('lease_agreements/', views.lease_agreements, name='lease_agreements'),
     path('issues_rep/', views.issues_rep, name='issues_rep'),
+    path('pdf_display', views.pdf_display, name='pdf_display'),
+#    path('lease_display/<str:pdf_filename>/', views.lease_display, name='lease_display'),
+
     #
     # Tenants
     path('tenant_add/', views.tenant_add, name='tenant_add'),
     path('tenant_edit/<tenant_id>', views.tenant_edit, name='tenant_edit'),
     path('tenant_edit_commit/<tenant_id>', views.tenant_edit_commit, name='tenant_edit_commit'),
     path('tenant_commit/', views.tenant_commit, name='tenant_commit'),
+    
     #
     #Properties
     path('properties/', views.properties_page, name='properties'),
@@ -41,15 +45,18 @@ urlpatterns = [
     path('properties_edit/<prop_id>', views.properties_edit, name='properties_edit'),
     path('properties_commit/', views.properties_commit, name='properties_commit'),
     path('properties_edit_commit/<prop_id>', views.properties_edit_commit, name='properties_edit_commit'),
+    
     #
     # Petty Cash
     path('petty_cash/', views.petty_cash, name='petty_cash'),
     path('petty_cash_add/', views.petty_cash_add, name='petty_cash_add'),
     path('petty_cash_commit/', views.petty_cash_commit, name='petty_cash_commit'),
+    
     #
     # Invoices
     path('invoices/', views.invoices_page, name='invoices'),
     path('invoices_commit/<invoice_id>', views.invoices_commit, name='invoices_commit'),
+    
     #
     # Suppliers
     path('suppliers/', views.suppliers, name='suppliers'),
@@ -57,6 +64,7 @@ urlpatterns = [
     path('suppliers_edit/<supplier_id>', views.suppliers_edit, name='suppliers_edit'),
     path('suppliers_commit/', views.suppliers_commit, name='suppliers_commit'),
     path('suppliers_edit_commit/<supplier_id>', views.suppliers_edit_commit, name='suppliers_edit_commit'),
+    
     #
     # Friday Status Report Capture
     path('fsr/', views.fsr, name='fsr'),

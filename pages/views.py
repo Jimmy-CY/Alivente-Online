@@ -6,6 +6,8 @@ from django.http import HttpResponse
 from .models import props, petty, issues, issues_details, tenant, invoices, supplier
 from datetime import date, datetime
 from . import forms
+import os
+from django.conf import settings
 from .forms import PropForm, TenantForm, PettyForm, InvoicesForm, IssuesForm, DetailsForm, SupplierForm
 
 ### HOME ###
@@ -376,6 +378,12 @@ def petty_cash_rep(request):
 	petty_cash.petty_cash(rep_output, email, fname)
 	messages.success(request, "Report Created Successfully")
 	return redirect('home')
+
+def pdf_display(request):
+	return render(request, 'pdf_display.html',)
+
+#def lease_display(request, pdf_filename):
+#	return render(request, 'pdf_display.html', {'pdf_url': f'/static/lease_agreements/{pdf_filename}'})
 
 def lease_agreements(request):
 	import print_lease
