@@ -5,6 +5,8 @@ def title_report (property, rep_output, email, fname):
 	import pdf_display
 	import send_email
 	from django.conf import settings
+	from django.templatetags.static import static
+	from django.contrib.staticfiles.storage import staticfiles_storage
 
 	# CONNECT TO DATBASE (FIRST HAVE TO LEAVE database line off until have created database)
 	mydb = mysql.connector.connect(
@@ -40,7 +42,6 @@ def title_report (property, rep_output, email, fname):
 	result = my_cursor.fetchall()
 
 	file_path = "C:/Users/DemetrisManias/Desktop/code/djangoproject/static/title_deeds/"
-
 	report_name = file_path+property+" - Title Deed.pdf"
 	
 	# send email to (email address, email subject, report name and "file path and name") - fixed body text for email
@@ -53,6 +54,8 @@ def title_report (property, rep_output, email, fname):
 	# display pdf file in new window - send file_name
 	if rep_output == "Display":
 		try:
+			static_url = static(f'title_deeds/{property} - Title Deed.pdf')
+			report_name = "http://alivente.online" + static_url
 			pdf_display.pdf_display(report_name)
 		except:
 			pass

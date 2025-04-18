@@ -7,14 +7,8 @@ def lease_report (property, rep_output, email, fname):
 	import os
 	from django.conf import settings
 	from django.templatetags.static import static
-
-	def get_static_file_path(relative_path):
-		if settings.DEBUG:
-        	# Development - serve from STATICFILES_DIRS
-			return os.path.join(settings.BASE_DIR, 'static', relative_path)
-		else:
-			# Production - serve from STATIC_ROOT
-			return os.path.join(settings.STATIC_ROOT, relative_path)
+	from django.contrib.staticfiles.storage import staticfiles_storage
+	import subprocess
 
 	mydb = None
 	try:
@@ -33,19 +27,22 @@ def lease_report (property, rep_output, email, fname):
 
 		today=date.today()
 
-#	file_path = "C:/Users/DemetrisManias/Desktop/code/djangoproject/static/lease_agreements/"
-#	report_name = file_path+property+" - Lease Agreement.pdf"
+#		file_path = "C:/Users/DemetrisManias/Desktop/code/djangoproject/static/lease_agreements/"
+#		report_name = file_path+property+" - Lease Agreement.pdf"
+#		report_name = os.path.join(settings.STATIC_ROOT, "lease_agreements/" + property + " - Lease Agreement.pdf")
 
-		report_name = os.path.join(settings.STATIC_ROOT, "lease_agreements/" + property + " - Lease Agreement.pdf")
-		
 		# send email to (email address, email subject, report name and "file path and name") - fixed body text for email
 		if rep_output == "Email":
+			static_url = static(f'lease_agreements/{property} - Lease Agreement.pdf')
+			report_name = "XXX"
 			send_email.send_email(email, property + " - Lease Agreement", property + " - Lease Agreement", report_name, fname)
 
 		# display pdf file in new window - send file_name
 		if rep_output == "Display":
-#			views.lease_display(property + " - Lease Agreements.pdf")
+			static_url = static(f'lease_agreements/{property} - Lease Agreement.pdf')
+			report_name = "http://alivente.online" + static_url
 			pdf_display.pdf_display(report_name)
+
 
 	finally:
 		# Ensure resources are closed

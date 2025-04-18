@@ -5,6 +5,9 @@ def prop_report (property, rep_output, email, fname):
 	import send_email
 	import pdf_display
 	from django.conf import settings
+	from django.templatetags.static import static
+	from django.contrib.staticfiles.storage import staticfiles_storage
+	import os
 
 	# CONNECT TO DATBASE (FIRST HAVE TO LEAVE database line off until have created database)
 	mydb = mysql.connector.connect(
@@ -35,7 +38,6 @@ def prop_report (property, rep_output, email, fname):
 	my_cursor.execute("SELECT prop.prop_name, prop.prop_address1, prop.prop_address2, prop.prop_suburb, prop.prop_city, prop.prop_province, prop.prop_country, prop.prop_pcode, prop.prop_floor_area, prop.prop_year_built, prop.prop_status, prop.prop_available_for_rent, prop.prop_title_deed, prop.prop_title_deed_status, prop.prop_electricity, prop.prop_water, prop.prop_refuse, prop.prop_property_tax, prop.prop_sewerage, prop.prop_insurance FROM railway.prop ORDER BY prop.prop_country ASC, prop.prop_name ASC")
 #	my_cursor.execute("SELECT * FROM prop ORDER BY prop.prop_country ASC, prop.prop_name ASC")
 	result = my_cursor.fetchall()
-	print(result)
 	
 	page_break = 0
 
@@ -221,6 +223,10 @@ def prop_report (property, rep_output, email, fname):
 
 	# display pdf file in new window - send file_name
 	if rep_output == "Display":
+		static_url = static(f'reports/Property Details Report ({str(today)}).pdf')
+		print(static_url)
+		report_name = "http://alivente.online" + static_url
+		print(report_name)
 		pdf_display.pdf_display(report_name)
 
 	if mydb.is_connected():

@@ -3,6 +3,7 @@ from django.contrib.auth import authenticate, login, logout, update_session_auth
 from django.contrib import messages
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm, PasswordChangeForm
 from django.http import HttpResponse
+from django.templatetags.static import static
 from .models import props, petty, issues, issues_details, tenant, invoices, supplier
 from datetime import date, datetime
 from . import forms
@@ -380,7 +381,9 @@ def petty_cash_rep(request):
 	return redirect('home')
 
 def pdf_display(request):
-	return render(request, 'pdf_display.html',)
+	pdf_url = static('lease_agreements/Eleftheroupoleos - Lease Agreement.pdf')
+	return render(request, 'pdf_display.html', {'pdf_url': pdf_url})
+#	return render(request, 'pdf_display.html',)
 
 #def lease_display(request, pdf_filename):
 #	return render(request, 'pdf_display.html', {'pdf_url': f'/static/lease_agreements/{pdf_filename}'})

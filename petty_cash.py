@@ -6,6 +6,8 @@ def petty_cash(rep_output, email, fname):
 	import send_email
 	import pdf_display
 	from django.conf import settings
+	from django.templatetags.static import static
+	from django.contrib.staticfiles.storage import staticfiles_storage
 
 	# CONNECT TO DATBASE (FIRST HAVE TO LEAVE database line off until have created database)
 	mydb = mysql.connector.connect(
@@ -86,6 +88,9 @@ def petty_cash(rep_output, email, fname):
 
 	# display pdf file in new window - send file_name
 	if rep_output == "Display":
+		static_url = static(f'reports/Petty Cash ({str(today)}).pdf')
+		report_name = "http://alivente.online" + static_url
+		print(report_name)
 		pdf_display.pdf_display(report_name)
 
 	if mydb.is_connected():
