@@ -1,0 +1,143 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+{% endblock %}
+
+{% block content %}
+<div class="report-container">
+    <div class="report-content">
+        <div class="header-container">
+            <h2 class="report-title">PROPERTY DETAILS REPORT ({{ today|date:"Y-m-d" }})</h2>
+            <a href="{% url 'properties' %}" class="btn btn-info back-button" role="button">Back</a>
+        </div>
+
+        <div class="property-section">
+            <h2 class="property-name"><u>{{ property.prop_name }}</u></h2>
+            
+            <div class="property-details">
+                <p><strong>Address:</strong> {{ property.prop_address1 }}</p>
+                {% if property.prop_address2 %}
+                <p class="address-line">{{ property.prop_address2 }}</p>
+                {% endif %}
+                {% if property.prop_suburb %}
+                <p class="address-line">{{ property.prop_suburb }}</p>
+                {% endif %}
+                <p class="address-line">{{ property.prop_city }}</p>
+                <p class="address-line">{{ property.prop_province }}</p>
+                <p class="address-line">{{ property.prop_country }}</p>
+                <p class="address-line">{{ property.prop_pcode }}</p>
+                
+                <p><strong>Square Meters:</strong> {{ property.prop_floor_area }}</p>
+                <p><strong>Year Built:</strong> {{ property.prop_year_built }}</p>
+                <p><strong>Electricity Account No.:</strong> {{ property.prop_electricity }}</p>
+                <p><strong>Water Account No.:</strong> {{ property.prop_water }}</p>
+                <p><strong>Municipality (Refuse) Account No.:</strong> {{ property.prop_refuse }}</p>
+                <p><strong>Municipality (Annual Property Tax) Account No.:</strong> {{ property.prop_property_tax }}</p>
+                <p><strong>Sewerage Account No.:</strong> {{ property.prop_sewerage }}</p>
+                <p><strong>Insurance Policy Number:</strong> {{ property.prop_insurance }}</p>
+                <p><strong>Status:</strong> {{ property.prop_status }}</p>
+                <p><strong>Available for Rent:</strong> {{ property.prop_available_for_rent|yesno:"Yes,No" }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .report-container {
+        display: flex;
+        justify-content: center;
+        width: 100%;
+        padding: 20px;
+    }
+    
+    .report-content {
+        width: 80%;
+        max-width: 900px;
+        background: white;
+        padding: 30px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    
+    .header-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        flex-wrap: wrap;
+    }
+    
+    .report-title {
+        font-family: Arial, sans-serif;
+        font-size: 1.6rem;
+        text-decoration: underline;
+        margin: 0;
+        flex-grow: 1;
+        text-align: center;
+        padding: 0 10px;
+    }
+    
+    .back-button {
+        margin-left: 20px;
+        white-space: nowrap;
+    }
+    
+    .property-section {
+        margin-bottom: 1rem;
+        page-break-inside: avoid;
+    }
+    
+    .property-name {
+        font-family: Arial, sans-serif;
+        font-size: 1.4rem;
+        text-decoration: underline;
+        margin-bottom: 1rem;
+        color: #2c3e50;
+    }
+    
+    .property-details {
+        font-family: Arial, sans-serif;
+        margin-left: 1.5rem;
+        line-height: 1.5;
+    }
+    
+    .property-details p {
+        margin-bottom: 0.5rem;
+    }
+    
+    .address-line {
+        margin-left: 3rem;
+    }
+    
+    @media print {
+        .report-container {
+            display: block;
+            padding: 0;
+        }
+        
+        .report-content {
+            width: 100%;
+            max-width: 100%;
+            padding: 0;
+            box-shadow: none;
+        }
+        
+        .header-container {
+            display: none;
+        }
+        
+        body {
+            background: white;
+            color: black;
+        }
+        
+        .property-section {
+            margin-bottom: 0.5rem;
+        }
+        
+        .property-details p {
+            margin-bottom: 0.25rem;
+        }
+    }
+</style>
+{% endblock %}

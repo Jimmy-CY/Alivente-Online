@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.contrib import messages
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm, PasswordChangeForm
@@ -6,10 +6,15 @@ from django.http import HttpResponse
 from django.templatetags.static import static
 from .models import props, petty, issues, issues_details, tenant, invoices, supplier
 from datetime import date, datetime
+from django.db import connection
+import mysql.connector
 from . import forms
 import os
+import logging
 from django.conf import settings
 from .forms import PropForm, TenantForm, PettyForm, InvoicesForm, IssuesForm, DetailsForm, SupplierForm
+
+logger = logging.getLogger(__name__)
 
 ### HOME ###
 def home(request):
@@ -381,9 +386,12 @@ def petty_cash_rep(request):
 	return redirect('home')
 
 def pdf_display(request):
-	pdf_url = static('lease_agreements/Eleftheroupoleos - Lease Agreement.pdf')
-	return render(request, 'pdf_display.html', {'pdf_url': pdf_url})
-#	return render(request, 'pdf_display.html',)
+	prop = request.POST.get('propname')
+	results = props.objects.all().order_by('prop_country','prop_name')
+	tresults = tenant.objects.filter(tenant_current="Yes")
+	sresults = supplier.objects.all().order_by('supplier_country','supplier_contact_person')
+	messages.success(request, "Report Created Successfully")
+	return render (request, 'pdf_display.html', {"props":results, "tenant":tresults, "supplier":sresults})
 
 #def lease_display(request, pdf_filename):
 #	return render(request, 'pdf_display.html', {'pdf_url': f'/static/lease_agreements/{pdf_filename}'})
@@ -420,6 +428,36 @@ def prop_rep(request):
 	print_prop.prop_report(prop, rep_output, email, fname)
 	messages.success(request, "Report Created Successfully")
 	return redirect('home')
+
+def property_report(request, prop_id):
+	today = date.today()
+	property = get_object_or_404(props.objects.only(
+    	'prop_id', 'prop_name', 'prop_address1', 'prop_address2', 'prop_suburb', 
+		'prop_city', 'prop_province', 'prop_country', 'prop_pcode',
+		'prop_floor_area', 'prop_year_built', 'prop_status',
+		'prop_available_for_rent', 'prop_title_deed',
+		'prop_title_deed_status', 'prop_electricity', 'prop_water',
+		'prop_refuse', 'prop_property_tax', 'prop_sewerage', 'prop_insurance'
+	), pk=prop_id)
+	context = {
+		'today': today,
+		'property': property,
+	}
+	return render(request, 'property_report.html', context)
+
+def supplier_report(request, supplier_id):
+	print("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX")
+	today = date.today()
+	supplier_obj = get_object_or_404(supplier.objects.only(
+		'supplier_id', 'supplier_contact_person', 'supplier_contact_number', 
+		'supplier_email', 'supplier_company_name', 'supplier_role',
+		'supplier_country'
+	), pk=supplier_id)
+	context = {
+		'today': today,
+		'supplier': supplier_obj,
+	}
+	return render(request, 'supplier_report.html', context)
 
 def tenant_rep(request):
 	import print_tenant

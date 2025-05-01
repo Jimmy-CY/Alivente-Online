@@ -6,14 +6,116 @@
 
 {% block content %}
 
-<iframe src="{% static 'lease_agreements/Eleftheroupoleos - Lease Agreement.pdf' %}" width="100%" height="400px" style="border: none;"></iframe>
-<iframe src="{% static 'reports/Friday Status Report (2025-04-02).pdf' %}" width="100%" height="400px" style="border: none;"></iframe>
+<h2><center>ALIVENTE ONLINE - DOCUMENTS</center></h2>
+<br/>
+
+{% for msg in messages %}
+  <div class="alert alert-secondary alert-dismissible fade show auto-dismiss" role="alert">
+    <strong></strong> <center>{{ msg }}</center>
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <script>
+    // Automatically close the alert after 3 seconds (3000 milliseconds)
+    setTimeout(function() {
+      document.querySelectorAll('.auto-dismiss').forEach(alert => {
+        alert.classList.remove('show'); // Hide alert visually
+        alert.classList.add('fade'); // Add fade effect
+        setTimeout(() => alert.remove(), 500); // Remove from DOM after fade
+      });
+    }, 2000);
+  </script>
+{% endfor %}
+
+<div class="form-row">
+    <div class="form-group col-md-6">
+        <h5>Lease Agreements</h5>
+        <form action = "{% url 'pdf_display' %}" method="post">
+        {% csrf_token %}
+            <div class="input-group">
+                <select name="propname" class="custom-select" id="propertySelect01" aria-label="Property document selection">
+                    <option disabled selected>Select Property</option>
+                    {% for results in props %}
+                        {% if results.prop_available_for_rent == "Yes" %}
+                          <option value="{{ results.prop_name }}">{{ results.prop_name }}</option>
+                        {% endif %}
+                    {% endfor %}
+                </select>
+                <div class="input-group-append">
+                    <button class="btn btn-info" type="submit" id="viewDocsBtn" disabled>Display</button>
+                </div>
+            </div>
+            <script>
+              document.addEventListener("DOMContentLoaded", function () {
+                const propname = document.getElementById("propertySelect01");
+                const viewDocsBtn = document.getElementById("viewDocsBtn");
+                function checkField() {
+                  if (propname.value !== "Select Property")
+                    {viewDocsBtn.removeAttribute("disabled");}
+                  else
+                    {viewDocsBtn.setAttribute("disabled", "true");}
+                }
+
+                // Initialize button state
+                checkField();
+        
+                // Add event listener
+               propname.addEventListener("change", checkField);
+              });
+            </script>
+        </form>
+    </div>
+</div>
 
 <iframe 
-  src="{{ pdf_url }}" 
-  width="100%" 
-  height="600px" 
-  style="border: none;"
+    src="{% static 'lease_agreements/' %}{{ request.GET.property_name }} - Lease Agreement.pdf" 
+    width="100%" 
+    height="400px" 
+    style="border: none;"
+    onerror="this.style.display='none';"
 ></iframe>
+
+{% if request.GET.property_name %}
+    <hr>
+    <h3>Documents for {{ request.GET.propname }}</h3>
+    
+    <h4>Lease Agreement</h4>
+    <iframe 
+        src="{% static 'lease_agreements/' %}{{ request.GET.property_name }} - Lease Agreement.pdf" 
+        width="100%" 
+        height="400px" 
+        style="border: none;"
+        onerror="this.style.display='none';"
+    ></iframe>
+    <p id="lease-agreement-error" style="color: red; display: none;">
+        Lease agreement not found for {{ request.GET.propname }}
+    </p>
+
+    <h4>Status Report</h4>
+    <iframe 
+        src="{% static 'reports/Friday Status Report (2025-04-02).pdf' %}" 
+        width="100%" 
+        height="400px" 
+        style="border: none;"
+    ></iframe>
+
+    {% if pdf_url %}
+    <h4>Additional Document</h4>
+    <iframe 
+        src="{{ pdf_url }}" 
+        width="100%" 
+        height="600px" 
+        style="border: none;"
+    ></iframe>
+    {% endif %}
+
+    <script>
+        // Check if lease agreement iframe loaded successfully
+        document.querySelector('iframe').onerror = function() {
+            document.getElementById('lease-agreement-error').style.display = 'block';
+        };
+    </script>
+{% endif %}
 
 {% endblock %}

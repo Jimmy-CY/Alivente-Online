@@ -31,16 +31,26 @@ def lease_report (property, rep_output, email, fname):
 #		report_name = file_path+property+" - Lease Agreement.pdf"
 #		report_name = os.path.join(settings.STATIC_ROOT, "lease_agreements/" + property + " - Lease Agreement.pdf")
 
+		file_name = f'lease_agreements/{property} - Lease Agreement.pdf'
+		print(file_name)
+#		report_name = staticfiles_storage.url(file_name)
+		report_name = '/staticfiles/' + file_name
+		print(report_name)
+		static_url = report_name
+		print(static_url)		
+
 		# send email to (email address, email subject, report name and "file path and name") - fixed body text for email
 		if rep_output == "Email":
-			static_url = static(f'lease_agreements/{property} - Lease Agreement.pdf')
-			report_name = "XXX"
+#			static_url = static(f'lease_agreements/{property} - Lease Agreement.pdf')
+#			report_name = "XXX"
 			send_email.send_email(email, property + " - Lease Agreement", property + " - Lease Agreement", report_name, fname)
 
 		# display pdf file in new window - send file_name
 		if rep_output == "Display":
-			static_url = static(f'lease_agreements/{property} - Lease Agreement.pdf')
-			report_name = "http://alivente.online" + static_url
+#			static_url = static(f'lease_agreements/{property} - Lease Agreement.pdf')
+#			report_name = "http://alivente.online" + static_url
+			report_name = "http://alivente.online" + report_name
+			print(report_name)
 			pdf_display.pdf_display(report_name)
 
 

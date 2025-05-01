@@ -30,6 +30,8 @@
 
 <body>
   <div style="display: flex ; justify-content: flex-end">
+    <a href="{% url 'tenant_add' %}" class="btn btn-info" style="margin-right:16px" type="button">Invoices</a>
+    <a href="{% url 'tenant_add' %}" class="btn btn-info" style="margin-right:16px" type="button">Renewals</a>
     <a href="{% url 'tenant_add' %}" class="btn btn-info" style="margin-right:16px" type="button">Add New</a>
     <a href="{% url 'home' %}" class="btn btn-info" style="margin-right:16px" role="button">Back</a>
   </div>
@@ -74,10 +76,10 @@
     <tr>
       <th text-align="left">Tenant</th>
       <th text-align="left">Property</th>
-      <th align="center">Lease Start Date</th>
-      <th align="center">Lease End Date</th>
       <th align="center">Active</th>
-      <th align="center">Edit</th>
+      <th align="center">Details</th>
+      <th align="center">Agreement</th>
+      <th align="center">Report</th>
     </tr>
   </thead>
   <tbody>
@@ -87,10 +89,10 @@
           <tr>
             <td align="left">{{tresults.tenant_name}}</td>
             <td align="left">{{results.prop_name}}</td>
-            <td align="center">{{tresults.tenant_lease_start_date}}</td>
-            <td align="center">{{tresults.tenant_lease_end_date}}</td>
             <td align="center">{{tresults.tenant_current}}</td>
-            <td align="center"><button type ="button" class="btn btn-light" style="border-color:black;"><a href="{% url 'tenant_edit' tresults.tenant_id %}">Edit</a></button></td>    
+            <td align="center"><button type ="button" class="btn btn-light" style="border-color:black;"><a href="{% url 'tenant_edit' tresults.tenant_id %}">Edit</a></button></td>
+            <td align="center"><button type ="button" class="btn btn-light" style="border-color:black;"><a href="{% url 'tenant_edit' tresults.tenant_id %}">View</a></button></td>
+            <td align="center"><button type ="button" class="btn btn-light" style="border-color:black;"><a href="{% url 'tenant_edit' tresults.tenant_id %}">View</a></button></td>    
           </tr>
         {% endif %}
       {% endfor %}

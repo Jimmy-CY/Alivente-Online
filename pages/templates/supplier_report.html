@@ -1,0 +1,133 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+{% endblock %}
+
+{% block content %}
+<div class="report-container">
+    <div class="report-content">
+        <div class="header-container">
+            <h2 class="report-title">SUPPLIER DETAILS REPORT ({{ today|date:"Y-m-d" }})</h2>
+            <a href="{% url 'suppliers' %}" class="btn btn-info back-button" role="button">Back</a>
+        </div>
+
+        <div class="supplier-section">
+            <h3 class="supplier-name"><u>{{ supplier.supplier_contact_person }}</u></h3>
+            
+            <div class="supplier-details">
+                <p><strong>Contact Number:</strong> {{ supplier.supplier_contact_number }}</p>
+                <p><strong>Email:</strong> {{ supplier.supplier_email }}</p>
+                <p><strong>Company:</strong> {{ supplier.supplier_company_name }}</p>
+                <p><strong>Role:</strong> {{ supplier.supplier_role }}</p>
+                <p><strong>Country:</strong> {{ supplier.supplier_country }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .report-container {
+        display: flex;
+        justify-content: center;
+        width: 100%;
+        padding: 20px;
+    }
+    
+    .report-content {
+        width: 80%;
+        max-width: 800px;
+        background: white;
+        padding: 30px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        border-radius: 5px;
+    }
+    
+    .header-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        flex-wrap: wrap;
+    }
+    
+    .report-title {
+        font-family: Arial, sans-serif;
+        font-size: 1.5rem;
+        text-decoration: underline;
+        margin: 0;
+        flex-grow: 1;
+        text-align: center;
+        color: #2c3e50;
+    }
+    
+    .back-button {
+        margin-left: 20px;
+        white-space: nowrap;
+        background-color: #17a2b8;
+        border: none;
+        padding: 8px 15px;
+        color: white;
+        text-decoration: none;
+    }
+    
+    .supplier-section {
+        margin-bottom: 1rem;
+        page-break-inside: avoid;
+    }
+    
+    .supplier-name {
+        font-family: Arial, sans-serif;
+        font-size: 1.3rem;
+        text-decoration: underline;
+        margin-bottom: 1rem;
+        color: #2c3e50;
+    }
+    
+    .supplier-details {
+        font-family: Arial, sans-serif;
+        margin-left: 1.5rem;
+        line-height: 1.6;
+    }
+    
+    .supplier-details p {
+        margin-bottom: 0.6rem;
+    }
+    
+    @media print {
+        .report-container {
+            display: block;
+            padding: 0;
+        }
+        
+        .report-content {
+            width: 100%;
+            max-width: 100%;
+            padding: 10px;
+            box-shadow: none;
+            border: none;
+        }
+        
+        .header-container {
+            display: none;
+        }
+        
+        .back-button {
+            display: none;
+        }
+        
+        body {
+            background: white;
+            font-size: 12pt;
+        }
+        
+        .supplier-name {
+            font-size: 14pt;
+        }
+        
+        .supplier-details p {
+            margin-bottom: 4pt;
+        }
+    }
+</style>
+{% endblock %}

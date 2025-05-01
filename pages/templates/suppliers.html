@@ -70,7 +70,8 @@
       <th text-align="left">Company Name</th>
       <th align="center">Role</th>
       <th align="center">Country</th>
-      <th align="center">Edit</th>
+      <th align="center">Details</th>
+      <th align="center">Report</th>
     </tr>
   </thead>
   <tbody>
@@ -78,10 +79,11 @@
       <tr>
         <td align="left">{{sresults.supplier_contact_person}}</td>
         <td align="center">{{sresults.supplier_contact_number}}</td>
-        <td align="left">{{sresults.supplier_company_name}}</td>
+        <td align="center">{{sresults.supplier_company_name}}</td>
         <td align="center">{{sresults.supplier_role}}</td>
         <td align="center">{{sresults.supplier_country}}</td>
-        <td align="center"><button type ="button" class="btn btn-light" style="border-color:black;"><a href="{% url 'suppliers_edit' sresults.supplier_id %}">Edit</a></button></td>    
+        <td align="center"><button type ="button" class="btn btn-light" style="border-color:black;"><a href="{% url 'suppliers_edit' sresults.supplier_id %}">Edit</a></button></td>  
+        <td align="center"><button type ="button" class="btn btn-light" style="border-color:black;"><a href="{% url 'supplier_report' sresults.supplier_id %}">View</a></button></td>  
       </tr>
     {% endfor %}
   </tbody>

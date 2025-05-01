@@ -28,8 +28,9 @@ urlpatterns = [
     path('lease_renewal/', views.lease_renewal, name='lease_renewal'),
     path('lease_agreements/', views.lease_agreements, name='lease_agreements'),
     path('issues_rep/', views.issues_rep, name='issues_rep'),
-    path('pdf_display', views.pdf_display, name='pdf_display'),
-#    path('lease_display/<str:pdf_filename>/', views.lease_display, name='lease_display'),
+    path('pdf_display/', views.pdf_display, name='pdf_display'),
+    path('property_report/<prop_id>', views.property_report, name='property_report'),
+    path('supplier_report/<supplier_id>', views.supplier_report, name='supplier_report'),
 
     #
     # Tenants
