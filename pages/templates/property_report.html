@@ -16,17 +16,15 @@
             <h2 class="property-name"><u>{{ property.prop_name }}</u></h2>
             
             <div class="property-details">
-                <p><strong>Address:</strong> {{ property.prop_address1 }}</p>
-                {% if property.prop_address2 %}
-                <p class="address-line">{{ property.prop_address2 }}</p>
-                {% endif %}
-                {% if property.prop_suburb %}
-                <p class="address-line">{{ property.prop_suburb }}</p>
-                {% endif %}
-                <p class="address-line">{{ property.prop_city }}</p>
-                <p class="address-line">{{ property.prop_province }}</p>
-                <p class="address-line">{{ property.prop_country }}</p>
-                <p class="address-line">{{ property.prop_pcode }}</p>
+                <p><strong>Address:</strong> 
+                    {{ property.prop_address1 }}
+                    {% if property.prop_address2 %}, {{ property.prop_address2 }}{% endif %}
+                    {% if property.prop_suburb %}, {{ property.prop_suburb }}{% endif %}
+                    , {{ property.prop_city }}
+                    , {{ property.prop_province }}
+                    , {{ property.prop_country }}
+                    , {{ property.prop_pcode }}
+                </p>
                 
                 <p><strong>Square Meters:</strong> {{ property.prop_floor_area }}</p>
                 <p><strong>Year Built:</strong> {{ property.prop_year_built }}</p>
@@ -103,10 +101,6 @@
     
     .property-details p {
         margin-bottom: 0.5rem;
-    }
-    
-    .address-line {
-        margin-left: 3rem;
     }
     
     @media print {

@@ -87,7 +87,7 @@
             <td align="center">{{results.prop_status}}</td>
             <td align="center"><button type ="button" class="btn btn-light" style="border-color:black;"><a href="{% url 'properties_edit' results.prop_id %}">Edit</a></button></td>    
             <td align="center"><button type ="button" class="btn btn-light" style="border-color:black;"><a href="{% url 'property_report' results.prop_id %}">View</a></button></td>
-            <td align="center"><button type ="button" class="btn btn-light" style="border-color:black;"><a href="{% url 'property_report' results.prop_id %}">View</a></button></td>
+            <td align="center"><button type ="button" class="btn btn-light" style="border-color:black;"><a href="{% url 'title_deed_report' results.prop_id %}">View</a></button></td>
         </tr>
     {% endfor %}
   </tbody>
