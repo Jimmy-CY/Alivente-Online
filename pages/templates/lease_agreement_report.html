@@ -8,24 +8,27 @@
 <div class="report-container">
     <div class="report-content">
         <div class="header-container">
-            <h2 class="report-title">TITLE DEED ({{ property.prop_name }})</h2>
-            <a href="{% url 'properties' %}" class="btn btn-info back-button" role="button">Back</a>
+            <div class="report-title-container">
+                <h2 class="report-title-main">LEASE AGREEMENT ({{ property.prop_name }})</h2>
+                <h3 class="report-title-sub">for {{ tenant.tenant_name }}</h3>
+            </div>
+            <a href="{% url 'tenant' %}" class="btn btn-info back-button" role="button">Back</a>
         </div>
         <div class="property-section">
             <!-- Error message -->
-            <div id="title-deeds-error" class="alert alert-warning" style="display: none;">
-                <p>Title Deed not found for this property.</p>
+            <div id="lease_agreement-error" class="alert alert-warning" style="display: none;">
+                <p>Lease Agreement not found for this tenant.</p>
             </div>
 
             <!-- Title Deed PDF Viewer -->
             {% with pdf_name=property.prop_name %}
-                {% static 'title_deeds/'|add:pdf_name|add:' - Title Deed.pdf' as pdf_url %}
+                {% static 'lease_agreements/'|add:pdf_name|add:' - Lease Agreement.pdf' as pdf_url %}
                 <iframe 
                     src="{{ pdf_url }}" 
                     width="100%" 
                     height="600px" 
                     style="border: none;"
-                    title="Title Deed for {{ property.prop_name }}"
+                    title="Lease Agreement for {{ property.prop_name }}"
                     onerror="handlePdfError(this)"
                 ></iframe>
                 
@@ -41,7 +44,7 @@
         <script>
             function handlePdfError(iframe) {
                 iframe.style.display = 'none';
-                document.getElementById('title-deeds-error').style.display = 'block';
+                document.getElementById('lease_agreement-error').style.display = 'block';
             }
         </script>
     </div>
@@ -72,14 +75,28 @@
         margin-bottom: 20px;
     }
     
-    .report-title {
+    .report-title-container {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .report-title-main {
         font-size: 1.8rem;
         color: #2c3e50;
-        margin: 0; /* Remove any default margins */
+        margin: 0;
+        font-weight: bold;
+        text-transform: uppercase;
+    }
+    
+    .report-title-sub {
+        font-size: 1.4rem;
+        color: #2c3e50;
+        margin: 5px 0 0 0;
+        font-weight: normal;
     }
     
     .back-button {
-        /* Optional: Add some styling to make the button stand out */
         background-color: #17a2b8;
         color: white;
         padding: 8px 16px;

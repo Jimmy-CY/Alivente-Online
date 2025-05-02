@@ -1,0 +1,179 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+{% endblock %}
+
+{% block content %}
+<div class="report-container">
+    <div class="report-content">
+        <div class="header-container">
+            <h2 class="report-title">TENANT DETAILS REPORT ({{ today|date:"Y-m-d" }})</h2>
+            <a href="{% url 'tenant' %}" class="btn btn-info back-button" role="button">Back</a>
+        </div>
+
+        <div class="tenant-section">
+            <div class="tenant-details">
+                <p><strong>Tenant Type:</strong> {{ tenant.tenant_type }}</p>
+                <p><strong>Tenant Name:</strong> {{ tenant.tenant_name }}</p>
+                <p><strong>Contact Person:</strong> {{ tenant.tenant_contact_person }}</p>
+                <p><strong>Contact Number:</strong> {{ tenant.tenant_contact_number }}</p>
+                <p><strong>Email:</strong> {{ tenant.tenant_email }}</p>
+                
+                <div class="date-row">
+                    <p><strong>Lease Dates:</strong> 
+                        <span class="date-box">{{ tenant.tenant_lease_start_date }}</span> to 
+                        <span class="date-box">{{ tenant.tenant_lease_end_date }}</span>
+                    </p>
+                </div>
+                
+                <div class="financial-row">
+                    <p><strong>Financials:</strong> 
+                        Deposit: <span class="amount">€ {{ tenant.tenant_deposit }}</span> | 
+                        Rent: <span class="amount">€ {{ tenant.tenant_rent }}</span> | 
+                        Levies: <span class="amount">€ {{ tenant.tenant_levies }}</span>
+                    </p>
+                </div>
+                
+                <p><strong>Rental Type:</strong> {{ tenant.tenant_rental_type }}</p>
+                <p><strong>Lease Renewal Clause:</strong> {{ tenant.tenant_renewal }}</p>
+                {% if tenant.tenant_renewal == "Yes" %}
+                    <p><strong>Lease Renewal Notice Period:</strong> {{ tenant.tenant_renewal_period }} days</p>
+                {% endif %}
+                <p><strong>Payment Terms:</strong> {% if tenant.tenant_payment_terms == 0 %}Immediate{% else %}{{ tenant.tenant_payment_terms }} days{% endif %}</p>
+                <p><strong>Active:</strong> {{ tenant.tenant_current }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .report-container {
+        display: flex;
+        justify-content: center;
+        width: 100%;
+        padding: 20px;
+    }
+    
+    .report-content {
+        width: 80%;
+        max-width: 900px;
+        background: white;
+        padding: 30px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    
+    .header-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        flex-wrap: wrap;
+    }
+    
+    .report-title {
+        font-family: Arial, sans-serif;
+        font-size: 1.6rem;
+        text-decoration: underline;
+        margin: 0;
+        flex-grow: 1;
+        text-align: center;
+        padding: 0 10px;
+    }
+    
+    .back-button {
+        margin-left: 20px;
+        white-space: nowrap;
+    }
+    
+    .tenant-section {
+        margin-bottom: 1rem;
+        page-break-inside: avoid;
+    }
+    
+    .property-name {
+        font-family: Arial, sans-serif;
+        font-size: 1.4rem;
+        text-decoration: underline;
+        margin-bottom: 1rem;
+        color: #2c3e50;
+    }
+    
+    .tenant-details {
+        font-family: Arial, sans-serif;
+        margin-left: 1.5rem;
+        line-height: 1.5;
+    }
+    
+    .tenant-details p {
+        margin-bottom: 0.5rem;
+    }
+    
+    .date-row, .financial-row {
+        margin: 0.75rem 0;
+    }
+    
+    .date-box {
+        display: inline-block;
+        padding: 2px 6px;
+        border: 1px solid #ccc;
+        border-radius: 3px;
+        background-color: #f8f9fa;
+        margin: 0 2px;
+    }
+    
+    @media print {
+        .report-container {
+            display: block;
+            padding: 0;
+        }
+        
+        .report-content {
+            width: 100%;
+            max-width: 100%;
+            padding: 0;
+            box-shadow: none;
+        }
+        
+        .header-container {
+            display: none;
+        }
+        
+        body {
+            background: white;
+            color: black;
+        }
+        
+        .tenant-section {
+            margin-bottom: 0.5rem;
+        }
+        
+        .tenant-details p {
+            margin-bottom: 0.25rem;
+        }
+        
+        .date-row, .financial-row {
+            margin: 0.5rem 0;
+        }
+        
+        .date-box {
+            border: 1px solid #000;
+            background-color: transparent;
+        }
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Format all amounts with thousand separators
+    document.querySelectorAll('.amount').forEach(element => {
+        const text = element.textContent;
+        const amount = text.match(/\d+/); // Extract the numeric part
+        if (amount) {
+            const formatted = amount[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+            element.textContent = text.replace(amount[0], formatted);
+        }
+    });
+});
+</script>
+{% endblock %}

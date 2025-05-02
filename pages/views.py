@@ -5,7 +5,7 @@ from django.contrib.auth.forms import UserCreationForm, UserChangeForm, Password
 from django.http import HttpResponse
 from django.templatetags.static import static
 from .models import props, petty, issues, issues_details, tenant, invoices, supplier
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 from django.db import connection
 import mysql.connector
 from . import forms
@@ -450,6 +450,45 @@ def title_deed_report(request, prop_id):
 	}
 	return render(request, 'title_deed_report.html', context)
 
+def lease_agreement_report(request, tenant_id):
+	today = date.today()
+	tenant_obj = get_object_or_404(tenant.objects.only(
+		'tenant_id', 'prop_id', 'tenant_type', 'tenant_name', 'tenant_contact_person', 'tenant_contact_number', 
+		'tenant_email', 'tenant_deposit', 'tenant_lease_start_date', 'tenant_lease_end_date',
+		'tenant_rental_type', 'tenant_renewal', 'tenant_renewal_period',
+		'tenant_rent', 'tenant_levies',
+		'tenant_payment_terms', 'tenant_current', 'tenant_lease_agreement'
+	), pk=tenant_id)
+	property = get_object_or_404(props.objects.only(
+		'prop_id', 'prop_name', 'prop_address1', 'prop_address2', 'prop_suburb', 
+		'prop_city', 'prop_province', 'prop_country', 'prop_pcode',
+		'prop_floor_area', 'prop_year_built', 'prop_status',
+		'prop_available_for_rent', 'prop_title_deed',
+		'prop_title_deed_status', 'prop_electricity', 'prop_water',
+		'prop_refuse', 'prop_property_tax', 'prop_sewerage', 'prop_insurance'
+	), pk=tenant_obj.prop_id)
+	context = {
+		'today': today,
+		'tenant': tenant_obj,
+		'property': property,
+	}
+	return render(request, 'lease_agreement_report.html', context)
+
+def tenant_report(request, tenant_id):
+	today = date.today()
+	tenant_obj = get_object_or_404(tenant.objects.only(
+		'tenant_id', 'prop_id', 'tenant_type', 'tenant_name', 'tenant_contact_person', 'tenant_contact_number', 
+		'tenant_email', 'tenant_deposit', 'tenant_lease_start_date', 'tenant_lease_end_date',
+		'tenant_rental_type', 'tenant_renewal', 'tenant_renewal_period',
+		'tenant_rent', 'tenant_levies',
+		'tenant_payment_terms', 'tenant_current', 'tenant_lease_agreement'
+	), pk=tenant_id)
+	context = {
+		'today': today,
+		'tenant': tenant_obj,
+	}
+	return render(request, 'tenant_report.html', context)
+
 def supplier_report(request, supplier_id):
 	today = date.today()
 	supplier_obj = get_object_or_404(supplier.objects.only(
@@ -524,6 +563,87 @@ def open_invoices(request):
 	open_invoices.open_invoices(rep_output, check, email, fname)
 	messages.success(request, "Report Created Successfully")
 	return redirect('home')
+
+def lease_renewal_report(request):
+	mydb = mysql.connector.connect(
+		host=settings.DATABASES['default']['HOST'],
+		port=settings.DATABASES['default']['PORT'],
+		user=settings.DATABASES['default']['USER'],
+		password=settings.DATABASES['default']['PASSWORD'],
+		database=settings.DATABASES['default']['NAME'],
+		auth_plugin=settings.DATABASES['default']['AUTH_PLUGIN'],
+	)
+	my_cursor = mydb.cursor()
+	today = date.today()
+	tenants = []
+	vacant_properties = []
+	my_cursor.execute("""
+		SELECT prop.prop_name, prop.prop_country, tenant.tenant_type, tenant.tenant_name,
+		tenant.tenant_contact_person, tenant.tenant_contact_number, tenant.tenant_email,
+		tenant.tenant_deposit, tenant.tenant_lease_start_date, tenant.tenant_lease_end_date,
+		tenant.tenant_rental_type, tenant.tenant_renewal, tenant.tenant_renewal_period,
+		tenant.tenant_rent, tenant.tenant_levies, tenant.tenant_payment_terms,
+		tenant.tenant_current
+		FROM railway.tenant
+		JOIN railway.prop ON prop.prop_id = tenant.prop_id
+		WHERE tenant.tenant_current = 'Yes'
+		ORDER BY prop.prop_country ASC, prop.prop_name ASC
+	""")
+	tenant_rows = my_cursor.fetchall()
+	my_cursor.execute("""
+		SELECT prop.prop_name
+		FROM railway.tenant
+		JOIN railway.prop ON prop.prop_id = tenant.prop_id
+		WHERE tenant.tenant_current = 'Yes'
+		ORDER BY prop.prop_country ASC, prop.prop_name ASC
+	""")
+	prop_active_tenant = [row[0] for row in my_cursor.fetchall()]
+	my_cursor.execute("""
+		SELECT prop.prop_name
+		FROM railway.prop
+		WHERE prop.prop_status = 'Active'
+		AND prop.prop_available_for_rent = 'Yes'
+		ORDER BY prop.prop_country ASC, prop.prop_name ASC
+	""")
+	active_properties = [row[0] for row in my_cursor.fetchall()]
+	for row in tenant_rows:
+		lease_end_date = row[9]  # tenant_lease_end_date
+		renewal_period = int(row[12])  # tenant_renewal_period
+		renewal_date = lease_end_date - timedelta(days=renewal_period)
+		warning_date = renewal_date - timedelta(days=30)
+		print(row[0],lease_end_date, renewal_period, renewal_date, warning_date)
+		if today >= warning_date:
+			tenants.append({
+				'prop_name': row[0],
+				'prop_country': row[1],
+				'tenant_type': row[2],
+				'tenant_name': row[3],
+				'tenant_contact_person': row[4],
+				'tenant_contact_number': row[5],
+				'tenant_email': row[6],
+				'tenant_deposit': row[7],
+				'tenant_lease_start_date': row[8].strftime('%Y-%m-%d') if row[8] else '',
+				'tenant_lease_end_date': row[9].strftime('%Y-%m-%d') if row[9] else '',
+				'tenant_rental_type': row[10],
+				'tenant_renewal': row[11],
+				'tenant_renewal_period': row[12],
+				'tenant_rent': row[13],
+				'tenant_levies': row[14],
+				'tenant_payment_terms': row[15],
+				'renewal_date': renewal_date.strftime('%Y-%m-%d'),
+				'needs_renewal': True
+			})
+		vacant_properties = [{'prop_name': prop} for prop in active_properties if prop not in prop_active_tenant]
+	if mydb.is_connected():
+		my_cursor.close()
+		mydb.close()
+	context = {
+		'tenants': tenants,
+		'vacant_properties': vacant_properties,
+		'today': today.strftime('%Y-%m-%d')
+	}
+	print(context)
+	return render(request, 'lease_renewal_report.html', context)
 
 def lease_renewal(request):
 	import lease_renewal

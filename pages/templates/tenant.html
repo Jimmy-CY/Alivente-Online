@@ -31,7 +31,7 @@
 <body>
   <div style="display: flex ; justify-content: flex-end">
     <a href="{% url 'tenant_add' %}" class="btn btn-info" style="margin-right:16px" type="button">Invoices</a>
-    <a href="{% url 'tenant_add' %}" class="btn btn-info" style="margin-right:16px" type="button">Renewals</a>
+    <a href="{% url 'lease_renewal_report' %}" class="btn btn-info" style="margin-right:16px" type="button">Renewals</a>
     <a href="{% url 'tenant_add' %}" class="btn btn-info" style="margin-right:16px" type="button">Add New</a>
     <a href="{% url 'home' %}" class="btn btn-info" style="margin-right:16px" role="button">Back</a>
   </div>
@@ -91,8 +91,8 @@
             <td align="left">{{results.prop_name}}</td>
             <td align="center">{{tresults.tenant_current}}</td>
             <td align="center"><button type ="button" class="btn btn-light" style="border-color:black;"><a href="{% url 'tenant_edit' tresults.tenant_id %}">Edit</a></button></td>
-            <td align="center"><button type ="button" class="btn btn-light" style="border-color:black;"><a href="{% url 'tenant_edit' tresults.tenant_id %}">View</a></button></td>
-            <td align="center"><button type ="button" class="btn btn-light" style="border-color:black;"><a href="{% url 'tenant_edit' tresults.tenant_id %}">View</a></button></td>    
+            <td align="center"><button type ="button" class="btn btn-light" style="border-color:black;"><a href="{% url 'lease_agreement_report' tresults.tenant_id %}">View</a></button></td>
+            <td align="center"><button type ="button" class="btn btn-light" style="border-color:black;"><a href="{% url 'tenant_report' tresults.tenant_id %}">View</a></button></td>    
           </tr>
         {% endif %}
       {% endfor %}

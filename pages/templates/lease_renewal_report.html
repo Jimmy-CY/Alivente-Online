@@ -1,0 +1,200 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+{% endblock %}
+
+{% block content %}
+<div class="report-container">
+    <div class="report-content">
+        <div class="header-container">
+            <div class="report-title-container">
+                <h2 class="report-title-main">LEASE RENEWAL REPORT</h2>
+                <h3 class="report-title-sub">{{ today }}</h3>
+            </div>
+            <a href="{% url 'tenant' %}" class="btn btn-info back-button" role="button">Back</a>
+        </div>
+
+        <div class="lease-renewal-section">
+            {% for tenant in tenants %}
+                {% if tenant.needs_renewal %}
+                <div class="tenant-card">
+                    <h3 class="property-name">{{ tenant.prop_name }}</h3>
+                    
+                    <div class="tenant-details">
+                        <!-- Type and Name on one line -->
+                        <p>
+                            <strong>Type:</strong> {{ tenant.tenant_type }} | 
+                            <strong>Name:</strong> {{ tenant.tenant_name }} |
+                            <strong>Rental Type:</strong> {{ tenant.tenant_rental_type }}
+                        </p>
+                        
+                        <!-- Contact Person and Number on one line -->
+                        <p>
+                            <strong>Contact:</strong> {{ tenant.tenant_contact_person }} | 
+                            <strong>Number:</strong> {{ tenant.tenant_contact_number }}
+                        </p>
+                        
+                        <p><strong>Email:</strong> {{ tenant.tenant_email }}</p>
+                        
+                        <!-- Lease Dates on one line -->
+                        <p>
+                            <strong>Lease Period:</strong> 
+                            {{ tenant.tenant_lease_start_date }} to 
+                            <span class="highlight-red">{{ tenant.tenant_lease_end_date }}</span>
+                        </p>
+                        <p>
+                            <strong>Lease Renewal Clause:</strong> {{ tenant.tenant_renewal }} |
+                            <strong>Lease Renewal Notice Period:</strong> {{ tenant.tenant_renewal_period }} days
+                        </p>
+                        <p class="highlight-red"><strong>Tenant Contact Date:</strong> {{ tenant.renewal_date }}</p>
+                    </div>
+                </div>
+                {% endif %}
+            {% endfor %}
+
+            {% for property in vacant_properties %}
+                <div class="vacant-property-card">
+                    <h3 class="property-name">{{ property.prop_name }}</h3>
+                    <p class="highlight-red"><strong>NO CURRENT TENANT - NEED NEW TENANT</strong></p>
+                </div>
+            {% endfor %}
+
+            {% if not tenants and not vacant_properties %}
+                <div class="no-renewals">
+                    <p>No lease renewals or vacant properties to report at this time.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+    .report-container {
+        display: flex;
+        justify-content: center;
+        width: 100%;
+        padding: 20px;
+        min-height: 80vh;
+    }
+    
+    .report-content {
+        width: 90%;
+        max-width: 1200px;
+        background: white;
+        padding: 30px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .header-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+    
+    .report-title-container {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .report-title-main {
+        font-size: 1.8rem;
+        color: #2c3e50;
+        margin: 0;
+        font-weight: bold;
+        text-transform: uppercase;
+    }
+    
+    .report-title-sub {
+        font-size: 1.4rem;
+        color: #2c3e50;
+        margin: 5px 0 0 0;
+        font-weight: normal;
+    }
+    
+    .back-button {
+        background-color: #17a2b8;
+        color: white;
+        padding: 8px 16px;
+        text-decoration: none;
+        border-radius: 4px;
+        font-weight: 500;
+    }
+    
+    .back-button:hover {
+        background-color: #138496;
+        color: white;
+    }
+    
+    .lease-renewal-section {
+        margin-top: 20px;
+    }
+    
+    .tenant-card, .vacant-property-card {
+        margin-bottom: 30px;
+        padding: 20px;
+        border: 1px solid #eee;
+        border-radius: 4px;
+        background-color: #f9f9f9;
+    }
+    
+    .vacant-property-card {
+        background-color: #fff3f3;
+    }
+    
+    .property-name {
+        font-size: 1.4rem;
+        color: #2c3e50;
+        margin-bottom: 15px;
+        border-bottom: 1px solid #ddd;
+        padding-bottom: 5px;
+    }
+    
+    .tenant-details p {
+        margin-bottom: 8px;
+        line-height: 1.5;
+    }
+    
+    .highlight-red {
+        color: #d9534f;
+        font-weight: bold;
+    }
+    
+    .no-renewals {
+        text-align: center;
+        padding: 30px;
+        font-style: italic;
+        color: #666;
+    }
+    
+    @media print {
+        .report-container {
+            padding: 0;
+        }
+        
+        .report-content {
+            width: 100%;
+            max-width: 100%;
+            padding: 0;
+            box-shadow: none;
+        }
+        
+        .back-button {
+            display: none;
+        }
+        
+        .tenant-card, .vacant-property-card {
+            page-break-inside: avoid;
+            border: none;
+            padding: 10px 0;
+        }
+        
+        .highlight-red {
+            color: #d9534f !important;
+        }
+    }
+</style>
+{% endblock %}

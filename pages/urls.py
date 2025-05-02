@@ -29,8 +29,11 @@ urlpatterns = [
     path('lease_agreements/', views.lease_agreements, name='lease_agreements'),
     path('issues_rep/', views.issues_rep, name='issues_rep'),
     path('title_deed_report/<int:prop_id>', views.title_deed_report, name='title_deed_report'),
+    path('lease_agreement_report/<int:tenant_id>', views.lease_agreement_report, name='lease_agreement_report'),
     path('property_report/<int:prop_id>', views.property_report, name='property_report'),
     path('supplier_report/<int:supplier_id>', views.supplier_report, name='supplier_report'),
+    path('tenant_report/<int:tenant_id>', views.tenant_report, name='tenant_report'),
+    path('lease_renewal_report/', views.lease_renewal_report, name='lease_renewal_report'),
 
     #
     # Tenants
