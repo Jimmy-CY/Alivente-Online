@@ -30,7 +30,7 @@
 
 <body>
   <div style="display: flex ; justify-content: flex-end">
-    <a href="{% url 'tenant_add' %}" class="btn btn-info" style="margin-right:16px" type="button">Invoices</a>
+    <a href="{% url 'open_invoices_report' %}" class="btn btn-info" style="margin-right:16px" type="button">Invoices</a>
     <a href="{% url 'lease_renewal_report' %}" class="btn btn-info" style="margin-right:16px" type="button">Renewals</a>
     <a href="{% url 'tenant_add' %}" class="btn btn-info" style="margin-right:16px" type="button">Add New</a>
     <a href="{% url 'home' %}" class="btn btn-info" style="margin-right:16px" role="button">Back</a>
@@ -74,12 +74,12 @@
   <table class="table table-bordered table-striped text-center">
   <thead>
     <tr>
-      <th text-align="left">Tenant</th>
-      <th text-align="left">Property</th>
-      <th align="center">Active</th>
-      <th align="center">Details</th>
-      <th align="center">Agreement</th>
-      <th align="center">Report</th>
+     <th style="text-align: left; width: 37%">Tenant</th>
+      <th style="width: 23%">Property</th>
+      <th style="width: 10%">Active</th>
+      <th style="width: 10%">Details</th>
+      <th style="width: 10%">Agreement</th>
+      <th style="width: 10%">Report</th>
     </tr>
   </thead>
   <tbody>
@@ -87,12 +87,24 @@
       {% for tresults in tenant %}
         {% if tresults.prop_id == results.prop_id %}
           <tr>
-            <td align="left">{{tresults.tenant_name}}</td>
-            <td align="left">{{results.prop_name}}</td>
-            <td align="center">{{tresults.tenant_current}}</td>
-            <td align="center"><button type ="button" class="btn btn-light" style="border-color:black;"><a href="{% url 'tenant_edit' tresults.tenant_id %}">Edit</a></button></td>
-            <td align="center"><button type ="button" class="btn btn-light" style="border-color:black;"><a href="{% url 'lease_agreement_report' tresults.tenant_id %}">View</a></button></td>
-            <td align="center"><button type ="button" class="btn btn-light" style="border-color:black;"><a href="{% url 'tenant_report' tresults.tenant_id %}">View</a></button></td>    
+            <td style="text-align: left">{{tresults.tenant_name}}</td>
+            <td>{{results.prop_name}}</td>
+            <td>{{tresults.tenant_current}}</td>
+            <td>
+              <button type="button" class="btn btn-light" style="border-color:black; width: 100%">
+                <a href="{% url 'tenant_edit' tresults.tenant_id %}">Edit</a>
+              </button>
+            </td>    
+            <td>
+              <button type="button" class="btn btn-light" style="border-color:black; width: 100%">
+                <a href="{% url 'lease_agreement_report' tresults.tenant_id %}">View</a>
+              </button>
+            </td>
+            <td>
+              <button type="button" class="btn btn-light" style="border-color:black; width: 100%">
+                <a href="{% url 'tenant_report' tresults.tenant_id %}">View</a>
+              </button>
+            </td>
           </tr>
         {% endif %}
       {% endfor %}

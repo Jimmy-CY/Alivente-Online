@@ -1,41 +1,106 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}
-{% endblock %}
+{% block title %}Property Details | Alivente Online{% endblock %}
 
 {% block content %}
 <div class="report-container">
     <div class="report-content">
         <div class="header-container">
-            <h2 class="report-title">PROPERTY DETAILS REPORT ({{ today|date:"Y-m-d" }})</h2>
+            <div class="report-title-container">
+                <h2 class="report-title-main">PROPERTY DETAILS REPORT</h2>
+                <h3 class="report-title-sub">{{ today|date:"Y-m-d" }}</h3>
+            </div>
             <a href="{% url 'properties' %}" class="btn btn-info back-button" role="button">Back</a>
         </div>
 
-        <div class="property-section">
-            <h2 class="property-name"><u>{{ property.prop_name }}</u></h2>
+        <div class="property-card">
+            <h3 class="property-name">{{ property.prop_name }}</h3>
             
-            <div class="property-details">
-                <p><strong>Address:</strong> 
-                    {{ property.prop_address1 }}
-                    {% if property.prop_address2 %}, {{ property.prop_address2 }}{% endif %}
-                    {% if property.prop_suburb %}, {{ property.prop_suburb }}{% endif %}
-                    , {{ property.prop_city }}
-                    , {{ property.prop_province }}
-                    , {{ property.prop_country }}
-                    , {{ property.prop_pcode }}
-                </p>
+            <div class="detail-groups">
+                <!-- Property Address Section -->
+                <div class="detail-group">
+                    <h4 class="section-title">Property Address</h4>
+                    <div class="detail-row">
+                        <span class="detail-label">Address:</span>
+                        <span class="detail-value">
+                            {{ property.prop_address1 }}
+                            {% if property.prop_address2 %}, {{ property.prop_address2 }}{% endif %}
+                            {% if property.prop_suburb %}, {{ property.prop_suburb }}{% endif %}
+                        </span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">City/Province:</span>
+                        <span class="detail-value">
+                            {{ property.prop_city }}, {{ property.prop_province }}
+                        </span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Country/Post Code:</span>
+                        <span class="detail-value">
+                            {{ property.prop_country }}, {{ property.prop_pcode }}
+                        </span>
+                    </div>
+                </div>
                 
-                <p><strong>Square Meters:</strong> {{ property.prop_floor_area }}</p>
-                <p><strong>Year Built:</strong> {{ property.prop_year_built }}</p>
-                <p><strong>Electricity Account No.:</strong> {{ property.prop_electricity }}</p>
-                <p><strong>Water Account No.:</strong> {{ property.prop_water }}</p>
-                <p><strong>Municipality (Refuse) Account No.:</strong> {{ property.prop_refuse }}</p>
-                <p><strong>Municipality (Annual Property Tax) Account No.:</strong> {{ property.prop_property_tax }}</p>
-                <p><strong>Sewerage Account No.:</strong> {{ property.prop_sewerage }}</p>
-                <p><strong>Insurance Policy Number:</strong> {{ property.prop_insurance }}</p>
-                <p><strong>Status:</strong> {{ property.prop_status }}</p>
-                <p><strong>Available for Rent:</strong> {{ property.prop_available_for_rent|yesno:"Yes,No" }}</p>
+                <!-- Property Specifications -->
+                <div class="detail-group">
+                    <h4 class="section-title">Property Specifications</h4>
+                    <div class="detail-row">
+                        <span class="detail-label">Square Meters:</span>
+                        <span class="detail-value">{{ property.prop_floor_area|floatformat:"0" }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Year Built:</span>
+                        <span class="detail-value">{{ property.prop_year_built }}</span>
+                    </div>
+                </div>
+                
+                <!-- Utility Accounts -->
+                <div class="detail-group">
+                    <h4 class="section-title">Utility Accounts</h4>
+                    <div class="detail-row">
+                        <span class="detail-label">Electricity:</span>
+                        <span class="detail-value">{{ property.prop_electricity }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Water:</span>
+                        <span class="detail-value">{{ property.prop_water }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Refuse:</span>
+                        <span class="detail-value">{{ property.prop_refuse }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Property Tax:</span>
+                        <span class="detail-value">{{ property.prop_property_tax }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Sewerage:</span>
+                        <span class="detail-value">{{ property.prop_sewerage }}</span>
+                    </div>
+                </div>
+                
+                <!-- Insurance and Status -->
+                <div class="detail-group">
+                    <h4 class="section-title">Insurance & Status</h4>
+                    <div class="detail-row">
+                        <span class="detail-label">Insurance Policy:</span>
+                        <span class="detail-value">{{ property.prop_insurance }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Status:</span>
+                        <span class="badge {% if property.prop_status == 'Active' %}badge-success{% else %}badge-secondary{% endif %}">
+                            {{ property.prop_status }}
+                        </span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Available for Rent:</span>
+                        <span class="badge {% if property.prop_available_for_rent %}badge-info{% else %}badge-light{% endif %}">
+                            {{ property.prop_available_for_rent|yesno:"Yes,No" }}
+                        </span>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -47,14 +112,16 @@
         justify-content: center;
         width: 100%;
         padding: 20px;
+        min-height: 80vh;
     }
     
     .report-content {
-        width: 80%;
-        max-width: 900px;
+        width: 90%;
+        max-width: 1200px;
         background: white;
         padding: 30px;
-        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     }
     
     .header-container {
@@ -62,50 +129,115 @@
         justify-content: space-between;
         align-items: center;
         margin-bottom: 30px;
-        flex-wrap: wrap;
     }
     
-    .report-title {
-        font-family: Arial, sans-serif;
-        font-size: 1.6rem;
-        text-decoration: underline;
+    .report-title-container {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .report-title-main {
+        font-size: 1.8rem;
+        color: #2c3e50;
         margin: 0;
-        flex-grow: 1;
-        text-align: center;
-        padding: 0 10px;
+        font-weight: bold;
     }
     
-    .back-button {
-        margin-left: 20px;
-        white-space: nowrap;
+    .report-title-sub {
+        font-size: 1.4rem;
+        color: #6c757d;
+        margin: 5px 0 0 0;
+        font-weight: normal;
     }
     
-    .property-section {
-        margin-bottom: 1rem;
-        page-break-inside: avoid;
+    .property-card {
+        margin-bottom: 30px;
+        padding: 25px;
+        background-color: #f8f9fa;
+        border-radius: 8px;
     }
     
     .property-name {
-        font-family: Arial, sans-serif;
-        font-size: 1.4rem;
-        text-decoration: underline;
-        margin-bottom: 1rem;
+        font-size: 1.5rem;
         color: #2c3e50;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #dee2e6;
     }
     
-    .property-details {
-        font-family: Arial, sans-serif;
-        margin-left: 1.5rem;
+    .detail-groups {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 25px;
+    }
+    
+    .detail-group {
+        margin-bottom: 0;
+    }
+    
+    .section-title {
+        font-size: 1.2rem;
+        color: #495057;
+        margin-bottom: 15px;
+        padding-bottom: 5px;
+        border-bottom: 1px dashed #ced4da;
+    }
+    
+    .detail-row {
+        display: flex;
+        margin-bottom: 10px;
         line-height: 1.5;
     }
     
-    .property-details p {
-        margin-bottom: 0.5rem;
+    .detail-label {
+        font-weight: 600;
+        color: #343a40;
+        min-width: 150px;
+    }
+
+    .detail-value {
+        color: #495057;
+    }
+    
+    .badge {
+        display: inline-block;
+        padding: 5px 10px;
+        border-radius: 12px;
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+    
+    .badge-success {
+        background-color: #28a745;
+        color: white;
+    }
+    
+    .badge-secondary {
+        background-color: #6c757d;
+        color: white;
+    }
+    
+    .badge-info {
+        background-color: #17a2b8;
+        color: white;
+    }
+    
+    .badge-light {
+        background-color: #f8f9fa;
+        color: #212529;
+    }
+    
+    .back-button {
+        background-color: #17a2b8;
+        color: white;
+        padding: 8px 16px;
+        text-decoration: none;
+        border-radius: 4px;
+        font-weight: 500;
     }
     
     @media print {
         .report-container {
-            display: block;
             padding: 0;
         }
         
@@ -116,21 +248,23 @@
             box-shadow: none;
         }
         
-        .header-container {
+        .back-button {
             display: none;
         }
         
-        body {
-            background: white;
-            color: black;
+        .property-card {
+            page-break-inside: avoid;
+            border: none;
+            background-color: transparent;
+            padding: 0;
         }
         
-        .property-section {
-            margin-bottom: 0.5rem;
+        .detail-label {
+            min-width: 120px;
         }
         
-        .property-details p {
-            margin-bottom: 0.25rem;
+        .detail-groups {
+            grid-template-columns: 1fr;
         }
     }
 </style>

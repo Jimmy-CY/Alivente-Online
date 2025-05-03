@@ -1,26 +1,57 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}
-{% endblock %}
+{% block title %}Supplier Details | Alivente Online{% endblock %}
 
 {% block content %}
 <div class="report-container">
     <div class="report-content">
         <div class="header-container">
-            <h2 class="report-title">SUPPLIER DETAILS REPORT ({{ today|date:"Y-m-d" }})</h2>
+            <div class="report-title-container">
+                <h2 class="report-title-main">SUPPLIER DETAILS REPORT</h2>
+                <h3 class="report-title-sub">{{ today|date:"Y-m-d" }}</h3>
+            </div>
             <a href="{% url 'suppliers' %}" class="btn btn-info back-button" role="button">Back</a>
         </div>
 
-        <div class="supplier-section">
-            <h3 class="supplier-name"><u>{{ supplier.supplier_contact_person }}</u></h3>
+        <div class="property-card">
+            <h3 class="property-name">{{ supplier.supplier_contact_person }}</h3>
             
-            <div class="supplier-details">
-                <p><strong>Contact Number:</strong> {{ supplier.supplier_contact_number }}</p>
-                <p><strong>Email:</strong> {{ supplier.supplier_email }}</p>
-                <p><strong>Company:</strong> {{ supplier.supplier_company_name }}</p>
-                <p><strong>Role:</strong> {{ supplier.supplier_role }}</p>
-                <p><strong>Country:</strong> {{ supplier.supplier_country }}</p>
+            <div class="detail-groups">
+                <!-- Contact Information Section -->
+                <div class="detail-group">
+                    <h4 class="section-title">Contact Information</h4>
+                    <div class="detail-row">
+                        <span class="detail-label">Contact Number:</span>
+                        <span class="detail-value">{{ supplier.supplier_contact_number }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Email:</span>
+                        <span class="detail-value">{{ supplier.supplier_email }}</span>
+                    </div>
+                </div>
+                
+                <!-- Company Details -->
+                <div class="detail-group">
+                    <h4 class="section-title">Company Details</h4>
+                    <div class="detail-row">
+                        <span class="detail-label">Company Name:</span>
+                        <span class="detail-value">{{ supplier.supplier_company_name }}</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Role:</span>
+                        <span class="detail-value">{{ supplier.supplier_role }}</span>
+                    </div>
+                </div>
+                
+                <!-- Location Information -->
+                <div class="detail-group">
+                    <h4 class="section-title">Location</h4>
+                    <div class="detail-row">
+                        <span class="detail-label">Country:</span>
+                        <span class="detail-value">{{ supplier.supplier_country }}</span>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -32,15 +63,16 @@
         justify-content: center;
         width: 100%;
         padding: 20px;
+        min-height: 80vh;
     }
     
     .report-content {
-        width: 80%;
-        max-width: 800px;
+        width: 90%;
+        max-width: 1200px;
         background: white;
         padding: 30px;
-        box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        border-radius: 5px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     }
     
     .header-container {
@@ -48,85 +80,115 @@
         justify-content: space-between;
         align-items: center;
         margin-bottom: 30px;
-        flex-wrap: wrap;
     }
     
-    .report-title {
-        font-family: Arial, sans-serif;
-        font-size: 1.5rem;
-        text-decoration: underline;
-        margin: 0;
-        flex-grow: 1;
-        text-align: center;
+    .report-title-container {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .report-title-main {
+        font-size: 1.8rem;
         color: #2c3e50;
+        margin: 0;
+        font-weight: bold;
+    }
+    
+    .report-title-sub {
+        font-size: 1.4rem;
+        color: #6c757d;
+        margin: 5px 0 0 0;
+        font-weight: normal;
+    }
+    
+    .property-card {
+        margin-bottom: 30px;
+        padding: 25px;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+    }
+    
+    .property-name {
+        font-size: 1.5rem;
+        color: #2c3e50;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #dee2e6;
+    }
+    
+    .detail-groups {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 25px;
+    }
+    
+    .detail-group {
+        margin-bottom: 0;
+    }
+    
+    .section-title {
+        font-size: 1.2rem;
+        color: #495057;
+        margin-bottom: 15px;
+        padding-bottom: 5px;
+        border-bottom: 1px dashed #ced4da;
+    }
+    
+    .detail-row {
+        display: flex;
+        margin-bottom: 10px;
+        line-height: 1.5;
+    }
+    
+    .detail-label {
+        font-weight: 600;
+        color: #343a40;
+        min-width: 150px;
+        margin-right: 10px;
+    }
+    
+    .detail-value {
+        color: #495057;
     }
     
     .back-button {
-        margin-left: 20px;
-        white-space: nowrap;
         background-color: #17a2b8;
-        border: none;
-        padding: 8px 15px;
         color: white;
+        padding: 8px 16px;
         text-decoration: none;
-    }
-    
-    .supplier-section {
-        margin-bottom: 1rem;
-        page-break-inside: avoid;
-    }
-    
-    .supplier-name {
-        font-family: Arial, sans-serif;
-        font-size: 1.3rem;
-        text-decoration: underline;
-        margin-bottom: 1rem;
-        color: #2c3e50;
-    }
-    
-    .supplier-details {
-        font-family: Arial, sans-serif;
-        margin-left: 1.5rem;
-        line-height: 1.6;
-    }
-    
-    .supplier-details p {
-        margin-bottom: 0.6rem;
+        border-radius: 4px;
+        font-weight: 500;
     }
     
     @media print {
         .report-container {
-            display: block;
             padding: 0;
         }
         
         .report-content {
             width: 100%;
             max-width: 100%;
-            padding: 10px;
+            padding: 0;
             box-shadow: none;
-            border: none;
-        }
-        
-        .header-container {
-            display: none;
         }
         
         .back-button {
             display: none;
         }
         
-        body {
-            background: white;
-            font-size: 12pt;
+        .property-card {
+            page-break-inside: avoid;
+            border: none;
+            background-color: transparent;
+            padding: 0;
         }
         
-        .supplier-name {
-            font-size: 14pt;
+        .detail-label {
+            min-width: 120px;
         }
         
-        .supplier-details p {
-            margin-bottom: 4pt;
+        .detail-groups {
+            grid-template-columns: 1fr;
         }
     }
 </style>

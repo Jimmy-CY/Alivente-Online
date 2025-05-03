@@ -68,30 +68,42 @@
 <form action = "" method="">
   {% csrf_token %}
   <div>
-  <table class="table table-bordered table-striped text-center">
+<table class="table table-bordered table-striped text-center">
   <thead>
     <tr>
-      <th text-align="left">Property</th>
-      <th align="center">Country</th>
-      <th align="center">Status</th>
-      <th align="center">Details</th>
-      <th align="center">Report</th>
-      <th align="center">Title Deed</th>
+      <th style="text-align: left; width: 40%">Property</th>
+      <th style="width: 15%">Country</th>
+      <th style="width: 15%">Status</th>
+      <th style="width: 10%">Details</th>
+      <th style="width: 10%">Report</th>
+      <th style="width: 10%">Title Deed</th>
     </tr>
   </thead>
   <tbody>
     {% for results in props %}
-	    <tr>
-    		<td align="left">{{results.prop_name}}</td>
-            <td align="center">{{results.prop_country}}</td>
-            <td align="center">{{results.prop_status}}</td>
-            <td align="center"><button type ="button" class="btn btn-light" style="border-color:black;"><a href="{% url 'properties_edit' results.prop_id %}">Edit</a></button></td>    
-            <td align="center"><button type ="button" class="btn btn-light" style="border-color:black;"><a href="{% url 'property_report' results.prop_id %}">View</a></button></td>
-            <td align="center"><button type ="button" class="btn btn-light" style="border-color:black;"><a href="{% url 'title_deed_report' results.prop_id %}">View</a></button></td>
-        </tr>
+      <tr>
+        <td style="text-align: left">{{results.prop_name}}</td>
+        <td>{{results.prop_country}}</td>
+        <td>{{results.prop_status}}</td>
+        <td>
+          <button type="button" class="btn btn-light" style="border-color:black; width: 100%">
+            <a href="{% url 'properties_edit' results.prop_id %}">Edit</a>
+          </button>
+        </td>    
+        <td>
+          <button type="button" class="btn btn-light" style="border-color:black; width: 100%">
+            <a href="{% url 'property_report' results.prop_id %}">View</a>
+          </button>
+        </td>
+        <td>
+          <button type="button" class="btn btn-light" style="border-color:black; width: 100%">
+            <a href="{% url 'title_deed_report' results.prop_id %}">View</a>
+          </button>
+        </td>
+      </tr>
     {% endfor %}
   </tbody>
-  </table>    
+</table>    
   </div>
   
 </form>

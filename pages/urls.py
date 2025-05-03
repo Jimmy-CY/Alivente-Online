@@ -34,6 +34,7 @@ urlpatterns = [
     path('supplier_report/<int:supplier_id>', views.supplier_report, name='supplier_report'),
     path('tenant_report/<int:tenant_id>', views.tenant_report, name='tenant_report'),
     path('lease_renewal_report/', views.lease_renewal_report, name='lease_renewal_report'),
+    path('open_invoices_report/', views.open_invoices_report, name='open_invoices_report'),
 
     #
     # Tenants

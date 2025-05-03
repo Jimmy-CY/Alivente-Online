@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.contrib import messages
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm, PasswordChangeForm
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseServerError
 from django.templatetags.static import static
 from .models import props, petty, issues, issues_details, tenant, invoices, supplier
 from datetime import date, datetime, timedelta
@@ -563,6 +563,71 @@ def open_invoices(request):
 	open_invoices.open_invoices(rep_output, check, email, fname)
 	messages.success(request, "Report Created Successfully")
 	return redirect('home')
+
+def open_invoices_report(request):
+	mydb = mysql.connector.connect(
+		host=settings.DATABASES['default']['HOST'],
+		port=settings.DATABASES['default']['PORT'],
+		user=settings.DATABASES['default']['USER'],
+		password=settings.DATABASES['default']['PASSWORD'],
+		database=settings.DATABASES['default']['NAME'],
+		auth_plugin=settings.DATABASES['default']['AUTH_PLUGIN'],
+	)
+	my_cursor = mydb.cursor(dictionary=True)
+	today = date.today()
+	properties_with_invoices = []
+	my_cursor.execute("""
+		SELECT prop.prop_name, prop.prop_country, tenant.tenant_id, tenant.tenant_name,
+			tenant.tenant_contact_person, tenant.tenant_contact_number, tenant.tenant_email,
+			tenant.tenant_rent, tenant.tenant_payment_terms
+		FROM railway.tenant 
+		JOIN railway.prop ON prop.prop_id = tenant.prop_id 
+		WHERE tenant.tenant_current = 'Yes'
+		ORDER BY prop.prop_country ASC, prop.prop_name ASC
+	""")
+	tenants_rows = my_cursor.fetchall()
+	my_cursor.execute("""
+		SELECT invoice.invoice_id, invoice.tenant_id, invoice.invoice_date, invoice.invoice_paid 
+		FROM railway.invoice
+		WHERE invoice.invoice_paid = 'No' 
+		ORDER BY invoice.invoice_date ASC
+	""")
+	unpaid_invoices = my_cursor.fetchall()
+	for ten in tenants_rows:
+		tenant_invoices = []
+		for invoice in unpaid_invoices:
+			if ten['tenant_id'] == invoice['tenant_id']:
+				due_date = invoice['invoice_date'] + timedelta(days=ten['tenant_payment_terms'])
+				days_overdue = (today - due_date).days if today > due_date else 0
+				tenant_invoices.append({
+					'invoice_id': invoice['invoice_id'],
+					'invoice_date': invoice['invoice_date'].strftime('%Y-%m-%d'),
+					'due_date': due_date.strftime('%Y-%m-%d'),
+					'days_overdue': days_overdue,
+					'overdue': days_overdue > 0
+				})
+		if tenant_invoices:
+			properties_with_invoices.append({
+				'prop_name': ten['prop_name'],
+				'prop_country': ten['prop_country'],
+				'tenant_id': ten['tenant_id'],
+				'tenant_name': ten['tenant_name'],
+				'tenant_contact_person': ten['tenant_contact_person'],
+				'tenant_contact_number': ten['tenant_contact_number'],
+				'tenant_email': ten['tenant_email'],
+				'tenant_rent': ten['tenant_rent'],
+				'tenant_payment_terms': ten['tenant_payment_terms'],
+				'invoices': tenant_invoices
+			})
+	context = {
+		'today': today.strftime('%Y-%m-%d'),
+		'properties_with_invoices': properties_with_invoices
+	}
+	if mydb.is_connected():
+		my_cursor.close()
+		mydb.close()
+	return render(request, 'open_invoices_report.html', context)
+
 
 def lease_renewal_report(request):
 	mydb = mysql.connector.connect(
