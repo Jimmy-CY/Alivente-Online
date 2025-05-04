@@ -35,6 +35,7 @@ urlpatterns = [
     path('tenant_report/<int:tenant_id>', views.tenant_report, name='tenant_report'),
     path('lease_renewal_report/', views.lease_renewal_report, name='lease_renewal_report'),
     path('open_invoices_report/', views.open_invoices_report, name='open_invoices_report'),
+    path('friday_status_report/', views.friday_status_report, name='friday_status_report'),
 
     #
     # Tenants

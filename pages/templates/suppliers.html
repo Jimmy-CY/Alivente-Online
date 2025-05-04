@@ -65,25 +65,33 @@
   <table class="table table-bordered table-striped text-center">
   <thead>
     <tr>
-      <th text-align="left">Contact Person</th>
-      <th align="center">Contact Number</th>
-      <th text-align="left">Company Name</th>
-      <th align="center">Role</th>
-      <th align="center">Country</th>
-      <th align="center">Details</th>
-      <th align="center">Report</th>
+      <th style="text-align: left; width: 25%">Contact Person</th>
+      <th style="width: 15%">Contact Number</th>
+      <th style="width: 15%">Company Name</th>
+      <th style="width: 15%">Role</th>
+      <th style="width: 10%">Country</th>
+      <th style="width: 10%">Details</th>
+      <th style="width: 10%">Report</th>
     </tr>
   </thead>
   <tbody>
     {% for sresults in supplier %}
       <tr>
-        <td align="left">{{sresults.supplier_contact_person}}</td>
-        <td align="center">{{sresults.supplier_contact_number}}</td>
-        <td align="center">{{sresults.supplier_company_name}}</td>
-        <td align="center">{{sresults.supplier_role}}</td>
-        <td align="center">{{sresults.supplier_country}}</td>
-        <td align="center"><button type ="button" class="btn btn-light" style="border-color:black;"><a href="{% url 'suppliers_edit' sresults.supplier_id %}">Edit</a></button></td>  
-        <td align="center"><button type ="button" class="btn btn-light" style="border-color:black;"><a href="{% url 'supplier_report' sresults.supplier_id %}">View</a></button></td>  
+        <td style="text-align: left">{{sresults.supplier_contact_person}}</td>
+        <td>{{sresults.supplier_contact_number}}</td>
+        <td>{{sresults.supplier_company_name}}</td>
+        <td>{{sresults.supplier_role}}</td>
+        <td>{{sresults.supplier_country}}</td>
+        <td>
+          <button type="button" class="btn btn-light" style="border-color:black; width: 100%">
+            <a href="{% url 'suppliers_edit' sresults.supplier_id %}">Edit</a>
+          </button>
+        </td>    
+        <td>
+          <button type="button" class="btn btn-light" style="border-color:black; width: 100%">
+            <a href="{% url 'supplier_report' sresults.supplier_id %}">View</a>
+          </button>
+        </td>
       </tr>
     {% endfor %}
   </tbody>

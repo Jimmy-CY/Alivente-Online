@@ -1,0 +1,201 @@
+{% extends 'base.html' %}
+{% load fsr_filters %}
+{% load static %}
+
+{% block title %}
+{% endblock %}
+
+{% block content %}
+<div class="report-container">
+    <div class="report-content">
+        <div class="header-container">
+            <div class="report-title-container">
+                <h2 class="report-title-main">FRIDAY STATUS REPORT</h2>
+                <h3 class="report-title-sub">{{ today|date:"Y-m-d" }}</h3>
+            </div>
+        </div>
+
+        <div class="report-body">
+            <!-- Issues Section -->
+            {% for status in statuses %}
+            <div class="status-section">
+                <h4 class="status-heading">STATUS: {{ status|upper }}</h4>
+                {% for prop in properties %}
+                    {% with prop_issues=issues|filter_by_prop:prop.prop_name|filter_by_status:status %}
+                    {% if prop_issues %}
+                    <div class="property-section">
+                        <h5 class="property-heading">{{ prop.prop_name|upper }}</h5>
+                        
+                        {% for issue in prop_issues|unique_issues %}
+                        <div class="issue-section">
+                            <h6 class="issue-heading">- {{ issue.issues_heading }} ({{ issue.issues_description }})</h6>
+                            
+                            <div class="issue-details">
+                                {% for detail in issue.details %}
+                                <p class="issue-detail">
+                                    <strong>{{ detail.issues_details_date|date:"Y-m-d" }} ({{ detail.issues_details_user }})</strong> - {{ detail.issues_details_comment }}
+                                </p>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    {% endwith %}
+                {% endfor %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<style>
+    .report-container {
+        display: flex;
+        justify-content: center;
+        width: 100%;
+        padding: 20px;
+        min-height: 80vh;
+    }
+    
+    .report-content {
+        width: 90%;
+        max-width: 1200px;
+        background: white;
+        padding: 30px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .header-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+    }
+    
+    .report-title-container {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .report-title-main {
+        font-size: 1.8rem;
+        color: #2c3e50;
+        margin: 0;
+        font-weight: bold;
+    }
+    
+    .report-title-sub {
+        font-size: 1.4rem;
+        color: #6c757d;
+        margin: 5px 0 0 0;
+        font-weight: normal;
+    }
+    
+    .status-section {
+        margin-bottom: 30px;
+        page-break-inside: avoid;
+    }
+    
+    .status-heading {
+        font-size: 1.4rem;
+        color: #2c3e50;
+        border-bottom: 2px solid #2c3e50;
+        padding-bottom: 5px;
+        margin-bottom: 15px;
+    }
+    
+    .property-section {
+        margin-bottom: 20px;
+    }
+    
+    .property-heading {
+        font-size: 1.2rem;
+        color: #2c3e50;
+        margin: 10px 0 5px 15px;
+    }
+    
+    .issue-section {
+        margin-left: 30px;
+        margin-bottom: 15px;
+    }
+    
+    .issue-heading {
+        font-size: 1.1rem;
+        color: #2c3e50;
+        margin: 5px 0;
+    }
+    
+    .issue-details {
+        margin-left: 20px;
+    }
+    
+    .issue-detail {
+        font-size: 1rem;
+        color: #495057;
+        margin: 5px 0;
+    }
+    
+    .petty-cash-section {
+        margin-top: 40px;
+        page-break-inside: avoid;
+    }
+    
+    .section-heading {
+        font-size: 1.4rem;
+        color: #2c3e50;
+        border-bottom: 2px solid #2c3e50;
+        padding-bottom: 5px;
+        margin-bottom: 15px;
+    }
+    
+    .petty-cash-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+    }
+    
+    .petty-cash-table th {
+        background-color: #f8f9fa;
+        padding: 8px;
+        text-align: left;
+        border: 1px solid #dee2e6;
+    }
+    
+    .petty-cash-table td {
+        padding: 8px;
+        border: 1px solid #dee2e6;
+    }
+    
+    .credit {
+        color: #dc3545;
+    }
+    
+    .debit {
+        color: #28a745;
+    }
+    
+    .balance-row {
+        background-color: #f8f9fa;
+        font-weight: bold;
+    }
+    
+    @media print {
+        .report-container {
+            padding: 0;
+        }
+        
+        .report-content {
+            width: 100%;
+            max-width: 100%;
+            padding: 0;
+            box-shadow: none;
+        }
+        
+        .status-section, .petty-cash-section {
+            page-break-inside: avoid;
+        }
+    }
+</style>
+{% endblock %}

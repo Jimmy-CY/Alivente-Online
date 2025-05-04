@@ -1,0 +1,198 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Friday Status Report | Alivente Online{% endblock %}
+
+{% block content %}
+<div class="report-container">
+    <div class="report-content">
+        <div class="header-container">
+            <div class="report-title-container">
+                <h2 class="report-title-main">FRIDAY STATUS REPORT</h2>
+                <h3 class="report-title-sub">{{ today|date:"Y-m-d" }}</h3>
+            </div>
+            <a href="{% url 'fsr' %}" class="btn btn-info back-button" role="button">Back</a>
+        </div>
+
+        <div class="report-body">
+            <!-- Issues Section -->
+            {% for status_group in status_groups %}
+            <div class="status-card">
+                <h3 class="status-title">STATUS: {{ status_group.status|upper }}</h3>
+                
+                {% for property in status_group.property_issues %}
+                <div class="property-card">
+                    <h4 class="property-name">{{ property.prop_name|upper }}</h4>
+                    
+                    {% for issue in property.issues %}
+                    <div class="issue-group">
+                        <h5 class="issue-heading">{{ issue.issues_heading }} <span class="issue-description">({{ issue.issues_description }})</span></h5>
+                        <div class="issue-details">
+                            {% for detail in issue.details|slice:":3" %}
+                            <div class="detail-row">
+                                <span class="detail-label">{{ detail.issues_details_date|date:"Y-m-d" }} ({{ detail.issues_details_user }}):</span>
+                                <span class="detail-value">{{ detail.issues_details_comment }}</span>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endfor %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<style>
+    .report-container {
+        display: flex;
+        justify-content: center;
+        width: 100%;
+        padding: 20px;
+        min-height: 80vh;
+    }
+    
+    .report-content {
+        width: 90%;
+        max-width: 1200px;
+        background: white;
+        padding: 30px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .header-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+    }
+    
+    .report-title-container {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .report-title-main {
+        font-size: 1.8rem;
+        color: #2c3e50;
+        margin: 0;
+        font-weight: bold;
+    }
+    
+    .report-title-sub {
+        font-size: 1.4rem;
+        color: #6c757d;
+        margin: 5px 0 0 0;
+        font-weight: normal;
+    }
+    
+    .status-card {
+        margin-bottom: 30px;
+        padding: 25px;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        page-break-inside: avoid;
+    }
+    
+    .status-title {
+        font-size: 1.5rem;
+        color: #2c3e50;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #dee2e6;
+    }
+    
+    .property-card {
+        margin-bottom: 20px;
+        padding: 20px;
+        background-color: #ffffff;
+        border-radius: 6px;
+        border-left: 4px solid #17a2b8;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    
+    .property-name {
+        font-size: 1.3rem;
+        color: #2c3e50;
+        margin-bottom: 15px;
+    }
+    
+    .issue-group {
+        margin-bottom: 15px;
+    }
+    
+    .issue-heading {
+        font-size: 1.1rem;
+        color: #495057;
+        margin-bottom: 10px;
+        padding-bottom: 5px;
+        border-bottom: 1px dashed #ced4da;
+    }
+    
+    .issue-description {
+        font-weight: normal;
+        color: #6c757d;
+    }
+    
+    .issue-details {
+        margin-left: 15px;
+    }
+    
+    .detail-row {
+        display: flex;
+        margin-bottom: 8px;
+        line-height: 1.4;
+    }
+    
+    .detail-label {
+        font-weight: 600;
+        color: #343a40;
+        min-width: 200px;
+    }
+    
+    .detail-value {
+        color: #495057;
+    }
+    
+    .back-button {
+        background-color: #17a2b8;
+        color: white;
+        padding: 8px 16px;
+        text-decoration: none;
+        border-radius: 4px;
+        font-weight: 500;
+    }
+    
+    @media print {
+        .report-container {
+            padding: 0;
+        }
+        
+        .report-content {
+            width: 100%;
+            max-width: 100%;
+            padding: 0;
+            box-shadow: none;
+        }
+        
+        .back-button {
+            display: none;
+        }
+        
+        .status-card, .property-card {
+            page-break-inside: avoid;
+            border: none;
+            background-color: transparent;
+            padding: 0;
+            box-shadow: none;
+        }
+        
+        .detail-label {
+            min-width: 180px;
+        }
+    }
+</style>
+{% endblock %}
