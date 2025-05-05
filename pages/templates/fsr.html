@@ -87,7 +87,7 @@
 		            <td align="left">{{isresults.issues_heading}}</td>
 		            <td align="left">{{isresults.issues_description}}</td>
 		            <td align="center">{{isresults.issues_status}}</td>
-		            <td align="center"><button type ="button" class="btn btn-light" style="border-color:black;"><a href="{% url 'fsr_details' isresults.issues_id %}">Comments</a></button></td>    
+		            <td align="center"><button type ="button" class="btn btn-light" style="border-color:black;"><a href="{% url 'fsr_details' isresults.issues_id %}?from=fsr&referrer={{ request.get_full_path|urlencode }}">Comments</a></button></td>    
 	        	</tr>
 	      {% endif %}
       {% endfor %}

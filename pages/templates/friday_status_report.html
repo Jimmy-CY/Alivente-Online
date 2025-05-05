@@ -26,12 +26,18 @@
                     
                     {% for issue in property.issues %}
                     <div class="issue-group">
-                        <h5 class="issue-heading">{{ issue.issues_heading }} <span class="issue-description">({{ issue.issues_description }})</span></h5>
+                        <a href="{% url 'fsr_details' issue.issues_id %}?from=status_report&referrer={{ request.get_full_path|urlencode }}" class="issue-heading-link">
+                            <h5 class="issue-heading">
+                                {{ issue.issues_heading }} 
+                                <span class="issue-description">({{ issue.issues_description }})</span>
+                            </h5>
+                        </a>
                         <div class="issue-details">
-                            {% for detail in issue.details|slice:":3" %}
+                            {% for detail in issue.details %}
                             <div class="detail-row">
-                                <span class="detail-label">{{ detail.issues_details_date|date:"Y-m-d" }} ({{ detail.issues_details_user }}):</span>
-                                <span class="detail-value">{{ detail.issues_details_comment }}</span>
+                                <span class="detail-comment">
+                                    {{ detail.issues_details_date|date:"Y-m-d" }} ({{ detail.issues_details_user }}): {{ detail.issues_details_comment }}
+                                </span>
                             </div>
                             {% endfor %}
                         </div>
@@ -124,12 +130,22 @@
         margin-bottom: 15px;
     }
     
+    .issue-heading-link {
+        text-decoration: none;
+        color: inherit;
+        display: block;
+    }
+    
     .issue-heading {
         font-size: 1.1rem;
         color: #495057;
         margin-bottom: 10px;
         padding-bottom: 5px;
         border-bottom: 1px dashed #ced4da;
+    }
+    
+    .issue-heading:hover {
+        color: #17a2b8;
     }
     
     .issue-description {
@@ -142,18 +158,11 @@
     }
     
     .detail-row {
-        display: flex;
         margin-bottom: 8px;
         line-height: 1.4;
     }
     
-    .detail-label {
-        font-weight: 600;
-        color: #343a40;
-        min-width: 200px;
-    }
-    
-    .detail-value {
+    .detail-comment {
         color: #495057;
     }
     
@@ -190,8 +199,8 @@
             box-shadow: none;
         }
         
-        .detail-label {
-            min-width: 180px;
+        .issue-heading-link {
+            pointer-events: none;
         }
     }
 </style>

@@ -8,6 +8,7 @@ from .models import props, petty, issues, issues_details, tenant, invoices, supp
 from datetime import date, datetime, timedelta
 from django.db import connection
 from django.db.models import Q
+from django.urls import reverse
 import mysql.connector
 from . import forms
 import os
@@ -340,40 +341,93 @@ def fsr_details(request, issues_id):
 	return render(request, "fsr_details.html", {"props":results, "issues":isresults, "issues_details":idresults})
 
 def fsr_commit_status_change(request):
-	pname = request.POST.get('prop_name')
-	is_head = request.POST.get('issues_heading')
-	is_id = request.POST.get('issues_id')
-	is_status = request.POST.get('issues_status')
-	issue_update = issues.objects.filter(pk=is_id).update(issues_status=is_status)
-	isresults = issues.objects.all().order_by('issues_date_logged','issues_status')
-	isvalues = issues.objects.values()
-	today_date = date.today()
-	for x in isvalues:
-		if int(x['issues_id']) == int(is_id):
-			if x['issues_status'] == "Resolved":
-				if request.user.is_authenticated:
-					lname = request.user.last_name
-					fname = request.user.first_name
-					user_initials = fname[:1]+lname[:1]
-				issue_update = issues.objects.filter(pk=is_id).update(issues_resolution_date=today_date)
-				issue_update = issues.objects.filter(pk=is_id).update(issues_resolving_user=user_initials)
-			else:
-				issue_update = issues.objects.filter(pk=is_id).update(issues_resolution_date='1900-01-01')
-				issue_update = issues.objects.filter(pk=is_id).update(issues_resolving_user='')
-	messages.success(request, "Status Updated Successfully")
-	return redirect("fsr")
+    if request.method == 'POST':
+        # Get form data
+        is_id = request.POST.get('issues_id')
+        is_status = request.POST.get('issues_status')
+        if is_id and is_status:
+            # Update issue status
+            updates = {'issues_status': is_status}
+            
+            # Handle resolution details
+            if is_status == "Resolved":
+                if request.user.is_authenticated:
+                    user_initials = f"{request.user.first_name[:1]}{request.user.last_name[:1]}"
+                    updates.update({
+                        'issues_resolution_date': date.today(),
+                        'issues_resolving_user': user_initials
+                    })
+                else:
+                    updates.update({
+                        'issues_resolution_date': date(1900, 1, 1),
+                        'issues_resolving_user': ''
+                    })
+            
+            issues.objects.filter(pk=is_id).update(**updates)
+        # Handle redirection
+        next_url = request.POST.get('next', '')
+        referrer = request.META.get('HTTP_REFERER', '')
+        # Priority 1: Use explicit next URL if provided
+        if next_url:
+            return redirect(next_url)
+        # Priority 2: Use HTTP_REFERER if available and from our domain
+        if referrer and request.get_host() in referrer:
+            return redirect(referrer)
+        # Fallback: Go to FSR page
+        return redirect(reverse('fsr'))
+    # If not POST, redirect to FSR page
+    return redirect(reverse('fsr'))
+
+#def fsr_comment_add(request, issues_id):
+#	iss_det = request.POST.get('issues_details_comment')
+#	if request.user.is_authenticated:
+#		lname = request.user.last_name
+#		fname = request.user.first_name
+#		user_initials = fname[:1]+lname[:1]
+#	comm_date = date.today()
+#	print("YES", issues_id, comm_date, user_initials, iss_det)
+#	issue_update=issues_details.objects.create (issues_details_comment=iss_det, issues_details_user=user_initials, issues_details_date=comm_date, issues_id=issues_id)
+#	return redirect("fsr_details", issues_id)
 
 def fsr_comment_add(request, issues_id):
-	iss_det = request.POST.get('issues_details_comment')
-	if request.user.is_authenticated:
-		lname = request.user.last_name
-		fname = request.user.first_name
-		user_initials = fname[:1]+lname[:1]
-	comm_date = date.today()
-	print("YES", issues_id, comm_date, user_initials, iss_det)
-	issue_update=issues_details.objects.create (issues_details_comment=iss_det, issues_details_user=user_initials, issues_details_date=comm_date, issues_id=issues_id)
-	return redirect("fsr_details", issues_id)
-
+    if request.method == 'POST':
+        # Get comment text from form
+        comment_text = request.POST.get('issues_details_comment', '').strip()
+        
+        # Validate comment exists
+        if not comment_text:
+            messages.error(request, "Comment cannot be empty")
+            return redirect(reverse('fsr_details', args=[issues_id]) + f"?from={request.GET.get('from', '')}&referrer={request.GET.get('referrer', '')}")
+        
+        # Get user info if authenticated
+        user_initials = ''
+        if request.user.is_authenticated:
+            user_initials = f"{request.user.first_name[:1]}{request.user.last_name[:1]}"
+        
+        # Create the comment
+        issues_details.objects.create(
+            issues_details_comment=comment_text,
+            issues_details_user=user_initials,
+            issues_details_date=date.today(),
+            issues_id=issues_id
+        )
+        
+        # Determine where to redirect back to
+        redirect_url = request.POST.get('next', '')
+        if not redirect_url:
+            # Reconstruct the original URL with parameters
+            from_param = request.GET.get('from', '')
+            referrer = request.GET.get('referrer', '')
+            if from_param and referrer:
+                redirect_url = reverse('fsr_details', args=[issues_id]) + f"?from={from_param}&referrer={referrer}"
+            else:
+                redirect_url = reverse('fsr_details', args=[issues_id])
+        
+        messages.success(request, "Comment added successfully")
+        return redirect(redirect_url)
+    
+    # If not POST, redirect to details page
+    return redirect(reverse('fsr_details', args=[issues_id]))
 
 ### REPORTS - DASHBOARD (FROM HOME PAGE) ###
 def petty_cash_rep(request):
