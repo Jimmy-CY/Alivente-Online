@@ -1,102 +1,171 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}
-{% endblock %}
+{% block title %}Issues Management | Alivente Online{% endblock %}
 
 {% block content %}
 
 <h2><center>ALIVENTE ONLINE - ISSUES</center></h2>
 <br/>
 
-  {% for msg in messages %}
-    <div class="alert alert-secondary alert-dismissible fade show auto-dismiss" role="alert">
-      <strong></strong> <center>{{ msg }}</center>
-      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+{% for msg in messages %}
+<div class="alert alert-secondary alert-dismissible fade show auto-dismiss" role="alert">
+    <center>{{ msg }}</center>
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
         <span aria-hidden="true">&times;</span>
-      </button>
-    </div>
-    <script>
-      // Automatically close the alert after 2 seconds (2000 milliseconds)
-      setTimeout(function() {
+    </button>
+</div>
+<script>
+    setTimeout(function() {
         document.querySelectorAll('.auto-dismiss').forEach(alert => {
-          alert.classList.remove('show'); // Hide alert visually
-          alert.classList.add('fade'); // Add fade effect
-          setTimeout(() => alert.remove(), 500); // Remove from DOM after fade
+            alert.classList.remove('show');
+            alert.classList.add('fade');
+            setTimeout(() => alert.remove(), 500);
         });
-      }, 2000);
-    </script>
-  {% endfor %}
+    }, 2000);
+</script>
+{% endfor %}
 
-	<div style="display: flex ; justify-content: flex-end">
-      <a href="{% url 'friday_status_report' %}" class="btn btn-info" style="margin-right:16px" type="button">Status Report</a>
-      <a href="{% url 'fsr_add' %}" class="btn btn-info" style="margin-right:16px" type="button">Add New</a>
-    	<a href="{% url 'home' %}" class="btn btn-info" style="margin-right:16px" role="button">Back</a>
-	</div>
+<!-- Date Range Modal -->
+<div class="modal fade" id="dateRangeModal" tabindex="-1" role="dialog" aria-labelledby="dateRangeModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="dateRangeModalLabel">Select Date Range</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="dateRangeForm" action="{% url 'resolved_issues_report' %}" method="get">
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="fromDate">From Date</label>
+                        <input type="date" class="form-control" id="fromDate" name="f_date" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="toDate">To Date</label>
+                        <input type="date" class="form-control" id="toDate" name="t_date" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Generate Report</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
+<!-- Action Buttons -->
+<div style="display: flex; justify-content: flex-end; margin-bottom: 20px; gap: 16px;">
+    <button class="btn btn-info" data-toggle="modal" data-target="#dateRangeModal">
+        Resolved Issues Report
+    </button>
+    <a href="{% url 'friday_status_report' %}" class="btn btn-info">Status Report</a>
+    <a href="{% url 'fsr_add' %}" class="btn btn-info">Add New</a>
+    <a href="{% url 'home' %}" class="btn btn-info">Back</a>
+</div>
+
+<!-- Filters -->
 <div class="form-row">
-	    <div class="form-group col-md-5">
-	      	<form action = "{% url 'fsr' %}" method="post">
-		        {% csrf_token %}
-		        <div class="input-group">
-		          	<select name = "propcountry" class="custom-select" id="inputGroupSelect08" aria-label="Example select with button addon" onchange="this.form.submit()">
-	                  <option disabled selected value="">Select Country</option>
-	                  <option value="All">All Countries</option>
-	                  <option value="Cyprus">Cyprus</option>
-	                  <option value="Greece">Greece</option>
-	                  <option value="Spain">Spain</option>
-		        	</select>
-		       	 	<select name = "propname" class="custom-select" id="inputGroupSelect08" aria-label="Example select with button addon" onchange="this.form.submit()">
-	            		<option disabled selected value="">Select Property</option>
-	            		<option value="All">All Properties</option>
-	            			{% for results in props %}
-	              				<option value="{{results.prop_name}}">{{results.prop_name}}</option>
-	            			{% endfor %}
-	          		</select>
-	          		<select name = "issuestatus" class="custom-select" id="inputGroupSelect08" aria-label="Example select with button addon" onchange="this.form.submit()">
-	                  	<option disabled selected value="">Select Status</option>
-	                  	<option value="All">All Statuses</option>
-	                    <option value="Resolved">Resolved</option>
-	                    <option value="Unresolved">Unresolved</option>
-	                    <option value="Issue">Issue</option>  
-	          		</select>
-		        </div>
-		    </form>
-		</div>
-	</div>
+    <div class="form-group col-md-5">
+        <form action="{% url 'fsr' %}" method="post">
+            {% csrf_token %}
+            <div class="input-group">
+                <select name="propcountry" class="custom-select" onchange="this.form.submit()">
+                    <option disabled selected value="">Select Country</option>
+                    <option value="All" {% if request.POST.propcountry == 'All' %}selected{% endif %}>All Countries</option>
+                    <option value="Cyprus" {% if request.POST.propcountry == 'Cyprus' %}selected{% endif %}>Cyprus</option>
+                    <option value="Greece" {% if request.POST.propcountry == 'Greece' %}selected{% endif %}>Greece</option>
+                    <option value="Spain" {% if request.POST.propcountry == 'Spain' %}selected{% endif %}>Spain</option>
+                </select>
+                <select name="propname" class="custom-select" onchange="this.form.submit()">
+                    <option disabled selected value="">Select Property</option>
+                    <option value="All" {% if request.POST.propname == 'All' %}selected{% endif %}>All Properties</option>
+                    {% for results in props %}
+                        <option value="{{results.prop_name}}" {% if request.POST.propname == results.prop_name %}selected{% endif %}>
+                            {{results.prop_name}}
+                        </option>
+                    {% endfor %}
+                </select>
+                <select name="issuestatus" class="custom-select" onchange="this.form.submit()">
+                    <option disabled selected value="">Select Status</option>
+                    <option value="All" {% if request.POST.issuestatus == 'All' %}selected{% endif %}>All Statuses</option>
+                    <option value="Resolved" {% if request.POST.issuestatus == 'Resolved' %}selected{% endif %}>Resolved</option>
+                    <option value="Unresolved" {% if request.POST.issuestatus == 'Unresolved' %}selected{% endif %}>Unresolved</option>
+                    <option value="Issue" {% if request.POST.issuestatus == 'Issue' %}selected{% endif %}>Issue</option>
+                </select>
+            </div>
+        </form>
+    </div>
+</div>
 
-<form action = "" method="">
-  {% csrf_token %}
-  <div>
-  <table class="table table-bordered table-striped text-center">
-  <thead>
-    <tr>
-      <th text-align="left">Property</th>
-      <th align="center">Issue</th>
-      <th align="center">Description</th>
-      <th align="center">Status</th>
-      <th align="center">Comments</th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for results in props %}
-    	{% for isresults in issues %}
-    		{% if results.prop_id == isresults.prop_id %}
-		    	<tr>
-		    		<td align="left">{{results.prop_name}}</td>
-		            <td align="left">{{isresults.issues_heading}}</td>
-		            <td align="left">{{isresults.issues_description}}</td>
-		            <td align="center">{{isresults.issues_status}}</td>
-		            <td align="center"><button type ="button" class="btn btn-light" style="border-color:black;"><a href="{% url 'fsr_details' isresults.issues_id %}?from=fsr&referrer={{ request.get_full_path|urlencode }}">Comments</a></button></td>    
-	        	</tr>
-	      {% endif %}
-      {% endfor %}
-  	{% endfor %}
-  </tbody>
-  </table>    
-  </div>
-  
-</form>
-</body>
+<!-- Issues Table -->
+<div class="table-responsive">
+    <table class="table table-bordered table-striped">
+        <thead class="thead-light">
+            <tr>
+                <th class="text-left">Property</th>
+                <th class="text-left">Issue</th>
+                <th class="text-left">Description</th>
+                <th class="text-center">Status</th>
+                <th class="text-center">Comments</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for results in props %}
+                {% for isresults in issues %}
+                    {% if results.prop_id == isresults.prop_id %}
+                        <tr>
+                            <td class="text-left">{{ results.prop_name }}</td>
+                            <td class="text-left">{{ isresults.issues_heading }}</td>
+                            <td class="text-left">{{ isresults.issues_description }}</td>
+                            <td class="text-center">
+                                <span class="badge 
+                                    {% if isresults.issues_status == 'Resolved' %}badge-success
+                                    {% elif isresults.issues_status == 'Unresolved' %}badge-warning
+                                    {% else %}badge-danger{% endif %}">
+                                    {{ isresults.issues_status }}
+                                </span>
+                            </td>
+                            <td class="text-center">
+                                <a href="{% url 'fsr_details' isresults.issues_id %}?from=fsr&referrer={{ request.get_full_path|urlencode }}" 
+                                   class="btn btn-sm btn-outline-dark">
+                                    Comments
+                                </a>
+                            </td>
+                        </tr>
+                    {% endif %}
+                {% endfor %}
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Set default dates
+    const today = new Date().toISOString().split('T')[0];
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+    const fromDateDefault = thirtyDaysAgo.toISOString().split('T')[0];
+    
+    document.getElementById('toDate').value = today;
+    document.getElementById('fromDate').value = fromDateDefault;
+    
+    // Handle form submission
+    document.getElementById('dateRangeForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const fromDate = document.getElementById('fromDate').value;
+        const toDate = document.getElementById('toDate').value;
+        
+        // Construct the URL with date parameters
+        const baseUrl = "{% url 'resolved_issues_report' %}";
+        const reportUrl = `${baseUrl}?f_date=${fromDate}&t_date=${toDate}`;
+        
+        window.location.href = reportUrl;
+    });
+});
+</script>
 
 {% endblock %}

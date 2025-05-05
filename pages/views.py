@@ -15,6 +15,8 @@ import os
 import logging
 from django.conf import settings
 from .forms import PropForm, TenantForm, PettyForm, InvoicesForm, IssuesForm, DetailsForm, SupplierForm
+from collections import defaultdict
+from django.utils.dateparse import parse_date
 
 logger = logging.getLogger(__name__)
 
@@ -692,6 +694,105 @@ def friday_status_report(request):
 		mydb.close()
 	
 	return render(request, 'friday_status_report.html', context)
+
+def resolved_issues_report(request):
+    # Get dates from GET parameters
+    f_date_str = request.GET.get('f_date')
+    t_date_str = request.GET.get('t_date')
+
+    # Validate dates
+    if not f_date_str or not t_date_str:
+        messages.error(request, "Both date ranges are required")
+        return redirect('fsr')
+
+    try:
+        f_date = parse_date(f_date_str)
+        t_date = parse_date(t_date_str)
+        
+        if not f_date or not t_date:
+            raise ValueError("Invalid date format")
+            
+        if t_date < f_date:
+            messages.error(request, "End date cannot be before start date")
+            return redirect('fsr')
+
+    except (ValueError, TypeError) as e:
+        messages.error(request, f"Invalid date format: {str(e)}")
+        return redirect('fsr')
+
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute("""
+                SELECT 
+                    prop.prop_name, 
+                    issues.issues_heading, 
+                    issues.issues_description, 
+                    issues.issues_status,
+                    issues_details.issues_details_comment,
+                    issues_details.issues_details_user,
+                    issues_details.issues_details_date,
+                    issues.issues_resolution_date
+                FROM 
+                    prop
+                    JOIN issues ON prop.prop_id = issues.prop_id
+                    JOIN issues_details ON issues.issues_id = issues_details.issues_id
+                WHERE 
+                    issues.issues_status = 'Resolved'
+                    AND issues.issues_resolution_date BETWEEN %s AND %s
+                ORDER BY 
+                    prop.prop_name ASC,
+                    issues.issues_heading ASC,
+                    issues_details.issues_details_date DESC
+            """, [f_date_str, t_date_str])  # Use string dates as stored in DB
+
+            rows = cursor.fetchall()
+
+        # Structure the data
+        properties = defaultdict(lambda: {
+            'prop_name': '',
+            'issues': defaultdict(list)
+        })
+
+        for row in rows:
+            prop_name = row[0]
+            issue_heading = row[1]
+            
+            properties[prop_name]['prop_name'] = prop_name
+            properties[prop_name]['issues'][issue_heading].append({
+                'issues_description': row[2],
+                'comment': row[4],
+                'user': row[5],
+                'comment_date': row[6],
+                'resolution_date': row[7]
+            })
+
+        # Convert to list format for template
+        properties_list = []
+        for prop_name, prop_data in properties.items():
+            issues_list = []
+            for issue_heading, comments in prop_data['issues'].items():
+                issues_list.append({
+                    'heading': issue_heading,
+                    'description': comments[0]['issues_description'],  # All same for same issue
+                    'comments': sorted(comments, key=lambda x: x['comment_date'], reverse=True)[:20]
+                })
+
+            properties_list.append({
+                'prop_name': prop_name,
+                'issues': sorted(issues_list, key=lambda x: x['heading'])
+            })
+
+        context = {
+            'f_date': f_date_str,  # Original string for display
+            't_date': t_date_str,
+            'properties': sorted(properties_list, key=lambda x: x['prop_name'])
+        }
+
+        return render(request, 'resolved_issues_report.html', context)
+
+    except Exception as e:
+        messages.error(request, f"Error generating report: {str(e)}")
+        return redirect('fsr')
 
 def issues_rep(request):
 	import issues
