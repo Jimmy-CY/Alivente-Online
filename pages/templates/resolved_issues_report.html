@@ -31,9 +31,12 @@
                 <div class="property-card">
                     <div class="issue-header">
                         <strong class="issue-heading">{{ issue.heading }}</strong>
-                        <span class="issue-description">({{ issue.description }})</span>
+                        <span class="issue-description">
+                            ({{ issue.description }}) - 
+                            <span style="color: red;">Resolution: {{ issue.days_to_resolve }} day{{ issue.days_to_resolve|pluralize }}</span>
+                        </span>
+                        </span>
                     </div>
-                    
                     <div class="comments-container">
                         {% for comment in issue.comments %}
                         <div class="comment-row">
@@ -183,6 +186,12 @@
         border-radius: 4px;
         font-weight: 500;
         height: fit-content;
+    }
+
+    .resolution-time {
+    font-weight: bold;
+    color: #17a2b8;
+    margin-left: 5px;
     }
     
     @media print {

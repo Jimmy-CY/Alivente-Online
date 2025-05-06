@@ -30,6 +30,13 @@
                             <h5 class="issue-heading">
                                 {{ issue.issues_heading }} 
                                 <span class="issue-description">({{ issue.issues_description }})</span>
+                                {% if issue.days_to_resolve and status_group.status == 'Resolved' %}
+                                    <span class="resolution-time">- Resolution: {{ issue.days_to_resolve }} day{{ issue.days_to_resolve|pluralize }}</span>
+                                {% elif issue.days_open and status_group.status != 'Resolved' %}
+                                    <span class="days-open">- {{ issue.days_open }} day{{ issue.days_open|pluralize }} open</span>
+                                {% elif issue.days_open == 0 and status_group.status != 'Resolved' %}
+                                    <span class="days-open">- New Issue</span>
+                                {% endif %}
                             </h5>
                         </a>
                         <div class="issue-details">
@@ -176,9 +183,14 @@
     }
 
     .days-open {
-        font-size: 0.9rem;
-        color: #6c757d;
-        font-style: italic;
+        color: #FF0000;
+        font-weight: normal;
+        margin-left: 8px;
+    }
+    
+    .resolution-time {
+        color: #FF0000;
+        font-weight: normal;
         margin-left: 8px;
     }
     

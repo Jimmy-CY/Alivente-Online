@@ -594,106 +594,126 @@ def fsr_rep(request):
 	return redirect('home')
 
 def friday_status_report(request):
-	mydb = mysql.connector.connect(
-		host=settings.DATABASES['default']['HOST'],
-		port=settings.DATABASES['default']['PORT'],
-		user=settings.DATABASES['default']['USER'],
-		password=settings.DATABASES['default']['PASSWORD'],
-		database=settings.DATABASES['default']['NAME'],
-		auth_plugin=settings.DATABASES['default']['AUTH_PLUGIN'],
-	)
-	today = date.today()
-	rep_date = today
-	with mydb.cursor(dictionary=True) as cursor:
-		cursor.execute("SELECT prop.prop_name FROM prop ORDER BY prop.prop_country ASC, prop.prop_name ASC")
-		properties = cursor.fetchall()
-		cursor.execute("""
-			SELECT 
-				prop.prop_name,
-				issues.issues_id, issues.issues_heading, issues.issues_description, issues.issues_status, 
-				issues.issues_resolution_date,
-				issues_details.issues_details_id, issues_details.issues_details_comment, 
-				issues_details.issues_details_user, issues_details.issues_details_date
-			FROM issues
-			JOIN prop ON prop.prop_id = issues.prop_id
-			JOIN issues_details ON issues_details.issues_id = issues.issues_id
-			ORDER BY issues.issues_id ASC, issues_details.issues_details_id DESC
-		""")
-		issues_data = cursor.fetchall()
-	issues = []
-	current_issue = None
-	for row in issues_data:
-		if current_issue is None or current_issue['issues_id'] != row['issues_id']:
-			if current_issue is not None:
-				issues.append(current_issue)
-			current_issue = {
-				'prop_name': row['prop_name'],
-				'issues_id': row['issues_id'],
-				'issues_heading': row['issues_heading'],
-				'issues_description': row['issues_description'],
-				'issues_status': row['issues_status'],
-				'issues_resolution_date': row['issues_resolution_date'],
-				'details': []
-			}
-		current_issue['details'].append({
-			'issues_details_id': row['issues_details_id'],
-			'issues_details_comment': row['issues_details_comment'],
-			'issues_details_user': row['issues_details_user'],
-			'issues_details_date': row['issues_details_date']
-		})
-	if current_issue is not None:
-		issues.append(current_issue)
+    mydb = mysql.connector.connect(
+        host=settings.DATABASES['default']['HOST'],
+        port=settings.DATABASES['default']['PORT'],
+        user=settings.DATABASES['default']['USER'],
+        password=settings.DATABASES['default']['PASSWORD'],
+        database=settings.DATABASES['default']['NAME'],
+        auth_plugin=settings.DATABASES['default']['AUTH_PLUGIN'],
+    )
+    today = date.today()
+    rep_date = today
+    with mydb.cursor(dictionary=True) as cursor:
+        cursor.execute("SELECT prop.prop_name FROM prop ORDER BY prop.prop_country ASC, prop.prop_name ASC")
+        properties = cursor.fetchall()
+        cursor.execute("""
+            SELECT 
+                prop.prop_name,
+                issues.issues_id, issues.issues_heading, issues.issues_description, 
+                issues.issues_status, issues.issues_date_logged, issues.issues_resolution_date,
+                issues_details.issues_details_id, issues_details.issues_details_comment, 
+                issues_details.issues_details_user, issues_details.issues_details_date
+            FROM issues
+            JOIN prop ON prop.prop_id = issues.prop_id
+            JOIN issues_details ON issues_details.issues_id = issues.issues_id
+            ORDER BY issues.issues_id ASC, issues_details.issues_details_id DESC
+        """)
+        issues_data = cursor.fetchall()
+    
+    issues = []
+    current_issue = None
+    for row in issues_data:
+        if current_issue is None or current_issue['issues_id'] != row['issues_id']:
+            if current_issue is not None:
+                issues.append(current_issue)
+            current_issue = {
+                'prop_name': row['prop_name'],
+                'issues_id': row['issues_id'],
+                'issues_heading': row['issues_heading'],
+                'issues_description': row['issues_description'],
+                'issues_status': row['issues_status'],
+                'issues_date_logged': row['issues_date_logged'],
+                'issues_resolution_date': row['issues_resolution_date'],
+                'days_to_resolve': None,  # For resolved issues
+                'days_open': None,       # For unresolved issues
+                'details': []
+            }
+            # Calculate days metrics based on status
+            if current_issue['issues_date_logged']:
+                if current_issue['issues_status'] == 'Resolved':
+                    if (current_issue['issues_resolution_date'] and 
+                        current_issue['issues_resolution_date'] != date(1900, 1, 1)):
+                        current_issue['days_to_resolve'] = (current_issue['issues_resolution_date'] - current_issue['issues_date_logged']).days
+                else:  # For Unresolved and Issue status
+                    current_issue['days_open'] = (today - current_issue['issues_date_logged']).days
+                    
+        current_issue['details'].append({
+            'issues_details_id': row['issues_details_id'],
+            'issues_details_comment': row['issues_details_comment'],
+            'issues_details_user': row['issues_details_user'],
+            'issues_details_date': row['issues_details_date']
+        })
+    if current_issue is not None:
+        issues.append(current_issue)
 
-	processed_data = {}
-	cut_off_date = date.today() - timedelta(days=7)
-	for status in ['Resolved', 'Unresolved', 'Issue']:
-		processed_data[status] = {}
-		for prop in properties:
-			prop_name = prop['prop_name']
-			processed_data[status][prop_name] = []
+    processed_data = {}
+    cut_off_date = date.today() - timedelta(days=7)
+    for status in ['Resolved', 'Unresolved', 'Issue']:
+        processed_data[status] = {}
+        for prop in properties:
+            prop_name = prop['prop_name']
+            processed_data[status][prop_name] = []
 
-			# Track unique issues by heading+description
-			unique_issues = set()
+            # Track unique issues by heading+description
+            unique_issues = set()
 
-			for issue in issues:
-				if (issue['prop_name'] == prop_name and 
-					issue['issues_status'] == status and 
-					(issue['issues_heading'], issue['issues_description']) not in unique_issues):
+            for issue in issues:
+                if (issue['prop_name'] == prop_name and 
+                    issue['issues_status'] == status and 
+                    (issue['issues_heading'], issue['issues_description']) not in unique_issues):
 
                     # For Resolved, check cutoff date
-					if status == 'Resolved':
-						if (issue['issues_resolution_date'] != date(1900, 1, 1) and 
-							issue['issues_resolution_date'] >= (date.today() - timedelta(days=7))):
-							processed_data[status][prop_name].append(issue)
-							unique_issues.add((issue['issues_heading'], issue['issues_description']))
-					else:
-						processed_data[status][prop_name].append(issue)
-						unique_issues.add((issue['issues_heading'], issue['issues_description']))
-	
-	context = {
-		'today': today,
-		'statuses': ['Resolved', 'Unresolved', 'Issue'],
-		'properties': properties,
-		'status_groups': [
-			{
-				'status': status,
-				'property_issues': [
-					{
-						'prop_name': prop['prop_name'],
-						'issues': processed_data[status][prop['prop_name']]
-					}
-					for prop in properties
-					if processed_data[status][prop['prop_name']]  # Only include if issues exist
-				]
-			}
-			for status in ['Resolved', 'Unresolved', 'Issue']
-		]
-	}
+                    if status == 'Resolved':
+                        if (issue['issues_resolution_date'] != date(1900, 1, 1) and 
+                            issue['issues_resolution_date'] >= (date.today() - timedelta(days=7))):
+                            processed_data[status][prop_name].append(issue)
+                            unique_issues.add((issue['issues_heading'], issue['issues_description']))
+                    else:
+                        processed_data[status][prop_name].append(issue)
+                        unique_issues.add((issue['issues_heading'], issue['issues_description']))
+    
+    context = {
+        'today': today,
+        'statuses': ['Resolved', 'Unresolved', 'Issue'],
+        'properties': properties,
+        'status_groups': [
+            {
+                'status': status,
+                'property_issues': [
+                    {
+                        'prop_name': prop['prop_name'],
+                        'issues': processed_data[status][prop['prop_name']]
+                    }
+                    for prop in properties
+                    if processed_data[status][prop['prop_name']]  # Only include if issues exist
+                ]
+            }
+            for status in ['Resolved', 'Unresolved', 'Issue']
+        ]
+    }
 
-	if mydb.is_connected():
-		mydb.close()
-	
-	return render(request, 'friday_status_report.html', context)
+    if mydb.is_connected():
+        mydb.close()
+    
+    return render(request, 'friday_status_report.html', context)
+
+from datetime import datetime, date
+from django.shortcuts import render, redirect
+from django.db import connection
+from django.contrib import messages
+from collections import defaultdict
+from django.utils.dateparse import parse_date
 
 def resolved_issues_report(request):
     # Get dates from GET parameters
@@ -731,7 +751,8 @@ def resolved_issues_report(request):
                     issues_details.issues_details_comment,
                     issues_details.issues_details_user,
                     issues_details.issues_details_date,
-                    issues.issues_resolution_date
+                    issues.issues_resolution_date,
+                    issues.issues_date_logged
                 FROM 
                     prop
                     JOIN issues ON prop.prop_id = issues.prop_id
@@ -743,9 +764,20 @@ def resolved_issues_report(request):
                     prop.prop_name ASC,
                     issues.issues_heading ASC,
                     issues_details.issues_details_date DESC
-            """, [f_date_str, t_date_str])  # Use string dates as stored in DB
+            """, [f_date_str, t_date_str])
 
             rows = cursor.fetchall()
+
+        # Helper function to parse dates
+        def parse_db_date(date_value):
+            if isinstance(date_value, date):
+                return date_value
+            elif isinstance(date_value, str):
+                return datetime.strptime(date_value, '%Y-%m-%d').date()
+            elif isinstance(date_value, datetime):
+                return date_value.date()
+            else:
+                raise ValueError(f"Unsupported date format: {type(date_value)}")
 
         # Structure the data
         properties = defaultdict(lambda: {
@@ -757,13 +789,22 @@ def resolved_issues_report(request):
             prop_name = row[0]
             issue_heading = row[1]
             
+            try:
+                resolution_date = parse_db_date(row[7])
+                date_logged = parse_db_date(row[8])
+                days_to_resolve = (resolution_date - date_logged).days
+            except Exception as e:
+                days_to_resolve = 0  # Default value if date parsing fails
+
             properties[prop_name]['prop_name'] = prop_name
             properties[prop_name]['issues'][issue_heading].append({
                 'issues_description': row[2],
                 'comment': row[4],
                 'user': row[5],
                 'comment_date': row[6],
-                'resolution_date': row[7]
+                'resolution_date': row[7],
+                'date_logged': row[8],
+                'days_to_resolve': days_to_resolve
             })
 
         # Convert to list format for template
@@ -773,7 +814,10 @@ def resolved_issues_report(request):
             for issue_heading, comments in prop_data['issues'].items():
                 issues_list.append({
                     'heading': issue_heading,
-                    'description': comments[0]['issues_description'],  # All same for same issue
+                    'description': comments[0]['issues_description'],
+                    'issues_date_logged': comments[0]['date_logged'],
+                    'issues_resolution_date': comments[0]['resolution_date'],
+                    'days_to_resolve': comments[0]['days_to_resolve'],
                     'comments': sorted(comments, key=lambda x: x['comment_date'], reverse=True)[:20]
                 })
 
@@ -783,7 +827,7 @@ def resolved_issues_report(request):
             })
 
         context = {
-            'f_date': f_date_str,  # Original string for display
+            'f_date': f_date_str,
             't_date': t_date_str,
             'properties': sorted(properties_list, key=lambda x: x['prop_name'])
         }
