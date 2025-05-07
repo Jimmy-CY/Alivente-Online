@@ -27,29 +27,19 @@
 </script>
 {% endfor %}
 
-<!-- In your back button section -->
+<!-- Back button section -->
 <div style="display: flex; justify-content: flex-end">
-    {% if request.GET.from == 'fsr' %}
-        <a href="{% url 'fsr' %}{% if request.GET.referrer %}?redirect={{ request.GET.referrer|urlencode }}{% endif %}" 
-           class="btn btn-info" style="margin-right:16px">Back</a>
-    {% elif request.GET.from == 'status_report' %}
-        <a href="{{ request.GET.referrer|default:'' }}{% if not request.GET.referrer %}{% url 'friday_status_report' %}{% endif %}" 
-           class="btn btn-info" style="margin-right:16px">Back</a>
-    {% else %}
-        <button onclick="goBackWithRefresh()" class="btn btn-info" style="margin-right:16px">Back</button>
-    {% endif %}
+    <a href="#" onclick="handleBackButton(); return false;" class="btn btn-info" style="margin-right:16px">Back</a>
 </div>
 
-<form action="{% url 'fsr_commit_status_change' %}" method="post">
-{% csrf_token %}
-<input type="hidden" name="next" value="{{ request.META.HTTP_REFERER }}">
 <br/>
 {% for results in props %}
     {% for isresults in issues %}
         {% if results.prop_id == isresults.prop_id %}
-            <form action="{% url 'fsr_commit_status_change' %}" method="post">
-            {% csrf_token %}
-            <input type="hidden" name="next" value="{{ request.META.HTTP_REFERER }}">
+            <form action="{% url 'fsr_commit_status_change' %}" method="post" id="statusForm{{ isresults.issues_id }}">
+                {% csrf_token %}
+                <input type="hidden" name="issues_id" value="{{ isresults.issues_id }}">
+                <input type="hidden" name="next" value="{{ request.get_full_path }}">
                 <div class="form-row">
                     <div class="form-group col-md-3">
                         <label for="prop_name"><strong>Property Name</strong></label>
@@ -65,7 +55,7 @@
 
                     <div class="form-group col-md-2">
                         <label for="issues_status"><strong>Issue Status</strong></label>
-                        <select name="issues_status" class="custom-select" id="issues_status" aria-label="Example select with button addon" onchange="this.form.submit()">
+                        <select name="issues_status" class="custom-select" id="issues_status_{{ isresults.issues_id }}" aria-label="Example select with button addon">
                             <option disabled>Select Issue Status</option>
                             {% if isresults.issues_status == "Resolved" %}
                                 <option selected value="Resolved">Resolved</option>
@@ -84,8 +74,8 @@
                             {% endif %}
                         </select>
                     </div>
-                </form>
-            </div>
+                </div>
+            </form>
             <div class="form-row">
                 <div class="form-group col-md-12">
                     <label for="issues_description"><strong>Issue Description</strong></label>
@@ -94,8 +84,8 @@
             </div>
             <hr>
             <form action="{% url 'fsr_comment_add' isresults.issues_id %}" method="post">
-            {% csrf_token %}
-            <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ request.get_full_path }}">
                 <div class="form-row">
                     <div class="form-group col-md-10">
                         <input placeholder="Enter New Comment" type="text" id="issues_details_comment" class="form-control" name="issues_details_comment" maxlength="250" required>
@@ -114,28 +104,52 @@
                     <br/>
                 {% endif %}
             {% endfor %}
+            
+            <script>
+            // Auto-submit status form when changed
+            document.getElementById('issues_status_{{ isresults.issues_id }}').addEventListener('change', function() {
+                document.getElementById('statusForm{{ isresults.issues_id }}').submit();
+            });
+            </script>
         {% endif %}
     {% endfor %}
 {% endfor %}
 
-</form>
-
 <script>
-function goBackWithRefresh() {
-    // First try to use the explicitly passed referrer
-    const explicitReferrer = "{{ request.GET.referrer }}";
-    if (explicitReferrer) {
-        window.location.href = explicitReferrer + (window.location.search.includes('refresh=true') ? '' : '?refresh=true');
-        return;
+function handleBackButton() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const fromParam = urlParams.get('from');
+    const originParam = urlParams.get('origin');
+    
+    // Determine target URL
+    let targetUrl;
+    
+    // If coming from add form, go back to fsr
+    if (fromParam === 'fsr_add' && originParam === 'fsr') {
+        targetUrl = "{% url 'fsr' %}?refresh=true";
+    }
+    else if (fromParam === 'fsr') {
+        targetUrl = "{% url 'fsr' %}?refresh=true";
+    }
+    else if (fromParam === 'status_report') {
+        targetUrl = "{% url 'friday_status_report' %}?refresh=true";
+    }
+    else if (document.referrer && document.referrer.includes(window.location.hostname)) {
+        targetUrl = document.referrer + (document.referrer.includes('?') ? '&' : '?') + 'refresh=true';
+    }
+    else {
+        targetUrl = "{% url 'fsr' %}?refresh=true";
     }
     
-    // Fallback to document.referrer
-    if (document.referrer && document.referrer.indexOf(window.location.host) !== -1) {
-        window.location.href = document.referrer + (document.referrer.includes('?') ? '&' : '?') + 'refresh=true';
-    } else {
-        // Final fallback to FSR page
-        window.location.href = "{% url 'fsr' %}";
-    }
+    window.location.href = targetUrl;
+}
+
+// Page refresh logic
+const urlParams = new URLSearchParams(window.location.search);
+if (urlParams.has('refresh')) {
+    const cleanUrl = window.location.pathname + window.location.search.replace(/[?&]refresh=true/, '').replace(/&$/, '').replace(/\?$/, '');
+    window.history.replaceState({}, document.title, cleanUrl);
+    window.location.reload(true);
 }
 </script>
 

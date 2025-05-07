@@ -17,6 +17,7 @@ from django.conf import settings
 from .forms import PropForm, TenantForm, PettyForm, InvoicesForm, IssuesForm, DetailsForm, SupplierForm
 from collections import defaultdict
 from django.utils.dateparse import parse_date
+from urllib.parse import urlparse, parse_qs
 
 logger = logging.getLogger(__name__)
 
@@ -327,58 +328,69 @@ def fsr_add(request):
 	return render(request, "fsr_add.html", {"props":results, "issues":isresults, "issues_details":idresults, "log_date":log_date})
 
 def fsr_commit(request):
-	if request.method == "POST":
-		form = IssuesForm(request.POST or None)
-		if form.is_valid():
-			form.save()
-			messages.success(request, "Issue Added Successfully")
-	temp_results = issues.objects.all().order_by('-issues_id')
-	is_id = temp_results[0].issues_id
-	return redirect("fsr_details", is_id)
+    if request.method == "POST":
+        form = IssuesForm(request.POST or None)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Issue Added Successfully")
+    temp_results = issues.objects.all().order_by('-issues_id')
+    is_id = temp_results[0].issues_id
+    return redirect(reverse("fsr_details", args=[is_id]) + "?from=fsr_add&origin=fsr")
 
 def fsr_details(request, issues_id):
-	isresults = issues.objects.filter(pk=issues_id)
-	results = props.objects.all().order_by('prop_country','prop_name')
-	idresults = issues_details.objects.all().order_by('issues_details_date','issues_details_id').reverse()
-	return render(request, "fsr_details.html", {"props":results, "issues":isresults, "issues_details":idresults})
+    isresults = issues.objects.filter(pk=issues_id)
+    results = props.objects.all().order_by('prop_country','prop_name')
+    idresults = issues_details.objects.all().order_by('issues_details_date','issues_details_id').reverse()
+    
+    # Get the HTTP_REFERER if it exists
+    referrer = request.META.get('HTTP_REFERER', '')
+    
+    # Determine the clean redirect URL
+    if 'fsr_details' in referrer:
+        # If coming from another details page, go back to main FSR
+        redirect_url = reverse('fsr')
+    elif 'status_report' in referrer:
+        # If coming from status report, go back there
+        redirect_url = reverse('friday_status_report')
+    else:
+        # Default to the main FSR page
+        redirect_url = reverse('fsr')
+    
+    context = {
+        "props": results,
+        "issues": isresults,
+        "issues_details": idresults,
+        "redirect_url": redirect_url,
+    }
+    
+    return render(request, "fsr_details.html", context)
 
 def fsr_commit_status_change(request):
-    if request.method == 'POST':
+    if request.method == "POST":
         # Get form data
-        is_id = request.POST.get('issues_id')
-        is_status = request.POST.get('issues_status')
-        if is_id and is_status:
-            # Update issue status
-            updates = {'issues_status': is_status}
-            
-            # Handle resolution details
-            if is_status == "Resolved":
-                if request.user.is_authenticated:
-                    user_initials = f"{request.user.first_name[:1]}{request.user.last_name[:1]}"
-                    updates.update({
-                        'issues_resolution_date': date.today(),
-                        'issues_resolving_user': user_initials
-                    })
-                else:
-                    updates.update({
-                        'issues_resolution_date': date(1900, 1, 1),
-                        'issues_resolving_user': ''
-                    })
-            
-            issues.objects.filter(pk=is_id).update(**updates)
-        # Handle redirection
+        issues_id = request.POST.get('issues_id')
+        new_status = request.POST.get('issues_status')
         next_url = request.POST.get('next', '')
-        referrer = request.META.get('HTTP_REFERER', '')
-        # Priority 1: Use explicit next URL if provided
-        if next_url:
-            return redirect(next_url)
-        # Priority 2: Use HTTP_REFERER if available and from our domain
-        if referrer and request.get_host() in referrer:
-            return redirect(referrer)
-        # Fallback: Go to FSR page
-        return redirect(reverse('fsr'))
-    # If not POST, redirect to FSR page
-    return redirect(reverse('fsr'))
+        
+        # Update the issue
+        issue = issues.objects.get(pk=issues_id)
+        issue.issues_status = new_status
+        if new_status == "Resolved":
+            issue.issues_resolution_date = date.today()
+        issue.save()
+        
+        # Parse the next URL to get parameters
+        parsed_url = urlparse(next_url)
+        params = parse_qs(parsed_url.query)
+        from_param = params.get('from', ['fsr'])[0]
+        
+        # Determine redirect URL with refresh
+        if from_param == 'fsr':
+            return redirect(reverse('fsr') + "?refresh=true")
+        elif from_param == 'status_report':
+            return redirect(reverse('friday_status_report') + "?refresh=true")
+        else:
+            return redirect(reverse('fsr') + "?refresh=true")
 
 #def fsr_comment_add(request, issues_id):
 #	iss_det = request.POST.get('issues_details_comment')

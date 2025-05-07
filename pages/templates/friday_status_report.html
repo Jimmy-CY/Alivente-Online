@@ -26,7 +26,8 @@
                     
                     {% for issue in property.issues %}
                     <div class="issue-group">
-                        <a href="{% url 'fsr_details' issue.issues_id %}?from=status_report&referrer={{ request.get_full_path|urlencode }}" class="issue-heading-link">
+                        <!-- In your Friday status report template -->
+                        <a href="{% url 'fsr_details' issue.issues_id %}?from=status_report" class="issue-heading-link">
                             <h5 class="issue-heading">
                                 {{ issue.issues_heading }} 
                                 <span class="issue-description">({{ issue.issues_description }})</span>

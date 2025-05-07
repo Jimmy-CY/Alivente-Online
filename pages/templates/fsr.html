@@ -129,8 +129,7 @@
                                 </span>
                             </td>
                             <td class="text-center">
-                                <a href="{% url 'fsr_details' isresults.issues_id %}?from=fsr&referrer={{ request.get_full_path|urlencode }}" 
-                                   class="btn btn-sm btn-outline-dark">
+                                <a href="{% url 'fsr_details' isresults.issues_id %}?from=fsr" class="issue-heading-link">
                                     Comments
                                 </a>
                             </td>
@@ -152,6 +151,18 @@ document.addEventListener('DOMContentLoaded', function() {
     
     document.getElementById('toDate').value = today;
     document.getElementById('fromDate').value = fromDateDefault;
+
+    // Check for refresh parameter
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('refresh')) {
+    
+    // Remove the refresh parameter from URL
+        const cleanUrl = window.location.pathname + window.location.search.replace(/[?&]refresh=true/, '').replace(/&$/, '').replace(/\?$/, '');
+        window.history.replaceState({}, document.title, cleanUrl);
+        
+    // Force reload the page without cache
+        window.location.reload(true);
+    }
     
     // Handle form submission
     document.getElementById('dateRangeForm').addEventListener('submit', function(e) {
