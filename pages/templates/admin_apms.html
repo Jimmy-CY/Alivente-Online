@@ -18,12 +18,11 @@
       </button>
     </div>
     <script>
-      // Automatically close the alert after 3 seconds (3000 milliseconds)
       setTimeout(function() {
         document.querySelectorAll('.auto-dismiss').forEach(alert => {
-          alert.classList.remove('show'); // Hide alert visually
-          alert.classList.add('fade'); // Add fade effect
-          setTimeout(() => alert.remove(), 500); // Remove from DOM after fade
+          alert.classList.remove('show');
+          alert.classList.add('fade');
+          setTimeout(() => alert.remove(), 500);
         });
       }, 2000);
     </script>
@@ -31,33 +30,123 @@
 
 <body>  
   <div style="display: flex ; justify-content: flex-end">
+    <a href="{% url 'admin_invoices' %}" class="btn btn-info" style="margin-right:16px" role="button">Generate Invoices</a>
     <a href="{% url 'home' %}" class="btn btn-info" style="margin-right:16px" role="button">Back</a>
   </div>
+<br>
 
-  <form action = "" method="">
-    {% csrf_token %}
-    <br/>
-    <div>
-    <table class="table table-bordered table-striped text-center">
-    <thead>
-      <tr>
-        <th text-align="left">Reports</th>
-        <th text-align="left">Lease Agreements</th>
-        <th align="center">Outstanding Invoices</th>
-        <th align="center">New Invoices</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td align="center"><button type ="button" class="btn btn-light" style="border-color:black;"><a href="{% url 'admin_clear' %}">Clear Old Reports</a></button></td>
-        <td align="center"><button type ="button" class="btn btn-light" style="border-color:black;"><a href="{% url 'admin_renewals' %}">Lease Renewals</a></button></td>
-        <td align="center"><button type ="button" class="btn btn-light" style="border-color:black;"><a href="{% url 'admin_unpaid' %}">Outstanding Invoices</a></button></td>
-        <td align="center"><button type ="button" class="btn btn-light" style="border-color:black;"><a href="{% url 'admin_invoices' %}">Generate Invoices</a></button></td>    
-      </tr>
-    </tbody>
-    </table>    
+  <div class="row">
+    <!-- Title Deed Upload Box -->
+    <div class="col-md-6">
+      <div class="card mb-4">
+          <div class="card-header">
+              <h5>Upload Title Deed</h5>
+          </div>
+          <div class="card-body">
+              <form action="{% url 'upload_title_deed' %}" method="post" enctype="multipart/form-data">
+                  {% csrf_token %}
+                  <div class="form-group">
+                      <label for="property-select">Select Property:</label>
+                      <select class="form-control" id="property-select" name="property" required>
+                          <option value="" selected disabled>-- Select a Property --</option>
+                          {% for property in props %}
+                              <option value="{{ property.prop_name }}">{{ property.prop_name }}</option>
+                          {% endfor %}
+                      </select>
+                  </div>
+                  <div class="form-group">
+                      <label for="title-deed-upload">Upload Title Deed (PDF only):</label>
+                      <div class="custom-file">
+                          <input type="file" class="custom-file-input" id="title-deed-upload" name="title_deed" accept=".pdf" required>
+                          <label class="custom-file-label" for="title-deed-upload">Choose file...</label>
+                          <small id="title-deed-preview" class="form-text text-muted" style="display: none;">File will be saved as: "<span id="selected-property"></span> - Title Deed.pdf"</small>
+                      </div>
+                  </div>
+                  <button type="submit" class="btn btn-primary">Upload Title Deed</button>
+              </form>
+          </div>
+      </div>
     </div>
-  </form>
+
+    <!-- Lease Agreement Upload Box -->
+    <div class="col-md-6">
+      <div class="card mb-4">
+          <div class="card-header">
+              <h5>Upload Lease Agreement</h5>
+          </div>
+          <div class="card-body">
+              <form action="{% url 'upload_lease_agreement' %}" method="post" enctype="multipart/form-data">
+                  {% csrf_token %}
+                  <div class="form-group">
+                      <label for="tenant-select">Select Tenant:</label>
+                      <select class="form-control" id="tenant-select" name="tenant" required>
+                          <option value="" selected disabled>-- Select a Tenant --</option>
+                          {% for t in tenant %}
+                              <option value="{{ t.tenant_id }}" data-prop-name="{{ t.prop.prop_name }}">
+                                  {{ t.tenant_name }} ({{ t.prop.prop_name }})
+                              </option>
+                          {% endfor %}
+                      </select>
+                  </div>
+                  <div class="form-group">
+                      <label for="lease-upload">Upload Lease Agreement (PDF only):</label>
+                      <div class="custom-file">
+                          <input type="file" class="custom-file-input" id="lease-upload" name="lease_agreement" accept=".pdf" required>
+                          <label class="custom-file-label" for="lease-upload">Choose file...</label>
+                          <small id="lease-preview" class="form-text text-muted" style="display: none;">
+                              File will be saved as: "<span id="selected-property-name"></span> - Lease Agreement.pdf"
+                          </small>
+                      </div>
+                  </div>
+                  <button type="submit" class="btn btn-primary">Upload Lease Agreement</button>
+              </form>
+          </div>
+      </div>
+    </div>
+
+  <!-- Rest of your template remains the same -->
+  <script>
+    // Title Deed file input handler
+    document.getElementById('title-deed-upload').addEventListener('change', function(e) {
+      var fileName = e.target.files[0].name;
+      e.target.nextElementSibling.innerText = fileName;
+    });
+
+    // Lease Agreement file input handler
+    document.getElementById('lease-upload').addEventListener('change', function(e) {
+      var fileName = e.target.files[0].name;
+      e.target.nextElementSibling.innerText = fileName;
+    });
+
+    // Title Deed property selection preview
+    document.getElementById('property-select').addEventListener('change', function(e) {
+      const selected = e.target.value;
+      const preview = document.getElementById('title-deed-preview');
+      const span = document.getElementById('selected-property');
+      
+      if (selected) {
+        span.textContent = selected;
+        preview.style.display = 'block';
+      } else {
+        preview.style.display = 'none';
+      }
+    });
+
+    // Lease Agreement tenant selection preview
+    document.getElementById('tenant-select').addEventListener('change', function(e) {
+      const selectedOption = e.target.options[e.target.selectedIndex];
+      const propName = selectedOption.getAttribute('data-prop-name');
+      const preview = document.getElementById('lease-preview');
+      const span = document.getElementById('selected-property-name');
+      
+      if (propName) {
+        span.textContent = propName;
+        preview.style.display = 'block';
+      } else {
+        preview.style.display = 'none';
+      }
+    });
+  </script>
 </body>
 
 {% else %}

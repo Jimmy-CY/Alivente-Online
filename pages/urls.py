@@ -15,6 +15,8 @@ urlpatterns = [
     path('admin_renewals/', views.admin_renewals, name='admin_renewals'),
     path('admin_invoices/', views.admin_invoices, name='admin_invoices'),
     path('tenant/', views.tenant_page, name='tenant'),
+    path('upload_title_deed/', views.upload_title_deed, name='upload_title_deed'),
+    path('upload_lease_agreement/', views.upload_lease_agreement, name='upload_lease_agreement'),
 
     #
     #Reports - Dashboard

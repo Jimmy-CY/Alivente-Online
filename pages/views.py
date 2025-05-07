@@ -30,7 +30,121 @@ def home(request):
 
 ### ADMIN ###
 def admin_apms(request):
-	return render (request, "admin_apms.html", {})
+    results = props.objects.all().order_by('prop_country', 'prop_name')
+    tresults = tenant.objects.select_related('prop').all().order_by('tenant_name')
+    return render(request, "admin_apms.html", {
+        "props": results, 
+        "tenant": tresults
+    })
+
+def upload_lease_agreement(request):
+    if request.method == 'POST':
+        tenant_id = request.POST.get('tenant')
+        uploaded_file = request.FILES.get('lease_agreement')
+        
+        print("XXXXXXXXXXXXXXXXXXX",tenant_id)
+
+        if not uploaded_file:
+            messages.error(request, "No file was uploaded.")
+            return redirect('admin_apms')
+        
+        try:
+            # First debug print to check the tenant_id
+            print(f"DEBUG: Received tenant_id: {tenant_id}")
+            
+            # Try getting the tenant - ensure your model's primary key field name
+            tenant_obj = tenant.objects.get(pk=tenant_id)  # Using pk instead of id
+            
+            # Debug print to check the tenant object
+            print(f"DEBUG: Found tenant: {tenant_obj}")
+            
+            if not hasattr(tenant_obj, 'prop'):
+                messages.error(request, "Tenant model doesn't have a 'prop' field.")
+                return redirect('admin_apms')
+                
+            if not tenant_obj.prop:
+                messages.error(request, "Selected tenant has no property assigned.")
+                return redirect('admin_apms')
+                
+            property_name = tenant_obj.prop.prop_name
+            lease_dir = os.path.join(settings.STATIC_ROOT, 'lease_agreements')
+            
+            # Debug print for directory path
+            print(f"DEBUG: Target directory: {lease_dir}")
+            
+            # Create directory if not exists
+            os.makedirs(lease_dir, exist_ok=True)
+            
+            # Sanitize filename
+            import re
+            clean_name = re.sub(r'[^\w\-_\. ]', '_', property_name)
+            filename = f"{clean_name} - Lease Agreement.pdf"
+            file_path = os.path.join(lease_dir, filename)
+            
+            # Debug print for file path
+            print(f"DEBUG: Full file path: {file_path}")
+            
+            # Remove existing file if exists
+            if os.path.exists(file_path):
+                os.remove(file_path)
+            
+            # Save new file
+            with open(file_path, 'wb+') as destination:
+                for chunk in uploaded_file.chunks():
+                    destination.write(chunk)
+            
+            messages.success(request, f"Lease agreement for {property_name} saved successfully!")
+        except tenant.DoesNotExist:
+            messages.error(request, "Selected tenant does not exist.")
+        except Exception as e:
+            messages.error(request, f"Error saving file: {str(e)}")
+            print(f"FULL ERROR: {str(e)}", exc_info=True)  # This will print the full traceback
+        
+        return redirect('admin_apms')
+    
+    return redirect('admin_apms')
+
+def upload_title_deed(request):
+    if request.method == 'POST':
+        # Get the selected property name
+        property_name = request.POST.get('property')
+        
+        # Get the uploaded file
+        uploaded_file = request.FILES.get('title_deed')
+        
+        if not uploaded_file:
+            messages.error(request, "No file was uploaded.")
+            return redirect('admin_apms')
+        
+        # Validate file extension
+        if not uploaded_file.name.lower().endswith('.pdf'):
+            messages.error(request, "Only PDF files are allowed.")
+            return redirect('admin_apms')
+        
+        # Create the title_deeds directory if it doesn't exist
+        title_deeds_dir = os.path.join(settings.STATIC_ROOT, 'title_deeds')
+        os.makedirs(title_deeds_dir, exist_ok=True)
+        
+        # Create the filename
+        filename = f'{property_name} - Title Deed.pdf'
+        file_path = os.path.join(title_deeds_dir, filename)
+        
+        # Save the file
+        try:
+            # Delete existing file if it exists
+            if os.path.exists(file_path):
+                os.remove(file_path)
+                
+            with open(file_path, 'wb+') as destination:
+                for chunk in uploaded_file.chunks():
+                    destination.write(chunk)
+            messages.success(request, f"Title deed for {property_name} uploaded successfully!")
+        except Exception as e:
+            messages.error(request, f"Error saving file: {str(e)}")
+        
+        return redirect('admin_apms')
+    
+    return redirect('admin_apms')
 
 def admin_clear(request):
 	import os
