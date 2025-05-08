@@ -2,49 +2,48 @@
 {% load static %}
 
 {% block title %}
+Lease Agreement - {{ property.prop_name }}
 {% endblock %}
 
 {% block content %}
 <div class="report-container">
     <div class="report-content">
         <div class="header-container">
-            <div class="report-title-container">
-                <h2 class="report-title-main">LEASE AGREEMENT ({{ property.prop_name }})</h2>
-                <h3 class="report-title-sub">for {{ tenant.tenant_name }}</h3>
+            <div class="title-wrapper">
+                <h2 class="report-title">LEASE AGREEMENT ({{ property.prop_name }})</h2>
+                <h3 class="report-subtitle">for {{ tenant.tenant_name }}</h3>
             </div>
             <a href="{% url 'tenant' %}" class="btn btn-info back-button" role="button">Back</a>
         </div>
+        
         <div class="property-section">
-            <!-- Error message -->
-            <div id="lease_agreement-error" class="alert alert-warning" style="display: none;">
-                <p>Lease Agreement not found for this tenant.</p>
+            <!-- Error message (only shows if PDF fails to load) -->
+            <div id="lease-error" class="alert alert-warning" style="display: none;">
+                <p>Lease agreement not found for this property.</p>
+                <a href="#" class="btn btn-sm btn-primary" id="download-lease" download>Download Instead</a>
             </div>
 
-            <!-- Title Deed PDF Viewer -->
-            {% with pdf_name=property.prop_name %}
-                {% static 'lease_agreements/'|add:pdf_name|add:' - Lease Agreement.pdf' as pdf_url %}
-                <iframe 
-                    src="{{ pdf_url }}" 
-                    width="100%" 
-                    height="600px" 
-                    style="border: none;"
-                    title="Lease Agreement for {{ property.prop_name }}"
-                    onerror="handlePdfError(this)"
-                ></iframe>
-                
-                <!-- Add this debug div -->
-                <div class="debug-info" style="display: none;">
-                    <p>Debug Info:</p>
-                    <p>Property: {{ property.prop_name }}</p>
-                    <p>PDF Path: {{ pdf_url }}</p>
-                </div>
-            {% endwith %}
+            <!-- Lease Agreement PDF Viewer -->
+            <iframe 
+                src="{% static 'lease_agreements/' %}{{ property.prop_name }} - Lease Agreement.pdf" 
+                width="100%" 
+                height="600px" 
+                style="border: none;"
+                title="Lease Agreement for {{ property.prop_name }}"
+                onerror="handlePdfError(this)"
+            ></iframe>
         </div>
 
         <script>
             function handlePdfError(iframe) {
                 iframe.style.display = 'none';
-                document.getElementById('lease_agreement-error').style.display = 'block';
+                const errorDiv = document.getElementById('lease-error');
+                errorDiv.style.display = 'block';
+                
+                // Set up download link with cache busting
+                const downloadBtn = document.getElementById('download-lease');
+                const newUrl = "{% static 'lease_agreements/' %}{{ property.prop_name }} - Lease Agreement.pdf?v=" + Date.now();
+                downloadBtn.href = newUrl;
             }
         </script>
     </div>
@@ -73,15 +72,14 @@
         justify-content: space-between;
         align-items: center;
         margin-bottom: 20px;
+        gap: 20px;
     }
     
-    .report-title-container {
-        display: flex;
-        flex-direction: column;
-        align-items: flex-start;
+    .title-wrapper {
+        flex: 1;
     }
     
-    .report-title-main {
+    .report-title {
         font-size: 1.8rem;
         color: #2c3e50;
         margin: 0;
@@ -89,7 +87,7 @@
         text-transform: uppercase;
     }
     
-    .report-title-sub {
+    .report-subtitle {
         font-size: 1.4rem;
         color: #2c3e50;
         margin: 5px 0 0 0;
@@ -103,6 +101,8 @@
         text-decoration: none;
         border-radius: 4px;
         font-weight: 500;
+        white-space: nowrap;
+        height: fit-content;
     }
     
     .back-button:hover {

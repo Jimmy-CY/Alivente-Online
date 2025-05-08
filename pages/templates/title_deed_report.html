@@ -12,7 +12,7 @@
             <a href="{% url 'properties' %}" class="btn btn-info back-button" role="button">Back</a>
         </div>
         <div class="property-section">
-            <!-- Error message -->
+            <!-- Error message (only shows if PDF fails to load) -->
             <div id="title-deeds-error" class="alert alert-warning" style="display: none;">
                 <p>Title Deed not found for this property.</p>
             </div>
@@ -28,13 +28,6 @@
                     title="Title Deed for {{ property.prop_name }}"
                     onerror="handlePdfError(this)"
                 ></iframe>
-                
-                <!-- Add this debug div -->
-                <div class="debug-info" style="display: none;">
-                    <p>Debug Info:</p>
-                    <p>Property: {{ property.prop_name }}</p>
-                    <p>PDF Path: {{ pdf_url }}</p>
-                </div>
             {% endwith %}
         </div>
 
@@ -75,11 +68,10 @@
     .report-title {
         font-size: 1.8rem;
         color: #2c3e50;
-        margin: 0; /* Remove any default margins */
+        margin: 0;
     }
     
     .back-button {
-        /* Optional: Add some styling to make the button stand out */
         background-color: #17a2b8;
         color: white;
         padding: 8px 16px;

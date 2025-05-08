@@ -1,3 +1,5 @@
+from django.conf import settings
+from django.conf.urls.static import static
 from django.urls import path
 from . import views
 
@@ -16,6 +18,11 @@ urlpatterns = [
     path('admin_invoices/', views.admin_invoices, name='admin_invoices'),
     path('tenant/', views.tenant_page, name='tenant'),
     path('upload_title_deed/', views.upload_title_deed, name='upload_title_deed'),
+#    path('upload_lease_agreement/', views.upload_lease_agreement, name='upload_lease_agreement'),
+#    path('lease_agreement_report/<int:tenant_id>/', views.lease_agreement_report, name='lease_agreement_report'),
+#    path('serve_lease/<str:filename>/', views.serve_lease, name='serve_lease'),
+    path('lease/<int:tenant_id>/', views.lease_agreement_report, name='lease_agreement_report'),
+    path('lease/<str:filename>/view/', views.serve_lease, name='serve_lease'),
     path('upload_lease_agreement/', views.upload_lease_agreement, name='upload_lease_agreement'),
 
     #
@@ -31,7 +38,7 @@ urlpatterns = [
     path('lease_agreements/', views.lease_agreements, name='lease_agreements'),
     path('issues_rep/', views.issues_rep, name='issues_rep'),
     path('title_deed_report/<int:prop_id>', views.title_deed_report, name='title_deed_report'),
-    path('lease_agreement_report/<int:tenant_id>', views.lease_agreement_report, name='lease_agreement_report'),
+#    path('lease_agreement_report/<int:tenant_id>', views.lease_agreement_report, name='lease_agreement_report'),
     path('property_report/<int:prop_id>', views.property_report, name='property_report'),
     path('supplier_report/<int:supplier_id>', views.supplier_report, name='supplier_report'),
     path('tenant_report/<int:tenant_id>', views.tenant_report, name='tenant_report'),
@@ -85,4 +92,4 @@ urlpatterns = [
     path('fsr_comment_add/<issues_id>', views.fsr_comment_add, name='fsr_comment_add'),
 
 
-    ]
+    ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

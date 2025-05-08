@@ -1,23 +1,30 @@
-from django.shortcuts import render, redirect, get_object_or_404
+
+from django.conf import settings
 from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.contrib import messages
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm, PasswordChangeForm
-from django.http import HttpResponse, HttpResponseServerError
-from django.templatetags.static import static
-from .models import props, petty, issues, issues_details, tenant, invoices, supplier
-from datetime import date, datetime, timedelta
+from django.core.files.storage import FileSystemStorage
 from django.db import connection
 from django.db.models import Q
+from django.http import HttpResponse, HttpResponseServerError, FileResponse, Http404
+from django.shortcuts import render, redirect, get_object_or_404
+from django.templatetags.static import static
 from django.urls import reverse
-import mysql.connector
+from django.utils import timezone
+from django.views.decorators.cache import never_cache
+from django.views.static import serve
 from . import forms
-import os
-import logging
-from django.conf import settings
 from .forms import PropForm, TenantForm, PettyForm, InvoicesForm, IssuesForm, DetailsForm, SupplierForm
+from .models import props, petty, issues, issues_details, tenant, invoices, supplier
 from collections import defaultdict
+from datetime import date, datetime, timedelta
 from django.utils.dateparse import parse_date
 from urllib.parse import urlparse, parse_qs
+import mysql.connector
+import os
+import re
+import uuid
+import logging
 
 logger = logging.getLogger(__name__)
 
@@ -37,72 +44,107 @@ def admin_apms(request):
         "tenant": tresults
     })
 
+def lease_agreement_report(request, tenant_id):
+    try:
+        # Get tenant and property info
+        tenant_obj = get_object_or_404(tenant, pk=tenant_id)
+        if not hasattr(tenant_obj, 'prop') or not tenant_obj.prop:
+            raise Http404("Tenant has no property assigned")
+        
+        property_name = tenant_obj.prop.prop_name
+        filename = f"{property_name} - Lease Agreement.pdf"
+        file_path = os.path.join(settings.MEDIA_ROOT, 'lease_agreements', filename)
+        
+        context = {
+            'tenant': tenant_obj,
+            'property': tenant_obj.prop,
+            'filename': filename,
+            'file_exists': os.path.exists(file_path),
+            'file_url': os.path.join(settings.MEDIA_URL, 'lease_agreements', filename)
+        }
+        return render(request, 'lease_agreement_report.html', context)
+        
+    except Exception as e:
+        return render(request, 'error.html', {'error': str(e)})
+
+def serve_lease(request, filename):
+    try:
+        # Security validation
+        if not filename.endswith(' - Lease Agreement.pdf'):
+            raise Http404("Invalid filename format")
+            
+        file_path = os.path.join(settings.MEDIA_ROOT, 'lease_agreements', filename)
+        
+        if not os.path.exists(file_path):
+            raise Http404("File not found")
+            
+        response = FileResponse(open(file_path, 'rb'), content_type='application/pdf')
+        response['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+        return response
+        
+    except Exception as e:
+        return Http404(str(e))
+        
 def upload_lease_agreement(request):
     if request.method == 'POST':
         tenant_id = request.POST.get('tenant')
         uploaded_file = request.FILES.get('lease_agreement')
         
-        print("XXXXXXXXXXXXXXXXXXX",tenant_id)
-
         if not uploaded_file:
             messages.error(request, "No file was uploaded.")
             return redirect('admin_apms')
         
         try:
-            # First debug print to check the tenant_id
-            print(f"DEBUG: Received tenant_id: {tenant_id}")
-            
-            # Try getting the tenant - ensure your model's primary key field name
-            tenant_obj = tenant.objects.get(pk=tenant_id)  # Using pk instead of id
-            
-            # Debug print to check the tenant object
-            print(f"DEBUG: Found tenant: {tenant_obj}")
-            
-            if not hasattr(tenant_obj, 'prop'):
-                messages.error(request, "Tenant model doesn't have a 'prop' field.")
-                return redirect('admin_apms')
+            # Validate file
+            if not uploaded_file.name.lower().endswith('.pdf'):
+                raise ValueError("Only PDF files are allowed")
                 
-            if not tenant_obj.prop:
-                messages.error(request, "Selected tenant has no property assigned.")
-                return redirect('admin_apms')
+            tenant_obj = tenant.objects.get(pk=tenant_id)
+            if not hasattr(tenant_obj, 'prop') or not tenant_obj.prop:
+                raise ValueError("No property assigned to tenant")
                 
             property_name = tenant_obj.prop.prop_name
             lease_dir = os.path.join(settings.STATIC_ROOT, 'lease_agreements')
-            
-            # Debug print for directory path
-            print(f"DEBUG: Target directory: {lease_dir}")
-            
-            # Create directory if not exists
             os.makedirs(lease_dir, exist_ok=True)
             
-            # Sanitize filename
-            import re
-            clean_name = re.sub(r'[^\w\-_\. ]', '_', property_name)
-            filename = f"{clean_name} - Lease Agreement.pdf"
+            filename = f"{property_name} - Lease Agreement.pdf"
             file_path = os.path.join(lease_dir, filename)
             
-            # Debug print for file path
-            print(f"DEBUG: Full file path: {file_path}")
-            
-            # Remove existing file if exists
-            if os.path.exists(file_path):
-                os.remove(file_path)
-            
-            # Save new file
+            # Save file
             with open(file_path, 'wb+') as destination:
                 for chunk in uploaded_file.chunks():
                     destination.write(chunk)
             
-            messages.success(request, f"Lease agreement for {property_name} saved successfully!")
-        except tenant.DoesNotExist:
-            messages.error(request, "Selected tenant does not exist.")
+            messages.success(request, f"Lease agreement uploaded successfully!")
+            return redirect('admin_apms')
+            
         except Exception as e:
-            messages.error(request, f"Error saving file: {str(e)}")
-            print(f"FULL ERROR: {str(e)}", exc_info=True)  # This will print the full traceback
+            messages.error(request, f"Error: {str(e)}")
         
         return redirect('admin_apms')
-    
     return redirect('admin_apms')
+
+def serve_lease(request, filename):
+    """Secure file serving for exact filename format"""
+    try:
+        # Verify filename format
+        if not filename.endswith(' - Lease Agreement.pdf'):
+            raise Http404("Invalid filename format")
+            
+        file_path = os.path.join(settings.STATIC_ROOT, 'lease_agreements', filename)
+        
+        if not os.path.exists(file_path):
+            raise Http404("Lease agreement not found")
+            
+        # Serve with cache-control headers
+        response = FileResponse(open(file_path, 'rb'), content_type='application/pdf')
+        response['Cache-Control'] = 'no-store, must-revalidate'
+        response['Pragma'] = 'no-cache'
+        return response
+        
+    except Exception as e:
+        messages.error(request, f"Error serving file: {str(e)}")
+        return redirect('admin_apms')
 
 def upload_title_deed(request):
     if request.method == 'POST':
