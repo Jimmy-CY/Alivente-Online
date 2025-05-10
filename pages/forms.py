@@ -35,3 +35,8 @@ class DetailsForm(forms.ModelForm):
 	class Meta:
 		model = models.issues_details
 		fields = ["issues","issues_details_comment","issues_details_user","issues_details_date"]
+
+class ValuesForm(forms.ModelForm):
+	class Meta:
+		model = models.prop_values
+		fields = ["prop", "prop_values_purchase_price","prop_values_current_value"]

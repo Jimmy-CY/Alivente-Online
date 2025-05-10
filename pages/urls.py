@@ -49,6 +49,10 @@ urlpatterns = [
 
 
     #
+    # Finance
+    path('finance/', views.finance, name='finance'),
+
+    #
     # Tenants
     path('tenant_add/', views.tenant_add, name='tenant_add'),
     path('tenant_edit/<tenant_id>', views.tenant_edit, name='tenant_edit'),

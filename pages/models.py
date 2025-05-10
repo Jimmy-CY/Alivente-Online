@@ -124,3 +124,14 @@ class issues_details(models.Model):
 	class Meta:
 		db_table="issues_details"
 
+class prop_values(models.Model):
+	prop_values_id = models.AutoField(primary_key=True)
+	prop = models.ForeignKey(props, on_delete=models.CASCADE)
+	prop_values_purchase_price = models.IntegerField(blank=True, null=True)
+	prop_values_current_value = models.IntegerField(blank=True, null=True)
+
+	def __str__(self):
+		return self.prop_values_purchase_price
+
+	class Meta:
+		db_table="prop_values"

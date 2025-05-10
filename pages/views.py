@@ -14,8 +14,8 @@ from django.utils import timezone
 from django.views.decorators.cache import never_cache
 from django.views.static import serve
 from . import forms
-from .forms import PropForm, TenantForm, PettyForm, InvoicesForm, IssuesForm, DetailsForm, SupplierForm
-from .models import props, petty, issues, issues_details, tenant, invoices, supplier
+from .forms import PropForm, TenantForm, PettyForm, InvoicesForm, IssuesForm, DetailsForm, SupplierForm, ValuesForm
+from .models import props, petty, issues, issues_details, tenant, invoices, supplier, prop_values
 from collections import defaultdict
 from datetime import date, datetime, timedelta
 from django.utils.dateparse import parse_date
@@ -84,7 +84,7 @@ def serve_lease(request, filename):
         
     except Exception as e:
         return Http404(str(e))
-        
+
 def upload_lease_agreement(request):
     if request.method == 'POST':
         tenant_id = request.POST.get('tenant')
@@ -227,6 +227,11 @@ def admin_invoices(request):
 	months = ('Month','January','February','March','April','May','June','July','August','September','October','November','December')
 	open_invoices.create_invoices(months[today.month],today.year)
 	return redirect("admin_apms")
+
+### FINANCE ###
+def finance(request):
+#	return redirect("finance")
+	return render (request, "finance.html", {})
 
 ### TENANTS ###
 def tenant_page(request):
@@ -1146,7 +1151,6 @@ def lease_renewal_report(request):
 		renewal_period = int(row[12])  # tenant_renewal_period
 		renewal_date = lease_end_date - timedelta(days=renewal_period)
 		warning_date = renewal_date - timedelta(days=30)
-		print(row[0],lease_end_date, renewal_period, renewal_date, warning_date)
 		if today >= warning_date:
 			tenants.append({
 				'prop_name': row[0],
@@ -1177,7 +1181,6 @@ def lease_renewal_report(request):
 		'vacant_properties': vacant_properties,
 		'today': today.strftime('%Y-%m-%d')
 	}
-	print(context)
 	return render(request, 'lease_renewal_report.html', context)
 
 def lease_renewal(request):

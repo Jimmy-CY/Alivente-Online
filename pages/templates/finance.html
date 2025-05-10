@@ -1,0 +1,121 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+ALIVENTE ONLINE - FINANCE
+{% endblock %}
+
+{% block content %}
+
+<h2><center>ALIVENTE ONLINE - FINANCE</center></h2>
+<br/>
+
+  {% for msg in messages %}
+    <div class="alert alert-secondary alert-dismissible fade show auto-dismiss" role="alert">
+      <strong></strong> <center>{{ msg }}</center>
+      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    <script>
+      // Automatically close the alert after 3 seconds (3000 milliseconds)
+      setTimeout(function() {
+        document.querySelectorAll('.auto-dismiss').forEach(alert => {
+          alert.classList.remove('show'); // Hide alert visually
+          alert.classList.add('fade'); // Add fade effect
+          setTimeout(() => alert.remove(), 500); // Remove from DOM after fade
+        });
+      }, 2000);
+    </script>
+  {% endfor %}
+  
+  <div style="display: flex; justify-content: flex-end">
+    <a href="{% url 'home' %}" class="btn btn-info" style="margin-right:16px" role="button">Back</a>
+  </div>
+
+<br/>
+
+<div class="container">
+  <div class="row">
+  
+    <!-- Button 1 -->
+    <div class="col-md-4 mb-3">
+      <a href="{% url 'home' %}" class="btn btn-info btn-block py-3 finance-btn" style="height: 100px;">
+        <h5>Income Types</h5>
+      </a>
+    </div>
+    
+    <!-- Button 2 -->
+    <div class="col-md-4 mb-3">
+      <a href="{% url 'home' %}" class="btn btn-info btn-block py-3 finance-btn" style="height: 100px;">
+        <h5>Incomes</h5>
+      </a>
+    </div>
+
+    <!-- Button 3 -->
+    <div class="col-md-4 mb-3">
+      <a href="{% url 'home' %}" class="btn btn-info btn-block py-3 finance-btn" style="height: 100px;">
+        <h5>Property Valuations</h5>
+      </a>
+    </div>
+
+    <!-- Button 4 -->
+    <div class="col-md-4 mb-3">
+      <a href="{% url 'home' %}" class="btn btn-info btn-block py-3 finance-btn" style="height: 100px;">
+        <h5>Expense Types</h5>
+      </a>
+    </div>
+    
+    <!-- Button 5 -->
+    <div class="col-md-4 mb-3">
+      <a href="{% url 'home' %}" class="btn btn-info btn-block py-3 finance-btn" style="height: 100px;">
+        <h5>Expenses</h5>
+      </a>
+    </div>
+    
+    <!-- Button 6 -->
+    <div class="col-md-4 mb-3">
+      <a href="{% url 'home' %}" class="btn btn-info btn-block py-3 finance-btn" style="height: 100px;">
+        <h5>Profit & Loss</h5>
+      </a>
+    </div>
+  </div>
+</div>
+
+<style>
+  .finance-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    background-color: #17a2b8;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    position: relative;
+    box-shadow: 0 4px 0 #138496, 
+                0 5px 10px rgba(0,0,0,0.2);
+    transform: translateY(0);
+  }
+  
+  .finance-btn:hover {
+    background-color: #138496;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 0 #117a8b, 
+                0 8px 15px rgba(0,0,0,0.2);
+  }
+  
+  .finance-btn:active {
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 #117a8b, 
+                0 3px 5px rgba(0,0,0,0.2);
+  }
+  
+  h5 {
+    margin: 0;
+    font-weight: bold;
+    font-size: 1.2rem;
+  }
+</style>
+
+{% endblock %}
