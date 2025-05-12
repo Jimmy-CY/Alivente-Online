@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 {% load humanize %}
+{% load custom_filters %} 
 
 {% block title %}
 {% endblock %}
@@ -36,7 +37,7 @@
     <a href="{% url 'finance' %}" class="btn btn-info" style="margin-right:16px" role="button">Back</a>
   </div>
 <br>
-<form action = "" method="">
+<form action="" method="">
   {% csrf_token %}
   <div>
     <table class="table table-bordered table-striped text-center">
@@ -49,23 +50,28 @@
         </tr>
       </thead>
       <tbody>
-        {% for results in props %}
-          <tr>
-            {% for vresults in prop_values %}
-              {% if results.prop_id == vresults.prop_id %}
-                <td style="text-align: left">{{results.prop_name}}</td>
-                <td style="text-align: right">€ {{ vresults.prop_values_purchase_price|floatformat:"0"|intcomma }}</td>
-                <td style="text-align: right">€ {{ vresults.prop_values_current_value|floatformat:"0"|intcomma }}</td>
+        {% for property in props %}
+          {% with valuation=prop_values|get_item:property.prop_id %}
+            {% if valuation %}
+              <tr>
+                <td style="text-align: left">{{ property.prop_name }}</td>
+                <td style="text-align: right">€ {{ valuation.prop_values_purchase_price|floatformat:"0"|intcomma }}</td>
+                <td style="text-align: right">€ {{ valuation.prop_values_current_value|floatformat:"0"|intcomma }}</td>
                 <td>
                   <button type="button" class="btn btn-light" style="border-color:black; width: 100%">
-                    <a href="{% url 'home' %}">Edit</a>
+                    <a href="{% url 'finance_valuations_edit' valuation.prop_values_id %}">Edit</a>
                   </button>
-                </td>    
-              {% endif %}
-            {% endfor %}
-          </tr>
+                </td>
+              </tr>
+            {% endif %}
+          {% endwith %}
         {% endfor %}
-        <tr><td style="font-weight:bold" align="right">TOTAL: </td><td style="font-weight:bold" align="right">€ {{ pur_balance|floatformat:"0"|intcomma }}</td><td style="font-weight:bold" align="right">€ {{ cur_balance|floatformat:"0"|intcomma }}</td></tr>
+        <tr>
+          <td style="font-weight:bold" align="right">TOTAL: </td>
+          <td style="font-weight:bold" align="right">€ {{ pur_balance|default:0|floatformat:"0"|intcomma }}</td>
+          <td style="font-weight:bold" align="right">€ {{ cur_balance|default:0|floatformat:"0"|intcomma }}</td>
+          <td></td>
+        </tr>
       </tbody>
     </table>    
   </div>

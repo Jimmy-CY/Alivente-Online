@@ -67,28 +67,30 @@ class tenant(models.Model):
     tenant_lease_agreement = models.CharField(max_length=255, blank=True, null=True)
 
     def clean(self):
-        # Check for lease date conflicts
+        """Validate lease dates and check for ACTIVE tenant overlaps only"""
         if self.tenant_lease_start_date and self.tenant_lease_end_date:
-            # Ensure end date is after start date
+            # Validate date order
             if self.tenant_lease_end_date <= self.tenant_lease_start_date:
                 raise ValidationError("Lease end date must be after start date")
             
-            # Check for overlapping leases on the same property
+            # Only check for overlaps with ACTIVE tenants
             if hasattr(self, 'prop'):
                 overlapping = tenant.objects.filter(
                     prop=self.prop,
+                    tenant_current='Yes',  # KEY CHANGE - only active tenants
                     tenant_lease_start_date__lte=self.tenant_lease_end_date,
                     tenant_lease_end_date__gte=self.tenant_lease_start_date
-                ).exclude(pk=self.pk)  # Exclude current tenant when updating
+                ).exclude(pk=self.pk)
                 
                 if overlapping.exists():
+                    tenant_list = ", ".join([f"{t.tenant_name} ({'Active' if t.tenant_current == 'Yes' else 'Inactive'})" 
+                                           for t in overlapping])
                     raise ValidationError(
-                        f"Property already has tenant(s) during this period: " +
-                        ", ".join([t.tenant_name for t in overlapping])
+                        f"Property already has active tenant(s) during this period: {tenant_list}"
                     )
 
     def save(self, *args, **kwargs):
-        self.full_clean()  # Runs validation before saving
+        self.full_clean()
         super().save(*args, **kwargs)
 
     def __str__(self):

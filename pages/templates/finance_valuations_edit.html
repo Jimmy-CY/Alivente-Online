@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}Edit Property Valuation{% endblock %}
+
+{% block content %}
+<h2><center>ALIVENTE ONLINE - PROPERTY VALUATIONS</center></h2>
+<h4><center>EDIT EXISTING VALUATION</center></h4>
+<br/>
+
+<div style="display: flex ; justify-content: flex-end">
+    <button class="btn btn-info" form="valuationForm" style="margin-right:16px" type="submit">Save</button>
+    <a href="{% url 'finance_valuations' %}" class="btn btn-info" style="margin-right:16px" role="button">Back</a>
+</div>
+
+<form method="POST" action="{% url 'finance_valuations_edit_commit' vresults.prop_values_id %}" id="valuationForm">
+    {% csrf_token %}
+    
+    <div class="form-row align-items-center">
+        <!-- Property Field -->
+        <div class="col-md-4">
+            <label for="property"><strong>Property</strong></label>
+            <select name="prop_id" id="property" class="form-control" disabled>
+                {% for property in props %}
+                    <option value="{{ property.prop_id }}" 
+                        {% if property.prop_id == vresults.prop_id %}selected{% endif %}>
+                        {{ property.prop_name }}
+                    </option>
+                {% endfor %}
+            </select>
+            <input type="hidden" name="prop" value="{{ vresults.prop_id }}">
+        </div>
+        
+        <!-- Purchase Price -->
+        <div class="col-md-3">
+            <label for="purchase_price"><strong>Purchase Price</strong></label>
+            <div class="input-group">
+                <div class="input-group-prepend">
+                    <span class="input-group-text">€</span>
+                </div>
+                <input type="number" id="purchase_price" name="prop_values_purchase_price" 
+                       class="form-control text-right" 
+                       value="{{ vresults.prop_values_purchase_price|floatformat:'0' }}">
+            </div>
+        </div>
+        
+        <!-- Current Value -->
+        <div class="col-md-3">
+            <label for="current_value"><strong>Current Value</strong></label>
+            <div class="input-group">
+                <div class="input-group-prepend">
+                    <span class="input-group-text">€</span>
+                </div>
+                <input type="number" id="current_value" name="prop_values_current_value" 
+                       class="form-control text-right" 
+                       value="{{ vresults.prop_values_current_value|floatformat:'0' }}">
+            </div>
+        </div>
+    </div>
+</form>
+
+<style>
+    .text-right {
+        text-align: right !important;
+    }
+    .form-row {
+        margin-top: 20px;
+    }
+</style>
+
+{% endblock %}

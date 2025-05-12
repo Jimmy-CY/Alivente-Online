@@ -7,7 +7,7 @@
 {% block content %}
 
 <h2><center>ALIVENTE ONLINE - PROPERTY VALUATIONS</center></h2>
-<h4><center>ADD TRANSACTION</center></h4>
+<h4><center>ADD VALUATION</center></h4>
 <br/>
   
 <form action = "{% url 'finance_valuations_commit' %}" method="post">
@@ -19,8 +19,8 @@
 <br/>
   <div class="form-row">
     <div class="form-group col-md-4">
-      <label for="prop_name"><strong>Property</strong></label>
-      <select id="prop_name" class="form-control" name="prop_name" required>
+      <label for="prop"><strong>Property</strong></label>
+      <select id="prop" class="form-control" name="prop" required>
         <option value="" disabled selected>Select Property</option>
         {% for results in props %}
           <option value={{results.prop_id}}>{{results.prop_name}}</option>
@@ -36,7 +36,7 @@
       <input type="number" class="form-control" id="prop_values_current_value" name="prop_values_current_value" placeholder="Amount" align="margin-right" step="0.01" required>
     </div>
   </div>
-  
+
 </form>
 
 {% endblock %}
