@@ -51,6 +51,9 @@ urlpatterns = [
     #
     # Finance
     path('finance/', views.finance, name='finance'),
+    path('finance_valuations/', views.finance_valuations, name='finance_valuations'),
+    path('finance_valuations_add/', views.finance_valuations_add, name='finance_valuations_add'),
+    path('finance_valuations_commit/', views.finance_valuations_commit, name='finance_valuations_commit'),
 
     #
     # Tenants

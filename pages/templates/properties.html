@@ -31,7 +31,11 @@
 <body>
   
   <div style="display: flex ; justify-content: flex-end">
-    <a href="{% url 'properties_add' %}" class="btn btn-info" style="margin-right:16px" type="button">Add New</a>
+    {% if user.username == 'admin' or user.username == 'Demetrios' or user.username == 'angy' %}
+        <a href="{% url 'properties_add' %}" class="btn btn-info" style="margin-right:16px" type="button">Add New</a>
+    {% else %}
+        <span class="btn btn-secondary" style="margin-right:16px; opacity:0.6; cursor:not-allowed; pointer-events:none;" type="button">Add New</span>
+    {% endif %}
     <a href="{% url 'home' %}" class="btn btn-info" style="margin-right:16px" role="button">Back</a>
   </div>
 
@@ -79,27 +83,39 @@
       <th style="width: 10%">Title Deed</th>
     </tr>
   </thead>
-  <tbody>
+<tbody>
     {% for results in props %}
       <tr>
         <td style="text-align: left">{{results.prop_name}}</td>
         <td>{{results.prop_country}}</td>
         <td>{{results.prop_status}}</td>
         <td>
-          <button type="button" class="btn btn-light" style="border-color:black; width: 100%">
-            <a href="{% url 'properties_edit' results.prop_id %}">Edit</a>
-          </button>
+          {% if user.username == 'admin' or user.username == 'Demetrios' or user.username == 'angy' %}
+            <button type="button" class="btn btn-light" style="border-color:black; width: 100%">
+              <a href="{% url 'properties_edit' results.prop_id %}">Edit</a>
+            </button>
+          {% else %}
+            <button type="button" class="btn btn-light" style="border-color:black; width: 100%; background-color: #e9ecef; color: #6c757d;" disabled>
+              Edit
+            </button>
+          {% endif %}
         </td>    
         <td>
           <button type="button" class="btn btn-light" style="border-color:black; width: 100%">
             <a href="{% url 'property_report' results.prop_id %}">View</a>
           </button>
         </td>
-        <td>
+      <td>
+        {% if user.username == 'admin' or user.username == 'Demetrios' or user.username == 'angy' %}
           <button type="button" class="btn btn-light" style="border-color:black; width: 100%">
             <a href="{% url 'title_deed_report' results.prop_id %}">View</a>
           </button>
-        </td>
+        {% else %}
+          <button type="button" class="btn btn-light" style="border-color:black; width: 100%; background-color: #e9ecef; color: #6c757d;" disabled>
+            View
+          </button>
+        {% endif %}
+      </td>
       </tr>
     {% endfor %}
   </tbody>

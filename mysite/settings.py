@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     "pages",
     "django_celery_beat",
     "whitenoise.runserver_nostatic",
+    "django.contrib.humanize",
     
 ]
 

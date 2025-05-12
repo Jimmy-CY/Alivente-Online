@@ -97,8 +97,8 @@
                     </div>
                     <div class="detail-row">
                         <span class="detail-label">Available for Rent:</span>
-                        <span class="badge {% if property.prop_available_for_rent %}badge-info{% else %}badge-light{% endif %}">
-                            {{ property.prop_available_for_rent|yesno:"Yes,No" }}
+                        <span class="badge {% if property.prop_available_for_rent == 'Yes' %}badge-available{% else %}badge-not-available{% endif %}">
+                            {{ property.prop_available_for_rent }}
                         </span>
                     </div>
                 </div>
@@ -235,6 +235,16 @@
         text-decoration: none;
         border-radius: 4px;
         font-weight: 500;
+    }
+    
+    .badge-available {
+        background-color: #28a745;  /* Green for Yes */
+        color: white;
+    }
+
+    .badge-not-available {
+        background-color: #dc3545;  /* Red for No */
+        color: white;
     }
     
     @media print {

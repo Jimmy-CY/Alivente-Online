@@ -1,8 +1,8 @@
-
 from django.conf import settings
 from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.contrib import messages
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm, PasswordChangeForm
+from django.core.exceptions import ValidationError
 from django.core.files.storage import FileSystemStorage
 from django.db import connection
 from django.db.models import Q
@@ -11,6 +11,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.templatetags.static import static
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.dateparse import parse_date
 from django.views.decorators.cache import never_cache
 from django.views.static import serve
 from . import forms
@@ -18,7 +19,6 @@ from .forms import PropForm, TenantForm, PettyForm, InvoicesForm, IssuesForm, De
 from .models import props, petty, issues, issues_details, tenant, invoices, supplier, prop_values
 from collections import defaultdict
 from datetime import date, datetime, timedelta
-from django.utils.dateparse import parse_date
 from urllib.parse import urlparse, parse_qs
 import mysql.connector
 import os
@@ -233,6 +233,69 @@ def finance(request):
 #	return redirect("finance")
 	return render (request, "finance.html", {})
 
+def finance_valuations(request):
+    results = props.objects.all().order_by('prop_country', 'prop_name')
+    vresults = prop_values.objects.all()
+
+    pur_balance = 0
+    cur_balance = 0
+
+    for x in vresults:
+        print("Processing record:", x.prop_values_id, x.prop_values_purchase_price)
+        if x.prop_values_purchase_price is not None:  # Explicit None check
+            pur_balance += x.prop_values_purchase_price
+        if x.prop_values_current_value is not None:  # Explicit None check
+            cur_balance += x.prop_values_current_value
+
+    context = {
+        'pur_balance': pur_balance,
+        'cur_balance': cur_balance,        
+        'props': results,
+        'prop_values': vresults,
+    }
+    return render(request, "finance_valuations.html", context)
+
+def finance_valuations_add(request):
+	results = props.objects.all().order_by('prop_country', 'prop_name')
+	vresults = prop_values.objects.all()
+	context = {
+		'props': results,
+		'prop_values': vresults,
+	}
+	return render(request, "finance_valuations_add.html", context)
+
+def finance_valuations_commit(request):
+	if request.method == "POST":
+		print ("AAAAAAAAAAAAAAAA")
+		form = ValuesForm(request.POST or None)
+		if form.is_valid():
+			print ("BBBBBBBBBBBBBBBBBB")
+			form.save()
+			messages.success(request, "Valuation Added Successfully")
+		else:
+			print("CCCCCCCCCCCCCCCCCC")
+			print(form.errors.as_data())
+	results = props.objects.all().order_by('prop_country','prop_name')
+	vresults = prop_values.objects.all().order_by('prop_values_purchase_price')    
+	print("DDDDDDDDDDDDDDDDDDD")
+	pur_balance = 0
+	cur_balance = 0
+
+	for x in vresults:
+		print("Processing record:", x.prop_values_id, x.prop_values_purchase_price)
+		if x.prop_values_purchase_price is not None:  # Explicit None check
+			pur_balance += x.prop_values_purchase_price
+		if x.prop_values_current_value is not None:  # Explicit None check
+			cur_balance += x.prop_values_current_value
+
+	context = {
+		'pur_balance': pur_balance,
+		'cur_balance': cur_balance,        
+		'props': results,
+		'prop_values': vresults,
+	}
+	return render(request, "finance_valuations.html", context)
+
 ### TENANTS ###
 def tenant_page(request):
 	prop_output = request.POST.get('propname')
@@ -277,17 +340,54 @@ def tenant_edit(request, tenant_id):
 	return render (request, "tenant_edit.html", {"props":results, "tenant":tresults})
 
 def tenant_commit(request):
-	if request.method == "POST":
-		form = TenantForm(request.POST or None)
-		if form.is_valid():
-			form.save()
-			messages.success(request, "Tenant Added Successfully")
-		else:
-			print(form.errors.as_data())
-	results = props.objects.all().order_by('prop_country','prop_name')
-	tresults = tenant.objects.all().order_by('tenant_name')
-	return render (request, "tenant.html", {"props":results, "tenant":tresults})
-
+    props_list = props.objects.all().order_by('prop_country', 'prop_name')
+    
+    if request.method == "POST":
+        form = TenantForm(request.POST)
+        
+        if form.is_valid():
+            prop = form.cleaned_data['prop']
+            lease_start = form.cleaned_data['tenant_lease_start_date']
+            lease_end = form.cleaned_data['tenant_lease_end_date']
+            
+            # Check for overlapping ACTIVE tenants only
+            overlapping = tenant.objects.filter(
+                prop=prop,
+                tenant_current='Yes',
+                tenant_lease_start_date__lte=lease_end,
+                tenant_lease_end_date__gte=lease_start
+            ).exclude(pk=form.instance.pk if form.instance else None)
+            
+            if overlapping.exists():
+                tenant_list = ", ".join([t.tenant_name for t in overlapping])
+                messages.error(request, 
+                    f"Property {prop.prop_name} has active tenant(s) ({tenant_list}) during this period."
+                )
+                return render(request, "tenant_add.html", {
+                    'form': form,
+                    'props': props_list,
+                    'form_data': request.POST
+                })
+            
+            try:
+                new_tenant = form.save()
+                messages.success(request, f"Tenant {new_tenant.tenant_name} added successfully")
+                return redirect('tenant')
+            except Exception as e:
+                messages.error(request, f"Error saving tenant: {str(e)}")
+        else:
+            # Form is invalid - collect all errors
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f"{field}: {error}")
+    
+    # For GET requests or when form is invalid
+    return render(request, "tenant_add.html", {
+        'form': TenantForm(request.POST if request.method == "POST" else None),
+        'props': props_list,
+        'form_data': request.POST if request.method == "POST" else None
+    })
+    
 def tenant_edit_commit(request, tenant_id):
 	ten = tenant.objects.get(pk=tenant_id)
 	if request.method == "POST":
@@ -392,7 +492,8 @@ def properties_page(request):
 
 def properties_add(request):
 	results = props.objects.all().order_by('prop_country','prop_name')
-	return render(request, "properties_add.html", {"props":results})
+	existing_names = list(props.objects.values_list('prop_name', flat=True))
+	return render(request, "properties_add.html", {"props":results, "existing_names": existing_names})
 
 def properties_commit(request):
 	if request.method == "POST":
@@ -404,19 +505,50 @@ def properties_commit(request):
 	return render (request, "properties.html", {"props":results})
 
 def properties_edit(request, prop_id):
-	results = props.objects.filter(pk=prop_id)
-	return render (request, "properties_edit.html", {"props":results})
+    # Get the current property being edited
+    current_property = get_object_or_404(props, pk=prop_id)
+    
+    # Get all other property names (excluding the current one)
+    existing_names = props.objects.exclude(prop_id=prop_id).values_list('prop_name', flat=True)
+    
+    return render(request, "properties_edit.html", {
+        "props": [current_property],  # Maintain your existing structure
+        "existing_names": list(existing_names)  # Add this for client-side validation
+    })
 
 def properties_edit_commit(request, prop_id):
-	prop = props.objects.get(pk=prop_id)
-	if request.method == "POST":
-		form = PropForm(request.POST or None, instance=prop)
-		if form.is_valid():
-			form.save()
-	results = props.objects.all().order_by('prop_country','prop_name')
-	messages.success(request, "Property Edited Successfully")
-	return render (request, "properties.html", {"props":results})
-
+    prop = get_object_or_404(props, pk=prop_id)
+    existing_names = props.objects.exclude(prop_id=prop_id).values_list('prop_name', flat=True)
+    
+    if request.method == "POST":
+        form = PropForm(request.POST, instance=prop)
+        
+        if form.is_valid():
+            new_name = form.cleaned_data.get('prop_name')
+            current_name = prop.prop_name
+            
+            if new_name.lower() != current_name.lower():
+                if props.objects.exclude(prop_id=prop_id).filter(prop_name__iexact=new_name).exists():
+                    messages.error(request, "A property with this name already exists.")
+                    return render(request, "properties_edit.html", {
+                        'props': [prop],
+                        'existing_names': list(existing_names)
+                    })
+            
+            form.save()
+            messages.success(request, "Property Edited Successfully")
+            results = props.objects.all().order_by('prop_country','prop_name')
+            return redirect('properties')  # Better to redirect after POST
+        
+        # Form is invalid
+        messages.error(request, "Please correct the errors below.")
+        return render(request, "properties_edit.html", {
+            'props': [prop],
+            'existing_names': list(existing_names)
+        })
+    
+    # If not POST, redirect to properties page
+    return redirect('properties')
 
 ### PETTY CASH ###
 def petty_cash(request):

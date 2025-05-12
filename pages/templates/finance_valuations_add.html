@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+{% endblock %}
+
+{% block content %}
+
+<h2><center>ALIVENTE ONLINE - PROPERTY VALUATIONS</center></h2>
+<h4><center>ADD TRANSACTION</center></h4>
+<br/>
+  
+<form action = "{% url 'finance_valuations_commit' %}" method="post">
+  {% csrf_token %}
+  <div style="display: flex ; justify-content: flex-end">
+      <button class="btn btn-info" style="margin-right:16px" type="submit">Save</button>
+      <a href="{% url 'finance_valuations' %}" class="btn btn-info" style="margin-right:16px" role="button">Back</a>
+  </div>
+<br/>
+  <div class="form-row">
+    <div class="form-group col-md-4">
+      <label for="prop_name"><strong>Property</strong></label>
+      <select id="prop_name" class="form-control" name="prop_name" required>
+        <option value="" disabled selected>Select Property</option>
+        {% for results in props %}
+          <option value={{results.prop_id}}>{{results.prop_name}}</option>
+        {% endfor %}
+      </select>
+    </div>  
+    <div class="form-group col-md-2">
+      <label for="prop_values_purchase_price"><strong>Purchase Price</strong></label>
+      <input type="number" class="form-control" id="prop_values_purchase_price" name="prop_values_purchase_price" placeholder="Amount" align="margin-right" step="0.01" required>
+    </div>
+    <div class="form-group col-md-2">
+      <label for="prop_values_current_value"><strong>Current Value</strong></label>
+      <input type="number" class="form-control" id="prop_values_current_value" name="prop_values_current_value" placeholder="Amount" align="margin-right" step="0.01" required>
+    </div>
+  </div>
+  
+</form>
+
+{% endblock %}

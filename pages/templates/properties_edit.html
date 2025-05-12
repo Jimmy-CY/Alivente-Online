@@ -11,19 +11,20 @@
 <br/>
 
 {% for results in props %}
-<form action = "{% url 'properties_edit_commit' results.prop_id %}" method="post">
+<form action="{% url 'properties_edit_commit' results.prop_id %}" method="post" onsubmit="return validatePropertyName()">
   {% csrf_token %}
   <div style="display: flex ; justify-content: flex-end">
       <button class="btn btn-info" style="margin-right:16px" type="submit">Save</button>
       <a href="{% url 'properties' %}" class="btn btn-info" style="margin-right:16px" role="button">Back</a>
   </div>
-  
-    <div class="form-row">
-      <div class="form-group col-md-4">
-        <label for="prop_name"><strong>Property Name</strong></label>
-        <input type="text" class="form-control" id="prop_name" name="prop_name" placeholder="Property Name" value= "{{results.prop_name}}" required>
-      </div>
+  <input type="hidden" id="original_prop_name" value="{{ results.prop_name }}">
+  <div class="form-row">
+    <div class="form-group col-md-4">
+      <label for="prop_name"><strong>Property Name</strong></label>
+      <input type="text" class="form-control" id="prop_name" name="prop_name" placeholder="Property Name" value="{{ results.prop_name }}" required>
+      <small id="nameError" class="text-danger d-none">A property with this name already exists.</small>
     </div>
+  </div>
     <div class="form-row">
       <div class="form-group col-md-4">
         <label for="prop_address1"><strong>Address</strong></label>
@@ -147,4 +148,34 @@
  
 </form>
 {% endfor %}
+
+<script>
+// Convert Django template variable to JavaScript array
+const existingNames = {{ existing_names|safe }};
+
+function validatePropertyName() {
+    const propName = document.getElementById('prop_name').value.trim();
+    const originalName = document.getElementById('original_prop_name').value.trim();
+    
+    // Skip validation if name hasn't changed
+    if (propName.toLowerCase() === originalName.toLowerCase()) {
+        return true;
+    }
+    
+    // Check for duplicates (case-insensitive)
+    const isDuplicate = existingNames.some(name => 
+        name.toLowerCase() === propName.toLowerCase()
+    );
+    
+    if (isDuplicate) {
+        document.getElementById('nameError').classList.remove('d-none');
+        alert('A property with this name already exists. Please choose a different name.');
+        return false;
+    }
+    
+    document.getElementById('nameError').classList.add('d-none');
+    return true;
+}
+</script>
+
 {% endblock %}

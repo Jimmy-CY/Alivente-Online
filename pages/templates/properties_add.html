@@ -10,13 +10,12 @@
 <h4><center>ADD NEW PROPERTY</center></h4>
 <br/>
 
-<form action = "{% url 'properties_commit' %}" method="post">
+<form id="propertyForm" action="{% url 'properties_commit' %}" method="post" onsubmit="return validatePropertyName()">
   {% csrf_token %}
   <div style="display: flex ; justify-content: flex-end">
-      <button class="btn btn-info" style="margin-right:16px" type="submit">Save</button>
+      <button class="btn btn-info" style="margin-right:16px" type="submit" id="submitBtn">Save</button>
       <a href="{% url 'properties' %}" class="btn btn-info" style="margin-right:16px" role="button">Back</a>
   </div>
-
   <div class="form-row">
     <div class="form-group col-md-4">
       <label for="prop_name"><strong>Property Name</strong></label>
@@ -120,5 +119,18 @@
     </div>
   </div>
 </form>
+
+<script>
+const existingNames = {{ existing_names|safe }};
+
+function validatePropertyName() {
+    const propName = document.getElementById('prop_name').value.trim();
+    if (existingNames.some(name => name.toLowerCase() === propName.toLowerCase())) {
+        alert('A property with this name already exists.');
+        return false;
+    }
+    return true;
+}
+</script>
 
 {% endblock %}

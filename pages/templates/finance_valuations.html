@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}
+{% endblock %}
+
+{% block content %}
+
+<h2><center>ALIVENTE ONLINE - PROPERTY VALUATIONS</center></h2>
+<br/>
+
+  {% for msg in messages %}
+    <div class="alert alert-secondary alert-dismissible fade show auto-dismiss" role="alert">
+      <strong></strong> <center>{{ msg }}</center>
+      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    <script>
+      // Automatically close the alert after 3 seconds (3000 milliseconds)
+      setTimeout(function() {
+        document.querySelectorAll('.auto-dismiss').forEach(alert => {
+          alert.classList.remove('show'); // Hide alert visually
+          alert.classList.add('fade'); // Add fade effect
+          setTimeout(() => alert.remove(), 500); // Remove from DOM after fade
+        });
+      }, 2000);
+    </script>
+  {% endfor %}
+  
+<body>
+  
+  <div style="display: flex ; justify-content: flex-end">
+    <a href="{% url 'finance_valuations_add' %}" class="btn btn-info" style="margin-right:16px" type="button">Add New</a>
+    <a href="{% url 'finance' %}" class="btn btn-info" style="margin-right:16px" role="button">Back</a>
+  </div>
+<br>
+<form action = "" method="">
+  {% csrf_token %}
+  <div>
+    <table class="table table-bordered table-striped text-center">
+      <thead>
+        <tr>
+          <th style="text-align: left; width: 50%">Property</th>
+          <th style="width: 20%">Purchase Price</th>
+          <th style="width: 20%">Current Value</th>
+          <th style="width: 10%">Details</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for results in props %}
+          <tr>
+            {% for vresults in prop_values %}
+              {% if results.prop_id == vresults.prop_id %}
+                <td style="text-align: left">{{results.prop_name}}</td>
+                <td style="text-align: right">€ {{ vresults.prop_values_purchase_price|floatformat:"0"|intcomma }}</td>
+                <td style="text-align: right">€ {{ vresults.prop_values_current_value|floatformat:"0"|intcomma }}</td>
+                <td>
+                  <button type="button" class="btn btn-light" style="border-color:black; width: 100%">
+                    <a href="{% url 'home' %}">Edit</a>
+                  </button>
+                </td>    
+              {% endif %}
+            {% endfor %}
+          </tr>
+        {% endfor %}
+        <tr><td style="font-weight:bold" align="right">TOTAL: </td><td style="font-weight:bold" align="right">€ {{ pur_balance|floatformat:"0"|intcomma }}</td><td style="font-weight:bold" align="right">€ {{ cur_balance|floatformat:"0"|intcomma }}</td></tr>
+      </tbody>
+    </table>    
+  </div>
+</form>
+</body>
+
+{% endblock %}

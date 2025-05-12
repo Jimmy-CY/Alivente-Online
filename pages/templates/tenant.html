@@ -32,7 +32,11 @@
   <div style="display: flex ; justify-content: flex-end">
     <a href="{% url 'open_invoices_report' %}" class="btn btn-info" style="margin-right:16px" type="button">Open Invoices</a>
     <a href="{% url 'lease_renewal_report' %}" class="btn btn-info" style="margin-right:16px" type="button">Lease Renewals</a>
-    <a href="{% url 'tenant_add' %}" class="btn btn-info" style="margin-right:16px" type="button">Add New</a>
+    {% if user.username == 'admin' or user.username == 'Demetrios' or user.username == 'angy' %}
+      <a href="{% url 'tenant_add' %}" class="btn btn-info" style="margin-right:16px" type="button">Add New</a>
+    {% else %}
+      <span class="btn btn-secondary" style="margin-right:16px; opacity:0.6; cursor:not-allowed; pointer-events:none;" type="button">Add New</span>
+    {% endif %}
     <a href="{% url 'home' %}" class="btn btn-info" style="margin-right:16px" role="button">Back</a>
   </div>
 
@@ -91,10 +95,16 @@
             <td>{{results.prop_name}}</td>
             <td>{{tresults.tenant_current}}</td>
             <td>
-              <button type="button" class="btn btn-light" style="border-color:black; width: 100%">
-                <a href="{% url 'tenant_edit' tresults.tenant_id %}">Edit</a>
-              </button>
-            </td>    
+              {% if user.username == 'admin' or user.username == 'Demetrios' or user.username == 'angy' %}
+                <button type="button" class="btn btn-light" style="border-color:black; width: 100%">
+                  <a href="{% url 'tenant_edit' tresults.tenant_id %}">Edit</a>
+                </button>
+              {% else %}
+                <button type="button" class="btn btn-light" style="border-color:black; width: 100%; opacity: 0.5; cursor: not-allowed; pointer-events: none;" disabled>
+                  <span style="color: #6c757d;">Edit</span>
+                </button>
+              {% endif %}
+            </td> 
             <td>
               <button type="button" class="btn btn-light" style="border-color:black; width: 100%">
                 <a href="{% url 'lease_agreement_report' tresults.tenant_id %}">View</a>
