@@ -5,7 +5,7 @@ from django.contrib.auth.forms import UserCreationForm, UserChangeForm, Password
 from django.core.exceptions import ValidationError
 from django.core.files.storage import FileSystemStorage
 from django.db import connection
-from django.db.models import Q
+from django.db.models import Q, Prefetch
 from django.http import HttpResponse, HttpResponseServerError, FileResponse, Http404
 from django.shortcuts import render, redirect, get_object_or_404
 from django.templatetags.static import static
@@ -233,6 +233,17 @@ def finance(request):
 #	return redirect("finance")
 	return render (request, "finance.html", {})
 
+def finance_revenue(request):
+	props_data = props.objects.prefetch_related(
+		Prefetch(
+			'revenue_set',
+			queryset=revenue.objects.select_related('revenue_line_types', 'revenue_types')
+		)
+	).all().order_by('prop_country', 'prop_name')
+	return render(request, "finance_revenue.html", {
+		"props_data": props_data,
+	})
+
 def finance_revenue_types(request):
     rev_types = revenue_types.objects.all()
     return render(request, "finance_revenue_types.html", {
@@ -243,6 +254,12 @@ def finance_revenue_line_types(request):
     rev_line_types = revenue_line_types.objects.all()
     return render(request, "finance_revenue_line_types.html", {
         "rltresults": rev_line_types,
+    })
+
+def finance_expense(request):
+    exp = expense.objects.all()
+    return render(request, "finance_expense.html", {
+        "eresults": exp,
     })
 
 def finance_expense_types(request):

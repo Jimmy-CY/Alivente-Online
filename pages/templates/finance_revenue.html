@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+{% load custom_filters %} 
+
+{% block title %}
+{% endblock %}
+
+{% block content %}
+
+<h2><center>ALIVENTE ONLINE - REVENUE</center></h2>
+<br/>
+
+  {% for msg in messages %}
+    <div class="alert alert-secondary alert-dismissible fade show auto-dismiss" role="alert">
+      <strong></strong> <center>{{ msg }}</center>
+      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    <script>
+      // Automatically close the alert after 3 seconds (3000 milliseconds)
+      setTimeout(function() {
+        document.querySelectorAll('.auto-dismiss').forEach(alert => {
+          alert.classList.remove('show'); // Hide alert visually
+          alert.classList.add('fade'); // Add fade effect
+          setTimeout(() => alert.remove(), 500); // Remove from DOM after fade
+        });
+      }, 2000);
+    </script>
+  {% endfor %}
+  
+<body>
+  
+  <div style="display: flex ; justify-content: flex-end">
+    <a href="{% url 'finance' %}" class="btn btn-info" style="margin-right:16px" type="button">Add New</a>
+    <a href="{% url 'finance' %}" class="btn btn-info" style="margin-right:16px" role="button">Back</a>
+  </div>
+<br>
+<form action="" method="">
+  {% csrf_token %}
+  <div style="overflow-x: auto;">
+    <table class="table table-bordered table-striped text-center" style="table-layout: fixed; width: 100%;">
+      <thead>
+        <tr>
+          <th style="text-align: left; box-sizing: border-box;">Property</th>
+          <th style="text-align: left; box-sizing: border-box;">Revenue Line Type</th>
+          <th style="text-align: left; box-sizing: border-box;">Revenue Type</th>
+          <th style="text-align: left; box-sizing: border-box;">Revenue Amount</th>
+          <th style="box-sizing: border-box;">Details</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for pro in props_data %}
+          {% for rev in pro.revenue_set.all %}
+            <tr>
+              <td>{{ pro.prop_name }}</td>
+              <td>{{ rev.revenue_line_types.revenue_line_types_name }}</td>
+              <td>{{ rev.revenue_types.revenue_types_name }}</td>
+              <td>{{ rev.revenue_amount }}</td>
+              <td>
+                <button class="btn btn-light" style="border-color:black; width: 100%">
+                  <a href="{% url 'finance' %}">Edit</a>
+                </button>
+              </td>
+            </tr>
+          {% endfor %}
+        {% endfor %}
+      </tbody>
+    </table>    
+  </div>
+</form>
+</body>
+
+{% endblock %}
