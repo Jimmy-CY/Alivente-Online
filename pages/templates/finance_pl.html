@@ -1,0 +1,469 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+{% load custom_filters %}
+
+{% block title %}ALIVENTE ONLINE - PROFIT & LOSS{% endblock %}
+
+{% block content %}
+
+<h2><center>ALIVENTE ONLINE - PROFIT & LOSS</center></h2>
+<h5><center>12 MONTH BUDGET</center></h5>
+<br/>
+
+{% for msg in messages %}
+<div class="alert alert-secondary alert-dismissible fade show auto-dismiss" role="alert">
+    {{ msg }}
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+    </button>
+</div>
+{% endfor %}
+
+<div class="d-flex justify-content-end mb-2">
+    <a href="{% url 'finance' %}" class="btn btn-info">Back</a>
+</div>
+
+<!-- Property Tabs -->
+<ul class="nav nav-tabs nav-fill custom-tabs mb-3">
+    <li class="nav-item">
+        <a class="nav-link active custom-tab"
+           data-toggle="tab"
+           href="#all"
+           title="All Properties">
+            <i class="fas fa-layer-group mr-2"></i>All Properties
+        </a>
+    </li>
+    {% for prop in properties %}
+    <li class="nav-item">
+        <a class="nav-link custom-tab"
+           data-toggle="tab"
+           href="#prop{{ prop.prop_id }}"
+           title="{{ prop.prop_name }}">
+           <i class="fas fa-home mr-2"></i>{{ prop.prop_name|truncatechars:12 }}
+        </a>
+    </li>
+    {% endfor %}
+</ul>
+
+<div class="tab-content">
+    <!-- All Properties Tab -->
+    <div class="tab-pane fade show active" id="all">
+        <!-- COMBINED TABLE -->
+        <div class="table-responsive" style="overflow-x: auto; width: 100%;">
+            <table class="table table-sm table-bordered" style="font-size: 0.85rem;">
+                <thead class="thead-light">
+                    <tr>
+                        <th></th>
+                        <th class="text-center">Jan</th>
+                        <th class="text-center">Feb</th>
+                        <th class="text-center">Mar</th>
+                        <th class="text-center">Apr</th>
+                        <th class="text-center">May</th>
+                        <th class="text-center">Jun</th>
+                        <th class="text-center">Jul</th>
+                        <th class="text-center">Aug</th>
+                        <th class="text-center">Sep</th>
+                        <th class="text-center">Oct</th>
+                        <th class="text-center">Nov</th>
+                        <th class="text-center">Dec</th>
+                        <th class="text-center">Total</th>
+                        <th class="text-center">Monthly</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- REVENUE SECTION -->
+                    <tr class="section-header">
+                        <td class="font-weight-bold" style="background-color: #17a2b8; color: white;">REVENUE</td>
+                        <td colspan="14" style="background-color: #17a2b8;"></td>
+                    </tr>
+                    {% for line_type in revenue_line_types %}
+                    <tr>
+                        <td>{{ line_type.revenue_line_types_name }}</td>
+                        {% with line_totals=revenue_totals_by_line.all|get_item:line_type.revenue_line_types_id %}
+                        <td class="text-right">{{ line_totals.jan|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ line_totals.feb|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ line_totals.mar|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ line_totals.apr|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ line_totals.may|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ line_totals.jun|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ line_totals.jul|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ line_totals.aug|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ line_totals.sep|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ line_totals.oct|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ line_totals.nov|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ line_totals.dec|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right font-weight-bold">{{ line_totals.total|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ line_totals.total|divide:12|default:0|floatformat:"0"|intcomma }}</td>
+                        {% endwith %}
+                    </tr>
+                    {% endfor %}
+                    <tr class="font-weight-bold" style="background-color: #f8f9fa">
+                        <td>TOTAL REVENUE:</td>
+                        <td class="text-right">{{ revenue_totals.jan|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ revenue_totals.feb|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ revenue_totals.mar|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ revenue_totals.apr|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ revenue_totals.may|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ revenue_totals.jun|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ revenue_totals.jul|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ revenue_totals.aug|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ revenue_totals.sep|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ revenue_totals.oct|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ revenue_totals.nov|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ revenue_totals.dec|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ revenue_totals.year|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ revenue_totals.year|divide:12|default:0|floatformat:"0"|intcomma }}</td>
+                    </tr>
+                    
+                    <!-- EXPENSES SECTION -->
+                    <tr class="section-header">
+                        <td class="font-weight-bold" style="background-color: #17a2b8; color: white;">EXPENSES</td>
+                        <td colspan="14" style="background-color: #17a2b8;"></td>
+                    </tr>
+                    {% for line_type in expense_line_types %}
+                    <tr>
+                        <td>{{ line_type.expense_line_types_name }}</td>
+                        {% with line_totals=expense_totals_by_line.all|get_item:line_type.expense_line_types_id %}
+                        <td class="text-right">{{ line_totals.jan|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ line_totals.feb|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ line_totals.mar|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ line_totals.apr|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ line_totals.may|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ line_totals.jun|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ line_totals.jul|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ line_totals.aug|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ line_totals.sep|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ line_totals.oct|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ line_totals.nov|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ line_totals.dec|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right font-weight-bold">{{ line_totals.total|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ line_totals.total|divide:12|default:0|floatformat:"0"|intcomma }}</td>
+                        {% endwith %}
+                    </tr>
+                    {% endfor %}
+                    <tr class="font-weight-bold" style="background-color: #f8f9fa">
+                        <td>TOTAL EXPENSES:</td>
+                        <td class="text-right">{{ expense_totals.jan|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ expense_totals.feb|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ expense_totals.mar|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ expense_totals.apr|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ expense_totals.may|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ expense_totals.jun|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ expense_totals.jul|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ expense_totals.aug|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ expense_totals.sep|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ expense_totals.oct|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ expense_totals.nov|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ expense_totals.dec|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ expense_totals.year|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ expense_totals.year|divide:12|default:0|floatformat:"0"|intcomma }}</td>
+                    </tr>
+                    
+                    <!-- PROFIT SECTION -->
+                    <tr class="section-header">
+                        <td class="font-weight-bold" style="background-color: #17a2b8; color: white;">PROFIT</td>
+                        <td colspan="14" style="background-color: #17a2b8;"></td>
+                    </tr>
+                    <tr class="font-weight-bold" style="background-color: #f8f9fa">
+                        <td>NET PROFIT:</td>
+                        <td class="text-right">{{ profit_totals.jan|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ profit_totals.feb|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ profit_totals.mar|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ profit_totals.apr|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ profit_totals.may|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ profit_totals.jun|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ profit_totals.jul|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ profit_totals.aug|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ profit_totals.sep|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ profit_totals.oct|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ profit_totals.nov|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ profit_totals.dec|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ profit_totals.year|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ profit_totals.year|divide:12|default:0|floatformat:"0"|intcomma }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Property-specific Tabs -->
+    {% for prop in properties %}
+    <div class="tab-pane fade" id="prop{{ prop.prop_id }}">
+        <!-- COMBINED TABLE -->
+        <div class="table-responsive" style="overflow-x: auto; width: 100%;">
+            <table class="table table-sm table-bordered" style="font-size: 0.85rem;">
+                <thead class="thead-light">
+                    <tr>
+                        <th></th>
+                        <th class="text-center">Jan</th>
+                        <th class="text-center">Feb</th>
+                        <th class="text-center">Mar</th>
+                        <th class="text-center">Apr</th>
+                        <th class="text-center">May</th>
+                        <th class="text-center">Jun</th>
+                        <th class="text-center">Jul</th>
+                        <th class="text-center">Aug</th>
+                        <th class="text-center">Sep</th>
+                        <th class="text-center">Oct</th>
+                        <th class="text-center">Nov</th>
+                        <th class="text-center">Dec</th>
+                        <th class="text-center">Total</th>
+                        <th class="text-center">Monthly</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- REVENUE SECTION -->
+                    <tr class="section-header">
+                        <td class="font-weight-bold" style="background-color: #17a2b8; color: white;">REVENUE</td>
+                        <td colspan="14" style="background-color: #17a2b8;"></td>
+                    </tr>
+                    {% for line_type in revenue_line_types %}
+                    <tr>
+                        <td>{{ line_type.revenue_line_types_name }}</td>
+                        {% with line_totals=revenue_totals_by_line|get_item:prop.prop_id|get_item:line_type.revenue_line_types_id %}
+                        <td class="text-right">{{ line_totals.jan|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ line_totals.feb|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ line_totals.mar|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ line_totals.apr|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ line_totals.may|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ line_totals.jun|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ line_totals.jul|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ line_totals.aug|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ line_totals.sep|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ line_totals.oct|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ line_totals.nov|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ line_totals.dec|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right font-weight-bold">{{ line_totals.total|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ line_totals.total|divide:12|default:0|floatformat:"0"|intcomma }}</td>
+                        {% endwith %}
+                    </tr>
+                    {% endfor %}
+                    <tr class="font-weight-bold" style="background-color: #f8f9fa">
+                        <td>TOTAL REVENUE:</td>
+                        {% with prop_total=revenue_prop_totals|get_item:prop.prop_id %}
+                        <td class="text-right">{{ prop_total.jan|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ prop_total.feb|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ prop_total.mar|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ prop_total.apr|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ prop_total.may|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ prop_total.jun|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ prop_total.jul|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ prop_total.aug|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ prop_total.sep|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ prop_total.oct|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ prop_total.nov|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ prop_total.dec|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ prop_total.year|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ prop_total.year|divide:12|default:0|floatformat:"0"|intcomma }}</td>
+                        {% endwith %}
+                    </tr>
+                    
+                    <!-- EXPENSES SECTION -->
+                    <tr class="section-header">
+                        <td class="font-weight-bold" style="background-color: #17a2b8; color: white;">EXPENSES</td>
+                        <td colspan="14" style="background-color: #17a2b8;"></td>
+                    </tr>
+                    {% for line_type in expense_line_types %}
+                    <tr>
+                        <td>{{ line_type.expense_line_types_name }}</td>
+                        {% with line_totals=expense_totals_by_line|get_item:prop.prop_id|get_item:line_type.expense_line_types_id %}
+                        <td class="text-right">{{ line_totals.jan|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ line_totals.feb|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ line_totals.mar|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ line_totals.apr|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ line_totals.may|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ line_totals.jun|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ line_totals.jul|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ line_totals.aug|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ line_totals.sep|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ line_totals.oct|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ line_totals.nov|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ line_totals.dec|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right font-weight-bold">{{ line_totals.total|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ line_totals.total|divide:12|default:0|floatformat:"0"|intcomma }}</td>
+                        {% endwith %}
+                    </tr>
+                    {% endfor %}
+                    <tr class="font-weight-bold" style="background-color: #f8f9fa">
+                        <td>TOTAL EXPENSES:</td>
+                        {% with prop_total=expense_prop_totals|get_item:prop.prop_id %}
+                        <td class="text-right">{{ prop_total.jan|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ prop_total.feb|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ prop_total.mar|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ prop_total.apr|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ prop_total.may|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ prop_total.jun|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ prop_total.jul|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ prop_total.aug|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ prop_total.sep|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ prop_total.oct|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ prop_total.nov|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ prop_total.dec|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ prop_total.year|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ prop_total.year|divide:12|default:0|floatformat:"0"|intcomma }}</td>
+                        {% endwith %}
+                    </tr>
+                    
+                    <!-- PROFIT SECTION -->
+                    <tr class="section-header">
+                        <td class="font-weight-bold" style="background-color: #17a2b8; color: white;">PROFIT</td>
+                        <td colspan="14" style="background-color: #17a2b8;"></td>
+                    </tr>
+                    <tr class="font-weight-bold" style="background-color: #f8f9fa">
+                        <td>NET PROFIT:</td>
+                        {% with prop_revenue=revenue_prop_totals|get_item:prop.prop_id %}
+                        {% with prop_expense=expense_prop_totals|get_item:prop.prop_id %}
+                        <td class="text-right">{{ prop_revenue.jan|subtract:prop_expense.jan|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ prop_revenue.feb|subtract:prop_expense.feb|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ prop_revenue.mar|subtract:prop_expense.mar|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ prop_revenue.apr|subtract:prop_expense.apr|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ prop_revenue.may|subtract:prop_expense.may|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ prop_revenue.jun|subtract:prop_expense.jun|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ prop_revenue.jul|subtract:prop_expense.jul|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ prop_revenue.aug|subtract:prop_expense.aug|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ prop_revenue.sep|subtract:prop_expense.sep|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ prop_revenue.oct|subtract:prop_expense.oct|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ prop_revenue.nov|subtract:prop_expense.nov|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ prop_revenue.dec|subtract:prop_expense.dec|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ prop_revenue.year|subtract:prop_expense.year|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ prop_revenue.year|subtract:prop_expense.year|divide:12|floatformat:"0"|intcomma }}</td>
+                        {% endwith %}
+                        {% endwith %}
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- ROI CALCULATIONS -->
+        <div class="roi-section mt-3">
+            <h4 class="section-title" style="background-color: #17a2b8; color: white; padding: 8px; border-radius: 4px; width: fit-content;">RETURN ON INVESTMENT</h4>
+            
+            <div style="background-color: #f8f9fa; padding: 8px; margin-bottom: 5px; border-radius: 4px; width: fit-content;">
+                <span class="font-weight-bold">Gross ROI: 
+                    {% with prop_revenue=revenue_prop_totals|get_item:prop.prop_id %}
+                    {% with current_value=prop.prop_values_set.first.prop_values_purchase_price %}
+                    {% if current_value %}
+                        {{ prop_revenue.year|divide:current_value|multiply:100|floatformat:"2" }}%
+                    {% else %}
+                        0.00%
+                    {% endif %}
+                    {% endwith %}
+                    {% endwith %}
+                </span>
+            </div>
+            
+            <div style="background-color: #f8f9fa; padding: 8px; margin-bottom: 5px; border-radius: 4px; width: fit-content;">
+                <span class="font-weight-bold">Net ROI: 
+                    {% with prop_revenue=revenue_prop_totals|get_item:prop.prop_id %}
+                    {% with prop_expense=expense_prop_totals|get_item:prop.prop_id %}
+                    {% with current_value=prop.prop_values_set.first.prop_values_purchase_price %}
+                    {% if current_value %}
+                        {{ prop_revenue.year|subtract:prop_expense.year|divide:current_value|multiply:100|floatformat:"2" }}%
+                    {% else %}
+                        0.00%
+                    {% endif %}
+                    {% endwith %}
+                    {% endwith %}
+                    {% endwith %}
+                </span>
+            </div>
+            
+            <div style="background-color: #f8f9fa; padding: 8px; margin-bottom: 5px; border-radius: 4px; width: fit-content;">
+                <span class="font-weight-bold">Expenses to Revenue: 
+                    {% with prop_revenue=revenue_prop_totals|get_item:prop.prop_id %}
+                    {% with prop_expense=expense_prop_totals|get_item:prop.prop_id %}
+                    {% if prop_revenue.year %}
+                        {{ prop_expense.year|divide:prop_revenue.year|multiply:100|floatformat:"2" }}%
+                    {% else %}
+                        0.00%
+                    {% endif %}
+                    {% endwith %}
+                    {% endwith %}
+                </span>
+            </div>
+        </div>
+
+
+
+        
+    </div>
+    {% endfor %}
+</div>
+
+<style>
+    .table-responsive {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        width: 100%;
+    }
+    
+    table {
+        width: 100%;
+        font-size: 0.85rem;
+    }
+    
+    th, td {
+        white-space: nowrap;
+        padding: 4px 8px;
+    }
+    
+    td.text-right {
+        min-width: 70px;
+    }
+    
+    .nav-tabs .nav-link {
+        padding: 0.5rem 0.75rem;
+    }
+    
+    .nav-tabs .nav-link.active {
+        font-weight: bold;
+        border-bottom: 3px solid #007bff;
+    }
+    
+    .section-header td {
+        font-size: 0.9em;
+        padding: 6px 8px;
+    }
+    
+    .custom-tabs .nav-link {
+        background-color: #e0f7fa;
+        color: #17a2b8;
+        border: 1px solid #17a2b8;
+        border-radius: 0.5rem;
+        margin-right: 0.5rem;
+        transition: background-color 0.2s ease, box-shadow 0.2s ease;
+        font-weight: bold;
+        text-align: center;
+        padding: 0.5rem 0.75rem;
+    }
+    
+    .custom-tabs .nav-link:hover {
+        background-color: #d1f0f5;
+        color: #138496;
+    }
+    
+    .custom-tabs .nav-link.active {
+        background-color: #17a2b8;
+        color: white !important;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+        border-color: #138496;
+    }
+    
+    @media (max-width: 768px) {
+        table {
+            font-size: 0.75rem;
+        }
+        
+        th, td {
+            padding: 3px 5px;
+        }
+        
+        .custom-tabs .nav-link {
+            padding: 0.3rem 0.5rem;
+            font-size: 0.8rem;
+        }
+    }
+</style>
+
+{% endblock %}

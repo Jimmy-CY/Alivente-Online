@@ -40,3 +40,33 @@ class ValuesForm(forms.ModelForm):
 	class Meta:
 		model = models.prop_values
 		fields = ["prop", "prop_values_purchase_price","prop_values_current_value"]
+
+class RevenueTypesForm(forms.ModelForm):
+	class Meta:
+		model = models.revenue_types
+		fields = ["revenue_types_name", "revenue_types_jan", "revenue_types_feb", "revenue_types_mar", "revenue_types_apr", "revenue_types_may", "revenue_types_jun", "revenue_types_jul", "revenue_types_aug", "revenue_types_sep", "revenue_types_oct", "revenue_types_nov", "revenue_types_dec"]
+
+class RevenueLineForm(forms.ModelForm):
+	class Meta:
+		model = models.revenue_line_types
+		fields = ["revenue_line_types_name", "revenue_line_types_description"]
+
+class RevenueForm(forms.ModelForm):
+	class Meta:
+		model = models.revenue
+		fields = ["revenue_types", "prop","revenue_line_types","revenue_amount","revenue_jan","revenue_feb","revenue_mar","revenue_apr","revenue_may","revenue_jun","revenue_jul","revenue_aug","revenue_sep","revenue_oct","revenue_nov","revenue_dec"]
+
+class ExpenseTypesForm(forms.ModelForm):
+	class Meta:
+		model = models.expense_types
+		fields = ["expense_types_name", "expense_types_jan", "expense_types_feb", "expense_types_mar", "expense_types_apr", "expense_types_may", "expense_types_jun", "expense_types_jul", "expense_types_aug", "expense_types_sep", "expense_types_oct", "expense_types_nov", "expense_types_dec"]
+
+class ExpenseLineForm(forms.ModelForm):
+	class Meta:
+		model = models.expense_line_types
+		fields = ["expense_line_types_name", "expense_line_types_description", "expense_line_types_prorata", "expense_line_types_pr_amount"]
+
+class ExpenseForm(forms.ModelForm):
+	class Meta:
+		model = models.expense
+		fields = ["expense_types","expense_line_types","expense_amount","prop","expense_jan","expense_feb","expense_mar","expense_apr","expense_may","expense_jun","expense_jul","expense_aug","expense_sep","expense_oct","expense_nov","expense_dec"]

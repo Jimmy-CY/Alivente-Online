@@ -15,8 +15,8 @@ from django.utils.dateparse import parse_date
 from django.views.decorators.cache import never_cache
 from django.views.static import serve
 from . import forms
-from .forms import PropForm, TenantForm, PettyForm, InvoicesForm, IssuesForm, DetailsForm, SupplierForm, ValuesForm
-from .models import props, petty, issues, issues_details, tenant, invoices, supplier, prop_values
+from .forms import PropForm, TenantForm, PettyForm, InvoicesForm, IssuesForm, DetailsForm, SupplierForm, ValuesForm, RevenueTypesForm, RevenueLineForm, RevenueForm, ExpenseTypesForm, ExpenseLineForm, ExpenseForm 
+from .models import props, petty, issues, issues_details, tenant, invoices, supplier, prop_values, revenue_types, revenue_line_types, revenue, expense_types, expense_line_types, expense
 from collections import defaultdict
 from datetime import date, datetime, timedelta
 from urllib.parse import urlparse, parse_qs
@@ -751,6 +751,215 @@ def fsr_comment_add(request, issues_id):
     return redirect(reverse('fsr_details', args=[issues_id]))
 
 ### REPORTS - DASHBOARD (FROM HOME PAGE) ###
+from django.shortcuts import render
+from .models import props, revenue_line_types, revenue
+
+def finance_pl(request):
+    # Get all properties with prefetched prop_values to optimize queries
+    properties = props.objects.all().prefetch_related('prop_values_set')
+    
+    # Revenue Section
+    revenue_line_types_list = revenue_line_types.objects.all()
+    revenues = revenue.objects.all()
+    
+    # Calculate revenue totals
+    revenue_totals = {
+        'jan': sum(r.revenue_jan or 0 for r in revenues),
+        'feb': sum(r.revenue_feb or 0 for r in revenues),
+        'mar': sum(r.revenue_mar or 0 for r in revenues),
+        'apr': sum(r.revenue_apr or 0 for r in revenues),
+        'may': sum(r.revenue_may or 0 for r in revenues),
+        'jun': sum(r.revenue_jun or 0 for r in revenues),
+        'jul': sum(r.revenue_jul or 0 for r in revenues),
+        'aug': sum(r.revenue_aug or 0 for r in revenues),
+        'sep': sum(r.revenue_sep or 0 for r in revenues),
+        'oct': sum(r.revenue_oct or 0 for r in revenues),
+        'nov': sum(r.revenue_nov or 0 for r in revenues),
+        'dec': sum(r.revenue_dec or 0 for r in revenues),
+    }
+    revenue_totals['year'] = sum(revenue_totals.values())
+    
+    # Calculate revenue totals by line type for all properties
+    revenue_totals_by_line = {'all': {}}
+    for lt in revenue_line_types_list:
+        line_revenues = revenues.filter(revenue_line_types=lt)
+        monthly_totals = {
+            'jan': sum(r.revenue_jan or 0 for r in line_revenues),
+            'feb': sum(r.revenue_feb or 0 for r in line_revenues),
+            'mar': sum(r.revenue_mar or 0 for r in line_revenues),
+            'apr': sum(r.revenue_apr or 0 for r in line_revenues),
+            'may': sum(r.revenue_may or 0 for r in line_revenues),
+            'jun': sum(r.revenue_jun or 0 for r in line_revenues),
+            'jul': sum(r.revenue_jul or 0 for r in line_revenues),
+            'aug': sum(r.revenue_aug or 0 for r in line_revenues),
+            'sep': sum(r.revenue_sep or 0 for r in line_revenues),
+            'oct': sum(r.revenue_oct or 0 for r in line_revenues),
+            'nov': sum(r.revenue_nov or 0 for r in line_revenues),
+            'dec': sum(r.revenue_dec or 0 for r in line_revenues),
+        }
+        monthly_totals['total'] = sum(monthly_totals.values())
+        revenue_totals_by_line['all'][lt.revenue_line_types_id] = monthly_totals
+    
+    # Calculate property-specific revenue totals
+    revenue_prop_totals = {}
+    for prop in properties:
+        prop_revenues = revenues.filter(prop=prop)
+        monthly_totals = {
+            'jan': sum(r.revenue_jan or 0 for r in prop_revenues),
+            'feb': sum(r.revenue_feb or 0 for r in prop_revenues),
+            'mar': sum(r.revenue_mar or 0 for r in prop_revenues),
+            'apr': sum(r.revenue_apr or 0 for r in prop_revenues),
+            'may': sum(r.revenue_may or 0 for r in prop_revenues),
+            'jun': sum(r.revenue_jun or 0 for r in prop_revenues),
+            'jul': sum(r.revenue_jul or 0 for r in prop_revenues),
+            'aug': sum(r.revenue_aug or 0 for r in prop_revenues),
+            'sep': sum(r.revenue_sep or 0 for r in prop_revenues),
+            'oct': sum(r.revenue_oct or 0 for r in prop_revenues),
+            'nov': sum(r.revenue_nov or 0 for r in prop_revenues),
+            'dec': sum(r.revenue_dec or 0 for r in prop_revenues),
+        }
+        monthly_totals['year'] = sum(monthly_totals.values())
+        revenue_prop_totals[prop.prop_id] = monthly_totals
+        
+        # Add property-specific revenue line type totals
+        revenue_totals_by_line[prop.prop_id] = {}
+        for lt in revenue_line_types_list:
+            prop_line_revenues = prop_revenues.filter(revenue_line_types=lt)
+            line_monthly_totals = {
+                'jan': sum(r.revenue_jan or 0 for r in prop_line_revenues),
+                'feb': sum(r.revenue_feb or 0 for r in prop_line_revenues),
+                'mar': sum(r.revenue_mar or 0 for r in prop_line_revenues),
+                'apr': sum(r.revenue_apr or 0 for r in prop_line_revenues),
+                'may': sum(r.revenue_may or 0 for r in prop_line_revenues),
+                'jun': sum(r.revenue_jun or 0 for r in prop_line_revenues),
+                'jul': sum(r.revenue_jul or 0 for r in prop_line_revenues),
+                'aug': sum(r.revenue_aug or 0 for r in prop_line_revenues),
+                'sep': sum(r.revenue_sep or 0 for r in prop_line_revenues),
+                'oct': sum(r.revenue_oct or 0 for r in prop_line_revenues),
+                'nov': sum(r.revenue_nov or 0 for r in prop_line_revenues),
+                'dec': sum(r.revenue_dec or 0 for r in prop_line_revenues),
+            }
+            line_monthly_totals['total'] = sum(line_monthly_totals.values())
+            revenue_totals_by_line[prop.prop_id][lt.revenue_line_types_id] = line_monthly_totals
+
+    # Expense Section
+    expense_line_types_list = expense_line_types.objects.all()
+    expenses = expense.objects.all()
+    
+    # Calculate expense totals
+    expense_totals = {
+        'jan': sum(e.expense_jan or 0 for e in expenses),
+        'feb': sum(e.expense_feb or 0 for e in expenses),
+        'mar': sum(e.expense_mar or 0 for e in expenses),
+        'apr': sum(e.expense_apr or 0 for e in expenses),
+        'may': sum(e.expense_may or 0 for e in expenses),
+        'jun': sum(e.expense_jun or 0 for e in expenses),
+        'jul': sum(e.expense_jul or 0 for e in expenses),
+        'aug': sum(e.expense_aug or 0 for e in expenses),
+        'sep': sum(e.expense_sep or 0 for e in expenses),
+        'oct': sum(e.expense_oct or 0 for e in expenses),
+        'nov': sum(e.expense_nov or 0 for e in expenses),
+        'dec': sum(e.expense_dec or 0 for e in expenses),
+    }
+    expense_totals['year'] = sum(expense_totals.values())
+    
+    # Calculate expense totals by line type for all properties
+    expense_totals_by_line = {'all': {}}
+    for elt in expense_line_types_list:
+        line_expenses = expenses.filter(expense_line_types=elt)
+        monthly_totals = {
+            'jan': sum(e.expense_jan or 0 for e in line_expenses),
+            'feb': sum(e.expense_feb or 0 for e in line_expenses),
+            'mar': sum(e.expense_mar or 0 for e in line_expenses),
+            'apr': sum(e.expense_apr or 0 for e in line_expenses),
+            'may': sum(e.expense_may or 0 for e in line_expenses),
+            'jun': sum(e.expense_jun or 0 for e in line_expenses),
+            'jul': sum(e.expense_jul or 0 for e in line_expenses),
+            'aug': sum(e.expense_aug or 0 for e in line_expenses),
+            'sep': sum(e.expense_sep or 0 for e in line_expenses),
+            'oct': sum(e.expense_oct or 0 for e in line_expenses),
+            'nov': sum(e.expense_nov or 0 for e in line_expenses),
+            'dec': sum(e.expense_dec or 0 for e in line_expenses),
+        }
+        monthly_totals['total'] = sum(monthly_totals.values())
+        expense_totals_by_line['all'][elt.expense_line_types_id] = monthly_totals
+    
+    # Calculate property-specific expense totals
+    expense_prop_totals = {}
+    for prop in properties:
+        prop_expenses = expenses.filter(prop=prop)
+        monthly_totals = {
+            'jan': sum(e.expense_jan or 0 for e in prop_expenses),
+            'feb': sum(e.expense_feb or 0 for e in prop_expenses),
+            'mar': sum(e.expense_mar or 0 for e in prop_expenses),
+            'apr': sum(e.expense_apr or 0 for e in prop_expenses),
+            'may': sum(e.expense_may or 0 for e in prop_expenses),
+            'jun': sum(e.expense_jun or 0 for e in prop_expenses),
+            'jul': sum(e.expense_jul or 0 for e in prop_expenses),
+            'aug': sum(e.expense_aug or 0 for e in prop_expenses),
+            'sep': sum(e.expense_sep or 0 for e in prop_expenses),
+            'oct': sum(e.expense_oct or 0 for e in prop_expenses),
+            'nov': sum(e.expense_nov or 0 for e in prop_expenses),
+            'dec': sum(e.expense_dec or 0 for e in prop_expenses),
+        }
+        monthly_totals['year'] = sum(monthly_totals.values())
+        expense_prop_totals[prop.prop_id] = monthly_totals
+        
+        # Add property-specific expense line type totals
+        expense_totals_by_line[prop.prop_id] = {}
+        for elt in expense_line_types_list:
+            prop_line_expenses = prop_expenses.filter(expense_line_types=elt)
+            line_monthly_totals = {
+                'jan': sum(e.expense_jan or 0 for e in prop_line_expenses),
+                'feb': sum(e.expense_feb or 0 for e in prop_line_expenses),
+                'mar': sum(e.expense_mar or 0 for e in prop_line_expenses),
+                'apr': sum(e.expense_apr or 0 for e in prop_line_expenses),
+                'may': sum(e.expense_may or 0 for e in prop_line_expenses),
+                'jun': sum(e.expense_jun or 0 for e in prop_line_expenses),
+                'jul': sum(e.expense_jul or 0 for e in prop_line_expenses),
+                'aug': sum(e.expense_aug or 0 for e in prop_line_expenses),
+                'sep': sum(e.expense_sep or 0 for e in prop_line_expenses),
+                'oct': sum(e.expense_oct or 0 for e in prop_line_expenses),
+                'nov': sum(e.expense_nov or 0 for e in prop_line_expenses),
+                'dec': sum(e.expense_dec or 0 for e in prop_line_expenses),
+            }
+            line_monthly_totals['total'] = sum(line_monthly_totals.values())
+            expense_totals_by_line[prop.prop_id][elt.expense_line_types_id] = line_monthly_totals
+
+    # Calculate Profit (Revenue - Expenses)
+    profit_totals = {
+        'jan': revenue_totals['jan'] - expense_totals['jan'],
+        'feb': revenue_totals['feb'] - expense_totals['feb'],
+        'mar': revenue_totals['mar'] - expense_totals['mar'],
+        'apr': revenue_totals['apr'] - expense_totals['apr'],
+        'may': revenue_totals['may'] - expense_totals['may'],
+        'jun': revenue_totals['jun'] - expense_totals['jun'],
+        'jul': revenue_totals['jul'] - expense_totals['jul'],
+        'aug': revenue_totals['aug'] - expense_totals['aug'],
+        'sep': revenue_totals['sep'] - expense_totals['sep'],
+        'oct': revenue_totals['oct'] - expense_totals['oct'],
+        'nov': revenue_totals['nov'] - expense_totals['nov'],
+        'dec': revenue_totals['dec'] - expense_totals['dec'],
+        'year': revenue_totals['year'] - expense_totals['year']
+    }
+
+    # Prepare property values mapping for easy access in template
+    prop_values_map = {prop.prop_id: prop.prop_values_set.first() for prop in properties}
+
+    return render(request, 'finance_pl.html', {
+        'properties': properties,
+        'revenue_line_types': revenue_line_types_list,
+        'revenue_totals': revenue_totals,
+        'revenue_totals_by_line': revenue_totals_by_line,
+        'revenue_prop_totals': revenue_prop_totals,
+        'expense_line_types': expense_line_types_list,
+        'expense_totals': expense_totals,
+        'expense_totals_by_line': expense_totals_by_line,
+        'expense_prop_totals': expense_prop_totals,
+        'profit_totals': profit_totals,
+        'prop_values_map': prop_values_map  # Add property values mapping to context
+    })
+
 def petty_cash_rep(request):
 	import petty_cash
 	rep_output = request.POST.get('d_e')

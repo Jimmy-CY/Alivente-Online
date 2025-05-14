@@ -98,7 +98,7 @@ class tenant(models.Model):
 
     class Meta:
         db_table = "tenant"
-        
+
 class supplier(models.Model):
 	supplier_id = models.AutoField(primary_key=True)
 	supplier_contact_person = models.CharField(max_length=255, blank=True, null=True)
@@ -163,3 +163,123 @@ class prop_values(models.Model):
 
 	class Meta:
 		db_table="prop_values"
+
+class revenue_types(models.Model):
+	revenue_types_id = models.AutoField(primary_key=True)
+	revenue_types_name = models.CharField(max_length=255, blank=True, null=True)
+	revenue_types_jan = models.CharField(max_length=3, blank=True, null=True)
+	revenue_types_feb = models.CharField(max_length=3, blank=True, null=True)
+	revenue_types_mar = models.CharField(max_length=3, blank=True, null=True)
+	revenue_types_apr = models.CharField(max_length=3, blank=True, null=True)
+	revenue_types_may = models.CharField(max_length=3, blank=True, null=True)
+	revenue_types_jun = models.CharField(max_length=3, blank=True, null=True)
+	revenue_types_jul = models.CharField(max_length=3, blank=True, null=True)
+	revenue_types_aug = models.CharField(max_length=3, blank=True, null=True)
+	revenue_types_sep = models.CharField(max_length=3, blank=True, null=True)
+	revenue_types_oct = models.CharField(max_length=3, blank=True, null=True)
+	revenue_types_nov = models.CharField(max_length=3, blank=True, null=True)
+	revenue_types_dec = models.CharField(max_length=3, blank=True, null=True)
+
+	def __str__(self):
+		return str(self.revenue_types_name)
+
+	class Meta:
+		db_table="revenue_types"
+
+class revenue_line_types(models.Model):
+	revenue_line_types_id = models.AutoField(primary_key=True)
+	revenue_line_types_name = models.CharField(max_length=255, blank=True, null=True)
+	revenue_line_types_description = models.CharField(max_length=255, blank=True, null=True)
+	
+	def __str__(self):
+		return str(self.revenue_line_types_name)
+
+	class Meta:
+		db_table="revenue_line_types"
+
+class revenue(models.Model):
+	revenue_id = models.AutoField(primary_key=True)
+	revenue_types = models.ForeignKey(revenue_types, on_delete=models.CASCADE)
+	prop = models.ForeignKey(props, on_delete=models.CASCADE)
+	revenue_line_types = models.ForeignKey(revenue_line_types, on_delete=models.CASCADE)
+	revenue_amount = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
+	revenue_jan = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
+	revenue_feb = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
+	revenue_mar = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
+	revenue_apr = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
+	revenue_may = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
+	revenue_jun = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
+	revenue_jul = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
+	revenue_aug = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
+	revenue_sep = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
+	revenue_oct = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
+	revenue_nov = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
+	revenue_dec = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
+
+	def __str__(self):
+		return str(self.revenue_id)
+
+	class Meta:
+		db_table="revenue"
+
+class expense_types(models.Model):
+	expense_types_id = models.AutoField(primary_key=True)
+	expense_types_name = models.CharField(max_length=255, blank=True, null=True)
+	expense_types_jan = models.CharField(max_length=3, blank=True, null=True)
+	expense_types_feb = models.CharField(max_length=3, blank=True, null=True)
+	expense_types_mar = models.CharField(max_length=3, blank=True, null=True)
+	expense_types_apr = models.CharField(max_length=3, blank=True, null=True)
+	expense_types_may = models.CharField(max_length=3, blank=True, null=True)
+	expense_types_jun = models.CharField(max_length=3, blank=True, null=True)
+	expense_types_jul = models.CharField(max_length=3, blank=True, null=True)
+	expense_types_aug = models.CharField(max_length=3, blank=True, null=True)
+	expense_types_sep = models.CharField(max_length=3, blank=True, null=True)
+	expense_types_oct = models.CharField(max_length=3, blank=True, null=True)
+	expense_types_nov = models.CharField(max_length=3, blank=True, null=True)
+	expense_types_dec = models.CharField(max_length=3, blank=True, null=True)
+
+	def __str__(self):
+		return str(self.expense_types_name)
+
+	class Meta:
+		db_table="expense_types"
+
+class expense_line_types(models.Model):
+	expense_line_types_id = models.AutoField(primary_key=True)
+	expense_line_types_name = models.CharField(max_length=255, blank=True, null=True)
+	expense_line_types_description = models.CharField(max_length=255, blank=True, null=True)
+	expense_line_types_prorata = models.CharField(max_length=3, blank=True, null=True)
+	expense_line_types_pr_amount = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
+
+	def __str__(self):
+		return str(self.expense_line_types_name)
+
+	class Meta:
+		db_table="expense_line_types"
+
+class expense(models.Model):
+	expense_id = models.AutoField(primary_key=True)
+	expense_types = models.ForeignKey(expense_types, on_delete=models.CASCADE)
+	expense_line_types = models.ForeignKey(expense_line_types, on_delete=models.CASCADE)
+	expense_amount = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
+	prop = models.ForeignKey(props, on_delete=models.CASCADE)
+	expense_jan = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
+	expense_feb = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
+	expense_mar = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
+	expense_apr = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
+	expense_may = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
+	expense_jun = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
+	expense_jul = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
+	expense_aug = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
+	expense_sep = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
+	expense_oct = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
+	expense_nov = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
+	expense_dec = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
+
+	def __str__(self):
+		return str(self.expense_id)
+
+	class Meta:
+		db_table="expense"
+
+

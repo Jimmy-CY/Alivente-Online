@@ -46,6 +46,7 @@ urlpatterns = [
     path('open_invoices_report/', views.open_invoices_report, name='open_invoices_report'),
     path('friday_status_report/', views.friday_status_report, name='friday_status_report'),
     path('resolved_issues_report/', views.resolved_issues_report, name='resolved_issues_report'),
+    path('finance_pl/', views.finance_pl, name='finance_pl'),
 
 
     #
