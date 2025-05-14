@@ -233,6 +233,30 @@ def finance(request):
 #	return redirect("finance")
 	return render (request, "finance.html", {})
 
+def finance_revenue_types(request):
+    rev_types = revenue_types.objects.all()
+    return render(request, "finance_revenue_types.html", {
+        "rtresults": rev_types,
+    })
+
+def finance_revenue_line_types(request):
+    rev_line_types = revenue_line_types.objects.all()
+    return render(request, "finance_revenue_line_types.html", {
+        "rltresults": rev_line_types,
+    })
+
+def finance_expense_types(request):
+    exp_types = expense_types.objects.all()
+    return render(request, "finance_expense_types.html", {
+        "etresults": exp_types,
+    })
+
+def finance_expense_line_types(request):
+    exp_line_types = expense_line_types.objects.all()
+    return render(request, "finance_expense_line_types.html", {
+        "eltresults": exp_line_types,
+    })
+
 def finance_valuations(request):
     props_list = props.objects.all().order_by('prop_country', 'prop_name')
     valuations = prop_values.objects.all()

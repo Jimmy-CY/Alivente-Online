@@ -57,7 +57,10 @@ urlpatterns = [
     path('finance_valuations_commit/', views.finance_valuations_commit, name='finance_valuations_commit'),
     path('finance_valuations_edit/<int:prop_values_id>/', views.finance_valuations_edit, name='finance_valuations_edit'),
     path('finance_valuations_edit_commit/<int:prop_values_id>/', views.finance_valuations_edit_commit, name='finance_valuations_edit_commit'),
-  
+    path('finance_revenue_types/', views.finance_revenue_types, name='finance_revenue_types'),
+    path('finance_expense_types/', views.finance_expense_types, name='finance_expense_types'),
+    path('finance_revenue_line_types/', views.finance_revenue_line_types, name='finance_revenue_line_types'),
+    path('finance_expense_line_types/', views.finance_expense_line_types, name='finance_expense_line_types'),
 
     #
     # Tenants

@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+{% load custom_filters %} 
+
+{% block title %}
+{% endblock %}
+
+{% block content %}
+
+<h2><center>ALIVENTE ONLINE - REVENUE TYPES</center></h2>
+<br/>
+
+  {% for msg in messages %}
+    <div class="alert alert-secondary alert-dismissible fade show auto-dismiss" role="alert">
+      <strong></strong> <center>{{ msg }}</center>
+      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    <script>
+      // Automatically close the alert after 3 seconds (3000 milliseconds)
+      setTimeout(function() {
+        document.querySelectorAll('.auto-dismiss').forEach(alert => {
+          alert.classList.remove('show'); // Hide alert visually
+          alert.classList.add('fade'); // Add fade effect
+          setTimeout(() => alert.remove(), 500); // Remove from DOM after fade
+        });
+      }, 2000);
+    </script>
+  {% endfor %}
+  
+<body>
+  
+  <div style="display: flex ; justify-content: flex-end">
+    <a href="{% url 'finance_valuations_add' %}" class="btn btn-info" style="margin-right:16px" type="button">Add New</a>
+    <a href="{% url 'finance' %}" class="btn btn-info" style="margin-right:16px" role="button">Back</a>
+  </div>
+<br>
+<form action="" method="">
+  {% csrf_token %}
+  <div style="overflow-x: auto;">
+    <table class="table table-bordered table-striped text-center" style="table-layout: fixed; width: 100%;">
+      <thead>
+        <tr>
+          <th style="text-align: left; width: 32%; box-sizing: border-box;">Revenue Type</th>
+          <th style="width: 5%; box-sizing: border-box;">Jan</th>
+          <th style="width: 5%; box-sizing: border-box;">Feb</th>
+          <th style="width: 5%; box-sizing: border-box;">Mar</th>
+          <th style="width: 5%; box-sizing: border-box;">Apr</th>
+          <th style="width: 5%; box-sizing: border-box;">May</th>
+          <th style="width: 5%; box-sizing: border-box;">Jun</th>
+          <th style="width: 5%; box-sizing: border-box;">Jul</th>
+          <th style="width: 5%; box-sizing: border-box;">Aug</th>
+          <th style="width: 5%; box-sizing: border-box;">Sep</th>
+          <th style="width: 5%; box-sizing: border-box;">Oct</th>
+          <th style="width: 5%; box-sizing: border-box;">Nov</th>
+          <th style="width: 5%; box-sizing: border-box;">Dec</th>
+          <th style="width: 8%; box-sizing: border-box;">Details</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for rev in rtresults %}
+          <tr>
+            <td style="text-align: left; width: 32%; box-sizing: border-box;">{{ rev.revenue_types_name }}</td>
+            <td style="width: 5%; box-sizing: border-box; {% if rev.revenue_types_jan == 'Yes' %}background-color: #90EE90;{% elif rev.revenue_types_jan == 'No' %}background-color: #FFCCCB;{% endif %}">{{ rev.revenue_types_jan }}</td>
+            <td style="width: 5%; box-sizing: border-box; {% if rev.revenue_types_feb == 'Yes' %}background-color: #90EE90;{% elif rev.revenue_types_feb == 'No' %}background-color: #FFCCCB;{% endif %}">{{ rev.revenue_types_feb }}</td>
+            <td style="width: 5%; box-sizing: border-box; {% if rev.revenue_types_mar == 'Yes' %}background-color: #90EE90;{% elif rev.revenue_types_mar == 'No' %}background-color: #FFCCCB;{% endif %}">{{ rev.revenue_types_mar }}</td>
+            <td style="width: 5%; box-sizing: border-box; {% if rev.revenue_types_apr == 'Yes' %}background-color: #90EE90;{% elif rev.revenue_types_apr == 'No' %}background-color: #FFCCCB;{% endif %}">{{ rev.revenue_types_apr }}</td>
+            <td style="width: 5%; box-sizing: border-box; {% if rev.revenue_types_may == 'Yes' %}background-color: #90EE90;{% elif rev.revenue_types_may == 'No' %}background-color: #FFCCCB;{% endif %}">{{ rev.revenue_types_may }}</td>
+            <td style="width: 5%; box-sizing: border-box; {% if rev.revenue_types_jun == 'Yes' %}background-color: #90EE90;{% elif rev.revenue_types_jun == 'No' %}background-color: #FFCCCB;{% endif %}">{{ rev.revenue_types_jun }}</td>
+            <td style="width: 5%; box-sizing: border-box; {% if rev.revenue_types_jul == 'Yes' %}background-color: #90EE90;{% elif rev.revenue_types_jul == 'No' %}background-color: #FFCCCB;{% endif %}">{{ rev.revenue_types_jul }}</td>
+            <td style="width: 5%; box-sizing: border-box; {% if rev.revenue_types_aug == 'Yes' %}background-color: #90EE90;{% elif rev.revenue_types_aug == 'No' %}background-color: #FFCCCB;{% endif %}">{{ rev.revenue_types_aug }}</td>
+            <td style="width: 5%; box-sizing: border-box; {% if rev.revenue_types_sep == 'Yes' %}background-color: #90EE90;{% elif rev.revenue_types_sep == 'No' %}background-color: #FFCCCB;{% endif %}">{{ rev.revenue_types_sep }}</td>
+            <td style="width: 5%; box-sizing: border-box; {% if rev.revenue_types_oct == 'Yes' %}background-color: #90EE90;{% elif rev.revenue_types_oct == 'No' %}background-color: #FFCCCB;{% endif %}">{{ rev.revenue_types_oct }}</td>
+            <td style="width: 5%; box-sizing: border-box; {% if rev.revenue_types_nov == 'Yes' %}background-color: #90EE90;{% elif rev.revenue_types_nov == 'No' %}background-color: #FFCCCB;{% endif %}">{{ rev.revenue_types_nov }}</td>
+            <td style="width: 5%; box-sizing: border-box; {% if rev.revenue_types_dec == 'Yes' %}background-color: #90EE90;{% elif rev.revenue_types_dec == 'No' %}background-color: #FFCCCB;{% endif %}">{{ rev.revenue_types_dec }}</td>
+            <td>
+              <button type="button" class="btn btn-light" style="border-color:black; width: 100%">
+                <a href="{% url 'home' %}">Edit</a>
+              </button>
+            </td>    
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>    
+  </div>
+</form>
+</body>
+
+{% endblock %}
