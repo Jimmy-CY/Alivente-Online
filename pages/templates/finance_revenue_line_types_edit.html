@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+{% endblock %}
+
+{% block content %}
+
+<h2><center>ALIVENTE ONLINE - REVENUE LINE TYPES</center></h2>
+<h4><center>EDIT EXISTING LINE TYPES</center></h4>
+<br/>
+
+{% for rev in rltresults %}
+<form action="{% url 'finance_revenue_line_types_edit_commit' rev.revenue_line_types_id %}" method="post">
+  {% csrf_token %}
+  <div style="display: flex ; justify-content: flex-end">
+    <button class="btn btn-info" style="margin-right:16px" type="submit">Save</button>
+    <a href="{% url 'finance_revenue_line_types' %}" class="btn btn-info" style="margin-right:16px" role="button">Back</a>
+  </div>
+  <div class="form-row">
+    <div class="form-group col-md-4">
+      <label for="revenue_line_types_name"><strong>Revenue Line Type</strong></label>
+      <input type="text" class="form-control" id="revenue_line_types_name" name="revenue_line_types_name" 
+             placeholder="Name" value="{{ rev.revenue_line_types_name }}" required>
+      {% if name_error %}
+      <small class="text-danger">A Line Type with this name already exists.</small>
+      {% endif %}
+    </div>
+    <div class="form-group col-md-4">
+      <label for="revenue_line_types_description"><strong>Revenue Line Type Description</strong></label>
+      <input type="text" class="form-control" id="revenue_line_types_description" 
+             name="revenue_line_types_description" placeholder="Description" 
+             value="{{ rev.revenue_line_types_description }}" required>
+    </div>
+  </div>
+</form>
+{% endfor %}
+
+<script>
+// Handle multiple forms
+document.addEventListener('DOMContentLoaded', function() {
+    // Name validation
+    document.querySelectorAll('form').forEach(form => {
+        form.addEventListener('submit', function(e) {
+            const nameInput = this.querySelector('[name="expense_line_types_name"]');
+            if (nameInput.value.trim() === '') {
+                e.preventDefault();
+                alert('Please enter a name');
+                nameInput.focus();
+            }
+        });
+    });
+
+    // Pro-rata amount handling for each form
+    document.querySelectorAll('[name="expense_line_types_prorata"]').forEach(select => {
+        const formGroup = select.closest('.form-row');
+        const prAmountInput = formGroup.querySelector('[name="expense_line_types_pr_amount"]');
+        
+        select.addEventListener('change', function() {
+            if (this.value === 'Yes') {
+                prAmountInput.removeAttribute('readonly');
+                prAmountInput.setAttribute('required', 'required');
+                if (prAmountInput.value === '0') prAmountInput.value = '';
+            } else {
+                prAmountInput.value = '0';
+                prAmountInput.setAttribute('readonly', 'readonly');
+                prAmountInput.removeAttribute('required');
+            }
+        });
+
+        // Initialize
+        if (select.value === 'No') {
+            prAmountInput.value = '0';
+            prAmountInput.setAttribute('readonly', 'readonly');
+            prAmountInput.removeAttribute('required');
+        }
+    });
+});
+</script>
+
+
+{% endblock %}

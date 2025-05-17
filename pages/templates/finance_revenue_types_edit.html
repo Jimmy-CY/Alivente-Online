@@ -1,0 +1,233 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+{% endblock %}
+
+{% block content %}
+
+<h2 class="text-center">ALIVENTE ONLINE - REVENUE TYPES</h2>
+<h4 class="text-center">EDIT REVENUE TYPE</h4>
+<br/>
+
+{% for rev in rtresults %}
+<form action="{% url 'finance_revenue_types_edit_commit' rev.revenue_types_id %}" method="post">
+  {% csrf_token %}
+  <div style="display: flex ; justify-content: flex-end">
+    <button class="btn btn-info" style="margin-right:16px" type="submit">Save</button>
+    <a href="{% url 'finance_revenue_types' %}" class="btn btn-info" style="margin-right:16px" role="button">Back</a>
+  </div>
+  <div class="form-row">
+    <div class="form-group col-md-3">
+      <label for="revenue_types_name"><strong>Revenue Type</strong></label>
+      <input type="text" class="form-control" id="revenue_types_name" name="revenue_types_name" 
+             placeholder="Name" value="{{ rev.revenue_types_name }}" required>
+    </div>
+    <div class="form-group col-md-9">
+      <!-- Empty space to balance the row -->
+    </div>
+  </div>
+
+  <!-- Months Table -->
+  <div class="form-row">
+    <div class="col-md-12">
+      <table class="table table-bordered">
+        <thead class="bg-info text-white">
+          <tr>
+            <th class="text-center" style="width: 8.33%"><strong>Jan</strong></th>
+            <th class="text-center" style="width: 8.33%"><strong>Feb</strong></th>
+            <th class="text-center" style="width: 8.33%"><strong>Mar</strong></th>
+            <th class="text-center" style="width: 8.33%"><strong>Apr</strong></th>
+            <th class="text-center" style="width: 8.33%"><strong>May</strong></th>
+            <th class="text-center" style="width: 8.33%"><strong>Jun</strong></th>
+            <th class="text-center" style="width: 8.33%"><strong>Jul</strong></th>
+            <th class="text-center" style="width: 8.33%"><strong>Aug</strong></th>
+            <th class="text-center" style="width: 8.33%"><strong>Sep</strong></th>
+            <th class="text-center" style="width: 8.33%"><strong>Oct</strong></th>
+            <th class="text-center" style="width: 8.33%"><strong>Nov</strong></th>
+            <th class="text-center" style="width: 8.33%"><strong>Dec</strong></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <!-- January -->
+            <td class="text-center">
+              <div class="d-flex justify-content-center">
+                <input type="hidden" name="revenue_types_jan" value="No">
+                <input 
+                  type="checkbox" 
+                  id="revenue_types_jan" 
+                  name="revenue_types_jan" 
+                  value="Yes"
+                  {% if rev.revenue_types_jan == 'Yes' %}checked{% endif %}
+                >
+              </div>
+            </td>
+            
+            <!-- February -->
+            <td class="text-center">
+              <div class="d-flex justify-content-center">
+                <input type="hidden" name="revenue_types_feb" value="No">
+                <input 
+                  type="checkbox" 
+                  id="revenue_types_feb" 
+                  name="revenue_types_feb" 
+                  value="Yes"
+                  {% if rev.revenue_types_feb == 'Yes' %}checked{% endif %}
+                >
+              </div>
+            </td>
+            
+            <!-- March -->
+            <td class="text-center">
+              <div class="d-flex justify-content-center">
+                <input type="hidden" name="revenue_types_mar" value="No">
+                <input 
+                  type="checkbox" 
+                  id="revenue_types_mar" 
+                  name="revenue_types_mar" 
+                  value="Yes"
+                  {% if rev.revenue_types_mar == 'Yes' %}checked{% endif %}
+                >
+              </div>
+            </td>
+            
+            <!-- April -->
+            <td class="text-center">
+              <div class="d-flex justify-content-center">
+                <input type="hidden" name="revenue_types_apr" value="No">
+                <input 
+                  type="checkbox" 
+                  id="revenue_types_apr" 
+                  name="revenue_types_apr" 
+                  value="Yes"
+                  {% if rev.revenue_types_apr == 'Yes' %}checked{% endif %}
+                >
+              </div>
+            </td>
+            
+            <!-- May -->
+            <td class="text-center">
+              <div class="d-flex justify-content-center">
+                <input type="hidden" name="revenue_types_may" value="No">
+                <input 
+                  type="checkbox" 
+                  id="revenue_types_may" 
+                  name="revenue_types_may" 
+                  value="Yes"
+                  {% if rev.revenue_types_may == 'Yes' %}checked{% endif %}
+                >
+              </div>
+            </td>
+            
+            <!-- June -->
+            <td class="text-center">
+              <div class="d-flex justify-content-center">
+                <input type="hidden" name="revenue_types_jun" value="No">
+                <input 
+                  type="checkbox" 
+                  id="revenue_types_jun" 
+                  name="revenue_types_jun" 
+                  value="Yes"
+                  {% if rev.revenue_types_jun == 'Yes' %}checked{% endif %}
+                >
+              </div>
+            </td>
+            
+            <!-- July -->
+            <td class="text-center">
+              <div class="d-flex justify-content-center">
+                <input type="hidden" name="revenue_types_jul" value="No">
+                <input 
+                  type="checkbox" 
+                  id="revenue_types_jul" 
+                  name="revenue_types_jul" 
+                  value="Yes"
+                  {% if rev.revenue_types_jul == 'Yes' %}checked{% endif %}
+                >
+              </div>
+            </td>
+            
+            <!-- August -->
+            <td class="text-center">
+              <div class="d-flex justify-content-center">
+                <input type="hidden" name="revenue_types_aug" value="No">
+                <input 
+                  type="checkbox" 
+                  id="revenue_types_aug" 
+                  name="revenue_types_aug" 
+                  value="Yes"
+                  {% if rev.revenue_types_aug == 'Yes' %}checked{% endif %}
+                >
+              </div>
+            </td>
+            
+            <!-- September -->
+            <td class="text-center">
+              <div class="d-flex justify-content-center">
+                <input type="hidden" name="revenue_types_sep" value="No">
+                <input 
+                  type="checkbox" 
+                  id="revenue_types_sep" 
+                  name="revenue_types_sep" 
+                  value="Yes"
+                  {% if rev.revenue_types_sep == 'Yes' %}checked{% endif %}
+                >
+              </div>
+            </td>
+            
+            <!-- October -->
+            <td class="text-center">
+              <div class="d-flex justify-content-center">
+                <input type="hidden" name="revenue_types_oct" value="No">
+                <input 
+                  type="checkbox" 
+                  id="revenue_types_oct" 
+                  name="revenue_types_oct" 
+                  value="Yes"
+                  {% if rev.revenue_types_oct == 'Yes' %}checked{% endif %}
+                >
+              </div>
+            </td>
+            
+            <!-- November -->
+            <td class="text-center">
+              <div class="d-flex justify-content-center">
+                <input type="hidden" name="revenue_types_nov" value="No">
+                <input 
+                  type="checkbox" 
+                  id="revenue_types_nov" 
+                  name="revenue_types_nov" 
+                  value="Yes"
+                  {% if rev.revenue_types_nov == 'Yes' %}checked{% endif %}
+                >
+              </div>
+            </td>
+            
+            <!-- December -->
+            <td class="text-center">
+              <div class="d-flex justify-content-center">
+                <input type="hidden" name="revenue_types_dec" value="No">
+                <input 
+                  type="checkbox" 
+                  id="revenue_types_dec" 
+                  name="revenue_types_dec" 
+                  value="Yes"
+                  {% if rev.revenue_types_dec == 'Yes' %}checked{% endif %}
+                >
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</form>
+{% endfor %}
+
+<script>
+// Remove this JavaScript completely as it's not needed anymore
+// The Django template tags handle the initial state correctly
+</script>
+
+{% endblock %}

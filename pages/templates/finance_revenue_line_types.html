@@ -33,7 +33,7 @@
 <body>
   
   <div style="display: flex ; justify-content: flex-end">
-    <a href="{% url 'finance_valuations_add' %}" class="btn btn-info" style="margin-right:16px" type="button">Add New</a>
+    <a href="{% url 'finance_revenue_line_types_add' %}" class="btn btn-info" style="margin-right:16px" type="button">Add New</a>
     <a href="{% url 'finance' %}" class="btn btn-info" style="margin-right:16px" role="button">Back</a>
   </div>
 <br>
@@ -55,7 +55,7 @@
             <td style="text-align: left; box-sizing: border-box;">{{ rev.revenue_line_types_description }}</td>
             <td> 
               <button type="button" class="btn btn-light" style="border-color:black">
-                <a href="{% url 'home' %}">Edit</a>
+                <a href="{% url 'finance_revenue_line_types_edit' rev.revenue_line_types_id %}">Edit</a>
               </button>
             </td>    
           </tr>

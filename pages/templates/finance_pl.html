@@ -337,50 +337,52 @@
         
         <!-- ROI CALCULATIONS -->
         <div class="roi-section mt-3">
-            <h4 class="section-title" style="background-color: #17a2b8; color: white; padding: 8px; border-radius: 4px; width: fit-content;">RETURN ON INVESTMENT</h4>
+            <h6 class="section-title" style="background-color: #17a2b8; color: white; padding: 8px; border-radius: 4px; width: fit-content;">RETURN ON INVESTMENT</h6>
             
-            <div style="background-color: #f8f9fa; padding: 8px; margin-bottom: 5px; border-radius: 4px; width: fit-content;">
-                <span class="font-weight-bold">Gross ROI: 
-                    {% with prop_revenue=revenue_prop_totals|get_item:prop.prop_id %}
-                    {% with current_value=prop.prop_values_set.first.prop_values_purchase_price %}
-                    {% if current_value %}
-                        {{ prop_revenue.year|divide:current_value|multiply:100|floatformat:"2" }}%
-                    {% else %}
-                        0.00%
-                    {% endif %}
-                    {% endwith %}
-                    {% endwith %}
-                </span>
-            </div>
-            
-            <div style="background-color: #f8f9fa; padding: 8px; margin-bottom: 5px; border-radius: 4px; width: fit-content;">
-                <span class="font-weight-bold">Net ROI: 
-                    {% with prop_revenue=revenue_prop_totals|get_item:prop.prop_id %}
-                    {% with prop_expense=expense_prop_totals|get_item:prop.prop_id %}
-                    {% with current_value=prop.prop_values_set.first.prop_values_purchase_price %}
-                    {% if current_value %}
-                        {{ prop_revenue.year|subtract:prop_expense.year|divide:current_value|multiply:100|floatformat:"2" }}%
-                    {% else %}
-                        0.00%
-                    {% endif %}
-                    {% endwith %}
-                    {% endwith %}
-                    {% endwith %}
-                </span>
-            </div>
-            
-            <div style="background-color: #f8f9fa; padding: 8px; margin-bottom: 5px; border-radius: 4px; width: fit-content;">
-                <span class="font-weight-bold">Expenses to Revenue: 
-                    {% with prop_revenue=revenue_prop_totals|get_item:prop.prop_id %}
-                    {% with prop_expense=expense_prop_totals|get_item:prop.prop_id %}
-                    {% if prop_revenue.year %}
-                        {{ prop_expense.year|divide:prop_revenue.year|multiply:100|floatformat:"2" }}%
-                    {% else %}
-                        0.00%
-                    {% endif %}
-                    {% endwith %}
-                    {% endwith %}
-                </span>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <div style="background-color: #f8f9fa; padding: 8px; border-radius: 4px; width: fit-content;">
+                    <span class="font-weight-bold">Gross ROI: 
+                        {% with prop_revenue=revenue_prop_totals|get_item:prop.prop_id %}
+                        {% with current_value=prop.prop_values_set.first.prop_values_purchase_price %}
+                        {% if current_value %}
+                            {{ prop_revenue.year|divide:current_value|multiply:100|floatformat:"2" }}%
+                        {% else %}
+                            0.00%
+                        {% endif %}
+                        {% endwith %}
+                        {% endwith %}
+                    </span>
+                </div>
+                
+                <div style="background-color: #f8f9fa; padding: 8px; border-radius: 4px; width: fit-content;">
+                    <span class="font-weight-bold">Net ROI: 
+                        {% with prop_revenue=revenue_prop_totals|get_item:prop.prop_id %}
+                        {% with prop_expense=expense_prop_totals|get_item:prop.prop_id %}
+                        {% with current_value=prop.prop_values_set.first.prop_values_purchase_price %}
+                        {% if current_value %}
+                            {{ prop_revenue.year|subtract:prop_expense.year|divide:current_value|multiply:100|floatformat:"2" }}%
+                        {% else %}
+                            0.00%
+                        {% endif %}
+                        {% endwith %}
+                        {% endwith %}
+                        {% endwith %}
+                    </span>
+                </div>
+                
+                <div style="background-color: #f8f9fa; padding: 8px; border-radius: 4px; width: fit-content;">
+                    <span class="font-weight-bold">Expenses to Revenue: 
+                        {% with prop_revenue=revenue_prop_totals|get_item:prop.prop_id %}
+                        {% with prop_expense=expense_prop_totals|get_item:prop.prop_id %}
+                        {% if prop_revenue.year %}
+                            {{ prop_expense.year|divide:prop_revenue.year|multiply:100|floatformat:"2" }}%
+                        {% else %}
+                            0.00%
+                        {% endif %}
+                        {% endwith %}
+                        {% endwith %}
+                    </span>
+                </div>
             </div>
         </div>
 

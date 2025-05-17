@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+{% endblock %}
+
+{% block content %}
+
+<h2 class="text-center">ALIVENTE ONLINE - EXPENSE TYPES</h2>
+<h4 class="text-center">ADD EXPENSE TYPE</h4>
+<br/>
+  
+<form action="{% url 'finance_expense_types_commit' %}" method="post" id="ExpenseTypeForm">
+  
+  {% csrf_token %}
+  <div style="display: flex; justify-content: flex-end">
+      <button class="btn btn-info" style="margin-right:16px" type="submit">Save</button>
+      <a href="{% url 'finance_expense_types' %}" class="btn btn-info" style="margin-right:16px" role="button">Back</a>
+  </div>
+  <br/>
+
+  <!-- First Row: Name Field (Left) + Empty Space (Right) -->
+  <div class="form-row">
+    <div class="form-group col-md-3">
+      <label for="expense_types_name"><strong>Expense Type Name</strong></label>
+      <input type="text" class="form-control" id="expense_types_name" name="expense_types_name" placeholder="Name" maxlength="20" required>
+    </div>
+    <div class="form-group col-md-9">
+      <!-- Empty space to balance the row -->
+    </div>
+  </div>
+
+  <!-- Months Table -->
+  <div class="form-row">
+    <div class="col-md-12">
+      <table class="table table-bordered">
+        <thead class="bg-info text-white">
+          <tr>
+            <th class="text-center" style="width: 8.33%"><strong>Jan</strong></th>
+            <th class="text-center" style="width: 8.33%"><strong>Feb</strong></th>
+            <th class="text-center" style="width: 8.33%"><strong>Mar</strong></th>
+            <th class="text-center" style="width: 8.33%"><strong>Apr</strong></th>
+            <th class="text-center" style="width: 8.33%"><strong>May</strong></th>
+            <th class="text-center" style="width: 8.33%"><strong>Jun</strong></th>
+            <th class="text-center" style="width: 8.33%"><strong>Jul</strong></th>
+            <th class="text-center" style="width: 8.33%"><strong>Aug</strong></th>
+            <th class="text-center" style="width: 8.33%"><strong>Sep</strong></th>
+            <th class="text-center" style="width: 8.33%"><strong>Oct</strong></th>
+            <th class="text-center" style="width: 8.33%"><strong>Nov</strong></th>
+            <th class="text-center" style="width: 8.33%"><strong>Dec</strong></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="text-center">
+              <div class="d-flex justify-content-center">
+                <input type="hidden" name="expense_types_jan" value="No">
+                <input type="checkbox" id="expense_types_jan" name="expense_types_jan" value="Yes">
+              </div>
+            </td>
+            <td class="text-center">
+              <div class="d-flex justify-content-center">
+                <input type="hidden" name="expense_types_feb" value="No">
+                <input type="checkbox" id="expense_types_feb" name="expense_types_feb" value="Yes">
+              </div>
+            </td>
+            <td class="text-center">
+              <div class="d-flex justify-content-center">
+                <input type="hidden" name="expense_types_mar" value="No">
+                <input type="checkbox" id="expense_types_mar" name="expense_types_mar" value="Yes">
+              </div>
+            </td>
+            <td class="text-center">
+              <div class="d-flex justify-content-center">
+                <input type="hidden" name="expense_types_apr" value="No">
+                <input type="checkbox" id="expense_types_apr" name="expense_types_apr" value="Yes">
+              </div>
+            </td>
+            <td class="text-center">
+              <div class="d-flex justify-content-center">
+                <input type="hidden" name="expense_types_may" value="No">
+                <input type="checkbox" id="expense_types_may" name="expense_types_may" value="Yes">
+              </div>
+            </td>
+            <td class="text-center">
+              <div class="d-flex justify-content-center">
+                <input type="hidden" name="expense_types_jun" value="No">
+                <input type="checkbox" id="expense_types_jun" name="expense_types_jun" value="Yes">
+              </div>
+            </td>
+            <td class="text-center">
+              <div class="d-flex justify-content-center">
+                <input type="hidden" name="expense_types_jul" value="No">
+                <input type="checkbox" id="expense_types_jul" name="expense_types_jul" value="Yes">
+              </div>
+            </td>
+            <td class="text-center">
+              <div class="d-flex justify-content-center">
+                <input type="hidden" name="expense_types_aug" value="No">
+                <input type="checkbox" id="expense_types_aug" name="expense_types_aug" value="Yes">
+              </div>
+            </td>
+            <td class="text-center">
+              <div class="d-flex justify-content-center">
+                <input type="hidden" name="expense_types_sep" value="No">
+                <input type="checkbox" id="expense_types_sep" name="expense_types_sep" value="Yes">
+              </div>
+            </td>
+            <td class="text-center">
+              <div class="d-flex justify-content-center">
+                <input type="hidden" name="expense_types_oct" value="No">
+                <input type="checkbox" id="expense_types_oct" name="expense_types_oct" value="Yes">
+              </div>
+            </td>
+            <td class="text-center">
+              <div class="d-flex justify-content-center">
+                <input type="hidden" name="expense_types_nov" value="No">
+                <input type="checkbox" id="expense_types_nov" name="expense_types_nov" value="Yes">
+              </div>
+            </td>
+            <td class="text-center">
+              <div class="d-flex justify-content-center">
+                <input type="hidden" name="expense_types_dec" value="No">
+                <input type="checkbox" id="expense_types_dec" name="expense_types_dec" value="Yes">
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</form>
+
+{% endblock %}

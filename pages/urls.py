@@ -63,6 +63,22 @@ urlpatterns = [
     path('finance_expense_types/', views.finance_expense_types, name='finance_expense_types'),
     path('finance_revenue_line_types/', views.finance_revenue_line_types, name='finance_revenue_line_types'),
     path('finance_expense_line_types/', views.finance_expense_line_types, name='finance_expense_line_types'),
+    path('finance_revenue_line_types_add/', views.finance_revenue_line_types_add, name='finance_revenue_line_types_add'),
+    path('finance_revenue_line_types_commit/', views.finance_revenue_line_types_commit, name='finance_revenue_line_types_commit'),
+    path('finance_expense_line_types_add/', views.finance_expense_line_types_add, name='finance_expense_line_types_add'),
+    path('finance_expense_line_types_commit/', views.finance_expense_line_types_commit, name='finance_expense_line_types_commit'),
+    path('finance_expense_line_types_edit/<expense_line_types_id>', views.finance_expense_line_types_edit, name='finance_expense_line_types_edit'),
+    path('finance_expense_line_types_edit_commit/<int:expense_line_types_id>', views.finance_expense_line_types_edit_commit, name='finance_expense_line_types_edit_commit'),
+    path('finance_revenue_line_types_edit/<revenue_line_types_id>', views.finance_revenue_line_types_edit, name='finance_revenue_line_types_edit'),
+    path('finance_revenue_line_types_edit_commit/<int:revenue_line_types_id>', views.finance_revenue_line_types_edit_commit, name='finance_revenue_line_types_edit_commit'),
+    path('finance_revenue_types_add/', views.finance_revenue_types_add, name='finance_revenue_types_add'),
+    path('finance_revenue_types_commit/', views.finance_revenue_types_commit, name='finance_revenue_types_commit'),
+    path('finance_expense_types_add/', views.finance_expense_types_add, name='finance_expense_types_add'),
+    path('finance_expense_types_commit/', views.finance_expense_types_commit, name='finance_expense_types_commit'),
+    path('finance_revenue_types_edit/<revenue_types_id>', views.finance_revenue_types_edit, name='finance_revenue_types_edit'),
+    path('finance_revenue_types_edit_commit/<int:revenue_types_id>', views.finance_revenue_types_edit_commit, name='finance_revenue_types_edit_commit'),
+    path('finance_expense_types_edit/<expense_types_id>', views.finance_expense_types_edit, name='finance_expense_types_edit'),
+    path('finance_expense_types_edit_commit/<int:expense_types_id>', views.finance_expense_types_edit_commit, name='finance_expense_types_edit_commit'),
 
     #
     # Tenants

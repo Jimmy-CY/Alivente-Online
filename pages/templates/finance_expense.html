@@ -1,0 +1,148 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+{% load custom_filters %} 
+
+{% block title %}
+{% endblock %}
+
+{% block content %}
+
+<h2><center>ALIVENTE ONLINE - EXPENSE</center></h2>
+<br/>
+
+  {% for msg in messages %}
+    <div class="alert alert-secondary alert-dismissible fade show auto-dismiss" role="alert">
+      <strong></strong> <center>{{ msg }}</center>
+      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    <script>
+      setTimeout(function() {
+        document.querySelectorAll('.auto-dismiss').forEach(alert => {
+          alert.classList.remove('show');
+          alert.classList.add('fade');
+          setTimeout(() => alert.remove(), 500);
+        });
+      }, 2000);
+    </script>
+  {% endfor %}
+  
+<body>
+  
+  <div style="display: flex ; justify-content: flex-end">
+    <a href="{% url 'finance' %}" class="btn btn-info" style="margin-right:16px" type="button">Add New</a>
+    <a href="{% url 'finance' %}" class="btn btn-info" style="margin-right:16px" role="button">Back</a>
+  </div>
+  
+<br>
+
+<form action="" method="">
+  {% csrf_token %}
+  <div style="overflow-x: auto;">
+    <table class="table table-bordered table-striped text-center" style="table-layout: fixed; width: 100%;">
+      <thead>
+        <tr>
+          <th style="box-sizing: border-box;">Property</th>
+          <th style="box-sizing: border-box;">Expense Line Type</th>
+          <th style="box-sizing: border-box;">Expense Type</th>
+          <th style="box-sizing: border-box;">Expense Amount</th>
+          <th style="box-sizing: border-box;">Details</th>
+        </tr>
+      </thead>
+      
+      <tbody>
+        {% for pro in props_data %}
+          {% with expenses=pro.expense_set.all %}
+            {% if expenses %}
+              <!-- Property Group -->
+              <tbody class="property-group" data-property-id="{{ pro.id }}">
+                <!-- Property Header -->
+                <tr class="property-header" style="cursor: pointer;">
+                  <td colspan="5" style="text-align: left; font-weight: bold;">
+                    <i class="fas fa-chevron-right property-arrow"></i> {{ pro.prop_name }}
+                    <span class="badge badge-info">{{ expenses|length }}</span>
+                  </td>
+                </tr>
+                
+                <!-- Property Details -->
+                {% for exp in expenses %}
+                  <tr class="property-details" style="display: none;">
+                    <td style="text-align: left;">{{ pro.prop_name }}</td>
+                    <td>{{ exp.expense_line_types.expense_line_types_name }}</td>
+                    <td>{{ exp.expense_types.expense_types_name }}</td>
+                    <td style="text-align: right;">€ {{ exp.expense_amount|floatformat:0|intcomma }}</td>
+                    <td>
+                      <button class="btn btn-light" style="border-color:black; width: auto; padding: 0.25rem 0.5rem;">
+                        <a href="{% url 'finance' %}">Edit</a>
+                      </button>
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            {% endif %}
+          {% endwith %}
+        {% endfor %}
+      </tbody>
+    </table>    
+  </div>
+</form>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const propertyGroups = document.querySelectorAll('.property-group');
+  
+  propertyGroups.forEach(group => {
+    const header = group.querySelector('.property-header');
+    const details = group.querySelectorAll('.property-details');
+    const arrow = group.querySelector('.property-arrow');
+    
+    header.addEventListener('click', function() {
+      // Check if this group is currently expanded
+      const isExpanded = details[0].style.display === 'table-row';
+      
+      // Collapse all property groups first
+      propertyGroups.forEach(g => {
+        g.querySelectorAll('.property-details').forEach(d => {
+          d.style.display = 'none';
+        });
+        g.querySelector('.property-arrow').classList.remove('fa-chevron-down');
+        g.querySelector('.property-arrow').classList.add('fa-chevron-right');
+      });
+      
+      // If this group wasn't expanded, expand it now
+      if (!isExpanded) {
+        details.forEach(detail => {
+          detail.style.display = 'table-row';
+        });
+        arrow.classList.remove('fa-chevron-right');
+        arrow.classList.add('fa-chevron-down');
+      }
+    });
+  });
+});
+</script>
+
+<style>
+.property-header:hover {
+  background-color: #f8f9fa;
+}
+
+.property-arrow {
+  transition: transform 0.2s ease;
+  margin-right: 8px;
+}
+
+.badge-info {
+  background-color: #17a2b8;
+  margin-left: 8px;
+}
+
+.property-details {
+  background-color: #f8f9fa;
+}
+</style>
+
+</body>
+{% endblock %}

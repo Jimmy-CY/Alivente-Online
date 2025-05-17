@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+{% endblock %}
+
+{% block content %}
+
+<h2><center>ALIVENTE ONLINE - EXPENSE LINE TYPES</center></h2>
+<h4><center>EDIT EXISTING LINE TYPES</center></h4>
+<br/>
+
+{% for exp in eltresults %}
+<form action="{% url 'finance_expense_line_types_edit_commit' exp.expense_line_types_id %}" method="post">
+  {% csrf_token %}
+  <div style="display: flex ; justify-content: flex-end">
+    <button class="btn btn-info" style="margin-right:16px" type="submit">Save</button>
+    <a href="{% url 'finance_expense_line_types' %}" class="btn btn-info" style="margin-right:16px" role="button">Back</a>
+  </div>
+  <div class="form-row">
+    <div class="form-group col-md-3">
+      <label for="expense_line_types_name"><strong>Expense Line Type</strong></label>
+      <input type="text" class="form-control" id="expense_line_types_name" name="expense_line_types_name" 
+             placeholder="Name" value="{{ exp.expense_line_types_name }}" required>
+      {% if name_error %}
+      <small class="text-danger">A Line Type with this name already exists.</small>
+      {% endif %}
+    </div>
+    <div class="form-group col-md-3">
+      <label for="expense_line_types_description"><strong>Expense Line Type Description</strong></label>
+      <input type="text" class="form-control" id="expense_line_types_description" 
+             name="expense_line_types_description" placeholder="Description" 
+             value="{{ exp.expense_line_types_description }}" required>
+    </div>
+    <div class="form-group col-md-3">
+      <label for="expense_line_types_prorata"><strong>Pro-Rata (Yes/No)</strong></label>
+      <select class="form-control" id="expense_line_types_prorata" name="expense_line_types_prorata">
+        <option value="Yes" {% if exp.expense_line_types_prorata == 'Yes' %}selected{% endif %}>Yes</option>
+        <option value="No" {% if exp.expense_line_types_prorata == 'No' %}selected{% endif %}>No</option>
+      </select>
+    </div>
+    <div class="form-group col-md-3">
+      <label for="expense_line_types_pr_amount"><strong>Pro-Rata Amount</strong></label>
+      <input type="number" class="form-control" id="expense_line_types_pr_amount_{{ exp.expense_line_types_id }}" 
+             name="expense_line_types_pr_amount" placeholder="0.00"
+             step="0.01" min="0" maxlength="30"
+             value="{% if exp.expense_line_types_prorata == 'No' %}0{% else %}{{ exp.expense_line_types_pr_amount|default:'0' }}{% endif %}"
+             {% if exp.expense_line_types_prorata == 'No' %}readonly{% else %}required{% endif %}>
+    </div>
+  </div>
+</form>
+{% endfor %}
+
+<script>
+// Handle multiple forms
+document.addEventListener('DOMContentLoaded', function() {
+    // Name validation
+    document.querySelectorAll('form').forEach(form => {
+        form.addEventListener('submit', function(e) {
+            const nameInput = this.querySelector('[name="expense_line_types_name"]');
+            if (nameInput.value.trim() === '') {
+                e.preventDefault();
+                alert('Please enter a name');
+                nameInput.focus();
+            }
+        });
+    });
+
+    // Pro-rata amount handling for each form
+    document.querySelectorAll('[name="expense_line_types_prorata"]').forEach(select => {
+        const formGroup = select.closest('.form-row');
+        const prAmountInput = formGroup.querySelector('[name="expense_line_types_pr_amount"]');
+        
+        select.addEventListener('change', function() {
+            if (this.value === 'Yes') {
+                prAmountInput.removeAttribute('readonly');
+                prAmountInput.setAttribute('required', 'required');
+                if (prAmountInput.value === '0') prAmountInput.value = '';
+            } else {
+                prAmountInput.value = '0';
+                prAmountInput.setAttribute('readonly', 'readonly');
+                prAmountInput.removeAttribute('required');
+            }
+        });
+
+        // Initialize
+        if (select.value === 'No') {
+            prAmountInput.value = '0';
+            prAmountInput.setAttribute('readonly', 'readonly');
+            prAmountInput.removeAttribute('required');
+        }
+    });
+});
+</script>
+
+
+{% endblock %}

@@ -234,12 +234,22 @@ def finance(request):
 	return render (request, "finance.html", {})
 
 def finance_revenue(request):
-	props_data = props.objects.prefetch_related(
-		Prefetch(
-			'revenue_set',
-			queryset=revenue.objects.select_related('revenue_line_types', 'revenue_types')
-		)
-	).all().order_by('prop_country', 'prop_name')
+	prop_output = request.POST.get('propname')
+	if prop_output is None or prop_output == "All":
+			props_data = props.objects.prefetch_related(
+				Prefetch(
+					'revenue_set',
+					queryset=revenue.objects.select_related('revenue_line_types', 'revenue_types')
+				)
+			).all().order_by('prop_country', 'prop_name')
+	else:
+		if prop_output is not None:
+				props_data = props.objects.prefetch_related(
+					Prefetch(
+						'revenue_set',
+						queryset=revenue.objects.select_related('revenue_line_types', 'revenue_types')
+					)
+				).all().order_by('prop_country', 'prop_name').filter(prop_name=prop_output)
 	return render(request, "finance_revenue.html", {
 		"props_data": props_data,
 	})
@@ -250,16 +260,122 @@ def finance_revenue_types(request):
         "rtresults": rev_types,
     })
 
+def finance_revenue_types_add(request):
+    rev_types = revenue_types.objects.all().order_by('revenue_types_name')
+    return render(request, "finance_revenue_types_add.html", {"rtresults":rev_types})
+
+def finance_revenue_types_commit(request):
+    if request.method == "POST":
+        form = RevenueTypesForm(request.POST or None)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Revenue Types Added Successfully")
+    rev_types = revenue_types.objects.all()
+    return render(request, "finance_revenue_types.html", {"rtresults":rev_types})
+
+def finance_revenue_types_edit(request, revenue_types_id):
+    rev_types = revenue_types.objects.filter(pk=revenue_types_id)
+    return render(request, "finance_revenue_types_edit.html", {"rtresults":rev_types})
+
+def finance_revenue_types_edit_commit(request, revenue_types_id):
+    rev = get_object_or_404(revenue_types, pk=revenue_types_id)
+    all_types = revenue_types.objects.all().order_by('revenue_types_name')
+    if request.method == "POST":
+        name = request.POST.get('revenue_types_name')
+        # Check for duplicates (case-insensitive, excluding current record)
+        if revenue_types.objects.filter(
+            revenue_types_name__iexact=name
+        ).exclude(
+            pk=revenue_types_id
+        ).exists():
+            messages.error(request, "No duplicate Revenue Types Allowed")
+            return render(request, "finance_revenue_types.html", {
+                "rtresults": all_types,
+                "rev": rev,
+                "name_error": True
+            })
+        form = RevenueTypesForm(request.POST, instance=rev)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Revenue Type Edited Successfully")
+            return redirect('finance_revenue_types')
+    # If GET request or form invalid
+    return render(request, "finance_revenue_types.html", {
+        "rtresults": all_types,
+        "rev": rev
+    })
+
 def finance_revenue_line_types(request):
     rev_line_types = revenue_line_types.objects.all()
     return render(request, "finance_revenue_line_types.html", {
         "rltresults": rev_line_types,
     })
 
+def finance_revenue_line_types_add(request):
+    rev_line_types = revenue_line_types.objects.all().order_by('revenue_line_types_name')
+    return render(request, "finance_revenue_line_types_add.html", {"rltresults":rev_line_types})
+
+def finance_revenue_line_types_commit(request):
+    if request.method == "POST":
+        form = RevenueLineForm(request.POST or None)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Revenue Line Types Added Successfully")
+    rev_line_types = revenue_line_types.objects.all()
+    return render(request, "finance_revenue_line_types.html", {"rltresults":rev_line_types})
+
+def finance_revenue_line_types_edit(request, revenue_line_types_id):
+    rev_line_types = revenue_line_types.objects.filter(pk=revenue_line_types_id)
+    return render(request, "finance_revenue_line_types_edit.html", {"rltresults":rev_line_types})
+
+def finance_revenue_line_types_edit_commit(request, revenue_line_types_id):
+    rev = get_object_or_404(revenue_line_types, pk=revenue_line_types_id)
+    all_types = revenue_line_types.objects.all().order_by('revenue_line_types_name')
+    if request.method == "POST":
+        name = request.POST.get('revenue_line_types_name')
+        # Check for duplicates (case-insensitive, excluding current record)
+        if revenue_line_types.objects.filter(
+            revenue_line_types_name__iexact=name
+        ).exclude(
+            pk=revenue_line_types_id
+        ).exists():
+            messages.error(request, "No duplicate Revenue Line Types Allowed")
+            return render(request, "finance_revenue_line_types.html", {
+                "rltresults": all_types,
+                "rev": rev,
+                "name_error": True
+            })
+        form = RevenueLineForm(request.POST, instance=rev)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Revenue Line Type Edited Successfully")
+            return redirect('finance_revenue_line_types')
+    
+    # If GET request or form invalid
+    return render(request, "finance_revenue_line_types.html", {
+        "rltresults": all_types,
+        "rev": rev
+    })
+
 def finance_expense(request):
-    exp = expense.objects.all()
+    prop_output = request.POST.get('propname')
+    if prop_output is None or prop_output == "All":
+            props_data = props.objects.prefetch_related(
+                Prefetch(
+                    'expense_set',
+                    queryset=expense.objects.select_related('expense_line_types', 'expense_types')
+                )
+            ).all().order_by('prop_country', 'prop_name')
+    else:
+        if prop_output is not None:
+                props_data = props.objects.prefetch_related(
+                    Prefetch(
+                        'expense_set',
+                        queryset=expense.objects.select_related('expense_line_types', 'expense_types')
+                    )
+                ).all().order_by('prop_country', 'prop_name').filter(prop_name=prop_output)
     return render(request, "finance_expense.html", {
-        "eresults": exp,
+        "props_data": props_data,
     })
 
 def finance_expense_types(request):
@@ -268,10 +384,102 @@ def finance_expense_types(request):
         "etresults": exp_types,
     })
 
+def finance_expense_types_add(request):
+    exp_types = expense_types.objects.all().order_by('expense_types_name')
+    return render(request, "finance_expense_types_add.html", {"etresults":exp_types})
+
+def finance_expense_types_commit(request):
+    if request.method == "POST":
+        form = ExpenseTypesForm(request.POST or None)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Expense Types Added Successfully")
+    exp_types = expense_types.objects.all()
+    return render(request, "finance_expense_types.html", {"etresults":exp_types})
+
+def finance_expense_types_edit(request, expense_types_id):
+    exp_types = expense_types.objects.filter(pk=expense_types_id)
+    return render(request, "finance_expense_types_edit.html", {"etresults":exp_types})
+
+def finance_expense_types_edit_commit(request, expense_types_id):
+    exp = get_object_or_404(expense_types, pk=expense_types_id)
+    all_types = expense_types.objects.all().order_by('expense_types_name')
+    if request.method == "POST":
+        name = request.POST.get('expense_types_name')
+        # Check for duplicates (case-insensitive, excluding current record)
+        if expense_types.objects.filter(
+            expense_types_name__iexact=name
+        ).exclude(
+            pk=expense_types_id
+        ).exists():
+            messages.error(request, "No duplicate Expense Types Allowed")
+            return render(request, "finance_expense_types.html", {
+                "etresults": all_types,
+                "exp": exp,
+                "name_error": True
+            })
+        form = ExpenseTypesForm(request.POST, instance=exp)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Expense Type Edited Successfully")
+            return redirect('finance_expense_types')
+    
+    # If GET request or form invalid
+    return render(request, "finance_expense_types.html", {
+        "etresults": all_types,
+        "exp": exp
+    })
+
 def finance_expense_line_types(request):
-    exp_line_types = expense_line_types.objects.all()
+    exp_line_types = expense_line_types.objects.all().order_by('expense_line_types_name')
     return render(request, "finance_expense_line_types.html", {
         "eltresults": exp_line_types,
+    })
+
+def finance_expense_line_types_add(request):
+    exp_line_types = expense_line_types.objects.all()
+    return render(request, "finance_expense_line_types_add.html", {"eltresults":exp_line_types})
+
+def finance_expense_line_types_commit(request):
+    if request.method == "POST":
+        form = ExpenseLineForm(request.POST or None)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Expense Line Type Added Successfully")
+    exp_line_types = expense_line_types.objects.all()
+    return render(request, "finance_expense_line_types.html", {"eltresults":exp_line_types})
+
+def finance_expense_line_types_edit(request, expense_line_types_id):
+    exp_line_types = expense_line_types.objects.filter(pk=expense_line_types_id)
+    return render(request, "finance_expense_line_types_edit.html", {"eltresults":exp_line_types})
+
+def finance_expense_line_types_edit_commit(request, expense_line_types_id):
+    exp = get_object_or_404(expense_line_types, pk=expense_line_types_id)
+    all_types = expense_line_types.objects.all().order_by('expense_line_types_name')
+    if request.method == "POST":
+        name = request.POST.get('expense_line_types_name')
+        # Check for duplicates (case-insensitive, excluding current record)
+        if expense_line_types.objects.filter(
+            expense_line_types_name__iexact=name
+        ).exclude(
+            pk=expense_line_types_id
+        ).exists():
+            messages.error(request, "No duplicate Expense Line Types Allowed")
+            return render(request, "finance_expense_line_types.html", {
+                "eltresults": all_types,
+                "exp": exp,
+                "name_error": True
+            })
+        form = ExpenseLineForm(request.POST, instance=exp)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Expense Line Type Edited Successfully")
+            return redirect('finance_expense_line_types')
+    
+    # If GET request or form invalid
+    return render(request, "finance_expense_line_types.html", {
+        "eltresults": all_types,
+        "exp": exp
     })
 
 def finance_valuations(request):
