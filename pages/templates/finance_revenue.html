@@ -19,12 +19,11 @@
       </button>
     </div>
     <script>
-      // Automatically close the alert after 3 seconds (3000 milliseconds)
       setTimeout(function() {
         document.querySelectorAll('.auto-dismiss').forEach(alert => {
-          alert.classList.remove('show'); // Hide alert visually
-          alert.classList.add('fade'); // Add fade effect
-          setTimeout(() => alert.remove(), 500); // Remove from DOM after fade
+          alert.classList.remove('show');
+          alert.classList.add('fade');
+          setTimeout(() => alert.remove(), 500);
         });
       }, 2000);
     </script>
@@ -33,27 +32,11 @@
 <body>
   
   <div style="display: flex ; justify-content: flex-end">
-    <a href="{% url 'finance_revenue_types_add' %}" class="btn btn-info" style="margin-right:16px" type="button">Add New</a>
+    <a href="{% url 'finance_revenue_add' %}" class="btn btn-info" style="margin-right:16px" type="button">Add New</a>
     <a href="{% url 'finance' %}" class="btn btn-info" style="margin-right:16px" role="button">Back</a>
   </div>
+  <br>
   
-  <div class="form-row">
-        <div class="form-group col-md-3">
-            <form action = "{% url 'finance_revenue' %}" method="post">
-              {% csrf_token %}
-              <div class="input-group">
-                  <select name = "propname" class="custom-select" id="inputGroupSelect08" aria-label="Example select with button addon" onchange="this.form.submit()">
-                    <option disabled selected value="All">Select Property</option>
-                    <option value="All">All Properties</option>
-                    {% for results in props_data %}
-                      <option value="{{results.prop_name}}">{{results.prop_name}}</option>
-                    {% endfor %}
-                </select>
-              </div>
-          </form>
-      </div>
-    </div>
-
 <form action="" method="">
   {% csrf_token %}
   <div style="overflow-x: auto;">
@@ -67,26 +50,98 @@
           <th style="box-sizing: border-box;">Details</th>
         </tr>
       </thead>
+      
       <tbody>
         {% for pro in props_data %}
-          {% for rev in pro.revenue_set.all %}
-            <tr>
-              <td style="text-align: left;">{{ pro.prop_name }}</td>
-              <td>{{ rev.revenue_line_types.revenue_line_types_name }}</td>
-              <td>{{ rev.revenue_types.revenue_types_name }}</td>
-              <td style="text-align: right;">€ {{ rev.revenue_amount|floatformat:0|intcomma }}</td>
-              <td>
-                <button class="btn btn-light" style="border-color:black; width: auto; padding: 0.25rem 0.5rem;">
-                  <a href="{% url 'finance' %}">Edit</a>
-                </button>
-              </td>
-            </tr>
-          {% endfor %}
+          {% with revenues=pro.revenue_set.all %}
+            {% if revenues %}
+              <!-- Property Group -->
+              <tbody class="property-group" data-property-id="{{ pro.id }}">
+                <!-- Property Header -->
+                <tr class="property-header" style="cursor: pointer;">
+                  <td colspan="5" style="text-align: left; font-weight: bold;">
+                    <i class="fas fa-chevron-right property-arrow"></i> {{ pro.prop_name }}
+                    <span class="badge badge-info">{{ revenues|length }}</span>
+                  </td>
+                </tr>
+                
+                <!-- Property Details -->
+                {% for rev in revenues %}
+                  <tr class="property-details" style="display: none;">
+                    <td style="text-align: left;">{{ pro.prop_name }}</td>
+                    <td>{{ rev.revenue_line_types.revenue_line_types_name }}</td>
+                    <td>{{ rev.revenue_types.revenue_types_name }}</td>
+                    <td style="text-align: right;">€ {{ rev.revenue_amount|floatformat:0|intcomma }}</td>
+                    <td>
+                      <button class="btn btn-light" style="border-color:black; width: auto; padding: 0.25rem 0.5rem;">
+                        <a href="{% url 'finance' %}">Edit</a>
+                      </button>
+                    </td>
+                  </tr>
+                {% endfor %}
+              </tbody>
+            {% endif %}
+          {% endwith %}
         {% endfor %}
       </tbody>
     </table>    
   </div>
 </form>
-</body>
 
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const propertyGroups = document.querySelectorAll('.property-group');
+  
+  propertyGroups.forEach(group => {
+    const header = group.querySelector('.property-header');
+    const details = group.querySelectorAll('.property-details');
+    const arrow = group.querySelector('.property-arrow');
+    
+    header.addEventListener('click', function() {
+      // Check if this group is currently expanded
+      const isExpanded = details[0].style.display === 'table-row';
+      
+      // Collapse all property groups first
+      propertyGroups.forEach(g => {
+        g.querySelectorAll('.property-details').forEach(d => {
+          d.style.display = 'none';
+        });
+        g.querySelector('.property-arrow').classList.remove('fa-chevron-down');
+        g.querySelector('.property-arrow').classList.add('fa-chevron-right');
+      });
+      
+      // If this group wasn't expanded, expand it now
+      if (!isExpanded) {
+        details.forEach(detail => {
+          detail.style.display = 'table-row';
+        });
+        arrow.classList.remove('fa-chevron-right');
+        arrow.classList.add('fa-chevron-down');
+      }
+    });
+  });
+});
+</script>
+
+<style>
+.property-header:hover {
+  background-color: #f8f9fa;
+}
+
+.property-arrow {
+  transition: transform 0.2s ease;
+  margin-right: 8px;
+}
+
+.badge-info {
+  background-color: #17a2b8;
+  margin-left: 8px;
+}
+
+.property-details {
+  background-color: #f8f9fa;
+}
+</style>
+
+</body>
 {% endblock %}

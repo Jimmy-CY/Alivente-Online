@@ -254,6 +254,58 @@ def finance_revenue(request):
 		"props_data": props_data,
 	})
 
+def finance_revenue_add(request):
+    props_data = props.objects.all().order_by('prop_country', 'prop_name')
+    revenue_types_list = revenue_types.objects.all()  # Fetch all revenue types
+    revenue_line_types_list = revenue_line_types.objects.all()  # Fetch all revenue line types
+
+    return render(request, "finance_revenue_add.html", {
+        "props_data": props_data,
+        "revenue_types": revenue_types_list,  # Pass to template
+        "revenue_line_types": revenue_line_types_list,  # Pass to template
+    })
+
+def finance_revenue_commit(request):
+    if request.method == "POST":
+        # Extract form data
+        prop_id = request.POST.get('prop')
+        rlt_id = request.POST.get('revenue_line_types')  # revenue_line_types_id
+        rt_id = request.POST.get('revenue_types')    # revenue_types_id
+        revenue_amount = request.POST.get('revenue_amount')
+
+        # Fetch the revenue_type to check monthly flags
+        try:
+            revenue_type = revenue_types.objects.get(revenue_types_id=rt_id)
+        except revenue_types.DoesNotExist:
+            messages.error(request, "Invalid Revenue Type")
+            return redirect('finance_revenue_add')
+        # Initialize monthly revenue data
+        monthly_data = {
+            'prop_id': prop_id,
+            'revenue_line_types_id': rlt_id,
+            'revenue_types_id': rt_id,
+            'revenue_amount': revenue_amount,
+        }
+        # Check each month and set revenue_jan, revenue_feb, etc. if "YES"
+        months = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 
+                 'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
+        
+        for month in months:
+            if getattr(revenue_type, f'revenue_types_{month}') == "Yes":
+                monthly_data[f'revenue_{month}'] = revenue_amount
+                print(monthly_data[f'revenue_{month}'])
+        # Create or update the revenue record
+        revenue.objects.update_or_create(
+            prop_id=prop_id,
+            revenue_line_types_id=rlt_id,
+            revenue_types_id=rt_id,
+            defaults=monthly_data
+        )
+        messages.success(request, "Revenue Updated Successfully")
+        return redirect('finance_revenue')
+    # If not a POST request, redirect back
+    return redirect('finance_revenue_add')
+
 def finance_revenue_types(request):
     rev_types = revenue_types.objects.all()
     return render(request, "finance_revenue_types.html", {

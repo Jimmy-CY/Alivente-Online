@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+{% endblock %}
+
+{% block content %}
+
+<h2><center>ALIVENTE ONLINE - REVENUE</center></h2>
+<h4><center>ADD REVENUE</center></h4>
+<br/>
+  
+<form action="{% url 'finance_revenue_commit' %}" method="post">
+  {% csrf_token %}
+  <div style="display: flex ; justify-content: flex-end">
+      <button class="btn btn-info" style="margin-right:16px" type="submit">Save</button>
+      <a href="{% url 'finance_revenue' %}" class="btn btn-info" style="margin-right:16px" role="button">Back</a>
+  </div>
+<br/>
+  <div class="form-row">
+    <div class="form-group col-md-3">
+      <label for="prop"><strong>Property</strong></label>
+      <select id="prop" class="form-control" name="prop" required>
+        <option value="">Select Property</option>
+        {% for prop in props_data %}
+            <option value="{{ prop.prop_id }}">{{ prop.prop_name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="form-group col-md-3">
+      <label for="revenue_line_types"><strong>Revenue Line Type</strong></label>
+      <select id="revenue_line_types" class="form-control" name="revenue_line_types" required>
+        <option value="">Select Revenue Line Type</option>
+        {% for rlt in revenue_line_types %}
+            <option value="{{ rlt.revenue_line_types_id }}">{{ rlt.revenue_line_types_name }}</option>
+        {% endfor %}
+      </select>
+    </div>    
+    <div class="form-group col-md-3">
+      <label for="revenue_types"><strong>Revenue Type</strong></label>
+      <select id="revenue_types" class="form-control" name="revenue_types" required>
+        <option value="">Select Revenue Type</option>
+        {% for rt in revenue_types %}
+            <option value="{{ rt.revenue_types_id }}">{{ rt.revenue_types_name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="form-group col-md-3">
+      <label for="revenue_amount"><strong>Revenue Amount</strong></label>
+      <input type="number" class="form-control" id="revenue_amount" 
+             name="revenue_amount" placeholder="Amount" 
+             step="0.01" min="0" maxlength="10" required>
+    </div>
+  </div>
+</form>
+
+{% endblock %}
