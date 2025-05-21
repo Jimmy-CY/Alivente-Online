@@ -9,41 +9,41 @@ Home
 
 {% if not user.is_authenticated %}
   <!-- Show logo when logged out -->
-  <div style="display: flex; justify-content: center; align-items: center; margin: 20px 0;">
-    <img src="{% static 'images/alivente_online_logo.png' %}" alt="Alivente" style="max-width: 100%; height: auto;">
+  <div class="text-center my-4">
+    <img src="{% static 'images/alivente_online_logo.png' %}" alt="Alivente" class="img-fluid">
   </div>
 {% else %}
   <!-- Show module buttons when logged in -->
-  <div class="container mt-5 border rounded p-4" style="max-width: 1200px; border-color: #dee2e6 !important;">
+  <div class="container mt-4 border rounded p-3 p-md-4" style="max-width: 1200px; border-color: #dee2e6 !important;">
     <div class="row justify-content-center">
       
       <!-- Properties Button -->
-      <div class="col-md-3 col-sm-6 mb-4">
-        <a href="{% url 'properties' %}" class="btn btn-info btn-block py-3 home-module-btn">
+      <div class="col-6 col-md-3 mb-3">
+        <a href="{% url 'properties' %}" class="btn btn-info btn-block py-2 py-md-3 home-module-btn">
           <i class="fas fa-home fa-2x mb-2"></i>
           <h4>Properties</h4>
         </a>
       </div>
 
       <!-- Tenants Button -->
-      <div class="col-md-3 col-sm-6 mb-4">
-        <a href="{% url 'tenant' %}" class="btn btn-info btn-block py-3 home-module-btn">
+      <div class="col-6 col-md-3 mb-3">
+        <a href="{% url 'tenant' %}" class="btn btn-info btn-block py-2 py-md-3 home-module-btn">
           <i class="fas fa-users fa-2x mb-2"></i>
           <h4>Tenants</h4>
         </a>
       </div>
 
       <!-- Suppliers Button -->
-      <div class="col-md-3 col-sm-6 mb-4">
-        <a href="{% url 'suppliers' %}" class="btn btn-info btn-block py-3 home-module-btn">
+      <div class="col-6 col-md-3 mb-3">
+        <a href="{% url 'suppliers' %}" class="btn btn-info btn-block py-2 py-md-3 home-module-btn">
           <i class="fas fa-hammer fa-2x mb-2"></i>
           <h4>Suppliers</h4>
         </a>
       </div>
 
       <!-- Petty Cash Button -->
-      <div class="col-md-3 col-sm-6 mb-4">
-        <a href="{% url 'petty_cash' %}" class="btn btn-info btn-block py-3 home-module-btn">
+      <div class="col-6 col-md-3 mb-3">
+        <a href="{% url 'petty_cash' %}" class="btn btn-info btn-block py-2 py-md-3 home-module-btn">
           <i class="fas fa-money-bill-wave fa-2x mb-2"></i>
           <h4>Petty Cash</h4>
         </a>
@@ -51,15 +51,15 @@ Home
 
       <!-- Invoices Button (Conditional) -->
       {% if user.username == 'admin' or user.username == 'Demetrios' or user.username == 'angy' %}
-      <div class="col-md-3 col-sm-6 mb-4">
-        <a href="{% url 'invoices' %}" class="btn btn-info btn-block py-3 home-module-btn">
+      <div class="col-6 col-md-3 mb-3">
+        <a href="{% url 'invoices' %}" class="btn btn-info btn-block py-2 py-md-3 home-module-btn">
           <i class="fas fa-file-invoice fa-2x mb-2"></i>
           <h4>Invoices</h4>
         </a>
       </div>
       {% else %}
-      <div class="col-md-3 col-sm-6 mb-4">
-        <button class="btn btn-secondary btn-block py-3 home-module-btn" disabled>
+      <div class="col-6 col-md-3 mb-3">
+        <button class="btn btn-secondary btn-block py-2 py-md-3 home-module-btn" disabled>
           <i class="fas fa-file-invoice fa-2x mb-2"></i>
           <h4>Invoices</h4>
         </button>
@@ -67,8 +67,8 @@ Home
       {% endif %}
 
       <!-- Issues Button -->
-      <div class="col-md-3 col-sm-6 mb-4">
-        <a href="{% url 'fsr' %}" class="btn btn-info btn-block py-3 home-module-btn">
+      <div class="col-6 col-md-3 mb-3">
+        <a href="{% url 'fsr' %}" class="btn btn-info btn-block py-2 py-md-3 home-module-btn">
           <i class="fas fa-exclamation-circle fa-2x mb-2"></i>
           <h4>Issues</h4>
         </a>
@@ -76,15 +76,15 @@ Home
 
       <!-- Finance Button (Conditional) -->
       {% if user.username == 'admin' or user.username == 'Demetrios' or user.username == 'angy' %}
-      <div class="col-md-3 col-sm-6 mb-4">
-        <a href="{% url 'finance' %}" class="btn btn-info btn-block py-3 home-module-btn">
+      <div class="col-6 col-md-3 mb-3">
+        <a href="{% url 'finance' %}" class="btn btn-info btn-block py-2 py-md-3 home-module-btn">
           <i class="fas fa-chart-line fa-2x mb-2"></i>
           <h4>Finance</h4>
         </a>
       </div>
       {% else %}
-      <div class="col-md-3 col-sm-6 mb-4">
-        <button class="btn btn-secondary btn-block py-3 home-module-btn" disabled>
+      <div class="col-6 col-md-3 mb-3">
+        <button class="btn btn-secondary btn-block py-2 py-md-3 home-module-btn" disabled>
           <i class="fas fa-chart-line fa-2x mb-2"></i>
           <h4>Finance</h4>
         </button>
@@ -93,15 +93,15 @@ Home
 
       <!-- Admin Button (Conditional) -->
       {% if user.username == 'admin' or user.username == 'Demetrios' or user.username == 'angy' %}
-      <div class="col-md-3 col-sm-6 mb-4">
-        <a href="{% url 'admin_apms' %}" class="btn btn-info btn-block py-3 home-module-btn">
+      <div class="col-6 col-md-3 mb-3">
+        <a href="{% url 'admin_apms' %}" class="btn btn-info btn-block py-2 py-md-3 home-module-btn">
           <i class="fas fa-user-gear fa-2x mb-2"></i>
           <h4>Admin</h4>
         </a>
       </div>
       {% else %}
-      <div class="col-md-3 col-sm-6 mb-4">
-        <button class="btn btn-secondary btn-block py-3 home-module-btn" disabled>
+      <div class="col-6 col-md-3 mb-3">
+        <button class="btn btn-secondary btn-block py-2 py-md-3 home-module-btn" disabled>
           <i class="fas fa-user-gear fa-2x mb-2"></i>
           <h4>Admin</h4>
         </button>
@@ -113,7 +113,7 @@ Home
 
   <style>
     .home-module-btn {
-      height: 140px;
+      height: 120px;
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -121,20 +121,47 @@ Home
       transition: all 0.3s ease;
       border-radius: 6px;
       color: white;
+      width: 100%;
     }
+    
     .home-module-btn:hover:not(:disabled) {
       transform: translateY(-3px);
       box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
       text-decoration: none;
     }
+    
     .home-module-btn h4 {
       margin-bottom: 0;
       font-weight: 500;
-      font-size: 1.1rem;
+      font-size: 1rem;
     }
+    
     .home-module-btn:disabled {
       opacity: 0.6;
       cursor: not-allowed;
+    }
+    
+    /* Media queries for responsive design */
+    @media (max-width: 767px) {
+      .home-module-btn {
+        height: 100px;
+        padding: 8px !important;
+      }
+      
+      .home-module-btn h4 {
+        font-size: 0.85rem;
+      }
+      
+      .home-module-btn i {
+        font-size: 1.5rem !important;
+        margin-bottom: 8px !important;
+      }
+    }
+    
+    @media (max-width: 575px) {
+      .home-module-btn {
+        height: 90px;
+      }
     }
   </style>
 {% endif %}
