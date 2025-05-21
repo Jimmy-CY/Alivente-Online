@@ -2,53 +2,73 @@
 {% load static %}
 
 {% block title %}
+ALIVENTE - Edit Revenue
 {% endblock %}
 
 {% block content %}
 
 <h2><center>ALIVENTE ONLINE - REVENUES</center></h2>
-<h4><center>ADD REVENUE</center></h4>
+<h4><center>EDIT REVENUE</center></h4>
 <br/>
-  
-<form action="{% url 'finance_revenue_commit' %}" method="post">
+
+<form action="{% url 'finance_revenue_edit_commit' rev.revenue_id %}" method="post">
   {% csrf_token %}
+  
   <div style="display: flex ; justify-content: flex-end">
-      <button class="btn btn-info" style="margin-right:16px" type="submit">Save</button>
-      <a href="{% url 'finance_revenue' %}" class="btn btn-info" style="margin-right:16px" role="button">Back</a>
+    <button class="btn btn-info" style="margin-right:16px" type="submit">Save</button>
+    <a href="{% url 'finance_revenue' %}" class="btn btn-info" style="margin-right:16px" role="button">Back</a>
   </div>
-<br/>
+  <br/>
+
   <div class="form-row">
+    <!-- Property Field -->
     <div class="form-group col-md-3">
       <label for="prop"><strong>Property</strong></label>
       <select id="prop" class="form-control" name="prop" required>
         <option value="">Select Property</option>
         {% for prop in props_data %}
-            <option value="{{ prop.prop_id }}">{{ prop.prop_name }}</option>
+          <option value="{{ prop.prop_id }}" 
+            {% if prop.prop_id == rev.prop.prop_id %}selected{% endif %}>
+            {{ prop.prop_name }}
+          </option>
         {% endfor %}
       </select>
     </div>
+    
+    <!-- Revenue Line Type Field -->
     <div class="form-group col-md-3">
       <label for="revenue_line_types"><strong>Revenue Line Type</strong></label>
       <select id="revenue_line_types" class="form-control" name="revenue_line_types" required>
         <option value="">Select Revenue Line Type</option>
         {% for rlt in revenue_line_types %}
-            <option value="{{ rlt.revenue_line_types_id }}">{{ rlt.revenue_line_types_name }}</option>
+          <option value="{{ rlt.revenue_line_types_id }}"
+            {% if rlt.revenue_line_types_id == rev.revenue_line_types.revenue_line_types_id %}selected{% endif %}>
+            {{ rlt.revenue_line_types_name }}
+          </option>
         {% endfor %}
       </select>
     </div>    
+
+    <!-- Revenue Type Field -->
     <div class="form-group col-md-3">
       <label for="revenue_types"><strong>Revenue Type</strong></label>
       <select id="revenue_types" class="form-control" name="revenue_types" required>
         <option value="">Select Revenue Type</option>
         {% for rt in revenue_types %}
-            <option value="{{ rt.revenue_types_id }}">{{ rt.revenue_types_name }}</option>
+          <option value="{{ rt.revenue_types_id }}"
+            {% if rt.revenue_types_id == rev.revenue_types.revenue_types_id %}selected{% endif %}>
+            {{ rt.revenue_types_name }}
+          </option>
         {% endfor %}
       </select>
     </div>
+    
+    <!-- Amount Field -->
     <div class="form-group col-md-3">
       <label for="revenue_amount"><strong>Revenue Amount</strong></label>
       <input type="number" class="form-control" id="revenue_amount" 
              name="revenue_amount" placeholder="Amount" 
+             value="{{ rev.revenue_amount|floatformat:2 }}"
              step="0.01" min="0" maxlength="10" required>
     </div>
   </div>

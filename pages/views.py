@@ -5,7 +5,8 @@ from django.contrib.auth.forms import UserCreationForm, UserChangeForm, Password
 from django.core.exceptions import ValidationError
 from django.core.files.storage import FileSystemStorage
 from django.db import connection
-from django.db.models import Q, Prefetch
+from django.db.models import Q, Prefetch, Subquery, OuterRef
+from django.db.models.functions import Coalesce
 from django.http import HttpResponse, HttpResponseServerError, FileResponse, Http404
 from django.shortcuts import render, redirect, get_object_or_404
 from django.templatetags.static import static
@@ -25,6 +26,7 @@ import os
 import re
 import uuid
 import logging
+import json
 
 logger = logging.getLogger(__name__)
 
@@ -306,6 +308,78 @@ def finance_revenue_commit(request):
     # If not a POST request, redirect back
     return redirect('finance_revenue_add')
 
+def finance_revenue_edit(request, revenue_id):
+    rev = get_object_or_404(revenue, pk=revenue_id)
+    props_data = props.objects.all().order_by('prop_country', 'prop_name')
+    revenue_types_list = revenue_types.objects.all()
+    revenue_line_types_list = revenue_line_types.objects.all()
+    form = RevenueForm(instance=rev)  # Use your actual form class
+    
+    return render(request, "finance_revenue_edit.html", {
+        "rev": rev,  # Changed from rresults to rev for clarity
+        "props_data": props_data,
+        "revenue_types": revenue_types_list,
+        "revenue_line_types": revenue_line_types_list,
+        "form": form,  # Pass the form to template
+    })
+
+def finance_revenue_edit_commit(request, revenue_id):
+    rev = get_object_or_404(revenue, pk=revenue_id)
+    
+    if request.method == "POST":
+        # Extract form data
+        prop_id = request.POST.get('prop')
+        rlt_id = request.POST.get('revenue_line_types')
+        rt_id = request.POST.get('revenue_types')
+        revenue_amount = request.POST.get('revenue_amount')
+
+        # Fetch the revenue_type to check monthly flags
+        try:
+            revenue_type = revenue_types.objects.get(revenue_types_id=rt_id)
+        except revenue_types.DoesNotExist:
+            messages.error(request, "Invalid Revenue Type")
+            return redirect('finance_revenue_edit', revenue_id=revenue_id)
+
+        # Initialize monthly revenue data
+        monthly_data = {
+            'prop_id': prop_id,
+            'revenue_line_types_id': rlt_id,
+            'revenue_types_id': rt_id,
+            'revenue_amount': revenue_amount,
+        }
+
+        # Check each month and set revenue_jan, revenue_feb, etc. if "YES"
+        months = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 
+                 'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
+        
+        for month in months:
+            if getattr(revenue_type, f'revenue_types_{month}') == "Yes":
+                monthly_data[f'revenue_{month}'] = revenue_amount
+            else:
+                monthly_data[f'revenue_{month}'] = None  # Clear if not applicable
+
+        # Update the revenue record
+        for key, value in monthly_data.items():
+            setattr(rev, key, value)
+        rev.save()
+
+        messages.success(request, "Revenue Updated Successfully")
+        return redirect('finance_revenue')
+
+    # If GET request, show the form
+    props_data = props.objects.all().order_by('prop_country', 'prop_name')
+    revenue_types_list = revenue_types.objects.all()
+    revenue_line_types_list = revenue_line_types.objects.all()
+    form = RevenueForm(instance=rev)
+    
+    return render(request, "finance_revenue_edit.html", {
+        "rev": rev,
+        "props_data": props_data,
+        "revenue_types": revenue_types_list,
+        "revenue_line_types": revenue_line_types_list,
+        "form": form,
+    })
+
 def finance_revenue_types(request):
     rev_types = revenue_types.objects.all()
     return render(request, "finance_revenue_types.html", {
@@ -429,6 +503,103 @@ def finance_expense(request):
     return render(request, "finance_expense.html", {
         "props_data": props_data,
     })
+
+def finance_expense_add(request):
+    # Get properties with their values (using select_related if it's a ForeignKey)
+    props_data = props.objects.all().order_by('prop_country', 'prop_name')
+    # Annotate each property with its current value (0 if none exists)
+    props_data = props_data.annotate(
+        current_value=Coalesce(
+            Subquery(
+                prop_values.objects.filter(prop_id=OuterRef('prop_id'))
+                .values('prop_values_current_value')[:1]
+            ),
+            0
+        )
+    )
+    expense_types_list = expense_types.objects.all()
+    expense_line_types_list = expense_line_types.objects.all().order_by('expense_line_types_name')
+    return render(request, "finance_expense_add.html", {
+        "props_data": props_data,
+        "expense_types": expense_types_list,
+        "expense_line_types": expense_line_types_list,
+    })
+
+def finance_expense_commit(request):
+    if request.method == "POST":
+        # Extract form data
+        prop_id = request.POST.get('prop')
+        elt_id = request.POST.get('expense_line_types')
+        et_id = request.POST.get('expense_types')  # Fix: Changed from 'expense_types' to match your form
+        expense_amount = request.POST.get('expense_amount')
+        prorata_data = request.POST.get('prorata_calculation_data')
+
+        # Define months list outside the prorata block
+        months = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 
+                 'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
+
+        try:
+            expense_type = expense_types.objects.get(expense_types_id=et_id)
+        except expense_types.DoesNotExist:
+            messages.error(request, "Invalid Expense Type")
+            return redirect('finance_expense_add')
+
+        # Check if this is a pro-rata expense with multiple properties
+        if prorata_data:
+            try:
+                prorata_data = json.loads(prorata_data)
+                selected_properties = prorata_data.get('selected_properties', [])
+                
+                # Create an expense for each selected property
+                for property_data in selected_properties:
+                    monthly_data = {
+                        'prop_id': property_data['prop_id'],
+                        'expense_line_types_id': elt_id,
+                        'expense_types_id': et_id,
+                        'expense_amount': property_data['calculated_amount'],
+                    }
+                    
+                    for month in months:
+                        if getattr(expense_type, f'expense_types_{month}') == "Yes":
+                            monthly_data[f'expense_{month}'] = property_data['calculated_amount']
+                    
+                    expense.objects.update_or_create(
+                        prop_id=property_data['prop_id'],
+                        expense_line_types_id=elt_id,
+                        expense_types_id=et_id,
+                        defaults=monthly_data
+                    )
+                
+                messages.success(request, f"{len(selected_properties)} pro-rata expenses created successfully")
+                return redirect('finance_expense')
+                
+            except json.JSONDecodeError:
+                messages.error(request, "Invalid pro-rata data")
+                return redirect('finance_expense_add')
+
+        # Handle non-pro-rata or single property expense
+        monthly_data = {
+            'prop_id': prop_id,
+            'expense_line_types_id': elt_id,
+            'expense_types_id': et_id,
+            'expense_amount': expense_amount,
+        }
+        
+        for month in months:
+            if getattr(expense_type, f'expense_types_{month}') == "Yes":
+                monthly_data[f'expense_{month}'] = expense_amount
+        
+        expense.objects.update_or_create(
+            prop_id=prop_id,
+            expense_line_types_id=elt_id,
+            expense_types_id=et_id,
+            defaults=monthly_data
+        )
+        
+        messages.success(request, "Expense Updated Successfully")
+        return redirect('finance_expense')
+    
+    return redirect('finance_expense_add')
 
 def finance_expense_types(request):
     exp_types = expense_types.objects.all()

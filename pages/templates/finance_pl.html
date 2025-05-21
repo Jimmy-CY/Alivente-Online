@@ -78,9 +78,10 @@
                         <td colspan="14" style="background-color: #17a2b8;"></td>
                     </tr>
                     {% for line_type in revenue_line_types %}
+                    {% with line_totals=revenue_totals_by_line.all|get_item:line_type.revenue_line_types_id %}
+                    {% if line_totals.jan or line_totals.feb or line_totals.mar or line_totals.apr or line_totals.may or line_totals.jun or line_totals.jul or line_totals.aug or line_totals.sep or line_totals.oct or line_totals.nov or line_totals.dec or line_totals.total %}
                     <tr>
                         <td>{{ line_type.revenue_line_types_name }}</td>
-                        {% with line_totals=revenue_totals_by_line.all|get_item:line_type.revenue_line_types_id %}
                         <td class="text-right">{{ line_totals.jan|default:0|floatformat:"0"|intcomma }}</td>
                         <td class="text-right">{{ line_totals.feb|default:0|floatformat:"0"|intcomma }}</td>
                         <td class="text-right">{{ line_totals.mar|default:0|floatformat:"0"|intcomma }}</td>
@@ -95,8 +96,9 @@
                         <td class="text-right">{{ line_totals.dec|default:0|floatformat:"0"|intcomma }}</td>
                         <td class="text-right font-weight-bold">{{ line_totals.total|default:0|floatformat:"0"|intcomma }}</td>
                         <td class="text-right">{{ line_totals.total|divide:12|default:0|floatformat:"0"|intcomma }}</td>
-                        {% endwith %}
                     </tr>
+                    {% endif %}
+                    {% endwith %}
                     {% endfor %}
                     <tr class="font-weight-bold" style="background-color: #f8f9fa">
                         <td>TOTAL REVENUE:</td>
@@ -122,9 +124,10 @@
                         <td colspan="14" style="background-color: #17a2b8;"></td>
                     </tr>
                     {% for line_type in expense_line_types %}
+                    {% with line_totals=expense_totals_by_line.all|get_item:line_type.expense_line_types_id %}
+                    {% if line_totals.jan or line_totals.feb or line_totals.mar or line_totals.apr or line_totals.may or line_totals.jun or line_totals.jul or line_totals.aug or line_totals.sep or line_totals.oct or line_totals.nov or line_totals.dec or line_totals.total %}
                     <tr>
                         <td>{{ line_type.expense_line_types_name }}</td>
-                        {% with line_totals=expense_totals_by_line.all|get_item:line_type.expense_line_types_id %}
                         <td class="text-right">{{ line_totals.jan|default:0|floatformat:"0"|intcomma }}</td>
                         <td class="text-right">{{ line_totals.feb|default:0|floatformat:"0"|intcomma }}</td>
                         <td class="text-right">{{ line_totals.mar|default:0|floatformat:"0"|intcomma }}</td>
@@ -139,8 +142,9 @@
                         <td class="text-right">{{ line_totals.dec|default:0|floatformat:"0"|intcomma }}</td>
                         <td class="text-right font-weight-bold">{{ line_totals.total|default:0|floatformat:"0"|intcomma }}</td>
                         <td class="text-right">{{ line_totals.total|divide:12|default:0|floatformat:"0"|intcomma }}</td>
-                        {% endwith %}
                     </tr>
+                    {% endif %}
+                    {% endwith %}
                     {% endfor %}
                     <tr class="font-weight-bold" style="background-color: #f8f9fa">
                         <td>TOTAL EXPENSES:</td>
@@ -219,9 +223,10 @@
                         <td colspan="14" style="background-color: #17a2b8;"></td>
                     </tr>
                     {% for line_type in revenue_line_types %}
+                    {% with line_totals=revenue_totals_by_line|get_item:prop.prop_id|get_item:line_type.revenue_line_types_id %}
+                    {% if line_totals.jan or line_totals.feb or line_totals.mar or line_totals.apr or line_totals.may or line_totals.jun or line_totals.jul or line_totals.aug or line_totals.sep or line_totals.oct or line_totals.nov or line_totals.dec or line_totals.total %}
                     <tr>
                         <td>{{ line_type.revenue_line_types_name }}</td>
-                        {% with line_totals=revenue_totals_by_line|get_item:prop.prop_id|get_item:line_type.revenue_line_types_id %}
                         <td class="text-right">{{ line_totals.jan|default:0|floatformat:"0"|intcomma }}</td>
                         <td class="text-right">{{ line_totals.feb|default:0|floatformat:"0"|intcomma }}</td>
                         <td class="text-right">{{ line_totals.mar|default:0|floatformat:"0"|intcomma }}</td>
@@ -236,8 +241,9 @@
                         <td class="text-right">{{ line_totals.dec|default:0|floatformat:"0"|intcomma }}</td>
                         <td class="text-right font-weight-bold">{{ line_totals.total|default:0|floatformat:"0"|intcomma }}</td>
                         <td class="text-right">{{ line_totals.total|divide:12|default:0|floatformat:"0"|intcomma }}</td>
-                        {% endwith %}
                     </tr>
+                    {% endif %}
+                    {% endwith %}
                     {% endfor %}
                     <tr class="font-weight-bold" style="background-color: #f8f9fa">
                         <td>TOTAL REVENUE:</td>
@@ -265,9 +271,10 @@
                         <td colspan="14" style="background-color: #17a2b8;"></td>
                     </tr>
                     {% for line_type in expense_line_types %}
+                    {% with line_totals=expense_totals_by_line|get_item:prop.prop_id|get_item:line_type.expense_line_types_id %}
+                    {% if line_totals.jan or line_totals.feb or line_totals.mar or line_totals.apr or line_totals.may or line_totals.jun or line_totals.jul or line_totals.aug or line_totals.sep or line_totals.oct or line_totals.nov or line_totals.dec or line_totals.total %}
                     <tr>
                         <td>{{ line_type.expense_line_types_name }}</td>
-                        {% with line_totals=expense_totals_by_line|get_item:prop.prop_id|get_item:line_type.expense_line_types_id %}
                         <td class="text-right">{{ line_totals.jan|default:0|floatformat:"0"|intcomma }}</td>
                         <td class="text-right">{{ line_totals.feb|default:0|floatformat:"0"|intcomma }}</td>
                         <td class="text-right">{{ line_totals.mar|default:0|floatformat:"0"|intcomma }}</td>
@@ -282,8 +289,9 @@
                         <td class="text-right">{{ line_totals.dec|default:0|floatformat:"0"|intcomma }}</td>
                         <td class="text-right font-weight-bold">{{ line_totals.total|default:0|floatformat:"0"|intcomma }}</td>
                         <td class="text-right">{{ line_totals.total|divide:12|default:0|floatformat:"0"|intcomma }}</td>
-                        {% endwith %}
                     </tr>
+                    {% endif %}
+                    {% endwith %}
                     {% endfor %}
                     <tr class="font-weight-bold" style="background-color: #f8f9fa">
                         <td>TOTAL EXPENSES:</td>
@@ -385,10 +393,6 @@
                 </div>
             </div>
         </div>
-
-
-
-        
     </div>
     {% endfor %}
 </div>
