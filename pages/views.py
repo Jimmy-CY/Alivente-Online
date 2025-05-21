@@ -601,6 +601,124 @@ def finance_expense_commit(request):
     
     return redirect('finance_expense_add')
 
+def finance_expense_edit(request, expense_id):
+    # Get the existing expense
+    try:
+        existing_expense = expense.objects.get(expense_id=expense_id)
+    except expense.DoesNotExist:
+        messages.error(request, "Expense not found")
+        return redirect('finance_expense')
+
+    # Get properties with their values (using select_related if it's a ForeignKey)
+    props_data = props.objects.all().order_by('prop_country', 'prop_name')
+    # Annotate each property with its current value (0 if none exists)
+    props_data = props_data.annotate(
+        current_value=Coalesce(
+            Subquery(
+                prop_values.objects.filter(prop_id=OuterRef('prop_id'))
+                .values('prop_values_current_value')[:1]
+            ),
+            0
+        )
+    )
+    
+    expense_types_list = expense_types.objects.all()
+    expense_line_types_list = expense_line_types.objects.all().order_by('expense_line_types_name')
+    
+    return render(request, "finance_expense_edit.html", {
+        "props_data": props_data,
+        "expense_types": expense_types_list,
+        "expense_line_types": expense_line_types_list,
+        "existing_expense": existing_expense,
+    })
+
+def finance_expense_edit_commit(request, expense_id):
+    # Get the existing expense first
+    try:
+        existing_expense = expense.objects.get(expense_id=expense_id)
+    except expense.DoesNotExist:
+        messages.error(request, "Expense not found")
+        return redirect('finance_expense')
+
+    if request.method == "POST":
+        # Extract form data
+        prop_id = request.POST.get('prop')
+        elt_id = request.POST.get('expense_line_types')
+        et_id = request.POST.get('expense_types')
+        expense_amount = request.POST.get('expense_amount')
+        prorata_data = request.POST.get('prorata_calculation_data')
+
+        # Define months list outside the prorata block
+        months = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 
+                 'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
+
+        try:
+            expense_type = expense_types.objects.get(expense_types_id=et_id)
+        except expense_types.DoesNotExist:
+            messages.error(request, "Invalid Expense Type")
+            return redirect('finance_expense_edit', expense_id=expense_id)
+
+        # Check if this is a pro-rata expense with multiple properties
+        if prorata_data and prorata_data != 'undefined':
+            try:
+                prorata_data = json.loads(prorata_data)
+                selected_properties = prorata_data.get('selected_properties', [])
+                
+                if not selected_properties:
+                    messages.error(request, "No properties selected for pro-rata distribution")
+                    return redirect('finance_expense_edit', expense_id=expense_id)
+                
+                # First delete the original expense
+                existing_expense.delete()
+                
+                # Create an expense for each selected property
+                for property_data in selected_properties:
+                    monthly_data = {
+                        'prop_id': property_data['prop_id'],
+                        'expense_line_types_id': elt_id,
+                        'expense_types_id': et_id,
+                        'expense_amount': property_data['calculated_amount'],
+                    }
+                    
+                    for month in months:
+                        if getattr(expense_type, f'expense_types_{month}') == "Yes":
+                            monthly_data[f'expense_{month}'] = property_data['calculated_amount']
+                    
+                    # Use create instead of update_or_create since we're making new records
+                    expense.objects.create(**monthly_data)
+                
+                messages.success(request, f"{len(selected_properties)} pro-rata expenses updated successfully")
+                return redirect('finance_expense')
+                
+            except json.JSONDecodeError:
+                messages.error(request, "Invalid pro-rata data")
+                return redirect('finance_expense_edit', expense_id=expense_id)
+            except Exception as e:
+                messages.error(request, f"Error processing pro-rata expense: {str(e)}")
+                return redirect('finance_expense_edit', expense_id=expense_id)
+
+        # Handle non-pro-rata or single property expense
+        monthly_data = {
+            'prop_id': prop_id,
+            'expense_line_types_id': elt_id,
+            'expense_types_id': et_id,
+            'expense_amount': expense_amount,
+        }
+        
+        for month in months:
+            if getattr(expense_type, f'expense_types_{month}') == "Yes":
+                monthly_data[f'expense_{month}'] = expense_amount
+        
+        # Update the existing expense
+        for field, value in monthly_data.items():
+            setattr(existing_expense, field, value)
+        existing_expense.save()
+        
+        messages.success(request, "Expense Updated Successfully")
+        return redirect('finance_expense')
+    
+    return redirect('finance_expense_edit', expense_id=expense_id)
+
 def finance_expense_types(request):
     exp_types = expense_types.objects.all()
     return render(request, "finance_expense_types.html", {

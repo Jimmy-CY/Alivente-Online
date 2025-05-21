@@ -391,8 +391,22 @@
                         {% endwith %}
                     </span>
                 </div>
+                
+                <div style="background-color: #f8f9fa; padding: 8px; border-radius: 4px; width: fit-content;">
+                    <span class="font-weight-bold">Rent (€/m<sup>2</sup>): 
+                        {% with prop_revenue=revenue_prop_totals|get_item:prop.prop_id %}
+                            {% if prop_revenue.year and prop.prop_floor_area %}
+                                {{ prop_revenue.year|divide:12|divide:prop.prop_floor_area|floatformat:"2" }}
+                            {% else %}
+                                0.00
+                            {% endif %}
+                        {% endwith %}
+                    </span>
+                </div>
+
             </div>
         </div>
+
     </div>
     {% endfor %}
 </div>
