@@ -28,7 +28,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = "django-insecure-3plz%&tdip9d0vwc6io8y2yk$a9km2-891cbl==n#v1u&3%gy8"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ['alivente-online-production.up.railway.app', 'alivente.online', 'localhost', '127.0.0.1']
 
