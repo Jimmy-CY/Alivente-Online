@@ -69,17 +69,17 @@
 <!-- Filters -->
 <div class="form-row">
     <div class="form-group col-md-5">
-        <form action="{% url 'fsr' %}" method="post">
+        <form action="{% url 'fsr' %}" method="post" id="filterForm">
             {% csrf_token %}
             <div class="input-group">
-                <select name="propcountry" class="custom-select" onchange="this.form.submit()">
+                <select name="propcountry" class="custom-select" id="countrySelect">
                     <option disabled selected value="">Select Country</option>
                     <option value="All" {% if request.POST.propcountry == 'All' %}selected{% endif %}>All Countries</option>
                     <option value="Cyprus" {% if request.POST.propcountry == 'Cyprus' %}selected{% endif %}>Cyprus</option>
                     <option value="Greece" {% if request.POST.propcountry == 'Greece' %}selected{% endif %}>Greece</option>
                     <option value="Spain" {% if request.POST.propcountry == 'Spain' %}selected{% endif %}>Spain</option>
                 </select>
-                <select name="propname" class="custom-select" onchange="this.form.submit()">
+                <select name="propname" class="custom-select" id="propertySelect">
                     <option disabled selected value="">Select Property</option>
                     <option value="All" {% if request.POST.propname == 'All' %}selected{% endif %}>All Properties</option>
                     {% for results in props %}
@@ -88,7 +88,7 @@
                         </option>
                     {% endfor %}
                 </select>
-                <select name="issuestatus" class="custom-select" onchange="this.form.submit()">
+                <select name="issuestatus" class="custom-select" id="statusSelect">
                     <option disabled selected value="">Select Status</option>
                     <option value="All" {% if request.POST.issuestatus == 'All' %}selected{% endif %}>All Statuses</option>
                     <option value="Resolved" {% if request.POST.issuestatus == 'Resolved' %}selected{% endif %}>Resolved</option>
@@ -116,6 +116,9 @@
             {% for results in props %}
                 {% for isresults in issues %}
                     {% if results.prop_id == isresults.prop_id %}
+                        {% if not request.POST.propcountry or request.POST.propcountry == 'All' or request.POST.propcountry == results.prop_country %}
+                        {% if not request.POST.propname or request.POST.propname == 'All' or request.POST.propname == results.prop_name %}
+                        {% if not request.POST.issuestatus or request.POST.issuestatus == 'All' or request.POST.issuestatus == isresults.issues_status %}
                         <tr>
                             <td class="text-left">{{ results.prop_name }}</td>
                             <td class="text-left">{{ isresults.issues_heading }}</td>
@@ -134,7 +137,14 @@
                                 </a>
                             </td>
                         </tr>
+                        {% endif %}
+                        {% endif %}
+                        {% endif %}
                     {% endif %}
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center">No issues found</td>
+                </tr>
                 {% endfor %}
             {% endfor %}
         </tbody>
@@ -152,15 +162,24 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('toDate').value = today;
     document.getElementById('fromDate').value = fromDateDefault;
 
+    // Filter functionality
+    const filterForm = document.getElementById('filterForm');
+    const countrySelect = document.getElementById('countrySelect');
+    const propertySelect = document.getElementById('propertySelect');
+    const statusSelect = document.getElementById('statusSelect');
+
+    // When any filter changes
+    [countrySelect, propertySelect, statusSelect].forEach(select => {
+        select.addEventListener('change', function() {
+            filterForm.submit();
+        });
+    });
+
     // Check for refresh parameter
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.has('refresh')) {
-    
-    // Remove the refresh parameter from URL
         const cleanUrl = window.location.pathname + window.location.search.replace(/[?&]refresh=true/, '').replace(/&$/, '').replace(/\?$/, '');
         window.history.replaceState({}, document.title, cleanUrl);
-        
-    // Force reload the page without cache
         window.location.reload(true);
     }
     
@@ -169,11 +188,8 @@ document.addEventListener('DOMContentLoaded', function() {
         e.preventDefault();
         const fromDate = document.getElementById('fromDate').value;
         const toDate = document.getElementById('toDate').value;
-        
-        // Construct the URL with date parameters
         const baseUrl = "{% url 'resolved_issues_report' %}";
         const reportUrl = `${baseUrl}?f_date=${fromDate}&t_date=${toDate}`;
-        
         window.location.href = reportUrl;
     });
 });

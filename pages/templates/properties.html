@@ -7,17 +7,18 @@ Properties
 
 {% block content %}
 
-<h2 class="text-center mb-3">ALIVENTE ONLINE - PROPERTIES</h2>
+<h2><center>ALIVENTE ONLINE - PROPERTIES</center></h2>
+<br/>
 
 {% for msg in messages %}
   <div class="alert alert-secondary alert-dismissible fade show auto-dismiss" role="alert">
-    <div class="text-center">{{ msg }}</div>
+    <strong></strong> <center>{{ msg }}</center>
     <button type="button" class="close" data-dismiss="alert" aria-label="Close">
       <span aria-hidden="true">&times;</span>
     </button>
   </div>
   <script>
-    // Automatically close the alert after 2 seconds
+    // Automatically close the alert after 3 seconds (3000 milliseconds)
     setTimeout(function() {
       document.querySelectorAll('.auto-dismiss').forEach(alert => {
         alert.classList.remove('show'); // Hide alert visually
@@ -28,109 +29,126 @@ Properties
   </script>
 {% endfor %}
 
-<div class="container-fluid px-0">
-  <!-- Action buttons -->
-  <div class="d-flex justify-content-end flex-wrap mb-3">
+<body>
+  <div style="display: flex ; justify-content: flex-end">
     {% if user.username == 'admin' or user.username == 'Demetrios' or user.username == 'angy' %}
-      <a href="{% url 'properties_add' %}" class="btn btn-info mr-2 mb-2">Add New</a>
+      <a href="{% url 'properties_add' %}" class="btn btn-info" style="margin-right:16px" type="button">Add New</a>
     {% else %}
-      <span class="btn btn-secondary mr-2 mb-2" style="opacity:0.6; cursor:not-allowed; pointer-events:none;">Add New</span>
+      <span class="btn btn-secondary" style="margin-right:16px; opacity:0.6; cursor:not-allowed; pointer-events:none;" type="button">Add New</span>
     {% endif %}
-    <a href="{% url 'home' %}" class="btn btn-info mb-2">Back</a>
+    <a href="{% url 'home' %}" class="btn btn-info" style="margin-right:16px" role="button">Back</a>
   </div>
 
-  <!-- Filters -->
-  <div class="row mb-3">
-    <div class="col-12 col-md-10 col-lg-8">
-      <form action="{% url 'properties' %}" method="post">
+  <div class="form-row">
+    <div class="form-group col-md-5">
+      <form action="{% url 'properties' %}" method="post" id="filterForm">
         {% csrf_token %}
-        <div class="form-row">
-          <div class="col-12 col-sm-4 mb-2 mb-sm-0">
-            <select name="propname" class="form-control" onchange="this.form.submit()">
-              <option disabled selected value="All">Select Property</option>
-              <option value="All">All Properties</option>
-              {% for results in props %}
-                <option value="{{results.prop_name}}">{{results.prop_name}}</option>
-              {% endfor %}
-            </select>
-          </div>
-          <div class="col-12 col-sm-4 mb-2 mb-sm-0">
-            <select name="country" class="form-control" onchange="this.form.submit()">
-              <option disabled selected value="All">Select Country</option>
-              <option value="All">All Countries</option>
-              <option value="Cyprus">Cyprus</option>
-              <option value="Greece">Greece</option>
-              <option value="Spain">Spain</option>
-            </select>
-          </div>
-          <div class="col-12 col-sm-4">
-            <select name="act" class="form-control" onchange="this.form.submit()">
-              <option disabled selected value="All">Select Status</option>
-              <option value="All">All Statuses</option>
-              <option value="Active">Active</option>
-              <option value="Inactive">Inactive</option>
-            </select>
-          </div>
+        <div class="input-group">
+          <select name="propname" class="custom-select" id="propnameSelect" aria-label="Property select">
+            <option disabled selected value="All">Select Property</option>
+            <option value="All">All Properties</option>
+            {% for results in props %}
+              <option value="{{results.prop_name}}" {% if selected_prop == results.prop_name %}selected{% endif %}>{{results.prop_name}}</option>
+            {% endfor %}
+          </select>
+          <select name="country" class="custom-select" id="countrySelect" aria-label="Country select">
+            <option disabled selected value="All">Select Country</option>
+            <option value="All" {% if selected_country == 'All' %}selected{% endif %}>All Countries</option>
+            <option value="Cyprus" {% if selected_country == 'Cyprus' %}selected{% endif %}>Cyprus</option>
+            <option value="Greece" {% if selected_country == 'Greece' %}selected{% endif %}>Greece</option>
+            <option value="Spain" {% if selected_country == 'Spain' %}selected{% endif %}>Spain</option>
+          </select>
+          <select name="act" class="custom-select" id="statusSelect" aria-label="Status select">
+            <option disabled selected value="All">Select Status</option>
+            <option value="All" {% if selected_status == 'All' %}selected{% endif %}>All Statuses</option>
+            <option value="Active" {% if selected_status == 'Active' %}selected{% endif %}>Active</option>
+            <option value="Inactive" {% if selected_status == 'Inactive' %}selected{% endif %}>Inactive</option>
+          </select>
         </div>
       </form>
     </div>
   </div>
 
-  <!-- Table -->
-  <div class="table-responsive">
-    <table class="table table-bordered table-striped text-center">
-      <thead>
-        <tr>
-          <th class="text-left" style="min-width: 150px;">Property</th>
-          <th style="min-width: 100px;">Country</th>
-          <th style="min-width: 100px;">Status</th>
-          <th style="min-width: 80px;">Details</th>
-          <th style="min-width: 80px;">Report</th>
-          <th style="min-width: 80px;">Title Deed</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for results in props %}
+  <form action="" method="">
+    {% csrf_token %}
+    <div>
+      <table class="table table-bordered table-striped text-center">
+        <thead>
           <tr>
-            <td class="text-left">{{results.prop_name}}</td>
-            <td>{{results.prop_country}}</td>
-            <td>{{results.prop_status}}</td>
-            <td>
-              {% if user.username == 'admin' or user.username == 'Demetrios' or user.username == 'angy' %}
-                <a href="{% url 'properties_edit' results.prop_id %}" class="btn btn-light btn-sm w-100" style="border-color:black;">Edit</a>
-              {% else %}
-                <button type="button" class="btn btn-light btn-sm w-100" style="border-color:black; background-color: #e9ecef; color: #6c757d;" disabled>Edit</button>
-              {% endif %}
-            </td>
-            <td>
-              <a href="{% url 'property_report' results.prop_id %}" class="btn btn-light btn-sm w-100" style="border-color:black;">View</a>
-            </td>
-            <td>
-              {% if user.username == 'admin' or user.username == 'Demetrios' or user.username == 'angy' %}
-                <a href="{% url 'title_deed_report' results.prop_id %}" class="btn btn-light btn-sm w-100" style="border-color:black;">View</a>
-              {% else %}
-                <button type="button" class="btn btn-light btn-sm w-100" style="border-color:black; background-color: #e9ecef; color: #6c757d;" disabled>View</button>
-              {% endif %}
-            </td>
+            <th style="text-align: left; width: 37%">Property</th>
+            <th style="width: 23%">Country</th>
+            <th style="width: 10%">Status</th>
+            <th style="width: 10%">Details</th>
+            <th style="width: 10%">Report</th>
+            <th style="width: 10%">Title Deed</th>
           </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
-</div>
+        </thead>
+        <tbody>
+          {% for results in props %}
+            <tr>
+              <td style="text-align: left">{{results.prop_name}}</td>
+              <td>{{results.prop_country}}</td>
+              <td>{{results.prop_status}}</td>
+              <td>
+                {% if user.username == 'admin' or user.username == 'Demetrios' or user.username == 'angy' %}
+                  <button type="button" class="btn btn-light" style="border-color:black; width: 100%">
+                    <a href="{% url 'properties_edit' results.prop_id %}">Edit</a>
+                  </button>
+                {% else %}
+                  <button type="button" class="btn btn-light" style="border-color:black; width: 100%; opacity: 0.5; cursor: not-allowed; pointer-events: none;" disabled>
+                    <span style="color: #6c757d;">Edit</span>
+                  </button>
+                {% endif %}
+              </td>
+              <td>
+                <button type="button" class="btn btn-light" style="border-color:black; width: 100%">
+                  <a href="{% url 'property_report' results.prop_id %}">View</a>
+                </button>
+              </td>
+              <td>
+                {% if user.username == 'admin' or user.username == 'Demetrios' or user.username == 'angy' %}
+                  <button type="button" class="btn btn-light" style="border-color:black; width: 100%">
+                    <a href="{% url 'title_deed_report' results.prop_id %}">View</a>
+                  </button>
+                {% else %}
+                  <button type="button" class="btn btn-light" style="border-color:black; width: 100%; opacity: 0.5; cursor: not-allowed; pointer-events: none;" disabled>
+                    <span style="color: #6c757d;">View</span>
+                  </button>
+                {% endif %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </form>
+</body>
 
-<!-- For very small screens, add custom styling -->
-<style>
-  @media (max-width: 576px) {
-    .table {
-      font-size: 0.85rem;
-    }
-    
-    .btn-sm {
-      padding: 0.25rem 0.4rem;
-      font-size: 0.75rem;
-    }
-  }
-</style>
+<script>
+  // Add event listeners to all select elements
+  document.getElementById('propnameSelect').addEventListener('change', function() {
+    // Reset other selects to 'All'
+    document.getElementById('countrySelect').value = 'All';
+    document.getElementById('statusSelect').value = 'All';
+    // Submit the form
+    document.getElementById('filterForm').submit();
+  });
+
+  document.getElementById('countrySelect').addEventListener('change', function() {
+    // Reset other selects to 'All'
+    document.getElementById('propnameSelect').value = 'All';
+    document.getElementById('statusSelect').value = 'All';
+    // Submit the form
+    document.getElementById('filterForm').submit();
+  });
+
+  document.getElementById('statusSelect').addEventListener('change', function() {
+    // Reset other selects to 'All'
+    document.getElementById('propnameSelect').value = 'All';
+    document.getElementById('countrySelect').value = 'All';
+    // Submit the form
+    document.getElementById('filterForm').submit();
+  });
+</script>
 
 {% endblock %}

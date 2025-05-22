@@ -860,16 +860,22 @@ def finance_valuations_add(request):
 
 def finance_valuations_commit(request):
     if request.method == "POST":
-        form = ValuesForm(request.POST)  # Remove 'or None'
+        prop_id = request.POST.get('prop_id')  # Get property ID from form
+        
+        # Check if valuation already exists for this property
+        if prop_values.objects.filter(prop_id=prop_id).exists():
+            messages.error(request, "A valuation already exists for this property. Please edit the existing valuation.")
+            return redirect('finance_valuations')
+            
+        form = ValuesForm(request.POST)
         if form.is_valid():
             form.save()
             messages.success(request, "Valuation Added Successfully")
-            return redirect('finance_valuations')  # Redirect after success
+            return redirect('finance_valuations')
         else:
-            print(form.errors.as_data())
             messages.error(request, "Please correct the errors below")
     
-    # For GET requests or failed POSTs
+    # Rest of your view remains the same...
     results = props.objects.all().order_by('prop_country','prop_name')
     vresults = prop_values.objects.all().order_by('prop_values_purchase_price')    
     
@@ -881,7 +887,6 @@ def finance_valuations_commit(request):
         'cur_balance': cur_balance,        
         'props': results,
         'prop_values': vresults,
-        'form_data': request.POST if request.method == "POST" else None  # Preserve form data
     }
     return render(request, "finance_valuations.html", context)
 
