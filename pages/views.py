@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
+from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm, PasswordChangeForm
 from django.core.exceptions import ValidationError
@@ -38,6 +39,7 @@ def home(request):
 	return render (request, "home.html", {"props":results, "tenant":tresults, "supplier":sresults})
 
 ### ADMIN ###
+@login_required
 def admin_apms(request):
     results = props.objects.all().order_by('prop_country', 'prop_name')
     tresults = tenant.objects.select_related('prop').all().order_by('tenant_name')
@@ -46,6 +48,7 @@ def admin_apms(request):
         "tenant": tresults
     })
 
+@login_required
 def lease_agreement_report(request, tenant_id):
     try:
         # Get tenant and property info
@@ -69,6 +72,7 @@ def lease_agreement_report(request, tenant_id):
     except Exception as e:
         return render(request, 'error.html', {'error': str(e)})
 
+@login_required
 def serve_lease(request, filename):
     try:
         # Security validation
@@ -87,6 +91,7 @@ def serve_lease(request, filename):
     except Exception as e:
         return Http404(str(e))
 
+@login_required
 def upload_lease_agreement(request):
     if request.method == 'POST':
         tenant_id = request.POST.get('tenant')
@@ -126,6 +131,7 @@ def upload_lease_agreement(request):
         return redirect('admin_apms')
     return redirect('admin_apms')
 
+@login_required
 def serve_lease(request, filename):
     """Secure file serving for exact filename format"""
     try:
@@ -148,6 +154,7 @@ def serve_lease(request, filename):
         messages.error(request, f"Error serving file: {str(e)}")
         return redirect('admin_apms')
 
+@login_required
 def upload_title_deed(request):
     if request.method == 'POST':
         # Get the selected property name
@@ -190,6 +197,7 @@ def upload_title_deed(request):
     
     return redirect('admin_apms')
 
+@login_required
 def admin_clear(request):
 	import os
 	import glob
@@ -199,6 +207,7 @@ def admin_clear(request):
 		os.remove(f)
 	return redirect("admin_apms")
 
+@login_required
 def admin_unpaid(request):
 	import open_invoices
 	rep_output = "Email"
@@ -211,6 +220,7 @@ def admin_unpaid(request):
 #	open_invoices.open_invoices(rep_output, check, email, fname)
 	return redirect("admin_apms")
 
+@login_required
 def admin_renewals(request):
 	import lease_renewal
 	rep_output = "Email"
@@ -223,6 +233,7 @@ def admin_renewals(request):
 #	lease_renewal.lease_renewal(rep_output,check, email, fname)
 	return redirect("admin_apms")
 
+@login_required
 def admin_invoices(request):
 	import open_invoices
 	today = date.today()
@@ -231,10 +242,12 @@ def admin_invoices(request):
 	return redirect("admin_apms")
 
 ### FINANCE ###
+@login_required
 def finance(request):
 #	return redirect("finance")
 	return render (request, "finance.html", {})
 
+@login_required
 def finance_revenue(request):
 	prop_output = request.POST.get('propname')
 	if prop_output is None or prop_output == "All":
@@ -256,6 +269,7 @@ def finance_revenue(request):
 		"props_data": props_data,
 	})
 
+@login_required
 def finance_revenue_add(request):
     props_data = props.objects.all().order_by('prop_country', 'prop_name')
     revenue_types_list = revenue_types.objects.all()  # Fetch all revenue types
@@ -267,6 +281,7 @@ def finance_revenue_add(request):
         "revenue_line_types": revenue_line_types_list,  # Pass to template
     })
 
+@login_required
 def finance_revenue_commit(request):
     if request.method == "POST":
         # Extract form data
@@ -308,6 +323,7 @@ def finance_revenue_commit(request):
     # If not a POST request, redirect back
     return redirect('finance_revenue_add')
 
+@login_required
 def finance_revenue_edit(request, revenue_id):
     rev = get_object_or_404(revenue, pk=revenue_id)
     props_data = props.objects.all().order_by('prop_country', 'prop_name')
@@ -323,6 +339,7 @@ def finance_revenue_edit(request, revenue_id):
         "form": form,  # Pass the form to template
     })
 
+@login_required
 def finance_revenue_edit_commit(request, revenue_id):
     rev = get_object_or_404(revenue, pk=revenue_id)
     
@@ -380,16 +397,19 @@ def finance_revenue_edit_commit(request, revenue_id):
         "form": form,
     })
 
+@login_required
 def finance_revenue_types(request):
     rev_types = revenue_types.objects.all()
     return render(request, "finance_revenue_types.html", {
         "rtresults": rev_types,
     })
 
+@login_required
 def finance_revenue_types_add(request):
     rev_types = revenue_types.objects.all().order_by('revenue_types_name')
     return render(request, "finance_revenue_types_add.html", {"rtresults":rev_types})
 
+@login_required
 def finance_revenue_types_commit(request):
     if request.method == "POST":
         form = RevenueTypesForm(request.POST or None)
@@ -399,10 +419,12 @@ def finance_revenue_types_commit(request):
     rev_types = revenue_types.objects.all()
     return render(request, "finance_revenue_types.html", {"rtresults":rev_types})
 
+@login_required
 def finance_revenue_types_edit(request, revenue_types_id):
     rev_types = revenue_types.objects.filter(pk=revenue_types_id)
     return render(request, "finance_revenue_types_edit.html", {"rtresults":rev_types})
 
+@login_required
 def finance_revenue_types_edit_commit(request, revenue_types_id):
     rev = get_object_or_404(revenue_types, pk=revenue_types_id)
     all_types = revenue_types.objects.all().order_by('revenue_types_name')
@@ -431,16 +453,19 @@ def finance_revenue_types_edit_commit(request, revenue_types_id):
         "rev": rev
     })
 
+@login_required
 def finance_revenue_line_types(request):
     rev_line_types = revenue_line_types.objects.all()
     return render(request, "finance_revenue_line_types.html", {
         "rltresults": rev_line_types,
     })
 
+@login_required
 def finance_revenue_line_types_add(request):
     rev_line_types = revenue_line_types.objects.all().order_by('revenue_line_types_name')
     return render(request, "finance_revenue_line_types_add.html", {"rltresults":rev_line_types})
 
+@login_required
 def finance_revenue_line_types_commit(request):
     if request.method == "POST":
         form = RevenueLineForm(request.POST or None)
@@ -450,10 +475,12 @@ def finance_revenue_line_types_commit(request):
     rev_line_types = revenue_line_types.objects.all()
     return render(request, "finance_revenue_line_types.html", {"rltresults":rev_line_types})
 
+@login_required
 def finance_revenue_line_types_edit(request, revenue_line_types_id):
     rev_line_types = revenue_line_types.objects.filter(pk=revenue_line_types_id)
     return render(request, "finance_revenue_line_types_edit.html", {"rltresults":rev_line_types})
 
+@login_required
 def finance_revenue_line_types_edit_commit(request, revenue_line_types_id):
     rev = get_object_or_404(revenue_line_types, pk=revenue_line_types_id)
     all_types = revenue_line_types.objects.all().order_by('revenue_line_types_name')
@@ -483,6 +510,7 @@ def finance_revenue_line_types_edit_commit(request, revenue_line_types_id):
         "rev": rev
     })
 
+@login_required
 def finance_expense(request):
     prop_output = request.POST.get('propname')
     if prop_output is None or prop_output == "All":
@@ -504,6 +532,7 @@ def finance_expense(request):
         "props_data": props_data,
     })
 
+@login_required
 def finance_expense_add(request):
     # Get properties with their values (using select_related if it's a ForeignKey)
     props_data = props.objects.all().order_by('prop_country', 'prop_name')
@@ -525,6 +554,7 @@ def finance_expense_add(request):
         "expense_line_types": expense_line_types_list,
     })
 
+@login_required
 def finance_expense_commit(request):
     if request.method == "POST":
         # Extract form data
@@ -601,6 +631,7 @@ def finance_expense_commit(request):
     
     return redirect('finance_expense_add')
 
+@login_required
 def finance_expense_edit(request, expense_id):
     # Get the existing expense
     try:
@@ -632,6 +663,7 @@ def finance_expense_edit(request, expense_id):
         "existing_expense": existing_expense,
     })
 
+@login_required
 def finance_expense_edit_commit(request, expense_id):
     # Get the existing expense first
     try:
@@ -719,16 +751,19 @@ def finance_expense_edit_commit(request, expense_id):
     
     return redirect('finance_expense_edit', expense_id=expense_id)
 
+@login_required
 def finance_expense_types(request):
     exp_types = expense_types.objects.all()
     return render(request, "finance_expense_types.html", {
         "etresults": exp_types,
     })
 
+@login_required
 def finance_expense_types_add(request):
     exp_types = expense_types.objects.all().order_by('expense_types_name')
     return render(request, "finance_expense_types_add.html", {"etresults":exp_types})
 
+@login_required
 def finance_expense_types_commit(request):
     if request.method == "POST":
         form = ExpenseTypesForm(request.POST or None)
@@ -738,10 +773,12 @@ def finance_expense_types_commit(request):
     exp_types = expense_types.objects.all()
     return render(request, "finance_expense_types.html", {"etresults":exp_types})
 
+@login_required
 def finance_expense_types_edit(request, expense_types_id):
     exp_types = expense_types.objects.filter(pk=expense_types_id)
     return render(request, "finance_expense_types_edit.html", {"etresults":exp_types})
 
+@login_required
 def finance_expense_types_edit_commit(request, expense_types_id):
     exp = get_object_or_404(expense_types, pk=expense_types_id)
     all_types = expense_types.objects.all().order_by('expense_types_name')
@@ -771,16 +808,19 @@ def finance_expense_types_edit_commit(request, expense_types_id):
         "exp": exp
     })
 
+@login_required
 def finance_expense_line_types(request):
     exp_line_types = expense_line_types.objects.all().order_by('expense_line_types_name')
     return render(request, "finance_expense_line_types.html", {
         "eltresults": exp_line_types,
     })
 
+@login_required
 def finance_expense_line_types_add(request):
     exp_line_types = expense_line_types.objects.all()
     return render(request, "finance_expense_line_types_add.html", {"eltresults":exp_line_types})
 
+@login_required
 def finance_expense_line_types_commit(request):
     if request.method == "POST":
         form = ExpenseLineForm(request.POST or None)
@@ -790,10 +830,12 @@ def finance_expense_line_types_commit(request):
     exp_line_types = expense_line_types.objects.all()
     return render(request, "finance_expense_line_types.html", {"eltresults":exp_line_types})
 
+@login_required
 def finance_expense_line_types_edit(request, expense_line_types_id):
     exp_line_types = expense_line_types.objects.filter(pk=expense_line_types_id)
     return render(request, "finance_expense_line_types_edit.html", {"eltresults":exp_line_types})
 
+@login_required
 def finance_expense_line_types_edit_commit(request, expense_line_types_id):
     exp = get_object_or_404(expense_line_types, pk=expense_line_types_id)
     all_types = expense_line_types.objects.all().order_by('expense_line_types_name')
@@ -823,6 +865,7 @@ def finance_expense_line_types_edit_commit(request, expense_line_types_id):
         "exp": exp
     })
 
+@login_required
 def finance_valuations(request):
     props_list = props.objects.all().order_by('prop_country', 'prop_name')
     valuations = prop_values.objects.all()
@@ -849,6 +892,7 @@ def finance_valuations(request):
         "cur_balance": cur_balance
     })
 
+@login_required
 def finance_valuations_add(request):
 	results = props.objects.all().order_by('prop_country', 'prop_name')
 	vresults = prop_values.objects.all()
@@ -858,6 +902,7 @@ def finance_valuations_add(request):
 	}
 	return render(request, "finance_valuations_add.html", context)
 
+@login_required
 def finance_valuations_commit(request):
     if request.method == "POST":
         prop_id = request.POST.get('prop_id')  # Get property ID from form
@@ -890,6 +935,7 @@ def finance_valuations_commit(request):
     }
     return render(request, "finance_valuations.html", context)
 
+@login_required
 def finance_valuations_edit(request, prop_values_id):
 	try:
 		vresults = prop_values.objects.get(pk=prop_values_id)
@@ -902,6 +948,7 @@ def finance_valuations_edit(request, prop_values_id):
 		"vresults": vresults
 	})
 
+@login_required
 def finance_valuations_edit_commit(request, prop_values_id):
     print("Form data received:", request.POST)
     vresult = prop_values.objects.get(pk=prop_values_id)
@@ -921,6 +968,7 @@ def finance_valuations_edit_commit(request, prop_values_id):
     return redirect('finance_valuations')
 
 ### TENANTS ###
+@login_required
 def tenant_page(request):
 	prop_output = request.POST.get('propname')
 	tenant_output = request.POST.get('tenantname')
@@ -953,16 +1001,19 @@ def tenant_page(request):
 		results = props.objects.filter(prop_name=prop_output)
 	return render (request, "tenant.html", {"tenant":tresults, "props":results})
 
+@login_required
 def tenant_add(request):
 	results = props.objects.all().order_by('prop_country','prop_name')
 	tresults = tenant.objects.all().order_by('tenant_name')
 	return render(request, "tenant_add.html", {"props":results, "tenant":tresults})
 
+@login_required
 def tenant_edit(request, tenant_id):
 	tresults = tenant.objects.filter(pk=tenant_id)
 	results = props.objects.all().order_by('prop_country','prop_name')
 	return render (request, "tenant_edit.html", {"props":results, "tenant":tresults})
 
+@login_required
 def tenant_commit(request):
     props_list = props.objects.all().order_by('prop_country','prop_name')
     
@@ -997,6 +1048,7 @@ def tenant_commit(request):
         'form_data': request.POST if request.method == "POST" else None
     })
 
+@login_required
 def tenant_edit_commit(request, tenant_id):
 	ten = tenant.objects.get(pk=tenant_id)
 	if request.method == "POST":
@@ -1009,6 +1061,7 @@ def tenant_edit_commit(request, tenant_id):
 	return render (request, "tenant.html", {"tenant":tresults, "props":results})
 
 ### SUPPLIERS ###
+@login_required
 def suppliers(request):
 	sup_output = request.POST.get('supname')
 	sup_count = request.POST.get('supcount')
@@ -1024,14 +1077,17 @@ def suppliers(request):
 			sresults = supplier.objects.filter(supplier_country=sup_count)
 	return render (request, "suppliers.html", {"supplier":sresults})
 
+@login_required
 def suppliers_add(request):
 	sresults = supplier.objects.all().order_by('supplier_country','supplier_contact_person')
 	return render(request, "suppliers_add.html", {"supplier":sresults})
 
+@login_required
 def suppliers_edit(request, supplier_id):
 	sresults = supplier.objects.filter(pk=supplier_id)
 	return render (request, "suppliers_edit.html", {"supplier":sresults})
 
+@login_required
 def suppliers_commit(request):
 	if request.method == "POST":
 		form = SupplierForm(request.POST or None)
@@ -1043,6 +1099,7 @@ def suppliers_commit(request):
 	sresults = supplier.objects.all().order_by('supplier_country','supplier_contact_person')
 	return render (request, "suppliers.html", {"supplier":sresults})
 
+@login_required
 def suppliers_edit_commit(request, supplier_id):
 	sup = supplier.objects.get(pk=supplier_id)
 	if request.method == "POST":
@@ -1055,6 +1112,7 @@ def suppliers_edit_commit(request, supplier_id):
 
 
 ### INVOICES ###
+@login_required
 def invoices_page(request):
 	prop_output = request.POST.get('propname')
 	tenant_output = request.POST.get('tenantname')
@@ -1075,12 +1133,14 @@ def invoices_page(request):
 		results = props.objects.filter(prop_name=prop_output)
 	return render (request, "invoices.html", {"invoices":iresults, "tenant":tresults, "props":results})
 
+@login_required
 def invoices_commit(request, invoice_id):
 	inv_tbp = invoices.objects.filter(pk=invoice_id).update(invoice_paid="Yes")
 	return redirect('invoices')
 
 
 ### PROPERTIES ###
+@login_required
 def properties_page(request):
 	prop_output = request.POST.get('propname')
 	country_output = request.POST.get('country')
@@ -1099,11 +1159,13 @@ def properties_page(request):
 			results = props.objects.filter(prop_status=active_output)
 	return render (request, "properties.html", {"props":results})
 
+@login_required
 def properties_add(request):
 	results = props.objects.all().order_by('prop_country','prop_name')
 	existing_names = list(props.objects.values_list('prop_name', flat=True))
 	return render(request, "properties_add.html", {"props":results, "existing_names": existing_names})
 
+@login_required
 def properties_commit(request):
 	if request.method == "POST":
 		form = PropForm(request.POST or None)
@@ -1113,6 +1175,7 @@ def properties_commit(request):
 	messages.success(request, "Property Added Successfully")
 	return render (request, "properties.html", {"props":results})
 
+@login_required
 def properties_edit(request, prop_id):
     # Get the current property being edited
     current_property = get_object_or_404(props, pk=prop_id)
@@ -1125,6 +1188,7 @@ def properties_edit(request, prop_id):
         "existing_names": list(existing_names)  # Add this for client-side validation
     })
 
+@login_required
 def properties_edit_commit(request, prop_id):
     prop = get_object_or_404(props, pk=prop_id)
     existing_names = props.objects.exclude(prop_id=prop_id).values_list('prop_name', flat=True)
@@ -1160,6 +1224,7 @@ def properties_edit_commit(request, prop_id):
     return redirect('properties')
 
 ### PETTY CASH ###
+@login_required
 def petty_cash(request):
 	presults = petty.objects.all().order_by('petty_cash_date')
 	pvalues = petty.objects.values()
@@ -1171,6 +1236,7 @@ def petty_cash(request):
 			balance = balance - x['petty_cash_amount']
 	return render (request, "petty_cash.html", {"petty":presults, "balance":balance})
 
+@login_required
 def petty_cash_commit(request):
 	if request.method == "POST":
 		form = PettyForm(request.POST or None)
@@ -1188,12 +1254,14 @@ def petty_cash_commit(request):
 			balance = balance - x['petty_cash_amount']
 	return render (request, "petty_cash.html", {"petty":presults, "balance":balance})
 
+@login_required
 def petty_cash_add(request):
 	presults = petty.objects.all().order_by('petty_cash_date')
 	return render(request, "petty_cash_add.html", {"petty":presults})
 
 
 ### ISSUES - FRIDAY STATUS REPORT ###
+@login_required
 def fsr(request):
 	prop_output = request.POST.get('propname')
 	country_output = request.POST.get('propcountry')
@@ -1222,6 +1290,7 @@ def fsr(request):
 			idresults = issues_details.objects.all().order_by('issues_details_date','issues_details_id')
 	return render(request, "fsr.html", {"props":results, "issues":isresults, "issues_details":idresults})
 
+@login_required
 def fsr_add(request):
 	results = props.objects.all().order_by('prop_country','prop_name')
 	isresults = issues.objects.all().order_by('issues_date_logged','issues_status')
@@ -1229,6 +1298,7 @@ def fsr_add(request):
 	log_date = date.today()
 	return render(request, "fsr_add.html", {"props":results, "issues":isresults, "issues_details":idresults, "log_date":log_date})
 
+@login_required
 def fsr_commit(request):
     if request.method == "POST":
         form = IssuesForm(request.POST or None)
@@ -1239,6 +1309,7 @@ def fsr_commit(request):
     is_id = temp_results[0].issues_id
     return redirect(reverse("fsr_details", args=[is_id]) + "?from=fsr_add&origin=fsr")
 
+@login_required
 def fsr_details(request, issues_id):
     isresults = issues.objects.filter(pk=issues_id)
     results = props.objects.all().order_by('prop_country','prop_name')
@@ -1267,6 +1338,7 @@ def fsr_details(request, issues_id):
     
     return render(request, "fsr_details.html", context)
 
+@login_required
 def fsr_commit_status_change(request):
     if request.method == "POST":
         # Get form data
@@ -1294,6 +1366,7 @@ def fsr_commit_status_change(request):
         else:
             return redirect(reverse('fsr') + "?refresh=true")
 
+#@login_required
 #def fsr_comment_add(request, issues_id):
 #	iss_det = request.POST.get('issues_details_comment')
 #	if request.user.is_authenticated:
@@ -1305,6 +1378,7 @@ def fsr_commit_status_change(request):
 #	issue_update=issues_details.objects.create (issues_details_comment=iss_det, issues_details_user=user_initials, issues_details_date=comm_date, issues_id=issues_id)
 #	return redirect("fsr_details", issues_id)
 
+@login_required
 def fsr_comment_add(request, issues_id):
     if request.method == 'POST':
         # Get comment text from form
@@ -1349,6 +1423,7 @@ def fsr_comment_add(request, issues_id):
 from django.shortcuts import render
 from .models import props, revenue_line_types, revenue
 
+@login_required
 def finance_pl(request):
     # Get all properties with prefetched prop_values to optimize queries
     properties = props.objects.all().prefetch_related('prop_values_set')
@@ -1555,6 +1630,7 @@ def finance_pl(request):
         'prop_values_map': prop_values_map  # Add property values mapping to context
     })
 
+@login_required
 def petty_cash_rep(request):
 	import petty_cash
 	rep_output = request.POST.get('d_e')
@@ -1565,6 +1641,7 @@ def petty_cash_rep(request):
 	messages.success(request, "Report Created Successfully")
 	return redirect('home')
 
+@login_required
 def lease_agreements(request):
 	import print_lease
 	prop = request.POST.get('propname')
@@ -1576,6 +1653,7 @@ def lease_agreements(request):
 	messages.success(request, "Report Created Successfully")
 	return redirect('home')
 
+@login_required
 def title_deeds(request):
 	import print_title
 	prop = request.POST.get('propname')
@@ -1587,6 +1665,7 @@ def title_deeds(request):
 	messages.success(request, "Report Created Successfully")
 	return redirect('home')
 
+@login_required
 def prop_rep(request):
 	import print_prop
 	prop = request.POST.get('propname')
@@ -1598,6 +1677,7 @@ def prop_rep(request):
 	messages.success(request, "Report Created Successfully")
 	return redirect('home')
 
+@login_required
 def property_report(request, prop_id):
 	today = date.today()
 	property = get_object_or_404(props.objects.only(
@@ -1614,6 +1694,7 @@ def property_report(request, prop_id):
 	}
 	return render(request, 'property_report.html', context)
 
+@login_required
 def title_deed_report(request, prop_id):
 	today = date.today()
 	property = get_object_or_404(props.objects.only(
@@ -1630,6 +1711,7 @@ def title_deed_report(request, prop_id):
 	}
 	return render(request, 'title_deed_report.html', context)
 
+@login_required
 def lease_agreement_report(request, tenant_id):
 	today = date.today()
 	tenant_obj = get_object_or_404(tenant.objects.only(
@@ -1654,6 +1736,7 @@ def lease_agreement_report(request, tenant_id):
 	}
 	return render(request, 'lease_agreement_report.html', context)
 
+@login_required
 def tenant_report(request, tenant_id):
 	today = date.today()
 	tenant_obj = get_object_or_404(tenant.objects.only(
@@ -1669,6 +1752,7 @@ def tenant_report(request, tenant_id):
 	}
 	return render(request, 'tenant_report.html', context)
 
+@login_required
 def supplier_report(request, supplier_id):
 	today = date.today()
 	supplier_obj = get_object_or_404(supplier.objects.only(
@@ -1682,6 +1766,7 @@ def supplier_report(request, supplier_id):
 	}
 	return render(request, 'supplier_report.html', context)
 
+@login_required
 def tenant_rep(request):
 	import print_tenant
 	prop = request.POST.get('propname')
@@ -1693,6 +1778,7 @@ def tenant_rep(request):
 	messages.success(request, "Report Created Successfully")
 	return redirect('home')
 
+@login_required
 def suppliers_rep(request):
 	import print_supplier
 	sup = request.POST.get('supname')
@@ -1704,6 +1790,7 @@ def suppliers_rep(request):
 	messages.success(request, "Report Created Successfully")
 	return redirect('home')
 
+@login_required
 def fsr_rep(request):
 	import fsr
 	rep_type = request.POST.get('d_s')
@@ -1716,6 +1803,7 @@ def fsr_rep(request):
 	messages.success(request, "Report Created Successfully")
 	return redirect('home')
 
+@login_required
 def friday_status_report(request):
     mydb = mysql.connector.connect(
         host=settings.DATABASES['default']['HOST'],
@@ -1838,6 +1926,7 @@ from django.contrib import messages
 from collections import defaultdict
 from django.utils.dateparse import parse_date
 
+@login_required
 def resolved_issues_report(request):
     # Get dates from GET parameters
     f_date_str = request.GET.get('f_date')
@@ -1961,6 +2050,7 @@ def resolved_issues_report(request):
         messages.error(request, f"Error generating report: {str(e)}")
         return redirect('fsr')
 
+@login_required
 def issues_rep(request):
 	import issues
 	f_d = request.POST.get('from_date')
@@ -1978,6 +2068,7 @@ def issues_rep(request):
 	messages.success(request, "Report Created Successfully")
 	return redirect('home')
 
+@login_required
 def open_invoices(request):
 	import open_invoices
 	rep_output = request.POST.get('d_e')
@@ -1989,6 +2080,7 @@ def open_invoices(request):
 	messages.success(request, "Report Created Successfully")
 	return redirect('home')
 
+@login_required
 def open_invoices_report(request):
 	mydb = mysql.connector.connect(
 		host=settings.DATABASES['default']['HOST'],
@@ -2054,6 +2146,7 @@ def open_invoices_report(request):
 	return render(request, 'open_invoices_report.html', context)
 
 
+@login_required
 def lease_renewal_report(request):
 	mydb = mysql.connector.connect(
 		host=settings.DATABASES['default']['HOST'],
@@ -2133,6 +2226,7 @@ def lease_renewal_report(request):
 	}
 	return render(request, 'lease_renewal_report.html', context)
 
+@login_required
 def lease_renewal(request):
 	import lease_renewal
 	rep_output = request.POST.get('d_e')
