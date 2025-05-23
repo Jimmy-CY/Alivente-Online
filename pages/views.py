@@ -1615,6 +1615,11 @@ def finance_pl(request):
 
     # Prepare property values mapping for easy access in template
     prop_values_map = {prop.prop_id: prop.prop_values_set.first() for prop in properties}
+    total_current_value = 0
+    for prop in properties:
+        prop_values = prop.prop_values_set.first()
+        if prop_values and prop_values.prop_values_current_value is not None:
+            total_current_value += prop_values.prop_values_current_value
 
     return render(request, 'finance_pl.html', {
         'properties': properties,
@@ -1627,7 +1632,8 @@ def finance_pl(request):
         'expense_totals_by_line': expense_totals_by_line,
         'expense_prop_totals': expense_prop_totals,
         'profit_totals': profit_totals,
-        'prop_values_map': prop_values_map  # Add property values mapping to context
+        'prop_values_map': prop_values_map,
+        'total_current_value': total_current_value,
     })
 
 @login_required

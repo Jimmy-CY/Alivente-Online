@@ -51,3 +51,12 @@ def sum_purchase_prices(properties):
             if value:  # Only add if not None
                 total += float(value)
     return total
+
+@register.filter
+def sum_prop_values(properties, attr_name):
+    total = 0
+    for prop in properties:
+        if hasattr(prop, 'prop_values_set') and prop.prop_values_set.exists():
+            value = getattr(prop.prop_values_set.first(), attr_name, 0)
+            total += value if value else 0
+    return total
