@@ -1426,7 +1426,7 @@ from .models import props, revenue_line_types, revenue
 @login_required
 def finance_pl(request):
     # Get all properties with prefetched prop_values to optimize queries
-    properties = props.objects.all().prefetch_related('prop_values_set')
+    properties = props.objects.filter(prop_status="Active").prefetch_related('prop_values_set')
     
     # Revenue Section
     revenue_line_types_list = revenue_line_types.objects.all()

@@ -36,3 +36,18 @@ def multiply(value, arg):
             return value * arg
         except Exception:
             return 0
+
+@register.filter
+def sum_attr(iterable, attr):
+    """Sums values of a specific attribute from a list of objects"""
+    return sum(getattr(item, attr, 0) for item in iterable if hasattr(item, attr))
+
+@register.filter
+def sum_purchase_prices(properties):
+    total = 0
+    for prop in properties:
+        if prop.prop_values_set.exists():
+            value = prop.prop_values_set.first().prop_values_purchase_price
+            if value:  # Only add if not None
+                total += float(value)
+    return total
