@@ -25,7 +25,8 @@
 </div>
 
 <!-- Property Tabs -->
-<ul class="nav nav-tabs nav-fill custom-tabs mb-3">
+<!-- Property Tabs -->
+<ul class="nav nav-tabs custom-tabs-flex mb-3">  <!-- Added nav-tabs class back -->
     <li class="nav-item">
         <a class="nav-link active custom-tab"
            data-toggle="tab"
@@ -40,7 +41,7 @@
            data-toggle="tab"
            href="#prop{{ prop.prop_id }}"
            title="{{ prop.prop_name }}">
-           <i class="fas fa-home mr-2"></i>{{ prop.prop_name|truncatechars:12 }}
+           <i class="fas fa-home mr-2"></i>{{ prop.prop_name|truncatechars:14 }}
         </a>
     </li>
     {% endfor %}
@@ -512,76 +513,186 @@
 </div>
 
 <style>
+    /* Base Styles */
+    body {
+        overflow-x: hidden;
+    }
+    
+    /* Main Container */
+    .container {
+        max-width: 100%;
+        padding: 0 15px;
+    }
+    
+    /* Table Styles - No Horizontal Scroll */
     .table-responsive {
+        width: 100%;
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;
-        width: 100%;
+        -ms-overflow-style: -ms-autohiding-scrollbar;
     }
     
-    table {
-        width: 100%;
+    .table-responsive::-webkit-scrollbar {
+        display: none; /* Hide scrollbar but keep functionality */
+    }
+    
+    .table-sm {
+        width: 100% !important;
+        max-width: 100%;
+        table-layout: fixed; /* Critical for preventing overflow */
+    }
+    
+    .table-sm thead th {
+        position: sticky;
+        top: 0;
+        background-color: #f8f9fa;
+        z-index: 10;
+    }
+    
+    .table-sm td, .table-sm th {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        padding: 4px 8px;
+        font-size: 0.8rem;
+    }
+    
+    /* Column Widths */
+    .table-sm th:first-child,
+    .table-sm td:first-child {
+        width: 150px; /* Fixed width for first column */
+        min-width: 150px;
+        max-width: 150px;
+    }
+    
+    .table-sm th:not(:first-child),
+    .table-sm td:not(:first-child) {
+        width: 70px; /* Fixed width for month columns */
+        min-width: 70px;
+        max-width: 70px;
+    }
+    
+    .table-sm th:last-child,
+    .table-sm td:last-child,
+    .table-sm th:nth-last-child(2),
+    .table-sm td:nth-last-child(2) {
+        width: 80px; /* Slightly wider for totals */
+        min-width: 80px;
+        max-width: 80px;
+    }
+
+    /* Custom Tabs */
+    .custom-tabs-flex {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 20px;
+    }
+    
+    .custom-tabs-flex .nav-item {
+        flex: 1 0 calc(16.666% - 8px);
+        min-width: 120px;
+    }
+    
+    .custom-tabs-flex .nav-item:nth-child(n+7) {
+        flex: 1 0 calc(20% - 8px);
+    }
+    
+    .nav-tabs .nav-link.custom-tab {
+        background-color: #f8f9fa;
+        color: #17a2b8;
+        border: 2px solid #17a2b8;
+        border-radius: 6px;
+        padding: 8px 12px;
+        text-align: center;
+        font-weight: bold;
+        transition: all 0.2s;
+    }
+    
+    .nav-tabs .nav-link.custom-tab.active {
+        background-color: #17a2b8;
+        color: white;
+    }
+
+    /* Section Headers */
+    .section-header td {
+        background-color: #17a2b8 !important;
+        color: white !important;
+        font-weight: bold;
+    }
+    
+    /* Financial Indicators */
+    .roi-section {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 20px;
+    }
+    
+    .roi-section > div {
+        background-color: #f8f9fa;
+        padding: 8px 12px;
+        border-radius: 4px;
         font-size: 0.85rem;
     }
-    
-    th, td {
-        white-space: nowrap;
-        padding: 4px 8px;
+
+    /* Responsive Adjustments */
+    @media (max-width: 1200px) {
+        .table-sm td, .table-sm th {
+            font-size: 0.75rem;
+            padding: 3px 6px;
+        }
+        
+        .table-sm th:first-child,
+        .table-sm td:first-child {
+            width: 120px;
+            min-width: 120px;
+            max-width: 120px;
+        }
     }
     
-    td.text-right {
-        min-width: 70px;
-    }
-    
-    .nav-tabs .nav-link {
-        padding: 0.5rem 0.75rem;
-    }
-    
-    .nav-tabs .nav-link.active {
-        font-weight: bold;
-        border-bottom: 3px solid #007bff;
-    }
-    
-    .section-header td {
-        font-size: 0.9em;
-        padding: 6px 8px;
-    }
-    
-    .custom-tabs .nav-link {
-        background-color: #e0f7fa;
-        color: #17a2b8;
-        border: 1px solid #17a2b8;
-        border-radius: 0.5rem;
-        margin-right: 0.5rem;
-        transition: background-color 0.2s ease, box-shadow 0.2s ease;
-        font-weight: bold;
-        text-align: center;
-        padding: 0.5rem 0.75rem;
-    }
-    
-    .custom-tabs .nav-link:hover {
-        background-color: #d1f0f5;
-        color: #138496;
-    }
-    
-    .custom-tabs .nav-link.active {
-        background-color: #17a2b8;
-        color: white !important;
-        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-        border-color: #138496;
+    @media (max-width: 992px) {
+        .custom-tabs-flex .nav-item {
+            flex: 1 0 calc(25% - 8px);
+        }
     }
     
     @media (max-width: 768px) {
-        table {
-            font-size: 0.75rem;
+        .table-sm {
+            font-size: 0.7rem;
         }
         
-        th, td {
-            padding: 3px 5px;
+        .table-sm th:first-child,
+        .table-sm td:first-child {
+            width: 100px;
+            min-width: 100px;
+            max-width: 100px;
         }
         
-        .custom-tabs .nav-link {
-            padding: 0.3rem 0.5rem;
-            font-size: 0.8rem;
+        .table-sm th:not(:first-child),
+        .table-sm td:not(:first-child) {
+            width: 60px;
+            min-width: 60px;
+            max-width: 60px;
+        }
+        
+        .custom-tabs-flex .nav-item {
+            flex: 1 0 calc(33.333% - 8px);
+        }
+    }
+    
+    @media (max-width: 576px) {
+        .table-sm {
+            font-size: 0.65rem;
+        }
+        
+        .custom-tabs-flex .nav-item {
+            flex: 1 0 calc(50% - 8px);
+            min-width: 100px;
+        }
+        
+        .roi-section > div {
+            flex: 1 0 100%;
         }
     }
 </style>
