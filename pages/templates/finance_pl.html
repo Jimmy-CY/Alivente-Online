@@ -196,7 +196,7 @@
             <h6 class="section-title" style="background-color: #17a2b8; color: white; padding: 8px; border-radius: 4px; width: fit-content;">CONSOLIDATED FINANCIAL INDICATORS</h6>
             <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                 <!-- GROSS ROI -->
-                <div style="background-color: #f8f9fa; padding: 8px; border-radius: 4px; width: fit-content;">
+                <div style="background-color: #f8f9fa; padding: 8px; border-radius: 4px; width: fit-content; border: 1.5px solid #dee2e6;">
                     <span class="font-weight-bold">Gross ROI: 
                         {% with total_revenue=revenue_totals.year %}
                         {% with total_purchase=properties|sum_purchase_prices %}
@@ -211,7 +211,7 @@
                 </div>
                 
                 <!-- NET ROI -->
-                <div style="background-color: #f8f9fa; padding: 8px; border-radius: 4px; width: fit-content;">
+                <div style="background-color: #f8f9fa; padding: 8px; border-radius: 4px; width: fit-content; border: 1.5px solid #dee2e6;">
                     <span class="font-weight-bold">Net ROI: 
                         {% with total_revenue=revenue_totals.year %}
                         {% with total_expense=expense_totals.year %}
@@ -228,7 +228,7 @@
                 </div>
                 
                 <!-- EXPENSE RATIO -->
-                <div style="background-color: #f8f9fa; padding: 8px; border-radius: 4px; width: fit-content;">
+                <div style="background-color: #f8f9fa; padding: 8px; border-radius: 4px; width: fit-content; border: 1.5px solid #dee2e6;">
                     <span class="font-weight-bold">Expenses to Revenue: 
                         {% with total_revenue=revenue_totals.year %}
                         {% with total_expense=expense_totals.year %}
@@ -243,7 +243,7 @@
                 </div>
                 
                 <!-- RENT PER SQ M -->
-                <div style="background-color: #f8f9fa; padding: 8px; border-radius: 4px; width: fit-content;">
+                <div style="background-color: #f8f9fa; padding: 8px; border-radius: 4px; width: fit-content; border: 1.5px solid #dee2e6;">
                     <span class="font-weight-bold">Rent (€/m<sup>2</sup>): 
                         {% with total_revenue=revenue_totals.year %}
                         {% with total_area=properties|sum_attr:'prop_floor_area' %}
@@ -258,7 +258,7 @@
                 </div>
 
                 <!-- VALUE INCREASE -->
-                <div style="background-color: #f8f9fa; padding: 8px; border-radius: 4px; width: fit-content;">
+                <div style="background-color: #f8f9fa; padding: 8px; border-radius: 4px; width: fit-content; border: 1.5px solid #dee2e6;">
                     <span class="font-weight-bold">% Value Increase: 
                         {% with total_purchase=properties|sum_purchase_prices %}
                         {% if total_purchase > 0 and total_current_value > 0 %}
@@ -434,7 +434,7 @@
             <h6 class="section-title" style="background-color: #17a2b8; color: white; padding: 8px; border-radius: 4px; width: fit-content;">FINANCIAL INDICATORS</h6>
             
             <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                <div style="background-color: #f8f9fa; padding: 8px; border-radius: 4px; width: fit-content;">
+                <div style="background-color: #f8f9fa; padding: 8px; border-radius: 4px; width: fit-content; border: 1.5px solid #dee2e6;">
                     <span class="font-weight-bold">Gross ROI: 
                         {% with prop_revenue=revenue_prop_totals|get_item:prop.prop_id %}
                         {% with current_value=prop.prop_values_set.first.prop_values_purchase_price %}
@@ -448,7 +448,7 @@
                     </span>
                 </div>
                 
-                <div style="background-color: #f8f9fa; padding: 8px; border-radius: 4px; width: fit-content;">
+                <div style="background-color: #f8f9fa; padding: 8px; border-radius: 4px; width: fit-content; border: 1.5px solid #dee2e6;">
                     <span class="font-weight-bold">Net ROI: 
                         {% with prop_revenue=revenue_prop_totals|get_item:prop.prop_id %}
                         {% with prop_expense=expense_prop_totals|get_item:prop.prop_id %}
@@ -464,7 +464,7 @@
                     </span>
                 </div>
                 
-                <div style="background-color: #f8f9fa; padding: 8px; border-radius: 4px; width: fit-content;">
+                <div style="background-color: #f8f9fa; padding: 8px; border-radius: 4px; width: fit-content; border: 1.5px solid #dee2e6;">
                     <span class="font-weight-bold">Expenses to Revenue: 
                         {% with prop_revenue=revenue_prop_totals|get_item:prop.prop_id %}
                         {% with prop_expense=expense_prop_totals|get_item:prop.prop_id %}
@@ -478,7 +478,7 @@
                     </span>
                 </div>
                 
-                <div style="background-color: #f8f9fa; padding: 8px; border-radius: 4px; width: fit-content;">
+                <div style="background-color: #f8f9fa; padding: 8px; border-radius: 4px; width: fit-content; border: 1.5px solid #dee2e6;">
                     <span class="font-weight-bold">Rent (€/m<sup>2</sup>): 
                         {% with prop_revenue=revenue_prop_totals|get_item:prop.prop_id %}
                             {% if prop_revenue.year and prop.prop_floor_area %}
@@ -491,7 +491,7 @@
                 </div>
 
                 <!-- VALUE INCREASE - PROPERTY SPECIFIC -->
-                <div style="background-color: #f8f9fa; padding: 8px; border-radius: 4px; width: fit-content;">
+                <div style="background-color: #f8f9fa; padding: 8px; border-radius: 4px; width: fit-content; border: 1.5px solid #dee2e6;">
                     <span class="font-weight-bold">% Value Increase: 
                         {% with prop_values=prop.prop_values_set.first %}
                         {% if prop_values and prop_values.prop_values_purchase_price and prop_values.prop_values_current_value %}
@@ -601,7 +601,7 @@
     .nav-tabs .nav-link.custom-tab {
         background-color: #f8f9fa;
         color: #17a2b8;
-        border: 2px solid #17a2b8;
+        border: 1.0px solid #17a2b8;
         border-radius: 6px;
         padding: 8px 12px;
         text-align: center;

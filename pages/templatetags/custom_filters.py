@@ -4,8 +4,9 @@ register = template.Library()
 
 @register.filter
 def get_item(dictionary, key):
-    return dictionary.get(key)
-
+    if hasattr(dictionary, 'get'):
+        return dictionary.get(key, 0)  # Return 0 as default if key doesn't exist
+    return 0  # Return 0 if input isn't a dictionary
 
 @register.filter(name='subtract')
 def subtract(value, arg):

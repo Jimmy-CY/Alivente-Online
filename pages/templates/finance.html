@@ -110,6 +110,30 @@ ALIVENTE ONLINE - FINANCE
         </div>
         <div class="card-body">
           <div class="row">
+            <!-- Actual Profit & Loss -->
+            <div class="col-md-6 mb-3">
+              <a href="{% url 'finance_pl_act' %}" class="btn btn-info btn-block py-2 finance-btn d-flex flex-column justify-content-center" style="height: 100px;">
+                <i class="fas fa-chart-line fa-2x mb-2"></i>
+                <span class="font-weight-bold" style="font-size: 0.95rem">Actual Profit & Loss</span>
+              </a>
+            </div>
+            
+            <!-- Budgeted Profit & Loss -->
+            <div class="col-md-6 mb-3">
+              <a href="{% url 'finance_pl' %}" class="btn btn-info btn-block py-2 finance-btn d-flex flex-column justify-content-center" style="height: 100px;">
+                <i class="fas fa-chart-bar fa-2x mb-2"></i>
+                <span class="font-weight-bold" style="font-size: 0.95rem">Budgeted Profit & Loss</span>
+              </a>
+            </div>
+
+            <!-- Actula Expenses -->
+            <div class="col-md-6 mb-3">
+              <a href="{% url 'act_expense_view' %}" class="btn btn-info btn-block py-2 finance-btn d-flex flex-column justify-content-center" style="height: 100px;">
+                <i class="fas fa-coins fa-2x mb-2"></i>
+                <span class="font-weight-bold" style="font-size: 0.95rem">Actual Expenses</span>
+              </a>
+            </div>
+
             <!-- Property Valuations -->
             <div class="col-md-6 mb-3">
               <a href="{% url 'finance_valuations' %}" class="btn btn-info btn-block py-2 finance-btn d-flex flex-column justify-content-center" style="height: 100px;">
@@ -117,14 +141,7 @@ ALIVENTE ONLINE - FINANCE
                 <span class="font-weight-bold" style="font-size: 0.95rem">Property Valuations</span>
               </a>
             </div>
-            
-            <!-- Profit & Loss -->
-            <div class="col-md-6 mb-3">
-              <a href="{% url 'finance_pl' %}" class="btn btn-info btn-block py-2 finance-btn d-flex flex-column justify-content-center" style="height: 100px;">
-                <i class="fas fa-chart-line fa-2x mb-2"></i>
-                <span class="font-weight-bold" style="font-size: 0.95rem">Profit & Loss</span>
-              </a>
-            </div>
+
           </div>
         </div>
       </div>

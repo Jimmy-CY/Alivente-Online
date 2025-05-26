@@ -70,3 +70,8 @@ class ExpenseForm(forms.ModelForm):
 	class Meta:
 		model = models.expense
 		fields = ["expense_types","expense_line_types","expense_amount","prop","expense_jan","expense_feb","expense_mar","expense_apr","expense_may","expense_jun","expense_jul","expense_aug","expense_sep","expense_oct","expense_nov","expense_dec"]
+
+class ActExpenseForm(forms.ModelForm):
+	class Meta:
+		model = models.act_expense
+		fields = ["act_expense_date","prop","act_expense_description","act_expense_amount","act_expense_approved","act_expense_paid"]

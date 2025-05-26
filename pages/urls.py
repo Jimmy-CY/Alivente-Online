@@ -47,6 +47,7 @@ urlpatterns = [
     path('friday_status_report/', views.friday_status_report, name='friday_status_report'),
     path('resolved_issues_report/', views.resolved_issues_report, name='resolved_issues_report'),
     path('finance_pl/', views.finance_pl, name='finance_pl'),
+    path('finance_pl_act/', views.finance_pl_act, name='finance_pl_act'),
 
 
     #
@@ -108,7 +109,16 @@ urlpatterns = [
     path('petty_cash/', views.petty_cash, name='petty_cash'),
     path('petty_cash_add/', views.petty_cash_add, name='petty_cash_add'),
     path('petty_cash_commit/', views.petty_cash_commit, name='petty_cash_commit'),
-    
+
+    #
+    # Actual Expenses
+    path('act_expense_view/', views.act_expense_view, name='act_expense_view'),
+    path('act_expense_add/', views.act_expense_add, name='act_expense_add'),
+    path('act_expense_edit/<expense_id>', views.act_expense_edit, name='act_expense_edit'),
+    path('mark_approved/<expense_id>', views.mark_approved, name='mark_approved'),
+    path('mark_paid/<expense_id>', views.mark_paid, name='mark_paid'),
+
+
     #
     # Invoices
     path('invoices/', views.invoices_page, name='invoices'),

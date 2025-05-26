@@ -282,4 +282,21 @@ class expense(models.Model):
 	class Meta:
 		db_table="expense"
 
+class act_expense(models.Model):
+	act_expense_id = models.AutoField(primary_key=True)
+	act_expense_date = models.DateField(blank=True, null=True)
+	prop = models.ForeignKey(props, on_delete=models.CASCADE)
+	act_expense_description = models.CharField(max_length=55, blank=True, null=True)
+	act_expense_amount = models.DecimalField(max_digits=6, decimal_places=2, blank=True, null=True)
+	act_expense_approved = models.CharField(max_length=3, blank=True, null=True)
+	act_expense_paid = models.CharField(max_length=3, blank=True, null=True)
 
+	def __str__(self):
+		return self.act_expense_description
+	def approved_display(self):
+	    return "Yes" if self.act_expense_approved == 'Yes' else "No"
+	def paid_display(self):
+		return "Yes" if self.act_expense_paid == 'Yes' else "No"
+
+	class Meta:
+		db_table="act_expense"
