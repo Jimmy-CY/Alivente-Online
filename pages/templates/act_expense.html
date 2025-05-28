@@ -28,11 +28,19 @@
   {% endfor %}
   
     <div style="display: flex ; justify-content: flex-end">
-        <button type="button" class="btn btn-info" style="margin-right:16px" data-toggle="modal" data-target="#dateRangeModal">
-            Select Date Range
-        </button>
-        <a href="{% url 'act_expense_add' %}" class="btn btn-info" style="margin-right:16px" type="button">Add New</a>
-        <a href="{% url 'finance' %}" class="btn btn-info" style="margin-right:16px" role="button">Back</a>
+        {% if not from_finance_pl_act %}
+            <button type="button" class="btn btn-info" style="margin-right:16px" data-toggle="modal" data-target="#dateRangeModal">
+                Select Date Range
+            </button>
+            <a href="{% url 'act_expense_add' %}" class="btn btn-info" style="margin-right:16px" type="button">Add New</a>
+        {% endif %}
+        
+        {% if from_finance_pl_act %}
+            <a href="{% url 'finance_pl_act' %}?year={{ request.GET.year|default:selected_year }}&prop={{ request.GET.prop|default:'all' }}" 
+               class="btn btn-info" style="margin-right:16px" role="button">Back</a>
+        {% else %}
+            <a href="{% url 'finance' %}" class="btn btn-info" style="margin-right:16px" role="button">Back</a>
+        {% endif %}
     </div>
 
     <!-- Display selected date range if available -->
@@ -43,6 +51,7 @@
     {% endif %}
 
     <!-- Date Range Modal -->
+    {% if not from_finance_pl_act %}
     <div class="modal fade" id="dateRangeModal" tabindex="-1" role="dialog" aria-labelledby="dateRangeModalLabel" aria-hidden="true">
         <div class="modal-dialog" role="document">
             <div class="modal-content">
@@ -52,7 +61,7 @@
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
-                <form method="GET" action="{% url 'act_expense_view' %}">
+                <form method="GET" action="{% url 'act_expense_all' %}">
                     <div class="modal-body">
                         <div class="form-group">
                             <label for="from_date">From Date</label>
@@ -71,6 +80,7 @@
             </div>
         </div>
     </div>
+    {% endif %}
 
 <br/>
 
@@ -78,13 +88,16 @@
 <table class="table table-bordered table-striped text-center">
 <thead>
     <tr>
-        <th style="text-align: center; width: 10%">Date</th>
-        <th style="text-align: center; width: 12%">Property</th>
-        <th style="text-align: left; width: 30%">Description</th>
-        <th style="width: 10%">Amount</th>
-        <th style="width: 10%">Details</th>
-        <th style="width: 10%">Approved?</th>
-        <th style="width: 10%">Paid?</th>
+        <th style="text-align: center; width: {% if from_finance_pl_act %}15%{% else %}10%{% endif %}">Date</th>
+        <th style="text-align: center; width: {% if from_finance_pl_act %}20%{% else %}12%{% endif %}">Property</th>
+        <th style="text-align: left; width: {% if from_finance_pl_act %}45%{% else %}30%{% endif %}">Description</th>
+        <th style="width: {% if from_finance_pl_act %}20%{% else %}8%{% endif %}">Amount</th>
+        {% if not from_finance_pl_act %}
+            <th style="width: 8%">Details</th>
+            <th style="width: 8%">Approved?</th>
+            <th style="width: 8%">Paid?</th>
+            <th style="width: 8%">Delete?</th>
+        {% endif %}
     </tr>
 </thead>
 <tbody>
@@ -93,40 +106,50 @@
         <td>{{ expense.act_expense_date|date:"Y-m-d" }}</td>
         <td style="text-align: left">{{ expense.prop.prop_name }}</td>
         <td style="text-align: left">{{ expense.act_expense_description }}</td>
-        <td>- {{ expense.act_expense_amount }}</td>
-        <td>
-            <button type="button" class="btn btn-light" style="border-color:black; width: 100%">
-                <a href="{% url 'act_expense_edit' expense.act_expense_id %}" style="color: #007bff; text-decoration: none;">Edit</a>
-            </button>
-        </td>
-        <td>
-            {% if expense.act_expense_approved == 'Yes' %}
-                <button type="button" class="btn btn-light" style="border-color:black; width: 100%; opacity: 0.5; cursor: not-allowed; pointer-events: none;" disabled>
-                    <span style="color: #6c757d;">Approved</span>
+        <td>{{ expense.act_expense_amount }}</td>
+        {% if not from_finance_pl_act %}
+            <td>
+                <button type="button" class="btn btn-light" style="border-color:black; width: 100%">
+                    <a href="{% url 'act_expense_edit' expense.act_expense_id %}" style="color: #007bff; text-decoration: none;">Edit</a>
                 </button>
-            {% else %}
-                <form method="post" action="{% url 'mark_approved' expense.act_expense_id %}" style="display:inline; width: 100%;">
+            </td>
+            <td>
+                {% if expense.act_expense_approved == 'Yes' %}
+                    <button type="button" class="btn btn-light" style="border-color:black; width: 100%; opacity: 0.5; cursor: not-allowed; pointer-events: none;" disabled>
+                        <span style="color: #6c757d;">Approved</span>
+                    </button>
+                {% else %}
+                    <form method="post" action="{% url 'mark_approved' expense.act_expense_id %}" style="display:inline; width: 100%;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-light" style="border-color:black; width: 100%;">
+                            <span style="color: #007bff;">Approve</span>
+                        </button>
+                    </form>
+                {% endif %}
+            </td>
+            <td>
+                {% if expense.act_expense_paid == 'Yes' %}
+                    <button type="button" class="btn btn-light" style="border-color:black; width: 100%; opacity: 0.5; cursor: not-allowed; pointer-events: none;" disabled>
+                        <span style="color: #6c757d;">Paid</span>
+                    </button>
+                {% else %}
+                    <form method="post" action="{% url 'mark_paid' expense.act_expense_id %}" style="display:inline; width: 100%;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-light" style="border-color:black; width: 100%;">
+                            <span style="color: #007bff;">Pay</span>
+                        </button>
+                    </form>
+                {% endif %}
+            </td>
+            <td>
+                <form method="post" action="{% url 'mark_deleted' expense.act_expense_id %}" style="display:inline; width: 100%;">
                     {% csrf_token %}
                     <button type="submit" class="btn btn-light" style="border-color:black; width: 100%;">
-                        <span style="color: #007bff;">Approve</span>
+                        <span style="color: #007bff;">Delete</span>
                     </button>
                 </form>
-            {% endif %}
-        </td>
-        <td>
-            {% if expense.act_expense_paid == 'Yes' %}
-                <button type="button" class="btn btn-light" style="border-color:black; width: 100%; opacity: 0.5; cursor: not-allowed; pointer-events: none;" disabled>
-                    <span style="color: #6c757d;">Paid</span>
-                </button>
-            {% else %}
-                <form method="post" action="{% url 'mark_paid' expense.act_expense_id %}" style="display:inline; width: 100%;">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-light" style="border-color:black; width: 100%;">
-                        <span style="color: #007bff;">Pay</span>
-                    </button>
-                </form>
-            {% endif %}
-        </td>
+            </td>
+        {% endif %}
     </tr>
     {% endfor %}
 </tbody>

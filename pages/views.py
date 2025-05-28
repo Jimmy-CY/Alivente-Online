@@ -14,6 +14,7 @@ from django.templatetags.static import static
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.dateparse import parse_date
+from django.utils.timezone import now
 from django.views.decorators.cache import never_cache
 from django.views.static import serve
 from . import forms
@@ -1240,11 +1241,83 @@ def properties_edit_commit(request, prop_id):
     return redirect('properties')
 
 ### ACTUAL EXPENSES ###
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+from datetime import datetime
+from .models import act_expense
+
+@login_required
+def act_expense_all(request):
+    # Get year/month from request or use current year as default
+    selected_year = request.GET.get('year', datetime.now().year)
+    selected_month = request.GET.get('month')
+    
+    # Base queryset - only approved and paid expenses, ordered by date
+    expenses = act_expense.objects.select_related('prop').order_by('-act_expense_date')
+    
+    # Handle YEAR/MONTH filtering (convert to int safely)
+    try:
+        year = int(request.GET.get('year', 0)) if request.GET.get('year') else None
+        month = int(request.GET.get('month', 0)) if request.GET.get('month') else None
+    except (ValueError, TypeError):
+        year, month = None, None  # Fallback if invalid input
+    
+    if year:
+        expenses = expenses.filter(act_expense_date__year=year)
+        if month:
+            expenses = expenses.filter(act_expense_date__month=month)
+    
+    # Handle DATE RANGE filtering
+    from_date = request.GET.get('from_date')
+    to_date = request.GET.get('to_date')
+    
+    print(from_date)
+    print(to_date)
+
+    if from_date and to_date:
+        expenses = expenses.filter(
+            act_expense_date__gte=from_date,
+            act_expense_date__lte=to_date
+        )
+    
+#    # Get available years for filter dropdown
+#    available_years = act_expense.objects.dates('act_expense_date', 'year').order_by('-act_expense_date')
+    
+    return render(request, 'act_expense.html', {
+        'expenses': expenses,
+        'selected_year': year if year else int(selected_year),
+        'selected_month': month,
+        'current_year': datetime.now().year,
+#        'available_years': [y.year for y in available_years],
+#        'from_finance_pl_act': request.GET.get('from_finance_pl_act', False)
+    })
+
 @login_required
 def act_expense_view(request):
-    expenses = act_expense.objects.select_related('prop').all()
+    # Get year/month from request or use current year as default
+    selected_year = request.GET.get('year', datetime.now().year)
+    selected_month = request.GET.get('month')
+    from_finance_pl_act = request.GET.get('from_finance_pl_act', False)
     
-    # Handle date range filtering
+    # Base queryset - only approved and paid expenses, ordered by date
+    expenses = act_expense.objects.select_related('prop').filter(
+        act_expense_approved="Yes",
+        act_expense_paid="Yes"
+    ).order_by('-act_expense_date')
+    
+    # Handle YEAR/MONTH filtering (convert to int safely)
+    try:
+        year = int(request.GET.get('year', 0)) if request.GET.get('year') else None
+        month = int(request.GET.get('month', 0)) if request.GET.get('month') else None
+    except (ValueError, TypeError):
+        year, month = None, None  # Fallback if invalid input
+    
+    if year:
+        expenses = expenses.filter(act_expense_date__year=year)
+        if month:
+            expenses = expenses.filter(act_expense_date__month=month)
+    
+    # Handle DATE RANGE filtering
     from_date = request.GET.get('from_date')
     to_date = request.GET.get('to_date')
     
@@ -1254,7 +1327,20 @@ def act_expense_view(request):
             act_expense_date__lte=to_date
         )
     
-    return render(request, 'act_expense.html', {'expenses': expenses})
+    # Get available years for filter dropdown
+    available_years = act_expense.objects.filter(
+        act_expense_approved="Yes",
+        act_expense_paid="Yes"
+    ).dates('act_expense_date', 'year').order_by('-act_expense_date')
+    
+    return render(request, 'act_expense.html', {
+        'expenses': expenses,
+        'selected_year': year if year else int(selected_year),
+        'selected_month': month,
+        'current_year': datetime.now().year,
+        'available_years': [y.year for y in available_years],
+        'from_finance_pl_act': from_finance_pl_act
+    })
 
 @login_required
 def act_expense_edit(request, expense_id):
@@ -1268,7 +1354,7 @@ def mark_approved(request, expense_id):
         expense.act_expense_approved = 'Yes'
         expense.save()
         messages.success(request, "Expense approved successfully")
-    return redirect('act_expense_view')
+    return redirect('act_expense_all')
 
 @login_required
 def mark_paid(request, expense_id):
@@ -1277,25 +1363,62 @@ def mark_paid(request, expense_id):
         expense.act_expense_paid = 'Yes'
         expense.save()
         messages.success(request, "Expense marked as paid")
-    return redirect('act_expense_view')
+    return redirect('act_expense_all')
+
+@login_required
+def mark_deleted(request, expense_id):
+    try:
+        expense = get_object_or_404(act_expense, pk=expense_id)
+        expense.delete()  # Permanently deletes the record
+        messages.success(request, "Expense deleted successfully")
+    except Exception as e:
+        messages.error(request, f"Error deleting expense: {str(e)}")
+    return redirect('act_expense_all')
 
 @login_required
 def act_expense_add(request):
-    if request.method == "POST":
-        form = PettyForm(request.POST or None)
-        print(form)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "Transaction Added Successfully")
-    presults = petty.objects.all().order_by('petty_cash_date')
-    pvalues = petty.objects.values()
-    balance = 0
-    for x in pvalues:
-        if x['petty_cash_dr_cr'] == "DR":
-            balance = balance + x['petty_cash_amount']
-        elif x['petty_cash_dr_cr'] == "CR":
-            balance = balance - x['petty_cash_amount']
-    return render (request, "act_expense.html", {"petty":presults, "balance":balance})
+    results = props.objects.all().order_by('prop_country','prop_name')
+    return render(request, "act_expense_add.html", {'props': results})
+
+@login_required
+def act_expense_commit(request):
+    if request.method == 'POST':
+        try:
+            # Get data from the form
+            expense_date = request.POST.get('act_expense_date')
+            expense_prop = request.POST.get('prop')
+            expense_description = request.POST.get('act_expense_description')
+            expense_amount = request.POST.get('act_expense_amount')
+            expense_approved = request.POST.get('act_expense_approved', 'No')
+            expense_paid = request.POST.get('act_expense_paid', 'No')
+            
+            # Validate required fields
+            if not expense_date or not expense_description or not expense_amount:
+                messages.error(request, 'All fields are required.')
+                return redirect('act_expense_add')  # Replace with your add expense URL name
+            
+            # Create and save the expense record
+            expense = act_expense(
+                act_expense_date=expense_date,
+                act_expense_description=expense_description,
+                act_expense_amount=float(expense_amount),
+                act_expense_approved=expense_approved,
+                act_expense_paid=expense_paid,
+                prop_id=expense_prop
+            )
+            print ("XXXXXXXXXXXXXXXXX")
+            expense.save()
+            messages.success(request, 'Expense added successfully!')
+            return redirect('act_expense_all')  # Redirect to expense list
+            
+        except ValueError:
+            messages.error(request, 'Please enter a valid amount.')
+            return redirect('act_expense_add')
+        except Exception as e:
+            messages.error(request, f'An error occurred: {str(e)}')
+            return redirect('act_expense_add')
+    
+    return redirect('act_expense_add')
 
 ### PETTY CASH ###
 @login_required
@@ -1712,10 +1835,23 @@ def finance_pl(request):
 
 @login_required
 def finance_pl_act(request):
-    # Get all properties with prefetched prop_values to optimize queries
+    # Get selected year from request (default to current year)
+    selected_year = request.GET.get('year', datetime.now().year)
+    active_prop = request.GET.get('prop', 'all')  # Default to 'all' properties
+
+    try:
+        selected_year = int(selected_year)
+    except (ValueError, TypeError):
+        selected_year = now().year
+    
+    # Ensure only 2024 or 2025 is selectable
+    if selected_year not in [2024, 2025]:
+        selected_year = now().year
+    
+    # Get all properties with prefetched prop_values
     properties = props.objects.filter(prop_status="Active").prefetch_related('prop_values_set')
     
-    # Revenue Section
+    # ========= REVENUE SECTION ========= (unchanged as per requirements)
     revenue_line_types_list = revenue_line_types.objects.all()
     revenues = revenue.objects.all()
     
@@ -1799,12 +1935,16 @@ def finance_pl_act(request):
             line_monthly_totals['total'] = sum(line_monthly_totals.values())
             revenue_totals_by_line[prop.prop_id][lt.revenue_line_types_id] = line_monthly_totals
 
-    # Expense Section
+    # ========= EXPENSE SECTION =========
     expense_line_types_list = expense_line_types.objects.all()
     expenses = expense.objects.all()
     
-    # Calculate ACTUAL expenses from act_expenses table
-    actual_expenses = act_expense.objects.all()
+    # Calculate ACTUAL expenses - FILTERED BY SELECTED YEAR, APPROVED AND PAID
+    actual_expenses = act_expense.objects.filter(
+        act_expense_date__year=selected_year,
+        act_expense_approved="Yes",
+        act_expense_paid="Yes"
+    )
     
     # Initialize actual expense totals
     actual_expense_totals = {
@@ -1853,7 +1993,7 @@ def finance_pl_act(request):
         prop_totals['year'] = sum(prop_totals.values())
         actual_expense_prop_totals[prop.prop_id] = prop_totals
     
-    # Calculate expense totals
+    # Calculate budgeted expense totals
     expense_totals = {
         'jan': sum(e.expense_jan or 0 for e in expenses),
         'feb': sum(e.expense_feb or 0 for e in expenses),
@@ -1933,7 +2073,7 @@ def finance_pl_act(request):
             line_monthly_totals['total'] = sum(line_monthly_totals.values())
             expense_totals_by_line[prop.prop_id][elt.expense_line_types_id] = line_monthly_totals
 
-    # Calculate Profit (Revenue - Expenses)
+    # ========= PROFIT CALCULATION =========
     profit_totals = {
         'jan': revenue_totals['jan'] - expense_totals['jan'],
         'feb': revenue_totals['feb'] - expense_totals['feb'],
@@ -1950,13 +2090,13 @@ def finance_pl_act(request):
         'year': revenue_totals['year'] - expense_totals['year']
     }
 
-    # Prepare property values mapping for easy access in template
+    # Prepare property values mapping
     prop_values_map = {prop.prop_id: prop.prop_values_set.first() for prop in properties}
-    total_current_value = 0
-    for prop in properties:
-        prop_values = prop.prop_values_set.first()
-        if prop_values and prop_values.prop_values_current_value is not None:
-            total_current_value += prop_values.prop_values_current_value
+    total_current_value = sum(
+        pv.prop_values_current_value 
+        for pv in prop_values_map.values() 
+        if pv and pv.prop_values_current_value is not None
+    )
 
     return render(request, 'finance_pl_act.html', {
         'properties': properties,
@@ -1973,6 +2113,9 @@ def finance_pl_act(request):
         'total_current_value': total_current_value,
         'actual_expense_totals': actual_expense_totals,
         'actual_expense_prop_totals': actual_expense_prop_totals,
+        'selected_year': selected_year,
+        'active_prop': active_prop,
+        'available_years': [2024, 2025],
     })
 
 @login_required

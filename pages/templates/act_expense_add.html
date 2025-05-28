@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}
+{% endblock %}
+{% block content %}
+<h2><center>ALIVENTE ONLINE - ACTUAL EXPENSES</center></h2>
+<h4><center>ADD EXPENSE</center></h4>
+<br/>
+  
+<form action="{% url 'act_expense_commit' %}" method="post">
+  {% csrf_token %}
+  
+  <div style="display: flex ; justify-content: flex-end">
+      <button class="btn btn-info" style="margin-right:16px" type="submit">Save</button>
+      <a href="{% url 'act_expense_all' %}" class="btn btn-info" style="margin-right:16px" role="button">Back</a>
+  </div>
+<br/>
+  
+  <!-- Hidden fields for default values -->
+  <input type="hidden" name="act_expense_approved" value="No">
+  <input type="hidden" name="act_expense_paid" value="No">
+  
+  <div class="form-row">
+    <div class="form-group col-md-2">
+      <label for="act_expense_date"><strong>Date</strong></label>
+      <input placeholder="Expense Date" type="date" id="act_expense_date" class="form-control" name="act_expense_date" required>
+    </div>
+    <div class="form-group col-md-3">
+      <label for="prop"><strong>Property Name</strong></label>
+      <select id="prop" class="form-control" name="prop" required>
+        <option value = "" disabled selected value="">Select Property</option>
+        {% for results in props %}
+          <option value="{{results.prop_id}}">{{results.prop_name}}</option>
+        {% endfor %}
+      </select>
+    </div>    
+    <div class="form-group col-md-4">
+      <label for="act_expense_description"><strong>Expense Description</strong></label>
+      <input type="text" class="form-control" id="act_expense_description" name="act_expense_description" placeholder="Expense Description" maxlength="55" required>
+    </div>
+    <div class="form-group col-md-2">
+      <label for="act_expense_amount"><strong>Amount</strong></label>
+      <input type="number" class="form-control" id="act_expense_amount" name="act_expense_amount" placeholder="Amount" step="0.01" required>
+    </div>
+  </div>
+  
+</form>
+{% endblock %}
