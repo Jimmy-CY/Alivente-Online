@@ -109,45 +109,79 @@
         <td>{{ expense.act_expense_amount }}</td>
         {% if not from_finance_pl_act %}
             <td>
-                <button type="button" class="btn btn-light" style="border-color:black; width: 100%">
-                    <a href="{% url 'act_expense_edit' expense.act_expense_id %}" style="color: #007bff; text-decoration: none;">Edit</a>
-                </button>
-            </td>
-            <td>
-                {% if expense.act_expense_approved == 'Yes' %}
-                    <button type="button" class="btn btn-light" style="border-color:black; width: 100%; opacity: 0.5; cursor: not-allowed; pointer-events: none;" disabled>
-                        <span style="color: #6c757d;">Approved</span>
-                    </button>
-                {% else %}
-                    <form method="post" action="{% url 'mark_approved' expense.act_expense_id %}" style="display:inline; width: 100%;">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-light" style="border-color:black; width: 100%;">
-                            <span style="color: #007bff;">Approve</span>
+                {% if expense.act_expense_approved == 'Yes' or expense.act_expense_paid == 'Yes' %}
+                    {% if user.username == 'admin' or user.username == 'Demetrios' or user.username == 'angy' %}
+                        <button type="button" class="btn btn-light" style="border-color:black; width: 100%">
+                            <a href="{% url 'act_expense_edit' expense.act_expense_id %}" style="color: #007bff; text-decoration: none;">Edit</a>
                         </button>
-                    </form>
+                    {% else %}
+                        <button type="button" class="btn btn-light" style="border-color:black; width: 100%; opacity: 0.5; cursor: not-allowed; pointer-events: none;" disabled>
+                            <span style="color: #6c757d;">Edit</span>
+                        </button>
+                    {% endif %}
+                {% else %}
+                    <button type="button" class="btn btn-light" style="border-color:black; width: 100%">
+                        <a href="{% url 'act_expense_edit' expense.act_expense_id %}" style="color: #007bff; text-decoration: none;">Edit</a>
+                    </button>
                 {% endif %}
             </td>
             <td>
-                {% if expense.act_expense_paid == 'Yes' %}
-                    <button type="button" class="btn btn-light" style="border-color:black; width: 100%; opacity: 0.5; cursor: not-allowed; pointer-events: none;" disabled>
-                        <span style="color: #6c757d;">Paid</span>
-                    </button>
-                {% else %}
-                    <form method="post" action="{% url 'mark_paid' expense.act_expense_id %}" style="display:inline; width: 100%;">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-light" style="border-color:black; width: 100%;">
-                            <span style="color: #007bff;">Pay</span>
+                {% if user.username == 'admin' or user.username == 'Demetrios' or user.username == 'angy' %}
+                    {% if expense.act_expense_approved == 'Yes' %}
+                        <button type="button" class="btn btn-light" style="border-color:black; width: 100%; opacity: 0.5; cursor: not-allowed; pointer-events: none;" disabled>
+                            <span style="color: #6c757d;">Approved</span>
                         </button>
-                    </form>
+                    {% else %}
+                        <form method="post" action="{% url 'mark_approved' expense.act_expense_id %}" style="display:inline; width: 100%;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-light" style="border-color:black; width: 100%;">
+                                <span style="color: #007bff;">Approve</span>
+                            </button>
+                        </form>
+                    {% endif %}
+                {% else %}
+                    <button type="button" class="btn btn-light" style="border-color:black; width: 100%; opacity: 0.5; cursor: not-allowed; pointer-events: none;" disabled>
+                        <span style="color: #6c757d;">
+                            {% if expense.act_expense_approved == 'Yes' %}Approved{% else %}Pending{% endif %}
+                        </span>
+                    </button>
                 {% endif %}
             </td>
             <td>
-                <form method="post" action="{% url 'mark_deleted' expense.act_expense_id %}" style="display:inline; width: 100%;">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-light" style="border-color:black; width: 100%;">
-                        <span style="color: #007bff;">Delete</span>
+                {% if user.username == 'admin' or user.username == 'Demetrios' or user.username == 'angy' %}
+                    {% if expense.act_expense_paid == 'Yes' %}
+                        <button type="button" class="btn btn-light" style="border-color:black; width: 100%; opacity: 0.5; cursor: not-allowed; pointer-events: none;" disabled>
+                            <span style="color: #6c757d;">Paid</span>
+                        </button>
+                    {% else %}
+                        <form method="post" action="{% url 'mark_paid' expense.act_expense_id %}" style="display:inline; width: 100%;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-light" style="border-color:black; width: 100%;">
+                                <span style="color: #007bff;">Pay</span>
+                            </button>
+                        </form>
+                    {% endif %}
+                {% else %}
+                    <button type="button" class="btn btn-light" style="border-color:black; width: 100%; opacity: 0.5; cursor: not-allowed; pointer-events: none;" disabled>
+                        <span style="color: #6c757d;">
+                            {% if expense.act_expense_paid == 'Yes' %}Paid{% else %}Pending{% endif %}
+                        </span>
                     </button>
-                </form>
+                {% endif %}
+            </td>
+            <td>
+                {% if user.username == 'admin' or user.username == 'Demetrios' or user.username == 'angy' %}
+                    <form method="post" action="{% url 'mark_deleted' expense.act_expense_id %}" style="display:inline; width: 100%;">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-light" style="border-color:black; width: 100%;">
+                            <span style="color: #007bff;">Delete</span>
+                        </button>
+                    </form>
+                {% else %}
+                    <button type="button" class="btn btn-light" style="border-color:black; width: 100%; opacity: 0.5; cursor: not-allowed; pointer-events: none;" disabled>
+                        <span style="color: #6c757d;">Delete</span>
+                    </button>
+                {% endif %}
             </td>
         {% endif %}
     </tr>

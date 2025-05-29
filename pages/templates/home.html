@@ -75,21 +75,13 @@ Home
       </div>
 
       <!-- Finance Button (Conditional) -->
-      {% if user.username == 'admin' or user.username == 'Demetrios' or user.username == 'angy' %}
+
       <div class="col-6 col-md-3 mb-3">
         <a href="{% url 'finance' %}" class="btn btn-info btn-block py-2 py-md-3 home-module-btn">
           <i class="fas fa-chart-line fa-2x mb-2"></i>
           <h4>Finance</h4>
         </a>
       </div>
-      {% else %}
-      <div class="col-6 col-md-3 mb-3">
-        <button class="btn btn-secondary btn-block py-2 py-md-3 home-module-btn" disabled>
-          <i class="fas fa-chart-line fa-2x mb-2"></i>
-          <h4>Finance</h4>
-        </button>
-      </div>
-      {% endif %}
 
       <!-- Admin Button (Conditional) -->
       {% if user.username == 'admin' or user.username == 'Demetrios' or user.username == 'angy' %}

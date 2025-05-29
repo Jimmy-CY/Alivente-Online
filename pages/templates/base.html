@@ -62,16 +62,10 @@
         <ul class="navbar-nav ml-auto">
           
           {% if user.is_authenticated %}
-              {% if user.username == 'admin' or user.username == 'Demetrios' or user.username == 'angy' %}
               <li class="nav-item">
                   <a class="nav-link" href="{% url 'finance' %}">Finance</a>
               </li>
-              {% else %}
-              <li class="nav-item">
-                  <span class="nav-link text-muted" style="cursor: default;">Finance</span>
-              </li>
-              {% endif %}
-              
+
               {% if user.username == 'admin' or user.username == 'Demetrios' or user.username == 'angy' %}
               <li class="nav-item">
                   <a class="nav-link" href="{% url 'admin_apms' %}">Admin</a>

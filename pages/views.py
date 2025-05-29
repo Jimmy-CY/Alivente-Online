@@ -24,6 +24,9 @@ from collections import defaultdict
 from datetime import date, datetime, timedelta
 from urllib.parse import urlparse, parse_qs
 import mysql.connector
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 import os
 import re
 import uuid
@@ -1152,9 +1155,71 @@ def invoices_page(request):
 
 @login_required
 def invoices_commit(request, invoice_id):
-	inv_tbp = invoices.objects.filter(pk=invoice_id).update(invoice_paid="Yes")
-	return redirect('invoices')
+    inv_tbp = invoices.objects.filter(pk=invoice_id).update(invoice_paid="Yes")
+    iresults = invoices.objects.get(pk=invoice_id)
+    tresults = tenant.objects.get(pk=iresults.tenant_id)
+    # Attempt to send the notification email
+    if send_invoices_paid_email(tresults, iresults.invoice_date):
+        messages.info(request, "Invoice marked as Paid notification email sent.")
+    else:
+        messages.warning(request, "Invoice marked as Paid, but email could not be sent.")
+    return redirect('invoices')
 
+def send_invoices_paid_email(tenant, invoice_date):
+    """
+    Send email notification of an expense payment for a specific expense
+    """
+    smtp_object = None
+    try:
+        # Create message
+        msg = MIMEMultipart()
+        msg['From'] = "demetrimanias@gmail.com"
+        msg['To'] = "demetrimanias@gmail.com"
+        msg['Subject'] = "Rent Payment"
+        
+        # Email body with proper formatting
+        body = f"""Dear Stella,
+
+We have received payment of the rent from the following tenant:
+ • Tenant: {tenant}
+ • Invoice Date: {invoice_date}
+
+Thanks,
+
+Alivente Property Management System"""
+        
+        msg.attach(MIMEText(body, 'plain'))
+        
+        # SMTP setup with more detailed error handling
+        smtp_object = smtplib.SMTP('smtp.gmail.com', 587)
+        smtp_object.ehlo()
+        smtp_object.starttls()
+        
+        email = "demetrimanias@gmail.com"
+        password = "nfvb been waqz wwks"
+        
+        smtp_object.login(email, password)
+        
+        # Send email
+        text = msg.as_string()
+        smtp_object.sendmail(email, "demetrimanias@gmail.com", text)
+        return True
+        
+    except smtplib.SMTPAuthenticationError as e:
+        logger.error(f"SMTP Authentication Error: {e}")
+        return False
+    except smtplib.SMTPException as e:
+        logger.error(f"SMTP Error: {e}")
+        return False
+    except Exception as e:
+        logger.error(f"Error sending email: {e}")
+        return False
+    finally:
+        if smtp_object:
+            try:
+                smtp_object.quit()
+            except:
+                pass
 
 ### PROPERTIES ###
 @login_required
@@ -1353,7 +1418,11 @@ def mark_approved(request, expense_id):
     if expense.act_expense_approved != 'Yes':  # Only update if not already approved
         expense.act_expense_approved = 'Yes'
         expense.save()
-        messages.success(request, "Expense approved successfully")
+        # Attempt to send the notification email
+        if send_expense_approved_email(expense.act_expense_description, expense.act_expense_amount):
+            messages.info(request, "Expense approved and notification email sent.")
+        else:
+            messages.warning(request, "Expense approved, but email could not be sent.")
     return redirect('act_expense_all')
 
 @login_required
@@ -1362,7 +1431,11 @@ def mark_paid(request, expense_id):
     if expense.act_expense_paid != 'Yes':  # Only update if not already paid
         expense.act_expense_paid = 'Yes'
         expense.save()
-        messages.success(request, "Expense marked as paid")
+        # Attempt to send the notification email
+        if send_expense_paid_email(expense.act_expense_description, expense.act_expense_amount):
+            messages.info(request, "Expense marked as paid and notification email sent.")
+        else:
+            messages.warning(request, "Expense marked as paid, but email could not be sent.")
     return redirect('act_expense_all')
 
 @login_required
@@ -1380,6 +1453,174 @@ def act_expense_add(request):
     results = props.objects.all().order_by('prop_country','prop_name')
     return render(request, "act_expense_add.html", {'props': results})
 
+def send_expense_approved_email(description, amount):
+    """
+    Send email notification of an expense approval for a specific expense
+    """
+    smtp_object = None
+    try:
+        # Create message
+        msg = MIMEMultipart()
+        msg['From'] = "demetrimanias@gmail.com"
+        msg['To'] = "demetrimanias@gmail.com"
+        msg['Subject'] = "Expense Approval"
+        
+        # Email body with proper formatting
+        body = f"""Dear Stella,
+
+Demetri has approved an expense.  The details are as follows:
+ • Description: {description}
+ • Amount: € {amount}
+
+Thanks,
+
+Alivente Property Management System"""
+        
+        msg.attach(MIMEText(body, 'plain'))
+        
+        # SMTP setup with more detailed error handling
+        smtp_object = smtplib.SMTP('smtp.gmail.com', 587)
+        smtp_object.ehlo()
+        smtp_object.starttls()
+        
+        email = "demetrimanias@gmail.com"
+        password = "nfvb been waqz wwks"
+        
+        smtp_object.login(email, password)
+        
+        # Send email
+        text = msg.as_string()
+        smtp_object.sendmail(email, "demetrimanias@gmail.com", text)
+        return True
+        
+    except smtplib.SMTPAuthenticationError as e:
+        logger.error(f"SMTP Authentication Error: {e}")
+        return False
+    except smtplib.SMTPException as e:
+        logger.error(f"SMTP Error: {e}")
+        return False
+    except Exception as e:
+        logger.error(f"Error sending email: {e}")
+        return False
+    finally:
+        if smtp_object:
+            try:
+                smtp_object.quit()
+            except:
+                pass
+
+def send_expense_paid_email(description, amount):
+    """
+    Send email notification of an expense payment for a specific expense
+    """
+    smtp_object = None
+    try:
+        # Create message
+        msg = MIMEMultipart()
+        msg['From'] = "demetrimanias@gmail.com"
+        msg['To'] = "demetrimanias@gmail.com"
+        msg['Subject'] = "Expense Payment"
+        
+        # Email body with proper formatting
+        body = f"""Dear Stella,
+
+Demetri has paid an expense.  The details are as follows:
+ • Description: {description}
+ • Amount: € {amount}
+
+Thanks,
+
+Alivente Property Management System"""
+        
+        msg.attach(MIMEText(body, 'plain'))
+        
+        # SMTP setup with more detailed error handling
+        smtp_object = smtplib.SMTP('smtp.gmail.com', 587)
+        smtp_object.ehlo()
+        smtp_object.starttls()
+        
+        email = "demetrimanias@gmail.com"
+        password = "nfvb been waqz wwks"
+        
+        smtp_object.login(email, password)
+        
+        # Send email
+        text = msg.as_string()
+        smtp_object.sendmail(email, "demetrimanias@gmail.com", text)
+        return True
+        
+    except smtplib.SMTPAuthenticationError as e:
+        logger.error(f"SMTP Authentication Error: {e}")
+        return False
+    except smtplib.SMTPException as e:
+        logger.error(f"SMTP Error: {e}")
+        return False
+    except Exception as e:
+        logger.error(f"Error sending email: {e}")
+        return False
+    finally:
+        if smtp_object:
+            try:
+                smtp_object.quit()
+            except:
+                pass
+
+def send_expense_approval_email_with_link(description, amount):
+    """
+    Send email notification for expense approval with link to specific expense
+    """
+    smtp_object = None
+    try:
+        # Create message
+        msg = MIMEMultipart()
+        msg['From'] = "demetrimanias@gmail.com"
+        msg['To'] = "demetrimanias@gmail.com"
+        msg['Subject'] = "Actual Expense Approval"
+        
+        # Email body with proper formatting
+        body = f"""Dear Demetri,
+
+Stella has created a new Actual Expense that requires your approval.  The details are as follows:
+ • Description: {description}
+ • Amount: € {amount}
+
+Thanks,
+
+Alivente Property Management System"""
+        
+        msg.attach(MIMEText(body, 'plain'))
+        
+        # SMTP setup with more detailed error handling
+        smtp_object = smtplib.SMTP('smtp.gmail.com', 587)
+        smtp_object.ehlo()
+        smtp_object.starttls()
+        
+        email = "demetrimanias@gmail.com"
+        password = "nfvb been waqz wwks"
+        
+        smtp_object.login(email, password)
+        
+        # Send email
+        text = msg.as_string()
+        smtp_object.sendmail(email, "demetrimanias@gmail.com", text)
+        return True
+        
+    except smtplib.SMTPAuthenticationError as e:
+        logger.error(f"SMTP Authentication Error: {e}")
+        return False
+    except smtplib.SMTPException as e:
+        logger.error(f"SMTP Error: {e}")
+        return False
+    except Exception as e:
+        logger.error(f"Error sending email: {e}")
+        return False
+    finally:
+        if smtp_object:
+            try:
+                smtp_object.quit()
+            except:
+                pass
+
 @login_required
 def act_expense_commit(request):
     if request.method == 'POST':
@@ -1393,9 +1634,9 @@ def act_expense_commit(request):
             expense_paid = request.POST.get('act_expense_paid', 'No')
             
             # Validate required fields
-            if not expense_date or not expense_description or not expense_amount:
+            if not expense_date or not expense_description or not expense_amount or not expense_prop:
                 messages.error(request, 'All fields are required.')
-                return redirect('act_expense_add')  # Replace with your add expense URL name
+                return redirect('act_expense_add')
             
             # Create and save the expense record
             expense = act_expense(
@@ -1406,12 +1647,21 @@ def act_expense_commit(request):
                 act_expense_paid=expense_paid,
                 prop_id=expense_prop
             )
-            print ("XXXXXXXXXXXXXXXXX")
             expense.save()
-            messages.success(request, 'Expense added successfully!')
-            return redirect('act_expense_all')  # Redirect to expense list
             
-        except ValueError:
+            # Check if user is StellaSimi and send email
+            if request.user.username == "StellaSimi":
+                email_sent = send_expense_approval_email_with_link(expense_description, expense_amount)
+                if email_sent:
+                    messages.success(request, 'Expense added successfully and approval email sent!')
+                else:
+                    messages.warning(request, 'Expense added successfully but failed to send approval email.')
+            else:
+                messages.success(request, 'Expense added successfully!')
+            
+            return redirect('act_expense_all')
+            
+        except ValueError as e:
             messages.error(request, 'Please enter a valid amount.')
             return redirect('act_expense_add')
         except Exception as e:

@@ -48,54 +48,98 @@ ALIVENTE ONLINE - FINANCE
       <div class="row">
         <!-- Revenue Types -->
         <div class="col-md-4 mb-3">
-          <a href="{% url 'finance_revenue_types' %}" class="btn btn-info btn-block py-2 finance-btn d-flex flex-column justify-content-center" style="height: 100px;">
-            <i class="fas fa-money-bill-wave fa-2x mb-2"></i>
-            <span class="font-weight-bold" style="font-size: 0.95rem">Revenue Types</span>
-          </a>
+          {% if user.username == 'admin' or user.username == 'Demetrios' or user.username == 'angy' %}
+            <a href="{% url 'finance_revenue_types' %}" class="btn btn-info btn-block py-2 finance-btn d-flex flex-column justify-content-center" style="height: 100px;">
+              <i class="fas fa-money-bill-wave fa-2x mb-2"></i>
+              <span class="font-weight-bold" style="font-size: 0.95rem">Revenue Types</span>
+            </a>
+          {% else %}
+            <div class="btn btn-secondary btn-block py-2 finance-btn d-flex flex-column justify-content-center" style="height: 100px; cursor: default;">
+              <i class="fas fa-money-bill-wave fa-2x mb-2 text-muted"></i>
+              <span class="font-weight-bold text-muted" style="font-size: 0.95rem">Revenue Types</span>
+            </div>
+          {% endif %}
         </div>
 
-        <!-- Revenue Line Types -->
+<!-- Revenue Line Types -->
         <div class="col-md-4 mb-3">
-          <a href="{% url 'finance_revenue_line_types' %}" 
-             class="btn btn-info btn-block py-2 finance-btn d-flex flex-column justify-content-center align-items-center text-center" 
-             style="height: 100px; white-space: normal;">
-            <i class="fas fa-list-alt fa-2x mb-2"></i>
-            <span class="font-weight-bold" style="font-size: 0.95rem; word-wrap: break-word;">Revenue Line Types</span>
-          </a>
+          {% if user.username == 'admin' or user.username == 'Demetrios' or user.username == 'angy' %}
+            <a href="{% url 'finance_revenue_line_types' %}" 
+               class="btn btn-info btn-block py-2 finance-btn d-flex flex-column justify-content-center align-items-center text-center" 
+               style="height: 100px; white-space: normal;">
+              <i class="fas fa-list-alt fa-2x mb-2"></i>
+              <span class="font-weight-bold" style="font-size: 0.95rem; word-wrap: break-word;">Revenue Line Types</span>
+            </a>
+          {% else %}
+            <div class="btn btn-secondary btn-block py-2 finance-btn d-flex flex-column justify-content-center align-items-center text-center" 
+                 style="height: 100px; white-space: normal; cursor: default;">
+              <i class="fas fa-list-alt fa-2x mb-2 text-muted"></i>
+              <span class="font-weight-bold text-muted" style="font-size: 0.95rem; word-wrap: break-word;">Revenue Line Types</span>
+            </div>
+          {% endif %}
         </div>
 
         <!-- Revenues -->
         <div class="col-md-4 mb-3">
-          <a href="{% url 'finance_revenue' %}" class="btn btn-info btn-block py-2 finance-btn d-flex flex-column justify-content-center" style="height: 100px;">
-            <i class="fas fa-cash-register fa-2x mb-2"></i>
-            <span class="font-weight-bold" style="font-size: 0.95rem">Revenues</span>
-          </a>
+          {% if user.username == 'admin' or user.username == 'Demetrios' or user.username == 'angy' %}
+            <a href="{% url 'finance_revenue' %}" class="btn btn-info btn-block py-2 finance-btn d-flex flex-column justify-content-center" style="height: 100px;">
+              <i class="fas fa-cash-register fa-2x mb-2"></i>
+              <span class="font-weight-bold" style="font-size: 0.95rem">Revenues</span>
+            </a>
+          {% else %}
+            <div class="btn btn-secondary btn-block py-2 finance-btn d-flex flex-column justify-content-center" style="height: 100px; cursor: default;">
+              <i class="fas fa-cash-register fa-2x mb-2 text-muted"></i>
+              <span class="font-weight-bold text-muted" style="font-size: 0.95rem">Revenues</span>
+            </div>
+          {% endif %}
         </div>
 
         <!-- Expense Types -->
         <div class="col-md-4 mb-3">
-          <a href="{% url 'finance_expense_types' %}" class="btn btn-info btn-block py-2 finance-btn d-flex flex-column justify-content-center" style="height: 100px;">
-            <i class="fas fa-receipt fa-2x mb-2"></i>
-            <span class="font-weight-bold" style="font-size: 0.95rem">Expense Types</span>
-          </a>
+          {% if user.username == 'admin' or user.username == 'Demetrios' or user.username == 'angy' %}
+            <a href="{% url 'finance_expense_types' %}" class="btn btn-info btn-block py-2 finance-btn d-flex flex-column justify-content-center" style="height: 100px;">
+              <i class="fas fa-receipt fa-2x mb-2"></i>
+              <span class="font-weight-bold" style="font-size: 0.95rem">Expense Types</span>
+            </a>
+          {% else %}
+            <div class="btn btn-secondary btn-block py-2 finance-btn d-flex flex-column justify-content-center" style="height: 100px; cursor: default;">
+              <i class="fas fa-receipt fa-2x mb-2 text-muted"></i>
+              <span class="font-weight-bold text-muted" style="font-size: 0.95rem">Expense Types</span>
+            </div>
+          {% endif %}
         </div>
         
         <!-- Expense Line Types -->
         <div class="col-md-4 mb-3">
-          <a href="{% url 'finance_expense_line_types' %}" 
-             class="btn btn-info btn-block py-2 finance-btn d-flex flex-column justify-content-center align-items-center text-center" 
-             style="height: 100px; white-space: normal;">
-            <i class="fas fa-tasks fa-2x mb-2"></i>
-            <span class="font-weight-bold" style="font-size: 0.95rem; word-wrap: break-word;">Expense Line Types</span>
-          </a>
+          {% if user.username == 'admin' or user.username == 'Demetrios' or user.username == 'angy' %}
+            <a href="{% url 'finance_expense_line_types' %}" 
+               class="btn btn-info btn-block py-2 finance-btn d-flex flex-column justify-content-center align-items-center text-center" 
+               style="height: 100px; white-space: normal;">
+              <i class="fas fa-tasks fa-2x mb-2"></i>
+              <span class="font-weight-bold" style="font-size: 0.95rem; word-wrap: break-word;">Expense Line Types</span>
+            </a>
+          {% else %}
+            <div class="btn btn-secondary btn-block py-2 finance-btn d-flex flex-column justify-content-center align-items-center text-center" 
+                 style="height: 100px; white-space: normal; cursor: default;">
+              <i class="fas fa-tasks fa-2x mb-2 text-muted"></i>
+              <span class="font-weight-bold text-muted" style="font-size: 0.95rem; word-wrap: break-word;">Expense Line Types</span>
+            </div>
+          {% endif %}
         </div>
         
         <!-- Expenses -->
         <div class="col-md-4 mb-3">
-          <a href="{% url 'finance_expense' %}" class="btn btn-info btn-block py-2 finance-btn d-flex flex-column justify-content-center" style="height: 100px;">
-            <i class="fas fa-file-invoice-dollar fa-2x mb-2"></i>
-            <span class="font-weight-bold" style="font-size: 0.95rem">Expenses</span>
-          </a>
+          {% if user.username == 'admin' or user.username == 'Demetrios' or user.username == 'angy' %}
+            <a href="{% url 'finance_expense' %}" class="btn btn-info btn-block py-2 finance-btn d-flex flex-column justify-content-center" style="height: 100px;">
+              <i class="fas fa-file-invoice-dollar fa-2x mb-2"></i>
+              <span class="font-weight-bold" style="font-size: 0.95rem">Expenses</span>
+            </a>
+          {% else %}
+            <div class="btn btn-secondary btn-block py-2 finance-btn d-flex flex-column justify-content-center" style="height: 100px; cursor: default;">
+              <i class="fas fa-file-invoice-dollar fa-2x mb-2 text-muted"></i>
+              <span class="font-weight-bold text-muted" style="font-size: 0.95rem">Expenses</span>
+            </div>
+          {% endif %}
         </div>
       </div>
     </div>
@@ -112,21 +156,35 @@ ALIVENTE ONLINE - FINANCE
           <div class="row">
             <!-- Actual Profit & Loss -->
             <div class="col-md-6 mb-3">
-              <a href="{% url 'finance_pl_act' %}" class="btn btn-info btn-block py-2 finance-btn d-flex flex-column justify-content-center" style="height: 100px;">
-                <i class="fas fa-chart-line fa-2x mb-2"></i>
-                <span class="font-weight-bold" style="font-size: 0.95rem">Actual Profit & Loss</span>
-              </a>
+              {% if user.username == 'admin' or user.username == 'Demetrios' or user.username == 'angy' %}
+                <a href="{% url 'finance_pl_act' %}" class="btn btn-info btn-block py-2 finance-btn d-flex flex-column justify-content-center" style="height: 100px;">
+                  <i class="fas fa-chart-line fa-2x mb-2"></i>
+                  <span class="font-weight-bold" style="font-size: 0.95rem">Actual Profit & Loss</span>
+                </a>
+              {% else %}
+                <div class="btn btn-secondary btn-block py-2 finance-btn d-flex flex-column justify-content-center" style="height: 100px; cursor: default;">
+                  <i class="fas fa-chart-line fa-2x mb-2 text-muted"></i>
+                  <span class="font-weight-bold text-muted" style="font-size: 0.95rem">Actual Profit & Loss</span>
+                </div>
+              {% endif %}
             </div>
             
             <!-- Budgeted Profit & Loss -->
             <div class="col-md-6 mb-3">
-              <a href="{% url 'finance_pl' %}" class="btn btn-info btn-block py-2 finance-btn d-flex flex-column justify-content-center" style="height: 100px;">
-                <i class="fas fa-chart-bar fa-2x mb-2"></i>
-                <span class="font-weight-bold" style="font-size: 0.95rem">Budgeted Profit & Loss</span>
-              </a>
+              {% if user.username == 'admin' or user.username == 'Demetrios' or user.username == 'angy' %}
+                <a href="{% url 'finance_pl' %}" class="btn btn-info btn-block py-2 finance-btn d-flex flex-column justify-content-center" style="height: 100px;">
+                  <i class="fas fa-chart-bar fa-2x mb-2"></i>
+                  <span class="font-weight-bold" style="font-size: 0.95rem">Budgeted Profit & Loss</span>
+                </a>
+              {% else %}
+                <div class="btn btn-secondary btn-block py-2 finance-btn d-flex flex-column justify-content-center" style="height: 100px; cursor: default;">
+                  <i class="fas fa-chart-bar fa-2x mb-2 text-muted"></i>
+                  <span class="font-weight-bold text-muted" style="font-size: 0.95rem">Budgeted Profit & Loss</span>
+                </div>
+              {% endif %}
             </div>
 
-            <!-- Actula Expenses -->
+            <!-- Actual Expenses -->
             <div class="col-md-6 mb-3">
               <a href="{% url 'act_expense_all' %}" class="btn btn-info btn-block py-2 finance-btn d-flex flex-column justify-content-center" style="height: 100px;">
                 <i class="fas fa-coins fa-2x mb-2"></i>
@@ -136,12 +194,18 @@ ALIVENTE ONLINE - FINANCE
 
             <!-- Property Valuations -->
             <div class="col-md-6 mb-3">
-              <a href="{% url 'finance_valuations' %}" class="btn btn-info btn-block py-2 finance-btn d-flex flex-column justify-content-center" style="height: 100px;">
-                <i class="fas fa-home fa-2x mb-2"></i>
-                <span class="font-weight-bold" style="font-size: 0.95rem">Property Valuations</span>
-              </a>
+              {% if user.username == 'admin' or user.username == 'Demetrios' or user.username == 'angy' %}
+                <a href="{% url 'finance_valuations' %}" class="btn btn-info btn-block py-2 finance-btn d-flex flex-column justify-content-center" style="height: 100px;">
+                  <i class="fas fa-home fa-2x mb-2"></i>
+                  <span class="font-weight-bold" style="font-size: 0.95rem">Property Valuations</span>
+                </a>
+              {% else %}
+                <div class="btn btn-secondary btn-block py-2 finance-btn d-flex flex-column justify-content-center" style="height: 100px; cursor: default;">
+                  <i class="fas fa-home fa-2x mb-2 text-muted"></i>
+                  <span class="font-weight-bold text-muted" style="font-size: 0.95rem">Property Valuations</span>
+                </div>
+              {% endif %}
             </div>
-
           </div>
         </div>
       </div>
