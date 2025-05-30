@@ -1305,12 +1305,8 @@ def properties_edit_commit(request, prop_id):
     # If not POST, redirect to properties page
     return redirect('properties')
 
-### ACTUAL EXPENSES ###
-from django.shortcuts import render
-from django.contrib.auth.decorators import login_required
-from datetime import datetime
-from .models import act_expense
 
+### ACTUAL EXPENSES ###
 @login_required
 def act_expense_all(request):
     # Get year/month from request or use current year as default
@@ -1336,9 +1332,6 @@ def act_expense_all(request):
     from_date = request.GET.get('from_date')
     to_date = request.GET.get('to_date')
     
-    print(from_date)
-    print(to_date)
-
     if from_date and to_date:
         expenses = expenses.filter(
             act_expense_date__gte=from_date,
@@ -1363,12 +1356,20 @@ def act_expense_view(request):
     selected_year = request.GET.get('year', datetime.now().year)
     selected_month = request.GET.get('month')
     from_finance_pl_act = request.GET.get('from_finance_pl_act', False)
+    property_id = request.GET.get('property_id')
     
     # Base queryset - only approved and paid expenses, ordered by date
     expenses = act_expense.objects.select_related('prop').filter(
         act_expense_approved="Yes",
         act_expense_paid="Yes"
     ).order_by('-act_expense_date')
+    
+    # Filter by property if specified
+    if property_id:
+        try:
+            expenses = expenses.filter(prop_id=int(property_id))
+        except (ValueError, TypeError):
+            pass  # Skip if property_id is invalid
     
     # Handle YEAR/MONTH filtering (convert to int safely)
     try:
@@ -1404,13 +1405,33 @@ def act_expense_view(request):
         'selected_month': month,
         'current_year': datetime.now().year,
         'available_years': [y.year for y in available_years],
-        'from_finance_pl_act': from_finance_pl_act
+        'from_finance_pl_act': from_finance_pl_act,
+        'selected_property_id': property_id
     })
 
 @login_required
 def act_expense_edit(request, expense_id):
-    # Your edit view logic here
-    pass
+    # Get the current expense being edited
+    current_expense = get_object_or_404(act_expense, pk=expense_id)
+    
+    # Get property details from props table
+    results = props.objects.all().order_by('prop_country','prop_name')
+
+    return render(request, "act_expense_edit.html", {
+        "props": results,
+        "current_expense": current_expense,
+    })
+
+@login_required
+def act_expense_edit_commit(request, expense_id):
+    a_exp = act_expense.objects.get(pk=expense_id)
+    if request.method == "POST":
+        form = ActExpenseForm(request.POST or None, instance=a_exp)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Expense Edited Successfully")
+#    expenses = act_expense.objects.select_related('prop').order_by('-act_expense_date')
+    return redirect('act_expense_all')
 
 @login_required
 def mark_approved(request, expense_id):

@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+{% endblock %}
+
+{% block content %}
+
+<h2><center>ALIVENTE ONLINE - ACTUAL EXPENSES</center></h2>
+<h4><center>EDIT EXISTING EXPENSE</center></h4>
+<br/>
+
+<form action = "{% url 'act_expense_edit_commit' current_expense.act_expense_id %}" method="post">
+  {% csrf_token %}
+  <div style="display: flex ; justify-content: flex-end">
+      <button class="btn btn-info" style="margin-right:16px" type="submit">Save</button>
+      <a href="{% url 'act_expense_all' %}" class="btn btn-info" style="margin-right:16px" role="button">Back</a>
+  </div>
+  <div class="form-row">
+    <div class="form-group col-md-2">
+      <label for="act_expense_date"><strong>Expense Date</strong></label>
+      <input placeholder="Expense Date" type="date" id="act_expense_date" class="form-control" name="act_expense_date" value = "{{current_expense.act_expense_date|date:'Y-m-d'}}" required>
+    </div>
+    <div class="form-group col-md-3">
+      <label for="prop"><strong>Property Name</strong></label>
+      <select id="prop" class="form-control" name="prop" required>
+        <option disabled>Select Property</option>
+        {% for results in props %}
+          {% if results.prop_id == current_expense.prop_id %}
+            <option selected value={{results.prop_id}}>{{results.prop_name}}</option>
+          {% else %}
+            <option value={{results.prop_id}}>{{results.prop_name}}</option>
+          {% endif %}
+        {% endfor %}
+      </select>
+    </div> 
+    <div class="form-group col-md-4">
+      <label for="act_expense_description"><strong>Expense Description</strong></label>
+      <input type="text" class="form-control" id="act_expense_description" name="act_expense_description" placeholder="Expense Description" maxlength="55" value = "{{current_expense.act_expense_description}}" required>
+    </div>
+    <div class="form-group col-md-3">
+      <label for="act_expense_amount"><strong>Amount</strong></label>
+      <input type="number" class="form-control" id="act_expense_amount" name="act_expense_amount" placeholder="Amount" step="0.01" value = "{{current_expense.act_expense_amount}}" required>
+    </div>
+    {% if user.username == 'admin' or user.username == 'Demetrios' or user.username == 'angy' %}
+        <!-- Editable fields for authorized users -->
+        <div class="form-group col-md-2">
+          <label for="act_expense_approved"><strong>Approved ?</strong></label>
+          <select id="act_expense_approved" class="form-control" name="act_expense_approved" required>
+              {% if current_expense.act_expense_approved == "Yes" %}
+                <option selected value="Yes">Yes</option>
+              {% else %}
+                <option value="Yes">Yes</option>
+              {% endif %}
+              {% if current_expense.act_expense_approved == "No" %}
+                <option selected value="No">No</option>
+              {% else %}
+                <option value="No">No</option>
+              {% endif %}
+          </select>
+        </div>
+        <div class="form-group col-md-2">
+          <label for="act_expense_paid"><strong>Paid ?</strong></label>
+          <select id="act_expense_paid" class="form-control" name="act_expense_paid" required>
+              {% if current_expense.act_expense_paid == "Yes" %}
+                <option selected value="Yes">Yes</option>
+              {% else %}
+                <option value="Yes">Yes</option>
+              {% endif %}
+              {% if current_expense.act_expense_paid == "No" %}
+                <option selected value="No">No</option>
+              {% else %}
+                <option value="No">No</option>
+              {% endif %}
+          </select>
+        </div>
+    {% else %}
+      <!-- Read-only display for other users -->
+      <div class="form-group col-md-2">
+        <label><strong>Approved ?</strong></label>
+        <div class="form-control">{{ current_expense.act_expense_approved }}</div>
+        <!-- Hidden input to maintain form structure if needed -->
+        <input type="hidden" name="act_expense_approved" value="{{ current_expense.act_expense_approved }}">
+      </div>
+      <div class="form-group col-md-2">
+        <label><strong>Paid ?</strong></label>
+        <div class="form-control">{{ current_expense.act_expense_paid }}</div>
+        <!-- Hidden input to maintain form structure if needed -->
+        <input type="hidden" name="act_expense_paid" value="{{ current_expense.act_expense_paid }}">
+      </div>
+    {% endif %}
+  </div>
+</form>
+{% endblock %}

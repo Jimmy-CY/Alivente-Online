@@ -92,7 +92,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <!-- REVENUE SECTION -->
+                    <!-- REVENUE SECTION for all properties -->
                     <tr class="section-header">
                         <td class="font-weight-bold" style="background-color: #17a2b8; color: white;">REVENUE</td>
                         <td colspan="14" style="background-color: #17a2b8;"></td>
@@ -138,13 +138,13 @@
                         <td class="text-right">{{ revenue_totals.year|divide:12|default:0|floatformat:"0"|intcomma }}</td>
                     </tr>
                     
-                    <!-- EXPENSES SECTION -->
+                    <!-- EXPENSES SECTION for all properties -->
                     <tr class="section-header">
                         <td class="font-weight-bold" style="background-color: #17a2b8; color: white;">EXPENSES</td>
                         <td colspan="14" style="background-color: #17a2b8;"></td>
                     </tr>
 
-                    <!-- ACTUAL EXPENSES ROW -->
+                    <!-- ACTUAL EXPENSES ROW for all properties -->
                     {% if actual_expense_totals.year > 0 %}
                     <tr style="background-color: #f8f9fa;">
                         <td>Actual Expenses</td>
@@ -281,13 +281,17 @@
                             {% endif %}
                         </td>
                         
-                        <!-- Year Total (Non-clickable) -->
-                        <td class="text-right font-weight-bold">{{ actual_expense_totals.year|floatformat:"0"|intcomma }}</td>
+                        <!-- Year Total (Clickable) -->
+                        <td class="text-right font-weight-bold">
+                            <a href="{% url 'act_expense_view' %}?year={{ selected_year|floatformat:"0" }}&from_finance_pl_act=true&prop={{ active_prop }}">
+                                {{ actual_expense_totals.year|floatformat:"0"|intcomma }}
+                            </a>
+                        </td>
                         <td class="text-right">{{ actual_expense_totals.year|divide:12|floatformat:"0"|intcomma }}</td>
                     </tr>
                     {% endif %}
 
-                    <!-- BUDGETED EXPENSES -->
+                    <!-- BUDGETED EXPENSES for all properties -->
                     {% for line_type in expense_line_types %}
                     {% with line_totals=expense_totals_by_line.all|get_item:line_type.expense_line_types_id %}
                     {% if line_totals.jan or line_totals.feb or line_totals.mar or line_totals.apr or line_totals.may or line_totals.jun or line_totals.jul or line_totals.aug or line_totals.sep or line_totals.oct or line_totals.nov or line_totals.dec or line_totals.total %}
@@ -311,51 +315,52 @@
                     {% endif %}
                     {% endwith %}
                     {% endfor %}
+                    <!-- TOTAL EXPENSES (Budgeted + Actual) for all properties -->
                     <tr class="font-weight-bold" style="background-color: #f8f9fa">
                         <td>TOTAL EXPENSES:</td>
-                        <td class="text-right">{{ expense_totals.jan|default:0|floatformat:"0"|intcomma }}</td>
-                        <td class="text-right">{{ expense_totals.feb|default:0|floatformat:"0"|intcomma }}</td>
-                        <td class="text-right">{{ expense_totals.mar|default:0|floatformat:"0"|intcomma }}</td>
-                        <td class="text-right">{{ expense_totals.apr|default:0|floatformat:"0"|intcomma }}</td>
-                        <td class="text-right">{{ expense_totals.may|default:0|floatformat:"0"|intcomma }}</td>
-                        <td class="text-right">{{ expense_totals.jun|default:0|floatformat:"0"|intcomma }}</td>
-                        <td class="text-right">{{ expense_totals.jul|default:0|floatformat:"0"|intcomma }}</td>
-                        <td class="text-right">{{ expense_totals.aug|default:0|floatformat:"0"|intcomma }}</td>
-                        <td class="text-right">{{ expense_totals.sep|default:0|floatformat:"0"|intcomma }}</td>
-                        <td class="text-right">{{ expense_totals.oct|default:0|floatformat:"0"|intcomma }}</td>
-                        <td class="text-right">{{ expense_totals.nov|default:0|floatformat:"0"|intcomma }}</td>
-                        <td class="text-right">{{ expense_totals.dec|default:0|floatformat:"0"|intcomma }}</td>
-                        <td class="text-right">{{ expense_totals.year|default:0|floatformat:"0"|intcomma }}</td>
-                        <td class="text-right">{{ expense_totals.year|divide:12|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ expense_totals.jan|add:actual_expense_totals.jan|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ expense_totals.feb|add:actual_expense_totals.feb|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ expense_totals.mar|add:actual_expense_totals.mar|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ expense_totals.apr|add:actual_expense_totals.apr|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ expense_totals.may|add:actual_expense_totals.may|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ expense_totals.jun|add:actual_expense_totals.jun|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ expense_totals.jul|add:actual_expense_totals.jul|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ expense_totals.aug|add:actual_expense_totals.aug|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ expense_totals.sep|add:actual_expense_totals.sep|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ expense_totals.oct|add:actual_expense_totals.oct|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ expense_totals.nov|add:actual_expense_totals.nov|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ expense_totals.dec|add:actual_expense_totals.dec|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ expense_totals.year|add:actual_expense_totals.year|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ expense_totals.year|add:actual_expense_totals.year|divide:12|default:0|floatformat:"0"|intcomma }}</td>
                     </tr>
                     
-                    <!-- PROFIT SECTION -->
+                    <!-- PROFIT SECTION for all properties -->
                     <tr class="section-header">
                         <td class="font-weight-bold" style="background-color: #17a2b8; color: white;">PROFIT</td>
                         <td colspan="14" style="background-color: #17a2b8;"></td>
                     </tr>
                     <tr class="font-weight-bold" style="background-color: #f8f9fa">
                         <td>NET PROFIT:</td>
-                        <td class="text-right">{{ profit_totals.jan|default:0|floatformat:"0"|intcomma }}</td>
-                        <td class="text-right">{{ profit_totals.feb|default:0|floatformat:"0"|intcomma }}</td>
-                        <td class="text-right">{{ profit_totals.mar|default:0|floatformat:"0"|intcomma }}</td>
-                        <td class="text-right">{{ profit_totals.apr|default:0|floatformat:"0"|intcomma }}</td>
-                        <td class="text-right">{{ profit_totals.may|default:0|floatformat:"0"|intcomma }}</td>
-                        <td class="text-right">{{ profit_totals.jun|default:0|floatformat:"0"|intcomma }}</td>
-                        <td class="text-right">{{ profit_totals.jul|default:0|floatformat:"0"|intcomma }}</td>
-                        <td class="text-right">{{ profit_totals.aug|default:0|floatformat:"0"|intcomma }}</td>
-                        <td class="text-right">{{ profit_totals.sep|default:0|floatformat:"0"|intcomma }}</td>
-                        <td class="text-right">{{ profit_totals.oct|default:0|floatformat:"0"|intcomma }}</td>
-                        <td class="text-right">{{ profit_totals.nov|default:0|floatformat:"0"|intcomma }}</td>
-                        <td class="text-right">{{ profit_totals.dec|default:0|floatformat:"0"|intcomma }}</td>
-                        <td class="text-right">{{ profit_totals.year|default:0|floatformat:"0"|intcomma }}</td>
-                        <td class="text-right">{{ profit_totals.year|divide:12|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ revenue_totals.jan|subtract:expense_totals.jan|subtract:actual_expense_totals.jan|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ revenue_totals.feb|subtract:expense_totals.feb|subtract:actual_expense_totals.feb|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ revenue_totals.mar|subtract:expense_totals.mar|subtract:actual_expense_totals.mar|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ revenue_totals.apr|subtract:expense_totals.apr|subtract:actual_expense_totals.apr|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ revenue_totals.may|subtract:expense_totals.may|subtract:actual_expense_totals.may|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ revenue_totals.jun|subtract:expense_totals.jun|subtract:actual_expense_totals.jun|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ revenue_totals.jul|subtract:expense_totals.jul|subtract:actual_expense_totals.jul|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ revenue_totals.aug|subtract:expense_totals.aug|subtract:actual_expense_totals.aug|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ revenue_totals.sep|subtract:expense_totals.sep|subtract:actual_expense_totals.sep|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ revenue_totals.oct|subtract:expense_totals.oct|subtract:actual_expense_totals.oct|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ revenue_totals.nov|subtract:expense_totals.nov|subtract:actual_expense_totals.nov|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ revenue_totals.dec|subtract:expense_totals.dec|subtract:actual_expense_totals.dec|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ revenue_totals.year|subtract:expense_totals.year|subtract:actual_expense_totals.year|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">{{ revenue_totals.year|subtract:expense_totals.year|subtract:actual_expense_totals.year|divide:12|default:0|floatformat:"0"|intcomma }}</td>
                     </tr>
                 </tbody>
             </table>
         </div>
 
-        <!-- CONSOLIDATED ROI CALCULATIONS -->
+        <!-- CONSOLIDATED ROI CALCULATIONS for all properties-->
         <div class="roi-section mt-3">
             <h6 class="section-title" style="background-color: #17a2b8; color: white; padding: 8px; border-radius: 4px; width: fit-content;">CONSOLIDATED FINANCIAL INDICATORS</h6>
             <div style="display: flex; gap: 10px; flex-wrap: wrap;">
@@ -381,7 +386,7 @@
                         {% with total_expense=expense_totals.year %}
                         {% with total_purchase=properties|sum_purchase_prices %}
                         {% if total_purchase > 0 %}
-                            {{ total_revenue|subtract:total_expense|divide:total_purchase|multiply:100|floatformat:"2" }}%
+                            {{ total_revenue|subtract:total_expense|subtract:actual_expense_totals.year|divide:total_purchase|multiply:100|floatformat:"2" }}%
                         {% else %}
                             N/A
                         {% endif %}
@@ -397,7 +402,7 @@
                         {% with total_revenue=revenue_totals.year %}
                         {% with total_expense=expense_totals.year %}
                         {% if total_revenue > 0 %}
-                            {{ total_expense|divide:total_revenue|multiply:100|floatformat:"2" }}%
+                            {{ total_expense|add:actual_expense_totals.year|divide:total_revenue|multiply:100|floatformat:"2" }}%
                         {% else %}
                             N/A
                         {% endif %}
@@ -466,7 +471,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    <!-- REVENUE SECTION -->
+                                    <!-- REVENUE SECTION for specific property -->
                                     <tr class="section-header">
                                         <td class="font-weight-bold" style="background-color: #17a2b8; color: white;">REVENUE</td>
                                         <td colspan="14" style="background-color: #17a2b8;"></td>
@@ -514,34 +519,162 @@
                                         {% endwith %}
                                     </tr>
                                     
-                                    <!-- EXPENSES SECTION -->
+                                    <!-- EXPENSES SECTION for specific property -->
                                     <tr class="section-header">
                                         <td class="font-weight-bold" style="background-color: #17a2b8; color: white;">EXPENSES</td>
                                         <td colspan="14" style="background-color: #17a2b8;"></td>
                                     </tr>
-                                    <!-- ACTUAL EXPENSES ROW FOR PROPERTY -->
+
+                                    <!-- ACTUAL EXPENSES ROW for specific property -->
                                     {% with prop_actual_expenses=actual_expense_prop_totals|get_item:prop.prop_id %}
                                     {% if prop_actual_expenses.year > 0 %}
                                     <tr style="background-color: #f8f9fa;">
                                         <td>Actual Expenses</td>
-                                        <td class="text-right">{{ prop_actual_expenses.jan|default:0|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right">{{ prop_actual_expenses.feb|default:0|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right">{{ prop_actual_expenses.mar|default:0|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right">{{ prop_actual_expenses.apr|default:0|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right">{{ prop_actual_expenses.may|default:0|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right">{{ prop_actual_expenses.jun|default:0|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right">{{ prop_actual_expenses.jul|default:0|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right">{{ prop_actual_expenses.aug|default:0|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right">{{ prop_actual_expenses.sep|default:0|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right">{{ prop_actual_expenses.oct|default:0|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right">{{ prop_actual_expenses.nov|default:0|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right">{{ prop_actual_expenses.dec|default:0|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right font-weight-bold">{{ prop_actual_expenses.year|default:0|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right">{{ prop_actual_expenses.year|divide:12|default:0|floatformat:"0"|intcomma }}</td>
+                                        
+                                        <!-- January -->
+                                        <td class="text-right">
+                                            {% if prop_actual_expenses.jan %}
+                                                <a href="{% url 'act_expense_view' %}?year={{ selected_year }}&month=1&property_id={{ prop.prop_id }}&from_finance_pl_act=true">
+                                                    {{ prop_actual_expenses.jan|floatformat:"0"|intcomma }}
+                                                </a>
+                                            {% else %}
+                                                0
+                                            {% endif %}
+                                        </td>
+                                        
+                                        <!-- February -->
+                                        <td class="text-right">
+                                            {% if prop_actual_expenses.feb %}
+                                                <a href="{% url 'act_expense_view' %}?year={{ selected_year }}&month=2&property_id={{ prop.prop_id }}&from_finance_pl_act=true">
+                                                    {{ prop_actual_expenses.feb|floatformat:"0"|intcomma }}
+                                                </a>
+                                            {% else %}
+                                                0
+                                            {% endif %}
+                                        </td>
+                                        
+                                        <!-- March -->
+                                        <td class="text-right">
+                                            {% if prop_actual_expenses.mar %}
+                                                <a href="{% url 'act_expense_view' %}?year={{ selected_year }}&month=3&property_id={{ prop.prop_id }}&from_finance_pl_act=true">
+                                                    {{ prop_actual_expenses.mar|floatformat:"0"|intcomma }}
+                                                </a>
+                                            {% else %}
+                                                0
+                                            {% endif %}
+                                        </td>
+                                        
+                                        <!-- April -->
+                                        <td class="text-right">
+                                            {% if prop_actual_expenses.apr %}
+                                                <a href="{% url 'act_expense_view' %}?year={{ selected_year }}&month=4&property_id={{ prop.prop_id }}&from_finance_pl_act=true">
+                                                    {{ prop_actual_expenses.apr|floatformat:"0"|intcomma }}
+                                                </a>
+                                            {% else %}
+                                                0
+                                            {% endif %}
+                                        </td>
+                                        
+                                        <!-- May -->
+                                        <td class="text-right">
+                                            {% if prop_actual_expenses.may %}
+                                                <a href="{% url 'act_expense_view' %}?year={{ selected_year }}&month=5&property_id={{ prop.prop_id }}&from_finance_pl_act=true">
+                                                    {{ prop_actual_expenses.may|floatformat:"0"|intcomma }}
+                                                </a>
+                                            {% else %}
+                                                0
+                                            {% endif %}
+                                        </td>
+                                        
+                                        <!-- June -->
+                                        <td class="text-right">
+                                            {% if prop_actual_expenses.jun %}
+                                                <a href="{% url 'act_expense_view' %}?year={{ selected_year }}&month=6&property_id={{ prop.prop_id }}&from_finance_pl_act=true">
+                                                    {{ prop_actual_expenses.jun|floatformat:"0"|intcomma }}
+                                                </a>
+                                            {% else %}
+                                                0
+                                            {% endif %}
+                                        </td>
+                                        
+                                        <!-- July -->
+                                        <td class="text-right">
+                                            {% if prop_actual_expenses.jul %}
+                                                <a href="{% url 'act_expense_view' %}?year={{ selected_year }}&month=7&property_id={{ prop.prop_id }}&from_finance_pl_act=true">
+                                                    {{ prop_actual_expenses.jul|floatformat:"0"|intcomma }}
+                                                </a>
+                                            {% else %}
+                                                0
+                                            {% endif %}
+                                        </td>
+                                        
+                                        <!-- August -->
+                                        <td class="text-right">
+                                            {% if prop_actual_expenses.aug %}
+                                                <a href="{% url 'act_expense_view' %}?year={{ selected_year }}&month=8&property_id={{ prop.prop_id }}&from_finance_pl_act=true">
+                                                    {{ prop_actual_expenses.aug|floatformat:"0"|intcomma }}
+                                                </a>
+                                            {% else %}
+                                                0
+                                            {% endif %}
+                                        </td>
+                                        
+                                        <!-- September -->
+                                        <td class="text-right">
+                                            {% if prop_actual_expenses.sep %}
+                                                <a href="{% url 'act_expense_view' %}?year={{ selected_year }}&month=9&property_id={{ prop.prop_id }}&from_finance_pl_act=true">
+                                                    {{ prop_actual_expenses.sep|floatformat:"0"|intcomma }}
+                                                </a>
+                                            {% else %}
+                                                0
+                                            {% endif %}
+                                        </td>
+                                        
+                                        <!-- October -->
+                                        <td class="text-right">
+                                            {% if prop_actual_expenses.oct %}
+                                                <a href="{% url 'act_expense_view' %}?year={{ selected_year }}&month=10&property_id={{ prop.prop_id }}&from_finance_pl_act=true">
+                                                    {{ prop_actual_expenses.oct|floatformat:"0"|intcomma }}
+                                                </a>
+                                            {% else %}
+                                                0
+                                            {% endif %}
+                                        </td>
+                                        
+                                        <!-- November -->
+                                        <td class="text-right">
+                                            {% if prop_actual_expenses.nov %}
+                                                <a href="{% url 'act_expense_view' %}?year={{ selected_year }}&month=11&property_id={{ prop.prop_id }}&from_finance_pl_act=true">
+                                                    {{ prop_actual_expenses.nov|floatformat:"0"|intcomma }}
+                                                </a>
+                                            {% else %}
+                                                0
+                                            {% endif %}
+                                        </td>
+                                        
+                                        <!-- December -->
+                                        <td class="text-right">
+                                            {% if prop_actual_expenses.dec %}
+                                                <a href="{% url 'act_expense_view' %}?year={{ selected_year }}&month=12&property_id={{ prop.prop_id }}&from_finance_pl_act=true">
+                                                    {{ prop_actual_expenses.dec|floatformat:"0"|intcomma }}
+                                                </a>
+                                            {% else %}
+                                                0
+                                            {% endif %}
+                                        </td>
+                                        
+                                        <!-- Year Total -->
+                                        <td class="text-right font-weight-bold">
+                                            <a href="{% url 'act_expense_view' %}?year={{ selected_year }}&property_id={{ prop.prop_id }}&from_finance_pl_act=true">
+                                                {{ prop_actual_expenses.year|floatformat:"0"|intcomma }}
+                                            </a>
+                                        </td>
+                                        <td class="text-right">{{ prop_actual_expenses.year|divide:12|floatformat:"0"|intcomma }}</td>
                                     </tr>
                                     {% endif %}
                                     {% endwith %}
-                                    <!-- BUDGETED EXPENSES FOR PROPERTY -->
+
+                                    <!-- BUDGETED EXPENSES for specific property -->
                                     {% for line_type in expense_line_types %}
                                     {% with line_totals=expense_totals_by_line|get_item:prop.prop_id|get_item:line_type.expense_line_types_id %}
                                     {% if line_totals.jan or line_totals.feb or line_totals.mar or line_totals.apr or line_totals.may or line_totals.jun or line_totals.jul or line_totals.aug or line_totals.sep or line_totals.oct or line_totals.nov or line_totals.dec or line_totals.total %}
@@ -568,24 +701,27 @@
                                     <tr class="font-weight-bold" style="background-color: #f8f9fa">
                                         <td>TOTAL EXPENSES:</td>
                                         {% with prop_total=expense_prop_totals|get_item:prop.prop_id %}
-                                        <td class="text-right">{{ prop_total.jan|default:0|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right">{{ prop_total.feb|default:0|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right">{{ prop_total.mar|default:0|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right">{{ prop_total.apr|default:0|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right">{{ prop_total.may|default:0|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right">{{ prop_total.jun|default:0|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right">{{ prop_total.jul|default:0|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right">{{ prop_total.aug|default:0|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right">{{ prop_total.sep|default:0|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right">{{ prop_total.oct|default:0|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right">{{ prop_total.nov|default:0|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right">{{ prop_total.dec|default:0|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right">{{ prop_total.year|default:0|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right">{{ prop_total.year|divide:12|default:0|floatformat:"0"|intcomma }}</td>
+                                        {% with prop_actual_expenses=actual_expense_prop_totals|get_item:prop.prop_id %}
+                                        <td class="text-right">{{ prop_total.jan|add:prop_actual_expenses.jan|default:0|floatformat:"0"|intcomma }}</td>
+                                        <td class="text-right">{{ prop_total.feb|add:prop_actual_expenses.feb|default:0|floatformat:"0"|intcomma }}</td>
+                                        <td class="text-right">{{ prop_total.mar|add:prop_actual_expenses.mar|default:0|floatformat:"0"|intcomma }}</td>
+                                        <td class="text-right">{{ prop_total.apr|add:prop_actual_expenses.apr|default:0|floatformat:"0"|intcomma }}</td>
+                                        <td class="text-right">{{ prop_total.may|add:prop_actual_expenses.may|default:0|floatformat:"0"|intcomma }}</td>
+                                        <td class="text-right">{{ prop_total.jun|add:prop_actual_expenses.jun|default:0|floatformat:"0"|intcomma }}</td>
+                                        <td class="text-right">{{ prop_total.jul|add:prop_actual_expenses.jul|default:0|floatformat:"0"|intcomma }}</td>
+                                        <td class="text-right">{{ prop_total.aug|add:prop_actual_expenses.aug|default:0|floatformat:"0"|intcomma }}</td>
+                                        <td class="text-right">{{ prop_total.sep|add:prop_actual_expenses.sep|default:0|floatformat:"0"|intcomma }}</td>
+                                        <td class="text-right">{{ prop_total.oct|add:prop_actual_expenses.oct|default:0|floatformat:"0"|intcomma }}</td>
+                                        <td class="text-right">{{ prop_total.nov|add:prop_actual_expenses.nov|default:0|floatformat:"0"|intcomma }}</td>
+                                        <td class="text-right">{{ prop_total.dec|add:prop_actual_expenses.dec|default:0|floatformat:"0"|intcomma }}</td>
+                                        <td class="text-right">{{ prop_total.year|add:prop_actual_expenses.year|default:0|floatformat:"0"|intcomma }}</td>
+                                        <td class="text-right">{{ prop_total.year|add:prop_actual_expenses.year|divide:12|default:0|floatformat:"0"|intcomma }}</td>
+                                        {% endwith %}
                                         {% endwith %}
                                     </tr>
+
                                     
-                                    <!-- PROFIT SECTION -->
+                                    <!-- PROFIT SECTION for specific property -->
                                     <tr class="section-header">
                                         <td class="font-weight-bold" style="background-color: #17a2b8; color: white;">PROFIT</td>
                                         <td colspan="14" style="background-color: #17a2b8;"></td>
@@ -594,20 +730,22 @@
                                         <td>NET PROFIT:</td>
                                         {% with prop_revenue=revenue_prop_totals|get_item:prop.prop_id %}
                                         {% with prop_expense=expense_prop_totals|get_item:prop.prop_id %}
-                                        <td class="text-right">{{ prop_revenue.jan|subtract:prop_expense.jan|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right">{{ prop_revenue.feb|subtract:prop_expense.feb|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right">{{ prop_revenue.mar|subtract:prop_expense.mar|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right">{{ prop_revenue.apr|subtract:prop_expense.apr|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right">{{ prop_revenue.may|subtract:prop_expense.may|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right">{{ prop_revenue.jun|subtract:prop_expense.jun|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right">{{ prop_revenue.jul|subtract:prop_expense.jul|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right">{{ prop_revenue.aug|subtract:prop_expense.aug|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right">{{ prop_revenue.sep|subtract:prop_expense.sep|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right">{{ prop_revenue.oct|subtract:prop_expense.oct|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right">{{ prop_revenue.nov|subtract:prop_expense.nov|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right">{{ prop_revenue.dec|subtract:prop_expense.dec|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right">{{ prop_revenue.year|subtract:prop_expense.year|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right">{{ prop_revenue.year|subtract:prop_expense.year|divide:12|floatformat:"0"|intcomma }}</td>
+                                        {% with prop_actual=actual_expense_prop_totals|get_item:prop.prop_id %}
+                                        <td class="text-right">{{ prop_revenue.jan|subtract:prop_expense.jan|subtract:prop_actual.jan|default:0|floatformat:"0"|intcomma }}</td>
+                                        <td class="text-right">{{ prop_revenue.feb|subtract:prop_expense.feb|subtract:prop_actual.feb|default:0|floatformat:"0"|intcomma }}</td>
+                                        <td class="text-right">{{ prop_revenue.mar|subtract:prop_expense.mar|subtract:prop_actual.mar|default:0|floatformat:"0"|intcomma }}</td>
+                                        <td class="text-right">{{ prop_revenue.apr|subtract:prop_expense.apr|subtract:prop_actual.apr|default:0|floatformat:"0"|intcomma }}</td>
+                                        <td class="text-right">{{ prop_revenue.may|subtract:prop_expense.may|subtract:prop_actual.may|default:0|floatformat:"0"|intcomma }}</td>
+                                        <td class="text-right">{{ prop_revenue.jun|subtract:prop_expense.jun|subtract:prop_actual.jun|default:0|floatformat:"0"|intcomma }}</td>
+                                        <td class="text-right">{{ prop_revenue.jul|subtract:prop_expense.jul|subtract:prop_actual.jul|default:0|floatformat:"0"|intcomma }}</td>
+                                        <td class="text-right">{{ prop_revenue.aug|subtract:prop_expense.aug|subtract:prop_actual.aug|default:0|floatformat:"0"|intcomma }}</td>
+                                        <td class="text-right">{{ prop_revenue.sep|subtract:prop_expense.sep|subtract:prop_actual.sep|default:0|floatformat:"0"|intcomma }}</td>
+                                        <td class="text-right">{{ prop_revenue.oct|subtract:prop_expense.oct|subtract:prop_actual.oct|default:0|floatformat:"0"|intcomma }}</td>
+                                        <td class="text-right">{{ prop_revenue.nov|subtract:prop_expense.nov|subtract:prop_actual.nov|default:0|floatformat:"0"|intcomma }}</td>
+                                        <td class="text-right">{{ prop_revenue.dec|subtract:prop_expense.dec|subtract:prop_actual.dec|default:0|floatformat:"0"|intcomma }}</td>
+                                        <td class="text-right">{{ prop_revenue.year|subtract:prop_expense.year|subtract:prop_actual.year|default:0|floatformat:"0"|intcomma }}</td>
+                                        <td class="text-right">{{ prop_revenue.year|subtract:prop_expense.year|subtract:prop_actual.year|divide:12|default:0|floatformat:"0"|intcomma }}</td>
+                                        {% endwith %}
                                         {% endwith %}
                                         {% endwith %}
                                     </tr>
@@ -615,7 +753,7 @@
                             </table>
                         </div>
                         
-                        <!-- ROI CALCULATIONS -->
+                        <!-- ROI CALCULATIONS for specific property -->
                         <div class="roi-section mt-3">
                             <h6 class="section-title" style="background-color: #17a2b8; color: white; padding: 8px; border-radius: 4px; width: fit-content;">FINANCIAL INDICATORS</h6>
                             
@@ -634,31 +772,41 @@
                                     </span>
                                 </div>
                                 
+                                <!-- NET ROI - Updated to include actual expenses -->
                                 <div style="background-color: #f8f9fa; padding: 8px; border-radius: 4px; width: fit-content; border: 1.5px solid #dee2e6;">
                                     <span class="font-weight-bold">Net ROI: 
                                         {% with prop_revenue=revenue_prop_totals|get_item:prop.prop_id %}
                                         {% with prop_expense=expense_prop_totals|get_item:prop.prop_id %}
+                                        {% with prop_actual=actual_expense_prop_totals|get_item:prop.prop_id %}
                                         {% with current_value=prop.prop_values_set.first.prop_values_purchase_price %}
                                         {% if current_value %}
-                                            {{ prop_revenue.year|subtract:prop_expense.year|divide:current_value|multiply:100|floatformat:"2" }}%
+                                            {% with net_profit=prop_revenue.year|subtract:prop_expense.year|subtract:prop_actual.year|default:0 %}
+                                                {{ net_profit|divide:current_value|multiply:100|floatformat:"2" }}%
+                                            {% endwith %}
                                         {% else %}
                                             0.00%
                                         {% endif %}
+                                        {% endwith %}
                                         {% endwith %}
                                         {% endwith %}
                                         {% endwith %}
                                     </span>
                                 </div>
-                                
+
+                                <!-- EXPENSE RATIO - Updated to include actual expenses -->
                                 <div style="background-color: #f8f9fa; padding: 8px; border-radius: 4px; width: fit-content; border: 1.5px solid #dee2e6;">
                                     <span class="font-weight-bold">Expenses to Revenue: 
                                         {% with prop_revenue=revenue_prop_totals|get_item:prop.prop_id %}
                                         {% with prop_expense=expense_prop_totals|get_item:prop.prop_id %}
+                                        {% with prop_actual=actual_expense_prop_totals|get_item:prop.prop_id %}
                                         {% if prop_revenue.year %}
-                                            {{ prop_expense.year|divide:prop_revenue.year|multiply:100|floatformat:"2" }}%
+                                            {% with total_expenses=prop_expense.year|add:prop_actual.year|default:0 %}
+                                                {{ total_expenses|divide:prop_revenue.year|multiply:100|floatformat:"2" }}%
+                                            {% endwith %}
                                         {% else %}
                                             0.00%
                                         {% endif %}
+                                        {% endwith %}
                                         {% endwith %}
                                         {% endwith %}
                                     </span>
