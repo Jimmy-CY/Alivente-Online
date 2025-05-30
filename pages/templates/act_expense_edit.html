@@ -42,7 +42,7 @@
       <label for="act_expense_amount"><strong>Amount</strong></label>
       <input type="number" class="form-control" id="act_expense_amount" name="act_expense_amount" placeholder="Amount" step="0.01" value = "{{current_expense.act_expense_amount}}" required>
     </div>
-    {% if user.username == 'admin' or user.username == 'Demetrios' or user.username == 'angy' %}
+    {% if user.is_superuser %}
         <!-- Editable fields for authorized users -->
         <div class="form-group col-md-2">
           <label for="act_expense_approved"><strong>Approved ?</strong></label>

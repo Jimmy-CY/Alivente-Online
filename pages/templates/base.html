@@ -43,7 +43,7 @@
             <li class="nav-item">
               <a class="nav-link" href="{% url 'petty_cash' %}">Petty Cash</a>
             </li>
-            {% if user.username == 'admin' or user.username == 'Demetrios' or user.username == 'angy' %}
+            {% if user.is_superuser %}
               <li class="nav-item">
                   <a class="nav-link" href="{% url 'invoices' %}">Invoices</a>
               </li>
@@ -51,7 +51,10 @@
               <li class="nav-item">
                   <span class="nav-link text-muted" style="cursor: default;">Invoices</span>
               </li>
-              {% endif %}
+            {% endif %}
+            <li class="nav-item">
+              <a class="nav-link" href="{% url 'act_expense_all' %}?from=home">Expenses</a>
+            </li>
             <li class="nav-item">
               <a class="nav-link" href="{% url 'fsr' %}">Issues</a>
             </li>
@@ -62,11 +65,17 @@
         <ul class="navbar-nav ml-auto">
           
           {% if user.is_authenticated %}
+              {% if user.is_superuser %}
               <li class="nav-item">
                   <a class="nav-link" href="{% url 'finance' %}">Finance</a>
               </li>
+              {% else %}
+              <li class="nav-item">
+                  <span class="nav-link text-muted" style="cursor: default;">Finance</span>
+              </li>
+              {% endif %}
 
-              {% if user.username == 'admin' or user.username == 'Demetrios' or user.username == 'angy' %}
+              {% if user.is_superuser %}
               <li class="nav-item">
                   <a class="nav-link" href="{% url 'admin_apms' %}">Admin</a>
               </li>

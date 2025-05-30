@@ -7,6 +7,25 @@ Home
 
 {% block content %}
 
+  {% for msg in messages %}
+    <div class="alert alert-secondary alert-dismissible fade show auto-dismiss" role="alert">
+      <strong></strong> <center>{{ msg }}</center>
+      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+    <script>
+      // Automatically close the alert after 3 seconds (3000 milliseconds)
+      setTimeout(function() {
+        document.querySelectorAll('.auto-dismiss').forEach(alert => {
+          alert.classList.remove('show'); // Hide alert visually
+          alert.classList.add('fade'); // Add fade effect
+          setTimeout(() => alert.remove(), 500); // Remove from DOM after fade
+        });
+      }, 2000);
+    </script>
+  {% endfor %}
+
 {% if not user.is_authenticated %}
   <!-- Show logo when logged out -->
   <div class="text-center my-4">
@@ -50,7 +69,7 @@ Home
       </div>
 
       <!-- Invoices Button (Conditional) -->
-      {% if user.username == 'admin' or user.username == 'Demetrios' or user.username == 'angy' %}
+      {% if user.is_superuser %}
       <div class="col-6 col-md-3 mb-3">
         <a href="{% url 'invoices' %}" class="btn btn-info btn-block py-2 py-md-3 home-module-btn">
           <i class="fas fa-file-invoice fa-2x mb-2"></i>
@@ -66,6 +85,14 @@ Home
       </div>
       {% endif %}
 
+      <!-- Expenses Button -->
+      <div class="col-6 col-md-3 mb-3">
+        <a href="{% url 'act_expense_all' %}?from=home" class="btn btn-info btn-block py-2 py-md-3 home-module-btn">
+          <i class="fas fa-coins fa-2x mb-2"></i>
+          <h4>Expenses</h4>
+        </a>
+      </div>
+
       <!-- Issues Button -->
       <div class="col-6 col-md-3 mb-3">
         <a href="{% url 'fsr' %}" class="btn btn-info btn-block py-2 py-md-3 home-module-btn">
@@ -75,27 +102,18 @@ Home
       </div>
 
       <!-- Finance Button (Conditional) -->
-
+      {% if user.is_superuser %}
       <div class="col-6 col-md-3 mb-3">
         <a href="{% url 'finance' %}" class="btn btn-info btn-block py-2 py-md-3 home-module-btn">
           <i class="fas fa-chart-line fa-2x mb-2"></i>
           <h4>Finance</h4>
         </a>
       </div>
-
-      <!-- Admin Button (Conditional) -->
-      {% if user.username == 'admin' or user.username == 'Demetrios' or user.username == 'angy' %}
-      <div class="col-6 col-md-3 mb-3">
-        <a href="{% url 'admin_apms' %}" class="btn btn-info btn-block py-2 py-md-3 home-module-btn">
-          <i class="fas fa-user-gear fa-2x mb-2"></i>
-          <h4>Admin</h4>
-        </a>
-      </div>
       {% else %}
       <div class="col-6 col-md-3 mb-3">
         <button class="btn btn-secondary btn-block py-2 py-md-3 home-module-btn" disabled>
-          <i class="fas fa-user-gear fa-2x mb-2"></i>
-          <h4>Admin</h4>
+          <i class="fas fa-chart-line fa-2x mb-2"></i>
+          <h4>Finance</h4>
         </button>
       </div>
       {% endif %}

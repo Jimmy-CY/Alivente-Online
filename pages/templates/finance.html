@@ -48,7 +48,7 @@ ALIVENTE ONLINE - FINANCE
       <div class="row">
         <!-- Revenue Types -->
         <div class="col-md-4 mb-3">
-          {% if user.username == 'admin' or user.username == 'Demetrios' or user.username == 'angy' %}
+          {% if user.is_superuser %}
             <a href="{% url 'finance_revenue_types' %}" class="btn btn-info btn-block py-2 finance-btn d-flex flex-column justify-content-center" style="height: 100px;">
               <i class="fas fa-money-bill-wave fa-2x mb-2"></i>
               <span class="font-weight-bold" style="font-size: 0.95rem">Revenue Types</span>
@@ -63,7 +63,7 @@ ALIVENTE ONLINE - FINANCE
 
 <!-- Revenue Line Types -->
         <div class="col-md-4 mb-3">
-          {% if user.username == 'admin' or user.username == 'Demetrios' or user.username == 'angy' %}
+          {% if user.is_superuser %}
             <a href="{% url 'finance_revenue_line_types' %}" 
                class="btn btn-info btn-block py-2 finance-btn d-flex flex-column justify-content-center align-items-center text-center" 
                style="height: 100px; white-space: normal;">
@@ -81,7 +81,7 @@ ALIVENTE ONLINE - FINANCE
 
         <!-- Revenues -->
         <div class="col-md-4 mb-3">
-          {% if user.username == 'admin' or user.username == 'Demetrios' or user.username == 'angy' %}
+          {% if user.is_superuser %}
             <a href="{% url 'finance_revenue' %}" class="btn btn-info btn-block py-2 finance-btn d-flex flex-column justify-content-center" style="height: 100px;">
               <i class="fas fa-cash-register fa-2x mb-2"></i>
               <span class="font-weight-bold" style="font-size: 0.95rem">Revenues</span>
@@ -96,7 +96,7 @@ ALIVENTE ONLINE - FINANCE
 
         <!-- Expense Types -->
         <div class="col-md-4 mb-3">
-          {% if user.username == 'admin' or user.username == 'Demetrios' or user.username == 'angy' %}
+          {% if user.is_superuser %}
             <a href="{% url 'finance_expense_types' %}" class="btn btn-info btn-block py-2 finance-btn d-flex flex-column justify-content-center" style="height: 100px;">
               <i class="fas fa-receipt fa-2x mb-2"></i>
               <span class="font-weight-bold" style="font-size: 0.95rem">Expense Types</span>
@@ -111,7 +111,7 @@ ALIVENTE ONLINE - FINANCE
         
         <!-- Expense Line Types -->
         <div class="col-md-4 mb-3">
-          {% if user.username == 'admin' or user.username == 'Demetrios' or user.username == 'angy' %}
+          {% if user.is_superuser %}
             <a href="{% url 'finance_expense_line_types' %}" 
                class="btn btn-info btn-block py-2 finance-btn d-flex flex-column justify-content-center align-items-center text-center" 
                style="height: 100px; white-space: normal;">
@@ -129,7 +129,7 @@ ALIVENTE ONLINE - FINANCE
         
         <!-- Expenses -->
         <div class="col-md-4 mb-3">
-          {% if user.username == 'admin' or user.username == 'Demetrios' or user.username == 'angy' %}
+          {% if user.is_superuser %}
             <a href="{% url 'finance_expense' %}" class="btn btn-info btn-block py-2 finance-btn d-flex flex-column justify-content-center" style="height: 100px;">
               <i class="fas fa-file-invoice-dollar fa-2x mb-2"></i>
               <span class="font-weight-bold" style="font-size: 0.95rem">Expenses</span>
@@ -156,7 +156,7 @@ ALIVENTE ONLINE - FINANCE
           <div class="row">
             <!-- Actual Profit & Loss -->
             <div class="col-md-6 mb-3">
-              {% if user.username == 'admin' or user.username == 'Demetrios' or user.username == 'angy' %}
+              {% if user.is_superuser %}
                 <a href="{% url 'finance_pl_act' %}" class="btn btn-info btn-block py-2 finance-btn d-flex flex-column justify-content-center" style="height: 100px;">
                   <i class="fas fa-chart-line fa-2x mb-2"></i>
                   <span class="font-weight-bold" style="font-size: 0.95rem">Actual Profit & Loss</span>
@@ -171,7 +171,7 @@ ALIVENTE ONLINE - FINANCE
             
             <!-- Budgeted Profit & Loss -->
             <div class="col-md-6 mb-3">
-              {% if user.username == 'admin' or user.username == 'Demetrios' or user.username == 'angy' %}
+              {% if user.is_superuser %}
                 <a href="{% url 'finance_pl' %}" class="btn btn-info btn-block py-2 finance-btn d-flex flex-column justify-content-center" style="height: 100px;">
                   <i class="fas fa-chart-bar fa-2x mb-2"></i>
                   <span class="font-weight-bold" style="font-size: 0.95rem">Budgeted Profit & Loss</span>
@@ -186,7 +186,7 @@ ALIVENTE ONLINE - FINANCE
 
             <!-- Actual Expenses -->
             <div class="col-md-6 mb-3">
-              <a href="{% url 'act_expense_all' %}" class="btn btn-info btn-block py-2 finance-btn d-flex flex-column justify-content-center" style="height: 100px;">
+              <a href="{% url 'act_expense_all' %}?from=finance" class="btn btn-info btn-block py-2 finance-btn d-flex flex-column justify-content-center" style="height: 100px;">
                 <i class="fas fa-coins fa-2x mb-2"></i>
                 <span class="font-weight-bold" style="font-size: 0.95rem">Actual Expenses</span>
               </a>
@@ -194,7 +194,7 @@ ALIVENTE ONLINE - FINANCE
 
             <!-- Property Valuations -->
             <div class="col-md-6 mb-3">
-              {% if user.username == 'admin' or user.username == 'Demetrios' or user.username == 'angy' %}
+              {% if user.is_superuser %}
                 <a href="{% url 'finance_valuations' %}" class="btn btn-info btn-block py-2 finance-btn d-flex flex-column justify-content-center" style="height: 100px;">
                   <i class="fas fa-home fa-2x mb-2"></i>
                   <span class="font-weight-bold" style="font-size: 0.95rem">Property Valuations</span>

@@ -38,8 +38,13 @@
         {% if from_finance_pl_act %}
             <a href="{% url 'finance_pl_act' %}?year={{ request.GET.year|default:selected_year }}&prop={{ request.GET.prop|default:'all' }}" 
                class="btn btn-info" style="margin-right:16px" role="button">Back</a>
-        {% else %}
+        {% elif came_from == 'finance' %}
             <a href="{% url 'finance' %}" class="btn btn-info" style="margin-right:16px" role="button">Back</a>
+        {% elif came_from == 'home' %}
+            <a href="{% url 'home' %}" class="btn btn-info" style="margin-right:16px" role="button">Back</a>
+        {% else %}
+            <!-- Default fallback - could be home or finance depending on your preference -->
+            <a href="{% url 'home' %}" class="btn btn-info" style="margin-right:16px" role="button">Back</a>
         {% endif %}
     </div>
 
@@ -110,7 +115,7 @@
         {% if not from_finance_pl_act %}
             <td>
                 {% if expense.act_expense_approved == 'Yes' or expense.act_expense_paid == 'Yes' %}
-                    {% if user.username == 'admin' or user.username == 'Demetrios' or user.username == 'angy' %}
+                    {% if user.is_superuser %}
                         <button type="button" class="btn btn-light" style="border-color:black; width: 100%">
                             <a href="{% url 'act_expense_edit' expense.act_expense_id %}" style="color: #007bff; text-decoration: none;">Edit</a>
                         </button>
@@ -126,7 +131,7 @@
                 {% endif %}
             </td>
             <td>
-                {% if user.username == 'admin' or user.username == 'Demetrios' or user.username == 'angy' %}
+                {% if user.is_superuser %}
                     {% if expense.act_expense_approved == 'Yes' %}
                         <button type="button" class="btn btn-light" style="border-color:black; width: 100%; opacity: 0.5; cursor: not-allowed; pointer-events: none;" disabled>
                             <span style="color: #6c757d;">Approved</span>
@@ -148,7 +153,7 @@
                 {% endif %}
             </td>
             <td>
-                {% if user.username == 'admin' or user.username == 'Demetrios' or user.username == 'angy' %}
+                {% if user.is_superuser %}
                     {% if expense.act_expense_paid == 'Yes' %}
                         <button type="button" class="btn btn-light" style="border-color:black; width: 100%; opacity: 0.5; cursor: not-allowed; pointer-events: none;" disabled>
                             <span style="color: #6c757d;">Paid</span>
@@ -170,7 +175,7 @@
                 {% endif %}
             </td>
             <td>
-                {% if user.username == 'admin' or user.username == 'Demetrios' or user.username == 'angy' %}
+                {% if user.is_superuser %}
                     <form method="post" action="{% url 'mark_deleted' expense.act_expense_id %}" style="display:inline; width: 100%;">
                         {% csrf_token %}
                         <button type="submit" class="btn btn-light" style="border-color:black; width: 100%;">

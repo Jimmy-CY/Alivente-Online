@@ -31,7 +31,7 @@ Properties
 
 <body>
   <div style="display: flex ; justify-content: flex-end">
-    {% if user.username == 'admin' or user.username == 'Demetrios' or user.username == 'angy' %}
+    {% if user.is_superuser %}
       <a href="{% url 'properties_add' %}" class="btn btn-info" style="margin-right:16px" type="button">Add New</a>
     {% else %}
       <span class="btn btn-secondary" style="margin-right:16px; opacity:0.6; cursor:not-allowed; pointer-events:none;" type="button">Add New</span>
@@ -90,7 +90,7 @@ Properties
               <td>{{results.prop_country}}</td>
               <td>{{results.prop_status}}</td>
               <td>
-                {% if user.username == 'admin' or user.username == 'Demetrios' or user.username == 'angy' %}
+                {% if user.is_superuser %}
                   <button type="button" class="btn btn-light" style="border-color:black; width: 100%">
                     <a href="{% url 'properties_edit' results.prop_id %}">Edit</a>
                   </button>
@@ -106,7 +106,7 @@ Properties
                 </button>
               </td>
               <td>
-                {% if user.username == 'admin' or user.username == 'Demetrios' or user.username == 'angy' %}
+                {% if user.is_superuser %}
                   <button type="button" class="btn btn-light" style="border-color:black; width: 100%">
                     <a href="{% url 'title_deed_report' results.prop_id %}">View</a>
                   </button>

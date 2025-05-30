@@ -1178,9 +1178,9 @@ def send_invoices_paid_email(tenant, invoice_date):
         msg['Subject'] = "Rent Payment"
         
         # Email body with proper formatting
-        body = f"""Dear Stella,
+        body = f"""Dear User,
 
-We have received payment of the rent from the following tenant:
+The rent has been received from the following tenant:
  • Tenant: {tenant}
  • Invoice Date: {invoice_date}
 
@@ -1341,11 +1341,21 @@ def act_expense_all(request):
 #    # Get available years for filter dropdown
 #    available_years = act_expense.objects.dates('act_expense_date', 'year').order_by('-act_expense_date')
     
+    # Determine where the user came from
+    came_from = request.GET.get('from', None)
+    from_finance_pl_act = request.GET.get('from_finance_pl_act', False)
+    
+    # Convert string 'True'/'False' to boolean if needed
+    if isinstance(from_finance_pl_act, str):
+        from_finance_pl_act = from_finance_pl_act.lower() == 'true'
+
     return render(request, 'act_expense.html', {
         'expenses': expenses,
         'selected_year': year if year else int(selected_year),
         'selected_month': month,
         'current_year': datetime.now().year,
+        'from_finance_pl_act': from_finance_pl_act,
+        'came_from': came_from,
 #        'available_years': [y.year for y in available_years],
 #        'from_finance_pl_act': request.GET.get('from_finance_pl_act', False)
     })
@@ -1415,7 +1425,7 @@ def act_expense_edit(request, expense_id):
     current_expense = get_object_or_404(act_expense, pk=expense_id)
     
     # Get property details from props table
-    results = props.objects.all().order_by('prop_country','prop_name')
+    results = props.objects.filter(prop_status="Active").order_by('prop_country','prop_name')
 
     return render(request, "act_expense_edit.html", {
         "props": results,
@@ -1471,7 +1481,7 @@ def mark_deleted(request, expense_id):
 
 @login_required
 def act_expense_add(request):
-    results = props.objects.all().order_by('prop_country','prop_name')
+    results = props.objects.filter(prop_status="Active").order_by('prop_country','prop_name')
     return render(request, "act_expense_add.html", {'props': results})
 
 def send_expense_approved_email(description, amount):
@@ -1487,9 +1497,9 @@ def send_expense_approved_email(description, amount):
         msg['Subject'] = "Expense Approval"
         
         # Email body with proper formatting
-        body = f"""Dear Stella,
+        body = f"""Dear User,
 
-Demetri has approved an expense.  The details are as follows:
+An expense has been approved.  The details are as follows:
  • Description: {description}
  • Amount: € {amount}
 
@@ -1543,9 +1553,9 @@ def send_expense_paid_email(description, amount):
         msg['Subject'] = "Expense Payment"
         
         # Email body with proper formatting
-        body = f"""Dear Stella,
+        body = f"""Dear User,
 
-Demetri has paid an expense.  The details are as follows:
+An expense has been paid.  The details are as follows:
  • Description: {description}
  • Amount: € {amount}
 
@@ -1599,9 +1609,9 @@ def send_expense_approval_email_with_link(description, amount):
         msg['Subject'] = "Actual Expense Approval"
         
         # Email body with proper formatting
-        body = f"""Dear Demetri,
+        body = f"""Dear User,
 
-Stella has created a new Actual Expense that requires your approval.  The details are as follows:
+A new Actual Expense has been created that requires your approval.  The details are as follows:
  • Description: {description}
  • Amount: € {amount}
 
@@ -1670,8 +1680,8 @@ def act_expense_commit(request):
             )
             expense.save()
             
-            # Check if user is StellaSimi and send email
-            if request.user.username == "StellaSimi":
+            # Check if user is not a superuser and send email
+            if not request.user.is_superuser:
                 email_sent = send_expense_approval_email_with_link(expense_description, expense_amount)
                 if email_sent:
                     messages.success(request, 'Expense added successfully and approval email sent!')
