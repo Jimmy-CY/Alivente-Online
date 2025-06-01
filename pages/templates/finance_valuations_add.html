@@ -9,7 +9,9 @@
 <h2><center>ALIVENTE ONLINE - PROPERTY VALUATIONS</center></h2>
 <h4><center>ADD VALUATION</center></h4>
 <br/>
-  
+
+{% if user.is_superuser %}
+
 <form action = "{% url 'finance_valuations_commit' %}" method="post">
   {% csrf_token %}
   <div style="display: flex ; justify-content: flex-end">
@@ -38,5 +40,7 @@
   </div>
 
 </form>
+
+{% endif %}
 
 {% endblock %}

@@ -9,7 +9,9 @@
 <h2><center>ALIVENTE ONLINE - OPEN INVOICES</center></h2>
 <br/>
 <br/>
-	
+
+{% if user.is_superuser %}
+
 <body>
 	
 	<div style="display: flex ; justify-content: flex-end">
@@ -73,5 +75,7 @@
 	
 </form>
 </body>
+
+{% endif %}
 
 {% endblock %}

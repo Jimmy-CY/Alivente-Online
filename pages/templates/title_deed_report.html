@@ -4,7 +4,12 @@
 {% block title %}
 {% endblock %}
 
+
+
 {% block content %}
+
+{% if user.is_superuser %}
+
 <div class="report-container">
     <div class="report-content">
         <div class="header-container">
@@ -39,6 +44,10 @@
         </script>
     </div>
 </div>
+
+{% endif %}
+
+{% endblock %}
 
 <style>
     .report-container {
@@ -99,4 +108,3 @@
         color: #856404;
     }
 </style>
-{% endblock %}

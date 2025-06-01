@@ -9,7 +9,9 @@
 <h2><center>ALIVENTE ONLINE - EXPENSES</center></h2>
 <h4><center>EDIT EXPENSE</center></h4>
 <br/>
-  
+
+{% if user.is_superuser %}
+
 <form action="{% url 'finance_expense_edit_commit' existing_expense.expense_id %}" method="post">
   {% csrf_token %}
   <div style="display: flex ; justify-content: flex-end">
@@ -143,6 +145,8 @@
   <!-- Hidden field to store calculation details -->
   <input type="hidden" id="prorata_calculation_data" name="prorata_calculation_data">
 </form>
+
+{% endif %}
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>

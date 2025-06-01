@@ -28,12 +28,16 @@
     </script>
   {% endfor %}
 
+{% if user.is_superuser %}
+
 <body>  
   <div style="display: flex ; justify-content: flex-end">
     <a href="{% url 'admin_invoices' %}" class="btn btn-info" style="margin-right:16px" role="button">Generate Invoices</a>
     <a href="{% url 'home' %}" class="btn btn-info" style="margin-right:16px" role="button">Back</a>
   </div>
 <br>
+
+{% endif %}
 
 <!-- 
 Commenting out the file upload functionality for now ................

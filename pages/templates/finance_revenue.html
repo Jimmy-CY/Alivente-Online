@@ -28,7 +28,9 @@
       }, 2000);
     </script>
   {% endfor %}
-  
+
+{% if user.is_superuser %}
+
 <body>
   
   <div style="display: flex ; justify-content: flex-end">
@@ -87,6 +89,8 @@
     </table>    
   </div>
 </form>
+
+{% endif %}
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {

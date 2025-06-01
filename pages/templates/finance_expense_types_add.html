@@ -9,7 +9,9 @@
 <h2 class="text-center">ALIVENTE ONLINE - EXPENSE TYPES</h2>
 <h4 class="text-center">ADD EXPENSE TYPE</h4>
 <br/>
-  
+
+{% if user.is_superuser %}
+
 <form action="{% url 'finance_expense_types_commit' %}" method="post" id="ExpenseTypeForm">
   
   {% csrf_token %}
@@ -131,5 +133,7 @@
   </div>
 
 </form>
+
+{% endif %}
 
 {% endblock %}

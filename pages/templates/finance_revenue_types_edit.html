@@ -10,6 +10,8 @@
 <h4 class="text-center">EDIT REVENUE TYPE</h4>
 <br/>
 
+{% if user.is_superuser %}
+
 {% for rev in rtresults %}
 <form action="{% url 'finance_revenue_types_edit_commit' rev.revenue_types_id %}" method="post">
   {% csrf_token %}
@@ -224,6 +226,8 @@
   </div>
 </form>
 {% endfor %}
+
+{% endif %}
 
 <script>
 // Remove this JavaScript completely as it's not needed anymore

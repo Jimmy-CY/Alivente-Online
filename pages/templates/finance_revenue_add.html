@@ -9,7 +9,9 @@
 <h2><center>ALIVENTE ONLINE - REVENUES</center></h2>
 <h4><center>ADD REVENUE</center></h4>
 <br/>
-  
+
+{% if user.is_superuser %}
+
 <form action="{% url 'finance_revenue_commit' %}" method="post">
   {% csrf_token %}
   <div style="display: flex ; justify-content: flex-end">
@@ -53,5 +55,7 @@
     </div>
   </div>
 </form>
+
+{% endif %}
 
 {% endblock %}

@@ -30,6 +30,8 @@
   {% endfor %}
   
 <body>
+
+{% if user.is_superuser %}
   
   <div style="display: flex ; justify-content: flex-end">
     <a href="{% url 'finance_expense_add' %}" class="btn btn-info" style="margin-right:16px" type="button">Add New</a>
@@ -88,6 +90,8 @@
     </table>    
   </div>
 </form>
+
+{% endif %}
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {

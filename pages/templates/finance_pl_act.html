@@ -20,6 +20,8 @@
 </div>
 {% endfor %}
 
+{% if user.is_superuser %}
+
 <div class="d-flex justify-content-end mb-2">
     <!-- Year Selector Button Group -->
     <div class="btn-group me-3">
@@ -847,6 +849,8 @@
         </div>
     </div>
 </div>
+
+{% endif %}
 
 <style>
     /* Base Styles */

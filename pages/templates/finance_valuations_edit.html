@@ -9,6 +9,8 @@
 <h4><center>EDIT EXISTING VALUATION</center></h4>
 <br/>
 
+{% if user.is_superuser %}
+
 <div style="display: flex ; justify-content: flex-end">
     <button class="btn btn-info" form="valuationForm" style="margin-right:16px" type="submit">Save</button>
     <a href="{% url 'finance_valuations' %}" class="btn btn-info" style="margin-right:16px" role="button">Back</a>
@@ -59,6 +61,8 @@
         </div>
     </div>
 </form>
+
+{% endif %}
 
 <style>
     .text-right {

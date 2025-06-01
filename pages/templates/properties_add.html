@@ -10,6 +10,8 @@
 <h4><center>ADD NEW PROPERTY</center></h4>
 <br/>
 
+{% if user.is_superuser %}
+
 <form id="propertyForm" action="{% url 'properties_commit' %}" method="post" onsubmit="return validatePropertyName()">
   {% csrf_token %}
   <div style="display: flex ; justify-content: flex-end">
@@ -119,6 +121,8 @@
     </div>
   </div>
 </form>
+
+{% endif %}
 
 <script>
 const existingNames = {{ existing_names|safe }};

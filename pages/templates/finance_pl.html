@@ -20,6 +20,8 @@
 </div>
 {% endfor %}
 
+{% if user.is_superuser %}
+
 <div class="d-flex justify-content-end mb-2">
     <a href="{% url 'finance' %}" class="btn btn-info">Back</a>
 </div>
@@ -511,6 +513,8 @@
     </div>
     {% endfor %}
 </div>
+
+{% endif %}
 
 <style>
     /* Base Styles */

@@ -11,6 +11,8 @@
 <h2><center>ALIVENTE ONLINE - EXPENSE LINE TYPES</center></h2>
 <br/>
 
+{% if user.is_superuser %}
+
   {% for msg in messages %}
     <div class="alert alert-secondary alert-dismissible fade show auto-dismiss" role="alert">
       <strong></strong> <center>{{ msg }}</center>
@@ -65,5 +67,7 @@
   </div>
 </form>
 </body>
+
+{% endif %}
 
 {% endblock %}

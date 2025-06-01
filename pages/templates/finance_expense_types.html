@@ -29,7 +29,9 @@
       }, 2000);
     </script>
   {% endfor %}
-  
+
+{% if user.is_superuser %}
+
 <body>
   
   <div style="display: flex ; justify-content: flex-end">
@@ -87,5 +89,7 @@
   </div>
 </form>
 </body>
+
+{% endif %}
 
 {% endblock %}

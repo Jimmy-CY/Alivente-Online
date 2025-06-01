@@ -9,7 +9,9 @@
 <h2><center>ALIVENTE ONLINE - EXPENSE LINE TYPES</center></h2>
 <h4><center>ADD LINE TYPE</center></h4>
 <br/>
-  
+
+{% if user.is_superuser %}
+
 <form action = "{% url 'finance_expense_line_types_commit' %}" method="post">
   
   {% csrf_token %}
@@ -44,6 +46,8 @@
   </div>
 
 </form>
+
+{% endif %}
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>

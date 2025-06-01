@@ -10,6 +10,8 @@
 <h4><center>EDIT EXISTING PROPERTY</center></h4>
 <br/>
 
+{% if user.is_superuser %}
+
 {% for results in props %}
 <form action="{% url 'properties_edit_commit' results.prop_id %}" method="post" onsubmit="return validatePropertyName()">
   {% csrf_token %}
@@ -148,6 +150,8 @@
  
 </form>
 {% endfor %}
+
+{% endif %}
 
 <script>
 // Convert Django template variable to JavaScript array

@@ -23,6 +23,8 @@
 </div>
 {% endif %}
 
+{% if user.is_superuser %}
+
 <form id="tenantForm" action="{% url 'tenant_commit' %}" method="post">
   {% csrf_token %}
   
@@ -152,6 +154,8 @@
     </div>    
   </div>
 </form>
+
+{% endif %}
 
 <!-- Required JavaScript -->
 <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>

@@ -31,7 +31,9 @@
   {% endfor %}
   
 <body>
-  
+
+{% if user.is_superuser %}
+
   <div style="display: flex ; justify-content: flex-end">
     <a href="{% url 'finance_valuations_add' %}" class="btn btn-info" style="margin-right:16px" type="button">Add New</a>
     <a href="{% url 'finance' %}" class="btn btn-info" style="margin-right:16px" role="button">Back</a>
@@ -76,6 +78,9 @@
     </table>    
   </div>
 </form>
+
+{% endif %}
+
 </body>
 
 {% endblock %}

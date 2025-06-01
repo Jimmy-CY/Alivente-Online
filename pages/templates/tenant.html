@@ -82,8 +82,8 @@
       <th style="width: 23%">Property</th>
       <th style="width: 10%">Active</th>
       <th style="width: 10%">Details</th>
-      <th style="width: 10%">Agreement</th>
       <th style="width: 10%">Report</th>
+      <th style="width: 10%">Agreement</th>
     </tr>
   </thead>
   <tbody>
@@ -107,12 +107,12 @@
             </td> 
             <td>
               <button type="button" class="btn btn-light" style="border-color:black; width: 100%">
-                <a href="{% url 'lease_agreement_report' tresults.tenant_id %}">View</a>
+                <a href="{% url 'tenant_report' tresults.tenant_id %}">View</a>
               </button>
             </td>
             <td>
               <button type="button" class="btn btn-light" style="border-color:black; width: 100%">
-                <a href="{% url 'tenant_report' tresults.tenant_id %}">View</a>
+                <a href="{% url 'lease_agreement_report' tresults.tenant_id %}">View</a>
               </button>
             </td>
           </tr>
