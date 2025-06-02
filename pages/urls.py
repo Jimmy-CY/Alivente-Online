@@ -144,6 +144,7 @@ urlpatterns = [
     path('fsr_details/<issues_id>', views.fsr_details, name='fsr_details'),
     path('fsr_commit_status_change/', views.fsr_commit_status_change, name='fsr_commit_status_change'),
     path('fsr_comment_add/<issues_id>', views.fsr_comment_add, name='fsr_comment_add'),
+    path('fsr_notification/', views.fsr_notification, name='fsr_notification'),
 
 
     ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

@@ -134,7 +134,7 @@
                 {% if user.is_superuser %}
                     {% if expense.act_expense_approved == 'Yes' %}
                         <button type="button" class="btn btn-light" style="border-color:black; width: 100%; opacity: 0.5; cursor: not-allowed; pointer-events: none;" disabled>
-                            <span style="color: #6c757d;">Approved</span>
+                            <span style="color: #32CD32;">Approved</span>
                         </button>
                     {% else %}
                         <form method="post" action="{% url 'mark_approved' expense.act_expense_id %}" style="display:inline; width: 100%;">
@@ -146,7 +146,7 @@
                     {% endif %}
                 {% else %}
                     <button type="button" class="btn btn-light" style="border-color:black; width: 100%; opacity: 0.5; cursor: not-allowed; pointer-events: none;" disabled>
-                        <span style="color: #6c757d;">
+                        <span style="color: {% if expense.act_expense_approved == 'Yes' %}#32CD32{% else %}#DC143C{% endif %};">
                             {% if expense.act_expense_approved == 'Yes' %}Approved{% else %}Pending{% endif %}
                         </span>
                     </button>
@@ -156,7 +156,7 @@
                 {% if user.is_superuser %}
                     {% if expense.act_expense_paid == 'Yes' %}
                         <button type="button" class="btn btn-light" style="border-color:black; width: 100%; opacity: 0.5; cursor: not-allowed; pointer-events: none;" disabled>
-                            <span style="color: #6c757d;">Paid</span>
+                            <span style="color: #32CD32;">Paid</span>
                         </button>
                     {% else %}
                         <form method="post" action="{% url 'mark_paid' expense.act_expense_id %}" style="display:inline; width: 100%;">
@@ -168,7 +168,7 @@
                     {% endif %}
                 {% else %}
                     <button type="button" class="btn btn-light" style="border-color:black; width: 100%; opacity: 0.5; cursor: not-allowed; pointer-events: none;" disabled>
-                        <span style="color: #6c757d;">
+                        <span style="color: {% if expense.act_expense_paid == 'Yes' %}#32CD32{% else %}#DC143C{% endif %};">
                             {% if expense.act_expense_paid == 'Yes' %}Paid{% else %}Pending{% endif %}
                         </span>
                     </button>

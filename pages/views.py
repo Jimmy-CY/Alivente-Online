@@ -1844,18 +1844,6 @@ def fsr_commit_status_change(request):
         else:
             return redirect(reverse('fsr') + "?refresh=true")
 
-#@login_required
-#def fsr_comment_add(request, issues_id):
-#	iss_det = request.POST.get('issues_details_comment')
-#	if request.user.is_authenticated:
-#		lname = request.user.last_name
-#		fname = request.user.first_name
-#		user_initials = fname[:1]+lname[:1]
-#	comm_date = date.today()
-#	print("YES", issues_id, comm_date, user_initials, iss_det)
-#	issue_update=issues_details.objects.create (issues_details_comment=iss_det, issues_details_user=user_initials, issues_details_date=comm_date, issues_id=issues_id)
-#	return redirect("fsr_details", issues_id)
-
 @login_required
 def fsr_comment_add(request, issues_id):
     if request.method == 'POST':
@@ -1896,6 +1884,73 @@ def fsr_comment_add(request, issues_id):
     
     # If not POST, redirect to details page
     return redirect(reverse('fsr_details', args=[issues_id]))
+
+@login_required
+def fsr_notification(request):
+    """
+    Send email notification that a Friday Status Report has been updated
+    """
+    smtp_object = None
+    try:
+        # Create message
+        msg = MIMEMultipart()
+        msg['From'] = "demetrimanias@gmail.com"
+        if not request.user.is_superuser:
+            msg['To'] = "demetrimanias@gmail.com"
+        else:
+            msg['To'] = "demetrimanias@gmail.com"
+        msg['Subject'] = "Friday Status Report has been Updated"
+        
+        # Email body with proper formatting
+        body = f"""Dear User,
+
+The Friday Status Report has been updated and is ready for your review.
+
+Thanks,
+
+
+Alivente Property Management System"""
+        
+        msg.attach(MIMEText(body, 'plain'))
+        
+        # SMTP setup with more detailed error handling
+        smtp_object = smtplib.SMTP('smtp.gmail.com', 587)
+        smtp_object.ehlo()
+        smtp_object.starttls()
+        
+        email = "demetrimanias@gmail.com"
+        password = "nfvb been waqz wwks"
+        
+        smtp_object.login(email, password)
+        
+        # Send email
+        text = msg.as_string()
+        if not request.user.is_superuser:
+            smtp_object.sendmail(email, "demetrimanias@gmail.com", text)
+        else:
+            smtp_object.sendmail(email, "demetrimanias@gmail.com", text)
+        
+        # Add success message
+        messages.success(request, "Email notification sent successfully!")
+        
+    except smtplib.SMTPAuthenticationError as e:
+        logger.error(f"SMTP Authentication Error: {e}")
+        messages.error(request, "Failed to send email notification - Authentication error.")
+    except smtplib.SMTPException as e:
+        logger.error(f"SMTP Error: {e}")
+        messages.error(request, "Failed to send email notification - SMTP error.")
+    except Exception as e:
+        logger.error(f"Error sending email: {e}")
+        messages.error(request, "Failed to send email notification.")
+    finally:
+        if smtp_object:
+            try:
+                smtp_object.quit()
+            except:
+                pass
+    
+    # Always return a redirect - this is what Django expects
+    return redirect('fsr')
 
 ### REPORTS - DASHBOARD (FROM HOME PAGE) ###
 from django.shortcuts import render
