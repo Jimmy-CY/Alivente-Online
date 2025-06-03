@@ -121,7 +121,7 @@ urlpatterns = [
     path('mark_approved/<expense_id>', views.mark_approved, name='mark_approved'),
     path('mark_paid/<expense_id>', views.mark_paid, name='mark_paid'),
     path('mark_deleted/<expense_id>', views.mark_deleted, name='mark_deleted'),
-
+    path('act_expense_upload_inv/', views.act_expense_upload_inv, name='act_expense_upload_inv'),
 
     #
     # Invoices

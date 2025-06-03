@@ -1,9 +1,33 @@
 from django.db import models
 from django.db import connections
 from django.core.exceptions import ValidationError
+import os
+from django.utils.text import slugify
 
-# Create your models here.
+def expense_document_upload_path(instance, filename):
+	"""
+	Generate custom upload path for expense documents
+	Format: expense_docs/PropertyName-YYYYMMDD-OriginalFileName.ext
+	"""
+	# Get the file extension
+	ext = filename.split('.')[-1]
 
+	# Get property name and clean it (remove spaces, special chars)
+	property_name = slugify(instance.prop.prop_name)
+
+	# Format the date as YYYYMMDD
+	date_str = instance.act_expense_date.strftime('%Y%m%d')
+
+	# Get the original filename without extension
+	original_name = os.path.splitext(filename)[0]
+
+	# Create the new filename
+	new_filename = f"{property_name}-{date_str}-{original_name}.{ext}"
+
+	# Return the full path
+	return os.path.join('expense_docs', new_filename)
+
+##### Create your models here ###############
 class props(models.Model):
 	prop_id = models.AutoField(primary_key=True)
 	prop_name = models.CharField(max_length=255, blank=True, null=True)
@@ -290,6 +314,7 @@ class act_expense(models.Model):
 	act_expense_amount = models.DecimalField(max_digits=6, decimal_places=2, blank=True, null=True)
 	act_expense_approved = models.CharField(max_length=3, blank=True, null=True)
 	act_expense_paid = models.CharField(max_length=3, blank=True, null=True)
+	act_expense_document = models.FileField(upload_to=expense_document_upload_path, blank=True, null=True)
 
 	def __str__(self):
 		return self.act_expense_description

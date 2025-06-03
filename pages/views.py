@@ -1360,6 +1360,54 @@ def act_expense_all(request):
 #        'from_finance_pl_act': request.GET.get('from_finance_pl_act', False)
     })
 
+
+@login_required
+def act_expense_upload_inv(request):
+    # Get all expenses to display in the table
+    expenses = act_expense.objects.all().order_by('-act_expense_date')
+    
+    if request.method == 'POST':
+        expense_id = request.POST.get('expense_id')
+        
+        if not expense_id:
+            messages.error(request, 'No expense selected')
+            return redirect('act_expense_upload_inv')
+        
+        try:
+            expense = get_object_or_404(act_expense, pk=expense_id)
+            
+            # Handle file upload
+            if 'act_expense_document' in request.FILES:
+                uploaded_file = request.FILES['act_expense_document']
+                
+                # Validate file size (5MB limit)
+                if uploaded_file.size > 5 * 1024 * 1024:
+                    messages.error(request, 'File size exceeds 5MB limit')
+                    return redirect('act_expense_upload_inv')
+                
+                # Validate file type
+                allowed_extensions = ['.pdf', '.jpg', '.jpeg', '.png', '.xlsx', '.xls', '.doc', '.docx']
+                file_extension = os.path.splitext(uploaded_file.name)[1].lower()
+                
+                if file_extension not in allowed_extensions:
+                    messages.error(request, 'Invalid file type. Please upload PDF, JPG, PNG, Excel, or Word files only.')
+                    return redirect('act_expense_upload_inv')
+                
+                expense.act_expense_document = uploaded_file
+                expense.save()
+                messages.success(request, f'Document uploaded successfully for expense on {expense.act_expense_date}!')
+                return redirect('act_expense_upload_inv')
+            else:
+                messages.error(request, 'Please select a file to upload')
+                
+        except Exception as e:
+            messages.error(request, f'Error uploading document: {str(e)}')
+    
+    context = {
+        'expenses': expenses,
+    }
+    return render(request, 'act_expense_upload_inv.html', context)
+    
 @login_required
 def act_expense_view(request):
     # Get year/month from request or use current year as default

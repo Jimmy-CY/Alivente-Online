@@ -74,4 +74,4 @@ class ExpenseForm(forms.ModelForm):
 class ActExpenseForm(forms.ModelForm):
 	class Meta:
 		model = models.act_expense
-		fields = ["act_expense_date","prop","act_expense_description","act_expense_amount","act_expense_approved","act_expense_paid"]
+		fields = ["act_expense_date","prop","act_expense_description","act_expense_amount","act_expense_approved","act_expense_paid","act_expense_document"]

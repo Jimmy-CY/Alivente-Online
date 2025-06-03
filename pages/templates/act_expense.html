@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load humanize %}
 
 {% block title %}
 {% endblock %}
@@ -29,6 +30,7 @@
   
     <div style="display: flex ; justify-content: flex-end">
         {% if not from_finance_pl_act %}
+            <a href="{% url 'act_expense_upload_inv' %}" class="btn btn-info" style="margin-right:16px" type="button">Invoices</a> 
             <button type="button" class="btn btn-info" style="margin-right:16px" data-toggle="modal" data-target="#dateRangeModal">
                 Select Date Range
             </button>
@@ -111,7 +113,7 @@
         <td>{{ expense.act_expense_date|date:"Y-m-d" }}</td>
         <td style="text-align: left">{{ expense.prop.prop_name }}</td>
         <td style="text-align: left">{{ expense.act_expense_description }}</td>
-        <td>{{ expense.act_expense_amount }}</td>
+        <td>{{ expense.act_expense_amount|floatformat:2|intcomma }}</td>
         {% if not from_finance_pl_act %}
             <td>
                 {% if expense.act_expense_approved == 'Yes' or expense.act_expense_paid == 'Yes' %}
