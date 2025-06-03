@@ -2,9 +2,8 @@
 {% load static %}
 
 {% block title %}
+Title Deed - {{ property.prop_name }}
 {% endblock %}
-
-
 
 {% block content %}
 
@@ -13,13 +12,20 @@
 <div class="report-container">
     <div class="report-content">
         <div class="header-container">
-            <h2 class="report-title">TITLE DEED ({{ property.prop_name }})</h2>
+            <div class="title-wrapper">
+                <h2 class="report-title">TITLE DEED ({{ property.prop_name }})</h2>
+                {% if property.prop_address %}
+                <h3 class="report-subtitle">{{ property.prop_address }}</h3>
+                {% endif %}
+            </div>
             <a href="{% url 'properties' %}" class="btn btn-info back-button" role="button">Back</a>
         </div>
+        
         <div class="property-section">
             <!-- Error message (only shows if PDF fails to load) -->
             <div id="title-deeds-error" class="alert alert-warning" style="display: none;">
-                <p>Title Deed not found for this property.</p>
+                <p>Title deed not found for this property.</p>
+                <a href="#" class="btn btn-sm btn-primary" id="download-title-deed" download>Download Instead</a>
             </div>
 
             <!-- Title Deed PDF Viewer -->
@@ -39,15 +45,17 @@
         <script>
             function handlePdfError(iframe) {
                 iframe.style.display = 'none';
-                document.getElementById('title-deeds-error').style.display = 'block';
+                const errorDiv = document.getElementById('title-deeds-error');
+                errorDiv.style.display = 'block';
+                
+                // Set up download link with cache busting
+                const downloadBtn = document.getElementById('download-title-deed');
+                const newUrl = "{% static 'title_deeds/' %}{{ property.prop_name }} - Title Deed.pdf?v=" + Date.now();
+                downloadBtn.href = newUrl;
             }
         </script>
     </div>
 </div>
-
-{% endif %}
-
-{% endblock %}
 
 <style>
     .report-container {
@@ -72,12 +80,26 @@
         justify-content: space-between;
         align-items: center;
         margin-bottom: 20px;
+        gap: 20px;
+    }
+    
+    .title-wrapper {
+        flex: 1;
     }
     
     .report-title {
         font-size: 1.8rem;
         color: #2c3e50;
         margin: 0;
+        font-weight: bold;
+        text-transform: uppercase;
+    }
+    
+    .report-subtitle {
+        font-size: 1.4rem;
+        color: #2c3e50;
+        margin: 5px 0 0 0;
+        font-weight: normal;
     }
     
     .back-button {
@@ -87,6 +109,8 @@
         text-decoration: none;
         border-radius: 4px;
         font-weight: 500;
+        white-space: nowrap;
+        height: fit-content;
     }
     
     .back-button:hover {
@@ -108,3 +132,7 @@
         color: #856404;
     }
 </style>
+
+{% endif %}
+
+{% endblock %}

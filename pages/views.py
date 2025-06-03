@@ -1367,6 +1367,7 @@ def act_expense_upload_inv(request):
     expenses = act_expense.objects.all().order_by('-act_expense_date')
     
     if request.method == 'POST':
+        action = request.POST.get('action')
         expense_id = request.POST.get('expense_id')
         
         if not expense_id:
@@ -1376,32 +1377,52 @@ def act_expense_upload_inv(request):
         try:
             expense = get_object_or_404(act_expense, pk=expense_id)
             
-            # Handle file upload
-            if 'act_expense_document' in request.FILES:
-                uploaded_file = request.FILES['act_expense_document']
-                
-                # Validate file size (5MB limit)
-                if uploaded_file.size > 5 * 1024 * 1024:
-                    messages.error(request, 'File size exceeds 5MB limit')
-                    return redirect('act_expense_upload_inv')
-                
-                # Validate file type
-                allowed_extensions = ['.pdf', '.jpg', '.jpeg', '.png', '.xlsx', '.xls', '.doc', '.docx']
-                file_extension = os.path.splitext(uploaded_file.name)[1].lower()
-                
-                if file_extension not in allowed_extensions:
-                    messages.error(request, 'Invalid file type. Please upload PDF, JPG, PNG, Excel, or Word files only.')
-                    return redirect('act_expense_upload_inv')
-                
-                expense.act_expense_document = uploaded_file
-                expense.save()
-                messages.success(request, f'Document uploaded successfully for expense on {expense.act_expense_date}!')
-                return redirect('act_expense_upload_inv')
-            else:
-                messages.error(request, 'Please select a file to upload')
-                
+            if action == 'delete':
+                # Handle file deletion
+                if expense.act_expense_document:
+                    # Delete the physical file
+                    if expense.act_expense_document.storage.exists(expense.act_expense_document.name):
+                        expense.act_expense_document.delete(save=False)
+                    
+                    # Clear the database field
+                    expense.act_expense_document = None
+                    expense.save()
+                    
+                    messages.success(request, f'Document deleted successfully for expense on {expense.act_expense_date}!')
+                else:
+                    messages.warning(request, 'No document found to delete.')
+                    
+            elif action == 'upload':
+                # Handle file upload (your existing code)
+                if 'act_expense_document' in request.FILES:
+                    uploaded_file = request.FILES['act_expense_document']
+                    
+                    # Validate file size (5MB limit)
+                    if uploaded_file.size > 5 * 1024 * 1024:
+                        messages.error(request, 'File size exceeds 5MB limit')
+                        return redirect('act_expense_upload_inv')
+                    
+                    # Validate file type
+                    allowed_extensions = ['.pdf', '.jpg', '.jpeg', '.png', '.xlsx', '.xls', '.doc', '.docx']
+                    file_extension = os.path.splitext(uploaded_file.name)[1].lower()
+                    
+                    if file_extension not in allowed_extensions:
+                        messages.error(request, 'Invalid file type. Please upload PDF, JPG, PNG, Excel, or Word files only.')
+                        return redirect('act_expense_upload_inv')
+                    
+                    # Delete existing file if present
+                    if expense.act_expense_document:
+                        if expense.act_expense_document.storage.exists(expense.act_expense_document.name):
+                            expense.act_expense_document.delete(save=False)
+                    
+                    expense.act_expense_document = uploaded_file
+                    expense.save()
+                    messages.success(request, f'Document uploaded successfully for expense on {expense.act_expense_date}!')
+                else:
+                    messages.error(request, 'Please select a file to upload')
+                    
         except Exception as e:
-            messages.error(request, f'Error uploading document: {str(e)}')
+            messages.error(request, f'Error processing request: {str(e)}')
     
     context = {
         'expenses': expenses,
