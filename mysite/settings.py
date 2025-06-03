@@ -159,9 +159,25 @@ USE_I18N = True
 USE_TZ = True
 
 
-# Media files (uploads)
-MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+### Media files (uploads)
+# Use Railway's volume mount point ### RAILWAY VOLUMES ~~~~
+# Media files configuration
+if (os.environ.get('RAILWAY_ENVIRONMENT_NAME') == 'production' or 
+    os.environ.get('RAILWAY_PROJECT_ID')):
+    # Production on Railway - use volume
+    MEDIA_ROOT = '/data/media/'
+    MEDIA_URL = '/media/'
+    
+    # Create media directory if it doesn't exist
+    os.makedirs(MEDIA_ROOT, exist_ok=True)
+    
+    print(f"Railway Production - Using MEDIA_ROOT: {MEDIA_ROOT}")
+else:
+    # Local development
+    MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+    MEDIA_URL = '/media/'
+    
+    print(f"Local Development - Using MEDIA_ROOT: {MEDIA_ROOT}")
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
