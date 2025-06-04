@@ -32,87 +32,41 @@
 
 <body>  
   <div style="display: flex ; justify-content: flex-end">
-    <a href="{% url 'admin_invoices' %}" class="btn btn-info" style="margin-right:16px" role="button">Generate Invoices</a>
     <a href="{% url 'home' %}" class="btn btn-info" style="margin-right:16px" role="button">Back</a>
   </div>
 <br>
 
 {% endif %}
 
-<!-- 
-Commenting out the file upload functionality for now ................
+<!-- Show module buttons when logged in -->
+  <div class="container mt-4 border rounded p-3 p-md-4" style="max-width: 1200px; border-color: #dee2e6 !important;">
+    <div class="row justify-content-center">
+      
+      <!-- Properties Button -->
+      <div class="col-6 col-md-3 mb-3">
+        <a href="{% url 'properties_title_deed' %}" class="btn btn-info btn-block py-2 py-md-3 home-module-btn">
+          <i class="fas fa-file-contract fa-2x mb-2"></i>
+          <h6>Manage Lease Agreements</h6>
+        </a>
+      </div>
 
-  <div class="row">
-    <div class="col-md-6">
-      <div class="card mb-4">
-          <div class="card-header">
-              <h5>Upload Title Deed</h5>
-          </div>
-          <div class="card-body">
-              <form action="{% url 'upload_title_deed' %}" method="post" enctype="multipart/form-data">
-                  {% csrf_token %}
-                  <div class="form-group">
-                      <label for="property-select">Select Property:</label>
-                      <select class="form-control" id="property-select" name="property" required>
-                          <option value="" selected disabled>-- Select a Property --</option>
-                          {% for property in props %}
-                              <option value="{{ property.prop_name }}">{{ property.prop_name }}</option>
-                          {% endfor %}
-                      </select>
-                  </div>
-                  <div class="form-group">
-                      <label for="title-deed-upload">Upload Title Deed (PDF only):</label>
-                      <div class="custom-file">
-                          <input type="file" class="custom-file-input" id="title-deed-upload" name="title_deed" accept=".pdf" required>
-                          <label class="custom-file-label" for="title-deed-upload">Choose file...</label>
-                          <small id="title-deed-preview" class="form-text text-muted" style="display: none;">File will be saved as: "<span id="selected-property"></span> - Title Deed.pdf"</small>
-                      </div>
-                  </div>
-                  <button type="submit" class="btn btn-primary">Upload Title Deed</button>
-              </form>
-          </div>
+      <!-- Tenants Button -->
+      <div class="col-6 col-md-3 mb-3">
+        <a href="{% url 'properties_title_deed' %}" class="btn btn-info btn-block py-2 py-md-3 home-module-btn">
+          <i class="fas fa-scroll fa-2x mb-2"></i>
+          <h6>Manage Title Deeds</h6>
+        </a>
+      </div>
+
+      <!-- Suppliers Button -->
+      <div class="col-6 col-md-3 mb-3">
+        <a href="{% url 'admin_invoices' %}" class="btn btn-info btn-block py-2 py-md-3 home-module-btn">
+          <i class="fas fa-file-invoice fa-2x mb-2"></i>
+          <h6>Generate Invoices</h6>
+        </a>
       </div>
     </div>
 
-    <div class="col-md-6">
-      <div class="card mb-4">
-          <div class="card-header">
-              <h5>Upload Lease Agreement</h5>
-          </div>
-          <div class="card-body">
-              <form action="{% url 'upload_lease_agreement' %}" method="post" enctype="multipart/form-data">
-                  {% csrf_token %}
-                  <div class="form-group">
-                      <label for="tenant-select">Select Tenant:</label>
-                      <select class="form-control" id="tenant-select" name="tenant" required>
-                          <option value="" selected disabled>-- Select a Tenant --</option>
-                          {% for t in tenant %}
-                              <option value="{{ t.tenant_id }}" data-prop-name="{{ t.prop.prop_name }}">
-                                  {{ t.tenant_name }} ({{ t.prop.prop_name }})
-                              </option>
-                          {% endfor %}
-                      </select>
-                  </div>
-                  <div class="form-group">
-                      <label for="lease-upload">Upload Lease Agreement (PDF only):</label>
-                      <div class="custom-file">
-                          <input type="file" class="custom-file-input" id="lease-upload" name="lease_agreement" accept=".pdf" required>
-                          <label class="custom-file-label" for="lease-upload">Choose file...</label>
-                          <small id="lease-preview" class="form-text text-muted" style="display: none;">
-                              File will be saved as: "<span id="selected-property-name"></span> - Lease Agreement.pdf"
-                          </small>
-                      </div>
-                  </div>
-                  <button type="submit" class="btn btn-primary">Upload Lease Agreement</button>
-              </form>
-          </div>
-      </div>
-    </div>
-
-    Commenting out the file load functionality for now 
--->
-
-  <!-- Rest of your template remains the same -->
   <script>
     // Title Deed file input handler
     document.getElementById('title-deed-upload').addEventListener('change', function(e) {

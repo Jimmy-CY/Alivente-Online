@@ -27,35 +27,51 @@ def expense_document_upload_path(instance, filename):
 	# Return the full path
 	return os.path.join('expense_docs', new_filename)
 
+def title_deed_upload_path(instance, filename):
+    """Generate upload path for title deeds"""
+    # Sanitize the property name
+    prop_name_slug = slugify(instance.prop_name or 'property')
+    
+    # Get file extension
+    ext = os.path.splitext(filename)[1].lower()
+    
+    # Generate filename
+    filename = f"prop_{instance.prop_id}_{prop_name_slug[:50]}_title_deed{ext}"
+    
+    # Return full path
+    return os.path.join('properties', 'title_deeds', filename)
+
 ##### Create your models here ###############
 class props(models.Model):
-	prop_id = models.AutoField(primary_key=True)
-	prop_name = models.CharField(max_length=255, blank=True, null=True)
-	prop_address1 = models.CharField(max_length=255, blank=True, null=True)
-	prop_address2 = models.CharField(max_length=255, blank=True, null=True)
-	prop_suburb = models.CharField(max_length=255, blank=True, null=True)
-	prop_city = models.CharField(max_length=255, blank=True, null=True)
-	prop_province = models.CharField(max_length=255, blank=True, null=True)
-	prop_country = models.CharField(max_length=255, blank=True, null=True)
-	prop_pcode = models.CharField(max_length=255, blank=True, null=True)
-	prop_floor_area = models.IntegerField(blank=True, null=True)
-	prop_year_built = models.IntegerField(blank=True, null=True)
-	prop_status = models.CharField(max_length=255, blank=True, null=True)
-	prop_available_for_rent = models.CharField(max_length=255, blank=True, null=True)
-	prop_title_deed = models.CharField(max_length=255, blank=True, null=True)
-	prop_title_deed_status = models.CharField(max_length=255, blank=True, null=True)
-	prop_electricity = models.CharField(max_length=255, blank=True, null=True)
-	prop_water = models.CharField(max_length=255, blank=True, null=True)
-	prop_refuse = models.CharField(max_length=255, blank=True, null=True)
-	prop_property_tax = models.CharField(max_length=255, blank=True, null=True)
-	prop_sewerage = models.CharField(max_length=255, blank=True, null=True)
-	prop_insurance = models.CharField(max_length=255, blank=True, null=True)
+    prop_id = models.AutoField(primary_key=True)
+    prop_name = models.CharField(max_length=255, blank=True, null=True)
+    prop_address1 = models.CharField(max_length=255, blank=True, null=True)
+    prop_address2 = models.CharField(max_length=255, blank=True, null=True)
+    prop_suburb = models.CharField(max_length=255, blank=True, null=True)
+    prop_city = models.CharField(max_length=255, blank=True, null=True)
+    prop_province = models.CharField(max_length=255, blank=True, null=True)
+    prop_country = models.CharField(max_length=255, blank=True, null=True)
+    prop_pcode = models.CharField(max_length=255, blank=True, null=True)
+    prop_floor_area = models.IntegerField(blank=True, null=True)
+    prop_year_built = models.IntegerField(blank=True, null=True)
+    prop_status = models.CharField(max_length=255, blank=True, null=True)
+    prop_available_for_rent = models.CharField(max_length=255, blank=True, null=True)
+    prop_title_deed = models.FileField(upload_to=title_deed_upload_path, blank=True, null=True)
+    prop_title_deed_status = models.CharField(max_length=255, blank=True, null=True)
+    prop_electricity = models.CharField(max_length=255, blank=True, null=True)
+    prop_water = models.CharField(max_length=255, blank=True, null=True)
+    prop_refuse = models.CharField(max_length=255, blank=True, null=True)
+    prop_property_tax = models.CharField(max_length=255, blank=True, null=True)
+    prop_sewerage = models.CharField(max_length=255, blank=True, null=True)
+    prop_insurance = models.CharField(max_length=255, blank=True, null=True)
 
-	def __str__(self):
-		return self.prop_name
+    def __str__(self):
+        return self.prop_name or f"Property {self.prop_id}"
 
-	class Meta:
-		db_table="prop"
+    class Meta:
+        db_table = "prop"
+        verbose_name = "Property"
+        verbose_name_plural = "Properties"
 
 class petty(models.Model):
 	petty_cash_id = models.AutoField(primary_key=True)

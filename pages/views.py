@@ -1242,6 +1242,77 @@ def properties_page(request):
 	return render (request, "properties.html", {"props":results})
 
 @login_required
+def properties_title_deed(request):
+    properties = props.objects.all().order_by('prop_country','prop_name')
+    
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        prop_id = request.POST.get('property_id')  # Changed from 'prop_id' to match form
+        
+        if not prop_id:
+            messages.error(request, 'No property selected')
+            return redirect('properties_title_deed')
+        
+        try:
+            property_obj = get_object_or_404(props, pk=prop_id)
+            
+            if action == 'delete':
+                if property_obj.prop_title_deed:
+                    # Delete the file from storage
+                    property_obj.prop_title_deed.delete()
+                    property_obj.prop_title_deed_status = "No Title Deed"
+                    property_obj.save()
+                    messages.success(request, f'Title deed deleted for {property_obj.prop_name}!')
+                else:
+                    messages.warning(request, 'No title deed found to delete.')
+                    
+
+            elif action == 'upload':
+                if 'title_deed' in request.FILES:
+                    uploaded_file = request.FILES['title_deed']
+                    
+                    # Validate file size (10MB limit)
+                    if uploaded_file.size > 10 * 1024 * 1024:
+                        messages.error(request, 'File size exceeds 10MB limit')
+                        return redirect('properties_title_deed')
+                    
+                    # Validate file type
+                    allowed_extensions = ['.pdf', '.jpg', '.jpeg', '.png']
+                    file_extension = os.path.splitext(uploaded_file.name)[1].lower()
+                    
+                    if file_extension not in allowed_extensions:
+                        messages.error(request, 'Invalid file type. Please upload PDF or image files only.')
+                        return redirect('properties_title_deed')
+                    
+                    try:
+                        # Ensure directory exists
+                        upload_path = os.path.join(settings.MEDIA_ROOT, 'properties', 'title_deeds')
+                        os.makedirs(upload_path, exist_ok=True)
+                        
+                        # Delete old file if exists
+                        if property_obj.prop_title_deed:
+                            property_obj.prop_title_deed.delete(save=False)
+                        
+                        # Save new file
+                        property_obj.prop_title_deed = uploaded_file
+                        property_obj.prop_title_deed_status = "Title Deed Uploaded"
+                        property_obj.save()
+                        
+                        messages.success(request, f'Title deed uploaded successfully for {property_obj.prop_name}!')
+                    except Exception as e:
+                        messages.error(request, f'Error saving file: {str(e)}')
+                else:
+                    messages.error(request, 'Please select a file to upload')
+                    
+        except Exception as e:
+            messages.error(request, f'Error processing request: {str(e)}')
+    
+    context = {
+        'properties': properties,
+    }
+    return render(request, 'properties_title_deed.html', context)
+
+@login_required
 def properties_add(request):
 	results = props.objects.all().order_by('prop_country','prop_name')
 	existing_names = list(props.objects.values_list('prop_name', flat=True))
@@ -1428,7 +1499,7 @@ def act_expense_upload_inv(request):
         'expenses': expenses,
     }
     return render(request, 'act_expense_upload_inv.html', context)
-    
+
 @login_required
 def act_expense_view(request):
     # Get year/month from request or use current year as default
@@ -2589,20 +2660,17 @@ def property_report(request, prop_id):
 
 @login_required
 def title_deed_report(request, prop_id):
-	today = date.today()
-	property = get_object_or_404(props.objects.only(
-		'prop_id', 'prop_name', 'prop_address1', 'prop_address2', 'prop_suburb', 
-		'prop_city', 'prop_province', 'prop_country', 'prop_pcode',
-		'prop_floor_area', 'prop_year_built', 'prop_status',
-		'prop_available_for_rent', 'prop_title_deed',
-		'prop_title_deed_status', 'prop_electricity', 'prop_water',
-		'prop_refuse', 'prop_property_tax', 'prop_sewerage', 'prop_insurance'
-	), pk=prop_id)
-	context = {
-		'today': today,
-		'property': property,
-	}
-	return render(request, 'title_deed_report.html', context)
+    property = get_object_or_404(props, pk=prop_id)
+    
+    if not property.prop_title_deed:
+        return JsonResponse({'error': 'No title deed available for this property'}, status=404)
+    
+    # Return JSON with the file URL and type
+    return JsonResponse({
+        'file_url': property.prop_title_deed.url,
+        'file_name': property.prop_title_deed.name.split('/')[-1],
+        'file_type': property.prop_title_deed.name.split('.')[-1].lower()
+    })
 
 @login_required
 def lease_agreement_report(request, tenant_id):
