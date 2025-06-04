@@ -41,6 +41,20 @@ def title_deed_upload_path(instance, filename):
     # Return full path
     return os.path.join('properties', 'title_deeds', filename)
 
+def lease_agreement_upload_path(instance, filename):
+    """Generate upload path for lease agreements"""
+    # Sanitize the tenant name
+    tenant_name_slug = slugify(instance.tenant_name or 'tenant')
+    
+    # Get file extension
+    ext = os.path.splitext(filename)[1].lower()
+    
+    # Generate filename
+    filename = f"tenant_{instance.tenant_id}_{tenant_name_slug[:50]}_lease_agreement{ext}"
+    
+    # Return full path
+    return os.path.join('tenants', 'lease_agreements', filename)
+
 ##### Create your models here ###############
 class props(models.Model):
     prop_id = models.AutoField(primary_key=True)
@@ -104,7 +118,18 @@ class tenant(models.Model):
     tenant_levies = models.IntegerField(blank=True, null=True)
     tenant_payment_terms = models.IntegerField(blank=True, null=True)
     tenant_current = models.CharField(max_length=255, blank=True, null=True)
-    tenant_lease_agreement = models.CharField(max_length=255, blank=True, null=True)
+    tenant_lease_agreement = models.FileField(
+        upload_to=lease_agreement_upload_path, 
+        blank=True, 
+        null=True,
+        verbose_name="Lease Agreement Document"
+    )
+    tenant_lease_agreement_status = models.CharField(
+        max_length=255, 
+        blank=True, 
+        null=True,
+        verbose_name="Lease Agreement Status"
+    )
 
     def clean(self):
         """Validate lease dates and check for ACTIVE tenant overlaps only"""
@@ -138,6 +163,8 @@ class tenant(models.Model):
 
     class Meta:
         db_table = "tenant"
+        verbose_name = "Tenant"
+        verbose_name_plural = "Tenants"
 
 class supplier(models.Model):
 	supplier_id = models.AutoField(primary_key=True)

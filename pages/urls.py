@@ -95,6 +95,7 @@ urlpatterns = [
     path('tenant_edit/<tenant_id>', views.tenant_edit, name='tenant_edit'),
     path('tenant_edit_commit/<tenant_id>', views.tenant_edit_commit, name='tenant_edit_commit'),
     path('tenant_commit/', views.tenant_commit, name='tenant_commit'),
+    path('tenant_lease_agreement/', views.tenant_lease_agreement, name='tenant_lease_agreement'),
     
     #
     #Properties

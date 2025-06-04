@@ -1080,6 +1080,77 @@ def tenant_edit_commit(request, tenant_id):
 	tresults = tenant.objects.all().order_by('tenant_name')
 	return render (request, "tenant.html", {"tenant":tresults, "props":results})
 
+@login_required
+def tenant_lease_agreement(request):
+    tenants = tenant.objects.all().order_by('prop__prop_country', 'prop__prop_name', 'tenant_name')
+    
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        tenant_id = request.POST.get('tenant_id')
+        
+        if not tenant_id:
+            messages.error(request, 'No tenant selected')
+            return redirect('tenant_lease_agreement')
+        
+        try:
+            tenant_obj = get_object_or_404(tenant, pk=tenant_id)
+            
+            if action == 'delete':
+                if tenant_obj.tenant_lease_agreement:
+                    # Delete the file from storage
+                    tenant_obj.tenant_lease_agreement.delete()
+                    tenant_obj.tenant_lease_agreement_status = "No Lease Agreement"
+                    tenant_obj.save()
+                    messages.success(request, f'Lease agreement deleted for {tenant_obj.tenant_name}!')
+                else:
+                    messages.warning(request, 'No lease agreement found to delete.')
+                    
+
+            elif action == 'upload':
+                if 'lease_agreement' in request.FILES:
+                    uploaded_file = request.FILES['lease_agreement']
+                    
+                    # Validate file size (10MB limit)
+                    if uploaded_file.size > 10 * 1024 * 1024:
+                        messages.error(request, 'File size exceeds 10MB limit')
+                        return redirect('tenant_lease_agreement')
+                    
+                    # Validate file type
+                    allowed_extensions = ['.pdf', '.jpg', '.jpeg', '.png']
+                    file_extension = os.path.splitext(uploaded_file.name)[1].lower()
+                    
+                    if file_extension not in allowed_extensions:
+                        messages.error(request, 'Invalid file type. Please upload PDF or image files only.')
+                        return redirect('tenant_lease_agreement')
+                    
+                    try:
+                        # Ensure directory exists
+                        upload_path = os.path.join(settings.MEDIA_ROOT, 'tenants', 'lease_agreements')
+                        os.makedirs(upload_path, exist_ok=True)
+                        
+                        # Delete old file if exists
+                        if tenant_obj.tenant_lease_agreement:
+                            tenant_obj.tenant_lease_agreement.delete(save=False)
+                        
+                        # Save new file
+                        tenant_obj.tenant_lease_agreement = uploaded_file
+                        tenant_obj.tenant_lease_agreement_status = "Lease Agreement Uploaded"
+                        tenant_obj.save()
+                        
+                        messages.success(request, f'Lease agreement uploaded successfully for {tenant_obj.tenant_name}!')
+                    except Exception as e:
+                        messages.error(request, f'Error saving file: {str(e)}')
+                else:
+                    messages.error(request, 'Please select a file to upload')
+                    
+        except Exception as e:
+            messages.error(request, f'Error processing request: {str(e)}')
+    
+    context = {
+        'tenants': tenants,
+    }
+    return render(request, 'tenant_lease_agreement.html', context)
+
 ### SUPPLIERS ###
 @login_required
 def suppliers(request):
