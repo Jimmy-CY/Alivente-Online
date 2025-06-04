@@ -10,10 +10,12 @@ from django.db.models import Q, Prefetch, Subquery, OuterRef, Sum
 from django.db.models.functions import Coalesce
 from django.http import HttpResponse, HttpResponseServerError, FileResponse, Http404
 from django.shortcuts import render, redirect, get_object_or_404
+from django.template.loader import render_to_string, get_template
 from django.templatetags.static import static
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.dateparse import parse_date
+from django.utils.html import strip_tags
 from django.utils.timezone import now
 from django.views.decorators.cache import never_cache
 from django.views.static import serve
@@ -23,6 +25,7 @@ from .models import props, petty, issues, issues_details, tenant, invoices, supp
 from collections import defaultdict
 from datetime import date, datetime, timedelta
 from urllib.parse import urlparse, parse_qs
+from xhtml2pdf import pisa
 import mysql.connector
 import smtplib
 from email.mime.text import MIMEText
@@ -33,7 +36,17 @@ import uuid
 import logging
 import json
 
+
 logger = logging.getLogger(__name__)
+
+def render_to_pdf(template_src, context_dict):
+    template = get_template(template_src)
+    html = template.render(context_dict)
+    response = HttpResponse(content_type='application/pdf')
+    pisa_status = pisa.CreatePDF(html, dest=response)
+    if pisa_status.err:
+        return HttpResponse('PDF generation failed', status=500)
+    return response
 
 ### HOME ###
 def home(request):
@@ -2096,63 +2109,113 @@ def fsr_comment_add(request, issues_id):
     # If not POST, redirect to details page
     return redirect(reverse('fsr_details', args=[issues_id]))
 
+def get_fsr_context_data(request):
+    status_groups = []
+    # Use your actual model name 'issues' (lowercase as defined)
+    statuses = issues.objects.values_list('issues_status', flat=True).distinct()
+    
+    # Define the desired order for statuses
+    status_order = ['Resolved', 'Unresolved', 'Issue']
+    
+    # Sort statuses according to the defined order
+    # First get statuses that match our order, then any others that might exist
+    ordered_statuses = []
+    for preferred_status in status_order:
+        if preferred_status in statuses:
+            ordered_statuses.append(preferred_status)
+    
+    # Add any other statuses that weren't in our predefined order
+    for status in statuses:
+        if status not in ordered_statuses:
+            ordered_statuses.append(status)
+    
+    for status in ordered_statuses:
+        property_issues = []
+        # Filter using the correct field name
+        issues_with_status = issues.objects.filter(issues_status=status)
+        # Access related property name via ForeignKey
+        properties = issues_with_status.values_list('prop__prop_name', flat=True).distinct()
+        
+        for prop_name in properties:
+            issues_fsr = issues_with_status.filter(prop__prop_name=prop_name)
+            issue_data = []
+            
+            for issue in issues_fsr:
+                # Use the correct foreign key field name 'issues' and primary key 'issues_id'
+                # CHANGED: Added '-issues_details_date' for descending order
+                details = issues_details.objects.filter(issues=issue.issues_id).order_by('-issues_details_date')
+                issue_data.append({
+                    'issues_id': issue.issues_id,  # Use the actual primary key field name
+                    'issues_heading': issue.issues_heading,
+                    'issues_description': issue.issues_description,
+                    'days_to_resolve': getattr(issue, 'days_to_resolve', None),  # This field doesn't exist in your model
+                    'days_open': getattr(issue, 'days_open', None),  # This field doesn't exist in your model
+                    'details': details
+                })
+            
+            property_issues.append({
+                'prop_name': prop_name,
+                'issues': issue_data
+            })
+        
+        status_groups.append({
+            'status': status,
+            'property_issues': property_issues
+        })
+    
+    return {
+        'status_groups': status_groups,
+        'today': date.today(),
+        'request': request
+    }
+
+def fsr_pdf(request):
+    context = get_fsr_context_data(request)
+    return render_to_pdf('fsr_email.html', context)
+
 @login_required
 def fsr_notification(request):
-    """
-    Send email notification that a Friday Status Report has been updated
-    """
     smtp_object = None
     try:
-        # Create message
-        msg = MIMEMultipart()
+        # Fetch context data for the report
+        context = get_fsr_context_data(request)
+        
+        # Render HTML content - note the corrected template name
+        html_content = render_to_string("fsr_email.html", context, request=request)
+        text_content = strip_tags(html_content)
+        
+        # Prepare email
+        msg = MIMEMultipart("alternative")
         msg['From'] = "demetrimanias@gmail.com"
-        if not request.user.is_superuser:
-            msg['To'] = "demetrimanias@gmail.com"
-        else:
-            msg['To'] = "demetrimanias@gmail.com"
-        msg['Subject'] = "Friday Status Report has been Updated"
+        msg['To'] = "demetrimanias@gmail.com"
+        msg['Subject'] = "Friday Status Report"
         
-        # Email body with proper formatting
-        body = f"""Dear User,
-
-The Friday Status Report has been updated and is ready for your review.
-
-Thanks,
-
-
-Alivente Property Management System"""
+        # Attach both plain text and HTML
+        msg.attach(MIMEText(text_content, 'plain'))
+        msg.attach(MIMEText(html_content, 'html'))
         
-        msg.attach(MIMEText(body, 'plain'))
-        
-        # SMTP setup with more detailed error handling
+        # SMTP setup
         smtp_object = smtplib.SMTP('smtp.gmail.com', 587)
         smtp_object.ehlo()
         smtp_object.starttls()
         
         email = "demetrimanias@gmail.com"
-        password = "nfvb been waqz wwks"
+        password = "nfvb been waqz wwks"  # Consider using environment variables for credentials
         
         smtp_object.login(email, password)
+        smtp_object.sendmail(email, "demetrimanias@gmail.com", msg.as_string())
         
-        # Send email
-        text = msg.as_string()
-        if not request.user.is_superuser:
-            smtp_object.sendmail(email, "demetrimanias@gmail.com", text)
-        else:
-            smtp_object.sendmail(email, "demetrimanias@gmail.com", text)
-        
-        # Add success message
-        messages.success(request, "Email notification sent successfully!")
-        
+        messages.success(request, "Friday Status Report sent successfully!")
+    
     except smtplib.SMTPAuthenticationError as e:
         logger.error(f"SMTP Authentication Error: {e}")
-        messages.error(request, "Failed to send email notification - Authentication error.")
+        messages.error(request, "Failed to send email - Authentication error.")
     except smtplib.SMTPException as e:
         logger.error(f"SMTP Error: {e}")
-        messages.error(request, "Failed to send email notification - SMTP error.")
+        messages.error(request, "Failed to send email - SMTP error.")
     except Exception as e:
         logger.error(f"Error sending email: {e}")
-        messages.error(request, "Failed to send email notification.")
+        messages.error(request, f"Failed to send email notification: {str(e)}")
     finally:
         if smtp_object:
             try:
@@ -2160,7 +2223,6 @@ Alivente Property Management System"""
             except:
                 pass
     
-    # Always return a redirect - this is what Django expects
     return redirect('fsr')
 
 ### REPORTS - DASHBOARD (FROM HOME PAGE) ###

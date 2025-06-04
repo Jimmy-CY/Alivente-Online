@@ -11,9 +11,11 @@
                 <h2 class="report-title-main">FRIDAY STATUS REPORT</h2>
                 <h3 class="report-title-sub">{{ today|date:"Y-m-d" }}</h3>
             </div>
-            <a href="{% url 'fsr' %}" class="btn btn-info back-button" role="button">Back</a>
+            <div style="display: flex; gap: 16px;">
+                <a href="{% url 'fsr_notification' %}" class="btn btn-info back-button" role="button">Submit FSR</a>
+                <a href="{% url 'fsr' %}" class="btn btn-info back-button" role="button">Back</a>
+            </div>
         </div>
-
         <div class="report-body">
             <!-- Issues Section -->
             {% for status_group in status_groups %}

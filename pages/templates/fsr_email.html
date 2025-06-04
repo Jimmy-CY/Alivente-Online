@@ -1,0 +1,68 @@
+{% load static %}
+
+{% block title %}Friday Status Report{% endblock %}
+
+{% block content %}
+<div style="font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px;">
+    <!-- Main Header - Underlined and Left-aligned -->
+    <h1 style="text-decoration: underline; font-size: 24px; color: #2c3e50; margin: 0 0 8px 0; text-align: left; padding: 0;">
+        FRIDAY STATUS REPORT {{ today|date:"Y-m-d" }}
+    </h1>
+    
+    {% for status_group in status_groups %}
+        <!-- Level 1: STATUS -->
+        <div style="margin: 0 0 3px 5px; padding: 0;">
+            <h2 style="font-size: 20px; color: #FFA500; margin: 0 0 2px 0; padding: 0; line-height: 1.2;">
+                STATUS: {{ status_group.status|upper }}
+            </h2>
+            
+            {% for property in status_group.property_issues %}
+                <!-- Level 2: Property Name -->
+                <div style="margin: 0 0 2px 10px; padding: 0;">
+                    <h3 style="font-size: 18px; color: #0000FF; margin: 0 0 1px 0; padding: 0; line-height: 1.2;">
+                        {{ property.prop_name|upper }}
+                    </h3>
+                    
+                    {% for issue in property.issues %}
+                        <!-- Level 3: Issue Heading -->
+                        <div style="margin: 0 0 1px 15px; padding: 0;">
+                            <h4 style="font-size: 16px; color: #495057; margin: 0 0 1px 0; padding: 0; line-height: 1.2;">
+                                {{ issue.issues_heading }} 
+                                <span style="font-weight: normal; color: #6c757d;">({{ issue.issues_description }})</span>
+                            </h4>
+                            
+                        <!-- Level 4: Details -->
+                        {% for detail in issue.details %}
+                            {% if detail.issues_details_user == 'SS' %}
+                                <div style="margin: 0 0 1px 20px; padding: 0; font-size: 14px; color: #FF0000; line-height: 1.2;">
+                            {% elif detail.issues_details_user == 'DM' %}
+                                <div style="margin: 0 0 1px 20px; padding: 0; font-size: 14px; color: #008000; line-height: 1.2;">
+                            {% else %}
+                                <div style="margin: 0 0 1px 20px; padding: 0; font-size: 14px; color: #495057; line-height: 1.2;">
+                            {% endif %}
+                                    {{ detail.issues_details_date|date:"Y-m-d" }} ({{ detail.issues_details_user }}): {{ detail.issues_details_comment }}
+                                </div>
+                        {% endfor %}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Separator line -->
+        <hr style="border: none; border-top: 1px solid #ccc; margin: 12px 0; padding: 0;">
+    {% endfor %}
+</div>
+
+<!-- Fallback styles -->
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        line-height: 1.2;
+    }
+    h1, h2, h3, h4, div {
+        margin: 0;
+        padding: 0;
+    }
+</style>
+{% endblock %}

@@ -57,15 +57,24 @@
 </div>
 
 <!-- Action Buttons -->
-<div style="display: flex; justify-content: flex-end; margin-bottom: 20px; gap: 16px;">
-    <a href="{% url 'fsr_notification' %}" class="btn btn-info">Update Notification</a>
-    <button class="btn btn-info" data-toggle="modal" data-target="#dateRangeModal">
-        Resolved Issues Report
-    </button>
-    <a href="{% url 'friday_status_report' %}" class="btn btn-info">Friday Status Report</a>
-    <a href="{% url 'fsr_add' %}" class="btn btn-info">Add New</a>
-    <a href="{% url 'home' %}" class="btn btn-info">Back</a>
+<div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+    <!-- Left-aligned button -->
+    <div>
+        <a href="{% url 'fsr_notification' %}" class="btn btn-info" role="button">Submit FSR</a>
+    </div>
+
+    <!-- Right-aligned buttons -->
+    <div style="display: flex; gap: 16px;">
+        <button class="btn btn-info" data-toggle="modal" data-target="#dateRangeModal">
+            Resolved Issues Report
+        </button>
+        <a href="{% url 'friday_status_report' %}" class="btn btn-info">Friday Status Report</a>
+        <a href="{% url 'fsr_add' %}" class="btn btn-info">Add New</a>
+        <a href="{% url 'home' %}" class="btn btn-info">Back</a>
+    </div>
 </div>
+
+
 
 <!-- Filters -->
 <div class="form-row">
