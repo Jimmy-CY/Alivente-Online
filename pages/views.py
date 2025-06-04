@@ -242,7 +242,7 @@ def admin_invoices(request):
 	import open_invoices
 	today = date.today()
 	months = ('Month','January','February','March','April','May','June','July','August','September','October','November','December')
-	open_invoices.create_invoices(months[today.month],today.year)
+	open_invoices.create_invoices(months[today.month],today.year,request)
 	return redirect("admin_apms")
 
 ### FINANCE ###

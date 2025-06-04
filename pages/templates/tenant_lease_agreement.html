@@ -28,6 +28,8 @@
 </div>
 <br/>
 
+{% if user.is_superuser %}
+
 <div>
 <table class="table table-bordered table-striped text-center">
 <thead>
@@ -164,6 +166,8 @@
     </div>
   </div>
 </div>
+
+{% endif %}
 
 <script>
 function uploadDocument(tenantId) {

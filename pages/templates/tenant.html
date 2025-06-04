@@ -111,20 +111,14 @@
               </button>
             </td>
             <td>
-                {% if user.is_superuser %}
-                    {% if tresults.tenant_lease_agreement %}
-                        <button type="button" class="btn btn-light" style="border-color:black; width: 100%"
-                                onclick="viewLeaseAgreement('{{ tresults.tenant_lease_agreement.url }}', '{{ tresults.tenant_lease_agreement.name }}', '{{ tresults.tenant_name }}')">
-                            <a href="#" style="text-decoration: none;">View</a>
-                        </button>
-                    {% else %}
-                        <span class="text-muted">No agreement</span>
-                    {% endif %}
-                {% else %}
-                    <button type="button" class="btn btn-light" style="border-color:black; width: 100%; opacity: 0.5; cursor: not-allowed; pointer-events: none;" disabled>
-                        <span style="color: #6c757d;">View</span>
-                    </button>
-                {% endif %}
+              {% if tresults.tenant_lease_agreement %}
+                  <button type="button" class="btn btn-light" style="border-color:black; width: 100%"
+                          onclick="viewLeaseAgreement('{{ tresults.tenant_lease_agreement.url }}', '{{ tresults.tenant_lease_agreement.name }}', '{{ tresults.tenant_name }}')">
+                      <a href="#" style="text-decoration: none;">View</a>
+                  </button>
+              {% else %}
+                  <span class="text-muted">No agreement</span>
+              {% endif %}
             </td>
           </tr>
         {% endif %}

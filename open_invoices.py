@@ -104,52 +104,73 @@ def open_invoices (rep_output,check,email,fname):
 		my_cursor.close()
 		mydb.close()
 
-def create_invoices(M,Y):
+def create_invoices(M, Y, request):
+    import mysql.connector
+    from datetime import datetime
+    from django.conf import settings
+    from django.contrib import messages  # for displaying messages
 
-	import mysql.connector
-	from datetime import date, datetime, timedelta
-	from django.conf import settings
+    # CONNECT TO DATABASE
+    mydb = mysql.connector.connect(
+        host=settings.DATABASES['default']['HOST'],
+        port=settings.DATABASES['default']['PORT'],
+        user=settings.DATABASES['default']['USER'],
+        password=settings.DATABASES['default']['PASSWORD'],
+        database=settings.DATABASES['default']['NAME'],
+        auth_plugin=settings.DATABASES['default']['AUTH_PLUGIN'],
+    )
 
-	# CONNECT TO DATBASE (FIRST HAVE TO LEAVE database line off until have created database)
-	mydb = mysql.connector.connect(
-		host = settings.DATABASES['default']['HOST'],
-		port = settings.DATABASES['default']['PORT'],
-		user = settings.DATABASES['default']['USER'],
-		password = settings.DATABASES['default']['PASSWORD'],
-		database = settings.DATABASES['default']['NAME'],
-		auth_plugin = settings.DATABASES['default']['AUTH_PLUGIN'],
-	)
+    # CREATE CURSOR INSTANCE
+    my_cursor = mydb.cursor()
 
-	# CREATE CURSOR INSTANCE
-	my_cursor = mydb.cursor()
+    my_cursor.execute("""
+        SELECT prop.prop_id, prop.prop_name, prop.prop_country, prop.prop_status, tenant.tenant_id 
+        FROM railway.tenant 
+        JOIN railway.prop ON prop.prop_id = tenant.prop_id 
+        WHERE tenant.tenant_current = 'Yes' AND prop.prop_status = 'Active' 
+        ORDER BY tenant.tenant_id ASC
+    """)
+    tenants = my_cursor.fetchall()
 
-	my_cursor.execute("SELECT prop.prop_id, prop.prop_name, prop.prop_country, prop.prop_status, tenant.tenant_id FROM railway.tenant JOIN railway.prop ON prop.prop_id = tenant.prop_id WHERE tenant.tenant_current = 'Yes' and prop.prop_status = 'Active' ORDER BY tenant.tenant_id ASC")
-	result = my_cursor.fetchall()
-	my_cursor.execute("SELECT  invoice.invoice_id, invoice.tenant_id, invoice.invoice_date, invoice.invoice_paid FROM railway.invoice WHERE invoice.invoice_paid = 'No' ORDER BY invoice.invoice_date ASC")
-	result_invoices = my_cursor.fetchall()
+    my_cursor.execute("""
+        SELECT invoice.invoice_id, invoice.tenant_id, invoice.invoice_date, invoice.invoice_paid 
+        FROM railway.invoice 
+        WHERE invoice.invoice_paid = 'No' 
+        ORDER BY invoice.invoice_date ASC
+    """)
+    existing_invoices = my_cursor.fetchall()
 
-	months = (('January','01'),('February','02'),('March','03'),('April','04'),('May','05'),('June','06'),('July','07'),('August','08'),('September','09'),('October','10'),('November','11'),('December','12'))
-	
-	for num in months:
-		if num [0] == M:
-			temp_date = '01-'+num[1]+'-'+str(Y)
-			new_invoice_date = datetime.strptime(temp_date, '%d-%m-%Y').date()
+    # Determine new invoice date
+    months = (('January','01'),('February','02'),('March','03'),('April','04'),('May','05'),('June','06'),
+              ('July','07'),('August','08'),('September','09'),('October','10'),('November','11'),('December','12'))
 
-	# INSERT INDIVIDUAL INVOICES INTO INVOICE TABLE
-	for row in result:
-		inv_count = 0
-		for inv in result_invoices:
-			if row[4] == inv[1] and inv[2]==new_invoice_date:
-				inv_count = inv_count + 1
-		if inv_count == 0:
-			sqlStuff = "INSERT INTO invoice (tenant_id,invoice_date,invoice_paid) VALUES (%s, %s, %s)"
-			records = [
-				(row[4],new_invoice_date,'No'),
-			]
-			my_cursor.executemany(sqlStuff, records)
-			mydb.commit()
+    for name, number in months:
+        if name == M:
+            temp_date = f'01-{number}-{Y}'
+            new_invoice_date = datetime.strptime(temp_date, '%d-%m-%Y').date()
+            break
 
-	if mydb.is_connected():
-		my_cursor.close()
-		mydb.close()
+    created_count = 0
+
+    # INSERT NEW INVOICES
+    for tenant in tenants:
+        tenant_id = tenant[4]
+        already_exists = any(inv[1] == tenant_id and inv[2] == new_invoice_date for inv in existing_invoices)
+
+        if not already_exists:
+            sql = "INSERT INTO invoice (tenant_id, invoice_date, invoice_paid) VALUES (%s, %s, %s)"
+            my_cursor.execute(sql, (tenant_id, new_invoice_date, 'No'))
+            created_count += 1
+
+    if created_count > 0:
+        mydb.commit()
+        messages.success(request, f"New invoices were created for all tenants for date: {new_invoice_date}.")
+    else:
+        messages.info(request, "No invoices were created, as they already exist.")
+
+    # Close connections
+    if mydb.is_connected():
+        my_cursor.close()
+        mydb.close()
+
 
