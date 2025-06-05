@@ -20,6 +20,26 @@
 </div>
 {% endfor %}
 
+<!-- Expense Details Modal -->
+<div class="modal fade" id="expenseDetailsModal" tabindex="-1" aria-labelledby="expenseDetailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="expenseDetailsModalLabel">Actual Expense Details</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="expenseDetailsContent">
+                <!-- Content loaded here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 {% if user.is_superuser %}
 
 <div class="d-flex justify-content-end mb-2">
@@ -154,7 +174,8 @@
                         <!-- January -->
                         <td class="text-right">
                             {% if actual_expense_totals.jan %}
-                                <a href="{% url 'act_expense_view' %}?year={{ selected_year|floatformat:"0" }}&month=1&from_finance_pl_act=true&prop={{ active_prop }}">
+                                <a href="#" class="expense-details-link" 
+                                   data-url="{% url 'act_expense_view' %}?year={{ selected_year|floatformat:"0" }}&month=1&from_finance_pl_act=true&prop={{ active_prop }}">
                                     {{ actual_expense_totals.jan|floatformat:"0"|intcomma }}
                                 </a>
                             {% else %}
@@ -165,8 +186,9 @@
                         <!-- February -->
                         <td class="text-right">
                             {% if actual_expense_totals.feb %}
-                                <a href="{% url 'act_expense_view' %}?year={{ selected_year|floatformat:"0" }}&month=2&from_finance_pl_act=true&prop={{ active_prop }}">
-                                    {{ actual_expense_totals.feb|floatformat:"0"|intcomma }}
+                                <a href="#" class="expense-details-link"
+                                   data-url="{% url 'act_expense_view' %}?year={{ selected_year|floatformat:"0" }}&month=2&from_finance_pl_act=true&prop={{ active_prop }}">
+                                   {{ actual_expense_totals.feb|floatformat:"0"|intcomma }}
                                 </a>
                             {% else %}
                                 0
@@ -176,7 +198,8 @@
                         <!-- March -->
                         <td class="text-right">
                             {% if actual_expense_totals.mar %}
-                                <a href="{% url 'act_expense_view' %}?year={{ selected_year|floatformat:"0" }}&month=3&from_finance_pl_act=true&prop={{ active_prop }}">
+                                <a href="#" class="expense-details-link"
+                                   data-url="{% url 'act_expense_view' %}?year={{ selected_year|floatformat:"0" }}&month=3&from_finance_pl_act=true&prop={{ active_prop }}">
                                     {{ actual_expense_totals.mar|floatformat:"0"|intcomma }}
                                 </a>
                             {% else %}
@@ -187,7 +210,8 @@
                         <!-- April -->
                         <td class="text-right">
                             {% if actual_expense_totals.apr %}
-                                <a href="{% url 'act_expense_view' %}?year={{ selected_year|floatformat:"0" }}&month=4&from_finance_pl_act=true&prop={{ active_prop }}">
+                                <a href="#" class="expense-details-link"
+                                   data-url="{% url 'act_expense_view' %}?year={{ selected_year|floatformat:"0" }}&month=4&from_finance_pl_act=true&prop={{ active_prop }}">
                                     {{ actual_expense_totals.apr|floatformat:"0"|intcomma }}
                                 </a>
                             {% else %}
@@ -198,7 +222,8 @@
                         <!-- May -->
                         <td class="text-right">
                             {% if actual_expense_totals.may %}
-                                <a href="{% url 'act_expense_view' %}?year={{ selected_year|floatformat:"0" }}&month=5&from_finance_pl_act=true&prop={{ active_prop }}">
+                                <a href="#" class="expense-details-link"
+                                   data-url="{% url 'act_expense_view' %}?year={{ selected_year|floatformat:"0" }}&month=5&from_finance_pl_act=true&prop={{ active_prop }}">
                                     {{ actual_expense_totals.may|floatformat:"0"|intcomma }}
                                 </a>
                             {% else %}
@@ -209,7 +234,8 @@
                         <!-- June -->
                         <td class="text-right">
                             {% if actual_expense_totals.jun %}
-                                <a href="{% url 'act_expense_view' %}?year={{ selected_year|floatformat:"0" }}&month=6&from_finance_pl_act=true&prop={{ active_prop }}">
+                                <a href="#" class="expense-details-link"
+                                   data-url="{% url 'act_expense_view' %}?year={{ selected_year|floatformat:"0" }}&month=6&from_finance_pl_act=true&prop={{ active_prop }}">
                                     {{ actual_expense_totals.jun|floatformat:"0"|intcomma }}
                                 </a>
                             {% else %}
@@ -220,7 +246,8 @@
                         <!-- July -->
                         <td class="text-right">
                             {% if actual_expense_totals.jul %}
-                                <a href="{% url 'act_expense_view' %}?year={{ selected_year|floatformat:"0" }}&month=7&from_finance_pl_act=true&prop={{ active_prop }}">
+                                <a href="#" class="expense-details-link"
+                                   data-url="{% url 'act_expense_view' %}?year={{ selected_year|floatformat:"0" }}&month=7&from_finance_pl_act=true&prop={{ active_prop }}">
                                     {{ actual_expense_totals.jul|floatformat:"0"|intcomma }}
                                 </a>
                             {% else %}
@@ -231,7 +258,8 @@
                         <!-- August -->
                         <td class="text-right">
                             {% if actual_expense_totals.aug %}
-                                <a href="{% url 'act_expense_view' %}?year={{ selected_year|floatformat:"0" }}&month=8&from_finance_pl_act=true&prop={{ active_prop }}">
+                                <a href="#" class="expense-details-link"
+                                   data-url="{% url 'act_expense_view' %}?year={{ selected_year|floatformat:"0" }}&month=8&from_finance_pl_act=true&prop={{ active_prop }}">
                                     {{ actual_expense_totals.aug|floatformat:"0"|intcomma }}
                                 </a>
                             {% else %}
@@ -242,7 +270,8 @@
                         <!-- September -->
                         <td class="text-right">
                             {% if actual_expense_totals.sep %}
-                                <a href="{% url 'act_expense_view' %}?year={{ selected_year|floatformat:"0" }}&month=9&from_finance_pl_act=true&prop={{ active_prop }}">
+                                <a href="#" class="expense-details-link"
+                                   data-url="{% url 'act_expense_view' %}?year={{ selected_year|floatformat:"0" }}&month=9&from_finance_pl_act=true&prop={{ active_prop }}">
                                     {{ actual_expense_totals.sep|floatformat:"0"|intcomma }}
                                 </a>
                             {% else %}
@@ -253,7 +282,8 @@
                         <!-- October -->
                         <td class="text-right">
                             {% if actual_expense_totals.oct %}
-                                <a href="{% url 'act_expense_view' %}?year={{ selected_year|floatformat:"0" }}&month=10&from_finance_pl_act=true&prop={{ active_prop }}">
+                                <a href="#" class="expense-details-link"
+                                   data-url="{% url 'act_expense_view' %}?year={{ selected_year|floatformat:"0" }}&month=10&from_finance_pl_act=true&prop={{ active_prop }}">
                                     {{ actual_expense_totals.oct|floatformat:"0"|intcomma }}
                                 </a>
                             {% else %}
@@ -264,7 +294,8 @@
                         <!-- November -->
                         <td class="text-right">
                             {% if actual_expense_totals.nov %}
-                                <a href="{% url 'act_expense_view' %}?year={{ selected_year|floatformat:"0" }}&month=11&from_finance_pl_act=true&prop={{ active_prop }}">
+                                <a href="#" class="expense-details-link"
+                                   data-url="{% url 'act_expense_view' %}?year={{ selected_year|floatformat:"0" }}&month=11&from_finance_pl_act=true&prop={{ active_prop }}">
                                     {{ actual_expense_totals.nov|floatformat:"0"|intcomma }}
                                 </a>
                             {% else %}
@@ -275,7 +306,8 @@
                         <!-- December -->
                         <td class="text-right">
                             {% if actual_expense_totals.dec %}
-                                <a href="{% url 'act_expense_view' %}?year={{ selected_year|floatformat:"0" }}&month=12&from_finance_pl_act=true&prop={{ active_prop }}">
+                                <a href="#" class="expense-details-link"
+                                   data-url="{% url 'act_expense_view' %}?year={{ selected_year|floatformat:"0" }}&month=12&from_finance_pl_act=true&prop={{ active_prop }}">
                                     {{ actual_expense_totals.dec|floatformat:"0"|intcomma }}
                                 </a>
                             {% else %}
@@ -285,7 +317,8 @@
                         
                         <!-- Year Total (Clickable) -->
                         <td class="text-right font-weight-bold">
-                            <a href="{% url 'act_expense_view' %}?year={{ selected_year|floatformat:"0" }}&from_finance_pl_act=true&prop={{ active_prop }}">
+                            <a href="#" class="expense-details-link" 
+                                data-url="{% url 'act_expense_view' %}?year={{ selected_year|floatformat:"0" }}&from_finance_pl_act=true&prop={{ active_prop }}">
                                 {{ actual_expense_totals.year|floatformat:"0"|intcomma }}
                             </a>
                         </td>
@@ -536,7 +569,8 @@
                                         <!-- January -->
                                         <td class="text-right">
                                             {% if prop_actual_expenses.jan %}
-                                                <a href="{% url 'act_expense_view' %}?year={{ selected_year }}&month=1&property_id={{ prop.prop_id }}&from_finance_pl_act=true">
+                                                <a href="#" class="expense-details-link" 
+                                                    data-url="{% url 'act_expense_view' %}?year={{ selected_year }}&month=1&property_id={{ prop.prop_id }}&from_finance_pl_act=true">
                                                     {{ prop_actual_expenses.jan|floatformat:"0"|intcomma }}
                                                 </a>
                                             {% else %}
@@ -547,7 +581,8 @@
                                         <!-- February -->
                                         <td class="text-right">
                                             {% if prop_actual_expenses.feb %}
-                                                <a href="{% url 'act_expense_view' %}?year={{ selected_year }}&month=2&property_id={{ prop.prop_id }}&from_finance_pl_act=true">
+                                                <a href="#" class="expense-details-link" 
+                                                    data-url="{% url 'act_expense_view' %}?year={{ selected_year }}&month=2&property_id={{ prop.prop_id }}&from_finance_pl_act=true">
                                                     {{ prop_actual_expenses.feb|floatformat:"0"|intcomma }}
                                                 </a>
                                             {% else %}
@@ -558,7 +593,8 @@
                                         <!-- March -->
                                         <td class="text-right">
                                             {% if prop_actual_expenses.mar %}
-                                                <a href="{% url 'act_expense_view' %}?year={{ selected_year }}&month=3&property_id={{ prop.prop_id }}&from_finance_pl_act=true">
+                                                <a href="#" class="expense-details-link" 
+                                                    data-url="{% url 'act_expense_view' %}?year={{ selected_year }}&month=3&property_id={{ prop.prop_id }}&from_finance_pl_act=true">
                                                     {{ prop_actual_expenses.mar|floatformat:"0"|intcomma }}
                                                 </a>
                                             {% else %}
@@ -569,7 +605,8 @@
                                         <!-- April -->
                                         <td class="text-right">
                                             {% if prop_actual_expenses.apr %}
-                                                <a href="{% url 'act_expense_view' %}?year={{ selected_year }}&month=4&property_id={{ prop.prop_id }}&from_finance_pl_act=true">
+                                                <a href="#" class="expense-details-link" 
+                                                    data-url="{% url 'act_expense_view' %}?year={{ selected_year }}&month=4&property_id={{ prop.prop_id }}&from_finance_pl_act=true">
                                                     {{ prop_actual_expenses.apr|floatformat:"0"|intcomma }}
                                                 </a>
                                             {% else %}
@@ -580,7 +617,8 @@
                                         <!-- May -->
                                         <td class="text-right">
                                             {% if prop_actual_expenses.may %}
-                                                <a href="{% url 'act_expense_view' %}?year={{ selected_year }}&month=5&property_id={{ prop.prop_id }}&from_finance_pl_act=true">
+                                                <a href="#" class="expense-details-link" 
+                                                    data-url="{% url 'act_expense_view' %}?year={{ selected_year }}&month=5&property_id={{ prop.prop_id }}&from_finance_pl_act=true">
                                                     {{ prop_actual_expenses.may|floatformat:"0"|intcomma }}
                                                 </a>
                                             {% else %}
@@ -591,7 +629,8 @@
                                         <!-- June -->
                                         <td class="text-right">
                                             {% if prop_actual_expenses.jun %}
-                                                <a href="{% url 'act_expense_view' %}?year={{ selected_year }}&month=6&property_id={{ prop.prop_id }}&from_finance_pl_act=true">
+                                                <a href="#" class="expense-details-link" 
+                                                    data-url="{% url 'act_expense_view' %}?year={{ selected_year }}&month=6&property_id={{ prop.prop_id }}&from_finance_pl_act=true">
                                                     {{ prop_actual_expenses.jun|floatformat:"0"|intcomma }}
                                                 </a>
                                             {% else %}
@@ -602,7 +641,8 @@
                                         <!-- July -->
                                         <td class="text-right">
                                             {% if prop_actual_expenses.jul %}
-                                                <a href="{% url 'act_expense_view' %}?year={{ selected_year }}&month=7&property_id={{ prop.prop_id }}&from_finance_pl_act=true">
+                                                <a href="#" class="expense-details-link" 
+                                                    data-url="{% url 'act_expense_view' %}?year={{ selected_year }}&month=7&property_id={{ prop.prop_id }}&from_finance_pl_act=true">
                                                     {{ prop_actual_expenses.jul|floatformat:"0"|intcomma }}
                                                 </a>
                                             {% else %}
@@ -613,7 +653,8 @@
                                         <!-- August -->
                                         <td class="text-right">
                                             {% if prop_actual_expenses.aug %}
-                                                <a href="{% url 'act_expense_view' %}?year={{ selected_year }}&month=8&property_id={{ prop.prop_id }}&from_finance_pl_act=true">
+                                                <a href="#" class="expense-details-link" 
+                                                    data-url="{% url 'act_expense_view' %}?year={{ selected_year }}&month=8&property_id={{ prop.prop_id }}&from_finance_pl_act=true">
                                                     {{ prop_actual_expenses.aug|floatformat:"0"|intcomma }}
                                                 </a>
                                             {% else %}
@@ -624,7 +665,8 @@
                                         <!-- September -->
                                         <td class="text-right">
                                             {% if prop_actual_expenses.sep %}
-                                                <a href="{% url 'act_expense_view' %}?year={{ selected_year }}&month=9&property_id={{ prop.prop_id }}&from_finance_pl_act=true">
+                                                <a href="#" class="expense-details-link" 
+                                                    data-url="{% url 'act_expense_view' %}?year={{ selected_year }}&month=9&property_id={{ prop.prop_id }}&from_finance_pl_act=true">
                                                     {{ prop_actual_expenses.sep|floatformat:"0"|intcomma }}
                                                 </a>
                                             {% else %}
@@ -635,7 +677,8 @@
                                         <!-- October -->
                                         <td class="text-right">
                                             {% if prop_actual_expenses.oct %}
-                                                <a href="{% url 'act_expense_view' %}?year={{ selected_year }}&month=10&property_id={{ prop.prop_id }}&from_finance_pl_act=true">
+                                                <a href="#" class="expense-details-link" 
+                                                    data-url="{% url 'act_expense_view' %}?year={{ selected_year }}&month=10&property_id={{ prop.prop_id }}&from_finance_pl_act=true">
                                                     {{ prop_actual_expenses.oct|floatformat:"0"|intcomma }}
                                                 </a>
                                             {% else %}
@@ -646,7 +689,8 @@
                                         <!-- November -->
                                         <td class="text-right">
                                             {% if prop_actual_expenses.nov %}
-                                                <a href="{% url 'act_expense_view' %}?year={{ selected_year }}&month=11&property_id={{ prop.prop_id }}&from_finance_pl_act=true">
+                                                <a href="#" class="expense-details-link" 
+                                                    data-url="{% url 'act_expense_view' %}?year={{ selected_year }}&month=11&property_id={{ prop.prop_id }}&from_finance_pl_act=true">
                                                     {{ prop_actual_expenses.nov|floatformat:"0"|intcomma }}
                                                 </a>
                                             {% else %}
@@ -657,7 +701,8 @@
                                         <!-- December -->
                                         <td class="text-right">
                                             {% if prop_actual_expenses.dec %}
-                                                <a href="{% url 'act_expense_view' %}?year={{ selected_year }}&month=12&property_id={{ prop.prop_id }}&from_finance_pl_act=true">
+                                                <a href="#" class="expense-details-link" 
+                                                    data-url="{% url 'act_expense_view' %}?year={{ selected_year }}&month=12&property_id={{ prop.prop_id }}&from_finance_pl_act=true">
                                                     {{ prop_actual_expenses.dec|floatformat:"0"|intcomma }}
                                                 </a>
                                             {% else %}
@@ -667,7 +712,8 @@
                                         
                                         <!-- Year Total -->
                                         <td class="text-right font-weight-bold">
-                                            <a href="{% url 'act_expense_view' %}?year={{ selected_year }}&property_id={{ prop.prop_id }}&from_finance_pl_act=true">
+                                            <a href="#" class="expense-details-link" 
+                                               data-url="{% url 'act_expense_view' %}?year={{ selected_year }}&property_id={{ prop.prop_id }}&from_finance_pl_act=true">
                                                 {{ prop_actual_expenses.year|floatformat:"0"|intcomma }}
                                             </a>
                                         </td>
@@ -1043,6 +1089,74 @@ function updateUrlParam(key, value) {
     url.searchParams.set(key, value);
     window.history.pushState({}, '', url);
 }
+
+$(document).ready(function() {
+    $(document).on('click', '.expense-details-link', function(e) {
+        e.preventDefault();
+        var url = $(this).data('url');
+        
+        // Show loading indicator
+        $('#expenseDetailsContent').html(`
+            <div class="text-center py-4">
+                <div class="spinner-border text-info" role="status">
+                    <span class="sr-only">Loading...</span>
+                </div>
+                <p>Loading expense details...</p>
+            </div>
+        `);
+        
+        // Show modal
+        $('#expenseDetailsModal').modal('show');
+        
+        // Make AJAX request
+        $.ajax({
+            url: url,
+            type: 'GET',
+            success: function(data) {
+                try {
+                    // Create temporary DOM element to parse response
+                    var $temp = $('<div>').html(data);
+                    
+                    // Find the table - try multiple selectors
+                    var $table = $temp.find('table.table').first();
+                    if (!$table.length) $table = $temp.find('table').first();
+                    
+                    if ($table.length) {
+                        $('#expenseDetailsContent').html(
+                            $('<div class="table-responsive">').append($table)
+                        );
+                    } else {
+                        $('#expenseDetailsContent').html(`
+                            <div class="alert alert-warning">
+                                Could not find table in response. Showing raw data:
+                                <pre>${data.substring(0, 1000)}</pre>
+                            </div>
+                        `);
+                    }
+                } catch (e) {
+                    $('#expenseDetailsContent').html(`
+                        <div class="alert alert-danger">
+                            Error processing response: ${e.message}
+                        </div>
+                    `);
+                }
+            },
+            error: function(xhr) {
+                $('#expenseDetailsContent').html(`
+                    <div class="alert alert-danger">
+                        Failed to load data: ${xhr.status} ${xhr.statusText}
+                    </div>
+                `);
+            }
+        });
+    });
+
+    // Proper modal close handling
+    $('#expenseDetailsModal .close, #expenseDetailsModal .btn-secondary').on('click', function() {
+        $('#expenseDetailsModal').modal('hide');
+    });
+});
+
 </script>
 
 {% endblock %}

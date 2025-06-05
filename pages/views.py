@@ -1592,6 +1592,10 @@ def act_expense_view(request):
     from_finance_pl_act = request.GET.get('from_finance_pl_act', False)
     property_id = request.GET.get('property_id')
     
+#    template_name = 'act_expense.html'  # default full-page view
+#    if request.GET.get('from_finance_pl_act') == 'true':
+#        template_name = 'act_expense_modal_table.html'
+
     # Base queryset - only approved and paid expenses, ordered by date
     expenses = act_expense.objects.select_related('prop').filter(
         act_expense_approved="Yes",
