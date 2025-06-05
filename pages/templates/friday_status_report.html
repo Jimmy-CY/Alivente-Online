@@ -226,4 +226,22 @@
         }
     }
 </style>
+
+<script>
+// Detect when user returns to this page via back button
+window.addEventListener('pageshow', function(event) {
+    // If the page is being restored from cache (back button)
+    if (event.persisted) {
+        location.reload();
+    }
+});
+
+// Alternative approach - check if page was accessed via back button
+window.addEventListener('load', function() {
+    if (performance.navigation.type === performance.navigation.TYPE_BACK_FORWARD) {
+        location.reload();
+    }
+});
+</script>
+
 {% endblock %}

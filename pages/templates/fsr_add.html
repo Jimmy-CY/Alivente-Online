@@ -14,7 +14,7 @@
   {% csrf_token %}
   <div style="display: flex ; justify-content: flex-end">
       <button class="btn btn-info" style="margin-right:16px" type="submit">Save</button>
-      <a href="{% url 'fsr' %}" class="btn btn-info" style="margin-right:16px" role="button">Back</a>
+      <button class="btn btn-info" style="margin-right:16px" onclick="history.back()" type="button">Back</button>
   </div>
 <br/>
   <div class="form-row">
