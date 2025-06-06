@@ -51,7 +51,6 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "pages",
-    "django_celery_beat",
     "whitenoise.runserver_nostatic",
     "django.contrib.humanize",
     
