@@ -1,0 +1,9 @@
+{
+  "crons": [
+    {
+      "name": "Lease Renewal Check",
+      "schedule": "0 5 * * *",  // Runs daily at 5:00 AM UTC, which is 8AM Cyprus time
+      "command": "python manage.py check_lease_renewals"
+    }
+  ]
+}
