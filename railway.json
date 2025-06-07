@@ -1,4 +1,4 @@
-﻿{
+{
   "build": {
     "installCommand": "python -m pip install -r cron-requirements.txt"
   }
