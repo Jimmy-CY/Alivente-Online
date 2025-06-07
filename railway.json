@@ -1,6 +1,6 @@
 ﻿{
   "build": {
-    "builder": "DOCKER",
-    "dockerfile": "Dockerfile"
+    "builder": "NIXPACKS",
+    "installCommand": "python -m pip install -r cron-requirements.txt"
   }
 }
