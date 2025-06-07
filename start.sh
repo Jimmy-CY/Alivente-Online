@@ -1,1 +1,0 @@
-#!/bin/shpython manage.py check_lease_renewals

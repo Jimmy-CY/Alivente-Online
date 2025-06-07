@@ -2,3 +2,7 @@ Watching for file changes with StatReloader
 Watching for file changes with StatReloader
 Watching for file changes with StatReloader
 "GET / HTTP/1.1" 200 7615
+Watching for file changes with StatReloader
+"GET /finance/ HTTP/1.1" 200 10481
+"GET /finance_pl_act/ HTTP/1.1" 200 340998
+"GET /act_expense_view/?year=2025&month=5&from_finance_pl_act=true&prop=all HTTP/1.1" 200 5846
