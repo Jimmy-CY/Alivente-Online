@@ -101,10 +101,21 @@ class Command(BaseCommand):
         try:
             self.stdout.write('=== SENDING LEASE RENEWAL NOTIFICATION ===')
             
+            # Get email settings from environment variables
+            email_host = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
+            email_port = int(os.environ.get('EMAIL_PORT', '587'))
+            email_user = os.environ.get('EMAIL_USER', 'demetrimanias@gmail.com')
+            email_password = os.environ.get('EMAIL_PASSWORD')
+            email_to = os.environ.get('EMAIL_TO', 'demetrimanias@gmail.com')
+            
+            if not email_password:
+                self.stdout.write('❌ EMAIL_PASSWORD environment variable not set')
+                return False
+            
             # Create message
             msg = MIMEMultipart()
-            msg['From'] = "demetrimanias@gmail.com"
-            msg['To'] = "demetrimanias@gmail.com"
+            msg['From'] = email_user
+            msg['To'] = email_to
             msg['Subject'] = "Daily Property Management Alert - Lease Renewals & Vacant Properties"
             
             # Build email body based on counts
@@ -142,22 +153,15 @@ Automated Daily Report"""
             msg.attach(MIMEText(body, 'plain'))
             
             # SMTP setup with detailed error handling
-            smtp_object = smtplib.SMTP('smtp.gmail.com', 587)
+            smtp_object = smtplib.SMTP(email_host, email_port)
             smtp_object.ehlo()
             smtp_object.starttls()
             
-            email = "demetrimanias@gmail.com"
-            password = os.environ.get('EMAIL_PASSWORD')
-            
-            if not password:
-                self.stdout.write('❌ EMAIL_PASSWORD environment variable not set')
-                return False
-            
-            smtp_object.login(email, password)
+            smtp_object.login(email_user, email_password)
             
             # Send email
             text = msg.as_string()
-            smtp_object.sendmail(email, "demetrimanias@gmail.com", text)
+            smtp_object.sendmail(email_user, email_to, text)
             
             self.stdout.write('✅ Lease renewal notification email sent successfully!')
             return True
