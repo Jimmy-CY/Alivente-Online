@@ -7,5 +7,5 @@ WORKDIR /app
 COPY . .
 RUN pip install -r cron-requirements.txt
 
-# Simple startup with explicit logging
-CMD ["sh", "-c", "echo 'CONTAINER STARTING' && service cron start && echo 'CRON SERVICE STARTED' && crontab -l && echo 'KEEPING CONTAINER ALIVE' && while true; do echo 'Container heartbeat:' $(date); sleep 300; done"]
+# Force immediate output and simpler startup
+CMD ["sh", "-c", "echo 'STARTING CRON SERVICE' && service cron start && echo 'CRON STARTED' && echo 'Setting up cron job for lease renewals...' && echo '0 9 * * * cd /app && python manage.py check_lease_renewals' | crontab - && echo 'Cron job installed:' && crontab -l && echo 'Container is ready and waiting...' && exec tail -f /dev/null"]
