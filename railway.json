@@ -1,6 +1,13 @@
-﻿{
+{
   "build": {
     "builder": "NIXPACKS",
     "installCommand": "python -m pip install -r cron-requirements.txt"
-  }
+  },
+  "crons": [
+    {
+      "name": "Lease Renewal Check",
+      "schedule": "*/5 * * * *",
+      "command": "python manage.py check_lease_renewals"
+    }
+  ]
 }
