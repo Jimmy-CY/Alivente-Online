@@ -2,3 +2,4 @@
 python-crontab==3.2.0
 Django==5.1.4
 mysql-connector-python==9.1.0
+pymysql
