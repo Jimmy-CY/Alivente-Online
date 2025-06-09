@@ -3243,7 +3243,6 @@ def open_invoices_report(request):
 		mydb.close()
 	return render(request, 'open_invoices_report.html', context)
 
-
 @login_required
 def lease_renewal_report(request):
 	mydb = mysql.connector.connect(

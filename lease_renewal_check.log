@@ -12,3 +12,11 @@ Watching for file changes with StatReloader
 "GET /static/images/alivente_online_logo.png HTTP/1.1" 200 58508
 Not Found: /favicon.ico
 "GET /favicon.ico HTTP/1.1" 404 33420
+Watching for file changes with StatReloader
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 33420
+"GET /tenant/ HTTP/1.1" 200 26307
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
