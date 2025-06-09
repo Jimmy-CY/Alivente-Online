@@ -6,3 +6,9 @@ Watching for file changes with StatReloader
 "GET /finance/ HTTP/1.1" 200 10481
 "GET /finance_pl_act/ HTTP/1.1" 200 340998
 "GET /act_expense_view/?year=2025&month=5&from_finance_pl_act=true&prop=all HTTP/1.1" 200 5846
+Watching for file changes with StatReloader
+"GET /finance_pl_act/ HTTP/1.1" 200 340998
+"GET /static/css/my_style.css HTTP/1.1" 200 45
+"GET /static/images/alivente_online_logo.png HTTP/1.1" 200 58508
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 33420

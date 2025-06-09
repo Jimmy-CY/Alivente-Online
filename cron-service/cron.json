@@ -1,9 +1,0 @@
-﻿{
-  "crons": [
-    {
-      "name": "Lease Renewal Check",
-      "schedule": "*/5 * * * *",
-      "command": "python manage.py check_lease_renewals"
-    }
-  ]
-}
