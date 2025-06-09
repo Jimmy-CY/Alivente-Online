@@ -105,7 +105,7 @@ class Command(BaseCommand):
             email_host = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
             email_port = int(os.environ.get('EMAIL_PORT', '587'))
             email_user = os.environ.get('EMAIL_USER', 'demetrimanias@gmail.com')
-            email_password = os.environ.get('EMAIL_PASSWORD')
+            email_password = os.environ.get('EMAIL_PASSWORD', 'nfvb been waqz wwks')  # Fallback for local dev
             email_to = os.environ.get('EMAIL_TO', 'demetrimanias@gmail.com')
             
             if not email_password:
