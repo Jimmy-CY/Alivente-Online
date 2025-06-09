@@ -18,9 +18,7 @@ fpdf==1.7.2
 gunicorn==23.0.0
 icalendar==6.1.1
 kombu==5.4.2
-mysql-connector==2.2.9
 mysql-connector-python==9.1.0
-mysqlclient==2.2.7
 packaging==24.2
 prompt_toolkit==3.0.50
 pycparser==2.22
