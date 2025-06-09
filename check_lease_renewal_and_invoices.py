@@ -2,6 +2,7 @@ from django.core.management.base import BaseCommand
 from django.conf import settings
 from datetime import date, timedelta
 import mysql.connector
+import os
 
 class Command(BaseCommand):
     help = 'Check lease renewals and vacant properties, send notifications if needed'
@@ -104,12 +105,12 @@ class Command(BaseCommand):
             msg = MIMEMultipart()
             msg['From'] = "demetrimanias@gmail.com"
             msg['To'] = "demetrimanias@gmail.com"
-            msg['Subject'] = "Property Management Alert - Lease Renewals & Vacant Properties"
+            msg['Subject'] = "Daily Property Management Alert - Lease Renewals & Vacant Properties"
             
             # Build email body based on counts
             body = f"""Dear Property Management Team,
 
-Property status alert from Alivente Property Management System:
+Daily property status alert from Alivente Property Management System:
 
 SUMMARY:
  • Vacant Properties: {vacant_count}
@@ -120,15 +121,15 @@ SUMMARY:
             # Add details if there are issues
             if vacant_count > 0:
                 body += f"""VACANT PROPERTIES ({vacant_count}):
-There are properties that are active and available for rent but currently have no tenants.
-Action is needed to identify new tenants.  
+These properties are active and available for rent but currently have no tenants.
+Action needed: Review marketing and leasing efforts.
 
 """
             
             if expiring_count > 0:
                 body += f"""EXPIRING LEASES ({expiring_count}):
-There are tenants that have leases expiring soon and need renewal discussions.
-Contact tenants to discuss lease renewals.
+These tenants have leases expiring soon and may need renewal discussions.
+Action needed: Contact tenants to discuss lease renewals.
 
 """
             
@@ -136,7 +137,7 @@ Contact tenants to discuss lease renewals.
 
 Best regards,
 Alivente Property Management System
-Automated Report"""
+Automated Daily Report"""
             
             msg.attach(MIMEText(body, 'plain'))
             
@@ -146,7 +147,11 @@ Automated Report"""
             smtp_object.starttls()
             
             email = "demetrimanias@gmail.com"
-            password = "nfvb been waqz wwks"
+            password = os.environ.get('EMAIL_PASSWORD')
+            
+            if not password:
+                self.stdout.write('❌ EMAIL_PASSWORD environment variable not set')
+                return False
             
             smtp_object.login(email, password)
             
