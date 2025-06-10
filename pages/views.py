@@ -1274,15 +1274,21 @@ Alivente Property Management System"""
         
         msg.attach(MIMEText(body, 'plain'))
         
+        # Get email credentials from environment variables
+        email_password = os.environ.get('EMAIL_PASSWORD')
+        
+        if not email_password:
+            logger.error('❌ EMAIL_PASSWORD environment variable not set')
+            return False
+        
         # SMTP setup with more detailed error handling
         smtp_object = smtplib.SMTP('smtp.gmail.com', 587)
         smtp_object.ehlo()
         smtp_object.starttls()
         
         email = "demetrimanias@gmail.com"
-        password = "nfvb been waqz wwks"
         
-        smtp_object.login(email, password)
+        smtp_object.login(email, email_password)
         
         # Send email
         text = msg.as_string()
@@ -1737,15 +1743,21 @@ Alivente Property Management System"""
         
         msg.attach(MIMEText(body, 'plain'))
         
+        # Get email credentials from environment variables
+        email_password = os.environ.get('EMAIL_PASSWORD')
+        
+        if not email_password:
+            logger.error('❌ EMAIL_PASSWORD environment variable not set')
+            return False
+        
         # SMTP setup with more detailed error handling
         smtp_object = smtplib.SMTP('smtp.gmail.com', 587)
         smtp_object.ehlo()
         smtp_object.starttls()
         
         email = "demetrimanias@gmail.com"
-        password = "nfvb been waqz wwks"
         
-        smtp_object.login(email, password)
+        smtp_object.login(email, email_password)
         
         # Send email
         text = msg.as_string()
@@ -1793,15 +1805,21 @@ Alivente Property Management System"""
         
         msg.attach(MIMEText(body, 'plain'))
         
+        # Get email credentials from environment variables
+        email_password = os.environ.get('EMAIL_PASSWORD')
+        
+        if not email_password:
+            logger.error('❌ EMAIL_PASSWORD environment variable not set')
+            return False
+        
         # SMTP setup with more detailed error handling
         smtp_object = smtplib.SMTP('smtp.gmail.com', 587)
         smtp_object.ehlo()
         smtp_object.starttls()
         
         email = "demetrimanias@gmail.com"
-        password = "nfvb been waqz wwks"
         
-        smtp_object.login(email, password)
+        smtp_object.login(email, email_password)
         
         # Send email
         text = msg.as_string()
@@ -1849,15 +1867,21 @@ Alivente Property Management System"""
         
         msg.attach(MIMEText(body, 'plain'))
         
+        # Get email credentials from environment variables
+        email_password = os.environ.get('EMAIL_PASSWORD')
+        
+        if not email_password:
+            logger.error('❌ EMAIL_PASSWORD environment variable not set')
+            return False
+        
         # SMTP setup with more detailed error handling
         smtp_object = smtplib.SMTP('smtp.gmail.com', 587)
         smtp_object.ehlo()
         smtp_object.starttls()
         
         email = "demetrimanias@gmail.com"
-        password = "nfvb been waqz wwks"
         
-        smtp_object.login(email, password)
+        smtp_object.login(email, email_password)
         
         # Send email
         text = msg.as_string()
@@ -2204,7 +2228,7 @@ def fsr_notification(request):
         smtp_object.starttls()
         
         email = "demetrimanias@gmail.com"
-        password = "nfvb been waqz wwks"  # Consider using environment variables for credentials
+        password = os.environ.get('EMAIL_PASSWORD')
         
         smtp_object.login(email, password)
         smtp_object.sendmail(email, "demetrimanias@gmail.com", msg.as_string())

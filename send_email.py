@@ -16,7 +16,7 @@ def send_email (email_address, subject, report_name, file_name, fname):
 	email = "demetrimanias@gmail.com"
 	# password = getpass.getpass("Password: ")
 	# need to go to gmail and generate an App Password (Go to Gmail --> Settings --> See All Settings --> Accounts and Import --> Other Google Account Settings (in Change Account Settings) --> Security --> 2-Step Verification --> App Passwords)
-	password = "nfvb been waqz wwks"
+	password = os.environ.get('EMAIL_PASSWORD')
 	smtp_object.login(email,password)
 
 	from_address = email

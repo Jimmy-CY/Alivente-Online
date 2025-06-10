@@ -20,3 +20,25 @@ C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\views.py changed, reloa
 Watching for file changes with StatReloader
 C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\views.py changed, reloading.
 Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+"GET /act_expense_all/?from=home HTTP/1.1" 200 38087
+"GET /act_expense_add/ HTTP/1.1" 200 6516
+"POST /act_expense_commit/ HTTP/1.1" 302 0
+"GET /act_expense_all/ HTTP/1.1" 200 41136
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+"POST /mark_deleted/18 HTTP/1.1" 302 0
+"GET /act_expense_all/ HTTP/1.1" 200 38791
+"GET /act_expense_add/ HTTP/1.1" 200 6516
+"POST /act_expense_commit/ HTTP/1.1" 302 0
+"GET /act_expense_all/ HTTP/1.1" 200 41126
+"POST /mark_approved/19 HTTP/1.1" 302 0
+"GET /act_expense_all/ HTTP/1.1" 200 40962
+"POST /mark_deleted/19 HTTP/1.1" 302 0
+"GET /act_expense_all/ HTTP/1.1" 200 38791
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
