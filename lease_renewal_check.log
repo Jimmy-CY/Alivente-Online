@@ -49,3 +49,24 @@ Watching for file changes with StatReloader
 "GET /friday_status_report/ HTTP/1.1" 200 31680
 "GET /fsr_notification/ HTTP/1.1" 302 0
 "GET /fsr/ HTTP/1.1" 200 32319
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 7615
+"GET /tenant/ HTTP/1.1" 200 26307
+"GET /lease_renewal_report/ HTTP/1.1" 200 13731
+"GET /tenant/ HTTP/1.1" 200 26307
+Watching for file changes with StatReloader
+"GET /tenant_edit/9 HTTP/1.1" 200 11042
+"POST /tenant_edit_commit/9 HTTP/1.1" 200 26307
+"GET /tenant_edit/10 HTTP/1.1" 200 11046
+"GET /tenant/ HTTP/1.1" 200 26307
+"GET /lease_renewal_report/ HTTP/1.1" 200 13731
+"GET /tenant/ HTTP/1.1" 200 26307
+"GET /tenant_edit/10 HTTP/1.1" 200 11046
+"POST /tenant_edit_commit/10 HTTP/1.1" 200 27061
+"GET /lease_renewal_report/ HTTP/1.1" 200 12375
+"GET /tenant/ HTTP/1.1" 200 26306
+Watching for file changes with StatReloader
+"GET /tenant/ HTTP/1.1" 200 26306
+Watching for file changes with StatReloader
+"GET /open_invoices_report/ HTTP/1.1" 200 23697
+Watching for file changes with StatReloader
