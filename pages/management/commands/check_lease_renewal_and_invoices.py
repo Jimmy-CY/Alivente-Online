@@ -3,11 +3,34 @@ from django.conf import settings
 from datetime import date, timedelta
 import mysql.connector
 import os
+import sys
 
 class Command(BaseCommand):
     help = 'Check lease renewals and vacant properties, send notifications if needed'
     
     def handle(self, *args, **options):
+        self.stdout.write('=== STARTING LEASE RENEWAL CHECK ===')
+        self.stdout.write(f'Current working directory: {os.getcwd()}')
+        self.stdout.write(f'Python path: {sys.executable}')
+        
+        # Test environment variables
+        email_password = os.environ.get('EMAIL_PASSWORD')
+        if email_password:
+            self.stdout.write('✅ EMAIL_PASSWORD environment variable found')
+        else:
+            self.stdout.write('❌ EMAIL_PASSWORD environment variable NOT found')
+            return
+        
+        # Test database connection
+        try:
+            from django.db import connection
+            with connection.cursor() as cursor:
+                cursor.execute("SELECT 1")
+                self.stdout.write('✅ Database connection successful')
+        except Exception as e:
+            self.stdout.write(f'❌ Database connection failed: {e}')
+            return
+        
         self.stdout.write('Starting lease renewal and invoice checks...')
         
         # Get the data using the same logic as your view
@@ -24,7 +47,10 @@ class Command(BaseCommand):
         # Action needed - call your function XYZ
         if vacant_count > 0 or expiring_count > 0:
             self.stdout.write('Action needed! Running notification function...')
-            self.run_notification_function(vacant_count, expiring_count)
+            result = self.run_notification_function(vacant_count, expiring_count)
+            self.stdout.write(f'Email function returned: {result}')
+        
+        self.stdout.write('=== LEASE RENEWAL CHECK COMPLETED ===')
     
     def get_property_counts(self):
         """Get the same data as your view function"""
@@ -105,7 +131,7 @@ class Command(BaseCommand):
             email_host = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
             email_port = int(os.environ.get('EMAIL_PORT', '587'))
             email_user = os.environ.get('EMAIL_USER', 'demetrimanias@gmail.com')
-            email_password = os.environ.get('EMAIL_PASSWORD', 'nfvb been waqz wwks')  # Fallback for local dev
+            email_password = os.environ.get('EMAIL_PASSWORD')
             email_to = os.environ.get('EMAIL_TO', 'demetrimanias@gmail.com')
             
             if not email_password:

@@ -42,3 +42,10 @@ Watching for file changes with StatReloader
 "GET /act_expense_all/ HTTP/1.1" 200 38791
 C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\views.py changed, reloading.
 Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+"POST /mark_paid/11 HTTP/1.1" 302 0
+"GET /act_expense_all/ HTTP/1.1" 200 38582
+"GET /fsr/ HTTP/1.1" 200 31738
+"GET /friday_status_report/ HTTP/1.1" 200 31680
+"GET /fsr_notification/ HTTP/1.1" 302 0
+"GET /fsr/ HTTP/1.1" 200 32319
