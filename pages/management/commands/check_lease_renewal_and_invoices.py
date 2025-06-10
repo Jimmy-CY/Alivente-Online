@@ -255,12 +255,17 @@ class Command(BaseCommand):
                 <br>
                 <p>Property status alert from Alivente Property Management System:</p>
                 <br>
-                <p><b><u>REPORT SUMMARY:</u></b><br>
-                • Vacant Properties: {vacant_count}<br>
-                • Expiring Leases: {expiring_count}<br>
-                • Overdue Invoices: {overdue_count}</p>
-                <br>
-"""
+                <p><b><u>REPORT SUMMARY:</u></b><br>"""
+            
+            # Only show lines with counts > 0
+            if vacant_count > 0:
+                html_body += f"• Vacant Properties: {vacant_count}<br>"
+            if expiring_count > 0:
+                html_body += f"• Expiring Leases: {expiring_count}<br>"
+            if overdue_count > 0:
+                html_body += f"• Overdue Invoices: {overdue_count}<br>"
+            
+            html_body += "</p><br>"
             
             # Add detailed vacant properties list
             if vacant_count > 0:
@@ -304,12 +309,17 @@ class Command(BaseCommand):
 
 Status alert from Alivente Property Management System:
 
-REPORT SUMMARY:
- • Vacant Properties: {vacant_count}
- • Expiring Leases: {expiring_count}
- • Overdue Invoices: {overdue_count}
-
-"""
+REPORT SUMMARY:"""
+            
+            # Only show lines with counts > 0
+            if vacant_count > 0:
+                text_body += f"\n • Vacant Properties: {vacant_count}"
+            if expiring_count > 0:
+                text_body += f"\n • Expiring Leases: {expiring_count}"
+            if overdue_count > 0:
+                text_body += f"\n • Overdue Invoices: {overdue_count}"
+            
+            text_body += "\n\n"
             
             # Add plain text vacant properties
             if vacant_count > 0:
