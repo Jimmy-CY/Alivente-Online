@@ -131,3 +131,36 @@ Watching for file changes with StatReloader
 "GET /finance/ HTTP/1.1" 200 10481
 "GET /finance_pl_act/ HTTP/1.1" 200 346284
 "GET / HTTP/1.1" 200 7615
+Watching for file changes with StatReloader
+"GET /tenant/ HTTP/1.1" 200 26306
+"GET /tenant_edit/10 HTTP/1.1" 200 11046
+"GET /tenant_edit/9 HTTP/1.1" 200 11042
+"POST /tenant_edit_commit/9 HTTP/1.1" 200 27062
+"GET /lease_renewal_report/ HTTP/1.1" 200 13728
+Watching for file changes with StatReloader
+"GET /tenant/ HTTP/1.1" 200 26307
+"GET /tenant_edit/10 HTTP/1.1" 200 11046
+"GET /tenant/ HTTP/1.1" 200 26307
+"GET /tenant_edit/9 HTTP/1.1" 200 11042
+"POST /tenant_edit_commit/9 HTTP/1.1" 200 27061
+"GET /lease_renewal_report/ HTTP/1.1" 200 12375
+"GET /tenant/ HTTP/1.1" 200 26306
+"GET /lease_renewal_report/ HTTP/1.1" 200 12375
+"GET /tenant/ HTTP/1.1" 200 26306
+"GET /open_invoices_report/ HTTP/1.1" 200 23704
+"GET /tenant/ HTTP/1.1" 200 26306
+"GET /tenant_edit/9 HTTP/1.1" 200 11042
+"GET /tenant/ HTTP/1.1" 200 26306
+"GET /tenant/ HTTP/1.1" 200 26306
+"GET /tenant_edit/9 HTTP/1.1" 200 11042
+"GET /tenant/ HTTP/1.1" 200 26306
+"GET /properties/ HTTP/1.1" 200 26104
+"GET /tenant/ HTTP/1.1" 200 26306
+"GET /tenant_edit/8 HTTP/1.1" 200 11038
+"GET /tenant/ HTTP/1.1" 200 26306
+"GET /tenant_edit/9 HTTP/1.1" 200 11050
+"GET /tenant/ HTTP/1.1" 200 26306
+"GET / HTTP/1.1" 200 7615
+"GET /admin_apms/ HTTP/1.1" 200 6955
+"GET /tenant_lease_agreement/ HTTP/1.1" 200 21078
+"GET /media/tenants/lease_agreements/tenant_2_capacitor-partners-limited_lease_agreement.pdf HTTP/1.1" 200 854614

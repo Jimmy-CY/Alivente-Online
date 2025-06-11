@@ -253,7 +253,7 @@ class Command(BaseCommand):
             <body>
                 <p>Dear User,</p>
                 <br>
-                <p>Property status alert from Alivente Property Management System:</p>
+                <p>Property management alert from Alivente Property Management System:</p>
                 <br>
                 <p><b><u>REPORT SUMMARY:</u></b><br>"""
             
@@ -263,7 +263,7 @@ class Command(BaseCommand):
             if expiring_count > 0:
                 html_body += f"• Expiring Leases: {expiring_count}<br>"
             if overdue_count > 0:
-                html_body += f"• Overdue Invoices: {overdue_count}<br>"
+                html_body += f"• Tenants with Overdue Invoices: {overdue_count}<br>"
             
             html_body += "</p><br>"
             
@@ -287,7 +287,7 @@ class Command(BaseCommand):
             # Add detailed overdue invoices list
             if overdue_count > 0:
                 html_body += f"""<p><b><u>OVERDUE INVOICES ({overdue_count}):</u></b><br>
-                These properties have overdue invoices that require immediate attention. Contact tenants ASAP.</p><ul>"""
+                These tenants have overdue invoices that require immediate attention. Contact tenants ASAP.</p><ul>"""
                 for property_invoice in overdue_invoices:
                     html_body += f"<li><b>{property_invoice['prop_name']} ({property_invoice['prop_country']})</b> - Tenant: {property_invoice['tenant_name']}<br>"
                     for invoice in property_invoice['invoices']:
@@ -307,7 +307,7 @@ class Command(BaseCommand):
             # Create plain text version as backup
             text_body = f"""Dear User,
 
-Status alert from Alivente Property Management System:
+Property management alert from Alivente Property Management System:
 
 REPORT SUMMARY:"""
             
@@ -317,7 +317,7 @@ REPORT SUMMARY:"""
             if expiring_count > 0:
                 text_body += f"\n • Expiring Leases: {expiring_count}"
             if overdue_count > 0:
-                text_body += f"\n • Overdue Invoices: {overdue_count}"
+                text_body += f"\n • Tenants with Overdue Invoices: {overdue_count}"
             
             text_body += "\n\n"
             
@@ -341,7 +341,7 @@ These tenants have leases expiring soon and need renewal discussions. Contact te
             # Add plain text overdue invoices
             if overdue_count > 0:
                 text_body += f"""OVERDUE INVOICES ({overdue_count}):
-These properties have overdue invoices that require immediate attention. Contact tenants ASAP."""
+These tenants have overdue invoices that require immediate attention. Contact tenants ASAP."""
                 for property_invoice in overdue_invoices:
                     text_body += f"\n • {property_invoice['prop_name']} ({property_invoice['prop_country']}) - Tenant: {property_invoice['tenant_name']}"
                     for invoice in property_invoice['invoices']:

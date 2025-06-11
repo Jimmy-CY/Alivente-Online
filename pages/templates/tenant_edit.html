@@ -128,22 +128,22 @@
     </div>
   </div>
   <div class="form-row">
-  	<div class="form-group col-md-4">
+    <div class="form-group col-md-4">
       <label for="tenant_current"><strong>Tenant Status</strong></label>
       <select id="tenant_current" class="form-control" name="tenant_current" required>
         <option disabled>Select Active or Inactive</option>
-          {% if tesults.tenant_current == "Active" %}
-            <option selected value="Active">Active</option>
+          {% if tresults.tenant_current == "Yes" %}
+            <option selected value="Yes">Active</option>
           {% else %}
             <option value="Yes">Active</option>
           {% endif %}
-          {% if tresults.tenant_renewal == "Inactive" %}
-            <option selected value="Inactive">Inactive</option>
+          {% if tresults.tenant_current == "No" %}
+            <option selected value="No">Inactive</option>
           {% else %}
             <option value="No">Inactive</option>
           {% endif %}
       </select>
-    </div>    
+    </div>  
     <div class="form-group col-md-4">
       <label for="prop"><strong>Property</strong></label>
       <select id="prop" class="form-control" name="prop" required>
