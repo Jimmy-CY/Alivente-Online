@@ -164,3 +164,7 @@ Watching for file changes with StatReloader
 "GET /admin_apms/ HTTP/1.1" 200 6955
 "GET /tenant_lease_agreement/ HTTP/1.1" 200 21078
 "GET /media/tenants/lease_agreements/tenant_2_capacitor-partners-limited_lease_agreement.pdf HTTP/1.1" 200 854614
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 7615
+"GET /admin_apms/ HTTP/1.1" 200 6955
+"GET /admin_apms/ HTTP/1.1" 200 6955

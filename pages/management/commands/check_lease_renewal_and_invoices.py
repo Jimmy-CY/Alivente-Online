@@ -1,15 +1,15 @@
 from django.core.management.base import BaseCommand
 from django.conf import settings
-from datetime import date, timedelta
+from datetime import date, timedelta, datetime
 import mysql.connector
 import os
 import sys
 
 class Command(BaseCommand):
-    help = 'Check lease renewals, vacant properties, and outstanding invoices, send notifications if needed'
+    help = 'Check lease renewals, vacant properties, outstanding invoices, and create new invoices if needed'
     
     def handle(self, *args, **options):
-        self.stdout.write('=== STARTING LEASE RENEWAL AND INVOICE CHECK ===')
+        self.stdout.write('=== STARTING LEASE RENEWAL, INVOICE CHECK, AND INVOICE CREATION ===')
         self.stdout.write(f'Current working directory: {os.getcwd()}')
         self.stdout.write(f'Python path: {sys.executable}')
         
@@ -31,31 +31,117 @@ class Command(BaseCommand):
             self.stdout.write(f'❌ Database connection failed: {e}')
             return
         
-        self.stdout.write('Starting lease renewal and invoice checks...')
+        self.stdout.write('Starting invoice creation, lease renewal and invoice checks...')
         
-        # Get all the data with property details
+        # First, create invoices if needed
+        created_invoices_count = self.create_invoices()
+        
+        # Then get all the data with property details
         vacant_properties, expiring_leases, overdue_invoices = self.get_all_property_details()
         
         vacant_count = len(vacant_properties)
         expiring_count = len(expiring_leases)
         overdue_count = len(overdue_invoices)
         
+        self.stdout.write(f'Invoices created today: {created_invoices_count}')
         self.stdout.write(f'Vacant properties: {vacant_count}')
         self.stdout.write(f'Expiring leases: {expiring_count}')
         self.stdout.write(f'Overdue invoices: {overdue_count}')
         
-        # Check if action is needed
-        if vacant_count == 0 and expiring_count == 0 and overdue_count == 0:
-            self.stdout.write('No action needed - no vacant properties, expiring leases, or overdue invoices')
+        # Check if action is needed (including invoice creation)
+        if vacant_count == 0 and expiring_count == 0 and overdue_count == 0 and created_invoices_count == 0:
+            self.stdout.write('No action needed - no vacant properties, expiring leases, overdue invoices, or new invoices created')
             return
         
         # Action needed - send notification
-        if vacant_count > 0 or expiring_count > 0 or overdue_count > 0:
+        if vacant_count > 0 or expiring_count > 0 or overdue_count > 0 or created_invoices_count > 0:
             self.stdout.write('Action needed! Running notification function...')
-            result = self.run_notification_function(vacant_properties, expiring_leases, overdue_invoices)
+            result = self.run_notification_function(vacant_properties, expiring_leases, overdue_invoices, created_invoices_count)
             self.stdout.write(f'Email function returned: {result}')
         
-        self.stdout.write('=== LEASE RENEWAL AND INVOICE CHECK COMPLETED ===')
+        self.stdout.write('=== LEASE RENEWAL, INVOICE CHECK, AND INVOICE CREATION COMPLETED ===')
+    
+    def create_invoices(self):
+        """Create invoices for current month if they don't already exist"""
+        today = date.today()
+        months = ('Month','January','February','March','April','May','June',
+                 'July','August','September','October','November','December')
+        
+        current_month = months[today.month]
+        current_year = today.year
+        
+        self.stdout.write(f'Checking invoice creation for {current_month} {current_year}')
+        
+        mydb = mysql.connector.connect(
+            host=settings.DATABASES['default']['HOST'],
+            port=settings.DATABASES['default']['PORT'],
+            user=settings.DATABASES['default']['USER'],
+            password=settings.DATABASES['default']['PASSWORD'],
+            database=settings.DATABASES['default']['NAME'],
+            auth_plugin=settings.DATABASES['default']['AUTH_PLUGIN'],
+        )
+        
+        my_cursor = mydb.cursor()
+        
+        try:
+            # Get all current active tenants
+            my_cursor.execute("""
+                SELECT prop.prop_id, prop.prop_name, prop.prop_country, prop.prop_status, tenant.tenant_id 
+                FROM railway.tenant 
+                JOIN railway.prop ON prop.prop_id = tenant.prop_id 
+                WHERE tenant.tenant_current = 'Yes' AND prop.prop_status = 'Active' 
+                ORDER BY tenant.tenant_id ASC
+            """)
+            tenants = my_cursor.fetchall()
+            
+            # Get existing unpaid invoices
+            my_cursor.execute("""
+                SELECT invoice.invoice_id, invoice.tenant_id, invoice.invoice_date, invoice.invoice_paid 
+                FROM railway.invoice 
+                WHERE invoice.invoice_paid = 'No' 
+                ORDER BY invoice.invoice_date ASC
+            """)
+            existing_invoices = my_cursor.fetchall()
+            
+            # Determine new invoice date (1st of current month)
+            months_mapping = (('January','01'),('February','02'),('March','03'),('April','04'),
+                            ('May','05'),('June','06'),('July','07'),('August','08'),
+                            ('September','09'),('October','10'),('November','11'),('December','12'))
+            
+            for name, number in months_mapping:
+                if name == current_month:
+                    temp_date = f'01-{number}-{current_year}'
+                    new_invoice_date = datetime.strptime(temp_date, '%d-%m-%Y').date()
+                    break
+            
+            created_count = 0
+            
+            # Create new invoices for tenants who don't have one for this month
+            for tenant in tenants:
+                tenant_id = tenant[4]
+                # Check if invoice already exists for this tenant and date
+                already_exists = any(inv[1] == tenant_id and inv[2] == new_invoice_date for inv in existing_invoices)
+                
+                if not already_exists:
+                    sql = "INSERT INTO invoice (tenant_id, invoice_date, invoice_paid) VALUES (%s, %s, %s)"
+                    my_cursor.execute(sql, (tenant_id, new_invoice_date, 'No'))
+                    created_count += 1
+            
+            if created_count > 0:
+                mydb.commit()
+                self.stdout.write(f'✅ Created {created_count} new invoices for {new_invoice_date}')
+            else:
+                self.stdout.write(f'ℹ️  No new invoices created - they already exist for {new_invoice_date}')
+            
+            return created_count
+            
+        except Exception as e:
+            self.stdout.write(f'❌ Error creating invoices: {e}')
+            return 0
+        finally:
+            if mydb.is_connected():
+                my_cursor.close()
+                mydb.close()
     
     def get_all_property_details(self):
         """Get detailed property, lease, and invoice information"""
@@ -206,8 +292,8 @@ class Command(BaseCommand):
         
         return properties_with_overdue_invoices
     
-    def run_notification_function(self, vacant_properties, expiring_leases, overdue_invoices):
-        """Send email notification for lease renewals, vacant properties, and overdue invoices"""
+    def run_notification_function(self, vacant_properties, expiring_leases, overdue_invoices, created_invoices_count):
+        """Send email notification for lease renewals, vacant properties, overdue invoices, and invoice creation"""
         import smtplib
         import logging
         from email.mime.multipart import MIMEMultipart
@@ -238,7 +324,7 @@ class Command(BaseCommand):
             msg = MIMEMultipart('alternative')
             msg['From'] = email_user
             msg['To'] = email_to
-            msg['Subject'] = "Property Management Alert - Lease Renewals, Vacant Properties & Overdue Invoices"
+            msg['Subject'] = "Property Management Alert - Invoice Creation, Lease Renewals, Vacant Properties & Overdue Invoices"
             
             # Build HTML email body with formatting
             html_body = f"""
@@ -258,6 +344,8 @@ class Command(BaseCommand):
                 <p><b><u>REPORT SUMMARY:</u></b><br>"""
             
             # Only show lines with counts > 0
+            if created_invoices_count > 0:
+                html_body += f"• New Invoices Created: {created_invoices_count}<br>"
             if vacant_count > 0:
                 html_body += f"• Vacant Properties: {vacant_count}<br>"
             if expiring_count > 0:
@@ -266,6 +354,15 @@ class Command(BaseCommand):
                 html_body += f"• Tenants with Overdue Invoices: {overdue_count}<br>"
             
             html_body += "</p><br>"
+            
+            # Add invoice creation summary if any were created
+            if created_invoices_count > 0:
+                today = date.today()
+                months = ('','January','February','March','April','May','June',
+                         'July','August','September','October','November','December')
+                current_month = months[today.month]
+                html_body += f"""<p><b><u>INVOICE CREATION SUMMARY:</u></b><br>
+                {created_invoices_count} new invoices were automatically created today for {current_month} {today.year}.</p><br>"""
             
             # Add detailed vacant properties list
             if vacant_count > 0:
@@ -312,6 +409,8 @@ Property management alert from Alivente Property Management System:
 REPORT SUMMARY:"""
             
             # Only show lines with counts > 0
+            if created_invoices_count > 0:
+                text_body += f"\n • New Invoices Created: {created_invoices_count}"
             if vacant_count > 0:
                 text_body += f"\n • Vacant Properties: {vacant_count}"
             if expiring_count > 0:
@@ -320,6 +419,17 @@ REPORT SUMMARY:"""
                 text_body += f"\n • Tenants with Overdue Invoices: {overdue_count}"
             
             text_body += "\n\n"
+            
+            # Add invoice creation summary if any were created
+            if created_invoices_count > 0:
+                today = date.today()
+                months = ('','January','February','March','April','May','June',
+                         'July','August','September','October','November','December')
+                current_month = months[today.month]
+                text_body += f"""INVOICE CREATION SUMMARY:
+{created_invoices_count} new invoices were automatically created today for {current_month} {today.year}.
+
+"""
             
             # Add plain text vacant properties
             if vacant_count > 0:
