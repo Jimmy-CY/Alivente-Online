@@ -66,6 +66,8 @@ class props(models.Model):
     prop_province = models.CharField(max_length=255, blank=True, null=True)
     prop_country = models.CharField(max_length=255, blank=True, null=True)
     prop_pcode = models.CharField(max_length=255, blank=True, null=True)
+    prop_latitude = models.DecimalField(max_digits=10, decimal_places=8, blank=True, null=True)
+    prop_longitude = models.DecimalField(max_digits=11, decimal_places=8, blank=True, null=True)
     prop_floor_area = models.IntegerField(blank=True, null=True)
     prop_year_built = models.IntegerField(blank=True, null=True)
     prop_status = models.CharField(max_length=255, blank=True, null=True)

@@ -18,6 +18,11 @@
       <button class="btn btn-info" style="margin-right:16px" type="submit" id="submitBtn">Save</button>
       <a href="{% url 'properties' %}" class="btn btn-info" style="margin-right:16px" role="button">Back</a>
   </div>
+  
+  <!-- Hidden fields for coordinates -->
+  <input type="hidden" name="prop_latitude" id="prop_latitude">
+  <input type="hidden" name="prop_longitude" id="prop_longitude">
+  
   <div class="form-row">
     <div class="form-group col-md-4">
       <label for="prop_name"><strong>Property Name</strong></label>
@@ -49,13 +54,46 @@
     </div>
     <div class="form-group col-md-2">
       <label for="prop_country"><strong>Country</strong></label>
-      <input type="text" class="form-control" id="prop_country" name="prop_country" placeholder="Country" required>
+      <select class="form-control" id="prop_country" name="prop_country" required>
+        <option value="" disabled selected>Select Country</option>
+        <option value="Cyprus">Cyprus</option>
+        <option value="Greece">Greece</option>
+        <option value="Spain">Spain</option>
+        <option value="Portugal">Portugal</option>
+        <option value="Italy">Italy</option>
+        <option value="France">France</option>
+        <option value="Germany">Germany</option>
+        <option value="United Kingdom">United Kingdom</option>
+      </select>
     </div>
     <div class="form-group col-md-2">
       <label for="prop_pcode"><strong>Post Code</strong></label>
       <input type="text" class="form-control" id="prop_pcode" name="prop_pcode" placeholder="Post Code" required>
     </div>
   </div>
+  
+  <!-- MAP SECTION -->
+  <div class="form-row">
+    <div class="form-group col-md-12">
+      <label><strong>Property Location on Map</strong></label>
+      <p class="text-muted small">Click on the map to set the exact property location</p>
+      <div class="map-container">
+        <div id="propertyMap" class="property-location-map"></div>
+        <div class="map-controls mt-2">
+          <button type="button" id="findOnMapBtn" class="btn btn-primary btn-sm">
+            📍 Find Address on Map
+          </button>
+          <div class="coordinates-display ml-3">
+            <small class="text-muted">
+              <strong>Coordinates:</strong> 
+              <span id="coordinatesDisplay">Click on map to set location</span>
+            </small>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
   <div class="form-row">
     <div class="form-group col-md-4">
       <label for="prop_floor_area"><strong>Floor Area</strong></label>
@@ -124,6 +162,52 @@
 
 {% endif %}
 
+<style>
+.map-container {
+    background-color: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid #dee2e6;
+}
+
+.property-location-map {
+    height: 400px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    margin-bottom: 10px;
+}
+
+.map-controls {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.coordinates-display {
+    background-color: #e9ecef;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-family: monospace;
+    display: inline-block;
+}
+
+@media (max-width: 768px) {
+    .map-controls {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .coordinates-display {
+        margin-left: 0 !important;
+        margin-top: 10px;
+    }
+}
+</style>
+
+<!-- Include Leaflet CSS and JS -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+
 <script>
 const existingNames = {{ existing_names|safe }};
 
@@ -135,6 +219,122 @@ function validatePropertyName() {
     }
     return true;
 }
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize the map
+    var map = L.map('propertyMap').setView([35.1264, 33.4299], 8); // Default to Cyprus
+    
+    // Add OpenStreetMap tiles
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors',
+        maxZoom: 18
+    }).addTo(map);
+    
+    var currentMarker = null;
+    
+    // Handle map clicks
+    map.on('click', function(e) {
+        var lat = e.latlng.lat;
+        var lng = e.latlng.lng;
+        
+        // Remove existing marker
+        if (currentMarker) {
+            map.removeLayer(currentMarker);
+        }
+        
+        // Add new marker
+        currentMarker = L.marker([lat, lng]).addTo(map);
+        
+        // Update form fields
+        document.getElementById('prop_latitude').value = lat.toFixed(8);
+        document.getElementById('prop_longitude').value = lng.toFixed(8);
+        
+        updateCoordinatesDisplay(lat, lng);
+    });
+    
+    // Update coordinates display
+    function updateCoordinatesDisplay(lat, lng) {
+        document.getElementById('coordinatesDisplay').textContent = 
+            `Latitude: ${lat.toFixed(6)}, Longitude: ${lng.toFixed(6)}`;
+    }
+    
+    // Find address on map button
+    document.getElementById('findOnMapBtn').addEventListener('click', function() {
+        var addressParts = [
+            document.getElementById('prop_address1').value,
+            document.getElementById('prop_city').value,
+            document.getElementById('prop_country').value
+        ].filter(part => part && part.trim() !== '');
+        
+        if (addressParts.length === 0) {
+            alert('Please enter at least a city and country to search for the location.');
+            return;
+        }
+        
+        var address = addressParts.join(', ');
+        var geocodeUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1`;
+        
+        // Show loading
+        document.getElementById('findOnMapBtn').innerHTML = '🔍 Searching...';
+        document.getElementById('findOnMapBtn').disabled = true;
+        
+        fetch(geocodeUrl)
+            .then(response => response.json())
+            .then(data => {
+                if (data && data.length > 0) {
+                    var lat = parseFloat(data[0].lat);
+                    var lng = parseFloat(data[0].lon);
+                    
+                    // Remove existing marker
+                    if (currentMarker) {
+                        map.removeLayer(currentMarker);
+                    }
+                    
+                    // Add new marker
+                    currentMarker = L.marker([lat, lng]).addTo(map);
+                    map.setView([lat, lng], 15);
+                    
+                    // Update form fields
+                    document.getElementById('prop_latitude').value = lat.toFixed(8);
+                    document.getElementById('prop_longitude').value = lng.toFixed(8);
+                    
+                    updateCoordinatesDisplay(lat, lng);
+                    
+                    alert('Location found! You can fine-tune the position by clicking on the map.');
+                } else {
+                    alert('Location not found. Please try a different address or place the marker manually.');
+                }
+            })
+            .catch(error => {
+                console.error('Geocoding error:', error);
+                alert('Error finding location. Please place the marker manually on the map.');
+            })
+            .finally(() => {
+                // Reset button
+                document.getElementById('findOnMapBtn').innerHTML = '📍 Find Address on Map';
+                document.getElementById('findOnMapBtn').disabled = false;
+            });
+    });
+    
+    // Auto-center map when country changes
+    document.getElementById('prop_country').addEventListener('change', function() {
+        var country = this.value;
+        var countryCoordinates = {
+            'Cyprus': [35.1264, 33.4299],
+            'Greece': [39.0742, 21.8243],
+            'Spain': [40.4637, -3.7492],
+            'Portugal': [39.3999, -8.2245],
+            'Italy': [41.8719, 12.5674],
+            'France': [46.6034, 1.8883],
+            'Germany': [51.1657, 10.4515],
+            'United Kingdom': [55.3781, -3.4360]
+        };
+        
+        if (countryCoordinates[country]) {
+            map.setView(countryCoordinates[country], 8);
+        }
+    });
+});
 </script>
 
 {% endblock %}

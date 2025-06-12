@@ -230,3 +230,196 @@ Watching for file changes with StatReloader
 "GET /tenant/ HTTP/1.1" 200 26306
 "GET /act_expense_all/?from=home HTTP/1.1" 200 37855
 "GET / HTTP/1.1" 200 7615
+Watching for file changes with StatReloader
+"GET /tenant/ HTTP/1.1" 200 26306
+"GET /open_invoices_report/ HTTP/1.1" 200 31340
+"GET /properties/ HTTP/1.1" 200 26104
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\urls.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 7615
+"GET /properties/ HTTP/1.1" 200 26841
+"GET /properties/map/ HTTP/1.1" 200 18812
+"GET /properties/ HTTP/1.1" 200 26841
+"GET / HTTP/1.1" 200 7615
+"GET /properties/ HTTP/1.1" 200 26841
+"GET /properties/map/ HTTP/1.1" 200 20175
+"GET / HTTP/1.1" 200 7615
+"GET /properties/ HTTP/1.1" 200 26841
+"GET /properties/map/ HTTP/1.1" 200 24090
+"GET /properties/ HTTP/1.1" 200 26841
+"GET /properties/map/ HTTP/1.1" 200 24090
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\models.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\models.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\models.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 7615
+"GET /properties/ HTTP/1.1" 200 26841
+"GET /properties_edit/6 HTTP/1.1" 200 20336
+"POST /properties_edit_commit/6 HTTP/1.1" 302 0
+"GET /properties/ HTTP/1.1" 200 27564
+"GET /properties_edit/5 HTTP/1.1" 200 20350
+"POST /properties_edit_commit/5 HTTP/1.1" 302 0
+"GET /properties/ HTTP/1.1" 200 27564
+"GET /properties/map/ HTTP/1.1" 200 24092
+"GET /properties/ HTTP/1.1" 200 26841
+"GET /properties_edit/4 HTTP/1.1" 200 20349
+"POST /properties_edit_commit/4 HTTP/1.1" 302 0
+"GET /properties/ HTTP/1.1" 200 27564
+"GET /properties_edit/2 HTTP/1.1" 200 20337
+"POST /properties_edit_commit/2 HTTP/1.1" 302 0
+"GET /properties/ HTTP/1.1" 200 27564
+"GET /properties_edit/7 HTTP/1.1" 200 20419
+"POST /properties_edit_commit/7 HTTP/1.1" 302 0
+"GET /properties/ HTTP/1.1" 200 27564
+"GET /properties_edit/8 HTTP/1.1" 200 20419
+"POST /properties_edit_commit/8 HTTP/1.1" 302 0
+"GET /properties/ HTTP/1.1" 200 27564
+"GET /properties_edit/8 HTTP/1.1" 200 20428
+"GET /properties/ HTTP/1.1" 200 26841
+"GET /properties/map/ HTTP/1.1" 200 24092
+"GET /properties/ HTTP/1.1" 200 26841
+"GET /properties_edit/5 HTTP/1.1" 200 20359
+"POST /properties_edit_commit/5 HTTP/1.1" 302 0
+"GET /properties/ HTTP/1.1" 200 27564
+"GET /properties_edit/5 HTTP/1.1" 200 20359
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\forms.py changed, reloading.
+Watching for file changes with StatReloader
+"POST /properties_edit_commit/5 HTTP/1.1" 302 0
+"GET /properties/ HTTP/1.1" 200 27564
+"GET /properties_edit/5 HTTP/1.1" 200 20394
+"POST /properties_edit_commit/5 HTTP/1.1" 302 0
+"GET /properties/ HTTP/1.1" 200 27564
+"GET /properties_edit/6 HTTP/1.1" 200 20345
+"POST /properties_edit_commit/6 HTTP/1.1" 302 0
+"GET /properties/ HTTP/1.1" 200 27564
+"GET /properties_edit/4 HTTP/1.1" 200 20356
+"POST /properties_edit_commit/4 HTTP/1.1" 302 0
+"GET /properties/ HTTP/1.1" 200 27564
+"GET /properties_edit/2 HTTP/1.1" 200 20345
+"POST /properties_edit_commit/2 HTTP/1.1" 302 0
+"GET /properties/ HTTP/1.1" 200 27564
+"GET /properties_edit/7 HTTP/1.1" 200 20428
+"POST /properties_edit_commit/7 HTTP/1.1" 302 0
+"GET /properties/ HTTP/1.1" 200 27564
+"GET /properties_edit/8 HTTP/1.1" 200 20428
+"POST /properties_edit_commit/8 HTTP/1.1" 302 0
+"GET /properties/ HTTP/1.1" 200 27564
+"GET /properties_edit/1 HTTP/1.1" 200 20353
+"POST /properties_edit_commit/1 HTTP/1.1" 302 0
+"GET /properties/ HTTP/1.1" 200 27564
+"GET /properties_edit/3 HTTP/1.1" 200 20348
+"POST /properties_edit_commit/3 HTTP/1.1" 302 0
+"GET /properties/ HTTP/1.1" 200 27564
+"GET /properties_edit/9 HTTP/1.1" 200 20362
+"POST /properties_edit_commit/9 HTTP/1.1" 302 0
+"GET /properties/ HTTP/1.1" 200 27564
+"GET /properties_edit/10 HTTP/1.1" 200 20365
+"POST /properties_edit_commit/10 HTTP/1.1" 302 0
+"GET /properties/ HTTP/1.1" 200 27564
+"GET /properties_edit/11 HTTP/1.1" 200 20363
+"POST /properties_edit_commit/11 HTTP/1.1" 302 0
+"GET /properties/ HTTP/1.1" 200 27564
+"GET /properties_edit/12 HTTP/1.1" 200 20358
+"POST /properties_edit_commit/12 HTTP/1.1" 302 0
+"GET /properties/ HTTP/1.1" 200 27564
+"GET /properties_edit/12 HTTP/1.1" 200 20400
+"GET /properties/ HTTP/1.1" 200 26841
+"GET /properties/map/ HTTP/1.1" 200 24094
+"GET /properties/ HTTP/1.1" 200 26841
+"GET / HTTP/1.1" 200 7615
+"GET /properties/ HTTP/1.1" 200 26841
+"GET /properties/map/ HTTP/1.1" 200 19983
+"GET /properties/ HTTP/1.1" 200 26841
+"GET /properties/ HTTP/1.1" 200 26841
+"GET /suppliers/ HTTP/1.1" 200 14949
+"GET /properties/ HTTP/1.1" 200 26841
+"GET /properties/map/ HTTP/1.1" 200 20294
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 33807
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 33807
+"GET /properties/ HTTP/1.1" 200 26841
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 33807
+"GET / HTTP/1.1" 200 7615
+"GET /properties/ HTTP/1.1" 200 26841
+"GET /properties/map/ HTTP/1.1" 200 20294
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 33807
+"GET / HTTP/1.1" 200 7615
+"GET /properties/ HTTP/1.1" 200 26841
+"GET /properties/map/ HTTP/1.1" 200 20294
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 33807
+"GET / HTTP/1.1" 200 7615
+"GET /tenant/ HTTP/1.1" 200 26306
+"GET /properties/ HTTP/1.1" 200 26841
+"GET /properties/map/ HTTP/1.1" 200 20294
+"GET /properties/ HTTP/1.1" 200 26841
+"GET /properties/map/ HTTP/1.1" 200 20294
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 33807
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+Not Found: /properties/map-test/
+"GET /properties/map-test/ HTTP/1.1" 404 33723
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\urls.py changed, reloading.
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 7615
+"GET /properties/ HTTP/1.1" 200 26841
+"GET /properties/map/ HTTP/1.1" 200 19207
+"GET / HTTP/1.1" 200 7615
+"GET /properties/ HTTP/1.1" 200 26841
+"GET /properties/map/ HTTP/1.1" 200 19931
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 34077
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 7615
+"GET /properties/ HTTP/1.1" 200 26841
+"GET /properties/map/ HTTP/1.1" 200 21070
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 7615
+"GET /properties/ HTTP/1.1" 200 26841
+"GET /properties/map/ HTTP/1.1" 200 20779
+"GET /properties/ HTTP/1.1" 200 26841
+"GET /properties/map/ HTTP/1.1" 200 20779
+"GET /properties/ HTTP/1.1" 200 26841
+"GET /properties/map/ HTTP/1.1" 200 20779
+"GET / HTTP/1.1" 200 7615
+"GET /properties/ HTTP/1.1" 200 26841
+"GET /properties/map/ HTTP/1.1" 200 20765
+"GET /properties/ HTTP/1.1" 200 26841
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 7615
+"GET /properties/ HTTP/1.1" 200 26841
+"GET /properties/map/ HTTP/1.1" 200 20813
+"GET /properties/ HTTP/1.1" 200 26841
+"GET / HTTP/1.1" 200 7615
+"GET /properties/ HTTP/1.1" 200 26833
+"GET /properties/map/ HTTP/1.1" 200 20813
+"GET /properties/ HTTP/1.1" 200 26833
+"GET /properties/map/ HTTP/1.1" 200 20813
+"GET / HTTP/1.1" 200 7615
+"GET /properties/ HTTP/1.1" 200 26833
+"GET /properties/map/ HTTP/1.1" 200 20576
+"GET /properties/ HTTP/1.1" 200 26833
+"GET /properties/map/ HTTP/1.1" 200 20519
+"GET /properties/ HTTP/1.1" 200 26833
+"GET /properties_edit/9 HTTP/1.1" 200 20406
+"POST /properties_edit_commit/9 HTTP/1.1" 302 0
+"GET /properties/ HTTP/1.1" 200 27556
+"GET /properties_edit/11 HTTP/1.1" 200 20407
+"POST /properties_edit_commit/11 HTTP/1.1" 302 0
+"GET /properties/ HTTP/1.1" 200 27556
+"GET /properties/map/ HTTP/1.1" 200 20519
+"GET /properties/ HTTP/1.1" 200 26833
+"GET /properties_add/ HTTP/1.1" 200 17374
+"GET /properties/ HTTP/1.1" 200 26833

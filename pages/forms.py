@@ -2,10 +2,32 @@ from django import forms
 from . import models
 
 class PropForm(forms.ModelForm):
-	class Meta:
-		model = models.props
-		fields = ["prop_name","prop_address1","prop_address2","prop_suburb","prop_city","prop_province","prop_country","prop_pcode","prop_floor_area","prop_year_built","prop_status","prop_available_for_rent","prop_title_deed","prop_title_deed_status","prop_electricity","prop_water","prop_refuse","prop_property_tax","prop_sewerage","prop_insurance"]
-
+    class Meta:
+        model = models.props
+        fields = [
+            "prop_name",
+            "prop_address1", 
+            "prop_address2",
+            "prop_suburb",
+            "prop_city",
+            "prop_province",
+            "prop_country",
+            "prop_pcode",
+            "prop_latitude",
+            "prop_longitude",
+            "prop_floor_area",
+            "prop_year_built",
+            "prop_status",
+            "prop_available_for_rent",
+            "prop_title_deed",
+            "prop_title_deed_status",
+            "prop_electricity",
+            "prop_water",
+            "prop_refuse",
+            "prop_property_tax",
+            "prop_sewerage",
+            "prop_insurance"
+        ]
 class PettyForm(forms.ModelForm):
 	class Meta:
 		model = models.petty

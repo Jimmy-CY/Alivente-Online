@@ -30,14 +30,24 @@ Properties
 {% endfor %}
 
 <body>
-  <div style="display: flex ; justify-content: flex-end">
+  <div style="display: flex; justify-content: flex-end; gap: 10px;">
+    <!-- Map View Button -->
+    <a href="{% url 'properties_map_view' %}" class="btn btn-info" style="margin-right: 0px;">
+        🗺️ Map View
+    </a>
+    
+    <!-- Add New Button (existing logic) -->
     {% if user.is_superuser %}
-      <a href="{% url 'properties_add' %}" class="btn btn-info" style="margin-right:16px" type="button">Add New</a>
+      <a href="{% url 'properties_add' %}" class="btn btn-info" style="margin-right:0px" type="button">Add New</a>
     {% else %}
-      <span class="btn btn-secondary" style="margin-right:16px; opacity:0.6; cursor:not-allowed; pointer-events:none;" type="button">Add New</span>
+      <span class="btn btn-secondary" style="margin-right:0px; opacity:0.6; cursor:not-allowed; pointer-events:none;" type="button">Add New</span>
     {% endif %}
+    
+    <!-- Back Button (existing) -->
     <a href="{% url 'home' %}" class="btn btn-info" style="margin-right:16px" role="button">Back</a>
   </div>
+
+  <br/>
 
   <div class="form-row">
     <div class="form-group col-md-5">
@@ -155,6 +165,30 @@ Properties
 
 <!-- Add jQuery if not already included -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<style>
+/* Additional styles for consistent button colors */
+.btn-info {
+    background-color: #17a2b8;
+    color: white;
+    border: 1px solid #17a2b8;
+    transition: all 0.3s ease;
+}
+
+.btn-info:hover {
+    background-color: #138496;
+    border-color: #117a8b;
+    color: white;
+    text-decoration: none;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.btn-info:active {
+    background-color: #117a8b;
+    border-color: #10707f;
+}
+</style>
 
 <script>
   // Add event listeners to all select elements for filtering

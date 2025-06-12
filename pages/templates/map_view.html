@@ -1,0 +1,293 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Properties Map View{% endblock %}
+
+{% block content %}
+<div class="map-container">
+    <div class="map-header">
+        <div>
+            <h2>Properties Map View</h2>
+            <p id="propertyCount" class="text-muted">Loading properties...</p>
+        </div>
+        <div class="map-controls">
+            <button id="centerMapBtn" class="btn btn-info">Center Map</button>
+            <a href="{% url 'properties' %}" class="btn btn-info">Back</a>
+        </div>
+    </div>
+    
+    <div id="map" class="property-map"></div>
+    
+    <!-- Property Info Modal -->
+    <div id="propertyModal" class="modal fade" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Property Details</h5>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" id="modalContent">
+                    <!-- Property details will be loaded here -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .map-container {
+        width: 100%;
+        height: 100vh;
+        padding: 20px;
+        box-sizing: border-box;
+    }
+    
+    .map-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+    
+    .map-header h2 {
+        margin: 0;
+        color: #2c3e50;
+    }
+    
+    .map-controls {
+        display: flex;
+        gap: 10px;
+    }
+    
+    .property-map {
+        width: 100%;
+        height: calc(100vh - 120px);
+        border: 2px solid #ddd;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .btn {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 4px;
+        text-decoration: none;
+        display: inline-block;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+    
+    .btn-secondary {
+        background-color: #6c757d;
+        color: white;
+    }
+    
+    .btn-secondary:hover {
+        background-color: #5a6268;
+        color: white;
+        text-decoration: none;
+    }
+    
+    .btn-info {
+        background-color: #17a2b8;
+        color: white;
+    }
+    
+    .btn-info:hover {
+        background-color: #138496;
+        color: white;
+        text-decoration: none;
+    }
+    
+    /* Custom marker popup styles */
+    .property-popup {
+        font-family: Arial, sans-serif;
+    }
+    
+    .property-popup h4 {
+        margin: 0 0 10px 0;
+        color: #2c3e50;
+        font-size: 16px;
+    }
+    
+    .property-popup p {
+        margin: 5px 0;
+        font-size: 14px;
+    }
+    
+    .property-popup .status-active {
+        color: #28a745;
+        font-weight: bold;
+    }
+    
+    .property-popup .status-inactive {
+        color: #dc3545;
+        font-weight: bold;
+    }
+    
+    .property-popup .view-details {
+        color: #007bff;
+        text-decoration: none;
+        font-weight: 500;
+    }
+    
+    .property-popup .view-details:hover {
+        text-decoration: underline;
+    }
+</style>
+
+<!-- Include Leaflet CSS and JS -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Map script starting...');
+    
+    // Update status
+    document.getElementById('propertyCount').textContent = 'Initializing map...';
+    
+    // Initialize the map
+    var map = L.map('map').setView([35.1264, 33.4299], 6);
+    
+    // Add OpenStreetMap tiles
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors',
+        maxZoom: 18
+    }).addTo(map);
+    
+    // Store all markers for centering
+    var markers = [];
+    
+    // Get properties data - simple approach
+    var rawPropertiesData = '{{ properties_json|escapejs }}';
+    var properties = [];
+    
+    try {
+        properties = JSON.parse(rawPropertiesData);
+        console.log('Properties loaded:', properties.length);
+        console.log('First property:', properties[0]);
+        
+        // Debug each property's coordinates
+        properties.forEach(function(prop, index) {
+            console.log('Property ' + index + ':', prop.name, 
+                       'Lat:', prop.latitude, '(type: ' + typeof prop.latitude + ')',
+                       'Lng:', prop.longitude, '(type: ' + typeof prop.longitude + ')');
+        });
+        
+    } catch (error) {
+        console.error('Error parsing properties:', error);
+        document.getElementById('propertyCount').textContent = 'Error loading properties: ' + error.message;
+        return;
+    }
+    
+    // Filter properties with coordinates
+    var propertiesWithCoords = properties.filter(function(property) {
+        var hasLat = property.latitude && property.latitude !== '' && property.latitude !== 'None' && property.latitude !== null;
+        var hasLng = property.longitude && property.longitude !== '' && property.longitude !== 'None' && property.longitude !== null;
+        
+        console.log('Filtering property:', property.name, 
+                   'hasLat:', hasLat, '(' + property.latitude + ')',
+                   'hasLng:', hasLng, '(' + property.longitude + ')');
+        
+        return hasLat && hasLng;
+    });
+    
+    console.log('Properties with coordinates:', propertiesWithCoords.length);
+    
+    // Add properties to map
+    propertiesWithCoords.forEach(function(property, index) {
+        var lat = parseFloat(property.latitude);
+        var lon = parseFloat(property.longitude);
+        
+        if (isNaN(lat) || isNaN(lon)) {
+            console.warn('Invalid coordinates for property:', property.name, lat, lon);
+            return;
+        }
+        
+        console.log('Adding marker for:', property.name, 'at', lat, lon);
+        
+        // Create location pin marker
+        var icon = L.divIcon({
+            className: 'custom-marker',
+            html: '<div style="color: #dc3545; font-size: 20px; text-shadow: 1px 1px 2px rgba(0,0,0,0.5);">📍</div>',
+            iconSize: [20, 20],
+            iconAnchor: [10, 20]
+        });
+        
+        // Create marker
+        var marker = L.marker([lat, lon], { icon: icon }).addTo(map);
+        markers.push(marker);
+        
+        // Build complete address for display
+        var addressParts = [
+            property.address1,
+            property.address2,
+            property.suburb,
+            property.city,
+            property.province,
+            property.country,
+            property.pcode
+        ];
+        var displayAddress = addressParts.filter(function(part) {
+            return part && part.trim() !== '';
+        }).join(', ');
+        
+        // Create popup content
+        var popupContent = '<div class="property-popup">' +
+            '<h4>' + (property.name || 'Property #' + property.id) + '</h4>' +
+            '<p><strong>Address:</strong> ' + (displayAddress || 'Address not available') + '</p>' +
+            '<p><strong>Status:</strong> <span class="status-' + (property.status ? property.status.toLowerCase() : 'unknown') + '">' + (property.status || 'Unknown') + '</span></p>' +
+            '<p><strong>Available for Rent:</strong> ' + (property.available_for_rent || 'Unknown') + '</p>';
+        
+        if (property.floor_area) {
+            popupContent += '<p><strong>Floor Area:</strong> ' + property.floor_area + ' m²</p>';
+        }
+        if (property.year_built) {
+            popupContent += '<p><strong>Year Built:</strong> ' + property.year_built + '</p>';
+        }
+        
+        popupContent += '<p><strong>Coordinates:</strong> ' + lat.toFixed(6) + ', ' + lon.toFixed(6) + '</p>' +
+            '</div>';
+        
+        marker.bindPopup(popupContent);
+    });
+    
+    // Update property count
+    document.getElementById('propertyCount').textContent = 
+        'Showing ' + propertiesWithCoords.length + ' of ' + properties.length + ' properties on map';
+    
+    if (propertiesWithCoords.length < properties.length) {
+        var missingCount = properties.length - propertiesWithCoords.length;
+        document.getElementById('propertyCount').innerHTML += 
+            '<br><small class="text-warning">' + missingCount + ' properties without coordinates are hidden</small>';
+    }
+    
+    // Function to center map on all markers
+    function centerMapOnMarkers() {
+        if (markers.length > 0) {
+            var group = new L.featureGroup(markers);
+            map.fitBounds(group.getBounds().pad(0.1));
+        }
+    }
+    
+    // Center map on load
+    if (markers.length > 0) {
+        centerMapOnMarkers();
+    }
+    
+    // Center map button functionality
+    document.getElementById('centerMapBtn').addEventListener('click', function() {
+        centerMapOnMarkers();
+    });
+    
+    console.log('Map initialization complete. Markers:', markers.length);
+});
+</script>
+{% endblock %}

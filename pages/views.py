@@ -5,6 +5,7 @@ from django.contrib import messages
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm, PasswordChangeForm
 from django.core.exceptions import ValidationError
 from django.core.files.storage import FileSystemStorage
+from django.core.serializers import serialize
 from django.db import connection
 from django.db.models import Q, Prefetch, Subquery, OuterRef, Sum
 from django.db.models.functions import Coalesce
@@ -1330,6 +1331,56 @@ def properties_page(request):
 		elif active_output is not None:
 			results = props.objects.filter(prop_status=active_output)
 	return render (request, "properties.html", {"props":results})
+
+@login_required
+def properties_map_view(request):
+    """Display all properties on an interactive map"""
+    import json
+    
+    # Get all properties from the database
+    properties = props.objects.all()
+    
+    # Convert properties to JSON format for JavaScript
+    properties_data = []
+    for prop in properties:
+        # Handle Decimal fields properly
+        latitude = None
+        longitude = None
+        
+        if prop.prop_latitude is not None:
+            latitude = float(prop.prop_latitude)
+        if prop.prop_longitude is not None:
+            longitude = float(prop.prop_longitude)
+        
+        property_dict = {
+            'id': prop.prop_id,
+            'name': prop.prop_name,
+            'address1': prop.prop_address1,
+            'address2': prop.prop_address2,
+            'suburb': prop.prop_suburb,
+            'city': prop.prop_city,
+            'province': prop.prop_province,
+            'country': prop.prop_country,
+            'pcode': prop.prop_pcode,
+            'latitude': latitude,
+            'longitude': longitude,
+            'floor_area': prop.prop_floor_area,
+            'year_built': prop.prop_year_built,
+            'status': prop.prop_status,
+            'available_for_rent': prop.prop_available_for_rent,
+        }
+        properties_data.append(property_dict)
+    
+    context = {
+        'properties_json': json.dumps(properties_data),
+        'properties_count': len(properties_data)
+    }
+    
+    return render(request, 'map_view.html', context)
+
+@login_required
+def map_test(request):
+    return render(request, 'map_test.html')
 
 @login_required
 def properties_title_deed(request):

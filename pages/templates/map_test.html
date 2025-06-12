@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+
+{% block title %}Map Test{% endblock %}
+
+{% block content %}
+<div style="padding: 20px;">
+    <h2>Map Test</h2>
+    <div id="debugInfo" style="background: #f8f9fa; padding: 10px; border: 1px solid #dee2e6; margin-bottom: 20px;">
+        <strong>Debug:</strong> <span id="debugText">Starting...</span>
+    </div>
+    <div id="map" style="height: 400px; border: 2px solid #ddd;"></div>
+</div>
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+
+<script>
+console.log('Script starting...');
+document.getElementById('debugText').innerHTML = 'Script loaded';
+
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM ready');
+    document.getElementById('debugText').innerHTML = 'DOM ready, checking Leaflet...';
+    
+    if (typeof L === 'undefined') {
+        document.getElementById('debugText').innerHTML = 'ERROR: Leaflet not loaded';
+        return;
+    }
+    
+    document.getElementById('debugText').innerHTML = 'Leaflet OK, creating map...';
+    
+    try {
+        var map = L.map('map').setView([35.1264, 33.4299], 8);
+        document.getElementById('debugText').innerHTML = 'Map created, adding tiles...';
+        
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+        
+        document.getElementById('debugText').innerHTML = 'Map loaded successfully!';
+        
+        // Add a test marker
+        L.marker([35.1264, 33.4299]).addTo(map)
+            .bindPopup('Test marker in Cyprus')
+            .openPopup();
+            
+    } catch (error) {
+        console.error('Map error:', error);
+        document.getElementById('debugText').innerHTML = 'ERROR: ' + error.message;
+    }
+});
+</script>
+{% endblock %}
