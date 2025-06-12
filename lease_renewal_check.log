@@ -189,3 +189,44 @@ Watching for file changes with StatReloader
 Watching for file changes with StatReloader
 "GET /open_invoices_report/ HTTP/1.1" 200 23704
 "GET /tenant/ HTTP/1.1" 200 26306
+Watching for file changes with StatReloader
+"GET /open_invoices_report/ HTTP/1.1" 200 23704
+"GET /open_invoices_report/ HTTP/1.1" 200 23704
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 7615
+"GET /tenant/ HTTP/1.1" 200 26306
+"GET /open_invoices_report/ HTTP/1.1" 200 31399
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\templatetags\custom_filters.py changed, reloading.
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 7615
+"GET /tenant/ HTTP/1.1" 200 26306
+"GET /open_invoices_report/ HTTP/1.1" 200 31217
+"GET /tenant/ HTTP/1.1" 200 26306
+"GET /tenant_edit/3 HTTP/1.1" 200 11070
+"POST /tenant_edit_commit/3 HTTP/1.1" 200 27061
+"GET /open_invoices_report/ HTTP/1.1" 200 31239
+"GET / HTTP/1.1" 200 7615
+"GET /tenant/ HTTP/1.1" 200 26306
+"GET /open_invoices_report/ HTTP/1.1" 200 31260
+"GET / HTTP/1.1" 200 7615
+"GET /tenant/ HTTP/1.1" 200 26306
+"GET /open_invoices_report/ HTTP/1.1" 200 31340
+"GET / HTTP/1.1" 200 7615
+"GET /tenant/ HTTP/1.1" 200 26306
+"GET /open_invoices_report/ HTTP/1.1" 200 31340
+"GET /tenant/ HTTP/1.1" 200 26306
+"GET /lease_renewal_report/ HTTP/1.1" 200 12375
+"GET /suppliers/ HTTP/1.1" 200 14949
+"GET /petty_cash/ HTTP/1.1" 200 6608
+"GET /invoices/ HTTP/1.1" 200 43832
+"GET /fsr/ HTTP/1.1" 200 31738
+"GET /friday_status_report/ HTTP/1.1" 200 24967
+"GET /finance/ HTTP/1.1" 200 10481
+"GET /finance_pl_act/ HTTP/1.1" 200 346284
+"GET /act_expense_view/?year=2025&month=5&from_finance_pl_act=true&prop=all HTTP/1.1" 200 6068
+"GET /finance/ HTTP/1.1" 200 10481
+"GET /properties/ HTTP/1.1" 200 26104
+"GET /tenant/ HTTP/1.1" 200 26306
+"GET /act_expense_all/?from=home HTTP/1.1" 200 37855
+"GET / HTTP/1.1" 200 7615

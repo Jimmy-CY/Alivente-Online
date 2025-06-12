@@ -61,3 +61,12 @@ def sum_prop_values(properties, attr_name):
             value = getattr(prop.prop_values_set.first(), attr_name, 0)
             total += value if value else 0
     return total
+
+@register.filter
+def add_thousand_separator(value):
+    """Add thousand separators to a number"""
+    try:
+        # Convert to integer first to remove decimals, then format with commas
+        return "{:,}".format(int(float(value)))
+    except (ValueError, TypeError):
+        return value

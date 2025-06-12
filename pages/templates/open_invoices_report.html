@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load custom_filters %}
 
 {% block title %}
 {% endblock %}
@@ -15,7 +16,49 @@
             <a href="{% url 'tenant' %}" class="btn btn-info back-button" role="button">Back</a>
         </div>
 
+        <!-- Debtors Age Analysis Table -->
+        {% if debtors_age_analysis %}
+        <div class="age-analysis-section">
+            <h3 class="analysis-title">Debtors Age Analysis</h3>
+            <table class="age-analysis-table">
+                <thead>
+                    <tr>
+                        <th>Tenant Name</th>
+                        <th>Total Outstanding</th>
+                        <th>Current<br>(0 to 30 Days)</th>
+                        <th>Past Due<br>(31 to 60 Days)</th>
+                        <th>Past Due<br>(61 to 90 Days)</th>
+                        <th>Past Due<br>(91+ Days)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for debtor in debtors_age_analysis %}
+                    <tr>
+                        <td class="tenant-name-cell">{{ debtor.tenant_name }}</td>
+                        <td class="amount-cell total-amount">€{{ debtor.total_outstanding|floatformat:0|add_thousand_separator }}</td>
+                        <td class="amount-cell current">€{{ debtor.current_0_30|floatformat:0|add_thousand_separator }}</td>
+                        <td class="amount-cell past-due-31-60">€{{ debtor.past_due_31_60|floatformat:0|add_thousand_separator }}</td>
+                        <td class="amount-cell past-due-61-90">€{{ debtor.past_due_61_90|floatformat:0|add_thousand_separator }}</td>
+                        <td class="amount-cell past-due-91-plus">€{{ debtor.past_due_91_plus|floatformat:0|add_thousand_separator }}</td>
+                    </tr>
+                    {% endfor %}
+                    <!-- Totals Row -->
+                    <tr class="totals-row">
+                        <td class="tenant-name-cell"><strong>TOTALS</strong></td>
+                        <td class="amount-cell total-amount"><strong>€{{ totals.total_outstanding|floatformat:0|add_thousand_separator }}</strong></td>
+                        <td class="amount-cell current"><strong>€{{ totals.current_0_30|floatformat:0|add_thousand_separator }}</strong></td>
+                        <td class="amount-cell past-due-31-60"><strong>€{{ totals.past_due_31_60|floatformat:0|add_thousand_separator }}</strong></td>
+                        <td class="amount-cell past-due-61-90"><strong>€{{ totals.past_due_61_90|floatformat:0|add_thousand_separator }}</strong></td>
+                        <td class="amount-cell past-due-91-plus"><strong>€{{ totals.past_due_91_plus|floatformat:0|add_thousand_separator }}</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <hr class="section-divider">
+        {% endif %}
+
         <div class="invoice-section">
+            <h3 class="section-title">Detailed Invoice Breakdown</h3>
             {% if not properties_with_invoices %}
                 <div class="no-invoices">
                     <p>No outstanding invoices to report at this time.</p>
@@ -74,7 +117,7 @@
     
     .report-content {
         width: 90%;
-        max-width: 1200px;
+        max-width: 1400px;
         background: white;
         padding: 30px;
         border-radius: 8px;
@@ -100,6 +143,98 @@
         color: #6c757d;
         margin: 5px 0 0 0;
         font-weight: normal;
+    }
+
+    /* Age Analysis Styles */
+    .age-analysis-section {
+        margin-bottom: 40px;
+    }
+
+    .analysis-title {
+        font-size: 1.5rem;
+        color: #2c3e50;
+        margin-bottom: 20px;
+        font-weight: bold;
+    }
+
+    .section-title {
+        font-size: 1.5rem;
+        color: #2c3e50;
+        margin-bottom: 20px;
+        font-weight: bold;
+    }
+
+    .age-analysis-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+        font-size: 0.9rem;
+    }
+
+    .age-analysis-table th {
+        background-color: #2c3e50;
+        color: white;
+        padding: 12px 8px;
+        text-align: center;
+        font-weight: 600;
+        border: 1px solid #34495e;
+        font-size: 0.85rem;
+        line-height: 1.2;
+        min-width: 120px;
+    }
+
+    .age-analysis-table td {
+        padding: 10px 8px;
+        border: 1px solid #dee2e6;
+        text-align: center;
+    }
+
+    .tenant-name-cell {
+        text-align: left !important;
+        font-weight: 500;
+        background-color: #f8f9fa;
+    }
+
+    .amount-cell {
+        text-align: right !important;
+        font-family: 'Courier New', monospace;
+    }
+
+    .total-amount {
+        background-color: #e3f2fd;
+        font-weight: 600;
+    }
+
+    .current {
+        background-color: #eceff1;
+    }
+
+    .past-due-31-60 {
+        background-color: #e1f5fe;
+    }
+
+    .past-due-61-90 {
+        background-color: #e0e4e7;
+    }
+
+    .past-due-91-plus {
+        background-color: #e3f2fd;
+    }
+
+    .totals-row {
+        background-color: #f1f3f4;
+        border-top: 2px solid #2c3e50;
+    }
+
+    .totals-row .amount-cell {
+        font-weight: bold;
+    }
+
+    .section-divider {
+        border: 0;
+        height: 2px;
+        background-color: #2c3e50;
+        margin: 40px 0;
     }
     
     .property-card {
@@ -185,8 +320,12 @@
             display: none;
         }
         
-        .property-card {
+        .property-card, .age-analysis-section {
             page-break-inside: avoid;
+        }
+
+        .age-analysis-table {
+            font-size: 0.8rem;
         }
     }
 </style>

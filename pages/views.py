@@ -3204,68 +3204,135 @@ def open_invoices(request):
 
 @login_required
 def open_invoices_report(request):
-	mydb = mysql.connector.connect(
-		host=settings.DATABASES['default']['HOST'],
-		port=settings.DATABASES['default']['PORT'],
-		user=settings.DATABASES['default']['USER'],
-		password=settings.DATABASES['default']['PASSWORD'],
-		database=settings.DATABASES['default']['NAME'],
-		auth_plugin=settings.DATABASES['default']['AUTH_PLUGIN'],
-	)
-	my_cursor = mydb.cursor(dictionary=True)
-	today = date.today()
-	properties_with_invoices = []
-	my_cursor.execute("""
-		SELECT prop.prop_name, prop.prop_country, tenant.tenant_id, tenant.tenant_name,
-			tenant.tenant_contact_person, tenant.tenant_contact_number, tenant.tenant_email,
-			tenant.tenant_rent, tenant.tenant_payment_terms
-		FROM railway.tenant 
-		JOIN railway.prop ON prop.prop_id = tenant.prop_id 
-		WHERE tenant.tenant_current = 'Yes'
-		ORDER BY prop.prop_country ASC, prop.prop_name ASC
-	""")
-	tenants_rows = my_cursor.fetchall()
-	my_cursor.execute("""
-		SELECT invoice.invoice_id, invoice.tenant_id, invoice.invoice_date, invoice.invoice_paid 
-		FROM railway.invoice
-		WHERE invoice.invoice_paid = 'No' 
-		ORDER BY invoice.invoice_date ASC
-	""")
-	unpaid_invoices = my_cursor.fetchall()
-	for ten in tenants_rows:
-		tenant_invoices = []
-		for invoice in unpaid_invoices:
-			if ten['tenant_id'] == invoice['tenant_id']:
-				due_date = invoice['invoice_date'] + timedelta(days=ten['tenant_payment_terms'])
-				days_overdue = (today - due_date).days if today > due_date else 0
-				tenant_invoices.append({
-					'invoice_id': invoice['invoice_id'],
-					'invoice_date': invoice['invoice_date'].strftime('%Y-%m-%d'),
-					'due_date': due_date.strftime('%Y-%m-%d'),
-					'days_overdue': days_overdue,
-					'overdue': days_overdue > 0
-				})
-		if tenant_invoices:
-			properties_with_invoices.append({
-				'prop_name': ten['prop_name'],
-				'prop_country': ten['prop_country'],
-				'tenant_id': ten['tenant_id'],
-				'tenant_name': ten['tenant_name'],
-				'tenant_contact_person': ten['tenant_contact_person'],
-				'tenant_contact_number': ten['tenant_contact_number'],
-				'tenant_email': ten['tenant_email'],
-				'tenant_rent': ten['tenant_rent'],
-				'tenant_payment_terms': ten['tenant_payment_terms'],
-				'invoices': tenant_invoices
-			})
-	context = {
-		'today': today.strftime('%Y-%m-%d'),
-		'properties_with_invoices': properties_with_invoices
-	}
-	if mydb.is_connected():
-		my_cursor.close()
-		mydb.close()
-	return render(request, 'open_invoices_report.html', context)
+    mydb = mysql.connector.connect(
+        host=settings.DATABASES['default']['HOST'],
+        port=settings.DATABASES['default']['PORT'],
+        user=settings.DATABASES['default']['USER'],
+        password=settings.DATABASES['default']['PASSWORD'],
+        database=settings.DATABASES['default']['NAME'],
+        auth_plugin=settings.DATABASES['default']['AUTH_PLUGIN'],
+    )
+    my_cursor = mydb.cursor(dictionary=True)
+    today = date.today()
+    properties_with_invoices = []
+    
+    # Get all current tenants
+    my_cursor.execute("""
+        SELECT prop.prop_name, prop.prop_country, tenant.tenant_id, tenant.tenant_name,
+            tenant.tenant_contact_person, tenant.tenant_contact_number, tenant.tenant_email,
+            tenant.tenant_rent, tenant.tenant_payment_terms
+        FROM railway.tenant 
+        JOIN railway.prop ON prop.prop_id = tenant.prop_id 
+        WHERE tenant.tenant_current = 'Yes'
+        ORDER BY prop.prop_country ASC, prop.prop_name ASC
+    """)
+    tenants_rows = my_cursor.fetchall()
+    
+    # Get all unpaid invoices
+    my_cursor.execute("""
+        SELECT invoice.invoice_id, invoice.tenant_id, invoice.invoice_date, invoice.invoice_paid 
+        FROM railway.invoice
+        WHERE invoice.invoice_paid = 'No' 
+        ORDER BY invoice.invoice_date ASC
+    """)
+    unpaid_invoices = my_cursor.fetchall()
+    
+    # Process detailed invoice breakdown (existing logic)
+    for ten in tenants_rows:
+        tenant_invoices = []
+        for invoice in unpaid_invoices:
+            if ten['tenant_id'] == invoice['tenant_id']:
+                due_date = invoice['invoice_date'] + timedelta(days=ten['tenant_payment_terms'])
+                days_overdue = (today - due_date).days if today > due_date else 0
+                tenant_invoices.append({
+                    'invoice_id': invoice['invoice_id'],
+                    'invoice_date': invoice['invoice_date'].strftime('%Y-%m-%d'),
+                    'due_date': due_date.strftime('%Y-%m-%d'),
+                    'days_overdue': days_overdue,
+                    'overdue': days_overdue > 0
+                })
+        if tenant_invoices:
+            properties_with_invoices.append({
+                'prop_name': ten['prop_name'],
+                'prop_country': ten['prop_country'],
+                'tenant_id': ten['tenant_id'],
+                'tenant_name': ten['tenant_name'],
+                'tenant_contact_person': ten['tenant_contact_person'],
+                'tenant_contact_number': ten['tenant_contact_number'],
+                'tenant_email': ten['tenant_email'],
+                'tenant_rent': ten['tenant_rent'],
+                'tenant_payment_terms': ten['tenant_payment_terms'],
+                'invoices': tenant_invoices
+            })
+    
+    # Calculate Debtors Age Analysis
+    debtors_age_analysis = []
+    totals = {
+        'total_outstanding': 0,
+        'current_0_30': 0,
+        'past_due_31_60': 0,
+        'past_due_61_90': 0,
+        'past_due_91_plus': 0
+    }
+    
+    for ten in tenants_rows:
+        tenant_analysis = {
+            'tenant_name': ten['tenant_name'],
+            'total_outstanding': 0,
+            'current_0_30': 0,
+            'past_due_31_60': 0,
+            'past_due_61_90': 0,
+            'past_due_91_plus': 0
+        }
+        
+        # Calculate aging for this tenant's invoices
+        for invoice in unpaid_invoices:
+            if ten['tenant_id'] == invoice['tenant_id']:
+                due_date = invoice['invoice_date'] + timedelta(days=ten['tenant_payment_terms'])
+                days_overdue = (today - due_date).days if today > due_date else 0
+                amount = float(ten['tenant_rent'])
+                
+                tenant_analysis['total_outstanding'] += amount
+                
+                if days_overdue <= 30:
+                    # Current (0-30 days - includes not yet due and up to 30 days overdue)
+                    tenant_analysis['current_0_30'] += amount
+                elif 31 <= days_overdue <= 60:
+                    # Past due 31-60 days
+                    tenant_analysis['past_due_31_60'] += amount
+                elif 61 <= days_overdue <= 90:
+                    # Past due 61-90 days
+                    tenant_analysis['past_due_61_90'] += amount
+                else:
+                    # Past due 91+ days
+                    tenant_analysis['past_due_91_plus'] += amount
+        
+        # Only include tenants with outstanding invoices
+        if tenant_analysis['total_outstanding'] > 0:
+            debtors_age_analysis.append(tenant_analysis)
+            
+            # Add to totals
+            totals['total_outstanding'] += tenant_analysis['total_outstanding']
+            totals['current_0_30'] += tenant_analysis['current_0_30']
+            totals['past_due_31_60'] += tenant_analysis['past_due_31_60']
+            totals['past_due_61_90'] += tenant_analysis['past_due_61_90']
+            totals['past_due_91_plus'] += tenant_analysis['past_due_91_plus']
+    
+    # Sort debtors by total outstanding (highest first)
+    debtors_age_analysis.sort(key=lambda x: x['total_outstanding'], reverse=True)
+    
+    context = {
+        'today': today.strftime('%Y-%m-%d'),
+        'properties_with_invoices': properties_with_invoices,
+        'debtors_age_analysis': debtors_age_analysis,
+        'totals': totals
+    }
+    
+    if mydb.is_connected():
+        my_cursor.close()
+        mydb.close()
+    
+    return render(request, 'open_invoices_report.html', context)
 
 @login_required
 def lease_renewal_report(request):
