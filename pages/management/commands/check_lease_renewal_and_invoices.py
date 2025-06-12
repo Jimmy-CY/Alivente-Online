@@ -94,13 +94,13 @@ class Command(BaseCommand):
             """)
             tenants = my_cursor.fetchall()
             
-            # Get existing unpaid invoices
+            # Get ALL invoices for the current month/year (paid or unpaid)
             my_cursor.execute("""
                 SELECT invoice.invoice_id, invoice.tenant_id, invoice.invoice_date, invoice.invoice_paid 
                 FROM railway.invoice 
-                WHERE invoice.invoice_paid = 'No' 
+                WHERE MONTH(invoice.invoice_date) = %s AND YEAR(invoice.invoice_date) = %s
                 ORDER BY invoice.invoice_date ASC
-            """)
+            """, (today.month, today.year))
             existing_invoices = my_cursor.fetchall()
             
             # Determine new invoice date (1st of current month)
@@ -324,7 +324,7 @@ class Command(BaseCommand):
             msg = MIMEMultipart('alternative')
             msg['From'] = email_user
             msg['To'] = email_to
-            msg['Subject'] = "Property Management Alert - Invoice Creation, Lease Renewals, Vacant Properties & Overdue Invoices"
+            msg['Subject'] = "Alert - Invoices, Leases and Vacant Properties"
             
             # Build HTML email body with formatting
             html_body = f"""
@@ -338,8 +338,6 @@ class Command(BaseCommand):
             </head>
             <body>
                 <p>Dear User,</p>
-                <br>
-                <p>Property management alert from Alivente Property Management System:</p>
                 <br>
                 <p><b><u>REPORT SUMMARY:</u></b><br>"""
             
@@ -361,30 +359,58 @@ class Command(BaseCommand):
                 months = ('','January','February','March','April','May','June',
                          'July','August','September','October','November','December')
                 current_month = months[today.month]
-                html_body += f"""<p><b><u>INVOICE CREATION SUMMARY:</u></b><br>
-                {created_invoices_count} new invoices were automatically created today for {current_month} {today.year}.</p><br>"""
+                
+                # Correct grammar for singular vs plural
+                if created_invoices_count == 1:
+                    invoice_text = "There was 1 new invoice that was automatically created"
+                else:
+                    invoice_text = f"There were {created_invoices_count} new invoices that were automatically created"
+                
+                html_body += f"""<p><b><u>INVOICE CREATION SUMMARY ({created_invoices_count}):</u></b><br>
+                {invoice_text} today for {current_month} {today.year}.</p><br>"""
             
             # Add detailed vacant properties list
             if vacant_count > 0:
-                html_body += f"""<p><b><u>VACANT PROPERTIES ({vacant_count}):</u></b><br>
-                These properties are active and available for rent but currently have no tenants. Contact estate agents ASAP.</p><ul>"""
+                # Correct grammar for singular vs plural
+                property_word = "property" if vacant_count == 1 else "properties"
+                property_verb = "is" if vacant_count == 1 else "are"
+                tenant_word = "tenant" if vacant_count == 1 else "tenants"
+                
+                html_body += f"""<p><b><u>VACANT {property_word.upper()} ({vacant_count}):</u></b><br>
+                This {property_word} {property_verb} active and available for rent but currently has no {tenant_word}. Contact estate agents ASAP.</p><ul>""" if vacant_count == 1 else f"""<p><b><u>VACANT {property_word.upper()} ({vacant_count}):</u></b><br>
+                These {property_word} {property_verb} active and available for rent but currently have no {tenant_word}. Contact estate agents ASAP.</p><ul>"""
+                
                 for prop in vacant_properties:
                     html_body += f"<li><b>{prop['prop_name']} ({prop['prop_country']})</b></li>"
                 html_body += """</ul><br>"""
-            
+
             # Add detailed expiring leases list
             if expiring_count > 0:
-                html_body += f"""<p><b><u>EXPIRING LEASES ({expiring_count}):</u></b><br>
-                These tenants have leases expiring soon and need renewal discussions. Contact tenants ASAP.</p><ul>"""
+                # Correct grammar for singular vs plural
+                lease_word = "lease" if expiring_count == 1 else "leases"
+                tenant_word = "tenant" if expiring_count == 1 else "tenants"
+                tenant_verb = "has a" if expiring_count == 1 else "have"
+                
+                html_body += f"""<p><b><u>EXPIRING {lease_word.upper()} ({expiring_count}):</u></b><br>
+                This {tenant_word} {tenant_verb} {lease_word} expiring soon that requires a renewal discussion. Contact the {tenant_word} ASAP.</p><ul>""" if expiring_count == 1 else f"""<p><b><u>EXPIRING {lease_word.upper()} ({expiring_count}):</u></b><br>
+                These {tenant_word} {tenant_verb} {lease_word} expiring soon that require renewal discussions. Contact the {tenant_word} ASAP.</p><ul>"""
+                
                 for lease in expiring_leases:
                     html_body += f"<li><b>{lease['prop_name']} ({lease['prop_country']})</b> - Tenant: {lease['tenant_name']}<br>"
                     html_body += f"(Lease ends: {lease['lease_end_date']} | Renewal due by: {lease['renewal_date']})</li>"
                 html_body += """</ul><br>"""
-            
+
             # Add detailed overdue invoices list
             if overdue_count > 0:
-                html_body += f"""<p><b><u>OVERDUE INVOICES ({overdue_count}):</u></b><br>
-                These tenants have overdue invoices that require immediate attention. Contact tenants ASAP.</p><ul>"""
+                # Correct grammar for singular vs plural
+                tenant_word = "tenant" if overdue_count == 1 else "tenants"
+                tenant_verb = "has an" if overdue_count == 1 else "have"
+                invoice_word = "invoice" if overdue_count == 1 else "invoices"
+                
+                html_body += f"""<p><b><u>{tenant_word.upper()} WITH OVERDUE {invoice_word.upper()} ({overdue_count}):</u></b><br>
+                This {tenant_word} {tenant_verb} overdue {invoice_word} that requires immediate attention. Contact {tenant_word} ASAP.</p><ul>""" if overdue_count == 1 else f"""<p><b><u>OVERDUE {invoice_word.upper()} ({overdue_count}):</u></b><br>
+                These {tenant_word} {tenant_verb} overdue {invoice_word} that require immediate attention. Contact {tenant_word} ASAP.</p><ul>"""
+                
                 for property_invoice in overdue_invoices:
                     html_body += f"<li><b>{property_invoice['prop_name']} ({property_invoice['prop_country']})</b> - Tenant: {property_invoice['tenant_name']}<br>"
                     for invoice in property_invoice['invoices']:
@@ -404,10 +430,8 @@ class Command(BaseCommand):
             # Create plain text version as backup
             text_body = f"""Dear User,
 
-Property management alert from Alivente Property Management System:
-
 REPORT SUMMARY:"""
-            
+
             # Only show lines with counts > 0
             if created_invoices_count > 0:
                 text_body += f"\n • New Invoices Created: {created_invoices_count}"
@@ -417,47 +441,84 @@ REPORT SUMMARY:"""
                 text_body += f"\n • Expiring Leases: {expiring_count}"
             if overdue_count > 0:
                 text_body += f"\n • Tenants with Overdue Invoices: {overdue_count}"
-            
+
             text_body += "\n\n"
-            
+
             # Add invoice creation summary if any were created
             if created_invoices_count > 0:
                 today = date.today()
                 months = ('','January','February','March','April','May','June',
                          'July','August','September','October','November','December')
                 current_month = months[today.month]
-                text_body += f"""INVOICE CREATION SUMMARY:
-{created_invoices_count} new invoices were automatically created today for {current_month} {today.year}.
+                
+                # Correct grammar for singular vs plural
+                if created_invoices_count == 1:
+                    invoice_text = "There was 1 new invoice that was automatically created"
+                else:
+                    invoice_text = f"There were {created_invoices_count} new invoices that were automatically created"
+                
+                text_body += f"""INVOICE CREATION SUMMARY ({created_invoices_count}):
+{invoice_text} today for {current_month} {today.year}.
 
 """
-            
-            # Add plain text vacant properties
+
+            # Add detailed vacant properties list
             if vacant_count > 0:
-                text_body += f"""VACANT PROPERTIES ({vacant_count}):
-These properties are active and available for rent but currently have no tenants. Contact estate agents ASAP."""
+                # Correct grammar for singular vs plural
+                property_word = "property" if vacant_count == 1 else "properties"
+                property_verb = "is" if vacant_count == 1 else "are"
+                tenant_word = "tenant" if vacant_count == 1 else "tenants"
+                
+                if vacant_count == 1:
+                    text_body += f"""VACANT {property_word.upper()} ({vacant_count}):
+This {property_word} {property_verb} active and available for rent but currently has no {tenant_word}. Contact estate agents ASAP."""
+                else:
+                    text_body += f"""VACANT {property_word.upper()} ({vacant_count}):
+These {property_word} {property_verb} active and available for rent but currently have no {tenant_word}. Contact estate agents ASAP."""
+                
                 for prop in vacant_properties:
                     text_body += f"\n • {prop['prop_name']} ({prop['prop_country']})"
                 text_body += f"\n\n"
-            
-            # Add plain text expiring leases
+
+            # Add detailed expiring leases list
             if expiring_count > 0:
-                text_body += f"""EXPIRING LEASES ({expiring_count}):
-These tenants have leases expiring soon and need renewal discussions. Contact tenants ASAP."""
+                # Correct grammar for singular vs plural
+                lease_word = "lease" if expiring_count == 1 else "leases"
+                tenant_word = "tenant" if expiring_count == 1 else "tenants"
+                tenant_verb = "has a" if expiring_count == 1 else "have"
+                
+                if expiring_count == 1:
+                    text_body += f"""EXPIRING {lease_word.upper()} ({expiring_count}):
+This {tenant_word} {tenant_verb} {lease_word} expiring soon that requires a renewal discussion. Contact the {tenant_word} ASAP."""
+                else:
+                    text_body += f"""EXPIRING {lease_word.upper()} ({expiring_count}):
+These {tenant_word} {tenant_verb} {lease_word} expiring soon that require renewal discussions. Contact the {tenant_word} ASAP."""
+                
                 for lease in expiring_leases:
                     text_body += f"\n • {lease['prop_name']} ({lease['prop_country']}) - Tenant: {lease['tenant_name']}"
                     text_body += f"\n   (Lease ends: {lease['lease_end_date']} | Renewal due by: {lease['renewal_date']})"
                 text_body += f"\n\n"
-            
-            # Add plain text overdue invoices
+
+            # Add detailed overdue invoices list
             if overdue_count > 0:
-                text_body += f"""OVERDUE INVOICES ({overdue_count}):
-These tenants have overdue invoices that require immediate attention. Contact tenants ASAP."""
+                # Correct grammar for singular vs plural
+                tenant_word = "tenant" if overdue_count == 1 else "tenants"
+                tenant_verb = "has an" if overdue_count == 1 else "have"
+                invoice_word = "invoice" if overdue_count == 1 else "invoices"
+                
+                if overdue_count == 1:
+                    text_body += f"""{tenant_word.upper()} WITH OVERDUE {invoice_word.upper()} ({overdue_count}):
+This {tenant_word} {tenant_verb} overdue {invoice_word} that requires immediate attention. Contact {tenant_word} ASAP."""
+                else:
+                    text_body += f"""OVERDUE {invoice_word.upper()} ({overdue_count}):
+These {tenant_word} {tenant_verb} overdue {invoice_word} that require immediate attention. Contact {tenant_word} ASAP."""
+                
                 for property_invoice in overdue_invoices:
                     text_body += f"\n • {property_invoice['prop_name']} ({property_invoice['prop_country']}) - Tenant: {property_invoice['tenant_name']}"
                     for invoice in property_invoice['invoices']:
                         text_body += f"\n     - Due: {invoice['due_date']} - €{property_invoice['tenant_rent']}"
                 text_body += f"\n\n"
-            
+
             text_body += """Please log into the Alivente Online System for additional details.
 
 Best regards,

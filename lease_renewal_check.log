@@ -168,3 +168,24 @@ Watching for file changes with StatReloader
 "GET / HTTP/1.1" 200 7615
 "GET /admin_apms/ HTTP/1.1" 200 6955
 "GET /admin_apms/ HTTP/1.1" 200 6955
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+"GET /tenant/ HTTP/1.1" 200 26306
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 33420
+"GET / HTTP/1.1" 200 7615
+"GET /tenant/ HTTP/1.1" 200 26306
+"GET /lease_renewal_report/ HTTP/1.1" 200 12375
+"GET /tenant/ HTTP/1.1" 200 26306
+"GET /invoices/ HTTP/1.1" 200 43832
+"GET /tenant_edit/10 HTTP/1.1" 200 11054
+"POST /tenant_edit_commit/10 HTTP/1.1" 200 27062
+"GET /lease_renewal_report/ HTTP/1.1" 200 13731
+"GET /tenant/ HTTP/1.1" 200 26307
+"GET /tenant_edit/10 HTTP/1.1" 200 11054
+"POST /tenant_edit_commit/10 HTTP/1.1" 200 27061
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+"GET /open_invoices_report/ HTTP/1.1" 200 23704
+"GET /tenant/ HTTP/1.1" 200 26306
