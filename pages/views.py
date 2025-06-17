@@ -1335,7 +1335,6 @@ def properties_page(request):
 @login_required
 def properties_map_view(request):
     """Display all properties on an interactive map"""
-    import json
     
     # Get all properties from the database
     properties = props.objects.all()
@@ -1377,10 +1376,6 @@ def properties_map_view(request):
     }
     
     return render(request, 'map_view.html', context)
-
-@login_required
-def map_test(request):
-    return render(request, 'map_test.html')
 
 @login_required
 def properties_title_deed(request):

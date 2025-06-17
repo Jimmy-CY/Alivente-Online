@@ -423,3 +423,42 @@ Watching for file changes with StatReloader
 "GET /properties/ HTTP/1.1" 200 26833
 "GET /properties_add/ HTTP/1.1" 200 17374
 "GET /properties/ HTTP/1.1" 200 26833
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 7615
+"GET /tenant/ HTTP/1.1" 200 26306
+"GET /open_invoices_report/ HTTP/1.1" 200 31340
+"GET /tenant/ HTTP/1.1" 200 26306
+"GET /properties/ HTTP/1.1" 200 26833
+"GET /properties/map/ HTTP/1.1" 200 20519
+"GET /properties/ HTTP/1.1" 200 26833
+"GET / HTTP/1.1" 200 7615
+"GET / HTTP/1.1" 200 7615
+"GET /properties/ HTTP/1.1" 200 26833
+"GET /properties/map/ HTTP/1.1" 200 20519
+"GET /properties/ HTTP/1.1" 200 26833
+"GET /tenant/ HTTP/1.1" 200 26306
+"GET /open_invoices_report/ HTTP/1.1" 200 31340
+"GET /tenant/ HTTP/1.1" 200 26306
+"GET /lease_renewal_report/ HTTP/1.1" 200 12375
+"GET / HTTP/1.1" 200 7615
+"GET /properties/ HTTP/1.1" 200 26833
+"GET /properties/map/ HTTP/1.1" 200 20519
+"GET / HTTP/1.1" 200 7615
+"GET /tenant/ HTTP/1.1" 200 26306
+"GET /open_invoices_report/ HTTP/1.1" 200 31340
+"GET /properties/ HTTP/1.1" 200 26833
+"GET /properties/map/ HTTP/1.1" 200 20519
+"GET /properties/ HTTP/1.1" 200 26833
+"GET / HTTP/1.1" 200 7615
+Watching for file changes with StatReloader
+"GET /properties/ HTTP/1.1" 200 26833
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 33966
+"GET /properties/map/ HTTP/1.1" 200 20519
+"GET /properties/ HTTP/1.1" 200 26833
+"GET /tenant/ HTTP/1.1" 200 26306
+"GET /lease_renewal_report/ HTTP/1.1" 200 12375
+"GET /tenant/ HTTP/1.1" 200 26306
+"GET /open_invoices_report/ HTTP/1.1" 200 31340
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\views.py changed, reloading.
+Watching for file changes with StatReloader

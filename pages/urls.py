@@ -106,7 +106,6 @@ urlpatterns = [
     path('properties_edit_commit/<prop_id>', views.properties_edit_commit, name='properties_edit_commit'),
     path('properties_title_deed/', views.properties_title_deed, name='properties_title_deed'),
     path('properties/map/', views.properties_map_view, name='properties_map_view'),
-    path('properties/map-test/', views.map_test, name='map_test'),
     
     #
     # Petty Cash

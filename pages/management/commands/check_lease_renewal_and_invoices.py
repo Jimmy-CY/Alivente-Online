@@ -510,7 +510,7 @@ These {tenant_word} {tenant_verb} {lease_word} expiring soon that require renewa
                     text_body += f"""{tenant_word.upper()} WITH OVERDUE {invoice_word.upper()} ({overdue_count}):
 This {tenant_word} {tenant_verb} overdue {invoice_word} that requires immediate attention. Contact {tenant_word} ASAP."""
                 else:
-                    text_body += f"""OVERDUE {invoice_word.upper()} ({overdue_count}):
+                    text_body += f"""{tenant_word.upper()} WITH OVERDUE {invoice_word.upper()} ({overdue_count}):
 These {tenant_word} {tenant_verb} overdue {invoice_word} that require immediate attention. Contact {tenant_word} ASAP."""
                 
                 for property_invoice in overdue_invoices:
