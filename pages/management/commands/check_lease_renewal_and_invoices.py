@@ -408,7 +408,7 @@ class Command(BaseCommand):
                 invoice_word = "invoice" if overdue_count == 1 else "invoices"
                 
                 html_body += f"""<p><b><u>{tenant_word.upper()} WITH OVERDUE {invoice_word.upper()} ({overdue_count}):</u></b><br>
-                This {tenant_word} {tenant_verb} overdue {invoice_word} that requires immediate attention. Contact {tenant_word} ASAP.</p><ul>""" if overdue_count == 1 else f"""<p><b><u>OVERDUE {invoice_word.upper()} ({overdue_count}):</u></b><br>
+                This {tenant_word} {tenant_verb} overdue {invoice_word} that requires immediate attention. Contact {tenant_word} ASAP.</p><ul>""" if overdue_count == 1 else f"""<p><b><u>{tenant_word.upper()} WITH OVERDUE {invoice_word.upper()} ({overdue_count}):</u></b><br>
                 These {tenant_word} {tenant_verb} overdue {invoice_word} that require immediate attention. Contact {tenant_word} ASAP.</p><ul>"""
                 
                 for property_invoice in overdue_invoices:
