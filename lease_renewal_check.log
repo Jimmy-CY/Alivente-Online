@@ -462,3 +462,772 @@ Not Found: /favicon.ico
 "GET /open_invoices_report/ HTTP/1.1" 200 31340
 C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\views.py changed, reloading.
 Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 7615
+"GET /properties/ HTTP/1.1" 200 26833
+"GET /properties/map/ HTTP/1.1" 200 20519
+"GET / HTTP/1.1" 200 7615
+"GET /properties/ HTTP/1.1" 200 26833
+"GET /properties/map/ HTTP/1.1" 200 20744
+"GET /properties/ HTTP/1.1" 200 26833
+"GET /properties_edit/6 HTTP/1.1" 200 20380
+"POST /properties_edit_commit/6 HTTP/1.1" 302 0
+"GET /properties/ HTTP/1.1" 200 27556
+"GET /properties/map/ HTTP/1.1" 200 20732
+"GET / HTTP/1.1" 200 7615
+"GET /properties/ HTTP/1.1" 200 26833
+"GET /properties/map/ HTTP/1.1" 200 20746
+"GET /properties/ HTTP/1.1" 200 26833
+"GET /properties/map/ HTTP/1.1" 200 20746
+"GET /properties/ HTTP/1.1" 200 26833
+"GET /properties_edit/6 HTTP/1.1" 200 20345
+"POST /properties_edit_commit/6 HTTP/1.1" 302 0
+"GET /properties/ HTTP/1.1" 200 27556
+"GET /properties/map/ HTTP/1.1" 200 20758
+"GET /properties/ HTTP/1.1" 200 26833
+"GET /properties/ HTTP/1.1" 200 26833
+"GET /tenant/ HTTP/1.1" 200 26306
+"GET /open_invoices_report/ HTTP/1.1" 200 31340
+"GET /tenant/ HTTP/1.1" 200 26306
+"GET /tenant/ HTTP/1.1" 200 26306
+"GET /open_invoices_report/ HTTP/1.1" 200 31340
+"GET /tenant/ HTTP/1.1" 200 26306
+"GET /finance/ HTTP/1.1" 200 10481
+"GET /finance_pl_act/ HTTP/1.1" 200 346284
+"GET /act_expense_view/?year=2025&month=5&from_finance_pl_act=true&prop=all HTTP/1.1" 200 6068
+"GET /finance/ HTTP/1.1" 200 10481
+"GET /properties/ HTTP/1.1" 200 26833
+"GET / HTTP/1.1" 200 7615
+"GET /properties/ HTTP/1.1" 200 30742
+"POST /properties/ HTTP/1.1" 200 16971
+"POST /properties/ HTTP/1.1" 200 26083
+"POST /properties/ HTTP/1.1" 200 16971
+"POST /properties/ HTTP/1.1" 200 16971
+"POST /properties/ HTTP/1.1" 200 20466
+"POST /properties/ HTTP/1.1" 200 16971
+"POST /properties/ HTTP/1.1" 200 16971
+"POST /properties/ HTTP/1.1" 200 16971
+"POST /properties/ HTTP/1.1" 200 16971
+"POST /properties/ HTTP/1.1" 200 16971
+"POST /properties/ HTTP/1.1" 200 16971
+"POST /properties/ HTTP/1.1" 200 16971
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 7615
+"GET /properties/ HTTP/1.1" 200 30742
+"POST /properties/ HTTP/1.1" 200 18115
+"POST /properties/ HTTP/1.1" 200 30742
+"POST /properties/ HTTP/1.1" 200 20474
+"POST /properties/ HTTP/1.1" 200 16987
+"POST /properties/ HTTP/1.1" 200 19265
+"POST /properties/ HTTP/1.1" 200 30742
+"POST /properties/ HTTP/1.1" 200 19277
+"POST /properties/ HTTP/1.1" 200 19285
+"POST /properties/ HTTP/1.1" 200 16983
+"POST /properties/ HTTP/1.1" 200 20474
+"POST /properties/ HTTP/1.1" 200 30742
+"POST /properties/ HTTP/1.1" 200 18115
+"POST /properties/ HTTP/1.1" 200 16990
+"POST /properties/ HTTP/1.1" 200 18115
+"GET / HTTP/1.1" 200 7615
+"GET /properties/ HTTP/1.1" 200 31930
+"GET /properties/ HTTP/1.1" 200 31930
+"GET /properties/ HTTP/1.1" 200 31930
+"GET /static/css/my_style.css HTTP/1.1" 200 45
+"GET /static/images/alivente_online_logo.png HTTP/1.1" 200 58508
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 33696
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 7615
+"GET /properties/ HTTP/1.1" 200 31930
+"GET / HTTP/1.1" 200 2993
+"GET /static/css/my_style.css HTTP/1.1" 200 45
+"GET /static/images/alivente_online_logo.png HTTP/1.1" 200 58508
+"GET /login/ HTTP/1.1" 200 4422
+"POST /login/ HTTP/1.1" 302 0
+"GET / HTTP/1.1" 200 8376
+"GET /properties/ HTTP/1.1" 200 31930
+"GET / HTTP/1.1" 200 7615
+"GET /properties/ HTTP/1.1" 200 33374
+"POST /properties/ HTTP/1.1" 200 20747
+"POST /properties/ HTTP/1.1" 200 20755
+"POST /properties/ HTTP/1.1" 200 19630
+"POST /properties/ HTTP/1.1" 200 20763
+"POST /properties/ HTTP/1.1" 200 33374
+"GET / HTTP/1.1" 200 7615
+"GET /properties/ HTTP/1.1" 200 36323
+"POST /properties/ HTTP/1.1" 200 24857
+"POST /properties/ HTTP/1.1" 200 23712
+"POST /properties/ HTTP/1.1" 200 36323
+"GET /tenant/ HTTP/1.1" 200 26306
+"GET /suppliers/ HTTP/1.1" 200 14949
+"GET /petty_cash/ HTTP/1.1" 200 6608
+"GET /invoices/ HTTP/1.1" 200 43832
+"GET /act_expense_all/?from=home HTTP/1.1" 200 37855
+"GET /fsr/ HTTP/1.1" 200 31738
+"GET /properties/ HTTP/1.1" 200 36323
+"GET / HTTP/1.1" 200 7615
+"GET /properties/ HTTP/1.1" 200 37460
+"POST /properties/ HTTP/1.1" 200 27192
+"POST /properties/ HTTP/1.1" 200 37460
+"POST /properties/ HTTP/1.1" 200 35182
+"POST /properties/ HTTP/1.1" 200 25983
+"POST /properties/ HTTP/1.1" 200 37460
+"POST /properties/ HTTP/1.1" 200 25994
+"POST /properties/ HTTP/1.1" 200 37460
+"GET / HTTP/1.1" 200 7615
+"GET /properties/ HTTP/1.1" 200 38545
+"POST /properties/ HTTP/1.1" 200 28277
+"POST /properties/ HTTP/1.1" 200 33894
+"POST /properties/ HTTP/1.1" 200 38545
+"POST /properties/ HTTP/1.1" 200 36267
+"POST /properties/ HTTP/1.1" 200 27068
+"POST /properties/ HTTP/1.1" 200 38545
+"POST /properties/ HTTP/1.1" 200 25940
+"POST /properties/ HTTP/1.1" 200 38545
+"GET / HTTP/1.1" 200 7615
+"GET /tenant/ HTTP/1.1" 200 26306
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 7615
+"GET /properties/ HTTP/1.1" 200 38545
+"GET /tenant/ HTTP/1.1" 200 41508
+"POST /tenant/ HTTP/1.1" 200 25355
+"POST /tenant/ HTTP/1.1" 200 41508
+"POST /tenant/ HTTP/1.1" 200 25804
+"POST /tenant/ HTTP/1.1" 200 41508
+"POST /tenant/ HTTP/1.1" 200 37980
+"POST /tenant/ HTTP/1.1" 200 27509
+"POST /tenant/ HTTP/1.1" 200 41508
+"GET /properties/ HTTP/1.1" 200 38545
+"GET /tenant/ HTTP/1.1" 200 41508
+"GET /properties/ HTTP/1.1" 200 38545
+"GET /tenant/ HTTP/1.1" 200 41508
+"GET /tenant/ HTTP/1.1" 200 41508
+"GET / HTTP/1.1" 200 7615
+"GET /tenant/ HTTP/1.1" 200 41508
+"GET /properties/ HTTP/1.1" 200 38545
+"GET /tenant/ HTTP/1.1" 200 41508
+"GET /tenant/ HTTP/1.1" 200 41508
+"GET /tenant/ HTTP/1.1" 200 41508
+"GET /properties/ HTTP/1.1" 200 38545
+"GET /suppliers/ HTTP/1.1" 200 14949
+"GET /properties/ HTTP/1.1" 200 38545
+"GET / HTTP/1.1" 200 7615
+"GET /properties/ HTTP/1.1" 200 38154
+"GET /tenant/ HTTP/1.1" 200 41111
+"GET /properties/ HTTP/1.1" 200 38154
+"GET /tenant/ HTTP/1.1" 200 41111
+"POST /tenant/ HTTP/1.1" 200 25333
+"GET /suppliers/ HTTP/1.1" 200 14949
+"GET /tenant/ HTTP/1.1" 200 41111
+"POST /tenant/ HTTP/1.1" 200 41111
+"POST /tenant/ HTTP/1.1" 200 25355
+"POST /tenant/ HTTP/1.1" 200 41111
+"POST /tenant/ HTTP/1.1" 200 37583
+"POST /tenant/ HTTP/1.1" 200 41111
+"GET /properties/ HTTP/1.1" 200 38154
+"POST /properties/ HTTP/1.1" 200 33503
+"POST /properties/ HTTP/1.1" 200 38154
+"GET / HTTP/1.1" 200 7615
+"GET /properties/ HTTP/1.1" 200 38242
+"POST /properties/ HTTP/1.1" 200 33591
+"POST /properties/ HTTP/1.1" 200 38242
+"GET /tenant/ HTTP/1.1" 200 41191
+"GET /properties/ HTTP/1.1" 200 38242
+"GET /tenant/ HTTP/1.1" 200 41191
+"POST /tenant/ HTTP/1.1" 200 41191
+"POST /tenant/ HTTP/1.1" 200 25435
+"POST /tenant/ HTTP/1.1" 200 41191
+"GET / HTTP/1.1" 200 7615
+"GET /properties/ HTTP/1.1" 200 38242
+"POST /properties/ HTTP/1.1" 200 38242
+"GET / HTTP/1.1" 200 7615
+"GET /properties/ HTTP/1.1" 200 38242
+"POST /properties/ HTTP/1.1" 200 33591
+"POST /properties/ HTTP/1.1" 200 38242
+"POST /properties/ HTTP/1.1" 200 35964
+"POST /properties/ HTTP/1.1" 200 38242
+"POST /properties/ HTTP/1.1" 200 25608
+"POST /properties/ HTTP/1.1" 200 38242
+"GET /tenant/ HTTP/1.1" 200 41276
+"POST /tenant/ HTTP/1.1" 200 26531
+"POST /tenant/ HTTP/1.1" 200 41276
+"POST /tenant/ HTTP/1.1" 200 25520
+"POST /tenant/ HTTP/1.1" 200 41276
+"POST /tenant/ HTTP/1.1" 200 25430
+"POST /tenant/ HTTP/1.1" 200 41276
+"GET /properties/ HTTP/1.1" 200 38242
+"POST /properties/ HTTP/1.1" 200 38242
+"POST /properties/ HTTP/1.1" 200 38242
+"POST /properties/ HTTP/1.1" 200 38242
+"POST /properties/ HTTP/1.1" 200 33591
+"POST /properties/ HTTP/1.1" 200 38242
+"GET / HTTP/1.1" 200 7615
+"GET /properties/ HTTP/1.1" 200 38242
+"POST /properties/ HTTP/1.1" 200 33591
+"POST /properties/ HTTP/1.1" 200 38242
+"GET /tenant/ HTTP/1.1" 200 41276
+"POST /tenant/ HTTP/1.1" 200 25498
+"POST /tenant/ HTTP/1.1" 200 41276
+"GET / HTTP/1.1" 200 7615
+"GET /properties/ HTTP/1.1" 200 38309
+"POST /properties/ HTTP/1.1" 200 38309
+"POST /properties/ HTTP/1.1" 200 38309
+"POST /properties/ HTTP/1.1" 200 38309
+"POST /properties/ HTTP/1.1" 200 33658
+"POST /properties/ HTTP/1.1" 200 31380
+"POST /properties/ HTTP/1.1" 200 36031
+"POST /properties/ HTTP/1.1" 200 38309
+"GET / HTTP/1.1" 200 7615
+"GET / HTTP/1.1" 200 7615
+"GET /static/css/my_style.css HTTP/1.1" 200 45
+"GET /static/images/alivente_online_logo.png HTTP/1.1" 200 58508
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 33696
+"GET /properties/ HTTP/1.1" 200 38309
+"POST /properties/ HTTP/1.1" 200 38309
+"POST /properties/ HTTP/1.1" 200 38309
+"POST /properties/ HTTP/1.1" 200 33658
+"POST /properties/ HTTP/1.1" 200 38309
+"POST /properties/ HTTP/1.1" 200 36031
+"POST /properties/ HTTP/1.1" 200 31380
+"POST /properties/ HTTP/1.1" 200 25674
+"GET /media/properties/title_deeds/prop_3_pindarou_title_deed.pdf HTTP/1.1" 200 3025927
+"POST /properties/ HTTP/1.1" 200 38309
+"POST /properties/ HTTP/1.1" 200 36031
+"POST /properties/ HTTP/1.1" 200 38309
+"POST /properties/ HTTP/1.1" 200 36031
+"GET /static/css/my_style.css HTTP/1.1" 200 45
+"GET /static/images/alivente_online_logo.png HTTP/1.1" 200 58508
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 33696
+"GET / HTTP/1.1" 200 7615
+"GET /properties/ HTTP/1.1" 200 38309
+"POST /properties/ HTTP/1.1" 200 38309
+"POST /properties/ HTTP/1.1" 200 33658
+"POST /properties/ HTTP/1.1" 200 38309
+"POST /properties/ HTTP/1.1" 200 26843
+"GET /static/css/my_style.css HTTP/1.1" 200 45
+"GET /static/images/alivente_online_logo.png HTTP/1.1" 200 58508
+"POST /properties/ HTTP/1.1" 200 25698
+"POST /properties/ HTTP/1.1" 200 38309
+"POST /properties/ HTTP/1.1" 200 33658
+"POST /properties/ HTTP/1.1" 200 38309
+"GET / HTTP/1.1" 200 7615
+"GET /properties/ HTTP/1.1" 200 38798
+"POST /properties/ HTTP/1.1" 200 27332
+"POST /properties/ HTTP/1.1" 200 27340
+"POST /properties/ HTTP/1.1" 200 26195
+"POST /properties/ HTTP/1.1" 200 38798
+"POST /properties/ HTTP/1.1" 200 34147
+"POST /properties/ HTTP/1.1" 200 38798
+"POST /properties/ HTTP/1.1" 200 36520
+"POST /properties/ HTTP/1.1" 200 38798
+"GET /tenant/ HTTP/1.1" 200 42264
+"POST /tenant/ HTTP/1.1" 200 26237
+"POST /tenant/ HTTP/1.1" 200 42264
+"POST /tenant/ HTTP/1.1" 200 26464
+"POST /tenant/ HTTP/1.1" 200 42264
+"POST /tenant/ HTTP/1.1" 200 38736
+"POST /tenant/ HTTP/1.1" 200 42264
+"GET /properties/ HTTP/1.1" 200 38798
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 33807
+"POST /properties/ HTTP/1.1" 200 38798
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 33807
+"POST /properties/ HTTP/1.1" 200 38798
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 33807
+"POST /properties/ HTTP/1.1" 200 38798
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 33807
+"GET /static/css/my_style.css HTTP/1.1" 200 45
+"GET /static/images/alivente_online_logo.png HTTP/1.1" 200 58508
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 33696
+"GET / HTTP/1.1" 200 7615
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 33807
+"GET /properties/ HTTP/1.1" 200 38798
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 33807
+"POST /properties/ HTTP/1.1" 200 28464
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 33807
+"POST /properties/ HTTP/1.1" 200 38798
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 33807
+"GET / HTTP/1.1" 200 7615
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 33807
+"GET /properties/ HTTP/1.1" 200 38798
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 33807
+"POST /properties/ HTTP/1.1" 200 34147
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 33807
+"POST /properties/ HTTP/1.1" 200 38798
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 33807
+"POST /properties/ HTTP/1.1" 200 36520
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 33807
+"POST /properties/ HTTP/1.1" 200 38798
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 33807
+"GET / HTTP/1.1" 200 7615
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 33807
+"GET /properties/ HTTP/1.1" 200 38798
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 33807
+"POST /properties/ HTTP/1.1" 200 38798
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 33807
+"GET / HTTP/1.1" 200 7615
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 33807
+"GET /properties/ HTTP/1.1" 200 38798
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 33807
+"GET /properties/ HTTP/1.1" 200 38798
+"GET /properties/ HTTP/1.1" 200 38798
+"GET /properties/ HTTP/1.1" 200 38798
+"GET /static/css/my_style.css HTTP/1.1" 200 45
+"GET /static/images/alivente_online_logo.png HTTP/1.1" 200 58508
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 33696
+"GET /properties/ HTTP/1.1" 200 38798
+"GET /static/css/my_style.css HTTP/1.1" 200 45
+"GET /static/images/alivente_online_logo.png HTTP/1.1" 200 58508
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 33696
+"GET /properties/ HTTP/1.1" 200 38798
+"GET /static/css/my_style.css HTTP/1.1" 200 45
+"GET /static/images/alivente_online_logo.png HTTP/1.1" 200 58508
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 33696
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 7615
+Internal Server Error: /properties/
+Traceback (most recent call last):
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\contrib\auth\decorators.py", line 60, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\djangoproject\pages\views.py", line 1352, in properties_page
+    return render(request, "BROKEN_FILENAME.html", context)
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\loader.py", line 19, in get_template
+    raise TemplateDoesNotExist(template_name, chain=chain)
+django.template.exceptions.TemplateDoesNotExist: BROKEN_FILENAME.html
+"GET /properties/ HTTP/1.1" 500 88350
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+"GET /properties/ HTTP/1.1" 200 38798
+"POST /properties/ HTTP/1.1" 200 38798
+"GET / HTTP/1.1" 200 7615
+"GET /properties/ HTTP/1.1" 200 38915
+"GET /properties/ HTTP/1.1" 200 37031
+"GET /static/css/my_style.css HTTP/1.1" 200 45
+"GET /static/images/alivente_online_logo.png HTTP/1.1" 200 58508
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 33696
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 33807
+"POST /properties/ HTTP/1.1" 200 37031
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 33807
+"POST /properties/ HTTP/1.1" 200 32380
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 33807
+"POST /properties/ HTTP/1.1" 200 37031
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 33807
+"POST /properties/ HTTP/1.1" 200 41854
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 33807
+"GET /static/css/my_style.css HTTP/1.1" 200 45
+"GET /static/images/alivente_online_logo.png HTTP/1.1" 200 58508
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 33696
+"GET / HTTP/1.1" 200 7615
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 33807
+"GET /properties/ HTTP/1.1" 200 41854
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 33807
+"POST /properties/ HTTP/1.1" 200 41854
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 33807
+"POST /properties/ HTTP/1.1" 200 37203
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 33807
+"POST /properties/ HTTP/1.1" 200 39929
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 33807
+"GET /static/css/my_style.css HTTP/1.1" 200 45
+"GET /static/images/alivente_online_logo.png HTTP/1.1" 200 58508
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 33696
+"POST /properties/ HTTP/1.1" 200 44580
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 33807
+"POST /properties/ HTTP/1.1" 200 39929
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 33807
+"POST /properties/ HTTP/1.1" 200 44580
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 33807
+"POST /properties/ HTTP/1.1" 200 42302
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 33807
+"POST /properties/ HTTP/1.1" 200 44580
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 33807
+"POST /properties/ HTTP/1.1" 200 34246
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 33807
+"POST /properties/ HTTP/1.1" 200 44580
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 33807
+"POST /properties/ HTTP/1.1" 200 44580
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 33807
+"POST /properties/ HTTP/1.1" 200 33117
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 33807
+"POST /properties/ HTTP/1.1" 200 37603
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 33807
+"GET /static/css/my_style.css HTTP/1.1" 200 45
+"GET /static/images/alivente_online_logo.png HTTP/1.1" 200 58508
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 33696
+"POST /properties/ HTTP/1.1" 200 37611
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 33807
+"POST /properties/ HTTP/1.1" 200 44415
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 33807
+"POST /properties/ HTTP/1.1" 200 49066
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 33807
+"POST /properties/ HTTP/1.1" 200 46788
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 33807
+"POST /properties/ HTTP/1.1" 200 49066
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 33807
+"POST /properties/ HTTP/1.1" 200 38732
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 33807
+"POST /properties/ HTTP/1.1" 200 49066
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 33807
+"POST /properties/ HTTP/1.1" 200 38798
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 33807
+"GET /tenant/ HTTP/1.1" 200 42264
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 33807
+"GET /properties/ HTTP/1.1" 200 49066
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 33807
+"POST /properties/ HTTP/1.1" 200 44415
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 33807
+"POST /properties/ HTTP/1.1" 200 42137
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 33807
+"POST /properties/ HTTP/1.1" 200 44415
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 33807
+"POST /properties/ HTTP/1.1" 200 49066
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 33807
+"POST /properties/ HTTP/1.1" 200 49066
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 33807
+"POST /properties/ HTTP/1.1" 200 37600
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 33807
+"POST /properties/ HTTP/1.1" 200 49066
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 33807
+"GET / HTTP/1.1" 200 7615
+"GET /properties/ HTTP/1.1" 200 49947
+"POST /properties/ HTTP/1.1" 200 38481
+"POST /properties/ HTTP/1.1" 200 49947
+"POST /properties/ HTTP/1.1" 200 45296
+"POST /properties/ HTTP/1.1" 200 49947
+"POST /properties/ HTTP/1.1" 200 49947
+"GET / HTTP/1.1" 200 7615
+"GET /properties/ HTTP/1.1" 200 53044
+"POST /properties/ HTTP/1.1" 200 41578
+"POST /properties/ HTTP/1.1" 200 53044
+"POST /properties/ HTTP/1.1" 200 48393
+"POST /properties/ HTTP/1.1" 200 42776
+"POST /properties/ HTTP/1.1" 200 53044
+"POST /properties/ HTTP/1.1" 200 50766
+"POST /properties/ HTTP/1.1" 200 53044
+"POST /properties/ HTTP/1.1" 200 48393
+"POST /properties/ HTTP/1.1" 200 53044
+"GET /tenant/ HTTP/1.1" 200 42264
+"GET / HTTP/1.1" 200 7615
+"GET /properties/ HTTP/1.1" 200 53044
+"GET / HTTP/1.1" 200 7615
+"GET /tenant/ HTTP/1.1" 200 54314
+"POST /tenant/ HTTP/1.1" 200 38160
+"POST /tenant/ HTTP/1.1" 200 54314
+"POST /tenant/ HTTP/1.1" 200 38666
+"POST /tenant/ HTTP/1.1" 200 54314
+"POST /tenant/ HTTP/1.1" 200 50786
+"POST /tenant/ HTTP/1.1" 200 54314
+"GET /open_invoices_report/ HTTP/1.1" 200 31340
+"GET /tenant/ HTTP/1.1" 200 54314
+"GET /lease_renewal_report/ HTTP/1.1" 200 12375
+"GET /tenant/ HTTP/1.1" 200 54314
+"GET /tenant_add/ HTTP/1.1" 200 12029
+"GET /tenant/ HTTP/1.1" 200 54314
+"GET / HTTP/1.1" 200 7615
+"GET /suppliers/ HTTP/1.1" 200 14949
+"GET / HTTP/1.1" 200 2993
+"GET /login/ HTTP/1.1" 200 4422
+"POST /login/ HTTP/1.1" 302 0
+"GET / HTTP/1.1" 200 8376
+"GET /suppliers/ HTTP/1.1" 200 42906
+"POST /suppliers/ HTTP/1.1" 200 42906
+"POST /suppliers/ HTTP/1.1" 200 42906
+"POST /suppliers/ HTTP/1.1" 200 42906
+"GET /properties/ HTTP/1.1" 200 53044
+"GET /suppliers/ HTTP/1.1" 200 42906
+"POST /suppliers/ HTTP/1.1" 200 42906
+"GET / HTTP/1.1" 200 7615
+"GET /suppliers/ HTTP/1.1" 200 43780
+"GET / HTTP/1.1" 200 7615
+"GET /properties/ HTTP/1.1" 200 53044
+"GET /suppliers/ HTTP/1.1" 200 43780
+"GET /suppliers/ HTTP/1.1" 200 43780
+"GET / HTTP/1.1" 200 7615
+"GET /properties/ HTTP/1.1" 200 53044
+"GET /tenant/ HTTP/1.1" 200 54314
+"GET /suppliers/ HTTP/1.1" 200 43780
+"GET / HTTP/1.1" 200 7615
+"GET /properties/ HTTP/1.1" 200 53044
+"GET /tenant/ HTTP/1.1" 200 54314
+"GET /suppliers/ HTTP/1.1" 200 43782
+"POST /suppliers/ HTTP/1.1" 200 43782
+"POST /suppliers/ HTTP/1.1" 200 36273
+"POST /suppliers/ HTTP/1.1" 200 42494
+"POST /suppliers/ HTTP/1.1" 200 36265
+"POST /suppliers/ HTTP/1.1" 200 43782
+"GET / HTTP/1.1" 200 7615
+"GET /suppliers/ HTTP/1.1" 200 43827
+"POST /suppliers/ HTTP/1.1" 200 43827
+"GET / HTTP/1.1" 200 7615
+"GET /suppliers/ HTTP/1.1" 200 44247
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 33807
+"POST /suppliers/ HTTP/1.1" 200 44247
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 33807
+"POST /suppliers/ HTTP/1.1" 200 44247
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 33807
+"GET /logout/ HTTP/1.1" 302 0
+"GET / HTTP/1.1" 200 3753
+"GET /login/ HTTP/1.1" 200 4422
+"POST /login/ HTTP/1.1" 302 0
+"GET / HTTP/1.1" 200 8376
+"GET /properties/ HTTP/1.1" 200 53044
+"GET /properties_edit/5 HTTP/1.1" 200 20394
+"GET /properties/ HTTP/1.1" 200 53044
+"GET /property_report/5 HTTP/1.1" 200 12018
+"GET /property_report/4 HTTP/1.1" 200 12015
+"GET /properties/ HTTP/1.1" 200 53044
+"GET /media/properties/title_deeds/prop_4_eleftheroupoleos_title_deed.pdf HTTP/1.1" 200 3026605
+"POST /properties/ HTTP/1.1" 200 42776
+"POST /properties/ HTTP/1.1" 200 53044
+"GET /properties/map/ HTTP/1.1" 200 20758
+"GET /properties/ HTTP/1.1" 200 53044
+"GET /tenant/ HTTP/1.1" 200 54314
+"GET /tenant_edit/5 HTTP/1.1" 200 11167
+"GET /tenant/ HTTP/1.1" 200 54314
+"GET /tenant_report/3 HTTP/1.1" 200 12881
+"GET /tenant/ HTTP/1.1" 200 54314
+"GET /media/tenants/lease_agreements/tenant_3_assetworth-limited_lease_agreement.pdf HTTP/1.1" 200 193562
+"GET /lease_renewal_report/ HTTP/1.1" 200 12375
+"GET /tenant/ HTTP/1.1" 200 54314
+"GET /open_invoices_report/ HTTP/1.1" 200 31340
+"GET /tenant/ HTTP/1.1" 200 54314
+"GET /suppliers/ HTTP/1.1" 200 44247
+"GET /supplier_report/1 HTTP/1.1" 200 9052
+"GET /suppliers/ HTTP/1.1" 200 44247
+"GET /petty_cash/ HTTP/1.1" 200 6608
+"GET /invoices/ HTTP/1.1" 200 43832
+"GET /invoices_commit/18 HTTP/1.1" 302 0
+"GET /invoices/ HTTP/1.1" 200 42166
+"GET /act_expense_all/?from=home HTTP/1.1" 200 38484
+"GET /act_expense_upload_inv/ HTTP/1.1" 200 19924
+"GET /media/expense_docs/pindarou-20250521-Invoice.pdf HTTP/1.1" 200 461728
+"GET /act_expense_all/ HTTP/1.1" 200 37949
+"GET /fsr/ HTTP/1.1" 200 31738
+"GET /fsr_details/6?from=fsr HTTP/1.1" 200 11769
+"POST /fsr_commit_status_change/ HTTP/1.1" 302 0
+"GET /fsr/?refresh=true HTTP/1.1" 200 31740
+"GET /fsr/ HTTP/1.1" 200 31740
+"GET /friday_status_report/ HTTP/1.1" 200 27710
+"GET /fsr/ HTTP/1.1" 200 31740
+"GET /fsr_details/6?from=fsr HTTP/1.1" 200 11769
+"POST /fsr_commit_status_change/ HTTP/1.1" 302 0
+"GET /fsr/?refresh=true HTTP/1.1" 200 31738
+"GET /fsr/ HTTP/1.1" 200 31738
+"GET /friday_status_report/ HTTP/1.1" 200 27723
+"GET /fsr_details/35?from=status_report HTTP/1.1" 200 11768
+"POST /fsr_commit_status_change/ HTTP/1.1" 302 0
+"GET /friday_status_report/?refresh=true HTTP/1.1" 200 27736
+"GET /fsr/ HTTP/1.1" 200 31736
+"GET /resolved_issues_report/?f_date=2025-03-20&t_date=2025-06-18 HTTP/1.1" 200 15375
+"GET /fsr/ HTTP/1.1" 200 31736
+"GET /finance/ HTTP/1.1" 200 10481
+"GET /finance_valuations/ HTTP/1.1" 200 11592
+"GET /finance/ HTTP/1.1" 200 10481
+"GET /finance_pl_act/ HTTP/1.1" 200 346284
+"GET /act_expense_view/?year=2025&month=4&from_finance_pl_act=true&prop=all HTTP/1.1" 200 5239
+"GET /act_expense_view/?year=2025&month=5&from_finance_pl_act=true&prop=all HTTP/1.1" 200 6068
+"GET /act_expense_view/?year=2025&from_finance_pl_act=true&prop=all HTTP/1.1" 200 6466
+"GET /admin_apms/ HTTP/1.1" 200 6955
+"GET /tenant_lease_agreement/ HTTP/1.1" 200 21078
+"GET /admin_apms/ HTTP/1.1" 200 6955
+"GET /logout/ HTTP/1.1" 302 0
+"GET / HTTP/1.1" 200 3753
+"GET /login/ HTTP/1.1" 200 4422
+"POST /login/ HTTP/1.1" 302 0
+"GET / HTTP/1.1" 200 8376
+"GET /suppliers/ HTTP/1.1" 200 44247
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 33807
+"POST /suppliers/ HTTP/1.1" 200 44247
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 33807
+"POST /suppliers/ HTTP/1.1" 200 44247
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 33807
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 7615
+"GET /suppliers/ HTTP/1.1" 200 44247
+"POST /suppliers/ HTTP/1.1" 200 36725
+"POST /suppliers/ HTTP/1.1" 200 44247
+"POST /suppliers/ HTTP/1.1" 200 37358
+"POST /suppliers/ HTTP/1.1" 200 44247
+"POST /suppliers/ HTTP/1.1" 200 36746
+"GET / HTTP/1.1" 200 7615
+"GET /petty_cash/ HTTP/1.1" 200 6608
+"GET /invoices/ HTTP/1.1" 200 42166
+"GET /act_expense_all/?from=home HTTP/1.1" 200 37855
+"GET /fsr/ HTTP/1.1" 200 31736
+"GET /petty_cash/ HTTP/1.1" 200 6608
+"GET /invoices/ HTTP/1.1" 200 42166
+"GET /finance/ HTTP/1.1" 200 10481
+"GET /admin_apms/ HTTP/1.1" 200 6955
+"GET /fsr/ HTTP/1.1" 200 31736
+"GET /act_expense_all/?from=home HTTP/1.1" 200 37855
+"GET /invoices/ HTTP/1.1" 200 42166
+"GET /petty_cash/ HTTP/1.1" 200 6608
+"GET /petty_cash/ HTTP/1.1" 200 6608
+"GET /invoices/ HTTP/1.1" 200 42166
+"GET /act_expense_all/?from=home HTTP/1.1" 200 37855
+"GET /fsr/ HTTP/1.1" 200 31736
+"GET /invoices/ HTTP/1.1" 200 42166
+"GET /finance/ HTTP/1.1" 200 10481
+"GET /admin_apms/ HTTP/1.1" 200 6955
+"GET /finance/ HTTP/1.1" 200 10481
+"GET /invoices/ HTTP/1.1" 200 42166
+"GET / HTTP/1.1" 200 7615
+"GET /suppliers/ HTTP/1.1" 200 44247
+"POST /suppliers/ HTTP/1.1" 200 37358
+"GET /supplier_report/4 HTTP/1.1" 200 9076
+"GET /suppliers/ HTTP/1.1" 200 44247
+"GET / HTTP/1.1" 200 7615
+"GET /properties/ HTTP/1.1" 200 53044
+"POST /properties/ HTTP/1.1" 200 42710
+"POST /properties/ HTTP/1.1" 200 53044
+"POST /properties/ HTTP/1.1" 200 42776
+"POST /properties/ HTTP/1.1" 200 53044
+"GET / HTTP/1.1" 200 7615
+"GET /invoices/ HTTP/1.1" 200 42166
+"GET /fsr/ HTTP/1.1" 200 31736
+"GET /invoices/ HTTP/1.1" 200 42166
+"GET /properties/ HTTP/1.1" 200 53044
+"GET /tenant/ HTTP/1.1" 200 54314
+"GET /suppliers/ HTTP/1.1" 200 44247
+"GET /invoices/ HTTP/1.1" 200 42166
+"GET / HTTP/1.1" 200 7615
+"GET /invoices/ HTTP/1.1" 200 112894
+"POST /invoices/ HTTP/1.1" 200 30446
+"POST /invoices/ HTTP/1.1" 200 30315
+"POST /invoices/ HTTP/1.1" 200 30315
+"GET /invoices/ HTTP/1.1" 200 112894
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 7615
+"GET /invoices/ HTTP/1.1" 200 112894
+"POST /invoices/ HTTP/1.1" 200 38713
+"POST /invoices/ HTTP/1.1" 200 112894
+"POST /invoices/ HTTP/1.1" 200 40173
+"POST /invoices/ HTTP/1.1" 200 112894
+"POST /invoices/ HTTP/1.1" 200 39180
+"POST /invoices/ HTTP/1.1" 200 112894
+"GET / HTTP/1.1" 200 7615
+"GET /properties/ HTTP/1.1" 200 53044
+"GET /tenant/ HTTP/1.1" 200 54314
+"GET /suppliers/ HTTP/1.1" 200 44247
+"GET /invoices/ HTTP/1.1" 200 112894
+"GET /act_expense_all/?from=home HTTP/1.1" 200 37855
+"GET /fsr/ HTTP/1.1" 200 31736
+"GET / HTTP/1.1" 200 7615
+"GET /fsr/ HTTP/1.1" 200 57822
+"POST /fsr/ HTTP/1.1" 200 39683
+"POST /fsr/ HTTP/1.1" 200 33950
+"POST /fsr/ HTTP/1.1" 200 33958
+"POST /fsr/ HTTP/1.1" 200 33958
+"POST /fsr/ HTTP/1.1" 200 33950
+"POST /fsr/ HTTP/1.1" 200 33950
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 7615
+"GET /fsr/ HTTP/1.1" 200 57822
+"POST /fsr/ HTTP/1.1" 200 38046
+"POST /fsr/ HTTP/1.1" 200 57822
+"POST /fsr/ HTTP/1.1" 200 36613
+"POST /fsr/ HTTP/1.1" 200 57822
+"POST /fsr/ HTTP/1.1" 200 34284
+"POST /fsr/ HTTP/1.1" 200 57822
+"POST /fsr/ HTTP/1.1" 200 36627
+"POST /fsr/ HTTP/1.1" 200 57822
+"POST /fsr/ HTTP/1.1" 200 47985
+"POST /fsr/ HTTP/1.1" 200 34296
+"POST /fsr/ HTTP/1.1" 200 47985
+"POST /fsr/ HTTP/1.1" 200 36646
+"POST /fsr/ HTTP/1.1" 200 36638
+"POST /fsr/ HTTP/1.1" 200 57822
+"POST /fsr/ HTTP/1.1" 200 38070
+"POST /fsr/ HTTP/1.1" 200 57822
+"GET /invoices/ HTTP/1.1" 200 112894
+"GET /fsr/ HTTP/1.1" 200 57822
+"GET /act_expense_all/?from=home HTTP/1.1" 200 37855

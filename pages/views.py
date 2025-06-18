@@ -1004,36 +1004,41 @@ def finance_valuations_edit_commit(request, prop_values_id):
 ### TENANTS ###
 @login_required
 def tenant_page(request):
-	prop_output = request.POST.get('propname')
-	tenant_output = request.POST.get('tenantname')
-	active_output = request.POST.get('act')
-	results = props.objects.all().order_by('prop_country','prop_name')
-	tresults = tenant.objects.all().order_by('tenant_name')
-	if tenant_output is None:
-		tresults = tenant.objects.all().order_by('tenant_name')
-		if active_output is None:
-			tresults = tenant.objects.all().order_by('tenant_name')
-		elif active_output == "All":
-			tresults = tenant.objects.all().order_by('tenant_name')
-		else:
-			tresults = tenant.objects.filter(tenant_current=active_output)
-	elif tenant_output == "All":
-		tresults = tenant.objects.all().order_by('tenant_name')
-		if active_output is None:
-			tresults = tenant.objects.all().order_by('tenant_name')
-		elif active_output == "All":
-			tresults = tenant.objects.all().order_by('tenant_name')
-		else:
-			tresults = tenant.objects.filter(tenant_current=active_output)
-	else:
-		tresults = tenant.objects.filter(tenant_name=tenant_output)
-	if prop_output is None:
-		results = props.objects.all().order_by('prop_country','prop_name')
-	elif prop_output == "All":
-		results = props.objects.all().order_by('prop_country','prop_name')
-	else:
-		results = props.objects.filter(prop_name=prop_output)
-	return render (request, "tenant.html", {"tenant":tresults, "props":results})
+    # Get filter values from the new form
+    selected_property = request.POST.get('propname', '').strip()
+    selected_tenant = request.POST.get('tenantname', '').strip()
+    selected_status = request.POST.get('act', '').strip()
+    
+    # Start with all properties and tenants
+    all_properties = props.objects.all().order_by('prop_country', 'prop_name')
+    all_tenants = tenant.objects.all().order_by('tenant_name')
+    
+    # Filter tenants based on the selected criteria
+    filtered_tenants = all_tenants
+    
+    # Apply tenant name filter
+    if selected_tenant:
+        filtered_tenants = filtered_tenants.filter(tenant_name=selected_tenant)
+    
+    # Apply status filter
+    if selected_status:
+        filtered_tenants = filtered_tenants.filter(tenant_current=selected_status)
+    
+    # Filter properties based on the selected property
+    filtered_properties = all_properties
+    if selected_property:
+        filtered_properties = filtered_properties.filter(prop_name=selected_property)
+    
+    # Pass filter values back to template for form persistence
+    context = {
+        'tenant': filtered_tenants,
+        'props': filtered_properties,
+        'selected_property': selected_property,
+        'selected_tenant': selected_tenant,
+        'selected_status': selected_status,
+    }
+    
+    return render(request, "tenant.html", context)
 
 @login_required
 def tenant_add(request):
@@ -1168,19 +1173,28 @@ def tenant_lease_agreement(request):
 ### SUPPLIERS ###
 @login_required
 def suppliers(request):
-	sup_output = request.POST.get('supname')
-	sup_count = request.POST.get('supcount')
-	sresults = supplier.objects.all().order_by('supplier_country','supplier_contact_person')
-	if sup_output is None and sup_count is None:
-		sresults = supplier.objects.all().order_by('supplier_country','supplier_contact_person')
-	elif sup_output == "All" or sup_count == "All":
-		sresults = supplier.objects.all().order_by('supplier_country','supplier_contact_person')
-	else:
-		if sup_output is not None:
-			sresults = supplier.objects.filter(supplier_contact_person=sup_output)
-		elif sup_count is not None:
-			sresults = supplier.objects.filter(supplier_country=sup_count)
-	return render (request, "suppliers.html", {"supplier":sresults})
+    sup_output = request.POST.get('supname')
+    sup_count = request.POST.get('supcount')
+    
+    # Start with all suppliers
+    sresults = supplier.objects.all().order_by('supplier_country','supplier_contact_person')
+    
+    # Apply search filter if provided and not "All"
+    if sup_output and sup_output != "All":
+        sresults = sresults.filter(supplier_contact_person__icontains=sup_output)
+    
+    # Apply country filter if provided and not "All"  
+    if sup_count and sup_count != "All":
+        sresults = sresults.filter(supplier_country=sup_count)
+    
+    # Pass the search values back to template for form preservation
+    context = {
+        "supplier": sresults,
+        "selected_supplier": sup_output if sup_output and sup_output != "All" else "",
+        "selected_country": sup_count if sup_count and sup_count != "All" else "All"
+    }
+    
+    return render(request, "suppliers.html", context)
 
 @login_required
 def suppliers_add(request):
@@ -1219,24 +1233,42 @@ def suppliers_edit_commit(request, supplier_id):
 ### INVOICES ###
 @login_required
 def invoices_page(request):
-	prop_output = request.POST.get('propname')
-	tenant_output = request.POST.get('tenantname')
-	results = props.objects.all().order_by('prop_country','prop_name')
-	tresults = tenant.objects.all().order_by('tenant_name')
-	iresults = invoices.objects.filter(invoice_paid="No").order_by('invoice_date')
-	if tenant_output is None:
-		tresults = tenant.objects.all().order_by('tenant_name')
-	elif tenant_output == "All":
-		tresults = tenant.objects.all().order_by('tenant_name')
-	else:
-		tresults = tenant.objects.filter(tenant_name=tenant_output)
-	if prop_output is None:
-		results = props.objects.all().order_by('prop_country','prop_name')
-	elif prop_output == "All":
-		results = props.objects.all().order_by('prop_country','prop_name')
-	else:
-		results = props.objects.filter(prop_name=prop_output)
-	return render (request, "invoices.html", {"invoices":iresults, "tenant":tresults, "props":results})
+    # Get filter values from POST request
+    prop_output = request.POST.get('propname', '')
+    tenant_output = request.POST.get('tenantname', '')
+    
+    # Always get all props for the dropdown
+    all_props = props.objects.all().order_by('prop_country', 'prop_name')
+    
+    # Always get all tenants for the dropdown  
+    all_tenants = tenant.objects.all().order_by('tenant_name')
+    
+    # Get unpaid invoices
+    iresults = invoices.objects.filter(invoice_paid="No").order_by('invoice_date')
+    
+    # Filter props based on selection
+    if prop_output and prop_output != "All":
+        filtered_props = props.objects.filter(prop_name=prop_output)
+    else:
+        filtered_props = all_props
+    
+    # Filter tenants based on selection
+    if tenant_output and tenant_output != "All":
+        filtered_tenants = tenant.objects.filter(tenant_name=tenant_output)
+    else:
+        filtered_tenants = all_tenants
+    
+    context = {
+        "invoices": iresults,
+        "tenant": filtered_tenants,  # Filtered tenants for display
+        "props": filtered_props,     # Filtered props for display
+        "all_props": all_props,      # All props for dropdown
+        "all_tenants": all_tenants,  # All tenants for dropdown
+        "selected_property": prop_output if prop_output != "All" else "",
+        "selected_tenant": tenant_output if tenant_output != "All" else "",
+    }
+    
+    return render(request, "invoices.html", context)
 
 @login_required
 def invoices_commit(request, invoice_id):
@@ -1315,22 +1347,36 @@ Alivente Property Management System"""
 ### PROPERTIES ###
 @login_required
 def properties_page(request):
-	prop_output = request.POST.get('propname')
-	country_output = request.POST.get('country')
-	active_output = request.POST.get('act')
-	results = props.objects.all().order_by('prop_country','prop_name')
-	if prop_output is None and active_output is None and country_output is None:
-		results = props.objects.all().order_by('prop_country','prop_name')
-	elif prop_output == "All" or active_output == "All" or country_output == "All":
-		results = props.objects.all().order_by('prop_country','prop_name')
-	else:
-		if prop_output is not None:
-			results = props.objects.filter(prop_name=prop_output)
-		elif country_output is not None:
-			results = props.objects.filter(prop_country=country_output)
-		elif active_output is not None:
-			results = props.objects.filter(prop_status=active_output)
-	return render (request, "properties.html", {"props":results})
+    # Get filter values from the new form
+    search_query = request.POST.get('search', '').strip()
+    selected_country = request.POST.get('country', '')
+    selected_status = request.POST.get('status', '')
+    
+    # Start with all properties
+    results = props.objects.all()
+    
+    # Apply cumulative filters (all work together)
+    if search_query:
+        results = results.filter(prop_name__icontains=search_query)
+    
+    if selected_country:
+        results = results.filter(prop_country=selected_country)
+    
+    if selected_status:
+        results = results.filter(prop_status=selected_status)
+    
+    # Always order the results
+    results = results.order_by('prop_country', 'prop_name')
+    
+    # Pass filter values back to template for form persistence
+    context = {
+        'props': results,
+        'search_query': search_query,
+        'selected_country': selected_country,
+        'selected_status': selected_status,
+    }
+
+    return render(request, "properties.html", context)
 
 @login_required
 def properties_map_view(request):
@@ -2037,34 +2083,63 @@ def petty_cash_add(request):
 
 
 ### ISSUES - FRIDAY STATUS REPORT ###
+from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
+from django.db.models import Q
+
 @login_required
 def fsr(request):
-	prop_output = request.POST.get('propname')
-	country_output = request.POST.get('propcountry')
-	active_output = request.POST.get('issuestatus')
-	results = props.objects.all().order_by('prop_country','prop_name')
-	if prop_output is None and active_output is None and country_output is None:
-		results = props.objects.all().order_by('prop_country','prop_name')
-		isresults = issues.objects.all().order_by('issues_date_logged','issues_status')
-		idresults = issues_details.objects.all().order_by('issues_details_date','issues_details_id')
-	elif prop_output == "All" or active_output == "All" or country_output == "All":
-		results = props.objects.all().order_by('prop_country','prop_name')
-		isresults = issues.objects.all().order_by('issues_date_logged','issues_status')
-		idresults = issues_details.objects.all().order_by('issues_details_date','issues_details_id')
-	else:
-		if country_output is not None:
-			results = props.objects.filter(prop_country=country_output).order_by('prop_country','prop_name')
-			isresults = issues.objects.all().order_by('issues_date_logged','issues_status')
-			idresults = issues_details.objects.all().order_by('issues_details_date','issues_details_id')
-		elif prop_output is not None:
-			results = props.objects.filter(prop_name=prop_output).order_by('prop_country','prop_name')
-			isresults = issues.objects.all().order_by('issues_date_logged','issues_status')
-			idresults = issues_details.objects.all().order_by('issues_details_date','issues_details_id')
-		elif active_output is not None:
-			isresults = issues.objects.filter(issues_status=active_output).order_by('issues_date_logged','issues_status')
-			results = props.objects.all().order_by('prop_country','prop_name')
-			idresults = issues_details.objects.all().order_by('issues_details_date','issues_details_id')
-	return render(request, "fsr.html", {"props":results, "issues":isresults, "issues_details":idresults})
+    # Get filter parameters
+    prop_output = request.POST.get('propname', '').strip()
+    country_output = request.POST.get('propcountry', '').strip()
+    status_output = request.POST.get('issuestatus', '').strip()
+    search_query = request.POST.get('search', '').strip()
+    
+    # Start with all objects
+    results = props.objects.all().order_by('prop_country', 'prop_name')
+    isresults = issues.objects.all().order_by('issues_date_logged', 'issues_status')
+    idresults = issues_details.objects.all().order_by('issues_details_date', 'issues_details_id')
+    
+    # Apply filters to properties based on country
+    if country_output and country_output != 'All':
+        results = results.filter(prop_country=country_output)
+    
+    # Apply filters to properties based on property name
+    if prop_output and prop_output != 'All':
+        results = results.filter(prop_name=prop_output)
+    
+    # Apply filters to issues based on status
+    if status_output and status_output != 'All':
+        isresults = isresults.filter(issues_status=status_output)
+    
+    # Apply search filter to issues (search in heading and description)
+    if search_query:
+        isresults = isresults.filter(
+            Q(issues_heading__icontains=search_query) | 
+            Q(issues_description__icontains=search_query)
+        )
+    
+    # Get the property IDs from filtered results to ensure issues match filtered properties
+    if country_output and country_output != 'All':
+        property_ids = results.values_list('prop_id', flat=True)
+        isresults = isresults.filter(prop_id__in=property_ids)
+    
+    if prop_output and prop_output != 'All':
+        property_ids = results.values_list('prop_id', flat=True)
+        isresults = isresults.filter(prop_id__in=property_ids)
+    
+    # Pass search query to template for displaying in search input
+    context = {
+        "props": results, 
+        "issues": isresults, 
+        "issues_details": idresults,
+        "search_query": search_query,
+        "selected_country": country_output,
+        "selected_property": prop_output,
+        "selected_status": status_output,
+    }
+    
+    return render(request, "fsr.html", context)
 
 @login_required
 def fsr_add(request):

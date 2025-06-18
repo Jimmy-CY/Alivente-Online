@@ -2,6 +2,7 @@
 {% load static %}
 
 {% block title %}
+Tenants
 {% endblock %}
 
 {% block content %}
@@ -9,126 +10,167 @@
 <h2><center>ALIVENTE ONLINE - TENANTS</center></h2>
 <br/>
 
-  {% for msg in messages %}
-    <div class="alert alert-secondary alert-dismissible fade show auto-dismiss" role="alert">
-      <strong></strong> <center>{{ msg }}</center>
-      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-        <span aria-hidden="true">&times;</span>
-      </button>
-    </div>
-    <script>
-      // Automatically close the alert after 3 seconds (3000 milliseconds)
-      setTimeout(function() {
-        document.querySelectorAll('.auto-dismiss').forEach(alert => {
-          alert.classList.remove('show'); // Hide alert visually
-          alert.classList.add('fade'); // Add fade effect
-          setTimeout(() => alert.remove(), 500); // Remove from DOM after fade
-        });
-      }, 2000);
-    </script>
-  {% endfor %}
+{% for msg in messages %}
+  <div class="alert alert-secondary alert-dismissible fade show auto-dismiss" role="alert">
+    <strong></strong> <center>{{ msg }}</center>
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <script>
+    setTimeout(function() {
+      document.querySelectorAll('.auto-dismiss').forEach(alert => {
+        alert.classList.remove('show');
+        alert.classList.add('fade');
+        setTimeout(() => alert.remove(), 500);
+      });
+    }, 2000);
+  </script>
+{% endfor %}
 
 <body>
-  <div style="display: flex ; justify-content: flex-end">
-    <a href="{% url 'open_invoices_report' %}" class="btn btn-info" style="margin-right:16px" type="button">Open Invoices</a>
-    <a href="{% url 'lease_renewal_report' %}" class="btn btn-info" style="margin-right:16px" type="button">Lease Renewals</a>
+  <!-- Action Buttons -->
+  <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 20px;">
+    <a href="{% url 'open_invoices_report' %}" class="btn btn-info">Open Invoices</a>
+    <a href="{% url 'lease_renewal_report' %}" class="btn btn-info">Lease Renewals</a>
     {% if user.is_superuser %}
-      <a href="{% url 'tenant_add' %}" class="btn btn-info" style="margin-right:16px" type="button">Add New</a>
+      <a href="{% url 'tenant_add' %}" class="btn btn-info">Add New</a>
     {% else %}
-      <span class="btn btn-secondary" style="margin-right:16px; opacity:0.6; cursor:not-allowed; pointer-events:none;" type="button">Add New</span>
+      <span class="btn btn-secondary" style="opacity:0.6; cursor:not-allowed; pointer-events:none;">Add New</span>
     {% endif %}
-    <a href="{% url 'home' %}" class="btn btn-info" style="margin-right:16px" role="button">Back</a>
+    <a href="{% url 'home' %}" class="btn btn-info">Back</a>
   </div>
 
-  <div class="form-row">
-      <div class="form-group col-md-5">
-          <form action = "{% url 'tenant' %}" method="post">
-            {% csrf_token %}
-            <div class="input-group">
-                <select name = "propname" class="custom-select" id="inputGroupSelect08" aria-label="Example select with button addon" onchange="this.form.submit()">
-                  <option disabled selected value="All">Select Property</option>
-                  <option value="All">All Properties</option>
-                  {% for results in props %}
-                    {% if results.prop_available_for_rent == "Yes" %}
-                      <option value="{{results.prop_name}}">{{results.prop_name}}</option>
-                    {% endif %}
-                  {% endfor %}
-              </select>
-              <select name = "tenantname" class="custom-select" id="inputGroupSelect08" aria-label="Example select with button addon" onchange="this.form.submit()">
-                  <option disabled selected value="All">Select Tenant</option>
-                  <option value="All">All Tenants</option>
-                    {% for tresults in tenant %}
-                        <option value="{{tresults.tenant_name}}">{{tresults.tenant_name}}</option>
-                    {% endfor %}
-                </select>
-                <select name = "act" class="custom-select" id="inputGroupSelect08" aria-label="Example select with button addon" onchange="this.form.submit()">
-                  <option disabled selected value="All">Select Status</option>
-                  <option value="All">All Statuses</option>
-                    <option value="Yes">Active</option>
-                    <option value="No">Inactive</option>                    
-                </select>
-            </div>
-        </form>
+  <!-- Collapsible Filter Panel -->
+  <div class="filter-panel" id="filterPanel">
+    <div class="filter-header" onclick="toggleFilters()">
+      <h5 class="filter-title">
+        <i class="fas fa-filter"></i> Tenant Filters
+        <i class="fas fa-chevron-down filter-toggle-icon" id="filterToggleIcon"></i>
+      </h5>
+      <button type="button" id="clearAllBtn" class="btn btn-outline-secondary btn-sm" onclick="event.stopPropagation();">
+        <i class="fas fa-times-circle"></i> Clear All
+      </button>
+    </div>
+    
+    <div class="filter-content" id="filterContent">
+      <form action="{% url 'tenant' %}" method="post" id="filterForm">
+        {% csrf_token %}
+        <div class="filter-grid">
+          <!-- Property Filter -->
+          <div class="filter-group">
+            <label class="filter-label">
+              <i class="fas fa-building"></i> Property
+            </label>
+            <select name="propname" class="form-control filter-select" id="propertySelect">
+              <option value="">All Properties</option>
+              {% for results in props %}
+                {% if results.prop_available_for_rent == "Yes" %}
+                  <option value="{{results.prop_name}}" {% if selected_property == results.prop_name %}selected{% endif %}>{{results.prop_name}}</option>
+                {% endif %}
+              {% endfor %}
+            </select>
+          </div>
+
+          <!-- Tenant Filter -->
+          <div class="filter-group">
+            <label class="filter-label">
+              <i class="fas fa-user"></i> Tenant
+            </label>
+            <select name="tenantname" class="form-control filter-select" id="tenantSelect">
+              <option value="">All Tenants</option>
+              {% for tresults in tenant %}
+                <option value="{{tresults.tenant_name}}" {% if selected_tenant == tresults.tenant_name %}selected{% endif %}>{{tresults.tenant_name}}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <!-- Status Filter -->
+          <div class="filter-group">
+            <label class="filter-label">
+              <i class="fas fa-info-circle"></i> Status
+            </label>
+            <select name="act" class="form-control filter-select" id="statusSelect">
+              <option value="">All Statuses</option>
+              <option value="Yes" {% if selected_status == 'Yes' %}selected{% endif %}>Active</option>
+              <option value="No" {% if selected_status == 'No' %}selected{% endif %}>Inactive</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Active Filters Display -->
+        <div class="active-filters" id="activeFilters" style="display: none;">
+          <span class="active-filters-label">Active filters:</span>
+          <div class="filter-tags" id="filterTags"></div>
+        </div>
+      </form>
     </div>
   </div>
 
-<form action = "" method="">
-  {% csrf_token %}
-  <div>
-  <table class="table table-bordered table-striped text-center">
-  <thead>
-    <tr>
-     <th style="text-align: left; width: 37%">Tenant</th>
-      <th style="width: 23%">Property</th>
-      <th style="width: 10%">Active</th>
-      <th style="width: 10%">Details</th>
-      <th style="width: 10%">Report</th>
-      <th style="width: 10%">Agreement</th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for results in props %}
-      {% for tresults in tenant %}
-        {% if tresults.prop_id == results.prop_id %}
-          <tr>
-            <td style="text-align: left">{{tresults.tenant_name}}</td>
-            <td>{{results.prop_name}}</td>
-            <td>{{tresults.tenant_current}}</td>
-            <td>
-              {% if user.is_superuser %}
-                <button type="button" class="btn btn-light" style="border-color:black; width: 100%">
-                  <a href="{% url 'tenant_edit' tresults.tenant_id %}">Edit</a>
-                </button>
-              {% else %}
-                <button type="button" class="btn btn-light" style="border-color:black; width: 100%; opacity: 0.5; cursor: not-allowed; pointer-events: none;" disabled>
-                  <span style="color: #6c757d;">Edit</span>
-                </button>
-              {% endif %}
-            </td> 
-            <td>
-              <button type="button" class="btn btn-light" style="border-color:black; width: 100%">
-                <a href="{% url 'tenant_report' tresults.tenant_id %}">View</a>
-              </button>
-            </td>
-            <td>
-              {% if tresults.tenant_lease_agreement %}
-                  <button type="button" class="btn btn-light" style="border-color:black; width: 100%"
-                          onclick="viewLeaseAgreement('{{ tresults.tenant_lease_agreement.url }}', '{{ tresults.tenant_lease_agreement.name }}', '{{ tresults.tenant_name }}')">
-                      <a href="#" style="text-decoration: none;">View</a>
+  <!-- Tenants Table -->
+  <div class="table-container">
+    <table class="table table-bordered table-striped text-center">
+      <thead>
+        <tr>
+          <th style="text-align: left; width: 37%">Tenant</th>
+          <th style="width: 23%">Property</th>
+          <th style="width: 10%">Active</th>
+          <th style="width: 10%">Details</th>
+          <th style="width: 10%">Report</th>
+          <th style="width: 10%">Agreement</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for results in props %}
+          {% for tresults in tenant %}
+            {% if tresults.prop_id == results.prop_id %}
+              <tr>
+                <td style="text-align: left">{{tresults.tenant_name}}</td>
+                <td>{{results.prop_name}}</td>
+                <td>
+                  <span class="status-badge {% if tresults.tenant_current == 'Yes' %}status-active{% else %}status-inactive{% endif %}">
+                    {% if tresults.tenant_current == 'Yes' %}Active{% else %}Inactive{% endif %}
+                  </span>
+                </td>
+                <td>
+                  {% if user.is_superuser %}
+                    <button type="button" class="btn btn-light action-btn">
+                      <a href="{% url 'tenant_edit' tresults.tenant_id %}">Edit</a>
+                    </button>
+                  {% else %}
+                    <button type="button" class="btn btn-light action-btn" disabled style="opacity: 0.5;">
+                      <span style="color: #6c757d;">Edit</span>
+                    </button>
+                  {% endif %}
+                </td>
+                <td>
+                  <button type="button" class="btn btn-light action-btn">
+                    <a href="{% url 'tenant_report' tresults.tenant_id %}">View</a>
                   </button>
-              {% else %}
-                  <span class="text-muted">Unavailable</span>
-              {% endif %}
-            </td>
-          </tr>
-        {% endif %}
-      {% endfor %}
-    {% endfor %}
-  </tbody>
-  </table>    
+                </td>
+                <td>
+                  {% if user.is_superuser %}
+                    {% if tresults.tenant_lease_agreement %}
+                      <button type="button" class="btn btn-light action-btn"
+                              onclick="viewLeaseAgreement('{{ tresults.tenant_lease_agreement.url }}', '{{ tresults.tenant_lease_agreement.name }}', '{{ tresults.tenant_name }}')">
+                        <a href="#" style="text-decoration: none;">View</a>
+                      </button>
+                    {% else %}
+                      <span class="text-muted">Unavailable</span>
+                    {% endif %}
+                  {% else %}
+                    <button type="button" class="btn btn-light action-btn" disabled style="opacity: 0.5;">
+                      <span style="color: #6c757d;">View</span>
+                    </button>
+                  {% endif %}
+                </td>
+              </tr>
+            {% endif %}
+          {% endfor %}
+        {% endfor %}
+      </tbody>
+    </table>
   </div>
-  
-</form>
 
 <!-- Lease Agreement Viewer Modal -->
 <div class="modal fade" id="leaseAgreementModal" tabindex="-1" role="dialog" aria-labelledby="leaseAgreementModalLabel" aria-hidden="true">
@@ -155,31 +197,753 @@
 
 </body>
 
-<!-- Add jQuery if not already included -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+<style>
+/* Refined Filter Panel Styles */
+.filter-panel {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border: 1px solid #dee2e6;
+    border-radius: 12px;
+    padding: 12px 24px;
+    margin-bottom: 30px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    transition: padding 0.3s ease;
+}
+
+.filter-panel.expanded {
+    padding: 24px;
+}
+
+/* CSS-only visibility control - can't be overridden by JavaScript */
+.filter-panel:not(.expanded) .filter-content {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    height: 0 !important;
+    overflow: hidden !important;
+}
+
+.filter-panel.expanded .filter-content,
+.filter-panel.force-expanded .filter-content {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    height: auto !important;
+    overflow: visible !important;
+    padding-top: 20px;
+}
+
+/* Force-expanded class overrides everything */
+.filter-panel.force-expanded {
+    padding: 24px !important;
+}
+
+.filter-panel.force-expanded .filter-content {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    height: auto !important;
+    overflow: visible !important;
+    padding-top: 20px !important;
+}
+
+.filter-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #dee2e6;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.filter-header.expanded {
+    padding-bottom: 12px;
+    border-bottom: 2px solid #dee2e6;
+    margin-bottom: 20px;
+}
+
+.filter-header:hover {
+    background-color: rgba(23, 162, 184, 0.05);
+    border-radius: 8px;
+    margin: -8px;
+    padding: 16px 8px;
+}
+
+.filter-header.expanded:hover {
+    padding: 20px 8px;
+}
+
+.filter-title {
+    margin: 0;
+    color: #2c3e50;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    user-select: none;
+}
+
+.filter-title i {
+    color: #17a2b8;
+}
+
+.filter-toggle-icon {
+    transition: transform 0.3s ease;
+    margin-left: 8px;
+}
+
+.filter-toggle-icon.rotated {
+    transform: rotate(180deg);
+}
+
+.filter-content {
+    overflow: visible;
+    transition: all 0.3s ease;
+}
+
+.filter-content.show {
+    display: block !important;
+    padding-top: 20px;
+}
+
+.filter-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 20px;
+    align-items: end;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    /* Ensure dropdowns don't get cut off */
+    overflow: visible;
+}
+
+.filter-label {
+    font-weight: 500;
+    color: #495057;
+    margin-bottom: 6px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.filter-label i {
+    color: #6c757d;
+    width: 14px;
+}
+
+.filter-input, .filter-select {
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    background: white;
+    position: relative;
+    z-index: 10;
+}
+
+.filter-select {
+    cursor: pointer;
+    /* Fix dropdown cutoff - ensure proper height and padding */
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 12px center;
+    background-repeat: no-repeat;
+    background-size: 16px 12px;
+    padding-right: 40px;
+    min-height: 44px;
+    line-height: 1.4;
+}
+
+.filter-input:focus, .filter-select:focus {
+    border-color: #17a2b8;
+    box-shadow: 0 0 0 3px rgba(23, 162, 184, 0.1);
+    outline: none;
+    position: relative;
+    z-index: 20;
+}
+
+.btn-outline-secondary {
+    border: 2px solid #6c757d;
+    color: #6c757d;
+    background: transparent;
+    border-radius: 6px;
+    font-size: 13px;
+    padding: 6px 12px;
+    transition: all 0.3s ease;
+}
+
+.btn-outline-secondary:hover {
+    background: #6c757d;
+    color: white;
+    transform: translateY(-1px);
+}
+
+/* Active Filters */
+.active-filters {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid #dee2e6;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.active-filters-label {
+    font-weight: 500;
+    color: #495057;
+    font-size: 14px;
+}
+
+.filter-tags {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.filter-tag {
+    background: #17a2b8;
+    color: white;
+    padding: 4px 12px;
+    border-radius: 16px;
+    font-size: 12px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.filter-tag .remove-tag {
+    background: rgba(255, 255, 255, 0.3);
+    border: none;
+    color: white;
+    border-radius: 50%;
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 10px;
+}
+
+/* Table Enhancements */
+.table-container {
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.status-badge {
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.status-active {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status-inactive {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.action-btn {
+    border-color: #dee2e6;
+    transition: all 0.2s ease;
+}
+
+.action-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Button Styles */
+.btn-info {
+    background-color: #17a2b8;
+    color: white;
+    border: 1px solid #17a2b8;
+    transition: all 0.3s ease;
+    border-radius: 6px;
+    font-weight: 500;
+}
+
+.btn-info:hover {
+    background-color: #138496;
+    border-color: #117a8b;
+    color: white;
+    text-decoration: none;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .filter-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    
+    .filter-header {
+        flex-direction: column;
+        gap: 12px;
+        align-items: stretch;
+    }
+}
+</style>
 
 <script>
+console.log('=== TENANT FILTER PANEL SCRIPT LOADED ===');
+
+// NUCLEAR OPTION - Complete override of external interference
+let PANEL_IS_MANUALLY_EXPANDED = false;
+let EXTERNAL_INTERFERENCE_DETECTED = false;
+
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM loaded - initializing tenant filter panel');
+    
+    // Check if panel was forcibly expanded before form submission
+    const wasForceExpanded = sessionStorage.getItem('FORCE_TENANT_PANEL_EXPANDED') === 'true';
+    const wasClearAllProtected = sessionStorage.getItem('TENANT_CLEAR_ALL_PROTECTION') === 'true';
+    const windowFlag = window.TENANT_PANEL_MUST_STAY_EXPANDED;
+    const clearAllFlag = window.TENANT_CLEAR_ALL_PROTECTION_ACTIVE;
+    
+    console.log(`🔍 Checking forced expansion: sessionStorage=${wasForceExpanded}, clearAll=${wasClearAllProtected}, window=${windowFlag}`);
+    
+    // Initialize as collapsed UNLESS it was force-expanded
+    const filterPanel = document.getElementById('filterPanel');
+    if (filterPanel) {
+        if (wasForceExpanded || wasClearAllProtected || windowFlag || clearAllFlag) {
+            console.log('🔓 RESTORING FORCE-EXPANDED TENANT PANEL');
+            filterPanel.classList.add('expanded', 'force-expanded');
+            filterPanel.setAttribute('data-force-expanded', 'true');
+            const toggleIcon = document.getElementById('filterToggleIcon');
+            if (toggleIcon) {
+                toggleIcon.classList.add('rotated');
+            }
+            PANEL_IS_MANUALLY_EXPANDED = true;
+            
+            // Clear the force flags
+            sessionStorage.removeItem('FORCE_TENANT_PANEL_EXPANDED');
+            sessionStorage.removeItem('TENANT_CLEAR_ALL_PROTECTION');
+            window.TENANT_PANEL_MUST_STAY_EXPANDED = false;
+            window.TENANT_CLEAR_ALL_PROTECTION_ACTIVE = false;
+        } else {
+            filterPanel.classList.remove('expanded', 'force-expanded');
+            filterPanel.removeAttribute('data-force-expanded');
+            console.log('Tenant panel initialized as collapsed');
+        }
+    }
+    
+    // Set up continuous monitoring for external interference
+    setupInterferenceProtection();
+    
+    updateActiveFilters();
+    
+    // Auto-submit on dropdown filter change
+    ['propertySelect', 'tenantSelect', 'statusSelect'].forEach(id => {
+        const element = document.getElementById(id);
+        if (element) {
+            element.addEventListener('change', function() {
+                console.log(`🔄 Tenant filter changed: ${id} = ${this.value}`);
+                
+                // CRITICAL: Lock panel state BEFORE form submission
+                if (PANEL_IS_MANUALLY_EXPANDED) {
+                    console.log('🔒 LOCKING TENANT PANEL STATE BEFORE FORM SUBMISSION');
+                    
+                    // Multiple approaches to prevent collapse during submission
+                    const filterPanel = document.getElementById('filterPanel');
+                    const toggleIcon = document.getElementById('filterToggleIcon');
+                    
+                    // Approach 1: Add persistent CSS class
+                    if (filterPanel) {
+                        filterPanel.classList.add('force-expanded');
+                        filterPanel.style.cssText += 'display: block !important;';
+                    }
+                    
+                    // Approach 2: Store in sessionStorage
+                    sessionStorage.setItem('FORCE_TENANT_PANEL_EXPANDED', 'true');
+                    
+                    // Approach 3: Set flag in window object
+                    window.TENANT_PANEL_MUST_STAY_EXPANDED = true;
+                    
+                    // Approach 4: Override any potential hide functions
+                    const originalHide = window.hideFilters;
+                    window.hideFilters = function() {
+                        console.log('🚫 BLOCKED: hideFilters() call during tenant form submission');
+                        return false;
+                    };
+                    
+                    // Restore original function after a delay
+                    setTimeout(() => {
+                        window.hideFilters = originalHide;
+                    }, 100);
+                }
+                
+                // Submit the form
+                document.getElementById('filterForm').submit();
+            });
+        }
+    });
+    
+    // Clear all filters - ENHANCED PROTECTION
+    const clearAllBtn = document.getElementById('clearAllBtn');
+    if (clearAllBtn) {
+        clearAllBtn.addEventListener('click', function() {
+            console.log('🚨🧹 TENANT CLEAR ALL CLICKED - MAXIMUM PROTECTION MODE ACTIVATED 🧹🚨');
+            
+            if (PANEL_IS_MANUALLY_EXPANDED) {
+                console.log('🔒🔒 LOCKING TENANT PANEL STATE BEFORE CLEAR ALL SUBMISSION - MAXIMUM SECURITY 🔒🔒');
+                
+                const filterPanel = document.getElementById('filterPanel');
+                
+                // MAXIMUM PROTECTION for Clear All
+                if (filterPanel) {
+                    filterPanel.classList.add('force-expanded');
+                    filterPanel.style.cssText += 'display: block !important; visibility: visible !important;';
+                    
+                    // Add extra CSS protection
+                    filterPanel.setAttribute('data-force-expanded', 'true');
+                }
+                
+                // Multiple storage methods
+                sessionStorage.setItem('FORCE_TENANT_PANEL_EXPANDED', 'true');
+                sessionStorage.setItem('TENANT_CLEAR_ALL_PROTECTION', 'true');
+                window.TENANT_PANEL_MUST_STAY_EXPANDED = true;
+                window.TENANT_CLEAR_ALL_PROTECTION_ACTIVE = true;
+                
+                // Enhanced function blocking
+                const originalHide = window.hideFilters;
+                const originalToggle = window.toggleFilters;
+                
+                window.hideFilters = function() {
+                    console.log('🚫🚫 BLOCKED: hideFilters() call during TENANT CLEAR ALL submission 🚫🚫');
+                    return false;
+                };
+                
+                // Also block toggle during clear all
+                window.toggleFilters = function() {
+                    console.log('🚫 BLOCKED: toggleFilters() call during TENANT CLEAR ALL submission');
+                    return false;
+                };
+                
+                // Enhanced restoration schedule
+                setTimeout(() => forceExpandPanel(), 50);
+                setTimeout(() => forceExpandPanel(), 100);
+                setTimeout(() => forceExpandPanel(), 200);
+                setTimeout(() => forceExpandPanel(), 500);
+                setTimeout(() => forceExpandPanel(), 1000);
+                setTimeout(() => forceExpandPanel(), 2000);
+                
+                // Restore original functions after longer delay for Clear All
+                setTimeout(() => {
+                    window.hideFilters = originalHide;
+                    window.toggleFilters = originalToggle;
+                    console.log('🔓 Tenant Clear All protection mode ended');
+                }, 200);
+                
+                // Continuous monitoring for Clear All
+                const protectionInterval = setInterval(() => {
+                    if (PANEL_IS_MANUALLY_EXPANDED) {
+                        forceExpandPanel();
+                    } else {
+                        clearInterval(protectionInterval);
+                    }
+                }, 50); // More frequent monitoring for Clear All
+                
+                // Stop monitoring after 10 seconds for Clear All
+                setTimeout(() => {
+                    clearInterval(protectionInterval);
+                    console.log('🛡️ Tenant Clear All continuous protection ended');
+                }, 10000);
+            }
+            
+            document.getElementById('propertySelect').value = '';
+            document.getElementById('tenantSelect').value = '';
+            document.getElementById('statusSelect').value = '';
+            document.getElementById('filterForm').submit();
+        });
+    }
+    
+    console.log('All tenant event listeners attached');
+});
+
+// Force expand panel function
+function forceExpandPanel() {
+    const filterPanel = document.getElementById('filterPanel');
+    const toggleIcon = document.getElementById('filterToggleIcon');
+    
+    if (filterPanel && !filterPanel.classList.contains('expanded')) {
+        console.log('🔥 FORCING TENANT PANEL TO EXPAND - OVERRIDING EXTERNAL INTERFERENCE');
+        filterPanel.classList.add('expanded');
+        if (toggleIcon) {
+            toggleIcon.classList.add('rotated');
+        }
+        EXTERNAL_INTERFERENCE_DETECTED = true;
+    }
+}
+
+// Set up continuous monitoring for external interference
+function setupInterferenceProtection() {
+    const filterPanel = document.getElementById('filterPanel');
+    if (!filterPanel) return;
+    
+    // Monitor for class changes
+    const observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+            if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+                const hasExpanded = filterPanel.classList.contains('expanded');
+                
+                if (PANEL_IS_MANUALLY_EXPANDED && !hasExpanded) {
+                    console.log('🚨 EXTERNAL INTERFERENCE DETECTED! TENANT PANEL WAS COLLAPSED BY EXTERNAL CODE');
+                    console.log('🛡️ RESTORING EXPANDED STATE');
+                    
+                    // Immediately restore
+                    filterPanel.classList.add('expanded');
+                    const toggleIcon = document.getElementById('filterToggleIcon');
+                    if (toggleIcon) {
+                        toggleIcon.classList.add('rotated');
+                    }
+                    
+                    EXTERNAL_INTERFERENCE_DETECTED = true;
+                }
+            }
+        });
+    });
+    
+    observer.observe(filterPanel, {
+        attributes: true,
+        attributeFilter: ['class']
+    });
+    
+    console.log('🛡️ Tenant interference protection activated');
+}
+
+// Simple toggle - only changes when user clicks header
+function toggleFilters() {
+    console.log('🔄🔄 Toggle tenant filters called - MANUAL USER ACTION 🔄🔄');
+    const filterPanel = document.getElementById('filterPanel');
+    const toggleIcon = document.getElementById('filterToggleIcon');
+    
+    if (!filterPanel || !toggleIcon) {
+        console.log('❌ Panel or icon not found');
+        return;
+    }
+    
+    const isExpanded = filterPanel.classList.contains('expanded') || filterPanel.classList.contains('force-expanded');
+    console.log(`📊📊 Current state: ${isExpanded ? 'expanded' : 'collapsed'} 📊📊`);
+    console.log(`🔍 Panel classes: ${filterPanel.className}`);
+    
+    if (isExpanded) {
+        // MANUAL COLLAPSE - Override all protection with extreme force
+        console.log('📉📉 MANUAL TENANT COLLAPSE - NUCLEAR OVERRIDE OF ALL PROTECTION 📉📉');
+        
+        // Clear all protection flags
+        PANEL_IS_MANUALLY_EXPANDED = false;
+        sessionStorage.removeItem('FORCE_TENANT_PANEL_EXPANDED');
+        sessionStorage.removeItem('TENANT_CLEAR_ALL_PROTECTION');
+        window.TENANT_PANEL_MUST_STAY_EXPANDED = false;
+        window.TENANT_CLEAR_ALL_PROTECTION_ACTIVE = false;
+        
+        // FORCE removal of all classes
+        filterPanel.classList.remove('expanded', 'force-expanded');
+        filterPanel.removeAttribute('data-force-expanded');
+        
+        // NUCLEAR CSS override
+        filterPanel.style.cssText = '';
+        filterPanel.style.display = '';
+        filterPanel.style.visibility = '';
+        filterPanel.style.opacity = '';
+        filterPanel.style.height = '';
+        filterPanel.style.overflow = '';
+        filterPanel.style.padding = '';
+        
+        // Force hide the content directly
+        const filterContent = document.getElementById('filterContent');
+        if (filterContent) {
+            filterContent.style.display = 'none';
+            filterContent.style.visibility = 'hidden';
+            filterContent.style.opacity = '0';
+            filterContent.style.height = '0';
+            filterContent.style.overflow = 'hidden';
+            filterContent.classList.remove('show');
+        }
+        
+        toggleIcon.classList.remove('rotated');
+        
+        console.log('📉📉 Tenant Panel FORCE collapsed - ALL PROTECTION NUKED 📉📉');
+        
+        // Verify the collapse worked
+        setTimeout(() => {
+            const isStillExpanded = filterPanel.classList.contains('expanded') || filterPanel.classList.contains('force-expanded');
+            console.log(`🔍 Collapse verification: panel still expanded = ${isStillExpanded}`);
+            if (isStillExpanded) {
+                console.log('⚠️ COLLAPSE FAILED - EXTERNAL INTERFERENCE DETECTED');
+                // Try one more time with even more force
+                filterPanel.className = filterPanel.className.replace(/\b(expanded|force-expanded)\b/g, '').trim();
+                filterPanel.style.cssText = 'padding: 12px 24px !important;';
+                if (filterContent) {
+                    filterContent.style.cssText = 'display: none !important; visibility: hidden !important; opacity: 0 !important; height: 0 !important; overflow: hidden !important;';
+                }
+            }
+        }, 50);
+        
+    } else {
+        // MANUAL EXPANSION
+        console.log('📈📈 Tenant Panel manually expanded - PROTECTION ACTIVATED 📈📈');
+        filterPanel.classList.add('expanded');
+        filterPanel.classList.remove('force-expanded'); // Clean start
+        toggleIcon.classList.add('rotated');
+        PANEL_IS_MANUALLY_EXPANDED = true;
+        
+        // Ensure content is visible
+        const filterContent = document.getElementById('filterContent');
+        if (filterContent) {
+            filterContent.style.display = 'block';
+            filterContent.style.visibility = 'visible';
+            filterContent.style.opacity = '1';
+            filterContent.style.height = 'auto';
+            filterContent.style.overflow = 'visible';
+            filterContent.classList.add('show');
+        }
+    }
+}
+
+// Simple update function - NEVER changes panel state
+function updateActiveFilters() {
+    console.log('🔄 updateActiveFilters called for tenant page');
+    const propertySelect = document.getElementById('propertySelect');
+    const tenantSelect = document.getElementById('tenantSelect');
+    const statusSelect = document.getElementById('statusSelect');
+    const activeFiltersDiv = document.getElementById('activeFilters');
+    const filterTagsDiv = document.getElementById('filterTags');
+    
+    if (!propertySelect || !tenantSelect || !statusSelect || !activeFiltersDiv || !filterTagsDiv) {
+        console.log('❌ Some elements missing for updateActiveFilters');
+        return;
+    }
+    
+    const property = propertySelect.value;
+    const tenant = tenantSelect.value;
+    const status = statusSelect.value;
+    
+    console.log(`📊 Tenant filter values - Property: "${property}", Tenant: "${tenant}", Status: "${status}"`);
+    
+    filterTagsDiv.innerHTML = '';
+    let hasFilters = false;
+    
+    if (property) {
+        filterTagsDiv.innerHTML += `<span class="filter-tag">Property: ${property} <button class="remove-tag" onclick="clearFilter('property')">×</button></span>`;
+        hasFilters = true;
+    }
+    
+    if (tenant) {
+        filterTagsDiv.innerHTML += `<span class="filter-tag">Tenant: ${tenant} <button class="remove-tag" onclick="clearFilter('tenant')">×</button></span>`;
+        hasFilters = true;
+    }
+    
+    if (status) {
+        const statusText = status === 'Yes' ? 'Active' : 'Inactive';
+        filterTagsDiv.innerHTML += `<span class="filter-tag">Status: ${statusText} <button class="remove-tag" onclick="clearFilter('status')">×</button></span>`;
+        hasFilters = true;
+    }
+    
+    activeFiltersDiv.style.display = hasFilters ? 'flex' : 'none';
+    console.log(`✅ Tenant filter tags updated, hasFilters: ${hasFilters}`);
+    
+    console.log('✅ updateActiveFilters completed - tenant panel state UNCHANGED');
+}
+
+function clearFilter(filterType) {
+    console.log(`🧹 clearFilter called for tenant page: ${filterType}`);
+    
+    // Apply the same protection as other form submissions
+    if (PANEL_IS_MANUALLY_EXPANDED) {
+        console.log('🔒 LOCKING TENANT PANEL STATE BEFORE INDIVIDUAL FILTER CLEAR');
+        
+        const filterPanel = document.getElementById('filterPanel');
+        
+        // Apply all protection methods
+        if (filterPanel) {
+            filterPanel.classList.add('force-expanded');
+            filterPanel.style.cssText += 'display: block !important;';
+            filterPanel.setAttribute('data-force-expanded', 'true');
+        }
+        
+        // Multiple storage methods
+        sessionStorage.setItem('FORCE_TENANT_PANEL_EXPANDED', 'true');
+        window.TENANT_PANEL_MUST_STAY_EXPANDED = true;
+        
+        // Block hide functions temporarily
+        const originalHide = window.hideFilters;
+        window.hideFilters = function() {
+            console.log('🚫 BLOCKED: hideFilters() call during tenant individual filter clear');
+            return false;
+        };
+        
+        setTimeout(() => {
+            window.hideFilters = originalHide;
+        }, 100);
+    }
+    
+    switch(filterType) {
+        case 'property':
+            const propertySelect = document.getElementById('propertySelect');
+            if (propertySelect) propertySelect.value = '';
+            break;
+        case 'tenant':
+            const tenantSelect = document.getElementById('tenantSelect');
+            if (tenantSelect) tenantSelect.value = '';
+            break;
+        case 'status':
+            const statusSelect = document.getElementById('statusSelect');
+            if (statusSelect) statusSelect.value = '';
+            break;
+    }
+    document.getElementById('filterForm').submit();
+}
+
+// Show interference detection status
+setInterval(() => {
+    if (EXTERNAL_INTERFERENCE_DETECTED) {
+        console.log('🚨 External interference was detected and blocked on tenant page');
+        EXTERNAL_INTERFERENCE_DETECTED = false; // Reset flag
+    }
+}, 2000);
+
 // Lease Agreement Viewer Function
 function viewLeaseAgreement(documentUrl, documentName, tenantName) {
     const documentViewer = document.getElementById('leaseAgreementContent');
     const downloadLink = document.getElementById('downloadAgreement');
     const modalTitle = document.getElementById('leaseAgreementModalLabel');
     
-    // Update modal title with tenant name
-    modalTitle.textContent = `Lease Agreement (${tenantName})`;
+    if (!documentViewer || !downloadLink || !modalTitle) {
+        console.error('Modal elements not found');
+        return;
+    }
     
-    // Set download link
+    modalTitle.textContent = `Lease Agreement (${tenantName})`;
     downloadLink.href = documentUrl;
     downloadLink.download = documentName;
-    
-    // Clear previous content
     documentViewer.innerHTML = '';
     
-    // Get file extension
     const extension = documentName.split('.').pop().toLowerCase();
     
     if (extension === 'pdf') {
-        // For PDF files
         documentViewer.innerHTML = `
             <embed src="${documentUrl}" type="application/pdf" width="100%" height="500px">
             <p class="text-center mt-2">
@@ -187,12 +951,10 @@ function viewLeaseAgreement(documentUrl, documentName, tenantName) {
             </p>
         `;
     } else if (['jpg', 'jpeg', 'png'].includes(extension)) {
-        // For image files
         documentViewer.innerHTML = `
             <img src="${documentUrl}" alt="Lease Agreement" class="img-fluid mx-auto d-block" style="max-height: 70vh;">
         `;
     } else {
-        // For other file types
         documentViewer.innerHTML = `
             <div class="text-center">
                 <i class="fas fa-file-contract fa-5x text-muted mb-3"></i>
@@ -203,9 +965,10 @@ function viewLeaseAgreement(documentUrl, documentName, tenantName) {
         `;
     }
     
-    // Show the modal
     $('#leaseAgreementModal').modal('show');
 }
+
+console.log('🚀 === TENANT SCRIPT COMPLETE ===');
 </script>
 
 {% endblock %}

@@ -58,7 +58,6 @@
 
 <!-- Action Buttons -->
 <div style="display: flex; justify-content: flex-end; margin-bottom: 20px;">
-    <!-- Right-aligned buttons -->
     <div style="display: flex; gap: 16px;">
         <button class="btn btn-info" data-toggle="modal" data-target="#dateRangeModal">
             Resolved Issues Report
@@ -69,53 +68,101 @@
     </div>
 </div>
 
-
-
-
-<!-- Filters -->
-<div class="form-row">
-    <div class="form-group col-md-5">
+<!-- Enhanced Filter Panel -->
+<div class="filter-panel" id="filterPanel">
+    <div class="filter-header" onclick="toggleFilters()">
+        <h5 class="filter-title">
+            <i class="fas fa-filter"></i> Issue Filters
+            <i class="fas fa-chevron-down filter-toggle-icon" id="filterToggleIcon"></i>
+        </h5>
+        <button type="button" id="clearAllBtn" class="btn btn-outline-secondary btn-sm" onclick="event.stopPropagation();">
+            <i class="fas fa-times-circle"></i> Clear All
+        </button>
+    </div>
+    
+    <div class="filter-content" id="filterContent">
         <form action="{% url 'fsr' %}" method="post" id="filterForm">
             {% csrf_token %}
-            <div class="input-group">
-                <select name="propcountry" class="custom-select" id="countrySelect">
-                    <option disabled selected value="">Select Country</option>
-                    <option value="All" {% if request.POST.propcountry == 'All' %}selected{% endif %}>All Countries</option>
-                    <option value="Cyprus" {% if request.POST.propcountry == 'Cyprus' %}selected{% endif %}>Cyprus</option>
-                    <option value="Greece" {% if request.POST.propcountry == 'Greece' %}selected{% endif %}>Greece</option>
-                    <option value="Spain" {% if request.POST.propcountry == 'Spain' %}selected{% endif %}>Spain</option>
-                </select>
-                <select name="propname" class="custom-select" id="propertySelect">
-                    <option disabled selected value="">Select Property</option>
-                    <option value="All" {% if request.POST.propname == 'All' %}selected{% endif %}>All Properties</option>
-                    {% for results in props %}
-                        <option value="{{results.prop_name}}" {% if request.POST.propname == results.prop_name %}selected{% endif %}>
-                            {{results.prop_name}}
-                        </option>
-                    {% endfor %}
-                </select>
-                <select name="issuestatus" class="custom-select" id="statusSelect">
-                    <option disabled selected value="">Select Status</option>
-                    <option value="All" {% if request.POST.issuestatus == 'All' %}selected{% endif %}>All Statuses</option>
-                    <option value="Resolved" {% if request.POST.issuestatus == 'Resolved' %}selected{% endif %}>Resolved</option>
-                    <option value="Unresolved" {% if request.POST.issuestatus == 'Unresolved' %}selected{% endif %}>Unresolved</option>
-                    <option value="Issue" {% if request.POST.issuestatus == 'Issue' %}selected{% endif %}>Issue</option>
-                </select>
+            <div class="filter-grid">
+                <!-- Search Bar -->
+                <div class="filter-group">
+                    <label class="filter-label">
+                        <i class="fas fa-search"></i> Search Issues
+                    </label>
+                    <div class="search-input-group">
+                        <input type="text" 
+                               name="search" 
+                               id="searchInput"
+                               class="form-control search-input" 
+                               placeholder="Search by issue heading or description..."
+                               value="{{ search_query|default:'' }}">
+                        <button type="button" class="search-btn" id="searchBtn">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Country Filter -->
+                <div class="filter-group">
+                    <label class="filter-label">
+                        <i class="fas fa-globe"></i> Country
+                    </label>
+                    <select name="propcountry" class="form-control filter-select" id="countrySelect">
+                        <option value="">All Countries</option>
+                        <option value="Cyprus" {% if request.POST.propcountry == 'Cyprus' %}selected{% endif %}>Cyprus</option>
+                        <option value="Greece" {% if request.POST.propcountry == 'Greece' %}selected{% endif %}>Greece</option>
+                        <option value="Spain" {% if request.POST.propcountry == 'Spain' %}selected{% endif %}>Spain</option>
+                    </select>
+                </div>
+
+                <!-- Property Filter -->
+                <div class="filter-group">
+                    <label class="filter-label">
+                        <i class="fas fa-building"></i> Property
+                    </label>
+                    <select name="propname" class="form-control filter-select" id="propertySelect">
+                        <option value="">All Properties</option>
+                        {% for prop in props %}
+                            <option value="{{ prop.prop_name }}" {% if request.POST.propname == prop.prop_name %}selected{% endif %}>
+                                {{ prop.prop_name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Status Filter -->
+                <div class="filter-group">
+                    <label class="filter-label">
+                        <i class="fas fa-info-circle"></i> Status
+                    </label>
+                    <select name="issuestatus" class="form-control filter-select" id="statusSelect">
+                        <option value="">All Statuses</option>
+                        <option value="Resolved" {% if request.POST.issuestatus == 'Resolved' %}selected{% endif %}>Resolved</option>
+                        <option value="Unresolved" {% if request.POST.issuestatus == 'Unresolved' %}selected{% endif %}>Unresolved</option>
+                        <option value="Issue" {% if request.POST.issuestatus == 'Issue' %}selected{% endif %}>Issue</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Active Filters Display -->
+            <div class="active-filters" id="activeFilters" style="display: none;">
+                <span class="active-filters-label">Active filters:</span>
+                <div class="filter-tags" id="filterTags"></div>
             </div>
         </form>
     </div>
 </div>
 
 <!-- Issues Table -->
-<div class="table-responsive">
+<div class="table-container">
     <table class="table table-bordered table-striped">
         <thead class="thead-light">
             <tr>
-                <th class="text-left">Property</th>
-                <th class="text-left">Issue</th>
-                <th class="text-left">Description</th>
-                <th class="text-center">Status</th>
-                <th class="text-center">Comments</th>
+                <th class="text-left" style="width: 20%">Property</th>
+                <th class="text-left" style="width: 25%">Issue</th>
+                <th class="text-left" style="width: 35%">Description</th>
+                <th class="text-center" style="width: 10%">Status</th>
+                <th class="text-center" style="width: 10%">Comments</th>
             </tr>
         </thead>
         <tbody>
@@ -130,17 +177,19 @@
                             <td class="text-left">{{ isresults.issues_heading }}</td>
                             <td class="text-left">{{ isresults.issues_description }}</td>
                             <td class="text-center">
-                                <span class="badge 
-                                    {% if isresults.issues_status == 'Resolved' %}badge-success
-                                    {% elif isresults.issues_status == 'Unresolved' %}badge-warning
-                                    {% else %}badge-danger{% endif %}">
+                                <span class="status-badge 
+                                    {% if isresults.issues_status == 'Resolved' %}status-success
+                                    {% elif isresults.issues_status == 'Unresolved' %}status-warning
+                                    {% else %}status-danger{% endif %}">
                                     {{ isresults.issues_status }}
                                 </span>
                             </td>
                             <td class="text-center">
-                                <a href="{% url 'fsr_details' isresults.issues_id %}?from=fsr" class="issue-heading-link">
-                                    Comments
-                                </a>
+                                <button type="button" class="btn btn-light action-btn">
+                                    <a href="{% url 'fsr_details' isresults.issues_id %}?from=fsr" class="issue-heading-link">
+                                        Comments
+                                    </a>
+                                </button>
                             </td>
                         </tr>
                         {% endif %}
@@ -157,31 +206,515 @@
     </table>
 </div>
 
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+<style>
+/* Enhanced Filter Panel Styles */
+.filter-panel {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border: 1px solid #dee2e6;
+    border-radius: 12px;
+    padding: 12px 24px;
+    margin-bottom: 30px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    transition: padding 0.3s ease;
+}
+
+.filter-panel.expanded {
+    padding: 24px;
+}
+
+.filter-panel:not(.expanded) .filter-content {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    height: 0 !important;
+    overflow: hidden !important;
+}
+
+.filter-panel.expanded .filter-content,
+.filter-panel.force-expanded .filter-content {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    height: auto !important;
+    overflow: visible !important;
+    padding-top: 20px;
+}
+
+.filter-panel.force-expanded {
+    padding: 24px !important;
+}
+
+.filter-panel.force-expanded .filter-content {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    height: auto !important;
+    overflow: visible !important;
+    padding-top: 20px !important;
+}
+
+.filter-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #dee2e6;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.filter-header.expanded {
+    padding-bottom: 12px;
+    border-bottom: 2px solid #dee2e6;
+    margin-bottom: 20px;
+}
+
+.filter-header:hover {
+    background-color: rgba(23, 162, 184, 0.05);
+    border-radius: 8px;
+    margin: -8px;
+    padding: 16px 8px;
+}
+
+.filter-header.expanded:hover {
+    padding: 20px 8px;
+}
+
+.filter-title {
+    margin: 0;
+    color: #2c3e50;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    user-select: none;
+}
+
+.filter-title i {
+    color: #17a2b8;
+}
+
+.filter-toggle-icon {
+    transition: transform 0.3s ease;
+    margin-left: 8px;
+}
+
+.filter-toggle-icon.rotated {
+    transform: rotate(180deg);
+}
+
+.filter-content {
+    overflow: visible;
+    transition: all 0.3s ease;
+}
+
+.filter-content.show {
+    display: block !important;
+    padding-top: 20px;
+}
+
+.filter-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+    gap: 20px;
+    align-items: end;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: visible;
+}
+
+.filter-label {
+    font-weight: 500;
+    color: #495057;
+    margin-bottom: 6px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.filter-label i {
+    color: #6c757d;
+    width: 14px;
+}
+
+.filter-input, .filter-select {
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    background: white;
+    position: relative;
+    z-index: 10;
+}
+
+.filter-select {
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 12px center;
+    background-repeat: no-repeat;
+    background-size: 16px 12px;
+    padding-right: 40px;
+    min-height: 44px;
+    line-height: 1.4;
+}
+
+.filter-input:focus, .filter-select:focus {
+    border-color: #17a2b8;
+    box-shadow: 0 0 0 3px rgba(23, 162, 184, 0.1);
+    outline: none;
+    position: relative;
+    z-index: 20;
+}
+
+/* Search Input Group */
+.search-input-group {
+    position: relative;
+    display: flex;
+    align-items: stretch;
+}
+
+.search-input {
+    border: 2px solid #e9ecef;
+    border-radius: 8px 0 0 8px;
+    border-right: none;
+    padding: 10px 14px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    background: white;
+    flex: 1;
+}
+
+.search-input:focus {
+    border-color: #17a2b8;
+    box-shadow: 0 0 0 3px rgba(23, 162, 184, 0.1);
+    outline: none;
+    z-index: 20;
+}
+
+.search-btn {
+    background: #17a2b8;
+    border: 2px solid #17a2b8;
+    border-left: none;
+    border-radius: 0 8px 8px 0;
+    color: white;
+    padding: 10px 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.search-btn:hover {
+    background: #138496;
+    border-color: #138496;
+}
+
+.search-btn:active {
+    transform: scale(0.98);
+}
+
+.btn-outline-secondary {
+    border: 2px solid #6c757d;
+    color: #6c757d;
+    background: transparent;
+    border-radius: 6px;
+    font-size: 13px;
+    padding: 6px 12px;
+    transition: all 0.3s ease;
+}
+
+.btn-outline-secondary:hover {
+    background: #6c757d;
+    color: white;
+    transform: translateY(-1px);
+}
+
+/* Active Filters */
+.active-filters {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid #dee2e6;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.active-filters-label {
+    font-weight: 500;
+    color: #495057;
+    font-size: 14px;
+}
+
+.filter-tags {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.filter-tag {
+    background: #17a2b8;
+    color: white;
+    padding: 4px 12px;
+    border-radius: 16px;
+    font-size: 12px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.filter-tag .remove-tag {
+    background: rgba(255, 255, 255, 0.3);
+    border: none;
+    color: white;
+    border-radius: 50%;
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 10px;
+}
+
+/* Table Enhancements */
+.table-container {
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+/* Status Badge Styles */
+.status-badge {
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.status-success {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status-warning {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.status-danger {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.action-btn {
+    border-color: #dee2e6;
+    transition: all 0.2s ease;
+    padding: 6px 12px;
+    font-size: 12px;
+}
+
+.action-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.action-btn a {
+    text-decoration: none;
+    color: #495057;
+}
+
+.action-btn:hover a {
+    color: #17a2b8;
+}
+
+/* Button Styles */
+.btn-info {
+    background-color: #17a2b8;
+    color: white;
+    border: 1px solid #17a2b8;
+    transition: all 0.3s ease;
+    border-radius: 6px;
+    font-weight: 500;
+}
+
+.btn-info:hover {
+    background-color: #138496;
+    border-color: #117a8b;
+    color: white;
+    text-decoration: none;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .filter-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    
+    .filter-header {
+        flex-direction: column;
+        gap: 12px;
+        align-items: stretch;
+    }
+    
+    .search-input-group {
+        width: 100%;
+    }
+    
+    .table-container {
+        overflow-x: auto;
+    }
+}
+</style>
+
 <script>
+console.log('=== FSR FILTER PANEL SCRIPT LOADED ===');
+
+let PANEL_IS_MANUALLY_EXPANDED = false;
+let EXTERNAL_INTERFERENCE_DETECTED = false;
+
 document.addEventListener('DOMContentLoaded', function() {
-    // Set default dates
+    console.log('DOM loaded - initializing FSR filter panel');
+    
+    // Set default dates for modal
     const today = new Date().toISOString().split('T')[0];
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
     const fromDateDefault = thirtyDaysAgo.toISOString().split('T')[0];
     
-    document.getElementById('toDate').value = today;
-    document.getElementById('fromDate').value = fromDateDefault;
-
-    // Filter functionality
-    const filterForm = document.getElementById('filterForm');
-    const countrySelect = document.getElementById('countrySelect');
-    const propertySelect = document.getElementById('propertySelect');
-    const statusSelect = document.getElementById('statusSelect');
-
-    // When any filter changes
-    [countrySelect, propertySelect, statusSelect].forEach(select => {
-        select.addEventListener('change', function() {
-            filterForm.submit();
-        });
+    const toDateInput = document.getElementById('toDate');
+    const fromDateInput = document.getElementById('fromDate');
+    if (toDateInput) toDateInput.value = today;
+    if (fromDateInput) fromDateInput.value = fromDateDefault;
+    
+    // Check if panel was forcibly expanded
+    const wasForceExpanded = sessionStorage.getItem('FORCE_PANEL_EXPANDED') === 'true';
+    const wasClearAllProtected = sessionStorage.getItem('CLEAR_ALL_PROTECTION') === 'true';
+    const windowFlag = window.PANEL_MUST_STAY_EXPANDED;
+    const clearAllFlag = window.CLEAR_ALL_PROTECTION_ACTIVE;
+    
+    console.log(`🔍 Checking forced expansion: sessionStorage=${wasForceExpanded}, clearAll=${wasClearAllProtected}, window=${windowFlag}`);
+    
+    // Initialize filter panel
+    const filterPanel = document.getElementById('filterPanel');
+    if (filterPanel) {
+        if (wasForceExpanded || wasClearAllProtected || windowFlag || clearAllFlag) {
+            console.log('🔓 RESTORING FORCE-EXPANDED PANEL');
+            filterPanel.classList.add('expanded', 'force-expanded');
+            filterPanel.setAttribute('data-force-expanded', 'true');
+            const toggleIcon = document.getElementById('filterToggleIcon');
+            if (toggleIcon) {
+                toggleIcon.classList.add('rotated');
+            }
+            PANEL_IS_MANUALLY_EXPANDED = true;
+            
+            // Clear the force flags
+            sessionStorage.removeItem('FORCE_PANEL_EXPANDED');
+            sessionStorage.removeItem('CLEAR_ALL_PROTECTION');
+            window.PANEL_MUST_STAY_EXPANDED = false;
+            window.CLEAR_ALL_PROTECTION_ACTIVE = false;
+        } else {
+            filterPanel.classList.remove('expanded', 'force-expanded');
+            filterPanel.removeAttribute('data-force-expanded');
+            console.log('Panel initialized as collapsed');
+        }
+    }
+    
+    // Set up continuous monitoring
+    setupInterferenceProtection();
+    updateActiveFilters();
+    
+    // Auto-submit on dropdown filter change
+    ['countrySelect', 'propertySelect', 'statusSelect'].forEach(id => {
+        const element = document.getElementById(id);
+        if (element) {
+            element.addEventListener('change', function() {
+                console.log(`🔄 Filter changed: ${id} = ${this.value}`);
+                
+                if (PANEL_IS_MANUALLY_EXPANDED) {
+                    console.log('🔒 LOCKING PANEL STATE BEFORE FORM SUBMISSION');
+                    lockPanelState();
+                }
+                
+                document.getElementById('filterForm').submit();
+            });
+        }
     });
-
-    // Check for refresh parameter
+    
+    // Search functionality
+    const searchBtn = document.getElementById('searchBtn');
+    if (searchBtn) {
+        searchBtn.addEventListener('click', function() {
+            console.log('🔍 Search button clicked');
+            if (PANEL_IS_MANUALLY_EXPANDED) {
+                lockPanelState();
+            }
+            document.getElementById('filterForm').submit();
+        });
+    }
+    
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                console.log('⌨️ Search enter key pressed');
+                if (PANEL_IS_MANUALLY_EXPANDED) {
+                    lockPanelState();
+                }
+                document.getElementById('filterForm').submit();
+            }
+        });
+    }
+    
+    // Clear all functionality
+    const clearAllBtn = document.getElementById('clearAllBtn');
+    if (clearAllBtn) {
+        clearAllBtn.addEventListener('click', function() {
+            console.log('🚨🧹 CLEAR ALL CLICKED - MAXIMUM PROTECTION MODE 🧹🚨');
+            
+            if (PANEL_IS_MANUALLY_EXPANDED) {
+                console.log('🔒🔒 LOCKING PANEL STATE FOR CLEAR ALL 🔒🔒');
+                
+                const filterPanel = document.getElementById('filterPanel');
+                if (filterPanel) {
+                    filterPanel.classList.add('force-expanded');
+                    filterPanel.style.cssText += 'display: block !important; visibility: visible !important;';
+                    filterPanel.setAttribute('data-force-expanded', 'true');
+                }
+                
+                sessionStorage.setItem('FORCE_PANEL_EXPANDED', 'true');
+                sessionStorage.setItem('CLEAR_ALL_PROTECTION', 'true');
+                window.PANEL_MUST_STAY_EXPANDED = true;
+                window.CLEAR_ALL_PROTECTION_ACTIVE = true;
+            }
+            
+            document.getElementById('searchInput').value = '';
+            document.getElementById('countrySelect').value = '';
+            document.getElementById('propertySelect').value = '';
+            document.getElementById('statusSelect').value = '';
+            document.getElementById('filterForm').submit();
+        });
+    }
+    
+    // Handle refresh parameter
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.has('refresh')) {
         const cleanUrl = window.location.pathname + window.location.search.replace(/[?&]refresh=true/, '').replace(/&$/, '').replace(/\?$/, '');
@@ -189,16 +722,262 @@ document.addEventListener('DOMContentLoaded', function() {
         window.location.reload(true);
     }
     
-    // Handle form submission
-    document.getElementById('dateRangeForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        const fromDate = document.getElementById('fromDate').value;
-        const toDate = document.getElementById('toDate').value;
-        const baseUrl = "{% url 'resolved_issues_report' %}";
-        const reportUrl = `${baseUrl}?f_date=${fromDate}&t_date=${toDate}`;
-        window.location.href = reportUrl;
-    });
+    // Handle date range form
+    const dateRangeForm = document.getElementById('dateRangeForm');
+    if (dateRangeForm) {
+        dateRangeForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const fromDate = document.getElementById('fromDate').value;
+            const toDate = document.getElementById('toDate').value;
+            const baseUrl = "{% url 'resolved_issues_report' %}";
+            const reportUrl = `${baseUrl}?f_date=${fromDate}&t_date=${toDate}`;
+            window.location.href = reportUrl;
+        });
+    }
+    
+    console.log('All FSR event listeners attached');
 });
+
+function lockPanelState() {
+    const filterPanel = document.getElementById('filterPanel');
+    
+    if (filterPanel) {
+        filterPanel.classList.add('force-expanded');
+        filterPanel.style.cssText += 'display: block !important;';
+    }
+    
+    sessionStorage.setItem('FORCE_PANEL_EXPANDED', 'true');
+    window.PANEL_MUST_STAY_EXPANDED = true;
+    
+    const originalHide = window.hideFilters;
+    window.hideFilters = function() {
+        console.log('🚫 BLOCKED: hideFilters() call during form submission');
+        return false;
+    };
+    
+    setTimeout(() => {
+        window.hideFilters = originalHide;
+    }, 100);
+}
+
+function forceExpandPanel() {
+    const filterPanel = document.getElementById('filterPanel');
+    const toggleIcon = document.getElementById('filterToggleIcon');
+    
+    if (filterPanel && !filterPanel.classList.contains('expanded')) {
+        console.log('🔥 FORCING PANEL TO EXPAND');
+        filterPanel.classList.add('expanded');
+        if (toggleIcon) {
+            toggleIcon.classList.add('rotated');
+        }
+        EXTERNAL_INTERFERENCE_DETECTED = true;
+    }
+}
+
+function setupInterferenceProtection() {
+    const filterPanel = document.getElementById('filterPanel');
+    if (!filterPanel) return;
+    
+    const observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+            if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+                const hasExpanded = filterPanel.classList.contains('expanded');
+                
+                if (PANEL_IS_MANUALLY_EXPANDED && !hasExpanded) {
+                    console.log('🚨 EXTERNAL INTERFERENCE DETECTED!');
+                    filterPanel.classList.add('expanded');
+                    const toggleIcon = document.getElementById('filterToggleIcon');
+                    if (toggleIcon) {
+                        toggleIcon.classList.add('rotated');
+                    }
+                    EXTERNAL_INTERFERENCE_DETECTED = true;
+                }
+            }
+        });
+    });
+    
+    observer.observe(filterPanel, {
+        attributes: true,
+        attributeFilter: ['class']
+    });
+    
+    console.log('🛡️ FSR Interference protection activated');
+}
+
+function toggleFilters() {
+    console.log('🔄🔄 Toggle filters called - MANUAL USER ACTION 🔄🔄');
+    const filterPanel = document.getElementById('filterPanel');
+    const toggleIcon = document.getElementById('filterToggleIcon');
+    
+    if (!filterPanel || !toggleIcon) {
+        console.log('❌ Panel or icon not found');
+        return;
+    }
+    
+    const isExpanded = filterPanel.classList.contains('expanded') || filterPanel.classList.contains('force-expanded');
+    console.log(`📊📊 Current state: ${isExpanded ? 'expanded' : 'collapsed'} 📊📊`);
+    
+    if (isExpanded) {
+        // MANUAL COLLAPSE
+        console.log('📉📉 MANUAL COLLAPSE 📉📉');
+        
+        PANEL_IS_MANUALLY_EXPANDED = false;
+        sessionStorage.removeItem('FORCE_PANEL_EXPANDED');
+        sessionStorage.removeItem('CLEAR_ALL_PROTECTION');
+        window.PANEL_MUST_STAY_EXPANDED = false;
+        window.CLEAR_ALL_PROTECTION_ACTIVE = false;
+        
+        // FORCE removal of all classes
+        filterPanel.classList.remove('expanded', 'force-expanded');
+        filterPanel.removeAttribute('data-force-expanded');
+        
+        // NUCLEAR CSS override
+        filterPanel.style.cssText = '';
+        filterPanel.style.display = '';
+        filterPanel.style.visibility = '';
+        filterPanel.style.opacity = '';
+        filterPanel.style.height = '';
+        filterPanel.style.overflow = '';
+        filterPanel.style.padding = '';
+        
+        // Force hide the content directly
+        const filterContent = document.getElementById('filterContent');
+        if (filterContent) {
+            filterContent.style.display = 'none';
+            filterContent.style.visibility = 'hidden';
+            filterContent.style.opacity = '0';
+            filterContent.style.height = '0';
+            filterContent.style.overflow = 'hidden';
+            filterContent.classList.remove('show');
+        }
+        
+        toggleIcon.classList.remove('rotated');
+        
+        console.log('📉📉 Panel FORCE collapsed - ALL PROTECTION NUKED 📉📉');
+        
+        // Verify the collapse worked
+        setTimeout(() => {
+            const isStillExpanded = filterPanel.classList.contains('expanded') || filterPanel.classList.contains('force-expanded');
+            console.log(`🔍 Collapse verification: panel still expanded = ${isStillExpanded}`);
+            if (isStillExpanded) {
+                console.log('⚠️ COLLAPSE FAILED - EXTERNAL INTERFERENCE DETECTED');
+                filterPanel.className = filterPanel.className.replace(/\b(expanded|force-expanded)\b/g, '').trim();
+                filterPanel.style.cssText = 'padding: 12px 24px !important;';
+                if (filterContent) {
+                    filterContent.style.cssText = 'display: none !important; visibility: hidden !important; opacity: 0 !important; height: 0 !important; overflow: hidden !important;';
+                }
+            }
+        }, 50);
+        
+    } else {
+        // MANUAL EXPANSION
+        console.log('📈📈 Panel manually expanded - PROTECTION ACTIVATED 📈📈');
+        filterPanel.classList.add('expanded');
+        filterPanel.classList.remove('force-expanded');
+        toggleIcon.classList.add('rotated');
+        PANEL_IS_MANUALLY_EXPANDED = true;
+        
+        // Ensure content is visible
+        const filterContent = document.getElementById('filterContent');
+        if (filterContent) {
+            filterContent.style.display = 'block';
+            filterContent.style.visibility = 'visible';
+            filterContent.style.opacity = '1';
+            filterContent.style.height = 'auto';
+            filterContent.style.overflow = 'visible';
+            filterContent.classList.add('show');
+        }
+    }
+}
+
+function updateActiveFilters() {
+    console.log('🔄 updateActiveFilters called');
+    const searchInput = document.getElementById('searchInput');
+    const countrySelect = document.getElementById('countrySelect');
+    const propertySelect = document.getElementById('propertySelect');
+    const statusSelect = document.getElementById('statusSelect');
+    const activeFiltersDiv = document.getElementById('activeFilters');
+    const filterTagsDiv = document.getElementById('filterTags');
+    
+    if (!searchInput || !countrySelect || !propertySelect || !statusSelect || !activeFiltersDiv || !filterTagsDiv) {
+        console.log('❌ Some elements missing for updateActiveFilters');
+        return;
+    }
+    
+    const search = searchInput.value;
+    const country = countrySelect.value;
+    const property = propertySelect.value;
+    const status = statusSelect.value;
+    
+    console.log(`📊 Filter values - Search: "${search}", Country: "${country}", Property: "${property}", Status: "${status}"`);
+    
+    filterTagsDiv.innerHTML = '';
+    let hasFilters = false;
+    
+    if (search) {
+        filterTagsDiv.innerHTML += `<span class="filter-tag">Search: "${search}" <button class="remove-tag" onclick="clearFilter('search')">×</button></span>`;
+        hasFilters = true;
+    }
+    
+    if (country) {
+        filterTagsDiv.innerHTML += `<span class="filter-tag">Country: ${country} <button class="remove-tag" onclick="clearFilter('country')">×</button></span>`;
+        hasFilters = true;
+    }
+    
+    if (property) {
+        filterTagsDiv.innerHTML += `<span class="filter-tag">Property: ${property} <button class="remove-tag" onclick="clearFilter('property')">×</button></span>`;
+        hasFilters = true;
+    }
+    
+    if (status) {
+        filterTagsDiv.innerHTML += `<span class="filter-tag">Status: ${status} <button class="remove-tag" onclick="clearFilter('status')">×</button></span>`;
+        hasFilters = true;
+    }
+    
+    activeFiltersDiv.style.display = hasFilters ? 'flex' : 'none';
+    console.log(`✅ Filter tags updated, hasFilters: ${hasFilters}`);
+    
+    console.log('✅ updateActiveFilters completed - panel state UNCHANGED');
+}
+
+function clearFilter(filterType) {
+    console.log(`🧹 clearFilter called for: ${filterType}`);
+    
+    if (PANEL_IS_MANUALLY_EXPANDED) {
+        console.log('🔒 LOCKING PANEL STATE BEFORE INDIVIDUAL FILTER CLEAR');
+        lockPanelState();
+    }
+    
+    switch(filterType) {
+        case 'search':
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) searchInput.value = '';
+            break;
+        case 'country':
+            const countrySelect = document.getElementById('countrySelect');
+            if (countrySelect) countrySelect.value = '';
+            break;
+        case 'property':
+            const propertySelect = document.getElementById('propertySelect');
+            if (propertySelect) propertySelect.value = '';
+            break;
+        case 'status':
+            const statusSelect = document.getElementById('statusSelect');
+            if (statusSelect) statusSelect.value = '';
+            break;
+    }
+    document.getElementById('filterForm').submit();
+}
+
+// Show interference detection status
+setInterval(() => {
+    if (EXTERNAL_INTERFERENCE_DETECTED) {
+        console.log('🚨 External interference was detected and blocked');
+        EXTERNAL_INTERFERENCE_DETECTED = false;
+    }
+}, 2000);
+
+console.log('🚀 === FSR SCRIPT COMPLETE ===');
 </script>
 
 {% endblock %}

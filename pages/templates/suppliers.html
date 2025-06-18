@@ -2,6 +2,7 @@
 {% load static %}
 
 {% block title %}
+Suppliers
 {% endblock %}
 
 {% block content %}
@@ -9,96 +10,973 @@
 <h2><center>ALIVENTE ONLINE - SUPPLIERS</center></h2>
 <br/>
 
-  {% for msg in messages %}
-    <div class="alert alert-secondary alert-dismissible fade show auto-dismiss" role="alert">
-      <strong></strong> <center>{{ msg }}</center>
-      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-        <span aria-hidden="true">&times;</span>
+{% for msg in messages %}
+  <div class="alert alert-secondary alert-dismissible fade show auto-dismiss" role="alert">
+    <strong></strong> <center>{{ msg }}</center>
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <script>
+    setTimeout(function() {
+      document.querySelectorAll('.auto-dismiss').forEach(alert => {
+        alert.classList.remove('show');
+        alert.classList.add('fade');
+        setTimeout(() => alert.remove(), 500);
+      });
+    }, 2000);
+  </script>
+{% endfor %}
+
+<body>
+  <!-- Action Buttons -->
+  <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 20px;">
+    {% if user.is_superuser %}
+      <a href="{% url 'suppliers_add' %}" class="btn btn-info">Add New</a>
+    {% else %}
+      <span class="btn btn-secondary" style="opacity:0.6; cursor:not-allowed; pointer-events:none;">Add New</span>
+    {% endif %}
+    <a href="{% url 'home' %}" class="btn btn-info">Back</a>
+  </div>
+
+  <!-- Collapsible Filter Panel -->
+  <div class="filter-panel" id="filterPanel">
+    <div class="filter-header" onclick="toggleFilters()">
+      <h5 class="filter-title">
+        <i class="fas fa-filter"></i> Supplier Filters
+        <i class="fas fa-chevron-down filter-toggle-icon" id="filterToggleIcon"></i>
+      </h5>
+      <button type="button" id="clearAllBtn" class="btn btn-outline-secondary btn-sm" onclick="event.stopPropagation();">
+        <i class="fas fa-times-circle"></i> Clear All
       </button>
     </div>
-    <script>
-      // Automatically close the alert after 3 seconds (3000 milliseconds)
-      setTimeout(function() {
-        document.querySelectorAll('.auto-dismiss').forEach(alert => {
-          alert.classList.remove('show'); // Hide alert visually
-          alert.classList.add('fade'); // Add fade effect
-          setTimeout(() => alert.remove(), 500); // Remove from DOM after fade
-        });
-      }, 2000);
-    </script>
-  {% endfor %}
-  
-<body>
-  
-  <div style="display: flex ; justify-content: flex-end">
-    <a href="{% url 'suppliers_add' %}" class="btn btn-info" style="margin-right:16px" type="button">Add New</a>
-    <a href="{% url 'home' %}" class="btn btn-info" style="margin-right:16px" role="button">Back</a>
-  </div>
-
-  <div class="form-row">
-      <div class="form-group col-md-5">
-          <form action = "{% url 'suppliers' %}" method="post">
-            {% csrf_token %}
-            <div class="input-group">
-                <select name = "supname" class="custom-select" id="inputGroupSelect08" aria-label="Example select with button addon" onchange="this.form.submit()">
-                  <option disabled selected value="All">Select Supplier</option>
-                  <option value="All">All Suppliers</option>
-                  {% for sresults in supplier %}
-                    <option value="{{sresults.supplier_contact_person}}">{{sresults.supplier_contact_person}}</option>
-                  {% endfor %}
-              </select>
-              <select name = "supcount" class="custom-select" id="inputGroupSelect08" aria-label="Example select with button addon" onchange="this.form.submit()">
-                  <option disabled selected value="All">Select Country</option>
-                  <option value="All">All Countries</option>
-                  <option value="Cyprus">Cyprus</option>
-                  <option value="Greece">Greece</option>
-                  <option value="Spain">Spain</option>
-               </select>
+    
+    <div class="filter-content" id="filterContent">
+      <form action="{% url 'suppliers' %}" method="post" id="filterForm">
+        {% csrf_token %}
+        <div class="filter-grid">
+          <!-- Search Bar -->
+          <div class="filter-group">
+            <label class="filter-label">
+              <i class="fas fa-search"></i> Search Contact Person
+            </label>
+            <div class="search-input-group">
+              <input type="text" 
+                     name="supname" 
+                     id="searchInput"
+                     class="form-control search-input" 
+                     placeholder="Search by contact person name..."
+                     value="{{ selected_supplier|default:'' }}{{ search_query|default:'' }}{{ supname_query|default:'' }}">
+              <button type="button" class="search-btn" id="searchBtn">
+                <i class="fas fa-search"></i>
+              </button>
             </div>
-        </form>
+          </div>
+
+          <!-- Country Filter -->
+          <div class="filter-group">
+            <label class="filter-label">
+              <i class="fas fa-globe"></i> Country
+            </label>
+            <select name="supcount" class="form-control filter-select" id="countrySelect">
+              <option value="All">All Countries</option>
+              <option value="Cyprus" {% if selected_country == 'Cyprus' %}selected{% endif %}>Cyprus</option>
+              <option value="Greece" {% if selected_country == 'Greece' %}selected{% endif %}>Greece</option>
+              <option value="Spain" {% if selected_country == 'Spain' %}selected{% endif %}>Spain</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Active Filters Display -->
+        <div class="active-filters" id="activeFilters" style="display: none;">
+          <span class="active-filters-label">Active filters:</span>
+          <div class="filter-tags" id="filterTags"></div>
+        </div>
+      </form>
     </div>
   </div>
 
-<form action = "" method="">
-  {% csrf_token %}
-  <div>
-  <table class="table table-bordered table-striped text-center">
-  <thead>
-    <tr>
-      <th style="text-align: left; width: 25%">Contact Person</th>
-      <th style="width: 15%">Contact Number</th>
-      <th style="width: 15%">Company Name</th>
-      <th style="width: 15%">Role</th>
-      <th style="width: 10%">Country</th>
-      <th style="width: 10%">Details</th>
-      <th style="width: 10%">Report</th>
-    </tr>
-  </thead>
-  <tbody>
-    {% for sresults in supplier %}
-      <tr>
-        <td style="text-align: left">{{sresults.supplier_contact_person}}</td>
-        <td>{{sresults.supplier_contact_number}}</td>
-        <td>{{sresults.supplier_company_name}}</td>
-        <td>{{sresults.supplier_role}}</td>
-        <td>{{sresults.supplier_country}}</td>
-        <td>
-          <button type="button" class="btn btn-light" style="border-color:black; width: 100%">
-            <a href="{% url 'suppliers_edit' sresults.supplier_id %}">Edit</a>
-          </button>
-        </td>    
-        <td>
-          <button type="button" class="btn btn-light" style="border-color:black; width: 100%">
-            <a href="{% url 'supplier_report' sresults.supplier_id %}">View</a>
-          </button>
-        </td>
-      </tr>
-    {% endfor %}
-  </tbody>
-  </table>    
+  <!-- Suppliers Table -->
+  <div class="table-container">
+    <table class="table table-bordered table-striped text-center">
+      <thead>
+        <tr>
+          <th style="text-align: left; width: 25%">Contact Person</th>
+          <th style="width: 15%">Contact Number</th>
+          <th style="width: 15%">Company Name</th>
+          <th style="width: 15%">Role</th>
+          <th style="width: 10%">Country</th>
+          <th style="width: 10%">Details</th>
+          <th style="width: 10%">Report</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for sresults in supplier %}
+          <tr>
+            <td style="text-align: left">{{sresults.supplier_contact_person}}</td>
+            <td>{{sresults.supplier_contact_number}}</td>
+            <td>{{sresults.supplier_company_name}}</td>
+            <td>{{sresults.supplier_role}}</td>
+            <td>{{sresults.supplier_country}}</td>
+            <td>
+              {% if user.is_superuser %}
+                <button type="button" class="btn btn-light action-btn">
+                  <a href="{% url 'suppliers_edit' sresults.supplier_id %}">Edit</a>
+                </button>
+              {% else %}
+                <button type="button" class="btn btn-light action-btn" disabled style="opacity: 0.5;">
+                  <span style="color: #6c757d;">Edit</span>
+                </button>
+              {% endif %}
+            </td>
+            <td>
+              <button type="button" class="btn btn-light action-btn">
+                <a href="{% url 'supplier_report' sresults.supplier_id %}">View</a>
+              </button>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
   </div>
-  
-</form>
+
 </body>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+<style>
+/* Refined Filter Panel Styles */
+.filter-panel {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border: 1px solid #dee2e6;
+    border-radius: 12px;
+    padding: 12px 24px;
+    margin-bottom: 30px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    transition: padding 0.3s ease;
+}
+
+.filter-panel.expanded {
+    padding: 24px;
+}
+
+/* CSS-only visibility control - can't be overridden by JavaScript */
+.filter-panel:not(.expanded) .filter-content {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    height: 0 !important;
+    overflow: hidden !important;
+}
+
+.filter-panel.expanded .filter-content,
+.filter-panel.force-expanded .filter-content {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    height: auto !important;
+    overflow: visible !important;
+    padding-top: 20px;
+}
+
+/* Force-expanded class overrides everything */
+.filter-panel.force-expanded {
+    padding: 24px !important;
+}
+
+.filter-panel.force-expanded .filter-content {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    height: auto !important;
+    overflow: visible !important;
+    padding-top: 20px !important;
+}
+
+.filter-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #dee2e6;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.filter-header.expanded {
+    padding-bottom: 12px;
+    border-bottom: 2px solid #dee2e6;
+    margin-bottom: 20px;
+}
+
+.filter-header:hover {
+    background-color: rgba(23, 162, 184, 0.05);
+    border-radius: 8px;
+    margin: -8px;
+    padding: 16px 8px;
+}
+
+.filter-header.expanded:hover {
+    padding: 20px 8px;
+}
+
+.filter-title {
+    margin: 0;
+    color: #2c3e50;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    user-select: none;
+}
+
+.filter-title i {
+    color: #17a2b8;
+}
+
+.filter-toggle-icon {
+    transition: transform 0.3s ease;
+    margin-left: 8px;
+}
+
+.filter-toggle-icon.rotated {
+    transform: rotate(180deg);
+}
+
+.filter-content {
+    overflow: visible;
+    transition: all 0.3s ease;
+}
+
+.filter-content.show {
+    display: block !important;
+    padding-top: 20px;
+}
+
+.filter-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 20px;
+    align-items: end;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    /* Ensure dropdowns don't get cut off */
+    overflow: visible;
+}
+
+.filter-label {
+    font-weight: 500;
+    color: #495057;
+    margin-bottom: 6px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.filter-label i {
+    color: #6c757d;
+    width: 14px;
+}
+
+.filter-input, .filter-select {
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    background: white;
+    position: relative;
+    z-index: 10;
+}
+
+.filter-select {
+    cursor: pointer;
+    /* Fix dropdown cutoff - ensure proper height and padding */
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 12px center;
+    background-repeat: no-repeat;
+    background-size: 16px 12px;
+    padding-right: 40px;
+    min-height: 44px;
+    line-height: 1.4;
+}
+
+.filter-input:focus, .filter-select:focus {
+    border-color: #17a2b8;
+    box-shadow: 0 0 0 3px rgba(23, 162, 184, 0.1);
+    outline: none;
+    position: relative;
+    z-index: 20;
+}
+
+/* Search Input Group */
+.search-input-group {
+    position: relative;
+    display: flex;
+    align-items: stretch;
+}
+
+.search-input {
+    border: 2px solid #e9ecef;
+    border-radius: 8px 0 0 8px;
+    border-right: none;
+    padding: 10px 14px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    background: white;
+    flex: 1;
+}
+
+.search-input:focus {
+    border-color: #17a2b8;
+    box-shadow: 0 0 0 3px rgba(23, 162, 184, 0.1);
+    outline: none;
+    z-index: 20;
+}
+
+.search-btn {
+    background: #17a2b8;
+    border: 2px solid #17a2b8;
+    border-left: none;
+    border-radius: 0 8px 8px 0;
+    color: white;
+    padding: 10px 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.search-btn:hover {
+    background: #138496;
+    border-color: #138496;
+}
+
+.search-btn:active {
+    transform: scale(0.98);
+}
+
+.btn-outline-secondary {
+    border: 2px solid #6c757d;
+    color: #6c757d;
+    background: transparent;
+    border-radius: 6px;
+    font-size: 13px;
+    padding: 6px 12px;
+    transition: all 0.3s ease;
+}
+
+.btn-outline-secondary:hover {
+    background: #6c757d;
+    color: white;
+    transform: translateY(-1px);
+}
+
+/* Active Filters */
+.active-filters {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid #dee2e6;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.active-filters-label {
+    font-weight: 500;
+    color: #495057;
+    font-size: 14px;
+}
+
+.filter-tags {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.filter-tag {
+    background: #17a2b8;
+    color: white;
+    padding: 4px 12px;
+    border-radius: 16px;
+    font-size: 12px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.filter-tag .remove-tag {
+    background: rgba(255, 255, 255, 0.3);
+    border: none;
+    color: white;
+    border-radius: 50%;
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 10px;
+}
+
+/* Table Enhancements */
+.table-container {
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.action-btn {
+    border-color: #dee2e6;
+    transition: all 0.2s ease;
+    width: 100%;
+}
+
+.action-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Button Styles */
+.btn-info {
+    background-color: #17a2b8;
+    color: white;
+    border: 1px solid #17a2b8;
+    transition: all 0.3s ease;
+    border-radius: 6px;
+    font-weight: 500;
+}
+
+.btn-info:hover {
+    background-color: #138496;
+    border-color: #117a8b;
+    color: white;
+    text-decoration: none;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .filter-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    
+    .filter-header {
+        flex-direction: column;
+        gap: 12px;
+        align-items: stretch;
+    }
+    
+    .search-input-group {
+        width: 100%;
+    }
+}
+</style>
+
+<script>
+console.log('=== SUPPLIER FILTER PANEL SCRIPT LOADED ===');
+
+// NUCLEAR OPTION - Complete override of external interference
+let PANEL_IS_MANUALLY_EXPANDED = false;
+let EXTERNAL_INTERFERENCE_DETECTED = false;
+
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM loaded - initializing supplier filter panel');
+    
+    // Check if panel was forcibly expanded before form submission
+    const wasForceExpanded = sessionStorage.getItem('FORCE_SUPPLIER_PANEL_EXPANDED') === 'true';
+    const wasClearAllProtected = sessionStorage.getItem('SUPPLIER_CLEAR_ALL_PROTECTION') === 'true';
+    const windowFlag = window.SUPPLIER_PANEL_MUST_STAY_EXPANDED;
+    const clearAllFlag = window.SUPPLIER_CLEAR_ALL_PROTECTION_ACTIVE;
+    
+    console.log(`🔍 Checking forced expansion: sessionStorage=${wasForceExpanded}, clearAll=${wasClearAllProtected}, window=${windowFlag}`);
+    
+    // Initialize as collapsed UNLESS it was force-expanded
+    const filterPanel = document.getElementById('filterPanel');
+    if (filterPanel) {
+        if (wasForceExpanded || wasClearAllProtected || windowFlag || clearAllFlag) {
+            console.log('🔓 RESTORING FORCE-EXPANDED SUPPLIER PANEL');
+            filterPanel.classList.add('expanded', 'force-expanded');
+            filterPanel.setAttribute('data-force-expanded', 'true');
+            const toggleIcon = document.getElementById('filterToggleIcon');
+            if (toggleIcon) {
+                toggleIcon.classList.add('rotated');
+            }
+            PANEL_IS_MANUALLY_EXPANDED = true;
+            
+            // Clear the force flags
+            sessionStorage.removeItem('FORCE_SUPPLIER_PANEL_EXPANDED');
+            sessionStorage.removeItem('SUPPLIER_CLEAR_ALL_PROTECTION');
+            window.SUPPLIER_PANEL_MUST_STAY_EXPANDED = false;
+            window.SUPPLIER_CLEAR_ALL_PROTECTION_ACTIVE = false;
+        } else {
+            filterPanel.classList.remove('expanded', 'force-expanded');
+            filterPanel.removeAttribute('data-force-expanded');
+            console.log('Supplier panel initialized as collapsed');
+        }
+    }
+    
+    // Set up continuous monitoring for external interference
+    setupInterferenceProtection();
+    
+    updateActiveFilters();
+    
+    // Auto-submit on dropdown filter change
+    ['countrySelect'].forEach(id => {
+        const element = document.getElementById(id);
+        if (element) {
+            element.addEventListener('change', function() {
+                console.log(`🔄 Supplier filter changed: ${id} = ${this.value}`);
+                
+                // CRITICAL: Lock panel state BEFORE form submission
+                if (PANEL_IS_MANUALLY_EXPANDED) {
+                    console.log('🔒 LOCKING SUPPLIER PANEL STATE BEFORE FORM SUBMISSION');
+                    
+                    // Multiple approaches to prevent collapse during submission
+                    const filterPanel = document.getElementById('filterPanel');
+                    const toggleIcon = document.getElementById('filterToggleIcon');
+                    
+                    // Approach 1: Add persistent CSS class
+                    if (filterPanel) {
+                        filterPanel.classList.add('force-expanded');
+                        filterPanel.style.cssText += 'display: block !important;';
+                    }
+                    
+                    // Approach 2: Store in sessionStorage
+                    sessionStorage.setItem('FORCE_SUPPLIER_PANEL_EXPANDED', 'true');
+                    
+                    // Approach 3: Set flag in window object
+                    window.SUPPLIER_PANEL_MUST_STAY_EXPANDED = true;
+                    
+                    // Approach 4: Override any potential hide functions
+                    const originalHide = window.hideFilters;
+                    window.hideFilters = function() {
+                        console.log('🚫 BLOCKED: hideFilters() call during supplier form submission');
+                        return false;
+                    };
+                    
+                    // Restore original function after a delay
+                    setTimeout(() => {
+                        window.hideFilters = originalHide;
+                    }, 100);
+                }
+                
+                // Submit the form
+                document.getElementById('filterForm').submit();
+            });
+        }
+    });
+    
+    // Search button functionality
+    const searchBtn = document.getElementById('searchBtn');
+    if (searchBtn) {
+        searchBtn.addEventListener('click', function() {
+            console.log('🔍 Search button clicked');
+            const searchValue = document.getElementById('searchInput').value;
+            console.log('🔍 Search value:', searchValue);
+            
+            // Apply the same protection as dropdowns
+            if (PANEL_IS_MANUALLY_EXPANDED) {
+                console.log('🔒 LOCKING SUPPLIER PANEL STATE BEFORE SEARCH SUBMISSION');
+                
+                const filterPanel = document.getElementById('filterPanel');
+                
+                // Apply all protection methods
+                if (filterPanel) {
+                    filterPanel.classList.add('force-expanded');
+                    filterPanel.style.cssText += 'display: block !important;';
+                }
+                
+                sessionStorage.setItem('FORCE_SUPPLIER_PANEL_EXPANDED', 'true');
+                window.SUPPLIER_PANEL_MUST_STAY_EXPANDED = true;
+                
+                // Block hide functions temporarily
+                const originalHide = window.hideFilters;
+                window.hideFilters = function() {
+                    console.log('🚫 BLOCKED: hideFilters() call during search submission');
+                    return false;
+                };
+                
+                setTimeout(() => {
+                    window.hideFilters = originalHide;
+                }, 100);
+            }
+            
+            console.log('🔍 Submitting form with search value:', searchValue);
+            document.getElementById('filterForm').submit();
+        });
+    }
+    
+    // Enter key in search input
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                console.log('⌨️ Search enter key pressed');
+                const searchValue = this.value;
+                console.log('⌨️ Search value:', searchValue);
+                
+                // Apply the same protection as dropdowns
+                if (PANEL_IS_MANUALLY_EXPANDED) {
+                    console.log('🔒 LOCKING SUPPLIER PANEL STATE BEFORE SEARCH ENTER SUBMISSION');
+                    
+                    const filterPanel = document.getElementById('filterPanel');
+                    
+                    // Apply all protection methods
+                    if (filterPanel) {
+                        filterPanel.classList.add('force-expanded');
+                        filterPanel.style.cssText += 'display: block !important;';
+                    }
+                    
+                    sessionStorage.setItem('FORCE_SUPPLIER_PANEL_EXPANDED', 'true');
+                    window.SUPPLIER_PANEL_MUST_STAY_EXPANDED = true;
+                    
+                    // Block hide functions temporarily
+                    const originalHide = window.hideFilters;
+                    window.hideFilters = function() {
+                        console.log('🚫 BLOCKED: hideFilters() call during search enter submission');
+                        return false;
+                    };
+                    
+                    setTimeout(() => {
+                        window.hideFilters = originalHide;
+                    }, 100);
+                }
+                
+                console.log('⌨️ Submitting form with search value:', searchValue);
+                document.getElementById('filterForm').submit();
+            }
+        });
+    }
+    
+    // Clear all filters - ENHANCED PROTECTION
+    const clearAllBtn = document.getElementById('clearAllBtn');
+    if (clearAllBtn) {
+        clearAllBtn.addEventListener('click', function() {
+            console.log('🚨🧹 SUPPLIER CLEAR ALL CLICKED - MAXIMUM PROTECTION MODE ACTIVATED 🧹🚨');
+            
+            if (PANEL_IS_MANUALLY_EXPANDED) {
+                console.log('🔒🔒 LOCKING SUPPLIER PANEL STATE BEFORE CLEAR ALL SUBMISSION - MAXIMUM SECURITY 🔒🔒');
+                
+                const filterPanel = document.getElementById('filterPanel');
+                
+                // MAXIMUM PROTECTION for Clear All
+                if (filterPanel) {
+                    filterPanel.classList.add('force-expanded');
+                    filterPanel.style.cssText += 'display: block !important; visibility: visible !important;';
+                    
+                    // Add extra CSS protection
+                    filterPanel.setAttribute('data-force-expanded', 'true');
+                }
+                
+                // Multiple storage methods
+                sessionStorage.setItem('FORCE_SUPPLIER_PANEL_EXPANDED', 'true');
+                sessionStorage.setItem('SUPPLIER_CLEAR_ALL_PROTECTION', 'true');
+                window.SUPPLIER_PANEL_MUST_STAY_EXPANDED = true;
+                window.SUPPLIER_CLEAR_ALL_PROTECTION_ACTIVE = true;
+                
+                // Enhanced function blocking
+                const originalHide = window.hideFilters;
+                const originalToggle = window.toggleFilters;
+                
+                window.hideFilters = function() {
+                    console.log('🚫🚫 BLOCKED: hideFilters() call during SUPPLIER CLEAR ALL submission 🚫🚫');
+                    return false;
+                };
+                
+                // Also block toggle during clear all
+                window.toggleFilters = function() {
+                    console.log('🚫 BLOCKED: toggleFilters() call during SUPPLIER CLEAR ALL submission');
+                    return false;
+                };
+                
+                // Enhanced restoration schedule
+                setTimeout(() => forceExpandPanel(), 50);
+                setTimeout(() => forceExpandPanel(), 100);
+                setTimeout(() => forceExpandPanel(), 200);
+                setTimeout(() => forceExpandPanel(), 500);
+                setTimeout(() => forceExpandPanel(), 1000);
+                setTimeout(() => forceExpandPanel(), 2000);
+                
+                // Restore original functions after longer delay for Clear All
+                setTimeout(() => {
+                    window.hideFilters = originalHide;
+                    window.toggleFilters = originalToggle;
+                    console.log('🔓 Supplier Clear All protection mode ended');
+                }, 200);
+                
+                // Continuous monitoring for Clear All
+                const protectionInterval = setInterval(() => {
+                    if (PANEL_IS_MANUALLY_EXPANDED) {
+                        forceExpandPanel();
+                    } else {
+                        clearInterval(protectionInterval);
+                    }
+                }, 50); // More frequent monitoring for Clear All
+                
+                // Stop monitoring after 10 seconds for Clear All
+                setTimeout(() => {
+                    clearInterval(protectionInterval);
+                    console.log('🛡️ Supplier Clear All continuous protection ended');
+                }, 10000);
+            }
+            
+            document.getElementById('searchInput').value = '';
+            document.getElementById('countrySelect').value = 'All';
+            document.getElementById('filterForm').submit();
+        });
+    }
+    
+    console.log('All supplier event listeners attached');
+});
+
+// Force expand panel function
+function forceExpandPanel() {
+    const filterPanel = document.getElementById('filterPanel');
+    const toggleIcon = document.getElementById('filterToggleIcon');
+    
+    if (filterPanel && !filterPanel.classList.contains('expanded')) {
+        console.log('🔥 FORCING SUPPLIER PANEL TO EXPAND - OVERRIDING EXTERNAL INTERFERENCE');
+        filterPanel.classList.add('expanded');
+        if (toggleIcon) {
+            toggleIcon.classList.add('rotated');
+        }
+        EXTERNAL_INTERFERENCE_DETECTED = true;
+    }
+}
+
+// Set up continuous monitoring for external interference
+function setupInterferenceProtection() {
+    const filterPanel = document.getElementById('filterPanel');
+    if (!filterPanel) return;
+    
+    // Monitor for class changes
+    const observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+            if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+                const hasExpanded = filterPanel.classList.contains('expanded');
+                
+                if (PANEL_IS_MANUALLY_EXPANDED && !hasExpanded) {
+                    console.log('🚨 EXTERNAL INTERFERENCE DETECTED! SUPPLIER PANEL WAS COLLAPSED BY EXTERNAL CODE');
+                    console.log('🛡️ RESTORING EXPANDED STATE');
+                    
+                    // Immediately restore
+                    filterPanel.classList.add('expanded');
+                    const toggleIcon = document.getElementById('filterToggleIcon');
+                    if (toggleIcon) {
+                        toggleIcon.classList.add('rotated');
+                    }
+                    
+                    EXTERNAL_INTERFERENCE_DETECTED = true;
+                }
+            }
+        });
+    });
+    
+    observer.observe(filterPanel, {
+        attributes: true,
+        attributeFilter: ['class']
+    });
+    
+    console.log('🛡️ Supplier interference protection activated');
+}
+
+// Simple toggle - only changes when user clicks header
+function toggleFilters() {
+    console.log('🔄🔄 Toggle supplier filters called - MANUAL USER ACTION 🔄🔄');
+    const filterPanel = document.getElementById('filterPanel');
+    const toggleIcon = document.getElementById('filterToggleIcon');
+    
+    if (!filterPanel || !toggleIcon) {
+        console.log('❌ Panel or icon not found');
+        return;
+    }
+    
+    const isExpanded = filterPanel.classList.contains('expanded') || filterPanel.classList.contains('force-expanded');
+    console.log(`📊📊 Current state: ${isExpanded ? 'expanded' : 'collapsed'} 📊📊`);
+    console.log(`🔍 Panel classes: ${filterPanel.className}`);
+    
+    if (isExpanded) {
+        // MANUAL COLLAPSE - Override all protection with extreme force
+        console.log('📉📉 MANUAL SUPPLIER COLLAPSE - NUCLEAR OVERRIDE OF ALL PROTECTION 📉📉');
+        
+        // Clear all protection flags
+        PANEL_IS_MANUALLY_EXPANDED = false;
+        sessionStorage.removeItem('FORCE_SUPPLIER_PANEL_EXPANDED');
+        sessionStorage.removeItem('SUPPLIER_CLEAR_ALL_PROTECTION');
+        window.SUPPLIER_PANEL_MUST_STAY_EXPANDED = false;
+        window.SUPPLIER_CLEAR_ALL_PROTECTION_ACTIVE = false;
+        
+        // FORCE removal of all classes
+        filterPanel.classList.remove('expanded', 'force-expanded');
+        filterPanel.removeAttribute('data-force-expanded');
+        
+        // NUCLEAR CSS override
+        filterPanel.style.cssText = '';
+        filterPanel.style.display = '';
+        filterPanel.style.visibility = '';
+        filterPanel.style.opacity = '';
+        filterPanel.style.height = '';
+        filterPanel.style.overflow = '';
+        filterPanel.style.padding = '';
+        
+        // Force hide the content directly
+        const filterContent = document.getElementById('filterContent');
+        if (filterContent) {
+            filterContent.style.display = 'none';
+            filterContent.style.visibility = 'hidden';
+            filterContent.style.opacity = '0';
+            filterContent.style.height = '0';
+            filterContent.style.overflow = 'hidden';
+            filterContent.classList.remove('show');
+        }
+        
+        toggleIcon.classList.remove('rotated');
+        
+        console.log('📉📉 Supplier Panel FORCE collapsed - ALL PROTECTION NUKED 📉📉');
+        
+        // Verify the collapse worked
+        setTimeout(() => {
+            const isStillExpanded = filterPanel.classList.contains('expanded') || filterPanel.classList.contains('force-expanded');
+            console.log(`🔍 Collapse verification: panel still expanded = ${isStillExpanded}`);
+            if (isStillExpanded) {
+                console.log('⚠️ COLLAPSE FAILED - EXTERNAL INTERFERENCE DETECTED');
+                // Try one more time with even more force
+                filterPanel.className = filterPanel.className.replace(/\b(expanded|force-expanded)\b/g, '').trim();
+                filterPanel.style.cssText = 'padding: 12px 24px !important;';
+                if (filterContent) {
+                    filterContent.style.cssText = 'display: none !important; visibility: hidden !important; opacity: 0 !important; height: 0 !important; overflow: hidden !important;';
+                }
+            }
+        }, 50);
+        
+    } else {
+        // MANUAL EXPANSION
+        console.log('📈📈 Supplier Panel manually expanded - PROTECTION ACTIVATED 📈📈');
+        filterPanel.classList.add('expanded');
+        filterPanel.classList.remove('force-expanded'); // Clean start
+        toggleIcon.classList.add('rotated');
+        PANEL_IS_MANUALLY_EXPANDED = true;
+        
+        // Ensure content is visible
+        const filterContent = document.getElementById('filterContent');
+        if (filterContent) {
+            filterContent.style.display = 'block';
+            filterContent.style.visibility = 'visible';
+            filterContent.style.opacity = '1';
+            filterContent.style.height = 'auto';
+            filterContent.style.overflow = 'visible';
+            filterContent.classList.add('show');
+        }
+    }
+}
+
+// Simple update function - NEVER changes panel state
+function updateActiveFilters() {
+    console.log('🔄 updateActiveFilters called for supplier page');
+    const searchInput = document.getElementById('searchInput');
+    const countrySelect = document.getElementById('countrySelect');
+    const activeFiltersDiv = document.getElementById('activeFilters');
+    const filterTagsDiv = document.getElementById('filterTags');
+    
+    if (!searchInput || !countrySelect || !activeFiltersDiv || !filterTagsDiv) {
+        console.log('❌ Some elements missing for updateActiveFilters');
+        return;
+    }
+    
+    const search = searchInput.value;
+    const country = countrySelect.value;
+    
+    console.log(`📊 Supplier filter values - Search: "${search}", Country: "${country}"`);
+    
+    filterTagsDiv.innerHTML = '';
+    let hasFilters = false;
+    
+    if (search && search.trim() !== '' && search !== 'All') {
+        filterTagsDiv.innerHTML += `<span class="filter-tag">Search: "${search}" <button class="remove-tag" onclick="clearFilter('search')">×</button></span>`;
+        hasFilters = true;
+    }
+    
+    if (country && country !== 'All') {
+        filterTagsDiv.innerHTML += `<span class="filter-tag">Country: ${country} <button class="remove-tag" onclick="clearFilter('country')">×</button></span>`;
+        hasFilters = true;
+    }
+    
+    activeFiltersDiv.style.display = hasFilters ? 'flex' : 'none';
+    console.log(`✅ Supplier filter tags updated, hasFilters: ${hasFilters}`);
+    
+    console.log('✅ updateActiveFilters completed - supplier panel state UNCHANGED');
+}
+
+function clearFilter(filterType) {
+    console.log(`🧹 clearFilter called for supplier page: ${filterType}`);
+    
+    // Apply the same protection as other form submissions
+    if (PANEL_IS_MANUALLY_EXPANDED) {
+        console.log('🔒 LOCKING SUPPLIER PANEL STATE BEFORE INDIVIDUAL FILTER CLEAR');
+        
+        const filterPanel = document.getElementById('filterPanel');
+        
+        // Apply all protection methods
+        if (filterPanel) {
+            filterPanel.classList.add('force-expanded');
+            filterPanel.style.cssText += 'display: block !important;';
+            filterPanel.setAttribute('data-force-expanded', 'true');
+        }
+        
+        // Multiple storage methods
+        sessionStorage.setItem('FORCE_SUPPLIER_PANEL_EXPANDED', 'true');
+        window.SUPPLIER_PANEL_MUST_STAY_EXPANDED = true;
+        
+        // Block hide functions temporarily
+        const originalHide = window.hideFilters;
+        window.hideFilters = function() {
+            console.log('🚫 BLOCKED: hideFilters() call during supplier individual filter clear');
+            return false;
+        };
+        
+        setTimeout(() => {
+            window.hideFilters = originalHide;
+        }, 100);
+    }
+    
+    switch(filterType) {
+        case 'search':
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) searchInput.value = '';
+            break;
+        case 'country':
+            const countrySelect = document.getElementById('countrySelect');
+            if (countrySelect) countrySelect.value = 'All';
+            break;
+    }
+    document.getElementById('filterForm').submit();
+}
+
+// Show interference detection status
+setInterval(() => {
+    if (EXTERNAL_INTERFERENCE_DETECTED) {
+        console.log('🚨 External interference was detected and blocked on supplier page');
+        EXTERNAL_INTERFERENCE_DETECTED = false; // Reset flag
+    }
+}, 2000);
+
+console.log('🚀 === SUPPLIER SCRIPT COMPLETE ===');
+</script>
 
 {% endblock %}

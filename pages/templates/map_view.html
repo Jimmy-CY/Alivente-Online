@@ -259,14 +259,18 @@ document.addEventListener('DOMContentLoaded', function() {
         marker.bindPopup(popupContent);
     });
     
-    // Update property count
-    document.getElementById('propertyCount').textContent = 
-        'Showing ' + propertiesWithCoords.length + ' of ' + properties.length + ' properties on map';
-    
-    if (propertiesWithCoords.length < properties.length) {
+    // Update property count with user-friendly text
+    if (propertiesWithCoords.length === properties.length) {
+        // All properties are shown
+        document.getElementById('propertyCount').textContent = 'Showing All Properties on Map';
+    } else {
+        // Some properties are missing coordinates - just show the warning
         var missingCount = properties.length - propertiesWithCoords.length;
-        document.getElementById('propertyCount').innerHTML += 
-            '<br><small class="text-warning">' + missingCount + ' properties without coordinates are hidden</small>';
+        var propertyWord = missingCount === 1 ? 'property' : 'properties';
+        var verbWord = missingCount === 1 ? 'is' : 'are';
+        
+        document.getElementById('propertyCount').innerHTML = 
+            '<small class="text-warning">' + missingCount + ' ' + propertyWord + ' without coordinates ' + verbWord + ' hidden</small>';
     }
     
     // Function to center map on all markers

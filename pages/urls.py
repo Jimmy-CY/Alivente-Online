@@ -16,7 +16,6 @@ urlpatterns = [
     path('admin_unpaid/', views.admin_unpaid, name='admin_unpaid'),
     path('admin_renewals/', views.admin_renewals, name='admin_renewals'),
     path('admin_invoices/', views.admin_invoices, name='admin_invoices'),
-    path('tenant/', views.tenant_page, name='tenant'),
     path('upload_title_deed/', views.upload_title_deed, name='upload_title_deed'),
 #    path('upload_lease_agreement/', views.upload_lease_agreement, name='upload_lease_agreement'),
 #    path('lease_agreement_report/<int:tenant_id>/', views.lease_agreement_report, name='lease_agreement_report'),
@@ -91,6 +90,7 @@ urlpatterns = [
 
     #
     # Tenants
+    path('tenant/', views.tenant_page, name='tenant'),
     path('tenant_add/', views.tenant_add, name='tenant_add'),
     path('tenant_edit/<tenant_id>', views.tenant_edit, name='tenant_edit'),
     path('tenant_edit_commit/<tenant_id>', views.tenant_edit_commit, name='tenant_edit_commit'),
