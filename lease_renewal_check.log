@@ -1231,3 +1231,545 @@ Watching for file changes with StatReloader
 "GET /invoices/ HTTP/1.1" 200 112894
 "GET /fsr/ HTTP/1.1" 200 57822
 "GET /act_expense_all/?from=home HTTP/1.1" 200 37855
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 7615
+"GET /act_expense_all/?from=home HTTP/1.1" 200 37855
+"POST /mark_deleted/10 HTTP/1.1" 302 0
+"GET /act_expense_all/ HTTP/1.1" 200 36635
+"GET /act_expense_upload_inv/ HTTP/1.1" 200 19383
+"GET /act_expense_all/?from=home HTTP/1.1" 200 35931
+"GET /act_expense_upload_inv/ HTTP/1.1" 200 19383
+"GET /act_expense_all/ HTTP/1.1" 200 36025
+"GET /act_expense_upload_inv/ HTTP/1.1" 200 19383
+"GET /invoices/ HTTP/1.1" 200 112894
+"GET /act_expense_all/?from=home HTTP/1.1" 200 35931
+"GET /act_expense_upload_inv/ HTTP/1.1" 200 19383
+"GET /act_expense_all/?from=home HTTP/1.1" 200 35931
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\urls.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 7615
+Internal Server Error: /act_expense_all/
+Traceback (most recent call last):
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\contrib\auth\decorators.py", line 60, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\djangoproject\pages\views.py", line 1660, in act_expense_all
+    props = props.objects.filter(prop_status="Active").order_by('prop_country','prop_name')
+            ^^^^^
+UnboundLocalError: cannot access local variable 'props' where it is not associated with a value
+"GET /act_expense_all/?from=home HTTP/1.1" 500 72461
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 7615
+"GET /act_expense_all/?from=home HTTP/1.1" 200 45795
+"GET /media/expense_docs/pindarou-20250521-Invoice.pdf HTTP/1.1" 200 461728
+"POST /act_expense_edit_commit/6 HTTP/1.1" 302 0
+"GET /act_expense_all/ HTTP/1.1" 200 46410
+"GET / HTTP/1.1" 200 7615
+"GET /act_expense_all/?from=home HTTP/1.1" 200 46871
+"GET /media/expense_docs/pindarou-20250521-Invoice.pdf HTTP/1.1" 200 461728
+"POST /act_expense_edit_commit/6 HTTP/1.1" 302 0
+"GET /act_expense_all/ HTTP/1.1" 200 47968
+"GET / HTTP/1.1" 200 7615
+"GET /act_expense_all/?from=home HTTP/1.1" 200 47376
+"GET /act_expense_all/?from=home HTTP/1.1" 200 47376
+"GET / HTTP/1.1" 200 7615
+"GET /act_expense_all/?from=home HTTP/1.1" 200 47376
+"GET / HTTP/1.1" 200 7615
+"GET /act_expense_all/?from=home HTTP/1.1" 200 47347
+"POST /mark_approved/6 HTTP/1.1" 302 0
+"GET /act_expense_all/ HTTP/1.1" 200 47740
+"POST /mark_paid/6 HTTP/1.1" 302 0
+"GET /act_expense_all/ HTTP/1.1" 200 47516
+"GET /act_expense_add/ HTTP/1.1" 200 6516
+"POST /act_expense_commit/ HTTP/1.1" 302 0
+"GET /act_expense_all/ HTTP/1.1" 200 49376
+"POST /act_expense_manage_document/ HTTP/1.1" 302 0
+"GET /act_expense_all/ HTTP/1.1" 200 49876
+"GET /media/expense_docs/spain-eusebi-guell-20250619-Invoice.pdf HTTP/1.1" 200 461728
+"GET /media/expense_docs/spain-eusebi-guell-20250619-Invoice.pdf HTTP/1.1" 200 461728
+"POST /act_expense_manage_document/ HTTP/1.1" 302 0
+"GET /act_expense_all/ HTTP/1.1" 200 49944
+"GET /media/expense_docs/spain-eusebi-guell-20250619-Refer-a-Friend_Programs.xlsx HTTP/1.1" 200 11807
+"POST /act_expense_all/ HTTP/1.1" 200 49297
+"GET / HTTP/1.1" 200 7615
+"GET /act_expense_all/?from=home HTTP/1.1" 200 49297
+"GET / HTTP/1.1" 200 7615
+"GET /act_expense_all/?from=home HTTP/1.1" 200 49967
+"GET /media/expense_docs/spain-eusebi-guell-20250619-Refer-a-Friend_Programs.xlsx HTTP/1.1" 200 11807
+"POST /act_expense_edit_commit/20 HTTP/1.1" 302 0
+"GET /act_expense_all/ HTTP/1.1" 200 50568
+"GET /media/expense_docs/spain-eusebi-guell-20250619-Refer-a-Friend_Programs.xlsx HTTP/1.1" 200 11807
+"POST /act_expense_manage_document/ HTTP/1.1" 302 0
+"GET /act_expense_all/ HTTP/1.1" 200 50530
+"GET /media/expense_docs/eleftheroupoleos-20250619-Invoice.pdf HTTP/1.1" 200 461728
+"GET /media/expense_docs/eleftheroupoleos-20250619-Invoice.pdf HTTP/1.1" 304 0
+"POST /act_expense_manage_document/ HTTP/1.1" 302 0
+"GET /act_expense_all/ HTTP/1.1" 200 50075
+"POST /act_expense_manage_document/ HTTP/1.1" 302 0
+"GET /act_expense_all/ HTTP/1.1" 200 50530
+"POST /mark_deleted/20 HTTP/1.1" 302 0
+"GET /act_expense_all/ HTTP/1.1" 200 48163
+"GET /logout/ HTTP/1.1" 302 0
+"GET / HTTP/1.1" 200 3753
+"GET /login/ HTTP/1.1" 200 4422
+"POST /login/ HTTP/1.1" 302 0
+"GET / HTTP/1.1" 200 8458
+"GET /act_expense_all/?from=home HTTP/1.1" 200 44582
+"GET / HTTP/1.1" 200 7697
+"GET /act_expense_all/?from=home HTTP/1.1" 200 48836
+"POST /act_expense_manage_document/ HTTP/1.1" 302 0
+"GET /act_expense_all/ HTTP/1.1" 200 49913
+"GET /logout/ HTTP/1.1" 302 0
+"GET / HTTP/1.1" 200 3753
+"GET /login/ HTTP/1.1" 200 4422
+"POST /login/ HTTP/1.1" 302 0
+"GET / HTTP/1.1" 200 8376
+"GET /act_expense_all/?from=home HTTP/1.1" 200 51271
+"GET /media/expense_docs/foti-pitta-20250514-Invoice.pdf HTTP/1.1" 200 461728
+"GET / HTTP/1.1" 200 7615
+"GET /act_expense_all/?from=home HTTP/1.1" 200 52531
+"GET /act_expense_all/?from=home HTTP/1.1" 200 52531
+"GET / HTTP/1.1" 200 7615
+"GET /act_expense_all/?from=home HTTP/1.1" 200 52531
+"GET / HTTP/1.1" 200 7615
+"GET /act_expense_all/?from=home HTTP/1.1" 200 52783
+"GET / HTTP/1.1" 200 7615
+"GET /act_expense_all/?from=home HTTP/1.1" 200 51257
+"GET /media/expense_docs/foti-pitta-20250514-Invoice.pdf HTTP/1.1" 304 0
+"GET /act_expense_all/?from=home HTTP/1.1" 200 51279
+"GET / HTTP/1.1" 200 7615
+"GET /act_expense_all/?from=home HTTP/1.1" 200 51299
+"GET / HTTP/1.1" 200 7615
+"GET /act_expense_all/?from=home HTTP/1.1" 200 51341
+"GET /invoices/ HTTP/1.1" 200 112894
+"GET /act_expense_all/?from=home HTTP/1.1" 200 51341
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 7615
+"GET /act_expense_all/?from=home HTTP/1.1" 200 54839
+"GET / HTTP/1.1" 200 7615
+"GET /act_expense_all/?from=home HTTP/1.1" 200 54839
+"GET /properties/ HTTP/1.1" 200 53044
+"GET /tenant/ HTTP/1.1" 200 54314
+"GET /suppliers/ HTTP/1.1" 200 44247
+"GET /petty_cash/ HTTP/1.1" 200 6608
+"GET /invoices/ HTTP/1.1" 200 112894
+"GET /fsr/ HTTP/1.1" 200 57822
+"GET /act_expense_all/?from=home HTTP/1.1" 200 54839
+"GET / HTTP/1.1" 200 7615
+"GET /act_expense_all/?from=home HTTP/1.1" 200 59060
+"GET /invoices/ HTTP/1.1" 200 112894
+"GET /act_expense_all/?from=home HTTP/1.1" 200 59060
+"GET /invoices/ HTTP/1.1" 200 112894
+"GET /act_expense_all/?from=home HTTP/1.1" 200 59060
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 7615
+"GET /act_expense_all/?from=home HTTP/1.1" 200 59341
+"GET / HTTP/1.1" 200 7615
+"GET /act_expense_all/?from=home HTTP/1.1" 200 59280
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 33817
+"GET / HTTP/1.1" 200 7615
+"GET /act_expense_all/?from=home HTTP/1.1" 200 59385
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 33817
+"GET / HTTP/1.1" 200 7615
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 33817
+"GET /act_expense_all/?from=home HTTP/1.1" 200 59385
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 33817
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 33817
+"GET /act_expense_all/?from=home HTTP/1.1" 200 59385
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 33817
+"GET / HTTP/1.1" 200 7615
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 33817
+"GET /act_expense_all/?from=home HTTP/1.1" 200 60723
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 33817
+"GET /properties/ HTTP/1.1" 200 53044
+"GET /tenant/ HTTP/1.1" 200 54314
+"GET /suppliers/ HTTP/1.1" 200 44247
+"GET /petty_cash/ HTTP/1.1" 200 6608
+"GET /invoices/ HTTP/1.1" 200 112894
+"GET /act_expense_all/?from=home HTTP/1.1" 200 60723
+"GET /fsr/ HTTP/1.1" 200 57822
+"POST /fsr/ HTTP/1.1" 200 47985
+"GET /fsr_details/5?from=fsr HTTP/1.1" 200 11694
+"GET /fsr/?refresh=true HTTP/1.1" 200 57822
+"GET /fsr/ HTTP/1.1" 200 57822
+"GET / HTTP/1.1" 200 7615
+"GET /act_expense_all/?from=home HTTP/1.1" 200 60723
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 33817
+"GET / HTTP/1.1" 200 7615
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 33817
+"GET /act_expense_all/?from=home HTTP/1.1" 200 60723
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 33817
+"GET /media/expense_docs/foti-pitta-20250514-Invoice.pdf HTTP/1.1" 304 0
+"GET / HTTP/1.1" 200 7615
+"GET / HTTP/1.1" 200 7615
+"GET /static/css/my_style.css HTTP/1.1" 200 45
+"GET /static/images/alivente_online_logo.png HTTP/1.1" 200 58508
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 33706
+"GET /act_expense_all/?from=home HTTP/1.1" 200 62469
+"GET /act_expense_all/?search=kyrio&property=&status=&from_date=&to_date= HTTP/1.1" 200 41155
+"GET /act_expense_all/?search=&property=&status=&from_date=&to_date= HTTP/1.1" 200 62469
+"GET /act_expense_all/?search=&property=&status=&from_date=&to_date= HTTP/1.1" 200 62469
+"GET / HTTP/1.1" 200 7615
+"GET /act_expense_all/?from=home HTTP/1.1" 200 62469
+"GET / HTTP/1.1" 200 7615
+"GET /act_expense_all/?from=home HTTP/1.1" 200 63030
+"GET /act_expense_all/?search=&property=&status=&from_date=&to_date= HTTP/1.1" 200 63030
+"GET / HTTP/1.1" 200 7615
+"GET /act_expense_all/?from=home HTTP/1.1" 200 63030
+"GET /act_expense_all/?search=&property=&status=&from_date=&to_date= HTTP/1.1" 200 63030
+"GET / HTTP/1.1" 200 7615
+"GET /invoices/ HTTP/1.1" 200 112894
+"GET /act_expense_all/?from=home HTTP/1.1" 200 63003
+"GET / HTTP/1.1" 200 7615
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 7615
+"GET /act_expense_all/?from=home HTTP/1.1" 200 63003
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 33817
+"GET /act_expense_all/?search=&property=&status=&from_date=&to_date= HTTP/1.1" 200 63092
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 33817
+"GET /act_expense_all/?search=BBB&from=home HTTP/1.1" 200 42266
+"GET / HTTP/1.1" 200 7615
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 33817
+"GET /act_expense_all/?from=home HTTP/1.1" 200 63213
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 33817
+"GET /act_expense_all/?from=home&search=&property=&status=&from_date=&to_date= HTTP/1.1" 200 63213
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 33817
+"GET / HTTP/1.1" 200 7615
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 33817
+"GET /act_expense_all/?from=home HTTP/1.1" 200 63230
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 33817
+"GET /act_expense_all/?from=home&search=&property=5&status=&from_date=&to_date= HTTP/1.1" 200 44204
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 33817
+"GET /act_expense_all/?from=home&search=&property=5&status=&from_date=&to_date= HTTP/1.1" 200 44204
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 33817
+"GET / HTTP/1.1" 200 7615
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 33817
+"GET / HTTP/1.1" 200 7615
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 33817
+"GET /static/css/my_style.css HTTP/1.1" 200 45
+"GET /static/images/alivente_online_logo.png HTTP/1.1" 200 58508
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 33706
+"GET /act_expense_all/?from=home HTTP/1.1" 200 63230
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 33817
+"GET /act_expense_all/?from=home&search=&property=&status=&from_date=&to_date= HTTP/1.1" 200 63230
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 33817
+"GET / HTTP/1.1" 200 7615
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 33817
+"GET / HTTP/1.1" 200 7615
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 33817
+"GET /static/css/my_style.css HTTP/1.1" 200 45
+"GET /static/images/alivente_online_logo.png HTTP/1.1" 200 58508
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 33706
+"GET /act_expense_all/?from=home HTTP/1.1" 200 63230
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 33817
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 7615
+Internal Server Error: /act_expense_all/
+Traceback (most recent call last):
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\contrib\auth\decorators.py", line 60, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\djangoproject\pages\views.py", line 1715, in act_expense_all
+    'current_year': datetime.now().year,
+                    ^^^^^^^^
+UnboundLocalError: cannot access local variable 'datetime' where it is not associated with a value
+"GET /act_expense_all/?from=home HTTP/1.1" 500 73240
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+"GET /properties/ HTTP/1.1" 200 53044
+"GET /act_expense_all/?from=home HTTP/1.1" 200 40253
+"GET /act_expense_all/?from=home&search=&property=5&status=&from_date=&to_date= HTTP/1.1" 200 21227
+"GET /act_expense_all/?from=home&search=&property=&status=&from_date=&to_date= HTTP/1.1" 200 40253
+"GET /act_expense_all/?from=home&search=&property=&status=approved&from_date=&to_date= HTTP/1.1" 200 19603
+"GET /act_expense_all/?from=home&search=&property=&status=&from_date=&to_date= HTTP/1.1" 200 40253
+"GET /act_expense_all/?from=home&search=&property=&status=&from_date=2025-04-01&to_date= HTTP/1.1" 200 33719
+"GET /act_expense_all/?from=home&search=&property=&status=&from_date=2025-04-01&to_date=2025-04-30 HTTP/1.1" 200 20331
+"GET /act_expense_all/?from=home&search=&property=&status=&from_date=&to_date= HTTP/1.1" 200 40253
+"GET /act_expense_all/?from=home&search=test&property=&status=&from_date=&to_date= HTTP/1.1" 200 20822
+"GET /act_expense_all/?from=home&search=&property=&status=&from_date=&to_date= HTTP/1.1" 200 40253
+"GET /act_expense_all/?from=home&search=bbb&property=&status=&from_date=&to_date= HTTP/1.1" 200 19343
+"GET / HTTP/1.1" 200 7615
+"GET /act_expense_all/?from=home HTTP/1.1" 200 40253
+"GET / HTTP/1.1" 200 7615
+"GET /act_expense_all/?from=home HTTP/1.1" 200 42608
+"GET /act_expense_all/?from=home&search=bbb&property=&status=&from_date=&to_date= HTTP/1.1" 200 21698
+"GET /act_expense_all/?from=home&search=&property=&status=&from_date=&to_date= HTTP/1.1" 200 42608
+"GET /act_expense_all/?from=home&search=&property=5&status=&from_date=&to_date= HTTP/1.1" 200 23582
+"GET /act_expense_all/?from=home&search=&property=&status=&from_date=&to_date= HTTP/1.1" 200 42608
+"GET /act_expense_all/?from=home&search=&property=&status=&from_date=2025-04-01&to_date= HTTP/1.1" 200 36074
+"GET /act_expense_all/?from=home&search=&property=&status=&from_date=2025-04-01&to_date=2025-04-30 HTTP/1.1" 200 22686
+"GET /act_expense_all/?from=home&search=&property=&status=&from_date=&to_date=2025-04-30 HTTP/1.1" 200 29220
+"GET /act_expense_all/?from=home&search=&property=&status=&from_date=&to_date= HTTP/1.1" 200 42608
+"GET /act_expense_all/?from=home&search=&property=5&status=&from_date=&to_date= HTTP/1.1" 200 23582
+"GET /act_expense_all/?from=home&search=&property=&status=&from_date=&to_date= HTTP/1.1" 200 42608
+"GET /properties/ HTTP/1.1" 200 53044
+"GET /tenant/ HTTP/1.1" 200 54314
+"GET /suppliers/ HTTP/1.1" 200 44247
+"GET /petty_cash/ HTTP/1.1" 200 6608
+"GET /invoices/ HTTP/1.1" 200 112894
+"GET /act_expense_all/?from=home HTTP/1.1" 200 42608
+"GET /properties/ HTTP/1.1" 200 53044
+"GET /act_expense_all/?from=home HTTP/1.1" 200 42608
+"GET / HTTP/1.1" 200 7615
+"GET /act_expense_all/?from=home HTTP/1.1" 200 43703
+"GET /act_expense_all/?from=home&search=test&property=&status=&from_date=&to_date= HTTP/1.1" 200 24272
+"GET /act_expense_all/?from=home&search=test&property=5&status=&from_date=&to_date= HTTP/1.1" 200 22850
+"GET /act_expense_all/?from=home&search=&property=5&status=&from_date=&to_date= HTTP/1.1" 200 24677
+"GET /act_expense_all/?from=home&search=&property=&status=&from_date=&to_date= HTTP/1.1" 200 43703
+"GET /act_expense_all/?from=home&search=&property=&status=&from_date=2025-03-03&to_date= HTTP/1.1" 200 37169
+"GET /act_expense_all/?from=home&search=&property=&status=&from_date=&to_date= HTTP/1.1" 200 43703
+"GET /act_expense_all/?from=home&search=&property=&status=&from_date=&to_date=2025-02-26 HTTP/1.1" 200 27513
+"GET /act_expense_all/?from=home&search=&property=&status=&from_date=&to_date= HTTP/1.1" 200 43703
+"GET /properties/ HTTP/1.1" 200 53044
+"GET / HTTP/1.1" 200 7615
+"GET /act_expense_all/?from=home HTTP/1.1" 200 43754
+"GET / HTTP/1.1" 200 7615
+"GET /act_expense_all/?from=home HTTP/1.1" 200 43754
+"GET / HTTP/1.1" 200 7615
+"GET /act_expense_all/?from=home HTTP/1.1" 200 43754
+"GET / HTTP/1.1" 200 7615
+"GET /act_expense_all/?from=home HTTP/1.1" 200 43983
+"GET / HTTP/1.1" 200 7615
+"GET / HTTP/1.1" 200 7615
+"GET /static/css/my_style.css HTTP/1.1" 200 45
+"GET /static/images/alivente_online_logo.png HTTP/1.1" 200 58508
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 33706
+"GET /act_expense_all/?from=home HTTP/1.1" 200 43983
+"GET /act_expense_all/?from=home&search=&property=5&status=&from_date=&to_date= HTTP/1.1" 200 24957
+"GET /act_expense_all/?from=home&search=&property=&status=&from_date=&to_date= HTTP/1.1" 200 43983
+"GET / HTTP/1.1" 200 7615
+"GET /properties/ HTTP/1.1" 200 53044
+"GET /properties/ HTTP/1.1" 200 53044
+"GET /static/css/my_style.css HTTP/1.1" 200 45
+"GET /static/images/alivente_online_logo.png HTTP/1.1" 200 58508
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 33706
+"GET /tenant/ HTTP/1.1" 200 54314
+"GET /act_expense_all/?from=home HTTP/1.1" 200 44710
+"GET /act_expense_all/?from=home&search=bbb&property=&status=&from_date=&to_date= HTTP/1.1" 200 23800
+"GET /act_expense_all/?from=home&search=&property=&status=&from_date=&to_date= HTTP/1.1" 200 44710
+"GET /act_expense_all/?from=home&search=bbb&property=&status=&from_date=&to_date= HTTP/1.1" 200 23800
+"GET /act_expense_all/?from=home&search=&property=&status=&from_date=&to_date= HTTP/1.1" 200 44710
+"GET /act_expense_all/?from=home&search=&property=&status=&from_date=&to_date= HTTP/1.1" 200 45262
+"GET /static/css/my_style.css HTTP/1.1" 200 45
+"GET /static/images/alivente_online_logo.png HTTP/1.1" 200 58508
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 33706
+"GET / HTTP/1.1" 200 7615
+"GET /act_expense_all/?from=home HTTP/1.1" 200 45262
+"GET /act_expense_all/?from=home&search=&property=5&status=&from_date=&to_date= HTTP/1.1" 200 26236
+"GET /act_expense_all/?from=home&search=bbb&property=5&status=&from_date=&to_date= HTTP/1.1" 200 24360
+"GET /act_expense_all/?from=home&search=&property=&status=&from_date=&to_date= HTTP/1.1" 200 45262
+"GET /act_expense_all/?from=home&search=&property=&status=&from_date=&to_date= HTTP/1.1" 200 45262
+"GET /act_expense_all/?from=home&search=bbb&property=&status=&from_date=&to_date= HTTP/1.1" 200 24352
+"GET /act_expense_all/?from=home&search=bbb&property=&status=&from_date=&to_date= HTTP/1.1" 200 24129
+"GET /static/css/my_style.css HTTP/1.1" 200 45
+"GET /static/images/alivente_online_logo.png HTTP/1.1" 200 58508
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 33706
+"GET / HTTP/1.1" 200 7615
+"GET /act_expense_all/?from=home HTTP/1.1" 200 45039
+"GET /act_expense_all/?from=home&search=bbb&property=&status=&from_date=&to_date= HTTP/1.1" 200 24129
+"GET /act_expense_all/?from=home&search=&property=&status=&from_date=&to_date= HTTP/1.1" 200 45039
+"GET /act_expense_all/?from=home&search=&property=5&status=&from_date=&to_date= HTTP/1.1" 200 26013
+"GET /act_expense_all/?from=home&search=&property=&status=&from_date=&to_date= HTTP/1.1" 200 45039
+"GET /act_expense_all/?from=home&search=&property=5&status=&from_date=&to_date= HTTP/1.1" 200 26013
+"GET /act_expense_all/?from=home&search=&property=&status=&from_date=&to_date= HTTP/1.1" 200 45039
+"GET / HTTP/1.1" 200 7615
+"GET /act_expense_all/?from=home HTTP/1.1" 200 45508
+"GET /act_expense_all/?from=home&search=bbb&property=&status=&from_date=&to_date= HTTP/1.1" 200 24598
+"GET /act_expense_all/?from=home&search=&property=&status=&from_date=&to_date= HTTP/1.1" 200 45508
+"GET /act_expense_all/?from=home&search=&property=5&status=&from_date=&to_date= HTTP/1.1" 200 26482
+"GET / HTTP/1.1" 200 7615
+"GET / HTTP/1.1" 200 7615
+"GET /static/css/my_style.css HTTP/1.1" 200 45
+"GET /static/images/alivente_online_logo.png HTTP/1.1" 200 58508
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 33706
+"GET /act_expense_all/?from=home HTTP/1.1" 200 44481
+"GET /act_expense_all/?from=home&search=bbb&property=&status=&from_date=&to_date= HTTP/1.1" 200 23571
+"GET /act_expense_all/?from=home&search=&property=&status=&from_date=&to_date= HTTP/1.1" 200 44481
+"GET /act_expense_all/?from=home&search=&property=5&status=&from_date=&to_date= HTTP/1.1" 200 25455
+"GET /act_expense_all/?from=home&search=&property=&status=&from_date=&to_date= HTTP/1.1" 200 44481
+"GET /act_expense_all/?from=home&search=&property=11&status=&from_date=&to_date= HTTP/1.1" 200 23604
+"GET /act_expense_all/?from=home&search=&property=&status=&from_date=&to_date= HTTP/1.1" 200 44481
+"GET /act_expense_all/?from=home&search=&property=&status=&from_date=&to_date= HTTP/1.1" 200 44481
+"GET / HTTP/1.1" 200 7615
+"GET /act_expense_all/?from=home HTTP/1.1" 200 44481
+"GET /act_expense_all/?from=home&search=&property=2&status=&from_date=&to_date= HTTP/1.1" 200 25239
+"GET / HTTP/1.1" 200 7615
+"GET / HTTP/1.1" 200 7615
+"GET /static/css/my_style.css HTTP/1.1" 200 45
+"GET /static/images/alivente_online_logo.png HTTP/1.1" 200 58508
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 33706
+"GET /act_expense_all/?from=home HTTP/1.1" 200 44978
+"GET /act_expense_all/?from=home&search=bb&property=&status=&from_date=&to_date= HTTP/1.1" 200 24067
+"GET /act_expense_all/?from=home&search=&property=&status=&from_date=&to_date= HTTP/1.1" 200 44978
+"GET / HTTP/1.1" 200 7615
+"GET / HTTP/1.1" 200 7615
+"GET /static/css/my_style.css HTTP/1.1" 200 45
+"GET /static/images/alivente_online_logo.png HTTP/1.1" 200 58508
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 33706
+"GET /act_expense_all/?from=home HTTP/1.1" 200 46297
+"GET / HTTP/1.1" 200 7615
+"GET / HTTP/1.1" 200 7615
+"GET /static/css/my_style.css HTTP/1.1" 200 45
+"GET /static/images/alivente_online_logo.png HTTP/1.1" 200 58508
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 33706
+"GET /act_expense_all/?from=home HTTP/1.1" 200 46647
+"GET / HTTP/1.1" 200 7615
+"GET / HTTP/1.1" 200 7615
+"GET /static/css/my_style.css HTTP/1.1" 200 45
+"GET /static/images/alivente_online_logo.png HTTP/1.1" 200 58508
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 33706
+"GET /act_expense_all/?from=home HTTP/1.1" 200 43795
+"GET /act_expense_all/?from=home&search=bbb&property=&status=&from_date=&to_date= HTTP/1.1" 200 22885
+"GET /act_expense_all/?from=home&search=&property=&status=&from_date=&to_date= HTTP/1.1" 200 43795
+"GET /act_expense_all/?from=home&search=&property=2&status=&from_date=&to_date= HTTP/1.1" 200 24553
+"GET /act_expense_all/?from=home&search=&property=&status=&from_date=&to_date= HTTP/1.1" 200 43795
+"GET / HTTP/1.1" 200 7615
+"GET / HTTP/1.1" 200 7615
+"GET /static/css/my_style.css HTTP/1.1" 200 45
+"GET /static/images/alivente_online_logo.png HTTP/1.1" 200 58508
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 33706
+"GET /act_expense_all/?from=home HTTP/1.1" 200 44572
+"GET /act_expense_all/?from=home&search=bbb&property=&status=&from_date=&to_date= HTTP/1.1" 200 23662
+"GET /act_expense_all/?from=home&search=&property=&status=&from_date=&to_date= HTTP/1.1" 200 44572
+"GET /act_expense_all/?from=home&search=&property=2&status=&from_date=&to_date= HTTP/1.1" 200 25330
+"GET /act_expense_all/?from=home&search=&property=&status=&from_date=&to_date= HTTP/1.1" 200 44572
+"GET /act_expense_all/?from=home&search=bbb&property=&status=&from_date=&to_date= HTTP/1.1" 200 23662
+"GET /act_expense_all/?from=home&search=&property=&status=&from_date=&to_date= HTTP/1.1" 200 44572
+"GET /act_expense_all/?from=home&search=&property=&status=&from_date=&to_date= HTTP/1.1" 200 45171
+"GET /static/css/my_style.css HTTP/1.1" 200 45
+"GET /static/images/alivente_online_logo.png HTTP/1.1" 200 58508
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 33706
+"GET /act_expense_all/?from=home&search=bbb&property=&status=&from_date=&to_date= HTTP/1.1" 200 24261
+"GET /act_expense_all/?from=home&search=&property=&status=&from_date=&to_date= HTTP/1.1" 200 45171
+"GET /act_expense_all/?from=home&search=&property=2&status=&from_date=&to_date= HTTP/1.1" 200 25929
+"GET /act_expense_all/?from=home&search=&property=&status=&from_date=&to_date= HTTP/1.1" 200 45171
+"GET /act_expense_all/?from=home&search=&property=&status=&from_date=2025-04-01&to_date= HTTP/1.1" 200 38637
+"GET /act_expense_all/?from=home&search=&property=&status=&from_date=2025-04-01&to_date=2025-04-30 HTTP/1.1" 200 25249
+"GET /act_expense_all/?from=home&search=&property=&status=&from_date=2025-04-01&to_date= HTTP/1.1" 200 38637
+"GET /act_expense_all/?from=home&search=&property=&status=&from_date=&to_date= HTTP/1.1" 200 45171
+"GET /invoices/ HTTP/1.1" 200 112894
+"GET /act_expense_all/?from=home HTTP/1.1" 200 45171
+"GET /act_expense_all/?from=home&search=&property=&status=approved&from_date=&to_date= HTTP/1.1" 200 24521
+"GET /act_expense_all/?from=home&search=&property=&status=&from_date=&to_date= HTTP/1.1" 200 45171
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 7615
+"GET / HTTP/1.1" 200 7615
+"GET /static/css/my_style.css HTTP/1.1" 200 45
+"GET /static/images/alivente_online_logo.png HTTP/1.1" 200 58508
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 33706
+"GET /act_expense_all/?from=home HTTP/1.1" 200 45237
+"GET /act_expense_all/?from=home&search=&property=&status=require_approval&from_date=&to_date= HTTP/1.1" 200 30004
+"GET /act_expense_all/?from=home&search=&property=&status=approved_not_paid&from_date=&to_date= HTTP/1.1" 200 24587
+"GET /act_expense_all/?from=home&search=&property=&status=approved_and_paid&from_date=&to_date= HTTP/1.1" 200 35656
+"GET /act_expense_all/?from=home&search=&property=&status=approved_not_paid&from_date=&to_date= HTTP/1.1" 200 24587
+"GET /act_expense_all/?from=home&search=&property=&status=require_approval&from_date=&to_date= HTTP/1.1" 200 30004
+"GET /act_expense_all/?from=home&search=&property=&status=&from_date=&to_date= HTTP/1.1" 200 45237
+"GET / HTTP/1.1" 200 7615
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+"GET /act_expense_all/?from=home HTTP/1.1" 200 45237
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+"GET /act_expense_all/?from=home HTTP/1.1" 200 45237
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 7615
+"GET /act_expense_all/?from=home HTTP/1.1" 200 45237
+"GET /act_expense_all/?from=home&search=&property=2&status=&from_date=&to_date= HTTP/1.1" 200 25995
+"GET /act_expense_all/?from=home&search=&property=&status=&from_date=&to_date= HTTP/1.1" 200 45237
+"GET /properties/ HTTP/1.1" 200 53044
+"GET /act_expense_all/?from=home HTTP/1.1" 200 45237
+"GET / HTTP/1.1" 200 7615
+"GET / HTTP/1.1" 200 7615
+"GET /static/css/my_style.css HTTP/1.1" 200 45
+"GET /static/images/alivente_online_logo.png HTTP/1.1" 200 58508
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 33706
+"GET /act_expense_all/?from=home HTTP/1.1" 200 66522
+"GET /act_expense_all/?from=home&search=bbb&property=&status=&from_date=&to_date= HTTP/1.1" 200 45612
+"GET /act_expense_all/?from=home&search=&property=&status=&from_date=&to_date= HTTP/1.1" 200 66522
+"GET /act_expense_all/?from=home&search=&property=2&status=&from_date=&to_date= HTTP/1.1" 200 47280
+"GET /act_expense_all/?from=home&search=&property=&status=&from_date=&to_date= HTTP/1.1" 200 66522
+"GET /act_expense_all/?from=home&search=&property=&status=require_approval&from_date=&to_date= HTTP/1.1" 200 51289
+"GET /act_expense_all/?from=home&search=&property=&status=approved_not_paid&from_date=&to_date= HTTP/1.1" 200 45872
+"GET /act_expense_all/?from=home&search=&property=&status=approved_and_paid&from_date=&to_date= HTTP/1.1" 200 56941
+"GET /act_expense_all/?from=home&search=&property=&status=&from_date=&to_date= HTTP/1.1" 200 66522
+"GET /act_expense_all/?from=home&search=&property=&status=require_approval&from_date=&to_date= HTTP/1.1" 200 51289
+"GET /act_expense_all/?from=home&search=&property=&status=&from_date=&to_date= HTTP/1.1" 200 66522
+"GET /act_expense_all/?from=home&search=&property=&status=&from_date=&to_date= HTTP/1.1" 200 66977
+"GET /static/css/my_style.css HTTP/1.1" 200 45
+"GET /static/images/alivente_online_logo.png HTTP/1.1" 200 58508
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 33706
+"GET /act_expense_all/?from=home&search=bbb&property=&status=&from_date=&to_date= HTTP/1.1" 200 46067
+"GET /act_expense_all/?from=home&search=&property=&status=&from_date=&to_date= HTTP/1.1" 200 66977
+"GET /act_expense_all/?from=home&search=&property=2&status=&from_date=&to_date= HTTP/1.1" 200 47735
+"GET /act_expense_all/?from=home&search=&property=&status=&from_date=&to_date= HTTP/1.1" 200 66977
+"GET /act_expense_all/?from=home&search=&property=&status=require_approval&from_date=&to_date= HTTP/1.1" 200 51744
+"GET /act_expense_all/?from=home&search=&property=&status=&from_date=&to_date= HTTP/1.1" 200 66977
+"GET /act_expense_all/?from=home&search=&property=&status=&from_date=2025-06-01&to_date= HTTP/1.1" 200 44243
+"GET /act_expense_all/?from=home&search=&property=&status=&from_date=&to_date= HTTP/1.1" 200 66977

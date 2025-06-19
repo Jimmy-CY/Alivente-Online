@@ -1561,40 +1561,130 @@ def properties_edit_commit(request, prop_id):
 
 ### ACTUAL EXPENSES ###
 @login_required
-def act_expense_all(request):
-    # Get year/month from request or use current year as default
-    selected_year = request.GET.get('year', datetime.now().year)
-    selected_month = request.GET.get('month')
+def act_expense_manage_document(request):
+    """
+    Handle document upload, replacement, and deletion within the main expense page
+    """
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        expense_id = request.POST.get('expense_id')
+        
+        if not expense_id:
+            messages.error(request, 'No expense selected')
+            return redirect('act_expense_all')
+        
+        try:
+            expense = get_object_or_404(act_expense, pk=expense_id)
+            
+            if action == 'delete_document':
+                # Handle document deletion only (not the entire expense)
+                if expense.act_expense_document:
+                    # Delete the physical file
+                    if expense.act_expense_document.storage.exists(expense.act_expense_document.name):
+                        expense.act_expense_document.delete(save=False)
+                    
+                    # Clear the database field
+                    expense.act_expense_document = None
+                    expense.save()
+                    
+                    messages.success(request, f'Invoice document deleted successfully for expense on {expense.act_expense_date}!')
+                else:
+                    messages.warning(request, 'No document found to delete.')
+                    
+            elif action == 'upload':
+                # Handle file upload/replacement
+                if 'act_expense_document' in request.FILES:
+                    uploaded_file = request.FILES['act_expense_document']
+                    
+                    # Validate file size (5MB limit)
+                    if uploaded_file.size > 5 * 1024 * 1024:
+                        messages.error(request, 'File size exceeds 5MB limit')
+                        return redirect('act_expense_all')
+                    
+                    # Validate file type
+                    allowed_extensions = ['.pdf', '.jpg', '.jpeg', '.png', '.xlsx', '.xls', '.doc', '.docx']
+                    file_extension = os.path.splitext(uploaded_file.name)[1].lower()
+                    
+                    if file_extension not in allowed_extensions:
+                        messages.error(request, 'Invalid file type. Please upload PDF, JPG, PNG, Excel, or Word files only.')
+                        return redirect('act_expense_all')
+                    
+                    # Delete existing file if present
+                    if expense.act_expense_document:
+                        if expense.act_expense_document.storage.exists(expense.act_expense_document.name):
+                            expense.act_expense_document.delete(save=False)
+                    
+                    expense.act_expense_document = uploaded_file
+                    expense.save()
+                    messages.success(request, f'Invoice document uploaded successfully for expense on {expense.act_expense_date}!')
+                else:
+                    messages.error(request, 'Please select a file to upload')
+                    
+        except Exception as e:
+            messages.error(request, f'Error processing request: {str(e)}')
     
-    # Base queryset - only approved and paid expenses, ordered by date
+    return redirect('act_expense_all')
+
+from datetime import datetime
+
+@login_required
+def act_expense_all(request):
+    # Get filter parameters from request
+    search_query = request.GET.get('search', '').strip()
+    property_filter = request.GET.get('property', '').strip()
+    status_filter = request.GET.get('status', '').strip()
+    from_date = request.GET.get('from_date', '').strip()
+    to_date = request.GET.get('to_date', '').strip()
+
+    # Base queryset - all expenses, ordered by date (most recent first)
     expenses = act_expense.objects.select_related('prop').order_by('-act_expense_date')
     
-    # Handle YEAR/MONTH filtering (convert to int safely)
-    try:
-        year = int(request.GET.get('year', 0)) if request.GET.get('year') else None
-        month = int(request.GET.get('month', 0)) if request.GET.get('month') else None
-    except (ValueError, TypeError):
-        year, month = None, None  # Fallback if invalid input
+    # Apply filters one by one
     
-    if year:
-        expenses = expenses.filter(act_expense_date__year=year)
-        if month:
-            expenses = expenses.filter(act_expense_date__month=month)
-    
-    # Handle DATE RANGE filtering
-    from_date = request.GET.get('from_date')
-    to_date = request.GET.get('to_date')
-    
-    if from_date and to_date:
+    # 1. Search filter - search in description
+    if search_query:
         expenses = expenses.filter(
-            act_expense_date__gte=from_date,
-            act_expense_date__lte=to_date
+            act_expense_description__icontains=search_query
         )
     
-#    # Get available years for filter dropdown
-#    available_years = act_expense.objects.dates('act_expense_date', 'year').order_by('-act_expense_date')
+    # 2. Property filter
+    if property_filter:
+        try:
+            property_id = int(property_filter)
+            expenses = expenses.filter(prop_id=property_id)
+        except (ValueError, TypeError):
+            pass
     
-    # Determine where the user came from
+    # 3. Status filter
+    if status_filter:
+        if status_filter == 'require_approval':
+            expenses = expenses.filter(act_expense_approved='No', act_expense_paid='No')
+        elif status_filter == 'approved_not_paid':
+            expenses = expenses.filter(act_expense_approved='Yes', act_expense_paid='No')
+        elif status_filter == 'approved_and_paid':
+            expenses = expenses.filter(act_expense_approved='Yes', act_expense_paid='Yes')
+    
+    # 4. Date range filtering
+    if from_date:
+        try:
+            # Ensure proper date format
+            parsed_from_date = datetime.strptime(from_date, '%Y-%m-%d').date()
+            expenses = expenses.filter(act_expense_date__gte=parsed_from_date)
+        except ValueError:
+            pass
+    
+    if to_date:
+        try:
+            # Ensure proper date format
+            parsed_to_date = datetime.strptime(to_date, '%Y-%m-%d').date()
+            expenses = expenses.filter(act_expense_date__lte=parsed_to_date)
+        except ValueError:
+            pass
+    
+    # Get properties for filter dropdown
+    properties = props.objects.filter(prop_status="Active").order_by('prop_country', 'prop_name')
+    
+    # Determine navigation context
     came_from = request.GET.get('from', None)
     from_finance_pl_act = request.GET.get('from_finance_pl_act', False)
     
@@ -1604,15 +1694,17 @@ def act_expense_all(request):
 
     return render(request, 'act_expense.html', {
         'expenses': expenses,
-        'selected_year': year if year else int(selected_year),
-        'selected_month': month,
+        'props': properties,
         'current_year': datetime.now().year,
         'from_finance_pl_act': from_finance_pl_act,
         'came_from': came_from,
-#        'available_years': [y.year for y in available_years],
-#        'from_finance_pl_act': request.GET.get('from_finance_pl_act', False)
+        # Pass filter values back to template to maintain state
+        'search_query': search_query,
+        'selected_property': property_filter,
+        'selected_status': status_filter,
+        'selected_from_date': from_date,
+        'selected_to_date': to_date,
     })
-
 
 @login_required
 def act_expense_upload_inv(request):

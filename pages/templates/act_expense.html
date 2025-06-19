@@ -7,103 +7,332 @@
 
 {% block content %}
 
+<style>
+/* Expense Filter Panel Styles */
+.filter-panel {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border: 1px solid #dee2e6;
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 30px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.filter-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #dee2e6;
+    cursor: pointer;
+}
+
+.filter-title {
+    margin: 0;
+    color: #2c3e50;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 18px;
+}
+
+.filter-title i.fas {
+    color: #17a2b8;
+    font-size: 16px;
+}
+
+.filter-toggle-icon {
+    transition: transform 0.3s ease;
+    margin-left: 8px;
+    font-size: 14px;
+}
+
+.filter-content {
+    display: none;
+}
+
+.filter-content.expanded {
+    display: block;
+}
+
+.filter-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 20px;
+    align-items: end;
+    margin-bottom: 20px;
+}
+
+.date-filter-grid {
+    display: grid;
+    grid-template-columns: 150px 150px;
+    gap: 20px;
+    align-items: end;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.filter-label {
+    font-weight: 500;
+    color: #495057;
+    margin-bottom: 6px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.search-input-group {
+    display: flex;
+}
+
+.search-input {
+    border: 2px solid #e9ecef;
+    border-radius: 8px 0 0 8px;
+    border-right: none;
+    padding: 10px 14px;
+    font-size: 14px;
+    background: white;
+    flex: 1;
+    height: 44px;
+}
+
+.search-btn {
+    background: #17a2b8;
+    border: 2px solid #17a2b8;
+    border-left: none;
+    border-radius: 0 8px 8px 0;
+    color: white;
+    padding: 10px 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 44px;
+}
+
+.filter-select,
+.filter-input {
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 14px;
+    background: white;
+    width: 100%;
+    height: 44px;
+}
+
+.filter-select {
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 12px center;
+    background-repeat: no-repeat;
+    background-size: 16px 12px;
+    padding-right: 40px;
+}
+
+.active-filters {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid #dee2e6;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.filter-tags {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.filter-tag {
+    background: #17a2b8;
+    color: white;
+    padding: 4px 12px;
+    border-radius: 16px;
+    font-size: 12px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.remove-tag {
+    background: rgba(255, 255, 255, 0.3);
+    border: none;
+    color: white;
+    border-radius: 50%;
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 10px;
+    line-height: 1;
+}
+
+.remove-tag:hover {
+    background: rgba(255, 255, 255, 0.5);
+}
+</style>
+
 <h2><center>ALIVENTE ONLINE - ACTUAL EXPENSES</center></h2>
 <br/>
 
-  {% for msg in messages %}
+<!-- Messages -->
+{% for msg in messages %}
     <div class="alert alert-secondary alert-dismissible fade show auto-dismiss" role="alert">
-      <strong></strong> <center>{{ msg }}</center>
-      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-        <span aria-hidden="true">&times;</span>
-      </button>
+        <strong></strong> <center>{{ msg }}</center>
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
     </div>
-    <script>
-      setTimeout(function() {
-        document.querySelectorAll('.auto-dismiss').forEach(alert => {
-          alert.classList.remove('show');
-          alert.classList.add('fade');
-          setTimeout(() => alert.remove(), 500);
-        });
-      }, 2000);
-    </script>
-  {% endfor %}
-  
-    <div style="display: flex ; justify-content: flex-end">
-        {% if not from_finance_pl_act %}
-            <a href="{% url 'act_expense_upload_inv' %}" class="btn btn-info" style="margin-right:16px" type="button">Invoices</a> 
-            <button type="button" class="btn btn-info" style="margin-right:16px" data-toggle="modal" data-target="#dateRangeModal">
-                Select Date Range
-            </button>
-            <a href="{% url 'act_expense_add' %}" class="btn btn-info" style="margin-right:16px" type="button">Add New</a>
-        {% endif %}
-        
-        {% if from_finance_pl_act %}
-            <a href="{% url 'finance_pl_act' %}?year={{ request.GET.year|default:selected_year }}&prop={{ request.GET.prop|default:'all' }}" 
-               class="btn btn-info" style="margin-right:16px" role="button">Back</a>
-        {% elif came_from == 'finance' %}
-            <a href="{% url 'finance' %}" class="btn btn-info" style="margin-right:16px" role="button">Back</a>
-        {% elif came_from == 'home' %}
-            <a href="{% url 'home' %}" class="btn btn-info" style="margin-right:16px" role="button">Back</a>
-        {% else %}
-            <!-- Default fallback - could be home or finance depending on your preference -->
-            <a href="{% url 'home' %}" class="btn btn-info" style="margin-right:16px" role="button">Back</a>
-        {% endif %}
-    </div>
+{% endfor %}
 
-    <!-- Display selected date range if available -->
-    {% if request.GET.from_date and request.GET.to_date %}
-    <div style="margin: 10px 0;">
-        <strong>Date Range:</strong> {{ request.GET.from_date }} to {{ request.GET.to_date }}
-    </div>
-    {% endif %}
-
-    <!-- Date Range Modal -->
+<!-- Action Buttons -->
+<div style="display: flex; justify-content: flex-end; margin-bottom: 20px;">
     {% if not from_finance_pl_act %}
-    <div class="modal fade" id="dateRangeModal" tabindex="-1" role="dialog" aria-labelledby="dateRangeModalLabel" aria-hidden="true">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="dateRangeModalLabel">Select Date Range</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <form method="GET" action="{% url 'act_expense_all' %}">
-                    <div class="modal-body">
-                        <div class="form-group">
-                            <label for="from_date">From Date</label>
-                            <input type="date" class="form-control" id="from_date" name="from_date" value="{{ request.GET.from_date }}" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="to_date">To Date</label>
-                            <input type="date" class="form-control" id="to_date" name="to_date" value="{{ request.GET.to_date }}" required>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                        <button type="submit" class="btn btn-info" style="margin-right:16px">Filter</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
+        <a href="{% url 'act_expense_add' %}" class="btn btn-info" style="margin-right:16px" type="button">Add New</a>
     {% endif %}
+    
+    {% if from_finance_pl_act %}
+        <a href="{% url 'finance_pl_act' %}?year={{ request.GET.year|default:selected_year }}&prop={{ request.GET.prop|default:'all' }}" 
+           class="btn btn-info" style="margin-right:16px" role="button">Back</a>
+    {% elif came_from == 'finance' %}
+        <a href="{% url 'finance' %}" class="btn btn-info" style="margin-right:16px" role="button">Back</a>
+    {% elif came_from == 'home' %}
+        <a href="{% url 'home' %}" class="btn btn-info" style="margin-right:16px" role="button">Back</a>
+    {% else %}
+        <a href="{% url 'home' %}" class="btn btn-info" style="margin-right:16px" role="button">Back</a>
+    {% endif %}
+</div>
+
+<!-- Filter Panel -->
+<div class="filter-panel" id="filterPanel">
+    <div class="filter-header" onclick="toggleFilterPanel()">
+        <h5 class="filter-title">
+            <i class="fas fa-filter"></i> Expense Filters
+            <i class="fas fa-chevron-down filter-toggle-icon" id="filterToggleIcon"></i>
+        </h5>
+        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="clearAllFilters(event)">
+            <i class="fas fa-times-circle"></i> Clear All
+        </button>
+    </div>
+    
+    <div class="filter-content" id="filterContent">
+        <form action="{% url 'act_expense_all' %}" method="GET" id="filterForm">
+            <!-- Preserve parameters -->
+            {% if request.GET.from %}
+                <input type="hidden" name="from" value="{{ request.GET.from }}">
+            {% endif %}
+            {% if request.GET.from_finance_pl_act %}
+                <input type="hidden" name="from_finance_pl_act" value="{{ request.GET.from_finance_pl_act }}">
+            {% endif %}
+            
+            <div class="filter-grid">
+                <!-- Search Bar -->
+                <div class="filter-group">
+                    <label class="filter-label">
+                        <i class="fas fa-search"></i> Search Expense
+                    </label>
+                    <div class="search-input-group">
+                        <input type="text" 
+                               name="search" 
+                               id="searchInput"
+                               class="form-control search-input" 
+                               placeholder="Search by description..."
+                               value="{{ search_query|default:'' }}">
+                        <button type="button" class="search-btn" id="searchBtn">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Property Filter -->
+                <div class="filter-group">
+                    <label class="filter-label">
+                        <i class="fas fa-building"></i> Property
+                    </label>
+                    <select name="property" class="form-control filter-select" id="propertySelect">
+                        <option value="">All Properties</option>
+                        {% for prop in props %}
+                            <option value="{{ prop.prop_id }}" {% if selected_property == prop.prop_id|stringformat:"s" %}selected{% endif %}>{{ prop.prop_name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Status Filter -->
+                <div class="filter-group">
+                    <label class="filter-label">
+                        <i class="fas fa-check-circle"></i> Status
+                    </label>
+                    <select name="status" class="form-control filter-select" id="statusSelect">
+                        <option value="">All Statuses</option>
+                        <option value="require_approval" {% if selected_status == 'require_approval' %}selected{% endif %}>Require Approval</option>
+                        <option value="approved_not_paid" {% if selected_status == 'approved_not_paid' %}selected{% endif %}>Approved and Not Paid</option>
+                        <option value="approved_and_paid" {% if selected_status == 'approved_and_paid' %}selected{% endif %}>Approved and Paid</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Date Range Filters -->
+            <div class="date-filter-grid">
+                <div class="filter-group">
+                    <label class="filter-label">
+                        <i class="fas fa-calendar-alt"></i> From Date
+                    </label>
+                    <input type="date" 
+                           name="from_date" 
+                           id="fromDateInput"
+                           class="form-control filter-input" 
+                           value="{{ selected_from_date|default:'' }}">
+                </div>
+                
+                <div class="filter-group">
+                    <label class="filter-label">
+                        <i class="fas fa-calendar-alt"></i> To Date
+                    </label>
+                    <input type="date" 
+                           name="to_date" 
+                           id="toDateInput"
+                           class="form-control filter-input" 
+                           value="{{ selected_to_date|default:'' }}">
+                </div>
+            </div>
+
+            <!-- Active Filters Display -->
+            <div class="active-filters" id="activeFilters" style="display: none;">
+                <span>Active filters:</span>
+                <div class="filter-tags" id="filterTags"></div>
+            </div>
+        </form>
+    </div>
+</div>
 
 <br/>
 
+<!-- Expenses Table -->
 <div>
 <table class="table table-bordered table-striped text-center">
 <thead>
     <tr>
         <th style="text-align: center; width: {% if from_finance_pl_act %}15%{% else %}10%{% endif %}">Date</th>
-        <th style="text-align: center; width: {% if from_finance_pl_act %}20%{% else %}12%{% endif %}">Property</th>
-        <th style="text-align: left; width: {% if from_finance_pl_act %}45%{% else %}30%{% endif %}">Description</th>
-        <th style="width: {% if from_finance_pl_act %}20%{% else %}8%{% endif %}">Amount</th>
+        <th style="text-align: center; width: {% if from_finance_pl_act %}20%{% else %}15%{% endif %}">Property</th>
+        <th style="text-align: left; width: {% if from_finance_pl_act %}45%{% else %}35%{% endif %}">Description</th>
+        <th style="width: {% if from_finance_pl_act %}20%{% else %}10%{% endif %}">Amount</th>
         {% if not from_finance_pl_act %}
-            <th style="width: 8%">Details</th>
-            <th style="width: 8%">Approved?</th>
-            <th style="width: 8%">Paid?</th>
-            <th style="width: 8%">Delete?</th>
+            <th style="width: 10%">Manage</th>
+            <th style="width: 10%">Approved?</th>
+            <th style="width: 10%">Paid?</th>
         {% endif %}
     </tr>
 </thead>
@@ -111,26 +340,23 @@
     {% for expense in expenses %}
     <tr>
         <td>{{ expense.act_expense_date|date:"Y-m-d" }}</td>
-        <td style="text-align: left">{{ expense.prop.prop_name }}</td>
+        <td style="text-align: left">
+            {{ expense.prop.prop_name }}
+            {% if expense.act_expense_document %}
+                <i class="fas fa-file-alt" 
+                   style="cursor: pointer; color: #28a745; margin-left: 8px;" 
+                   onclick="viewInvoiceQuick('{{ expense.act_expense_document.url }}', '{{ expense.act_expense_document.name }}')"
+                   title="Click to view invoice"></i>
+            {% endif %}
+        </td>
         <td style="text-align: left">{{ expense.act_expense_description }}</td>
         <td>{{ expense.act_expense_amount|floatformat:2|intcomma }}</td>
         {% if not from_finance_pl_act %}
             <td>
-                {% if expense.act_expense_approved == 'Yes' or expense.act_expense_paid == 'Yes' %}
-                    {% if user.is_superuser %}
-                        <button type="button" class="btn btn-light" style="border-color:black; width: 100%">
-                            <a href="{% url 'act_expense_edit' expense.act_expense_id %}" style="color: #007bff; text-decoration: none;">Edit</a>
-                        </button>
-                    {% else %}
-                        <button type="button" class="btn btn-light" style="border-color:black; width: 100%; opacity: 0.5; cursor: not-allowed; pointer-events: none;" disabled>
-                            <span style="color: #6c757d;">Edit</span>
-                        </button>
-                    {% endif %}
-                {% else %}
-                    <button type="button" class="btn btn-light" style="border-color:black; width: 100%">
-                        <a href="{% url 'act_expense_edit' expense.act_expense_id %}" style="color: #007bff; text-decoration: none;">Edit</a>
-                    </button>
-                {% endif %}
+                <button type="button" class="btn btn-light" style="border-color:black; width: 100%;"
+                        onclick="openManageModal({{ expense.act_expense_id }}, '{{ expense.act_expense_date|date:"Y-m-d" }}', '{{ expense.prop.prop_name }}', '{{ expense.act_expense_description }}', '{{ expense.act_expense_amount }}', '{{ expense.act_expense_approved }}', '{{ expense.act_expense_paid }}', {% if expense.act_expense_document %}'{{ expense.act_expense_document.url }}', '{{ expense.act_expense_document.name }}'{% else %}null, null{% endif %}, {{ user.is_superuser|yesno:"true,false" }})">
+                    <span style="color: #007bff;">Manage</span>
+                </button>
             </td>
             <td>
                 {% if user.is_superuser %}
@@ -176,25 +402,721 @@
                     </button>
                 {% endif %}
             </td>
-            <td>
-                {% if user.is_superuser %}
-                    <form method="post" action="{% url 'mark_deleted' expense.act_expense_id %}" style="display:inline; width: 100%;">
-                        {% csrf_token %}
-                        <button type="submit" class="btn btn-light" style="border-color:black; width: 100%;">
-                            <span style="color: #007bff;">Delete</span>
-                        </button>
-                    </form>
-                {% else %}
-                    <button type="button" class="btn btn-light" style="border-color:black; width: 100%; opacity: 0.5; cursor: not-allowed; pointer-events: none;" disabled>
-                        <span style="color: #6c757d;">Delete</span>
-                    </button>
-                {% endif %}
-            </td>
         {% endif %}
     </tr>
     {% endfor %}
 </tbody>
 </table>    
 </div>
+
+<!-- Main Management Modal with 3 Tabs -->
+<div class="modal fade" id="manageModal" tabindex="-1" role="dialog" aria-labelledby="manageModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="manageModalLabel">Manage Expense</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="closeManageModal()">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <!-- Tab Navigation -->
+        <ul class="nav nav-tabs" id="manageTabs" role="tablist">
+          <li class="nav-item">
+            <a class="nav-link active" id="expense-tab" data-toggle="tab" href="#expense" role="tab">Expense Details</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" id="invoice-tab" data-toggle="tab" href="#invoice" role="tab">Invoice Document</a>
+          </li>
+          <li class="nav-item" id="delete-tab-nav">
+            <a class="nav-link" id="delete-tab" data-toggle="tab" href="#delete" role="tab">Delete Expense</a>
+          </li>
+        </ul>
+
+        <!-- Tab Content -->
+        <div class="tab-content" id="manageTabContent">
+          <!-- Expense Details Tab -->
+          <div class="tab-pane fade show active" id="expense" role="tabpanel">
+            <br>
+            <div id="expenseDetailsContent">
+              <!-- Content will be populated by JavaScript based on permissions -->
+            </div>
+          </div>
+
+          <!-- Invoice Document Tab -->
+          <div class="tab-pane fade" id="invoice" role="tabpanel">
+            <br>
+            <div id="invoiceContent">
+              <!-- Content will be populated by JavaScript -->
+            </div>
+          </div>
+
+          <!-- Delete Expense Tab -->
+          <div class="tab-pane fade" id="delete" role="tabpanel">
+            <br>
+            <div class="text-center">
+              <i class="fas fa-exclamation-triangle fa-3x text-danger mb-3"></i>
+              <h5>Delete Entire Expense Record</h5>
+              <p class="text-muted">This action will permanently delete this expense and any attached invoice document.</p>
+              <p><strong>Expense Details:</strong></p>
+              <div id="deleteExpenseDetails" class="mb-4">
+                <!-- Details will be populated by JavaScript -->
+              </div>
+              <div class="form-check mb-3">
+                <input class="form-check-input" type="checkbox" id="deleteConfirmation" required>
+                <label class="form-check-label" for="deleteConfirmation">
+                  I understand this action cannot be undone
+                </label>
+              </div>
+              <form id="deleteExpenseForm" method="post">
+                {% csrf_token %}
+                <input type="hidden" id="delete_expense_id" name="expense_id">
+                <input type="hidden" name="action" value="delete_expense">
+                <button type="submit" class="btn btn-danger" id="confirmDeleteBtn" disabled>
+                  <i class="fas fa-trash"></i> Delete Expense Permanently
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Quick Invoice Viewer Modal -->
+<div class="modal fade" id="quickViewModal" tabindex="-1" role="dialog" aria-labelledby="quickViewModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="quickViewModalLabel">Invoice Document</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="closeQuickViewModal()">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div id="quickDocumentViewer">
+          <!-- Document content will be loaded here -->
+        </div>
+      </div>
+      <div class="modal-footer">
+        <a id="quickDownloadLink" href="#" target="_blank" class="btn btn-info">Download</a>
+        <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="closeQuickViewModal()">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- JavaScript -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Filter system initializing...');
+    
+    // Always start collapsed on page load
+    const filterContent = document.getElementById('filterContent');
+    const toggleIcon = document.getElementById('filterToggleIcon');
+    
+    if (filterContent && toggleIcon) {
+        filterContent.classList.remove('expanded');
+        toggleIcon.style.transform = 'rotate(0deg)'; // Points down when collapsed
+        console.log('Panel set to collapsed state');
+    }
+    
+    // Auto-submit form when filters change
+    const filterElements = ['propertySelect', 'statusSelect', 'fromDateInput', 'toDateInput'];
+    
+    filterElements.forEach(id => {
+        const element = document.getElementById(id);
+        if (element) {
+            element.addEventListener('change', function() {
+                console.log(`Filter changed: ${id} = ${this.value}`);
+                // Always remember interaction, even if selecting "All" options
+                sessionStorage.setItem('userInteracted', 'true');
+                sessionStorage.setItem('justUsedDropdown', 'true');
+                expandFilterPanel();
+                document.getElementById('filterForm').submit();
+            });
+        }
+    });
+    
+    // Search input - submit on Enter key  
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                sessionStorage.setItem('userInteracted', 'true');
+                expandFilterPanel();
+                document.getElementById('filterForm').submit();
+            }
+        });
+    }
+    
+    // Search button click
+    const searchBtn = document.getElementById('searchBtn');
+    if (searchBtn) {
+        searchBtn.addEventListener('click', function() {
+            sessionStorage.setItem('userInteracted', 'true');
+            expandFilterPanel();
+            document.getElementById('filterForm').submit();
+        });
+    }
+    
+    // Update active filters display
+    updateActiveFilters();
+    
+    // Only auto-expand if there are active filters AND user has interacted before
+    // OR if user just cleared filters (should stay expanded)
+    // OR if user just used a dropdown (including "All" options)
+    const userHasInteracted = sessionStorage.getItem('userInteracted') === 'true';
+    const hasActiveFilters = checkForActiveFilters();
+    const justClearedFilters = sessionStorage.getItem('justClearedFilters') === 'true';
+    const justUsedDropdown = sessionStorage.getItem('justUsedDropdown') === 'true';
+    
+    if ((userHasInteracted && hasActiveFilters) || justClearedFilters || justUsedDropdown) {
+        setTimeout(() => {
+            expandFilterPanel();
+        }, 100);
+    }
+    
+    // Clear the temporary flags after a short delay
+    if (justClearedFilters) {
+        setTimeout(() => {
+            sessionStorage.removeItem('justClearedFilters');
+        }, 200);
+    }
+    
+    if (justUsedDropdown) {
+        setTimeout(() => {
+            sessionStorage.removeItem('justUsedDropdown');
+        }, 200);
+    }
+    
+    console.log('Filter system ready');
+});
+
+function checkForActiveFilters() {
+    const searchInput = document.getElementById('searchInput');
+    const propertySelect = document.getElementById('propertySelect');
+    const statusSelect = document.getElementById('statusSelect');
+    const fromDateInput = document.getElementById('fromDateInput');
+    const toDateInput = document.getElementById('toDateInput');
+    
+    return (searchInput && searchInput.value) ||
+           (propertySelect && propertySelect.value) ||
+           (statusSelect && statusSelect.value) ||
+           (fromDateInput && fromDateInput.value) ||
+           (toDateInput && toDateInput.value);
+}
+
+function expandFilterPanel() {
+    const filterContent = document.getElementById('filterContent');
+    const toggleIcon = document.getElementById('filterToggleIcon');
+    
+    if (filterContent && toggleIcon) {
+        filterContent.classList.add('expanded');
+        toggleIcon.style.transform = 'rotate(180deg)';
+        console.log('Panel expanded due to user interaction');
+    } else {
+        console.error('Could not find filter elements to expand');
+    }
+}
+
+function toggleFilterPanel() {
+    const filterContent = document.getElementById('filterContent');
+    const toggleIcon = document.getElementById('filterToggleIcon');
+    
+    if (filterContent.classList.contains('expanded')) {
+        filterContent.classList.remove('expanded');
+        toggleIcon.style.transform = 'rotate(0deg)';
+        sessionStorage.setItem('userInteracted', 'false');
+    } else {
+        filterContent.classList.add('expanded');
+        toggleIcon.style.transform = 'rotate(180deg)';
+        sessionStorage.setItem('userInteracted', 'true');
+    }
+}
+
+function clearAllFilters(event) {
+    event.stopPropagation();
+    
+    // Set a flag that we just cleared filters and should keep panel expanded
+    sessionStorage.setItem('userInteracted', 'true');
+    sessionStorage.setItem('justClearedFilters', 'true');
+    expandFilterPanel();
+    
+    document.getElementById('searchInput').value = '';
+    document.getElementById('propertySelect').value = '';
+    document.getElementById('statusSelect').value = '';
+    document.getElementById('fromDateInput').value = '';
+    document.getElementById('toDateInput').value = '';
+    
+    document.getElementById('filterForm').submit();
+}
+
+function clearFilter(filterType) {
+    // Set a flag that we just cleared a filter and should keep panel expanded
+    sessionStorage.setItem('userInteracted', 'true');
+    sessionStorage.setItem('justClearedFilters', 'true');
+    expandFilterPanel();
+    
+    switch(filterType) {
+        case 'search':
+            document.getElementById('searchInput').value = '';
+            break;
+        case 'property':
+            document.getElementById('propertySelect').value = '';
+            break;
+        case 'status':
+            document.getElementById('statusSelect').value = '';
+            break;
+        case 'from_date':
+            document.getElementById('fromDateInput').value = '';
+            break;
+        case 'to_date':
+            document.getElementById('toDateInput').value = '';
+            break;
+    }
+    
+    document.getElementById('filterForm').submit();
+}
+
+function updateActiveFilters() {
+    const searchInput = document.getElementById('searchInput');
+    const propertySelect = document.getElementById('propertySelect');
+    const statusSelect = document.getElementById('statusSelect');
+    const fromDateInput = document.getElementById('fromDateInput');
+    const toDateInput = document.getElementById('toDateInput');
+    const activeFiltersDiv = document.getElementById('activeFilters');
+    const filterTagsDiv = document.getElementById('filterTags');
+    
+    if (!filterTagsDiv) return;
+    
+    const search = searchInput.value;
+    const property = propertySelect.value;
+    const status = statusSelect.value;
+    const fromDate = fromDateInput.value;
+    const toDate = toDateInput.value;
+    
+    filterTagsDiv.innerHTML = '';
+    let hasFilters = false;
+    
+    if (search) {
+        filterTagsDiv.innerHTML += `
+            <span class="filter-tag">
+                Search: "${search}" 
+                <button class="remove-tag" onclick="clearFilter('search')" type="button">×</button>
+            </span>`;
+        hasFilters = true;
+    }
+    
+    if (property) {
+        const propertyText = propertySelect.options[propertySelect.selectedIndex].text;
+        filterTagsDiv.innerHTML += `
+            <span class="filter-tag">
+                Property: ${propertyText} 
+                <button class="remove-tag" onclick="clearFilter('property')" type="button">×</button>
+            </span>`;
+        hasFilters = true;
+    }
+    
+    if (status) {
+        const statusText = statusSelect.options[statusSelect.selectedIndex].text;
+        filterTagsDiv.innerHTML += `
+            <span class="filter-tag">
+                Status: ${statusText} 
+                <button class="remove-tag" onclick="clearFilter('status')" type="button">×</button>
+            </span>`;
+        hasFilters = true;
+    }
+    
+    if (fromDate) {
+        filterTagsDiv.innerHTML += `
+            <span class="filter-tag">
+                From: ${fromDate} 
+                <button class="remove-tag" onclick="clearFilter('from_date')" type="button">×</button>
+            </span>`;
+        hasFilters = true;
+    }
+    
+    if (toDate) {
+        filterTagsDiv.innerHTML += `
+            <span class="filter-tag">
+                To: ${toDate} 
+                <button class="remove-tag" onclick="clearFilter('to_date')" type="button">×</button>
+            </span>`;
+        hasFilters = true;
+    }
+    
+    activeFiltersDiv.style.display = hasFilters ? 'flex' : 'none';
+}
+
+// Auto-dismiss alerts
+setTimeout(function() {
+    document.querySelectorAll('.auto-dismiss').forEach(alert => {
+        alert.classList.remove('show');
+        alert.classList.add('fade');
+        setTimeout(() => alert.remove(), 500);
+    });
+}, 2000);
+
+// Modal JavaScript Functions
+let currentExpenseId = null;
+
+function openManageModal(expenseId, date, property, description, amount, approved, paid, documentUrl, documentName, isSuperuser) {
+    currentExpenseId = expenseId;
+    
+    // Determine if user can edit (superuser OR expense is neither approved nor paid)
+    const canEdit = isSuperuser || (approved === 'No' && paid === 'No');
+    const canDelete = isSuperuser || (approved === 'No' && paid === 'No');
+    
+    // Populate expense details form based on permissions
+    populateExpenseDetailsTab(expenseId, date, property, description, amount, approved, paid, canEdit, isSuperuser);
+    
+    // Populate invoice tab
+    populateInvoiceTab(documentUrl, documentName, expenseId);
+    
+    // Show/hide delete tab based on permissions
+    const deleteTabNav = document.getElementById('delete-tab-nav');
+    if (canDelete) {
+        deleteTabNav.style.display = 'block';
+        // Populate delete tab
+        document.getElementById('deleteExpenseDetails').innerHTML = `
+            <p><strong>Date:</strong> ${date}</p>
+            <p><strong>Property:</strong> ${property}</p>
+            <p><strong>Description:</strong> ${description}</p>
+            <p><strong>Amount:</strong> €${amount}</p>
+        `;
+        document.getElementById('delete_expense_id').value = expenseId;
+    } else {
+        deleteTabNav.style.display = 'none';
+        // If delete tab was active, switch to expense tab
+        if (document.getElementById('delete-tab').classList.contains('active')) {
+            document.getElementById('expense-tab').click();
+        }
+    }
+    
+    // Reset delete confirmation
+    document.getElementById('deleteConfirmation').checked = false;
+    document.getElementById('confirmDeleteBtn').disabled = true;
+    
+    // Show modal
+    $('#manageModal').modal('show');
+}
+
+function populateExpenseDetailsTab(expenseId, date, property, description, amount, approved, paid, canEdit, isSuperuser) {
+    const expenseDetailsContent = document.getElementById('expenseDetailsContent');
+    
+    if (canEdit) {
+        // Show editable form
+        expenseDetailsContent.innerHTML = `
+            <form id="expenseEditForm" method="post">
+              <input type="hidden" id="edit_expense_id" name="expense_id" value="${expenseId}">
+              <input type="hidden" name="action" value="edit">
+              
+              <div class="form-row">
+                <div class="form-group col-md-3">
+                  <label for="edit_expense_date"><strong>Expense Date</strong></label>
+                  <input type="date" id="edit_expense_date" class="form-control" name="act_expense_date" value="${date}" required>
+                </div>
+                <div class="form-group col-md-4">
+                  <label for="edit_prop"><strong>Property Name</strong></label>
+                  <select id="edit_prop" class="form-control" name="prop" required>
+                    {% for prop in props %}
+                      <option value="{{ prop.prop_id }}">{{ prop.prop_name }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+                <div class="form-group col-md-5">
+                  <label for="edit_expense_description"><strong>Expense Description</strong></label>
+                  <input type="text" class="form-control" id="edit_expense_description" name="act_expense_description" maxlength="55" value="${description}" required>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group col-md-3">
+                  <label for="edit_expense_amount"><strong>Amount</strong></label>
+                  <input type="number" class="form-control" id="edit_expense_amount" name="act_expense_amount" step="0.01" value="${amount}" required>
+                </div>
+                ${isSuperuser ? `
+                <div class="form-group col-md-3">
+                  <label for="edit_expense_approved"><strong>Approved ?</strong></label>
+                  <select id="edit_expense_approved" class="form-control" name="act_expense_approved" required>
+                    <option value="Yes" ${approved === 'Yes' ? 'selected' : ''}>Yes</option>
+                    <option value="No" ${approved === 'No' ? 'selected' : ''}>No</option>
+                  </select>
+                </div>
+                <div class="form-group col-md-3">
+                  <label for="edit_expense_paid"><strong>Paid ?</strong></label>
+                  <select id="edit_expense_paid" class="form-control" name="act_expense_paid" required>
+                    <option value="Yes" ${paid === 'Yes' ? 'selected' : ''}>Yes</option>
+                    <option value="No" ${paid === 'No' ? 'selected' : ''}>No</option>
+                  </select>
+                </div>` : ''}
+              </div>
+              <div class="text-right">
+                <button type="submit" class="btn btn-success">Save Changes</button>
+              </div>
+            </form>
+        `;
+        
+        // Set the correct property option
+        const propSelect = document.getElementById('edit_prop');
+        if (propSelect) {
+            for (let option of propSelect.options) {
+                if (option.text === property) {
+                    option.selected = true;
+                    break;
+                }
+            }
+        }
+    } else {
+        // Show read-only view
+        expenseDetailsContent.innerHTML = `
+            <div class="alert alert-warning">
+                <i class="fas fa-lock"></i> <strong>Read Only:</strong> This expense has been approved or paid and cannot be modified.
+            </div>
+            <div class="form-row">
+                <div class="form-group col-md-3">
+                  <label><strong>Expense Date</strong></label>
+                  <div class="form-control-plaintext">${date}</div>
+                </div>
+                <div class="form-group col-md-4">
+                  <label><strong>Property Name</strong></label>
+                  <div class="form-control-plaintext">${property}</div>
+                </div>
+                <div class="form-group col-md-5">
+                  <label><strong>Expense Description</strong></label>
+                  <div class="form-control-plaintext">${description}</div>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group col-md-3">
+                  <label><strong>Amount</strong></label>
+                  <div class="form-control-plaintext">€${amount}</div>
+                </div>
+                <div class="form-group col-md-3">
+                  <label><strong>Approved</strong></label>
+                  <div class="form-control-plaintext">
+                    <span class="badge badge-${approved === 'Yes' ? 'success' : 'warning'}">${approved}</span>
+                  </div>
+                </div>
+                <div class="form-group col-md-3">
+                  <label><strong>Paid</strong></label>
+                  <div class="form-control-plaintext">
+                    <span class="badge badge-${paid === 'Yes' ? 'success' : 'warning'}">${paid}</span>
+                  </div>
+                </div>
+              </div>
+        `;
+    }
+}
+
+function populateInvoiceTab(documentUrl, documentName, expenseId) {
+    const invoiceContent = document.getElementById('invoiceContent');
+    
+    if (documentUrl && documentName) {
+        // Document exists
+        const extension = documentName.split('.').pop().toLowerCase();
+        let previewHtml = '';
+        
+        if (extension === 'pdf') {
+            previewHtml = `
+                <iframe src="${documentUrl}#toolbar=0&navpanes=0&scrollbar=0" width="100%" height="400px" style="border: none;"></iframe>
+                <p class="text-center mt-2">
+                    <small>If the PDF doesn't display, <a href="${documentUrl}" target="_blank">click here to open it in a new tab</a></small>
+                </p>
+            `;
+        } else if (['jpg', 'jpeg', 'png'].includes(extension)) {
+            previewHtml = `<img src="${documentUrl}" alt="Invoice" class="img-fluid" style="max-width: 100%; height: auto;">`;
+        } else {
+            previewHtml = `
+                <div class="text-center">
+                    <i class="fas fa-file-alt fa-3x text-muted mb-3"></i>
+                    <p>File: <strong>${documentName}</strong></p>
+                    <p>This file type cannot be previewed in the browser.</p>
+                </div>
+            `;
+        }
+        
+        invoiceContent.innerHTML = `
+            <h6>Current Invoice Document:</h6>
+            ${previewHtml}
+            <div class="mt-3">
+                <a href="${documentUrl}" download="${documentName}" class="btn btn-info btn-sm">
+                    <i class="fas fa-download"></i> Download
+                </a>
+                <button type="button" class="btn btn-warning btn-sm" onclick="showReplaceUpload(${expenseId})">
+                    <i class="fas fa-sync"></i> Replace
+                </button>
+                <button type="button" class="btn btn-danger btn-sm" onclick="deleteInvoiceDocument(${expenseId})">
+                    <i class="fas fa-trash"></i> Delete Document
+                </button>
+            </div>
+            <div id="replaceUploadForm" style="display: none;" class="mt-3">
+                <form method="post" enctype="multipart/form-data" id="replaceDocumentForm">
+                    {% csrf_token %}
+                    <input type="hidden" name="expense_id" value="${expenseId}">
+                    <input type="hidden" name="action" value="upload">
+                    <div class="form-group">
+                        <label>Select New Document:</label>
+                        <input type="file" class="form-control-file" name="act_expense_document" accept=".pdf,.jpg,.jpeg,.png,.xlsx,.xls,.doc,.docx" required>
+                        <small class="form-text text-muted">Max file size: 5MB</small>
+                    </div>
+                    <button type="submit" class="btn btn-success btn-sm">Upload</button>
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="hideReplaceUpload()">Cancel</button>
+                </form>
+            </div>
+        `;
+    } else {
+        // No document exists
+        invoiceContent.innerHTML = `
+            <h6>No Invoice Document Attached</h6>
+            <p class="text-muted">Upload an invoice document for this expense.</p>
+            <form method="post" enctype="multipart/form-data" id="uploadDocumentForm">
+                {% csrf_token %}
+                <input type="hidden" name="expense_id" value="${expenseId}">
+                <input type="hidden" name="action" value="upload">
+                <div class="form-group">
+                    <label>Select Document (PDF, JPG, PNG, Excel, Word):</label>
+                    <input type="file" class="form-control-file" name="act_expense_document" accept=".pdf,.jpg,.jpeg,.png,.xlsx,.xls,.doc,.docx" required>
+                    <small class="form-text text-muted">Max file size: 5MB</small>
+                </div>
+                <button type="submit" class="btn btn-info">
+                    <i class="fas fa-upload"></i> Upload Document
+                </button>
+            </form>
+        `;
+    }
+}
+
+function showReplaceUpload(expenseId) {
+    document.getElementById('replaceUploadForm').style.display = 'block';
+}
+
+function hideReplaceUpload() {
+    document.getElementById('replaceUploadForm').style.display = 'none';
+}
+
+function deleteInvoiceDocument(expenseId) {
+    if (confirm('Are you sure you want to delete this invoice document?')) {
+        // Create a form and submit it
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '{% url "act_expense_manage_document" %}';
+        
+        // Add CSRF token
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = 'csrfmiddlewaretoken';
+        csrfInput.value = csrfToken;
+        form.appendChild(csrfInput);
+        
+        // Add expense ID
+        const expenseInput = document.createElement('input');
+        expenseInput.type = 'hidden';
+        expenseInput.name = 'expense_id';
+        expenseInput.value = expenseId;
+        form.appendChild(expenseInput);
+        
+        // Add action
+        const actionInput = document.createElement('input');
+        actionInput.type = 'hidden';
+        actionInput.name = 'action';
+        actionInput.value = 'delete_document';
+        form.appendChild(actionInput);
+        
+        // Submit the form
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+
+function viewInvoiceQuick(documentUrl, documentName) {
+    const quickViewer = document.getElementById('quickDocumentViewer');
+    const quickDownload = document.getElementById('quickDownloadLink');
+    
+    quickDownload.href = documentUrl;
+    quickDownload.download = documentName;
+    
+    const extension = documentName.split('.').pop().toLowerCase();
+    
+    if (extension === 'pdf') {
+        quickViewer.innerHTML = `
+            <iframe src="${documentUrl}#toolbar=0&navpanes=0&scrollbar=0" width="100%" height="500px" style="border: none;"></iframe>
+            <p class="text-center mt-2">
+                <small>If the PDF doesn't display, <a href="${documentUrl}" target="_blank">click here to open it in a new tab</a></small>
+            </p>
+        `;
+    } else if (['jpg', 'jpeg', 'png'].includes(extension)) {
+        quickViewer.innerHTML = `<img src="${documentUrl}" alt="Invoice" class="img-fluid" style="max-width: 100%; height: auto;">`;
+    } else {
+        quickViewer.innerHTML = `
+            <div class="text-center">
+                <i class="fas fa-file-alt fa-5x text-muted mb-3"></i>
+                <p>File: <strong>${documentName}</strong></p>
+                <p>This file type cannot be previewed in the browser.</p>
+                <p>Click the Download button below to view the file.</p>
+            </div>
+        `;
+    }
+    
+    $('#quickViewModal').modal('show');
+}
+
+// Modal closing functions
+function closeManageModal() {
+    $('#manageModal').modal('hide');
+    document.getElementById('deleteConfirmation').checked = false;
+    document.getElementById('confirmDeleteBtn').disabled = true;
+}
+
+function closeQuickViewModal() {
+    $('#quickViewModal').modal('hide');
+    document.getElementById('quickDocumentViewer').innerHTML = '';
+}
+
+// Enable/disable delete button based on confirmation checkbox
+document.addEventListener('change', function(e) {
+    if (e.target.id === 'deleteConfirmation') {
+        document.getElementById('confirmDeleteBtn').disabled = !e.target.checked;
+    }
+});
+
+// Handle form submissions
+$(document).on('submit', '#expenseEditForm', function(e) {
+    e.preventDefault();
+    this.action = `{% url 'act_expense_edit_commit' 0 %}`.replace('0', currentExpenseId);
+    this.submit();
+});
+
+$(document).on('submit', '#deleteExpenseForm', function(e) {
+    e.preventDefault();
+    this.action = `{% url 'mark_deleted' 0 %}`.replace('0', currentExpenseId);
+    this.submit();
+});
+
+// Handle document upload forms
+$(document).on('submit', '#uploadDocumentForm, #replaceDocumentForm', function(e) {
+    e.preventDefault();
+    this.action = '{% url "act_expense_manage_document" %}';
+    this.submit();
+});
+
+// Modal cleanup
+$('#manageModal').on('hidden.bs.modal', function () {
+    $('#expenseEditForm')[0].reset();
+    document.getElementById('deleteConfirmation').checked = false;
+    document.getElementById('confirmDeleteBtn').disabled = true;
+    hideReplaceUpload();
+});
+
+$('#quickViewModal').on('hidden.bs.modal', function () {
+    document.getElementById('quickDocumentViewer').innerHTML = '';
+});
+</script>
 
 {% endblock %}
