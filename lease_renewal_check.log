@@ -1773,3 +1773,42 @@ Not Found: /favicon.ico
 "GET /act_expense_all/?from=home&search=&property=&status=&from_date=&to_date= HTTP/1.1" 200 66977
 "GET /act_expense_all/?from=home&search=&property=&status=&from_date=2025-06-01&to_date= HTTP/1.1" 200 44243
 "GET /act_expense_all/?from=home&search=&property=&status=&from_date=&to_date= HTTP/1.1" 200 66977
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 7615
+"GET / HTTP/1.1" 200 7615
+"GET /static/css/my_style.css HTTP/1.1" 200 45
+"GET /static/images/alivente_online_logo.png HTTP/1.1" 200 58508
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 33706
+"GET /act_expense_all/?from=home HTTP/1.1" 200 67408
+"GET /act_expense_all/?from=home&search=&property=&status=require_approval&from_date=&to_date= HTTP/1.1" 200 52175
+"GET /act_expense_all/?from=home&search=&property=&status=approved_not_paid&from_date=&to_date= HTTP/1.1" 200 47628
+"GET /act_expense_all/?from=home&search=&property=&status=approved_and_paid&from_date=&to_date= HTTP/1.1" 200 58697
+"GET /act_expense_all/?from=home&search=&property=&status=&from_date=&to_date= HTTP/1.1" 200 67408
+Forbidden (CSRF token missing.): /act_expense_edit_commit/6
+"POST /act_expense_edit_commit/6 HTTP/1.1" 403 2491
+Forbidden (CSRF token missing.): /act_expense_edit_commit/6
+"POST /act_expense_edit_commit/6 HTTP/1.1" 403 2491
+"GET / HTTP/1.1" 200 7615
+"GET / HTTP/1.1" 200 7615
+"GET /static/css/my_style.css HTTP/1.1" 200 45
+"GET /static/images/alivente_online_logo.png HTTP/1.1" 200 58508
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 33706
+"GET /act_expense_all/?from=home HTTP/1.1" 200 67636
+"POST /act_expense_edit_commit/6 HTTP/1.1" 302 0
+"GET /act_expense_all/ HTTP/1.1" 200 68141
+"GET /act_expense_all/ HTTP/1.1" 200 67784
+"GET /static/css/my_style.css HTTP/1.1" 200 45
+"GET /static/images/alivente_online_logo.png HTTP/1.1" 200 58508
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 33706
+"POST /act_expense_edit_commit/6 HTTP/1.1" 302 0
+"GET /act_expense_all/ HTTP/1.1" 200 68102
+"POST /act_expense_edit_commit/6 HTTP/1.1" 302 0
+"GET /act_expense_all/ HTTP/1.1" 200 68116
+"POST /mark_approved/6 HTTP/1.1" 302 0
+"GET /act_expense_all/ HTTP/1.1" 200 68122
+"POST /mark_paid/6 HTTP/1.1" 302 0
+"GET /act_expense_all/ HTTP/1.1" 200 67896
+"GET / HTTP/1.1" 200 7615
