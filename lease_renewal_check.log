@@ -1812,3 +1812,23 @@ Not Found: /favicon.ico
 "POST /mark_paid/6 HTTP/1.1" 302 0
 "GET /act_expense_all/ HTTP/1.1" 200 67896
 "GET / HTTP/1.1" 200 7615
+Watching for file changes with StatReloader
+"GET /act_expense_all/?from=home HTTP/1.1" 200 67616
+"GET /act_expense_all/?from=home&search=&property=&status=require_approval&from_date=&to_date= HTTP/1.1" 200 52383
+"GET /act_expense_all/?from=home&search=&property=&status=&from_date=&to_date= HTTP/1.1" 200 67616
+"GET /act_expense_all/?from=home&search=&property=&status=approved_not_paid&from_date=&to_date= HTTP/1.1" 200 47856
+"GET /act_expense_all/?from=home&search=&property=&status=approved_and_paid&from_date=&to_date= HTTP/1.1" 200 58925
+"GET /act_expense_all/?from=home&search=&property=&status=require_approval&from_date=&to_date= HTTP/1.1" 200 52383
+"GET /act_expense_all/?from=home&search=&property=&status=&from_date=&to_date= HTTP/1.1" 200 67616
+"POST /act_expense_edit_commit/11 HTTP/1.1" 302 0
+"GET /act_expense_all/ HTTP/1.1" 200 68117
+"GET /act_expense_all/?search=&property=&status=require_approval&from_date=&to_date= HTTP/1.1" 200 52307
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+"POST /act_expense_edit_commit/12 HTTP/1.1" 302 0
+"GET /act_expense_all/ HTTP/1.1" 200 68750
+"POST /act_expense_edit_commit/11 HTTP/1.1" 302 0
+"GET /act_expense_all/ HTTP/1.1" 200 68505
+"POST /act_expense_edit_commit/11 HTTP/1.1" 302 0
+"GET /act_expense_all/ HTTP/1.1" 200 68748
+"GET /act_expense_all/?search=&property=&status=require_approval&from_date=&to_date= HTTP/1.1" 200 53191

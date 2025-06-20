@@ -1850,15 +1850,39 @@ def act_expense_edit(request, expense_id):
         "current_expense": current_expense,
     })
 
+# In your act_expense_edit_commit view, add this logic:
+
 @login_required
 def act_expense_edit_commit(request, expense_id):
-    a_exp = act_expense.objects.get(pk=expense_id)
-    if request.method == "POST":
-        form = ActExpenseForm(request.POST or None, instance=a_exp)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "Expense Edited Successfully")
-#    expenses = act_expense.objects.select_related('prop').order_by('-act_expense_date')
+    if request.method == 'POST':
+        try:
+            expense = act_expense.objects.get(act_expense_id=expense_id)
+            
+            # Update expense fields
+            expense.act_expense_date = request.POST.get('act_expense_date')
+            expense.prop_id = request.POST.get('prop')
+            expense.act_expense_description = request.POST.get('act_expense_description')
+            expense.act_expense_amount = request.POST.get('act_expense_amount')
+            
+            if request.user.is_superuser:
+                expense.act_expense_approved = request.POST.get('act_expense_approved')
+                
+                # Handle the paid field - check for hidden field if main field is missing
+                paid_value = request.POST.get('act_expense_paid')
+                if not paid_value:  # If main field is empty (disabled)
+                    paid_value = request.POST.get('act_expense_paid_hidden')
+                
+                expense.act_expense_paid = paid_value
+            
+            expense.save()
+            
+            messages.success(request, 'Expense updated successfully!')
+            
+        except act_expense.DoesNotExist:
+            messages.error(request, 'Expense not found.')
+        except Exception as e:
+            messages.error(request, f'Error updating expense: {str(e)}')
+    
     return redirect('act_expense_all')
 
 @login_required

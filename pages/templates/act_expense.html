@@ -886,6 +886,13 @@ function populateExpenseDetailsTab(expenseId, date, property, description, amoun
         const paidSelect = document.getElementById('edit_expense_paid');
         
         if (approvedSelect && paidSelect) {
+            // Create a hidden field to ensure paid value is always submitted
+            const hiddenPaidInput = document.createElement('input');
+            hiddenPaidInput.type = 'hidden';
+            hiddenPaidInput.name = 'act_expense_paid_hidden';
+            hiddenPaidInput.id = 'edit_expense_paid_hidden';
+            paidSelect.parentNode.appendChild(hiddenPaidInput);
+            
             // Function to update paid field based on approved status
             function updatePaidFieldStatus() {
                 const isApproved = approvedSelect.value === 'Yes';
@@ -896,19 +903,28 @@ function populateExpenseDetailsTab(expenseId, date, property, description, amoun
                     paidSelect.disabled = true;
                     paidSelect.style.opacity = '0.5';
                     paidSelect.style.cursor = 'not-allowed';
+                    // Update hidden field to ensure "No" is submitted
+                    hiddenPaidInput.value = 'No';
                 } else {
                     // If approved, enable paid field
                     paidSelect.disabled = false;
                     paidSelect.style.opacity = '1';
                     paidSelect.style.cursor = 'pointer';
+                    // Update hidden field with current value
+                    hiddenPaidInput.value = paidSelect.value;
                 }
             }
             
             // Set initial state
             updatePaidFieldStatus();
             
-            // Add event listener for changes
+            // Add event listener for changes to approved field
             approvedSelect.addEventListener('change', updatePaidFieldStatus);
+            
+            // Add event listener for changes to paid field (when enabled)
+            paidSelect.addEventListener('change', function() {
+                hiddenPaidInput.value = this.value;
+            });
         }
     } else {
         // Show read-only view
