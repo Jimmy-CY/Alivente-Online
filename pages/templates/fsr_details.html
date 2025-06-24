@@ -133,6 +133,76 @@ function handleBackButton() {
         targetUrl = "{% url 'fsr' %}?refresh=true";
     }
     else if (fromParam === 'fsr') {
+        // For FSR, we need to handle POST-based filters
+        // Check if we have stored filter values to restore
+        try {
+            // First try to get from current URL parameters (passed from FSR links)
+            const currentUrl = new URL(window.location.href);
+            let filterData = {
+                search: currentUrl.searchParams.get('search') || '',
+                propcountry: currentUrl.searchParams.get('propcountry') || '',
+                propname: currentUrl.searchParams.get('propname') || '',
+                issuestatus: currentUrl.searchParams.get('issuestatus') || ''
+            };
+            
+            // If no filters in URL, try sessionStorage
+            const hasUrlFilters = Object.values(filterData).some(value => value);
+            if (!hasUrlFilters) {
+                const storedFilters = sessionStorage.getItem('current_fsr_filters');
+                if (storedFilters) {
+                    filterData = JSON.parse(storedFilters);
+                }
+            }
+            
+            // Check if we have any filters to restore
+            const hasFilters = Object.values(filterData).some(value => value);
+            
+            if (hasFilters) {
+                console.log('🔄 Restoring FSR filters:', filterData);
+                
+                // Create a form and submit it with the stored filter values
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = "{% url 'fsr' %}";
+                form.style.display = 'none';
+                
+                // Add CSRF token
+                const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
+                if (csrfToken) {
+                    const csrfInput = document.createElement('input');
+                    csrfInput.type = 'hidden';
+                    csrfInput.name = 'csrfmiddlewaretoken';
+                    csrfInput.value = csrfToken.value;
+                    form.appendChild(csrfInput);
+                }
+                
+                // Add filter parameters
+                Object.keys(filterData).forEach(key => {
+                    if (filterData[key]) {
+                        const input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = key;
+                        input.value = filterData[key];
+                        form.appendChild(input);
+                    }
+                });
+                
+                // Add refresh parameter
+                const refreshInput = document.createElement('input');
+                refreshInput.type = 'hidden';
+                refreshInput.name = 'refresh';
+                refreshInput.value = 'true';
+                form.appendChild(refreshInput);
+                
+                document.body.appendChild(form);
+                form.submit();
+                return; // Exit early since we're submitting a form
+            }
+        } catch (e) {
+            console.log('Error restoring FSR filters:', e);
+        }
+        
+        // Fallback to regular navigation if no filters to restore
         targetUrl = "{% url 'fsr' %}?refresh=true";
     }
     else if (fromParam === 'status_report') {
@@ -187,16 +257,47 @@ if (urlParams.has('refresh')) {
 // This helps preserve report type information even after form submissions
 document.addEventListener('DOMContentLoaded', function() {
     try {
-        if (document.referrer && document.referrer.includes('friday_status_report')) {
+        if (document.referrer) {
             const referrerUrl = new URL(document.referrer);
-            const maxComments = referrerUrl.searchParams.get('max_comments');
-            if (maxComments) {
-                // Store this information for later use
-                sessionStorage.setItem('temp_max_comments_from_referrer', maxComments);
-                sessionStorage.setItem('temp_report_type_from_referrer', 'summarized');
-            } else {
-                sessionStorage.setItem('temp_report_type_from_referrer', 'detailed');
-                sessionStorage.removeItem('temp_max_comments_from_referrer');
+            
+            // Store Friday Status Report info
+            if (document.referrer.includes('friday_status_report')) {
+                const maxComments = referrerUrl.searchParams.get('max_comments');
+                if (maxComments) {
+                    sessionStorage.setItem('temp_max_comments_from_referrer', maxComments);
+                    sessionStorage.setItem('temp_report_type_from_referrer', 'summarized');
+                } else {
+                    sessionStorage.setItem('temp_report_type_from_referrer', 'detailed');
+                    sessionStorage.removeItem('temp_max_comments_from_referrer');
+                }
+            }
+            
+            // For FSR filters, we need to get the values from URL parameters that were passed to this page
+            // Check if this page was called with filter context
+            const currentUrl = new URL(window.location.href);
+            const fromParam = currentUrl.searchParams.get('from');
+            
+            if (fromParam === 'fsr') {
+                // Try to get filter values from URL parameters if they exist
+                const filterData = {};
+                const possibleParams = ['search', 'propcountry', 'propname', 'issuestatus'];
+                
+                // Check current URL for any filter parameters that might have been passed
+                possibleParams.forEach(param => {
+                    const value = currentUrl.searchParams.get(param);
+                    if (value) {
+                        filterData[param] = value;
+                    }
+                });
+                
+                // If no filters in current URL, try to extract from referrer if it's FSR
+                if (Object.keys(filterData).length === 0 && document.referrer.includes('/fsr')) {
+                    // Since FSR uses POST, we can't get the filter values from the referrer URL
+                    // We'll need to rely on the updated FSR page to pass this information
+                    console.log('FSR filters: Cannot extract from POST-based referrer');
+                } else if (Object.keys(filterData).length > 0) {
+                    sessionStorage.setItem('temp_fsr_filters_data', JSON.stringify(filterData));
+                }
             }
         }
     } catch (e) {

@@ -259,7 +259,7 @@
                             </td>
                             <td class="text-center">
                                 <button type="button" class="btn btn-light action-btn">
-                                    <a href="{% url 'fsr_details' isresults.issues_id %}?from=fsr" class="issue-heading-link">
+                                    <a href="{% url 'fsr_details' isresults.issues_id %}?from=fsr&search={{ request.POST.search|default:'' }}&propcountry={{ request.POST.propcountry|default:'' }}&propname={{ request.POST.propname|default:'' }}&issuestatus={{ request.POST.issuestatus|default:'' }}" class="issue-heading-link">
                                         Comments
                                     </a>
                                 </button>
@@ -896,6 +896,9 @@ document.addEventListener('DOMContentLoaded', function() {
     setupInterferenceProtection();
     updateActiveFilters();
     
+    // Store current filter values for preservation when navigating to details
+    storeCurrentFilterValues();
+    
     // Auto-submit on dropdown filter change
     ['countrySelect', 'propertySelect', 'statusSelect'].forEach(id => {
         const element = document.getElementById(id);
@@ -907,6 +910,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     console.log('🔒 LOCKING PANEL STATE BEFORE FORM SUBMISSION');
                     lockPanelState();
                 }
+                
+                // Store current filter values before submitting
+                storeCurrentFilterValues();
                 
                 document.getElementById('filterForm').submit();
             });
@@ -1357,6 +1363,34 @@ function clearFilter(filterType) {
             break;
     }
     document.getElementById('filterForm').submit();
+}
+
+function storeCurrentFilterValues() {
+    console.log('📦 Storing current filter values');
+    try {
+        const searchInput = document.getElementById('searchInput');
+        const countrySelect = document.getElementById('countrySelect');
+        const propertySelect = document.getElementById('propertySelect');
+        const statusSelect = document.getElementById('statusSelect');
+        
+        const filterData = {
+            search: searchInput ? searchInput.value : '',
+            propcountry: countrySelect ? countrySelect.value : '',
+            propname: propertySelect ? propertySelect.value : '',
+            issuestatus: statusSelect ? statusSelect.value : ''
+        };
+        
+        // Store in sessionStorage for use when returning from fsr_details
+        sessionStorage.setItem('current_fsr_filters', JSON.stringify(filterData));
+        console.log('✅ Filter values stored:', filterData);
+    } catch (e) {
+        console.log('❌ Error storing filter values:', e);
+    }
+}
+
+// Update filter values storage whenever filters change
+function updateFilterStorage() {
+    storeCurrentFilterValues();
 }
 
 // Show interference detection status
