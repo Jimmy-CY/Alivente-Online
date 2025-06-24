@@ -40,6 +40,27 @@
     </div>
 </div>
 
+<!-- Invoice Viewer Modal (Second Popup) - Fixed scrollbar issues -->
+<div class="modal fade" id="invoiceViewerModal" tabindex="-1" aria-labelledby="invoiceViewerModalLabel" aria-hidden="true" data-backdrop="static">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="invoiceViewerModalLabel">Invoice Document</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="invoiceViewerContent" style="height: 75vh; overflow: hidden; padding: 10px;">
+                <!-- Invoice content loaded here -->
+            </div>
+            <div class="modal-footer">
+                <a id="downloadInvoiceBtn" href="#" target="_blank" class="btn btn-info">Download</a>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 {% if user.is_superuser %}
 
 <div class="d-flex justify-content-end mb-2">
@@ -1022,6 +1043,44 @@
         font-size: 0.85rem;
     }
 
+    /* Invoice Icon Styles */
+    .invoice-icon {
+        color: #28a745;
+        cursor: pointer;
+        font-size: 14px;
+        margin-left: 5px;
+        transition: color 0.2s;
+    }
+    
+    .invoice-icon:hover {
+        color: #1e7e34;
+        text-decoration: none;
+    }
+
+    /* Modal Styles */
+    .modal-xl {
+        max-width: 95%;
+    }
+    
+    #invoiceViewerContent {
+        background-color: #f8f9fa;
+        border-radius: 4px;
+    }
+    
+    #invoiceViewerContent iframe {
+        width: 100%;
+        height: 100%;
+        border: none;
+        border-radius: 4px;
+    }
+    
+    #invoiceViewerContent img {
+        max-width: 100%;
+        height: auto;
+        display: block;
+        margin: 0 auto;
+    }
+
     /* Responsive Adjustments */
     @media (max-width: 1200px) {
         .table-sm td, .table-sm th {
@@ -1081,6 +1140,61 @@
             flex: 1 0 100%;
         }
     }
+
+        /* Additional CSS to fix modal scrollbar issues */
+
+    /* Ensure the first modal maintains its scroll properties */
+    #expenseDetailsModal .modal-body {
+        max-height: 75vh !important;
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* Ensure content within the modal body maintains scrolling */
+    #expenseDetailsContent {
+        max-height: 70vh;
+        overflow-y: auto;
+        overflow-x: hidden;
+    }
+
+    /* Fix for nested modal backdrop issues */
+    .modal-backdrop.show {
+        opacity: 0.5;
+    }
+
+    .modal-backdrop + .modal-backdrop {
+        opacity: 0.7; /* Slightly darker for second modal */
+    }
+
+    /* Ensure modals don't interfere with each other's z-index */
+    #expenseDetailsModal {
+        z-index: 1050;
+    }
+
+    #invoiceViewerModal {
+        z-index: 1060;
+    }
+
+    /* Alternative solution: Force scrollbar to always be visible in first modal */
+    #expenseDetailsModal .modal-body::-webkit-scrollbar {
+        width: 8px;
+        display: block !important;
+    }
+
+    #expenseDetailsModal .modal-body::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 4px;
+    }
+
+    #expenseDetailsModal .modal-body::-webkit-scrollbar-thumb {
+        background: #c1c1c1;
+        border-radius: 4px;
+    }
+
+    #expenseDetailsModal .modal-body::-webkit-scrollbar-thumb:hover {
+        background: #a8a8a8;
+    }
+    
 </style>
 
 <script>
@@ -1091,6 +1205,10 @@ function updateUrlParam(key, value) {
 }
 
 $(document).ready(function() {
+    // Store the scroll position of the first modal
+    let firstModalScrollTop = 0;
+    
+    // Handle expense details modal
     $(document).on('click', '.expense-details-link', function(e) {
         e.preventDefault();
         var url = $(this).data('url');
@@ -1125,6 +1243,9 @@ $(document).ready(function() {
                         $('#expenseDetailsContent').html(
                             $('<div class="table-responsive">').append($table)
                         );
+                        
+                        // After loading the table, set up invoice icon click handlers
+                        setupInvoiceIconHandlers();
                     } else {
                         $('#expenseDetailsContent').html(`
                             <div class="alert alert-warning">
@@ -1151,12 +1272,133 @@ $(document).ready(function() {
         });
     });
 
-    // Proper modal close handling
+    // Function to setup invoice icon handlers
+    function setupInvoiceIconHandlers() {
+        // Look for the exact pattern from your existing module: fa-file-alt with green color
+        $(document).off('click', '.fa-file-alt').on('click', '.fa-file-alt', function(e) {
+            var $icon = $(this);
+            
+            // Check if it has green color (like in your existing module)
+            var color = $icon.css('color');
+            var isGreen = color === 'rgb(40, 167, 69)' || // #28a745
+                         color === 'rgb(0, 128, 0)' ||   // green
+                         color === 'green' ||
+                         $icon.hasClass('text-success') ||
+                         $icon.attr('style') && $icon.attr('style').includes('color: #28a745');
+            
+            if (isGreen) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                // Store the current scroll position of the first modal BEFORE opening second modal
+                firstModalScrollTop = $('#expenseDetailsModal .modal-body').scrollTop();
+                
+                // Look for the onclick attribute which should contain the invoice URL
+                var onclickAttr = $icon.attr('onclick');
+                if (onclickAttr) {
+                    // Extract the URL and filename from the onclick attribute
+                    // Pattern: viewInvoiceQuick('URL', 'filename')
+                    var matches = onclickAttr.match(/viewInvoiceQuick\('([^']+)',\s*'([^']+)'\)/);
+                    if (matches && matches.length >= 2) {
+                        var documentUrl = matches[1];
+                        var documentName = matches[2] || 'invoice.pdf';
+                        
+                        // Use the same function as your existing module
+                        showInvoiceModalLikeExisting(documentUrl, documentName);
+                        return;
+                    }
+                }
+                
+                // Fallback: try to find data attributes
+                var documentUrl = $icon.data('invoice-url') || $icon.data('url');
+                var documentName = $icon.data('filename') || 'invoice.pdf';
+                
+                if (documentUrl) {
+                    showInvoiceModalLikeExisting(documentUrl, documentName);
+                } else {
+                    alert('Invoice file not found for this expense.');
+                }
+            }
+        });
+    }
+    
+    // Function to show invoice modal exactly like your existing module
+    function showInvoiceModalLikeExisting(documentUrl, documentName) {
+        const invoiceViewer = document.getElementById('invoiceViewerContent');
+        const downloadLink = document.getElementById('downloadInvoiceBtn');
+        
+        // Set up download link
+        downloadLink.href = documentUrl;
+        downloadLink.download = documentName;
+        
+        // Determine file type and display accordingly (exactly like your existing module)
+        const extension = documentName.split('.').pop().toLowerCase();
+        
+        if (extension === 'pdf') {
+            invoiceViewer.innerHTML = `
+                <iframe src="${documentUrl}#toolbar=0&navpanes=0&scrollbar=0" width="100%" height="calc(75vh - 60px)" style="border: none; display: block;"></iframe>
+                <p class="text-center mt-2">
+                    <small>If the PDF doesn't display, <a href="${documentUrl}" target="_blank">click here to open it in a new tab</a></small>
+                </p>
+            `;
+        } else if (['jpg', 'jpeg', 'png'].includes(extension)) {
+            invoiceViewer.innerHTML = `<img src="${documentUrl}" alt="Invoice" class="img-fluid" style="max-width: 100%; height: auto;">`;
+        } else {
+            invoiceViewer.innerHTML = `
+                <div class="text-center">
+                    <i class="fas fa-file-alt fa-5x text-muted mb-3"></i>
+                    <p>File: <strong>${documentName}</strong></p>
+                    <p>This file type cannot be previewed in the browser.</p>
+                    <p>Click the Download button below to view the file.</p>
+                </div>
+            `;
+        }
+        
+        // Show the modal
+        $('#invoiceViewerModal').modal('show');
+    }
+
+    // Handle when the second modal (invoice viewer) is closed
+    $('#invoiceViewerModal').on('hidden.bs.modal', function() {
+        // Restore the scroll position of the first modal
+        setTimeout(function() {
+            $('#expenseDetailsModal .modal-body').scrollTop(firstModalScrollTop);
+            
+            // Force the modal-body to maintain its overflow settings
+            $('#expenseDetailsModal .modal-body').css({
+                'overflow-y': 'auto',
+                'max-height': '75vh'
+            });
+        }, 100); // Small delay to ensure modal transition is complete
+    });
+
+    // Also handle when the second modal is shown (to ensure first modal stays in background properly)
+    $('#invoiceViewerModal').on('shown.bs.modal', function() {
+        // Ensure the first modal doesn't lose its scroll properties
+        $('#expenseDetailsModal .modal-body').css({
+            'overflow-y': 'auto',
+            'max-height': '75vh'
+        });
+    });
+
+    // Proper modal close handling for first modal
     $('#expenseDetailsModal .close, #expenseDetailsModal .btn-secondary').on('click', function() {
         $('#expenseDetailsModal').modal('hide');
     });
+    
+    // Proper modal close handling for second modal
+    $('#invoiceViewerModal .close, #invoiceViewerModal .btn-secondary').on('click', function() {
+        $('#invoiceViewerModal').modal('hide');
+    });
+    
+    // Additional fix: Ensure first modal maintains proper styling when shown
+    $('#expenseDetailsModal').on('shown.bs.modal', function() {
+        $('#expenseDetailsContent').css({
+            'overflow-y': 'auto',
+            'max-height': '75vh'
+        });
+    });
 });
-
 </script>
 
 {% endblock %}

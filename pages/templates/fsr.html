@@ -56,13 +56,86 @@
     </div>
 </div>
 
+<!-- Friday Status Report Type Modal -->
+<div class="modal fade" id="fridayReportModal" tabindex="-1" role="dialog" aria-labelledby="fridayReportModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title" id="fridayReportModalLabel">
+                    <i class="fas fa-file-alt"></i> Friday Status Report Options
+                </h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="report-option-container">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="report-option-card" id="detailedOption">
+                                <div class="option-icon">
+                                    <i class="fas fa-list-ul"></i>
+                                </div>
+                                <h5 class="option-title">Detailed Report</h5>
+                                <p class="option-description">
+                                    Shows all comments and details for every issue.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="report-option-card" id="summarizedOption">
+                                <div class="option-icon">
+                                    <i class="fas fa-compress-alt"></i>
+                                </div>
+                                <h5 class="option-title">Summarized Report</h5>
+                                <p class="option-description">
+                                    Shows a limited number of recent comments per issue.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Summarized Options Panel -->
+                    <div class="summarized-options" id="summarizedOptionsPanel" style="display: none;">
+                        <div class="form-group">
+                            <div class="form-row-horizontal">
+                                <label for="maxComments" class="form-label">
+                                    <i class="fas fa-hashtag"></i> Maximum Number of Comments per Issue
+                                </label>
+                                <select class="form-control form-control-inline" id="maxComments" name="max_comments">
+                                    <option value="1">1 Comment (Most Recent)</option>
+                                    <option value="2" selected>2 Comments</option>
+                                    <option value="3">3 Comments</option>
+                                    <option value="4">4 Comments</option>
+                                    <option value="5">5 Comments</option>
+                                    <option value="10">10 Comments</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+                <button type="button" class="btn btn-primary" id="generateReportBtn" disabled>
+                    <i class="fas fa-file-download"></i> Generate Report
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Action Buttons -->
 <div style="display: flex; justify-content: flex-end; margin-bottom: 20px;">
     <div style="display: flex; gap: 16px;">
         <button class="btn btn-info" data-toggle="modal" data-target="#dateRangeModal">
             Resolved Issues Report
         </button>
-        <a href="{% url 'friday_status_report' %}" class="btn btn-info">Friday Status Report</a>
+        <button class="btn btn-info" data-toggle="modal" data-target="#fridayReportModal">
+            Friday Status Report
+        </button>
         <a href="{% url 'fsr_add' %}" class="btn btn-info">Add New</a>
         <a href="{% url 'home' %}" class="btn btn-info">Back</a>
     </div>
@@ -561,6 +634,176 @@
     box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 
+/* Friday Report Modal Styles */
+.report-option-container {
+    padding: 20px 0;
+}
+
+.report-option-card {
+    border: 2px solid #e9ecef;
+    border-radius: 12px;
+    padding: 25px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: #f8f9fa;
+    height: 100%;
+    position: relative;
+    overflow: hidden;
+}
+
+.report-option-card:hover {
+    border-color: #17a2b8;
+    background: #ffffff;
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(23, 162, 184, 0.15);
+}
+
+.report-option-card.selected {
+    border-color: #17a2b8;
+    background: linear-gradient(135deg, #e6f7ff 0%, #b3e5fc 100%);
+    box-shadow: 0 5px 15px rgba(23, 162, 184, 0.2);
+}
+
+.report-option-card.selected::before {
+    content: '\2713';
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    background: #17a2b8;
+    color: white;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 16px;
+}
+
+.option-icon {
+    font-size: 2rem;
+    color: #17a2b8;
+    margin-bottom: 15px;
+}
+
+.option-title {
+    color: #2c3e50;
+    font-weight: 600;
+    margin-bottom: 12px;
+    font-size: 1.3rem;
+}
+
+.option-description {
+    color: #6c757d;
+    margin-bottom: 20px;
+    line-height: 1.5;
+}
+
+.option-features {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: center;
+}
+
+.feature-badge {
+    background: #e9ecef;
+    color: #495057;
+    padding: 5px 12px;
+    border-radius: 15px;
+    font-size: 12px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.report-option-card.selected .feature-badge {
+    background: #17a2b8;
+    color: white;
+}
+
+.summarized-options {
+    margin-top: 20px;
+    padding: 12px 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+}
+
+.options-divider {
+    text-align: center;
+    margin-bottom: 12px;
+    position: relative;
+}
+
+.form-row-horizontal {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.form-control-inline {
+    width: auto;
+    min-width: 200px;
+    flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+    .form-row-horizontal {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    
+    .form-control-inline {
+        width: 100%;
+        min-width: auto;
+    }
+}
+
+.options-divider {
+    text-align: center;
+    margin-bottom: 25px;
+    position: relative;
+}
+
+.options-divider::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: #dee2e6;
+    z-index: 1;
+}
+
+.divider-text {
+    background: #f8f9fa;
+    padding: 0 20px;
+    color: #6c757d;
+    font-weight: 500;
+    position: relative;
+    z-index: 2;
+}
+
+.form-label {
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.form-label i {
+    color: #17a2b8;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
     .filter-grid {
@@ -581,6 +824,14 @@
     .table-container {
         overflow-x: auto;
     }
+    
+    .report-option-container .row {
+        flex-direction: column;
+    }
+    
+    .report-option-container .col-md-6 {
+        margin-bottom: 20px;
+    }
 }
 </style>
 
@@ -589,11 +840,12 @@ console.log('=== FSR FILTER PANEL SCRIPT LOADED ===');
 
 let PANEL_IS_MANUALLY_EXPANDED = false;
 let EXTERNAL_INTERFERENCE_DETECTED = false;
+let selectedReportType = null;
 
 document.addEventListener('DOMContentLoaded', function() {
     console.log('DOM loaded - initializing FSR filter panel');
     
-    // Set default dates for modal
+    // Set default dates for date range modal
     const today = new Date().toISOString().split('T')[0];
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
@@ -603,6 +855,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const fromDateInput = document.getElementById('fromDate');
     if (toDateInput) toDateInput.value = today;
     if (fromDateInput) fromDateInput.value = fromDateDefault;
+    
+    // Initialize Friday Report Modal functionality
+    initializeFridayReportModal();
     
     // Check if panel was forcibly expanded
     const wasForceExpanded = sessionStorage.getItem('FORCE_PANEL_EXPANDED') === 'true';
@@ -737,6 +992,141 @@ document.addEventListener('DOMContentLoaded', function() {
     
     console.log('All FSR event listeners attached');
 });
+
+// Friday Report Modal Functions
+function initializeFridayReportModal() {
+    console.log('🎯 Initializing Friday Report Modal');
+    
+    const detailedOption = document.getElementById('detailedOption');
+    const summarizedOption = document.getElementById('summarizedOption');
+    const summarizedOptionsPanel = document.getElementById('summarizedOptionsPanel');
+    const generateReportBtn = document.getElementById('generateReportBtn');
+    
+    if (detailedOption) {
+        detailedOption.addEventListener('click', function() {
+            selectReportType('detailed');
+        });
+    }
+    
+    if (summarizedOption) {
+        summarizedOption.addEventListener('click', function() {
+            selectReportType('summarized');
+        });
+    }
+    
+    if (generateReportBtn) {
+        generateReportBtn.addEventListener('click', function() {
+            generateFridayReport();
+        });
+    }
+    
+    // Reset modal when it's closed
+    $('#fridayReportModal').on('hidden.bs.modal', function() {
+        resetReportModal();
+    });
+    
+    console.log('✅ Friday Report Modal initialized');
+}
+
+function selectReportType(type) {
+    console.log(`📋 Report type selected: ${type}`);
+    
+    const detailedOption = document.getElementById('detailedOption');
+    const summarizedOption = document.getElementById('summarizedOption');
+    const summarizedOptionsPanel = document.getElementById('summarizedOptionsPanel');
+    const generateReportBtn = document.getElementById('generateReportBtn');
+    
+    // Remove previous selections
+    if (detailedOption) detailedOption.classList.remove('selected');
+    if (summarizedOption) summarizedOption.classList.remove('selected');
+    
+    selectedReportType = type;
+    
+    if (type === 'detailed') {
+        if (detailedOption) detailedOption.classList.add('selected');
+        if (summarizedOptionsPanel) summarizedOptionsPanel.style.display = 'none';
+        if (generateReportBtn) {
+            generateReportBtn.disabled = false;
+            generateReportBtn.innerHTML = '<i class="fas fa-file-download"></i> Generate Detailed Report';
+        }
+    } else if (type === 'summarized') {
+        if (summarizedOption) summarizedOption.classList.add('selected');
+        if (summarizedOptionsPanel) {
+            summarizedOptionsPanel.style.display = 'block';
+            // Smooth animation
+            setTimeout(() => {
+                summarizedOptionsPanel.style.opacity = '1';
+                summarizedOptionsPanel.style.transform = 'translateY(0)';
+            }, 10);
+        }
+        if (generateReportBtn) {
+            generateReportBtn.disabled = false;
+            generateReportBtn.innerHTML = '<i class="fas fa-file-download"></i> Generate Summarized Report';
+        }
+    }
+    
+    console.log(`✅ Report type "${type}" selected and UI updated`);
+}
+
+function generateFridayReport() {
+    console.log(`🚀 Generating ${selectedReportType} Friday report`);
+    
+    if (!selectedReportType) {
+        console.error('❌ No report type selected');
+        return;
+    }
+    
+    let reportUrl = "{% url 'friday_status_report' %}";
+    
+    if (selectedReportType === 'summarized') {
+        const maxComments = document.getElementById('maxComments').value;
+        reportUrl += `?max_comments=${maxComments}`;
+        console.log(`📊 Summarized report with max ${maxComments} comments per issue`);
+    } else {
+        console.log('📋 Detailed report with all comments');
+    }
+    
+    console.log(`🔗 Navigating to: ${reportUrl}`);
+    
+    // Close the modal first
+    $('#fridayReportModal').modal('hide');
+    
+    // Navigate to the report
+    window.location.href = reportUrl;
+}
+
+function resetReportModal() {
+    console.log('🔄 Resetting Friday Report Modal');
+    
+    const detailedOption = document.getElementById('detailedOption');
+    const summarizedOption = document.getElementById('summarizedOption');
+    const summarizedOptionsPanel = document.getElementById('summarizedOptionsPanel');
+    const generateReportBtn = document.getElementById('generateReportBtn');
+    const maxComments = document.getElementById('maxComments');
+    
+    // Clear selections
+    if (detailedOption) detailedOption.classList.remove('selected');
+    if (summarizedOption) summarizedOption.classList.remove('selected');
+    
+    // Hide summarized options
+    if (summarizedOptionsPanel) {
+        summarizedOptionsPanel.style.display = 'none';
+        summarizedOptionsPanel.style.opacity = '0';
+        summarizedOptionsPanel.style.transform = 'translateY(10px)';
+    }
+    
+    // Reset dropdown to default
+    if (maxComments) maxComments.value = '2';
+    
+    // Disable generate button
+    if (generateReportBtn) {
+        generateReportBtn.disabled = true;
+        generateReportBtn.innerHTML = '<i class="fas fa-file-download"></i> Generate Report';
+    }
+    
+    selectedReportType = null;
+    console.log('✅ Modal reset complete');
+}
 
 function lockPanelState() {
     const filterPanel = document.getElementById('filterPanel');

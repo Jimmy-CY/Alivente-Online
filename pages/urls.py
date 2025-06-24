@@ -115,17 +115,6 @@ urlpatterns = [
 
     #
     # Actual Expenses
-#    path('act_expense_all/', views.act_expense_all, name='act_expense_all'),
-#    path('act_expense_view/', views.act_expense_view, name='act_expense_view'),
-#    path('act_expense_add/', views.act_expense_add, name='act_expense_add'),
-#    path('act_expense_commit/', views.act_expense_commit, name='act_expense_commit'),
-#    path('act_expense_edit/<expense_id>', views.act_expense_edit, name='act_expense_edit'),
-#    path('act_expense_edit_commit/<expense_id>', views.act_expense_edit_commit, name='act_expense_edit_commit'),
-#    path('mark_approved/<expense_id>', views.mark_approved, name='mark_approved'),
-#    path('mark_paid/<expense_id>', views.mark_paid, name='mark_paid'),
-#    path('mark_deleted/<expense_id>', views.mark_deleted, name='mark_deleted'),
-#    path('act_expense_upload_inv/', views.act_expense_upload_inv, name='act_expense_upload_inv'),
-
     path('act_expense_all/', views.act_expense_all, name='act_expense_all'),
     path('act_expense_view/', views.act_expense_view, name='act_expense_view'),
     path('act_expense_add/', views.act_expense_add, name='act_expense_add'),
@@ -135,8 +124,9 @@ urlpatterns = [
     path('mark_approved/<expense_id>', views.mark_approved, name='mark_approved'),
     path('mark_paid/<expense_id>', views.mark_paid, name='mark_paid'),
     path('mark_deleted/<expense_id>', views.mark_deleted, name='mark_deleted'),
-     path('act_expense_manage_document/', views.act_expense_manage_document, name='act_expense_manage_document'),
- 
+    path('act_expense_manage_document/', views.act_expense_manage_document, name='act_expense_manage_document'),
+    path('get-expense-invoice/<str:expense_id>/', views.get_expense_invoice, name='get_expense_invoice'), 
+    
     #
     # Invoices
     path('invoices/', views.invoices_page, name='invoices'),

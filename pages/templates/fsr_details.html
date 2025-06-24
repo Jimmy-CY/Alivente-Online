@@ -136,7 +136,33 @@ function handleBackButton() {
         targetUrl = "{% url 'fsr' %}?refresh=true";
     }
     else if (fromParam === 'status_report') {
-        targetUrl = "{% url 'friday_status_report' %}?refresh=true";
+        // Check if we need to preserve summarized report parameters
+        // First check if referrer has max_comments parameter
+        let maxComments = null;
+        if (document.referrer) {
+            const referrerUrl = new URL(document.referrer);
+            maxComments = referrerUrl.searchParams.get('max_comments');
+        }
+        
+        // If no max_comments in referrer, check sessionStorage as fallback
+        if (!maxComments) {
+            try {
+                const sessionReportType = sessionStorage.getItem('last_report_type');
+                if (sessionReportType === 'summarized') {
+                    maxComments = sessionStorage.getItem('max_comments') || '2';
+                }
+            } catch (e) {
+                // sessionStorage might not be available
+                console.log('SessionStorage not available:', e);
+            }
+        }
+        
+        // Build the Friday Status Report URL with or without max_comments
+        if (maxComments) {
+            targetUrl = "{% url 'friday_status_report' %}?max_comments=" + maxComments + "&refresh=true";
+        } else {
+            targetUrl = "{% url 'friday_status_report' %}?refresh=true";
+        }
     }
     else if (document.referrer && document.referrer.includes(window.location.hostname)) {
         targetUrl = document.referrer + (document.referrer.includes('?') ? '&' : '?') + 'refresh=true';
@@ -145,6 +171,7 @@ function handleBackButton() {
         targetUrl = "{% url 'fsr' %}?refresh=true";
     }
     
+    console.log('Navigating back to:', targetUrl);
     window.location.href = targetUrl;
 }
 
@@ -155,6 +182,27 @@ if (urlParams.has('refresh')) {
     window.history.replaceState({}, document.title, cleanUrl);
     window.location.reload(true);
 }
+
+// Store the original referrer information when page loads
+// This helps preserve report type information even after form submissions
+document.addEventListener('DOMContentLoaded', function() {
+    try {
+        if (document.referrer && document.referrer.includes('friday_status_report')) {
+            const referrerUrl = new URL(document.referrer);
+            const maxComments = referrerUrl.searchParams.get('max_comments');
+            if (maxComments) {
+                // Store this information for later use
+                sessionStorage.setItem('temp_max_comments_from_referrer', maxComments);
+                sessionStorage.setItem('temp_report_type_from_referrer', 'summarized');
+            } else {
+                sessionStorage.setItem('temp_report_type_from_referrer', 'detailed');
+                sessionStorage.removeItem('temp_max_comments_from_referrer');
+            }
+        }
+    } catch (e) {
+        console.log('Error storing referrer info:', e);
+    }
+});
 </script>
 
 {% endblock %}

@@ -1886,6 +1886,29 @@ def act_expense_edit_commit(request, expense_id):
     return redirect('act_expense_all')
 
 @login_required
+def get_expense_invoice(request, expense_id):
+    try:
+        # Adjust this query based on your Expense model
+        # expense_id might be the date or actual expense ID
+        expense = YourExpenseModel.objects.filter(
+            # Add your filter logic here - could be by date, ID, etc.
+            date=expense_id  # or id=expense_id
+        ).first()
+        
+        if expense and expense.invoice_file:  # Adjust field name
+            response = HttpResponse(
+                expense.invoice_file.read(), 
+                content_type='application/pdf'  # or detect content type
+            )
+            response['Content-Disposition'] = f'inline; filename="invoice_{expense_id}.pdf"'
+            return response
+        else:
+            raise Http404("Invoice not found")
+            
+    except Exception as e:
+        raise Http404("Invoice not found")
+
+@login_required
 def mark_approved(request, expense_id):
     expense = get_object_or_404(act_expense, pk=expense_id)
     if expense.act_expense_approved != 'Yes':  # Only update if not already approved
@@ -2438,22 +2461,239 @@ def fsr_pdf(request):
     context = get_fsr_context_data(request)
     return render_to_pdf('fsr_email.html', context)
 
+def get_fsr_context_data(request):
+    """
+    Generate context data for Friday Status Report (used by both web view and email)
+    This function replicates the logic from friday_status_report view
+    """
+    mydb = mysql.connector.connect(
+        host=settings.DATABASES['default']['HOST'],
+        port=settings.DATABASES['default']['PORT'],
+        user=settings.DATABASES['default']['USER'],
+        password=settings.DATABASES['default']['PASSWORD'],
+        database=settings.DATABASES['default']['NAME'],
+        auth_plugin=settings.DATABASES['default']['AUTH_PLUGIN'],
+    )
+    
+    today = date.today()
+    
+    # Get max_comments parameter for summarized reports
+    max_comments = request.GET.get('max_comments', None) if hasattr(request, 'GET') else None
+    is_summarized_report = max_comments is not None
+    
+    if is_summarized_report:
+        try:
+            max_comments = int(max_comments)
+        except (ValueError, TypeError):
+            max_comments = None
+            is_summarized_report = False
+    
+    with mydb.cursor(dictionary=True) as cursor:
+        cursor.execute("SELECT prop.prop_name FROM prop ORDER BY prop.prop_country ASC, prop.prop_name ASC")
+        properties = cursor.fetchall()
+        cursor.execute("""
+            SELECT 
+                prop.prop_name,
+                issues.issues_id, issues.issues_heading, issues.issues_description, 
+                issues.issues_status, issues.issues_date_logged, issues.issues_resolution_date,
+                issues_details.issues_details_id, issues_details.issues_details_comment, 
+                issues_details.issues_details_user, issues_details.issues_details_date
+            FROM issues
+            JOIN prop ON prop.prop_id = issues.prop_id
+            JOIN issues_details ON issues_details.issues_id = issues.issues_id
+            ORDER BY issues.issues_id ASC, issues_details.issues_details_id DESC
+        """)
+        issues_data = cursor.fetchall()
+    
+    issues = []
+    current_issue = None
+    for row in issues_data:
+        if current_issue is None or current_issue['issues_id'] != row['issues_id']:
+            if current_issue is not None:
+                # Apply comment limiting for summarized reports
+                if is_summarized_report and max_comments and len(current_issue['details']) > max_comments:
+                    total_comments_before_limit = len(current_issue['details'])
+                    current_issue['details'] = current_issue['details'][:max_comments]
+                    current_issue['has_more_comments'] = True
+                    current_issue['total_comments'] = total_comments_before_limit
+                else:
+                    current_issue['has_more_comments'] = False
+                    current_issue['total_comments'] = len(current_issue['details'])
+                
+                issues.append(current_issue)
+            
+            current_issue = {
+                'prop_name': row['prop_name'],
+                'issues_id': row['issues_id'],
+                'issues_heading': row['issues_heading'],
+                'issues_description': row['issues_description'],
+                'issues_status': row['issues_status'],
+                'issues_date_logged': row['issues_date_logged'],
+                'issues_resolution_date': row['issues_resolution_date'],
+                'days_to_resolve': None,
+                'days_open': None,
+                'details': []
+            }
+            # Calculate days metrics based on status
+            if current_issue['issues_date_logged']:
+                if current_issue['issues_status'] == 'Resolved':
+                    if (current_issue['issues_resolution_date'] and 
+                        current_issue['issues_resolution_date'] != date(1900, 1, 1)):
+                        current_issue['days_to_resolve'] = (current_issue['issues_resolution_date'] - current_issue['issues_date_logged']).days
+                else:
+                    current_issue['days_open'] = (today - current_issue['issues_date_logged']).days
+                    
+        current_issue['details'].append({
+            'issues_details_id': row['issues_details_id'],
+            'issues_details_comment': row['issues_details_comment'],
+            'issues_details_user': row['issues_details_user'],
+            'issues_details_date': row['issues_details_date']
+        })
+    
+    # Handle the last issue
+    if current_issue is not None:
+        if is_summarized_report and max_comments and len(current_issue['details']) > max_comments:
+            total_comments_before_limit = len(current_issue['details'])
+            current_issue['details'] = current_issue['details'][:max_comments]
+            current_issue['has_more_comments'] = True
+            current_issue['total_comments'] = total_comments_before_limit
+        else:
+            current_issue['has_more_comments'] = False
+            current_issue['total_comments'] = len(current_issue['details'])
+        
+        issues.append(current_issue)
+
+    processed_data = {}
+    for status in ['Resolved', 'Unresolved', 'Issue']:
+        processed_data[status] = {}
+        for prop in properties:
+            prop_name = prop['prop_name']
+            processed_data[status][prop_name] = []
+
+            unique_issues = set()
+
+            for issue in issues:
+                if (issue['prop_name'] == prop_name and 
+                    issue['issues_status'] == status and 
+                    (issue['issues_heading'], issue['issues_description']) not in unique_issues):
+
+                    if status == 'Resolved':
+                        if (issue['issues_resolution_date'] != date(1900, 1, 1) and 
+                            issue['issues_resolution_date'] >= (date.today() - timedelta(days=7))):
+                            processed_data[status][prop_name].append(issue)
+                            unique_issues.add((issue['issues_heading'], issue['issues_description']))
+                    else:
+                        processed_data[status][prop_name].append(issue)
+                        unique_issues.add((issue['issues_heading'], issue['issues_description']))
+    
+    context = {
+        'today': today,
+        'statuses': ['Resolved', 'Unresolved', 'Issue'],
+        'properties': properties,
+        'is_summarized_report': is_summarized_report,
+        'max_comments': max_comments,
+        'status_groups': [
+            {
+                'status': status,
+                'property_issues': [
+                    {
+                        'prop_name': prop['prop_name'],
+                        'issues': processed_data[status][prop['prop_name']]
+                    }
+                    for prop in properties
+                    if processed_data[status][prop['prop_name']]
+                ]
+            }
+            for status in ['Resolved', 'Unresolved', 'Issue']
+        ]
+    }
+
+    if mydb.is_connected():
+        mydb.close()
+    
+    return context
+
 @login_required
 def fsr_notification(request):
     smtp_object = None
     try:
-        # Fetch context data for the report
-        context = get_fsr_context_data(request)
+        # Check if there's a max_comments parameter in the session or request
+        # This indicates the user wants a summarized report
+        max_comments = None
+        is_summarized_report = False
         
-        # Render HTML content - note the corrected template name
+        # Check for max_comments in various places:
+        # 1. Direct GET parameter (if coming from Friday report page)
+        # 2. Session storage (if user navigated from a summarized report)
+        # 3. HTTP_REFERER analysis (check if previous page had max_comments)
+        
+        if 'max_comments' in request.GET:
+            max_comments = request.GET.get('max_comments')
+            is_summarized_report = True
+        elif 'last_report_type' in request.session:
+            # If we stored the last report type in session
+            if request.session['last_report_type'] == 'summarized':
+                max_comments = request.session.get('max_comments', '2')
+                is_summarized_report = True
+        else:
+            # Check the HTTP referer to see if it came from a summarized report
+            referer = request.META.get('HTTP_REFERER', '')
+            if 'max_comments=' in referer:
+                # Extract max_comments from referer URL
+                import re
+                match = re.search(r'max_comments=(\d+)', referer)
+                if match:
+                    max_comments = match.group(1)
+                    is_summarized_report = True
+        
+        # Validate max_comments
+        if is_summarized_report and max_comments:
+            try:
+                max_comments = int(max_comments)
+                if max_comments < 1:
+                    max_comments = 2
+                    is_summarized_report = False
+            except (ValueError, TypeError):
+                max_comments = 2
+                is_summarized_report = False
+        
+        # Create a mock request object with the appropriate parameters for context generation
+        mock_request = type('MockRequest', (), {})()
+        mock_request.user = request.user
+        mock_request.session = request.session
+        mock_request.META = request.META
+        
+        if is_summarized_report:
+            # Create GET parameters for summarized report
+            mock_request.GET = {'max_comments': str(max_comments)}
+            report_type_text = f"Summarized Report (Max {max_comments} comments per issue)"
+        else:
+            # No parameters for detailed report
+            mock_request.GET = {}
+            report_type_text = "Detailed Report (All comments)"
+        
+        # Fetch context data for the report with appropriate parameters
+        context = get_fsr_context_data(mock_request)
+        
+        # Add report type information to context for email template
+        context['is_summarized_report'] = is_summarized_report
+        context['max_comments'] = max_comments if is_summarized_report else None
+        context['report_type_text'] = report_type_text
+        
+        # Render HTML content
         html_content = render_to_string("fsr_email.html", context, request=request)
         text_content = strip_tags(html_content)
         
-        # Prepare email
+        # Prepare email with report type in subject
         msg = MIMEMultipart("alternative")
         msg['From'] = "demetrimanias@gmail.com"
         msg['To'] = "demetrimanias@gmail.com"
-        msg['Subject'] = "Friday Status Report"
+        
+        # Include report type in subject
+        if is_summarized_report:
+            msg['Subject'] = f"Friday Status Report - Summarized ({max_comments} comments/issue)"
+        else:
+            msg['Subject'] = "Friday Status Report - Detailed"
         
         # Attach both plain text and HTML
         msg.attach(MIMEText(text_content, 'plain'))
@@ -2470,7 +2710,8 @@ def fsr_notification(request):
         smtp_object.login(email, password)
         smtp_object.sendmail(email, "demetrimanias@gmail.com", msg.as_string())
         
-        messages.success(request, "Friday Status Report sent successfully!")
+        success_message = f"Friday Status Report ({report_type_text}) sent successfully!"
+        messages.success(request, success_message)
     
     except smtplib.SMTPAuthenticationError as e:
         logger.error(f"SMTP Authentication Error: {e}")
@@ -3174,6 +3415,26 @@ def friday_status_report(request):
     )
     today = date.today()
     rep_date = today
+    
+    # Get max_comments parameter for summarized reports
+    max_comments = request.GET.get('max_comments', None)
+    is_summarized_report = max_comments is not None
+    
+    # Store report type in session for use by fsr_notification
+    if is_summarized_report:
+        try:
+            max_comments = int(max_comments)
+            request.session['last_report_type'] = 'summarized'
+            request.session['max_comments'] = max_comments
+        except (ValueError, TypeError):
+            max_comments = None
+            is_summarized_report = False
+            request.session['last_report_type'] = 'detailed'
+            request.session.pop('max_comments', None)
+    else:
+        request.session['last_report_type'] = 'detailed'
+        request.session.pop('max_comments', None)
+    
     with mydb.cursor(dictionary=True) as cursor:
         cursor.execute("SELECT prop.prop_name FROM prop ORDER BY prop.prop_country ASC, prop.prop_name ASC")
         properties = cursor.fetchall()
@@ -3196,7 +3457,18 @@ def friday_status_report(request):
     for row in issues_data:
         if current_issue is None or current_issue['issues_id'] != row['issues_id']:
             if current_issue is not None:
+                # Apply comment limiting for summarized reports
+                if is_summarized_report and max_comments and len(current_issue['details']) > max_comments:
+                    total_comments_before_limit = len(current_issue['details'])
+                    current_issue['details'] = current_issue['details'][:max_comments]
+                    current_issue['has_more_comments'] = True
+                    current_issue['total_comments'] = total_comments_before_limit
+                else:
+                    current_issue['has_more_comments'] = False
+                    current_issue['total_comments'] = len(current_issue['details'])
+                
                 issues.append(current_issue)
+            
             current_issue = {
                 'prop_name': row['prop_name'],
                 'issues_id': row['issues_id'],
@@ -3224,7 +3496,19 @@ def friday_status_report(request):
             'issues_details_user': row['issues_details_user'],
             'issues_details_date': row['issues_details_date']
         })
+    
+    # Handle the last issue
     if current_issue is not None:
+        # Apply comment limiting for summarized reports
+        if is_summarized_report and max_comments and len(current_issue['details']) > max_comments:
+            total_comments_before_limit = len(current_issue['details'])
+            current_issue['details'] = current_issue['details'][:max_comments]
+            current_issue['has_more_comments'] = True
+            current_issue['total_comments'] = total_comments_before_limit
+        else:
+            current_issue['has_more_comments'] = False
+            current_issue['total_comments'] = len(current_issue['details'])
+        
         issues.append(current_issue)
 
     processed_data = {}
@@ -3257,6 +3541,8 @@ def friday_status_report(request):
         'today': today,
         'statuses': ['Resolved', 'Unresolved', 'Issue'],
         'properties': properties,
+        'is_summarized_report': is_summarized_report,
+        'max_comments': max_comments,
         'status_groups': [
             {
                 'status': status,

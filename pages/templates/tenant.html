@@ -925,7 +925,7 @@ setInterval(() => {
     }
 }, 2000);
 
-// Lease Agreement Viewer Function
+// Lease Agreement Viewer Function - Updated to hide PDF sidebar
 function viewLeaseAgreement(documentUrl, documentName, tenantName) {
     const documentViewer = document.getElementById('leaseAgreementContent');
     const downloadLink = document.getElementById('downloadAgreement');
@@ -944,8 +944,14 @@ function viewLeaseAgreement(documentUrl, documentName, tenantName) {
     const extension = documentName.split('.').pop().toLowerCase();
     
     if (extension === 'pdf') {
+        // Use iframe with PDF parameters to hide sidebar and toolbar
         documentViewer.innerHTML = `
-            <embed src="${documentUrl}" type="application/pdf" width="100%" height="500px">
+            <iframe src="${documentUrl}#toolbar=0&navpanes=0&scrollbar=1&page=1&view=FitH" 
+                    type="application/pdf" 
+                    width="100%" 
+                    height="500px"
+                    style="border: none;">
+            </iframe>
             <p class="text-center mt-2">
                 <small>If the PDF doesn't display, <a href="${documentUrl}" target="_blank">click here to open it in a new tab</a></small>
             </p>

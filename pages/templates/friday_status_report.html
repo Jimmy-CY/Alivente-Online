@@ -10,6 +10,21 @@
             <div class="report-title-container">
                 <h2 class="report-title-main">FRIDAY STATUS REPORT</h2>
                 <h3 class="report-title-sub">{{ today|date:"Y-m-d" }}</h3>
+                {% if is_summarized_report %}
+                <div class="report-type-indicator">
+                    <span class="badge badge-info">
+                        <i class="fas fa-compress-alt"></i> 
+                        Summarized Report (Max {{ max_comments }} comment{{ max_comments|pluralize }} per issue)
+                    </span>
+                </div>
+                {% else %}
+                <div class="report-type-indicator">
+                    <span class="badge badge-success">
+                        <i class="fas fa-list-ul"></i> 
+                        Detailed Report (All comments)
+                    </span>
+                </div>
+                {% endif %}
             </div>
             <div style="display: flex; gap: 16px;">
                 <a href="{% url 'fsr_notification' %}" class="btn btn-info back-button" role="button">Submit FSR</a>
@@ -50,6 +65,18 @@
                                 </span>
                             </div>
                             {% endfor %}
+                            
+                            <!-- Show indicator if there are more comments in summarized view -->
+                            {% if is_summarized_report and issue.has_more_comments %}
+                            <div class="more-comments-indicator">
+                                <span class="text-muted">
+                                    <i class="fas fa-ellipsis-h"></i>
+                                    <a href="{% url 'fsr_details' issue.issues_id %}?from=status_report" class="view-all-link">
+                                        <em>View all comments</em>
+                                    </a>
+                                </span>
+                            </div>
+                            {% endif %}
                         </div>
                     </div>
                     {% endfor %}
@@ -103,6 +130,30 @@
         color: #6c757d;
         margin: 5px 0 0 0;
         font-weight: normal;
+    }
+    
+    .report-type-indicator {
+        margin-top: 10px;
+    }
+    
+    .badge {
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 14px;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+    
+    .badge-info {
+        background-color: #17a2b8;
+        color: white;
+    }
+    
+    .badge-success {
+        background-color: #28a745;
+        color: white;
     }
     
     .status-card {
@@ -176,6 +227,25 @@
         color: #495057;
     }
     
+    .more-comments-indicator {
+        margin-top: 12px;
+        padding: 8px 12px;
+        background-color: #f8f9fa;
+        border-radius: 4px;
+        border-left: 3px solid #17a2b8;
+    }
+    
+    .view-all-link {
+        color: #17a2b8;
+        text-decoration: none;
+        font-weight: 500;
+    }
+    
+    .view-all-link:hover {
+        color: #138496;
+        text-decoration: underline;
+    }
+    
     .back-button {
         background-color: #17a2b8;
         color: white;
@@ -213,6 +283,10 @@
             display: none;
         }
         
+        .report-type-indicator {
+            display: none;
+        }
+        
         .status-card, .property-card {
             page-break-inside: avoid;
             border: none;
@@ -223,6 +297,32 @@
         
         .issue-heading-link {
             pointer-events: none;
+        }
+        
+        .more-comments-indicator {
+            background-color: transparent;
+            border: 1px solid #dee2e6;
+        }
+        
+        .view-all-link {
+            display: none;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .header-container {
+            flex-direction: column;
+            gap: 20px;
+            align-items: stretch;
+        }
+        
+        .report-title-container {
+            text-align: center;
+        }
+        
+        .badge {
+            font-size: 12px;
+            padding: 6px 12px;
         }
     }
 </style>
