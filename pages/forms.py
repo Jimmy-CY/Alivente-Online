@@ -28,15 +28,24 @@ class PropForm(forms.ModelForm):
             "prop_sewerage",
             "prop_insurance"
         ]
+
 class PettyForm(forms.ModelForm):
 	class Meta:
 		model = models.petty
 		fields = ["petty_cash_date","petty_cash_description","petty_cash_amount","petty_cash_dr_cr"]
 
+# In your forms.py
 class TenantForm(forms.ModelForm):
-	class Meta:
-		model = models.tenant
-		fields = ["prop","tenant_type","tenant_name","tenant_contact_person","tenant_contact_number","tenant_email","tenant_deposit","tenant_lease_start_date","tenant_lease_end_date","tenant_rental_type","tenant_renewal","tenant_renewal_period","tenant_rent","tenant_levies","tenant_payment_terms","tenant_current","tenant_lease_agreement"]
+    class Meta:
+        model = models.tenant
+        fields = [
+            'tenant_type', 'tenant_name', 'tenant_contact_person', 
+            'tenant_contact_number', 'tenant_email', 'tenant_lease_start_date',
+            'tenant_lease_end_date', 'tenant_rental_type', 'tenant_deposit',
+            'tenant_rent', 'tenant_levies', 'tenant_payment_terms',
+            'tenant_renewal', 'tenant_renewal_period', 'tenant_renewal_status',
+            'tenant_current', 'prop'
+        ]
 
 class SupplierForm(forms.ModelForm):
 	class Meta:

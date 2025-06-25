@@ -2389,3 +2389,78 @@ Watching for file changes with StatReloader
 "GET /fsr/?refresh=true HTTP/1.1" 200 71889
 "GET /fsr/ HTTP/1.1" 200 71889
 "GET / HTTP/1.1" 200 7615
+Watching for file changes with StatReloader
+"GET /fsr/ HTTP/1.1" 200 71889
+"POST /fsr/ HTTP/1.1" 200 60143
+"POST /fsr/ HTTP/1.1" 200 71889
+"POST /fsr/ HTTP/1.1" 200 48883
+"POST /fsr/ HTTP/1.1" 200 71889
+"GET /friday_status_report/?max_comments=1 HTTP/1.1" 200 28182
+"GET /fsr/ HTTP/1.1" 200 71889
+"GET / HTTP/1.1" 200 7615
+"GET /fsr/ HTTP/1.1" 200 71889
+"GET /friday_status_report/ HTTP/1.1" 200 31720
+"GET /fsr_details/6?from=status_report HTTP/1.1" 200 18837
+"GET /friday_status_report/?refresh=true HTTP/1.1" 200 31720
+"GET /fsr/ HTTP/1.1" 200 71889
+"GET /friday_status_report/?max_comments=2 HTTP/1.1" 200 29685
+"GET /fsr_details/6?from=status_report HTTP/1.1" 200 18837
+"GET /friday_status_report/?max_comments=2&refresh=true HTTP/1.1" 200 29685
+"GET /fsr/ HTTP/1.1" 200 71889
+"GET /tenant/ HTTP/1.1" 200 54592
+"GET /tenant_edit/5 HTTP/1.1" 200 11167
+"GET /tenant/ HTTP/1.1" 200 54592
+"GET /lease_renewal_report/ HTTP/1.1" 200 12375
+"GET /tenant/ HTTP/1.1" 200 54592
+"GET /lease_renewal_report/ HTTP/1.1" 200 12375
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\models.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+"GET /tenant/ HTTP/1.1" 200 54592
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\forms.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\forms.py changed, reloading.
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 7615
+"GET /tenant/ HTTP/1.1" 200 54592
+"GET /tenant_add/ HTTP/1.1" 200 12442
+"GET /tenant/ HTTP/1.1" 200 54592
+"GET /tenant_edit/5 HTTP/1.1" 200 11652
+"GET /tenant/ HTTP/1.1" 200 54592
+"GET /tenant_edit/4 HTTP/1.1" 200 11563
+"POST /tenant_edit_commit/4 HTTP/1.1" 200 55168
+"GET /tenant_edit/4 HTTP/1.1" 200 11563
+"POST /tenant_edit_commit/4 HTTP/1.1" 200 55168
+"GET /tenant_edit/4 HTTP/1.1" 200 11563
+"POST /tenant_edit_commit/4 HTTP/1.1" 200 55168
+"GET /tenant_edit/1 HTTP/1.1" 200 11620
+"GET /tenant/ HTTP/1.1" 200 54592
+"GET /lease_renewal_report/ HTTP/1.1" 200 12652
+"GET /tenant/ HTTP/1.1" 200 54592
+"GET /tenant_edit/3 HTTP/1.1" 200 11563
+"POST /tenant_edit_commit/3 HTTP/1.1" 200 55168
+"GET /lease_renewal_report/ HTTP/1.1" 200 11019
+"GET /tenant/ HTTP/1.1" 200 54592
+"GET /tenant_edit/3 HTTP/1.1" 200 11563
+"POST /tenant_edit_commit/3 HTTP/1.1" 200 55168
+"GET /lease_renewal_report/ HTTP/1.1" 200 11562
+"GET /tenant/ HTTP/1.1" 200 54592
+"GET /tenant_edit/3 HTTP/1.1" 200 11563
+"POST /tenant_edit_commit/3 HTTP/1.1" 200 55168
+"GET /lease_renewal_report/ HTTP/1.1" 200 12652
+"GET /tenant/ HTTP/1.1" 200 54592
+"GET / HTTP/1.1" 200 7615
+"GET /tenant/ HTTP/1.1" 200 54592
+"GET /tenant_edit/1 HTTP/1.1" 200 11619
+"POST /tenant_edit_commit/1 HTTP/1.1" 200 55168
+"GET /lease_renewal_report/ HTTP/1.1" 200 10963
+"GET /tenant/ HTTP/1.1" 200 54592
+"GET /tenant_report/1 HTTP/1.1" 200 12941
+"GET /tenant/ HTTP/1.1" 200 54592
+"GET /tenant_edit/5 HTTP/1.1" 200 11651
+"GET / HTTP/1.1" 200 7615
+"GET /tenant/ HTTP/1.1" 200 54592
+"GET /tenant_report/5 HTTP/1.1" 200 14428
+"GET /tenant/ HTTP/1.1" 200 54592
+"GET /tenant_report/1 HTTP/1.1" 200 14404
+"GET /tenant/ HTTP/1.1" 200 54592

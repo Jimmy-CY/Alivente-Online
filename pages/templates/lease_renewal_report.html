@@ -16,6 +16,7 @@
         </div>
 
         <div class="lease-renewal-section">
+            <!-- Tenants needing renewal (Pending status) -->
             {% for tenant in tenants %}
                 {% if tenant.needs_renewal %}
                 <div class="tenant-card">
@@ -53,6 +54,19 @@
                 {% endif %}
             {% endfor %}
 
+            <!-- Tenants who declined renewal -->
+            {% for declined in declined_renewals %}
+                <div class="declined-renewal-card">
+                    <h3 class="property-name">{{ declined.prop_name }}</h3>
+                    <p class="highlight-red"><strong>{{ declined.message }}</strong></p>
+                    <div class="tenant-details">
+                        <p><strong>Current Tenant:</strong> {{ declined.tenant_name }}</p>
+                        <p><strong>Lease End Date:</strong> <span class="highlight-red">{{ declined.lease_end_date }}</span></p>
+                    </div>
+                </div>
+            {% endfor %}
+
+            <!-- Vacant properties -->
             {% for property in vacant_properties %}
                 <div class="vacant-property-card">
                     <h3 class="property-name">{{ property.prop_name }}</h3>
@@ -60,7 +74,7 @@
                 </div>
             {% endfor %}
 
-            {% if not tenants and not vacant_properties %}
+            {% if not tenants and not vacant_properties and not declined_renewals %}
                 <div class="no-renewals">
                     <p>No lease renewals or vacant properties to report at this time.</p>
                 </div>
@@ -133,7 +147,7 @@
         margin-top: 20px;
     }
     
-    .tenant-card, .vacant-property-card {
+    .tenant-card, .vacant-property-card, .declined-renewal-card {
         margin-bottom: 30px;
         padding: 20px;
         border: 1px solid #eee;
@@ -141,8 +155,9 @@
         background-color: #f9f9f9;
     }
     
-    .vacant-property-card {
+    .vacant-property-card, .declined-renewal-card {
         background-color: #fff3f3;
+        border-left: 4px solid #d9534f;
     }
     
     .property-name {
@@ -186,7 +201,7 @@
             display: none;
         }
         
-        .tenant-card, .vacant-property-card {
+        .tenant-card, .vacant-property-card, .declined-renewal-card {
             page-break-inside: avoid;
             border: none;
             padding: 10px 0;

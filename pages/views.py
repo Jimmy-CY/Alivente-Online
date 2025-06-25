@@ -3859,83 +3859,107 @@ def open_invoices_report(request):
 
 @login_required
 def lease_renewal_report(request):
-	mydb = mysql.connector.connect(
-		host=settings.DATABASES['default']['HOST'],
-		port=settings.DATABASES['default']['PORT'],
-		user=settings.DATABASES['default']['USER'],
-		password=settings.DATABASES['default']['PASSWORD'],
-		database=settings.DATABASES['default']['NAME'],
-		auth_plugin=settings.DATABASES['default']['AUTH_PLUGIN'],
-	)
-	my_cursor = mydb.cursor()
-	today = date.today()
-	tenants = []
-	vacant_properties = []
-	my_cursor.execute("""
-		SELECT prop.prop_name, prop.prop_country, tenant.tenant_type, tenant.tenant_name,
-		tenant.tenant_contact_person, tenant.tenant_contact_number, tenant.tenant_email,
-		tenant.tenant_deposit, tenant.tenant_lease_start_date, tenant.tenant_lease_end_date,
-		tenant.tenant_rental_type, tenant.tenant_renewal, tenant.tenant_renewal_period,
-		tenant.tenant_rent, tenant.tenant_levies, tenant.tenant_payment_terms,
-		tenant.tenant_current
-		FROM railway.tenant
-		JOIN railway.prop ON prop.prop_id = tenant.prop_id
-		WHERE tenant.tenant_current = 'Yes'
-		ORDER BY prop.prop_country ASC, prop.prop_name ASC
-	""")
-	tenant_rows = my_cursor.fetchall()
-	my_cursor.execute("""
-		SELECT prop.prop_name
-		FROM railway.tenant
-		JOIN railway.prop ON prop.prop_id = tenant.prop_id
-		WHERE tenant.tenant_current = 'Yes'
-		ORDER BY prop.prop_country ASC, prop.prop_name ASC
-	""")
-	prop_active_tenant = [row[0] for row in my_cursor.fetchall()]
-	my_cursor.execute("""
-		SELECT prop.prop_name
-		FROM railway.prop
-		WHERE prop.prop_status = 'Active'
-		AND prop.prop_available_for_rent = 'Yes'
-		ORDER BY prop.prop_country ASC, prop.prop_name ASC
-	""")
-	active_properties = [row[0] for row in my_cursor.fetchall()]
-	for row in tenant_rows:
-		lease_end_date = row[9]  # tenant_lease_end_date
-		renewal_period = int(row[12])  # tenant_renewal_period
-		renewal_date = lease_end_date - timedelta(days=renewal_period)
-		warning_date = renewal_date - timedelta(days=30)
-		if today >= warning_date:
-			tenants.append({
-				'prop_name': row[0],
-				'prop_country': row[1],
-				'tenant_type': row[2],
-				'tenant_name': row[3],
-				'tenant_contact_person': row[4],
-				'tenant_contact_number': row[5],
-				'tenant_email': row[6],
-				'tenant_deposit': row[7],
-				'tenant_lease_start_date': row[8].strftime('%Y-%m-%d') if row[8] else '',
-				'tenant_lease_end_date': row[9].strftime('%Y-%m-%d') if row[9] else '',
-				'tenant_rental_type': row[10],
-				'tenant_renewal': row[11],
-				'tenant_renewal_period': row[12],
-				'tenant_rent': row[13],
-				'tenant_levies': row[14],
-				'tenant_payment_terms': row[15],
-				'renewal_date': renewal_date.strftime('%Y-%m-%d'),
-				'needs_renewal': True
-			})
-		vacant_properties = [{'prop_name': prop} for prop in active_properties if prop not in prop_active_tenant]
-	if mydb.is_connected():
-		my_cursor.close()
-		mydb.close()
-	context = {
-		'tenants': tenants,
-		'vacant_properties': vacant_properties,
-		'today': today.strftime('%Y-%m-%d')
-	}
-	return render(request, 'lease_renewal_report.html', context)
+    mydb = mysql.connector.connect(
+        host=settings.DATABASES['default']['HOST'],
+        port=settings.DATABASES['default']['PORT'],
+        user=settings.DATABASES['default']['USER'],
+        password=settings.DATABASES['default']['PASSWORD'],
+        database=settings.DATABASES['default']['NAME'],
+        auth_plugin=settings.DATABASES['default']['AUTH_PLUGIN'],
+    )
+    my_cursor = mydb.cursor()
+    today = date.today()
+    tenants = []
+    vacant_properties = []
+    declined_renewals = []
+    
+    # Updated query to include tenant_renewal_status
+    my_cursor.execute("""
+        SELECT prop.prop_name, prop.prop_country, tenant.tenant_type, tenant.tenant_name,
+        tenant.tenant_contact_person, tenant.tenant_contact_number, tenant.tenant_email,
+        tenant.tenant_deposit, tenant.tenant_lease_start_date, tenant.tenant_lease_end_date,
+        tenant.tenant_rental_type, tenant.tenant_renewal, tenant.tenant_renewal_period,
+        tenant.tenant_rent, tenant.tenant_levies, tenant.tenant_payment_terms,
+        tenant.tenant_current, tenant.tenant_renewal_status
+        FROM railway.tenant
+        JOIN railway.prop ON prop.prop_id = tenant.prop_id
+        WHERE tenant.tenant_current = 'Yes'
+        ORDER BY prop.prop_country ASC, prop.prop_name ASC
+    """)
+    tenant_rows = my_cursor.fetchall()
+    
+    my_cursor.execute("""
+        SELECT prop.prop_name
+        FROM railway.tenant
+        JOIN railway.prop ON prop.prop_id = tenant.prop_id
+        WHERE tenant.tenant_current = 'Yes'
+        ORDER BY prop.prop_country ASC, prop.prop_name ASC
+    """)
+    prop_active_tenant = [row[0] for row in my_cursor.fetchall()]
+    
+    my_cursor.execute("""
+        SELECT prop.prop_name
+        FROM railway.prop
+        WHERE prop.prop_status = 'Active'
+        AND prop.prop_available_for_rent = 'Yes'
+        ORDER BY prop.prop_country ASC, prop.prop_name ASC
+    """)
+    active_properties = [row[0] for row in my_cursor.fetchall()]
+    
+    for row in tenant_rows:
+        lease_end_date = row[9]  # tenant_lease_end_date
+        renewal_period = int(row[12])  # tenant_renewal_period
+        renewal_date = lease_end_date - timedelta(days=renewal_period)
+        warning_date = renewal_date - timedelta(days=30)
+        renewal_status = row[17] if row[17] else 'pending'  # tenant_renewal_status (new field)
+        
+        if today >= warning_date:
+            if renewal_status == 'pending':
+                # Normal renewal case - add to tenants list
+                tenants.append({
+                    'prop_name': row[0],
+                    'prop_country': row[1],
+                    'tenant_type': row[2],
+                    'tenant_name': row[3],
+                    'tenant_contact_person': row[4],
+                    'tenant_contact_number': row[5],
+                    'tenant_email': row[6],
+                    'tenant_deposit': row[7],
+                    'tenant_lease_start_date': row[8].strftime('%Y-%m-%d') if row[8] else '',
+                    'tenant_lease_end_date': row[9].strftime('%Y-%m-%d') if row[9] else '',
+                    'tenant_rental_type': row[10],
+                    'tenant_renewal': row[11],
+                    'tenant_renewal_period': row[12],
+                    'tenant_rent': row[13],
+                    'tenant_levies': row[14],
+                    'tenant_payment_terms': row[15],
+                    'renewal_date': renewal_date.strftime('%Y-%m-%d'),
+                    'needs_renewal': True
+                })
+            elif renewal_status == 'declined':
+                # Tenant declined renewal - add to declined_renewals list
+                declined_renewals.append({
+                    'prop_name': row[0],
+                    'tenant_name': row[3],
+                    'lease_end_date': row[9].strftime('%Y-%m-%d') if row[9] else '',
+                    'message': 'CURRENT TENANT NOT RENEWING LEASE - NEED NEW TENANT'
+                })
+            # If renewal_status == 'new_lease_signed', do nothing (exclude from report)
+    
+    # Find vacant properties (properties without active tenants)
+    vacant_properties = [{'prop_name': prop} for prop in active_properties if prop not in prop_active_tenant]
+    
+    if mydb.is_connected():
+        my_cursor.close()
+        mydb.close()
+    
+    context = {
+        'tenants': tenants,
+        'vacant_properties': vacant_properties,
+        'declined_renewals': declined_renewals,  # Add this new context
+        'today': today.strftime('%Y-%m-%d')
+    }
+    return render(request, 'lease_renewal_report.html', context)
 
 @login_required
 def lease_renewal(request):

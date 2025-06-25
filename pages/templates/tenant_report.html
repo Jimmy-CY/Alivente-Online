@@ -100,6 +100,24 @@
                         </div>
                         {% endif %}
                         <div class="detail-row">
+                            <span class="detail-label">Renewal Status:</span>
+                            <span class="renewal-status-badge 
+                                {% if tenant.tenant_renewal_status == 'pending' or not tenant.tenant_renewal_status %}renewal-pending
+                                {% elif tenant.tenant_renewal_status == 'declined' %}renewal-declined
+                                {% elif tenant.tenant_renewal_status == 'new_lease_signed' %}renewal-signed
+                                {% endif %}">
+                                {% if tenant.tenant_renewal_status == 'pending' or not tenant.tenant_renewal_status %}
+                                    Pending
+                                {% elif tenant.tenant_renewal_status == 'declined' %}
+                                    Declined
+                                {% elif tenant.tenant_renewal_status == 'new_lease_signed' %}
+                                    New Lease Signed
+                                {% else %}
+                                    {{ tenant.tenant_renewal_status|title }}
+                                {% endif %}
+                            </span>
+                        </div>
+                        <div class="detail-row">
                             <span class="detail-label">Active Tenant:</span>
                             <span class="badge {% if tenant.tenant_current == 'Yes' %}badge-success{% else %}badge-secondary{% endif %}">
                                 {{ tenant.tenant_current }}
@@ -230,6 +248,32 @@
         color: white;
     }
     
+    /* Renewal Status Badge Styles */
+    .renewal-status-badge {
+        display: inline-block;
+        padding: 5px 12px;
+        border-radius: 12px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .renewal-pending {
+        background-color: #ffc107;
+        color: #212529;
+    }
+    
+    .renewal-declined {
+        background-color: #dc3545;
+        color: white;
+    }
+    
+    .renewal-signed {
+        background-color: #28a745;
+        color: white;
+    }
+    
     .back-button {
         background-color: #17a2b8;
         color: white;
@@ -264,6 +308,22 @@
         
         .detail-label {
             min-width: 120px;
+        }
+        
+        /* Print styles for renewal status */
+        .renewal-pending {
+            background-color: #ffc107 !important;
+            color: #212529 !important;
+        }
+        
+        .renewal-declined {
+            background-color: #dc3545 !important;
+            color: white !important;
+        }
+        
+        .renewal-signed {
+            background-color: #28a745 !important;
+            color: white !important;
         }
     }
 </style>

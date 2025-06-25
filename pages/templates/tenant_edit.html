@@ -21,11 +21,11 @@
   </div>
 
   <div class="form-row">
-	  <div class="form-group col-md-4">
+    <div class="form-group col-md-4">
       <label for="tenant_type"><strong>Tenant Type</strong></label>
       <select id="tenant_type" class="form-control" name="tenant_type" required>
         <option disabled>Select Tenant Type</option>
-          {% if tesults.tenant_type == "Company" %}
+          {% if tresults.tenant_type == "Company" %}
             <option selected value="Company">Company</option>
           {% else %}
             <option value="Company">Company</option>
@@ -69,7 +69,7 @@
       <label for="tenant_rental_type"><strong>Rental Type</strong></label>
       <select id="tenant_rental_type" class="form-control" name="tenant_rental_type" required>
         <option disabled>Select Rental Type</option>
-          {% if tesults.tenant_rental_type == "Weekly" %}
+          {% if tresults.tenant_rental_type == "Weekly" %}
             <option selected value="Weekly">Weekly</option>
           {% else %}
             <option value="Weekly">Weekly</option>
@@ -110,7 +110,7 @@
       <label for="tenant_renewal"><strong>Renewal Option</strong></label>
       <select id="tenant_renewal" class="form-control" name="tenant_renewal" required>
         <option disabled>Select if Lease is Renewable</option>
-          {% if tesults.tenant_renewal == "Yes" %}
+          {% if tresults.tenant_renewal == "Yes" %}
             <option selected value="Yes">Yes</option>
           {% else %}
             <option value="Yes">Yes</option>
@@ -128,6 +128,26 @@
     </div>
   </div>
   <div class="form-row">
+    <div class="form-group col-md-4">
+      <label for="tenant_renewal_status"><strong>Renewal Status</strong></label>
+      <select id="tenant_renewal_status" class="form-control" name="tenant_renewal_status">
+        {% if tresults.tenant_renewal_status == "pending" or not tresults.tenant_renewal_status %}
+          <option selected value="pending">Pending</option>
+        {% else %}
+          <option value="pending">Pending</option>
+        {% endif %}
+        {% if tresults.tenant_renewal_status == "declined" %}
+          <option selected value="declined">Declined</option>
+        {% else %}
+          <option value="declined">Declined</option>
+        {% endif %}
+        {% if tresults.tenant_renewal_status == "new_lease_signed" %}
+          <option selected value="new_lease_signed">New Lease Signed</option>
+        {% else %}
+          <option value="new_lease_signed">New Lease Signed</option>
+        {% endif %}
+      </select>
+    </div>
     <div class="form-group col-md-4">
       <label for="tenant_current"><strong>Tenant Status</strong></label>
       <select id="tenant_current" class="form-control" name="tenant_current" required>

@@ -132,6 +132,19 @@ class tenant(models.Model):
         null=True,
         verbose_name="Lease Agreement Status"
     )
+    RENEWAL_STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('declined', 'Declined'),
+        ('new_lease_signed', 'New Lease Signed'),
+    ]
+    tenant_renewal_status = models.CharField(
+        max_length=20,
+        choices=RENEWAL_STATUS_CHOICES,
+        default='pending',
+        blank=True,
+        null=True,
+        verbose_name="Renewal Status"
+    )
 
     def clean(self):
         """Validate lease dates and check for ACTIVE tenant overlaps only"""

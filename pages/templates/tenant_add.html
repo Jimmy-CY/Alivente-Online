@@ -62,7 +62,7 @@
     </div>
     <div class="form-group col-md-4">
       <label for="tenant_email"><strong>Email Address</strong></label>
-      <input type="email" class="form-control" id="tenant_email" name="tenant_email" 
+      <input type="text" class="form-control" id="tenant_email" name="tenant_email" 
              value="{{ form_data.tenant_email }}" placeholder="Tenant Email Address">
     </div>
   </div>
@@ -128,8 +128,15 @@
     </div>
   </div>
   
-  
   <div class="form-row">
+    <div class="form-group col-md-4">
+      <label for="tenant_renewal_status"><strong>Renewal Status</strong></label>
+      <select id="tenant_renewal_status" class="form-control" name="tenant_renewal_status">
+        <option value="pending" {% if form_data.tenant_renewal_status == 'pending' or not form_data.tenant_renewal_status %}selected{% endif %}>Pending</option>
+        <option value="declined" {% if form_data.tenant_renewal_status == 'declined' %}selected{% endif %}>Declined</option>
+        <option value="new_lease_signed" {% if form_data.tenant_renewal_status == 'new_lease_signed' %}selected{% endif %}>New Lease Signed</option>
+      </select>
+    </div>
     <div class="form-group col-md-4">
       <label for="tenant_current"><strong>Tenant Status</strong></label>
       <select id="tenant_current" class="form-control" name="tenant_current" required>
