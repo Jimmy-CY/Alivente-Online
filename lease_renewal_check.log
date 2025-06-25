@@ -2464,3 +2464,8 @@ Watching for file changes with StatReloader
 "GET /tenant/ HTTP/1.1" 200 54592
 "GET /tenant_report/1 HTTP/1.1" 200 14404
 "GET /tenant/ HTTP/1.1" 200 54592
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+"GET /tenant_edit/1 HTTP/1.1" 200 11619
+"POST /tenant_edit_commit/1 HTTP/1.1" 200 55168
+Watching for file changes with StatReloader

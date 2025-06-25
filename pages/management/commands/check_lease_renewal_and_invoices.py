@@ -37,26 +37,28 @@ class Command(BaseCommand):
         created_invoices_count = self.create_invoices()
         
         # Then get all the data with property details
-        vacant_properties, expiring_leases, overdue_invoices = self.get_all_property_details()
+        vacant_properties, expiring_leases, declined_renewals, overdue_invoices = self.get_all_property_details()
         
         vacant_count = len(vacant_properties)
         expiring_count = len(expiring_leases)
+        declined_count = len(declined_renewals)
         overdue_count = len(overdue_invoices)
         
         self.stdout.write(f'Invoices created today: {created_invoices_count}')
         self.stdout.write(f'Vacant properties: {vacant_count}')
-        self.stdout.write(f'Expiring leases: {expiring_count}')
+        self.stdout.write(f'Expiring leases (pending): {expiring_count}')
+        self.stdout.write(f'Declined renewals (need new tenants): {declined_count}')
         self.stdout.write(f'Overdue invoices: {overdue_count}')
         
         # Check if action is needed (including invoice creation)
-        if vacant_count == 0 and expiring_count == 0 and overdue_count == 0 and created_invoices_count == 0:
-            self.stdout.write('No action needed - no vacant properties, expiring leases, overdue invoices, or new invoices created')
+        if vacant_count == 0 and expiring_count == 0 and declined_count == 0 and overdue_count == 0 and created_invoices_count == 0:
+            self.stdout.write('No action needed - no vacant properties, expiring leases, declined renewals, overdue invoices, or new invoices created')
             return
         
         # Action needed - send notification
-        if vacant_count > 0 or expiring_count > 0 or overdue_count > 0 or created_invoices_count > 0:
+        if vacant_count > 0 or expiring_count > 0 or declined_count > 0 or overdue_count > 0 or created_invoices_count > 0:
             self.stdout.write('Action needed! Running notification function...')
-            result = self.run_notification_function(vacant_properties, expiring_leases, overdue_invoices, created_invoices_count)
+            result = self.run_notification_function(vacant_properties, expiring_leases, declined_renewals, overdue_invoices, created_invoices_count)
             self.stdout.write(f'Email function returned: {result}')
         
         self.stdout.write('=== LEASE RENEWAL, INVOICE CHECK, AND INVOICE CREATION COMPLETED ===')
@@ -144,7 +146,7 @@ class Command(BaseCommand):
                 mydb.close()
     
     def get_all_property_details(self):
-        """Get detailed property, lease, and invoice information"""
+        """Get detailed property, lease, and invoice information with renewal status logic"""
         mydb = mysql.connector.connect(
             host=settings.DATABASES['default']['HOST'],
             port=settings.DATABASES['default']['PORT'],
@@ -157,11 +159,11 @@ class Command(BaseCommand):
         today = date.today()
         
         try:
-            # Get current tenants with detailed lease info
+            # Get current tenants with detailed lease info INCLUDING renewal status
             my_cursor.execute("""
                 SELECT prop.prop_name, prop.prop_country, tenant.tenant_name, 
                        tenant.tenant_lease_end_date, tenant.tenant_renewal_period,
-                       tenant.tenant_payment_terms
+                       tenant.tenant_payment_terms, tenant.tenant_renewal_status
                 FROM railway.tenant
                 JOIN railway.prop ON prop.prop_id = tenant.prop_id
                 WHERE tenant.tenant_current = 'Yes'
@@ -188,26 +190,41 @@ class Command(BaseCommand):
             """)
             active_properties_data = my_cursor.fetchall()
             
-            # Find expiring leases with details
+            # Process leases with renewal status logic
             expiring_leases = []
+            declined_renewals = []
+            
             for row in tenant_rows:
                 prop_name = row[0]
                 prop_country = row[1]
                 tenant_name = row[2]
                 lease_end_date = row[3]
                 renewal_period = int(row[4])
+                renewal_status = row[6] if row[6] else 'pending'  # Default to pending if None
                 
                 renewal_date = lease_end_date - timedelta(days=renewal_period)
                 warning_date = renewal_date - timedelta(days=30)
                 
                 if today >= warning_date:
-                    expiring_leases.append({
-                        'prop_name': prop_name,
-                        'prop_country': prop_country,
-                        'tenant_name': tenant_name,
-                        'lease_end_date': lease_end_date.strftime('%Y-%m-%d'),
-                        'renewal_date': renewal_date.strftime('%Y-%m-%d')
-                    })
+                    if renewal_status == 'pending':
+                        # Normal renewal case - add to expiring leases
+                        expiring_leases.append({
+                            'prop_name': prop_name,
+                            'prop_country': prop_country,
+                            'tenant_name': tenant_name,
+                            'lease_end_date': lease_end_date.strftime('%Y-%m-%d'),
+                            'renewal_date': renewal_date.strftime('%Y-%m-%d')
+                        })
+                    elif renewal_status == 'declined':
+                        # Tenant declined renewal - add to declined renewals
+                        declined_renewals.append({
+                            'prop_name': prop_name,
+                            'prop_country': prop_country,
+                            'tenant_name': tenant_name,
+                            'lease_end_date': lease_end_date.strftime('%Y-%m-%d'),
+                            'message': 'CURRENT TENANT NOT RENEWING LEASE - NEED NEW TENANT'
+                        })
+                    # If renewal_status == 'new_lease_signed', do nothing (exclude from both lists)
             
             # Find vacant properties with details
             vacant_properties = []
@@ -224,7 +241,7 @@ class Command(BaseCommand):
             # Get outstanding invoices
             overdue_invoices = self.get_outstanding_invoices(my_cursor, today)
             
-            return vacant_properties, expiring_leases, overdue_invoices
+            return vacant_properties, expiring_leases, declined_renewals, overdue_invoices
             
         finally:
             if mydb.is_connected():
@@ -292,8 +309,8 @@ class Command(BaseCommand):
         
         return properties_with_overdue_invoices
     
-    def run_notification_function(self, vacant_properties, expiring_leases, overdue_invoices, created_invoices_count):
-        """Send email notification for lease renewals, vacant properties, overdue invoices, and invoice creation"""
+    def run_notification_function(self, vacant_properties, expiring_leases, declined_renewals, overdue_invoices, created_invoices_count):
+        """Send email notification for lease renewals, vacant properties, declined renewals, overdue invoices, and invoice creation"""
         import smtplib
         import logging
         from email.mime.multipart import MIMEMultipart
@@ -304,6 +321,7 @@ class Command(BaseCommand):
         
         vacant_count = len(vacant_properties)
         expiring_count = len(expiring_leases)
+        declined_count = len(declined_renewals)
         overdue_count = len(overdue_invoices)
         
         try:
@@ -347,7 +365,9 @@ class Command(BaseCommand):
             if vacant_count > 0:
                 html_body += f"• Vacant Properties: {vacant_count}<br>"
             if expiring_count > 0:
-                html_body += f"• Expiring Leases: {expiring_count}<br>"
+                html_body += f"• Expiring Leases (Pending): {expiring_count}<br>"
+            if declined_count > 0:
+                html_body += f"• Declined Renewals (Need New Tenants): {declined_count}<br>"
             if overdue_count > 0:
                 html_body += f"• Tenants with Overdue Invoices: {overdue_count}<br>"
             
@@ -384,20 +404,36 @@ class Command(BaseCommand):
                     html_body += f"<li><b>{prop['prop_name']} ({prop['prop_country']})</b></li>"
                 html_body += """</ul><br>"""
 
-            # Add detailed expiring leases list
+            # Add detailed expiring leases list (PENDING renewals only)
             if expiring_count > 0:
                 # Correct grammar for singular vs plural
                 lease_word = "lease" if expiring_count == 1 else "leases"
                 tenant_word = "tenant" if expiring_count == 1 else "tenants"
                 tenant_verb = "has a" if expiring_count == 1 else "have"
                 
-                html_body += f"""<p><b><u>EXPIRING {lease_word.upper()} ({expiring_count}):</u></b><br>
-                This {tenant_word} {tenant_verb} {lease_word} expiring soon that requires a renewal discussion. Contact the {tenant_word} ASAP.</p><ul>""" if expiring_count == 1 else f"""<p><b><u>EXPIRING {lease_word.upper()} ({expiring_count}):</u></b><br>
+                html_body += f"""<p><b><u>EXPIRING {lease_word.upper()} - PENDING RENEWALS ({expiring_count}):</u></b><br>
+                This {tenant_word} {tenant_verb} {lease_word} expiring soon that requires a renewal discussion. Contact the {tenant_word} ASAP.</p><ul>""" if expiring_count == 1 else f"""<p><b><u>EXPIRING {lease_word.upper()} - PENDING RENEWALS ({expiring_count}):</u></b><br>
                 These {tenant_word} {tenant_verb} {lease_word} expiring soon that require renewal discussions. Contact the {tenant_word} ASAP.</p><ul>"""
                 
                 for lease in expiring_leases:
                     html_body += f"<li><b>{lease['prop_name']} ({lease['prop_country']})</b> - Tenant: {lease['tenant_name']}<br>"
                     html_body += f"(Lease ends: {lease['lease_end_date']} | Renewal due by: {lease['renewal_date']})</li>"
+                html_body += """</ul><br>"""
+
+            # Add detailed declined renewals list (NEW SECTION)
+            if declined_count > 0:
+                # Correct grammar for singular vs plural
+                tenant_word = "tenant" if declined_count == 1 else "tenants"
+                tenant_verb = "has" if declined_count == 1 else "have"
+                property_word = "property" if declined_count == 1 else "properties"
+                
+                html_body += f"""<p><b><u>DECLINED RENEWALS - NEED NEW {tenant_word.upper()} ({declined_count}):</u></b><br>
+                This {tenant_word} {tenant_verb} declined lease renewal. These {property_word} will need new {tenant_word}. Contact estate agents ASAP.</p><ul>""" if declined_count == 1 else f"""<p><b><u>DECLINED RENEWALS - NEED NEW {tenant_word.upper()} ({declined_count}):</u></b><br>
+                These {tenant_word} {tenant_verb} declined lease renewals. These {property_word} will need new {tenant_word}. Contact estate agents ASAP.</p><ul>"""
+                
+                for declined in declined_renewals:
+                    html_body += f"<li><b>{declined['prop_name']} ({declined['prop_country']})</b> - Current Tenant: {declined['tenant_name']}<br>"
+                    html_body += f"(Lease ends: {declined['lease_end_date']} - {declined['message']})</li>"
                 html_body += """</ul><br>"""
 
             # Add detailed overdue invoices list
@@ -438,7 +474,9 @@ REPORT SUMMARY:"""
             if vacant_count > 0:
                 text_body += f"\n • Vacant Properties: {vacant_count}"
             if expiring_count > 0:
-                text_body += f"\n • Expiring Leases: {expiring_count}"
+                text_body += f"\n • Expiring Leases (Pending): {expiring_count}"
+            if declined_count > 0:
+                text_body += f"\n • Declined Renewals (Need New Tenants): {declined_count}"
             if overdue_count > 0:
                 text_body += f"\n • Tenants with Overdue Invoices: {overdue_count}"
 
@@ -480,7 +518,7 @@ These {property_word} {property_verb} active and available for rent but currentl
                     text_body += f"\n • {prop['prop_name']} ({prop['prop_country']})"
                 text_body += f"\n\n"
 
-            # Add detailed expiring leases list
+            # Add detailed expiring leases list (PENDING renewals only)
             if expiring_count > 0:
                 # Correct grammar for singular vs plural
                 lease_word = "lease" if expiring_count == 1 else "leases"
@@ -488,15 +526,34 @@ These {property_word} {property_verb} active and available for rent but currentl
                 tenant_verb = "has a" if expiring_count == 1 else "have"
                 
                 if expiring_count == 1:
-                    text_body += f"""EXPIRING {lease_word.upper()} ({expiring_count}):
+                    text_body += f"""EXPIRING {lease_word.upper()} - PENDING RENEWALS ({expiring_count}):
 This {tenant_word} {tenant_verb} {lease_word} expiring soon that requires a renewal discussion. Contact the {tenant_word} ASAP."""
                 else:
-                    text_body += f"""EXPIRING {lease_word.upper()} ({expiring_count}):
+                    text_body += f"""EXPIRING {lease_word.upper()} - PENDING RENEWALS ({expiring_count}):
 These {tenant_word} {tenant_verb} {lease_word} expiring soon that require renewal discussions. Contact the {tenant_word} ASAP."""
                 
                 for lease in expiring_leases:
                     text_body += f"\n • {lease['prop_name']} ({lease['prop_country']}) - Tenant: {lease['tenant_name']}"
                     text_body += f"\n   (Lease ends: {lease['lease_end_date']} | Renewal due by: {lease['renewal_date']})"
+                text_body += f"\n\n"
+
+            # Add detailed declined renewals list (NEW SECTION)
+            if declined_count > 0:
+                # Correct grammar for singular vs plural
+                tenant_word = "tenant" if declined_count == 1 else "tenants"
+                tenant_verb = "has" if declined_count == 1 else "have"
+                property_word = "property" if declined_count == 1 else "properties"
+                
+                if declined_count == 1:
+                    text_body += f"""DECLINED RENEWALS - NEED NEW {tenant_word.upper()} ({declined_count}):
+This {tenant_word} {tenant_verb} declined lease renewal. This {property_word} will need a new {tenant_word}. Contact estate agents ASAP."""
+                else:
+                    text_body += f"""DECLINED RENEWALS - NEED NEW {tenant_word.upper()} ({declined_count}):
+These {tenant_word} {tenant_verb} declined lease renewals. These {property_word} will need new {tenant_word}. Contact estate agents ASAP."""
+                
+                for declined in declined_renewals:
+                    text_body += f"\n • {declined['prop_name']} ({declined['prop_country']}) - Current Tenant: {declined['tenant_name']}"
+                    text_body += f"\n   (Lease ends: {declined['lease_end_date']} - {declined['message']})"
                 text_body += f"\n\n"
 
             # Add detailed overdue invoices list
