@@ -37,7 +37,6 @@ import uuid
 import logging
 import json
 
-
 logger = logging.getLogger(__name__)
 
 def render_to_pdf(template_src, context_dict):
@@ -1850,8 +1849,6 @@ def act_expense_edit(request, expense_id):
         "current_expense": current_expense,
     })
 
-# In your act_expense_edit_commit view, add this logic:
-
 @login_required
 def act_expense_edit_commit(request, expense_id):
     if request.method == 'POST':
@@ -2222,10 +2219,6 @@ def petty_cash_add(request):
 
 
 ### ISSUES - FRIDAY STATUS REPORT ###
-from django.shortcuts import render
-from django.contrib.auth.decorators import login_required
-from django.db.models import Q
-
 @login_required
 def fsr(request):
     # Get filter parameters
@@ -2464,17 +2457,8 @@ def fsr_pdf(request):
 def get_fsr_context_data(request):
     """
     Generate context data for Friday Status Report (used by both web view and email)
-    This function replicates the logic from friday_status_report view
+    Rewritten to use Django ORM instead of raw SQL
     """
-    mydb = mysql.connector.connect(
-        host=settings.DATABASES['default']['HOST'],
-        port=settings.DATABASES['default']['PORT'],
-        user=settings.DATABASES['default']['USER'],
-        password=settings.DATABASES['default']['PASSWORD'],
-        database=settings.DATABASES['default']['NAME'],
-        auth_plugin=settings.DATABASES['default']['AUTH_PLUGIN'],
-    )
-    
     today = date.today()
     
     # Get max_comments parameter for summarized reports
@@ -2488,81 +2472,68 @@ def get_fsr_context_data(request):
             max_comments = None
             is_summarized_report = False
     
-    with mydb.cursor(dictionary=True) as cursor:
-        cursor.execute("SELECT prop.prop_name FROM prop ORDER BY prop.prop_country ASC, prop.prop_name ASC")
-        properties = cursor.fetchall()
-        cursor.execute("""
-            SELECT 
-                prop.prop_name,
-                issues.issues_id, issues.issues_heading, issues.issues_description, 
-                issues.issues_status, issues.issues_date_logged, issues.issues_resolution_date,
-                issues_details.issues_details_id, issues_details.issues_details_comment, 
-                issues_details.issues_details_user, issues_details.issues_details_date
-            FROM issues
-            JOIN prop ON prop.prop_id = issues.prop_id
-            JOIN issues_details ON issues_details.issues_id = issues.issues_id
-            ORDER BY issues.issues_id ASC, issues_details.issues_details_id DESC
-        """)
-        issues_data = cursor.fetchall()
+    # Get all properties ordered by country and name
+    properties = props.objects.all().order_by('prop_country', 'prop_name').values('prop_name')
     
-    issues = []
-    current_issue = None
-    for row in issues_data:
-        if current_issue is None or current_issue['issues_id'] != row['issues_id']:
-            if current_issue is not None:
-                # Apply comment limiting for summarized reports
-                if is_summarized_report and max_comments and len(current_issue['details']) > max_comments:
-                    total_comments_before_limit = len(current_issue['details'])
-                    current_issue['details'] = current_issue['details'][:max_comments]
-                    current_issue['has_more_comments'] = True
-                    current_issue['total_comments'] = total_comments_before_limit
-                else:
-                    current_issue['has_more_comments'] = False
-                    current_issue['total_comments'] = len(current_issue['details'])
-                
-                issues.append(current_issue)
-            
-            current_issue = {
-                'prop_name': row['prop_name'],
-                'issues_id': row['issues_id'],
-                'issues_heading': row['issues_heading'],
-                'issues_description': row['issues_description'],
-                'issues_status': row['issues_status'],
-                'issues_date_logged': row['issues_date_logged'],
-                'issues_resolution_date': row['issues_resolution_date'],
-                'days_to_resolve': None,
-                'days_open': None,
-                'details': []
-            }
-            # Calculate days metrics based on status
-            if current_issue['issues_date_logged']:
-                if current_issue['issues_status'] == 'Resolved':
-                    if (current_issue['issues_resolution_date'] and 
-                        current_issue['issues_resolution_date'] != date(1900, 1, 1)):
-                        current_issue['days_to_resolve'] = (current_issue['issues_resolution_date'] - current_issue['issues_date_logged']).days
-                else:
-                    current_issue['days_open'] = (today - current_issue['issues_date_logged']).days
-                    
-        current_issue['details'].append({
-            'issues_details_id': row['issues_details_id'],
-            'issues_details_comment': row['issues_details_comment'],
-            'issues_details_user': row['issues_details_user'],
-            'issues_details_date': row['issues_details_date']
-        })
+    # Get all issues with their details, using select_related and prefetch_related for optimization
+    issues_queryset = issues.objects.select_related('prop').prefetch_related(
+        Prefetch(
+            'issues_details_set',
+            queryset=issues_details.objects.all().order_by('-issues_details_id'),
+            to_attr='details_list'
+        )
+    ).order_by('issues_id')
     
-    # Handle the last issue
-    if current_issue is not None:
-        if is_summarized_report and max_comments and len(current_issue['details']) > max_comments:
-            total_comments_before_limit = len(current_issue['details'])
-            current_issue['details'] = current_issue['details'][:max_comments]
-            current_issue['has_more_comments'] = True
-            current_issue['total_comments'] = total_comments_before_limit
-        else:
-            current_issue['has_more_comments'] = False
-            current_issue['total_comments'] = len(current_issue['details'])
+    # Process issues data
+    issues_data = []
+    for issue_obj in issues_queryset:
+        # Build the issue dictionary
+        issue_dict = {
+            'prop_name': issue_obj.prop.prop_name,
+            'issues_id': issue_obj.issues_id,
+            'issues_heading': issue_obj.issues_heading,
+            'issues_description': issue_obj.issues_description,
+            'issues_status': issue_obj.issues_status,
+            'issues_date_logged': issue_obj.issues_date_logged,
+            'issues_resolution_date': issue_obj.issues_resolution_date,
+            'days_to_resolve': None,
+            'days_open': None,
+            'details': []
+        }
         
-        issues.append(current_issue)
-
+        # Calculate days metrics based on status
+        if issue_dict['issues_date_logged']:
+            if issue_dict['issues_status'] == 'Resolved':
+                if (issue_dict['issues_resolution_date'] and 
+                    issue_dict['issues_resolution_date'] != date(1900, 1, 1)):
+                    issue_dict['days_to_resolve'] = (issue_dict['issues_resolution_date'] - issue_dict['issues_date_logged']).days
+            else:
+                issue_dict['days_open'] = (today - issue_dict['issues_date_logged']).days
+        
+        # Process details
+        details_data = []
+        for detail in issue_obj.details_list:
+            details_data.append({
+                'issues_details_id': detail.issues_details_id,
+                'issues_details_comment': detail.issues_details_comment,
+                'issues_details_user': detail.issues_details_user,
+                'issues_details_date': detail.issues_details_date
+            })
+        
+        # Apply comment limiting for summarized reports
+        if is_summarized_report and max_comments and len(details_data) > max_comments:
+            total_comments_before_limit = len(details_data)
+            issue_dict['details'] = details_data[:max_comments]
+            issue_dict['has_more_comments'] = True
+            issue_dict['total_comments'] = total_comments_before_limit
+        else:
+            issue_dict['details'] = details_data
+            issue_dict['has_more_comments'] = False
+            issue_dict['total_comments'] = len(details_data)
+        
+        issues_data.append(issue_dict)
+    
+    # Process data by status and property
     processed_data = {}
     for status in ['Resolved', 'Unresolved', 'Issue']:
         processed_data[status] = {}
@@ -2572,7 +2543,7 @@ def get_fsr_context_data(request):
 
             unique_issues = set()
 
-            for issue in issues:
+            for issue in issues_data:
                 if (issue['prop_name'] == prop_name and 
                     issue['issues_status'] == status and 
                     (issue['issues_heading'], issue['issues_description']) not in unique_issues):
@@ -2607,9 +2578,6 @@ def get_fsr_context_data(request):
             for status in ['Resolved', 'Unresolved', 'Issue']
         ]
     }
-
-    if mydb.is_connected():
-        mydb.close()
     
     return context
 
@@ -2732,9 +2700,6 @@ def fsr_notification(request):
     return redirect('fsr')
 
 ### REPORTS - DASHBOARD (FROM HOME PAGE) ###
-from django.shortcuts import render
-from .models import props, revenue_line_types, revenue
-
 @login_required
 def finance_pl(request):
     # Get all properties with prefetched prop_values to optimize queries
@@ -3405,14 +3370,6 @@ def fsr_rep(request):
 
 @login_required
 def friday_status_report(request):
-    mydb = mysql.connector.connect(
-        host=settings.DATABASES['default']['HOST'],
-        port=settings.DATABASES['default']['PORT'],
-        user=settings.DATABASES['default']['USER'],
-        password=settings.DATABASES['default']['PASSWORD'],
-        database=settings.DATABASES['default']['NAME'],
-        auth_plugin=settings.DATABASES['default']['AUTH_PLUGIN'],
-    )
     today = date.today()
     rep_date = today
     
@@ -3435,82 +3392,68 @@ def friday_status_report(request):
         request.session['last_report_type'] = 'detailed'
         request.session.pop('max_comments', None)
     
-    with mydb.cursor(dictionary=True) as cursor:
-        cursor.execute("SELECT prop.prop_name FROM prop ORDER BY prop.prop_country ASC, prop.prop_name ASC")
-        properties = cursor.fetchall()
-        cursor.execute("""
-            SELECT 
-                prop.prop_name,
-                issues.issues_id, issues.issues_heading, issues.issues_description, 
-                issues.issues_status, issues.issues_date_logged, issues.issues_resolution_date,
-                issues_details.issues_details_id, issues_details.issues_details_comment, 
-                issues_details.issues_details_user, issues_details.issues_details_date
-            FROM issues
-            JOIN prop ON prop.prop_id = issues.prop_id
-            JOIN issues_details ON issues_details.issues_id = issues.issues_id
-            ORDER BY issues.issues_id ASC, issues_details.issues_details_id DESC
-        """)
-        issues_data = cursor.fetchall()
+    # Get all properties ordered by country and name
+    properties = props.objects.all().order_by('prop_country', 'prop_name').values('prop_name')
     
-    issues = []
-    current_issue = None
-    for row in issues_data:
-        if current_issue is None or current_issue['issues_id'] != row['issues_id']:
-            if current_issue is not None:
-                # Apply comment limiting for summarized reports
-                if is_summarized_report and max_comments and len(current_issue['details']) > max_comments:
-                    total_comments_before_limit = len(current_issue['details'])
-                    current_issue['details'] = current_issue['details'][:max_comments]
-                    current_issue['has_more_comments'] = True
-                    current_issue['total_comments'] = total_comments_before_limit
-                else:
-                    current_issue['has_more_comments'] = False
-                    current_issue['total_comments'] = len(current_issue['details'])
-                
-                issues.append(current_issue)
-            
-            current_issue = {
-                'prop_name': row['prop_name'],
-                'issues_id': row['issues_id'],
-                'issues_heading': row['issues_heading'],
-                'issues_description': row['issues_description'],
-                'issues_status': row['issues_status'],
-                'issues_date_logged': row['issues_date_logged'],
-                'issues_resolution_date': row['issues_resolution_date'],
-                'days_to_resolve': None,  # For resolved issues
-                'days_open': None,       # For unresolved issues
-                'details': []
-            }
-            # Calculate days metrics based on status
-            if current_issue['issues_date_logged']:
-                if current_issue['issues_status'] == 'Resolved':
-                    if (current_issue['issues_resolution_date'] and 
-                        current_issue['issues_resolution_date'] != date(1900, 1, 1)):
-                        current_issue['days_to_resolve'] = (current_issue['issues_resolution_date'] - current_issue['issues_date_logged']).days
-                else:  # For Unresolved and Issue status
-                    current_issue['days_open'] = (today - current_issue['issues_date_logged']).days
-                    
-        current_issue['details'].append({
-            'issues_details_id': row['issues_details_id'],
-            'issues_details_comment': row['issues_details_comment'],
-            'issues_details_user': row['issues_details_user'],
-            'issues_details_date': row['issues_details_date']
-        })
+    # Get all issues with their details, using select_related and prefetch_related for optimization
+    issues_queryset = issues.objects.select_related('prop').prefetch_related(
+        Prefetch(
+            'issues_details_set',
+            queryset=issues_details.objects.all().order_by('-issues_details_id'),
+            to_attr='details_list'
+        )
+    ).order_by('issues_id')
     
-    # Handle the last issue
-    if current_issue is not None:
-        # Apply comment limiting for summarized reports
-        if is_summarized_report and max_comments and len(current_issue['details']) > max_comments:
-            total_comments_before_limit = len(current_issue['details'])
-            current_issue['details'] = current_issue['details'][:max_comments]
-            current_issue['has_more_comments'] = True
-            current_issue['total_comments'] = total_comments_before_limit
-        else:
-            current_issue['has_more_comments'] = False
-            current_issue['total_comments'] = len(current_issue['details'])
+    # Process issues data
+    issues_data = []
+    for issue_obj in issues_queryset:
+        # Build the issue dictionary
+        issue_dict = {
+            'prop_name': issue_obj.prop.prop_name,
+            'issues_id': issue_obj.issues_id,
+            'issues_heading': issue_obj.issues_heading,
+            'issues_description': issue_obj.issues_description,
+            'issues_status': issue_obj.issues_status,
+            'issues_date_logged': issue_obj.issues_date_logged,
+            'issues_resolution_date': issue_obj.issues_resolution_date,
+            'days_to_resolve': None,  # For resolved issues
+            'days_open': None,       # For unresolved issues
+            'details': []
+        }
         
-        issues.append(current_issue)
-
+        # Calculate days metrics based on status
+        if issue_dict['issues_date_logged']:
+            if issue_dict['issues_status'] == 'Resolved':
+                if (issue_dict['issues_resolution_date'] and 
+                    issue_dict['issues_resolution_date'] != date(1900, 1, 1)):
+                    issue_dict['days_to_resolve'] = (issue_dict['issues_resolution_date'] - issue_dict['issues_date_logged']).days
+            else:  # For Unresolved and Issue status
+                issue_dict['days_open'] = (today - issue_dict['issues_date_logged']).days
+        
+        # Process details
+        details_data = []
+        for detail in issue_obj.details_list:
+            details_data.append({
+                'issues_details_id': detail.issues_details_id,
+                'issues_details_comment': detail.issues_details_comment,
+                'issues_details_user': detail.issues_details_user,
+                'issues_details_date': detail.issues_details_date
+            })
+        
+        # Apply comment limiting for summarized reports
+        if is_summarized_report and max_comments and len(details_data) > max_comments:
+            total_comments_before_limit = len(details_data)
+            issue_dict['details'] = details_data[:max_comments]
+            issue_dict['has_more_comments'] = True
+            issue_dict['total_comments'] = total_comments_before_limit
+        else:
+            issue_dict['details'] = details_data
+            issue_dict['has_more_comments'] = False
+            issue_dict['total_comments'] = len(details_data)
+        
+        issues_data.append(issue_dict)
+    
+    # Process data by status and property
     processed_data = {}
     cut_off_date = date.today() - timedelta(days=7)
     for status in ['Resolved', 'Unresolved', 'Issue']:
@@ -3522,7 +3465,7 @@ def friday_status_report(request):
             # Track unique issues by heading+description
             unique_issues = set()
 
-            for issue in issues:
+            for issue in issues_data:
                 if (issue['prop_name'] == prop_name and 
                     issue['issues_status'] == status and 
                     (issue['issues_heading'], issue['issues_description']) not in unique_issues):
@@ -3558,18 +3501,8 @@ def friday_status_report(request):
             for status in ['Resolved', 'Unresolved', 'Issue']
         ]
     }
-
-    if mydb.is_connected():
-        mydb.close()
     
     return render(request, 'friday_status_report.html', context)
-
-from datetime import datetime, date
-from django.shortcuts import render, redirect
-from django.db import connection
-from django.contrib import messages
-from collections import defaultdict
-from django.utils.dateparse import parse_date
 
 @login_required
 def resolved_issues_report(request):
@@ -3727,64 +3660,52 @@ def open_invoices(request):
 
 @login_required
 def open_invoices_report(request):
-    mydb = mysql.connector.connect(
-        host=settings.DATABASES['default']['HOST'],
-        port=settings.DATABASES['default']['PORT'],
-        user=settings.DATABASES['default']['USER'],
-        password=settings.DATABASES['default']['PASSWORD'],
-        database=settings.DATABASES['default']['NAME'],
-        auth_plugin=settings.DATABASES['default']['AUTH_PLUGIN'],
-    )
-    my_cursor = mydb.cursor(dictionary=True)
+    
     today = date.today()
     properties_with_invoices = []
     
-    # Get all current tenants
-    my_cursor.execute("""
-        SELECT prop.prop_name, prop.prop_country, tenant.tenant_id, tenant.tenant_name,
-            tenant.tenant_contact_person, tenant.tenant_contact_number, tenant.tenant_email,
-            tenant.tenant_rent, tenant.tenant_payment_terms
-        FROM railway.tenant 
-        JOIN railway.prop ON prop.prop_id = tenant.prop_id 
-        WHERE tenant.tenant_current = 'Yes'
-        ORDER BY prop.prop_country ASC, prop.prop_name ASC
-    """)
-    tenants_rows = my_cursor.fetchall()
+    # Get all current tenants with their property details
+    current_tenants = tenant.objects.filter(
+        tenant_current='Yes'
+    ).select_related('prop').order_by('prop__prop_country', 'prop__prop_name')
     
-    # Get all unpaid invoices
-    my_cursor.execute("""
-        SELECT invoice.invoice_id, invoice.tenant_id, invoice.invoice_date, invoice.invoice_paid 
-        FROM railway.invoice
-        WHERE invoice.invoice_paid = 'No' 
-        ORDER BY invoice.invoice_date ASC
-    """)
-    unpaid_invoices = my_cursor.fetchall()
+    # Get all unpaid invoices with tenant details in one query
+    unpaid_invoices = invoices.objects.filter(
+        invoice_paid='No'
+    ).select_related('tenant', 'tenant__prop').order_by('invoice_date')
     
-    # Process detailed invoice breakdown (existing logic)
-    for ten in tenants_rows:
+    # Process detailed invoice breakdown
+    for tenant_obj in current_tenants:
         tenant_invoices = []
-        for invoice in unpaid_invoices:
-            if ten['tenant_id'] == invoice['tenant_id']:
-                due_date = invoice['invoice_date'] + timedelta(days=ten['tenant_payment_terms'])
-                days_overdue = (today - due_date).days if today > due_date else 0
-                tenant_invoices.append({
-                    'invoice_id': invoice['invoice_id'],
-                    'invoice_date': invoice['invoice_date'].strftime('%Y-%m-%d'),
-                    'due_date': due_date.strftime('%Y-%m-%d'),
-                    'days_overdue': days_overdue,
-                    'overdue': days_overdue > 0
-                })
+        
+        # Get unpaid invoices for this tenant
+        tenant_unpaid_invoices = [inv for inv in unpaid_invoices if inv.tenant.tenant_id == tenant_obj.tenant_id]
+        
+        for invoice_obj in tenant_unpaid_invoices:
+            payment_terms = tenant_obj.tenant_payment_terms or 0
+            due_date = invoice_obj.invoice_date + timedelta(days=payment_terms)
+            days_overdue = (today - due_date).days if today > due_date else 0
+            
+            tenant_invoices.append({
+                'invoice_id': invoice_obj.invoice_id,
+                'invoice_date': invoice_obj.invoice_date.strftime('%Y-%m-%d'),
+                'due_date': due_date.strftime('%Y-%m-%d'),
+                'days_overdue': days_overdue,
+                'overdue': days_overdue > 0
+            })
+        
+        # Only include tenants with unpaid invoices
         if tenant_invoices:
             properties_with_invoices.append({
-                'prop_name': ten['prop_name'],
-                'prop_country': ten['prop_country'],
-                'tenant_id': ten['tenant_id'],
-                'tenant_name': ten['tenant_name'],
-                'tenant_contact_person': ten['tenant_contact_person'],
-                'tenant_contact_number': ten['tenant_contact_number'],
-                'tenant_email': ten['tenant_email'],
-                'tenant_rent': ten['tenant_rent'],
-                'tenant_payment_terms': ten['tenant_payment_terms'],
+                'prop_name': tenant_obj.prop.prop_name,
+                'prop_country': tenant_obj.prop.prop_country,
+                'tenant_id': tenant_obj.tenant_id,
+                'tenant_name': tenant_obj.tenant_name,
+                'tenant_contact_person': tenant_obj.tenant_contact_person,
+                'tenant_contact_number': tenant_obj.tenant_contact_number,
+                'tenant_email': tenant_obj.tenant_email,
+                'tenant_rent': tenant_obj.tenant_rent,
+                'tenant_payment_terms': tenant_obj.tenant_payment_terms,
                 'invoices': tenant_invoices
             })
     
@@ -3798,9 +3719,9 @@ def open_invoices_report(request):
         'past_due_91_plus': 0
     }
     
-    for ten in tenants_rows:
+    for tenant_obj in current_tenants:
         tenant_analysis = {
-            'tenant_name': ten['tenant_name'],
+            'tenant_name': tenant_obj.tenant_name,
             'total_outstanding': 0,
             'current_0_30': 0,
             'past_due_31_60': 0,
@@ -3808,27 +3729,30 @@ def open_invoices_report(request):
             'past_due_91_plus': 0
         }
         
+        # Get unpaid invoices for this tenant
+        tenant_unpaid_invoices = [inv for inv in unpaid_invoices if inv.tenant.tenant_id == tenant_obj.tenant_id]
+        
         # Calculate aging for this tenant's invoices
-        for invoice in unpaid_invoices:
-            if ten['tenant_id'] == invoice['tenant_id']:
-                due_date = invoice['invoice_date'] + timedelta(days=ten['tenant_payment_terms'])
-                days_overdue = (today - due_date).days if today > due_date else 0
-                amount = float(ten['tenant_rent'])
-                
-                tenant_analysis['total_outstanding'] += amount
-                
-                if days_overdue <= 30:
-                    # Current (0-30 days - includes not yet due and up to 30 days overdue)
-                    tenant_analysis['current_0_30'] += amount
-                elif 31 <= days_overdue <= 60:
-                    # Past due 31-60 days
-                    tenant_analysis['past_due_31_60'] += amount
-                elif 61 <= days_overdue <= 90:
-                    # Past due 61-90 days
-                    tenant_analysis['past_due_61_90'] += amount
-                else:
-                    # Past due 91+ days
-                    tenant_analysis['past_due_91_plus'] += amount
+        for invoice_obj in tenant_unpaid_invoices:
+            payment_terms = tenant_obj.tenant_payment_terms or 0
+            due_date = invoice_obj.invoice_date + timedelta(days=payment_terms)
+            days_overdue = (today - due_date).days if today > due_date else 0
+            amount = float(tenant_obj.tenant_rent or 0)
+            
+            tenant_analysis['total_outstanding'] += amount
+            
+            if days_overdue <= 30:
+                # Current (0-30 days - includes not yet due and up to 30 days overdue)
+                tenant_analysis['current_0_30'] += amount
+            elif 31 <= days_overdue <= 60:
+                # Past due 31-60 days
+                tenant_analysis['past_due_31_60'] += amount
+            elif 61 <= days_overdue <= 90:
+                # Past due 61-90 days
+                tenant_analysis['past_due_61_90'] += amount
+            else:
+                # Past due 91+ days
+                tenant_analysis['past_due_91_plus'] += amount
         
         # Only include tenants with outstanding invoices
         if tenant_analysis['total_outstanding'] > 0:
@@ -3851,112 +3775,86 @@ def open_invoices_report(request):
         'totals': totals
     }
     
-    if mydb.is_connected():
-        my_cursor.close()
-        mydb.close()
-    
     return render(request, 'open_invoices_report.html', context)
 
 @login_required
 def lease_renewal_report(request):
-    mydb = mysql.connector.connect(
-        host=settings.DATABASES['default']['HOST'],
-        port=settings.DATABASES['default']['PORT'],
-        user=settings.DATABASES['default']['USER'],
-        password=settings.DATABASES['default']['PASSWORD'],
-        database=settings.DATABASES['default']['NAME'],
-        auth_plugin=settings.DATABASES['default']['AUTH_PLUGIN'],
-    )
-    my_cursor = mydb.cursor()
+    
     today = date.today()
-    tenants = []
+    tenants_for_renewal = []
     vacant_properties = []
     declined_renewals = []
     
-    # Updated query to include tenant_renewal_status
-    my_cursor.execute("""
-        SELECT prop.prop_name, prop.prop_country, tenant.tenant_type, tenant.tenant_name,
-        tenant.tenant_contact_person, tenant.tenant_contact_number, tenant.tenant_email,
-        tenant.tenant_deposit, tenant.tenant_lease_start_date, tenant.tenant_lease_end_date,
-        tenant.tenant_rental_type, tenant.tenant_renewal, tenant.tenant_renewal_period,
-        tenant.tenant_rent, tenant.tenant_levies, tenant.tenant_payment_terms,
-        tenant.tenant_current, tenant.tenant_renewal_status
-        FROM railway.tenant
-        JOIN railway.prop ON prop.prop_id = tenant.prop_id
-        WHERE tenant.tenant_current = 'Yes'
-        ORDER BY prop.prop_country ASC, prop.prop_name ASC
-    """)
-    tenant_rows = my_cursor.fetchall()
+    # Get all active tenants with their property details using select_related for efficiency
+    active_tenants = tenant.objects.filter(
+        tenant_current='Yes'
+    ).select_related('prop').order_by('prop__prop_country', 'prop__prop_name')
     
-    my_cursor.execute("""
-        SELECT prop.prop_name
-        FROM railway.tenant
-        JOIN railway.prop ON prop.prop_id = tenant.prop_id
-        WHERE tenant.tenant_current = 'Yes'
-        ORDER BY prop.prop_country ASC, prop.prop_name ASC
-    """)
-    prop_active_tenant = [row[0] for row in my_cursor.fetchall()]
+    # Get list of property names that have active tenants
+    prop_active_tenant = list(active_tenants.values_list('prop__prop_name', flat=True))
     
-    my_cursor.execute("""
-        SELECT prop.prop_name
-        FROM railway.prop
-        WHERE prop.prop_status = 'Active'
-        AND prop.prop_available_for_rent = 'Yes'
-        ORDER BY prop.prop_country ASC, prop.prop_name ASC
-    """)
-    active_properties = [row[0] for row in my_cursor.fetchall()]
+    # Get all active properties available for rent
+    active_properties = props.objects.filter(
+        prop_status='Active',
+        prop_available_for_rent='Yes'
+    ).order_by('prop_country', 'prop_name')
     
-    for row in tenant_rows:
-        lease_end_date = row[9]  # tenant_lease_end_date
-        renewal_period = int(row[12])  # tenant_renewal_period
-        renewal_date = lease_end_date - timedelta(days=renewal_period)
-        warning_date = renewal_date - timedelta(days=30)
-        renewal_status = row[17] if row[17] else 'pending'  # tenant_renewal_status (new field)
+    # Process each active tenant for renewal logic
+    for tenant_obj in active_tenants:
+        lease_end_date = tenant_obj.tenant_lease_end_date
+        renewal_period = tenant_obj.tenant_renewal_period or 30  # Default to 30 days if None
         
-        if today >= warning_date:
-            if renewal_status == 'pending':
-                # Normal renewal case - add to tenants list
-                tenants.append({
-                    'prop_name': row[0],
-                    'prop_country': row[1],
-                    'tenant_type': row[2],
-                    'tenant_name': row[3],
-                    'tenant_contact_person': row[4],
-                    'tenant_contact_number': row[5],
-                    'tenant_email': row[6],
-                    'tenant_deposit': row[7],
-                    'tenant_lease_start_date': row[8].strftime('%Y-%m-%d') if row[8] else '',
-                    'tenant_lease_end_date': row[9].strftime('%Y-%m-%d') if row[9] else '',
-                    'tenant_rental_type': row[10],
-                    'tenant_renewal': row[11],
-                    'tenant_renewal_period': row[12],
-                    'tenant_rent': row[13],
-                    'tenant_levies': row[14],
-                    'tenant_payment_terms': row[15],
-                    'renewal_date': renewal_date.strftime('%Y-%m-%d'),
-                    'needs_renewal': True
-                })
-            elif renewal_status == 'declined':
-                # Tenant declined renewal - add to declined_renewals list
-                declined_renewals.append({
-                    'prop_name': row[0],
-                    'tenant_name': row[3],
-                    'lease_end_date': row[9].strftime('%Y-%m-%d') if row[9] else '',
-                    'message': 'CURRENT TENANT NOT RENEWING LEASE - NEED NEW TENANT'
-                })
-            # If renewal_status == 'new_lease_signed', do nothing (exclude from report)
+        if lease_end_date:  # Make sure lease_end_date exists
+            renewal_date = lease_end_date - timedelta(days=renewal_period)
+            warning_date = renewal_date - timedelta(days=30)
+            renewal_status = tenant_obj.tenant_renewal_status or 'pending'  # Default to pending
+            
+            if today >= warning_date:
+                if renewal_status == 'pending':
+                    # Normal renewal case - add to tenants list
+                    tenants_for_renewal.append({
+                        'prop_name': tenant_obj.prop.prop_name,
+                        'prop_country': tenant_obj.prop.prop_country,
+                        'tenant_type': tenant_obj.tenant_type,
+                        'tenant_name': tenant_obj.tenant_name,
+                        'tenant_contact_person': tenant_obj.tenant_contact_person,
+                        'tenant_contact_number': tenant_obj.tenant_contact_number,
+                        'tenant_email': tenant_obj.tenant_email,
+                        'tenant_deposit': tenant_obj.tenant_deposit,
+                        'tenant_lease_start_date': tenant_obj.tenant_lease_start_date.strftime('%Y-%m-%d') if tenant_obj.tenant_lease_start_date else '',
+                        'tenant_lease_end_date': tenant_obj.tenant_lease_end_date.strftime('%Y-%m-%d') if tenant_obj.tenant_lease_end_date else '',
+                        'tenant_rental_type': tenant_obj.tenant_rental_type,
+                        'tenant_renewal': tenant_obj.tenant_renewal,
+                        'tenant_renewal_period': tenant_obj.tenant_renewal_period,
+                        'tenant_rent': tenant_obj.tenant_rent,
+                        'tenant_levies': tenant_obj.tenant_levies,
+                        'tenant_payment_terms': tenant_obj.tenant_payment_terms,
+                        'renewal_date': renewal_date.strftime('%Y-%m-%d'),
+                        'needs_renewal': True
+                    })
+                elif renewal_status == 'declined':
+                    # Tenant declined renewal - add to declined_renewals list
+                    declined_renewals.append({
+                        'prop_name': tenant_obj.prop.prop_name,
+                        'tenant_name': tenant_obj.tenant_name,
+                        'lease_end_date': tenant_obj.tenant_lease_end_date.strftime('%Y-%m-%d') if tenant_obj.tenant_lease_end_date else '',
+                        'message': 'CURRENT TENANT NOT RENEWING LEASE - NEED NEW TENANT'
+                    })
+                # If renewal_status == 'new_lease_signed', do nothing (exclude from report)
     
     # Find vacant properties (properties without active tenants)
-    vacant_properties = [{'prop_name': prop} for prop in active_properties if prop not in prop_active_tenant]
-    
-    if mydb.is_connected():
-        my_cursor.close()
-        mydb.close()
+    vacant_properties = []
+    for prop in active_properties:
+        if prop.prop_name not in prop_active_tenant:
+            vacant_properties.append({
+                'prop_name': prop.prop_name,
+                'prop_country': prop.prop_country
+            })
     
     context = {
-        'tenants': tenants,
+        'tenants': tenants_for_renewal,
         'vacant_properties': vacant_properties,
-        'declined_renewals': declined_renewals,  # Add this new context
+        'declined_renewals': declined_renewals,
         'today': today.strftime('%Y-%m-%d')
     }
     return render(request, 'lease_renewal_report.html', context)
