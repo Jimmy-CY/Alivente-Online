@@ -2712,3 +2712,178 @@ Watching for file changes with StatReloader
 "GET /fsr/ HTTP/1.1" 200 73610
 "GET / HTTP/1.1" 200 7615
 "GET /properties/ HTTP/1.1" 200 53322
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 7615
+"GET /petty_cash/ HTTP/1.1" 200 6608
+"GET / HTTP/1.1" 200 7615
+"GET /invoices/ HTTP/1.1" 200 112894
+"GET / HTTP/1.1" 200 7615
+"GET /properties/ HTTP/1.1" 200 53322
+"POST /properties/ HTTP/1.1" 200 43054
+"POST /properties/ HTTP/1.1" 200 53322
+"GET /tenant/ HTTP/1.1" 200 54592
+"POST /tenant/ HTTP/1.1" 200 51064
+"POST /tenant/ HTTP/1.1" 200 38952
+"GET /tenant_report/6 HTTP/1.1" 200 14424
+"GET /tenant/ HTTP/1.1" 200 54592
+"GET /media/tenants/lease_agreements/tenant_6_anastasia-spiropoulou-and-constantinos-souvatzoglo_lea_ClRk3Qo.pdf HTTP/1.1" 200 507747
+"GET /lease_renewal_report/ HTTP/1.1" 200 11515
+"GET /tenant/ HTTP/1.1" 200 54592
+"GET /open_invoices_report/ HTTP/1.1" 200 31000
+"GET / HTTP/1.1" 200 7615
+"GET /tenant/ HTTP/1.1" 200 54592
+"GET /open_invoices_report/ HTTP/1.1" 200 25959
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 34121
+"GET / HTTP/1.1" 200 7615
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 34121
+"GET /tenant/ HTTP/1.1" 200 54592
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 34121
+"GET /open_invoices_report/ HTTP/1.1" 200 25959
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 34121
+"GET / HTTP/1.1" 200 7615
+"GET /tenant/ HTTP/1.1" 200 54592
+"GET /open_invoices_report/ HTTP/1.1" 200 29908
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 7615
+"GET /tenant/ HTTP/1.1" 200 54592
+"GET /open_invoices_report/ HTTP/1.1" 200 29916
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 34121
+"GET /tenant/ HTTP/1.1" 200 54592
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 34121
+"GET /open_invoices_report/ HTTP/1.1" 200 29916
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 34121
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 7615
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 34121
+"GET /tenant/ HTTP/1.1" 200 54592
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 34121
+"GET /open_invoices_report/ HTTP/1.1" 200 35264
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 34121
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 7615
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 34121
+"GET /tenant/ HTTP/1.1" 200 54592
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 34121
+"GET /open_invoices_report/ HTTP/1.1" 200 26563
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 34121
+Watching for file changes with StatReloader
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 7615
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 34121
+"GET /tenant/ HTTP/1.1" 200 54592
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 34121
+"GET /open_invoices_report/ HTTP/1.1" 200 28351
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 34121
+"GET / HTTP/1.1" 200 7615
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 34121
+"GET /tenant/ HTTP/1.1" 200 54592
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 34121
+"GET /open_invoices_report/ HTTP/1.1" 200 22646
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 34121
+"GET / HTTP/1.1" 200 7615
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 34121
+"GET / HTTP/1.1" 200 7615
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 34121
+Watching for file changes with StatReloader
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 7615
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 34121
+"GET /tenant/ HTTP/1.1" 200 54592
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 34121
+"GET /open_invoices_report/ HTTP/1.1" 200 22646
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 34121
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 34121
+"GET / HTTP/1.1" 200 7615
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 34121
+"GET /tenant/ HTTP/1.1" 200 54592
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 34121
+"GET /open_invoices_report/ HTTP/1.1" 200 23384
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 34121
+"GET / HTTP/1.1" 200 7615
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 34121
+"GET /tenant/ HTTP/1.1" 200 54592
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 34121
+"GET /open_invoices_report/ HTTP/1.1" 200 24057
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 34121
+"GET / HTTP/1.1" 200 7615
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 34121
+"GET /tenant/ HTTP/1.1" 200 54592
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 34121
+"GET /open_invoices_report/ HTTP/1.1" 200 34095
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 34121
+"GET / HTTP/1.1" 200 7615
+"GET /tenant/ HTTP/1.1" 200 54592
+"GET /open_invoices_report/ HTTP/1.1" 200 34095
+"GET /tenant/ HTTP/1.1" 200 54592
+"GET /open_invoices_report/ HTTP/1.1" 200 34095
+"GET / HTTP/1.1" 200 7615
+"GET /tenant/ HTTP/1.1" 200 54592
+"GET /open_invoices_report/ HTTP/1.1" 200 34094
+"GET /properties/ HTTP/1.1" 200 53322
+"GET /tenant/ HTTP/1.1" 200 54592
+"GET /open_invoices_report/ HTTP/1.1" 200 34094
+"GET / HTTP/1.1" 200 7615
+"GET /tenant/ HTTP/1.1" 200 54592
+"GET /open_invoices_report/ HTTP/1.1" 200 34056
+"GET / HTTP/1.1" 200 7615
+"GET /tenant/ HTTP/1.1" 200 54592
+"GET /open_invoices_report/ HTTP/1.1" 200 34794
+"GET /invoices/ HTTP/1.1" 200 112894
+"GET /invoices_commit/53 HTTP/1.1" 302 0
+"GET /invoices/ HTTP/1.1" 200 109653
+"GET / HTTP/1.1" 200 7615
+"GET /tenant/ HTTP/1.1" 200 54592
+"GET /open_invoices_report/ HTTP/1.1" 200 33236
+"GET / HTTP/1.1" 200 7615
+"GET /tenant/ HTTP/1.1" 200 54592
+"GET /open_invoices_report/ HTTP/1.1" 200 33235
+"GET / HTTP/1.1" 200 7615
+"GET /tenant/ HTTP/1.1" 200 54592
+"GET /open_invoices_report/ HTTP/1.1" 200 33333
+"GET / HTTP/1.1" 200 7615
+"GET /tenant/ HTTP/1.1" 200 54592
+"GET /open_invoices_report/ HTTP/1.1" 200 28010

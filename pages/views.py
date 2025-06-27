@@ -17,6 +17,7 @@ from django.urls import reverse
 from django.utils import timezone
 from django.utils.dateparse import parse_date
 from django.utils.html import strip_tags
+from django.utils.safestring import mark_safe
 from django.utils.timezone import now
 from django.views.decorators.cache import never_cache
 from django.views.static import serve
@@ -3722,6 +3723,7 @@ def open_invoices_report(request):
     for tenant_obj in current_tenants:
         tenant_analysis = {
             'tenant_name': tenant_obj.tenant_name,
+            'tenant_id': tenant_obj.tenant_id,  # Add tenant_id here too
             'total_outstanding': 0,
             'current_0_30': 0,
             'past_due_31_60': 0,
@@ -3767,7 +3769,7 @@ def open_invoices_report(request):
     
     # Sort debtors by total outstanding (highest first)
     debtors_age_analysis.sort(key=lambda x: x['total_outstanding'], reverse=True)
-    
+
     context = {
         'today': today.strftime('%Y-%m-%d'),
         'properties_with_invoices': properties_with_invoices,
