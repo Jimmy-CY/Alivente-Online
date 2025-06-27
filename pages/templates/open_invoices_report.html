@@ -209,6 +209,18 @@ console.log('Tenant data loaded:', tenantData.length, 'properties');
                 </tbody>
             </table>
         </div>
+        {% else %}
+        <div class="age-analysis-section">
+            <h3 class="analysis-title">Debtors Age Analysis</h3>
+            <div class="no-outstanding-balances">
+                <div class="no-balances-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <h4>Excellent News!</h4>
+                <p>There are currently no tenants with outstanding balances.</p>
+                <p class="sub-message">All tenant accounts are up to date.</p>
+            </div>
+        </div>
         {% endif %}
     </div>
 </div>
@@ -451,6 +463,40 @@ console.log('Tenant data loaded:', tenantData.length, 'properties');
         padding: 40px;
         font-style: italic;
         color: #6c757d;
+    }
+
+    /* No Outstanding Balances Styles */
+    .no-outstanding-balances {
+        text-align: center;
+        padding: 60px 40px;
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        border: 2px solid #d4edda;
+    }
+
+    .no-balances-icon {
+        font-size: 4rem;
+        color: #28a745;
+        margin-bottom: 20px;
+    }
+
+    .no-outstanding-balances h4 {
+        color: #155724;
+        font-size: 1.5rem;
+        margin-bottom: 15px;
+        font-weight: 600;
+    }
+
+    .no-outstanding-balances p {
+        color: #6c757d;
+        font-size: 1.1rem;
+        margin-bottom: 10px;
+    }
+
+    .sub-message {
+        color: #28a745;
+        font-weight: 500;
+        font-size: 1rem !important;
     }
     
     @media print {

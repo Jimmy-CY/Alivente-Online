@@ -2887,3 +2887,13 @@ Not Found: /.well-known/appspecific/com.chrome.devtools.json
 "GET / HTTP/1.1" 200 7615
 "GET /tenant/ HTTP/1.1" 200 54592
 "GET /open_invoices_report/ HTTP/1.1" 200 28010
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 7615
+"GET /tenant/ HTTP/1.1" 200 54592
+"GET /lease_renewal_report/ HTTP/1.1" 200 11515
+"GET /tenant/ HTTP/1.1" 200 54592
+"GET /open_invoices_report/ HTTP/1.1" 200 28010
+"GET / HTTP/1.1" 200 7615
+"GET /tenant/ HTTP/1.1" 200 54592
+"GET /open_invoices_report/ HTTP/1.1" 200 28731
+"GET /tenant/ HTTP/1.1" 200 54592
