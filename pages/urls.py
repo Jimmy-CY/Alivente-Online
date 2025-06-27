@@ -152,4 +152,4 @@ urlpatterns = [
     path('fsr/pdf/', views.fsr_pdf, name='fsr_pdf'),
 
 
-    ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+    ]
