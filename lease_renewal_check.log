@@ -2916,3 +2916,6 @@ Watching for file changes with StatReloader
 "GET /finance/ HTTP/1.1" 200 10481
 "GET /finance_pl_act/ HTTP/1.1" 200 356137
 "GET /act_expense_view/?year=2025&month=5&from_finance_pl_act=true&prop=all HTTP/1.1" 200 46121
+Watching for file changes with StatReloader
+C:\Users\DemetrisManias\Desktop\code\djangoproject\mysite\urls.py changed, reloading.
+Watching for file changes with StatReloader
