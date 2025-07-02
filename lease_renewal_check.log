@@ -3705,3 +3705,319 @@ Watching for file changes with StatReloader
 "GET /finance_pl_act/ HTTP/1.1" 200 381457
 "GET /revenue-details/?year=2025&month=3&line_type=1&prop=all HTTP/1.1" 200 3730
 "GET /revenue-details/?year=2025&month=6&line_type=1&prop=all HTTP/1.1" 200 4032
+Watching for file changes with StatReloader
+"GET /revenue-details/?year=2025&month=6&line_type=5&prop=all HTTP/1.1" 200 2500
+"GET /act_expense_view/?year=2025&month=5&from_finance_pl_act=true&prop=all HTTP/1.1" 200 46121
+"GET /revenue-details/?year=2025&month=5&line_type=1&prop=all HTTP/1.1" 200 4032
+"GET /act_expense_view/?year=2025&from_finance_pl_act=true&prop=all HTTP/1.1" 200 47239
+"GET /revenue-details/?year=2025&month=3&line_type=1&prop=all HTTP/1.1" 200 3730
+"GET /revenue-details/?year=2025&month=4&line_type=5&prop=all HTTP/1.1" 200 2500
+"GET /act_expense_view/?year=2025&month=4&from_finance_pl_act=true&prop=all HTTP/1.1" 200 45039
+"GET /revenue-details/?year=2025&month=4&line_type=1&prop=all HTTP/1.1" 200 3730
+"GET /revenue-details/?year=2025&month=3&line_type=5&prop=all HTTP/1.1" 200 2500
+"GET /revenue-details/?year=2025&month=5&line_type=1&prop=all HTTP/1.1" 200 4032
+"GET /revenue-details/?year=2025&month=12&line_type=5&prop=all HTTP/1.1" 200 2500
+"GET /revenue-details/?year=2025&month=4&line_type=1&prop=all HTTP/1.1" 200 3730
+"GET /revenue-details/?year=2025&month=6&line_type=5&prop=all HTTP/1.1" 200 2500
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+"GET /finance/ HTTP/1.1" 200 10481
+"GET /finance_pl_act/ HTTP/1.1" 200 389368
+"GET /budget-expense-details/?year=2025&month=1&line_type=5&prop=all HTTP/1.1" 200 3467
+"GET /budget-expense-details/?year=2025&month=2&line_type=9&prop=all HTTP/1.1" 200 4500
+"GET /budget-expense-details/?year=2025&month=1&line_type=16&prop=all HTTP/1.1" 200 1424
+"GET /budget-expense-details/?year=2025&month=1&line_type=18&prop=all HTTP/1.1" 200 1430
+"GET /finance_pl_act/ HTTP/1.1" 200 410664
+"GET /budget-expense-details/?year=2025&month=6&line_type=3&prop=all HTTP/1.1" 200 4512
+"GET /budget-expense-details/?year=2025&month=7&line_type=5&prop=all HTTP/1.1" 200 1426
+"GET /budget-expense-details/?year=2025&month=7&line_type=6&prop=all HTTP/1.1" 200 2759
+"GET /budget-expense-details/?year=2025&month=6&line_type=8&prop=all HTTP/1.1" 200 4434
+"GET /budget-expense-details/?year=2025&month=6&line_type=9&prop=all HTTP/1.1" 200 4500
+"GET /budget-expense-details/?year=2025&month=6&line_type=21&prop=all HTTP/1.1" 200 1428
+"GET /budget-expense-details/?year=2025&month=6&line_type=22&prop=all HTTP/1.1" 200 1422
+"GET /budget-expense-details/?year=2025&month=6&line_type=23&prop=all HTTP/1.1" 200 1428
+"GET /budget-expense-details/?year=2025&month=6&line_type=28&prop=all HTTP/1.1" 200 2124
+"GET / HTTP/1.1" 200 7615
+"GET /finance/ HTTP/1.1" 200 10481
+"GET /finance_pl_act/ HTTP/1.1" 200 432685
+"GET /budget-expense-details/?year=2025&month=8&line_type=17&prop=all HTTP/1.1" 200 2129
+"GET /budget-expense-details/?year=2025&month=9&line_type=29&prop=all HTTP/1.1" 200 2133
+"GET /budget-expense-details/?year=2025&month=9&line_type=30&prop=all HTTP/1.1" 200 1429
+"GET /finance_pl_act/?year=2024&prop=all HTTP/1.1" 200 421581
+"GET /budget-expense-details/?year=2024&month=9&line_type=1&prop=all HTTP/1.1" 200 3075
+"GET /finance_pl_act/?year=2025&prop=all HTTP/1.1" 200 432685
+"GET /budget-expense-details/?year=2025&month=10&line_type=2&prop=all HTTP/1.1" 200 3075
+"GET /budget-expense-details/?year=2025&month=11&line_type=4&prop=all HTTP/1.1" 200 3127
+"GET /budget-expense-details/?year=2025&month=6&line_type=3&prop=all HTTP/1.1" 200 4512
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+"GET /finance/ HTTP/1.1" 200 10481
+"GET / HTTP/1.1" 200 7615
+"GET /finance/ HTTP/1.1" 200 10481
+"GET /finance_pl_act/ HTTP/1.1" 200 435185
+Internal Server Error: /budget-expense-details/
+Traceback (most recent call last):
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\contrib\auth\decorators.py", line 60, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\djangoproject\pages\views.py", line 2849, in budget_expense_details_view
+    return render(request, 'budget_expense_details.html', context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\loader.py", line 15, in get_template
+    return engine.get_template(template_name)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\backends\django.py", line 79, in get_template
+    return Template(self.engine.get_template(template_name), self)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\engine.py", line 177, in get_template
+    template, origin = self.find_template(template_name)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\engine.py", line 159, in find_template
+    template = loader.get_template(name, skip=skip)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\loaders\cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\loaders\base.py", line 28, in get_template
+    return Template(
+           ^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 154, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 196, in compile_nodelist
+    nodelist = parser.parse()
+               ^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 518, in parse
+    raise self.error(token, e)
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 516, in parse
+    compiled_result = compile_func(self, token)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\defaulttags.py", line 962, in do_if
+    nodelist = parser.parse(("elif", "else", "endif"))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 518, in parse
+    raise self.error(token, e)
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 516, in parse
+    compiled_result = compile_func(self, token)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\defaulttags.py", line 1501, in widthratio
+    parser.compile_filter(this_value_expr),
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 605, in compile_filter
+    return FilterExpression(token, self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 702, in __init__
+    self.args_check(filter_name, filter_func, args)
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 764, in args_check
+    raise TemplateSyntaxError(
+django.template.exceptions.TemplateSyntaxError: sum_amounts requires 1 arguments, 2 provided
+"GET /budget-expense-details/?year=2025&month=6&line_type=3&prop=all HTTP/1.1" 500 197043
+Internal Server Error: /budget-expense-details/
+Traceback (most recent call last):
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\contrib\auth\decorators.py", line 60, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\djangoproject\pages\views.py", line 2849, in budget_expense_details_view
+    return render(request, 'budget_expense_details.html', context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\loader.py", line 15, in get_template
+    return engine.get_template(template_name)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\backends\django.py", line 79, in get_template
+    return Template(self.engine.get_template(template_name), self)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\engine.py", line 177, in get_template
+    template, origin = self.find_template(template_name)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\engine.py", line 159, in find_template
+    template = loader.get_template(name, skip=skip)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\loaders\cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\loaders\base.py", line 28, in get_template
+    return Template(
+           ^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 154, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 196, in compile_nodelist
+    nodelist = parser.parse()
+               ^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 518, in parse
+    raise self.error(token, e)
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 516, in parse
+    compiled_result = compile_func(self, token)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\defaulttags.py", line 962, in do_if
+    nodelist = parser.parse(("elif", "else", "endif"))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 518, in parse
+    raise self.error(token, e)
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 516, in parse
+    compiled_result = compile_func(self, token)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\defaulttags.py", line 1501, in widthratio
+    parser.compile_filter(this_value_expr),
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 605, in compile_filter
+    return FilterExpression(token, self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 702, in __init__
+    self.args_check(filter_name, filter_func, args)
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 764, in args_check
+    raise TemplateSyntaxError(
+django.template.exceptions.TemplateSyntaxError: sum_amounts requires 1 arguments, 2 provided
+"GET /budget-expense-details/?year=2025&month=9&line_type=1&prop=all HTTP/1.1" 500 193914
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 7615
+"GET /finance/ HTTP/1.1" 200 10481
+"GET /finance_pl_act/ HTTP/1.1" 200 435185
+Internal Server Error: /budget-expense-details/
+Traceback (most recent call last):
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\contrib\auth\decorators.py", line 60, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\djangoproject\pages\views.py", line 2849, in budget_expense_details_view
+    return render(request, 'budget_expense_details.html', context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\loader.py", line 15, in get_template
+    return engine.get_template(template_name)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\backends\django.py", line 79, in get_template
+    return Template(self.engine.get_template(template_name), self)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\engine.py", line 177, in get_template
+    template, origin = self.find_template(template_name)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\engine.py", line 159, in find_template
+    template = loader.get_template(name, skip=skip)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\loaders\cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\loaders\base.py", line 28, in get_template
+    return Template(
+           ^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 154, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 196, in compile_nodelist
+    nodelist = parser.parse()
+               ^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 518, in parse
+    raise self.error(token, e)
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 516, in parse
+    compiled_result = compile_func(self, token)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\defaulttags.py", line 962, in do_if
+    nodelist = parser.parse(("elif", "else", "endif"))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 518, in parse
+    raise self.error(token, e)
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 516, in parse
+    compiled_result = compile_func(self, token)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\defaulttags.py", line 1501, in widthratio
+    parser.compile_filter(this_value_expr),
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 605, in compile_filter
+    return FilterExpression(token, self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 702, in __init__
+    self.args_check(filter_name, filter_func, args)
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 764, in args_check
+    raise TemplateSyntaxError(
+django.template.exceptions.TemplateSyntaxError: sum_amounts requires 1 arguments, 2 provided
+"GET /budget-expense-details/?year=2025&month=6&line_type=3&prop=all HTTP/1.1" 500 197043
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 7615
+"GET /finance/ HTTP/1.1" 200 10481
+"GET /finance_pl_act/ HTTP/1.1" 200 435185
+Internal Server Error: /budget-expense-details/
+"GET /budget-expense-details/?year=2025&month=10&line_type=2&prop=all HTTP/1.1" 500 51
+Watching for file changes with StatReloader
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 7615
+"GET /finance/ HTTP/1.1" 200 10481
+"GET /finance_pl_act/ HTTP/1.1" 200 435185
+"GET /budget-expense-details/?year=2025&month=7&line_type=6&prop=all HTTP/1.1" 200 1544
+"GET /budget-expense-details/?year=2025&month=11&line_type=4&prop=all HTTP/1.1" 200 1698
+"GET /budget-expense-details/?year=2025&month=6&line_type=8&prop=all HTTP/1.1" 200 2369
+"GET /revenue-details/?year=2025&month=6&line_type=5&prop=all HTTP/1.1" 200 2500
+"GET /budget-expense-details/?year=2025&month=1&line_type=5&prop=all HTTP/1.1" 200 1873
+"GET /revenue-details/?year=2025&month=5&line_type=1&prop=all HTTP/1.1" 200 4032
+"GET /revenue-details/?year=2025&month=3&line_type=1&prop=all HTTP/1.1" 200 3730
+"GET /finance_pl_act/ HTTP/1.1" 200 435185
+"GET /revenue-details/?year=2025&month=6&line_type=1&prop=all HTTP/1.1" 200 4032
+"GET /budget-expense-details/?year=2025&month=6&line_type=3&prop=all HTTP/1.1" 200 2367
+"GET /budget-expense-details/?year=2025&month=9&line_type=1&prop=all HTTP/1.1" 200 1706
+"GET /revenue-details/?year=2025&month=3&line_type=1&prop=all HTTP/1.1" 200 3730
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 7615
+"GET /finance/ HTTP/1.1" 200 10481
+"GET /finance_pl_act/ HTTP/1.1" 200 431867
+"GET /revenue-details/?year=2025&month=3&line_type=1&prop=all HTTP/1.1" 200 2208
+"GET /revenue-details/?year=2025&month=6&line_type=1&prop=all HTTP/1.1" 200 2373
+"GET /budget-expense-details/?year=2025&month=6&line_type=3&prop=all HTTP/1.1" 200 2367
+"GET / HTTP/1.1" 200 7615
+"GET /finance/ HTTP/1.1" 200 10481
+"GET /finance_pl_act/ HTTP/1.1" 200 432575
+"GET /revenue-details/?year=2025&month=6&line_type=1&prop=all HTTP/1.1" 200 2373
+"GET /revenue-details/?year=2025&month=9&line_type=5&prop=all HTTP/1.1" 200 1530
+"GET /budget-expense-details/?year=2025&month=10&line_type=2&prop=all HTTP/1.1" 200 1706
+"GET /budget-expense-details/?year=2025&month=11&line_type=9&prop=all HTTP/1.1" 200 2355
+"GET /revenue-details/?year=2025&month=8&line_type=1&prop=all HTTP/1.1" 200 2373
+"GET /budget-expense-details/?year=2025&month=10&line_type=18&prop=all HTTP/1.1" 200 918
+"GET /budget-expense-details/?year=2025&month=9&line_type=7&prop=all HTTP/1.1" 200 1706
+"GET /budget-expense-details/?year=2025&month=6&line_type=8&prop=all HTTP/1.1" 200 2369
+"GET / HTTP/1.1" 200 7615
+"GET /finance/ HTTP/1.1" 200 10481
+"GET /finance_pl_act/ HTTP/1.1" 200 434851
+"GET /revenue-details/?year=2025&month=6&line_type=1&prop=all HTTP/1.1" 200 2373
+"GET /act_expense_view/?year=2025&month=6&from_finance_pl_act=true&prop=all HTTP/1.1" 200 45221
+"GET /budget-expense-details/?year=2025&month=9&line_type=1&prop=all HTTP/1.1" 200 1706
+"GET /budget-expense-details/?year=2025&month=6&line_type=8&prop=all HTTP/1.1" 200 2369
+"GET /budget-expense-details/?year=2025&month=5&line_type=9&prop=all HTTP/1.1" 200 2355
+"GET /act_expense_view/?year=2025&month=5&from_finance_pl_act=true&prop=all HTTP/1.1" 200 46121
+"GET /act_expense_view/?year=2025&from_finance_pl_act=true&prop=all HTTP/1.1" 200 47239

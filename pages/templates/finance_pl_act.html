@@ -61,12 +61,15 @@
     </div>
 </div>
 
-<!-- NEW MODALS - Revenue Details Modal -->
+<!-- Update your Revenue Details Modal HTML -->
 <div class="modal fade" id="revenueDetailsModal" tabindex="-1" aria-labelledby="revenueDetailsModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
+    <div class="modal-dialog modal-md"> <!-- Changed from modal-lg to modal-md for smaller size -->
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="revenueDetailsModalLabel">Revenue Details</h5>
+                <div>
+                    <h5 class="modal-title" id="revenueDetailsModalLabel">Revenue Details</h5>
+                    <small class="text-muted" id="revenueDetailsSubtitle"></small>
+                </div>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
@@ -81,12 +84,15 @@
     </div>
 </div>
 
-<!-- Budget Expense Details Modal -->
+<!-- Update your Budget Expense Modal HTML -->
 <div class="modal fade" id="budgetExpenseDetailsModal" tabindex="-1" aria-labelledby="budgetExpenseDetailsModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
+    <div class="modal-dialog modal-md"> <!-- Changed from modal-lg to modal-md for smaller size -->
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="budgetExpenseDetailsModalLabel">Budget Expense Details</h5>
+                <div>
+                    <h5 class="modal-title" id="budgetExpenseDetailsModalLabel">Budget Expense Details</h5>
+                    <small class="text-muted" id="budgetExpenseDetailsSubtitle"></small>
+                </div>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">&times;</span>
                 </button>
@@ -523,18 +529,126 @@
                     {% if line_totals.jan or line_totals.feb or line_totals.mar or line_totals.apr or line_totals.may or line_totals.jun or line_totals.jul or line_totals.aug or line_totals.sep or line_totals.oct or line_totals.nov or line_totals.dec or line_totals.total %}
                     <tr>
                         <td>{{ line_type.expense_line_types_name }}</td>
-                        <td class="text-right">{{ line_totals.jan|default:0|floatformat:"0"|intcomma }}</td>
-                        <td class="text-right">{{ line_totals.feb|default:0|floatformat:"0"|intcomma }}</td>
-                        <td class="text-right">{{ line_totals.mar|default:0|floatformat:"0"|intcomma }}</td>
-                        <td class="text-right">{{ line_totals.apr|default:0|floatformat:"0"|intcomma }}</td>
-                        <td class="text-right">{{ line_totals.may|default:0|floatformat:"0"|intcomma }}</td>
-                        <td class="text-right">{{ line_totals.jun|default:0|floatformat:"0"|intcomma }}</td>
-                        <td class="text-right">{{ line_totals.jul|default:0|floatformat:"0"|intcomma }}</td>
-                        <td class="text-right">{{ line_totals.aug|default:0|floatformat:"0"|intcomma }}</td>
-                        <td class="text-right">{{ line_totals.sep|default:0|floatformat:"0"|intcomma }}</td>
-                        <td class="text-right">{{ line_totals.oct|default:0|floatformat:"0"|intcomma }}</td>
-                        <td class="text-right">{{ line_totals.nov|default:0|floatformat:"0"|intcomma }}</td>
-                        <td class="text-right">{{ line_totals.dec|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">
+                            {% if line_totals.jan %}
+                                <a href="#" class="budget-expense-details-link" 
+                                   data-url="{% url 'budget_expense_details_view' %}?year={{ selected_year|floatformat:'0' }}&month=1&line_type={{ line_type.expense_line_types_id }}&prop={{ active_prop }}">
+                                    {{ line_totals.jan|default:0|floatformat:"0"|intcomma }}
+                                </a>
+                            {% else %}
+                                0
+                            {% endif %}
+                        </td>
+                        <td class="text-right">
+                            {% if line_totals.feb %}
+                                <a href="#" class="budget-expense-details-link" 
+                                   data-url="{% url 'budget_expense_details_view' %}?year={{ selected_year|floatformat:'0' }}&month=2&line_type={{ line_type.expense_line_types_id }}&prop={{ active_prop }}">
+                                    {{ line_totals.feb|default:0|floatformat:"0"|intcomma }}
+                                </a>
+                            {% else %}
+                                0
+                            {% endif %}
+                        </td>
+                        <td class="text-right">
+                            {% if line_totals.mar %}
+                                <a href="#" class="budget-expense-details-link" 
+                                   data-url="{% url 'budget_expense_details_view' %}?year={{ selected_year|floatformat:'0' }}&month=3&line_type={{ line_type.expense_line_types_id }}&prop={{ active_prop }}">
+                                    {{ line_totals.mar|default:0|floatformat:"0"|intcomma }}
+                                </a>
+                            {% else %}
+                                0
+                            {% endif %}
+                        </td>
+                        <td class="text-right">
+                            {% if line_totals.apr %}
+                                <a href="#" class="budget-expense-details-link" 
+                                   data-url="{% url 'budget_expense_details_view' %}?year={{ selected_year|floatformat:'0' }}&month=4&line_type={{ line_type.expense_line_types_id }}&prop={{ active_prop }}">
+                                    {{ line_totals.apr|default:0|floatformat:"0"|intcomma }}
+                                </a>
+                            {% else %}
+                                0
+                            {% endif %}
+                        </td>
+                        <td class="text-right">
+                            {% if line_totals.may %}
+                                <a href="#" class="budget-expense-details-link" 
+                                   data-url="{% url 'budget_expense_details_view' %}?year={{ selected_year|floatformat:'0' }}&month=5&line_type={{ line_type.expense_line_types_id }}&prop={{ active_prop }}">
+                                    {{ line_totals.may|default:0|floatformat:"0"|intcomma }}
+                                </a>
+                            {% else %}
+                                0
+                            {% endif %}
+                        </td>
+                        <td class="text-right">
+                            {% if line_totals.jun %}
+                                <a href="#" class="budget-expense-details-link" 
+                                   data-url="{% url 'budget_expense_details_view' %}?year={{ selected_year|floatformat:'0' }}&month=6&line_type={{ line_type.expense_line_types_id }}&prop={{ active_prop }}">
+                                    {{ line_totals.jun|default:0|floatformat:"0"|intcomma }}
+                                </a>
+                            {% else %}
+                                0
+                            {% endif %}
+                        </td>
+                        <td class="text-right">
+                            {% if line_totals.jul %}
+                                <a href="#" class="budget-expense-details-link" 
+                                   data-url="{% url 'budget_expense_details_view' %}?year={{ selected_year|floatformat:'0' }}&month=7&line_type={{ line_type.expense_line_types_id }}&prop={{ active_prop }}">
+                                    {{ line_totals.jul|default:0|floatformat:"0"|intcomma }}
+                                </a>
+                            {% else %}
+                                0
+                            {% endif %}
+                        </td>
+                        <td class="text-right">
+                            {% if line_totals.aug %}
+                                <a href="#" class="budget-expense-details-link" 
+                                   data-url="{% url 'budget_expense_details_view' %}?year={{ selected_year|floatformat:'0' }}&month=8&line_type={{ line_type.expense_line_types_id }}&prop={{ active_prop }}">
+                                    {{ line_totals.aug|default:0|floatformat:"0"|intcomma }}
+                                </a>
+                            {% else %}
+                                0
+                            {% endif %}
+                        </td>
+                        <td class="text-right">
+                            {% if line_totals.sep %}
+                                <a href="#" class="budget-expense-details-link" 
+                                   data-url="{% url 'budget_expense_details_view' %}?year={{ selected_year|floatformat:'0' }}&month=9&line_type={{ line_type.expense_line_types_id }}&prop={{ active_prop }}">
+                                    {{ line_totals.sep|default:0|floatformat:"0"|intcomma }}
+                                </a>
+                            {% else %}
+                                0
+                            {% endif %}
+                        </td>
+                        <td class="text-right">
+                            {% if line_totals.oct %}
+                                <a href="#" class="budget-expense-details-link" 
+                                   data-url="{% url 'budget_expense_details_view' %}?year={{ selected_year|floatformat:'0' }}&month=10&line_type={{ line_type.expense_line_types_id }}&prop={{ active_prop }}">
+                                    {{ line_totals.oct|default:0|floatformat:"0"|intcomma }}
+                                </a>
+                            {% else %}
+                                0
+                            {% endif %}
+                        </td>
+                        <td class="text-right">
+                            {% if line_totals.nov %}
+                                <a href="#" class="budget-expense-details-link" 
+                                   data-url="{% url 'budget_expense_details_view' %}?year={{ selected_year|floatformat:'0' }}&month=11&line_type={{ line_type.expense_line_types_id }}&prop={{ active_prop }}">
+                                    {{ line_totals.nov|default:0|floatformat:"0"|intcomma }}
+                                </a>
+                            {% else %}
+                                0
+                            {% endif %}
+                        </td>
+                        <td class="text-right">
+                            {% if line_totals.dec %}
+                                <a href="#" class="budget-expense-details-link" 
+                                   data-url="{% url 'budget_expense_details_view' %}?year={{ selected_year|floatformat:'0' }}&month=12&line_type={{ line_type.expense_line_types_id }}&prop={{ active_prop }}">
+                                    {{ line_totals.dec|default:0|floatformat:"0"|intcomma }}
+                                </a>
+                            {% else %}
+                                0
+                            {% endif %}
+                        </td>
                         <td class="text-right font-weight-bold">{{ line_totals.total|default:0|floatformat:"0"|intcomma }}</td>
                         <td class="text-right">{{ line_totals.total|divide:12|default:0|floatformat:"0"|intcomma }}</td>
                     </tr>
@@ -1251,6 +1365,194 @@
         margin: 0 auto;
     }
 
+    /* Revenue Details Modal Table Styling - Updated for Simplified Design */
+    #revenueDetailsModal .modal-dialog {
+        max-width: 600px; /* Smaller modal like budget expenses */
+    }
+
+    #revenueDetailsModal .table-responsive {
+        width: 100%;
+        overflow-x: visible;
+        max-height: 60vh; /* Limit height to enable scrolling */
+        overflow-y: auto;
+        /* Force scrollbar to always be visible */
+        scrollbar-width: thin; /* Firefox */
+        scrollbar-color: #c1c1c1 #f1f1f1; /* Firefox */
+    }
+
+    /* Custom scrollbar styling for Webkit browsers (Chrome, Safari, Edge) */
+    #revenueDetailsModal .table-responsive::-webkit-scrollbar {
+        width: 12px;
+        display: block !important; /* Force visibility */
+    }
+
+    #revenueDetailsModal .table-responsive::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 6px;
+        border: 1px solid #e0e0e0;
+    }
+
+    #revenueDetailsModal .table-responsive::-webkit-scrollbar-thumb {
+        background: #c1c1c1;
+        border-radius: 6px;
+        border: 1px solid #a8a8a8;
+    }
+
+    #revenueDetailsModal .table-responsive::-webkit-scrollbar-thumb:hover {
+        background: #a8a8a8;
+    }
+
+    #revenueDetailsModal .table-responsive::-webkit-scrollbar-thumb:active {
+        background: #909090;
+    }
+
+    #revenueDetailsModal .table {
+        width: 100% !important;
+        table-layout: auto;
+        margin-bottom: 0;
+    }
+
+    #revenueDetailsModal .table td,
+    #revenueDetailsModal .table th {
+        white-space: normal;
+        overflow: visible;
+        text-overflow: clip;
+        padding: 8px 12px;
+        font-size: 0.9rem;
+    }
+
+    /* Sticky headers for revenue modal */
+    #revenueDetailsModal .table thead th {
+        position: sticky;
+        top: 0;
+        background-color: #f8f9fa;
+        z-index: 10;
+        border-bottom: 2px solid #dee2e6;
+    }
+
+    /* Two column layout for simplified revenue table */
+    #revenueDetailsModal .table th:nth-child(1), /* Property */
+    #revenueDetailsModal .table td:nth-child(1) {
+        width: 70%;
+        min-width: 200px;
+    }
+
+    #revenueDetailsModal .table th:nth-child(2), /* Amount */
+    #revenueDetailsModal .table td:nth-child(2) {
+        width: 30%;
+        min-width: 100px;
+        text-align: right;
+    }
+
+    /* Modal header styling for revenue */
+    #revenueDetailsModal .modal-header h5 {
+        margin-bottom: 2px;
+    }
+
+    #revenueDetailsModal .modal-header small {
+        color: #6c757d;
+        font-size: 0.875rem;
+    }
+
+    /* Budget Expense Details Modal Table Styling */
+    #budgetExpenseDetailsModal .modal-dialog,
+    #totalExpenseDetailsModal .modal-dialog {
+        max-width: 600px; /* Smaller modal for budget expenses */
+    }
+
+    #budgetExpenseDetailsModal .table-responsive,
+    #totalExpenseDetailsModal .table-responsive {
+        width: 100%;
+        overflow-x: visible;
+        max-height: 60vh; /* Limit height to enable scrolling */
+        overflow-y: auto;
+        /* Force scrollbar to always be visible */
+        scrollbar-width: thin; /* Firefox */
+        scrollbar-color: #c1c1c1 #f1f1f1; /* Firefox */
+    }
+
+    /* Custom scrollbar styling for budget expense modals */
+    #budgetExpenseDetailsModal .table-responsive::-webkit-scrollbar,
+    #totalExpenseDetailsModal .table-responsive::-webkit-scrollbar {
+        width: 12px;
+        display: block !important; /* Force visibility */
+    }
+
+    #budgetExpenseDetailsModal .table-responsive::-webkit-scrollbar-track,
+    #totalExpenseDetailsModal .table-responsive::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 6px;
+        border: 1px solid #e0e0e0;
+    }
+
+    #budgetExpenseDetailsModal .table-responsive::-webkit-scrollbar-thumb,
+    #totalExpenseDetailsModal .table-responsive::-webkit-scrollbar-thumb {
+        background: #c1c1c1;
+        border-radius: 6px;
+        border: 1px solid #a8a8a8;
+    }
+
+    #budgetExpenseDetailsModal .table-responsive::-webkit-scrollbar-thumb:hover,
+    #totalExpenseDetailsModal .table-responsive::-webkit-scrollbar-thumb:hover {
+        background: #a8a8a8;
+    }
+
+    #budgetExpenseDetailsModal .table-responsive::-webkit-scrollbar-thumb:active,
+    #totalExpenseDetailsModal .table-responsive::-webkit-scrollbar-thumb:active {
+        background: #909090;
+    }
+
+    #budgetExpenseDetailsModal .table,
+    #totalExpenseDetailsModal .table {
+        width: 100% !important;
+        table-layout: auto;
+        margin-bottom: 0;
+    }
+
+    #budgetExpenseDetailsModal .table td,
+    #budgetExpenseDetailsModal .table th,
+    #totalExpenseDetailsModal .table td,
+    #totalExpenseDetailsModal .table th {
+        white-space: normal;
+        overflow: visible;
+        padding: 8px 12px;
+        font-size: 0.9rem;
+    }
+
+    /* Sticky headers for budget expense modal */
+    #budgetExpenseDetailsModal .table thead th,
+    #totalExpenseDetailsModal .table thead th {
+        position: sticky;
+        top: 0;
+        background-color: #f8f9fa;
+        z-index: 10;
+        border-bottom: 2px solid #dee2e6;
+    }
+
+    /* Two column layout for simplified budget expense table */
+    #budgetExpenseDetailsModal .table th:nth-child(1), /* Property */
+    #budgetExpenseDetailsModal .table td:nth-child(1) {
+        width: 70%;
+        min-width: 200px;
+    }
+
+    #budgetExpenseDetailsModal .table th:nth-child(2), /* Amount */
+    #budgetExpenseDetailsModal .table td:nth-child(2) {
+        width: 30%;
+        min-width: 100px;
+        text-align: right;
+    }
+
+    /* Modal header styling for budget expenses */
+    #budgetExpenseDetailsModal .modal-header h5 {
+        margin-bottom: 2px;
+    }
+
+    #budgetExpenseDetailsModal .modal-header small {
+        color: #6c757d;
+        font-size: 0.875rem;
+    }
+
     /* Responsive Adjustments */
     @media (max-width: 1200px) {
         .table-sm td, .table-sm th {
@@ -1311,97 +1613,7 @@
         }
     }
 
-/* Add this CSS to your existing <style> section in the P&L template */
-
-/* Revenue Details Modal Table Styling */
-#revenueDetailsModal .modal-dialog {
-    max-width: 90%; /* Make modal wider */
-}
-
-#revenueDetailsModal .table-responsive {
-    width: 100%;
-    overflow-x: visible; /* Remove horizontal scroll for modal tables */
-}
-
-#revenueDetailsModal .table {
-    width: 100% !important;
-    table-layout: auto; /* Allow flexible column widths */
-    margin-bottom: 0;
-}
-
-#revenueDetailsModal .table td,
-#revenueDetailsModal .table th {
-    white-space: normal; /* Allow text wrapping */
-    overflow: visible;
-    text-overflow: clip;
-    padding: 8px 12px; /* Better padding */
-    font-size: 0.9rem; /* Slightly larger font */
-}
-
-/* Column width distribution for revenue details table */
-#revenueDetailsModal .table th:nth-child(1), /* Property */
-#revenueDetailsModal .table td:nth-child(1) {
-    width: 25%;
-    min-width: 150px;
-}
-
-#revenueDetailsModal .table th:nth-child(2), /* Revenue Type */
-#revenueDetailsModal .table td:nth-child(2) {
-    width: 15%;
-    min-width: 100px;
-    text-align: center;
-}
-
-#revenueDetailsModal .table th:nth-child(3), /* Line Type */
-#revenueDetailsModal .table td:nth-child(3) {
-    width: 15%;
-    min-width: 100px;
-    text-align: center;
-}
-
-#revenueDetailsModal .table th:nth-child(4), /* Month */
-#revenueDetailsModal .table td:nth-child(4) {
-    width: 15%;
-    min-width: 80px;
-    text-align: center;
-}
-
-#revenueDetailsModal .table th:nth-child(5), /* Amount */
-#revenueDetailsModal .table td:nth-child(5) {
-    width: 20%;
-    min-width: 120px;
-    text-align: right;
-}
-
-/* Total row styling */
-#revenueDetailsModal .table td:contains("Total:") {
-    font-weight: bold;
-    background-color: #f8f9fa;
-}
-
-/* Make sure other modals don't get affected */
-#budgetExpenseDetailsModal .modal-dialog,
-#totalExpenseDetailsModal .modal-dialog {
-    max-width: 90%;
-}
-
-#budgetExpenseDetailsModal .table,
-#totalExpenseDetailsModal .table {
-    width: 100% !important;
-    table-layout: auto;
-}
-
-#budgetExpenseDetailsModal .table td,
-#budgetExpenseDetailsModal .table th,
-#totalExpenseDetailsModal .table td,
-#totalExpenseDetailsModal .table th {
-    white-space: normal;
-    overflow: visible;
-    padding: 8px 12px;
-    font-size: 0.9rem;
-}
-
-        /* Additional CSS to fix modal scrollbar issues */
+    /* Additional CSS to fix modal scrollbar issues */
 
     /* Ensure the first modal maintains its scroll properties */
     #expenseDetailsModal .modal-body {
@@ -1454,7 +1666,6 @@
     #expenseDetailsModal .modal-body::-webkit-scrollbar-thumb:hover {
         background: #a8a8a8;
     }
-    
 </style>
 
 <script>
@@ -1534,7 +1745,7 @@ $(document).ready(function() {
         });
     });
 
-    // Enhanced Revenue Details Handler with Debugging
+    // Enhanced Revenue Details Handler with Simplified Design
     $(document).on('click', '.revenue-details-link', function(e) {
         e.preventDefault();
         var url = $(this).data('url');
@@ -1544,16 +1755,30 @@ $(document).ready(function() {
         console.log('Clicked value:', linkText);
         console.log('Full URL:', url);
         
-        // Parse the URL to see parameters
-        try {
-            var urlObj = new URL(url, window.location.origin);
-            console.log('URL Parameters:');
-            urlObj.searchParams.forEach((value, key) => {
-                console.log(`  ${key}: ${value}`);
-            });
-        } catch (e) {
-            console.log('URL parsing error:', e);
+        // Extract line type and month from URL for the header
+        var urlParams = new URLSearchParams(url.split('?')[1]);
+        var lineType = urlParams.get('line_type');
+        var month = urlParams.get('month');
+        
+        // Get line type name from the current page
+        var lineTypeName = 'Revenue';
+        var $currentRow = $(this).closest('tr');
+        var $lineTypeCell = $currentRow.find('td:first');
+        if ($lineTypeCell.length) {
+            lineTypeName = $lineTypeCell.text().trim();
         }
+        
+        // Set modal title and subtitle
+        $('#revenueDetailsModalLabel').text('Revenue Details - ' + lineTypeName);
+        
+        // Set month subtitle
+        var monthNames = {
+            '1': 'January', '2': 'February', '3': 'March', '4': 'April',
+            '5': 'May', '6': 'June', '7': 'July', '8': 'August',
+            '9': 'September', '10': 'October', '11': 'November', '12': 'December'
+        };
+        var monthName = monthNames[month] || 'All Months';
+        $('#revenueDetailsSubtitle').text(monthName);
         
         // Show loading with debug info
         $('#revenueDetailsContent').html(`
@@ -1562,13 +1787,6 @@ $(document).ready(function() {
                     <span class="sr-only">Loading...</span>
                 </div>
                 <p>Loading revenue details...</p>
-                <div class="alert alert-info mt-3">
-                    <small>
-                        <strong>Debug Info:</strong><br>
-                        Clicked Value: ${linkText}<br>
-                        URL: <code>${url}</code>
-                    </small>
-                </div>
             </div>
         `);
         
@@ -1582,70 +1800,19 @@ $(document).ready(function() {
             success: function(data, status, xhr) {
                 console.log('Response received successfully');
                 console.log('Response length:', data.length);
-                console.log('Content-Type:', xhr.getResponseHeader('Content-Type'));
-                
-                // Log the first 2000 characters of the response to see what we're getting
-                console.log('Response preview:', data.substring(0, 2000));
                 
                 try {
                     var $temp = $('<div>').html(data);
-                    
-                    // Look for the specific "No revenue data found" message
-                    var noDataMessage = $temp.find('.alert:contains("No revenue data found")');
-                    if (noDataMessage.length) {
-                        console.log('❌ Found "No revenue data found" message in response');
-                        
-                        // Show the message but also show debug info
-                        $('#revenueDetailsContent').html(`
-                            <div class="alert alert-warning">
-                                <h6><i class="fas fa-exclamation-triangle"></i> Data Mismatch Issue</h6>
-                                <p><strong>Problem:</strong> The view says "No revenue data found" but we clicked on a value of <strong>${linkText}</strong></p>
-                                <p>This suggests a parameter mismatch between the P&L display and the revenue details view.</p>
-                            </div>
-                            ${noDataMessage.prop('outerHTML')}
-                            <div class="alert alert-info mt-3">
-                                <h6>Debugging Information:</h6>
-                                <p><strong>URL Called:</strong> <code>${url}</code></p>
-                                <p><strong>Expected Value:</strong> ${linkText}</p>
-                                <p><strong>Response Message:</strong> No data found</p>
-                                <hr>
-                                <details>
-                                    <summary>Full Response HTML</summary>
-                                    <pre style="max-height: 300px; overflow-y: auto; font-size: 0.75rem;">${data}</pre>
-                                </details>
-                            </div>
-                        `);
-                        return;
-                    }
-                    
-                    // Try to find tables or meaningful content
-                    var $content = null;
-                    var contentFound = false;
-                    
-                    // Look for tables
                     var $table = $temp.find('table').first();
+                    
                     if ($table.length) {
                         console.log('✅ Found table in response');
-                        $content = $('<div class="table-responsive">').append($table.clone());
-                        contentFound = true;
+                        $('#revenueDetailsContent').html($('<div class="table-responsive">').append($table.clone()));
                     } else {
-                        // Look for main content
-                        var $container = $temp.find('.container, #content, main, .content').first();
-                        if ($container.length) {
-                            console.log('✅ Found container content');
-                            $content = $container.clone();
-                            contentFound = true;
-                        }
-                    }
-                    
-                    if (contentFound) {
-                        $('#revenueDetailsContent').html($content);
-                    } else {
-                        console.log('❓ No structured content found, showing raw response');
+                        console.log('❓ No table found, showing raw response');
                         $('#revenueDetailsContent').html(`
                             <div class="alert alert-info">
                                 <h6>Raw Response Content</h6>
-                                <p>No standard content structure found. Here's what the server returned:</p>
                                 <div style="border: 1px solid #ddd; padding: 15px; background: #f8f9fa; max-height: 500px; overflow-y: auto;">
                                     ${data}
                                 </div>
@@ -1659,10 +1826,6 @@ $(document).ready(function() {
                         <div class="alert alert-danger">
                             <h6>Processing Error</h6>
                             <p><strong>Error:</strong> ${e.message}</p>
-                            <details>
-                                <summary>Raw Response</summary>
-                                <pre style="max-height: 300px; overflow-y: auto;">${data}</pre>
-                            </details>
                         </div>
                     `);
                 }
@@ -1687,12 +1850,37 @@ $(document).ready(function() {
         });
     });
 
-    // Handle budget expense details modal
+    // Handle budget expense details modal - UPDATED VERSION
     $(document).on('click', '.budget-expense-details-link', function(e) {
         e.preventDefault();
         var url = $(this).data('url');
         
-        console.log('Budget expense details URL:', url); // Debug log
+        console.log('Budget expense details URL:', url);
+        
+        // Extract line type and month from URL for the header
+        var urlParams = new URLSearchParams(url.split('?')[1]);
+        var lineType = urlParams.get('line_type');
+        var month = urlParams.get('month');
+        
+        // Get line type name from the current page (you might need to adjust this selector)
+        var lineTypeName = 'Budget Expenses';
+        var $currentRow = $(this).closest('tr');
+        var $lineTypeCell = $currentRow.find('td:first');
+        if ($lineTypeCell.length) {
+            lineTypeName = $lineTypeCell.text().trim();
+        }
+        
+        // Set modal title and subtitle
+        $('#budgetExpenseDetailsModalLabel').text('Budget Expense Details - ' + lineTypeName);
+        
+        // Set month subtitle
+        var monthNames = {
+            '1': 'January', '2': 'February', '3': 'March', '4': 'April',
+            '5': 'May', '6': 'June', '7': 'July', '8': 'August',
+            '9': 'September', '10': 'October', '11': 'November', '12': 'December'
+        };
+        var monthName = monthNames[month] || 'All Months';
+        $('#budgetExpenseDetailsSubtitle').text(monthName);
         
         $('#budgetExpenseDetailsContent').html(`
             <div class="text-center py-4">
