@@ -9,7 +9,7 @@ from django.core.serializers import serialize
 from django.db import connection
 from django.db.models import Q, Prefetch, Subquery, OuterRef, Sum
 from django.db.models.functions import Coalesce
-from django.http import HttpResponse, HttpResponseServerError, FileResponse, Http404
+from django.http import HttpResponse, HttpResponseServerError, FileResponse, Http404, JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
 from django.template.loader import render_to_string, get_template
 from django.templatetags.static import static
@@ -2701,6 +2701,217 @@ def fsr_notification(request):
     return redirect('fsr')
 
 ### REPORTS - DASHBOARD (FROM HOME PAGE) ###
+# Add these views to your views.py file
+@login_required
+def revenue_details_view(request):
+    """
+    View to show revenue details breakdown for budgeted/fixed revenues
+    """
+    year = request.GET.get('year', datetime.now().year)  # Just for display
+    month = request.GET.get('month')
+    line_type = request.GET.get('line_type')
+    property_id = request.GET.get('property_id')
+    prop = request.GET.get('prop', 'all')
+    
+    # Get all revenue records (no year filtering needed for budgeted revenues)
+    revenues = revenue.objects.all().select_related('prop', 'revenue_line_types', 'revenue_types')
+    
+    # Filter by line type if specified
+    if line_type:
+        revenues = revenues.filter(revenue_line_types_id=line_type)
+    
+    # Filter by property
+    if property_id and property_id != 'all':
+        revenues = revenues.filter(prop_id=property_id)
+    elif prop and prop != 'all':
+        revenues = revenues.filter(prop_id=prop)
+    
+    # Create a list of revenue items with monthly breakdown
+    revenue_items = []
+    for rev in revenues:
+        months = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 
+                 'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
+        
+        for i, month_name in enumerate(months, 1):
+            month_value = getattr(rev, f'revenue_{month_name}', 0)
+            
+            if month_value and month_value > 0:
+                # If specific month is requested, only show that month
+                if month and int(month) != i:
+                    continue
+                
+                revenue_items.append({
+                    'revenue_id': rev.revenue_id,
+                    'property': rev.prop,
+                    'revenue_line_type': rev.revenue_line_types,
+                    'revenue_type': rev.revenue_types,
+                    'month': i,
+                    'month_name': month_name.capitalize(),
+                    'amount': month_value,
+                    'description': f"{rev.revenue_line_types.revenue_line_types_name} - {month_name.capitalize()} {year}"
+                })
+    
+    # Get line types and properties for context
+    revenue_line_types_list = revenue_line_types.objects.all()
+    properties = props.objects.all()
+    
+    context = {
+        'revenue_items': revenue_items,
+        'revenue_line_types': revenue_line_types_list,
+        'properties': properties,
+        'selected_year': year,
+        'selected_month': month,
+        'selected_line_type': line_type,
+        'selected_property': property_id,
+        'prop': prop,
+    }
+    
+    return render(request, 'revenue_details.html', context)
+
+@login_required
+def budget_expense_details_view(request):
+    """
+    View to show budgeted expense details breakdown
+    """
+    year = request.GET.get('year', datetime.now().year)
+    month = request.GET.get('month')
+    line_type = request.GET.get('line_type')
+    property_id = request.GET.get('property_id')
+    prop = request.GET.get('prop', 'all')
+    
+    # Start with base queryset for expense model (budgeted expenses)
+    expenses = expense.objects.filter(
+        expense_types__expense_types_name__icontains=str(year)  # Assuming year is in expense_types_name
+    ).select_related('prop', 'expense_line_types', 'expense_types')
+    
+    # Filter by line type if specified
+    if line_type:
+        expenses = expenses.filter(expense_line_types_id=line_type)
+    
+    # Filter by property
+    if property_id:
+        expenses = expenses.filter(prop_id=property_id)
+    elif prop != 'all':
+        expenses = expenses.filter(prop_id=prop)
+    
+    # Create a list of expense items with monthly breakdown
+    expense_items = []
+    for exp in expenses:
+        months = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 
+                 'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
+        
+        for i, month_name in enumerate(months, 1):
+            month_value = getattr(exp, f'expense_{month_name}', 0)
+            if month_value and month_value > 0:
+                # If specific month is requested, only show that month
+                if month and int(month) != i:
+                    continue
+                    
+                expense_items.append({
+                    'expense_id': exp.expense_id,
+                    'property': exp.prop,
+                    'expense_line_type': exp.expense_line_types,
+                    'expense_type': exp.expense_types,
+                    'month': i,
+                    'month_name': month_name.capitalize(),
+                    'amount': month_value,
+                    'description': f"{exp.expense_line_types.expense_line_types_name} - {month_name.capitalize()} {year}"
+                })
+    
+    # Get line types and properties for context
+    expense_line_types_list = expense_line_types.objects.all()
+    properties = props.objects.all()
+    
+    context = {
+        'expense_items': expense_items,
+        'expense_line_types': expense_line_types_list,
+        'properties': properties,
+        'selected_year': year,
+        'selected_month': month,
+        'selected_line_type': line_type,
+        'selected_property': property_id,
+        'prop': prop,
+    }
+    
+    return render(request, 'budget_expense_details.html', context)
+
+@login_required
+def total_expense_details_view(request):
+    """
+    View to show combined actual + budgeted expense details
+    """
+    year = request.GET.get('year', datetime.now().year)
+    month = request.GET.get('month')
+    property_id = request.GET.get('property_id')
+    prop = request.GET.get('prop', 'all')
+    
+    # Get actual expenses
+    actual_expenses = act_expense.objects.filter(
+        act_expense_date__year=year
+    ).select_related('prop')
+    
+    # Get budget expenses
+    budget_expenses = expense.objects.filter(
+        expense_types__expense_types_name__icontains=str(year)
+    ).select_related('prop', 'expense_line_types', 'expense_types')
+    
+    # Filter by month if specified
+    if month:
+        actual_expenses = actual_expenses.filter(act_expense_date__month=month)
+    
+    # Filter by property
+    if property_id:
+        actual_expenses = actual_expenses.filter(prop_id=property_id)
+        budget_expenses = budget_expenses.filter(prop_id=property_id)
+    elif prop != 'all':
+        actual_expenses = actual_expenses.filter(prop_id=prop)
+        budget_expenses = budget_expenses.filter(prop_id=prop)
+    
+    # Order by date
+    actual_expenses = actual_expenses.order_by('-act_expense_date')
+    
+    # Create budget expense items with monthly breakdown (similar to budget_expense_details_view)
+    budget_expense_items = []
+    for exp in budget_expenses:
+        months = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 
+                 'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
+        
+        for i, month_name in enumerate(months, 1):
+            month_value = getattr(exp, f'expense_{month_name}', 0)
+            if month_value and month_value > 0:
+                # If specific month is requested, only show that month
+                if month and int(month) != i:
+                    continue
+                    
+                budget_expense_items.append({
+                    'expense_id': exp.expense_id,
+                    'property': exp.prop,
+                    'expense_line_type': exp.expense_line_types,
+                    'expense_type': exp.expense_types,
+                    'month': i,
+                    'month_name': month_name.capitalize(),
+                    'amount': month_value,
+                    'description': f"{exp.expense_line_types.expense_line_types_name} - {month_name.capitalize()} {year}",
+                    'type': 'budget'
+                })
+    
+    # Get line types and properties for context
+    expense_line_types_list = expense_line_types.objects.all()
+    properties = props.objects.all()
+    
+    context = {
+        'actual_expenses': actual_expenses,
+        'budget_expense_items': budget_expense_items,
+        'expense_line_types': expense_line_types_list,
+        'properties': properties,
+        'selected_year': year,
+        'selected_month': month,
+        'selected_property': property_id,
+        'prop': prop,
+    }
+    
+    return render(request, 'total_expense_details.html', context)
+
 @login_required
 def finance_pl(request):
     # Get all properties with prefetched prop_values to optimize queries

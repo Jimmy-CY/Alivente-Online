@@ -1,0 +1,54 @@
+{% load humanize %}
+{% load custom_filters %}
+
+<div class="container-fluid">
+    <h5 class="mb-3">Budget Expense Details - {{ selected_year }}
+        {% if selected_month %}
+            - {{ selected_month|date:"F" }}
+        {% endif %}
+        {% if selected_line_type %}
+            - {{ selected_line_type }}
+        {% endif %}
+    </h5>
+    
+    {% if expense_items %}
+        <div class="table-responsive">
+            <table class="table table-sm table-striped table-bordered">
+                <thead class="thead-light">
+                    <tr>
+                        <th>Property</th>
+                        <th>Expense Type</th>
+                        <th>Line Type</th>
+                        <th>Month</th>
+                        <th class="text-right">Amount (€)</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in expense_items %}
+                    <tr>
+                        <td>{{ item.property.prop_name|default:"N/A" }}</td>
+                        <td>{{ item.expense_type.expense_types_name|default:"N/A" }}</td>
+                        <td>{{ item.expense_line_type.expense_line_types_name|default:"N/A" }}</td>
+                        <td>{{ item.month_name }}</td>
+                        <td class="text-right">{{ item.amount|floatformat:"2"|intcomma }}</td>
+                        <td>{{ item.description }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr class="font-weight-bold bg-light">
+                        <td colspan="4">Total:</td>
+                        <td class="text-right">{{ expense_items|sum_amounts|floatformat:"2"|intcomma }}</td>
+                        <td></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    {% else %}
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle"></i>
+            No budget expense data found for the selected criteria.
+        </div>
+    {% endif %}
+</div>

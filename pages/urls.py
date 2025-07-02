@@ -87,6 +87,9 @@ urlpatterns = [
     path('finance_revenue_types_edit_commit/<int:revenue_types_id>', views.finance_revenue_types_edit_commit, name='finance_revenue_types_edit_commit'),
     path('finance_expense_types_edit/<expense_types_id>', views.finance_expense_types_edit, name='finance_expense_types_edit'),
     path('finance_expense_types_edit_commit/<int:expense_types_id>', views.finance_expense_types_edit_commit, name='finance_expense_types_edit_commit'),
+    path('revenue-details/', views.revenue_details_view, name='revenue_details_view'),
+    path('budget-expense-details/', views.budget_expense_details_view, name='budget_expense_details_view'),
+    path('total-expense-details/', views.total_expense_details_view, name='total_expense_details_view'),
 
     #
     # Tenants

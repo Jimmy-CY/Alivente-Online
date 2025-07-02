@@ -1,0 +1,122 @@
+{% load humanize %}
+{% load custom_filters %}
+
+<div class="container-fluid">
+    <h5 class="mb-3">Total Expense Details - {{ selected_year }}
+        {% if selected_month %}
+            - {{ selected_month|date:"F" }}
+        {% endif %}
+    </h5>
+    
+    <!-- Actual Expenses Section -->
+    {% if actual_expenses %}
+        <h6 class="mt-4 mb-3" style="color: #17a2b8;">
+            <i class="fas fa-receipt"></i> Actual Expenses
+        </h6>
+        <div class="table-responsive">
+            <table class="table table-sm table-striped table-bordered">
+                <thead class="thead-light">
+                    <tr>
+                        <th>Date</th>
+                        <th>Property</th>
+                        <th>Description</th>
+                        <th>Supplier</th>
+                        <th class="text-right">Amount (€)</th>
+                        <th>Invoice</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for expense in actual_expenses %}
+                    <tr>
+                        <td>{{ expense.act_expense_date|date:"d/m/Y" }}</td>
+                        <td>{{ expense.prop.prop_name|default:"N/A" }}</td>
+                        <td>{{ expense.act_expense_description|default:"N/A" }}</td>
+                        <td>{{ expense.act_expense_supplier|default:"N/A" }}</td>
+                        <td class="text-right">{{ expense.act_expense_amount|floatformat:"2"|intcomma }}</td>
+                        <td class="text-center">
+                            {% if expense.act_expense_invoice %}
+                                <i class="fas fa-file-alt" 
+                                   style="color: #28a745; cursor: pointer;" 
+                                   onclick="viewInvoiceQuick('{{ expense.act_expense_invoice.url }}', '{{ expense.act_expense_invoice.name }}')"
+                                   title="View Invoice"></i>
+                            {% else %}
+                                <i class="fas fa-file-alt" style="color: #6c757d;" title="No Invoice"></i>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr class="font-weight-bold bg-light">
+                        <td colspan="4">Actual Expenses Total:</td>
+                        <td class="text-right">{{ actual_expenses|sum_field:"act_expense_amount"|floatformat:"2"|intcomma }}</td>
+                        <td></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    {% endif %}
+    
+    <!-- Budget Expenses Section -->
+    {% if budget_expense_items %}
+        <h6 class="mt-4 mb-3" style="color: #17a2b8;">
+            <i class="fas fa-calculator"></i> Budget Expenses
+        </h6>
+        <div class="table-responsive">
+            <table class="table table-sm table-striped table-bordered">
+                <thead class="thead-light">
+                    <tr>
+                        <th>Property</th>
+                        <th>Expense Type</th>
+                        <th>Line Type</th>
+                        <th>Month</th>
+                        <th class="text-right">Amount (€)</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in budget_expense_items %}
+                    <tr>
+                        <td>{{ item.property.prop_name|default:"N/A" }}</td>
+                        <td>{{ item.expense_type.expense_types_name|default:"N/A" }}</td>
+                        <td>{{ item.expense_line_type.expense_line_types_name|default:"N/A" }}</td>
+                        <td>{{ item.month_name }}</td>
+                        <td class="text-right">{{ item.amount|floatformat:"2"|intcomma }}</td>
+                        <td>{{ item.description }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr class="font-weight-bold bg-light">
+                        <td colspan="4">Budget Expenses Total:</td>
+                        <td class="text-right">{{ budget_expense_items|sum_amounts|floatformat:"2"|intcomma }}</td>
+                        <td></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    {% endif %}
+    
+    <!-- Grand Total -->
+    {% if actual_expenses or budget_expense_items %}
+        <div class="mt-4">
+            <div class="card">
+                <div class="card-body bg-info text-white">
+                    <h6 class="card-title mb-0">
+                        <i class="fas fa-calculator"></i> Grand Total: 
+                        <span class="float-right">
+                            {{ actual_expenses|sum_field:"act_expense_amount"|add:budget_expense_items|sum_amounts|floatformat:"2"|intcomma }} €
+                        </span>
+                    </h6>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+    
+    {% if not actual_expenses and not budget_expense_items %}
+        <div class="alert alert-info">
+            <i class="fas fa-info-circle"></i>
+            No expense data found for the selected criteria.
+        </div>
+    {% endif %}
+</div>

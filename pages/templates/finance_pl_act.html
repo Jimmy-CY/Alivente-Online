@@ -61,6 +61,66 @@
     </div>
 </div>
 
+<!-- NEW MODALS - Revenue Details Modal -->
+<div class="modal fade" id="revenueDetailsModal" tabindex="-1" aria-labelledby="revenueDetailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="revenueDetailsModalLabel">Revenue Details</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="revenueDetailsContent" style="max-height: 75vh; overflow-y: auto;">
+                <!-- Content loaded here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Budget Expense Details Modal -->
+<div class="modal fade" id="budgetExpenseDetailsModal" tabindex="-1" aria-labelledby="budgetExpenseDetailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="budgetExpenseDetailsModalLabel">Budget Expense Details</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="budgetExpenseDetailsContent" style="max-height: 75vh; overflow-y: auto;">
+                <!-- Content loaded here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Total Expense Details Modal -->
+<div class="modal fade" id="totalExpenseDetailsModal" tabindex="-1" aria-labelledby="totalExpenseDetailsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="totalExpenseDetailsModalLabel">Total Expense Details</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="totalExpenseDetailsContent" style="max-height: 75vh; overflow-y: auto;">
+                <!-- Content loaded here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 {% if user.is_superuser %}
 
 <div class="d-flex justify-content-end mb-2">
@@ -145,19 +205,129 @@
                     {% if line_totals.jan or line_totals.feb or line_totals.mar or line_totals.apr or line_totals.may or line_totals.jun or line_totals.jul or line_totals.aug or line_totals.sep or line_totals.oct or line_totals.nov or line_totals.dec or line_totals.total %}
                     <tr>
                         <td>{{ line_type.revenue_line_types_name }}</td>
-                        <td class="text-right">{{ line_totals.jan|default:0|floatformat:"0"|intcomma }}</td>
-                        <td class="text-right">{{ line_totals.feb|default:0|floatformat:"0"|intcomma }}</td>
-                        <td class="text-right">{{ line_totals.mar|default:0|floatformat:"0"|intcomma }}</td>
-                        <td class="text-right">{{ line_totals.apr|default:0|floatformat:"0"|intcomma }}</td>
-                        <td class="text-right">{{ line_totals.may|default:0|floatformat:"0"|intcomma }}</td>
-                        <td class="text-right">{{ line_totals.jun|default:0|floatformat:"0"|intcomma }}</td>
-                        <td class="text-right">{{ line_totals.jul|default:0|floatformat:"0"|intcomma }}</td>
-                        <td class="text-right">{{ line_totals.aug|default:0|floatformat:"0"|intcomma }}</td>
-                        <td class="text-right">{{ line_totals.sep|default:0|floatformat:"0"|intcomma }}</td>
-                        <td class="text-right">{{ line_totals.oct|default:0|floatformat:"0"|intcomma }}</td>
-                        <td class="text-right">{{ line_totals.nov|default:0|floatformat:"0"|intcomma }}</td>
-                        <td class="text-right">{{ line_totals.dec|default:0|floatformat:"0"|intcomma }}</td>
-                        <td class="text-right font-weight-bold">{{ line_totals.total|default:0|floatformat:"0"|intcomma }}</td>
+                        <td class="text-right">
+                            {% if line_totals.jan %}
+                                <a href="#" class="revenue-details-link" 
+                                   data-url="{% url 'revenue_details_view' %}?year={{ selected_year|floatformat:'0' }}&month=1&line_type={{ line_type.revenue_line_types_id }}&prop={{ active_prop }}">
+                                    {{ line_totals.jan|default:0|floatformat:"0"|intcomma }}
+                                </a>
+                            {% else %}
+                                0
+                            {% endif %}
+                        </td>
+                        <td class="text-right">
+                            {% if line_totals.feb %}
+                                <a href="#" class="revenue-details-link" 
+                                   data-url="{% url 'revenue_details_view' %}?year={{ selected_year|floatformat:'0' }}&month=2&line_type={{ line_type.revenue_line_types_id }}&prop={{ active_prop }}">
+                                    {{ line_totals.feb|default:0|floatformat:"0"|intcomma }}
+                                </a>
+                            {% else %}
+                                0
+                            {% endif %}
+                        </td>                        
+                        <td class="text-right">
+                            {% if line_totals.mar %}
+                                <a href="#" class="revenue-details-link" 
+                                   data-url="{% url 'revenue_details_view' %}?year={{ selected_year|floatformat:'0' }}&month=3&line_type={{ line_type.revenue_line_types_id }}&prop={{ active_prop }}">
+                                    {{ line_totals.mar|default:0|floatformat:"0"|intcomma }}
+                                </a>
+                            {% else %}
+                                0
+                            {% endif %}
+                        </td>
+                        <td class="text-right">
+                            {% if line_totals.apr %}
+                                <a href="#" class="revenue-details-link" 
+                                   data-url="{% url 'revenue_details_view' %}?year={{ selected_year|floatformat:'0' }}&month=4&line_type={{ line_type.revenue_line_types_id }}&prop={{ active_prop }}">
+                                    {{ line_totals.apr|default:0|floatformat:"0"|intcomma }}
+                                </a>
+                            {% else %}
+                                0
+                            {% endif %}
+                        </td>
+                        <td class="text-right">
+                            {% if line_totals.may %}
+                                <a href="#" class="revenue-details-link" 
+                                   data-url="{% url 'revenue_details_view' %}?year={{ selected_year|floatformat:'0' }}&month=5&line_type={{ line_type.revenue_line_types_id }}&prop={{ active_prop }}">
+                                    {{ line_totals.may|default:0|floatformat:"0"|intcomma }}
+                                </a>
+                            {% else %}
+                                0
+                            {% endif %}
+                        </td>
+                        <td class="text-right">
+                            {% if line_totals.jun %}
+                                <a href="#" class="revenue-details-link" 
+                                   data-url="{% url 'revenue_details_view' %}?year={{ selected_year|floatformat:'0' }}&month=6&line_type={{ line_type.revenue_line_types_id }}&prop={{ active_prop }}">
+                                    {{ line_totals.jun|default:0|floatformat:"0"|intcomma }}
+                                </a>
+                            {% else %}
+                                0
+                            {% endif %}
+                        </td>
+                        <td class="text-right">
+                            {% if line_totals.jul %}
+                                <a href="#" class="revenue-details-link" 
+                                   data-url="{% url 'revenue_details_view' %}?year={{ selected_year|floatformat:'0' }}&month=7&line_type={{ line_type.revenue_line_types_id }}&prop={{ active_prop }}">
+                                    {{ line_totals.jul|default:0|floatformat:"0"|intcomma }}
+                                </a>
+                            {% else %}
+                                0
+                            {% endif %}
+                        </td>
+                        <td class="text-right">
+                            {% if line_totals.aug %}
+                                <a href="#" class="revenue-details-link" 
+                                   data-url="{% url 'revenue_details_view' %}?year={{ selected_year|floatformat:'0' }}&month=8&line_type={{ line_type.revenue_line_types_id }}&prop={{ active_prop }}">
+                                    {{ line_totals.aug|default:0|floatformat:"0"|intcomma }}
+                                </a>
+                            {% else %}
+                                0
+                            {% endif %}
+                        </td>
+                        <td class="text-right">
+                            {% if line_totals.sep %}
+                                <a href="#" class="revenue-details-link" 
+                                   data-url="{% url 'revenue_details_view' %}?year={{ selected_year|floatformat:'0' }}&month=9&line_type={{ line_type.revenue_line_types_id }}&prop={{ active_prop }}">
+                                    {{ line_totals.sep|default:0|floatformat:"0"|intcomma }}
+                                </a>
+                            {% else %}
+                                0
+                            {% endif %}
+                        </td>
+                        <td class="text-right">
+                            {% if line_totals.oct %}
+                                <a href="#" class="revenue-details-link" 
+                                   data-url="{% url 'revenue_details_view' %}?year={{ selected_year|floatformat:'0' }}&month=10&line_type={{ line_type.revenue_line_types_id }}&prop={{ active_prop }}">
+                                    {{ line_totals.oct|default:0|floatformat:"0"|intcomma }}
+                                </a>
+                            {% else %}
+                                0
+                            {% endif %}
+                        </td>
+                        <td class="text-right">
+                            {% if line_totals.nov %}
+                                <a href="#" class="revenue-details-link" 
+                                   data-url="{% url 'revenue_details_view' %}?year={{ selected_year|floatformat:'0' }}&month=11&line_type={{ line_type.revenue_line_types_id }}&prop={{ active_prop }}">
+                                    {{ line_totals.nov|default:0|floatformat:"0"|intcomma }}
+                                </a>
+                            {% else %}
+                                0
+                            {% endif %}
+                        </td>
+                        <td class="text-right">
+                            {% if line_totals.dec %}
+                                <a href="#" class="revenue-details-link" 
+                                   data-url="{% url 'revenue_details_view' %}?year={{ selected_year|floatformat:'0' }}&month=12&line_type={{ line_type.revenue_line_types_id }}&prop={{ active_prop }}">
+                                    {{ line_totals.dec|default:0|floatformat:"0"|intcomma }}
+                                </a>
+                            {% else %}
+                                0
+                            {% endif %}
+                        </td>
+                        <td class="text-right font-weight-bold">
+                            {{ line_totals.total|default:0|floatformat:"0"|intcomma }}
+                        </td>
                         <td class="text-right">{{ line_totals.total|divide:12|default:0|floatformat:"0"|intcomma }}</td>
                     </tr>
                     {% endif %}
@@ -1141,6 +1311,96 @@
         }
     }
 
+/* Add this CSS to your existing <style> section in the P&L template */
+
+/* Revenue Details Modal Table Styling */
+#revenueDetailsModal .modal-dialog {
+    max-width: 90%; /* Make modal wider */
+}
+
+#revenueDetailsModal .table-responsive {
+    width: 100%;
+    overflow-x: visible; /* Remove horizontal scroll for modal tables */
+}
+
+#revenueDetailsModal .table {
+    width: 100% !important;
+    table-layout: auto; /* Allow flexible column widths */
+    margin-bottom: 0;
+}
+
+#revenueDetailsModal .table td,
+#revenueDetailsModal .table th {
+    white-space: normal; /* Allow text wrapping */
+    overflow: visible;
+    text-overflow: clip;
+    padding: 8px 12px; /* Better padding */
+    font-size: 0.9rem; /* Slightly larger font */
+}
+
+/* Column width distribution for revenue details table */
+#revenueDetailsModal .table th:nth-child(1), /* Property */
+#revenueDetailsModal .table td:nth-child(1) {
+    width: 25%;
+    min-width: 150px;
+}
+
+#revenueDetailsModal .table th:nth-child(2), /* Revenue Type */
+#revenueDetailsModal .table td:nth-child(2) {
+    width: 15%;
+    min-width: 100px;
+    text-align: center;
+}
+
+#revenueDetailsModal .table th:nth-child(3), /* Line Type */
+#revenueDetailsModal .table td:nth-child(3) {
+    width: 15%;
+    min-width: 100px;
+    text-align: center;
+}
+
+#revenueDetailsModal .table th:nth-child(4), /* Month */
+#revenueDetailsModal .table td:nth-child(4) {
+    width: 15%;
+    min-width: 80px;
+    text-align: center;
+}
+
+#revenueDetailsModal .table th:nth-child(5), /* Amount */
+#revenueDetailsModal .table td:nth-child(5) {
+    width: 20%;
+    min-width: 120px;
+    text-align: right;
+}
+
+/* Total row styling */
+#revenueDetailsModal .table td:contains("Total:") {
+    font-weight: bold;
+    background-color: #f8f9fa;
+}
+
+/* Make sure other modals don't get affected */
+#budgetExpenseDetailsModal .modal-dialog,
+#totalExpenseDetailsModal .modal-dialog {
+    max-width: 90%;
+}
+
+#budgetExpenseDetailsModal .table,
+#totalExpenseDetailsModal .table {
+    width: 100% !important;
+    table-layout: auto;
+}
+
+#budgetExpenseDetailsModal .table td,
+#budgetExpenseDetailsModal .table th,
+#totalExpenseDetailsModal .table td,
+#totalExpenseDetailsModal .table th {
+    white-space: normal;
+    overflow: visible;
+    padding: 8px 12px;
+    font-size: 0.9rem;
+}
+
         /* Additional CSS to fix modal scrollbar issues */
 
     /* Ensure the first modal maintains its scroll properties */
@@ -1213,6 +1473,8 @@ $(document).ready(function() {
         e.preventDefault();
         var url = $(this).data('url');
         
+        console.log('Expense details URL:', url); // Debug log
+        
         // Show loading indicator
         $('#expenseDetailsContent').html(`
             <div class="text-center py-4">
@@ -1272,6 +1534,243 @@ $(document).ready(function() {
         });
     });
 
+    // Enhanced Revenue Details Handler with Debugging
+    $(document).on('click', '.revenue-details-link', function(e) {
+        e.preventDefault();
+        var url = $(this).data('url');
+        var linkText = $(this).text().trim();
+        
+        console.log('=== REVENUE DETAILS DEBUG ===');
+        console.log('Clicked value:', linkText);
+        console.log('Full URL:', url);
+        
+        // Parse the URL to see parameters
+        try {
+            var urlObj = new URL(url, window.location.origin);
+            console.log('URL Parameters:');
+            urlObj.searchParams.forEach((value, key) => {
+                console.log(`  ${key}: ${value}`);
+            });
+        } catch (e) {
+            console.log('URL parsing error:', e);
+        }
+        
+        // Show loading with debug info
+        $('#revenueDetailsContent').html(`
+            <div class="text-center py-4">
+                <div class="spinner-border text-info" role="status">
+                    <span class="sr-only">Loading...</span>
+                </div>
+                <p>Loading revenue details...</p>
+                <div class="alert alert-info mt-3">
+                    <small>
+                        <strong>Debug Info:</strong><br>
+                        Clicked Value: ${linkText}<br>
+                        URL: <code>${url}</code>
+                    </small>
+                </div>
+            </div>
+        `);
+        
+        $('#revenueDetailsModal').modal('show');
+        
+        $.ajax({
+            url: url,
+            type: 'GET',
+            dataType: 'html',
+            timeout: 30000,
+            success: function(data, status, xhr) {
+                console.log('Response received successfully');
+                console.log('Response length:', data.length);
+                console.log('Content-Type:', xhr.getResponseHeader('Content-Type'));
+                
+                // Log the first 2000 characters of the response to see what we're getting
+                console.log('Response preview:', data.substring(0, 2000));
+                
+                try {
+                    var $temp = $('<div>').html(data);
+                    
+                    // Look for the specific "No revenue data found" message
+                    var noDataMessage = $temp.find('.alert:contains("No revenue data found")');
+                    if (noDataMessage.length) {
+                        console.log('❌ Found "No revenue data found" message in response');
+                        
+                        // Show the message but also show debug info
+                        $('#revenueDetailsContent').html(`
+                            <div class="alert alert-warning">
+                                <h6><i class="fas fa-exclamation-triangle"></i> Data Mismatch Issue</h6>
+                                <p><strong>Problem:</strong> The view says "No revenue data found" but we clicked on a value of <strong>${linkText}</strong></p>
+                                <p>This suggests a parameter mismatch between the P&L display and the revenue details view.</p>
+                            </div>
+                            ${noDataMessage.prop('outerHTML')}
+                            <div class="alert alert-info mt-3">
+                                <h6>Debugging Information:</h6>
+                                <p><strong>URL Called:</strong> <code>${url}</code></p>
+                                <p><strong>Expected Value:</strong> ${linkText}</p>
+                                <p><strong>Response Message:</strong> No data found</p>
+                                <hr>
+                                <details>
+                                    <summary>Full Response HTML</summary>
+                                    <pre style="max-height: 300px; overflow-y: auto; font-size: 0.75rem;">${data}</pre>
+                                </details>
+                            </div>
+                        `);
+                        return;
+                    }
+                    
+                    // Try to find tables or meaningful content
+                    var $content = null;
+                    var contentFound = false;
+                    
+                    // Look for tables
+                    var $table = $temp.find('table').first();
+                    if ($table.length) {
+                        console.log('✅ Found table in response');
+                        $content = $('<div class="table-responsive">').append($table.clone());
+                        contentFound = true;
+                    } else {
+                        // Look for main content
+                        var $container = $temp.find('.container, #content, main, .content').first();
+                        if ($container.length) {
+                            console.log('✅ Found container content');
+                            $content = $container.clone();
+                            contentFound = true;
+                        }
+                    }
+                    
+                    if (contentFound) {
+                        $('#revenueDetailsContent').html($content);
+                    } else {
+                        console.log('❓ No structured content found, showing raw response');
+                        $('#revenueDetailsContent').html(`
+                            <div class="alert alert-info">
+                                <h6>Raw Response Content</h6>
+                                <p>No standard content structure found. Here's what the server returned:</p>
+                                <div style="border: 1px solid #ddd; padding: 15px; background: #f8f9fa; max-height: 500px; overflow-y: auto;">
+                                    ${data}
+                                </div>
+                            </div>
+                        `);
+                    }
+                    
+                } catch (e) {
+                    console.error('Error processing response:', e);
+                    $('#revenueDetailsContent').html(`
+                        <div class="alert alert-danger">
+                            <h6>Processing Error</h6>
+                            <p><strong>Error:</strong> ${e.message}</p>
+                            <details>
+                                <summary>Raw Response</summary>
+                                <pre style="max-height: 300px; overflow-y: auto;">${data}</pre>
+                            </details>
+                        </div>
+                    `);
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('AJAX Error:', {
+                    status: status,
+                    error: error,
+                    statusCode: xhr.status,
+                    statusText: xhr.statusText
+                });
+                
+                $('#revenueDetailsContent').html(`
+                    <div class="alert alert-danger">
+                        <h6>Request Failed</h6>
+                        <p><strong>URL:</strong> <code>${url}</code></p>
+                        <p><strong>Status:</strong> ${xhr.status} ${xhr.statusText}</p>
+                        <p><strong>Error:</strong> ${error}</p>
+                    </div>
+                `);
+            }
+        });
+    });
+
+    // Handle budget expense details modal
+    $(document).on('click', '.budget-expense-details-link', function(e) {
+        e.preventDefault();
+        var url = $(this).data('url');
+        
+        console.log('Budget expense details URL:', url); // Debug log
+        
+        $('#budgetExpenseDetailsContent').html(`
+            <div class="text-center py-4">
+                <div class="spinner-border text-info" role="status">
+                    <span class="sr-only">Loading...</span>
+                </div>
+                <p>Loading budget expense details...</p>
+            </div>
+        `);
+        
+        $('#budgetExpenseDetailsModal').modal('show');
+        
+        $.ajax({
+            url: url,
+            type: 'GET',
+            success: function(data) {
+                try {
+                    var $temp = $('<div>').html(data);
+                    var $table = $temp.find('table.table').first();
+                    if (!$table.length) $table = $temp.find('table').first();
+                    
+                    if ($table.length) {
+                        $('#budgetExpenseDetailsContent').html($('<div class="table-responsive">').append($table));
+                    } else {
+                        $('#budgetExpenseDetailsContent').html(`<div class="alert alert-warning">Could not find table in response.</div>`);
+                    }
+                } catch (e) {
+                    $('#budgetExpenseDetailsContent').html(`<div class="alert alert-danger">Error: ${e.message}</div>`);
+                }
+            },
+            error: function(xhr) {
+                $('#budgetExpenseDetailsContent').html(`<div class="alert alert-danger">Failed to load data: ${xhr.status}</div>`);
+            }
+        });
+    });
+
+    // Handle total expense details modal
+    $(document).on('click', '.total-expense-details-link', function(e) {
+        e.preventDefault();
+        var url = $(this).data('url');
+        
+        console.log('Total expense details URL:', url); // Debug log
+        
+        $('#totalExpenseDetailsContent').html(`
+            <div class="text-center py-4">
+                <div class="spinner-border text-info" role="status">
+                    <span class="sr-only">Loading...</span>
+                </div>
+                <p>Loading total expense details...</p>
+            </div>
+        `);
+        
+        $('#totalExpenseDetailsModal').modal('show');
+        
+        $.ajax({
+            url: url,
+            type: 'GET',
+            success: function(data) {
+                try {
+                    var $temp = $('<div>').html(data);
+                    var $table = $temp.find('table.table').first();
+                    if (!$table.length) $table = $temp.find('table').first();
+                    
+                    if ($table.length) {
+                        $('#totalExpenseDetailsContent').html($('<div class="table-responsive">').append($table));
+                    } else {
+                        $('#totalExpenseDetailsContent').html(`<div class="alert alert-warning">Could not find table in response.</div>`);
+                    }
+                } catch (e) {
+                    $('#totalExpenseDetailsContent').html(`<div class="alert alert-danger">Error: ${e.message}</div>`);
+                }
+            },
+            error: function(xhr) {
+                $('#totalExpenseDetailsContent').html(`<div class="alert alert-danger">Failed to load data: ${xhr.status}</div>`);
+            }
+        });
+    });
+
     // Function to setup invoice icon handlers
     function setupInvoiceIconHandlers() {
         // Look for the exact pattern from your existing module: fa-file-alt with green color
@@ -1321,7 +1820,7 @@ $(document).ready(function() {
             }
         });
     }
-    
+
     // Function to show invoice modal exactly like your existing module
     function showInvoiceModalLikeExisting(documentUrl, documentName) {
         const invoiceViewer = document.getElementById('invoiceViewerContent');
@@ -1357,6 +1856,19 @@ $(document).ready(function() {
         // Show the modal
         $('#invoiceViewerModal').modal('show');
     }
+
+    // Modal close handlers
+    $('#revenueDetailsModal .close, #revenueDetailsModal .btn-secondary').on('click', function() {
+        $('#revenueDetailsModal').modal('hide');
+    });
+
+    $('#budgetExpenseDetailsModal .close, #budgetExpenseDetailsModal .btn-secondary').on('click', function() {
+        $('#budgetExpenseDetailsModal').modal('hide');
+    });
+
+    $('#totalExpenseDetailsModal .close, #totalExpenseDetailsModal .btn-secondary').on('click', function() {
+        $('#totalExpenseDetailsModal').modal('hide');
+    });
 
     // Handle when the second modal (invoice viewer) is closed
     $('#invoiceViewerModal').on('hidden.bs.modal', function() {
@@ -1398,6 +1910,20 @@ $(document).ready(function() {
             'max-height': '75vh'
         });
     });
+
+    // Test function you can call from browser console to debug
+    window.testRevenueUrl = function(url) {
+        console.log('Testing revenue URL:', url);
+        $.get(url)
+            .done(function(data) {
+                console.log('SUCCESS - Response length:', data.length);
+                console.log('Response preview:', data.substring(0, 500));
+            })
+            .fail(function(xhr) {
+                console.log('FAILED - Status:', xhr.status, xhr.statusText);
+                console.log('Response:', xhr.responseText);
+            });
+    };
 });
 </script>
 
