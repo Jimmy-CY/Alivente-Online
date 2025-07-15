@@ -48,7 +48,18 @@
         <td style="text-align: left">{{ tenant.tenant_name }}</td>
         <td style="text-align: left">{{ tenant.prop.prop_name }}</td>
         <td>{{ tenant.tenant_lease_start_date|date:"Y-m-d"|default:"-" }}</td>
-        <td>{{ tenant.tenant_lease_end_date|date:"Y-m-d"|default:"-" }}</td>
+        <td>
+            {% if tenant.tenant_lease_end_date %}
+                {% now "Y-m-d" as today_date %}
+                {% if tenant.tenant_lease_end_date|date:"Y-m-d" < today_date %}
+                    <span style="color: red; font-weight: bold;">{{ tenant.tenant_lease_end_date|date:"Y-m-d" }}</span>
+                {% else %}
+                    {{ tenant.tenant_lease_end_date|date:"Y-m-d" }}
+                {% endif %}
+            {% else %}
+                -
+            {% endif %}
+        </td>
         <td>
             {% if tenant.tenant_lease_agreement %}
                 <button type="button" class="btn btn-sm btn-success" onclick="viewDocument('{{ tenant.tenant_lease_agreement.url }}', '{{ tenant.tenant_lease_agreement.name }}', '{{ tenant.tenant_name }}')">

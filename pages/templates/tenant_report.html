@@ -55,7 +55,16 @@
                         </div>
                         <div class="date-row">
                             <span class="detail-label">End Date: </span>
-                            <span class="date-box highlight-red"> {{ tenant.tenant_lease_end_date }}</span>
+                            {% if tenant.tenant_lease_end_date %}
+                                {% now "Y-m-d" as today_date %}
+                                {% if tenant.tenant_lease_end_date|date:"Y-m-d" < today_date %}
+                                    <span class="date-box highlight-red">{{ tenant.tenant_lease_end_date }}</span>
+                                {% else %}
+                                    <span class="date-box">{{ tenant.tenant_lease_end_date }}</span>
+                                {% endif %}
+                            {% else %}
+                                <span class="date-box">-</span>
+                            {% endif %}
                         </div>
                     </div>
                     
