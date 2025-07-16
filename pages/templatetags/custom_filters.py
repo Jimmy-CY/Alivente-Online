@@ -6,6 +6,74 @@ from decimal import Decimal
 register = template.Library()
 
 @register.filter
+def sort_by_expense_line_type(expenses):
+    """
+    Sort expenses by expense line type name alphabetically (case-insensitive)
+    """
+    if not expenses:
+        return expenses
+    
+    try:
+        return sorted(expenses, key=lambda exp: exp.expense_line_types.expense_line_types_name.lower() if exp.expense_line_types and exp.expense_line_types.expense_line_types_name else '')
+    except (AttributeError, TypeError):
+        return expenses
+
+@register.filter
+def sort_by_expense_type(expenses):
+    """
+    Sort expenses by expense type name alphabetically (case-insensitive)
+    """
+    if not expenses:
+        return expenses
+    
+    try:
+        return sorted(expenses, key=lambda exp: exp.expense_types.expense_types_name.lower() if exp.expense_types and exp.expense_types.expense_types_name else '')
+    except (AttributeError, TypeError):
+        return expenses
+
+@register.filter
+def sort_by_both(expenses):
+    """
+    Sort expenses first by expense line type, then by expense type (both alphabetically)
+    """
+    if not expenses:
+        return expenses
+    
+    try:
+        return sorted(expenses, key=lambda exp: (
+            exp.expense_line_types.expense_line_types_name.lower() if exp.expense_line_types and exp.expense_line_types.expense_line_types_name else '',
+            exp.expense_types.expense_types_name.lower() if exp.expense_types and exp.expense_types.expense_types_name else ''
+        ))
+    except (AttributeError, TypeError):
+        return expenses
+
+@register.filter
+def sort_expense_line_types(expense_line_types):
+    """
+    Sort expense line types by their name alphabetically (case-insensitive)
+    """
+    if not expense_line_types:
+        return expense_line_types
+    
+    try:
+        return sorted(expense_line_types, key=lambda line_type: line_type.expense_line_types_name.lower() if line_type.expense_line_types_name else '')
+    except (AttributeError, TypeError):
+        return expense_line_types
+
+@register.filter
+def sort_revenue_line_types(revenue_line_types):
+    """
+    Sort revenue line types by their name alphabetically (case-insensitive)
+    """
+    if not revenue_line_types:
+        return revenue_line_types
+    
+    try:
+        return sorted(revenue_line_types, key=lambda line_type: line_type.revenue_line_types_name.lower() if line_type.revenue_line_types_name else '')
+    except (AttributeError, TypeError):
+        return revenue_line_types
+
+@register.filter
 def get_item(dictionary, key):
     """Get item from dictionary by key"""
     if hasattr(dictionary, 'get'):

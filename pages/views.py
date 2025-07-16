@@ -6,7 +6,7 @@ from django.contrib.auth.forms import UserCreationForm, UserChangeForm, Password
 from django.core.exceptions import ValidationError
 from django.core.files.storage import FileSystemStorage
 from django.core.serializers import serialize
-from django.db import connection
+from django.db import connection, transaction
 from django.db.models import Q, Prefetch, Subquery, OuterRef, Sum
 from django.db.models.functions import Coalesce
 from django.http import HttpResponse, HttpResponseServerError, FileResponse, Http404, JsonResponse
@@ -20,6 +20,7 @@ from django.utils.html import strip_tags
 from django.utils.safestring import mark_safe
 from django.utils.timezone import now
 from django.views.decorators.cache import never_cache
+from django.views.decorators.csrf import csrf_exempt
 from django.views.static import serve
 from . import forms
 from .forms import PropForm, TenantForm, PettyForm, InvoicesForm, IssuesForm, DetailsForm, SupplierForm, ValuesForm, RevenueTypesForm, RevenueLineForm, RevenueForm, ExpenseTypesForm, ExpenseLineForm, ExpenseForm, ActExpenseForm 
@@ -898,6 +899,114 @@ def finance_expense_line_types_edit_commit(request, expense_line_types_id):
         "eltresults": all_types,
         "exp": exp
     })
+
+@login_required
+def check_expenses_for_line_type(request, expense_line_type_id):
+    """
+    Check if there are expenses linked to this expense line type
+    Returns JSON with expense details if any exist
+    """
+    if not request.user.is_superuser:
+        return JsonResponse({'error': 'Unauthorized'}, status=403)
+    
+    try:
+        # Get the expense line type
+        expense_line_type = get_object_or_404(expense_line_types, expense_line_types_id=expense_line_type_id)
+        
+        # Check for linked expenses using the correct foreign key field name
+        linked_expenses = expense.objects.filter(expense_line_types=expense_line_type)
+        
+        if linked_expenses.exists():
+            # Prepare expense data for the frontend
+            expenses_data = []
+            for exp in linked_expenses:
+                # Calculate total amount from all months
+                total_amount = 0
+                monthly_amounts = []
+                
+                months = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 
+                         'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
+                
+                for month in months:
+                    month_value = getattr(exp, f'expense_{month}', None)
+                    if month_value:
+                        total_amount += month_value
+                        monthly_amounts.append(f'{month.capitalize()}: {month_value}')
+                
+                # Use base expense_amount if available, otherwise use calculated total
+                display_amount = exp.expense_amount if exp.expense_amount else total_amount
+                
+                expenses_data.append({
+                    'id': exp.expense_id,
+                    'expense_type': str(exp.expense_types) if exp.expense_types else 'N/A',
+                    'property': str(exp.prop) if exp.prop else 'N/A',
+                    'base_amount': str(exp.expense_amount) if exp.expense_amount else '0.00',
+                    'total_monthly': str(total_amount),
+                    'display_amount': str(display_amount),
+                    'monthly_breakdown': monthly_amounts
+                })
+            
+            return JsonResponse({
+                'has_expenses': True,
+                'expense_count': linked_expenses.count(),
+                'expenses': expenses_data
+            })
+        else:
+            return JsonResponse({
+                'has_expenses': False,
+                'expense_count': 0,
+                'expenses': []
+            })
+            
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+@login_required
+def delete_expense_line_type(request, expense_line_type_id):
+    """
+    Delete an expense line type and all its linked expenses
+    """
+    if not request.user.is_superuser:
+        return JsonResponse({'error': 'Unauthorized'}, status=403)
+    
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Method not allowed'}, status=405)
+    
+    try:
+        with transaction.atomic():
+            # Get the expense line type
+            expense_line_type = get_object_or_404(expense_line_types, expense_line_types_id=expense_line_type_id)
+            
+            # Get linked expenses before deletion
+            linked_expenses = expense.objects.filter(expense_line_types=expense_line_type)
+            expense_count = linked_expenses.count()
+            
+            # Delete all linked expenses first
+            linked_expenses.delete()
+            
+            # Delete the expense line type
+            expense_line_type_name = expense_line_type.expense_line_types_name
+            expense_line_type.delete()
+            
+            # Create success message
+            if expense_count > 0:
+                message = f'Expense line type "{expense_line_type_name}" and {expense_count} linked expense(s) have been deleted successfully.'
+            else:
+                message = f'Expense line type "{expense_line_type_name}" has been deleted successfully.'
+            
+            messages.success(request, message)
+            
+            return JsonResponse({
+                'success': True,
+                'message': message,
+                'deleted_expenses': expense_count
+            })
+            
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=500)
 
 @login_required
 def finance_valuations(request):

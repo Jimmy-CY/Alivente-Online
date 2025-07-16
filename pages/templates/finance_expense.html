@@ -56,7 +56,7 @@
       
       <tbody>
         {% for pro in props_data %}
-          {% with expenses=pro.expense_set.all %}
+          {% with expenses=pro.expense_set.all|sort_by_expense_line_type %}
             {% if expenses %}
               <!-- Property Group -->
               <tbody class="property-group" data-property-id="{{ pro.id }}">
@@ -68,7 +68,7 @@
                   </td>
                 </tr>
                 
-                <!-- Property Details -->
+                <!-- Property Details - Now Sorted Alphabetically -->
                 {% for exp in expenses %}
                   <tr class="property-details" style="display: none;">
                     <td style="text-align: left;">{{ pro.prop_name }}</td>

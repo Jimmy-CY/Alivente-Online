@@ -2,17 +2,12 @@
 {% load static %}
 {% load humanize %}
 {% load custom_filters %} 
-
 {% block title %}
 {% endblock %}
-
 {% block content %}
-
 <h2><center>ALIVENTE ONLINE - EXPENSE LINE TYPES</center></h2>
 <br/>
-
 {% if user.is_superuser %}
-
   {% for msg in messages %}
     <div class="alert alert-secondary alert-dismissible fade show auto-dismiss" role="alert">
       <strong></strong> <center>{{ msg }}</center>
@@ -47,7 +42,7 @@
         <tr>
           <th style="text-align: left; box-sizing: border-box;">Expense Line Type</th>
           <th style="text-align: left; box-sizing: border-box;">Expense Line Type Description</th>
-          <th style="box-sizing: border-box;">Details</th>
+          <th style="box-sizing: border-box;">Actions</th>
         </tr>
       </thead>
       <tbody>
@@ -56,8 +51,11 @@
             <td style="text-align: left; box-sizing: border-box;">{{ exp.expense_line_types_name }}</td>
             <td style="text-align: left; box-sizing: border-box;">{{ exp.expense_line_types_description }}</td>
             <td> 
-              <button type="button" class="btn btn-light" style="border-color:black">
+              <button type="button" class="btn btn-light" style="border-color:black; margin-right: 5px;">
                 <a href="{% url 'finance_expense_line_types_edit' exp.expense_line_types_id %}">Edit</a>
+              </button>
+              <button type="button" class="btn btn-danger" onclick="checkAndDelete({{ exp.expense_line_types_id }}, '{{ exp.expense_line_types_name|escapejs }}')">
+                Delete
               </button>
             </td>    
           </tr>
@@ -66,8 +64,228 @@
     </table>    
   </div>
 </form>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="deleteModalLabel">Confirm Delete</h5>
+        <button type="button" class="close" onclick="closeModal()" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p id="deleteMessage"></p>
+        <div id="expensesList" style="display: none;">
+          <h6>Linked Expenses:</h6>
+          <div id="expensesListContainer" style="max-height: 400px; overflow-y: auto; border: 1px solid #ddd; padding: 10px; background-color: #f9f9f9;">
+            <ul id="expensesListItems" style="list-style-type: none; padding-left: 0;"></ul>
+          </div>
+          <p class="text-danger" style="margin-top: 15px;"><strong>⚠️ Warning: All these expenses will be permanently deleted!</strong></p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+        <button type="button" class="btn btn-danger" id="confirmDeleteBtn">Delete</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let currentDeleteId = null;
+let currentDeleteName = null;
+
+function checkAndDelete(expenseLineTypeId, expenseLineTypeName) {
+  currentDeleteId = expenseLineTypeId;
+  currentDeleteName = expenseLineTypeName;
+  
+  console.log('Checking expenses for line type:', expenseLineTypeId, expenseLineTypeName);
+  
+  // Make AJAX call to check for linked expenses
+  fetch(`/finance/expense-line-types/check-expenses/${expenseLineTypeId}/`, {
+    method: 'GET',
+    headers: {
+      'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+      'Content-Type': 'application/json',
+    },
+  })
+  .then(response => {
+    console.log('Response status:', response.status);
+    return response.json();
+  })
+  .then(data => {
+    console.log('Response data:', data);
+    
+    const deleteMessage = document.getElementById('deleteMessage');
+    const expensesList = document.getElementById('expensesList');
+    const expensesListItems = document.getElementById('expensesListItems');
+    
+    if (data.has_expenses && data.expenses && data.expenses.length > 0) {
+      // Show warning with list of expenses
+      deleteMessage.innerHTML = `Are you sure you want to delete the expense line type "<strong>${expenseLineTypeName}</strong>"?<br><br>This will also delete <strong>${data.expense_count}</strong> linked expense(s).`;
+      
+      // Clear previous items
+      expensesListItems.innerHTML = '';
+      
+      // Add expense items to the list
+      data.expenses.forEach(expense => {
+        const listItem = document.createElement('li');
+        
+        // Create a detailed display for each expense
+        let expenseDetails = `
+          <div style="margin-bottom: 10px; padding: 8px; border-left: 3px solid #dc3545;">
+            <strong>Expense ID:</strong> ${expense.id}<br>
+            <strong>Expense Type:</strong> ${expense.expense_type}<br>
+            <strong>Property:</strong> ${expense.property}<br>
+            <strong>Base Amount:</strong> ${expense.base_amount}<br>
+            <strong>Total Monthly:</strong> ${expense.total_monthly}
+        `;
+        
+        // Add monthly breakdown if there are monthly amounts
+        if (expense.monthly_breakdown && expense.monthly_breakdown.length > 0) {
+          expenseDetails += `<br><strong>Monthly Breakdown:</strong><br>`;
+          expense.monthly_breakdown.forEach(month => {
+            expenseDetails += `&nbsp;&nbsp;&nbsp;${month}<br>`;
+          });
+        }
+        
+        expenseDetails += `</div>`;
+        
+        listItem.innerHTML = expenseDetails;
+        expensesListItems.appendChild(listItem);
+      });
+      
+      expensesList.style.display = 'block';
+    } else {
+      // Simple delete confirmation
+      deleteMessage.innerHTML = `Are you sure you want to delete the expense line type "<strong>${expenseLineTypeName}</strong>"?`;
+      expensesList.style.display = 'none';
+    }
+    
+    // Show the modal
+    showModal();
+  })
+  .catch(error => {
+    console.error('Error:', error);
+    alert('Error checking for linked expenses. Please try again.');
+  });
+}
+
+// Function to show modal (works with different Bootstrap versions)
+function showModal() {
+  const modal = document.getElementById('deleteModal');
+  
+  // Try different methods to show modal
+  if (typeof $ !== 'undefined' && $.fn.modal) {
+    // Bootstrap with jQuery
+    $('#deleteModal').modal('show');
+  } else if (typeof bootstrap !== 'undefined') {
+    // Bootstrap 5
+    const modalInstance = new bootstrap.Modal(modal);
+    modalInstance.show();
+  } else {
+    // Fallback - manual show
+    modal.style.display = 'block';
+    modal.classList.add('show');
+    document.body.classList.add('modal-open');
+    
+    // Add backdrop
+    const backdrop = document.createElement('div');
+    backdrop.className = 'modal-backdrop fade show';
+    backdrop.id = 'modalBackdrop';
+    document.body.appendChild(backdrop);
+  }
+}
+
+// Function to close modal
+function closeModal() {
+  const modal = document.getElementById('deleteModal');
+  
+  if (typeof $ !== 'undefined' && $.fn.modal) {
+    // Bootstrap with jQuery
+    $('#deleteModal').modal('hide');
+  } else if (typeof bootstrap !== 'undefined') {
+    // Bootstrap 5
+    const modalInstance = bootstrap.Modal.getInstance(modal);
+    if (modalInstance) {
+      modalInstance.hide();
+    }
+  } else {
+    // Fallback - manual hide
+    modal.style.display = 'none';
+    modal.classList.remove('show');
+    document.body.classList.remove('modal-open');
+    
+    // Remove backdrop
+    const backdrop = document.getElementById('modalBackdrop');
+    if (backdrop) {
+      backdrop.remove();
+    }
+  }
+  
+  // Clear variables
+  currentDeleteId = null;
+  currentDeleteName = null;
+}
+
+// Handle the actual delete
+document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
+  if (currentDeleteId) {
+    console.log('Deleting expense line type:', currentDeleteId);
+    
+    // Make AJAX call to delete
+    fetch(`/finance/expense-line-types/delete/${currentDeleteId}/`, {
+      method: 'POST',
+      headers: {
+        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+        'Content-Type': 'application/json',
+      },
+    })
+    .then(response => response.json())
+    .then(data => {
+      console.log('Delete response:', data);
+      
+      if (data.success) {
+        // Close modal and reload page
+        closeModal();
+        location.reload();
+      } else {
+        alert('Error deleting expense line type: ' + data.error);
+      }
+    })
+    .catch(error => {
+      console.error('Error:', error);
+      alert('Error deleting expense line type. Please try again.');
+    });
+  }
+});
+
+// Handle clicking outside modal to close it
+document.addEventListener('click', function(event) {
+  const modal = document.getElementById('deleteModal');
+  if (event.target === modal) {
+    closeModal();
+  }
+});
+
+// Handle escape key to close modal
+document.addEventListener('keydown', function(event) {
+  if (event.key === 'Escape') {
+    closeModal();
+  }
+});
+
+// Clear variables when modal is closed (for Bootstrap with jQuery)
+if (typeof $ !== 'undefined') {
+  $('#deleteModal').on('hidden.bs.modal', function () {
+    currentDeleteId = null;
+    currentDeleteName = null;
+  });
+}
+</script>
+
 </body>
-
 {% endif %}
-
 {% endblock %}
