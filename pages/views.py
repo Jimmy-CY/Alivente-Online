@@ -719,21 +719,17 @@ def finance_expense_edit_commit(request, expense_id):
                     messages.error(request, "No properties selected for pro-rata distribution")
                     return redirect('finance_expense_edit', expense_id=expense_id)
                 
-                # Get all existing expenses with the same line type and expense type
-                existing_expenses = expense.objects.filter(
-                    expense_line_types_id=elt_id,
-                    expense_types_id=et_id
+                # For pro-rata expenses, we need to handle the original expense differently
+                # First, get all existing expenses with the ORIGINAL line type and expense type
+                original_expenses = expense.objects.filter(
+                    expense_line_types_id=existing_expense.expense_line_types_id,
+                    expense_types_id=existing_expense.expense_types_id
                 )
                 
-                # Create a set of property IDs we're updating
-                updating_property_ids = {p['prop_id'] for p in selected_properties}
+                # Delete all original pro-rata expenses (they will be recreated)
+                original_expenses.delete()
                 
-                # Delete any existing expenses that are no longer selected
-                for exp in existing_expenses:
-                    if exp.prop_id not in updating_property_ids:
-                        exp.delete()
-                
-                # Update or create expenses for each selected property
+                # Create new expenses for each selected property
                 for property_data in selected_properties:
                     monthly_data = {
                         'prop_id': property_data['prop_id'],
@@ -746,13 +742,8 @@ def finance_expense_edit_commit(request, expense_id):
                         if getattr(expense_type, f'expense_types_{month}') == "Yes":
                             monthly_data[f'expense_{month}'] = property_data['calculated_amount']
                     
-                    # Use update_or_create to update existing or create new
-                    expense.objects.update_or_create(
-                        prop_id=property_data['prop_id'],
-                        expense_line_types_id=elt_id,
-                        expense_types_id=et_id,
-                        defaults=monthly_data
-                    )
+                    # Create new expense
+                    expense.objects.create(**monthly_data)
                 
                 messages.success(request, f"{len(selected_properties)} pro-rata expenses updated successfully")
                 return redirect('finance_expense')
@@ -765,18 +756,33 @@ def finance_expense_edit_commit(request, expense_id):
                 return redirect('finance_expense_edit', expense_id=expense_id)
 
         # Handle non-pro-rata or single property expense
+        # IMPORTANT: Clear all monthly amounts first, then set only the active ones
         monthly_data = {
             'prop_id': prop_id,
             'expense_line_types_id': elt_id,
             'expense_types_id': et_id,
             'expense_amount': expense_amount,
+            # Clear all monthly amounts first
+            'expense_jan': None,
+            'expense_feb': None,
+            'expense_mar': None,
+            'expense_apr': None,
+            'expense_may': None,
+            'expense_jun': None,
+            'expense_jul': None,
+            'expense_aug': None,
+            'expense_sep': None,
+            'expense_oct': None,
+            'expense_nov': None,
+            'expense_dec': None,
         }
         
+        # Set only the active months based on the NEW expense type
         for month in months:
             if getattr(expense_type, f'expense_types_{month}') == "Yes":
                 monthly_data[f'expense_{month}'] = expense_amount
         
-        # Update the existing expense
+        # Update the existing expense directly (don't use update_or_create)
         for field, value in monthly_data.items():
             setattr(existing_expense, field, value)
         existing_expense.save()

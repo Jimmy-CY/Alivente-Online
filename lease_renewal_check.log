@@ -4591,3 +4591,72 @@ Watching for file changes with StatReloader
 "GET /finance/ HTTP/1.1" 200 10481
 "GET /finance_pl_act/ HTTP/1.1" 200 423687
 "GET /budget-expense-details/?year=2025&month=10&line_type=1&prop=all HTTP/1.1" 200 1706
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 7615
+Watching for file changes with StatReloader
+"GET /properties/ HTTP/1.1" 200 53322
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 35288
+"GET /property_report/5 HTTP/1.1" 200 12018
+"GET /properties/ HTTP/1.1" 200 53322
+"GET /finance/ HTTP/1.1" 200 10481
+"GET /finance_expense/ HTTP/1.1" 200 60222
+"GET /finance_expense_edit/87 HTTP/1.1" 200 34790
+"POST /finance_expense_edit_commit/87 HTTP/1.1" 302 0
+"GET /finance_expense/ HTTP/1.1" 200 60834
+"GET /finance/ HTTP/1.1" 200 10481
+"GET /finance_pl_act/ HTTP/1.1" 200 423924
+"GET /budget-expense-details/?year=2025&month=10&line_type=1&prop=all HTTP/1.1" 200 1706
+"GET /budget-expense-details/?year=2025&month=9&line_type=1&prop=all HTTP/1.1" 200 918
+"GET /finance/ HTTP/1.1" 200 10481
+"GET /finance_expense/ HTTP/1.1" 200 60224
+"GET /finance_expense_edit/87 HTTP/1.1" 200 34790
+"POST /finance_expense_edit_commit/87 HTTP/1.1" 302 0
+"GET /finance_expense/ HTTP/1.1" 200 60834
+"GET /finance/ HTTP/1.1" 200 10481
+"GET /finance_pl_act/ HTTP/1.1" 200 423924
+"GET /budget-expense-details/?year=2025&month=9&line_type=1&prop=all HTTP/1.1" 200 918
+"GET /budget-expense-details/?year=2025&month=10&line_type=1&prop=all HTTP/1.1" 200 1706
+"GET /finance/ HTTP/1.1" 200 10481
+"GET /finance_expense/ HTTP/1.1" 200 60224
+"GET /finance_expense_edit/87 HTTP/1.1" 200 34790
+"POST /finance_expense_edit_commit/87 HTTP/1.1" 302 0
+"GET /finance_expense/ HTTP/1.1" 200 60833
+"GET /finance/ HTTP/1.1" 200 10481
+"GET /finance_pl_act/ HTTP/1.1" 200 424163
+"GET /finance/ HTTP/1.1" 200 10481
+"GET /finance_expense/ HTTP/1.1" 200 60223
+"GET /finance_expense_edit/87 HTTP/1.1" 200 34790
+"POST /finance_expense_edit_commit/87 HTTP/1.1" 302 0
+"GET /finance_expense/ HTTP/1.1" 200 60833
+"GET /finance/ HTTP/1.1" 200 10481
+"GET /finance_pl_act/ HTTP/1.1" 200 424163
+"GET /finance/ HTTP/1.1" 200 10481
+"GET /finance_expense/ HTTP/1.1" 200 60223
+"GET /finance_expense_edit/87 HTTP/1.1" 200 34790
+"GET /finance_expense/ HTTP/1.1" 200 60223
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 7615
+"GET /finance/ HTTP/1.1" 200 10481
+"GET /finance_expense/ HTTP/1.1" 200 60223
+"GET /finance_expense_edit/87 HTTP/1.1" 200 34790
+"POST /finance_expense_edit_commit/87 HTTP/1.1" 302 0
+"GET /finance_expense/ HTTP/1.1" 200 60832
+"GET /finance/ HTTP/1.1" 200 10481
+"GET /finance_pl_act/ HTTP/1.1" 200 423687
+"GET /budget-expense-details/?year=2025&month=10&line_type=1&prop=all HTTP/1.1" 200 1706
+"GET /budget-expense-details/?year=2025&month=10&line_type=1&prop=all HTTP/1.1" 200 1706
+"GET /budget-expense-details/?year=2025&month=10&line_type=22&prop=all HTTP/1.1" 200 915
+"GET /budget-expense-details/?year=2025&month=10&line_type=28&prop=all HTTP/1.1" 200 1249
+"GET /act_expense_view/?year=2025&from_finance_pl_act=true&prop=all HTTP/1.1" 200 47239
+"GET /media/expense_docs/pindarou-20250521-Invoice.pdf HTTP/1.1" 200 461728
+"GET /budget-expense-details/?year=2025&month=4&line_type=9&prop=all HTTP/1.1" 200 2355
+"GET /budget-expense-details/?year=2025&month=2&line_type=25&prop=all HTTP/1.1" 200 913
+Watching for file changes with StatReloader
+"GET /finance_pl_act/ HTTP/1.1" 200 423687
+"GET /static/css/my_style.css HTTP/1.1" 200 45
+"GET /static/images/alivente_online_logo.png HTTP/1.1" 200 58508
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 35288
+"GET / HTTP/1.1" 200 7615
