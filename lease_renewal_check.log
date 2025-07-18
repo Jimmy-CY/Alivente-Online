@@ -4660,3 +4660,22 @@ Watching for file changes with StatReloader
 Not Found: /favicon.ico
 "GET /favicon.ico HTTP/1.1" 404 35288
 "GET / HTTP/1.1" 200 7615
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 2993
+"GET /static/css/my_style.css HTTP/1.1" 200 45
+"GET /static/images/alivente_online_logo.png HTTP/1.1" 200 58508
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 35288
+"GET /login/ HTTP/1.1" 200 4422
+"POST /login/ HTTP/1.1" 302 0
+"GET / HTTP/1.1" 200 8376
+"GET /properties/ HTTP/1.1" 200 53322
+"GET /media/properties/title_deeds/prop_5_apolloneon-demetri_title_deed.pdf HTTP/1.1" 200 3471395
+"GET /property_report/4 HTTP/1.1" 200 12015
+"GET /properties/ HTTP/1.1" 200 53322
+"GET /finance/ HTTP/1.1" 200 10481
+"GET /finance_pl_act/ HTTP/1.1" 200 423687
+"GET /budget-expense-details/?year=2025&month=1&line_type=5&prop=all HTTP/1.1" 200 1873
+"GET / HTTP/1.1" 200 7615
+"GET /finance/ HTTP/1.1" 200 10481
+"GET /act_expense_all/?from=finance HTTP/1.1" 200 74202
