@@ -80,6 +80,16 @@
 
               {% if user.is_superuser %}
               <li class="nav-item">
+                  <a class="nav-link" href="{% url 'property_management_dashboard' %}">Dashboard</a>
+              </li>
+              {% else %}
+              <li class="nav-item">
+                  <span class="nav-link text-muted" style="cursor: default;">Dashboard</span>
+              </li>
+              {% endif %}
+
+              {% if user.is_superuser %}
+              <li class="nav-item">
                   <a class="nav-link" href="{% url 'admin_apms' %}">Admin</a>
               </li>
               {% else %}

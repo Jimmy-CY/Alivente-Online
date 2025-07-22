@@ -1,0 +1,886 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+Property Dashboard
+{% endblock %}
+
+{% block content %}
+
+<h2><center>ALIVENTE ONLINE - PROPERTY DASHBOARD</center></h2>
+<br/>
+
+{% for msg in messages %}
+  <div class="alert alert-secondary alert-dismissible fade show auto-dismiss" role="alert">
+    <strong></strong> <center>{{ msg }}</center>
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <script>
+    setTimeout(function() {
+      document.querySelectorAll('.auto-dismiss').forEach(alert => {
+        alert.classList.remove('show');
+        alert.classList.add('fade');
+        setTimeout(() => alert.remove(), 500);
+      });
+    }, 2000);
+  </script>
+{% endfor %}
+
+<body>
+  <!-- Action Buttons -->
+  <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 20px;">
+    <a href="{% url 'home' %}" class="btn btn-info">Back</a>
+  </div>
+
+  <!-- Dashboard Container -->
+  <div class="dashboard-wrapper">
+    <div class="dashboard-container">
+      <div class="center-hub" id="centerHub">
+      <h2>Select Property</h2>
+      <select class="property-selector" id="propertySelector">
+        <option value="">Choose a property...</option>
+        {% for property in properties %}
+          <option value="{{ property.prop_id }}">{{ property.prop_name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <!-- Main Spokes and Boxes -->
+    <div class="spoke" id="spoke-report"></div>
+    <div class="spoke-box" id="property-report" data-function="propertyReport" data-url="{% url 'property_report' '0' %}">
+      <i class="fas fa-chart-line"></i>
+      <span class="box-text">Property Report</span>
+    </div>
+
+    <div class="spoke" id="spoke-deed"></div>
+    <div class="spoke-box" id="title-deed" data-function="titleDeed">
+      <i class="fas fa-file-contract"></i>
+      <span class="box-text">Title Deed</span>
+    </div>
+
+    <div class="spoke" id="spoke-tenant"></div>
+    <div class="spoke-box" id="tenant" data-function="tenant">
+      <i class="fas fa-users"></i>
+      <span class="box-text">Tenant</span>
+    </div>
+
+    <div class="spoke" id="spoke-expenses"></div>
+    <div class="spoke-box" id="actual-expenses" data-function="actualExpenses">
+      <i class="fas fa-receipt"></i>
+      <span class="box-text">Actual Expenses</span>
+    </div>
+
+    <div class="spoke" id="spoke-issues"></div>
+    <div class="spoke-box" id="issues" data-function="issues">
+      <i class="fas fa-exclamation-triangle"></i>
+      <span class="box-text">Issues</span>
+    </div>
+
+    <div class="spoke" id="spoke-valuations"></div>
+    <div class="spoke-box" id="property-valuations" data-function="propertyValuations">
+      <i class="fas fa-home"></i>
+      <span class="box-text">Property Valuations</span>
+    </div>
+
+    <div class="spoke" id="spoke-pl"></div>
+    <div class="spoke-box" id="profit-loss" data-function="profitLoss">
+      <i class="fas fa-chart-pie"></i>
+      <span class="box-text">Profit & Loss</span>
+    </div>
+
+    <div class="spoke" id="spoke-revenues"></div>
+    <div class="spoke-box" id="revenues" data-function="revenues">
+      <i class="fas fa-dollar-sign"></i>
+      <span class="box-text">Revenues</span>
+    </div>
+
+    <div class="spoke" id="spoke-budget"></div>
+    <div class="spoke-box" id="expenses" data-function="expenses">
+      <i class="fas fa-calculator"></i>
+      <span class="box-text">Expenses</span>
+    </div>
+
+    <!-- Sub-spokes for Tenant -->
+    <div class="sub-spoke" id="sub-spoke-invoices"></div>
+    <div class="sub-spoke-box" id="open-invoices" data-function="openInvoices">
+      <i class="fas fa-file-invoice-dollar"></i>
+      <span class="box-text">Open Invoices</span>
+    </div>
+
+    <div class="sub-spoke" id="sub-spoke-renewals"></div>
+    <div class="sub-spoke-box" id="lease-renewals" data-function="leaseRenewals">
+      <i class="fas fa-sync-alt"></i>
+      <span class="box-text">Lease Renewals</span>
+    </div>
+      </div>
+  </div>
+
+  <!-- Notification -->
+  <div class="notification" id="notification"></div>
+
+</body>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+<style>
+/* Dashboard Wrapper - Full container */
+.dashboard-wrapper {
+    width: 100%;
+    height: calc(100vh - 80px); /* Account for header and margins */
+    min-height: 600px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+/* Dashboard Container */
+.dashboard-container {
+    position: relative;
+    width: 100%;
+    max-width: 1200px;
+    height: 100%;
+    max-height: 800px;
+    aspect-ratio: 3/2; /* Maintain aspect ratio */
+    background: #f8f9fa;
+    border: 2px solid #e9ecef;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+}
+
+.center-hub {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: clamp(150px, 15vw, 200px);
+    height: clamp(150px, 15vw, 200px);
+    background: #17a2b8;
+    border-radius: 50%;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    z-index: 100;
+    border: 2px solid transparent; /* Default transparent border */
+}
+
+.center-hub.property-selected {
+    border: 3px solid #1e3a8a !important; /* Dark blue border when property is selected - made thicker */
+}
+
+.center-hub:hover {
+    transform: translate(-50%, -50%) scale(1.05);
+    box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2);
+    background: #138496;
+}
+
+.center-hub h2 {
+    color: white;
+    margin-bottom: 10px;
+    font-size: clamp(14px, 1.5vw, 18px);
+    text-align: center;
+    font-weight: bold;
+}
+
+.property-selector {
+    padding: 8px 16px;
+    border: 2px solid white;
+    border-radius: 25px;
+    background: white;
+    color: #333;
+    font-size: clamp(12px, 1.2vw, 14px);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: clamp(120px, 12vw, 180px);
+    font-weight: 600;
+}
+
+.property-selector:focus {
+    outline: none;
+    border-color: #138496;
+    box-shadow: 0 0 10px rgba(19, 132, 150, 0.3);
+}
+
+.spoke {
+    position: absolute;
+    height: 4px;
+    background: #ff6b6b; /* Light red by default when no property selected */
+    transform-origin: left center;
+    opacity: 1;
+    transition: all 0.3s ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    z-index: 10;
+}
+
+.spoke.property-selected {
+    background: #1e3a8a !important; /* Dark blue when property is selected */
+}
+
+.spoke.active {
+    opacity: 1;
+    box-shadow: 0 2px 6px rgba(52, 58, 64, 0.4);
+}
+
+.spoke-box {
+    position: absolute;
+    padding: clamp(8px, 1vw, 12px) clamp(10px, 1.2vw, 15px);
+    background: #17a2b8;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 2px solid transparent;
+    min-width: clamp(80px, 8vw, 110px);
+    max-width: clamp(100px, 10vw, 130px);
+    text-align: center;
+    font-weight: bold;
+    color: white;
+    font-size: clamp(9px, 0.9vw, 12px);
+    z-index: 50; /* Higher than spokes to hide spoke ends */
+    opacity: 1; /* Changed from 0.5 to 1 - always solid */
+    pointer-events: none;
+}
+
+.spoke-box i {
+    display: block;
+    margin-bottom: 3px;
+    font-size: clamp(12px, 1.2vw, 16px);
+    color: white;
+}
+
+.spoke-box.enabled {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.spoke-box.enabled:hover {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    border-color: #1e3a8a !important; /* Ensure border color is maintained on hover */
+    background: #138496;
+}
+
+.spoke-box.clicked {
+    background: #117a8b;
+    color: white;
+    transform: scale(1.05);
+}
+
+.spoke-box.clicked i {
+    color: white;
+}
+
+.sub-spoke {
+    position: absolute;
+    height: 3px;
+    background: #dc3545;
+    transform-origin: left center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    z-index: 10;
+}
+
+.sub-spoke-box {
+    position: absolute;
+    padding: clamp(6px, 0.6vw, 8px) clamp(8px, 0.8vw, 10px);
+    background: #ff6b6b;
+    border-radius: 6px;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid #ff6b6b;
+    min-width: clamp(70px, 7vw, 90px);
+    max-width: clamp(85px, 8.5vw, 105px);
+    text-align: center;
+    font-weight: 600;
+    color: white;
+    font-size: clamp(8px, 0.8vw, 10px);
+    opacity: 0;
+    z-index: 50;
+    pointer-events: none;
+}
+
+.sub-spoke-box.enabled {
+    pointer-events: auto;
+    background: #ff6b6b;
+}
+
+.sub-spoke-box:not(.enabled) {
+    background: #ff6b6b;
+}
+
+.sub-spoke-box i {
+    display: block;
+    margin-bottom: 3px;
+    font-size: clamp(12px, 1.2vw, 14px);
+}
+
+.sub-spoke-box.enabled {
+    pointer-events: auto;
+}
+
+.sub-spoke-box.enabled:hover {
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 12px 25px rgba(0, 0, 0, 0.15);
+    background: linear-gradient(145deg, #ffe0e0, #fff5f5);
+}
+
+.tenant-expanded .sub-spoke,
+.tenant-expanded .sub-spoke-box {
+    opacity: 1;
+}
+
+.notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 15px 25px;
+    background: linear-gradient(145deg, #4caf50, #45a049);
+    color: white;
+    border-radius: 10px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    transform: translateX(400px);
+    transition: transform 0.3s ease;
+    z-index: 1000;
+    font-weight: 600;
+}
+
+.notification.show {
+    transform: translateX(0);
+}
+
+.notification.error {
+    background: linear-gradient(145deg, #f44336, #d32f2f);
+}
+
+.loading {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #667eea;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Button Styles - Matching your existing template */
+.btn-info {
+    background-color: #17a2b8;
+    color: white;
+    border: 1px solid #17a2b8;
+    transition: all 0.3s ease;
+    border-radius: 6px;
+    font-weight: 500;
+}
+
+.btn-info:hover {
+    background-color: #138496;
+    border-color: #117a8b;
+    color: white;
+    text-decoration: none;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .dashboard-wrapper {
+        height: calc(100vh - 60px);
+        padding: 15px;
+    }
+    
+    .dashboard-container {
+        max-height: 700px;
+    }
+}
+
+@media (max-width: 768px) {
+    .dashboard-wrapper {
+        height: calc(100vh - 50px);
+        padding: 10px;
+    }
+    
+    .dashboard-container {
+        max-height: 600px;
+        aspect-ratio: 1;
+    }
+}
+
+@media (max-width: 480px) {
+    .dashboard-wrapper {
+        height: calc(100vh - 40px);
+        padding: 5px;
+    }
+    
+    .dashboard-container {
+        max-height: 500px;
+    }
+    
+    .spoke-box {
+        padding: 8px 12px;
+    }
+    
+    .sub-spoke-box {
+        padding: 6px 10px;
+    }
+}
+</style>
+
+<script>
+console.log('=== PROPERTY DASHBOARD SCRIPT LOADED ===');
+
+class PropertyDashboard {
+    constructor() {
+        this.selectedProperty = null;
+        this.selectedPropertyName = null;
+        this.centerHub = document.getElementById('centerHub');
+        this.propertySelector = document.getElementById('propertySelector');
+        this.propertyDisplay = document.getElementById('propertyDisplay');
+        this.tenantExpanded = false;
+        
+        this.spokePositions = [
+            { angle: 0, id: 'property-report', spokeId: 'spoke-report', text: 'Property Report' },
+            { angle: 40, id: 'title-deed', spokeId: 'spoke-deed', text: 'Title Deed' },
+            { angle: 80, id: 'tenant', spokeId: 'spoke-tenant', text: 'Tenant' },
+            { angle: 120, id: 'actual-expenses', spokeId: 'spoke-expenses', text: 'Actual Expenses' },
+            { angle: 160, id: 'issues', spokeId: 'spoke-issues', text: 'Issues' },
+            { angle: 200, id: 'property-valuations', spokeId: 'spoke-valuations', text: 'Property Valuations' },
+            { angle: 240, id: 'profit-loss', spokeId: 'spoke-pl', text: 'Profit & Loss' },
+            { angle: 280, id: 'revenues', spokeId: 'spoke-revenues', text: 'Revenues' },
+            { angle: 320, id: 'expenses', spokeId: 'spoke-budget', text: 'Expenses' }
+        ];
+
+        this.subSpokePositions = [
+            { angle: 60, id: 'open-invoices', spokeId: 'sub-spoke-invoices', parentId: 'tenant', text: 'Open Invoices' },
+            { angle: 100, id: 'lease-renewals', spokeId: 'sub-spoke-renewals', parentId: 'tenant', text: 'Lease Renewals' }
+        ];
+
+        this.init();
+    }
+
+    init() {
+        this.positionElements();
+        this.bindEvents();
+        this.updateSpokesVisibility();
+        this.updateBoxTexts(); // Initialize text content
+        
+        // Check if there's a pre-selected property from URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const preSelectedProperty = urlParams.get('property');
+        if (preSelectedProperty) {
+            this.propertySelector.value = preSelectedProperty;
+            this.selectProperty(preSelectedProperty);
+        }
+    }
+
+    positionElements() {
+        const container = document.querySelector('.dashboard-container');
+        if (!container) return;
+        
+        const containerRect = container.getBoundingClientRect();
+        const centerX = containerRect.width / 2;
+        const centerY = containerRect.height / 2;
+        
+        // Calculate distance based on container size
+        const baseDistance = Math.min(containerRect.width, containerRect.height) * 0.35;
+        const subDistance = baseDistance * 0.72;
+
+        // Position main spokes and boxes
+        this.spokePositions.forEach(pos => {
+            const radian = (pos.angle * Math.PI) / 180;
+            const x = centerX + Math.cos(radian) * baseDistance;
+            const y = centerY + Math.sin(radian) * baseDistance;
+
+            const box = document.getElementById(pos.id);
+            const spoke = document.getElementById(pos.spokeId);
+
+            if (box && spoke) {
+                // Position the box first
+                box.style.left = `${x - box.offsetWidth / 2}px`;
+                box.style.top = `${y - box.offsetHeight / 2}px`;
+
+                // Calculate spoke length to reach the closest edge of the box
+                const boxWidth = box.offsetWidth || 100;
+                const boxHeight = box.offsetHeight || 60;
+                
+                // Calculate the distance from center to the closest edge of the box
+                // We need to find where the spoke line intersects the box rectangle
+                const boxCenterDistance = baseDistance;
+                const boxRadius = Math.min(boxWidth, boxHeight) / 2; // Use smaller dimension for edge calculation
+                const spokeLength = boxCenterDistance - boxRadius;
+
+                // Position spoke to connect to the box edge
+                spoke.style.left = `${centerX}px`;
+                spoke.style.top = `${centerY}px`;
+                spoke.style.width = `${Math.max(spokeLength, 50)}px`;
+                spoke.style.transform = `rotate(${pos.angle}deg)`;
+                spoke.style.zIndex = '10';
+            }
+        });
+
+        // Position sub-spokes
+        this.subSpokePositions.forEach(pos => {
+            const parentBox = document.getElementById(pos.parentId);
+            if (parentBox) {
+                const parentRect = parentBox.getBoundingClientRect();
+                const containerRect = container.getBoundingClientRect();
+                
+                const parentCenterX = parentRect.left - containerRect.left + parentRect.width / 2;
+                const parentCenterY = parentRect.top - containerRect.top + parentRect.height / 2;
+
+                const radian = (pos.angle * Math.PI) / 180;
+                const x = parentCenterX + Math.cos(radian) * subDistance;
+                const y = parentCenterY + Math.sin(radian) * subDistance;
+
+                const box = document.getElementById(pos.id);
+                const spoke = document.getElementById(pos.spokeId);
+
+                if (box && spoke) {
+                    // Position the sub-box first
+                    box.style.left = `${x - box.offsetWidth / 2}px`;
+                    box.style.top = `${y - box.offsetHeight / 2}px`;
+
+                    // Calculate sub-spoke length to reach the box edge
+                    const boxWidth = box.offsetWidth || 90;
+                    const boxHeight = box.offsetHeight || 50;
+                    const boxRadius = Math.min(boxWidth, boxHeight) / 2;
+                    const spokeLength = subDistance - boxRadius;
+
+                    // Position sub-spoke to connect to the box edge
+                    spoke.style.left = `${parentCenterX}px`;
+                    spoke.style.top = `${parentCenterY}px`;
+                    spoke.style.width = `${Math.max(spokeLength, 30)}px`;
+                    spoke.style.transform = `rotate(${pos.angle}deg)`;
+                    spoke.style.zIndex = '10';
+                }
+            }
+        });
+    }
+
+    bindEvents() {
+        // Property selector change
+        this.propertySelector.addEventListener('change', (e) => {
+            const selectedOption = e.target.options[e.target.selectedIndex];
+            this.selectProperty(e.target.value, selectedOption.text);
+        });
+
+        // Spoke box clicks
+        document.querySelectorAll('.spoke-box').forEach(box => {
+            box.addEventListener('click', (e) => {
+                if (box.classList.contains('enabled')) {
+                    this.handleSpokeClick(e.target.closest('.spoke-box'));
+                }
+            });
+        });
+
+        // Sub-spoke box clicks
+        document.querySelectorAll('.sub-spoke-box').forEach(box => {
+            box.addEventListener('click', (e) => {
+                if (box.classList.contains('enabled')) {
+                    this.handleSubSpokeClick(e.target.closest('.sub-spoke-box'));
+                }
+            });
+        });
+
+        // Tenant expansion
+        document.getElementById('tenant').addEventListener('click', () => {
+            if (this.selectedProperty) {
+                this.toggleTenantExpansion();
+            }
+        });
+
+        // Window resize
+        window.addEventListener('resize', () => {
+            setTimeout(() => this.positionElements(), 100);
+        });
+    }
+
+    selectProperty(propertyId, propertyName = null) {
+        this.selectedProperty = propertyId;
+        
+        if (propertyId) {
+            // Get property name from selector if not provided
+            if (!propertyName) {
+                const selectedOption = this.propertySelector.options[this.propertySelector.selectedIndex];
+                propertyName = selectedOption.text;
+            }
+            
+            this.selectedPropertyName = propertyName;
+            this.centerHub.querySelector('h2').textContent = propertyName;
+        } else {
+            this.selectedPropertyName = null;
+            this.centerHub.querySelector('h2').textContent = 'Select Property';
+        }
+
+        this.updateSpokesVisibility();
+        this.updateBoxTexts(); // Update text content based on selection
+        this.collapseTenanttSubspokes();
+    }
+
+    updateBoxTexts() {
+        // Main spoke boxes always show their proper text (no more dynamic text changes)
+        // The styling changes (italic vs bold, borders) handle the visual feedback instead
+    }
+
+    updateSpokesVisibility() {
+        const spokes = document.querySelectorAll('.spoke');
+        const boxes = document.querySelectorAll('.spoke-box');
+        const subBoxes = document.querySelectorAll('.sub-spoke-box');
+
+        // Update spokes color and boxes
+        spokes.forEach(spoke => {
+            spoke.style.opacity = '1';
+            if (this.selectedProperty) {
+                spoke.classList.add('property-selected');
+            } else {
+                spoke.classList.remove('property-selected');
+            }
+        });
+
+        boxes.forEach(box => {
+            if (this.selectedProperty) {
+                box.classList.add('enabled');
+            } else {
+                box.classList.remove('enabled');
+            }
+        });
+
+        // Update center hub border
+        if (this.selectedProperty) {
+            this.centerHub.classList.add('property-selected');
+        } else {
+            this.centerHub.classList.remove('property-selected');
+        }
+
+        subBoxes.forEach(box => {
+            if (this.selectedProperty && this.tenantExpanded) {
+                box.classList.add('enabled');
+            } else {
+                box.classList.remove('enabled');
+            }
+        });
+    }
+
+    collapseTenanttSubspokes() {
+        this.tenantExpanded = false;
+        document.body.classList.remove('tenant-expanded');
+        this.updateSpokesVisibility();
+    }
+
+    handleSpokeClick(element) {
+        if (!this.selectedProperty) {
+            this.showNotification('Please select a property first!', 'error');
+            return;
+        }
+
+        // Special handling for tenant box
+        if (element.id === 'tenant') {
+            this.toggleTenantExpansion();
+            return;
+        }
+
+        // Remove previous clicked states
+        document.querySelectorAll('.spoke-box').forEach(box => {
+            box.classList.remove('clicked');
+        });
+
+        element.classList.add('clicked');
+
+        const functionName = element.getAttribute('data-function');
+        const boxText = element.querySelector('.box-text').textContent;
+        this.showNotification(`Loading ${boxText} for ${this.selectedPropertyName}...`);
+
+        // Simulate loading and then call function
+        setTimeout(() => {
+            this.callPropertyFunction(functionName, this.selectedProperty, element);
+            element.classList.remove('clicked');
+        }, 1500);
+    }
+
+    handleSubSpokeClick(element) {
+        if (!this.selectedProperty) {
+            this.showNotification('Please select a property first!', 'error');
+            return;
+        }
+
+        const functionName = element.getAttribute('data-function');
+        const boxText = element.querySelector('.box-text').textContent;
+        this.showNotification(`Loading ${boxText} for ${this.selectedPropertyName}...`);
+
+        setTimeout(() => {
+            this.callPropertyFunction(functionName, this.selectedProperty, element);
+        }, 1500);
+    }
+
+    toggleTenantExpansion() {
+        this.tenantExpanded = !this.tenantExpanded;
+        document.body.classList.toggle('tenant-expanded', this.tenantExpanded);
+        this.updateSpokesVisibility();
+    }
+
+    callPropertyFunction(functionName, propertyId, element) {
+        console.log(`Calling ${functionName} for property ${propertyId}`);
+        
+        // Get URL template from data attribute if it exists
+        const urlTemplate = element.getAttribute('data-url');
+        
+        switch(functionName) {
+            case 'propertyReport':
+                if (urlTemplate) {
+                    // Replace the '0' in the URL template with actual property ID
+                    const url = urlTemplate.replace('0', propertyId);
+                    window.location.href = url;
+                } else {
+                    this.loadPropertyReport(propertyId);
+                }
+                break;
+            case 'titleDeed':
+                this.loadTitleDeed(propertyId);
+                break;
+            case 'tenant':
+                this.loadTenantInfo(propertyId);
+                break;
+            case 'actualExpenses':
+                this.loadActualExpenses(propertyId);
+                break;
+            case 'issues':
+                this.loadIssues(propertyId);
+                break;
+            case 'propertyValuations':
+                this.loadPropertyValuations(propertyId);
+                break;
+            case 'profitLoss':
+                this.loadProfitLoss(propertyId);
+                break;
+            case 'revenues':
+                this.loadRevenues(propertyId);
+                break;
+            case 'expenses':
+                this.loadExpenses(propertyId);
+                break;
+            case 'openInvoices':
+                this.loadOpenInvoices(propertyId);
+                break;
+            case 'leaseRenewals':
+                this.loadLeaseRenewals(propertyId);
+                break;
+            default:
+                console.log(`Function ${functionName} not implemented yet`);
+                this.showNotification(`${functionName} function not implemented yet`, 'error');
+        }
+    }
+
+    // Function implementations - Update these with your actual Django URLs
+    loadPropertyReport(propertyId) {
+        console.log(`Loading property report for ${propertyId}`);
+        // Example implementation - replace with your actual URL pattern
+        // window.location.href = `/properties/report/${propertyId}/`;
+        this.showNotification(`Property Report loaded for ${this.selectedPropertyName}`);
+    }
+
+    loadTitleDeed(propertyId) {
+        console.log(`Loading title deed for ${propertyId}`);
+        // Example implementation
+        // window.location.href = `/properties/title-deed/${propertyId}/`;
+        this.showNotification(`Title Deed loaded for ${this.selectedPropertyName}`);
+    }
+
+    loadTenantInfo(propertyId) {
+        console.log(`Loading tenant info for ${propertyId}`);
+        // Example implementation
+        // window.location.href = `/properties/tenant/${propertyId}/`;
+        this.showNotification(`Tenant information loaded for ${this.selectedPropertyName}`);
+    }
+
+    loadActualExpenses(propertyId) {
+        console.log(`Loading actual expenses for ${propertyId}`);
+        // Example implementation
+        // window.location.href = `/properties/expenses/actual/${propertyId}/`;
+        this.showNotification(`Actual Expenses loaded for ${this.selectedPropertyName}`);
+    }
+
+    loadIssues(propertyId) {
+        console.log(`Loading issues for ${propertyId}`);
+        // Example implementation
+        // window.location.href = `/properties/issues/${propertyId}/`;
+        this.showNotification(`Issues loaded for ${this.selectedPropertyName}`);
+    }
+
+    loadPropertyValuations(propertyId) {
+        console.log(`Loading property valuations for ${propertyId}`);
+        // Example implementation
+        // window.location.href = `/properties/valuations/${propertyId}/`;
+        this.showNotification(`Property Valuations loaded for ${this.selectedPropertyName}`);
+    }
+
+    loadProfitLoss(propertyId) {
+        console.log(`Loading P&L for ${propertyId}`);
+        // Example implementation
+        // window.location.href = `/properties/profit-loss/${propertyId}/`;
+        this.showNotification(`Profit & Loss loaded for ${this.selectedPropertyName}`);
+    }
+
+    loadRevenues(propertyId) {
+        console.log(`Loading revenues for ${propertyId}`);
+        // Example implementation
+        // window.location.href = `/properties/revenues/${propertyId}/`;
+        this.showNotification(`Revenues loaded for ${this.selectedPropertyName}`);
+    }
+
+    loadExpenses(propertyId) {
+        console.log(`Loading expenses for ${propertyId}`);
+        // Example implementation
+        // window.location.href = `/properties/expenses/${propertyId}/`;
+        this.showNotification(`Expenses loaded for ${this.selectedPropertyName}`);
+    }
+
+    loadOpenInvoices(propertyId) {
+        console.log(`Loading open invoices for ${propertyId}`);
+        // Example implementation
+        // window.location.href = `/properties/invoices/open/${propertyId}/`;
+        this.showNotification(`Open Invoices loaded for ${this.selectedPropertyName}`);
+    }
+
+    loadLeaseRenewals(propertyId) {
+        console.log(`Loading lease renewals for ${propertyId}`);
+        // Example implementation
+        // window.location.href = `/properties/lease-renewals/${propertyId}/`;
+        this.showNotification(`Lease Renewals loaded for ${this.selectedPropertyName}`);
+    }
+
+    showNotification(message, type = 'success') {
+        const notification = document.getElementById('notification');
+        notification.textContent = message;
+        notification.className = `notification ${type}`;
+        notification.classList.add('show');
+
+        setTimeout(() => {
+            notification.classList.remove('show');
+        }, 3000);
+    }
+}
+
+// Initialize the dashboard when the page loads
+document.addEventListener('DOMContentLoaded', () => {
+    new PropertyDashboard();
+});
+
+console.log('🚀 === PROPERTY DASHBOARD SCRIPT COMPLETE ===');
+</script>
+
+{% endblock %}

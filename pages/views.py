@@ -260,6 +260,37 @@ def admin_invoices(request):
 	open_invoices.create_invoices(months[today.month],today.year,request)
 	return redirect("admin_apms")
 
+### DASHBOARD ###
+@login_required
+def property_management_dashboard(request):
+    """
+    Main property dashboard view with spoke-and-wheel interface
+    """
+    try:
+        # Get all properties for the dropdown
+        properties = props.objects.filter(prop_status='Active').order_by('prop_name')
+        
+        # Check if a specific property was selected
+        selected_property_id = request.GET.get('property')
+        selected_property = None
+        
+        if selected_property_id:
+            try:
+                selected_property = props.objects.get(prop_id=selected_property_id)
+            except props.DoesNotExist:
+                messages.error(request, f"Property with ID {selected_property_id} not found.")
+        
+        context = {
+            'properties': properties,
+            'selected_property': selected_property,
+        }
+        
+        return render(request, 'property_management_dashboard.html', context)
+        
+    except Exception as e:
+        messages.error(request, f"Error loading dashboard: {str(e)}")
+        return redirect('properties')
+
 ### FINANCE ###
 @login_required
 def finance(request):
