@@ -480,6 +480,7 @@ Property Dashboard
     opacity: 1;
 }
 
+/* Updated Notification CSS */
 .notification {
     position: fixed;
     top: 20px;
@@ -490,17 +491,31 @@ Property Dashboard
     border-radius: 10px;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
     transform: translateX(400px);
-    transition: transform 0.3s ease;
+    transition: transform 0.3s ease, opacity 0.3s ease;
     z-index: 1000;
     font-weight: 600;
+    opacity: 0;
+    visibility: hidden;
 }
 
 .notification.show {
     transform: translateX(0);
+    opacity: 1;
+    visibility: visible;
+}
+
+.notification.hide {
+    transform: translateX(400px);
+    opacity: 0;
+    visibility: hidden;
 }
 
 .notification.error {
     background: linear-gradient(145deg, #f44336, #d32f2f);
+}
+
+.notification.info {
+    background: linear-gradient(145deg, #17a2b8, #138496);
 }
 
 .loading {
@@ -593,6 +608,7 @@ class PropertyDashboard {
         this.propertyModal = document.getElementById('propertyModal');
         this.closeModal = document.getElementById('closeModal');
         this.tenantExpanded = false;
+        this.notificationTimeout = null; // Add timeout tracking
         
         // Updated positions with the requested box swaps
         // Starting with Title Deed at 12 o'clock (270 degrees)
@@ -888,14 +904,20 @@ class PropertyDashboard {
             return;
         }
 
+        const boxType = element.getAttribute('data-box-type');
+        
+        // Block the expenses box from being clickable
+        if (boxType === 'expenses') {
+            this.showNotification('Please select either "Actual" or "Budgeted" Expenses.', 'error');
+            return;
+        }
+
         // Remove previous clicked states
         document.querySelectorAll('.spoke-box').forEach(box => {
             box.classList.remove('clicked');
         });
 
         element.classList.add('clicked');
-
-        const boxType = element.getAttribute('data-box-type');
         
         // Redirect to property detail page with property_id and box_type
         setTimeout(() => {
@@ -941,12 +963,37 @@ class PropertyDashboard {
 
     showNotification(message, type = 'success') {
         const notification = document.getElementById('notification');
+        
+        // Clear any existing timeout
+        if (this.notificationTimeout) {
+            clearTimeout(this.notificationTimeout);
+        }
+        
+        // Reset classes
+        notification.className = 'notification';
         notification.textContent = message;
-        notification.className = `notification ${type}`;
-        notification.classList.add('show');
-
+        
+        // Add type class
+        if (type === 'error') {
+            notification.classList.add('error');
+        } else if (type === 'info') {
+            notification.classList.add('info');
+        }
+        
+        // Show notification
         setTimeout(() => {
+            notification.classList.add('show');
+        }, 10);
+        
+        // Hide notification after 3 seconds
+        this.notificationTimeout = setTimeout(() => {
             notification.classList.remove('show');
+            notification.classList.add('hide');
+            
+            // Remove hide class after animation completes
+            setTimeout(() => {
+                notification.classList.remove('hide');
+            }, 300);
         }, 3000);
     }
 }
