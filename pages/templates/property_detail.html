@@ -1,0 +1,1640 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}
+{{ property.prop_name }} - {{ box_type_display }}
+{% endblock %}
+
+{% block content %}
+
+<div class="container-fluid mt-4">
+    <!-- Header Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="mb-1">
+                        {{ property.prop_name }}
+                        {% if active_tenant and box_type == 'lease' %} ({{ active_tenant.tenant_name }}){% endif %}
+                    </h2>
+                </div>
+                <div>
+                    <a href="{% url 'property_management_dashboard' %}?property={{ property.prop_id }}" class="btn btn-info">
+                        <i class="fas fa-home"></i> Property Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dynamic Content Based on Box Type -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    {% if box_type == 'title-deed' %}
+                        <!-- Title Deed Content -->
+                        <div class="title-deed-section">
+                            <h5><i class="fas fa-file-contract text-info"></i> Title Deed Information</h5>
+                            {% if user.is_superuser %}
+                                {% if property.prop_title_deed %}
+                                    <div class="document-viewer mt-3">
+                                        <div class="document-preview border p-3 rounded">
+                                            {% if property.prop_title_deed.name|slice:"-4:" == ".pdf" %}
+                                                <iframe src="{{ property.prop_title_deed.url }}#navpanes=0&scrollbar=1&page=1&view=FitH" width="100%" height="600px" style="border: 1px solid #ddd; border-radius: 4px;">
+                                                    <p>Your browser does not support PDFs. <a href="{{ property.prop_title_deed.url }}" target="_blank">Click here to view</a></p>
+                                                </iframe>
+                                            {% else %}
+                                                <img src="{{ property.prop_title_deed.url }}" alt="Title Deed" class="img-fluid" style="max-height: 600px; width: 100%;">
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                {% else %}
+                                    <div class="alert alert-warning">
+                                        <i class="fas fa-exclamation-triangle"></i> No title deed available for this property.
+                                    </div>
+                                {% endif %}
+                            {% else %}
+                                <div class="alert alert-danger">
+                                    <i class="fas fa-lock"></i> Access denied. Superuser privileges required to view title deeds.
+                                </div>
+                            {% endif %}
+                        </div>
+
+                    {% elif box_type == 'property-report' %}
+                        <!-- Property Report Content -->
+                        <div class="property-report-section">
+                            <h5><i class="fas fa-chart-line text-info"></i> Property Report</h5>
+                            
+                            <div class="property-card mt-3">
+                                <h3 class="property-name">{{ property.prop_name }}</h3>
+                                
+                                <div class="detail-groups">
+                                    <!-- Property Address Section -->
+                                    <div class="detail-group">
+                                        <h4 class="section-title">Property Address</h4>
+                                        <div class="detail-row">
+                                            <span class="detail-label">Address:</span>
+                                            <span class="detail-value">
+                                                {{ property.prop_address1 }}
+                                                {% if property.prop_address2 %}, {{ property.prop_address2 }}{% endif %}
+                                                {% if property.prop_suburb %}, {{ property.prop_suburb }}{% endif %}
+                                            </span>
+                                        </div>
+                                        <div class="detail-row">
+                                            <span class="detail-label">City/Province:</span>
+                                            <span class="detail-value">
+                                                {{ property.prop_city }}, {{ property.prop_province }}
+                                            </span>
+                                        </div>
+                                        <div class="detail-row">
+                                            <span class="detail-label">Country/Post Code:</span>
+                                            <span class="detail-value">
+                                                {{ property.prop_country }}, {{ property.prop_pcode }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Property Specifications -->
+                                    <div class="detail-group">
+                                        <h4 class="section-title">Property Specifications</h4>
+                                        <div class="detail-row">
+                                            <span class="detail-label">Square Meters:</span>
+                                            <span class="detail-value">{{ property.prop_floor_area|floatformat:"0"|intcomma }}</span>
+                                        </div>
+                                        <div class="detail-row">
+                                            <span class="detail-label">Year Built:</span>
+                                            <span class="detail-value">{{ property.prop_year_built }}</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Utility Accounts -->
+                                    <div class="detail-group">
+                                        <h4 class="section-title">Utility Accounts</h4>
+                                        <div class="detail-row">
+                                            <span class="detail-label">Electricity:</span>
+                                            <span class="detail-value">{{ property.prop_electricity }}</span>
+                                        </div>
+                                        <div class="detail-row">
+                                            <span class="detail-label">Water:</span>
+                                            <span class="detail-value">{{ property.prop_water }}</span>
+                                        </div>
+                                        <div class="detail-row">
+                                            <span class="detail-label">Refuse:</span>
+                                            <span class="detail-value">{{ property.prop_refuse }}</span>
+                                        </div>
+                                        <div class="detail-row">
+                                            <span class="detail-label">Property Tax:</span>
+                                            <span class="detail-value">{{ property.prop_property_tax }}</span>
+                                        </div>
+                                        <div class="detail-row">
+                                            <span class="detail-label">Sewerage:</span>
+                                            <span class="detail-value">{{ property.prop_sewerage }}</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Insurance and Status -->
+                                    <div class="detail-group">
+                                        <h4 class="section-title">Insurance & Status</h4>
+                                        <div class="detail-row">
+                                            <span class="detail-label">Insurance Policy:</span>
+                                            <span class="detail-value">{{ property.prop_insurance }}</span>
+                                        </div>
+                                        <div class="detail-row">
+                                            <span class="detail-label">Status:</span>
+                                            <span class="badge {% if property.prop_status == 'Active' %}badge-success{% else %}badge-secondary{% endif %}">
+                                                {{ property.prop_status }}
+                                            </span>
+                                        </div>
+                                        <div class="detail-row">
+                                            <span class="detail-label">Available for Rent:</span>
+                                            <span class="badge {% if property.prop_available_for_rent == 'Yes' %}badge-available{% else %}badge-not-available{% endif %}">
+                                                {{ property.prop_available_for_rent }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    {% elif box_type == 'tenant' %}
+                        <!-- Tenant Information Content -->
+                        <div class="tenant-section">
+                            <h5><i class="fas fa-users text-info"></i> Tenant Information</h5>
+                            
+                            {% if property.prop_status != 'Active' and property.prop_available_for_rent != 'Yes' %}
+                                <!-- Property not active and not available for rent -->
+                                <div class="alert alert-warning mt-3">
+                                    <i class="fas fa-home"></i> This Property is currently not Available for Rent
+                                </div>
+                            {% else %}
+                                <!-- Check for active tenant -->
+                                {% if active_tenant %}
+                                    <!-- Active tenant found - show tenant details -->
+                                    <div class="property-card mt-3">
+                                        <h3 class="property-name">{{ active_tenant.tenant_name }}</h3>
+                                        
+                                        <div class="tenant-details">
+                                            <!-- Basic Info Section -->
+                                            <div class="detail-group">
+                                                <h4 class="section-title">Tenant Information</h4>
+                                                <div class="detail-row">
+                                                    <span class="detail-label">Type:</span>
+                                                    <span class="detail-value">{{ active_tenant.tenant_type }}</span>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Contact Info Section -->
+                                            <div class="detail-group">
+                                                <h4 class="section-title">Contact Information</h4>
+                                                <div class="detail-row">
+                                                    <span class="detail-label">Contact Person:</span>
+                                                    <span class="detail-value">{{ active_tenant.tenant_contact_person }}</span>
+                                                </div>
+                                                <div class="detail-row">
+                                                    <span class="detail-label">Contact Number:</span>
+                                                    <span class="detail-value">{{ active_tenant.tenant_contact_number }}</span>
+                                                </div>
+                                                <div class="detail-row">
+                                                    <span class="detail-label">Email:</span>
+                                                    <span class="detail-value">{{ active_tenant.tenant_email }}</span>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Lease Dates Section -->
+                                            <div class="detail-group">
+                                                <h4 class="section-title">Lease Period</h4>
+                                                <div class="date-row detail-row">
+                                                    <span class="detail-label">Start Date:</span>
+                                                    <span class="date-box">{{ active_tenant.tenant_lease_start_date }}</span>
+                                                </div>
+                                                <div class="date-row detail-row">
+                                                    <span class="detail-label">End Date:</span>
+                                                    {% if active_tenant.tenant_lease_end_date %}
+                                                        {% now "Y-m-d" as today_date %}
+                                                        {% if active_tenant.tenant_lease_end_date|date:"Y-m-d" < today_date %}
+                                                            <span class="date-box highlight-red">{{ active_tenant.tenant_lease_end_date }}</span>
+                                                        {% else %}
+                                                            <span class="date-box">{{ active_tenant.tenant_lease_end_date }}</span>
+                                                        {% endif %}
+                                                    {% else %}
+                                                        <span class="date-box">-</span>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Financial Information -->
+                                            <div class="detail-group">
+                                                <h4 class="section-title">Financial Information</h4>
+                                                <div class="financial-row detail-row">
+                                                    <span class="detail-label">Deposit:</span>
+                                                    <span class="detail-value amount">€{{ active_tenant.tenant_deposit|floatformat:"0"|intcomma }}</span>
+                                                </div>
+                                                <div class="financial-row detail-row">
+                                                    <span class="detail-label">Monthly Rent:</span>
+                                                    <span class="detail-value amount">€{{ active_tenant.tenant_rent|floatformat:"0"|intcomma }}</span>
+                                                </div>
+                                                <div class="financial-row detail-row">
+                                                    <span class="detail-label">Levies:</span>
+                                                    <span class="detail-value amount">€{{ active_tenant.tenant_levies|floatformat:"0"|intcomma }}</span>
+                                                </div>
+                                                <div class="financial-row detail-row">
+                                                    <span class="detail-label">Payment Terms:</span>
+                                                    <span class="detail-value">
+                                                        {% if active_tenant.tenant_payment_terms == 0 %}Immediate{% else %}{{ active_tenant.tenant_payment_terms }} days{% endif %}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Lease Details -->
+                                            <div class="detail-group">
+                                                <h4 class="section-title">Lease Details</h4>
+                                                <div class="detail-row">
+                                                    <span class="detail-label">Rental Type:</span>
+                                                    <span class="detail-value">{{ active_tenant.tenant_rental_type }}</span>
+                                                </div>
+                                                <div class="detail-row">
+                                                    <span class="detail-label">Renewal Clause:</span>
+                                                    <span class="detail-value">{{ active_tenant.tenant_renewal }}</span>
+                                                </div>
+                                                {% if active_tenant.tenant_renewal == "Yes" %}
+                                                <div class="detail-row">
+                                                    <span class="detail-label">Notice Period:</span>
+                                                    <span class="detail-value">{{ active_tenant.tenant_renewal_period }} days</span>
+                                                </div>
+                                                {% endif %}
+                                                <div class="detail-row">
+                                                    <span class="detail-label">Renewal Status:</span>
+                                                    <span class="renewal-status-badge 
+                                                        {% if active_tenant.tenant_renewal_status == 'pending' or not active_tenant.tenant_renewal_status %}renewal-pending
+                                                        {% elif active_tenant.tenant_renewal_status == 'declined' %}renewal-declined
+                                                        {% elif active_tenant.tenant_renewal_status == 'new_lease_signed' %}renewal-signed
+                                                        {% endif %}">
+                                                        {% if active_tenant.tenant_renewal_status == 'pending' or not active_tenant.tenant_renewal_status %}
+                                                            Pending
+                                                        {% elif active_tenant.tenant_renewal_status == 'declined' %}
+                                                            Declined
+                                                        {% elif active_tenant.tenant_renewal_status == 'new_lease_signed' %}
+                                                            New Lease Signed
+                                                        {% else %}
+                                                            {{ active_tenant.tenant_renewal_status|title }}
+                                                        {% endif %}
+                                                    </span>
+                                                </div>
+                                                <div class="detail-row">
+                                                    <span class="detail-label">Active Tenant:</span>
+                                                    <span class="badge {% if active_tenant.tenant_current == 'Yes' %}badge-success{% else %}badge-secondary{% endif %}">
+                                                        {{ active_tenant.tenant_current }}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% else %}
+                                    <!-- No active tenant found -->
+                                    <div class="alert alert-info mt-3">
+                                        <i class="fas fa-info-circle"></i> No Active Tenant for this Property
+                                    </div>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+
+                    {% elif box_type == 'lease-renewals' %}
+                        <!-- Lease Renewals Content -->
+                        <div class="renewals-section">
+                            <h5><i class="fas fa-sync-alt text-info"></i> Lease Renewals</h5>
+                            
+                            {% if property.prop_available_for_rent != 'Yes' %}
+                                <!-- Property not available for rent -->
+                                <div class="alert alert-warning mt-3">
+                                    <i class="fas fa-home"></i> This Property is Currently Not Available for Rent
+                                </div>
+                            {% elif lease_renewal_data %}
+                                {% if lease_renewal_data.status == 'vacant' %}
+                                    <!-- Vacant Property -->
+                                    <div class="vacant-property-card mt-3">
+                                        <h3 class="property-name">{{ property.prop_name }}</h3>
+                                        <p class="highlight-red"><strong>{{ lease_renewal_data.message }}</strong></p>
+                                    </div>
+                                    
+                                {% elif lease_renewal_data.status == 'declined' %}
+                                    <!-- Declined Renewal -->
+                                    <div class="declined-renewal-card mt-3">
+                                        <h3 class="property-name">{{ property.prop_name }}</h3>
+                                        <p class="highlight-red"><strong>{{ lease_renewal_data.message }}</strong></p>
+                                        <div class="tenant-details">
+                                            <p><strong>Current Tenant:</strong> {{ lease_renewal_data.tenant.tenant_name }}</p>
+                                            <p><strong>Contact:</strong> {{ lease_renewal_data.tenant.tenant_contact_person }} | {{ lease_renewal_data.tenant.tenant_contact_number }}</p>
+                                            <p><strong>Email:</strong> {{ lease_renewal_data.tenant.tenant_email }}</p>
+                                        </div>
+                                    </div>
+                                    
+                                {% elif lease_renewal_data.status == 'renewed' %}
+                                    <!-- Renewed Lease -->
+                                    <div class="renewed-lease-card mt-3">
+                                        <h3 class="property-name">{{ property.prop_name }}</h3>
+                                        <p class="highlight-green"><strong>{{ lease_renewal_data.message }}</strong></p>
+                                        <div class="tenant-details">
+                                            <p><strong>Tenant:</strong> {{ lease_renewal_data.tenant.tenant_name }}</p>
+                                            <p><strong>Previous Lease End:</strong> {{ lease_renewal_data.tenant.tenant_lease_end_date }}</p>
+                                        </div>
+                                    </div>
+                                    
+                                {% elif lease_renewal_data.needs_renewal %}
+                                    <!-- Needs Renewal -->
+                                    <div class="tenant-renewal-card mt-3">
+                                        <h3 class="property-name">{{ property.prop_name }}</h3>
+                                        
+                                        <div class="tenant-details">
+                                            <!-- Type and Name on one line -->
+                                            <p>
+                                                <strong>Type:</strong> {{ lease_renewal_data.tenant.tenant_type }} | 
+                                                <strong>Name:</strong> {{ lease_renewal_data.tenant.tenant_name }} |
+                                                <strong>Rental Type:</strong> {{ lease_renewal_data.tenant.tenant_rental_type }}
+                                            </p>
+                                            
+                                            <!-- Contact Person and Number on one line -->
+                                            <p>
+                                                <strong>Contact:</strong> {{ lease_renewal_data.tenant.tenant_contact_person }} | 
+                                                <strong>Number:</strong> {{ lease_renewal_data.tenant.tenant_contact_number }}
+                                            </p>
+                                            
+                                            <p><strong>Email:</strong> {{ lease_renewal_data.tenant.tenant_email }}</p>
+                                            
+                                            <!-- Lease Dates on one line -->
+                                            <p>
+                                                <strong>Lease Period:</strong> 
+                                                {{ lease_renewal_data.tenant.tenant_lease_start_date }} to 
+                                                <span class="highlight-red">{{ lease_renewal_data.tenant.tenant_lease_end_date }}</span>
+                                            </p>
+                                            <p>
+                                                <strong>Lease Renewal Clause:</strong> {{ lease_renewal_data.tenant.tenant_renewal }} |
+                                                <strong>Lease Renewal Notice Period:</strong> {{ lease_renewal_data.tenant.tenant_renewal_period }} days
+                                            </p>
+                                            <p class="highlight-red"><strong>Tenant Contact Date:</strong> {{ lease_renewal_data.renewal_date }}</p>
+                                            
+                                            <!-- Financial Information -->
+                                            <p>
+                                                <strong>Current Rent:</strong> €{{ lease_renewal_data.tenant.tenant_rent|floatformat:"0"|intcomma }} | 
+                                                <strong>Deposit:</strong> €{{ lease_renewal_data.tenant.tenant_deposit|floatformat:"0"|intcomma }}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    
+                                {% else %}
+                                    <!-- Current Lease (No Action Required) -->
+                                    <div class="current-lease-card mt-3">
+                                        <h3 class="property-name">{{ property.prop_name }}</h3>
+                                        <div class="alert alert-success">
+                                            <i class="fas fa-check-circle"></i> Current lease is active. No renewal action required at this time.
+                                        </div>
+                                        <div class="tenant-details">
+                                            <p><strong>Tenant:</strong> {{ lease_renewal_data.tenant.tenant_name }}</p>
+                                            <p><strong>Lease End Date:</strong> {{ lease_renewal_data.tenant.tenant_lease_end_date }}</p>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            {% else %}
+                                <div class="alert alert-info mt-3">
+                                    <i class="fas fa-info-circle"></i> No lease renewal information available for this property.
+                                </div>
+                            {% endif %}
+                        </div>
+
+                    {% elif box_type == 'lease' %}
+                        <!-- Lease Agreement Content -->
+                        <div class="lease-section">
+                            <h5><i class="fas fa-file-contract text-info"></i> Lease Agreement</h5>
+                            
+                            {% if active_tenant %}
+                                <div class="lease-container mt-3">
+                                    <div class="lease-viewer">
+                                        <!-- Error message (only shows if PDF fails to load) -->
+                                        <div id="lease-error" class="alert alert-warning" style="display: none;">
+                                            <i class="fas fa-exclamation-triangle"></i>
+                                            <p>Lease agreement not found for this property.</p>
+                                            <a href="#" class="btn btn-sm btn-info" id="download-lease" download>
+                                                <i class="fas fa-download"></i> Try Download Instead
+                                            </a>
+                                        </div>
+                                        
+                                        <!-- Lease Agreement PDF Viewer -->
+                                        <iframe 
+                                            src="{% static 'lease_agreements/' %}{{ property.prop_name }} - Lease Agreement.pdf#navpanes=0&toolbar=1" 
+                                            width="100%" 
+                                            height="600px" 
+                                            style="border: 1px solid #dee2e6; border-radius: 8px;"
+                                            title="Lease Agreement for {{ property.prop_name }}"
+                                            onerror="handlePdfError(this)"
+                                            id="lease-iframe"
+                                        ></iframe>
+                                    </div>
+                                </div>
+                                
+                                <script>
+                                    function handlePdfError(iframe) {
+                                        iframe.style.display = 'none';
+                                        const errorDiv = document.getElementById('lease-error');
+                                        errorDiv.style.display = 'block';
+                                        
+                                        // Set up download link with cache busting
+                                        const downloadBtn = document.getElementById('download-lease');
+                                        const newUrl = "{% static 'lease_agreements/' %}{{ property.prop_name }} - Lease Agreement.pdf?v=" + Date.now();
+                                        downloadBtn.href = newUrl;
+                                    }
+                                </script>
+                                
+                            {% else %}
+                                <!-- No Active Tenant -->
+                                <div class="no-lease mt-4">
+                                    <div class="no-lease-icon">
+                                        <i class="fas fa-file-contract"></i>
+                                    </div>
+                                    <h4>No Active Lease</h4>
+                                    <p>No active tenant found for this property. A lease agreement requires an active tenant.</p>
+                                </div>
+                            {% endif %}
+                        </div>
+
+                    {% elif box_type == 'actual-expenses' %}
+                        <!-- Actual Expenses Content -->
+                        <div class="expenses-section">
+                            <h5><i class="fas fa-receipt text-info"></i> Actual Expenses</h5>
+                            <div class="alert alert-info mt-3">
+                                <i class="fas fa-info-circle"></i> Actual expenses functionality will be implemented here.
+                                <br><strong>Property:</strong> {{ property.prop_name }}
+                                <br><strong>Property ID:</strong> {{ property.prop_id }}
+                            </div>
+                        </div>
+
+                    {% elif box_type == 'issues' %}
+                        <!-- Issues Content -->
+                        <div class="issues-section">
+                            <h5><i class="fas fa-exclamation-triangle text-info"></i> Property Issues</h5>
+                            
+                            {% if property.prop_status != 'Active' and property.prop_available_for_rent != 'Yes' %}
+                                <!-- Property not active and not available for rent -->
+                                <div class="alert alert-warning mt-3">
+                                    <i class="fas fa-home"></i> This Property is Currently Not Available for Rent
+                                </div>
+                            {% else %}
+                                {% if property_issues %}
+                                    <!-- Issues Table -->
+                                    <div class="issues-table-container mt-3">
+                                        <div class="table-responsive">
+                                            <table class="table table-striped table-hover issues-table">
+                                                <thead class="table-dark">
+                                                    <tr>
+                                                        <th scope="col" class="text-left">Issue</th>
+                                                        <th scope="col" class="text-left">Description</th>
+                                                        <th scope="col" class="text-center">Date Logged</th>
+                                                        <th scope="col" class="text-center">Status</th>
+                                                        <th scope="col" class="text-center">Comments</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {% for issue in property_issues %}
+                                                    <tr>
+                                                        <td class="text-left">
+                                                            <strong>{{ issue.issues_heading }}</strong>
+                                                        </td>
+                                                        <td class="text-left">
+                                                            <span class="issue-description">{{ issue.issues_description|truncatechars:100 }}</span>
+                                                        </td>
+                                                        <td class="text-center date-logged">
+                                                            {% if issue.issues_date_logged %}
+                                                                {{ issue.issues_date_logged|date:"d/m/Y" }}
+                                                            {% else %}
+                                                                <span class="text-muted">N/A</span>
+                                                            {% endif %}
+                                                        </td>
+                                                        <td class="text-center">
+                                                            <span class="status-badge 
+                                                                {% if issue.issues_status == 'Resolved' %}status-success
+                                                                {% elif issue.issues_status == 'Unresolved' %}status-warning
+                                                                {% else %}status-danger{% endif %}">
+                                                                {{ issue.issues_status }}
+                                                            </span>
+                                                        </td>
+                                                        <td class="text-center">
+                                                            <a href="{% url 'fsr_details' issue.issues_id %}?from=property_detail&property_id={{ property.prop_id }}&box_type=issues" 
+                                                               class="btn btn-light action-btn">
+                                                                <i class="fas fa-comments"></i> Comments
+                                                            </a>
+                                                        </td>
+                                                    </tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        
+                                        <!-- Summary Stats -->
+                                        <div class="issues-summary mt-3">
+                                            <div class="row">
+                                                <div class="col-md-4">
+                                                    <div class="summary-card resolved">
+                                                        <div class="summary-icon">
+                                                            <i class="fas fa-check-circle"></i>
+                                                        </div>
+                                                        <div class="summary-content">
+                                                            <div class="summary-number">{{ resolved_count }}</div>
+                                                            <div class="summary-label">Resolved</div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <div class="summary-card unresolved">
+                                                        <div class="summary-icon">
+                                                            <i class="fas fa-clock"></i>
+                                                        </div>
+                                                        <div class="summary-content">
+                                                            <div class="summary-number">{{ unresolved_count }}</div>
+                                                            <div class="summary-label">Unresolved</div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <div class="summary-card total">
+                                                        <div class="summary-icon">
+                                                            <i class="fas fa-list"></i>
+                                                        </div>
+                                                        <div class="summary-content">
+                                                            <div class="summary-number">{{ total_issues_count }}</div>
+                                                            <div class="summary-label">Total Issues</div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% else %}
+                                    <!-- No Issues -->
+                                    <div class="no-issues mt-4">
+                                        <div class="no-issues-icon">
+                                            <i class="fas fa-check-circle"></i>
+                                        </div>
+                                        <h4>Excellent!</h4>
+                                        <p>No issues have been reported for this property.</p>
+                                    </div>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+
+                    {% elif box_type == 'valuation' %}
+                        <!-- Property Valuations Content -->
+                        <div class="valuations-section">
+                            <h5><i class="fas fa-home text-info"></i> Property Valuation</h5>
+                            
+                            {% if user.is_superuser %}
+                                {% if property_valuation %}
+                                    <!-- Valuation Details -->
+                                    <div class="valuation-container mt-3">
+                                        <div class="valuation-card">
+                                            <h3 class="property-name">{{ property.prop_name }}</h3>
+                                            
+                                            <div class="valuation-details">
+                                                <div class="valuation-row">
+                                                    <div class="valuation-item purchase">
+                                                        <div class="valuation-icon">
+                                                            <i class="fas fa-shopping-cart"></i>
+                                                        </div>
+                                                        <div class="valuation-content">
+                                                            <div class="valuation-label">Purchase Price</div>
+                                                            <div class="valuation-amount">€{{ property_valuation.prop_values_purchase_price|floatformat:"0"|intcomma }}</div>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <div class="valuation-item current">
+                                                        <div class="valuation-icon">
+                                                            <i class="fas fa-chart-line"></i>
+                                                        </div>
+                                                        <div class="valuation-content">
+                                                            <div class="valuation-label">Current Value</div>
+                                                            <div class="valuation-amount">€{{ property_valuation.prop_values_current_value|floatformat:"0"|intcomma }}</div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <!-- Value Change Calculation -->
+                                                <div class="valuation-summary">
+                                                    <div class="value-change {% if property_valuation.value_difference >= 0 %}positive{% else %}negative{% endif %}">
+                                                        <div class="change-icon">
+                                                            {% if property_valuation.value_difference >= 0 %}
+                                                                <i class="fas fa-arrow-up"></i>
+                                                            {% else %}
+                                                                <i class="fas fa-arrow-down"></i>
+                                                            {% endif %}
+                                                        </div>
+                                                        <div class="change-content">
+                                                            <div class="change-amount">
+                                                                {% if property_valuation.value_difference >= 0 %}+{% endif %}€{{ property_valuation.value_difference|floatformat:"0"|intcomma }}
+                                                            </div>
+                                                            <div class="change-percentage">
+                                                                {% if property_valuation.value_percentage >= 0 %}+{% endif %}{{ property_valuation.value_percentage|floatformat:1 }}%
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <!-- Additional Details -->
+                                                {% if property_valuation.prop_values_date %}
+                                                    <div class="valuation-meta">
+                                                        <p><strong>Last Updated:</strong> {{ property_valuation.prop_values_date|date:"d/m/Y" }}</p>
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% else %}
+                                    <!-- No Valuation Data -->
+                                    <div class="no-valuation mt-4">
+                                        <div class="no-valuation-icon">
+                                            <i class="fas fa-chart-line"></i>
+                                        </div>
+                                        <h4>No Valuation Data</h4>
+                                        <p>No valuation information has been recorded for this property.</p>
+                                    </div>
+                                {% endif %}
+                            {% else %}
+                                <!-- Access Denied -->
+                                <div class="alert alert-danger mt-3">
+                                    <i class="fas fa-lock"></i> Access denied. Superuser privileges required to view property valuations.
+                                </div>
+                            {% endif %}
+                        </div>
+
+                    {% elif box_type == 'expenses' %}
+                        <!-- Budgeted Expenses Content -->
+                        <div class="budget-expenses-section">
+                            <h5><i class="fas fa-calculator text-info"></i> Expenses</h5>
+                            <div class="alert alert-info mt-3">
+                                <i class="fas fa-info-circle"></i> Budgeted expenses functionality will be implemented here.
+                                <br><strong>Property:</strong> {{ property.prop_name }}
+                                <br><strong>Property ID:</strong> {{ property.prop_id }}
+                            </div>
+                        </div>
+
+                    {% elif box_type == 'budgeted-expenses' %}
+                        <!-- Budgeted Expenses Content -->
+                        <div class="budget-expenses-section">
+                            <h5><i class="fas fa-clipboard-list text-info"></i> Budgeted Expenses</h5>
+                            <div class="alert alert-info mt-3">
+                                <i class="fas fa-info-circle"></i> Budgeted expenses functionality will be implemented here.
+                                <br><strong>Property:</strong> {{ property.prop_name }}
+                                <br><strong>Property ID:</strong> {{ property.prop_id }}
+                            </div>
+                        </div>
+
+                    {% elif box_type == 'profit-loss' %}
+                        <!-- Profit & Loss Content -->
+                        <div class="profit-loss-section">
+                            <h5><i class="fas fa-chart-pie text-info"></i> Profit & Loss Statement</h5>
+                            <div class="alert alert-info mt-3">
+                                <i class="fas fa-info-circle"></i> Profit & Loss functionality will be implemented here.
+                                <br><strong>Property:</strong> {{ property.prop_name }}
+                                <br><strong>Property ID:</strong> {{ property.prop_id }}
+                            </div>
+                        </div>
+
+                    {% elif box_type == 'revenues' %}
+                        <!-- Revenues Content -->
+                        <div class="revenues-section">
+                            <h5><i class="fas fa-dollar-sign text-info"></i> Revenue Details</h5>
+                            <div class="alert alert-info mt-3">
+                                <i class="fas fa-info-circle"></i> Revenue details functionality will be implemented here.
+                                <br><strong>Property:</strong> {{ property.prop_name }}
+                                <br><strong>Property ID:</strong> {{ property.prop_id }}
+                            </div>
+                        </div>
+
+                    {% elif box_type == 'open-invoices' %}
+                        <!-- Open Invoices Content -->
+                        <div class="invoices-section">
+                            <h5>
+                                <i class="fas fa-file-invoice-dollar text-info"></i> Open Invoices
+                                {% if open_invoices_data and open_invoices_data|length > 0 %}
+                                    <span class="total-amount-due">
+                                        (Total Amount Due: €{{ total_invoices_amount|floatformat:"0"|intcomma }})
+                                    </span>
+                                {% endif %}
+                            </h5>
+                            
+                            <!-- Check if there are any unpaid invoices for this property -->
+                            {% if open_invoices_data and open_invoices_data|length > 0 %}
+                                <div class="invoices-table-section mt-4">
+                                    <div class="table-responsive">
+                                        <table class="table table-striped table-hover invoices-table">
+                                            <thead class="table-dark">
+                                                <tr>
+                                                    <th scope="col" class="text-left">Invoice Date</th>
+                                                    <th scope="col" class="text-left">Due Date</th>
+                                                    <th scope="col" class="text-center">Days Overdue</th>
+                                                    <th scope="col" class="text-right">Amount</th>
+                                                    <th scope="col" class="text-center">Status</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for invoice in open_invoices_data %}
+                                                <tr class="{% if invoice.overdue %}table-danger{% endif %}">
+                                                    <td class="text-left"><strong>{{ invoice.invoice_date }}</strong></td>
+                                                    <td class="text-left"><strong>{{ invoice.due_date }}</strong></td>
+                                                    <td class="text-center">
+                                                        <span class="{% if invoice.days_overdue > 0 %}text-danger fw-bold{% else %}text-muted{% endif %}">
+                                                            {{ invoice.days_overdue|intcomma }}
+                                                        </span>
+                                                    </td>
+                                                    <td class="text-right">
+                                                        <span class="amount-display">€{{ invoice.amount|floatformat:"0"|intcomma }}</span>
+                                                    </td>
+                                                    <td class="text-center">
+                                                        <span class="badge {% if invoice.overdue %}badge-danger{% else %}badge-success{% endif %} px-3 py-2">
+                                                            {% if invoice.overdue %}
+                                                                <i class="fas fa-exclamation-triangle me-1"></i>Overdue
+                                                            {% else %}
+                                                                <i class="fas fa-check-circle me-1"></i>Current
+                                                            {% endif %}
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            {% else %}
+                                <!-- No outstanding invoices -->
+                                <div class="no-outstanding-balances mt-4">
+                                    <div class="no-balances-icon">
+                                        <i class="fas fa-check-circle"></i>
+                                    </div>
+                                    <h4>Excellent News!</h4>
+                                    <p>There are currently no outstanding invoices for this property.</p>
+                                    <p class="sub-message">All invoices are up to date.</p>
+                                </div>
+                            {% endif %}
+                        </div>
+
+                    {% else %}
+                        <!-- Default/Unknown Box Type -->
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle"></i> 
+                            Unknown section type: {{ box_type }}. Please check the URL parameters.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Title Deed Viewer Modal -->
+<div class="modal fade" id="titleDeedModal" tabindex="-1" role="dialog" aria-labelledby="titleDeedModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="titleDeedModalLabel">Title Deed</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="$('#titleDeedModal').modal('hide');">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="titleDeedContent">
+                <!-- Content will be loaded here -->
+            </div>
+            <div class="modal-footer">
+                <a id="downloadDeed" href="#" class="btn btn-info" target="_blank">
+                    <i class="fas fa-download"></i> Download
+                </a>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="$('#titleDeedModal').modal('hide');">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+
+<style>
+.card {
+    transition: transform 0.2s ease-in-out;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.document-preview iframe,
+.document-preview img {
+    border-radius: 8px;
+}
+
+.badge {
+    font-size: 0.75em;
+}
+
+.table th {
+    background-color: #f8f9fa;
+    border-top: none;
+}
+
+.alert {
+    border-radius: 8px;
+}
+
+.btn {
+    border-radius: 6px;
+}
+
+/* Property Report Styles */
+.property-card {
+    margin-bottom: 30px;
+    padding: 25px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+}
+
+.property-name {
+    font-size: 1.5rem;
+    color: #2c3e50;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.detail-groups {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 25px;
+}
+
+.detail-group {
+    margin-bottom: 0;
+}
+
+.section-title {
+    font-size: 1.2rem;
+    color: #495057;
+    margin-bottom: 15px;
+    padding-bottom: 5px;
+    border-bottom: 1px dashed #ced4da;
+}
+
+.detail-row {
+    display: flex;
+    margin-bottom: 10px;
+    line-height: 1.5;
+}
+
+.detail-label {
+    font-weight: 600;
+    color: #343a40;
+    min-width: 150px;
+}
+
+.detail-value {
+    color: #495057;
+}
+
+.badge {
+    display: inline-block;
+    padding: 5px 10px;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.badge-success {
+    background-color: #28a745;
+    color: white;
+}
+
+.badge-secondary {
+    background-color: #6c757d;
+    color: white;
+}
+
+.badge-info {
+    background-color: #17a2b8;
+    color: white;
+}
+
+.badge-light {
+    background-color: #f8f9fa;
+    color: #212529;
+}
+
+.badge-available {
+    background-color: #28a745;  /* Green for Yes */
+    color: white;
+}
+
+.badge-not-available {
+    background-color: #dc3545;  /* Red for No */
+    color: white;
+}
+
+.badge-danger {
+    background-color: #dc3545;
+    color: white;
+}
+
+/* Renewal Status Badges */
+.renewal-status-badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.85em;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.renewal-pending {
+    background: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeaa7;
+}
+
+.renewal-declined {
+    background: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f1b0b7;
+}
+
+.renewal-signed {
+    background: #d1edff;
+    color: #0c5460;
+    border: 1px solid #bee5eb;
+}
+
+/* Lease Renewal Styles */
+.tenant-renewal-card, .vacant-property-card, .declined-renewal-card, .renewed-lease-card, .current-lease-card {
+    margin-bottom: 20px;
+    padding: 20px;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+    border: 1px solid #eee;
+}
+
+.vacant-property-card, .declined-renewal-card {
+    background-color: #fff3f3;
+    border-left: 4px solid #dc3545;
+}
+
+.renewed-lease-card {
+    background-color: #f3fff3;
+    border-left: 4px solid #28a745;
+}
+
+.current-lease-card {
+    background-color: #f8f9fa;
+    border-left: 4px solid #17a2b8;
+}
+
+.tenant-renewal-card {
+    background-color: #fff8dc;
+    border-left: 4px solid #ffc107;
+}
+
+.lease-renewal-section .property-name {
+    font-size: 1.4rem;
+    color: #2c3e50;
+    margin-bottom: 15px;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 5px;
+}
+
+.highlight-red {
+    color: #dc3545;
+    font-weight: bold;
+}
+
+.highlight-green {
+    color: #28a745;
+    font-weight: bold;
+}
+
+.date-box {
+    background: #ecf0f1;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-weight: 500;
+}
+
+/* Special styling for different value types */
+.detail-value.amount {
+    font-weight: bold;
+    color: #27ae60;
+    font-size: 1.1em;
+}
+
+/* Issues Section Styles */
+.issues-table-container {
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.issues-table {
+    font-size: 0.9rem;
+    margin-bottom: 0;
+}
+
+.issues-table th {
+    background-color: #343a40 !important;
+    color: white;
+    font-weight: 600;
+    border: none;
+    padding: 12px 8px;
+}
+
+.issues-table th.text-left {
+    text-align: left !important;
+}
+
+.issues-table th.text-center {
+    text-align: center !important;
+}
+
+.issues-table td {
+    vertical-align: middle;
+    padding: 12px 8px;
+    border-top: 1px solid #dee2e6;
+}
+
+.issue-description {
+    color: #6c757d;
+    font-size: 0.85rem;
+    line-height: 1.4;
+}
+
+.date-logged {
+    color: #495057;
+    font-size: 0.85rem;
+}
+
+.date-logged .text-muted {
+    font-style: italic;
+}
+
+/* Status Badge Styles */
+.status-badge {
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.status-success {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status-warning {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.status-danger {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.action-btn {
+    border-color: #dee2e6;
+    transition: all 0.2s ease;
+    padding: 6px 12px;
+    font-size: 11px;
+    text-decoration: none;
+    color: #495057;
+    border-radius: 4px;
+}
+
+.action-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    color: #17a2b8;
+    text-decoration: none;
+}
+
+.action-btn i {
+    margin-right: 4px;
+}
+
+/* Issues Summary Cards */
+.issues-summary {
+    padding: 20px;
+    background: #f8f9fa;
+    border-top: 1px solid #dee2e6;
+}
+
+.summary-card {
+    background: white;
+    border-radius: 8px;
+    padding: 15px;
+    display: flex;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s ease;
+}
+
+.summary-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.summary-card.resolved {
+    border-left: 4px solid #28a745;
+}
+
+.summary-card.unresolved {
+    border-left: 4px solid #ffc107;
+}
+
+.summary-card.total {
+    border-left: 4px solid #17a2b8;
+}
+
+.summary-icon {
+    font-size: 2rem;
+    margin-right: 15px;
+    opacity: 0.8;
+}
+
+.summary-card.resolved .summary-icon {
+    color: #28a745;
+}
+
+.summary-card.unresolved .summary-icon {
+    color: #ffc107;
+}
+
+.summary-card.total .summary-icon {
+    color: #17a2b8;
+}
+
+.summary-content {
+    text-align: left;
+}
+
+.summary-number {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: #2c3e50;
+    line-height: 1;
+}
+
+.summary-label {
+    font-size: 0.9rem;
+    color: #6c757d;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 2px;
+}
+
+/* No Issues State */
+.no-issues {
+    text-align: center;
+    padding: 60px 20px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+}
+
+.no-issues-icon i {
+    font-size: 4rem;
+    color: #28a745;
+    margin-bottom: 20px;
+}
+
+.no-issues h4 {
+    color: #28a745;
+    font-weight: 600;
+    margin-bottom: 15px;
+}
+
+.no-issues p {
+    color: #6c757d;
+    margin-bottom: 20px;
+}
+
+/* Property Valuation Styles */
+.valuation-container {
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.valuation-card {
+    padding: 25px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+}
+
+.valuation-card .property-name {
+    font-size: 1.5rem;
+    color: #2c3e50;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.valuation-details {
+    margin-top: 20px;
+}
+
+.valuation-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 25px;
+}
+
+.valuation-item {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    transition: transform 0.2s ease;
+}
+
+.valuation-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.valuation-item.purchase {
+    border-left: 4px solid #6c757d;
+}
+
+.valuation-item.current {
+    border-left: 4px solid #17a2b8;
+}
+
+.valuation-icon {
+    font-size: 2rem;
+    margin-right: 15px;
+    opacity: 0.8;
+}
+
+.valuation-item.purchase .valuation-icon {
+    color: #6c757d;
+}
+
+.valuation-item.current .valuation-icon {
+    color: #17a2b8;
+}
+
+.valuation-content {
+    text-align: left;
+}
+
+.valuation-label {
+    font-size: 0.9rem;
+    color: #6c757d;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 5px;
+}
+
+.valuation-amount {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: #2c3e50;
+    line-height: 1;
+}
+
+.valuation-summary {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.value-change {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.value-change.positive {
+    color: #28a745;
+}
+
+.value-change.negative {
+    color: #dc3545;
+}
+
+.change-icon {
+    font-size: 2rem;
+    margin-right: 15px;
+    opacity: 0.8;
+}
+
+.change-content {
+    text-align: center;
+}
+
+.change-amount {
+    font-size: 1.6rem;
+    font-weight: bold;
+    line-height: 1;
+    margin-bottom: 5px;
+}
+
+.change-percentage {
+    font-size: 1.1rem;
+    font-weight: 500;
+    opacity: 0.8;
+}
+
+.valuation-meta {
+    background: white;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.valuation-meta p {
+    margin: 0;
+    color: #6c757d;
+}
+
+/* No Valuation State */
+.no-valuation {
+    text-align: center;
+    padding: 60px 20px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+}
+
+.no-valuation-icon i {
+    font-size: 4rem;
+    color: #6c757d;
+    margin-bottom: 20px;
+}
+
+.no-valuation h4 {
+    color: #6c757d;
+    font-weight: 600;
+    margin-bottom: 15px;
+}
+
+.no-valuation p {
+    color: #6c757d;
+    margin-bottom: 20px;
+}
+
+/* Responsive Design for Valuations */
+@media (max-width: 768px) {
+    .valuation-row {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    
+    .valuation-item {
+        padding: 15px;
+    }
+    
+    .valuation-amount {
+        font-size: 1.5rem;
+    }
+    
+    .change-amount {
+        font-size: 1.4rem;
+    }
+}
+
+/* Lease Agreement Styles */
+.lease-container {
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.lease-header {
+    background: linear-gradient(135deg, #17a2b8, #138496);
+    color: white;
+    padding: 20px 25px;
+    text-align: center;
+}
+
+.lease-title-wrapper h3,
+.lease-title-wrapper h4 {
+    margin: 0;
+    color: white;
+}
+
+.lease-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+.lease-subtitle {
+    font-size: 1.1rem;
+    font-weight: 400;
+    opacity: 0.9;
+}
+
+.lease-viewer {
+    padding: 20px;
+}
+
+.lease-viewer iframe {
+    margin-top: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* No Lease State */
+.no-lease {
+    text-align: center;
+    padding: 60px 20px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+}
+
+.no-lease-icon i {
+    font-size: 4rem;
+    color: #6c757d;
+    margin-bottom: 20px;
+}
+
+.no-lease h4 {
+    color: #6c757d;
+    font-weight: 600;
+    margin-bottom: 15px;
+}
+
+.no-lease p {
+    color: #6c757d;
+    margin-bottom: 20px;
+}
+
+/* Invoice table styling */
+.invoices-table {
+    font-size: 0.95rem;
+}
+
+.invoices-table th {
+    background-color: #343a40 !important;
+    color: white;
+    font-weight: 600;
+}
+
+.invoices-table th.text-left {
+    text-align: left !important;
+}
+
+.invoices-table th.text-center {
+    text-align: center !important;
+}
+
+.invoices-table th.text-right {
+    text-align: right !important;
+}
+
+.invoices-table td {
+    vertical-align: middle;
+}
+
+.amount-display {
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+.total-amount-due {
+    color: #dc3545;
+    font-weight: 600;
+}
+
+.no-outstanding-balances {
+    text-align: center;
+    padding: 60px 20px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+}
+
+.no-balances-icon i {
+    font-size: 4rem;
+    color: #28a745;
+    margin-bottom: 20px;
+}
+
+.no-outstanding-balances h4 {
+    color: #28a745;
+    font-weight: 600;
+    margin-bottom: 15px;
+}
+
+.no-outstanding-balances p {
+    color: #6c757d;
+    margin-bottom: 5px;
+}
+
+.sub-message {
+    font-style: italic;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .detail-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 5px;
+    }
+    
+    .detail-label {
+        flex: none;
+    }
+    
+    .detail-value {
+        text-align: left;
+    }
+    
+    .property-card {
+        padding: 15px;
+    }
+    
+    .detail-group {
+        padding: 15px;
+    }
+}
+
+/* Additional responsive adjustments */
+@media (max-width: 576px) {
+    .summary-card {
+        margin-bottom: 15px;
+    }
+    
+    .summary-number {
+        font-size: 1.5rem;
+    }
+    
+    .summary-icon {
+        font-size: 1.5rem;
+    }
+}
+</style>
+
+<script>
+// Title Deed Viewer Function - From your properties template
+function viewTitleDeed(documentUrl, documentName, propertyName) {
+    const documentViewer = document.getElementById('titleDeedContent');
+    const downloadLink = document.getElementById('downloadDeed');
+    const modalTitle = document.getElementById('titleDeedModalLabel');
+    
+    if (!documentViewer || !downloadLink || !modalTitle) {
+        console.error('Modal elements not found');
+        return;
+    }
+    
+    modalTitle.textContent = `Title Deed (${propertyName})`;
+    downloadLink.href = documentUrl;
+    downloadLink.download = documentName;
+    documentViewer.innerHTML = '';
+    
+    const extension = documentName.split('.').pop().toLowerCase();
+    
+    if (extension === 'pdf') {
+        // Use iframe with PDF parameters to hide sidebar and toolbar
+        documentViewer.innerHTML = `
+            <iframe src="${documentUrl}#toolbar=0&navpanes=0&scrollbar=1&page=1&view=FitH" 
+                    type="application/pdf" 
+                    width="100%" 
+                    height="500px"
+                    style="border: none;">
+            </iframe>
+            <p class="text-center mt-2">
+                <small>If the PDF doesn't display, <a href="${documentUrl}" target="_blank">click here to open it in a new tab</a></small>
+            </p>
+        `;
+    } else if (['jpg', 'jpeg', 'png'].includes(extension)) {
+        documentViewer.innerHTML = `
+            <img src="${documentUrl}" alt="Title Deed" class="img-fluid mx-auto d-block" style="max-height: 70vh;">
+        `;
+    } else {
+        documentViewer.innerHTML = `
+            <div class="text-center">
+                <i class="fas fa-file fa-5x text-muted mb-3"></i>
+                <p>This file type cannot be previewed.</p>
+                <p>File: <strong>${documentName}</strong></p>
+                <p>Please download the file to view it.</p>
+            </div>
+        `;
+    }
+    
+    $('#titleDeedModal').modal('show');
+}
+</script>
+
+{% endblock %}

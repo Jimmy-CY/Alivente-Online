@@ -291,6 +291,181 @@ def property_management_dashboard(request):
         messages.error(request, f"Error loading dashboard: {str(e)}")
         return redirect('properties')
 
+@login_required
+def property_detail(request, property_id, box_type):
+    property_obj = get_object_or_404(props, prop_id=property_id)
+    
+    # Get the active tenant for this property (there should only be one)
+    active_tenant = tenant.objects.filter(
+        prop=property_obj, 
+        tenant_current='Yes'
+    ).first()
+    
+    # Get open invoices data for this property
+    open_invoices_data = None
+    total_invoices_amount = 0
+    
+    # Lease renewal data
+    lease_renewal_data = None
+    
+    # Issues data for this specific property
+    property_issues = None
+    resolved_count = 0
+    unresolved_count = 0
+    total_issues_count = 0
+    
+    # Valuation data for this specific property
+    property_valuation = None
+    
+    if active_tenant:
+        # Get all unpaid invoices for this tenant
+        unpaid_invoices = invoices.objects.filter(
+            tenant=active_tenant
+        ).exclude(
+            invoice_paid='Yes'  # Exclude paid invoices
+        ).order_by('invoice_date')
+        
+        # Calculate days overdue and prepare data
+        open_invoices_data = []
+        today = timezone.now().date()
+        
+        for invoice in unpaid_invoices:
+            # Calculate due date (invoice_date + payment_terms)
+            payment_terms = active_tenant.tenant_payment_terms or 0
+            due_date = invoice.invoice_date + timedelta(days=payment_terms)
+            
+            # Calculate days overdue
+            days_overdue = (today - due_date).days if today > due_date else 0
+            
+            # Use the actual invoice amount if available, otherwise fall back to tenant rent
+            invoice_amount = getattr(invoice, 'invoice_amount', None) or active_tenant.tenant_rent
+            
+            open_invoices_data.append({
+                'invoice_date': invoice.invoice_date,
+                'due_date': due_date,
+                'days_overdue': days_overdue,
+                'overdue': days_overdue > 0,
+                'amount': invoice_amount
+            })
+            
+            # Add to total amount
+            total_invoices_amount += invoice_amount
+        
+        # Lease renewal logic for this specific property
+        if box_type == 'lease-renewals':
+            lease_renewal_data = {
+                'tenant': active_tenant,
+                'property': property_obj,
+                'needs_renewal': False,
+                'renewal_date': None,
+                'status': 'current',
+                'message': None
+            }
+            
+            if active_tenant.tenant_lease_end_date:
+                # Calculate renewal contact date
+                renewal_period = active_tenant.tenant_renewal_period or 30
+                renewal_contact_date = active_tenant.tenant_lease_end_date - timedelta(days=renewal_period)
+                
+                # Check if renewal is needed
+                if today >= renewal_contact_date:
+                    lease_renewal_data['needs_renewal'] = True
+                    lease_renewal_data['renewal_date'] = renewal_contact_date
+                    
+                    # Check renewal status
+                    if active_tenant.tenant_renewal_status == 'declined':
+                        lease_renewal_data['status'] = 'declined'
+                        lease_renewal_data['message'] = f"TENANT DECLINED RENEWAL - LEASE EXPIRES {active_tenant.tenant_lease_end_date}"
+                    elif active_tenant.tenant_renewal_status == 'new_lease_signed':
+                        lease_renewal_data['status'] = 'renewed'
+                        lease_renewal_data['message'] = "NEW LEASE SIGNED"
+                    else:
+                        lease_renewal_data['status'] = 'pending'
+                        lease_renewal_data['message'] = f"RENEWAL CONTACT REQUIRED BY {renewal_contact_date}"
+    
+    elif box_type == 'lease-renewals':
+        # No active tenant - property is vacant
+        lease_renewal_data = {
+            'tenant': None,
+            'property': property_obj,
+            'status': 'vacant',
+            'message': "NO CURRENT TENANT - NEED NEW TENANT"
+        }
+    
+    # Issues logic - process for any box_type but only use data when box_type is 'issues'
+    if box_type == 'issues':
+        # Get all issues for this property, ordered by date (most recent first)
+        property_issues = issues.objects.filter(
+            prop=property_obj
+        ).order_by('-issues_date_logged')
+        
+        # Calculate issue counts
+        total_issues_count = property_issues.count()
+        resolved_count = property_issues.filter(issues_status='Resolved').count()
+        
+        # Updated logic: Include both "Unresolved" AND "Issue" status as unresolved
+        unresolved_count = property_issues.filter(
+            issues_status__in=['Unresolved', 'Issue']
+        ).count()
+    
+    # Valuation logic - process when box_type is 'valuation'
+    if box_type == 'valuation':
+        # Get valuation data for this property
+        try:
+            property_valuation = prop_values.objects.get(prop=property_obj)
+            
+            # Calculate value change in the view
+            if property_valuation.prop_values_current_value and property_valuation.prop_values_purchase_price:
+                difference = property_valuation.prop_values_current_value - property_valuation.prop_values_purchase_price
+                if property_valuation.prop_values_purchase_price > 0:
+                    percentage = (difference / property_valuation.prop_values_purchase_price) * 100
+                else:
+                    percentage = 0
+                
+                # Add calculated values to the valuation object
+                property_valuation.value_difference = difference
+                property_valuation.value_percentage = percentage
+            else:
+                property_valuation.value_difference = 0
+                property_valuation.value_percentage = 0
+                
+        except prop_values.DoesNotExist:
+            property_valuation = None
+    
+    # Map box types to display names
+    box_type_display_map = {
+        'title-deed': 'Title Deed',
+        'property-report': 'Property Report',
+        'tenant': 'Tenant Information',
+        'actual-expenses': 'Actual Expenses',
+        'issues': 'Property Issues',
+        'valuation': 'Property Valuation',
+        'profit-loss': 'Profit & Loss',
+        'revenues': 'Revenues',
+        'expenses': 'Budgeted Expenses',
+        'open-invoices': 'Open Invoices',
+        'lease-renewals': 'Lease Renewals',
+        'lease': 'Lease Details',
+    }
+    
+    context = {
+        'property': property_obj,
+        'active_tenant': active_tenant,
+        'open_invoices_data': open_invoices_data,
+        'total_invoices_amount': total_invoices_amount,
+        'lease_renewal_data': lease_renewal_data,
+        'property_issues': property_issues,
+        'resolved_count': resolved_count,
+        'unresolved_count': unresolved_count,
+        'total_issues_count': total_issues_count,
+        'property_valuation': property_valuation,
+        'box_type': box_type,
+        'box_type_display': box_type_display_map.get(box_type, box_type.title()),
+        'today': timezone.now().date(),
+    }
+    
+    return render(request, 'property_detail.html', context)
+
 ### FINANCE ###
 @login_required
 def finance(request):
@@ -2476,6 +2651,11 @@ def fsr_commit_status_change(request):
         new_status = request.POST.get('issues_status')
         next_url = request.POST.get('next', '')
         
+        # Get return parameters from hidden fields
+        from_param = request.POST.get('from', 'fsr')
+        property_id = request.POST.get('property_id')
+        box_type = request.POST.get('box_type')
+        
         # Update the issue
         issue = issues.objects.get(pk=issues_id)
         issue.issues_status = new_status
@@ -2483,18 +2663,24 @@ def fsr_commit_status_change(request):
             issue.issues_resolution_date = date.today()
         issue.save()
         
-        # Parse the next URL to get parameters
-        parsed_url = urlparse(next_url)
-        params = parse_qs(parsed_url.query)
-        from_param = params.get('from', ['fsr'])[0]
+        # Handle property_detail navigation
+        if from_param == 'property_detail' and property_id and box_type:
+            # Redirect back to the same fsr_details page with property_detail parameters
+            redirect_url = reverse('fsr_details', args=[issues_id])
+            redirect_url += f"?from=property_detail&property_id={property_id}&box_type={box_type}"
+            return redirect(redirect_url)
         
-        # Determine redirect URL with refresh
-        if from_param == 'fsr':
+        # Handle other cases
+        elif from_param == 'fsr':
             return redirect(reverse('fsr') + "?refresh=true")
         elif from_param == 'status_report':
             return redirect(reverse('friday_status_report') + "?refresh=true")
         else:
-            return redirect(reverse('fsr') + "?refresh=true")
+            # Fallback - try to use the next_url if available
+            if next_url:
+                return redirect(next_url)
+            else:
+                return redirect(reverse('fsr') + "?refresh=true")
 
 @login_required
 def fsr_comment_add(request, issues_id):

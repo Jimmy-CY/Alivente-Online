@@ -4746,3 +4746,1450 @@ Watching for file changes with StatReloader
 "GET /property_management_dashboard/ HTTP/1.1" 200 32969
 "GET / HTTP/1.1" 200 7793
 "GET /property_management_dashboard/ HTTP/1.1" 200 32969
+Watching for file changes with StatReloader
+"GET /property_report/1 HTTP/1.1" 200 12199
+"GET / HTTP/1.1" 200 7793
+"GET /property_management_dashboard/ HTTP/1.1" 200 33286
+"GET /act_expense_all/?from=home HTTP/1.1" 200 74361
+"GET /property_management_dashboard/ HTTP/1.1" 200 38463
+"GET / HTTP/1.1" 200 7793
+"GET /property_management_dashboard/ HTTP/1.1" 200 38391
+"GET /property_report/5 HTTP/1.1" 200 12196
+"GET /properties/ HTTP/1.1" 200 53500
+"GET /property_management_dashboard/ HTTP/1.1" 200 38391
+"GET / HTTP/1.1" 200 7793
+"GET /finance/ HTTP/1.1" 200 10659
+"GET /finance_pl_act/ HTTP/1.1" 200 423865
+"GET /act_expense_view/?year=2025&month=5&from_finance_pl_act=true&prop=all HTTP/1.1" 200 46299
+"GET /media/expense_docs/pindarou-20250521-Invoice.pdf HTTP/1.1" 200 461728
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\urls.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\urls.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\urls.py changed, reloading.
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 7793
+"GET /property_management_dashboard/ HTTP/1.1" 200 33648
+Internal Server Error: /property_detail/4/title-deed/
+Traceback (most recent call last):
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\contrib\auth\decorators.py", line 60, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\djangoproject\pages\views.py", line 296, in property_detail
+    property_obj = get_object_or_404(Property, prop_id=property_id)
+                                     ^^^^^^^^
+NameError: name 'Property' is not defined. Did you mean: 'property'?
+"GET /property_detail/4/title-deed/ HTTP/1.1" 500 70734
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 7793
+"GET /property_management_dashboard/ HTTP/1.1" 200 33648
+Internal Server Error: /property_detail/4/title-deed/
+Traceback (most recent call last):
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\contrib\auth\decorators.py", line 60, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\djangoproject\pages\views.py", line 320, in property_detail
+    return render(request, 'property_detail.html', context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\loader.py", line 15, in get_template
+    return engine.get_template(template_name)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\backends\django.py", line 79, in get_template
+    return Template(self.engine.get_template(template_name), self)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\engine.py", line 177, in get_template
+    template, origin = self.find_template(template_name)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\engine.py", line 159, in find_template
+    template = loader.get_template(name, skip=skip)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\loaders\cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\loaders\base.py", line 28, in get_template
+    return Template(
+           ^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 154, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 196, in compile_nodelist
+    nodelist = parser.parse()
+               ^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 518, in parse
+    raise self.error(token, e)
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 516, in parse
+    compiled_result = compile_func(self, token)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\loader_tags.py", line 295, in do_extends
+    nodelist = parser.parse()
+               ^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 518, in parse
+    raise self.error(token, e)
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 516, in parse
+    compiled_result = compile_func(self, token)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\loader_tags.py", line 234, in do_block
+    nodelist = parser.parse(("endblock",))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 518, in parse
+    raise self.error(token, e)
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 516, in parse
+    compiled_result = compile_func(self, token)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\defaulttags.py", line 970, in do_if
+    nodelist = parser.parse(("elif", "else", "endif"))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 489, in parse
+    raise self.error(token, e)
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 487, in parse
+    filter_expression = self.compile_filter(token.contents)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 605, in compile_filter
+    return FilterExpression(token, self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 678, in __init__
+    raise TemplateSyntaxError(
+django.template.exceptions.TemplateSyntaxError: Could not parse some characters: property.net_profit|default:0| >= 0||yesno:'success,danger'
+"GET /property_detail/4/title-deed/ HTTP/1.1" 500 302537
+"GET / HTTP/1.1" 200 7793
+"GET /property_management_dashboard/ HTTP/1.1" 200 33648
+Internal Server Error: /property_detail/4/title-deed/
+Traceback (most recent call last):
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\contrib\auth\decorators.py", line 60, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\djangoproject\pages\views.py", line 320, in property_detail
+    return render(request, 'property_detail.html', context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\loader.py", line 15, in get_template
+    return engine.get_template(template_name)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\backends\django.py", line 79, in get_template
+    return Template(self.engine.get_template(template_name), self)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\engine.py", line 177, in get_template
+    template, origin = self.find_template(template_name)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\engine.py", line 159, in find_template
+    template = loader.get_template(name, skip=skip)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\loaders\cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\loaders\base.py", line 28, in get_template
+    return Template(
+           ^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 154, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 196, in compile_nodelist
+    nodelist = parser.parse()
+               ^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 518, in parse
+    raise self.error(token, e)
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 516, in parse
+    compiled_result = compile_func(self, token)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\loader_tags.py", line 295, in do_extends
+    nodelist = parser.parse()
+               ^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 518, in parse
+    raise self.error(token, e)
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 516, in parse
+    compiled_result = compile_func(self, token)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\loader_tags.py", line 234, in do_block
+    nodelist = parser.parse(("endblock",))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 518, in parse
+    raise self.error(token, e)
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 516, in parse
+    compiled_result = compile_func(self, token)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\defaulttags.py", line 970, in do_if
+    nodelist = parser.parse(("elif", "else", "endif"))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 489, in parse
+    raise self.error(token, e)
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 487, in parse
+    filter_expression = self.compile_filter(token.contents)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 605, in compile_filter
+    return FilterExpression(token, self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 678, in __init__
+    raise TemplateSyntaxError(
+django.template.exceptions.TemplateSyntaxError: Could not parse some characters: property.net_profit|default:0| >= 0||yesno:'success,danger'
+"GET /property_detail/4/title-deed/ HTTP/1.1" 500 302481
+"GET / HTTP/1.1" 200 7793
+"GET /property_management_dashboard/ HTTP/1.1" 200 33648
+Internal Server Error: /property_detail/4/title-deed/
+Traceback (most recent call last):
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\contrib\auth\decorators.py", line 60, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\djangoproject\pages\views.py", line 320, in property_detail
+    return render(request, 'property_detail.html', context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\loader.py", line 15, in get_template
+    return engine.get_template(template_name)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\backends\django.py", line 79, in get_template
+    return Template(self.engine.get_template(template_name), self)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\engine.py", line 177, in get_template
+    template, origin = self.find_template(template_name)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\engine.py", line 159, in find_template
+    template = loader.get_template(name, skip=skip)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\loaders\cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\loaders\base.py", line 28, in get_template
+    return Template(
+           ^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 154, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 196, in compile_nodelist
+    nodelist = parser.parse()
+               ^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 518, in parse
+    raise self.error(token, e)
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 516, in parse
+    compiled_result = compile_func(self, token)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\loader_tags.py", line 295, in do_extends
+    nodelist = parser.parse()
+               ^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 518, in parse
+    raise self.error(token, e)
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 516, in parse
+    compiled_result = compile_func(self, token)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\loader_tags.py", line 234, in do_block
+    nodelist = parser.parse(("endblock",))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 518, in parse
+    raise self.error(token, e)
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 516, in parse
+    compiled_result = compile_func(self, token)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\defaulttags.py", line 970, in do_if
+    nodelist = parser.parse(("elif", "else", "endif"))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 489, in parse
+    raise self.error(token, e)
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 487, in parse
+    filter_expression = self.compile_filter(token.contents)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 605, in compile_filter
+    return FilterExpression(token, self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 678, in __init__
+    raise TemplateSyntaxError(
+django.template.exceptions.TemplateSyntaxError: Could not parse some characters: property.net_profit|default:0| >= 0||yesno:'success,danger'
+"GET /property_detail/4/title-deed/ HTTP/1.1" 500 302570
+"GET / HTTP/1.1" 200 7793
+"GET /property_management_dashboard/ HTTP/1.1" 200 33648
+Internal Server Error: /property_detail/4/title-deed/
+Traceback (most recent call last):
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\contrib\auth\decorators.py", line 60, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\djangoproject\pages\views.py", line 320, in property_detail
+    return render(request, 'property_detail.html', context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\loader.py", line 62, in render_to_string
+    return template.render(context, request)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\backends\django.py", line 107, in render
+    return self.template.render(context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 171, in render
+    return self._render(context)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 163, in _render
+    return self.nodelist.render(context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 1008, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 969, in render_annotated
+    return self.render(context)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\loader_tags.py", line 159, in render
+    return compiled_parent._render(context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 163, in _render
+    return self.nodelist.render(context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 1008, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 969, in render_annotated
+    return self.render(context)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\loader_tags.py", line 65, in render
+    result = block.nodelist.render(context)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 1008, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 969, in render_annotated
+    return self.render(context)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\defaulttags.py", line 480, in render
+    url = reverse(view_name, args=args, kwargs=kwargs, current_app=current_app)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\urls\base.py", line 88, in reverse
+    return resolver._reverse_with_prefix(view, prefix, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\urls\resolvers.py", line 831, in _reverse_with_prefix
+    raise NoReverseMatch(msg)
+django.urls.exceptions.NoReverseMatch: Reverse for 'property_dashboard' not found. 'property_dashboard' is not a valid view function or pattern name.
+"GET /property_detail/4/title-deed/ HTTP/1.1" 500 158358
+"GET / HTTP/1.1" 200 7793
+"GET /property_management_dashboard/ HTTP/1.1" 200 33648
+"GET /property_detail/4/title-deed/ HTTP/1.1" 200 12429
+"GET /media/properties/title_deeds/prop_4_eleftheroupoleos_title_deed.pdf HTTP/1.1" 200 3026605
+"GET /property_management_dashboard/?property=4 HTTP/1.1" 200 33648
+"GET /property_detail/4/title-deed/ HTTP/1.1" 200 12429
+"GET /property_management_dashboard/ HTTP/1.1" 200 33648
+"GET /property_detail/4/title-deed/ HTTP/1.1" 200 12429
+"GET /property_management_dashboard/?property=4 HTTP/1.1" 200 33648
+"GET / HTTP/1.1" 200 7793
+"GET /property_management_dashboard/ HTTP/1.1" 200 33648
+"GET /property_detail/4/title-deed/ HTTP/1.1" 200 10304
+"GET /property_management_dashboard/?property=4 HTTP/1.1" 200 33648
+"GET /property_detail/4/title-deed/ HTTP/1.1" 200 10304
+"GET / HTTP/1.1" 200 7793
+"GET /property_management_dashboard/ HTTP/1.1" 200 33648
+"GET /property_detail/4/title-deed/ HTTP/1.1" 200 10354
+"GET /property_management_dashboard/?property=4 HTTP/1.1" 200 33648
+"GET /property_detail/4/title-deed/ HTTP/1.1" 200 10354
+"GET / HTTP/1.1" 200 7793
+"GET /property_management_dashboard/ HTTP/1.1" 200 33551
+"GET /property_detail/4/title-deed/ HTTP/1.1" 200 10354
+"GET / HTTP/1.1" 200 7793
+"GET /property_management_dashboard/ HTTP/1.1" 200 33551
+"GET /property_detail/4/title-deed/ HTTP/1.1" 200 10344
+"GET /property_management_dashboard/?property=4 HTTP/1.1" 200 33551
+"GET /property_detail/4/property-report/ HTTP/1.1" 200 9736
+"GET /property_management_dashboard/ HTTP/1.1" 200 33551
+"GET /property_detail/2/title-deed/ HTTP/1.1" 200 11729
+"GET /media/properties/title_deeds/prop_2_foti-pitta_title_deed.pdf HTTP/1.1" 200 753960
+"GET /property_management_dashboard/?property=2 HTTP/1.1" 200 33551
+"GET /property_detail/2/property-report/ HTTP/1.1" 200 16657
+"GET /property_management_dashboard/?property=2 HTTP/1.1" 200 33551
+"GET /property_detail/2/title-deed/ HTTP/1.1" 200 11729
+"GET /property_management_dashboard/?property=2 HTTP/1.1" 200 33551
+"GET /property_detail/2/property-report/ HTTP/1.1" 200 16657
+"GET / HTTP/1.1" 200 7793
+"GET /property_management_dashboard/ HTTP/1.1" 200 33551
+"GET /property_detail/2/title-deed/ HTTP/1.1" 200 11670
+"GET /property_management_dashboard/?property=2 HTTP/1.1" 200 33551
+"GET /property_detail/2/property-report/ HTTP/1.1" 200 16593
+"GET /property_management_dashboard/?property=2 HTTP/1.1" 200 33551
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 7793
+"GET /property_management_dashboard/ HTTP/1.1" 200 33551
+"GET /property_detail/4/title-deed/ HTTP/1.1" 200 11694
+"GET /property_management_dashboard/?property=4 HTTP/1.1" 200 33551
+"GET /property_detail/4/property-report/ HTTP/1.1" 200 16616
+"GET /property_management_dashboard/?property=4 HTTP/1.1" 200 33551
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 7793
+"GET /property_management_dashboard/ HTTP/1.1" 200 33551
+"GET /property_detail/4/title-deed/ HTTP/1.1" 200 11694
+"GET /property_management_dashboard/?property=4 HTTP/1.1" 200 33551
+"GET /property_detail/4/property-report/ HTTP/1.1" 200 16616
+"GET /property_management_dashboard/?property=4 HTTP/1.1" 200 33551
+"GET / HTTP/1.1" 200 7793
+"GET /property_management_dashboard/ HTTP/1.1" 200 33396
+"GET /property_detail/4/title-deed/ HTTP/1.1" 200 11694
+"GET /property_management_dashboard/?property=4 HTTP/1.1" 200 33396
+"GET /property_detail/4/property-report/ HTTP/1.1" 200 16616
+"GET /property_management_dashboard/?property=4 HTTP/1.1" 200 33396
+"GET /property_detail/4/tenant/ HTTP/1.1" 200 18939
+"GET /property_management_dashboard/?property=4 HTTP/1.1" 200 33396
+"GET /property_detail/4/tenant/ HTTP/1.1" 200 18939
+"GET /property_detail/4/tenant/ HTTP/1.1" 200 18939
+"GET /property_management_dashboard/?property=4 HTTP/1.1" 200 33396
+"GET /property_detail/4/tenant/ HTTP/1.1" 200 18939
+"GET /property_management_dashboard/?property=4 HTTP/1.1" 200 33396
+"GET /property_detail/4/tenant/ HTTP/1.1" 200 18939
+"GET / HTTP/1.1" 200 7793
+"GET /property_management_dashboard/ HTTP/1.1" 200 34169
+"GET /property_detail/4/tenant/ HTTP/1.1" 200 18939
+"GET /property_management_dashboard/?property=4 HTTP/1.1" 200 34169
+"GET /property_detail/4/open-invoices/ HTTP/1.1" 200 11075
+"GET /property_detail/4/lease-renewals/ HTTP/1.1" 200 11068
+"GET /property_detail/12/tenant/ HTTP/1.1" 200 11226
+"GET /property_management_dashboard/?property=12 HTTP/1.1" 200 34169
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 7793
+"GET /property_management_dashboard/ HTTP/1.1" 200 34169
+"GET /property_detail/4/open-invoices/ HTTP/1.1" 200 11512
+"GET /property_management_dashboard/?property=4 HTTP/1.1" 200 34169
+"GET /tenant/ HTTP/1.1" 200 54770
+"GET /open_invoices_report/ HTTP/1.1" 200 28909
+"GET /tenant/ HTTP/1.1" 200 54770
+"GET / HTTP/1.1" 200 7793
+"GET /property_management_dashboard/ HTTP/1.1" 200 34169
+"GET /property_detail/2/open-invoices/ HTTP/1.1" 200 11500
+"GET /property_management_dashboard/?property=2 HTTP/1.1" 200 34169
+"GET /property_detail/2/open-invoices/ HTTP/1.1" 200 11500
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 7793
+"GET /property_management_dashboard/ HTTP/1.1" 200 34169
+"GET /property_detail/4/open-invoices/ HTTP/1.1" 200 17077
+"GET / HTTP/1.1" 200 7793
+"GET /property_management_dashboard/ HTTP/1.1" 200 34169
+"GET /property_detail/4/tenant/ HTTP/1.1" 200 18939
+"GET /property_management_dashboard/?property=4 HTTP/1.1" 200 34169
+"GET /property_detail/4/open-invoices/ HTTP/1.1" 200 19630
+"GET /property_management_dashboard/?property=4 HTTP/1.1" 200 34169
+"GET / HTTP/1.1" 200 7793
+"GET /property_management_dashboard/ HTTP/1.1" 200 34169
+"GET /property_detail/4/title-deed/ HTTP/1.1" 200 11694
+"GET /property_management_dashboard/?property=4 HTTP/1.1" 200 34169
+"GET /property_detail/4/property-report/ HTTP/1.1" 200 16616
+"GET /property_management_dashboard/?property=4 HTTP/1.1" 200 34169
+"GET /property_detail/4/tenant/ HTTP/1.1" 200 18939
+"GET /property_management_dashboard/?property=4 HTTP/1.1" 200 34169
+"GET /property_detail/4/open-invoices/ HTTP/1.1" 200 19630
+"GET /property_management_dashboard/?property=4 HTTP/1.1" 200 34169
+"GET /property_detail/2/title-deed/ HTTP/1.1" 200 11670
+"GET /property_management_dashboard/?property=2 HTTP/1.1" 200 34169
+"GET / HTTP/1.1" 200 7793
+"GET /property_management_dashboard/ HTTP/1.1" 200 34712
+"GET /property_management_dashboard/ HTTP/1.1" 200 34909
+"GET /property_management_dashboard/ HTTP/1.1" 200 34921
+"GET / HTTP/1.1" 200 7793
+"GET /property_management_dashboard/ HTTP/1.1" 200 34885
+"GET / HTTP/1.1" 200 7793
+"GET /property_management_dashboard/ HTTP/1.1" 200 34885
+"GET /property_management_dashboard/ HTTP/1.1" 200 34885
+"GET /property_detail/4/open-invoices/ HTTP/1.1" 200 19630
+"GET /property_detail/4/open-invoices/ HTTP/1.1" 200 19630
+"GET / HTTP/1.1" 200 7793
+"GET /property_management_dashboard/ HTTP/1.1" 200 34885
+"GET /property_detail/4/tenant/ HTTP/1.1" 200 18939
+"GET /property_management_dashboard/?property=4 HTTP/1.1" 200 34885
+"GET /property_detail/4/open-invoices/ HTTP/1.1" 200 16764
+"GET /property_detail/4/open-invoices/ HTTP/1.1" 200 16764
+"GET /property_management_dashboard/?property=4 HTTP/1.1" 200 34885
+"GET /property_detail/4/title-deed/ HTTP/1.1" 200 11694
+"GET /property_management_dashboard/?property=4 HTTP/1.1" 200 34885
+"GET /property_detail/4/property-report/ HTTP/1.1" 200 16616
+"GET /property_management_dashboard/?property=4 HTTP/1.1" 200 34885
+"GET /property_detail/4/tenant/ HTTP/1.1" 200 18939
+"GET /property_management_dashboard/?property=4 HTTP/1.1" 200 34885
+"GET /property_detail/4/open-invoices/ HTTP/1.1" 200 16764
+"GET /property_management_dashboard/?property=4 HTTP/1.1" 200 34885
+"GET /property_detail/4/lease-renewals/ HTTP/1.1" 200 11068
+"GET /property_management_dashboard/?property=4 HTTP/1.1" 200 34885
+"GET /property_detail/4/issues/ HTTP/1.1" 200 11073
+"GET /property_management_dashboard/?property=4 HTTP/1.1" 200 34885
+"GET /property_detail/4/budgeted-expenses/ HTTP/1.1" 200 11093
+"GET /property_management_dashboard/?property=4 HTTP/1.1" 200 34885
+"GET /property_detail/4/profit-loss/ HTTP/1.1" 200 11082
+"GET /property_management_dashboard/?property=4 HTTP/1.1" 200 34885
+"GET /property_detail/2/open-invoices/ HTTP/1.1" 200 15264
+"GET /property_management_dashboard/?property=2 HTTP/1.1" 200 34885
+"GET /property_detail/2/tenant/ HTTP/1.1" 200 18914
+"GET /property_management_dashboard/?property=2 HTTP/1.1" 200 34885
+"GET /property_management_dashboard/?property=2 HTTP/1.1" 200 34885
+"GET /property_detail/10/open-invoices/ HTTP/1.1" 200 15287
+"GET /property_detail/12/tenant/ HTTP/1.1" 200 11226
+"GET /property_management_dashboard/?property=12 HTTP/1.1" 200 34885
+"GET /property_detail/12/open-invoices/ HTTP/1.1" 200 11616
+"GET /property_management_dashboard/?property=12 HTTP/1.1" 200 34885
+"GET /property_detail/11/open-invoices/ HTTP/1.1" 200 15285
+"GET /property_management_dashboard/?property=11 HTTP/1.1" 200 34885
+"GET /property_detail/11/open-invoices/ HTTP/1.1" 200 15285
+"GET / HTTP/1.1" 200 7793
+"GET /property_management_dashboard/ HTTP/1.1" 200 34885
+"GET /property_detail/4/tenant/ HTTP/1.1" 200 19834
+"GET /property_management_dashboard/?property=4 HTTP/1.1" 200 34885
+"GET /property_detail/4/open-invoices/ HTTP/1.1" 200 18240
+"GET / HTTP/1.1" 200 7793
+"GET /property_management_dashboard/ HTTP/1.1" 200 34885
+Internal Server Error: /property_detail/4/open-invoices/
+Traceback (most recent call last):
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\contrib\auth\decorators.py", line 60, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\djangoproject\pages\views.py", line 358, in property_detail
+    return render(request, 'property_detail.html', context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\loader.py", line 15, in get_template
+    return engine.get_template(template_name)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\backends\django.py", line 79, in get_template
+    return Template(self.engine.get_template(template_name), self)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\engine.py", line 177, in get_template
+    template, origin = self.find_template(template_name)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\engine.py", line 159, in find_template
+    template = loader.get_template(name, skip=skip)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\loaders\cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\loaders\base.py", line 28, in get_template
+    return Template(
+           ^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 154, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 196, in compile_nodelist
+    nodelist = parser.parse()
+               ^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 518, in parse
+    raise self.error(token, e)
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 516, in parse
+    compiled_result = compile_func(self, token)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\loader_tags.py", line 295, in do_extends
+    nodelist = parser.parse()
+               ^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 518, in parse
+    raise self.error(token, e)
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 516, in parse
+    compiled_result = compile_func(self, token)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\loader_tags.py", line 234, in do_block
+    nodelist = parser.parse(("endblock",))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 518, in parse
+    raise self.error(token, e)
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 516, in parse
+    compiled_result = compile_func(self, token)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\defaulttags.py", line 970, in do_if
+    nodelist = parser.parse(("elif", "else", "endif"))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 518, in parse
+    raise self.error(token, e)
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 516, in parse
+    compiled_result = compile_func(self, token)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\defaulttags.py", line 962, in do_if
+    nodelist = parser.parse(("elif", "else", "endif"))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 489, in parse
+    raise self.error(token, e)
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 487, in parse
+    filter_expression = self.compile_filter(token.contents)
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 605, in compile_filter
+    return FilterExpression(token, self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 701, in __init__
+    filter_func = parser.find_filter(filter_name)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 611, in find_filter
+    raise TemplateSyntaxError("Invalid filter: '%s'" % filter_name)
+django.template.exceptions.TemplateSyntaxError: Invalid filter: 'mul'
+"GET /property_detail/4/open-invoices/ HTTP/1.1" 500 294994
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 7793
+"GET /property_management_dashboard/ HTTP/1.1" 200 34885
+"GET /property_detail/4/open-invoices/ HTTP/1.1" 200 18116
+"GET /property_management_dashboard/?property=4 HTTP/1.1" 200 34885
+"GET /property_detail/9/open-invoices/ HTTP/1.1" 200 16595
+"GET /property_management_dashboard/?property=9 HTTP/1.1" 200 34885
+"GET /property_detail/7/open-invoices/ HTTP/1.1" 200 12688
+"GET /property_management_dashboard/?property=7 HTTP/1.1" 200 34885
+"GET / HTTP/1.1" 200 7793
+"GET /property_management_dashboard/ HTTP/1.1" 200 34873
+"GET / HTTP/1.1" 200 7793
+"GET /property_management_dashboard/ HTTP/1.1" 200 27636
+"GET / HTTP/1.1" 200 7793
+"GET /property_management_dashboard/ HTTP/1.1" 200 34885
+"GET /property_detail/4/open-invoices/ HTTP/1.1" 200 18116
+"GET / HTTP/1.1" 200 7793
+"GET /property_management_dashboard/ HTTP/1.1" 200 35196
+"GET /property_detail/4/open-invoices/ HTTP/1.1" 200 18116
+"GET /property_management_dashboard/?property=4 HTTP/1.1" 200 35196
+"GET /property_detail/7/open-invoices/ HTTP/1.1" 200 12688
+"GET /property_management_dashboard/?property=7 HTTP/1.1" 200 35196
+"GET /property_detail/5/open-invoices/ HTTP/1.1" 200 12694
+"GET /property_management_dashboard/?property=5 HTTP/1.1" 200 35196
+"GET /tenant/ HTTP/1.1" 200 54770
+"GET /open_invoices_report/ HTTP/1.1" 200 28909
+"GET /property_management_dashboard/ HTTP/1.1" 200 35196
+"GET /property_detail/5/open-invoices/ HTTP/1.1" 200 12694
+"GET /property_management_dashboard/?property=5 HTTP/1.1" 200 35196
+"GET /property_detail/9/open-invoices/ HTTP/1.1" 200 16595
+"GET /property_management_dashboard/?property=9 HTTP/1.1" 200 35196
+"GET /property_detail/9/title-deed/ HTTP/1.1" 200 12785
+"GET /media/properties/title_deeds/prop_9_athens-first-floor_title_deed.pdf HTTP/1.1" 200 1180889
+"GET /property_management_dashboard/?property=9 HTTP/1.1" 200 35196
+"GET /property_detail/9/property-report/ HTTP/1.1" 200 17718
+"GET /property_management_dashboard/?property=9 HTTP/1.1" 200 35196
+"GET /property_detail/9/tenant/ HTTP/1.1" 200 20097
+"GET /property_management_dashboard/?property=9 HTTP/1.1" 200 35196
+"GET /property_detail/4/tenant/ HTTP/1.1" 200 20017
+"GET /property_management_dashboard/?property=4 HTTP/1.1" 200 35196
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 7793
+"GET /property_management_dashboard/ HTTP/1.1" 200 35196
+"GET /property_detail/4/open-invoices/ HTTP/1.1" 200 19147
+"GET /property_management_dashboard/?property=4 HTTP/1.1" 200 35196
+"GET /property_detail/4/lease-renewals/ HTTP/1.1" 200 15696
+"GET /property_management_dashboard/?property=4 HTTP/1.1" 200 35196
+"GET /property_detail/7/lease-renewals/ HTTP/1.1" 200 13392
+"GET /property_management_dashboard/?property=7 HTTP/1.1" 200 35196
+"GET /property_detail/12/lease-renewals/ HTTP/1.1" 200 13402
+"GET /property_management_dashboard/?property=12 HTTP/1.1" 200 35196
+"GET /property_detail/9/lease-renewals/ HTTP/1.1" 200 13959
+"GET /property_management_dashboard/?property=9 HTTP/1.1" 200 35196
+"GET /tenant/ HTTP/1.1" 200 54770
+"GET /lease_renewal_report/ HTTP/1.1" 200 11693
+"GET /tenant/ HTTP/1.1" 200 54770
+"GET /property_management_dashboard/ HTTP/1.1" 200 35196
+"GET /property_detail/1/lease-renewals/ HTTP/1.1" 200 13887
+"GET /property_management_dashboard/?property=1 HTTP/1.1" 200 35196
+"GET /property_detail/12/lease-renewals/ HTTP/1.1" 200 13402
+"GET /property_management_dashboard/?property=12 HTTP/1.1" 200 35196
+"GET /tenant/ HTTP/1.1" 200 54770
+"GET /lease_renewal_report/ HTTP/1.1" 200 11693
+"GET /property_management_dashboard/ HTTP/1.1" 200 35196
+"GET /property_detail/4/lease-renewals/ HTTP/1.1" 200 15696
+"GET /property_management_dashboard/?property=4 HTTP/1.1" 200 35196
+"GET /property_detail/10/lease-renewals/ HTTP/1.1" 200 15675
+"GET /property_management_dashboard/?property=10 HTTP/1.1" 200 35196
+"GET /property_detail/5/lease-renewals/ HTTP/1.1" 200 13949
+"GET /property_management_dashboard/?property=5 HTTP/1.1" 200 35196
+"GET /property_detail/9/lease-renewals/ HTTP/1.1" 200 13959
+"GET /property_management_dashboard/?property=9 HTTP/1.1" 200 35196
+"GET /property_detail/11/lease-renewals/ HTTP/1.1" 200 13926
+"GET /property_management_dashboard/?property=11 HTTP/1.1" 200 35196
+"GET /property_detail/2/lease-renewals/ HTTP/1.1" 200 13898
+"GET /property_management_dashboard/?property=2 HTTP/1.1" 200 35196
+"GET /property_detail/7/lease-renewals/ HTTP/1.1" 200 13392
+"GET /property_management_dashboard/?property=7 HTTP/1.1" 200 35196
+"GET /property_detail/3/lease-renewals/ HTTP/1.1" 200 13898
+"GET /property_management_dashboard/?property=3 HTTP/1.1" 200 35196
+"GET /tenant/ HTTP/1.1" 200 54770
+"GET /properties/ HTTP/1.1" 200 53500
+"GET /properties/ HTTP/1.1" 200 53500
+"GET /properties_edit/7 HTTP/1.1" 200 20641
+"GET /properties/ HTTP/1.1" 200 53500
+"GET /property_report/7 HTTP/1.1" 200 12268
+"GET /properties/ HTTP/1.1" 200 53500
+"GET /property_management_dashboard/ HTTP/1.1" 200 35196
+"GET /property_detail/5/lease-renewals/ HTTP/1.1" 200 13949
+"GET /property_management_dashboard/?property=5 HTTP/1.1" 200 35196
+"GET /property_detail/1/lease-renewals/ HTTP/1.1" 200 13887
+"GET /property_management_dashboard/?property=1 HTTP/1.1" 200 35196
+"GET /property_management_dashboard/ HTTP/1.1" 200 35196
+"GET /property_detail/1/lease-renewals/ HTTP/1.1" 200 13887
+"GET /property_management_dashboard/?property=1 HTTP/1.1" 200 35196
+"GET /property_detail/10/lease-renewals/ HTTP/1.1" 200 15675
+"GET /property_management_dashboard/?property=10 HTTP/1.1" 200 35196
+"GET /property_detail/7/lease-renewals/ HTTP/1.1" 200 13195
+"GET /property_management_dashboard/?property=7 HTTP/1.1" 200 35196
+"GET /property_detail/12/lease-renewals/ HTTP/1.1" 200 13402
+"GET /property_management_dashboard/?property=12 HTTP/1.1" 200 35196
+"GET / HTTP/1.1" 200 7793
+"GET /property_management_dashboard/ HTTP/1.1" 200 35196
+"GET / HTTP/1.1" 200 7793
+"GET /fsr/ HTTP/1.1" 200 76956
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 7793
+"GET /property_management_dashboard/ HTTP/1.1" 200 35196
+"GET /property_detail/2/issues/ HTTP/1.1" 200 24659
+"GET /fsr_details/4?from=property_detail&property_id=2&box_type=issues HTTP/1.1" 200 18805
+"GET /property_detail/2/issues/?refresh=true HTTP/1.1" 200 24659
+"GET /fsr_details/3?from=property_detail&property_id=2&box_type=issues HTTP/1.1" 200 19149
+"POST /fsr_comment_add/3 HTTP/1.1" 302 0
+"GET /fsr_details/3?from=property_detail&property_id=2&box_type=issues HTTP/1.1" 200 19866
+"GET /fsr_details/3?from=property_detail&property_id=2&box_type=issues&refresh=true HTTP/1.1" 200 19314
+"GET /fsr_details/3?from=property_detail&property_id=2&box_type=issues HTTP/1.1" 200 19280
+"GET /fsr_details/3?from=property_detail&property_id=2&box_type=issues&refresh=true HTTP/1.1" 200 19314
+"GET /fsr_details/3?from=property_detail&property_id=2&box_type=issues HTTP/1.1" 200 19280
+"GET /fsr_details/3?from=property_detail&property_id=2&box_type=issues&refresh=true HTTP/1.1" 200 19314
+"GET /fsr_details/3?from=property_detail&property_id=2&box_type=issues HTTP/1.1" 200 19280
+"GET /fsr_details/3?from=property_detail&property_id=2&box_type=issues&refresh=true HTTP/1.1" 200 19314
+"GET /fsr_details/3?from=property_detail&property_id=2&box_type=issues HTTP/1.1" 200 19280
+"GET /fsr_details/3?from=property_detail&property_id=2&box_type=issues&refresh=true HTTP/1.1" 200 19314
+"GET /fsr_details/3?from=property_detail&property_id=2&box_type=issues HTTP/1.1" 200 19280
+"GET /property_management_dashboard/ HTTP/1.1" 200 35196
+"GET /property_detail/2/issues/ HTTP/1.1" 200 24659
+"GET /fsr_details/4?from=property_detail&property_id=2&box_type=issues HTTP/1.1" 200 18835
+"GET /property_detail/2/issues/?refresh=true HTTP/1.1" 200 24659
+"GET /fsr_details/4?from=property_detail&property_id=2&box_type=issues HTTP/1.1" 200 18835
+"GET / HTTP/1.1" 200 7793
+"GET /property_management_dashboard/ HTTP/1.1" 200 35196
+"GET /property_detail/2/issues/ HTTP/1.1" 200 24659
+"GET /fsr_details/4?from=property_detail&property_id=2&box_type=issues HTTP/1.1" 200 19653
+"POST /fsr_comment_add/4 HTTP/1.1" 302 0
+"GET /fsr_details/4?from=property_detail&property_id=2&box_type=issues HTTP/1.1" 200 20390
+"GET /property_detail/2/issues/ HTTP/1.1" 200 24659
+"GET /fsr_details/3?from=property_detail&property_id=2&box_type=issues HTTP/1.1" 200 20128
+"POST /fsr_commit_status_change/ HTTP/1.1" 302 0
+"GET /fsr/?refresh=true HTTP/1.1" 200 76958
+"GET /fsr/ HTTP/1.1" 200 76958
+"GET /property_management_dashboard/ HTTP/1.1" 200 35196
+"GET /property_detail/2/issues/ HTTP/1.1" 200 24661
+"GET / HTTP/1.1" 200 7793
+"GET /property_management_dashboard/ HTTP/1.1" 200 35196
+"GET /property_detail/2/issues/ HTTP/1.1" 200 24661
+"GET /fsr_details/3?from=property_detail&property_id=2&box_type=issues HTTP/1.1" 200 20540
+"POST /fsr_commit_status_change/ HTTP/1.1" 302 0
+"GET /fsr/?refresh=true HTTP/1.1" 200 76956
+"GET /fsr/ HTTP/1.1" 200 76956
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+"GET /property_management_dashboard/ HTTP/1.1" 200 35196
+"GET /property_detail/2/issues/ HTTP/1.1" 200 24659
+"GET /fsr_details/3?from=property_detail&property_id=2&box_type=issues HTTP/1.1" 200 20540
+"POST /fsr_commit_status_change/ HTTP/1.1" 302 0
+"GET /fsr_details/3?from=property_detail&property_id=2&box_type=issues HTTP/1.1" 200 20540
+"GET /property_detail/2/issues/ HTTP/1.1" 200 24661
+"GET /fsr_details/3?from=property_detail&property_id=2&box_type=issues HTTP/1.1" 200 20540
+"POST /fsr_commit_status_change/ HTTP/1.1" 302 0
+"GET /fsr_details/3?from=property_detail&property_id=2&box_type=issues HTTP/1.1" 200 20540
+"GET /property_detail/2/issues/ HTTP/1.1" 200 24659
+"GET /property_management_dashboard/?property=2 HTTP/1.1" 200 35196
+"GET /property_detail/2/title-deed/ HTTP/1.1" 200 16956
+"GET /property_management_dashboard/?property=2 HTTP/1.1" 200 35196
+"GET /property_detail/2/title-deed/ HTTP/1.1" 200 16956
+"GET /property_management_dashboard/?property=2 HTTP/1.1" 200 35196
+"GET /property_detail/2/property-report/ HTTP/1.1" 200 21879
+"GET /property_management_dashboard/?property=2 HTTP/1.1" 200 35196
+"GET /property_detail/2/tenant/ HTTP/1.1" 200 24197
+"GET /property_management_dashboard/?property=2 HTTP/1.1" 200 35196
+"GET /property_detail/2/open-invoices/ HTTP/1.1" 200 20782
+"GET /property_management_dashboard/?property=2 HTTP/1.1" 200 35196
+"GET /property_detail/2/lease-renewals/ HTTP/1.1" 200 17074
+"GET /property_management_dashboard/?property=2 HTTP/1.1" 200 35196
+"GET /property_detail/2/issues/ HTTP/1.1" 200 24659
+"GET /fsr_details/4?from=property_detail&property_id=2&box_type=issues HTTP/1.1" 200 20216
+"GET /property_detail/2/issues/ HTTP/1.1" 200 24659
+"GET /property_management_dashboard/?property=2 HTTP/1.1" 200 35196
+"GET /property_detail/2/issues/ HTTP/1.1" 200 24659
+"GET /property_management_dashboard/?property=2 HTTP/1.1" 200 35196
+"GET /property_detail/2/lease-renewals/ HTTP/1.1" 200 17074
+"GET /property_management_dashboard/?property=2 HTTP/1.1" 200 35196
+"GET /fsr/ HTTP/1.1" 200 76956
+"GET /fsr_details/6?from=fsr&search=&propcountry=&propname=&issuestatus= HTTP/1.1" 200 20115
+"POST /fsr_commit_status_change/ HTTP/1.1" 302 0
+"GET /fsr/?refresh=true HTTP/1.1" 200 76958
+"GET /fsr/ HTTP/1.1" 200 76958
+"GET /fsr_details/6?from=fsr&search=&propcountry=&propname=&issuestatus= HTTP/1.1" 200 20115
+"POST /fsr_commit_status_change/ HTTP/1.1" 302 0
+"GET /fsr/?refresh=true HTTP/1.1" 200 76956
+"GET /fsr/ HTTP/1.1" 200 76956
+"GET /friday_status_report/?max_comments=2 HTTP/1.1" 200 31268
+"GET /fsr/ HTTP/1.1" 200 76956
+"GET /property_management_dashboard/ HTTP/1.1" 200 35196
+"GET /property_detail/5/title-deed/ HTTP/1.1" 200 16992
+"GET /media/properties/title_deeds/prop_5_apolloneon-demetri_title_deed.pdf HTTP/1.1" 200 3471395
+"GET /property_management_dashboard/?property=5 HTTP/1.1" 200 35196
+"GET /property_detail/5/property-report/ HTTP/1.1" 200 21913
+"GET /property_management_dashboard/?property=5 HTTP/1.1" 200 35196
+"GET /property_detail/5/tenant/ HTTP/1.1" 200 24308
+"GET /property_management_dashboard/?property=5 HTTP/1.1" 200 35196
+"GET /property_detail/5/open-invoices/ HTTP/1.1" 200 16901
+"GET /property_management_dashboard/?property=5 HTTP/1.1" 200 35196
+"GET /property_detail/5/lease-renewals/ HTTP/1.1" 200 17125
+"GET /property_management_dashboard/?property=5 HTTP/1.1" 200 35196
+"GET /property_detail/5/issues/ HTTP/1.1" 200 22538
+"GET /fsr_details/6?from=property_detail&property_id=5&box_type=issues HTTP/1.1" 200 20475
+"GET /property_detail/5/issues/ HTTP/1.1" 200 22538
+"GET /property_management_dashboard/?property=5 HTTP/1.1" 200 35196
+"GET /property_detail/5/title-deed/ HTTP/1.1" 200 16992
+"GET /property_management_dashboard/?property=5 HTTP/1.1" 200 35196
+"GET /property_detail/5/property-report/ HTTP/1.1" 200 21913
+"GET /property_management_dashboard/?property=5 HTTP/1.1" 200 35196
+"GET /property_detail/5/tenant/ HTTP/1.1" 200 24308
+"GET /property_management_dashboard/?property=5 HTTP/1.1" 200 35196
+"GET / HTTP/1.1" 200 7793
+"GET /property_management_dashboard/ HTTP/1.1" 200 35586
+"GET / HTTP/1.1" 200 7793
+"GET /property_management_dashboard/ HTTP/1.1" 200 35679
+"GET /property_management_dashboard/ HTTP/1.1" 200 35679
+"GET /property_management_dashboard/ HTTP/1.1" 200 35679
+"GET / HTTP/1.1" 200 7793
+"GET /property_management_dashboard/ HTTP/1.1" 200 35664
+"GET /property_detail/11/title-deed/ HTTP/1.1" 200 16995
+"GET /media/properties/title_deeds/prop_11_athens-third-floor_title_deed.pdf HTTP/1.1" 200 5417437
+"GET /property_management_dashboard/?property=11 HTTP/1.1" 200 35664
+"GET /property_detail/11/property-report/ HTTP/1.1" 200 21926
+"GET /property_management_dashboard/?property=11 HTTP/1.1" 200 35664
+"GET /property_detail/11/tenant/ HTTP/1.1" 200 24180
+"GET /property_management_dashboard/?property=11 HTTP/1.1" 200 35664
+"GET /property_detail/11/lease/ HTTP/1.1" 200 16058
+"GET /property_management_dashboard/?property=11 HTTP/1.1" 200 35664
+"GET /property_detail/11/open-invoices/ HTTP/1.1" 200 20803
+"GET /property_management_dashboard/?property=11 HTTP/1.1" 200 35664
+"GET /property_detail/11/lease-renewals/ HTTP/1.1" 200 17102
+"GET /property_management_dashboard/?property=11 HTTP/1.1" 200 35664
+"GET /property_detail/11/issues/ HTTP/1.1" 200 16898
+"GET /fsr_add/?property=11 HTTP/1.1" 200 7147
+"GET /property_management_dashboard/?property=11 HTTP/1.1" 200 35664
+"GET /property_detail/5/issues/ HTTP/1.1" 200 22538
+"GET /property_management_dashboard/?property=5 HTTP/1.1" 200 35664
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 7793
+"GET /property_management_dashboard/ HTTP/1.1" 200 35664
+Internal Server Error: /property_detail/2/valuation/
+Traceback (most recent call last):
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\contrib\auth\decorators.py", line 60, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\djangoproject\pages\views.py", line 447, in property_detail
+    return render(request, 'property_detail.html', context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\loader.py", line 15, in get_template
+    return engine.get_template(template_name)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\backends\django.py", line 79, in get_template
+    return Template(self.engine.get_template(template_name), self)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\engine.py", line 177, in get_template
+    template, origin = self.find_template(template_name)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\engine.py", line 159, in find_template
+    template = loader.get_template(name, skip=skip)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\loaders\cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\loaders\base.py", line 28, in get_template
+    return Template(
+           ^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 154, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 196, in compile_nodelist
+    nodelist = parser.parse()
+               ^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 518, in parse
+    raise self.error(token, e)
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 516, in parse
+    compiled_result = compile_func(self, token)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\loader_tags.py", line 295, in do_extends
+    nodelist = parser.parse()
+               ^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 518, in parse
+    raise self.error(token, e)
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 516, in parse
+    compiled_result = compile_func(self, token)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\loader_tags.py", line 234, in do_block
+    nodelist = parser.parse(("endblock",))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 518, in parse
+    raise self.error(token, e)
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 516, in parse
+    compiled_result = compile_func(self, token)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\defaulttags.py", line 970, in do_if
+    nodelist = parser.parse(("elif", "else", "endif"))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 518, in parse
+    raise self.error(token, e)
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 516, in parse
+    compiled_result = compile_func(self, token)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\defaulttags.py", line 962, in do_if
+    nodelist = parser.parse(("elif", "else", "endif"))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 518, in parse
+    raise self.error(token, e)
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 516, in parse
+    compiled_result = compile_func(self, token)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\defaulttags.py", line 962, in do_if
+    nodelist = parser.parse(("elif", "else", "endif"))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 518, in parse
+    raise self.error(token, e)
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 516, in parse
+    compiled_result = compile_func(self, token)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\defaulttags.py", line 1531, in do_with
+    extra_context = token_kwargs(remaining_bits, parser, support_legacy=True)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 1119, in token_kwargs
+    kwargs[key] = parser.compile_filter(value)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 605, in compile_filter
+    return FilterExpression(token, self)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 701, in __init__
+    filter_func = parser.find_filter(filter_name)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 611, in find_filter
+    raise TemplateSyntaxError("Invalid filter: '%s'" % filter_name)
+django.template.exceptions.TemplateSyntaxError: Invalid filter: 'sub'
+"GET /property_detail/2/valuation/ HTTP/1.1" 500 405672
+"GET /property_management_dashboard/ HTTP/1.1" 200 35664
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 7793
+"GET /property_management_dashboard/ HTTP/1.1" 200 35664
+"GET /property_detail/2/title-deed/ HTTP/1.1" 200 20184
+"GET /property_management_dashboard/?property=2 HTTP/1.1" 200 35664
+"GET /property_detail/2/property-report/ HTTP/1.1" 200 25107
+"GET /property_management_dashboard/?property=2 HTTP/1.1" 200 35664
+"GET /property_detail/2/tenant/ HTTP/1.1" 200 27425
+"GET /property_management_dashboard/?property=2 HTTP/1.1" 200 35664
+"GET /property_detail/2/lease/ HTTP/1.1" 200 19273
+"GET /property_management_dashboard/?property=2 HTTP/1.1" 200 35664
+"GET /property_detail/2/open-invoices/ HTTP/1.1" 200 24010
+"GET /property_management_dashboard/?property=2 HTTP/1.1" 200 35664
+"GET /property_detail/2/lease-renewals/ HTTP/1.1" 200 20302
+"GET /property_management_dashboard/?property=2 HTTP/1.1" 200 35664
+"GET /property_detail/2/issues/ HTTP/1.1" 200 27887
+"GET /property_management_dashboard/?property=2 HTTP/1.1" 200 35664
+"GET /property_detail/2/valuation/ HTTP/1.1" 200 23709
+"GET /finance_valuations_edit/6/ HTTP/1.1" 200 8284
+"GET /finance_valuations/ HTTP/1.1" 200 11770
+"GET /finance/ HTTP/1.1" 200 10659
+"GET / HTTP/1.1" 200 7793
+"GET /property_management_dashboard/ HTTP/1.1" 200 35664
+"GET /property_detail/5/issues/ HTTP/1.1" 200 25766
+"GET /property_management_dashboard/?property=5 HTTP/1.1" 200 35664
+"GET /property_detail/9/issues/ HTTP/1.1" 200 27867
+"GET /property_management_dashboard/?property=9 HTTP/1.1" 200 35664
+"GET /property_detail/11/issues/ HTTP/1.1" 200 20126
+"GET /property_management_dashboard/?property=11 HTTP/1.1" 200 35664
+"GET /property_detail/11/valuation/ HTTP/1.1" 200 23741
+"GET /property_management_dashboard/?property=11 HTTP/1.1" 200 35664
+"GET /property_detail/1/valuation/ HTTP/1.1" 200 23710
+"GET /property_management_dashboard/?property=1 HTTP/1.1" 200 35664
+"GET / HTTP/1.1" 200 7793
+"GET /property_management_dashboard/ HTTP/1.1" 200 35664
+"GET /property_detail/1/valuation/ HTTP/1.1" 200 23181
+"GET /property_management_dashboard/?property=1 HTTP/1.1" 200 35664
+"GET /property_detail/1/issues/ HTTP/1.1" 200 30027
+"GET /property_management_dashboard/?property=1 HTTP/1.1" 200 35664
+"GET /property_detail/11/issues/ HTTP/1.1" 200 19893
+"GET /property_management_dashboard/?property=11 HTTP/1.1" 200 35664
+"GET /property_detail/11/property-report/ HTTP/1.1" 200 25154
+"GET /property_management_dashboard/?property=11 HTTP/1.1" 200 35664
+"GET /property_detail/11/tenant/ HTTP/1.1" 200 27408
+"GET /property_management_dashboard/?property=11 HTTP/1.1" 200 35664
+"GET /property_detail/11/open-invoices/ HTTP/1.1" 200 24031
+"GET /property_management_dashboard/?property=11 HTTP/1.1" 200 35664
+"GET /property_detail/11/lease-renewals/ HTTP/1.1" 200 20330
+"GET /property_management_dashboard/?property=11 HTTP/1.1" 200 35664
+"GET /property_detail/4/lease-renewals/ HTTP/1.1" 200 22100
+"GET /property_management_dashboard/?property=4 HTTP/1.1" 200 35664
+"GET /property_detail/11/lease-renewals/ HTTP/1.1" 200 20330
+"GET /property_management_dashboard/?property=11 HTTP/1.1" 200 35664
+"GET / HTTP/1.1" 200 7793
+"GET /property_management_dashboard/ HTTP/1.1" 200 35664
+"GET /property_detail/11/lease-renewals/ HTTP/1.1" 200 20239
+"GET /property_management_dashboard/?property=11 HTTP/1.1" 200 35664
+"GET /property_detail/4/lease-renewals/ HTTP/1.1" 200 22100
+"GET /property_management_dashboard/?property=4 HTTP/1.1" 200 35664
+"GET /property_detail/1/lease-renewals/ HTTP/1.1" 200 20291
+"GET /property_management_dashboard/?property=1 HTTP/1.1" 200 35664
+"GET /property_detail/1/valuation/ HTTP/1.1" 200 23181
+"GET /property_management_dashboard/?property=1 HTTP/1.1" 200 35664
+"GET /act_expense_all/?from=home HTTP/1.1" 200 74361
+"GET /property_management_dashboard/ HTTP/1.1" 200 35664
+"GET /property_detail/2/tenant/ HTTP/1.1" 200 28497
+"GET /property_management_dashboard/?property=2 HTTP/1.1" 200 35664
+"GET /property_detail/2/lease/ HTTP/1.1" 200 23977
+"GET /static/lease_agreements/Foti%20Pitta%20-%20Lease%20Agreement.pdf HTTP/1.1" 200 4656259
+"GET /property_management_dashboard/?property=2 HTTP/1.1" 200 35664
+"GET /property_detail/2/title-deed/ HTTP/1.1" 200 21202
+"GET /property_management_dashboard/?property=2 HTTP/1.1" 200 35664
+"GET /property_detail/2/lease/ HTTP/1.1" 200 23977
+"GET /property_management_dashboard/?property=2 HTTP/1.1" 200 35664
+"GET / HTTP/1.1" 200 7793
+"GET /property_management_dashboard/ HTTP/1.1" 200 35664
+"GET /property_detail/2/lease/ HTTP/1.1" 200 23672
+"GET /property_management_dashboard/ HTTP/1.1" 200 35664
+"GET /property_detail/4/title-deed/ HTTP/1.1" 200 20898
+"GET /property_management_dashboard/?property=4 HTTP/1.1" 200 35664
+"GET /property_detail/4/property-report/ HTTP/1.1" 200 25874
+"GET /property_management_dashboard/?property=4 HTTP/1.1" 200 35664
+"GET /property_detail/4/tenant/ HTTP/1.1" 200 28196
+"GET /property_management_dashboard/?property=4 HTTP/1.1" 200 35664
+"GET /property_detail/4/lease/ HTTP/1.1" 200 23704
+"GET /static/lease_agreements/Eleftheroupoleos%20-%20Lease%20Agreement.pdf HTTP/1.1" 200 193562
+"GET /property_management_dashboard/?property=4 HTTP/1.1" 200 35664
+"GET /property_detail/4/open-invoices/ HTTP/1.1" 200 26295
+"GET /property_management_dashboard/?property=4 HTTP/1.1" 200 35664
+"GET /property_detail/4/lease-renewals/ HTTP/1.1" 200 20039
+"GET /property_management_dashboard/?property=4 HTTP/1.1" 200 35664
+"GET /property_detail/4/issues/ HTTP/1.1" 200 26466
+"GET /property_management_dashboard/?property=4 HTTP/1.1" 200 35664
+"GET /property_detail/4/valuation/ HTTP/1.1" 200 23943
+"GET /property_management_dashboard/?property=4 HTTP/1.1" 200 35664
+"GET /property_detail/2/lease-renewals/ HTTP/1.1" 200 20027
+"GET /property_management_dashboard/?property=2 HTTP/1.1" 200 35664
+"GET /property_management_dashboard/ HTTP/1.1" 200 35664
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 36018
+"GET /property_management_dashboard/ HTTP/1.1" 200 35664
+"GET /property_detail/2/lease/ HTTP/1.1" 200 23672
+"GET /property_management_dashboard/?property=2 HTTP/1.1" 200 35664
+"GET /property_detail/2/lease-renewals/ HTTP/1.1" 200 20027
+"GET / HTTP/1.1" 200 7793
+"GET /property_management_dashboard/ HTTP/1.1" 200 35664
+"GET /property_detail/2/lease/ HTTP/1.1" 200 23672
+"GET /property_management_dashboard/?property=2 HTTP/1.1" 200 35664
+"GET /property_detail/2/lease-renewals/ HTTP/1.1" 200 20027
+"GET /property_management_dashboard/?property=2 HTTP/1.1" 200 35664
+"GET /property_detail/2/lease/ HTTP/1.1" 200 23672
+"GET / HTTP/1.1" 200 7793
+"GET /property_management_dashboard/ HTTP/1.1" 200 35664
+"GET /property_detail/2/lease/ HTTP/1.1" 200 23672
+"GET / HTTP/1.1" 200 7793
+"GET /property_management_dashboard/ HTTP/1.1" 200 35664
+"GET /property_detail/2/lease/ HTTP/1.1" 200 23672
+"GET /property_management_dashboard/?property=2 HTTP/1.1" 200 35664
+"GET /property_detail/2/lease-renewals/ HTTP/1.1" 200 20027
+"GET /property_management_dashboard/?property=2 HTTP/1.1" 200 35664
+"GET /property_detail/2/lease/ HTTP/1.1" 200 23672
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 7793
+"GET /property_management_dashboard/ HTTP/1.1" 200 35664
+"GET /property_detail/2/lease/ HTTP/1.1" 200 23672
+"GET /property_management_dashboard/?property=2 HTTP/1.1" 200 35664
+"GET /property_detail/2/lease-renewals/ HTTP/1.1" 200 20027
+"GET /property_management_dashboard/?property=2 HTTP/1.1" 200 35664
+"GET /property_detail/2/lease-renewals/ HTTP/1.1" 200 20027
+"GET / HTTP/1.1" 200 7793
+"GET /property_management_dashboard/ HTTP/1.1" 200 35664
+Internal Server Error: /property_detail/2/tenant/
+Traceback (most recent call last):
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\contrib\auth\decorators.py", line 60, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\djangoproject\pages\views.py", line 463, in property_detail
+    return render(request, 'property_detail.html', context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\loader.py", line 62, in render_to_string
+    return template.render(context, request)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\backends\django.py", line 107, in render
+    return self.template.render(context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 171, in render
+    return self._render(context)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 163, in _render
+    return self.nodelist.render(context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 1008, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 969, in render_annotated
+    return self.render(context)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\loader_tags.py", line 159, in render
+    return compiled_parent._render(context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 163, in _render
+    return self.nodelist.render(context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 1008, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 969, in render_annotated
+    return self.render(context)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\loader_tags.py", line 65, in render
+    result = block.nodelist.render(context)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 1008, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 969, in render_annotated
+    return self.render(context)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\defaulttags.py", line 480, in render
+    url = reverse(view_name, args=args, kwargs=kwargs, current_app=current_app)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\urls\base.py", line 88, in reverse
+    return resolver._reverse_with_prefix(view, prefix, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\urls\resolvers.py", line 831, in _reverse_with_prefix
+    raise NoReverseMatch(msg)
+django.urls.exceptions.NoReverseMatch: Reverse for 'main_dashboard' not found. 'main_dashboard' is not a valid view function or pattern name.
+"GET /property_detail/2/tenant/ HTTP/1.1" 500 173626
+Internal Server Error: /property_detail/2/title-deed/
+Traceback (most recent call last):
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\contrib\auth\decorators.py", line 60, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\djangoproject\pages\views.py", line 463, in property_detail
+    return render(request, 'property_detail.html', context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\loader.py", line 62, in render_to_string
+    return template.render(context, request)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\backends\django.py", line 107, in render
+    return self.template.render(context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 171, in render
+    return self._render(context)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 163, in _render
+    return self.nodelist.render(context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 1008, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 969, in render_annotated
+    return self.render(context)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\loader_tags.py", line 159, in render
+    return compiled_parent._render(context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 163, in _render
+    return self.nodelist.render(context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 1008, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 969, in render_annotated
+    return self.render(context)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\loader_tags.py", line 65, in render
+    result = block.nodelist.render(context)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 1008, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 969, in render_annotated
+    return self.render(context)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\defaulttags.py", line 480, in render
+    url = reverse(view_name, args=args, kwargs=kwargs, current_app=current_app)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\urls\base.py", line 88, in reverse
+    return resolver._reverse_with_prefix(view, prefix, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\urls\resolvers.py", line 831, in _reverse_with_prefix
+    raise NoReverseMatch(msg)
+django.urls.exceptions.NoReverseMatch: Reverse for 'main_dashboard' not found. 'main_dashboard' is not a valid view function or pattern name.
+"GET /property_detail/2/title-deed/ HTTP/1.1" 500 173630
+Internal Server Error: /property_detail/2/property-report/
+Traceback (most recent call last):
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\contrib\auth\decorators.py", line 60, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\djangoproject\pages\views.py", line 463, in property_detail
+    return render(request, 'property_detail.html', context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\loader.py", line 62, in render_to_string
+    return template.render(context, request)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\backends\django.py", line 107, in render
+    return self.template.render(context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 171, in render
+    return self._render(context)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 163, in _render
+    return self.nodelist.render(context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 1008, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 969, in render_annotated
+    return self.render(context)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\loader_tags.py", line 159, in render
+    return compiled_parent._render(context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 163, in _render
+    return self.nodelist.render(context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 1008, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 969, in render_annotated
+    return self.render(context)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\loader_tags.py", line 65, in render
+    result = block.nodelist.render(context)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 1008, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 969, in render_annotated
+    return self.render(context)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\defaulttags.py", line 480, in render
+    url = reverse(view_name, args=args, kwargs=kwargs, current_app=current_app)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\urls\base.py", line 88, in reverse
+    return resolver._reverse_with_prefix(view, prefix, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\urls\resolvers.py", line 831, in _reverse_with_prefix
+    raise NoReverseMatch(msg)
+django.urls.exceptions.NoReverseMatch: Reverse for 'main_dashboard' not found. 'main_dashboard' is not a valid view function or pattern name.
+"GET /property_detail/2/property-report/ HTTP/1.1" 500 173875
+"GET / HTTP/1.1" 200 7793
+"GET /property_management_dashboard/ HTTP/1.1" 200 35664
+"GET /property_detail/2/title-deed/ HTTP/1.1" 200 17782
+"GET /static/title_deeds/properties/title_deeds/prop_2_foti-pitta_title_deed.pdf HTTP/1.1" 404 2015
+"GET / HTTP/1.1" 200 7793
+"GET /property_management_dashboard/ HTTP/1.1" 200 35664
+"GET /property_detail/2/title-deed/ HTTP/1.1" 200 20874
+"GET /property_management_dashboard/?property=2 HTTP/1.1" 200 35664
+"GET /property_detail/2/property-report/ HTTP/1.1" 200 25851
+"GET /property_management_dashboard/?property=2 HTTP/1.1" 200 35664
+"GET /property_detail/2/tenant/ HTTP/1.1" 200 28169
+"GET /property_management_dashboard/?property=2 HTTP/1.1" 200 35664
+"GET /property_detail/2/lease/ HTTP/1.1" 200 23672
+"GET /property_management_dashboard/?property=2 HTTP/1.1" 200 35664
+"GET /property_detail/2/open-invoices/ HTTP/1.1" 200 24754
+"GET /property_management_dashboard/?property=2 HTTP/1.1" 200 35664
+"GET /property_detail/2/lease-renewals/ HTTP/1.1" 200 20027
+"GET /property_management_dashboard/?property=2 HTTP/1.1" 200 35664
+"GET /property_detail/2/issues/ HTTP/1.1" 200 28631
+"GET /property_management_dashboard/?property=2 HTTP/1.1" 200 35664
+"GET /property_detail/2/issues/ HTTP/1.1" 200 28631
+"GET /property_management_dashboard/?property=2 HTTP/1.1" 200 35664
+"GET /property_detail/2/valuation/ HTTP/1.1" 200 23925
+"GET /property_management_dashboard/?property=2 HTTP/1.1" 200 35664
+"GET /property_detail/2/valuation/ HTTP/1.1" 200 23925
+"GET /property_management_dashboard/?property=2 HTTP/1.1" 200 35664
+"GET /property_detail/2/issues/ HTTP/1.1" 200 28631
+"GET /property_management_dashboard/?property=2 HTTP/1.1" 200 35664
+"GET /property_detail/2/open-invoices/ HTTP/1.1" 200 24754
+"GET /property_management_dashboard/?property=2 HTTP/1.1" 200 35664
+"GET /property_detail/2/tenant/ HTTP/1.1" 200 28169
+"GET /property_management_dashboard/?property=2 HTTP/1.1" 200 35664
+"GET /property_detail/2/property-report/ HTTP/1.1" 200 25851
+"GET /property_management_dashboard/?property=2 HTTP/1.1" 200 35664
+"GET /property_detail/2/title-deed/ HTTP/1.1" 200 20874
+"GET /property_management_dashboard/?property=2 HTTP/1.1" 200 35664
+"GET / HTTP/1.1" 200 7793
+"GET /property_management_dashboard/ HTTP/1.1" 200 35664
+"GET /property_detail/2/title-deed/ HTTP/1.1" 200 22560
+"GET /property_management_dashboard/?property=2 HTTP/1.1" 200 35664
+"GET /property_detail/2/property-report/ HTTP/1.1" 200 27483
+"GET /property_management_dashboard/?property=2 HTTP/1.1" 200 35664
+"GET /property_detail/2/tenant/ HTTP/1.1" 200 29801
+"GET /property_management_dashboard/?property=2 HTTP/1.1" 200 35664
+"GET /property_detail/2/lease/ HTTP/1.1" 200 24745
+"GET /property_management_dashboard/?property=2 HTTP/1.1" 200 35664
+"GET /property_detail/2/open-invoices/ HTTP/1.1" 200 26386
+"GET /property_management_dashboard/?property=2 HTTP/1.1" 200 35664
+"GET /property_detail/2/lease-renewals/ HTTP/1.1" 200 22587
+"GET /property_management_dashboard/?property=2 HTTP/1.1" 200 35664
+"GET /property_detail/2/issues/ HTTP/1.1" 200 30263
+"GET /property_management_dashboard/?property=2 HTTP/1.1" 200 35664
+"GET /property_detail/2/valuation/ HTTP/1.1" 200 25557
+"GET /property_management_dashboard/?property=2 HTTP/1.1" 200 35664
+"GET /property_detail/2/lease/ HTTP/1.1" 200 24745
+"GET / HTTP/1.1" 200 7793
+"GET /property_management_dashboard/ HTTP/1.1" 200 35664
+"GET /property_detail/2/title-deed/ HTTP/1.1" 200 22560
+"GET /property_management_dashboard/?property=2 HTTP/1.1" 200 35664
+"GET /property_detail/2/property-report/ HTTP/1.1" 200 27483
+"GET /property_management_dashboard/?property=2 HTTP/1.1" 200 35664
+"GET /property_detail/2/tenant/ HTTP/1.1" 200 29801
+"GET /property_management_dashboard/?property=2 HTTP/1.1" 200 35664
+"GET /property_detail/2/lease/ HTTP/1.1" 200 24317
+"GET /property_management_dashboard/?property=2 HTTP/1.1" 200 35664
+"GET /property_detail/2/open-invoices/ HTTP/1.1" 200 26386
+"GET /property_management_dashboard/?property=2 HTTP/1.1" 200 35664
+"GET /property_detail/2/lease-renewals/ HTTP/1.1" 200 22587
+"GET /property_management_dashboard/?property=2 HTTP/1.1" 200 35664
+"GET /property_detail/2/issues/ HTTP/1.1" 200 30263
+"GET /property_management_dashboard/?property=2 HTTP/1.1" 200 35664
+"GET /property_detail/2/valuation/ HTTP/1.1" 200 25557
+"GET /property_management_dashboard/?property=2 HTTP/1.1" 200 35664
+"GET /property_detail/2/lease-renewals/ HTTP/1.1" 200 22587
+"GET /property_management_dashboard/?property=2 HTTP/1.1" 200 35664
+"GET /property_detail/2/lease/ HTTP/1.1" 200 24317
+"GET /property_management_dashboard/?property=2 HTTP/1.1" 200 35664
+"GET /property_detail/2/tenant/ HTTP/1.1" 200 29801
+"GET /property_management_dashboard/?property=2 HTTP/1.1" 200 35664
+"GET /property_detail/2/issues/ HTTP/1.1" 200 30263
+"GET /fsr/ HTTP/1.1" 200 76956
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 7793
+"GET /property_management_dashboard/ HTTP/1.1" 200 35664
+"GET /property_detail/2/lease/ HTTP/1.1" 200 24317
+"GET /property_management_dashboard/?property=2 HTTP/1.1" 200 35664
+"GET /property_detail/2/title-deed/ HTTP/1.1" 200 22560
+"GET /property_management_dashboard/?property=2 HTTP/1.1" 200 35664
+"GET /property_detail/2/property-report/ HTTP/1.1" 200 27483
+"GET /property_management_dashboard/?property=2 HTTP/1.1" 200 35664
+"GET /property_detail/2/tenant/ HTTP/1.1" 200 29801
+"GET /property_management_dashboard/?property=2 HTTP/1.1" 200 35664
+"GET /property_detail/2/open-invoices/ HTTP/1.1" 200 26386
+"GET /property_management_dashboard/?property=2 HTTP/1.1" 200 35664
+"GET /property_detail/2/lease-renewals/ HTTP/1.1" 200 22587
+"GET /property_management_dashboard/?property=2 HTTP/1.1" 200 35664
+"GET /property_detail/2/issues/ HTTP/1.1" 200 30263
+"GET /property_management_dashboard/?property=2 HTTP/1.1" 200 35664
+"GET /property_detail/2/valuation/ HTTP/1.1" 200 25557
+"GET /property_management_dashboard/?property=2 HTTP/1.1" 200 35664
+"GET /property_detail/5/issues/ HTTP/1.1" 200 28142
+"GET /property_management_dashboard/?property=5 HTTP/1.1" 200 35664
+"GET /property_detail/9/issues/ HTTP/1.1" 200 30243
+"GET /property_management_dashboard/?property=9 HTTP/1.1" 200 35664
+"GET /property_detail/10/issues/ HTTP/1.1" 200 28188
+"GET /property_management_dashboard/?property=10 HTTP/1.1" 200 35664
+"GET /property_detail/11/issues/ HTTP/1.1" 200 22269
+"GET /property_management_dashboard/?property=11 HTTP/1.1" 200 35664
+"GET /property_detail/4/issues/ HTTP/1.1" 200 28098
+"GET /property_management_dashboard/?property=4 HTTP/1.1" 200 35664
+"GET /property_detail/7/issues/ HTTP/1.1" 200 28183
+"GET /property_management_dashboard/?property=7 HTTP/1.1" 200 35664
+"GET /property_detail/1/issues/ HTTP/1.1" 200 32403
+"GET /property_management_dashboard/?property=1 HTTP/1.1" 200 35664
+"GET /property_detail/3/issues/ HTTP/1.1" 200 22244
+"GET /property_management_dashboard/?property=3 HTTP/1.1" 200 35664
+"GET /property_detail/12/issues/ HTTP/1.1" 200 30232
+"GET /property_management_dashboard/?property=12 HTTP/1.1" 200 35664
+"GET /property_detail/12/open-invoices/ HTTP/1.1" 200 22506
+"GET /property_management_dashboard/?property=12 HTTP/1.1" 200 35664
+"GET /property_detail/12/lease-renewals/ HTTP/1.1" 200 22182
+"GET /property_management_dashboard/?property=12 HTTP/1.1" 200 35664
+"GET /property_detail/12/lease/ HTTP/1.1" 200 22220
+"GET /property_management_dashboard/?property=12 HTTP/1.1" 200 35664
+"GET /property_detail/1/tenant/ HTTP/1.1" 200 29862
+"GET /property_management_dashboard/?property=1 HTTP/1.1" 200 35664
+"GET /property_detail/1/lease/ HTTP/1.1" 200 24330
+"GET /static/lease_agreements/Palikaridi%20-%20Lease%20Agreement.pdf HTTP/1.1" 200 4609313
+"GET /property_management_dashboard/?property=1 HTTP/1.1" 200 35664
+"GET /property_detail/1/open-invoices/ HTTP/1.1" 200 26386
+"GET /property_management_dashboard/?property=1 HTTP/1.1" 200 35664
+"GET /property_detail/1/lease-renewals/ HTTP/1.1" 200 22667
+"GET /property_management_dashboard/?property=1 HTTP/1.1" 200 35664
+"GET /property_detail/1/valuation/ HTTP/1.1" 200 25557
+"GET /property_management_dashboard/?property=1 HTTP/1.1" 200 35664

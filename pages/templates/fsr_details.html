@@ -40,6 +40,16 @@
                 {% csrf_token %}
                 <input type="hidden" name="issues_id" value="{{ isresults.issues_id }}">
                 <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                <!-- Hidden fields to preserve return parameters for status changes -->
+                {% if request.GET.from %}
+                    <input type="hidden" name="from" value="{{ request.GET.from }}">
+                {% endif %}
+                {% if request.GET.property_id %}
+                    <input type="hidden" name="property_id" value="{{ request.GET.property_id }}">
+                {% endif %}
+                {% if request.GET.box_type %}
+                    <input type="hidden" name="box_type" value="{{ request.GET.box_type }}">
+                {% endif %}
                 <div class="form-row">
                     <div class="form-group col-md-3">
                         <label for="prop_name"><strong>Property Name</strong></label>
@@ -90,6 +100,16 @@
             <form action="{% url 'fsr_comment_add' isresults.issues_id %}" method="post">
                 {% csrf_token %}
                 <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                <!-- Hidden fields to preserve return parameters -->
+                {% if request.GET.from %}
+                    <input type="hidden" name="from" value="{{ request.GET.from }}">
+                {% endif %}
+                {% if request.GET.property_id %}
+                    <input type="hidden" name="property_id" value="{{ request.GET.property_id }}">
+                {% endif %}
+                {% if request.GET.box_type %}
+                    <input type="hidden" name="box_type" value="{{ request.GET.box_type }}">
+                {% endif %}
                 <div class="form-row">
                     <div class="form-group col-md-10">
                         <input placeholder="Enter New Comment" type="text" id="issues_details_comment" class="form-control" name="issues_details_comment" maxlength="250" required>
@@ -124,9 +144,19 @@ function handleBackButton() {
     const urlParams = new URLSearchParams(window.location.search);
     const fromParam = urlParams.get('from');
     const originParam = urlParams.get('origin');
+    const propertyId = urlParams.get('property_id');
+    const boxType = urlParams.get('box_type');
     
     // Determine target URL
     let targetUrl;
+    
+    // NEW: Handle property_detail navigation
+    if (fromParam === 'property_detail' && propertyId && boxType) {
+        targetUrl = `/property_detail/${propertyId}/${boxType}/`;
+        console.log('🏠 Navigating back to Property Detail:', targetUrl);
+        window.location.href = targetUrl;
+        return;
+    }
     
     // If coming from add form, go back to fsr
     if (fromParam === 'fsr_add' && originParam === 'fsr') {

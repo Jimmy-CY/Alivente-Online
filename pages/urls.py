@@ -49,17 +49,7 @@ urlpatterns = [
     path('finance_pl_act/', views.finance_pl_act, name='finance_pl_act'),
     # Property Dashboard
     path('property_management_dashboard/', views.property_management_dashboard, name='property_management_dashboard'),
-    # Individual property function URLs (replace with your actual implementations)
-    #path('properties/tenant/<str:property_id>/', views.property_tenant, name='property_tenant'),
-    #path('properties/expenses/actual/<str:property_id>/', views.property_actual_expenses, name='property_actual_expenses'),
-    #path('properties/issues/<str:property_id>/', views.property_issues, name='property_issues'),
-    #path('properties/valuations/<str:property_id>/', views.property_valuations, name='property_valuations'),
-    #path('properties/profit-loss/<str:property_id>/', views.property_profit_loss, name='property_profit_loss'),
-    #path('properties/revenues/<str:property_id>/', views.property_revenues, name='property_revenues'),
-    #path('properties/expenses/<str:property_id>/', views.property_expenses, name='property_expenses'),
-    #path('properties/invoices/open/<str:property_id>/', views.property_open_invoices, name='property_open_invoices'),
-    #path('properties/lease-renewals/<str:property_id>/', views.property_lease_renewals, name='property_lease_renewals'),
-    #path('properties/title-deed/<str:property_id>/', views.property_title_deed, name='property_title_deed'),
+    path('property_detail/<int:property_id>/<str:box_type>/', views.property_detail, name='property_detail'),
     
     #
     # Finance
