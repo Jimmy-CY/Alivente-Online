@@ -6193,3 +6193,39 @@ Watching for file changes with StatReloader
 "GET /property_management_dashboard/?property=1 HTTP/1.1" 200 35664
 "GET /property_detail/1/valuation/ HTTP/1.1" 200 25557
 "GET /property_management_dashboard/?property=1 HTTP/1.1" 200 35664
+Watching for file changes with StatReloader
+"GET /finance/ HTTP/1.1" 200 10659
+"GET /finance_revenue/ HTTP/1.1" 200 22186
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 7793
+"GET /property_management_dashboard/ HTTP/1.1" 200 35664
+"GET /property_detail/2/title-deed/ HTTP/1.1" 200 24289
+"GET /property_management_dashboard/?property=2 HTTP/1.1" 200 35664
+"GET /property_detail/2/property-report/ HTTP/1.1" 200 29212
+"GET /property_management_dashboard/?property=2 HTTP/1.1" 200 35664
+"GET /property_detail/2/tenant/ HTTP/1.1" 200 31530
+"GET /property_management_dashboard/?property=2 HTTP/1.1" 200 35664
+"GET /property_detail/2/lease/ HTTP/1.1" 200 26046
+"GET /property_management_dashboard/?property=2 HTTP/1.1" 200 35664
+"GET /property_detail/2/open-invoices/ HTTP/1.1" 200 28115
+"GET /property_management_dashboard/?property=2 HTTP/1.1" 200 35664
+"GET /property_detail/2/lease-renewals/ HTTP/1.1" 200 24316
+"GET /property_management_dashboard/?property=2 HTTP/1.1" 200 35664
+"GET /property_detail/2/issues/ HTTP/1.1" 200 31992
+"GET /property_management_dashboard/?property=2 HTTP/1.1" 200 35664
+"GET /property_detail/2/valuation/ HTTP/1.1" 200 27286
+"GET /property_management_dashboard/?property=2 HTTP/1.1" 200 35664
+"GET /property_detail/2/revenues/ HTTP/1.1" 200 30527
+"GET /property_management_dashboard/?property=2 HTTP/1.1" 200 35664
+"GET /property_detail/7/revenues/ HTTP/1.1" 200 29145
+"GET /finance/ HTTP/1.1" 200 10659
+"GET /finance_revenue/ HTTP/1.1" 200 22186
+"GET /property_management_dashboard/ HTTP/1.1" 200 35664
+"GET /property_detail/5/revenues/ HTTP/1.1" 200 30547
+"GET /finance/ HTTP/1.1" 200 10659
+"GET /finance_revenue/ HTTP/1.1" 200 22186
+"GET /property_management_dashboard/ HTTP/1.1" 200 35664
+"GET /property_detail/2/revenues/ HTTP/1.1" 200 30527
+"GET /property_management_dashboard/?property=2 HTTP/1.1" 200 35664
+"GET /property_detail/1/revenues/ HTTP/1.1" 200 30527

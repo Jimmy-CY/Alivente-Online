@@ -700,12 +700,112 @@
                     {% elif box_type == 'revenues' %}
                         <!-- Revenues Content -->
                         <div class="revenues-section">
-                            <h5><i class="fas fa-dollar-sign text-info"></i> Revenue Details</h5>
-                            <div class="alert alert-info mt-3">
-                                <i class="fas fa-info-circle"></i> Revenue details functionality will be implemented here.
-                                <br><strong>Property:</strong> {{ property.prop_name }}
-                                <br><strong>Property ID:</strong> {{ property.prop_id }}
-                            </div>
+                            <h5>
+                                <i class="fas fa-dollar-sign text-info"></i> Revenue Details
+                                {% if property_revenues and property_revenues|length > 0 %}
+                                    <span class="total-revenue-amount">
+                                        (Total Revenue: €{{ total_revenue_amount|floatformat:"0"|intcomma }})
+                                    </span>
+                                {% endif %}
+                            </h5>
+                            
+                            {% if property_revenues and property_revenues|length > 0 %}
+                                <!-- Revenue Table -->
+                                <div class="revenue-table-container mt-3">
+                                    <div class="table-responsive">
+                                        <table class="table table-striped table-hover revenue-table">
+                                            <thead class="table-dark">
+                                                <tr>
+                                                    <th scope="col" class="text-left">Revenue Line Type</th>
+                                                    <th scope="col" class="text-left">Revenue Type</th>
+                                                    <th scope="col" class="text-right">Amount</th>
+                                                    <th scope="col" class="text-center">Actions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for revenue in property_revenues %}
+                                                <tr>
+                                                    <td class="text-left">
+                                                        <strong>{{ revenue.revenue_line_types.revenue_line_types_name }}</strong>
+                                                    </td>
+                                                    <td class="text-left">
+                                                        {{ revenue.revenue_types.revenue_types_name }}
+                                                    </td>
+                                                    <td class="text-right">
+                                                        <span class="amount-display">€{{ revenue.revenue_amount|floatformat:"0"|intcomma }}</span>
+                                                    </td>
+                                                    <td class="text-center">
+                                                        {% if user.is_superuser %}
+                                                            <a href="{% url 'finance_revenue_edit' revenue.revenue_id %}" 
+                                                               class="btn btn-light action-btn">
+                                                                <i class="fas fa-edit"></i> Edit
+                                                            </a>
+                                                        {% else %}
+                                                            <span class="text-muted">-</span>
+                                                        {% endif %}
+                                                    </td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    
+                                    <!-- Revenue Summary -->
+                                    <div class="revenue-summary mt-3">
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <div class="summary-card revenue-count">
+                                                    <div class="summary-icon">
+                                                        <i class="fas fa-list"></i>
+                                                    </div>
+                                                    <div class="summary-content">
+                                                        <div class="summary-number">{{ property_revenues|length }}</div>
+                                                        <div class="summary-label">Revenue Items</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="summary-card revenue-total">
+                                                    <div class="summary-icon">
+                                                        <i class="fas fa-euro-sign"></i>
+                                                    </div>
+                                                    <div class="summary-content">
+                                                        <div class="summary-number">€{{ total_revenue_amount|floatformat:"0"|intcomma }}</div>
+                                                        <div class="summary-label">Total Revenue</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="summary-card revenue-average">
+                                                    <div class="summary-icon">
+                                                        <i class="fas fa-chart-bar"></i>
+                                                    </div>
+                                                    <div class="summary-content">
+                                                        <div class="summary-number">€{% widthratio total_revenue_amount property_revenues|length 1 %}</div>
+                                                        <div class="summary-label">Average per Item</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% else %}
+                                <!-- No Revenue Data -->
+                                <div class="no-revenue mt-4">
+                                    <div class="no-revenue-icon">
+                                        <i class="fas fa-dollar-sign"></i>
+                                    </div>
+                                    <h4>No Revenue Data</h4>
+                                    <p>No revenue information has been recorded for this property.</p>
+                                    {% if user.is_superuser %}
+                                        <div class="revenue-actions mt-3">
+                                            <a href="{% url 'finance_revenue_add' %}" class="btn btn-info">
+                                                <i class="fas fa-plus"></i> Add Revenue
+                                            </a>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            {% endif %}
                         </div>
 
                     {% elif box_type == 'open-invoices' %}
@@ -1543,6 +1643,110 @@
 
 .sub-message {
     font-style: italic;
+}
+
+/* Revenue Section Styles */
+.revenue-table-container {
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.revenue-table {
+    font-size: 0.95rem;
+    margin-bottom: 0;
+}
+
+.revenue-table th {
+    background-color: #343a40 !important;
+    color: white;
+    font-weight: 600;
+    border: none;
+    padding: 15px;
+}
+
+.revenue-table th.text-left {
+    text-align: left !important;
+}
+
+.revenue-table th.text-center {
+    text-align: center !important;
+}
+
+.revenue-table th.text-right {
+    text-align: right !important;
+}
+
+.revenue-table td {
+    vertical-align: middle;
+    padding: 12px 15px;
+    border-top: 1px solid #dee2e6;
+}
+
+.total-revenue-amount {
+    color: #28a745;
+    font-weight: 600;
+    font-size: 0.9em;
+}
+
+.revenue-summary {
+    padding: 20px;
+    background: #f8f9fa;
+    border-top: 1px solid #dee2e6;
+}
+
+.summary-card.revenue-count {
+    border-left: 4px solid #17a2b8;
+}
+
+.summary-card.revenue-total {
+    border-left: 4px solid #28a745;
+}
+
+.summary-card.revenue-average {
+    border-left: 4px solid #ffc107;
+}
+
+.summary-card.revenue-count .summary-icon {
+    color: #17a2b8;
+}
+
+.summary-card.revenue-total .summary-icon {
+    color: #28a745;
+}
+
+.summary-card.revenue-average .summary-icon {
+    color: #ffc107;
+}
+
+/* No Revenue State */
+.no-revenue {
+    text-align: center;
+    padding: 60px 20px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+}
+
+.no-revenue-icon i {
+    font-size: 4rem;
+    color: #6c757d;
+    margin-bottom: 20px;
+}
+
+.no-revenue h4 {
+    color: #6c757d;
+    font-weight: 600;
+    margin-bottom: 15px;
+}
+
+.no-revenue p {
+    color: #6c757d;
+    margin-bottom: 20px;
+}
+
+.revenue-actions {
+    margin-top: 20px;
 }
 
 /* Responsive Design */

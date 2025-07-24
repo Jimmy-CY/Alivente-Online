@@ -317,6 +317,10 @@ def property_detail(request, property_id, box_type):
     # Valuation data for this specific property
     property_valuation = None
     
+    # Revenue data for this specific property
+    property_revenues = None
+    total_revenue_amount = 0
+    
     if active_tenant:
         # Get all unpaid invoices for this tenant
         unpaid_invoices = invoices.objects.filter(
@@ -432,6 +436,14 @@ def property_detail(request, property_id, box_type):
         except prop_values.DoesNotExist:
             property_valuation = None
     
+    # Revenue logic - process when box_type is 'revenues'
+    if box_type == 'revenues':
+        # Get all revenue data for this property
+        property_revenues = property_obj.revenue_set.all().order_by('revenue_line_types__revenue_line_types_name', 'revenue_types__revenue_types_name')
+        
+        # Calculate total revenue amount
+        total_revenue_amount = sum(rev.revenue_amount for rev in property_revenues)
+    
     # Map box types to display names
     box_type_display_map = {
         'title-deed': 'Title Deed',
@@ -459,6 +471,8 @@ def property_detail(request, property_id, box_type):
         'unresolved_count': unresolved_count,
         'total_issues_count': total_issues_count,
         'property_valuation': property_valuation,
+        'property_revenues': property_revenues,
+        'total_revenue_amount': total_revenue_amount,
         'box_type': box_type,
         'box_type_display': box_type_display_map.get(box_type, box_type.title()),
         'today': timezone.now().date(),
