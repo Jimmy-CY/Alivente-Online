@@ -321,6 +321,15 @@ def property_detail(request, property_id, box_type):
     property_revenues = None
     total_revenue_amount = 0
     
+    # Budgeted expenses data for this specific property
+    property_budgeted_expenses = None
+    total_budgeted_expense_amount = 0
+    
+    # Actual expenses data for this specific property
+    property_actual_expenses = None
+    actual_expense_years = []
+    selected_actual_year = None
+    
     if active_tenant:
         # Get all unpaid invoices for this tenant
         unpaid_invoices = invoices.objects.filter(
@@ -444,6 +453,49 @@ def property_detail(request, property_id, box_type):
         # Calculate total revenue amount
         total_revenue_amount = sum(rev.revenue_amount for rev in property_revenues)
     
+    # Budgeted Expenses logic - process when box_type is 'budgeted-expenses'
+    if box_type == 'budgeted-expenses':
+        # Get all budgeted expense data for this property, sorted by expense line type
+        property_budgeted_expenses = property_obj.expense_set.all().order_by('expense_line_types__expense_line_types_name', 'expense_types__expense_types_name')
+        
+        # Calculate total budgeted expense amount
+        total_budgeted_expense_amount = sum(exp.expense_amount for exp in property_budgeted_expenses)
+    
+    # Actual Expenses logic - process when box_type is 'actual-expenses'
+    if box_type == 'actual-expenses':
+        from django.db.models import Q
+        
+        # Get selected year from request or default to current year
+        selected_actual_year = request.GET.get('year')
+        current_year = timezone.now().year
+        
+        # Get all years that have actual expenses for this property (approved and paid only)
+        actual_expense_years = list(
+            property_obj.act_expense_set.filter(
+                act_expense_approved='Yes',
+                act_expense_paid='Yes'
+            ).dates('act_expense_date', 'year', order='DESC').distinct()
+        )
+        actual_expense_years = [date.year for date in actual_expense_years]
+        
+        # Default to the latest year if no year selected
+        if not selected_actual_year and actual_expense_years:
+            selected_actual_year = actual_expense_years[0]
+        elif not selected_actual_year:
+            selected_actual_year = current_year
+        else:
+            selected_actual_year = int(selected_actual_year)
+        
+        # Get actual expenses for the selected year (only approved and paid)
+        property_actual_expenses = property_obj.act_expense_set.filter(
+            act_expense_date__year=selected_actual_year,
+            act_expense_approved='Yes',
+            act_expense_paid='Yes'
+        ).order_by('-act_expense_date')
+        
+        # Calculate total actual expenses amount
+        total_actual_expense_amount = sum(exp.act_expense_amount for exp in property_actual_expenses)
+    
     # Map box types to display names
     box_type_display_map = {
         'title-deed': 'Title Deed',
@@ -473,6 +525,12 @@ def property_detail(request, property_id, box_type):
         'property_valuation': property_valuation,
         'property_revenues': property_revenues,
         'total_revenue_amount': total_revenue_amount,
+        'property_budgeted_expenses': property_budgeted_expenses,
+        'total_budgeted_expense_amount': total_budgeted_expense_amount,
+        'property_actual_expenses': property_actual_expenses,
+        'actual_expense_years': actual_expense_years,
+        'selected_actual_year': selected_actual_year,
+        'total_actual_expense_amount': locals().get('total_actual_expense_amount', 0),
         'box_type': box_type,
         'box_type_display': box_type_display_map.get(box_type, box_type.title()),
         'today': timezone.now().date(),
