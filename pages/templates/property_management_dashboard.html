@@ -789,13 +789,6 @@ class PropertyDashboard {
             });
         });
 
-        // Tenant expansion
-        document.getElementById('tenant').addEventListener('click', () => {
-            if (this.selectedProperty) {
-                this.toggleTenantExpansion();
-            }
-        });
-
         // Window resize
         window.addEventListener('resize', () => {
             setTimeout(() => this.positionElements(), 100);
@@ -919,11 +912,19 @@ class PropertyDashboard {
 
         element.classList.add('clicked');
         
-        // Redirect to property detail page with property_id and box_type
-        setTimeout(() => {
-            this.redirectToPropertyDetail(this.selectedProperty, boxType);
-            element.classList.remove('clicked');
-        }, 500); // Reduced delay since we're not showing loading message
+        // Special handling for Profit & Loss - redirect to dedicated dashboard
+        if (boxType === 'profit-loss') {
+            setTimeout(() => {
+                this.redirectToProfitLossDashboard(this.selectedProperty);
+                element.classList.remove('clicked');
+            }, 500);
+        } else {
+            // Standard redirect to property detail page
+            setTimeout(() => {
+                this.redirectToPropertyDetail(this.selectedProperty, boxType);
+                element.classList.remove('clicked');
+            }, 500);
+        }
     }
 
     handleSubSpokeClick(element) {
@@ -951,6 +952,13 @@ class PropertyDashboard {
     redirectToPropertyDetail(propertyId, boxType) {
         // Construct URL with property_id and box_type as path parameters
         const url = `/property_detail/${propertyId}/${boxType}/`;
+        
+        window.location.href = url;
+    }
+
+    redirectToProfitLossDashboard(propertyId) {
+        // Construct URL for the dedicated Profit & Loss dashboard
+        const url = `/property/${propertyId}/profit-loss/`;
         
         window.location.href = url;
     }

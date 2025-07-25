@@ -24,7 +24,23 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.static import serve
 from . import forms
 from .forms import PropForm, TenantForm, PettyForm, InvoicesForm, IssuesForm, DetailsForm, SupplierForm, ValuesForm, RevenueTypesForm, RevenueLineForm, RevenueForm, ExpenseTypesForm, ExpenseLineForm, ExpenseForm, ActExpenseForm 
-from .models import props, petty, issues, issues_details, tenant, invoices, supplier, prop_values, revenue_types, revenue_line_types, revenue, expense_types, expense_line_types, expense, act_expense
+from .models import (
+    props,
+    petty,
+    issues,
+    issues_details, 
+    tenant, 
+    invoices,
+    supplier,
+    prop_values,
+    revenue_types,
+    revenue_line_types,
+    revenue,
+    expense_types,
+    expense_line_types,
+    expense,
+    act_expense,
+    )
 from collections import defaultdict
 from datetime import date, datetime, timedelta
 from urllib.parse import urlparse, parse_qs
@@ -537,6 +553,158 @@ def property_detail(request, property_id, box_type):
     }
     
     return render(request, 'property_detail.html', context)
+
+@login_required
+def dashboard_pl(request, property_id):
+    """
+    Dedicated view for Profit & Loss dashboard
+    """
+    property_obj = get_object_or_404(props, prop_id=property_id)
+    
+    from django.db.models import Sum, Q
+    from collections import defaultdict
+    
+    # Get selected year from request
+    selected_year = request.GET.get('year', 'budget')
+    
+    # Get available years for this property (from actual expenses only since revenues/expenses are budget data)
+    actual_expense_years_obj = set(property_obj.act_expense_set.filter(
+        act_expense_approved='Yes',
+        act_expense_paid='Yes'
+    ).dates('act_expense_date', 'year', order='DESC').distinct())
+    
+    # Convert to integers and sort
+    available_years = sorted([date.year for date in actual_expense_years_obj], reverse=True)
+    
+    # Set display name for selected year
+    if selected_year == 'budget':
+        selected_year_display = 'Budget'
+    else:
+        try:
+            selected_year = int(selected_year)
+            selected_year_display = str(selected_year)
+        except (ValueError, TypeError):
+            selected_year = 'budget'
+            selected_year_display = 'Budget'
+    
+    # Get revenue and expense line types - using correct model names
+    revenue_line_types_queryset = revenue_line_types.objects.all().order_by('revenue_line_types_name')
+    expense_line_types_queryset = expense_line_types.objects.all().order_by('expense_line_types_name')
+    
+    # Initialize totals dictionaries
+    property_revenue_totals = {}
+    property_expense_totals = {}
+    
+    # Initialize monthly totals
+    months = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
+    property_revenue_total = {month: 0 for month in months}
+    property_revenue_total['year'] = 0
+    property_expense_total = {month: 0 for month in months}
+    property_expense_total['year'] = 0
+    property_actual_expense_total = {month: 0 for month in months}
+    property_actual_expense_total['year'] = 0
+    
+    # Process revenues for this property (using monthly fields)
+    for line_type in revenue_line_types_queryset:
+        line_totals = {month: 0 for month in months}
+        line_totals['total'] = 0
+        
+        # Get revenues for this line type and property
+        revenues = property_obj.revenue_set.filter(
+            revenue_line_types=line_type
+        )
+        
+        # Sum revenues by month using the monthly fields
+        for rev in revenues:
+            line_totals['jan'] += rev.revenue_jan or 0
+            line_totals['feb'] += rev.revenue_feb or 0
+            line_totals['mar'] += rev.revenue_mar or 0
+            line_totals['apr'] += rev.revenue_apr or 0
+            line_totals['may'] += rev.revenue_may or 0
+            line_totals['jun'] += rev.revenue_jun or 0
+            line_totals['jul'] += rev.revenue_jul or 0
+            line_totals['aug'] += rev.revenue_aug or 0
+            line_totals['sep'] += rev.revenue_sep or 0
+            line_totals['oct'] += rev.revenue_oct or 0
+            line_totals['nov'] += rev.revenue_nov or 0
+            line_totals['dec'] += rev.revenue_dec or 0
+        
+        # Calculate total for this line type
+        line_totals['total'] = sum(line_totals[month] for month in months)
+        
+        property_revenue_totals[line_type.revenue_line_types_id] = line_totals
+        
+        # Add to property totals
+        for month in months:
+            property_revenue_total[month] += line_totals[month]
+        property_revenue_total['year'] += line_totals['total']
+    
+    # Process budgeted expenses for this property (using monthly fields)
+    for line_type in expense_line_types_queryset:
+        line_totals = {month: 0 for month in months}
+        line_totals['total'] = 0
+        
+        # Get expenses for this line type and property
+        expenses = property_obj.expense_set.filter(
+            expense_line_types=line_type
+        )
+        
+        # Sum expenses by month using the monthly fields
+        for exp in expenses:
+            # Your expense model has monthly fields
+            line_totals['jan'] += exp.expense_jan or 0
+            line_totals['feb'] += exp.expense_feb or 0
+            line_totals['mar'] += exp.expense_mar or 0
+            line_totals['apr'] += exp.expense_apr or 0
+            line_totals['may'] += exp.expense_may or 0
+            line_totals['jun'] += exp.expense_jun or 0
+            line_totals['jul'] += exp.expense_jul or 0
+            line_totals['aug'] += exp.expense_aug or 0
+            line_totals['sep'] += exp.expense_sep or 0
+            line_totals['oct'] += exp.expense_oct or 0
+            line_totals['nov'] += exp.expense_nov or 0
+            line_totals['dec'] += exp.expense_dec or 0
+        
+        # Calculate total for this line type
+        line_totals['total'] = sum(line_totals[month] for month in months)
+        
+        property_expense_totals[line_type.expense_line_types_id] = line_totals
+        
+        # Add to property totals
+        for month in months:
+            property_expense_total[month] += line_totals[month]
+        property_expense_total['year'] += line_totals['total']
+    
+    # Process actual expenses for this property (only if not budget view)
+    if selected_year != 'budget':
+        actual_expenses = property_obj.act_expense_set.filter(
+            act_expense_date__year=selected_year,
+            act_expense_approved='Yes',
+            act_expense_paid='Yes'
+        ).values('act_expense_date', 'act_expense_amount')
+        
+        # Sum actual expenses by month
+        for exp in actual_expenses:
+            month_name = months[exp['act_expense_date'].month - 1]
+            property_actual_expense_total[month_name] += exp['act_expense_amount']
+            property_actual_expense_total['year'] += exp['act_expense_amount']
+    
+    context = {
+        'property': property_obj,
+        'available_years': available_years,
+        'selected_year': selected_year,
+        'selected_year_display': selected_year_display,
+        'revenue_line_types': revenue_line_types_queryset,  # Updated variable name
+        'expense_line_types': expense_line_types_queryset,  # Updated variable name
+        'property_revenue_totals': property_revenue_totals,
+        'property_expense_totals': property_expense_totals,
+        'property_revenue_total': property_revenue_total,
+        'property_expense_total': property_expense_total,
+        'property_actual_expense_total': property_actual_expense_total,
+        'today': timezone.now().date(),
+    }
+    
+    return render(request, 'dashboard_pl.html', context)
 
 ### FINANCE ###
 @login_required

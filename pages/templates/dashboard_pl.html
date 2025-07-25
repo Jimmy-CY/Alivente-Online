@@ -1,0 +1,650 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+{% load custom_filters %}
+
+{% block title %}
+{{ property.prop_name }} - Profit & Loss Statement
+{% endblock %}
+
+{% block extra_css %}
+<style>
+.card {
+    transition: transform 0.2s ease-in-out;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+/* Profit & Loss Table Styles */
+.profit-loss-table-container {
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.profit-loss-table {
+    font-size: 0.85rem;
+    margin-bottom: 0;
+    table-layout: fixed;
+    width: 100%;
+}
+
+.profit-loss-table thead th {
+    position: sticky;
+    top: 0;
+    background-color: #f8f9fa;
+    z-index: 10;
+    border-bottom: 2px solid #dee2e6;
+    padding: 8px 4px;
+    font-size: 0.8rem;
+}
+
+.profit-loss-table td, .profit-loss-table th {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding: 4px 6px;
+    border: 1px solid #dee2e6;
+}
+
+/* Column Widths for P&L Table */
+.profit-loss-table th:first-child,
+.profit-loss-table td:first-child {
+    width: 150px;
+    min-width: 150px;
+    max-width: 150px;
+    text-align: left;
+}
+
+.profit-loss-table th:not(:first-child),
+.profit-loss-table td:not(:first-child) {
+    width: 70px;
+    min-width: 70px;
+    max-width: 70px;
+    text-align: right;
+}
+
+.profit-loss-table th:last-child,
+.profit-loss-table td:last-child,
+.profit-loss-table th:nth-last-child(2),
+.profit-loss-table td:nth-last-child(2) {
+    width: 80px;
+    min-width: 80px;
+    max-width: 80px;
+}
+
+/* Section Headers */
+.profit-loss-table .section-header td {
+    background-color: #17a2b8 !important;
+    color: white !important;
+    font-weight: bold;
+    text-align: center;
+}
+
+/* Year Selector Styles */
+.year-selector .btn-group {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.year-selector .dropdown-toggle {
+    border-radius: 6px;
+    padding: 8px 16px;
+    font-weight: 500;
+}
+
+.year-selector .dropdown-menu {
+    border-radius: 6px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    border: none;
+}
+
+.year-selector .dropdown-item {
+    padding: 8px 16px;
+    transition: all 0.2s ease;
+}
+
+.year-selector .dropdown-item:hover {
+    background-color: #f8f9fa;
+    color: #17a2b8;
+}
+
+.year-selector .dropdown-item.active {
+    background-color: #17a2b8 !important;
+    color: white !important;
+}
+
+/* Financial Indicators Section */
+.roi-section {
+    margin-top: 20px;
+    padding: 20px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+}
+
+.roi-section .section-title {
+    margin-bottom: 15px;
+    display: inline-block;
+}
+
+.roi-section > div {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.roi-section > div > div {
+    background-color: white;
+    padding: 10px 15px;
+    border-radius: 6px;
+    border: 1.5px solid #dee2e6;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease;
+    min-width: 200px;
+    flex: 1 1 calc(33.333% - 10px);
+}
+
+.roi-section > div > div:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+}
+
+.roi-section .font-weight-bold {
+    font-size: 0.9rem;
+    color: #495057;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+    .profit-loss-table {
+        font-size: 0.75rem;
+    }
+    
+    .profit-loss-table td, .profit-loss-table th {
+        padding: 3px 4px;
+    }
+    
+    .profit-loss-table th:first-child,
+    .profit-loss-table td:first-child {
+        width: 120px;
+        min-width: 120px;
+        max-width: 120px;
+    }
+    
+    .roi-section > div > div {
+        flex: 1 1 calc(50% - 10px);
+        min-width: 180px;
+    }
+}
+
+@media (max-width: 992px) {
+    .profit-loss-table {
+        font-size: 0.7rem;
+    }
+    
+    .profit-loss-table th:first-child,
+    .profit-loss-table td:first-child {
+        width: 100px;
+        min-width: 100px;
+        max-width: 100px;
+    }
+    
+    .profit-loss-table th:not(:first-child),
+    .profit-loss-table td:not(:first-child) {
+        width: 60px;
+        min-width: 60px;
+        max-width: 60px;
+    }
+}
+
+@media (max-width: 768px) {
+    .profit-loss-table {
+        font-size: 0.65rem;
+    }
+    
+    .d-flex.justify-content-between {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .d-flex.justify-content-between .year-selector {
+        align-self: flex-end;
+    }
+    
+    .roi-section > div > div {
+        flex: 1 1 100%;
+        min-width: unset;
+    }
+}
+
+@media (max-width: 576px) {
+    .profit-loss-table td, .profit-loss-table th {
+        padding: 2px 3px;
+    }
+    
+    .roi-section {
+        padding: 15px;
+    }
+    
+    .roi-section > div > div {
+        padding: 8px 12px;
+    }
+}
+
+/* Table Overflow Handling */
+.table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    -ms-overflow-style: -ms-autohiding-scrollbar;
+}
+
+.table-responsive::-webkit-scrollbar {
+    height: 8px;
+}
+
+.table-responsive::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.table-responsive::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+}
+
+.table-responsive::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+/* Print Styles */
+@media print {
+    .year-selector {
+        display: none;
+    }
+    
+    .profit-loss-table {
+        font-size: 10px;
+    }
+    
+    .roi-section {
+        page-break-inside: avoid;
+    }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <!-- Header Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="mb-1">{{ property.prop_name }} - Profit & Loss Statement</h2>
+                </div>
+                <div>
+                    <a href="{% url 'property_management_dashboard' %}?property={{ property.prop_id }}" class="btn btn-info">
+                        <i class="fas fa-home"></i> Property Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profit & Loss Content -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="profit-loss-section">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h5><i class="fas fa-chart-pie text-info"></i> Profit & Loss Statement</h5>
+                            
+                            <!-- Year Selector -->
+                            <div class="year-selector">
+                                <div class="btn-group">
+                                    <button type="button" class="btn btn-info dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                        {{ selected_year_display }}
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li>
+                                            <a class="dropdown-item {% if selected_year == 'budget' %}active bg-info text-white{% endif %}" 
+                                               href="?year=budget">
+                                                Budget
+                                            </a>
+                                        </li>
+                                        {% for year in available_years %}
+                                            <li>
+                                                <a class="dropdown-item {% if year == selected_year %}active bg-info text-white{% endif %}" 
+                                                   href="?year={{ year }}">
+                                                    {{ year }}
+                                                </a>
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Profit & Loss Table -->
+                        <div class="profit-loss-table-container mt-3">
+                            <div class="table-responsive">
+                                <table class="table table-sm table-bordered profit-loss-table">
+                                    <thead class="thead-light">
+                                        <tr>
+                                            <th></th>
+                                            <th class="text-center">Jan</th>
+                                            <th class="text-center">Feb</th>
+                                            <th class="text-center">Mar</th>
+                                            <th class="text-center">Apr</th>
+                                            <th class="text-center">May</th>
+                                            <th class="text-center">Jun</th>
+                                            <th class="text-center">Jul</th>
+                                            <th class="text-center">Aug</th>
+                                            <th class="text-center">Sep</th>
+                                            <th class="text-center">Oct</th>
+                                            <th class="text-center">Nov</th>
+                                            <th class="text-center">Dec</th>
+                                            <th class="text-center">Total</th>
+                                            <th class="text-center">Monthly</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- REVENUE SECTION -->
+                                        <tr class="section-header">
+                                            <td class="font-weight-bold" style="background-color: #17a2b8; color: white;">REVENUE</td>
+                                            <td colspan="14" style="background-color: #17a2b8;"></td>
+                                        </tr>
+                                        {% for line_type in revenue_line_types %}
+                                        {% with line_totals=property_revenue_totals|get_item:line_type.revenue_line_types_id %}
+                                        {% if line_totals.jan or line_totals.feb or line_totals.mar or line_totals.apr or line_totals.may or line_totals.jun or line_totals.jul or line_totals.aug or line_totals.sep or line_totals.oct or line_totals.nov or line_totals.dec or line_totals.total %}
+                                        <tr>
+                                            <td>{{ line_type.revenue_line_types_name }}</td>
+                                            <td class="text-right">{{ line_totals.jan|default:0|floatformat:"0"|intcomma }}</td>
+                                            <td class="text-right">{{ line_totals.feb|default:0|floatformat:"0"|intcomma }}</td>
+                                            <td class="text-right">{{ line_totals.mar|default:0|floatformat:"0"|intcomma }}</td>
+                                            <td class="text-right">{{ line_totals.apr|default:0|floatformat:"0"|intcomma }}</td>
+                                            <td class="text-right">{{ line_totals.may|default:0|floatformat:"0"|intcomma }}</td>
+                                            <td class="text-right">{{ line_totals.jun|default:0|floatformat:"0"|intcomma }}</td>
+                                            <td class="text-right">{{ line_totals.jul|default:0|floatformat:"0"|intcomma }}</td>
+                                            <td class="text-right">{{ line_totals.aug|default:0|floatformat:"0"|intcomma }}</td>
+                                            <td class="text-right">{{ line_totals.sep|default:0|floatformat:"0"|intcomma }}</td>
+                                            <td class="text-right">{{ line_totals.oct|default:0|floatformat:"0"|intcomma }}</td>
+                                            <td class="text-right">{{ line_totals.nov|default:0|floatformat:"0"|intcomma }}</td>
+                                            <td class="text-right">{{ line_totals.dec|default:0|floatformat:"0"|intcomma }}</td>
+                                            <td class="text-right font-weight-bold">{{ line_totals.total|default:0|floatformat:"0"|intcomma }}</td>
+                                            <td class="text-right">{{ line_totals.total|divide:12|default:0|floatformat:"0"|intcomma }}</td>
+                                        </tr>
+                                        {% endif %}
+                                        {% endwith %}
+                                        {% endfor %}
+                                        <tr class="font-weight-bold" style="background-color: #f8f9fa">
+                                            <td>TOTAL REVENUE:</td>
+                                            <td class="text-right">{{ property_revenue_total.jan|default:0|floatformat:"0"|intcomma }}</td>
+                                            <td class="text-right">{{ property_revenue_total.feb|default:0|floatformat:"0"|intcomma }}</td>
+                                            <td class="text-right">{{ property_revenue_total.mar|default:0|floatformat:"0"|intcomma }}</td>
+                                            <td class="text-right">{{ property_revenue_total.apr|default:0|floatformat:"0"|intcomma }}</td>
+                                            <td class="text-right">{{ property_revenue_total.may|default:0|floatformat:"0"|intcomma }}</td>
+                                            <td class="text-right">{{ property_revenue_total.jun|default:0|floatformat:"0"|intcomma }}</td>
+                                            <td class="text-right">{{ property_revenue_total.jul|default:0|floatformat:"0"|intcomma }}</td>
+                                            <td class="text-right">{{ property_revenue_total.aug|default:0|floatformat:"0"|intcomma }}</td>
+                                            <td class="text-right">{{ property_revenue_total.sep|default:0|floatformat:"0"|intcomma }}</td>
+                                            <td class="text-right">{{ property_revenue_total.oct|default:0|floatformat:"0"|intcomma }}</td>
+                                            <td class="text-right">{{ property_revenue_total.nov|default:0|floatformat:"0"|intcomma }}</td>
+                                            <td class="text-right">{{ property_revenue_total.dec|default:0|floatformat:"0"|intcomma }}</td>
+                                            <td class="text-right">{{ property_revenue_total.year|default:0|floatformat:"0"|intcomma }}</td>
+                                            <td class="text-right">{{ property_revenue_total.year|divide:12|default:0|floatformat:"0"|intcomma }}</td>
+                                        </tr>
+                                        
+                                        <!-- EXPENSES SECTION -->
+                                        <tr class="section-header">
+                                            <td class="font-weight-bold" style="background-color: #17a2b8; color: white;">EXPENSES</td>
+                                            <td colspan="14" style="background-color: #17a2b8;"></td>
+                                        </tr>
+
+                                        <!-- ACTUAL EXPENSES ROW (only if not Budget view) -->
+                                        {% if selected_year != 'budget' and property_actual_expense_total.year > 0 %}
+                                        <tr style="background-color: #f8f9fa;">
+                                            <td>Actual Expenses</td>
+                                            <td class="text-right">{{ property_actual_expense_total.jan|default:0|floatformat:"0"|intcomma }}</td>
+                                            <td class="text-right">{{ property_actual_expense_total.feb|default:0|floatformat:"0"|intcomma }}</td>
+                                            <td class="text-right">{{ property_actual_expense_total.mar|default:0|floatformat:"0"|intcomma }}</td>
+                                            <td class="text-right">{{ property_actual_expense_total.apr|default:0|floatformat:"0"|intcomma }}</td>
+                                            <td class="text-right">{{ property_actual_expense_total.may|default:0|floatformat:"0"|intcomma }}</td>
+                                            <td class="text-right">{{ property_actual_expense_total.jun|default:0|floatformat:"0"|intcomma }}</td>
+                                            <td class="text-right">{{ property_actual_expense_total.jul|default:0|floatformat:"0"|intcomma }}</td>
+                                            <td class="text-right">{{ property_actual_expense_total.aug|default:0|floatformat:"0"|intcomma }}</td>
+                                            <td class="text-right">{{ property_actual_expense_total.sep|default:0|floatformat:"0"|intcomma }}</td>
+                                            <td class="text-right">{{ property_actual_expense_total.oct|default:0|floatformat:"0"|intcomma }}</td>
+                                            <td class="text-right">{{ property_actual_expense_total.nov|default:0|floatformat:"0"|intcomma }}</td>
+                                            <td class="text-right">{{ property_actual_expense_total.dec|default:0|floatformat:"0"|intcomma }}</td>
+                                            <td class="text-right font-weight-bold">{{ property_actual_expense_total.year|default:0|floatformat:"0"|intcomma }}</td>
+                                            <td class="text-right">{{ property_actual_expense_total.year|divide:12|default:0|floatformat:"0"|intcomma }}</td>
+                                        </tr>
+                                        {% endif %}
+
+                                        <!-- BUDGETED EXPENSES -->
+                                        {% for line_type in expense_line_types %}
+                                        {% with line_totals=property_expense_totals|get_item:line_type.expense_line_types_id %}
+                                        {% if line_totals.jan or line_totals.feb or line_totals.mar or line_totals.apr or line_totals.may or line_totals.jun or line_totals.jul or line_totals.aug or line_totals.sep or line_totals.oct or line_totals.nov or line_totals.dec or line_totals.total %}
+                                        <tr>
+                                            <td>{{ line_type.expense_line_types_name }}</td>
+                                            <td class="text-right">{{ line_totals.jan|default:0|floatformat:"0"|intcomma }}</td>
+                                            <td class="text-right">{{ line_totals.feb|default:0|floatformat:"0"|intcomma }}</td>
+                                            <td class="text-right">{{ line_totals.mar|default:0|floatformat:"0"|intcomma }}</td>
+                                            <td class="text-right">{{ line_totals.apr|default:0|floatformat:"0"|intcomma }}</td>
+                                            <td class="text-right">{{ line_totals.may|default:0|floatformat:"0"|intcomma }}</td>
+                                            <td class="text-right">{{ line_totals.jun|default:0|floatformat:"0"|intcomma }}</td>
+                                            <td class="text-right">{{ line_totals.jul|default:0|floatformat:"0"|intcomma }}</td>
+                                            <td class="text-right">{{ line_totals.aug|default:0|floatformat:"0"|intcomma }}</td>
+                                            <td class="text-right">{{ line_totals.sep|default:0|floatformat:"0"|intcomma }}</td>
+                                            <td class="text-right">{{ line_totals.oct|default:0|floatformat:"0"|intcomma }}</td>
+                                            <td class="text-right">{{ line_totals.nov|default:0|floatformat:"0"|intcomma }}</td>
+                                            <td class="text-right">{{ line_totals.dec|default:0|floatformat:"0"|intcomma }}</td>
+                                            <td class="text-right font-weight-bold">{{ line_totals.total|default:0|floatformat:"0"|intcomma }}</td>
+                                            <td class="text-right">{{ line_totals.total|divide:12|default:0|floatformat:"0"|intcomma }}</td>
+                                        </tr>
+                                        {% endif %}
+                                        {% endwith %}
+                                        {% endfor %}
+                                        
+                                        <!-- TOTAL EXPENSES -->
+                                        <tr class="font-weight-bold" style="background-color: #f8f9fa">
+                                            <td>TOTAL EXPENSES:</td>
+                                            {% if selected_year != 'budget' %}
+                                                <td class="text-right">{{ property_expense_total.jan|add:property_actual_expense_total.jan|default:0|floatformat:"0"|intcomma }}</td>
+                                                <td class="text-right">{{ property_expense_total.feb|add:property_actual_expense_total.feb|default:0|floatformat:"0"|intcomma }}</td>
+                                                <td class="text-right">{{ property_expense_total.mar|add:property_actual_expense_total.mar|default:0|floatformat:"0"|intcomma }}</td>
+                                                <td class="text-right">{{ property_expense_total.apr|add:property_actual_expense_total.apr|default:0|floatformat:"0"|intcomma }}</td>
+                                                <td class="text-right">{{ property_expense_total.may|add:property_actual_expense_total.may|default:0|floatformat:"0"|intcomma }}</td>
+                                                <td class="text-right">{{ property_expense_total.jun|add:property_actual_expense_total.jun|default:0|floatformat:"0"|intcomma }}</td>
+                                                <td class="text-right">{{ property_expense_total.jul|add:property_actual_expense_total.jul|default:0|floatformat:"0"|intcomma }}</td>
+                                                <td class="text-right">{{ property_expense_total.aug|add:property_actual_expense_total.aug|default:0|floatformat:"0"|intcomma }}</td>
+                                                <td class="text-right">{{ property_expense_total.sep|add:property_actual_expense_total.sep|default:0|floatformat:"0"|intcomma }}</td>
+                                                <td class="text-right">{{ property_expense_total.oct|add:property_actual_expense_total.oct|default:0|floatformat:"0"|intcomma }}</td>
+                                                <td class="text-right">{{ property_expense_total.nov|add:property_actual_expense_total.nov|default:0|floatformat:"0"|intcomma }}</td>
+                                                <td class="text-right">{{ property_expense_total.dec|add:property_actual_expense_total.dec|default:0|floatformat:"0"|intcomma }}</td>
+                                                <td class="text-right">{{ property_expense_total.year|add:property_actual_expense_total.year|default:0|floatformat:"0"|intcomma }}</td>
+                                                <td class="text-right">{{ property_expense_total.year|add:property_actual_expense_total.year|divide:12|default:0|floatformat:"0"|intcomma }}</td>
+                                            {% else %}
+                                                <td class="text-right">{{ property_expense_total.jan|default:0|floatformat:"0"|intcomma }}</td>
+                                                <td class="text-right">{{ property_expense_total.feb|default:0|floatformat:"0"|intcomma }}</td>
+                                                <td class="text-right">{{ property_expense_total.mar|default:0|floatformat:"0"|intcomma }}</td>
+                                                <td class="text-right">{{ property_expense_total.apr|default:0|floatformat:"0"|intcomma }}</td>
+                                                <td class="text-right">{{ property_expense_total.may|default:0|floatformat:"0"|intcomma }}</td>
+                                                <td class="text-right">{{ property_expense_total.jun|default:0|floatformat:"0"|intcomma }}</td>
+                                                <td class="text-right">{{ property_expense_total.jul|default:0|floatformat:"0"|intcomma }}</td>
+                                                <td class="text-right">{{ property_expense_total.aug|default:0|floatformat:"0"|intcomma }}</td>
+                                                <td class="text-right">{{ property_expense_total.sep|default:0|floatformat:"0"|intcomma }}</td>
+                                                <td class="text-right">{{ property_expense_total.oct|default:0|floatformat:"0"|intcomma }}</td>
+                                                <td class="text-right">{{ property_expense_total.nov|default:0|floatformat:"0"|intcomma }}</td>
+                                                <td class="text-right">{{ property_expense_total.dec|default:0|floatformat:"0"|intcomma }}</td>
+                                                <td class="text-right">{{ property_expense_total.year|default:0|floatformat:"0"|intcomma }}</td>
+                                                <td class="text-right">{{ property_expense_total.year|divide:12|default:0|floatformat:"0"|intcomma }}</td>
+                                            {% endif %}
+                                        </tr>
+                                        
+                                        <!-- PROFIT SECTION -->
+                                        <tr class="section-header">
+                                            <td class="font-weight-bold" style="background-color: #17a2b8; color: white;">PROFIT</td>
+                                            <td colspan="14" style="background-color: #17a2b8;"></td>
+                                        </tr>
+                                        <tr class="font-weight-bold" style="background-color: #f8f9fa">
+                                            <td>NET PROFIT:</td>
+                                            {% if selected_year != 'budget' %}
+                                                <td class="text-right">{{ property_revenue_total.jan|subtract:property_expense_total.jan|subtract:property_actual_expense_total.jan|default:0|floatformat:"0"|intcomma }}</td>
+                                                <td class="text-right">{{ property_revenue_total.feb|subtract:property_expense_total.feb|subtract:property_actual_expense_total.feb|default:0|floatformat:"0"|intcomma }}</td>
+                                                <td class="text-right">{{ property_revenue_total.mar|subtract:property_expense_total.mar|subtract:property_actual_expense_total.mar|default:0|floatformat:"0"|intcomma }}</td>
+                                                <td class="text-right">{{ property_revenue_total.apr|subtract:property_expense_total.apr|subtract:property_actual_expense_total.apr|default:0|floatformat:"0"|intcomma }}</td>
+                                                <td class="text-right">{{ property_revenue_total.may|subtract:property_expense_total.may|subtract:property_actual_expense_total.may|default:0|floatformat:"0"|intcomma }}</td>
+                                                <td class="text-right">{{ property_revenue_total.jun|subtract:property_expense_total.jun|subtract:property_actual_expense_total.jun|default:0|floatformat:"0"|intcomma }}</td>
+                                                <td class="text-right">{{ property_revenue_total.jul|subtract:property_expense_total.jul|subtract:property_actual_expense_total.jul|default:0|floatformat:"0"|intcomma }}</td>
+                                                <td class="text-right">{{ property_revenue_total.aug|subtract:property_expense_total.aug|subtract:property_actual_expense_total.aug|default:0|floatformat:"0"|intcomma }}</td>
+                                                <td class="text-right">{{ property_revenue_total.sep|subtract:property_expense_total.sep|subtract:property_actual_expense_total.sep|default:0|floatformat:"0"|intcomma }}</td>
+                                                <td class="text-right">{{ property_revenue_total.oct|subtract:property_expense_total.oct|subtract:property_actual_expense_total.oct|default:0|floatformat:"0"|intcomma }}</td>
+                                                <td class="text-right">{{ property_revenue_total.nov|subtract:property_expense_total.nov|subtract:property_actual_expense_total.nov|default:0|floatformat:"0"|intcomma }}</td>
+                                                <td class="text-right">{{ property_revenue_total.dec|subtract:property_expense_total.dec|subtract:property_actual_expense_total.dec|default:0|floatformat:"0"|intcomma }}</td>
+                                                <td class="text-right">{{ property_revenue_total.year|subtract:property_expense_total.year|subtract:property_actual_expense_total.year|default:0|floatformat:"0"|intcomma }}</td>
+                                                <td class="text-right">{{ property_revenue_total.year|subtract:property_expense_total.year|subtract:property_actual_expense_total.year|divide:12|default:0|floatformat:"0"|intcomma }}</td>
+                                            {% else %}
+                                                <td class="text-right">{{ property_revenue_total.jan|subtract:property_expense_total.jan|default:0|floatformat:"0"|intcomma }}</td>
+                                                <td class="text-right">{{ property_revenue_total.feb|subtract:property_expense_total.feb|default:0|floatformat:"0"|intcomma }}</td>
+                                                <td class="text-right">{{ property_revenue_total.mar|subtract:property_expense_total.mar|default:0|floatformat:"0"|intcomma }}</td>
+                                                <td class="text-right">{{ property_revenue_total.apr|subtract:property_expense_total.apr|default:0|floatformat:"0"|intcomma }}</td>
+                                                <td class="text-right">{{ property_revenue_total.may|subtract:property_expense_total.may|default:0|floatformat:"0"|intcomma }}</td>
+                                                <td class="text-right">{{ property_revenue_total.jun|subtract:property_expense_total.jun|default:0|floatformat:"0"|intcomma }}</td>
+                                                <td class="text-right">{{ property_revenue_total.jul|subtract:property_expense_total.jul|default:0|floatformat:"0"|intcomma }}</td>
+                                                <td class="text-right">{{ property_revenue_total.aug|subtract:property_expense_total.aug|default:0|floatformat:"0"|intcomma }}</td>
+                                                <td class="text-right">{{ property_revenue_total.sep|subtract:property_expense_total.sep|default:0|floatformat:"0"|intcomma }}</td>
+                                                <td class="text-right">{{ property_revenue_total.oct|subtract:property_expense_total.oct|default:0|floatformat:"0"|intcomma }}</td>
+                                                <td class="text-right">{{ property_revenue_total.nov|subtract:property_expense_total.nov|default:0|floatformat:"0"|intcomma }}</td>
+                                                <td class="text-right">{{ property_revenue_total.dec|subtract:property_expense_total.dec|default:0|floatformat:"0"|intcomma }}</td>
+                                                <td class="text-right">{{ property_revenue_total.year|subtract:property_expense_total.year|default:0|floatformat:"0"|intcomma }}</td>
+                                                <td class="text-right">{{ property_revenue_total.year|subtract:property_expense_total.year|divide:12|default:0|floatformat:"0"|intcomma }}</td>
+                                            {% endif %}
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- FINANCIAL INDICATORS for specific property -->
+                        <div class="roi-section mt-3">
+                            <h6 class="section-title" style="background-color: #17a2b8; color: white; padding: 8px; border-radius: 4px; width: fit-content;">FINANCIAL INDICATORS</h6>
+                            
+                            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                                <!-- GROSS ROI -->
+                                <div style="background-color: #f8f9fa; padding: 8px; border-radius: 4px; width: fit-content; border: 1.5px solid #dee2e6;">
+                                    <span class="font-weight-bold">Gross ROI: 
+                                        {% with current_value=property.prop_values_set.first.prop_values_purchase_price %}
+                                        {% if current_value %}
+                                            {{ property_revenue_total.year|divide:current_value|multiply:100|floatformat:"2" }}%
+                                        {% else %}
+                                            0.00%
+                                        {% endif %}
+                                        {% endwith %}
+                                    </span>
+                                </div>
+                                
+                                <!-- NET ROI -->
+                                <div style="background-color: #f8f9fa; padding: 8px; border-radius: 4px; width: fit-content; border: 1.5px solid #dee2e6;">
+                                    <span class="font-weight-bold">Net ROI: 
+                                        {% with current_value=property.prop_values_set.first.prop_values_purchase_price %}
+                                        {% if current_value %}
+                                            {% if selected_year != 'budget' %}
+                                                {% with net_profit=property_revenue_total.year|subtract:property_expense_total.year|subtract:property_actual_expense_total.year|default:0 %}
+                                                    {{ net_profit|divide:current_value|multiply:100|floatformat:"2" }}%
+                                                {% endwith %}
+                                            {% else %}
+                                                {% with net_profit=property_revenue_total.year|subtract:property_expense_total.year|default:0 %}
+                                                    {{ net_profit|divide:current_value|multiply:100|floatformat:"2" }}%
+                                                {% endwith %}
+                                            {% endif %}
+                                        {% else %}
+                                            0.00%
+                                        {% endif %}
+                                        {% endwith %}
+                                    </span>
+                                </div>
+
+                                <!-- EXPENSE RATIO -->
+                                <div style="background-color: #f8f9fa; padding: 8px; border-radius: 4px; width: fit-content; border: 1.5px solid #dee2e6;">
+                                    <span class="font-weight-bold">Expenses to Revenue: 
+                                        {% if property_revenue_total.year %}
+                                            {% if selected_year != 'budget' %}
+                                                {% with total_expenses=property_expense_total.year|add:property_actual_expense_total.year|default:0 %}
+                                                    {{ total_expenses|divide:property_revenue_total.year|multiply:100|floatformat:"2" }}%
+                                                {% endwith %}
+                                            {% else %}
+                                                {{ property_expense_total.year|divide:property_revenue_total.year|multiply:100|floatformat:"2" }}%
+                                            {% endif %}
+                                        {% else %}
+                                            0.00%
+                                        {% endif %}
+                                    </span>
+                                </div>
+                                
+                                <!-- RENT PER SQ M -->
+                                <div style="background-color: #f8f9fa; padding: 8px; border-radius: 4px; width: fit-content; border: 1.5px solid #dee2e6;">
+                                    <span class="font-weight-bold">Rent (€/m<sup>2</sup>): 
+                                        {% if property_revenue_total.year and property.prop_floor_area %}
+                                            {{ property_revenue_total.year|divide:12|divide:property.prop_floor_area|floatformat:"2" }}
+                                        {% else %}
+                                            0.00
+                                        {% endif %}
+                                    </span>
+                                </div>
+
+                                <!-- VALUE INCREASE -->
+                                <div style="background-color: #f8f9fa; padding: 8px; border-radius: 4px; width: fit-content; border: 1.5px solid #dee2e6;">
+                                    <span class="font-weight-bold">% Value Increase: 
+                                        {% with prop_values=property.prop_values_set.first %}
+                                        {% if prop_values and prop_values.prop_values_purchase_price and prop_values.prop_values_current_value %}
+                                            {{ prop_values.prop_values_current_value|subtract:prop_values.prop_values_purchase_price|divide:prop_values.prop_values_purchase_price|multiply:100|floatformat:"2" }}%
+                                        {% elif prop_values and prop_values.prop_values_purchase_price %}
+                                            (Current value not set)
+                                        {% else %}
+                                            (Purchase price not set)
+                                        {% endif %}
+                                        {% endwith %}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Profit & Loss Year Selector Functions
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle Bootstrap dropdown (compatible with both v4 and v5)
+    if (typeof bootstrap !== 'undefined') {
+        const dropdownToggle = document.querySelector('.year-selector .dropdown-toggle');
+        if (dropdownToggle) {
+            new bootstrap.Dropdown(dropdownToggle);
+        }
+    }
+    
+    // Alternative jQuery handling for Bootstrap 4
+    if (typeof $ !== 'undefined') {
+        $('.year-selector .dropdown-toggle').dropdown();
+    }
+});
+
+// Function to handle year selection change for profit & loss
+function changeYearProfitLoss(year) {
+    const currentUrl = new URL(window.location.href);
+    currentUrl.searchParams.set('year', year);
+    window.location.href = currentUrl.toString();
+}
+</script>
+{% endblock %}

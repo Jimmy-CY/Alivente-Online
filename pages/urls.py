@@ -50,7 +50,8 @@ urlpatterns = [
     # Property Dashboard
     path('property_management_dashboard/', views.property_management_dashboard, name='property_management_dashboard'),
     path('property_detail/<int:property_id>/<str:box_type>/', views.property_detail, name='property_detail'),
-    
+    path('property/<int:property_id>/profit-loss/', views.dashboard_pl, name='dashboard_pl'),    
+
     #
     # Finance
     path('finance/', views.finance, name='finance'),
