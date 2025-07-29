@@ -29,15 +29,11 @@ Suppliers
 {% endfor %}
 
 <body>
-  <!-- Action Buttons -->
-  <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 20px;">
-    {% if user.is_superuser %}
+    <!-- Action Buttons -->
+    <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 20px;">
       <a href="{% url 'suppliers_add' %}" class="btn btn-info">Add New</a>
-    {% else %}
-      <span class="btn btn-secondary" style="opacity:0.6; cursor:not-allowed; pointer-events:none;">Add New</span>
-    {% endif %}
-    <a href="{% url 'home' %}" class="btn btn-info">Back</a>
-  </div>
+      <a href="{% url 'home' %}" class="btn btn-info">Back</a>
+    </div>
 
   <!-- Collapsible Filter Panel -->
   <div class="filter-panel" id="filterPanel">

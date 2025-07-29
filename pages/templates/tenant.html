@@ -149,19 +149,13 @@ Tenants
                   </button>
                 </td>
                 <td>
-                  {% if user.is_superuser %}
-                    {% if tresults.tenant_lease_agreement %}
-                      <button type="button" class="btn btn-light action-btn"
-                              onclick="viewLeaseAgreement('{{ tresults.tenant_lease_agreement.url }}', '{{ tresults.tenant_lease_agreement.name }}', '{{ tresults.tenant_name }}')">
-                        <a href="#" style="text-decoration: none;">View</a>
-                      </button>
-                    {% else %}
-                      <span class="text-muted">Unavailable</span>
-                    {% endif %}
-                  {% else %}
-                    <button type="button" class="btn btn-light action-btn" disabled style="opacity: 0.5;">
-                      <span style="color: #6c757d;">View</span>
+                  {% if tresults.tenant_lease_agreement %}
+                    <button type="button" class="btn btn-light action-btn"
+                            onclick="viewLeaseAgreement('{{ tresults.tenant_lease_agreement.url }}', '{{ tresults.tenant_lease_agreement.name }}', '{{ tresults.tenant_name }}')">
+                      <a href="#" style="text-decoration: none;">View</a>
                     </button>
+                  {% else %}
+                    <span class="text-muted">Unavailable</span>
                   {% endif %}
                 </td>
               </tr>
