@@ -70,6 +70,16 @@
           {% if user.is_authenticated %}
               {% if user.is_superuser %}
               <li class="nav-item">
+                  <a class="nav-link" href="{% url 'projects' %}">Projects</a>
+              </li>
+              {% else %}
+              <li class="nav-item">
+                  <span class="nav-link text-muted" style="cursor: default;">Projects</span>
+              </li>
+              {% endif %}
+
+              {% if user.is_superuser %}
+              <li class="nav-item">
                   <a class="nav-link" href="{% url 'finance' %}">Finance</a>
               </li>
               {% else %}

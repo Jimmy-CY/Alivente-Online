@@ -1,0 +1,281 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+Edit Project - {{ project.project_name }}
+{% endblock %}
+
+{% block content %}
+
+<h2><center>EDIT PROJECT - {{ project.project_name|upper }}</center></h2>
+<br/>
+
+{% for msg in messages %}
+  <div class="alert alert-secondary alert-dismissible fade show auto-dismiss" role="alert">
+    <strong></strong> <center>{{ msg }}</center>
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <script>
+    setTimeout(function() {
+      document.querySelectorAll('.auto-dismiss').forEach(alert => {
+        alert.classList.remove('show');
+        alert.classList.add('fade');
+        setTimeout(() => alert.remove(), 500);
+      });
+    }, 2000);
+  </script>
+{% endfor %}
+
+<!-- Action Buttons -->
+<div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 20px;">
+  <a href="{% url 'projects_detail' project.project_id %}" class="btn btn-warning">
+    <i class="fas fa-eye"></i> View Project
+  </a>
+  <a href="{% url 'projects' %}" class="btn btn-info">
+    <i class="fas fa-arrow-left"></i> Back to Projects
+  </a>
+</div>
+
+<!-- Edit Project Form -->
+<form method="post" id="projectForm">
+  {% csrf_token %}
+  
+  <div class="row">
+    <!-- Project Name -->
+    <div class="col-md-6">
+      <div class="form-group">
+        <label for="project_name">
+          <i class="fas fa-project-diagram"></i> Project Name <span style="color: red;">*</span>
+        </label>
+        <input type="text" 
+               class="form-control" 
+               id="project_name" 
+               name="project_name" 
+               required
+               value="{{ project.project_name }}"
+               placeholder="Enter project name...">
+      </div>
+    </div>
+
+    <!-- Property -->
+    <div class="col-md-6">
+      <div class="form-group">
+        <label for="prop_id">
+          <i class="fas fa-home"></i> Property <span style="color: red;">*</span>
+        </label>
+        <select class="form-control" id="prop_id" name="prop_id" required>
+          <option value="">Select a property...</option>
+          {% for property in properties %}
+            <option value="{{ property.prop_id }}" 
+                    {% if property.prop_id == project.prop.prop_id %}selected{% endif %}>
+              {{ property.prop_name }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="row">
+    <!-- Start Date -->
+    <div class="col-md-4">
+      <div class="form-group">
+        <label for="project_start_date">
+          <i class="fas fa-calendar-alt"></i> Start Date
+        </label>
+        <input type="date" 
+               class="form-control" 
+               id="project_start_date" 
+               name="project_start_date"
+               value="{{ project.project_start_date|date:'Y-m-d' }}">
+      </div>
+    </div>
+
+    <!-- Expected Completion Date -->
+    <div class="col-md-4">
+      <div class="form-group">
+        <label for="project_expected_completion_date">
+          <i class="fas fa-calendar-check"></i> Expected Completion Date
+        </label>
+        <input type="date" 
+               class="form-control" 
+               id="project_expected_completion_date" 
+               name="project_expected_completion_date"
+               value="{{ project.project_expected_completion_date|date:'Y-m-d' }}">
+      </div>
+    </div>
+
+    <!-- Status -->
+    <div class="col-md-4">
+      <div class="form-group">
+        <label for="project_status">
+          <i class="fas fa-info-circle"></i> Status
+        </label>
+        <select class="form-control" id="project_status" name="project_status">
+          {% for status_value, status_display in status_choices %}
+            <option value="{{ status_value }}" 
+                    {% if status_value == project.project_status %}selected{% endif %}>
+              {{ status_display }}
+            </option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <!-- Actual Completion Date -->
+  <div class="row" id="actualCompletionRow" 
+       {% if project.project_status != 'Completed' %}style="display: none;"{% endif %}>
+    <div class="col-md-4">
+      <div class="form-group">
+        <label for="project_actual_completion_date">
+          <i class="fas fa-calendar-times"></i> Actual Completion Date <span style="color: red;">*</span>
+        </label>
+        <input type="date" 
+               class="form-control" 
+               id="project_actual_completion_date" 
+               name="project_actual_completion_date"
+               value="{{ project.project_actual_completion_date|date:'Y-m-d' }}">
+      </div>
+    </div>
+  </div>
+
+  <!-- Description -->
+  <div class="row">
+    <div class="col-md-12">
+      <div class="form-group">
+        <label for="project_description">
+          <i class="fas fa-align-left"></i> Project Description
+        </label>
+        <textarea class="form-control" 
+                  id="project_description" 
+                  name="project_description" 
+                  rows="4"
+                  placeholder="Enter project description...">{{ project.project_description }}</textarea>
+      </div>
+    </div>
+  </div>
+
+  <!-- Form Actions -->
+  <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #dee2e6;">
+    <button type="submit" class="btn btn-success">
+      <i class="fas fa-save"></i> Update Project
+    </button>
+    <a href="{% url 'projects_detail' project.project_id %}" class="btn btn-warning ml-2">
+      <i class="fas fa-eye"></i> View Project
+    </a>
+    <a href="{% url 'projects' %}" class="btn btn-secondary ml-2">
+      <i class="fas fa-times"></i> Cancel
+    </a>
+  </div>
+</form>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+<script>
+console.log('=== EDIT PROJECT FORM LOADED ===');
+
+$(document).ready(function() {
+    console.log('Setting up form validation and interactions');
+    
+    // Status change handler
+    $('#project_status').on('change', function() {
+        const status = $(this).val();
+        const actualCompletionRow = $('#actualCompletionRow');
+        const actualCompletionInput = $('#project_actual_completion_date');
+        
+        console.log('Status changed to:', status);
+        
+        if (status === 'Completed') {
+            actualCompletionRow.show();
+            actualCompletionInput.prop('required', true);
+            // Set today's date as default if no value exists
+            if (!actualCompletionInput.val()) {
+                actualCompletionInput.val(new Date().toISOString().split('T')[0]);
+            }
+        } else {
+            actualCompletionRow.hide();
+            actualCompletionInput.prop('required', false);
+        }
+    });
+    
+    // Date validation
+    $('#project_start_date, #project_expected_completion_date').on('change', function() {
+        validateDates();
+    });
+    
+    function validateDates() {
+        const startDate = $('#project_start_date').val();
+        const expectedEndDate = $('#project_expected_completion_date').val();
+        
+        if (startDate && expectedEndDate) {
+            const start = new Date(startDate);
+            const expectedEnd = new Date(expectedEndDate);
+            
+            if (expectedEnd <= start) {
+                alert('Expected completion date must be after start date');
+                $('#project_expected_completion_date').val('');
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    // Form submission validation
+    $('#projectForm').on('submit', function(e) {
+        console.log('Form submission attempted');
+        
+        let isValid = true;
+        
+        // Validate required fields
+        if (!$('#project_name').val().trim()) {
+            alert('Project name is required');
+            $('#project_name').focus();
+            isValid = false;
+        } else if (!$('#prop_id').val()) {
+            alert('Please select a property');
+            $('#prop_id').focus();
+            isValid = false;
+        }
+        
+        // Validate dates
+        if (!validateDates()) {
+            isValid = false;
+        }
+        
+        // Validate actual completion date if status is completed
+        const status = $('#project_status').val();
+        const actualCompletionDate = $('#project_actual_completion_date').val();
+        
+        if (status === 'Completed' && !actualCompletionDate) {
+            alert('Actual completion date is required when status is Completed');
+            $('#project_actual_completion_date').focus();
+            isValid = false;
+        }
+        
+        if (!isValid) {
+            e.preventDefault();
+            console.log('Form validation failed');
+        } else {
+            console.log('Form validation passed');
+        }
+    });
+    
+    // Update expected completion minimum date when start date changes
+    $('#project_start_date').on('change', function() {
+        const startDate = $(this).val();
+        if (startDate) {
+            $('#project_expected_completion_date').attr('min', startDate);
+        }
+    });
+    
+    console.log('Form setup complete');
+});
+
+console.log('🚀 === EDIT PROJECT FORM SCRIPT COMPLETE ===');
+</script>
+
+{% endblock %}

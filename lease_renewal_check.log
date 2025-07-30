@@ -7984,3 +7984,174 @@ Watching for file changes with StatReloader
 "GET / HTTP/1.1" 200 7793
 "GET /tenant/ HTTP/1.1" 200 54270
 "GET / HTTP/1.1" 200 7793
+Watching for file changes with StatReloader
+"GET /logout/ HTTP/1.1" 302 0
+"GET / HTTP/1.1" 200 3753
+"GET /login/ HTTP/1.1" 200 4422
+"POST /login/ HTTP/1.1" 302 0
+"GET / HTTP/1.1" 200 8554
+"GET /property_management_dashboard/ HTTP/1.1" 200 43046
+"GET /property_detail/1/title-deed/ HTTP/1.1" 200 30731
+"GET /property_management_dashboard/?property=1 HTTP/1.1" 200 43046
+"GET /property_detail/1/property-report/ HTTP/1.1" 200 35671
+"GET /property_management_dashboard/?property=1 HTTP/1.1" 200 43046
+"GET /property_detail/1/tenant/ HTTP/1.1" 200 38033
+"GET /property_management_dashboard/?property=1 HTTP/1.1" 200 43046
+"GET /property_detail/1/tenant/ HTTP/1.1" 200 38033
+"GET /property_management_dashboard/?property=1 HTTP/1.1" 200 43046
+"GET /property_detail/1/lease/ HTTP/1.1" 200 32501
+"GET /property_management_dashboard/?property=1 HTTP/1.1" 200 43046
+"GET /property_detail/1/open-invoices/ HTTP/1.1" 200 34557
+"GET /property_management_dashboard/?property=1 HTTP/1.1" 200 43046
+"GET /property_detail/1/lease-renewals/ HTTP/1.1" 200 30838
+"GET /property_management_dashboard/?property=1 HTTP/1.1" 200 43046
+"GET /property_detail/1/issues/ HTTP/1.1" 200 40574
+"GET /property_management_dashboard/?property=1 HTTP/1.1" 200 43046
+"GET /property_detail/1/valuation/ HTTP/1.1" 200 33728
+"GET /property_management_dashboard/?property=1 HTTP/1.1" 200 43046
+"GET /property_detail/1/revenues/ HTTP/1.1" 200 32551
+"GET /property_management_dashboard/?property=1 HTTP/1.1" 200 43046
+"GET /property_detail/1/budgeted-expenses/ HTTP/1.1" 200 37449
+"GET /property_management_dashboard/?property=1 HTTP/1.1" 200 43046
+"GET /property_detail/1/actual-expenses/ HTTP/1.1" 200 36942
+"GET /property_management_dashboard/?property=1 HTTP/1.1" 200 43046
+"GET /property/1/profit-loss/ HTTP/1.1" 200 34621
+"GET /property_management_dashboard/?property=1 HTTP/1.1" 200 43046
+"GET / HTTP/1.1" 200 7793
+C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\models.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 7949
+Internal Server Error: /projects/
+Traceback (most recent call last):
+  File "C:\users\demet\Onedrive\desktop\pythonapps\Alivente-Online\code\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\users\demet\Onedrive\desktop\pythonapps\Alivente-Online\code\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\users\demet\Onedrive\desktop\pythonapps\Alivente-Online\code\Lib\site-packages\django\contrib\auth\decorators.py", line 60, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\users\demet\Onedrive\desktop\pythonapps\Alivente-Online\pages\views.py", line 109, in projects_list
+    return render(request, 'projects/projects.html', context)
+  File "C:\users\demet\Onedrive\desktop\pythonapps\Alivente-Online\code\Lib\site-packages\django\shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "C:\users\demet\Onedrive\desktop\pythonapps\Alivente-Online\code\Lib\site-packages\django\template\loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+  File "C:\users\demet\Onedrive\desktop\pythonapps\Alivente-Online\code\Lib\site-packages\django\template\loader.py", line 19, in get_template
+    raise TemplateDoesNotExist(template_name, chain=chain)
+django.template.exceptions.TemplateDoesNotExist: projects/projects.html
+"GET /projects/ HTTP/1.1" 500 91253
+Internal Server Error: /projects/
+Traceback (most recent call last):
+  File "C:\users\demet\Onedrive\desktop\pythonapps\Alivente-Online\code\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\users\demet\Onedrive\desktop\pythonapps\Alivente-Online\code\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\users\demet\Onedrive\desktop\pythonapps\Alivente-Online\code\Lib\site-packages\django\contrib\auth\decorators.py", line 60, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\users\demet\Onedrive\desktop\pythonapps\Alivente-Online\pages\views.py", line 109, in projects_list
+    return render(request, 'projects/projects.html', context)
+  File "C:\users\demet\Onedrive\desktop\pythonapps\Alivente-Online\code\Lib\site-packages\django\shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "C:\users\demet\Onedrive\desktop\pythonapps\Alivente-Online\code\Lib\site-packages\django\template\loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+  File "C:\users\demet\Onedrive\desktop\pythonapps\Alivente-Online\code\Lib\site-packages\django\template\loader.py", line 19, in get_template
+    raise TemplateDoesNotExist(template_name, chain=chain)
+django.template.exceptions.TemplateDoesNotExist: projects/projects.html
+"GET /projects/ HTTP/1.1" 500 91253
+"GET /projects/ HTTP/1.1" 200 35814
+"GET / HTTP/1.1" 200 7949
+"GET /projects/ HTTP/1.1" 200 35814
+"GET /projects/add/ HTTP/1.1" 200 19719
+"GET /projects/ HTTP/1.1" 200 35814
+"GET /projects/add/ HTTP/1.1" 200 19892
+"GET / HTTP/1.1" 200 7949
+"GET /projects/ HTTP/1.1" 200 35814
+"GET /projects/add/ HTTP/1.1" 200 13245
+"POST /projects/add/ HTTP/1.1" 302 0
+"GET /projects/ HTTP/1.1" 200 37756
+"GET /projects/detail/1/ HTTP/1.1" 200 19335
+Internal Server Error: /projects/edit/1/
+Traceback (most recent call last):
+  File "C:\users\demet\Onedrive\desktop\pythonapps\Alivente-Online\code\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\users\demet\Onedrive\desktop\pythonapps\Alivente-Online\code\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\users\demet\Onedrive\desktop\pythonapps\Alivente-Online\code\Lib\site-packages\django\contrib\auth\decorators.py", line 60, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\users\demet\Onedrive\desktop\pythonapps\Alivente-Online\pages\views.py", line 199, in projects_edit
+    return render(request, 'projects/projects_edit.html', context)
+  File "C:\users\demet\Onedrive\desktop\pythonapps\Alivente-Online\code\Lib\site-packages\django\shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "C:\users\demet\Onedrive\desktop\pythonapps\Alivente-Online\code\Lib\site-packages\django\template\loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+  File "C:\users\demet\Onedrive\desktop\pythonapps\Alivente-Online\code\Lib\site-packages\django\template\loader.py", line 19, in get_template
+    raise TemplateDoesNotExist(template_name, chain=chain)
+django.template.exceptions.TemplateDoesNotExist: projects/projects_edit.html
+"GET /projects/edit/1/ HTTP/1.1" 500 90169
+Internal Server Error: /projects/1/tasks/add/
+Traceback (most recent call last):
+  File "C:\users\demet\Onedrive\desktop\pythonapps\Alivente-Online\code\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\users\demet\Onedrive\desktop\pythonapps\Alivente-Online\code\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\users\demet\Onedrive\desktop\pythonapps\Alivente-Online\code\Lib\site-packages\django\contrib\auth\decorators.py", line 60, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\users\demet\Onedrive\desktop\pythonapps\Alivente-Online\pages\views.py", line 291, in project_tasks_add
+    return render(request, 'projects/project_tasks_add.html', context)
+  File "C:\users\demet\Onedrive\desktop\pythonapps\Alivente-Online\code\Lib\site-packages\django\shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "C:\users\demet\Onedrive\desktop\pythonapps\Alivente-Online\code\Lib\site-packages\django\template\loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+  File "C:\users\demet\Onedrive\desktop\pythonapps\Alivente-Online\code\Lib\site-packages\django\template\loader.py", line 19, in get_template
+    raise TemplateDoesNotExist(template_name, chain=chain)
+django.template.exceptions.TemplateDoesNotExist: projects/project_tasks_add.html
+"GET /projects/1/tasks/add/ HTTP/1.1" 500 89647
+Internal Server Error: /projects/1/tasks/add/
+Traceback (most recent call last):
+  File "C:\users\demet\Onedrive\desktop\pythonapps\Alivente-Online\code\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\users\demet\Onedrive\desktop\pythonapps\Alivente-Online\code\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\users\demet\Onedrive\desktop\pythonapps\Alivente-Online\code\Lib\site-packages\django\contrib\auth\decorators.py", line 60, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\users\demet\Onedrive\desktop\pythonapps\Alivente-Online\pages\views.py", line 291, in project_tasks_add
+    return render(request, 'projects/project_tasks_add.html', context)
+  File "C:\users\demet\Onedrive\desktop\pythonapps\Alivente-Online\code\Lib\site-packages\django\shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "C:\users\demet\Onedrive\desktop\pythonapps\Alivente-Online\code\Lib\site-packages\django\template\loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+  File "C:\users\demet\Onedrive\desktop\pythonapps\Alivente-Online\code\Lib\site-packages\django\template\loader.py", line 19, in get_template
+    raise TemplateDoesNotExist(template_name, chain=chain)
+django.template.exceptions.TemplateDoesNotExist: projects/project_tasks_add.html
+"GET /projects/1/tasks/add/ HTTP/1.1" 500 89647
+"GET /projects/ HTTP/1.1" 200 37134
+Internal Server Error: /projects/edit/1/
+Traceback (most recent call last):
+  File "C:\users\demet\Onedrive\desktop\pythonapps\Alivente-Online\code\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+  File "C:\users\demet\Onedrive\desktop\pythonapps\Alivente-Online\code\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\users\demet\Onedrive\desktop\pythonapps\Alivente-Online\code\Lib\site-packages\django\contrib\auth\decorators.py", line 60, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+  File "C:\users\demet\Onedrive\desktop\pythonapps\Alivente-Online\pages\views.py", line 199, in projects_edit
+    return render(request, 'projects/projects_edit.html', context)
+  File "C:\users\demet\Onedrive\desktop\pythonapps\Alivente-Online\code\Lib\site-packages\django\shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+  File "C:\users\demet\Onedrive\desktop\pythonapps\Alivente-Online\code\Lib\site-packages\django\template\loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+  File "C:\users\demet\Onedrive\desktop\pythonapps\Alivente-Online\code\Lib\site-packages\django\template\loader.py", line 19, in get_template
+    raise TemplateDoesNotExist(template_name, chain=chain)
+django.template.exceptions.TemplateDoesNotExist: projects/projects_edit.html
+"GET /projects/edit/1/ HTTP/1.1" 500 90160
+"GET / HTTP/1.1" 200 7949
+"GET /projects/ HTTP/1.1" 200 37134
+"GET /projects/detail/1/ HTTP/1.1" 200 19335
+"GET /projects/1/tasks/add/ HTTP/1.1" 200 14239
+"POST /projects/1/tasks/add/ HTTP/1.1" 302 0
+"GET /projects/detail/1/ HTTP/1.1" 200 22320
+"GET /projects/1/tasks/add/ HTTP/1.1" 200 14239
+"POST /projects/1/tasks/add/ HTTP/1.1" 302 0
+"GET /projects/detail/1/ HTTP/1.1" 200 25109
+"GET /projects/1/tasks/1/subtasks/add/ HTTP/1.1" 200 14394
+"POST /projects/1/tasks/1/subtasks/add/ HTTP/1.1" 302 0
+"GET /projects/detail/1/ HTTP/1.1" 200 27094

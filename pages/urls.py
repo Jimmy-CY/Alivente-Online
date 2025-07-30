@@ -53,6 +53,24 @@ urlpatterns = [
     path('property/<int:property_id>/profit-loss/', views.dashboard_pl, name='dashboard_pl'),    
 
     #
+    # Projects
+    # Projects URLs
+    path('projects/', views.projects_list, name='projects'),
+    path('projects/add/', views.projects_add, name='projects_add'),
+    path('projects/edit/<int:project_id>/', views.projects_edit, name='projects_edit'),
+    path('projects/delete/<int:project_id>/', views.projects_delete, name='projects_delete'),
+    path('projects/detail/<int:project_id>/', views.projects_detail, name='projects_detail'),
+    # Project Tasks URLs
+    path('projects/<int:project_id>/tasks/add/', views.project_tasks_add, name='project_tasks_add'),
+    path('projects/<int:project_id>/tasks/edit/<int:task_id>/', views.project_tasks_edit, name='project_tasks_edit'),
+    path('projects/<int:project_id>/tasks/delete/<int:task_id>/', views.project_tasks_delete, name='project_tasks_delete'),
+    # Project Subtasks URLs
+    path('projects/<int:project_id>/tasks/<int:parent_task_id>/subtasks/add/', views.project_subtasks_add, name='project_subtasks_add'),
+    # AJAX URLs for dynamic updates
+    path('ajax/projects/update-status/', views.ajax_update_project_status, name='ajax_update_project_status'),
+    path('ajax/tasks/update-status/', views.ajax_update_task_status, name='ajax_update_task_status'),
+
+    #
     # Finance
     path('finance/', views.finance, name='finance'),
     path('finance_valuations/', views.finance_valuations, name='finance_valuations'),

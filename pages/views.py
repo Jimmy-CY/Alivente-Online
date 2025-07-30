@@ -5,6 +5,7 @@ from django.contrib import messages
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm, PasswordChangeForm
 from django.core.exceptions import ValidationError
 from django.core.files.storage import FileSystemStorage
+from django.core.paginator import Paginator
 from django.core.serializers import serialize
 from django.db import connection, transaction
 from django.db.models import Q, Prefetch, Subquery, OuterRef, Sum
@@ -40,6 +41,8 @@ from .models import (
     expense_line_types,
     expense,
     act_expense,
+    Project, 
+    ProjectTask,
     )
 from collections import defaultdict
 from datetime import date, datetime, timedelta
@@ -56,6 +59,419 @@ import logging
 import json
 
 logger = logging.getLogger(__name__)
+
+### PROJECTS ###
+@login_required
+def projects_list(request):
+    """Display list of projects with filtering"""
+    projects_list = Project.objects.select_related('prop').all()  # Updated model name
+    
+    # Initialize filter variables
+    search_query = ""
+    selected_property = ""
+    selected_status = ""
+    
+    if request.method == 'POST':
+        search_query = request.POST.get('search', '').strip()
+        selected_property = request.POST.get('property', '')
+        selected_status = request.POST.get('status', '')
+        
+        # Apply filters
+        if search_query:
+            projects_list = projects_list.filter(
+                Q(project_name__icontains=search_query) |
+                Q(project_description__icontains=search_query)
+            )
+        
+        if selected_property:
+            projects_list = projects_list.filter(prop_id=selected_property)
+        
+        if selected_status:
+            projects_list = projects_list.filter(project_status=selected_status)
+    
+    # Get all properties for filter dropdown
+    properties = props.objects.all().order_by('prop_name')
+    
+    # Pagination
+    paginator = Paginator(projects_list, 25)
+    page_number = request.GET.get('page')
+    projects_page = paginator.get_page(page_number)
+    
+    context = {
+        'projects': projects_page,
+        'properties': properties,
+        'search_query': search_query,
+        'selected_property': selected_property,
+        'selected_status': selected_status,
+        'status_choices': Project.PROJECT_STATUS_CHOICES,  # Updated model name
+    }
+    
+    return render(request, 'projects/projects.html', context)
+
+@login_required
+def projects_add(request):
+    """Add new project"""
+    if not request.user.is_superuser:
+        messages.error(request, "You don't have permission to add projects.")
+        return redirect('projects')
+    
+    if request.method == 'POST':
+        project_name = request.POST.get('project_name')
+        prop_id = request.POST.get('prop_id')
+        project_start_date = request.POST.get('project_start_date')
+        project_expected_completion_date = request.POST.get('project_expected_completion_date')
+        project_status = request.POST.get('project_status', 'Pending')
+        project_actual_completion_date = request.POST.get('project_actual_completion_date')
+        project_description = request.POST.get('project_description')
+        
+        try:
+            # Get the property
+            property_obj = get_object_or_404(props, prop_id=prop_id)
+            
+            # Create the project
+            project = Project(  # Updated model name
+                project_name=project_name,
+                prop=property_obj,
+                project_start_date=project_start_date if project_start_date else None,
+                project_expected_completion_date=project_expected_completion_date if project_expected_completion_date else None,
+                project_status=project_status,
+                project_actual_completion_date=project_actual_completion_date if project_actual_completion_date else None,
+                project_description=project_description
+            )
+            project.save()
+            
+            messages.success(request, f"Project '{project_name}' has been created successfully.")
+            return redirect('projects')
+            
+        except Exception as e:
+            messages.error(request, f"Error creating project: {str(e)}")
+    
+    # Get all properties for dropdown
+    properties = props.objects.all().order_by('prop_name')
+    
+    context = {
+        'properties': properties,
+        'status_choices': Project.PROJECT_STATUS_CHOICES,  # Updated model name
+    }
+    
+    return render(request, 'projects/projects_add.html', context)
+
+@login_required
+def projects_edit(request, project_id):
+    """Edit existing project"""
+    if not request.user.is_superuser:
+        messages.error(request, "You don't have permission to edit projects.")
+        return redirect('projects')
+    
+    project = get_object_or_404(Project, project_id=project_id)  # Updated model name
+    
+    if request.method == 'POST':
+        project.project_name = request.POST.get('project_name')
+        prop_id = request.POST.get('prop_id')
+        project.project_start_date = request.POST.get('project_start_date') if request.POST.get('project_start_date') else None
+        project.project_expected_completion_date = request.POST.get('project_expected_completion_date') if request.POST.get('project_expected_completion_date') else None
+        project.project_status = request.POST.get('project_status', 'Pending')
+        project.project_actual_completion_date = request.POST.get('project_actual_completion_date') if request.POST.get('project_actual_completion_date') else None
+        project.project_description = request.POST.get('project_description')
+        
+        try:
+            # Update the property
+            property_obj = get_object_or_404(props, prop_id=prop_id)
+            project.prop = property_obj
+            
+            project.save()
+            
+            messages.success(request, f"Project '{project.project_name}' has been updated successfully.")
+            return redirect('projects')
+            
+        except Exception as e:
+            messages.error(request, f"Error updating project: {str(e)}")
+    
+    # Get all properties for dropdown
+    properties = props.objects.all().order_by('prop_name')
+    
+    context = {
+        'project': project,
+        'properties': properties,
+        'status_choices': Project.PROJECT_STATUS_CHOICES,  # Updated model name
+    }
+    
+    return render(request, 'projects/projects_edit.html', context)
+
+@login_required
+def projects_delete(request, project_id):
+    """Delete project"""
+    if not request.user.is_superuser:
+        messages.error(request, "You don't have permission to delete projects.")
+        return redirect('projects')
+    
+    project = get_object_or_404(Project, project_id=project_id)  # Updated model name
+    project_name = project.project_name
+    
+    if request.method == 'POST':
+        project.delete()
+        messages.success(request, f"Project '{project_name}' has been deleted successfully.")
+        return redirect('projects')
+    
+    context = {
+        'project': project,
+    }
+    
+    return render(request, 'projects/projects_delete.html', context)
+
+@login_required
+def projects_detail(request, project_id):
+    """Display project details with tasks and subtasks"""
+    project = get_object_or_404(Project.objects.select_related('prop'), project_id=project_id)  # Updated model name
+    
+    # Get all tasks for this project (main tasks only, not subtasks)
+    main_tasks = ProjectTask.objects.filter(  # Updated model name
+        project=project, 
+        parent_task__isnull=True
+    ).prefetch_related('subtasks').order_by('task_start_date', 'task_id')
+    
+    context = {
+        'project': project,
+        'main_tasks': main_tasks,
+        'task_status_choices': ProjectTask.TASK_STATUS_CHOICES,  # Updated model name
+        'task_priority_choices': ProjectTask.TASK_PRIORITY_CHOICES,  # Updated model name
+    }
+    
+    return render(request, 'projects/projects_detail.html', context)
+
+@login_required
+def project_tasks_add(request, project_id):
+    """Add new task to project"""
+    if not request.user.is_superuser:
+        messages.error(request, "You don't have permission to add tasks.")
+        return redirect('projects_detail', project_id=project_id)
+    
+    project = get_object_or_404(Project, project_id=project_id)  # Updated model name
+    
+    if request.method == 'POST':
+        task_name = request.POST.get('task_name')
+        task_description = request.POST.get('task_description')
+        task_start_date = request.POST.get('task_start_date')
+        task_expected_completion_date = request.POST.get('task_expected_completion_date')
+        task_status = request.POST.get('task_status', 'Not Started')
+        task_priority = request.POST.get('task_priority', 'Medium')
+        task_budgeted_cost = request.POST.get('task_budgeted_cost')
+        task_actual_cost = request.POST.get('task_actual_cost')
+        task_assigned_to = request.POST.get('task_assigned_to')
+        task_actual_completion_date = request.POST.get('task_actual_completion_date')
+        
+        try:
+            task = ProjectTask(  # Updated model name
+                project=project,
+                task_name=task_name,
+                task_description=task_description,
+                task_start_date=task_start_date if task_start_date else None,
+                task_expected_completion_date=task_expected_completion_date if task_expected_completion_date else None,
+                task_status=task_status,
+                task_priority=task_priority,
+                task_budgeted_cost=task_budgeted_cost if task_budgeted_cost else 0.00,
+                task_actual_cost=task_actual_cost if task_actual_cost else 0.00,
+                task_assigned_to=task_assigned_to,
+                task_actual_completion_date=task_actual_completion_date if task_actual_completion_date else None
+            )
+            task.save()
+            
+            messages.success(request, f"Task '{task_name}' has been added successfully.")
+            return redirect('projects_detail', project_id=project_id)
+            
+        except Exception as e:
+            messages.error(request, f"Error adding task: {str(e)}")
+    
+    context = {
+        'project': project,
+        'task_status_choices': ProjectTask.TASK_STATUS_CHOICES,  # Updated model name
+        'task_priority_choices': ProjectTask.TASK_PRIORITY_CHOICES,  # Updated model name
+    }
+    
+    return render(request, 'projects/project_tasks_add.html', context)
+
+@login_required
+def project_tasks_edit(request, project_id, task_id):
+    """Edit existing task"""
+    if not request.user.is_superuser:
+        messages.error(request, "You don't have permission to edit tasks.")
+        return redirect('projects_detail', project_id=project_id)
+    
+    project = get_object_or_404(Project, project_id=project_id)  # Updated model name
+    task = get_object_or_404(ProjectTask, task_id=task_id, project=project)  # Updated model name
+    
+    if request.method == 'POST':
+        task.task_name = request.POST.get('task_name')
+        task.task_description = request.POST.get('task_description')
+        task.task_start_date = request.POST.get('task_start_date') if request.POST.get('task_start_date') else None
+        task.task_expected_completion_date = request.POST.get('task_expected_completion_date') if request.POST.get('task_expected_completion_date') else None
+        task.task_status = request.POST.get('task_status', 'Not Started')
+        task.task_priority = request.POST.get('task_priority', 'Medium')
+        task.task_budgeted_cost = request.POST.get('task_budgeted_cost') if request.POST.get('task_budgeted_cost') else 0.00
+        task.task_actual_cost = request.POST.get('task_actual_cost') if request.POST.get('task_actual_cost') else 0.00
+        task.task_assigned_to = request.POST.get('task_assigned_to')
+        task.task_actual_completion_date = request.POST.get('task_actual_completion_date') if request.POST.get('task_actual_completion_date') else None
+        
+        try:
+            task.save()
+            
+            messages.success(request, f"Task '{task.task_name}' has been updated successfully.")
+            return redirect('projects_detail', project_id=project_id)
+            
+        except Exception as e:
+            messages.error(request, f"Error updating task: {str(e)}")
+    
+    context = {
+        'project': project,
+        'task': task,
+        'task_status_choices': ProjectTask.TASK_STATUS_CHOICES,  # Updated model name
+        'task_priority_choices': ProjectTask.TASK_PRIORITY_CHOICES,  # Updated model name
+    }
+    
+    return render(request, 'projects/project_tasks_edit.html', context)
+
+@login_required
+def project_tasks_delete(request, project_id, task_id):
+    """Delete task"""
+    if not request.user.is_superuser:
+        messages.error(request, "You don't have permission to delete tasks.")
+        return redirect('projects_detail', project_id=project_id)
+    
+    project = get_object_or_404(Project, project_id=project_id)  # Updated model name
+    task = get_object_or_404(ProjectTask, task_id=task_id, project=project)  # Updated model name
+    task_name = task.task_name
+    
+    if request.method == 'POST':
+        task.delete()
+        messages.success(request, f"Task '{task_name}' has been deleted successfully.")
+        return redirect('projects_detail', project_id=project_id)
+    
+    context = {
+        'project': project,
+        'task': task,
+    }
+    
+    return render(request, 'projects/project_tasks_delete.html', context)
+
+@login_required
+def project_subtasks_add(request, project_id, parent_task_id):
+    """Add subtask to a main task"""
+    if not request.user.is_superuser:
+        messages.error(request, "You don't have permission to add subtasks.")
+        return redirect('projects_detail', project_id=project_id)
+    
+    project = get_object_or_404(Project, project_id=project_id)  # Updated model name
+    parent_task = get_object_or_404(ProjectTask, task_id=parent_task_id, project=project)  # Updated model name
+    
+    if request.method == 'POST':
+        task_name = request.POST.get('task_name')
+        task_description = request.POST.get('task_description')
+        task_start_date = request.POST.get('task_start_date')
+        task_expected_completion_date = request.POST.get('task_expected_completion_date')
+        task_status = request.POST.get('task_status', 'Not Started')
+        task_priority = request.POST.get('task_priority', 'Medium')
+        task_budgeted_cost = request.POST.get('task_budgeted_cost')
+        task_actual_cost = request.POST.get('task_actual_cost')
+        task_assigned_to = request.POST.get('task_assigned_to')
+        task_actual_completion_date = request.POST.get('task_actual_completion_date')
+        
+        try:
+            subtask = ProjectTask(  # Updated model name
+                project=project,
+                parent_task=parent_task,
+                task_name=task_name,
+                task_description=task_description,
+                task_start_date=task_start_date if task_start_date else None,
+                task_expected_completion_date=task_expected_completion_date if task_expected_completion_date else None,
+                task_status=task_status,
+                task_priority=task_priority,
+                task_budgeted_cost=task_budgeted_cost if task_budgeted_cost else 0.00,
+                task_actual_cost=task_actual_cost if task_actual_cost else 0.00,
+                task_assigned_to=task_assigned_to,
+                task_actual_completion_date=task_actual_completion_date if task_actual_completion_date else None
+            )
+            subtask.save()
+            
+            messages.success(request, f"Subtask '{task_name}' has been added successfully.")
+            return redirect('projects_detail', project_id=project_id)
+            
+        except Exception as e:
+            messages.error(request, f"Error adding subtask: {str(e)}")
+    
+    context = {
+        'project': project,
+        'parent_task': parent_task,
+        'task_status_choices': ProjectTask.TASK_STATUS_CHOICES,  # Updated model name
+        'task_priority_choices': ProjectTask.TASK_PRIORITY_CHOICES,  # Updated model name
+    }
+    
+    return render(request, 'projects/project_subtasks_add.html', context)
+
+@login_required
+def ajax_update_project_status(request):
+    """AJAX view to update project status"""
+    if request.method == 'POST' and request.user.is_superuser:
+        try:
+            data = json.loads(request.body)
+            project_id = data.get('project_id')
+            new_status = data.get('status')
+            actual_completion_date = data.get('actual_completion_date')
+            
+            project = get_object_or_404(Project, project_id=project_id)  # Updated model name
+            project.project_status = new_status
+            
+            if new_status == 'Completed' and actual_completion_date:
+                project.project_actual_completion_date = actual_completion_date
+            elif new_status != 'Completed':
+                project.project_actual_completion_date = None
+            
+            project.save()
+            
+            return JsonResponse({
+                'success': True,
+                'message': f"Project status updated to {new_status}"
+            })
+            
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'message': f"Error updating project status: {str(e)}"
+            })
+    
+    return JsonResponse({'success': False, 'message': 'Invalid request'})
+
+@login_required
+def ajax_update_task_status(request):
+    """AJAX view to update task status"""
+    if request.method == 'POST' and request.user.is_superuser:
+        try:
+            data = json.loads(request.body)
+            task_id = data.get('task_id')
+            new_status = data.get('status')
+            actual_completion_date = data.get('actual_completion_date')
+            
+            task = get_object_or_404(ProjectTask, task_id=task_id)  # Updated model name
+            task.task_status = new_status
+            
+            if new_status == 'Completed' and actual_completion_date:
+                task.task_actual_completion_date = actual_completion_date
+            elif new_status != 'Completed':
+                task.task_actual_completion_date = None
+            
+            task.save()
+            
+            return JsonResponse({
+                'success': True,
+                'message': f"Task status updated to {new_status}"
+            })
+            
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'message': f"Error updating task status: {str(e)}"
+            })
+    
+    return JsonResponse({'success': False, 'message': 'Invalid request'})
 
 def render_to_pdf(template_src, context_dict):
     template = get_template(template_src)

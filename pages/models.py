@@ -1,8 +1,230 @@
 from django.db import models
 from django.db import connections
 from django.core.exceptions import ValidationError
-import os
 from django.utils.text import slugify
+from django.utils import timezone
+from decimal import Decimal
+import os
+
+def project_document_upload_path(instance, filename):
+    """Generate upload path for project documents"""
+    # Get the file extension
+    ext = filename.split('.')[-1]
+    
+    # Get project name and clean it
+    project_name = slugify(instance.project.project_name or 'project')
+    
+    # Format the date as YYYYMMDD
+    date_str = timezone.now().strftime('%Y%m%d')
+    
+    # Get the original filename without extension
+    original_name = os.path.splitext(filename)[0]
+    
+    # Create the new filename
+    new_filename = f"{project_name}-{date_str}-{original_name}.{ext}"
+    
+    # Return the full path
+    return os.path.join('project_docs', new_filename)
+
+# Replace the Project model in your models.py with this corrected version:
+
+class Project(models.Model):
+    project_id = models.AutoField(primary_key=True)
+    project_name = models.CharField(max_length=255, blank=True, null=True)
+    prop = models.ForeignKey('props', on_delete=models.CASCADE)  # Changed to string reference
+    project_start_date = models.DateField(blank=True, null=True)
+    project_expected_completion_date = models.DateField(blank=True, null=True)
+    project_actual_completion_date = models.DateField(blank=True, null=True)
+    
+    PROJECT_STATUS_CHOICES = [
+        ('Pending', 'Pending'),
+        ('In Progress', 'In Progress'),
+        ('Completed', 'Completed'),
+    ]
+    project_status = models.CharField(
+        max_length=20,
+        choices=PROJECT_STATUS_CHOICES,
+        default='Pending',
+        blank=True,
+        null=True
+    )
+    
+    project_description = models.TextField(blank=True, null=True)
+    project_total_budgeted_cost = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, default=0.00)
+    project_total_actual_cost = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, default=0.00)
+    project_created_date = models.DateTimeField(auto_now_add=True)
+    project_updated_date = models.DateTimeField(auto_now=True)
+    
+    def clean(self):
+        """Validate project dates"""
+        if self.project_start_date and self.project_expected_completion_date:
+            if self.project_expected_completion_date <= self.project_start_date:
+                raise ValidationError("Expected completion date must be after start date")
+        
+        if self.project_status == 'Completed' and not self.project_actual_completion_date:
+            raise ValidationError("Actual completion date is required when project status is Completed")
+        
+        if self.project_actual_completion_date and self.project_start_date:
+            if self.project_actual_completion_date < self.project_start_date:
+                raise ValidationError("Actual completion date cannot be before start date")
+    
+    def update_totals(self):
+        """Update total budgeted and actual costs from tasks"""
+        tasks = self.project_tasks.all()
+        self.project_total_budgeted_cost = sum(task.task_budgeted_cost or 0 for task in tasks)
+        self.project_total_actual_cost = sum(task.task_actual_cost or 0 for task in tasks)
+        self.save()
+    
+    def get_progress_percentage(self):
+        """Calculate project progress based on completed tasks"""
+        total_tasks = self.project_tasks.count()
+        if total_tasks == 0:
+            return 0
+        completed_tasks = self.project_tasks.filter(task_status='Completed').count()
+        return round((completed_tasks / total_tasks) * 100, 1)
+    
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)
+    
+    def __str__(self):
+        return self.project_name or f"Project {self.project_id}"
+    
+    class Meta:
+        db_table = "projects"
+        verbose_name = "Project"
+        verbose_name_plural = "Projects"
+        ordering = ['-project_created_date']
+
+class ProjectTask(models.Model):
+    task_id = models.AutoField(primary_key=True)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='project_tasks')
+    parent_task = models.ForeignKey('self', on_delete=models.CASCADE, blank=True, null=True, related_name='subtasks')
+    task_name = models.CharField(max_length=255, blank=True, null=True)
+    task_description = models.TextField(blank=True, null=True)
+    task_start_date = models.DateField(blank=True, null=True)
+    task_expected_completion_date = models.DateField(blank=True, null=True)
+    task_actual_completion_date = models.DateField(blank=True, null=True)
+    
+    TASK_STATUS_CHOICES = [
+        ('Not Started', 'Not Started'),
+        ('In Progress', 'In Progress'),
+        ('Completed', 'Completed'),
+        ('On Hold', 'On Hold'),
+    ]
+    task_status = models.CharField(
+        max_length=20,
+        choices=TASK_STATUS_CHOICES,
+        default='Not Started',
+        blank=True,
+        null=True
+    )
+    
+    TASK_PRIORITY_CHOICES = [
+        ('Low', 'Low'),
+        ('Medium', 'Medium'),
+        ('High', 'High'),
+        ('Critical', 'Critical'),
+    ]
+    task_priority = models.CharField(
+        max_length=10,
+        choices=TASK_PRIORITY_CHOICES,
+        default='Medium',
+        blank=True,
+        null=True
+    )
+    
+    task_budgeted_cost = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True, default=0.00)
+    task_actual_cost = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True, default=0.00)
+    task_assigned_to = models.CharField(max_length=255, blank=True, null=True)
+    task_created_date = models.DateTimeField(auto_now_add=True)
+    task_updated_date = models.DateTimeField(auto_now=True)
+    
+    def clean(self):
+        """Validate task dates"""
+        if self.task_start_date and self.task_expected_completion_date:
+            if self.task_expected_completion_date <= self.task_start_date:
+                raise ValidationError("Expected completion date must be after start date")
+        
+        if self.task_status == 'Completed' and not self.task_actual_completion_date:
+            raise ValidationError("Actual completion date is required when task status is Completed")
+        
+        if self.task_actual_completion_date and self.task_start_date:
+            if self.task_actual_completion_date < self.task_start_date:
+                raise ValidationError("Actual completion date cannot be before start date")
+        
+        # Validate that task dates are within project dates
+        if self.project and self.task_start_date and self.project.project_start_date:
+            if self.task_start_date < self.project.project_start_date:
+                raise ValidationError("Task start date cannot be before project start date")
+        
+        if self.project and self.task_expected_completion_date and self.project.project_expected_completion_date:
+            if self.task_expected_completion_date > self.project.project_expected_completion_date:
+                raise ValidationError("Task expected completion date cannot be after project expected completion date")
+    
+    def is_subtask(self):
+        """Check if this task is a subtask"""
+        return self.parent_task is not None
+    
+    def get_subtask_count(self):
+        """Get the number of subtasks for this task"""
+        return self.subtasks.count()
+    
+    def get_completed_subtask_count(self):
+        """Get the number of completed subtasks"""
+        return self.subtasks.filter(task_status='Completed').count()
+    
+    def get_subtask_progress(self):
+        """Calculate subtask completion percentage"""
+        total = self.get_subtask_count()
+        if total == 0:
+            return 0
+        completed = self.get_completed_subtask_count()
+        return round((completed / total) * 100, 1)
+    
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)
+        # Update project totals when task is saved
+        if self.project:
+            self.project.update_totals()
+    
+    def delete(self, *args, **kwargs):
+        project = self.project
+        super().delete(*args, **kwargs)
+        # Update project totals when task is deleted
+        if project:
+            project.update_totals()
+    
+    def __str__(self):
+        if self.is_subtask():
+            return f"{self.parent_task.task_name} > {self.task_name}"
+        return self.task_name or f"Task {self.task_id}"
+    
+    class Meta:
+        db_table = "project_tasks"
+        verbose_name = "Project Task"
+        verbose_name_plural = "Project Tasks"
+        ordering = ['task_start_date', 'task_id']
+
+class ProjectDocument(models.Model):
+    document_id = models.AutoField(primary_key=True)
+    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='project_documents')
+    task = models.ForeignKey(ProjectTask, on_delete=models.CASCADE, blank=True, null=True, related_name='task_documents')
+    document_name = models.CharField(max_length=255, blank=True, null=True)
+    document_description = models.TextField(blank=True, null=True)
+    document_file = models.FileField(upload_to=project_document_upload_path, blank=True, null=True)
+    document_uploaded_date = models.DateTimeField(auto_now_add=True)
+    document_uploaded_by = models.CharField(max_length=255, blank=True, null=True)
+    
+    def __str__(self):
+        return self.document_name or f"Document {self.document_id}"
+    
+    class Meta:
+        db_table = "project_documents"
+        verbose_name = "Project Document"
+        verbose_name_plural = "Project Documents"
+        ordering = ['-document_uploaded_date']
 
 def expense_document_upload_path(instance, filename):
 	"""

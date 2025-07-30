@@ -1,0 +1,1060 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+Projects
+{% endblock %}
+
+{% block content %}
+
+<h2><center>ALIVENTE ONLINE - PROJECTS</center></h2>
+<br/>
+
+{% for msg in messages %}
+  <div class="alert alert-secondary alert-dismissible fade show auto-dismiss" role="alert">
+    <strong></strong> <center>{{ msg }}</center>
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <script>
+    setTimeout(function() {
+      document.querySelectorAll('.auto-dismiss').forEach(alert => {
+        alert.classList.remove('show');
+        alert.classList.add('fade');
+        setTimeout(() => alert.remove(), 500);
+      });
+    }, 2000);
+  </script>
+{% endfor %}
+
+<body>
+  <!-- Action Buttons -->
+  <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 20px;">
+    {% if user.is_superuser %}
+      <a href="{% url 'projects_add' %}" class="btn btn-info">Add New Project</a>
+    {% else %}
+      <span class="btn btn-secondary" style="opacity:0.6; cursor:not-allowed; pointer-events:none;">Add New Project</span>
+    {% endif %}
+    <a href="{% url 'home' %}" class="btn btn-info">Back</a>
+  </div>
+
+  <!-- Collapsible Filter Panel -->
+  <div class="filter-panel" id="filterPanel">
+    <div class="filter-header" onclick="toggleFilters()">
+      <h5 class="filter-title">
+        <i class="fas fa-filter"></i> Project Filters
+        <i class="fas fa-chevron-down filter-toggle-icon" id="filterToggleIcon"></i>
+      </h5>
+      <button type="button" id="clearAllBtn" class="btn btn-outline-secondary btn-sm" onclick="event.stopPropagation();">
+        <i class="fas fa-times-circle"></i> Clear All
+      </button>
+    </div>
+    
+    <div class="filter-content" id="filterContent">
+      <form action="{% url 'projects' %}" method="post" id="filterForm">
+        {% csrf_token %}
+        <div class="filter-grid">
+          <!-- Search Bar -->
+          <div class="filter-group">
+            <label class="filter-label">
+              <i class="fas fa-search"></i> Search Project
+            </label>
+            <div class="search-input-group">
+              <input type="text" 
+                     name="search" 
+                     id="searchInput"
+                     class="form-control search-input" 
+                     placeholder="Search by project name or description..."
+                     value="{{ search_query|default:'' }}">
+              <button type="button" class="search-btn" id="searchBtn">
+                <i class="fas fa-search"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Property Filter -->
+          <div class="filter-group">
+            <label class="filter-label">
+              <i class="fas fa-home"></i> Property
+            </label>
+            <select name="property" class="form-control filter-select" id="propertySelect">
+              <option value="">All Properties</option>
+              {% for property in properties %}
+                <option value="{{ property.prop_id }}" {% if selected_property|stringformat:"s" == property.prop_id|stringformat:"s" %}selected{% endif %}>
+                  {{ property.prop_name }}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <!-- Status Filter -->
+          <div class="filter-group">
+            <label class="filter-label">
+              <i class="fas fa-info-circle"></i> Status
+            </label>
+            <select name="status" class="form-control filter-select" id="statusSelect">
+              <option value="">All Statuses</option>
+              {% for status_value, status_display in status_choices %}
+                <option value="{{ status_value }}" {% if selected_status == status_value %}selected{% endif %}>
+                  {{ status_display }}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+
+        <!-- Active Filters Display -->
+        <div class="active-filters" id="activeFilters" style="display: none;">
+          <span class="active-filters-label">Active filters:</span>
+          <div class="filter-tags" id="filterTags"></div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Projects Table -->
+  <div class="table-container">
+    <table class="table table-bordered table-striped text-center">
+      <thead>
+        <tr>
+          <th style="text-align: left; width: 25%">Project Name</th>
+          <th style="width: 20%">Property</th>
+          <th style="width: 12%">Status</th>
+          <th style="width: 10%">Progress</th>
+          <th style="width: 10%">Start Date</th>
+          <th style="width: 10%">Expected End</th>
+          <th style="width: 8%">Details</th>
+          <th style="width: 5%">Edit</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for project in projects %}
+          <tr>
+            <td style="text-align: left">
+              <strong>{{ project.project_name }}</strong>
+              {% if project.project_description %}
+                <br><small class="text-muted">{{ project.project_description|truncatechars:80 }}</small>
+              {% endif %}
+            </td>
+            <td>{{ project.prop.prop_name }}</td>
+            <td>
+              <span class="status-badge 
+                {% if project.project_status == 'Completed' %}status-completed
+                {% elif project.project_status == 'In Progress' %}status-in-progress
+                {% else %}status-pending{% endif %}">
+                {{ project.project_status }}
+              </span>
+            </td>
+            <td>
+              <div class="progress-container">
+                <div class="progress">
+                  <div class="progress-bar bg-info" 
+                       role="progressbar" 
+                       style="width: {{ project.get_progress_percentage }}%"
+                       aria-valuenow="{{ project.get_progress_percentage }}" 
+                       aria-valuemin="0" 
+                       aria-valuemax="100">
+                  </div>
+                </div>
+                <small>{{ project.get_progress_percentage }}%</small>
+              </div>
+            </td>
+            <td>
+              {% if project.project_start_date %}
+                {{ project.project_start_date|date:"M d, Y" }}
+              {% else %}
+                <span class="text-muted">Not set</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if project.project_expected_completion_date %}
+                {{ project.project_expected_completion_date|date:"M d, Y" }}
+              {% else %}
+                <span class="text-muted">Not set</span>
+              {% endif %}
+            </td>
+            <td>
+              <button type="button" class="btn btn-light action-btn">
+                <a href="{% url 'projects_detail' project.project_id %}">View</a>
+              </button>
+            </td>
+            <td>
+              {% if user.is_superuser %}
+                <button type="button" class="btn btn-light action-btn">
+                  <a href="{% url 'projects_edit' project.project_id %}">Edit</a>
+                </button>
+              {% else %}
+                <button type="button" class="btn btn-light action-btn" disabled style="opacity: 0.5;">
+                  <span style="color: #6c757d;">Edit</span>
+                </button>
+              {% endif %}
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="8" class="text-center text-muted">
+              No projects found. 
+              {% if user.is_superuser %}
+                <a href="{% url 'projects_add' %}">Add your first project</a>
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  {% if projects.has_other_pages %}
+    <nav aria-label="Page navigation">
+      <ul class="pagination justify-content-center">
+        {% if projects.has_previous %}
+          <li class="page-item">
+            <a class="page-link" href="?page=1">&laquo; First</a>
+          </li>
+          <li class="page-item">
+            <a class="page-link" href="?page={{ projects.previous_page_number }}">Previous</a>
+          </li>
+        {% endif %}
+        
+        <li class="page-item active">
+          <span class="page-link">
+            Page {{ projects.number }} of {{ projects.paginator.num_pages }}
+          </span>
+        </li>
+        
+        {% if projects.has_next %}
+          <li class="page-item">
+            <a class="page-link" href="?page={{ projects.next_page_number }}">Next</a>
+          </li>
+          <li class="page-item">
+            <a class="page-link" href="?page={{ projects.paginator.num_pages }}">Last &raquo;</a>
+          </li>
+        {% endif %}
+      </ul>
+    </nav>
+  {% endif %}
+
+</body>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+<style>
+/* Reuse the same filter panel styles from properties.html */
+.filter-panel {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border: 1px solid #dee2e6;
+    border-radius: 12px;
+    padding: 12px 24px;
+    margin-bottom: 30px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    transition: padding 0.3s ease;
+}
+
+.filter-panel.expanded {
+    padding: 24px;
+}
+
+.filter-panel:not(.expanded) .filter-content {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    height: 0 !important;
+    overflow: hidden !important;
+}
+
+.filter-panel.expanded .filter-content,
+.filter-panel.force-expanded .filter-content {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    height: auto !important;
+    overflow: visible !important;
+    padding-top: 20px;
+}
+
+.filter-panel.force-expanded {
+    padding: 24px !important;
+}
+
+.filter-panel.force-expanded .filter-content {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    height: auto !important;
+    overflow: visible !important;
+    padding-top: 20px !important;
+}
+
+.filter-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #dee2e6;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.filter-header.expanded {
+    padding-bottom: 12px;
+    border-bottom: 2px solid #dee2e6;
+    margin-bottom: 20px;
+}
+
+.filter-header:hover {
+    background-color: rgba(23, 162, 184, 0.05);
+    border-radius: 8px;
+    margin: -8px;
+    padding: 16px 8px;
+}
+
+.filter-header.expanded:hover {
+    padding: 20px 8px;
+}
+
+.filter-title {
+    margin: 0;
+    color: #2c3e50;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    user-select: none;
+}
+
+.filter-title i {
+    color: #17a2b8;
+}
+
+.filter-toggle-icon {
+    transition: transform 0.3s ease;
+    margin-left: 8px;
+}
+
+.filter-toggle-icon.rotated {
+    transform: rotate(180deg);
+}
+
+.filter-content {
+    overflow: visible;
+    transition: all 0.3s ease;
+}
+
+.filter-content.show {
+    display: block !important;
+    padding-top: 20px;
+}
+
+.filter-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    gap: 20px;
+    align-items: end;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: visible;
+}
+
+.filter-label {
+    font-weight: 500;
+    color: #495057;
+    margin-bottom: 6px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.filter-label i {
+    color: #6c757d;
+    width: 14px;
+}
+
+.filter-input, .filter-select {
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    background: white;
+    position: relative;
+    z-index: 10;
+}
+
+.filter-select {
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 12px center;
+    background-repeat: no-repeat;
+    background-size: 16px 12px;
+    padding-right: 40px;
+    min-height: 44px;
+    line-height: 1.4;
+}
+
+.filter-input:focus, .filter-select:focus {
+    border-color: #17a2b8;
+    box-shadow: 0 0 0 3px rgba(23, 162, 184, 0.1);
+    outline: none;
+    position: relative;
+    z-index: 20;
+}
+
+.search-input-group {
+    position: relative;
+    display: flex;
+    align-items: stretch;
+}
+
+.search-input {
+    border: 2px solid #e9ecef;
+    border-radius: 8px 0 0 8px;
+    border-right: none;
+    padding: 10px 14px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    background: white;
+    flex: 1;
+}
+
+.search-input:focus {
+    border-color: #17a2b8;
+    box-shadow: 0 0 0 3px rgba(23, 162, 184, 0.1);
+    outline: none;
+    z-index: 20;
+}
+
+.search-btn {
+    background: #17a2b8;
+    border: 2px solid #17a2b8;
+    border-left: none;
+    border-radius: 0 8px 8px 0;
+    color: white;
+    padding: 10px 16px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.search-btn:hover {
+    background: #138496;
+    border-color: #138496;
+}
+
+.search-btn:active {
+    transform: scale(0.98);
+}
+
+.btn-outline-secondary {
+    border: 2px solid #6c757d;
+    color: #6c757d;
+    background: transparent;
+    border-radius: 6px;
+    font-size: 13px;
+    padding: 6px 12px;
+    transition: all 0.3s ease;
+}
+
+.btn-outline-secondary:hover {
+    background: #6c757d;
+    color: white;
+    transform: translateY(-1px);
+}
+
+.active-filters {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid #dee2e6;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.active-filters-label {
+    font-weight: 500;
+    color: #495057;
+    font-size: 14px;
+}
+
+.filter-tags {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.filter-tag {
+    background: #17a2b8;
+    color: white;
+    padding: 4px 12px;
+    border-radius: 16px;
+    font-size: 12px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.filter-tag .remove-tag {
+    background: rgba(255, 255, 255, 0.3);
+    border: none;
+    color: white;
+    border-radius: 50%;
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 10px;
+}
+
+/* Table Enhancements */
+.table-container {
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.status-badge {
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.status-completed {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status-in-progress {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.status-pending {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.progress-container {
+    text-align: center;
+}
+
+.progress {
+    height: 8px;
+    margin-bottom: 4px;
+    background-color: #e9ecef;
+    border-radius: 4px;
+}
+
+.progress-bar {
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+.action-btn {
+    border-color: #dee2e6;
+    transition: all 0.2s ease;
+}
+
+.action-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.btn-info {
+    background-color: #17a2b8;
+    color: white;
+    border: 1px solid #17a2b8;
+    transition: all 0.3s ease;
+    border-radius: 6px;
+    font-weight: 500;
+}
+
+.btn-info:hover {
+    background-color: #138496;
+    border-color: #117a8b;
+    color: white;
+    text-decoration: none;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .filter-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    
+    .filter-header {
+        flex-direction: column;
+        gap: 12px;
+        align-items: stretch;
+    }
+    
+    .search-input-group {
+        width: 100%;
+    }
+}
+</style>
+
+<script>
+// Same filter panel JavaScript as properties.html
+let PANEL_IS_MANUALLY_EXPANDED = false;
+let EXTERNAL_INTERFERENCE_DETECTED = false;
+
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM loaded - initializing filter panel');
+    
+    const wasForceExpanded = sessionStorage.getItem('FORCE_PANEL_EXPANDED') === 'true';
+    const wasClearAllProtected = sessionStorage.getItem('CLEAR_ALL_PROTECTION') === 'true';
+    const windowFlag = window.PANEL_MUST_STAY_EXPANDED;
+    const clearAllFlag = window.CLEAR_ALL_PROTECTION_ACTIVE;
+    
+    const filterPanel = document.getElementById('filterPanel');
+    if (filterPanel) {
+        if (wasForceExpanded || wasClearAllProtected || windowFlag || clearAllFlag) {
+            console.log('🔓 RESTORING FORCE-EXPANDED PANEL');
+            filterPanel.classList.add('expanded', 'force-expanded');
+            filterPanel.setAttribute('data-force-expanded', 'true');
+            const toggleIcon = document.getElementById('filterToggleIcon');
+            if (toggleIcon) {
+                toggleIcon.classList.add('rotated');
+            }
+            PANEL_IS_MANUALLY_EXPANDED = true;
+            
+            sessionStorage.removeItem('FORCE_PANEL_EXPANDED');
+            sessionStorage.removeItem('CLEAR_ALL_PROTECTION');
+            window.PANEL_MUST_STAY_EXPANDED = false;
+            window.CLEAR_ALL_PROTECTION_ACTIVE = false;
+        } else {
+            filterPanel.classList.remove('expanded', 'force-expanded');
+            filterPanel.removeAttribute('data-force-expanded');
+        }
+    }
+    
+    setupInterferenceProtection();
+    updateActiveFilters();
+    
+    // Auto-submit on dropdown filter change
+    ['propertySelect', 'statusSelect'].forEach(id => {
+        const element = document.getElementById(id);
+        if (element) {
+            element.addEventListener('change', function() {
+                console.log(`🔄 Filter changed: ${id} = ${this.value}`);
+                
+                if (PANEL_IS_MANUALLY_EXPANDED) {
+                    console.log('🔒 LOCKING PANEL STATE BEFORE FORM SUBMISSION');
+                    
+                    const filterPanel = document.getElementById('filterPanel');
+                    const toggleIcon = document.getElementById('filterToggleIcon');
+                    
+                    if (filterPanel) {
+                        filterPanel.classList.add('force-expanded');
+                        filterPanel.style.cssText += 'display: block !important;';
+                    }
+                    
+                    sessionStorage.setItem('FORCE_PANEL_EXPANDED', 'true');
+                    window.PANEL_MUST_STAY_EXPANDED = true;
+                    
+                    const originalHide = window.hideFilters;
+                    window.hideFilters = function() {
+                        console.log('🚫 BLOCKED: hideFilters() call during form submission');
+                        return false;
+                    };
+                    
+                    setTimeout(() => {
+                        window.hideFilters = originalHide;
+                    }, 100);
+                }
+                
+                document.getElementById('filterForm').submit();
+            });
+        }
+    });
+    
+    // Search button functionality
+    const searchBtn = document.getElementById('searchBtn');
+    if (searchBtn) {
+        searchBtn.addEventListener('click', function() {
+            console.log('🔍 Search button clicked');
+            
+            if (PANEL_IS_MANUALLY_EXPANDED) {
+                console.log('🔒 LOCKING PANEL STATE BEFORE SEARCH SUBMISSION');
+                
+                const filterPanel = document.getElementById('filterPanel');
+                
+                if (filterPanel) {
+                    filterPanel.classList.add('force-expanded');
+                    filterPanel.style.cssText += 'display: block !important;';
+                }
+                
+                sessionStorage.setItem('FORCE_PANEL_EXPANDED', 'true');
+                window.PANEL_MUST_STAY_EXPANDED = true;
+                
+                const originalHide = window.hideFilters;
+                window.hideFilters = function() {
+                    console.log('🚫 BLOCKED: hideFilters() call during search submission');
+                    return false;
+                };
+                
+                setTimeout(() => {
+                    window.hideFilters = originalHide;
+                }, 100);
+            }
+            
+            document.getElementById('filterForm').submit();
+        });
+    }
+    
+    // Enter key in search input
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                console.log('⌨️ Search enter key pressed');
+                
+                if (PANEL_IS_MANUALLY_EXPANDED) {
+                    console.log('🔒 LOCKING PANEL STATE BEFORE SEARCH ENTER SUBMISSION');
+                    
+                    const filterPanel = document.getElementById('filterPanel');
+                    
+                    if (filterPanel) {
+                        filterPanel.classList.add('force-expanded');
+                        filterPanel.style.cssText += 'display: block !important;';
+                    }
+                    
+                    sessionStorage.setItem('FORCE_PANEL_EXPANDED', 'true');
+                    window.PANEL_MUST_STAY_EXPANDED = true;
+                    
+                    const originalHide = window.hideFilters;
+                    window.hideFilters = function() {
+                        console.log('🚫 BLOCKED: hideFilters() call during search enter submission');
+                        return false;
+                    };
+                    
+                    setTimeout(() => {
+                        window.hideFilters = originalHide;
+                    }, 100);
+                }
+                
+                document.getElementById('filterForm').submit();
+            }
+        });
+    }
+    
+    // Clear all filters
+    const clearAllBtn = document.getElementById('clearAllBtn');
+    if (clearAllBtn) {
+        clearAllBtn.addEventListener('click', function() {
+            console.log('🚨🧹 CLEAR ALL CLICKED - MAXIMUM PROTECTION MODE ACTIVATED 🧹🚨');
+            
+            if (PANEL_IS_MANUALLY_EXPANDED) {
+                console.log('🔒🔒 LOCKING PANEL STATE BEFORE CLEAR ALL SUBMISSION - MAXIMUM SECURITY 🔒🔒');
+                
+                const filterPanel = document.getElementById('filterPanel');
+                
+                if (filterPanel) {
+                    filterPanel.classList.add('force-expanded');
+                    filterPanel.style.cssText += 'display: block !important; visibility: visible !important;';
+                    filterPanel.setAttribute('data-force-expanded', 'true');
+                }
+                
+                sessionStorage.setItem('FORCE_PANEL_EXPANDED', 'true');
+                sessionStorage.setItem('CLEAR_ALL_PROTECTION', 'true');
+                window.PANEL_MUST_STAY_EXPANDED = true;
+                window.CLEAR_ALL_PROTECTION_ACTIVE = true;
+                
+                const originalHide = window.hideFilters;
+                const originalToggle = window.toggleFilters;
+                
+                window.hideFilters = function() {
+                    console.log('🚫🚫 BLOCKED: hideFilters() call during CLEAR ALL submission 🚫🚫');
+                    return false;
+                };
+                
+                window.toggleFilters = function() {
+                    console.log('🚫 BLOCKED: toggleFilters() call during CLEAR ALL submission');
+                    return false;
+                };
+                
+                setTimeout(() => forceExpandPanel(), 50);
+                setTimeout(() => forceExpandPanel(), 100);
+                setTimeout(() => forceExpandPanel(), 200);
+                setTimeout(() => forceExpandPanel(), 500);
+                setTimeout(() => forceExpandPanel(), 1000);
+                setTimeout(() => forceExpandPanel(), 2000);
+                
+                setTimeout(() => {
+                    window.hideFilters = originalHide;
+                    window.toggleFilters = originalToggle;
+                    console.log('🔓 Clear All protection mode ended');
+                }, 200);
+                
+                const protectionInterval = setInterval(() => {
+                    if (PANEL_IS_MANUALLY_EXPANDED) {
+                        forceExpandPanel();
+                    } else {
+                        clearInterval(protectionInterval);
+                    }
+                }, 50);
+                
+                setTimeout(() => {
+                    clearInterval(protectionInterval);
+                    console.log('🛡️ Clear All continuous protection ended');
+                }, 10000);
+            }
+            
+            document.getElementById('searchInput').value = '';
+            document.getElementById('propertySelect').value = '';
+            document.getElementById('statusSelect').value = '';
+            document.getElementById('filterForm').submit();
+        });
+    }
+    
+    console.log('All event listeners attached');
+});
+
+function forceExpandPanel() {
+    const filterPanel = document.getElementById('filterPanel');
+    const toggleIcon = document.getElementById('filterToggleIcon');
+    
+    if (filterPanel && !filterPanel.classList.contains('expanded')) {
+        console.log('🔥 FORCING PANEL TO EXPAND - OVERRIDING EXTERNAL INTERFERENCE');
+        filterPanel.classList.add('expanded');
+        if (toggleIcon) {
+            toggleIcon.classList.add('rotated');
+        }
+        EXTERNAL_INTERFERENCE_DETECTED = true;
+    }
+}
+
+function setupInterferenceProtection() {
+    const filterPanel = document.getElementById('filterPanel');
+    if (!filterPanel) return;
+    
+    const observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+            if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+                const hasExpanded = filterPanel.classList.contains('expanded');
+                
+                if (PANEL_IS_MANUALLY_EXPANDED && !hasExpanded) {
+                    console.log('🚨 EXTERNAL INTERFERENCE DETECTED! PANEL WAS COLLAPSED BY EXTERNAL CODE');
+                    console.log('🛡️ RESTORING EXPANDED STATE');
+                    
+                    filterPanel.classList.add('expanded');
+                    const toggleIcon = document.getElementById('filterToggleIcon');
+                    if (toggleIcon) {
+                        toggleIcon.classList.add('rotated');
+                    }
+                    
+                    EXTERNAL_INTERFERENCE_DETECTED = true;
+                }
+            }
+        });
+    });
+    
+    observer.observe(filterPanel, {
+        attributes: true,
+        attributeFilter: ['class']
+    });
+    
+    console.log('🛡️ Interference protection activated');
+}
+
+function toggleFilters() {
+    console.log('🔄🔄 Toggle filters called - MANUAL USER ACTION 🔄🔄');
+    const filterPanel = document.getElementById('filterPanel');
+    const toggleIcon = document.getElementById('filterToggleIcon');
+    
+    if (!filterPanel || !toggleIcon) {
+        console.log('❌ Panel or icon not found');
+        return;
+    }
+    
+    const isExpanded = filterPanel.classList.contains('expanded') || filterPanel.classList.contains('force-expanded');
+    console.log(`📊📊 Current state: ${isExpanded ? 'expanded' : 'collapsed'} 📊📊`);
+    console.log(`🔍 Panel classes: ${filterPanel.className}`);
+    
+    if (isExpanded) {
+        console.log('📉📉 MANUAL COLLAPSE - NUCLEAR OVERRIDE OF ALL PROTECTION 📉📉');
+        
+        PANEL_IS_MANUALLY_EXPANDED = false;
+        sessionStorage.removeItem('FORCE_PANEL_EXPANDED');
+        sessionStorage.removeItem('CLEAR_ALL_PROTECTION');
+        window.PANEL_MUST_STAY_EXPANDED = false;
+        window.CLEAR_ALL_PROTECTION_ACTIVE = false;
+        
+        filterPanel.classList.remove('expanded', 'force-expanded');
+        filterPanel.removeAttribute('data-force-expanded');
+        
+        filterPanel.style.cssText = '';
+        filterPanel.style.display = '';
+        filterPanel.style.visibility = '';
+        filterPanel.style.opacity = '';
+        filterPanel.style.height = '';
+        filterPanel.style.overflow = '';
+        filterPanel.style.padding = '';
+        
+        const filterContent = document.getElementById('filterContent');
+        if (filterContent) {
+            filterContent.style.display = 'none';
+            filterContent.style.visibility = 'hidden';
+            filterContent.style.opacity = '0';
+            filterContent.style.height = '0';
+            filterContent.style.overflow = 'hidden';
+            filterContent.classList.remove('show');
+        }
+        
+        toggleIcon.classList.remove('rotated');
+        
+        console.log('📉📉 Panel FORCE collapsed - ALL PROTECTION NUKED 📉📉');
+        
+        setTimeout(() => {
+            const isStillExpanded = filterPanel.classList.contains('expanded') || filterPanel.classList.contains('force-expanded');
+            console.log(`🔍 Collapse verification: panel still expanded = ${isStillExpanded}`);
+            if (isStillExpanded) {
+                console.log('⚠️ COLLAPSE FAILED - EXTERNAL INTERFERENCE DETECTED');
+                filterPanel.className = filterPanel.className.replace(/\b(expanded|force-expanded)\b/g, '').trim();
+                filterPanel.style.cssText = 'padding: 12px 24px !important;';
+                if (filterContent) {
+                    filterContent.style.cssText = 'display: none !important; visibility: hidden !important; opacity: 0 !important; height: 0 !important; overflow: hidden !important;';
+                }
+            }
+        }, 50);
+        
+    } else {
+        console.log('📈📈 Panel manually expanded - PROTECTION ACTIVATED 📈📈');
+        filterPanel.classList.add('expanded');
+        filterPanel.classList.remove('force-expanded');
+        toggleIcon.classList.add('rotated');
+        PANEL_IS_MANUALLY_EXPANDED = true;
+        
+        const filterContent = document.getElementById('filterContent');
+        if (filterContent) {
+            filterContent.style.display = 'block';
+            filterContent.style.visibility = 'visible';
+            filterContent.style.opacity = '1';
+            filterContent.style.height = 'auto';
+            filterContent.style.overflow = 'visible';
+            filterContent.classList.add('show');
+        }
+    }
+}
+
+function updateActiveFilters() {
+    console.log('🔄 updateActiveFilters called');
+    const searchInput = document.getElementById('searchInput');
+    const propertySelect = document.getElementById('propertySelect');
+    const statusSelect = document.getElementById('statusSelect');
+    const activeFiltersDiv = document.getElementById('activeFilters');
+    const filterTagsDiv = document.getElementById('filterTags');
+    
+    if (!searchInput || !propertySelect || !statusSelect || !activeFiltersDiv || !filterTagsDiv) {
+        console.log('❌ Some elements missing for updateActiveFilters');
+        return;
+    }
+    
+    const search = searchInput.value;
+    const property = propertySelect.value;
+    const propertyText = propertySelect.options[propertySelect.selectedIndex].text;
+    const status = statusSelect.value;
+    
+    console.log(`📊 Filter values - Search: "${search}", Property: "${property}", Status: "${status}"`);
+    
+    filterTagsDiv.innerHTML = '';
+    let hasFilters = false;
+    
+    if (search) {
+        filterTagsDiv.innerHTML += `<span class="filter-tag">Search: "${search}" <button class="remove-tag" onclick="clearFilter('search')">×</button></span>`;
+        hasFilters = true;
+    }
+    
+    if (property) {
+        filterTagsDiv.innerHTML += `<span class="filter-tag">Property: ${propertyText} <button class="remove-tag" onclick="clearFilter('property')">×</button></span>`;
+        hasFilters = true;
+    }
+    
+    if (status) {
+        filterTagsDiv.innerHTML += `<span class="filter-tag">Status: ${status} <button class="remove-tag" onclick="clearFilter('status')">×</button></span>`;
+        hasFilters = true;
+    }
+    
+    activeFiltersDiv.style.display = hasFilters ? 'flex' : 'none';
+    console.log(`✅ Filter tags updated, hasFilters: ${hasFilters}`);
+    
+    console.log('✅ updateActiveFilters completed - panel state UNCHANGED');
+}
+
+function clearFilter(filterType) {
+    console.log(`🧹 clearFilter called for: ${filterType}`);
+    
+    if (PANEL_IS_MANUALLY_EXPANDED) {
+        console.log('🔒 LOCKING PANEL STATE BEFORE INDIVIDUAL FILTER CLEAR');
+        
+        const filterPanel = document.getElementById('filterPanel');
+        
+        if (filterPanel) {
+            filterPanel.classList.add('force-expanded');
+            filterPanel.style.cssText += 'display: block !important;';
+            filterPanel.setAttribute('data-force-expanded', 'true');
+        }
+        
+        sessionStorage.setItem('FORCE_PANEL_EXPANDED', 'true');
+        window.PANEL_MUST_STAY_EXPANDED = true;
+        
+        const originalHide = window.hideFilters;
+        window.hideFilters = function() {
+            console.log('🚫 BLOCKED: hideFilters() call during individual filter clear');
+            return false;
+        };
+        
+        setTimeout(() => {
+            window.hideFilters = originalHide;
+        }, 100);
+    }
+    
+    switch(filterType) {
+        case 'search':
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) searchInput.value = '';
+            break;
+        case 'property':
+            const propertySelect = document.getElementById('propertySelect');
+            if (propertySelect) propertySelect.value = '';
+            break;
+        case 'status':
+            const statusSelect = document.getElementById('statusSelect');
+            if (statusSelect) statusSelect.value = '';
+            break;
+    }
+    document.getElementById('filterForm').submit();
+}
+
+setInterval(() => {
+    if (EXTERNAL_INTERFERENCE_DETECTED) {
+        console.log('🚨 External interference was detected and blocked');
+        EXTERNAL_INTERFERENCE_DETECTED = false;
+    }
+}, 2000);
+
+console.log('🚀 === PROJECTS SCRIPT COMPLETE ===');
+</script>
+
+{% endblock %}
