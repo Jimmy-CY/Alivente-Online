@@ -1,0 +1,264 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+Delete Project - {{ project.project_name }}
+{% endblock %}
+
+{% block content %}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-exclamation-triangle"></i> 
+                        Confirm Project Deletion
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <!-- Warning Alert -->
+                    <div class="alert alert-danger" role="alert">
+                        <h5 class="alert-heading">
+                            <i class="fas fa-warning"></i> 
+                            <strong>WARNING: This action cannot be undone!</strong>
+                        </h5>
+                        <p class="mb-0">You are about to permanently delete this entire project and all associated data.</p>
+                    </div>
+
+                    <!-- Project Information -->
+                    <div class="project-info mb-4">
+                        <h5>Project to be deleted:</h5>
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <h6 class="card-title text-danger">{{ project.project_name }}</h6>
+                                {% if project.project_description %}
+                                    <p class="card-text text-muted">{{ project.project_description|truncatechars:200 }}</p>
+                                {% endif %}
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <small class="text-muted">
+                                            <strong>Property:</strong> {{ project.prop.prop_name }}<br>
+                                            <strong>Status:</strong> {{ project.project_status }}<br>
+                                            {% if project.project_start_date %}
+                                                <strong>Start Date:</strong> {{ project.project_start_date|date:"M d, Y" }}<br>
+                                            {% endif %}
+                                        </small>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <small class="text-muted">
+                                            {% if project.project_expected_completion_date %}
+                                                <strong>Expected Completion:</strong> {{ project.project_expected_completion_date|date:"M d, Y" }}<br>
+                                            {% endif %}
+                                            {% if project.project_total_budgeted_cost %}
+                                                <strong>Budgeted Cost:</strong> ${{ project.project_total_budgeted_cost|floatformat:2 }}<br>
+                                            {% endif %}
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- What will be deleted -->
+                    <div class="deletion-summary mb-4">
+                        <h5 class="text-danger">The following will be permanently deleted:</h5>
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span><i class="fas fa-project-diagram text-danger"></i> This project</span>
+                                <span class="badge badge-danger badge-pill">1</span>
+                            </li>
+                            
+                            {% if main_task_count > 0 %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span><i class="fas fa-tasks text-warning"></i> Main tasks</span>
+                                <span class="badge badge-warning badge-pill">{{ main_task_count }}</span>
+                            </li>
+                            {% endif %}
+                            
+                            {% if subtask_count > 0 %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span><i class="fas fa-list text-info"></i> Subtasks</span>
+                                <span class="badge badge-info badge-pill">{{ subtask_count }}</span>
+                            </li>
+                            {% endif %}
+                            
+                            {% if document_count > 0 %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span><i class="fas fa-file text-secondary"></i> Documents</span>
+                                <span class="badge badge-secondary badge-pill">{{ document_count }}</span>
+                            </li>
+                            {% endif %}
+                        </ul>
+                    </div>
+
+                    <!-- Show sample tasks if any exist -->
+                    {% if main_tasks %}
+                    <div class="sample-tasks mb-4">
+                        <h6>Sample main tasks that will be deleted:</h6>
+                        <div class="list-group">
+                            {% for task in main_tasks %}
+                            <div class="list-group-item list-group-item-light">
+                                <div class="d-flex w-100 justify-content-between">
+                                    <h6 class="mb-1">{{ task.task_name }}</h6>
+                                    <small class="text-muted">{{ task.task_status }}</small>
+                                </div>
+                                {% if task.task_description %}
+                                    <p class="mb-1 text-muted small">{{ task.task_description|truncatechars:100 }}</p>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                            {% if main_task_count > 5 %}
+                                <div class="list-group-item list-group-item-light text-center">
+                                    <small class="text-muted">... and {{ main_task_count|add:"-5" }} more main tasks</small>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Confirmation Input -->
+                    <div class="confirmation-section mb-4">
+                        <div class="form-group">
+                            <label for="confirmationInput" class="font-weight-bold">
+                                Type <span class="text-danger">"DELETE"</span> to confirm this permanent deletion:
+                            </label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="confirmationInput" 
+                                   placeholder="Type DELETE to confirm"
+                                   style="text-transform: uppercase;"
+                                   autocomplete="off">
+                            <small class="form-text text-muted">This helps prevent accidental deletions.</small>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="text-center">
+                        <a href="{% url 'projects' %}" class="btn btn-secondary btn-lg mr-3">
+                            <i class="fas fa-times"></i> Cancel
+                        </a>
+                        
+                        <form method="post" style="display: inline-block;" id="deleteForm">
+                            {% csrf_token %}
+                            <button type="submit" 
+                                    class="btn btn-danger btn-lg" 
+                                    id="confirmDeleteBtn" 
+                                    disabled>
+                                <i class="fas fa-trash"></i> Delete Project Permanently
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const confirmationInput = document.getElementById('confirmationInput');
+    const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+    const deleteForm = document.getElementById('deleteForm');
+    
+    if (confirmationInput && confirmDeleteBtn) {
+        confirmationInput.addEventListener('input', function() {
+            const inputValue = this.value.toUpperCase();
+            const isValid = inputValue === 'DELETE';
+            
+            confirmDeleteBtn.disabled = !isValid;
+            
+            if (isValid) {
+                this.classList.add('is-valid');
+                this.classList.remove('is-invalid');
+                confirmDeleteBtn.classList.remove('btn-secondary');
+                confirmDeleteBtn.classList.add('btn-danger');
+            } else {
+                this.classList.remove('is-valid');
+                if (this.value.length > 0) {
+                    this.classList.add('is-invalid');
+                } else {
+                    this.classList.remove('is-invalid');
+                }
+                confirmDeleteBtn.classList.remove('btn-danger');
+                confirmDeleteBtn.classList.add('btn-secondary');
+            }
+        });
+        
+        // Double confirmation on form submit
+        deleteForm.addEventListener('submit', function(e) {
+            if (confirmationInput.value.toUpperCase() !== 'DELETE') {
+                e.preventDefault();
+                alert('Please type "DELETE" to confirm the deletion.');
+                return false;
+            }
+            
+            // Final confirmation dialog
+            const confirmed = confirm(`Are you absolutely sure you want to permanently delete the project "${document.querySelector('.card-title').textContent}" and all its associated data? This action cannot be undone.`);
+            
+            if (!confirmed) {
+                e.preventDefault();
+                return false;
+            }
+        });
+    }
+});
+</script>
+
+<style>
+.confirmation-section {
+    background-color: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    border: 2px dashed #dc3545;
+}
+
+.project-info .card {
+    border-left: 4px solid #dc3545;
+}
+
+.deletion-summary {
+    background-color: #fff5f5;
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid #fed7d7;
+}
+
+.sample-tasks {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+#confirmationInput.is-valid {
+    border-color: #28a745;
+    background-color: rgba(40, 167, 69, 0.1);
+}
+
+#confirmationInput.is-invalid {
+    border-color: #dc3545;
+    background-color: rgba(220, 53, 69, 0.1);
+}
+
+.list-group-item {
+    border-left: 4px solid transparent;
+}
+
+.list-group-item:first-child {
+    border-left-color: #dc3545;
+}
+
+.list-group-item:nth-child(2) {
+    border-left-color: #ffc107;
+}
+
+.list-group-item:nth-child(3) {
+    border-left-color: #17a2b8;
+}
+
+.list-group-item:nth-child(4) {
+    border-left-color: #6c757d;
+}
+</style>
+
+{% endblock %}

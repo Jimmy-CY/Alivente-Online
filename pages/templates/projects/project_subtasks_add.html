@@ -86,7 +86,7 @@ Add Subtask - {{ parent_task.task_name }}
         </label>
         <select class="form-control" id="task_status" name="task_status">
           {% for status_value, status_display in task_status_choices %}
-            <option value="{{ status_value }}" {% if status_value == 'Not Started' %}selected{% endif %}>
+            <option value="{{ status_value }}" {% if status_value == 'Pending' %}selected{% endif %}>
               {{ status_display }}
             </option>
           {% endfor %}
@@ -96,7 +96,7 @@ Add Subtask - {{ parent_task.task_name }}
   </div>
 
   <div class="row">
-    <!-- Start Date -->
+    <!-- Start Date - NO CONSTRAINTS -->
     <div class="col-md-3">
       <div class="form-group">
         <label for="task_start_date">
@@ -106,10 +106,11 @@ Add Subtask - {{ parent_task.task_name }}
                class="form-control" 
                id="task_start_date" 
                name="task_start_date">
+        <small class="form-text text-muted">Can be any date - will update parent task and project dates automatically</small>
       </div>
     </div>
 
-    <!-- Expected Completion Date -->
+    <!-- Expected Completion Date - NO CONSTRAINTS -->
     <div class="col-md-3">
       <div class="form-group">
         <label for="task_expected_completion_date">
@@ -119,6 +120,7 @@ Add Subtask - {{ parent_task.task_name }}
                class="form-control" 
                id="task_expected_completion_date" 
                name="task_expected_completion_date">
+        <small class="form-text text-muted">Can be any date - will update parent task and project dates automatically</small>
       </div>
     </div>
 
@@ -202,6 +204,16 @@ Add Subtask - {{ parent_task.task_name }}
     </div>
   </div>
 
+  <!-- Information Message -->
+  <div class="alert alert-info" role="alert">
+    <div class="d-flex align-items-center">
+      <i class="fas fa-info-circle mr-2"></i>
+      <div>
+        <strong>Note:</strong> Subtask dates and costs will automatically update the parent task "{{ parent_task.task_name }}" and project "{{ project.project_name }}". You can set any dates - they are not restricted by current project timelines.
+      </div>
+    </div>
+  </div>
+
   <!-- Form Actions -->
   <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #dee2e6;">
     <button type="submit" class="btn btn-success">
@@ -244,7 +256,7 @@ $(document).ready(function() {
         }
     });
     
-    // Date validation
+    // Basic date validation (only that end date is after start date)
     $('#task_start_date, #task_expected_completion_date').on('change', function() {
         validateDates();
     });
@@ -279,7 +291,7 @@ $(document).ready(function() {
             isValid = false;
         }
         
-        // Validate dates
+        // Validate dates (only basic validation - no constraints)
         if (!validateDates()) {
             isValid = false;
         }
@@ -302,24 +314,15 @@ $(document).ready(function() {
         }
     });
     
-    // Set minimum dates based on parent task and project dates
-    {% if parent_task.task_start_date %}
-        $('#task_start_date').attr('min', '{{ parent_task.task_start_date|date:"Y-m-d" }}');
-    {% elif project.project_start_date %}
-        $('#task_start_date').attr('min', '{{ project.project_start_date|date:"Y-m-d" }}');
-    {% endif %}
+    // NO DATE CONSTRAINTS - Subtasks can have any dates
+    // The automatic rollup system will handle updating parent task and project dates
     
-    {% if parent_task.task_expected_completion_date %}
-        $('#task_expected_completion_date').attr('max', '{{ parent_task.task_expected_completion_date|date:"Y-m-d" }}');
-    {% elif project.project_expected_completion_date %}
-        $('#task_expected_completion_date').attr('max', '{{ project.project_expected_completion_date|date:"Y-m-d" }}');
-    {% endif %}
-    
-    // Update expected completion minimum date when start date changes
+    // Only set minimum for expected completion when start date changes
     $('#task_start_date').on('change', function() {
         const startDate = $(this).val();
         if (startDate) {
             $('#task_expected_completion_date').attr('min', startDate);
+            console.log('Updated subtask expected completion minimum to: ' + startDate);
         }
     });
     

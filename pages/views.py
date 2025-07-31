@@ -8,7 +8,7 @@ from django.core.files.storage import FileSystemStorage
 from django.core.paginator import Paginator
 from django.core.serializers import serialize
 from django.db import connection, transaction
-from django.db.models import Q, Prefetch, Subquery, OuterRef, Sum
+from django.db.models import Q, Prefetch, Subquery, OuterRef, Sum, F
 from django.db.models.functions import Coalesce
 from django.http import HttpResponse, HttpResponseServerError, FileResponse, Http404, JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
@@ -21,7 +21,8 @@ from django.utils.html import strip_tags
 from django.utils.safestring import mark_safe
 from django.utils.timezone import now
 from django.views.decorators.cache import never_cache
-from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.csrf import csrf_exempt, csrf_protect
+from django.views.decorators.http import require_POST
 from django.views.static import serve
 from . import forms
 from .forms import PropForm, TenantForm, PettyForm, InvoicesForm, IssuesForm, DetailsForm, SupplierForm, ValuesForm, RevenueTypesForm, RevenueLineForm, RevenueForm, ExpenseTypesForm, ExpenseLineForm, ExpenseForm, ActExpenseForm 
@@ -43,6 +44,7 @@ from .models import (
     act_expense,
     Project, 
     ProjectTask,
+    ProjectDocument,
     )
 from collections import defaultdict
 from datetime import date, datetime, timedelta
@@ -63,8 +65,52 @@ logger = logging.getLogger(__name__)
 ### PROJECTS ###
 @login_required
 def projects_list(request):
-    """Display list of projects with filtering"""
-    projects_list = Project.objects.select_related('prop').all()  # Updated model name
+    """Display list of projects with filtering and handle modal-based deletion"""
+    
+    # Handle POST request for modal-based deletion
+    if request.method == 'POST' and 'delete_project_id' in request.POST:
+        if not request.user.is_superuser:
+            messages.error(request, "You don't have permission to delete projects.")
+            return redirect('projects')
+        
+        project_id = request.POST.get('delete_project_id')
+        project = get_object_or_404(Project, project_id=project_id)
+        
+        try:
+            with transaction.atomic():
+                logger.info(f"User {request.user.username} deleting project via modal: {project.project_name}")
+                
+                # Get counts for message
+                main_task_count = project.projecttask_set.filter(parent_task__isnull=True).count()
+                subtask_count = project.projecttask_set.filter(parent_task__isnull=False).count()
+                document_count = project.project_documents.count() if hasattr(project, 'project_documents') else 0
+                project_name = project.project_name
+                
+                # Delete the project
+                project.delete()
+                
+                # Success message
+                if subtask_count > 0:
+                    messages.success(
+                        request, 
+                        f"Project '{project_name}' has been permanently deleted along with {main_task_count} main tasks, {subtask_count} subtasks, and {document_count} documents."
+                    )
+                else:
+                    messages.success(
+                        request, 
+                        f"Project '{project_name}' has been permanently deleted along with {main_task_count} tasks and {document_count} documents."
+                    )
+                
+        except Exception as e:
+            logger.error(f"Error deleting project {project_id}: {str(e)}")
+            messages.error(request, f"An error occurred while deleting the project '{project.project_name}'.")
+        
+        return redirect('projects')
+    
+    # Your existing filter logic (unchanged)
+    projects_list = Project.objects.select_related('prop').all().order_by(
+        F('project_start_date').desc(nulls_last=True)
+    )
     
     # Initialize filter variables
     search_query = ""
@@ -103,7 +149,7 @@ def projects_list(request):
         'search_query': search_query,
         'selected_property': selected_property,
         'selected_status': selected_status,
-        'status_choices': Project.PROJECT_STATUS_CHOICES,  # Updated model name
+        'status_choices': Project.PROJECT_STATUS_CHOICES,
     }
     
     return render(request, 'projects/projects.html', context)
@@ -200,21 +246,74 @@ def projects_edit(request, project_id):
 
 @login_required
 def projects_delete(request, project_id):
-    """Delete project"""
+    """Delete project with enhanced cascade deletion and warnings"""
     if not request.user.is_superuser:
         messages.error(request, "You don't have permission to delete projects.")
         return redirect('projects')
     
-    project = get_object_or_404(Project, project_id=project_id)  # Updated model name
-    project_name = project.project_name
+    project = get_object_or_404(Project, project_id=project_id)
     
     if request.method == 'POST':
-        project.delete()
-        messages.success(request, f"Project '{project_name}' has been deleted successfully.")
+        try:
+            with transaction.atomic():
+                # Log the deletion attempt
+                logger.info(f"User {request.user.username} attempting to delete project: {project.project_name} (ID: {project_id})")
+                
+                # Get counts for the success message BEFORE deletion
+                main_task_count = project.projecttask_set.filter(parent_task__isnull=True).count()
+                subtask_count = project.projecttask_set.filter(parent_task__isnull=False).count()
+                total_task_count = project.projecttask_set.count()
+                document_count = project.project_documents.count() if hasattr(project, 'project_documents') else 0
+                
+                project_name = project.project_name
+                
+                # Delete the project (this will cascade to delete all related tasks and subtasks)
+                project.delete()
+                
+                # Log successful deletion
+                logger.info(f"Successfully deleted project: {project_name} (ID: {project_id}) with {main_task_count} main tasks, {subtask_count} subtasks, and {document_count} documents")
+                
+                # Success message with detailed information
+                if subtask_count > 0:
+                    messages.success(
+                        request, 
+                        f"Project '{project_name}' has been permanently deleted along with {main_task_count} main tasks, {subtask_count} subtasks, and {document_count} documents."
+                    )
+                else:
+                    messages.success(
+                        request, 
+                        f"Project '{project_name}' has been permanently deleted along with {total_task_count} tasks and {document_count} documents."
+                    )
+                
+        except Exception as e:
+            # Log the error
+            logger.error(f"Error deleting project {project_id}: {str(e)}")
+            
+            # Error message
+            messages.error(
+                request, 
+                f"An error occurred while deleting the project '{project.project_name}'. Please try again or contact support."
+            )
+            
+            # Redirect back to the delete confirmation page
+            return render(request, 'projects/projects_delete.html', {'project': project})
+        
         return redirect('projects')
+    
+    # GET request - show confirmation page with detailed information
+    # Get counts for the confirmation page
+    main_tasks = project.projecttask_set.filter(parent_task__isnull=True)
+    subtasks = project.projecttask_set.filter(parent_task__isnull=False)
+    documents = project.project_documents.all() if hasattr(project, 'project_documents') else []
     
     context = {
         'project': project,
+        'main_task_count': main_tasks.count(),
+        'subtask_count': subtasks.count(),
+        'document_count': len(documents),
+        'main_tasks': main_tasks[:5],  # Show first 5 main tasks as examples
+        'subtasks': subtasks[:10],     # Show first 10 subtasks as examples
+        'documents': documents[:5],    # Show first 5 documents as examples
     }
     
     return render(request, 'projects/projects_delete.html', context)
@@ -253,7 +352,7 @@ def project_tasks_add(request, project_id):
         task_description = request.POST.get('task_description')
         task_start_date = request.POST.get('task_start_date')
         task_expected_completion_date = request.POST.get('task_expected_completion_date')
-        task_status = request.POST.get('task_status', 'Not Started')
+        task_status = request.POST.get('task_status', 'Pending')
         task_priority = request.POST.get('task_priority', 'Medium')
         task_budgeted_cost = request.POST.get('task_budgeted_cost')
         task_actual_cost = request.POST.get('task_actual_cost')
@@ -297,23 +396,47 @@ def project_tasks_edit(request, project_id, task_id):
         messages.error(request, "You don't have permission to edit tasks.")
         return redirect('projects_detail', project_id=project_id)
     
-    project = get_object_or_404(Project, project_id=project_id)  # Updated model name
-    task = get_object_or_404(ProjectTask, task_id=task_id, project=project)  # Updated model name
+    project = get_object_or_404(Project, project_id=project_id)
+    task = get_object_or_404(ProjectTask, task_id=task_id, project=project)
     
     if request.method == 'POST':
+        # Only update fields that are not auto-calculated
         task.task_name = request.POST.get('task_name')
         task.task_description = request.POST.get('task_description')
-        task.task_start_date = request.POST.get('task_start_date') if request.POST.get('task_start_date') else None
-        task.task_expected_completion_date = request.POST.get('task_expected_completion_date') if request.POST.get('task_expected_completion_date') else None
-        task.task_status = request.POST.get('task_status', 'Not Started')
-        task.task_priority = request.POST.get('task_priority', 'Medium')
-        task.task_budgeted_cost = request.POST.get('task_budgeted_cost') if request.POST.get('task_budgeted_cost') else 0.00
-        task.task_actual_cost = request.POST.get('task_actual_cost') if request.POST.get('task_actual_cost') else 0.00
-        task.task_assigned_to = request.POST.get('task_assigned_to')
-        task.task_actual_completion_date = request.POST.get('task_actual_completion_date') if request.POST.get('task_actual_completion_date') else None
+        
+        # For main tasks, don't update calculated fields
+        if not task.parent_task:  # This is a main task
+            # Auto-calculate all fields based on subtasks
+            task.task_status = task.get_calculated_status()
+            task.task_start_date = task.get_calculated_start_date()
+            task.task_expected_completion_date = task.get_calculated_expected_completion()
+            task.task_actual_completion_date = task.get_calculated_actual_completion()
+            task.task_budgeted_cost = task.get_calculated_budgeted_cost()
+            task.task_actual_cost = task.get_calculated_actual_cost()
+        else:  # This is a subtask
+            # Allow manual editing of all fields for subtasks
+            task.task_start_date = request.POST.get('task_start_date') if request.POST.get('task_start_date') else None
+            task.task_expected_completion_date = request.POST.get('task_expected_completion_date') if request.POST.get('task_expected_completion_date') else None
+            task.task_status = request.POST.get('task_status', 'Not Started')
+            task.task_priority = request.POST.get('task_priority', 'Medium')
+            task.task_budgeted_cost = request.POST.get('task_budgeted_cost') if request.POST.get('task_budgeted_cost') else 0.00
+            task.task_actual_cost = request.POST.get('task_actual_cost') if request.POST.get('task_actual_cost') else 0.00
+            task.task_assigned_to = request.POST.get('task_assigned_to')
+            task.task_actual_completion_date = request.POST.get('task_actual_completion_date') if request.POST.get('task_actual_completion_date') else None
         
         try:
             task.save()
+            
+            # If this is a subtask, update the parent task's calculated fields
+            if task.parent_task:
+                parent = task.parent_task
+                parent.task_status = parent.get_calculated_status()
+                parent.task_start_date = parent.get_calculated_start_date()
+                parent.task_expected_completion_date = parent.get_calculated_expected_completion()
+                parent.task_actual_completion_date = parent.get_calculated_actual_completion()
+                parent.task_budgeted_cost = parent.get_calculated_budgeted_cost()
+                parent.task_actual_cost = parent.get_calculated_actual_cost()
+                parent.save()
             
             messages.success(request, f"Task '{task.task_name}' has been updated successfully.")
             return redirect('projects_detail', project_id=project_id)
@@ -324,8 +447,8 @@ def project_tasks_edit(request, project_id, task_id):
     context = {
         'project': project,
         'task': task,
-        'task_status_choices': ProjectTask.TASK_STATUS_CHOICES,  # Updated model name
-        'task_priority_choices': ProjectTask.TASK_PRIORITY_CHOICES,  # Updated model name
+        'task_status_choices': ProjectTask.TASK_STATUS_CHOICES,
+        'task_priority_choices': ProjectTask.TASK_PRIORITY_CHOICES,
     }
     
     return render(request, 'projects/project_tasks_edit.html', context)
@@ -368,7 +491,7 @@ def project_subtasks_add(request, project_id, parent_task_id):
         task_description = request.POST.get('task_description')
         task_start_date = request.POST.get('task_start_date')
         task_expected_completion_date = request.POST.get('task_expected_completion_date')
-        task_status = request.POST.get('task_status', 'Not Started')
+        task_status = request.POST.get('task_status', 'Pending')
         task_priority = request.POST.get('task_priority', 'Medium')
         task_budgeted_cost = request.POST.get('task_budgeted_cost')
         task_actual_cost = request.POST.get('task_actual_cost')

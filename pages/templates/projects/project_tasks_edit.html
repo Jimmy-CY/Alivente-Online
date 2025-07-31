@@ -82,121 +82,207 @@ Edit Task - {{ task.task_name }}
       </div>
     </div>
 
-    <!-- Status -->
-    <div class="col-md-3">
-      <div class="form-group">
-        <label for="task_status">
-          <i class="fas fa-info-circle"></i> Status
-        </label>
-        <select class="form-control" id="task_status" name="task_status">
-          {% for status_value, status_display in task_status_choices %}
-            <option value="{{ status_value }}" 
-                    {% if status_value == task.task_status %}selected{% endif %}>
-              {{ status_display }}
-            </option>
-          {% endfor %}
-        </select>
+    <!-- Status - Show different fields based on whether this is a main task or subtask -->
+    {% if not task.parent_task %}
+      <!-- Main Task: Status is Auto-calculated and Disabled -->
+      <div class="col-md-3">
+        <div class="form-group">
+          <label for="task_status">
+            <i class="fas fa-info-circle"></i> Status (Auto-calculated)
+          </label>
+          <select class="form-control auto-calculated-field" id="task_status" name="task_status" disabled>
+            <option value="{{ task.get_calculated_status }}">{{ task.get_calculated_status }}</option>
+          </select>
+          <small class="form-text text-muted">Status is automatically calculated based on subtasks</small>
+        </div>
       </div>
-    </div>
+    {% else %}
+      <!-- Subtask: Status is Editable -->
+      <div class="col-md-3">
+        <div class="form-group">
+          <label for="task_status">
+            <i class="fas fa-info-circle"></i> Status
+          </label>
+          <select class="form-control" id="task_status" name="task_status">
+            {% for status_value, status_display in task_status_choices %}
+              <option value="{{ status_value }}" 
+                      {% if status_value == task.task_status %}selected{% endif %}>
+                {{ status_display }}
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+    {% endif %}
   </div>
 
   <div class="row">
-    <!-- Start Date -->
-    <div class="col-md-3">
-      <div class="form-group">
-        <label for="task_start_date">
-          <i class="fas fa-calendar-alt"></i> Start Date
-        </label>
-        <input type="date" 
-               class="form-control" 
-               id="task_start_date" 
-               name="task_start_date"
-               value="{{ task.task_start_date|date:'Y-m-d' }}">
+    {% if not task.parent_task %}
+      <!-- Main Task: Dates are Auto-calculated and Disabled -->
+      <div class="col-md-6">
+        <div class="form-group">
+          <label for="task_start_date">
+            <i class="fas fa-calendar-alt"></i> Start Date (Auto-calculated)
+          </label>
+          <input type="date" 
+                 class="form-control auto-calculated-field" 
+                 id="task_start_date" 
+                 name="task_start_date"
+                 disabled
+                 value="{% if task.get_calculated_start_date %}{{ task.get_calculated_start_date|date:'Y-m-d' }}{% endif %}">
+          <small class="form-text text-muted">Earliest start date from subtasks</small>
+        </div>
       </div>
-    </div>
 
-    <!-- Expected Completion Date -->
-    <div class="col-md-3">
-      <div class="form-group">
-        <label for="task_expected_completion_date">
-          <i class="fas fa-calendar-check"></i> Expected Completion
-        </label>
-        <input type="date" 
-               class="form-control" 
-               id="task_expected_completion_date" 
-               name="task_expected_completion_date"
-               value="{{ task.task_expected_completion_date|date:'Y-m-d' }}">
+      <div class="col-md-6">
+        <div class="form-group">
+          <label for="task_expected_completion_date">
+            <i class="fas fa-calendar-check"></i> Expected Completion (Auto-calculated)
+          </label>
+          <input type="date" 
+                 class="form-control auto-calculated-field" 
+                 id="task_expected_completion_date" 
+                 name="task_expected_completion_date"
+                 disabled
+                 value="{% if task.get_calculated_expected_completion %}{{ task.get_calculated_expected_completion|date:'Y-m-d' }}{% endif %}">
+          <small class="form-text text-muted">Latest expected completion from subtasks</small>
+        </div>
       </div>
-    </div>
+    {% else %}
+      <!-- Subtask: Dates are Editable -->
+      <div class="col-md-6">
+        <div class="form-group">
+          <label for="task_start_date">
+            <i class="fas fa-calendar-alt"></i> Start Date
+          </label>
+          <input type="date" 
+                 class="form-control" 
+                 id="task_start_date" 
+                 name="task_start_date"
+                 value="{% if task.task_start_date %}{{ task.task_start_date|date:'Y-m-d' }}{% endif %}">
+        </div>
+      </div>
 
-    <!-- Budgeted Cost -->
-    <div class="col-md-3">
-      <div class="form-group">
-        <label for="task_budgeted_cost">
-          <i class="fas fa-euro-sign"></i> Budgeted Cost
-        </label>
-        <input type="number" 
-               class="form-control" 
-               id="task_budgeted_cost" 
-               name="task_budgeted_cost"
-               step="0.01"
-               min="0"
-               value="{{ task.task_budgeted_cost }}"
-               placeholder="0.00">
+      <div class="col-md-6">
+        <div class="form-group">
+          <label for="task_expected_completion_date">
+            <i class="fas fa-calendar-check"></i> Expected Completion Date
+          </label>
+          <input type="date" 
+                 class="form-control" 
+                 id="task_expected_completion_date" 
+                 name="task_expected_completion_date"
+                 value="{% if task.task_expected_completion_date %}{{ task.task_expected_completion_date|date:'Y-m-d' }}{% endif %}">
+        </div>
       </div>
-    </div>
-
-    <!-- Actual Cost -->
-    <div class="col-md-3">
-      <div class="form-group">
-        <label for="task_actual_cost">
-          <i class="fas fa-euro-sign"></i> Actual Cost
-        </label>
-        <input type="number" 
-               class="form-control" 
-               id="task_actual_cost" 
-               name="task_actual_cost"
-               step="0.01"
-               min="0"
-               value="{{ task.task_actual_cost }}"
-               placeholder="0.00">
-      </div>
-    </div>
+    {% endif %}
   </div>
 
-  <!-- Actual Completion Date -->
-  <div class="row" id="actualCompletionRow" 
-       {% if task.task_status != 'Completed' %}style="display: none;"{% endif %}>
-    <div class="col-md-4">
-      <div class="form-group">
-        <label for="task_actual_completion_date">
-          <i class="fas fa-calendar-times"></i> Actual Completion Date <span style="color: red;">*</span>
-        </label>
-        <input type="date" 
-               class="form-control" 
-               id="task_actual_completion_date" 
-               name="task_actual_completion_date"
-               value="{{ task.task_actual_completion_date|date:'Y-m-d' }}">
-      </div>
-    </div>
-  </div>
-
-  <!-- Assigned To -->
   <div class="row">
-    <div class="col-md-6">
-      <div class="form-group">
-        <label for="task_assigned_to">
-          <i class="fas fa-user"></i> Assigned To
-        </label>
-        <input type="text" 
-               class="form-control" 
-               id="task_assigned_to" 
-               name="task_assigned_to"
-               value="{{ task.task_assigned_to }}"
-               placeholder="Enter assignee name...">
+    {% if not task.parent_task %}
+      <!-- Main Task: Costs are Auto-calculated and Disabled -->
+      <div class="col-md-6">
+        <div class="form-group">
+          <label for="task_budgeted_cost">
+            <i class="fas fa-euro-sign"></i> Budgeted Cost (Auto-calculated)
+          </label>
+          <input type="number" 
+                 class="form-control auto-calculated-field" 
+                 id="task_budgeted_cost" 
+                 name="task_budgeted_cost"
+                 disabled
+                 value="{{ task.get_calculated_budgeted_cost }}"
+                 step="0.01">
+          <small class="form-text text-muted">Sum of all subtask budgeted costs</small>
+        </div>
+      </div>
+
+      <div class="col-md-6">
+        <div class="form-group">
+          <label for="task_actual_cost">
+            <i class="fas fa-euro-sign"></i> Actual Cost (Auto-calculated)
+          </label>
+          <input type="number" 
+                 class="form-control auto-calculated-field" 
+                 id="task_actual_cost" 
+                 name="task_actual_cost"
+                 disabled
+                 value="{{ task.get_calculated_actual_cost }}"
+                 step="0.01">
+          <small class="form-text text-muted">Sum of all subtask actual costs</small>
+        </div>
+      </div>
+    {% else %}
+      <!-- Subtask: Costs are Editable -->
+      <div class="col-md-6">
+        <div class="form-group">
+          <label for="task_budgeted_cost">
+            <i class="fas fa-euro-sign"></i> Budgeted Cost
+          </label>
+          <input type="number" 
+                 class="form-control" 
+                 id="task_budgeted_cost" 
+                 name="task_budgeted_cost"
+                 value="{{ task.task_budgeted_cost }}"
+                 step="0.01"
+                 placeholder="0.00">
+        </div>
+      </div>
+
+      <div class="col-md-6">
+        <div class="form-group">
+          <label for="task_actual_cost">
+            <i class="fas fa-euro-sign"></i> Actual Cost
+          </label>
+          <input type="number" 
+                 class="form-control" 
+                 id="task_actual_cost" 
+                 name="task_actual_cost"
+                 value="{{ task.task_actual_cost }}"
+                 step="0.01"
+                 placeholder="0.00">
+        </div>
+      </div>
+    {% endif %}
+  </div>
+
+  <!-- Actual Completion Date - Only for subtasks or manually editable -->
+  {% if task.parent_task %}
+    <div class="row" id="actualCompletionRow" 
+         {% if task.task_status != 'Completed' %}style="display: none;"{% endif %}>
+      <div class="col-md-4">
+        <div class="form-group">
+          <label for="task_actual_completion_date">
+            <i class="fas fa-calendar-times"></i> Actual Completion Date <span style="color: red;">*</span>
+          </label>
+          <input type="date" 
+                 class="form-control" 
+                 id="task_actual_completion_date" 
+                 name="task_actual_completion_date"
+                 value="{% if task.task_actual_completion_date %}{{ task.task_actual_completion_date|date:'Y-m-d' }}{% endif %}">
+        </div>
       </div>
     </div>
-  </div>
+  {% endif %}
+
+  <!-- Assigned To - Only for subtasks -->
+  {% if task.parent_task %}
+    <div class="row">
+      <div class="col-md-6">
+        <div class="form-group">
+          <label for="task_assigned_to">
+            <i class="fas fa-user"></i> Assigned To
+          </label>
+          <input type="text" 
+                 class="form-control" 
+                 id="task_assigned_to" 
+                 name="task_assigned_to"
+                 value="{{ task.task_assigned_to }}"
+                 placeholder="Enter assignee name...">
+        </div>
+      </div>
+    </div>
+  {% endif %}
 
   <!-- Description -->
   <div class="row">
@@ -216,7 +302,7 @@ Edit Task - {{ task.task_name }}
 
   <!-- Form Actions -->
   <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #dee2e6;">
-    <button type="submit" class="btn btn-success">
+    <button type="submit" class="btn btn-info">
       <i class="fas fa-save"></i> Update Task
     </button>
     <a href="{% url 'projects_detail' project.project_id %}" class="btn btn-secondary ml-2">
@@ -234,7 +320,7 @@ console.log('=== EDIT TASK FORM LOADED ===');
 $(document).ready(function() {
     console.log('Setting up task edit form validation and interactions');
     
-    // Status change handler
+    // Status change handler - only for subtasks
     $('#task_status').on('change', function() {
         const status = $(this).val();
         const actualCompletionRow = $('#actualCompletionRow');
@@ -255,7 +341,7 @@ $(document).ready(function() {
         }
     });
     
-    // Date validation
+    // Date validation - only for subtasks
     $('#task_start_date, #task_expected_completion_date').on('change', function() {
         validateDates();
     });
@@ -290,7 +376,8 @@ $(document).ready(function() {
             isValid = false;
         }
         
-        // Validate dates
+        // Validate dates - only for subtasks
+        {% if task.parent_task %}
         if (!validateDates()) {
             isValid = false;
         }
@@ -304,6 +391,7 @@ $(document).ready(function() {
             $('#task_actual_completion_date').focus();
             isValid = false;
         }
+        {% endif %}
         
         if (!isValid) {
             e.preventDefault();
@@ -313,22 +401,17 @@ $(document).ready(function() {
         }
     });
     
-    // Set minimum dates based on project dates
-    {% if project.project_start_date %}
-        $('#task_start_date').attr('min', '{{ project.project_start_date|date:"Y-m-d" }}');
-    {% endif %}
-    
-    {% if project.project_expected_completion_date %}
-        $('#task_expected_completion_date').attr('max', '{{ project.project_expected_completion_date|date:"Y-m-d" }}');
-    {% endif %}
-    
-    // Update expected completion minimum date when start date changes
+    // NO DATE CONSTRAINTS for subtasks - they drive the timeline
+    // Only basic validation: expected completion must be after start date
+    {% if task.parent_task %}
     $('#task_start_date').on('change', function() {
         const startDate = $(this).val();
         if (startDate) {
             $('#task_expected_completion_date').attr('min', startDate);
+            console.log('Updated subtask expected completion minimum to: ' + startDate);
         }
     });
+    {% endif %}
     
     console.log('Task edit form setup complete');
 });

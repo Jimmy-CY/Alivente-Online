@@ -118,24 +118,26 @@ Projects
     <table class="table table-bordered table-striped text-center">
       <thead>
         <tr>
-          <th style="text-align: left; width: 25%">Project Name</th>
+          <th style="text-align: left; width: 30%">Project Name</th>
           <th style="width: 20%">Property</th>
-          <th style="width: 12%">Status</th>
-          <th style="width: 10%">Progress</th>
+          <th style="width: 13%">Status</th>
+          <th style="width: 12%">Progress</th>
           <th style="width: 10%">Start Date</th>
-          <th style="width: 10%">Expected End</th>
-          <th style="width: 8%">Details</th>
-          <th style="width: 5%">Edit</th>
+          <th style="width: 10%">End Date</th>
+          <th style="width: 8%">Edit</th>
+          <th style="width: 7%">Delete</th>
         </tr>
       </thead>
       <tbody>
         {% for project in projects %}
           <tr>
             <td style="text-align: left">
-              <strong>{{ project.project_name }}</strong>
-              {% if project.project_description %}
-                <br><small class="text-muted">{{ project.project_description|truncatechars:80 }}</small>
-              {% endif %}
+              <a href="{% url 'projects_detail' project.project_id %}" class="project-name-link">
+                <strong>{{ project.project_name }}</strong>
+                {% if project.project_description %}
+                  <br><small class="text-muted">{{ project.project_description|truncatechars:80 }}</small>
+                {% endif %}
+              </a>
             </td>
             <td>{{ project.prop.prop_name }}</td>
             <td>
@@ -175,11 +177,6 @@ Projects
               {% endif %}
             </td>
             <td>
-              <button type="button" class="btn btn-light action-btn">
-                <a href="{% url 'projects_detail' project.project_id %}">View</a>
-              </button>
-            </td>
-            <td>
               {% if user.is_superuser %}
                 <button type="button" class="btn btn-light action-btn">
                   <a href="{% url 'projects_edit' project.project_id %}">Edit</a>
@@ -187,6 +184,33 @@ Projects
               {% else %}
                 <button type="button" class="btn btn-light action-btn" disabled style="opacity: 0.5;">
                   <span style="color: #6c757d;">Edit</span>
+                </button>
+              {% endif %}
+            </td>
+            <td>
+              {% if user.is_superuser %}
+                <div class="btn-group" role="group">
+                  <!-- Direct delete page (recommended) -->
+                  <a href="{% url 'projects_delete' project.project_id %}" 
+                     class="btn btn-danger action-btn delete-btn"
+                     title="Delete Project">
+                    <i class="fas fa-trash"></i>
+                  </a>
+                  <!-- Alternative: Modal delete (optional) -->
+                  <!--
+                  <button type="button" 
+                          class="btn btn-danger action-btn delete-btn" 
+                          data-project-id="{{ project.project_id }}"
+                          data-project-name="{{ project.project_name }}"
+                          onclick="confirmDelete(this)"
+                          title="Quick Delete">
+                    <i class="fas fa-trash"></i>
+                  </button>
+                  -->
+                </div>
+              {% else %}
+                <button type="button" class="btn btn-light action-btn" disabled style="opacity: 0.5;">
+                  <i class="fas fa-trash" style="color: #6c757d;"></i>
                 </button>
               {% endif %}
             </td>
@@ -237,6 +261,60 @@ Projects
   {% endif %}
 
 </body>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteConfirmModal" tabindex="-1" role="dialog" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title" id="deleteConfirmModalLabel">
+          <i class="fas fa-exclamation-triangle"></i> Confirm Project Deletion
+        </h5>
+        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="alert alert-danger">
+          <strong><i class="fas fa-warning"></i> WARNING:</strong> This action cannot be undone!
+        </div>
+        <p>Are you sure you want to permanently delete the project:</p>
+        <p class="font-weight-bold text-danger" id="projectNameToDelete"></p>
+        <p class="text-muted">This will also delete:</p>
+        <ul class="text-muted">
+          <li>All tasks associated with this project</li>
+          <li>All subtasks within those tasks</li>
+          <li>All project data and progress</li>
+        </ul>
+        <div class="form-group mt-3">
+          <label for="confirmationInput">Type <strong>"DELETE"</strong> to confirm:</label>
+          <input type="text" 
+                 class="form-control" 
+                 id="confirmationInput" 
+                 placeholder="Type DELETE to confirm"
+                 style="text-transform: uppercase;">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">
+          <i class="fas fa-times"></i> Cancel
+        </button>
+        <button type="button" 
+                class="btn btn-danger" 
+                id="confirmDeleteBtn" 
+                disabled>
+          <i class="fas fa-trash"></i> Delete Project Permanently
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Hidden form for delete submission -->
+<form id="deleteProjectForm" method="post" style="display: none;">
+  {% csrf_token %}
+  <input type="hidden" name="delete_project_id" id="deleteProjectId">
+</form>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -528,6 +606,46 @@ Projects
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
+/* Clickable Project Name Styling */
+.project-name-link {
+    color: #2c3e50;
+    text-decoration: none;
+    display: block;
+    padding: 4px 0;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+}
+
+.project-name-link:hover {
+    color: #17a2b8;
+    text-decoration: none;
+    background-color: rgba(23, 162, 184, 0.05);
+    padding: 4px 8px;
+    margin: 0 -8px;
+    transform: translateX(2px);
+}
+
+.project-name-link:focus {
+    color: #17a2b8;
+    text-decoration: none;
+    outline: 2px solid rgba(23, 162, 184, 0.3);
+    outline-offset: 2px;
+}
+
+.project-name-link strong {
+    color: inherit;
+    font-weight: 600;
+}
+
+.project-name-link .text-muted {
+    color: #6c757d !important;
+    transition: color 0.3s ease;
+}
+
+.project-name-link:hover .text-muted {
+    color: #495057 !important;
+}
+
 .status-badge {
     padding: 4px 12px;
     border-radius: 12px;
@@ -569,6 +687,8 @@ Projects
 .action-btn {
     border-color: #dee2e6;
     transition: all 0.2s ease;
+    padding: 6px 12px;
+    font-size: 14px;
 }
 
 .action-btn:hover {
@@ -594,6 +714,63 @@ Projects
     box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 
+/* Delete Button Styling */
+.delete-btn {
+    background-color: #dc3545;
+    border-color: #dc3545;
+    color: white;
+    padding: 6px 10px;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+}
+
+.delete-btn:hover {
+    background-color: #c82333;
+    border-color: #bd2130;
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(220, 53, 69, 0.3);
+}
+
+.delete-btn:focus {
+    box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.25);
+}
+
+/* Modal Enhancements */
+.modal-content {
+    border-radius: 12px;
+    border: none;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.modal-header.bg-danger {
+    border-radius: 12px 12px 0 0;
+}
+
+.modal-body .alert-danger {
+    border-radius: 8px;
+    border-left: 4px solid #dc3545;
+}
+
+#confirmationInput {
+    border: 2px solid #e9ecef;
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+#confirmationInput:focus {
+    border-color: #dc3545;
+    box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.1);
+    outline: none;
+}
+
+#confirmationInput.valid {
+    border-color: #28a745;
+    background-color: rgba(40, 167, 69, 0.05);
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
     .filter-grid {
@@ -610,6 +787,14 @@ Projects
     .search-input-group {
         width: 100%;
     }
+    
+    .table-container {
+        overflow-x: auto;
+    }
+    
+    .table {
+        min-width: 800px;
+    }
 }
 </style>
 
@@ -617,6 +802,9 @@ Projects
 // Same filter panel JavaScript as properties.html
 let PANEL_IS_MANUALLY_EXPANDED = false;
 let EXTERNAL_INTERFERENCE_DETECTED = false;
+
+// Global variables for delete functionality
+let projectToDelete = null;
 
 document.addEventListener('DOMContentLoaded', function() {
     console.log('DOM loaded - initializing filter panel');
@@ -673,41 +861,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     window.PANEL_MUST_STAY_EXPANDED = true;
                     
                     const originalHide = window.hideFilters;
-                    window.hideFilters = function() {
-                        console.log('🚫 BLOCKED: hideFilters() call during form submission');
-                        return false;
-                    };
-                    
-                    setTimeout(() => {
-                        window.hideFilters = originalHide;
-                    }, 100);
-                }
-                
-                document.getElementById('filterForm').submit();
-            });
-        }
-    });
-    
-    // Search button functionality
-    const searchBtn = document.getElementById('searchBtn');
-    if (searchBtn) {
-        searchBtn.addEventListener('click', function() {
-            console.log('🔍 Search button clicked');
-            
-            if (PANEL_IS_MANUALLY_EXPANDED) {
-                console.log('🔒 LOCKING PANEL STATE BEFORE SEARCH SUBMISSION');
-                
-                const filterPanel = document.getElementById('filterPanel');
-                
-                if (filterPanel) {
-                    filterPanel.classList.add('force-expanded');
-                    filterPanel.style.cssText += 'display: block !important;';
-                }
-                
-                sessionStorage.setItem('FORCE_PANEL_EXPANDED', 'true');
-                window.PANEL_MUST_STAY_EXPANDED = true;
-                
-                const originalHide = window.hideFilters;
                 window.hideFilters = function() {
                     console.log('🚫 BLOCKED: hideFilters() call during search submission');
                     return false;
@@ -827,9 +980,72 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('filterForm').submit();
         });
     }
+
+    // Delete confirmation functionality
+    setupDeleteConfirmation();
     
     console.log('All event listeners attached');
 });
+
+function setupDeleteConfirmation() {
+    const confirmationInput = document.getElementById('confirmationInput');
+    const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
+    
+    if (confirmationInput && confirmDeleteBtn) {
+        confirmationInput.addEventListener('input', function() {
+            const inputValue = this.value.toUpperCase();
+            const isValid = inputValue === 'DELETE';
+            
+            confirmDeleteBtn.disabled = !isValid;
+            
+            if (isValid) {
+                this.classList.add('valid');
+                confirmDeleteBtn.classList.remove('btn-secondary');
+                confirmDeleteBtn.classList.add('btn-danger');
+            } else {
+                this.classList.remove('valid');
+                confirmDeleteBtn.classList.remove('btn-danger');
+                confirmDeleteBtn.classList.add('btn-secondary');
+            }
+        });
+        
+        confirmDeleteBtn.addEventListener('click', function() {
+            if (projectToDelete && confirmationInput.value.toUpperCase() === 'DELETE') {
+                document.getElementById('deleteProjectId').value = projectToDelete.id;
+                document.getElementById('deleteProjectForm').action = `/projects/delete/${projectToDelete.id}/`;
+                document.getElementById('deleteProjectForm').submit();
+            }
+        });
+    }
+    
+    // Reset modal when hidden
+    $('#deleteConfirmModal').on('hidden.bs.modal', function() {
+        confirmationInput.value = '';
+        confirmationInput.classList.remove('valid');
+        confirmDeleteBtn.disabled = true;
+        confirmDeleteBtn.classList.remove('btn-danger');
+        confirmDeleteBtn.classList.add('btn-secondary');
+        projectToDelete = null;
+    });
+}
+
+function confirmDelete(button) {
+    const projectId = button.getAttribute('data-project-id');
+    const projectName = button.getAttribute('data-project-name');
+    
+    if (!projectId || !projectName) {
+        console.error('Missing project data for delete operation');
+        return;
+    }
+    
+    projectToDelete = {
+        id: projectId,
+        name: projectName
+    };
+    
+    document.getElementById('projectNameToDelete').textContent = projectName;
+    $('#deleteConfirmModal').modal('show');
+}
 
 function forceExpandPanel() {
     const filterPanel = document.getElementById('filterPanel');
@@ -1058,3 +1274,38 @@ console.log('🚀 === PROJECTS SCRIPT COMPLETE ===');
 </script>
 
 {% endblock %}
+                    window.hideFilters = function() {
+                        console.log('🚫 BLOCKED: hideFilters() call during form submission');
+                        return false;
+                    };
+                    
+                    setTimeout(() => {
+                        window.hideFilters = originalHide;
+                    }, 100);
+                }
+                
+                document.getElementById('filterForm').submit();
+            });
+        }
+    });
+    
+    // Search button functionality
+    const searchBtn = document.getElementById('searchBtn');
+    if (searchBtn) {
+        searchBtn.addEventListener('click', function() {
+            console.log('🔍 Search button clicked');
+            
+            if (PANEL_IS_MANUALLY_EXPANDED) {
+                console.log('🔒 LOCKING PANEL STATE BEFORE SEARCH SUBMISSION');
+                
+                const filterPanel = document.getElementById('filterPanel');
+                
+                if (filterPanel) {
+                    filterPanel.classList.add('force-expanded');
+                    filterPanel.style.cssText += 'display: block !important;';
+                }
+                
+                sessionStorage.setItem('FORCE_PANEL_EXPANDED', 'true');
+                window.PANEL_MUST_STAY_EXPANDED = true;
+                
+                const originalHide = window.hideFilters;

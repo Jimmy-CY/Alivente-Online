@@ -7,7 +7,7 @@ Project Details - {{ project.project_name }}
 
 {% block content %}
 
-<h2><center>PROJECT DETAILS - {{ project.project_name|upper }}</center></h2>
+<h2><center>PROJECT DETAILS</center></h2>
 <br/>
 
 {% for msg in messages %}
@@ -31,14 +31,6 @@ Project Details - {{ project.project_name }}
 <body>
   <!-- Action Buttons -->
   <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 20px;">
-    {% if user.is_superuser %}
-      <a href="{% url 'project_tasks_add' project.project_id %}" class="btn btn-success">
-        <i class="fas fa-plus"></i> Add Task
-      </a>
-      <a href="{% url 'projects_edit' project.project_id %}" class="btn btn-warning">
-        <i class="fas fa-edit"></i> Edit Project
-      </a>
-    {% endif %}
     <a href="{% url 'projects' %}" class="btn btn-info">
       <i class="fas fa-arrow-left"></i> Back to Projects
     </a>
@@ -49,26 +41,26 @@ Project Details - {{ project.project_name }}
     <div class="row">
       <div class="col-md-8">
         <h3>{{ project.project_name }}</h3>
-        <p class="project-property">
-          <i class="fas fa-home"></i> <strong>Property:</strong> {{ project.prop.prop_name }}
-        </p>
         {% if project.project_description %}
           <p class="project-description">{{ project.project_description }}</p>
         {% endif %}
+        <p class="project-property">
+          <i class="fas fa-home"></i> <strong>Property:</strong> {{ project.prop.prop_name }}
+        </p>
       </div>
       <div class="col-md-4 text-right">
         <div class="project-status-container">
           <span class="status-badge 
-            {% if project.project_status == 'Completed' %}status-completed
-            {% elif project.project_status == 'In Progress' %}status-in-progress
+            {% if project.get_calculated_status == 'Completed' %}status-completed
+            {% elif project.get_calculated_status == 'In Progress' %}status-in-progress
             {% else %}status-pending{% endif %}">
-            {{ project.project_status }}
+            {{ project.get_calculated_status }}
           </span>
           
           {% if user.is_superuser %}
-            <button class="btn btn-sm btn-outline-secondary ml-2" onclick="showStatusModal()">
-              <i class="fas fa-edit"></i> Change
-            </button>
+            <a href="{% url 'projects_edit' project.project_id %}" class="btn btn-sm btn-info ml-2">
+              <i class="fas fa-edit"></i>
+            </a>
           {% endif %}
         </div>
       </div>
@@ -93,13 +85,13 @@ Project Details - {{ project.project_name }}
       </div>
       <div class="col-md-3">
         <div class="stat-card">
-          <div class="stat-value">€{{ project.project_total_budgeted_cost|floatformat:2 }}</div>
+          <div class="stat-value">€{{ project.get_calculated_budgeted_cost|floatformat:2 }}</div>
           <div class="stat-label">Budgeted Cost</div>
         </div>
       </div>
       <div class="col-md-3">
         <div class="stat-card">
-          <div class="stat-value">€{{ project.project_total_actual_cost|floatformat:2 }}</div>
+          <div class="stat-value">€{{ project.get_calculated_actual_cost|floatformat:2 }}</div>
           <div class="stat-label">Actual Cost</div>
         </div>
       </div>
@@ -110,8 +102,8 @@ Project Details - {{ project.project_name }}
       <div class="col-md-4">
         <div class="date-info">
           <strong>Start Date:</strong>
-          {% if project.project_start_date %}
-            {{ project.project_start_date|date:"M d, Y" }}
+          {% if project.get_calculated_start_date %}
+            {{ project.get_calculated_start_date|date:"M d, Y" }}
           {% else %}
             <span class="text-muted">Not set</span>
           {% endif %}
@@ -120,8 +112,8 @@ Project Details - {{ project.project_name }}
       <div class="col-md-4">
         <div class="date-info">
           <strong>Expected Completion:</strong>
-          {% if project.project_expected_completion_date %}
-            {{ project.project_expected_completion_date|date:"M d, Y" }}
+          {% if project.get_calculated_expected_completion %}
+            {{ project.get_calculated_expected_completion|date:"M d, Y" }}
           {% else %}
             <span class="text-muted">Not set</span>
           {% endif %}
@@ -130,8 +122,8 @@ Project Details - {{ project.project_name }}
       <div class="col-md-4">
         <div class="date-info">
           <strong>Actual Completion:</strong>
-          {% if project.project_actual_completion_date %}
-            {{ project.project_actual_completion_date|date:"M d, Y" }}
+          {% if project.get_calculated_actual_completion %}
+            {{ project.get_calculated_actual_completion|date:"M d, Y" }}
           {% else %}
             <span class="text-muted">Not completed</span>
           {% endif %}
@@ -145,7 +137,7 @@ Project Details - {{ project.project_name }}
     <h4>
       <i class="fas fa-tasks"></i> Project Tasks
       {% if user.is_superuser %}
-        <a href="{% url 'project_tasks_add' project.project_id %}" class="btn btn-sm btn-success ml-3">
+        <a href="{% url 'project_tasks_add' project.project_id %}" class="btn btn-sm btn-info ml-3">
           <i class="fas fa-plus"></i> Add Task
         </a>
       {% endif %}
@@ -162,25 +154,24 @@ Project Details - {{ project.project_name }}
                     {{ task.task_priority }}
                   </span>
                   {{ task.task_name }}
+                  {% if user.is_superuser %}
+                    <a href="{% url 'project_subtasks_add' project.project_id task.task_id %}" class="btn btn-sm btn-info ml-3">
+                      <i class="fas fa-plus"></i> Add Subtask
+                    </a>
+                  {% endif %}
                 </h5>
                 {% if task.task_description %}
                   <p class="task-description">{{ task.task_description }}</p>
                 {% endif %}
               </div>
               <div class="task-actions">
-                <span class="task-status-badge status-{{ task.task_status|slugify }}">
-                  {{ task.task_status }}
+                <span class="task-status-badge status-{{ task.get_calculated_status|slugify }}">
+                  {{ task.get_calculated_status }}
                 </span>
                 {% if user.is_superuser %}
                   <div class="btn-group ml-2">
-                    <button class="btn btn-sm btn-outline-primary" onclick="editTaskStatus('{{ task.task_id }}', '{{ task.task_status }}')">
+                    <a href="{% url 'project_tasks_edit' project.project_id task.task_id %}" class="btn btn-sm btn-info">
                       <i class="fas fa-edit"></i>
-                    </button>
-                    <a href="{% url 'project_tasks_edit' project.project_id task.task_id %}" class="btn btn-sm btn-outline-warning">
-                      <i class="fas fa-cog"></i>
-                    </a>
-                    <a href="{% url 'project_subtasks_add' project.project_id task.task_id %}" class="btn btn-sm btn-outline-success">
-                      <i class="fas fa-plus"></i> Subtask
                     </a>
                   </div>
                 {% endif %}
@@ -193,8 +184,8 @@ Project Details - {{ project.project_name }}
                 <div class="col-md-3">
                   <div class="task-detail-item">
                     <strong>Start Date:</strong>
-                    {% if task.task_start_date %}
-                      {{ task.task_start_date|date:"M d, Y" }}
+                    {% if task.get_calculated_start_date %}
+                      {{ task.get_calculated_start_date|date:"M d, Y" }}
                     {% else %}
                       <span class="text-muted">Not set</span>
                     {% endif %}
@@ -203,33 +194,27 @@ Project Details - {{ project.project_name }}
                 <div class="col-md-3">
                   <div class="task-detail-item">
                     <strong>Expected End:</strong>
-                    {% if task.task_expected_completion_date %}
-                      {{ task.task_expected_completion_date|date:"M d, Y" }}
+                    {% if task.get_calculated_expected_completion %}
+                      {{ task.get_calculated_expected_completion|date:"M d, Y" }}
                     {% else %}
                       <span class="text-muted">Not set</span>
                     {% endif %}
+                    {% if task.get_calculated_status == 'Completed' and task.get_calculated_actual_completion %}
+                      <br><strong>Actual End:</strong>
+                      <span style="color: #28a745;">{{ task.get_calculated_actual_completion|date:"M d, Y" }}</span>
+                    {% endif %}
                   </div>
                 </div>
-                <div class="col-md-2">
+                <div class="col-md-3">
                   <div class="task-detail-item">
                     <strong>Budgeted:</strong>
-                    €{{ task.task_budgeted_cost|floatformat:2 }}
+                    €{{ task.get_calculated_budgeted_cost|floatformat:2 }}
                   </div>
                 </div>
-                <div class="col-md-2">
+                <div class="col-md-3">
                   <div class="task-detail-item">
                     <strong>Actual:</strong>
-                    €{{ task.task_actual_cost|floatformat:2 }}
-                  </div>
-                </div>
-                <div class="col-md-2">
-                  <div class="task-detail-item">
-                    <strong>Assigned to:</strong>
-                    {% if task.task_assigned_to %}
-                      {{ task.task_assigned_to }}
-                    {% else %}
-                      <span class="text-muted">Unassigned</span>
-                    {% endif %}
+                    €{{ task.get_calculated_actual_cost|floatformat:2 }}
                   </div>
                 </div>
               </div>
@@ -253,27 +238,57 @@ Project Details - {{ project.project_name }}
                           {{ subtask.task_name }}
                         </div>
                         <div class="subtask-actions">
-                          <span class="subtask-status-badge status-{{ subtask.task_status|slugify }}">
-                            {{ subtask.task_status }}
-                          </span>
                           {% if user.is_superuser %}
-                            <button class="btn btn-xs btn-outline-primary ml-1" onclick="editTaskStatus('{{ subtask.task_id }}', '{{ subtask.task_status }}')">
+                            <span class="subtask-status-badge status-{{ subtask.task_status|slugify }} clickable-status" 
+                                  onclick="editTaskStatus('{{ subtask.task_id }}', '{{ subtask.task_status }}')">
+                              {{ subtask.task_status }}
+                            </span>
+                            <a href="{% url 'project_tasks_edit' project.project_id subtask.task_id %}" class="btn btn-xs btn-info ml-1">
                               <i class="fas fa-edit"></i>
-                            </button>
-                            <a href="{% url 'project_tasks_edit' project.project_id subtask.task_id %}" class="btn btn-xs btn-outline-warning ml-1">
-                              <i class="fas fa-cog"></i>
                             </a>
+                          {% else %}
+                            <span class="subtask-status-badge status-{{ subtask.task_status|slugify }}">
+                              {{ subtask.task_status }}
+                            </span>
                           {% endif %}
                         </div>
                       </div>
                       {% if subtask.task_description %}
                         <div class="subtask-description">{{ subtask.task_description }}</div>
                       {% endif %}
-                      <div class="subtask-costs">
-                        <span class="cost-item">Budgeted: €{{ subtask.task_budgeted_cost|floatformat:2 }}</span>
-                        <span class="cost-item">Actual: €{{ subtask.task_actual_cost|floatformat:2 }}</span>
+                      <div class="subtask-details">
+                        <span class="detail-item">
+                          <strong>Start:</strong> 
+                          {% if subtask.task_start_date %}
+                            {{ subtask.task_start_date|date:"M d, Y" }}
+                          {% else %}
+                            <span class="text-muted">Not set</span>
+                          {% endif %}
+                        </span>
+                        <span class="detail-item">
+                          <strong>End:</strong> 
+                          {% if subtask.task_expected_completion_date %}
+                            {{ subtask.task_expected_completion_date|date:"M d, Y" }}
+                          {% else %}
+                            <span class="text-muted">Not set</span>
+                          {% endif %}
+                        </span>
+                        {% if subtask.task_status == 'Completed' and subtask.task_actual_completion_date %}
+                          <span class="detail-item">
+                            <strong>Actual End:</strong> 
+                            <span style="color: #28a745;">{{ subtask.task_actual_completion_date|date:"M d, Y" }}</span>
+                          </span>
+                        {% endif %}
+                        <span class="detail-item">
+                          <strong>Budgeted:</strong> €{{ subtask.task_budgeted_cost|floatformat:2 }}
+                        </span>
+                        <span class="detail-item">
+                          <strong>Actual:</strong> €{{ subtask.task_actual_cost|floatformat:2 }}
+                        </span>
                         {% if subtask.task_assigned_to %}
-                          <span class="cost-item">Assigned: {{ subtask.task_assigned_to }}</span>
+                          <span class="detail-item">
+                            <strong>Assigned:</strong> {{ subtask.task_assigned_to }}
+                          </span>
                         {% endif %}
                       </div>
                     </div>
@@ -291,7 +306,7 @@ Project Details - {{ project.project_name }}
           <h5>No tasks yet</h5>
           <p class="text-muted">Get started by adding your first task to this project.</p>
           {% if user.is_superuser %}
-            <a href="{% url 'project_tasks_add' project.project_id %}" class="btn btn-success">
+            <a href="{% url 'project_tasks_add' project.project_id %}" class="btn btn-info">
               <i class="fas fa-plus"></i> Add First Task
             </a>
           {% endif %}
@@ -308,31 +323,35 @@ Project Details - {{ project.project_name }}
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="statusModalTitle">Update Status</h5>
-                <button type="button" class="close" data-dismiss="modal">
-                    <span>&times;</span>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
                 </button>
             </div>
             <div class="modal-body">
-                <div class="form-group">
-                    <label for="statusSelect">Status:</label>
-                    <select class="form-control" id="statusSelect">
-                        <!-- Options will be populated by JavaScript -->
-                    </select>
-                </div>
-                <div class="form-group" id="completionDateGroup" style="display: none;">
-                    <label for="completionDate">Actual Completion Date:</label>
-                    <input type="date" class="form-control" id="completionDate">
-                </div>
+                <form id="statusForm">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="statusSelect">Status:</label>
+                        <select class="form-control" id="statusSelect">
+                            <!-- Options will be populated by JavaScript -->
+                        </select>
+                    </div>
+                    <div class="form-group" id="completionDateGroup" style="display: none;">
+                        <label for="completionDate">Actual Completion Date:</label>
+                        <input type="date" class="form-control" id="completionDate">
+                    </div>
+                </form>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary" id="updateStatusBtn">Update Status</button>
+                <button type="button" class="btn btn-info" id="updateStatusBtn">Update Status</button>
             </div>
         </div>
     </div>
 </div>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.0/js/bootstrap.bundle.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
 <style>
@@ -485,20 +504,150 @@ Project Details - {{ project.project_name }}
 }
 
 /* Priority Indicators */
-.task-priority-indicator, .subtask-description {
+.task-priority-indicator, .subtask-priority-indicator {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    margin-right: 10px;
+}
+
+.priority-critical {
+    background: #dc3545;
+    color: white;
+}
+
+.priority-high {
+    background: #fd7e14;
+    color: white;
+}
+
+.priority-medium {
+    background: #ffc107;
+    color: #212529;
+}
+
+.priority-low {
+    background: #6c757d;
+    color: white;
+}
+
+/* Task Status Badges */
+.task-status-badge, .subtask-status-badge {
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+/* Clickable status for subtasks */
+.clickable-status {
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+}
+
+.clickable-status:hover {
+    transform: scale(1.05);
+    border: 1px solid #007bff;
+    box-shadow: 0 2px 4px rgba(0,123,255,0.2);
+}
+
+.status-not-started {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.status-on-hold {
+    background: #e2e3e5;
+    color: #383d41;
+}
+
+/* Task Details */
+.task-details {
+    padding: 20px;
+    background: white;
+}
+
+.task-detail-item {
+    margin-bottom: 10px;
+}
+
+.task-detail-item strong {
+    color: #495057;
+    font-size: 13px;
+}
+
+/* Subtasks */
+.subtasks-section {
+    background: #f8f9fa;
+    padding: 20px;
+    border-top: 1px solid #dee2e6;
+}
+
+.subtasks-section h6 {
+    color: #495057;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+}
+
+.subtasks-section h6 i {
+    color: #6c757d;
+    margin-right: 8px;
+}
+
+.subtask-progress {
+    font-size: 12px;
+    color: #6c757d;
+    font-weight: 400;
+}
+
+.subtask-item {
+    background: white;
+    border: 1px solid #e9ecef;
+    border-radius: 6px;
+    padding: 15px;
+    margin-bottom: 10px;
+}
+
+.subtask-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.subtask-title {
+    font-weight: 600;
+    color: #495057;
+    display: flex;
+    align-items: center;
+}
+
+.subtask-actions {
+    display: flex;
+    align-items: center;
+}
+
+.subtask-description {
     color: #6c757d;
     font-size: 14px;
     margin-bottom: 8px;
     font-style: italic;
 }
 
-.subtask-costs {
+.subtask-details {
     display: flex;
     gap: 15px;
     font-size: 13px;
+    margin-top: 8px;
+    flex-wrap: wrap;
 }
 
-.cost-item {
+.detail-item {
     color: #495057;
 }
 
@@ -528,6 +677,11 @@ Project Details - {{ project.project_name }}
     text-decoration: none;
     transform: translateY(-1px);
     box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+/* Fix Add Task button icon color */
+.btn-info i {
+    color: white !important;
 }
 
 .btn-success {
@@ -649,13 +803,13 @@ function showStatusModal() {
     
     // Populate status options for project
     statusSelect.html(`
-        <option value="Pending" {% if project.project_status == 'Pending' %}selected{% endif %}>Pending</option>
-        <option value="In Progress" {% if project.project_status == 'In Progress' %}selected{% endif %}>In Progress</option>
-        <option value="Completed" {% if project.project_status == 'Completed' %}selected{% endif %}>Completed</option>
+        <option value="Pending">Pending</option>
+        <option value="In Progress">In Progress</option>
+        <option value="Completed">Completed</option>
     `);
     
     // Set current status
-    statusSelect.val('{{ project.project_status }}');
+    statusSelect.val('{{ project.get_calculated_status }}');
     
     // Show/hide completion date field
     toggleCompletionDate();
@@ -675,15 +829,14 @@ function editTaskStatus(taskId, currentStatus) {
     
     modalTitle.text('Update Task Status');
     
-    // Populate status options for task
+    // Populate status options for task (using correct choices from model)
     statusSelect.html(`
-        <option value="Not Started">Not Started</option>
+        <option value="Pending">Pending</option>
         <option value="In Progress">In Progress</option>
         <option value="Completed">Completed</option>
-        <option value="On Hold">On Hold</option>
     `);
     
-    // Set current status
+    // Set current status as selected
     statusSelect.val(currentStatus);
     
     // Show/hide completion date field
@@ -696,13 +849,18 @@ function editTaskStatus(taskId, currentStatus) {
 function toggleCompletionDate() {
     const statusSelect = $('#statusSelect');
     const completionDateGroup = $('#completionDateGroup');
+    const completionDateInput = $('#completionDate');
     
     if (statusSelect.val() === 'Completed') {
         completionDateGroup.show();
-        // Set today's date as default
-        $('#completionDate').val(new Date().toISOString().split('T')[0]);
+        // Set today's date as default if not already set
+        if (!completionDateInput.val()) {
+            completionDateInput.val(new Date().toISOString().split('T')[0]);
+        }
     } else {
         completionDateGroup.hide();
+        // Clear the completion date when status is not "Completed"
+        completionDateInput.val('');
     }
 }
 
@@ -718,6 +876,17 @@ function updateStatus() {
         return;
     }
     
+    // Get CSRF token
+    const csrfToken = $('[name=csrfmiddlewaretoken]').val() || 
+                      $('input[name="csrfmiddlewaretoken"]').val() || 
+                      $('meta[name="csrf-token"]').attr('content');
+    
+    if (!csrfToken) {
+        console.error('CSRF token not found');
+        alert('Security token not found. Please refresh the page and try again.');
+        return;
+    }
+    
     const url = currentTaskType === 'project' ? 
         '{% url "ajax_update_project_status" %}' : 
         '{% url "ajax_update_task_status" %}';
@@ -728,27 +897,59 @@ function updateStatus() {
         actual_completion_date: completionDate || null
     };
     
+    console.log('Sending AJAX request with data:', data);
+    
+    // Disable button during request
+    const updateBtn = $('#updateStatusBtn');
+    updateBtn.prop('disabled', true).text('Updating...');
+    
     $.ajax({
         url: url,
         type: 'POST',
         data: JSON.stringify(data),
         contentType: 'application/json',
         headers: {
-            'X-CSRFToken': $('[name=csrfmiddlewaretoken]').val()
+            'X-CSRFToken': csrfToken,
+            'X-Requested-With': 'XMLHttpRequest'
         },
         success: function(response) {
+            console.log('AJAX response:', response);
+            updateBtn.prop('disabled', false).text('Update Status');
+            
             if (response.success) {
                 console.log('Status updated successfully');
                 $('#statusModal').modal('hide');
+                // Show success message
+                // alert('Status updated successfully!');
                 // Reload page to reflect changes
-                location.reload();
+                setTimeout(() => {
+                    location.reload();
+                }, 500);
             } else {
-                alert('Error: ' + response.message);
+                alert('Error: ' + (response.message || 'Unknown error occurred'));
             }
         },
         error: function(xhr, status, error) {
-            console.error('AJAX error:', error);
-            alert('Error updating status. Please try again.');
+            console.error('AJAX error:', {
+                status: xhr.status,
+                statusText: xhr.statusText,
+                responseText: xhr.responseText,
+                error: error
+            });
+            updateBtn.prop('disabled', false).text('Update Status');
+            
+            let errorMessage = 'Error updating status. ';
+            if (xhr.status === 403) {
+                errorMessage += 'You do not have permission to perform this action.';
+            } else if (xhr.status === 404) {
+                errorMessage += 'The requested resource was not found.';
+            } else if (xhr.status === 500) {
+                errorMessage += 'Server error. Please try again later.';
+            } else {
+                errorMessage += 'Please try again.';
+            }
+            
+            alert(errorMessage);
         }
     });
 }
@@ -757,25 +958,54 @@ function updateStatus() {
 $(document).ready(function() {
     console.log('Document ready - setting up event listeners');
     
+    // Ensure Bootstrap modal is available
+    if (typeof $.fn.modal === 'undefined') {
+        console.error('Bootstrap modal not loaded');
+    }
+    
     // Status change event
-    $('#statusSelect').on('change', toggleCompletionDate);
+    $('#statusSelect').on('change', function() {
+        console.log('Status changed to:', $(this).val());
+        toggleCompletionDate();
+    });
     
     // Update button click
-    $('#updateStatusBtn').on('click', updateStatus);
+    $('#updateStatusBtn').on('click', function(e) {
+        e.preventDefault();
+        console.log('Update status button clicked');
+        updateStatus();
+    });
     
-    // Modal hidden event
+    // Modal events
+    $('#statusModal').on('show.bs.modal', function() {
+        console.log('Modal showing');
+    });
+    
     $('#statusModal').on('hidden.bs.modal', function() {
         console.log('Modal closed');
         currentTaskId = null;
         currentTaskType = 'task';
+        // Reset form
+        $('#statusSelect').val('');
+        $('#completionDate').val('');
+        $('#completionDateGroup').hide();
     });
     
-    // Add CSRF token to all AJAX requests
-    $.ajaxSetup({
-        beforeSend: function(xhr, settings) {
-            if (!(/^http:.*/.test(settings.url) || /^https:.*/.test(settings.url))) {
-                xhr.setRequestHeader("X-CSRFToken", $('[name=csrfmiddlewaretoken]').val());
-            }
+    // Close button events
+    $('.close[data-dismiss="modal"]').on('click', function() {
+        console.log('Close button clicked');
+        $('#statusModal').modal('hide');
+    });
+    
+    $('[data-dismiss="modal"]').on('click', function() {
+        console.log('Modal dismiss button clicked');
+        $('#statusModal').modal('hide');
+    });
+    
+    // ESC key to close modal
+    $(document).on('keydown', function(e) {
+        if (e.key === 'Escape' && $('#statusModal').hasClass('show')) {
+            $('#statusModal').modal('hide');
         }
     });
     
@@ -785,129 +1015,4 @@ $(document).ready(function() {
 console.log('🚀 === PROJECT DETAILS SCRIPT COMPLETE ===');
 </script>
 
-{% endblock %}priority-indicator {
-    display: inline-block;
-    padding: 2px 8px;
-    border-radius: 10px;
-    font-size: 10px;
-    font-weight: 600;
-    text-transform: uppercase;
-    margin-right: 10px;
-}
-
-.priority-critical {
-    background: #dc3545;
-    color: white;
-}
-
-.priority-high {
-    background: #fd7e14;
-    color: white;
-}
-
-.priority-medium {
-    background: #ffc107;
-    color: #212529;
-}
-
-.priority-low {
-    background: #6c757d;
-    color: white;
-}
-
-/* Task Status Badges */
-.task-status-badge, .subtask-status-badge {
-    padding: 4px 12px;
-    border-radius: 12px;
-    font-size: 12px;
-    font-weight: 500;
-}
-
-.status-completed {
-    background: #d4edda;
-    color: #155724;
-}
-
-.status-in-progress {
-    background: #fff3cd;
-    color: #856404;
-}
-
-.status-not-started {
-    background: #f8d7da;
-    color: #721c24;
-}
-
-.status-on-hold {
-    background: #e2e3e5;
-    color: #383d41;
-}
-
-/* Task Details */
-.task-details {
-    padding: 20px;
-    background: white;
-}
-
-.task-detail-item {
-    margin-bottom: 10px;
-}
-
-.task-detail-item strong {
-    color: #495057;
-    font-size: 13px;
-}
-
-/* Subtasks */
-.subtasks-section {
-    background: #f8f9fa;
-    padding: 20px;
-    border-top: 1px solid #dee2e6;
-}
-
-.subtasks-section h6 {
-    color: #495057;
-    margin-bottom: 15px;
-    display: flex;
-    align-items: center;
-}
-
-.subtasks-section h6 i {
-    color: #6c757d;
-    margin-right: 8px;
-}
-
-.subtask-progress {
-    font-size: 12px;
-    color: #6c757d;
-    font-weight: 400;
-}
-
-.subtask-item {
-    background: white;
-    border: 1px solid #e9ecef;
-    border-radius: 6px;
-    padding: 15px;
-    margin-bottom: 10px;
-}
-
-.subtask-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 8px;
-}
-
-.subtask-title {
-    font-weight: 600;
-    color: #495057;
-    display: flex;
-    align-items: center;
-}
-
-.subtask-actions {
-    display: flex;
-    align-items: center;
-}
-
-.subtask-
+{% endblock %}

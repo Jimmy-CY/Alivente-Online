@@ -30,20 +30,23 @@ Edit Project - {{ project.project_name }}
 
 <!-- Action Buttons -->
 <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 20px;">
-  <a href="{% url 'projects_detail' project.project_id %}" class="btn btn-warning">
-    <i class="fas fa-eye"></i> View Project
+  <a href="{% url 'projects_detail' project.project_id %}" class="btn btn-info">
+    <i class="fas fa-arrow-left"></i> Back to Project
   </a>
-  <a href="{% url 'projects' %}" class="btn btn-info">
-    <i class="fas fa-arrow-left"></i> Back to Projects
+  <a href="{% url 'projects' %}" class="btn btn-secondary">
+    <i class="fas fa-list"></i> Back to Projects
   </a>
 </div>
 
-<!-- Edit Project Form -->
+<!-- Check if project has tasks -->
+{% with project.get_total_main_tasks as total_tasks %}
+
+<!-- Project Edit Form - Using exact same structure as projects_add.html -->
 <form method="post" id="projectForm">
   {% csrf_token %}
   
   <div class="row">
-    <!-- Project Name -->
+    <!-- Project Name - Always Editable -->
     <div class="col-md-6">
       <div class="form-group">
         <label for="project_name">
@@ -59,7 +62,7 @@ Edit Project - {{ project.project_name }}
       </div>
     </div>
 
-    <!-- Property -->
+    <!-- Property - Always Editable -->
     <div class="col-md-6">
       <div class="form-group">
         <label for="prop_id">
@@ -79,70 +82,104 @@ Edit Project - {{ project.project_name }}
   </div>
 
   <div class="row">
-    <!-- Start Date -->
+    <!-- Always show dates and status as auto-calculated (greyed out) -->
     <div class="col-md-4">
       <div class="form-group">
         <label for="project_start_date">
-          <i class="fas fa-calendar-alt"></i> Start Date
+          <i class="fas fa-calendar-alt"></i> Start Date (Auto-calculated)
         </label>
         <input type="date" 
                class="form-control" 
                id="project_start_date" 
                name="project_start_date"
-               value="{{ project.project_start_date|date:'Y-m-d' }}">
+               disabled
+               style="background-color: #e9ecef; cursor: not-allowed;"
+               value="{% if project.get_calculated_start_date %}{{ project.get_calculated_start_date|date:'Y-m-d' }}{% elif project.project_start_date %}{{ project.project_start_date|date:'Y-m-d' }}{% endif %}">
+        <small class="form-text text-muted">
+          {% if total_tasks > 0 %}
+            Earliest start date from tasks
+          {% else %}
+            Will be calculated from tasks when added
+          {% endif %}
+        </small>
       </div>
     </div>
 
-    <!-- Expected Completion Date -->
     <div class="col-md-4">
       <div class="form-group">
         <label for="project_expected_completion_date">
-          <i class="fas fa-calendar-check"></i> Expected Completion Date
+          <i class="fas fa-calendar-check"></i> Expected Completion (Auto-calculated)
         </label>
         <input type="date" 
                class="form-control" 
                id="project_expected_completion_date" 
                name="project_expected_completion_date"
-               value="{{ project.project_expected_completion_date|date:'Y-m-d' }}">
+               disabled
+               style="background-color: #e9ecef; cursor: not-allowed;"
+               value="{% if project.get_calculated_expected_completion %}{{ project.get_calculated_expected_completion|date:'Y-m-d' }}{% elif project.project_expected_completion_date %}{{ project.project_expected_completion_date|date:'Y-m-d' }}{% endif %}">
+        <small class="form-text text-muted">
+          {% if total_tasks > 0 %}
+            Latest expected completion from tasks
+          {% else %}
+            Will be calculated from tasks when added
+          {% endif %}
+        </small>
       </div>
     </div>
 
-    <!-- Status -->
     <div class="col-md-4">
       <div class="form-group">
         <label for="project_status">
-          <i class="fas fa-info-circle"></i> Status
+          <i class="fas fa-info-circle"></i> Status (Auto-calculated)
         </label>
-        <select class="form-control" id="project_status" name="project_status">
-          {% for status_value, status_display in status_choices %}
-            <option value="{{ status_value }}" 
-                    {% if status_value == project.project_status %}selected{% endif %}>
-              {{ status_display }}
-            </option>
-          {% endfor %}
+        <select class="form-control" 
+                id="project_status" 
+                name="project_status" 
+                disabled
+                style="background-color: #e9ecef; cursor: not-allowed;">
+          <option value="{{ project.get_calculated_status|default:project.project_status }}">
+            {{ project.get_calculated_status|default:project.project_status }}
+          </option>
         </select>
+        <small class="form-text text-muted">
+          {% if total_tasks > 0 %}
+            Status is automatically calculated based on tasks
+          {% else %}
+            Will be calculated from tasks when added
+          {% endif %}
+        </small>
       </div>
     </div>
   </div>
 
-  <!-- Actual Completion Date -->
-  <div class="row" id="actualCompletionRow" 
-       {% if project.project_status != 'Completed' %}style="display: none;"{% endif %}>
-    <div class="col-md-4">
-      <div class="form-group">
-        <label for="project_actual_completion_date">
-          <i class="fas fa-calendar-times"></i> Actual Completion Date <span style="color: red;">*</span>
-        </label>
-        <input type="date" 
-               class="form-control" 
-               id="project_actual_completion_date" 
-               name="project_actual_completion_date"
-               value="{{ project.project_actual_completion_date|date:'Y-m-d' }}">
+  <!-- Actual Completion Date - Only show if project is completed -->
+  {% if project.get_calculated_status == 'Completed' or project.project_status == 'Completed' %}
+    <div class="row">
+      <div class="col-md-4">
+        <div class="form-group">
+          <label for="project_actual_completion_date">
+            <i class="fas fa-calendar-times"></i> Actual Completion Date (Auto-calculated)
+          </label>
+          <input type="date" 
+                 class="form-control" 
+                 id="project_actual_completion_date" 
+                 name="project_actual_completion_date"
+                 disabled
+                 style="background-color: #e9ecef; cursor: not-allowed;"
+                 value="{% if project.get_calculated_actual_completion %}{{ project.get_calculated_actual_completion|date:'Y-m-d' }}{% elif project.project_actual_completion_date %}{{ project.project_actual_completion_date|date:'Y-m-d' }}{% endif %}">
+          <small class="form-text text-muted">
+            {% if total_tasks > 0 %}
+              Latest actual completion from tasks
+            {% else %}
+              Will be calculated from tasks when completed
+            {% endif %}
+          </small>
+        </div>
       </div>
     </div>
-  </div>
+  {% endif %}
 
-  <!-- Description -->
+  <!-- Description - Always Editable -->
   <div class="row">
     <div class="col-md-12">
       <div class="form-group">
@@ -158,19 +195,35 @@ Edit Project - {{ project.project_name }}
     </div>
   </div>
 
+  <!-- Information message for all projects -->
+  <div class="alert alert-info" role="alert">
+    <div class="d-flex align-items-center">
+      <i class="fas fa-info-circle mr-2"></i>
+      <div>
+        <strong>Note:</strong> 
+        {% if total_tasks > 0 %}
+          This project has {{ total_tasks }} task{{ total_tasks|pluralize }}. 
+          Dates and status are automatically calculated based on task progress and cannot be manually edited. 
+          To change project dates or status, edit the individual tasks.
+        {% else %}
+          Project dates and status will be automatically calculated based on the tasks and subtasks you add to this project.
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
   <!-- Form Actions -->
   <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #dee2e6;">
-    <button type="submit" class="btn btn-success">
+    <button type="submit" class="btn btn-info">
       <i class="fas fa-save"></i> Update Project
     </button>
-    <a href="{% url 'projects_detail' project.project_id %}" class="btn btn-warning ml-2">
-      <i class="fas fa-eye"></i> View Project
-    </a>
-    <a href="{% url 'projects' %}" class="btn btn-secondary ml-2">
+    <a href="{% url 'projects_detail' project.project_id %}" class="btn btn-secondary ml-2">
       <i class="fas fa-times"></i> Cancel
     </a>
   </div>
 </form>
+
+{% endwith %}
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -179,100 +232,36 @@ Edit Project - {{ project.project_name }}
 console.log('=== EDIT PROJECT FORM LOADED ===');
 
 $(document).ready(function() {
-    console.log('Setting up form validation and interactions');
+    console.log('Setting up project edit form validation and interactions');
     
-    // Status change handler
-    $('#project_status').on('change', function() {
-        const status = $(this).val();
-        const actualCompletionRow = $('#actualCompletionRow');
-        const actualCompletionInput = $('#project_actual_completion_date');
-        
-        console.log('Status changed to:', status);
-        
-        if (status === 'Completed') {
-            actualCompletionRow.show();
-            actualCompletionInput.prop('required', true);
-            // Set today's date as default if no value exists
-            if (!actualCompletionInput.val()) {
-                actualCompletionInput.val(new Date().toISOString().split('T')[0]);
-            }
-        } else {
-            actualCompletionRow.hide();
-            actualCompletionInput.prop('required', false);
-        }
-    });
-    
-    // Date validation
-    $('#project_start_date, #project_expected_completion_date').on('change', function() {
-        validateDates();
-    });
-    
-    function validateDates() {
-        const startDate = $('#project_start_date').val();
-        const expectedEndDate = $('#project_expected_completion_date').val();
-        
-        if (startDate && expectedEndDate) {
-            const start = new Date(startDate);
-            const expectedEnd = new Date(expectedEndDate);
-            
-            if (expectedEnd <= start) {
-                alert('Expected completion date must be after start date');
-                $('#project_expected_completion_date').val('');
-                return false;
-            }
-        }
-        return true;
-    }
-    
-    // Form submission validation
+    // Form submission validation - only validate editable fields
     $('#projectForm').on('submit', function(e) {
-        console.log('Form submission attempted');
+        console.log('Project edit form submission attempted');
         
         let isValid = true;
         
-        // Validate required fields
+        // Validate required fields (only name and property are editable)
         if (!$('#project_name').val().trim()) {
             alert('Project name is required');
             $('#project_name').focus();
             isValid = false;
-        } else if (!$('#prop_id').val()) {
-            alert('Please select a property');
+        }
+        
+        if (!$('#prop_id').val()) {
+            alert('Property is required');
             $('#prop_id').focus();
-            isValid = false;
-        }
-        
-        // Validate dates
-        if (!validateDates()) {
-            isValid = false;
-        }
-        
-        // Validate actual completion date if status is completed
-        const status = $('#project_status').val();
-        const actualCompletionDate = $('#project_actual_completion_date').val();
-        
-        if (status === 'Completed' && !actualCompletionDate) {
-            alert('Actual completion date is required when status is Completed');
-            $('#project_actual_completion_date').focus();
             isValid = false;
         }
         
         if (!isValid) {
             e.preventDefault();
-            console.log('Form validation failed');
+            console.log('Project edit form validation failed');
         } else {
-            console.log('Form validation passed');
+            console.log('Project edit form validation passed');
         }
     });
     
-    // Update expected completion minimum date when start date changes
-    $('#project_start_date').on('change', function() {
-        const startDate = $(this).val();
-        if (startDate) {
-            $('#project_expected_completion_date').attr('min', startDate);
-        }
-    });
-    
-    console.log('Form setup complete');
+    console.log('Project edit form setup complete');
 });
 
 console.log('🚀 === EDIT PROJECT FORM SCRIPT COMPLETE ===');

@@ -35,10 +35,19 @@ Add Task - {{ project.project_name }}
   </a>
 </div>
 
-<!-- Project Info Card -->
+<!-- Project Info Card with Calculated Dates -->
 <div style="background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 8px; padding: 15px; margin-bottom: 20px;">
   <h5><i class="fas fa-project-diagram"></i> Project: {{ project.project_name }}</h5>
-  <p class="mb-0"><i class="fas fa-home"></i> Property: {{ project.prop.prop_name }}</p>
+  <p class="mb-1"><i class="fas fa-home"></i> Property: {{ project.prop.prop_name }}</p>
+  {% if project.get_calculated_start_date or project.get_calculated_expected_completion %}
+    <p class="mb-0 text-muted" style="font-size: 0.9em;">
+      <i class="fas fa-info-circle"></i> 
+      Project Timeline: 
+      {% if project.get_calculated_start_date %}{{ project.get_calculated_start_date|date:"M d, Y" }}{% else %}Not set{% endif %}
+      to 
+      {% if project.get_calculated_expected_completion %}{{ project.get_calculated_expected_completion|date:"M d, Y" }}{% else %}Not set{% endif %}
+    </p>
+  {% endif %}
 </div>
 
 <!-- Add Task Form -->
@@ -47,7 +56,7 @@ Add Task - {{ project.project_name }}
   
   <div class="row">
     <!-- Task Name -->
-    <div class="col-md-6">
+    <div class="col-md-8">
       <div class="form-group">
         <label for="task_name">
           <i class="fas fa-tasks"></i> Task Name <span style="color: red;">*</span>
@@ -62,7 +71,7 @@ Add Task - {{ project.project_name }}
     </div>
 
     <!-- Priority -->
-    <div class="col-md-3">
+    <div class="col-md-4">
       <div class="form-group">
         <label for="task_priority">
           <i class="fas fa-flag"></i> Priority
@@ -74,113 +83,6 @@ Add Task - {{ project.project_name }}
             </option>
           {% endfor %}
         </select>
-      </div>
-    </div>
-
-    <!-- Status -->
-    <div class="col-md-3">
-      <div class="form-group">
-        <label for="task_status">
-          <i class="fas fa-info-circle"></i> Status
-        </label>
-        <select class="form-control" id="task_status" name="task_status">
-          {% for status_value, status_display in task_status_choices %}
-            <option value="{{ status_value }}" {% if status_value == 'Not Started' %}selected{% endif %}>
-              {{ status_display }}
-            </option>
-          {% endfor %}
-        </select>
-      </div>
-    </div>
-  </div>
-
-  <div class="row">
-    <!-- Start Date -->
-    <div class="col-md-3">
-      <div class="form-group">
-        <label for="task_start_date">
-          <i class="fas fa-calendar-alt"></i> Start Date
-        </label>
-        <input type="date" 
-               class="form-control" 
-               id="task_start_date" 
-               name="task_start_date">
-      </div>
-    </div>
-
-    <!-- Expected Completion Date -->
-    <div class="col-md-3">
-      <div class="form-group">
-        <label for="task_expected_completion_date">
-          <i class="fas fa-calendar-check"></i> Expected Completion
-        </label>
-        <input type="date" 
-               class="form-control" 
-               id="task_expected_completion_date" 
-               name="task_expected_completion_date">
-      </div>
-    </div>
-
-    <!-- Budgeted Cost -->
-    <div class="col-md-3">
-      <div class="form-group">
-        <label for="task_budgeted_cost">
-          <i class="fas fa-euro-sign"></i> Budgeted Cost
-        </label>
-        <input type="number" 
-               class="form-control" 
-               id="task_budgeted_cost" 
-               name="task_budgeted_cost"
-               step="0.01"
-               min="0"
-               placeholder="0.00">
-      </div>
-    </div>
-
-    <!-- Actual Cost -->
-    <div class="col-md-3">
-      <div class="form-group">
-        <label for="task_actual_cost">
-          <i class="fas fa-euro-sign"></i> Actual Cost
-        </label>
-        <input type="number" 
-               class="form-control" 
-               id="task_actual_cost" 
-               name="task_actual_cost"
-               step="0.01"
-               min="0"
-               placeholder="0.00">
-      </div>
-    </div>
-  </div>
-
-  <!-- Actual Completion Date (hidden by default) -->
-  <div class="row" id="actualCompletionRow" style="display: none;">
-    <div class="col-md-4">
-      <div class="form-group">
-        <label for="task_actual_completion_date">
-          <i class="fas fa-calendar-times"></i> Actual Completion Date <span style="color: red;">*</span>
-        </label>
-        <input type="date" 
-               class="form-control" 
-               id="task_actual_completion_date" 
-               name="task_actual_completion_date">
-      </div>
-    </div>
-  </div>
-
-  <!-- Assigned To -->
-  <div class="row">
-    <div class="col-md-6">
-      <div class="form-group">
-        <label for="task_assigned_to">
-          <i class="fas fa-user"></i> Assigned To
-        </label>
-        <input type="text" 
-               class="form-control" 
-               id="task_assigned_to" 
-               name="task_assigned_to"
-               placeholder="Enter assignee name...">
       </div>
     </div>
   </div>
@@ -201,9 +103,19 @@ Add Task - {{ project.project_name }}
     </div>
   </div>
 
+  <!-- Information Message -->
+  <div class="alert alert-info" role="alert">
+    <div class="d-flex align-items-center">
+      <i class="fas fa-info-circle mr-2"></i>
+      <div>
+        <strong>Note:</strong> Main tasks are containers for subtasks. Dates, costs, status, and assignments will be automatically calculated based on the subtasks you add to this task.
+      </div>
+    </div>
+  </div>
+
   <!-- Form Actions -->
   <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #dee2e6;">
-    <button type="submit" class="btn btn-success">
+    <button type="submit" class="btn btn-info">
       <i class="fas fa-save"></i> Add Task
     </button>
     <a href="{% url 'projects_detail' project.project_id %}" class="btn btn-secondary ml-2">
@@ -221,50 +133,6 @@ console.log('=== ADD TASK FORM LOADED ===');
 $(document).ready(function() {
     console.log('Setting up task form validation and interactions');
     
-    // Status change handler
-    $('#task_status').on('change', function() {
-        const status = $(this).val();
-        const actualCompletionRow = $('#actualCompletionRow');
-        const actualCompletionInput = $('#task_actual_completion_date');
-        
-        console.log('Status changed to:', status);
-        
-        if (status === 'Completed') {
-            actualCompletionRow.show();
-            actualCompletionInput.prop('required', true);
-            // Set today's date as default
-            if (!actualCompletionInput.val()) {
-                actualCompletionInput.val(new Date().toISOString().split('T')[0]);
-            }
-        } else {
-            actualCompletionRow.hide();
-            actualCompletionInput.prop('required', false);
-            actualCompletionInput.val('');
-        }
-    });
-    
-    // Date validation
-    $('#task_start_date, #task_expected_completion_date').on('change', function() {
-        validateDates();
-    });
-    
-    function validateDates() {
-        const startDate = $('#task_start_date').val();
-        const expectedEndDate = $('#task_expected_completion_date').val();
-        
-        if (startDate && expectedEndDate) {
-            const start = new Date(startDate);
-            const expectedEnd = new Date(expectedEndDate);
-            
-            if (expectedEnd <= start) {
-                alert('Expected completion date must be after start date');
-                $('#task_expected_completion_date').val('');
-                return false;
-            }
-        }
-        return true;
-    }
-    
     // Form submission validation
     $('#taskForm').on('submit', function(e) {
         console.log('Task form submission attempted');
@@ -278,43 +146,11 @@ $(document).ready(function() {
             isValid = false;
         }
         
-        // Validate dates
-        if (!validateDates()) {
-            isValid = false;
-        }
-        
-        // Validate actual completion date if status is completed
-        const status = $('#task_status').val();
-        const actualCompletionDate = $('#task_actual_completion_date').val();
-        
-        if (status === 'Completed' && !actualCompletionDate) {
-            alert('Actual completion date is required when status is Completed');
-            $('#task_actual_completion_date').focus();
-            isValid = false;
-        }
-        
         if (!isValid) {
             e.preventDefault();
             console.log('Task form validation failed');
         } else {
             console.log('Task form validation passed');
-        }
-    });
-    
-    // Set minimum dates based on project dates
-    {% if project.project_start_date %}
-        $('#task_start_date').attr('min', '{{ project.project_start_date|date:"Y-m-d" }}');
-    {% endif %}
-    
-    {% if project.project_expected_completion_date %}
-        $('#task_expected_completion_date').attr('max', '{{ project.project_expected_completion_date|date:"Y-m-d" }}');
-    {% endif %}
-    
-    // Update expected completion minimum date when start date changes
-    $('#task_start_date').on('change', function() {
-        const startDate = $(this).val();
-        if (startDate) {
-            $('#task_expected_completion_date').attr('min', startDate);
         }
     });
     

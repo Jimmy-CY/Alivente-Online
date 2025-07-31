@@ -71,65 +71,6 @@ Add New Project
     </div>
   </div>
 
-  <div class="row">
-    <!-- Start Date -->
-    <div class="col-md-4">
-      <div class="form-group">
-        <label for="project_start_date">
-          <i class="fas fa-calendar-alt"></i> Start Date
-        </label>
-        <input type="date" 
-               class="form-control" 
-               id="project_start_date" 
-               name="project_start_date">
-      </div>
-    </div>
-
-    <!-- Expected Completion Date -->
-    <div class="col-md-4">
-      <div class="form-group">
-        <label for="project_expected_completion_date">
-          <i class="fas fa-calendar-check"></i> Expected Completion Date
-        </label>
-        <input type="date" 
-               class="form-control" 
-               id="project_expected_completion_date" 
-               name="project_expected_completion_date">
-      </div>
-    </div>
-
-    <!-- Status -->
-    <div class="col-md-4">
-      <div class="form-group">
-        <label for="project_status">
-          <i class="fas fa-info-circle"></i> Status
-        </label>
-        <select class="form-control" id="project_status" name="project_status">
-          {% for status_value, status_display in status_choices %}
-            <option value="{{ status_value }}" {% if status_value == 'Pending' %}selected{% endif %}>
-              {{ status_display }}
-            </option>
-          {% endfor %}
-        </select>
-      </div>
-    </div>
-  </div>
-
-  <!-- Actual Completion Date (hidden by default) -->
-  <div class="row" id="actualCompletionRow" style="display: none;">
-    <div class="col-md-4">
-      <div class="form-group">
-        <label for="project_actual_completion_date">
-          <i class="fas fa-calendar-times"></i> Actual Completion Date <span style="color: red;">*</span>
-        </label>
-        <input type="date" 
-               class="form-control" 
-               id="project_actual_completion_date" 
-               name="project_actual_completion_date">
-      </div>
-    </div>
-  </div>
-
   <!-- Description -->
   <div class="row">
     <div class="col-md-12">
@@ -146,9 +87,19 @@ Add New Project
     </div>
   </div>
 
+  <!-- Information Message -->
+  <div class="alert alert-info" role="alert">
+    <div class="d-flex align-items-center">
+      <i class="fas fa-info-circle mr-2"></i>
+      <div>
+        <strong>Note:</strong> Project dates and status will be automatically calculated based on the tasks and subtasks you add to this project.
+      </div>
+    </div>
+  </div>
+
   <!-- Form Actions -->
   <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #dee2e6;">
-    <button type="submit" class="btn btn-success">
+    <button type="submit" class="btn btn-info">
       <i class="fas fa-save"></i> Create Project
     </button>
     <a href="{% url 'projects' %}" class="btn btn-secondary ml-2">
@@ -165,50 +116,6 @@ console.log('=== ADD PROJECT FORM LOADED ===');
 
 $(document).ready(function() {
     console.log('Setting up form validation and interactions');
-    
-    // Status change handler
-    $('#project_status').on('change', function() {
-        const status = $(this).val();
-        const actualCompletionRow = $('#actualCompletionRow');
-        const actualCompletionInput = $('#project_actual_completion_date');
-        
-        console.log('Status changed to:', status);
-        
-        if (status === 'Completed') {
-            actualCompletionRow.show();
-            actualCompletionInput.prop('required', true);
-            // Set today's date as default
-            if (!actualCompletionInput.val()) {
-                actualCompletionInput.val(new Date().toISOString().split('T')[0]);
-            }
-        } else {
-            actualCompletionRow.hide();
-            actualCompletionInput.prop('required', false);
-            actualCompletionInput.val('');
-        }
-    });
-    
-    // Date validation
-    $('#project_start_date, #project_expected_completion_date').on('change', function() {
-        validateDates();
-    });
-    
-    function validateDates() {
-        const startDate = $('#project_start_date').val();
-        const expectedEndDate = $('#project_expected_completion_date').val();
-        
-        if (startDate && expectedEndDate) {
-            const start = new Date(startDate);
-            const expectedEnd = new Date(expectedEndDate);
-            
-            if (expectedEnd <= start) {
-                alert('Expected completion date must be after start date');
-                $('#project_expected_completion_date').val('');
-                return false;
-            }
-        }
-        return true;
-    }
     
     // Form submission validation
     $('#projectForm').on('submit', function(e) {
@@ -227,38 +134,11 @@ $(document).ready(function() {
             isValid = false;
         }
         
-        // Validate dates
-        if (!validateDates()) {
-            isValid = false;
-        }
-        
-        // Validate actual completion date if status is completed
-        const status = $('#project_status').val();
-        const actualCompletionDate = $('#project_actual_completion_date').val();
-        
-        if (status === 'Completed' && !actualCompletionDate) {
-            alert('Actual completion date is required when status is Completed');
-            $('#project_actual_completion_date').focus();
-            isValid = false;
-        }
-        
         if (!isValid) {
             e.preventDefault();
             console.log('Form validation failed');
         } else {
             console.log('Form validation passed');
-        }
-    });
-    
-    // Set minimum date for start date (today)
-    const today = new Date().toISOString().split('T')[0];
-    $('#project_start_date').attr('min', today);
-    
-    // Update expected completion minimum date when start date changes
-    $('#project_start_date').on('change', function() {
-        const startDate = $(this).val();
-        if (startDate) {
-            $('#project_expected_completion_date').attr('min', startDate);
         }
     });
     

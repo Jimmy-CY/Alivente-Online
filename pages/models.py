@@ -1,10 +1,13 @@
 from django.db import models
 from django.db import connections
+from django.db.models import Min, Max, Sum
 from django.core.exceptions import ValidationError
 from django.utils.text import slugify
 from django.utils import timezone
 from decimal import Decimal
 import os
+from django.db.models.signals import post_save, post_delete
+from django.dispatch import receiver
 
 def project_document_upload_path(instance, filename):
     """Generate upload path for project documents"""
@@ -25,8 +28,6 @@ def project_document_upload_path(instance, filename):
     
     # Return the full path
     return os.path.join('project_docs', new_filename)
-
-# Replace the Project model in your models.py with this corrected version:
 
 class Project(models.Model):
     project_id = models.AutoField(primary_key=True)
@@ -69,22 +70,142 @@ class Project(models.Model):
                 raise ValidationError("Actual completion date cannot be before start date")
     
     def update_totals(self):
-        """Update total budgeted and actual costs from tasks"""
-        tasks = self.project_tasks.all()
-        self.project_total_budgeted_cost = sum(task.task_budgeted_cost or 0 for task in tasks)
-        self.project_total_actual_cost = sum(task.task_actual_cost or 0 for task in tasks)
+        """Update total budgeted and actual costs from main tasks"""
+        main_tasks = self.projecttask_set.filter(parent_task__isnull=True)
+        self.project_total_budgeted_cost = sum(task.get_calculated_budgeted_cost() for task in main_tasks)
+        self.project_total_actual_cost = sum(task.get_calculated_actual_cost() for task in main_tasks)
         self.save()
     
+    def get_calculated_status(self):
+        """Calculate project status based on all main tasks"""
+        main_tasks = self.projecttask_set.filter(parent_task__isnull=True)
+        if not main_tasks.exists():
+            return 'Pending'
+        
+        completed_count = 0
+        in_progress_count = 0
+        
+        for task in main_tasks:
+            task_status = task.get_calculated_status()
+            if task_status == 'Completed':
+                completed_count += 1
+            elif task_status == 'In Progress':
+                in_progress_count += 1
+        
+        total_tasks = main_tasks.count()
+        
+        if completed_count == total_tasks:
+            return 'Completed'
+        elif in_progress_count > 0 or completed_count > 0:
+            return 'In Progress'
+        else:
+            return 'Pending'
+    
+    def get_calculated_start_date(self):
+        """Get earliest start date from all main tasks"""
+        main_tasks = self.projecttask_set.filter(parent_task__isnull=True)
+        earliest_dates = []
+        
+        for task in main_tasks:
+            task_start = task.get_calculated_start_date()
+            if task_start:
+                earliest_dates.append(task_start)
+        
+        return min(earliest_dates) if earliest_dates else None
+    
+    def get_calculated_expected_completion(self):
+        """Get latest expected completion from all main tasks"""
+        main_tasks = self.projecttask_set.filter(parent_task__isnull=True)
+        latest_dates = []
+        
+        for task in main_tasks:
+            task_completion = task.get_calculated_expected_completion()
+            if task_completion:
+                latest_dates.append(task_completion)
+        
+        return max(latest_dates) if latest_dates else None
+    
+    def get_calculated_actual_completion(self):
+        """Get latest actual completion when all main tasks completed"""
+        if self.get_calculated_status() == 'Completed':
+            main_tasks = self.projecttask_set.filter(parent_task__isnull=True)
+            latest_dates = []
+            
+            for task in main_tasks:
+                task_completion = task.get_calculated_actual_completion()
+                if task_completion:
+                    latest_dates.append(task_completion)
+            
+            return max(latest_dates) if latest_dates else None
+        return None
+    
+    def get_calculated_budgeted_cost(self):
+        """Calculate total budgeted cost from all main tasks"""
+        main_tasks = self.projecttask_set.filter(parent_task__isnull=True)
+        return sum(task.get_calculated_budgeted_cost() for task in main_tasks)
+    
+    def get_calculated_actual_cost(self):
+        """Calculate total actual cost from all main tasks"""
+        main_tasks = self.projecttask_set.filter(parent_task__isnull=True)
+        return sum(task.get_calculated_actual_cost() for task in main_tasks)
+    
     def get_progress_percentage(self):
-        """Calculate project progress based on completed tasks"""
-        total_tasks = self.project_tasks.count()
-        if total_tasks == 0:
-            return 0
-        completed_tasks = self.project_tasks.filter(task_status='Completed').count()
-        return round((completed_tasks / total_tasks) * 100, 1)
+        """Calculate project progress based on subtask completion using day-based calculation"""
+        total_project_days = 0
+        completed_project_days = 0
+        
+        # Get all main tasks for this project
+        main_tasks = self.projecttask_set.filter(parent_task__isnull=True)
+        
+        for task in main_tasks:
+            completed_days, total_days = task.get_completed_days()
+            total_project_days += total_days
+            completed_project_days += completed_days
+        
+        if total_project_days > 0:
+            return round((completed_project_days / total_project_days) * 100, 1)
+        return 0.0
+    
+    def get_total_main_tasks(self):
+        """Get count of main tasks (not subtasks)"""
+        return self.projecttask_set.filter(parent_task__isnull=True).count()
+    
+    def get_completed_main_tasks(self):
+        """Get count of completed main tasks"""
+        main_tasks = self.projecttask_set.filter(parent_task__isnull=True)
+        completed_count = 0
+        
+        for task in main_tasks:
+            if task.get_calculated_status() == 'Completed':
+                completed_count += 1
+        
+        return completed_count
+    
+    def get_total_subtasks(self):
+        """Get count of all subtasks in the project"""
+        return self.projecttask_set.filter(parent_task__isnull=False).count()
+    
+    def get_completed_subtasks(self):
+        """Get count of completed subtasks in the project"""
+        return self.projecttask_set.filter(
+            parent_task__isnull=False,
+            task_status='Completed'
+        ).count()
+    
+    def update_project_from_tasks(self):
+        """Update project fields based on calculated values from tasks"""
+        self.project_status = self.get_calculated_status()
+        self.project_start_date = self.get_calculated_start_date()
+        self.project_expected_completion_date = self.get_calculated_expected_completion()
+        self.project_actual_completion_date = self.get_calculated_actual_completion()
+        self.project_total_budgeted_cost = self.get_calculated_budgeted_cost()
+        self.project_total_actual_cost = self.get_calculated_actual_cost()
+        # Don't call save() here to avoid recursion
     
     def save(self, *args, **kwargs):
-        self.full_clean()
+        # Only run validation if not being called from update methods
+        if not kwargs.pop('skip_validation', False):
+            self.full_clean()
         super().save(*args, **kwargs)
     
     def __str__(self):
@@ -98,24 +219,23 @@ class Project(models.Model):
 
 class ProjectTask(models.Model):
     task_id = models.AutoField(primary_key=True)
-    project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='project_tasks')
+    project = models.ForeignKey(Project, on_delete=models.CASCADE)
     parent_task = models.ForeignKey('self', on_delete=models.CASCADE, blank=True, null=True, related_name='subtasks')
     task_name = models.CharField(max_length=255, blank=True, null=True)
-    task_description = models.TextField(blank=True, null=True)
+    task_description = models.TextField(blank=True, null=True)  # longtext
     task_start_date = models.DateField(blank=True, null=True)
     task_expected_completion_date = models.DateField(blank=True, null=True)
     task_actual_completion_date = models.DateField(blank=True, null=True)
     
     TASK_STATUS_CHOICES = [
-        ('Not Started', 'Not Started'),
+        ('Pending', 'Pending'),
         ('In Progress', 'In Progress'),
         ('Completed', 'Completed'),
-        ('On Hold', 'On Hold'),
     ]
     task_status = models.CharField(
         max_length=20,
         choices=TASK_STATUS_CHOICES,
-        default='Not Started',
+        default='Pending',
         blank=True,
         null=True
     )
@@ -129,7 +249,6 @@ class ProjectTask(models.Model):
     task_priority = models.CharField(
         max_length=10,
         choices=TASK_PRIORITY_CHOICES,
-        default='Medium',
         blank=True,
         null=True
     )
@@ -152,65 +271,167 @@ class ProjectTask(models.Model):
         if self.task_actual_completion_date and self.task_start_date:
             if self.task_actual_completion_date < self.task_start_date:
                 raise ValidationError("Actual completion date cannot be before start date")
-        
-        # Validate that task dates are within project dates
-        if self.project and self.task_start_date and self.project.project_start_date:
-            if self.task_start_date < self.project.project_start_date:
-                raise ValidationError("Task start date cannot be before project start date")
-        
-        if self.project and self.task_expected_completion_date and self.project.project_expected_completion_date:
-            if self.task_expected_completion_date > self.project.project_expected_completion_date:
-                raise ValidationError("Task expected completion date cannot be after project expected completion date")
     
-    def is_subtask(self):
-        """Check if this task is a subtask"""
-        return self.parent_task is not None
+    def get_calculated_status(self):
+        """Calculate task status based on subtasks if any"""
+        subtasks = self.subtasks.all()
+        if not subtasks.exists():
+            return self.task_status or 'Pending'
+        
+        completed_count = 0
+        in_progress_count = 0
+        
+        for subtask in subtasks:
+            if subtask.task_status == 'Completed':
+                completed_count += 1
+            elif subtask.task_status == 'In Progress':
+                in_progress_count += 1
+        
+        total_subtasks = subtasks.count()
+        
+        if completed_count == total_subtasks:
+            return 'Completed'
+        elif in_progress_count > 0 or completed_count > 0:
+            return 'In Progress'
+        else:
+            return 'Pending'
     
-    def get_subtask_count(self):
-        """Get the number of subtasks for this task"""
-        return self.subtasks.count()
+    def get_calculated_start_date(self):
+        """Get earliest start date from subtasks or own start date"""
+        subtasks = self.subtasks.all()
+        if not subtasks.exists():
+            return self.task_start_date
+        
+        dates = [self.task_start_date] if self.task_start_date else []
+        for subtask in subtasks:
+            if subtask.task_start_date:
+                dates.append(subtask.task_start_date)
+        
+        return min(dates) if dates else None
+    
+    def get_calculated_expected_completion(self):
+        """Get latest expected completion from subtasks or own date"""
+        subtasks = self.subtasks.all()
+        if not subtasks.exists():
+            return self.task_expected_completion_date
+        
+        dates = [self.task_expected_completion_date] if self.task_expected_completion_date else []
+        for subtask in subtasks:
+            if subtask.task_expected_completion_date:
+                dates.append(subtask.task_expected_completion_date)
+        
+        return max(dates) if dates else None
+    
+    def get_calculated_actual_completion(self):
+        """Get latest actual completion when all subtasks completed"""
+        if self.get_calculated_status() == 'Completed':
+            subtasks = self.subtasks.all()
+            if not subtasks.exists():
+                return self.task_actual_completion_date
+            
+            dates = [self.task_actual_completion_date] if self.task_actual_completion_date else []
+            for subtask in subtasks:
+                if subtask.task_actual_completion_date:
+                    dates.append(subtask.task_actual_completion_date)
+            
+            return max(dates) if dates else None
+        return None
+    
+    def get_calculated_budgeted_cost(self):
+        """Calculate total budgeted cost including subtasks"""
+        subtasks = self.subtasks.all()
+        
+        # If this task has subtasks, only count subtask costs (not the main task cost)
+        if subtasks.exists():
+            total = Decimal('0.00')
+            for subtask in subtasks:
+                total += subtask.task_budgeted_cost or Decimal('0.00')
+            return total
+        
+        # If no subtasks, return own cost
+        return self.task_budgeted_cost or Decimal('0.00')
+
+    def get_calculated_actual_cost(self):
+        """Calculate total actual cost including subtasks"""
+        subtasks = self.subtasks.all()
+        
+        # If this task has subtasks, only count subtask costs (not the main task cost)
+        if subtasks.exists():
+            total = Decimal('0.00')
+            for subtask in subtasks:
+                total += subtask.task_actual_cost or Decimal('0.00')
+            return total
+        
+        # If no subtasks, return own cost
+        return self.task_actual_cost or Decimal('0.00')
+    
+    def get_completed_days(self):
+        """Calculate completed and total days for progress calculation"""
+        # If this is a main task with subtasks, calculate based on subtasks
+        subtasks = self.subtasks.all()
+        if subtasks.exists():
+            total_subtask_days = 0
+            completed_subtask_days = 0
+            
+            for subtask in subtasks:
+                completed_days, total_days = subtask.get_completed_days()
+                total_subtask_days += total_days
+                completed_subtask_days += completed_days
+            
+            return completed_subtask_days, total_subtask_days
+        
+        # For subtasks or main tasks without subtasks, calculate based on own dates and status
+        if not self.task_start_date or not self.task_expected_completion_date:
+            return 0, 0
+        
+        total_days = (self.task_expected_completion_date - self.task_start_date).days + 1
+        
+        if self.task_status == 'Completed':
+            return total_days, total_days
+        elif self.task_status == 'In Progress':
+            from django.utils import timezone
+            today = timezone.now().date()
+            if today >= self.task_start_date:
+                completed_days = min((today - self.task_start_date).days + 1, total_days)
+                return completed_days, total_days
+        
+        # For 'Pending', 'Not Started', 'On Hold', etc.
+        return 0, total_days
     
     def get_completed_subtask_count(self):
-        """Get the number of completed subtasks"""
+        """Get count of completed subtasks"""
         return self.subtasks.filter(task_status='Completed').count()
-    
+
+    def get_subtask_count(self):
+        """Get total count of subtasks"""
+        return self.subtasks.count()
+
     def get_subtask_progress(self):
-        """Calculate subtask completion percentage"""
-        total = self.get_subtask_count()
-        if total == 0:
+        """Get progress percentage for subtasks"""
+        total_subtasks = self.get_subtask_count()
+        if total_subtasks == 0:
             return 0
-        completed = self.get_completed_subtask_count()
-        return round((completed / total) * 100, 1)
+        
+        completed_subtasks = self.get_completed_subtask_count()
+        return round((completed_subtasks / total_subtasks) * 100, 1)
     
     def save(self, *args, **kwargs):
         self.full_clean()
         super().save(*args, **kwargs)
-        # Update project totals when task is saved
-        if self.project:
-            self.project.update_totals()
-    
-    def delete(self, *args, **kwargs):
-        project = self.project
-        super().delete(*args, **kwargs)
-        # Update project totals when task is deleted
-        if project:
-            project.update_totals()
     
     def __str__(self):
-        if self.is_subtask():
-            return f"{self.parent_task.task_name} > {self.task_name}"
         return self.task_name or f"Task {self.task_id}"
     
     class Meta:
-        db_table = "project_tasks"
+        db_table = "project_tasks"  # Update this to match your actual table name if different
         verbose_name = "Project Task"
         verbose_name_plural = "Project Tasks"
-        ordering = ['task_start_date', 'task_id']
+        ordering = ['task_start_date', 'task_name']
 
 class ProjectDocument(models.Model):
     document_id = models.AutoField(primary_key=True)
     project = models.ForeignKey(Project, on_delete=models.CASCADE, related_name='project_documents')
-    task = models.ForeignKey(ProjectTask, on_delete=models.CASCADE, blank=True, null=True, related_name='task_documents')
+    task = models.ForeignKey('ProjectTask', on_delete=models.CASCADE, blank=True, null=True, related_name='task_documents')  # Changed to string reference
     document_name = models.CharField(max_length=255, blank=True, null=True)
     document_description = models.TextField(blank=True, null=True)
     document_file = models.FileField(upload_to=project_document_upload_path, blank=True, null=True)
@@ -605,3 +826,23 @@ class act_expense(models.Model):
 
 	class Meta:
 		db_table="act_expense"
+
+@receiver(post_save, sender=ProjectTask)
+def update_project_on_task_save(sender, instance, **kwargs):
+    """Update project totals when a task is saved"""
+    try:
+        instance.project.update_project_from_tasks()
+        instance.project.save(skip_validation=True)
+    except Exception as e:
+        # Log error but don't break the save operation
+        print(f"Error updating project from task save: {e}")
+
+@receiver(post_delete, sender=ProjectTask)
+def update_project_on_task_delete(sender, instance, **kwargs):
+    """Update project totals when a task is deleted"""
+    try:
+        instance.project.update_project_from_tasks()
+        instance.project.save(skip_validation=True)
+    except Exception as e:
+        # Log error but don't break the delete operation
+        print(f"Error updating project from task delete: {e}")
