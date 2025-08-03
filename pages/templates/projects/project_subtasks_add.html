@@ -7,6 +7,33 @@ Add Subtask - {{ parent_task.task_name }}
 
 {% block content %}
 
+<style>
+/* Change Add Subtask button from green to blue */
+.btn-success {
+    background-color: #17a2b8 !important;
+    border-color: #17a2b8 !important;
+    color: white;
+}
+.btn-success:hover {
+    background-color: #138496 !important;
+    border-color: #117a8b !important;
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+.btn-success:focus {
+    background-color: #138496 !important;
+    border-color: #117a8b !important;
+    color: white;
+    box-shadow: 0 0 0 0.2rem rgba(23, 162, 184, 0.25);
+}
+.btn-success:active {
+    background-color: #117a8b !important;
+    border-color: #10707f !important;
+    color: white;
+}
+</style>
+
 <h2><center>ADD SUBTASK TO {{ parent_task.task_name|upper }}</center></h2>
 <br/>
 

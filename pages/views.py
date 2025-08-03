@@ -46,6 +46,7 @@ from .models import (
     ProjectTask,
     ProjectDocument,
     )
+from decimal import Decimal
 from collections import defaultdict
 from datetime import date, datetime, timedelta
 from urllib.parse import urlparse, parse_qs
@@ -204,12 +205,15 @@ def projects_add(request):
 
 @login_required
 def projects_edit(request, project_id):
-    """Edit existing project"""
+    """Edit existing project - enhanced to handle Gantt chart returns"""
     if not request.user.is_superuser:
         messages.error(request, "You don't have permission to edit projects.")
         return redirect('projects')
     
-    project = get_object_or_404(Project, project_id=project_id)  # Updated model name
+    project = get_object_or_404(Project, project_id=project_id)
+    
+    # Check if coming from Gantt chart
+    from_gantt = request.GET.get('from_gantt', 'false') == 'true'
     
     if request.method == 'POST':
         project.project_name = request.POST.get('project_name')
@@ -228,8 +232,13 @@ def projects_edit(request, project_id):
             project.save()
             
             messages.success(request, f"Project '{project.project_name}' has been updated successfully.")
-            return redirect('projects')
             
+            # Redirect based on where user came from
+            if from_gantt:
+                return redirect('project_gantt', project_id=project_id)
+            else:
+                return redirect('projects')
+                
         except Exception as e:
             messages.error(request, f"Error updating project: {str(e)}")
     
@@ -239,7 +248,8 @@ def projects_edit(request, project_id):
     context = {
         'project': project,
         'properties': properties,
-        'status_choices': Project.PROJECT_STATUS_CHOICES,  # Updated model name
+        'status_choices': Project.PROJECT_STATUS_CHOICES,
+        'from_gantt': from_gantt,  # Pass this to template for form action
     }
     
     return render(request, 'projects/projects_edit.html', context)
@@ -391,13 +401,16 @@ def project_tasks_add(request, project_id):
 
 @login_required
 def project_tasks_edit(request, project_id, task_id):
-    """Edit existing task"""
+    """Edit existing task - enhanced to handle Gantt chart returns"""
     if not request.user.is_superuser:
         messages.error(request, "You don't have permission to edit tasks.")
         return redirect('projects_detail', project_id=project_id)
     
     project = get_object_or_404(Project, project_id=project_id)
     task = get_object_or_404(ProjectTask, task_id=task_id, project=project)
+    
+    # Check if coming from Gantt chart
+    from_gantt = request.GET.get('from_gantt', 'false') == 'true'
     
     if request.method == 'POST':
         # Only update fields that are not auto-calculated
@@ -423,6 +436,19 @@ def project_tasks_edit(request, project_id, task_id):
             task.task_actual_cost = request.POST.get('task_actual_cost') if request.POST.get('task_actual_cost') else 0.00
             task.task_assigned_to = request.POST.get('task_assigned_to')
             task.task_actual_completion_date = request.POST.get('task_actual_completion_date') if request.POST.get('task_actual_completion_date') else None
+            
+            # Handle progress percentage
+            progress_percentage = request.POST.get('task_progress_percentage')
+            if progress_percentage is not None:
+                task.task_progress_percentage = int(progress_percentage)
+            else:
+                # Set default based on status
+                if task.task_status == 'Pending':
+                    task.task_progress_percentage = 0
+                elif task.task_status == 'Completed':
+                    task.task_progress_percentage = 100
+                else:  # In Progress
+                    task.task_progress_percentage = task.task_progress_percentage or 1
         
         try:
             task.save()
@@ -439,8 +465,13 @@ def project_tasks_edit(request, project_id, task_id):
                 parent.save()
             
             messages.success(request, f"Task '{task.task_name}' has been updated successfully.")
-            return redirect('projects_detail', project_id=project_id)
             
+            # Redirect based on where user came from
+            if from_gantt:
+                return redirect('project_gantt', project_id=project_id)
+            else:
+                return redirect('projects_detail', project_id=project_id)
+                
         except Exception as e:
             messages.error(request, f"Error updating task: {str(e)}")
     
@@ -449,6 +480,7 @@ def project_tasks_edit(request, project_id, task_id):
         'task': task,
         'task_status_choices': ProjectTask.TASK_STATUS_CHOICES,
         'task_priority_choices': ProjectTask.TASK_PRIORITY_CHOICES,
+        'from_gantt': from_gantt,  # Pass this to template for form action
     }
     
     return render(request, 'projects/project_tasks_edit.html', context)
@@ -531,6 +563,92 @@ def project_subtasks_add(request, project_id, parent_task_id):
     return render(request, 'projects/project_subtasks_add.html', context)
 
 @login_required
+def project_gantt(request, project_id):
+    """Display Gantt chart for project with tasks and subtasks"""
+    project = get_object_or_404(Project.objects.select_related('prop'), project_id=project_id)
+    
+    # Check if returning from edit page
+    from_edit = request.GET.get('from_edit', False)
+    if from_edit:
+        messages.success(request, "Changes saved successfully. Gantt chart has been refreshed.")
+    
+    # Get all main tasks for this project
+    main_tasks = ProjectTask.objects.filter(
+        project=project, 
+        parent_task__isnull=True
+    ).prefetch_related('subtasks').order_by('task_start_date', 'task_id')
+    
+    # Build Gantt data structure
+    gantt_data = []
+    task_counter = 1
+    
+    # Add project as the main item
+    project_start = project.get_calculated_start_date()
+    project_end = project.get_calculated_expected_completion()
+    
+    if project_start and project_end:
+        project_item = {
+            'id': f'project_{project.project_id}',
+            'text': project.project_name,
+            'start_date': project_start.strftime('%Y-%m-%d'),
+            'end_date': project_end.strftime('%Y-%m-%d'),
+            'duration': (project_end - project_start).days + 1,
+            'progress': project.get_progress_percentage() / 100,
+            'type': 'project',
+            'status': project.get_calculated_status(),
+            'budgeted_cost': float(project.get_calculated_budgeted_cost() or 0),
+            'actual_cost': float(project.get_calculated_actual_cost() or 0),
+            'open': True
+        }
+        gantt_data.append(project_item)
+    
+    # Add main tasks
+    for task in main_tasks:
+        task_start = task.get_calculated_start_date()
+        task_end = task.get_calculated_expected_completion()
+        
+        if task_start and task_end:
+            task_item = {
+                'id': f'task_{task.task_id}',
+                'text': task.task_name,
+                'start_date': task_start.strftime('%Y-%m-%d'),
+                'end_date': task_end.strftime('%Y-%m-%d'),
+                'duration': (task_end - task_start).days + 1,
+                'progress': task.get_subtask_progress() / 100 if task.subtasks.exists() else (1.0 if task.get_calculated_status() == 'Completed' else 0.0),
+                'status': task.get_calculated_status(),
+                'budgeted_cost': float(task.get_calculated_budgeted_cost() or 0),
+                'actual_cost': float(task.get_calculated_actual_cost() or 0),
+                'assigned_to': task.task_assigned_to or '',
+                'parent': f'project_{project.project_id}' if project_start and project_end else None,
+                'open': True,
+                'calculated_progress_percentage': round(task.get_subtask_progress(), 1)  # For display
+            }
+            gantt_data.append(task_item)
+    
+    # If no tasks have dates, create a placeholder message
+    if not gantt_data:
+        # Create a simple project timeline with today's date
+        today = datetime.now().date()
+        placeholder_item = {
+            'id': 'placeholder_1',
+            'text': f'{project.project_name} (No dates set)',
+            'start_date': today.strftime('%Y-%m-%d'),
+            'duration': 30,
+            'progress': 0,
+            'type': 'project',
+            'status': 'Pending'
+        }
+        gantt_data.append(placeholder_item)
+    
+    context = {
+        'project': project,
+        'main_tasks': main_tasks,
+        'gantt_data': json.dumps(gantt_data),
+    }
+    
+    return render(request, 'projects/project_gantt.html', context)
+
+@login_required
 def ajax_update_project_status(request):
     """AJAX view to update project status"""
     if request.method == 'POST' and request.user.is_superuser:
@@ -540,7 +658,7 @@ def ajax_update_project_status(request):
             new_status = data.get('status')
             actual_completion_date = data.get('actual_completion_date')
             
-            project = get_object_or_404(Project, project_id=project_id)  # Updated model name
+            project = get_object_or_404(Project, project_id=project_id)
             project.project_status = new_status
             
             if new_status == 'Completed' and actual_completion_date:
@@ -573,7 +691,7 @@ def ajax_update_task_status(request):
             new_status = data.get('status')
             actual_completion_date = data.get('actual_completion_date')
             
-            task = get_object_or_404(ProjectTask, task_id=task_id)  # Updated model name
+            task = get_object_or_404(ProjectTask, task_id=task_id)
             task.task_status = new_status
             
             if new_status == 'Completed' and actual_completion_date:
@@ -595,6 +713,237 @@ def ajax_update_task_status(request):
             })
     
     return JsonResponse({'success': False, 'message': 'Invalid request'})
+
+@login_required
+def ajax_duplicate_project(request):
+    """
+    AJAX view to duplicate a project with all its tasks and subtasks,
+    adjusting all dates based on the new project start date and handling budget copy options
+    """
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'message': 'Only POST method allowed'})
+    
+    if not request.user.is_superuser:
+        return JsonResponse({
+            'success': False,
+            'message': 'You do not have permission to duplicate projects'
+        })
+    
+    try:
+        # Parse JSON data
+        data = json.loads(request.body)
+        project_id = data.get('project_id')
+        new_project_name = data.get('new_project_name', '').strip()
+        new_project_start_date_str = data.get('new_project_start_date', '').strip()
+        budget_copy_option = data.get('budget_copy_option', 'budgeted')  # 'budgeted' or 'actual'
+        
+        if not project_id or not new_project_name or not new_project_start_date_str:
+            return JsonResponse({
+                'success': False,
+                'message': 'Project ID, new project name, and start date are required'
+            })
+        
+        # Validate budget copy option
+        if budget_copy_option not in ['budgeted', 'actual']:
+            budget_copy_option = 'budgeted'  # Default to budgeted if invalid option
+        
+        # Parse the new start date
+        try:
+            from datetime import datetime, timedelta
+            new_project_start_date = datetime.strptime(new_project_start_date_str, '%Y-%m-%d').date()
+        except ValueError:
+            return JsonResponse({
+                'success': False,
+                'message': 'Invalid date format. Please use YYYY-MM-DD format.'
+            })
+        
+        # Ensure project_id is an integer
+        try:
+            project_id = int(project_id)
+        except (ValueError, TypeError):
+            return JsonResponse({
+                'success': False,
+                'message': f'Invalid project ID: {project_id}'
+            })
+        
+        # Get the original project
+        try:
+            original_project = Project.objects.get(project_id=project_id)
+        except Project.DoesNotExist:
+            return JsonResponse({
+                'success': False,
+                'message': f'Project with ID {project_id} was not found'
+            })
+        
+        # Check if project name already exists
+        if Project.objects.filter(project_name=new_project_name).exists():
+            return JsonResponse({
+                'success': False,
+                'message': f'A project with the name "{new_project_name}" already exists'
+            })
+        
+        # Calculate date offset if original project has a start date
+        date_offset = None
+        original_start_date = original_project.get_calculated_start_date()
+        
+        if original_start_date:
+            date_offset = (new_project_start_date - original_start_date).days
+        
+        def adjust_date(original_date, offset_days):
+            """Helper function to adjust a date by the offset"""
+            if original_date and offset_days is not None:
+                return original_date + timedelta(days=offset_days)
+            return original_date
+        
+        def get_cost_for_budget(original_task, budget_option):
+            """Helper function to determine which cost to use as the new budget"""
+            if budget_option == 'actual':
+                return original_task.task_actual_cost
+            else:
+                return original_task.task_budgeted_cost
+        
+        # Use transaction to ensure all-or-nothing duplication
+        with transaction.atomic():
+            # Calculate new project dates
+            new_project_expected_completion = None
+            if original_project.get_calculated_expected_completion() and date_offset is not None:
+                new_project_expected_completion = adjust_date(
+                    original_project.get_calculated_expected_completion(), 
+                    date_offset
+                )
+            
+            # Calculate new project budget based on option
+            new_project_total_budgeted_cost = original_project.project_total_budgeted_cost
+            if budget_copy_option == 'actual':
+                # Use actual cost as new budget
+                new_project_total_budgeted_cost = original_project.get_calculated_actual_cost()
+            
+            # Create new project (copy all fields from original)
+            new_project = Project.objects.create(
+                project_name=new_project_name,
+                project_description=original_project.project_description,
+                prop=original_project.prop,  # Same property
+                project_start_date=new_project_start_date,  # Use the new start date
+                project_expected_completion_date=new_project_expected_completion,
+                project_status='Pending',  # Reset status to Pending
+                project_actual_completion_date=None,  # Clear completion date
+                project_total_budgeted_cost=new_project_total_budgeted_cost,  # Use calculated budget
+                project_total_actual_cost=Decimal('0.00'),  # Reset actual cost
+            )
+            
+            # Get all main tasks (tasks without parent_task)
+            main_tasks = ProjectTask.objects.filter(
+                project=original_project,
+                parent_task__isnull=True
+            ).order_by('task_id')
+            
+            # Dictionary to map old task IDs to new task objects
+            task_mapping = {}
+            
+            # First pass: Create all main tasks
+            for original_task in main_tasks:
+                # Adjust main task dates
+                new_task_start_date = adjust_date(original_task.task_start_date, date_offset)
+                new_task_expected_completion = adjust_date(original_task.task_expected_completion_date, date_offset)
+                
+                # Get the appropriate cost for the new budget
+                new_task_budgeted_cost = get_cost_for_budget(original_task, budget_copy_option)
+                
+                new_task = ProjectTask.objects.create(
+                    project=new_project,
+                    task_name=original_task.task_name,
+                    task_description=original_task.task_description,
+                    task_start_date=new_task_start_date,
+                    task_expected_completion_date=new_task_expected_completion,
+                    task_budgeted_cost=new_task_budgeted_cost,
+                    task_actual_cost=Decimal('0.00'),  # Reset actual cost
+                    task_priority=original_task.task_priority,
+                    task_status='Pending',  # Reset status to Pending
+                    task_actual_completion_date=None,  # Clear completion date
+                    task_assigned_to=original_task.task_assigned_to,
+                    parent_task=None,  # This is a main task
+                    task_progress_percentage=0,  # Reset progress
+                )
+                task_mapping[original_task.task_id] = new_task
+            
+            # Second pass: Create all subtasks
+            for original_main_task in main_tasks:
+                subtasks = ProjectTask.objects.filter(
+                    project=original_project,
+                    parent_task=original_main_task
+                ).order_by('task_id')
+                
+                for original_subtask in subtasks:
+                    # Adjust subtask dates
+                    new_subtask_start_date = adjust_date(original_subtask.task_start_date, date_offset)
+                    new_subtask_expected_completion = adjust_date(original_subtask.task_expected_completion_date, date_offset)
+                    
+                    # Get the appropriate cost for the new budget
+                    new_subtask_budgeted_cost = get_cost_for_budget(original_subtask, budget_copy_option)
+                    
+                    ProjectTask.objects.create(
+                        project=new_project,
+                        task_name=original_subtask.task_name,
+                        task_description=original_subtask.task_description,
+                        task_start_date=new_subtask_start_date,
+                        task_expected_completion_date=new_subtask_expected_completion,
+                        task_budgeted_cost=new_subtask_budgeted_cost,
+                        task_actual_cost=Decimal('0.00'),  # Reset actual cost
+                        task_priority=original_subtask.task_priority,
+                        task_status='Pending',  # Reset status to Pending
+                        task_actual_completion_date=None,  # Clear completion date
+                        task_assigned_to=original_subtask.task_assigned_to,
+                        parent_task=task_mapping[original_main_task.task_id],  # Link to new parent
+                        task_progress_percentage=0,  # Reset progress
+                    )
+            
+            # Copy project documents if they exist
+            try:
+                original_documents = original_project.project_documents.all()
+                for original_doc in original_documents:
+                    # Note: This copies the document reference, not the actual file
+                    # If you want to copy the actual files, you'll need additional logic
+                    ProjectDocument.objects.create(
+                        project=new_project,
+                        task=None,  # Project-level document
+                        document_name=f"Copy of {original_doc.document_name}" if original_doc.document_name else None,
+                        document_description=original_doc.document_description,
+                        document_file=original_doc.document_file,  # Same file reference
+                        document_uploaded_by=request.user.username,
+                    )
+            except Exception as doc_error:
+                # If document copying fails, log it but don't fail the entire duplication
+                pass  # Silent fail for document copying
+        
+        # Build success message based on budget option
+        budget_message = ""
+        if budget_copy_option == 'actual':
+            budget_message = " with actual costs copied as budgeted costs"
+        else:
+            budget_message = " with budgeted costs copied"
+            
+        success_message = f'Project "{new_project_name}" created successfully{budget_message}'
+        if date_offset is not None:
+            success_message += f' and all dates adjusted by {date_offset} days'
+        
+        return JsonResponse({
+            'success': True,
+            'message': success_message,
+            'new_project_id': new_project.project_id,
+            'date_offset': date_offset,
+            'budget_copy_option': budget_copy_option
+        })
+        
+    except json.JSONDecodeError:
+        return JsonResponse({
+            'success': False,
+            'message': 'Invalid JSON data'
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'An error occurred while duplicating the project: {str(e)}'
+        })
 
 def render_to_pdf(template_src, context_dict):
     template = get_template(template_src)

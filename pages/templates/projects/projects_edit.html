@@ -30,19 +30,31 @@ Edit Project - {{ project.project_name }}
 
 <!-- Action Buttons -->
 <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 20px;">
-  <a href="{% url 'projects_detail' project.project_id %}" class="btn btn-info">
-    <i class="fas fa-arrow-left"></i> Back to Project
-  </a>
-  <a href="{% url 'projects' %}" class="btn btn-secondary">
-    <i class="fas fa-list"></i> Back to Projects
-  </a>
+  {% if from_gantt %}
+    <a href="{% url 'project_gantt' project.project_id %}" class="btn btn-success">
+      <i class="fas fa-chart-gantt"></i> Back to Gantt Chart
+    </a>
+  {% else %}
+    <a href="{% url 'projects_detail' project.project_id %}" class="btn btn-info">
+      <i class="fas fa-arrow-left"></i> Back to Project
+    </a>
+    <a href="{% url 'projects' %}" class="btn btn-secondary">
+      <i class="fas fa-list"></i> Back to Projects
+    </a>
+  {% endif %}
 </div>
 
 <!-- Check if project has tasks -->
 {% with project.get_total_main_tasks as total_tasks %}
 
-<!-- Project Edit Form - Using exact same structure as projects_add.html -->
-<form method="post" id="projectForm">
+<!-- Project Edit Form - Enhanced with Gantt support -->
+<form method="post" 
+      id="projectForm"
+      {% if from_gantt %}
+        action="{% url 'projects_edit' project.project_id %}?from_gantt=true"
+      {% else %}
+        action="{% url 'projects_edit' project.project_id %}"
+      {% endif %}>
   {% csrf_token %}
   
   <div class="row">
@@ -217,9 +229,16 @@ Edit Project - {{ project.project_name }}
     <button type="submit" class="btn btn-info">
       <i class="fas fa-save"></i> Update Project
     </button>
-    <a href="{% url 'projects_detail' project.project_id %}" class="btn btn-secondary ml-2">
-      <i class="fas fa-times"></i> Cancel
-    </a>
+    
+    {% if from_gantt %}
+      <a href="{% url 'project_gantt' project.project_id %}" class="btn btn-secondary ml-2">
+        <i class="fas fa-times"></i> Cancel
+      </a>
+    {% else %}
+      <a href="{% url 'projects_detail' project.project_id %}" class="btn btn-secondary ml-2">
+        <i class="fas fa-times"></i> Cancel
+      </a>
+    {% endif %}
   </div>
 </form>
 
@@ -230,6 +249,10 @@ Edit Project - {{ project.project_name }}
 
 <script>
 console.log('=== EDIT PROJECT FORM LOADED ===');
+
+// Check if coming from Gantt chart
+const fromGantt = {{ from_gantt|yesno:"true,false" }};
+console.log('From Gantt Chart:', fromGantt);
 
 $(document).ready(function() {
     console.log('Setting up project edit form validation and interactions');
@@ -258,6 +281,11 @@ $(document).ready(function() {
             console.log('Project edit form validation failed');
         } else {
             console.log('Project edit form validation passed');
+            
+            // Show loading state if coming from Gantt
+            if (fromGantt) {
+                $(this).find('button[type="submit"]').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Updating...');
+            }
         }
     });
     
@@ -266,5 +294,60 @@ $(document).ready(function() {
 
 console.log('🚀 === EDIT PROJECT FORM SCRIPT COMPLETE ===');
 </script>
+
+<style>
+/* Enhanced styling for Gantt navigation */
+.btn-success {
+    background-color: #28a745;
+    border-color: #28a745;
+    transition: all 0.3s ease;
+    border-radius: 6px;
+    font-weight: 500;
+}
+
+.btn-success:hover {
+    background-color: #218838;
+    border-color: #1e7e34;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.btn-info {
+    background-color: #17a2b8;
+    border-color: #17a2b8;
+    transition: all 0.3s ease;
+    border-radius: 6px;
+    font-weight: 500;
+}
+
+.btn-info:hover {
+    background-color: #138496;
+    border-color: #117a8b;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.btn-secondary {
+    transition: all 0.3s ease;
+    border-radius: 6px;
+    font-weight: 500;
+}
+
+.btn-secondary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+/* Form enhancements */
+.form-control:focus {
+    border-color: #17a2b8;
+    box-shadow: 0 0 0 0.2rem rgba(23, 162, 184, 0.25);
+}
+
+.alert-info {
+    border-left: 4px solid #17a2b8;
+    background-color: rgba(23, 162, 184, 0.05);
+}
+</style>
 
 {% endblock %}

@@ -28,11 +28,17 @@ Edit Task - {{ task.task_name }}
   </script>
 {% endfor %}
 
-<!-- Action Buttons -->
+<!-- Action Buttons - Updated with Gantt support -->
 <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 20px;">
-  <a href="{% url 'projects_detail' project.project_id %}" class="btn btn-info">
-    <i class="fas fa-arrow-left"></i> Back to Project
-  </a>
+  {% if from_gantt %}
+    <a href="{% url 'project_gantt' project.project_id %}" class="btn btn-info">
+      <i class="fas fa-chart-gantt"></i> Back to Gantt Chart
+    </a>
+  {% else %}
+    <a href="{% url 'projects_detail' project.project_id %}" class="btn btn-info">
+      <i class="fas fa-arrow-left"></i> Back to Project
+    </a>
+  {% endif %}
 </div>
 
 <!-- Project Info Card -->
@@ -44,8 +50,14 @@ Edit Task - {{ task.task_name }}
   {% endif %}
 </div>
 
-<!-- Edit Task Form -->
-<form method="post" id="taskForm">
+<!-- Edit Task Form - Updated with Gantt support -->
+<form method="post" 
+      id="taskForm"
+      {% if from_gantt %}
+        action="{% url 'project_tasks_edit' project.project_id task.task_id %}?from_gantt=true"
+      {% else %}
+        action="{% url 'project_tasks_edit' project.project_id task.task_id %}"
+      {% endif %}>
   {% csrf_token %}
   
   <div class="row">
@@ -265,10 +277,10 @@ Edit Task - {{ task.task_name }}
     </div>
   {% endif %}
 
-  <!-- Assigned To - Only for subtasks -->
+  <!-- Assigned To and Progress - Only for subtasks -->
   {% if task.parent_task %}
     <div class="row">
-      <div class="col-md-6">
+      <div class="col-md-4">
         <div class="form-group">
           <label for="task_assigned_to">
             <i class="fas fa-user"></i> Assigned To
@@ -279,6 +291,30 @@ Edit Task - {{ task.task_name }}
                  name="task_assigned_to"
                  value="{{ task.task_assigned_to }}"
                  placeholder="Enter assignee name...">
+        </div>
+      </div>
+      
+      <div class="col-md-4">
+        <div class="form-group">
+          <label for="task_progress_percentage">
+            <i class="fas fa-percentage"></i> Progress Percentage
+          </label>
+          <div class="input-group">
+            <input type="number" 
+                   class="form-control" 
+                   id="task_progress_percentage" 
+                   name="task_progress_percentage"
+                   value="{{ task.task_progress_percentage|default:0 }}"
+                   min="0"
+                   max="100"
+                   step="1">
+            <div class="input-group-append">
+              <span class="input-group-text">%</span>
+            </div>
+          </div>
+          <small class="form-text text-muted" id="progressHelp">
+            Pending: 0%, In Progress: 1-99%, Completed: 100%
+          </small>
         </div>
       </div>
     </div>
@@ -300,14 +336,21 @@ Edit Task - {{ task.task_name }}
     </div>
   </div>
 
-  <!-- Form Actions -->
+  <!-- Form Actions - Updated with Gantt support -->
   <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #dee2e6;">
     <button type="submit" class="btn btn-info">
       <i class="fas fa-save"></i> Update Task
     </button>
-    <a href="{% url 'projects_detail' project.project_id %}" class="btn btn-secondary ml-2">
-      <i class="fas fa-times"></i> Cancel
-    </a>
+    
+    {% if from_gantt %}
+      <a href="{% url 'project_gantt' project.project_id %}" class="btn btn-info ml-2">
+        <i class="fas fa-times"></i> Cancel
+      </a>
+    {% else %}
+      <a href="{% url 'projects_detail' project.project_id %}" class="btn btn-secondary ml-2">
+        <i class="fas fa-times"></i> Cancel
+      </a>
+    {% endif %}
   </div>
 </form>
 
@@ -317,6 +360,10 @@ Edit Task - {{ task.task_name }}
 <script>
 console.log('=== EDIT TASK FORM LOADED ===');
 
+// Check if coming from Gantt chart
+const fromGantt = {{ from_gantt|yesno:"true,false" }};
+console.log('From Gantt Chart:', fromGantt);
+
 $(document).ready(function() {
     console.log('Setting up task edit form validation and interactions');
     
@@ -325,6 +372,8 @@ $(document).ready(function() {
         const status = $(this).val();
         const actualCompletionRow = $('#actualCompletionRow');
         const actualCompletionInput = $('#task_actual_completion_date');
+        const progressInput = $('#task_progress_percentage');
+        const progressHelp = $('#progressHelp');
         
         console.log('Status changed to:', status);
         
@@ -335,11 +384,63 @@ $(document).ready(function() {
             if (!actualCompletionInput.val()) {
                 actualCompletionInput.val(new Date().toISOString().split('T')[0]);
             }
-        } else {
+            // Set progress to 100% and disable
+            progressInput.val(100);
+            progressInput.prop('readonly', true);
+            progressInput.addClass('readonly-field');
+            progressHelp.text('Completed tasks are automatically set to 100%');
+            
+        } else if (status === 'Pending') {
             actualCompletionRow.hide();
             actualCompletionInput.prop('required', false);
+            // Set progress to 0% and disable
+            progressInput.val(0);
+            progressInput.prop('readonly', true);
+            progressInput.addClass('readonly-field');
+            progressHelp.text('Pending tasks are automatically set to 0%');
+            
+        } else if (status === 'In Progress') {
+            actualCompletionRow.hide();
+            actualCompletionInput.prop('required', false);
+            // Enable progress input for manual entry
+            progressInput.prop('readonly', false);
+            progressInput.removeClass('readonly-field');
+            progressInput.attr('min', 1);
+            progressInput.attr('max', 99);
+            // Set to 1% if currently 0% or 100%
+            const currentProgress = parseInt(progressInput.val()) || 0;
+            if (currentProgress === 0 || currentProgress === 100) {
+                progressInput.val(1);
+            }
+            progressHelp.text('Enter progress between 1% and 99%');
         }
     });
+    
+    // Progress percentage validation - only for subtasks
+    $('#task_progress_percentage').on('input change', function() {
+        const progress = parseInt($(this).val()) || 0;
+        const status = $('#task_status').val();
+        
+        if (status === 'In Progress') {
+            if (progress < 1) {
+                $(this).val(1);
+                showProgressWarning('In Progress tasks must have at least 1% progress');
+            } else if (progress > 99) {
+                $(this).val(99);
+                showProgressWarning('In Progress tasks cannot exceed 99% progress');
+            }
+        }
+    });
+    
+    function showProgressWarning(message) {
+        const progressHelp = $('#progressHelp');
+        const originalText = progressHelp.text();
+        progressHelp.text(message).addClass('text-warning');
+        
+        setTimeout(() => {
+            progressHelp.text(originalText).removeClass('text-warning');
+        }, 3000);
+    }
     
     // Date validation - only for subtasks
     $('#task_start_date, #task_expected_completion_date').on('change', function() {
@@ -385,10 +486,30 @@ $(document).ready(function() {
         // Validate actual completion date if status is completed
         const status = $('#task_status').val();
         const actualCompletionDate = $('#task_actual_completion_date').val();
+        const progressPercentage = parseInt($('#task_progress_percentage').val()) || 0;
         
         if (status === 'Completed' && !actualCompletionDate) {
             alert('Actual completion date is required when status is Completed');
             $('#task_actual_completion_date').focus();
+            isValid = false;
+        }
+        
+        // Validate progress percentage based on status
+        if (status === 'In Progress' && (progressPercentage < 1 || progressPercentage > 99)) {
+            alert('In Progress tasks must have progress between 1% and 99%');
+            $('#task_progress_percentage').focus();
+            isValid = false;
+        }
+        
+        if (status === 'Pending' && progressPercentage !== 0) {
+            alert('Pending tasks must have 0% progress');
+            $('#task_progress_percentage').focus();
+            isValid = false;
+        }
+        
+        if (status === 'Completed' && progressPercentage !== 100) {
+            alert('Completed tasks must have 100% progress');
+            $('#task_progress_percentage').focus();
             isValid = false;
         }
         {% endif %}
@@ -398,6 +519,11 @@ $(document).ready(function() {
             console.log('Task edit form validation failed');
         } else {
             console.log('Task edit form validation passed');
+            
+            // Show loading state if coming from Gantt
+            if (fromGantt) {
+                $(this).find('button[type="submit"]').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Updating...');
+            }
         }
     });
     
@@ -418,5 +544,78 @@ $(document).ready(function() {
 
 console.log('🚀 === EDIT TASK FORM SCRIPT COMPLETE ===');
 </script>
+
+<style>
+/* Enhanced styling for Gantt navigation */
+.btn-info {
+    background-color: #17a2b8;
+    border-color: #17a2b8;
+    transition: all 0.3s ease;
+    border-radius: 6px;
+    font-weight: 500;
+}
+
+.btn-info:hover {
+    background-color: #138496;
+    border-color: #117a8b;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.btn-secondary {
+    transition: all 0.3s ease;
+    border-radius: 6px;
+    font-weight: 500;
+}
+
+.btn-secondary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+/* Auto-calculated field styling */
+.auto-calculated-field {
+    background-color: #e9ecef !important;
+    opacity: 1;
+    cursor: not-allowed;
+}
+
+/* Readonly progress field styling */
+.readonly-field {
+    background-color: #f8f9fa !important;
+    cursor: not-allowed;
+}
+
+/* Progress input styling */
+#task_progress_percentage {
+    text-align: center;
+    font-weight: 600;
+}
+
+#task_progress_percentage:not(.readonly-field):focus {
+    border-color: #28a745;
+    box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+}
+
+/* Input group styling */
+.input-group-text {
+    background-color: #e9ecef;
+    border-color: #ced4da;
+    font-weight: 600;
+    color: #495057;
+}
+
+/* Warning text styling */
+.text-warning {
+    color: #856404 !important;
+    font-weight: 600;
+}
+
+/* Form enhancements */
+.form-control:focus {
+    border-color: #17a2b8;
+    box-shadow: 0 0 0 0.2rem rgba(23, 162, 184, 0.25);
+}
+</style>
 
 {% endblock %}

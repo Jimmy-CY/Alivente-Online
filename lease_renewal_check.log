@@ -8670,3 +8670,800 @@ Watching for file changes with StatReloader
 "GET /projects/delete/2/ HTTP/1.1" 200 14643
 "POST /projects/delete/2/ HTTP/1.1" 302 0
 "GET /projects/ HTTP/1.1" 200 46640
+Watching for file changes with StatReloader
+"GET /projects/add/ HTTP/1.1" 200 8983
+"GET /projects/ HTTP/1.1" 200 45967
+"GET /projects/edit/1/ HTTP/1.1" 200 12415
+"GET /projects/detail/1/ HTTP/1.1" 200 35806
+"GET /projects/1/tasks/edit/1/ HTTP/1.1" 200 13545
+"GET /projects/detail/1/ HTTP/1.1" 200 35806
+"GET /projects/1/tasks/edit/3/ HTTP/1.1" 200 15031
+"GET /projects/detail/1/ HTTP/1.1" 200 35806
+"GET /projects/edit/1/ HTTP/1.1" 200 12415
+"GET /projects/detail/1/ HTTP/1.1" 200 35806
+"GET /projects/1/tasks/edit/4/ HTTP/1.1" 200 15010
+"GET /projects/detail/1/ HTTP/1.1" 200 35806
+"GET /projects/ HTTP/1.1" 200 45967
+"GET /projects/add/ HTTP/1.1" 200 8983
+"GET /projects/ HTTP/1.1" 200 45967
+"GET /projects/detail/1/ HTTP/1.1" 200 35806
+"GET /projects/ HTTP/1.1" 200 45967
+"GET / HTTP/1.1" 200 7949
+"GET /projects/ HTTP/1.1" 200 45967
+"GET /projects/detail/1/ HTTP/1.1" 200 35806
+"GET /projects/ HTTP/1.1" 200 45967
+"GET /projects/detail/3/ HTTP/1.1" 200 38361
+"GET /projects/3/tasks/edit/6/ HTTP/1.1" 200 13454
+"GET /projects/detail/3/ HTTP/1.1" 200 38361
+"GET /projects/ HTTP/1.1" 200 45967
+"GET /projects/detail/1/ HTTP/1.1" 200 35816
+"GET /projects/ HTTP/1.1" 200 45967
+"GET /projects/detail/3/ HTTP/1.1" 200 38167
+"GET /projects/3/tasks/edit/7/ HTTP/1.1" 200 14980
+"POST /projects/3/tasks/edit/7/ HTTP/1.1" 302 0
+"GET /projects/detail/3/ HTTP/1.1" 200 38949
+"GET /projects/3/tasks/edit/8/ HTTP/1.1" 200 14982
+"POST /projects/3/tasks/edit/8/ HTTP/1.1" 302 0
+"GET /projects/detail/3/ HTTP/1.1" 200 39128
+"GET / HTTP/1.1" 200 7949
+"GET /projects/ HTTP/1.1" 200 45967
+"GET /projects/detail/1/ HTTP/1.1" 200 35816
+"GET /projects/ HTTP/1.1" 200 45967
+"GET /projects/delete/1/ HTTP/1.1" 200 14730
+"GET /projects/ HTTP/1.1" 200 45967
+"GET /projects/delete/3/ HTTP/1.1" 200 15176
+"GET /projects/ HTTP/1.1" 200 45967
+"GET / HTTP/1.1" 200 7949
+"GET /projects/ HTTP/1.1" 200 45967
+"GET /projects/detail/3/ HTTP/1.1" 200 38520
+"GET /projects/ HTTP/1.1" 200 45967
+"GET /projects/detail/3/ HTTP/1.1" 200 38520
+"GET /projects/ HTTP/1.1" 200 45967
+"GET /projects/detail/1/ HTTP/1.1" 200 35816
+"GET /projects/1/tasks/edit/4/ HTTP/1.1" 200 15010
+"POST /projects/1/tasks/edit/4/ HTTP/1.1" 302 0
+"GET /projects/detail/1/ HTTP/1.1" 200 36422
+"GET /projects/1/tasks/edit/4/ HTTP/1.1" 200 15010
+"POST /projects/1/tasks/edit/4/ HTTP/1.1" 302 0
+"GET /projects/detail/1/ HTTP/1.1" 200 36422
+"GET /property_management_dashboard/ HTTP/1.1" 200 43046
+"GET /property/1/profit-loss/ HTTP/1.1" 200 36586
+"GET /property_management_dashboard/?property=1 HTTP/1.1" 200 43046
+"GET /property_detail/1/open-invoices/ HTTP/1.1" 200 34713
+"GET /property_management_dashboard/?property=1 HTTP/1.1" 200 43046
+"GET / HTTP/1.1" 200 7949
+"GET /projects/ HTTP/1.1" 200 45967
+"GET /projects/detail/1/ HTTP/1.1" 200 35816
+"GET /projects/1/tasks/edit/3/ HTTP/1.1" 200 15031
+"GET /projects/detail/1/ HTTP/1.1" 200 35816
+"GET /projects/1/tasks/edit/1/ HTTP/1.1" 200 13545
+"GET /projects/detail/1/ HTTP/1.1" 200 35816
+"GET /projects/edit/1/ HTTP/1.1" 200 12415
+"GET /projects/detail/1/ HTTP/1.1" 200 35816
+"GET /projects/1/tasks/edit/2/ HTTP/1.1" 200 15042
+"GET /projects/detail/1/ HTTP/1.1" 200 35816
+"GET /projects/1/tasks/edit/4/ HTTP/1.1" 200 15010
+"GET /projects/detail/1/ HTTP/1.1" 200 35816
+"POST /ajax/tasks/update-status/ HTTP/1.1" 200 62
+"GET /projects/detail/1/ HTTP/1.1" 200 35804
+"GET /projects/ HTTP/1.1" 200 45967
+"GET /projects/edit/1/ HTTP/1.1" 200 12415
+"GET /projects/detail/1/ HTTP/1.1" 200 35804
+"GET /projects/1/tasks/1/subtasks/add/ HTTP/1.1" 200 15174
+"GET /projects/detail/1/ HTTP/1.1" 200 35804
+"GET /projects/1/tasks/add/ HTTP/1.1" 200 8853
+"GET /projects/detail/1/ HTTP/1.1" 200 35804
+"GET /projects/edit/1/ HTTP/1.1" 200 12415
+"GET /projects/detail/1/ HTTP/1.1" 200 35804
+"GET /projects/ HTTP/1.1" 200 45967
+"GET /projects/add/ HTTP/1.1" 200 8983
+"POST /projects/add/ HTTP/1.1" 302 0
+"GET /projects/ HTTP/1.1" 200 49057
+"GET /projects/detail/5/ HTTP/1.1" 200 24675
+"GET /projects/5/tasks/add/ HTTP/1.1" 200 8626
+"POST /projects/5/tasks/add/ HTTP/1.1" 302 0
+"GET /projects/detail/5/ HTTP/1.1" 200 26994
+"GET /projects/5/tasks/14/subtasks/add/ HTTP/1.1" 200 15094
+"POST /projects/5/tasks/14/subtasks/add/ HTTP/1.1" 302 0
+"GET /projects/detail/5/ HTTP/1.1" 200 29448
+"GET /projects/5/tasks/14/subtasks/add/ HTTP/1.1" 200 15094
+"POST /projects/5/tasks/14/subtasks/add/ HTTP/1.1" 302 0
+"GET /projects/detail/5/ HTTP/1.1" 200 31575
+"GET /projects/ HTTP/1.1" 200 48382
+"GET /projects/detail/5/ HTTP/1.1" 200 30950
+"GET /projects/ HTTP/1.1" 200 48382
+"GET /projects/detail/5/ HTTP/1.1" 200 30950
+"POST /ajax/tasks/update-status/ HTTP/1.1" 200 64
+"GET /projects/detail/5/ HTTP/1.1" 200 31240
+"GET /projects/5/tasks/edit/15/ HTTP/1.1" 200 15009
+"POST /projects/5/tasks/edit/15/ HTTP/1.1" 302 0
+"GET /projects/detail/5/ HTTP/1.1" 200 32279
+"GET /projects/ HTTP/1.1" 200 48409
+"GET /projects/detail/5/ HTTP/1.1" 200 31671
+"GET /projects/ HTTP/1.1" 200 48409
+"GET / HTTP/1.1" 200 7949
+"GET /projects/ HTTP/1.1" 200 48409
+"GET /projects/detail/3/ HTTP/1.1" 200 40901
+"GET /projects/ HTTP/1.1" 200 48409
+"GET /projects/detail/5/ HTTP/1.1" 200 33881
+"GET /projects/ HTTP/1.1" 200 48409
+"GET /projects/detail/1/ HTTP/1.1" 200 38011
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\urls.py changed, reloading.
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 7949
+"GET /projects/ HTTP/1.1" 200 48409
+"GET /projects/detail/3/ HTTP/1.1" 200 41021
+"GET /projects/3/gantt/ HTTP/1.1" 200 18664
+"GET /projects/ HTTP/1.1" 200 48409
+"GET /projects/detail/3/ HTTP/1.1" 200 41021
+"GET /projects/3/gantt/ HTTP/1.1" 200 22586
+"GET / HTTP/1.1" 200 7949
+"GET /projects/ HTTP/1.1" 200 48409
+"GET /projects/detail/3/ HTTP/1.1" 200 41021
+"GET /projects/3/gantt/ HTTP/1.1" 200 23834
+"GET /projects/detail/3/ HTTP/1.1" 200 41021
+"GET /projects/ HTTP/1.1" 200 48409
+"GET /projects/detail/5/ HTTP/1.1" 200 34001
+"GET /projects/5/gantt/ HTTP/1.1" 200 23067
+"GET /projects/detail/5/ HTTP/1.1" 200 34001
+"GET /projects/5/tasks/edit/16/ HTTP/1.1" 200 15022
+"POST /projects/5/tasks/edit/16/ HTTP/1.1" 302 0
+"GET /projects/detail/5/ HTTP/1.1" 200 34625
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+"GET /projects/ HTTP/1.1" 200 48409
+"GET /projects/detail/3/ HTTP/1.1" 200 41021
+"GET /projects/3/gantt/ HTTP/1.1" 200 26495
+"GET /projects/edit/3/ HTTP/1.1" 200 13868
+"GET /projects/detail/3/ HTTP/1.1" 200 41021
+"GET /projects/ HTTP/1.1" 200 48409
+"GET /projects/detail/3/ HTTP/1.1" 200 41021
+"GET /projects/3/gantt/ HTTP/1.1" 200 26495
+"GET /projects/edit/3/ HTTP/1.1" 200 13868
+"GET /projects/ HTTP/1.1" 200 48409
+"GET /projects/detail/3/ HTTP/1.1" 200 41021
+"GET /projects/3/gantt/ HTTP/1.1" 200 26495
+"GET /projects/3/tasks/edit/9/ HTTP/1.1" 200 13451
+"GET /projects/detail/3/ HTTP/1.1" 200 41021
+"GET /projects/3/gantt/ HTTP/1.1" 200 26495
+"GET /projects/3/tasks/edit/7/ HTTP/1.1" 200 14987
+"POST /projects/3/tasks/edit/7/ HTTP/1.1" 302 0
+"GET /projects/detail/3/ HTTP/1.1" 200 41172
+"GET /projects/3/gantt/ HTTP/1.1" 200 26485
+"GET /projects/3/tasks/edit/7/ HTTP/1.1" 200 15009
+"GET /projects/detail/3/ HTTP/1.1" 200 40565
+"GET /projects/3/gantt/ HTTP/1.1" 200 26485
+"GET /projects/3/tasks/edit/10/ HTTP/1.1" 200 15002
+"POST /projects/3/tasks/edit/10/ HTTP/1.1" 302 0
+"GET /projects/detail/3/ HTTP/1.1" 200 41173
+"GET /projects/3/gantt/ HTTP/1.1" 200 26485
+"GET /projects/3/tasks/edit/9/ HTTP/1.1" 200 13451
+"POST /projects/3/tasks/edit/9/ HTTP/1.1" 302 0
+"GET /projects/detail/3/ HTTP/1.1" 200 41169
+"GET /projects/3/gantt/ HTTP/1.1" 200 26485
+"GET /projects/edit/3/ HTTP/1.1" 200 13868
+"GET /projects/detail/3/ HTTP/1.1" 200 40565
+"GET /projects/3/gantt/ HTTP/1.1" 200 26485
+"GET /projects/edit/3/ HTTP/1.1" 200 13868
+"POST /projects/edit/3/ HTTP/1.1" 302 0
+"GET /projects/ HTTP/1.1" 200 49054
+"GET /projects/detail/5/ HTTP/1.1" 200 34001
+"GET /projects/5/gantt/ HTTP/1.1" 200 25728
+"GET /projects/edit/5/ HTTP/1.1" 200 14641
+"POST /projects/edit/5/ HTTP/1.1" 302 0
+"GET /projects/ HTTP/1.1" 200 49092
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 7949
+"GET /projects/ HTTP/1.1" 200 48471
+"GET /projects/detail/3/ HTTP/1.1" 200 40565
+"GET /projects/3/gantt/ HTTP/1.1" 200 26533
+"GET /projects/3/tasks/edit/7/?from_gantt=true HTTP/1.1" 200 16723
+"POST /projects/3/tasks/edit/7/?from_gantt=true HTTP/1.1" 302 0
+"GET /projects/3/gantt/ HTTP/1.1" 200 27150
+"GET /projects/3/tasks/edit/8/?from_gantt=true HTTP/1.1" 200 16706
+"POST /projects/3/tasks/edit/8/?from_gantt=true HTTP/1.1" 302 0
+"GET /projects/3/gantt/ HTTP/1.1" 200 27139
+"GET /projects/3/tasks/edit/8/?from_gantt=true HTTP/1.1" 200 16728
+"GET /projects/3/gantt/ HTTP/1.1" 200 26531
+"GET /projects/3/tasks/edit/6/?from_gantt=true HTTP/1.1" 200 15172
+"POST /projects/3/tasks/edit/6/?from_gantt=true HTTP/1.1" 302 0
+"GET /projects/3/gantt/ HTTP/1.1" 200 27135
+"GET /projects/3/tasks/edit/6/?from_gantt=true HTTP/1.1" 200 15172
+"GET /projects/3/gantt/ HTTP/1.1" 200 26531
+"GET /projects/edit/3/?from_gantt=true HTTP/1.1" 200 13777
+"GET /projects/3/gantt/ HTTP/1.1" 200 26531
+"GET /projects/edit/3/?from_gantt=true HTTP/1.1" 200 13777
+"POST /projects/edit/3/?from_gantt=true HTTP/1.1" 302 0
+"GET /projects/3/gantt/ HTTP/1.1" 200 27147
+"GET /projects/edit/3/?from_gantt=true HTTP/1.1" 200 13777
+"GET /projects/3/gantt/ HTTP/1.1" 200 26531
+"GET /projects/detail/3/ HTTP/1.1" 200 40563
+"GET /projects/3/gantt/ HTTP/1.1" 200 26531
+"GET / HTTP/1.1" 200 7949
+"GET /projects/ HTTP/1.1" 200 48468
+"GET /projects/detail/1/ HTTP/1.1" 200 38131
+"POST /ajax/tasks/update-status/ HTTP/1.1" 200 64
+"GET /projects/detail/1/ HTTP/1.1" 200 38373
+"GET /projects/1/tasks/edit/2/ HTTP/1.1" 200 16723
+"POST /projects/1/tasks/edit/2/ HTTP/1.1" 302 0
+"GET /projects/detail/1/ HTTP/1.1" 200 38986
+"GET /projects/ HTTP/1.1" 200 48468
+"GET /projects/detail/3/ HTTP/1.1" 200 40563
+"GET /projects/3/gantt/ HTTP/1.1" 200 26531
+"GET /projects/3/tasks/edit/8/?from_gantt=true HTTP/1.1" 200 16728
+"POST /projects/3/tasks/edit/8/?from_gantt=true HTTP/1.1" 302 0
+"GET /projects/3/gantt/ HTTP/1.1" 200 27151
+"GET /projects/detail/3/ HTTP/1.1" 200 41021
+"GET / HTTP/1.1" 200 7949
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\models.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+Internal Server Error: /projects/
+Traceback (most recent call last):
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\contrib\auth\decorators.py", line 60, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\djangoproject\pages\views.py", line 155, in projects_list
+    return render(request, 'projects/projects.html', context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\loader.py", line 62, in render_to_string
+    return template.render(context, request)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\backends\django.py", line 107, in render
+    return self.template.render(context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 171, in render
+    return self._render(context)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 163, in _render
+    return self.nodelist.render(context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 1008, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 969, in render_annotated
+    return self.render(context)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\loader_tags.py", line 159, in render
+    return compiled_parent._render(context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 163, in _render
+    return self.nodelist.render(context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 1008, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 969, in render_annotated
+    return self.render(context)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\loader_tags.py", line 65, in render
+    result = block.nodelist.render(context)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 1008, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 969, in render_annotated
+    return self.render(context)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\defaulttags.py", line 243, in render
+    nodelist.append(node.render_annotated(context))
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 969, in render_annotated
+    return self.render(context)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 1067, in render
+    output = self.filter_expression.resolve(context)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 718, in resolve
+    obj = self.var.resolve(context)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 850, in resolve
+    value = self._resolve_lookup(context)
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 917, in _resolve_lookup
+    current = current()
+              ^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\djangoproject\pages\models.py", line 161, in get_progress_percentage
+    completed_days, total_days = task.get_completed_days()
+                                 ^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'ProjectTask' object has no attribute 'get_completed_days'
+"GET /projects/ HTTP/1.1" 500 192079
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\models.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\models.py changed, reloading.
+Watching for file changes with StatReloader
+"GET /projects/ HTTP/1.1" 200 48442
+"GET /projects/detail/3/ HTTP/1.1" 200 41019
+"GET /projects/3/tasks/edit/7/ HTTP/1.1" 200 21378
+"POST /projects/3/tasks/edit/7/ HTTP/1.1" 302 0
+"GET /projects/detail/3/ HTTP/1.1" 200 41627
+"GET /projects/3/tasks/edit/8/ HTTP/1.1" 200 21383
+"POST /projects/3/tasks/edit/8/ HTTP/1.1" 302 0
+"GET /projects/detail/3/ HTTP/1.1" 200 41629
+"GET /projects/3/gantt/ HTTP/1.1" 200 26852
+"GET /projects/3/tasks/edit/10/?from_gantt=true HTTP/1.1" 200 21415
+"POST /projects/3/tasks/edit/10/?from_gantt=true HTTP/1.1" 302 0
+"GET /projects/3/gantt/ HTTP/1.1" 200 27469
+"GET /projects/3/tasks/edit/10/?from_gantt=true HTTP/1.1" 200 21416
+"POST /projects/3/tasks/edit/10/?from_gantt=true HTTP/1.1" 302 0
+"GET /projects/3/gantt/ HTTP/1.1" 200 27469
+"GET /projects/3/tasks/edit/7/?from_gantt=true HTTP/1.1" 200 21401
+"POST /projects/3/tasks/edit/7/?from_gantt=true HTTP/1.1" 302 0
+"GET /projects/3/gantt/ HTTP/1.1" 200 27457
+"GET /projects/ HTTP/1.1" 200 48442
+"GET /projects/detail/1/ HTTP/1.1" 200 38375
+"GET /projects/1/tasks/edit/3/ HTTP/1.1" 200 21422
+"POST /projects/1/tasks/edit/3/ HTTP/1.1" 302 0
+"GET /projects/detail/1/ HTTP/1.1" 200 38983
+"GET /projects/1/tasks/edit/2/ HTTP/1.1" 200 21422
+"POST /projects/1/tasks/edit/2/ HTTP/1.1" 302 0
+"GET /projects/detail/1/ HTTP/1.1" 200 38986
+"GET /projects/1/tasks/edit/5/ HTTP/1.1" 200 21409
+"POST /projects/1/tasks/edit/5/ HTTP/1.1" 302 0
+"GET /projects/detail/1/ HTTP/1.1" 200 38980
+"GET /projects/1/tasks/edit/4/ HTTP/1.1" 200 21401
+"POST /projects/1/tasks/edit/4/ HTTP/1.1" 302 0
+"GET /projects/detail/1/ HTTP/1.1" 200 38982
+"GET /projects/ HTTP/1.1" 200 48442
+"GET /projects/detail/3/ HTTP/1.1" 200 40586
+"GET /projects/3/tasks/edit/11/ HTTP/1.1" 200 21394
+"POST /projects/3/tasks/edit/11/ HTTP/1.1" 302 0
+"GET /projects/detail/3/ HTTP/1.1" 200 41194
+"GET /projects/3/tasks/edit/10/ HTTP/1.1" 200 21395
+"POST /projects/3/tasks/edit/10/ HTTP/1.1" 302 0
+"GET /projects/detail/3/ HTTP/1.1" 200 41194
+"GET /projects/3/tasks/edit/6/ HTTP/1.1" 200 18143
+"GET /projects/detail/3/ HTTP/1.1" 200 40586
+"GET /projects/3/tasks/edit/7/ HTTP/1.1" 200 21401
+"POST /projects/3/tasks/edit/7/ HTTP/1.1" 302 0
+"GET /projects/detail/3/ HTTP/1.1" 200 41193
+"GET /projects/3/tasks/edit/8/ HTTP/1.1" 200 21385
+"POST /projects/3/tasks/edit/8/ HTTP/1.1" 302 0
+"GET /projects/detail/3/ HTTP/1.1" 200 41194
+"GET /projects/ HTTP/1.1" 200 48442
+"GET /projects/detail/1/ HTTP/1.1" 200 38376
+"GET /projects/1/gantt/ HTTP/1.1" 200 26671
+"GET /projects/1/tasks/edit/3/?from_gantt=true HTTP/1.1" 200 21443
+"POST /projects/1/tasks/edit/3/?from_gantt=true HTTP/1.1" 302 0
+"GET /projects/1/gantt/ HTTP/1.1" 200 27279
+"GET /projects/1/tasks/edit/2/?from_gantt=true HTTP/1.1" 200 21445
+"GET /projects/1/gantt/ HTTP/1.1" 200 26671
+"GET /projects/1/tasks/edit/5/?from_gantt=true HTTP/1.1" 200 21430
+"POST /projects/1/tasks/edit/5/?from_gantt=true HTTP/1.1" 302 0
+"GET /projects/1/gantt/ HTTP/1.1" 200 27275
+"GET /projects/1/tasks/edit/2/?from_gantt=true HTTP/1.1" 200 21445
+"POST /projects/1/tasks/edit/2/?from_gantt=true HTTP/1.1" 302 0
+"GET /projects/1/gantt/ HTTP/1.1" 200 27281
+"GET /projects/1/tasks/edit/4/?from_gantt=true HTTP/1.1" 200 21424
+"POST /projects/1/tasks/edit/4/?from_gantt=true HTTP/1.1" 302 0
+"GET /projects/1/gantt/ HTTP/1.1" 200 27277
+"GET /projects/detail/1/ HTTP/1.1" 200 38376
+"GET /projects/ HTTP/1.1" 200 48442
+"GET /projects/detail/3/ HTTP/1.1" 200 40586
+"GET /projects/3/gantt/ HTTP/1.1" 200 26851
+"GET /projects/detail/3/ HTTP/1.1" 200 40586
+"GET /projects/ HTTP/1.1" 200 48442
+"GET /projects/detail/5/ HTTP/1.1" 200 33999
+"GET /projects/5/tasks/edit/16/ HTTP/1.1" 200 21414
+"POST /projects/5/tasks/edit/16/ HTTP/1.1" 302 0
+"GET /projects/detail/5/ HTTP/1.1" 200 34624
+"GET /projects/5/tasks/edit/15/ HTTP/1.1" 200 21389
+"POST /projects/5/tasks/edit/15/ HTTP/1.1" 302 0
+"GET /projects/detail/5/ HTTP/1.1" 200 34609
+"GET /projects/5/gantt/ HTTP/1.1" 200 26033
+"GET /projects/detail/5/ HTTP/1.1" 200 34001
+"GET /projects/ HTTP/1.1" 200 48409
+"GET /projects/detail/5/ HTTP/1.1" 200 34001
+"GET /projects/ HTTP/1.1" 200 48409
+"GET /projects/detail/1/ HTTP/1.1" 200 38376
+"GET /projects/1/gantt/ HTTP/1.1" 200 26671
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\models.py changed, reloading.
+Watching for file changes with StatReloader
+"GET /projects/1/gantt/ HTTP/1.1" 200 26673
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+"GET /projects/1/tasks/edit/2/?from_gantt=true HTTP/1.1" 200 21445
+"GET /projects/1/gantt/ HTTP/1.1" 200 27524
+"GET /projects/1/tasks/edit/3/?from_gantt=true HTTP/1.1" 200 21443
+"POST /projects/1/tasks/edit/3/?from_gantt=true HTTP/1.1" 302 0
+"GET /projects/1/gantt/ HTTP/1.1" 200 28163
+"GET /projects/detail/1/ HTTP/1.1" 200 38388
+"GET /projects/ HTTP/1.1" 200 48409
+"GET /projects/detail/3/ HTTP/1.1" 200 40586
+"GET /projects/3/gantt/ HTTP/1.1" 200 27772
+"GET /properties/ HTTP/1.1" 200 53656
+"GET /media/properties/title_deeds/prop_5_apolloneon-demetri_title_deed.pdf HTTP/1.1" 304 0
+"GET / HTTP/1.1" 200 7949
+"GET /projects/ HTTP/1.1" 200 48409
+"GET /projects/detail/3/ HTTP/1.1" 200 40586
+"GET /projects/3/gantt/ HTTP/1.1" 200 27779
+"GET /projects/detail/3/ HTTP/1.1" 200 40586
+"GET /projects/detail/3/ HTTP/1.1" 200 40583
+"GET /projects/3/gantt/ HTTP/1.1" 200 27779
+"GET /projects/3/tasks/edit/9/?from_gantt=true HTTP/1.1" 200 18165
+"GET /projects/3/tasks/edit/9/?from_gantt=true HTTP/1.1" 200 17846
+"GET /projects/3/gantt/ HTTP/1.1" 200 27779
+"GET /projects/detail/3/ HTTP/1.1" 200 40583
+"GET /projects/ HTTP/1.1" 200 48409
+"GET /projects/detail/3/ HTTP/1.1" 200 40583
+"GET /projects/3/gantt/ HTTP/1.1" 200 28304
+"GET /projects/detail/3/ HTTP/1.1" 200 40583
+"GET /projects/ HTTP/1.1" 200 48409
+"GET /projects/detail/5/ HTTP/1.1" 200 33998
+"GET /projects/5/gantt/ HTTP/1.1" 200 27417
+"GET /projects/detail/5/ HTTP/1.1" 200 33998
+"GET /projects/detail/5/ HTTP/1.1" 200 34816
+"GET /projects/ HTTP/1.1" 200 48409
+"GET /projects/detail/3/ HTTP/1.1" 200 41997
+"GET /projects/3/gantt/ HTTP/1.1" 200 28304
+"GET /projects/detail/3/ HTTP/1.1" 200 41997
+"GET /projects/ HTTP/1.1" 200 48409
+"GET /projects/detail/3/ HTTP/1.1" 200 41997
+"GET /projects/3/tasks/9/subtasks/add/ HTTP/1.1" 200 15094
+"GET /projects/3/tasks/9/subtasks/add/ HTTP/1.1" 200 15773
+"GET /projects/detail/3/ HTTP/1.1" 200 41997
+"GET /projects/3/gantt/ HTTP/1.1" 200 28304
+"GET /projects/detail/3/ HTTP/1.1" 200 41997
+"GET /projects/ HTTP/1.1" 200 48409
+"GET /projects/detail/3/ HTTP/1.1" 200 41997
+"GET /projects/3/gantt/ HTTP/1.1" 200 28304
+"GET / HTTP/1.1" 200 7949
+"GET /projects/ HTTP/1.1" 200 48409
+Internal Server Error: /projects/detail/3/
+Traceback (most recent call last):
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\contrib\auth\decorators.py", line 60, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\djangoproject\pages\views.py", line 348, in projects_detail
+    return render(request, 'projects/projects_detail.html', context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\loader.py", line 62, in render_to_string
+    return template.render(context, request)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\backends\django.py", line 107, in render
+    return self.template.render(context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 171, in render
+    return self._render(context)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 163, in _render
+    return self.nodelist.render(context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 1008, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 969, in render_annotated
+    return self.render(context)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\loader_tags.py", line 159, in render
+    return compiled_parent._render(context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 163, in _render
+    return self.nodelist.render(context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 1008, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 969, in render_annotated
+    return self.render(context)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\loader_tags.py", line 65, in render
+    result = block.nodelist.render(context)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 1008, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 969, in render_annotated
+    return self.render(context)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\defaulttags.py", line 480, in render
+    url = reverse(view_name, args=args, kwargs=kwargs, current_app=current_app)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\urls\base.py", line 88, in reverse
+    return resolver._reverse_with_prefix(view, prefix, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\urls\resolvers.py", line 831, in _reverse_with_prefix
+    raise NoReverseMatch(msg)
+django.urls.exceptions.NoReverseMatch: Reverse for 'ajax_duplicate_project' not found. 'ajax_duplicate_project' is not a valid view function or pattern name.
+"GET /projects/detail/3/ HTTP/1.1" 500 172199
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\urls.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 7949
+"GET /static/css/my_style.css HTTP/1.1" 200 45
+"GET /static/images/alivente_online_logo.png HTTP/1.1" 200 58508
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 40065
+"GET /projects/ HTTP/1.1" 200 48409
+"GET /projects/detail/5/ HTTP/1.1" 200 41462
+Not Found: /projects/ajax/duplicate/
+"POST /projects/ajax/duplicate/ HTTP/1.1" 404 40105
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 7949
+"GET /projects/ HTTP/1.1" 200 48409
+"GET /projects/detail/5/ HTTP/1.1" 200 41788
+Not Found: /projects/ajax/duplicate/
+"POST /projects/ajax/duplicate/ HTTP/1.1" 404 40105
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 7949
+"GET / HTTP/1.1" 200 7949
+"GET /projects/ HTTP/1.1" 200 48409
+"GET /projects/detail/5/ HTTP/1.1" 200 41788
+Not Found: /projects/ajax/duplicate/
+"POST /projects/ajax/duplicate/ HTTP/1.1" 404 40105
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 40176
+Not Found: /projects/ajax/duplicate/
+"POST /projects/ajax/duplicate/ HTTP/1.1" 404 40105
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\urls.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 7949
+"GET /projects/ HTTP/1.1" 200 48409
+"GET /projects/detail/5/ HTTP/1.1" 200 41788
+"POST /projects/ajax/duplicate/ HTTP/1.1" 200 101
+"GET /projects/detail/6/ HTTP/1.1" 200 41046
+"GET /projects/ HTTP/1.1" 200 50814
+"GET /projects/detail/5/ HTTP/1.1" 200 41788
+"GET /projects/ HTTP/1.1" 200 50814
+"GET /projects/detail/6/ HTTP/1.1" 200 41046
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 7949
+"GET /projects/ HTTP/1.1" 200 50814
+"GET /projects/detail/5/ HTTP/1.1" 200 38719
+"GET / HTTP/1.1" 200 7949
+"GET /projects/ HTTP/1.1" 200 50814
+Internal Server Error: /projects/detail/5/
+Traceback (most recent call last):
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 510, in parse
+    compile_func = self.tags[command]
+                   ~~~~~~~~~^^^^^^^^^
+KeyError: 'endblock'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\contrib\auth\decorators.py", line 60, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\djangoproject\pages\views.py", line 349, in projects_detail
+    return render(request, 'projects/projects_detail.html', context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\loader.py", line 15, in get_template
+    return engine.get_template(template_name)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\backends\django.py", line 79, in get_template
+    return Template(self.engine.get_template(template_name), self)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\engine.py", line 177, in get_template
+    template, origin = self.find_template(template_name)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\engine.py", line 159, in find_template
+    template = loader.get_template(name, skip=skip)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\loaders\cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\loaders\base.py", line 28, in get_template
+    return Template(
+           ^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 154, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 196, in compile_nodelist
+    nodelist = parser.parse()
+               ^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 518, in parse
+    raise self.error(token, e)
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 516, in parse
+    compiled_result = compile_func(self, token)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\loader_tags.py", line 295, in do_extends
+    nodelist = parser.parse()
+               ^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 518, in parse
+    raise self.error(token, e)
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 516, in parse
+    compiled_result = compile_func(self, token)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\loader_tags.py", line 234, in do_block
+    nodelist = parser.parse(("endblock",))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 518, in parse
+    raise self.error(token, e)
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 516, in parse
+    compiled_result = compile_func(self, token)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\defaulttags.py", line 862, in do_for
+    nodelist_loop = parser.parse(
+                    ^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 512, in parse
+    self.invalid_block_tag(token, command, parse_until)
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 563, in invalid_block_tag
+    raise self.error(
+django.template.exceptions.TemplateSyntaxError: Invalid block tag on line 487: 'endblock', expected 'empty' or 'endfor'. Did you forget to register or load this tag?
+"GET /projects/detail/5/ HTTP/1.1" 500 286186
+"GET / HTTP/1.1" 200 7949
+"GET /projects/ HTTP/1.1" 200 50814
+Internal Server Error: /projects/detail/5/
+Traceback (most recent call last):
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 510, in parse
+    compile_func = self.tags[command]
+                   ~~~~~~~~~^^^^^^^^^
+KeyError: 'endblock'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\contrib\auth\decorators.py", line 60, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\djangoproject\pages\views.py", line 349, in projects_detail
+    return render(request, 'projects/projects_detail.html', context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\loader.py", line 15, in get_template
+    return engine.get_template(template_name)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\backends\django.py", line 79, in get_template
+    return Template(self.engine.get_template(template_name), self)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\engine.py", line 177, in get_template
+    template, origin = self.find_template(template_name)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\engine.py", line 159, in find_template
+    template = loader.get_template(name, skip=skip)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\loaders\cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\loaders\base.py", line 28, in get_template
+    return Template(
+           ^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 154, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 196, in compile_nodelist
+    nodelist = parser.parse()
+               ^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 518, in parse
+    raise self.error(token, e)
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 516, in parse
+    compiled_result = compile_func(self, token)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\loader_tags.py", line 295, in do_extends
+    nodelist = parser.parse()
+               ^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 518, in parse
+    raise self.error(token, e)
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 516, in parse
+    compiled_result = compile_func(self, token)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\loader_tags.py", line 234, in do_block
+    nodelist = parser.parse(("endblock",))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 518, in parse
+    raise self.error(token, e)
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 516, in parse
+    compiled_result = compile_func(self, token)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\defaulttags.py", line 862, in do_for
+    nodelist_loop = parser.parse(
+                    ^^^^^^^^^^^^^
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 512, in parse
+    self.invalid_block_tag(token, command, parse_until)
+  File "C:\users\demetrismanias\desktop\code\Lib\site-packages\django\template\base.py", line 563, in invalid_block_tag
+    raise self.error(
+django.template.exceptions.TemplateSyntaxError: Invalid block tag on line 487: 'endblock', expected 'empty' or 'endfor'. Did you forget to register or load this tag?
+"GET /projects/detail/5/ HTTP/1.1" 500 286186
+"GET / HTTP/1.1" 200 7949
+"GET /projects/ HTTP/1.1" 200 50814
+"GET /projects/detail/5/ HTTP/1.1" 200 43654
+"POST /projects/ajax/duplicate/ HTTP/1.1" 200 154
+"GET /projects/detail/7/ HTTP/1.1" 200 42924
+"GET /projects/ HTTP/1.1" 200 53227
+"GET /projects/detail/7/ HTTP/1.1" 200 42924
+"GET /projects/edit/7/ HTTP/1.1" 200 13887
+"POST /projects/edit/7/ HTTP/1.1" 302 0
+"GET /projects/ HTTP/1.1" 200 53902
+"GET /projects/detail/7/ HTTP/1.1" 200 42925
+"GET /projects/ HTTP/1.1" 200 53281
+"GET /projects/delete/6/ HTTP/1.1" 200 14632
+"POST /projects/delete/6/ HTTP/1.1" 302 0
+"GET /projects/ HTTP/1.1" 200 51544
+"GET /projects/delete/7/ HTTP/1.1" 200 14353
+"POST /projects/delete/7/ HTTP/1.1" 302 0
+"GET /projects/ HTTP/1.1" 200 49082
+"GET /projects/detail/1/ HTTP/1.1" 200 48467
+"POST /projects/ajax/duplicate/ HTTP/1.1" 200 152
+"GET /projects/detail/8/ HTTP/1.1" 200 47835
+"GET /projects/ HTTP/1.1" 200 50817
+"GET /projects/detail/1/ HTTP/1.1" 200 48467
+"GET /projects/ HTTP/1.1" 200 50817
+"GET /projects/delete/8/ HTTP/1.1" 200 14674
+"POST /projects/delete/8/ HTTP/1.1" 302 0
+"GET /projects/ HTTP/1.1" 200 49072
+"GET /projects/detail/1/ HTTP/1.1" 200 48467
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+"GET /projects/ HTTP/1.1" 200 48409
+"GET /projects/detail/1/ HTTP/1.1" 200 52537
+"POST /projects/ajax/duplicate/ HTTP/1.1" 200 226
+"GET /projects/detail/9/ HTTP/1.1" 200 51900
+"GET /projects/ HTTP/1.1" 200 50817
+"GET /projects/delete/9/ HTTP/1.1" 200 14674
+"POST /projects/delete/9/ HTTP/1.1" 302 0
+"GET /projects/ HTTP/1.1" 200 49072
+"GET /projects/detail/1/ HTTP/1.1" 200 52537
+"POST /projects/ajax/duplicate/ HTTP/1.1" 200 213
+"GET /projects/detail/10/ HTTP/1.1" 200 51913
+"GET /projects/ HTTP/1.1" 200 50821
+"GET /projects/delete/10/ HTTP/1.1" 200 14674
+"POST /projects/delete/10/ HTTP/1.1" 302 0
+"GET /projects/ HTTP/1.1" 200 49072
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\views.py changed, reloading.
+Watching for file changes with StatReloader

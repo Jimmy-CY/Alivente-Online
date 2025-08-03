@@ -31,6 +31,12 @@ Project Details - {{ project.project_name }}
 <body>
   <!-- Action Buttons -->
   <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 20px;">
+    <a href="{% url 'project_gantt' project.project_id %}" class="btn btn-info">
+      <i class="fas fa-chart-gantt"></i> Gantt Chart
+    </a>
+    <button type="button" class="btn btn-warning" onclick="showDuplicateModal()">
+      <i class="fas fa-copy"></i> Duplicate Project
+    </button>
     <a href="{% url 'projects' %}" class="btn btn-info">
       <i class="fas fa-arrow-left"></i> Back to Projects
     </a>
@@ -163,6 +169,44 @@ Project Details - {{ project.project_name }}
                 {% if task.task_description %}
                   <p class="task-description">{{ task.task_description }}</p>
                 {% endif %}
+                
+                <!-- Task Details in one line -->
+                <div class="task-details-inline">
+                  <span class="detail-item">
+                    <strong>Start:</strong>
+                    {% if task.get_calculated_start_date %}
+                      {{ task.get_calculated_start_date|date:"M d, Y" }}
+                    {% else %}
+                      <span class="text-muted">Not set</span>
+                    {% endif %}
+                  </span>
+                  <span class="detail-item">
+                    <strong>Expected End:</strong>
+                    {% if task.get_calculated_expected_completion %}
+                      {{ task.get_calculated_expected_completion|date:"M d, Y" }}
+                    {% else %}
+                      <span class="text-muted">Not set</span>
+                    {% endif %}
+                  </span>
+                  {% if task.get_calculated_status == 'Completed' and task.get_calculated_actual_completion %}
+                    <span class="detail-item">
+                      <strong>Actual End:</strong>
+                      <span style="color: #28a745;">{{ task.get_calculated_actual_completion|date:"M d, Y" }}</span>
+                    </span>
+                  {% endif %}
+                  <span class="detail-item">
+                    <strong>Budgeted:</strong>
+                    €{{ task.get_calculated_budgeted_cost|floatformat:2 }}
+                  </span>
+                  <span class="detail-item">
+                    <strong>Actual:</strong>
+                    €{{ task.get_calculated_actual_cost|floatformat:2 }}
+                  </span>
+                  <span class="detail-item">
+                    <strong>Progress:</strong>
+                    <span class="progress-percentage">{{ task.get_subtask_progress|floatformat:1 }}%</span>
+                  </span>
+                </div>
               </div>
               <div class="task-actions">
                 <span class="task-status-badge status-{{ task.get_calculated_status|slugify }}">
@@ -178,56 +222,15 @@ Project Details - {{ project.project_name }}
               </div>
             </div>
 
-            <!-- Task Details -->
-            <div class="task-details">
-              <div class="row">
-                <div class="col-md-3">
-                  <div class="task-detail-item">
-                    <strong>Start Date:</strong>
-                    {% if task.get_calculated_start_date %}
-                      {{ task.get_calculated_start_date|date:"M d, Y" }}
-                    {% else %}
-                      <span class="text-muted">Not set</span>
-                    {% endif %}
-                  </div>
-                </div>
-                <div class="col-md-3">
-                  <div class="task-detail-item">
-                    <strong>Expected End:</strong>
-                    {% if task.get_calculated_expected_completion %}
-                      {{ task.get_calculated_expected_completion|date:"M d, Y" }}
-                    {% else %}
-                      <span class="text-muted">Not set</span>
-                    {% endif %}
-                    {% if task.get_calculated_status == 'Completed' and task.get_calculated_actual_completion %}
-                      <br><strong>Actual End:</strong>
-                      <span style="color: #28a745;">{{ task.get_calculated_actual_completion|date:"M d, Y" }}</span>
-                    {% endif %}
-                  </div>
-                </div>
-                <div class="col-md-3">
-                  <div class="task-detail-item">
-                    <strong>Budgeted:</strong>
-                    €{{ task.get_calculated_budgeted_cost|floatformat:2 }}
-                  </div>
-                </div>
-                <div class="col-md-3">
-                  <div class="task-detail-item">
-                    <strong>Actual:</strong>
-                    €{{ task.get_calculated_actual_cost|floatformat:2 }}
-                  </div>
-                </div>
-              </div>
-            </div>
-
             <!-- Subtasks -->
             {% if task.subtasks.all %}
               <div class="subtasks-section">
-                <h6>
+                <h6 class="subtasks-header" onclick="toggleSubtasks('task-{{ task.task_id }}')">
                   <i class="fas fa-indent"></i> Subtasks 
                   <span class="subtask-progress">({{ task.get_completed_subtask_count }}/{{ task.get_subtask_count }} completed - {{ task.get_subtask_progress }}%)</span>
+                  <i class="fas fa-chevron-down subtasks-toggle-icon" id="toggle-task-{{ task.task_id }}"></i>
                 </h6>
-                <div class="subtasks-container">
+                <div class="subtasks-container" id="subtasks-task-{{ task.task_id }}">
                   {% for subtask in task.subtasks.all %}
                     <div class="subtask-item">
                       <div class="subtask-header">
@@ -290,6 +293,10 @@ Project Details - {{ project.project_name }}
                             <strong>Assigned:</strong> {{ subtask.task_assigned_to }}
                           </span>
                         {% endif %}
+                        <span class="detail-item">
+                          <strong>Progress:</strong>
+                          <span class="progress-percentage">{{ subtask.task_progress_percentage|default:0 }}%</span>
+                        </span>
                       </div>
                     </div>
                   {% endfor %}
@@ -345,6 +352,111 @@ Project Details - {{ project.project_name }}
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
                 <button type="button" class="btn btn-info" id="updateStatusBtn">Update Status</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Duplicate Project Modal -->
+<div class="modal fade" id="duplicateModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Duplicate Project</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="duplicateForm">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="newProjectName">New Project Name:</label>
+                        <input type="text" 
+                               class="form-control" 
+                               id="newProjectName" 
+                               name="new_project_name"
+                               placeholder="Enter name for the duplicate project..."
+                               required>
+                    </div>
+                    <div class="form-group">
+                        <label for="newProjectStartDate">New Project Start Date:</label>
+                        <input type="date" 
+                               class="form-control" 
+                               id="newProjectStartDate" 
+                               name="new_project_start_date"
+                               required>
+                        <small class="form-text text-muted">
+                            All task and subtask dates will be adjusted based on the difference from the original start date.
+                        </small>
+                    </div>
+                    
+                    <!-- Budget Copy Options -->
+                    <div class="form-group">
+                        <label class="font-weight-bold">Budget Copy Options:</label>
+                        <div class="mt-2">
+                            <div class="custom-control custom-radio">
+                                <input type="radio" 
+                                       id="copyBudgetedCosts" 
+                                       name="budgetCopyOption" 
+                                       class="custom-control-input" 
+                                       value="budgeted" 
+                                       checked>
+                                <label class="custom-control-label" for="copyBudgetedCosts">
+                                    <strong>Copy Budgeted Costs</strong>
+                                    <br>
+                                    <small class="text-muted">Use the original project's budgeted costs as the new project's budgeted costs</small>
+                                </label>
+                            </div>
+                            <div class="custom-control custom-radio mt-2">
+                                <input type="radio" 
+                                       id="copyActualCosts" 
+                                       name="budgetCopyOption" 
+                                       class="custom-control-input" 
+                                       value="actual">
+                                <label class="custom-control-label" for="copyActualCosts">
+                                    <strong>Copy Actual Costs as Budget</strong>
+                                    <br>
+                                    <small class="text-muted">Use the original project's actual costs as the new project's budgeted costs</small>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <!-- Budget Summary -->
+                        <div class="mt-3 p-3 bg-light border rounded">
+                            <h6 class="mb-2">Current Project Budget Summary:</h6>
+                            <div class="row">
+                                <div class="col-sm-6">
+                                    <div class="budget-summary-item">
+                                        <strong>Total Budgeted:</strong>
+                                        <span class="text-info">€{{ project.get_calculated_budgeted_cost|floatformat:2 }}</span>
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <div class="budget-summary-item">
+                                        <strong>Total Actual:</strong>
+                                        <span class="text-success">€{{ project.get_calculated_actual_cost|floatformat:2 }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info mt-3" role="alert">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-info-circle mr-2"></i>
+                            <div>
+                                <strong>Note:</strong> This will create a complete copy of "{{ project.project_name }}" including all tasks and subtasks. All dates will be automatically adjusted based on your new start date, and costs will be copied according to your selection above.
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-warning" id="duplicateProjectBtn">
+                    <i class="fas fa-copy"></i> Duplicate Project
+                </button>
             </div>
         </div>
     </div>
@@ -498,6 +610,27 @@ Project Details - {{ project.project_name }}
     font-style: italic;
 }
 
+/* NEW: Task Details Inline Styling */
+.task-details-inline {
+    margin-top: 12px;
+    padding-top: 8px;
+    border-top: 1px solid #dee2e6;
+    display: flex;
+    gap: 20px;
+    font-size: 13px;
+    flex-wrap: wrap;
+}
+
+.task-details-inline .detail-item {
+    color: #495057;
+    white-space: nowrap;
+}
+
+.task-details-inline .detail-item strong {
+    color: #2c3e50;
+    font-weight: 600;
+}
+
 .task-actions {
     display: flex;
     align-items: center;
@@ -565,21 +698,6 @@ Project Details - {{ project.project_name }}
     color: #383d41;
 }
 
-/* Task Details */
-.task-details {
-    padding: 20px;
-    background: white;
-}
-
-.task-detail-item {
-    margin-bottom: 10px;
-}
-
-.task-detail-item strong {
-    color: #495057;
-    font-size: 13px;
-}
-
 /* Subtasks */
 .subtasks-section {
     background: #f8f9fa;
@@ -597,6 +715,43 @@ Project Details - {{ project.project_name }}
 .subtasks-section h6 i {
     color: #6c757d;
     margin-right: 8px;
+}
+
+.subtasks-header {
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border-radius: 6px;
+    padding: 8px 12px;
+    margin: -8px -12px 15px -12px;
+    user-select: none;
+    position: relative;
+}
+
+.subtasks-header:hover {
+    background-color: rgba(23, 162, 184, 0.1);
+    color: #17a2b8;
+}
+
+.subtasks-toggle-icon {
+    position: absolute;
+    right: 12px;
+    transition: transform 0.3s ease;
+    color: #6c757d;
+}
+
+.subtasks-toggle-icon.rotated {
+    transform: rotate(180deg);
+}
+
+.subtasks-container {
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.subtasks-container.collapsed {
+    max-height: 0;
+    opacity: 0;
+    margin-bottom: 0;
 }
 
 .subtask-progress {
@@ -649,6 +804,16 @@ Project Details - {{ project.project_name }}
 
 .detail-item {
     color: #495057;
+}
+
+/* Progress percentage styling */
+.progress-percentage {
+    color: #17a2b8;
+    font-weight: 600;
+    background-color: rgba(23, 162, 184, 0.1);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 12px;
 }
 
 /* No Tasks Message */
@@ -728,6 +893,33 @@ Project Details - {{ project.project_name }}
     transition: width 0.3s ease;
 }
 
+/* Budget Summary Styles */
+.budget-summary-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+.budget-summary-item strong {
+    color: #495057;
+}
+
+/* Custom Radio Button Styles */
+.custom-control-label {
+    cursor: pointer;
+    padding-left: 5px;
+}
+
+.custom-control-label strong {
+    color: #2c3e50;
+}
+
+/* Modal size adjustment */
+.modal-lg {
+    max-width: 600px;
+}
+
 /* Modal Styles */
 .modal-content {
     border-radius: 8px;
@@ -762,6 +954,11 @@ Project Details - {{ project.project_name }}
         justify-content: flex-start;
     }
     
+    .task-details-inline {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
     .subtask-header {
         flex-direction: column;
         align-items: stretch;
@@ -772,7 +969,7 @@ Project Details - {{ project.project_name }}
         justify-content: flex-start;
     }
     
-    .subtask-costs {
+    .subtask-details {
         flex-direction: column;
         gap: 5px;
     }
@@ -843,6 +1040,140 @@ function editTaskStatus(taskId, currentStatus) {
     toggleCompletionDate();
     
     modal.modal('show');
+}
+
+// Show duplicate project modal
+function showDuplicateModal() {
+    console.log('Opening duplicate project modal');
+    const modal = $('#duplicateModal');
+    const nameInput = $('#newProjectName');
+    const startDateInput = $('#newProjectStartDate');
+    
+    // Clear previous input
+    nameInput.val('');
+    startDateInput.val('');
+    
+    // Set default start date to today
+    const today = new Date().toISOString().split('T')[0];
+    startDateInput.val(today);
+    
+    modal.modal('show');
+    
+    // Focus on the name input field after modal is shown
+    modal.on('shown.bs.modal', function() {
+        nameInput.focus();
+    });
+}
+
+// Duplicate project function
+function duplicateProject() {
+    const newProjectName = $('#newProjectName').val().trim();
+    const newProjectStartDate = $('#newProjectStartDate').val();
+    const budgetCopyOption = $('input[name="budgetCopyOption"]:checked').val();
+    
+    if (!newProjectName) {
+        alert('Please enter a name for the duplicate project');
+        $('#newProjectName').focus();
+        return;
+    }
+    
+    if (!newProjectStartDate) {
+        alert('Please select a start date for the duplicate project');
+        $('#newProjectStartDate').focus();
+        return;
+    }
+    
+    console.log('Duplicating project with new name:', newProjectName);
+    console.log('New start date:', newProjectStartDate);
+    console.log('Budget copy option:', budgetCopyOption);
+    
+    // Get CSRF token
+    const csrfToken = $('[name=csrfmiddlewaretoken]').val() || 
+                      $('input[name="csrfmiddlewaretoken"]').val() || 
+                      $('meta[name="csrf-token"]').attr('content');
+    
+    if (!csrfToken) {
+        console.error('CSRF token not found');
+        alert('Security token not found. Please refresh the page and try again.');
+        return;
+    }
+    
+    // Get project ID from the current URL or from a data attribute
+    const currentUrl = window.location.pathname;
+    const projectIdMatch = currentUrl.match(/\/projects\/detail\/(\d+)\//);
+    const projectId = projectIdMatch ? projectIdMatch[1] : {{ project.project_id }};
+    
+    console.log('Project ID:', projectId);
+    
+    const data = {
+        project_id: parseInt(projectId),
+        new_project_name: newProjectName,
+        new_project_start_date: newProjectStartDate,
+        budget_copy_option: budgetCopyOption
+    };
+    
+    console.log('Sending duplicate request with data:', data);
+    
+    // Disable button during request
+    const duplicateBtn = $('#duplicateProjectBtn');
+    const originalText = duplicateBtn.html();
+    duplicateBtn.prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Duplicating...');
+    
+    $.ajax({
+        url: '/projects/ajax/duplicate/',
+        type: 'POST',
+        data: JSON.stringify(data),
+        contentType: 'application/json',
+        headers: {
+            'X-CSRFToken': csrfToken,
+            'X-Requested-With': 'XMLHttpRequest'
+        },
+        success: function(response) {
+            console.log('Duplicate response:', response);
+            duplicateBtn.prop('disabled', false).html(originalText);
+            
+            if (response.success) {
+                console.log('Project duplicated successfully');
+                $('#duplicateModal').modal('hide');
+                
+                // Show success message and redirect to new project
+                const budgetMessage = budgetCopyOption === 'actual' ? 
+                    'Actual costs have been copied as budgeted costs.' : 
+                    'Budgeted costs have been copied.';
+                alert(`Project duplicated successfully! All dates have been adjusted to the new start date. ${budgetMessage}`);
+                if (response.new_project_id) {
+                    window.location.href = '/projects/detail/' + response.new_project_id + '/';
+                } else {
+                    // Fallback - reload current page or redirect to projects list
+                    window.location.href = '/projects/';
+                }
+            } else {
+                alert('Error: ' + (response.message || 'Failed to duplicate project'));
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error('Duplicate AJAX error:', {
+                status: xhr.status,
+                statusText: xhr.statusText,
+                responseText: xhr.responseText,
+                error: error
+            });
+            duplicateBtn.prop('disabled', false).html(originalText);
+            
+            let errorMessage = 'Error duplicating project. ';
+            if (xhr.status === 403) {
+                errorMessage += 'You do not have permission to perform this action.';
+            } else if (xhr.status === 404) {
+                errorMessage += 'The requested project was not found.';
+            } else if (xhr.status === 500) {
+                errorMessage += 'Server error. Please try again later.';
+            } else {
+                errorMessage += 'Please try again.';
+            }
+            
+            alert(errorMessage);
+        }
+    });
 }
 
 // Toggle completion date field based on status
@@ -976,13 +1307,36 @@ $(document).ready(function() {
         updateStatus();
     });
     
+    // Duplicate button click
+    $('#duplicateProjectBtn').on('click', function(e) {
+        e.preventDefault();
+        console.log('Duplicate project button clicked');
+        duplicateProject();
+    });
+    
+    // Enter key in duplicate project name field
+    $('#newProjectName').on('keypress', function(e) {
+        if (e.which === 13) { // Enter key
+            e.preventDefault();
+            duplicateProject();
+        }
+    });
+    
+    // Enter key in duplicate project start date field
+    $('#newProjectStartDate').on('keypress', function(e) {
+        if (e.which === 13) { // Enter key
+            e.preventDefault();
+            duplicateProject();
+        }
+    });
+    
     // Modal events
     $('#statusModal').on('show.bs.modal', function() {
-        console.log('Modal showing');
+        console.log('Status modal showing');
     });
     
     $('#statusModal').on('hidden.bs.modal', function() {
-        console.log('Modal closed');
+        console.log('Status modal closed');
         currentTaskId = null;
         currentTaskType = 'task';
         // Reset form
@@ -991,21 +1345,39 @@ $(document).ready(function() {
         $('#completionDateGroup').hide();
     });
     
+    $('#duplicateModal').on('show.bs.modal', function() {
+        console.log('Duplicate modal showing');
+    });
+    
+    $('#duplicateModal').on('hidden.bs.modal', function() {
+        console.log('Duplicate modal closed');
+        // Reset form
+        $('#newProjectName').val('');
+        $('#newProjectStartDate').val('');
+        // Reset budget copy option to default (budgeted)
+        $('#copyBudgetedCosts').prop('checked', true);
+    });
+    
     // Close button events
     $('.close[data-dismiss="modal"]').on('click', function() {
         console.log('Close button clicked');
-        $('#statusModal').modal('hide');
+        $(this).closest('.modal').modal('hide');
     });
     
     $('[data-dismiss="modal"]').on('click', function() {
         console.log('Modal dismiss button clicked');
-        $('#statusModal').modal('hide');
+        $(this).closest('.modal').modal('hide');
     });
     
-    // ESC key to close modal
+    // ESC key to close modals
     $(document).on('keydown', function(e) {
-        if (e.key === 'Escape' && $('#statusModal').hasClass('show')) {
-            $('#statusModal').modal('hide');
+        if (e.key === 'Escape') {
+            if ($('#statusModal').hasClass('show')) {
+                $('#statusModal').modal('hide');
+            }
+            if ($('#duplicateModal').hasClass('show')) {
+                $('#duplicateModal').modal('hide');
+            }
         }
     });
     
@@ -1013,6 +1385,45 @@ $(document).ready(function() {
 });
 
 console.log('🚀 === PROJECT DETAILS SCRIPT COMPLETE ===');
+
+// Subtasks toggle functionality
+function toggleSubtasks(taskId) {
+    console.log('Toggling subtasks for:', taskId);
+    const subtasksContainer = document.getElementById('subtasks-' + taskId);
+    const toggleIcon = document.getElementById('toggle-' + taskId);
+    
+    if (subtasksContainer && toggleIcon) {
+        const isCollapsed = subtasksContainer.classList.contains('collapsed');
+        
+        if (isCollapsed) {
+            // Expand
+            subtasksContainer.classList.remove('collapsed');
+            toggleIcon.classList.remove('rotated');
+            console.log('Expanded subtasks for:', taskId);
+        } else {
+            // Collapse
+            subtasksContainer.classList.add('collapsed');
+            toggleIcon.classList.add('rotated');
+            console.log('Collapsed subtasks for:', taskId);
+        }
+    }
+}
+
+// Initialize subtasks state on page load
+$(document).ready(function() {
+    console.log('Initializing subtasks toggle functionality');
+    
+    // You can set default collapsed state here if desired
+    // For example, to start with all subtasks collapsed:
+    /*
+    document.querySelectorAll('.subtasks-container').forEach(container => {
+        container.classList.add('collapsed');
+    });
+    document.querySelectorAll('.subtasks-toggle-icon').forEach(icon => {
+        icon.classList.add('rotated');
+    });
+    */
+});
 </script>
 
 {% endblock %}

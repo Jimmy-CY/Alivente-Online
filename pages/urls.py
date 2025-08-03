@@ -60,6 +60,7 @@ urlpatterns = [
     path('projects/edit/<int:project_id>/', views.projects_edit, name='projects_edit'),
     path('projects/delete/<int:project_id>/', views.projects_delete, name='projects_delete'),
     path('projects/detail/<int:project_id>/', views.projects_detail, name='projects_detail'),
+    path('projects/<int:project_id>/gantt/', views.project_gantt, name='project_gantt'),
     # Project Tasks URLs
     path('projects/<int:project_id>/tasks/add/', views.project_tasks_add, name='project_tasks_add'),
     path('projects/<int:project_id>/tasks/edit/<int:task_id>/', views.project_tasks_edit, name='project_tasks_edit'),
@@ -69,7 +70,7 @@ urlpatterns = [
     # AJAX URLs for dynamic updates
     path('ajax/projects/update-status/', views.ajax_update_project_status, name='ajax_update_project_status'),
     path('ajax/tasks/update-status/', views.ajax_update_task_status, name='ajax_update_task_status'),
-
+    path('projects/ajax/duplicate/', views.ajax_duplicate_project, name='ajax_duplicate_project'),    
     #
     # Finance
     path('finance/', views.finance, name='finance'),

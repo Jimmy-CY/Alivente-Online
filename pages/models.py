@@ -256,11 +256,22 @@ class ProjectTask(models.Model):
     task_budgeted_cost = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True, default=0.00)
     task_actual_cost = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True, default=0.00)
     task_assigned_to = models.CharField(max_length=255, blank=True, null=True)
+    
+    # NEW: Progress percentage field (only for subtasks)
+    task_progress_percentage = models.IntegerField(
+        default=0,
+        blank=True,
+        null=True,
+        help_text="Progress percentage (0-100). Only used for subtasks."
+    )
+    
     task_created_date = models.DateTimeField(auto_now_add=True)
     task_updated_date = models.DateTimeField(auto_now=True)
     
     def clean(self):
-        """Validate task dates"""
+        """Validate task dates and progress percentage"""
+        from django.core.exceptions import ValidationError
+        
         if self.task_start_date and self.task_expected_completion_date:
             if self.task_expected_completion_date <= self.task_start_date:
                 raise ValidationError("Expected completion date must be after start date")
@@ -271,6 +282,25 @@ class ProjectTask(models.Model):
         if self.task_actual_completion_date and self.task_start_date:
             if self.task_actual_completion_date < self.task_start_date:
                 raise ValidationError("Actual completion date cannot be before start date")
+        
+        # NEW: Progress percentage validation
+        if self.task_progress_percentage is not None:
+            if self.task_progress_percentage < 0 or self.task_progress_percentage > 100:
+                raise ValidationError("Progress percentage must be between 0 and 100")
+            
+            # Auto-set progress based on status for subtasks only
+            if self.parent_task:  # This is a subtask
+                if self.task_status == 'Pending':
+                    self.task_progress_percentage = 0
+                elif self.task_status == 'Completed':
+                    self.task_progress_percentage = 100
+                elif self.task_status == 'In Progress':
+                    # Validate that In Progress has a value between 1-99
+                    if self.task_progress_percentage == 0 or self.task_progress_percentage == 100:
+                        if self.task_progress_percentage == 0:
+                            self.task_progress_percentage = 1  # Set minimum for In Progress
+                        elif self.task_progress_percentage == 100:
+                            self.task_progress_percentage = 99  # Set maximum for In Progress
     
     def get_calculated_status(self):
         """Calculate task status based on subtasks if any"""
@@ -380,23 +410,30 @@ class ProjectTask(models.Model):
             
             return completed_subtask_days, total_subtask_days
         
-        # For subtasks or main tasks without subtasks, calculate based on own dates and status
+        # For subtasks or main tasks without subtasks, calculate based on own dates and progress percentage
         if not self.task_start_date or not self.task_expected_completion_date:
             return 0, 0
         
         total_days = (self.task_expected_completion_date - self.task_start_date).days + 1
         
-        if self.task_status == 'Completed':
-            return total_days, total_days
-        elif self.task_status == 'In Progress':
-            from django.utils import timezone
-            today = timezone.now().date()
-            if today >= self.task_start_date:
-                completed_days = min((today - self.task_start_date).days + 1, total_days)
-                return completed_days, total_days
-        
-        # For 'Pending', 'Not Started', 'On Hold', etc.
-        return 0, total_days
+        # For subtasks, use the progress percentage to calculate completed days
+        if self.parent_task:  # This is a subtask
+            progress_percentage = self.task_progress_percentage or 0
+            completed_days = round((progress_percentage / 100.0) * total_days)
+            return completed_days, total_days
+        else:
+            # For main tasks without subtasks, use simple status-based logic
+            if self.task_status == 'Completed':
+                return total_days, total_days
+            elif self.task_status == 'In Progress':
+                from django.utils import timezone
+                today = timezone.now().date()
+                if today >= self.task_start_date:
+                    completed_days = min((today - self.task_start_date).days + 1, total_days)
+                    return completed_days, total_days
+            
+            # For 'Pending', 'Not Started', 'On Hold', etc.
+            return 0, total_days
     
     def get_completed_subtask_count(self):
         """Get count of completed subtasks"""
@@ -407,13 +444,36 @@ class ProjectTask(models.Model):
         return self.subtasks.count()
 
     def get_subtask_progress(self):
-        """Get progress percentage for subtasks"""
-        total_subtasks = self.get_subtask_count()
-        if total_subtasks == 0:
-            return 0
+        """Get progress percentage for main tasks based on subtask day-based calculation (same as project logic)"""
+        subtasks = self.subtasks.all()
+        if not subtasks.exists():
+            # For tasks without subtasks, use simple completion logic
+            if self.task_status == 'Completed':
+                return 100.0
+            elif self.task_status == 'In Progress':
+                return 50.0  # Default for in progress tasks without subtasks
+            else:
+                return 0.0
         
-        completed_subtasks = self.get_completed_subtask_count()
-        return round((completed_subtasks / total_subtasks) * 100, 1)
+        # Use the same day-based calculation as projects
+        total_task_days = 0
+        completed_task_days = 0
+        
+        for subtask in subtasks:
+            completed_days, total_days = subtask.get_completed_days()
+            total_task_days += total_days
+            completed_task_days += completed_days
+        
+        if total_task_days > 0:
+            return round((completed_task_days / total_task_days) * 100, 1)
+        return 0.0
+    
+    def get_progress_for_gantt(self):
+        """Get progress value for Gantt chart (0.0 to 1.0) - uses day-based calculation for consistency"""
+        if self.parent_task:  # This is a subtask
+            return (self.task_progress_percentage or 0) / 100.0
+        else:  # This is a main task - use day-based calculation like projects
+            return self.get_subtask_progress() / 100.0
     
     def save(self, *args, **kwargs):
         self.full_clean()
