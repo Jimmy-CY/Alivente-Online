@@ -39,21 +39,20 @@ Projects
     <a href="{% url 'home' %}" class="btn btn-info">Back</a>
   </div>
 
-  <!-- Collapsible Filter Panel -->
+  <!-- Simplified Filter Panel -->
   <div class="filter-panel" id="filterPanel">
     <div class="filter-header" onclick="toggleFilters()">
       <h5 class="filter-title">
         <i class="fas fa-filter"></i> Project Filters
         <i class="fas fa-chevron-down filter-toggle-icon" id="filterToggleIcon"></i>
       </h5>
-      <button type="button" id="clearAllBtn" class="btn btn-outline-secondary btn-sm" onclick="event.stopPropagation();">
+      <button type="button" id="clearAllBtn" class="btn btn-outline-secondary btn-sm" onclick="clearAllFilters(event);">
         <i class="fas fa-times-circle"></i> Clear All
       </button>
     </div>
     
     <div class="filter-content" id="filterContent">
-      <form action="{% url 'projects' %}" method="post" id="filterForm">
-        {% csrf_token %}
+      <form action="{% url 'projects' %}" method="GET" id="filterForm">
         <div class="filter-grid">
           <!-- Search Bar -->
           <div class="filter-group">
@@ -66,8 +65,8 @@ Projects
                      id="searchInput"
                      class="form-control search-input" 
                      placeholder="Search by project name or description..."
-                     value="{{ search_query|default:'' }}">
-              <button type="button" class="search-btn" id="searchBtn">
+                     value="{{ request.GET.search|default:'' }}">
+              <button type="submit" class="search-btn">
                 <i class="fas fa-search"></i>
               </button>
             </div>
@@ -78,10 +77,10 @@ Projects
             <label class="filter-label">
               <i class="fas fa-home"></i> Property
             </label>
-            <select name="property" class="form-control filter-select" id="propertySelect">
+            <select name="property" class="form-control filter-select" id="propertySelect" onchange="this.form.submit();">
               <option value="">All Properties</option>
               {% for property in properties %}
-                <option value="{{ property.prop_id }}" {% if selected_property|stringformat:"s" == property.prop_id|stringformat:"s" %}selected{% endif %}>
+                <option value="{{ property.prop_id }}" {% if request.GET.property|stringformat:"s" == property.prop_id|stringformat:"s" %}selected{% endif %}>
                   {{ property.prop_name }}
                 </option>
               {% endfor %}
@@ -93,21 +92,38 @@ Projects
             <label class="filter-label">
               <i class="fas fa-info-circle"></i> Status
             </label>
-            <select name="status" class="form-control filter-select" id="statusSelect">
+            <select name="status" class="form-control filter-select" id="statusSelect" onchange="this.form.submit();">
               <option value="">All Statuses</option>
-              {% for status_value, status_display in status_choices %}
-                <option value="{{ status_value }}" {% if selected_status == status_value %}selected{% endif %}>
-                  {{ status_display }}
-                </option>
-              {% endfor %}
+              <option value="Pending" {% if request.GET.status == 'Pending' %}selected{% endif %}>Pending</option>
+              <option value="In Progress" {% if request.GET.status == 'In Progress' %}selected{% endif %}>In Progress</option>
+              <option value="Completed" {% if request.GET.status == 'Completed' %}selected{% endif %}>Completed</option>
             </select>
           </div>
         </div>
 
         <!-- Active Filters Display -->
-        <div class="active-filters" id="activeFilters" style="display: none;">
+        <div class="active-filters" id="activeFilters" style="{% if not request.GET.search and not request.GET.property and not request.GET.status %}display: none;{% endif %}">
           <span class="active-filters-label">Active filters:</span>
-          <div class="filter-tags" id="filterTags"></div>
+          <div class="filter-tags" id="filterTags">
+            {% if request.GET.search %}
+              <span class="filter-tag">
+                Search: "{{ request.GET.search }}" 
+                <a href="?{% if request.GET.property %}property={{ request.GET.property }}&{% endif %}{% if request.GET.status %}status={{ request.GET.status }}{% endif %}" class="remove-tag">×</a>
+              </span>
+            {% endif %}
+            {% if request.GET.property %}
+              <span class="filter-tag">
+                Property: {% for prop in properties %}{% if prop.prop_id|stringformat:"s" == request.GET.property %}{{ prop.prop_name }}{% endif %}{% endfor %}
+                <a href="?{% if request.GET.search %}search={{ request.GET.search }}&{% endif %}{% if request.GET.status %}status={{ request.GET.status }}{% endif %}" class="remove-tag">×</a>
+              </span>
+            {% endif %}
+            {% if request.GET.status %}
+              <span class="filter-tag">
+                Status: {{ request.GET.status }}
+                <a href="?{% if request.GET.search %}search={{ request.GET.search }}&{% endif %}{% if request.GET.property %}property={{ request.GET.property }}{% endif %}" class="remove-tag">×</a>
+              </span>
+            {% endif %}
+          </div>
         </div>
       </form>
     </div>
@@ -142,10 +158,10 @@ Projects
             <td>{{ project.prop.prop_name }}</td>
             <td>
               <span class="status-badge 
-                {% if project.project_status == 'Completed' %}status-completed
-                {% elif project.project_status == 'In Progress' %}status-in-progress
+                {% if project.get_calculated_status == 'Completed' %}status-completed
+                {% elif project.get_calculated_status == 'In Progress' %}status-in-progress
                 {% else %}status-pending{% endif %}">
-                {{ project.project_status }}
+                {{ project.get_calculated_status }}
               </span>
             </td>
             <td>
@@ -163,24 +179,24 @@ Projects
               </div>
             </td>
             <td>
-              {% if project.project_start_date %}
-                {{ project.project_start_date|date:"M d, Y" }}
+              {% if project.get_calculated_start_date %}
+                {{ project.get_calculated_start_date|date:"M d, Y" }}
               {% else %}
                 <span class="text-muted">Not set</span>
               {% endif %}
             </td>
             <td>
-              {% if project.project_expected_completion_date %}
-                {{ project.project_expected_completion_date|date:"M d, Y" }}
+              {% if project.get_calculated_expected_completion %}
+                {{ project.get_calculated_expected_completion|date:"M d, Y" }}
               {% else %}
                 <span class="text-muted">Not set</span>
               {% endif %}
             </td>
             <td>
               {% if user.is_superuser %}
-                <button type="button" class="btn btn-light action-btn">
-                  <a href="{% url 'projects_edit' project.project_id %}">Edit</a>
-                </button>
+                <a href="{% url 'projects_edit' project.project_id %}" class="btn btn-light action-btn">
+                  Edit
+                </a>
               {% else %}
                 <button type="button" class="btn btn-light action-btn" disabled style="opacity: 0.5;">
                   <span style="color: #6c757d;">Edit</span>
@@ -189,25 +205,11 @@ Projects
             </td>
             <td>
               {% if user.is_superuser %}
-                <div class="btn-group" role="group">
-                  <!-- Direct delete page (recommended) -->
-                  <a href="{% url 'projects_delete' project.project_id %}" 
-                     class="btn btn-danger action-btn delete-btn"
-                     title="Delete Project">
-                    <i class="fas fa-trash"></i>
-                  </a>
-                  <!-- Alternative: Modal delete (optional) -->
-                  <!--
-                  <button type="button" 
-                          class="btn btn-danger action-btn delete-btn" 
-                          data-project-id="{{ project.project_id }}"
-                          data-project-name="{{ project.project_name }}"
-                          onclick="confirmDelete(this)"
-                          title="Quick Delete">
-                    <i class="fas fa-trash"></i>
-                  </button>
-                  -->
-                </div>
+                <a href="{% url 'projects_delete' project.project_id %}" 
+                   class="btn btn-danger action-btn delete-btn"
+                   title="Delete Project">
+                  <i class="fas fa-trash"></i>
+                </a>
               {% else %}
                 <button type="button" class="btn btn-light action-btn" disabled style="opacity: 0.5;">
                   <i class="fas fa-trash" style="color: #6c757d;"></i>
@@ -218,9 +220,14 @@ Projects
         {% empty %}
           <tr>
             <td colspan="8" class="text-center text-muted">
-              No projects found. 
-              {% if user.is_superuser %}
-                <a href="{% url 'projects_add' %}">Add your first project</a>
+              {% if request.GET.search or request.GET.property or request.GET.status %}
+                No projects found matching your filters. 
+                <a href="{% url 'projects' %}">Clear filters</a>
+              {% else %}
+                No projects found. 
+                {% if user.is_superuser %}
+                  <a href="{% url 'projects_add' %}">Add your first project</a>
+                {% endif %}
               {% endif %}
             </td>
           </tr>
@@ -235,10 +242,10 @@ Projects
       <ul class="pagination justify-content-center">
         {% if projects.has_previous %}
           <li class="page-item">
-            <a class="page-link" href="?page=1">&laquo; First</a>
+            <a class="page-link" href="?page=1{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.property %}&property={{ request.GET.property }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">&laquo; First</a>
           </li>
           <li class="page-item">
-            <a class="page-link" href="?page={{ projects.previous_page_number }}">Previous</a>
+            <a class="page-link" href="?page={{ projects.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.property %}&property={{ request.GET.property }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">Previous</a>
           </li>
         {% endif %}
         
@@ -250,10 +257,10 @@ Projects
         
         {% if projects.has_next %}
           <li class="page-item">
-            <a class="page-link" href="?page={{ projects.next_page_number }}">Next</a>
+            <a class="page-link" href="?page={{ projects.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.property %}&property={{ request.GET.property }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">Next</a>
           </li>
           <li class="page-item">
-            <a class="page-link" href="?page={{ projects.paginator.num_pages }}">Last &raquo;</a>
+            <a class="page-link" href="?page={{ projects.paginator.num_pages }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.property %}&property={{ request.GET.property }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">Last &raquo;</a>
           </li>
         {% endif %}
       </ul>
@@ -262,108 +269,19 @@ Projects
 
 </body>
 
-<!-- Delete Confirmation Modal -->
-<div class="modal fade" id="deleteConfirmModal" tabindex="-1" role="dialog" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered" role="document">
-    <div class="modal-content">
-      <div class="modal-header bg-danger text-white">
-        <h5 class="modal-title" id="deleteConfirmModalLabel">
-          <i class="fas fa-exclamation-triangle"></i> Confirm Project Deletion
-        </h5>
-        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-      <div class="modal-body">
-        <div class="alert alert-danger">
-          <strong><i class="fas fa-warning"></i> WARNING:</strong> This action cannot be undone!
-        </div>
-        <p>Are you sure you want to permanently delete the project:</p>
-        <p class="font-weight-bold text-danger" id="projectNameToDelete"></p>
-        <p class="text-muted">This will also delete:</p>
-        <ul class="text-muted">
-          <li>All tasks associated with this project</li>
-          <li>All subtasks within those tasks</li>
-          <li>All project data and progress</li>
-        </ul>
-        <div class="form-group mt-3">
-          <label for="confirmationInput">Type <strong>"DELETE"</strong> to confirm:</label>
-          <input type="text" 
-                 class="form-control" 
-                 id="confirmationInput" 
-                 placeholder="Type DELETE to confirm"
-                 style="text-transform: uppercase;">
-        </div>
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">
-          <i class="fas fa-times"></i> Cancel
-        </button>
-        <button type="button" 
-                class="btn btn-danger" 
-                id="confirmDeleteBtn" 
-                disabled>
-          <i class="fas fa-trash"></i> Delete Project Permanently
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- Hidden form for delete submission -->
-<form id="deleteProjectForm" method="post" style="display: none;">
-  {% csrf_token %}
-  <input type="hidden" name="delete_project_id" id="deleteProjectId">
-</form>
-
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
 <style>
-/* Reuse the same filter panel styles from properties.html */
+/* Filter Panel Styles */
 .filter-panel {
     background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
     border: 1px solid #dee2e6;
     border-radius: 12px;
-    padding: 12px 24px;
+    padding: 20px;
     margin-bottom: 30px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    transition: padding 0.3s ease;
-}
-
-.filter-panel.expanded {
-    padding: 24px;
-}
-
-.filter-panel:not(.expanded) .filter-content {
-    display: none !important;
-    visibility: hidden !important;
-    opacity: 0 !important;
-    height: 0 !important;
-    overflow: hidden !important;
-}
-
-.filter-panel.expanded .filter-content,
-.filter-panel.force-expanded .filter-content {
-    display: block !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-    height: auto !important;
-    overflow: visible !important;
-    padding-top: 20px;
-}
-
-.filter-panel.force-expanded {
-    padding: 24px !important;
-}
-
-.filter-panel.force-expanded .filter-content {
-    display: block !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-    height: auto !important;
-    overflow: visible !important;
-    padding-top: 20px !important;
+    transition: all 0.3s ease;
 }
 
 .filter-header {
@@ -371,27 +289,15 @@ Projects
     justify-content: space-between;
     align-items: center;
     margin-bottom: 0;
-    padding-bottom: 8px;
-    border-bottom: 1px solid #dee2e6;
     cursor: pointer;
     transition: all 0.3s ease;
-}
-
-.filter-header.expanded {
-    padding-bottom: 12px;
-    border-bottom: 2px solid #dee2e6;
-    margin-bottom: 20px;
 }
 
 .filter-header:hover {
     background-color: rgba(23, 162, 184, 0.05);
     border-radius: 8px;
     margin: -8px;
-    padding: 16px 8px;
-}
-
-.filter-header.expanded:hover {
-    padding: 20px 8px;
+    padding: 8px;
 }
 
 .filter-title {
@@ -404,7 +310,7 @@ Projects
     user-select: none;
 }
 
-.filter-title i {
+.filter-title i.fa-filter {
     color: #17a2b8;
 }
 
@@ -418,13 +324,14 @@ Projects
 }
 
 .filter-content {
-    overflow: visible;
-    transition: all 0.3s ease;
+    padding-top: 20px;
+    border-top: 1px solid #dee2e6;
+    margin-top: 15px;
+    display: none;
 }
 
 .filter-content.show {
-    display: block !important;
-    padding-top: 20px;
+    display: block;
 }
 
 .filter-grid {
@@ -437,8 +344,6 @@ Projects
 .filter-group {
     display: flex;
     flex-direction: column;
-    position: relative;
-    overflow: visible;
 }
 
 .filter-label {
@@ -456,18 +361,13 @@ Projects
     width: 14px;
 }
 
-.filter-input, .filter-select {
+.filter-select {
     border: 2px solid #e9ecef;
     border-radius: 8px;
     padding: 10px 14px;
     font-size: 14px;
     transition: all 0.3s ease;
     background: white;
-    position: relative;
-    z-index: 10;
-}
-
-.filter-select {
     cursor: pointer;
     appearance: none;
     background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
@@ -476,15 +376,12 @@ Projects
     background-size: 16px 12px;
     padding-right: 40px;
     min-height: 44px;
-    line-height: 1.4;
 }
 
-.filter-input:focus, .filter-select:focus {
+.filter-select:focus {
     border-color: #17a2b8;
     box-shadow: 0 0 0 3px rgba(23, 162, 184, 0.1);
     outline: none;
-    position: relative;
-    z-index: 20;
 }
 
 .search-input-group {
@@ -508,7 +405,6 @@ Projects
     border-color: #17a2b8;
     box-shadow: 0 0 0 3px rgba(23, 162, 184, 0.1);
     outline: none;
-    z-index: 20;
 }
 
 .search-btn {
@@ -528,10 +424,6 @@ Projects
 .search-btn:hover {
     background: #138496;
     border-color: #138496;
-}
-
-.search-btn:active {
-    transform: scale(0.98);
 }
 
 .btn-outline-secondary {
@@ -586,7 +478,6 @@ Projects
 
 .filter-tag .remove-tag {
     background: rgba(255, 255, 255, 0.3);
-    border: none;
     color: white;
     border-radius: 50%;
     width: 16px;
@@ -596,9 +487,17 @@ Projects
     justify-content: center;
     cursor: pointer;
     font-size: 10px;
+    text-decoration: none;
+    font-weight: bold;
 }
 
-/* Table Enhancements */
+.filter-tag .remove-tag:hover {
+    background: rgba(255, 255, 255, 0.5);
+    color: white;
+    text-decoration: none;
+}
+
+/* Table Styles */
 .table-container {
     background: white;
     border-radius: 8px;
@@ -606,7 +505,6 @@ Projects
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
-/* Clickable Project Name Styling */
 .project-name-link {
     color: #2c3e50;
     text-decoration: none;
@@ -625,25 +523,9 @@ Projects
     transform: translateX(2px);
 }
 
-.project-name-link:focus {
-    color: #17a2b8;
-    text-decoration: none;
-    outline: 2px solid rgba(23, 162, 184, 0.3);
-    outline-offset: 2px;
-}
-
 .project-name-link strong {
     color: inherit;
     font-weight: 600;
-}
-
-.project-name-link .text-muted {
-    color: #6c757d !important;
-    transition: color 0.3s ease;
-}
-
-.project-name-link:hover .text-muted {
-    color: #495057 !important;
 }
 
 .status-badge {
@@ -689,11 +571,14 @@ Projects
     transition: all 0.2s ease;
     padding: 6px 12px;
     font-size: 14px;
+    text-decoration: none;
+    color: #495057;
 }
 
 .action-btn:hover {
     transform: translateY(-1px);
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    text-decoration: none;
 }
 
 .btn-info {
@@ -703,6 +588,7 @@ Projects
     transition: all 0.3s ease;
     border-radius: 6px;
     font-weight: 500;
+    text-decoration: none;
 }
 
 .btn-info:hover {
@@ -714,7 +600,6 @@ Projects
     box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 
-/* Delete Button Styling */
 .delete-btn {
     background-color: #dc3545;
     border-color: #dc3545;
@@ -722,6 +607,7 @@ Projects
     padding: 6px 10px;
     border-radius: 4px;
     transition: all 0.3s ease;
+    text-decoration: none;
 }
 
 .delete-btn:hover {
@@ -730,45 +616,7 @@ Projects
     color: white;
     transform: translateY(-1px);
     box-shadow: 0 2px 6px rgba(220, 53, 69, 0.3);
-}
-
-.delete-btn:focus {
-    box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.25);
-}
-
-/* Modal Enhancements */
-.modal-content {
-    border-radius: 12px;
-    border: none;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-}
-
-.modal-header.bg-danger {
-    border-radius: 12px 12px 0 0;
-}
-
-.modal-body .alert-danger {
-    border-radius: 8px;
-    border-left: 4px solid #dc3545;
-}
-
-#confirmationInput {
-    border: 2px solid #e9ecef;
-    border-radius: 6px;
-    padding: 10px 14px;
-    font-size: 14px;
-    transition: all 0.3s ease;
-}
-
-#confirmationInput:focus {
-    border-color: #dc3545;
-    box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.1);
-    outline: none;
-}
-
-#confirmationInput.valid {
-    border-color: #28a745;
-    background-color: rgba(40, 167, 69, 0.05);
+    text-decoration: none;
 }
 
 /* Responsive Design */
@@ -784,10 +632,6 @@ Projects
         align-items: stretch;
     }
     
-    .search-input-group {
-        width: 100%;
-    }
-    
     .table-container {
         overflow-x: auto;
     }
@@ -799,513 +643,46 @@ Projects
 </style>
 
 <script>
-// Same filter panel JavaScript as properties.html
-let PANEL_IS_MANUALLY_EXPANDED = false;
-let EXTERNAL_INTERFERENCE_DETECTED = false;
+console.log('=== PROJECTS FILTERS LOADING ===');
 
-// Global variables for delete functionality
-let projectToDelete = null;
+// Simple toggle functionality
+function toggleFilters() {
+    const filterContent = document.getElementById('filterContent');
+    const toggleIcon = document.getElementById('filterToggleIcon');
+    
+    if (filterContent.classList.contains('show')) {
+        filterContent.classList.remove('show');
+        toggleIcon.classList.remove('rotated');
+    } else {
+        filterContent.classList.add('show');
+        toggleIcon.classList.add('rotated');
+    }
+}
 
+// Clear all filters
+function clearAllFilters(event) {
+    event.stopPropagation();
+    window.location.href = '{% url "projects" %}';
+}
+
+// Auto-expand filters if any are active
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('DOM loaded - initializing filter panel');
+    const hasActiveFilters = '{{ request.GET.search|default:"" }}' || 
+                           '{{ request.GET.property|default:"" }}' || 
+                           '{{ request.GET.status|default:"" }}';
     
-    const wasForceExpanded = sessionStorage.getItem('FORCE_PANEL_EXPANDED') === 'true';
-    const wasClearAllProtected = sessionStorage.getItem('CLEAR_ALL_PROTECTION') === 'true';
-    const windowFlag = window.PANEL_MUST_STAY_EXPANDED;
-    const clearAllFlag = window.CLEAR_ALL_PROTECTION_ACTIVE;
-    
-    const filterPanel = document.getElementById('filterPanel');
-    if (filterPanel) {
-        if (wasForceExpanded || wasClearAllProtected || windowFlag || clearAllFlag) {
-            console.log('🔓 RESTORING FORCE-EXPANDED PANEL');
-            filterPanel.classList.add('expanded', 'force-expanded');
-            filterPanel.setAttribute('data-force-expanded', 'true');
-            const toggleIcon = document.getElementById('filterToggleIcon');
-            if (toggleIcon) {
-                toggleIcon.classList.add('rotated');
-            }
-            PANEL_IS_MANUALLY_EXPANDED = true;
-            
-            sessionStorage.removeItem('FORCE_PANEL_EXPANDED');
-            sessionStorage.removeItem('CLEAR_ALL_PROTECTION');
-            window.PANEL_MUST_STAY_EXPANDED = false;
-            window.CLEAR_ALL_PROTECTION_ACTIVE = false;
-        } else {
-            filterPanel.classList.remove('expanded', 'force-expanded');
-            filterPanel.removeAttribute('data-force-expanded');
-        }
+    if (hasActiveFilters) {
+        const filterContent = document.getElementById('filterContent');
+        const toggleIcon = document.getElementById('filterToggleIcon');
+        
+        filterContent.classList.add('show');
+        toggleIcon.classList.add('rotated');
     }
     
-    setupInterferenceProtection();
-    updateActiveFilters();
-    
-    // Auto-submit on dropdown filter change
-    ['propertySelect', 'statusSelect'].forEach(id => {
-        const element = document.getElementById(id);
-        if (element) {
-            element.addEventListener('change', function() {
-                console.log(`🔄 Filter changed: ${id} = ${this.value}`);
-                
-                if (PANEL_IS_MANUALLY_EXPANDED) {
-                    console.log('🔒 LOCKING PANEL STATE BEFORE FORM SUBMISSION');
-                    
-                    const filterPanel = document.getElementById('filterPanel');
-                    const toggleIcon = document.getElementById('filterToggleIcon');
-                    
-                    if (filterPanel) {
-                        filterPanel.classList.add('force-expanded');
-                        filterPanel.style.cssText += 'display: block !important;';
-                    }
-                    
-                    sessionStorage.setItem('FORCE_PANEL_EXPANDED', 'true');
-                    window.PANEL_MUST_STAY_EXPANDED = true;
-                    
-                    const originalHide = window.hideFilters;
-                window.hideFilters = function() {
-                    console.log('🚫 BLOCKED: hideFilters() call during search submission');
-                    return false;
-                };
-                
-                setTimeout(() => {
-                    window.hideFilters = originalHide;
-                }, 100);
-            }
-            
-            document.getElementById('filterForm').submit();
-        });
-    }
-    
-    // Enter key in search input
-    const searchInput = document.getElementById('searchInput');
-    if (searchInput) {
-        searchInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                console.log('⌨️ Search enter key pressed');
-                
-                if (PANEL_IS_MANUALLY_EXPANDED) {
-                    console.log('🔒 LOCKING PANEL STATE BEFORE SEARCH ENTER SUBMISSION');
-                    
-                    const filterPanel = document.getElementById('filterPanel');
-                    
-                    if (filterPanel) {
-                        filterPanel.classList.add('force-expanded');
-                        filterPanel.style.cssText += 'display: block !important;';
-                    }
-                    
-                    sessionStorage.setItem('FORCE_PANEL_EXPANDED', 'true');
-                    window.PANEL_MUST_STAY_EXPANDED = true;
-                    
-                    const originalHide = window.hideFilters;
-                    window.hideFilters = function() {
-                        console.log('🚫 BLOCKED: hideFilters() call during search enter submission');
-                        return false;
-                    };
-                    
-                    setTimeout(() => {
-                        window.hideFilters = originalHide;
-                    }, 100);
-                }
-                
-                document.getElementById('filterForm').submit();
-            }
-        });
-    }
-    
-    // Clear all filters
-    const clearAllBtn = document.getElementById('clearAllBtn');
-    if (clearAllBtn) {
-        clearAllBtn.addEventListener('click', function() {
-            console.log('🚨🧹 CLEAR ALL CLICKED - MAXIMUM PROTECTION MODE ACTIVATED 🧹🚨');
-            
-            if (PANEL_IS_MANUALLY_EXPANDED) {
-                console.log('🔒🔒 LOCKING PANEL STATE BEFORE CLEAR ALL SUBMISSION - MAXIMUM SECURITY 🔒🔒');
-                
-                const filterPanel = document.getElementById('filterPanel');
-                
-                if (filterPanel) {
-                    filterPanel.classList.add('force-expanded');
-                    filterPanel.style.cssText += 'display: block !important; visibility: visible !important;';
-                    filterPanel.setAttribute('data-force-expanded', 'true');
-                }
-                
-                sessionStorage.setItem('FORCE_PANEL_EXPANDED', 'true');
-                sessionStorage.setItem('CLEAR_ALL_PROTECTION', 'true');
-                window.PANEL_MUST_STAY_EXPANDED = true;
-                window.CLEAR_ALL_PROTECTION_ACTIVE = true;
-                
-                const originalHide = window.hideFilters;
-                const originalToggle = window.toggleFilters;
-                
-                window.hideFilters = function() {
-                    console.log('🚫🚫 BLOCKED: hideFilters() call during CLEAR ALL submission 🚫🚫');
-                    return false;
-                };
-                
-                window.toggleFilters = function() {
-                    console.log('🚫 BLOCKED: toggleFilters() call during CLEAR ALL submission');
-                    return false;
-                };
-                
-                setTimeout(() => forceExpandPanel(), 50);
-                setTimeout(() => forceExpandPanel(), 100);
-                setTimeout(() => forceExpandPanel(), 200);
-                setTimeout(() => forceExpandPanel(), 500);
-                setTimeout(() => forceExpandPanel(), 1000);
-                setTimeout(() => forceExpandPanel(), 2000);
-                
-                setTimeout(() => {
-                    window.hideFilters = originalHide;
-                    window.toggleFilters = originalToggle;
-                    console.log('🔓 Clear All protection mode ended');
-                }, 200);
-                
-                const protectionInterval = setInterval(() => {
-                    if (PANEL_IS_MANUALLY_EXPANDED) {
-                        forceExpandPanel();
-                    } else {
-                        clearInterval(protectionInterval);
-                    }
-                }, 50);
-                
-                setTimeout(() => {
-                    clearInterval(protectionInterval);
-                    console.log('🛡️ Clear All continuous protection ended');
-                }, 10000);
-            }
-            
-            document.getElementById('searchInput').value = '';
-            document.getElementById('propertySelect').value = '';
-            document.getElementById('statusSelect').value = '';
-            document.getElementById('filterForm').submit();
-        });
-    }
-
-    // Delete confirmation functionality
-    setupDeleteConfirmation();
-    
-    console.log('All event listeners attached');
+    console.log('Project filters initialized successfully');
 });
 
-function setupDeleteConfirmation() {
-    const confirmationInput = document.getElementById('confirmationInput');
-    const confirmDeleteBtn = document.getElementById('confirmDeleteBtn');
-    
-    if (confirmationInput && confirmDeleteBtn) {
-        confirmationInput.addEventListener('input', function() {
-            const inputValue = this.value.toUpperCase();
-            const isValid = inputValue === 'DELETE';
-            
-            confirmDeleteBtn.disabled = !isValid;
-            
-            if (isValid) {
-                this.classList.add('valid');
-                confirmDeleteBtn.classList.remove('btn-secondary');
-                confirmDeleteBtn.classList.add('btn-danger');
-            } else {
-                this.classList.remove('valid');
-                confirmDeleteBtn.classList.remove('btn-danger');
-                confirmDeleteBtn.classList.add('btn-secondary');
-            }
-        });
-        
-        confirmDeleteBtn.addEventListener('click', function() {
-            if (projectToDelete && confirmationInput.value.toUpperCase() === 'DELETE') {
-                document.getElementById('deleteProjectId').value = projectToDelete.id;
-                document.getElementById('deleteProjectForm').action = `/projects/delete/${projectToDelete.id}/`;
-                document.getElementById('deleteProjectForm').submit();
-            }
-        });
-    }
-    
-    // Reset modal when hidden
-    $('#deleteConfirmModal').on('hidden.bs.modal', function() {
-        confirmationInput.value = '';
-        confirmationInput.classList.remove('valid');
-        confirmDeleteBtn.disabled = true;
-        confirmDeleteBtn.classList.remove('btn-danger');
-        confirmDeleteBtn.classList.add('btn-secondary');
-        projectToDelete = null;
-    });
-}
-
-function confirmDelete(button) {
-    const projectId = button.getAttribute('data-project-id');
-    const projectName = button.getAttribute('data-project-name');
-    
-    if (!projectId || !projectName) {
-        console.error('Missing project data for delete operation');
-        return;
-    }
-    
-    projectToDelete = {
-        id: projectId,
-        name: projectName
-    };
-    
-    document.getElementById('projectNameToDelete').textContent = projectName;
-    $('#deleteConfirmModal').modal('show');
-}
-
-function forceExpandPanel() {
-    const filterPanel = document.getElementById('filterPanel');
-    const toggleIcon = document.getElementById('filterToggleIcon');
-    
-    if (filterPanel && !filterPanel.classList.contains('expanded')) {
-        console.log('🔥 FORCING PANEL TO EXPAND - OVERRIDING EXTERNAL INTERFERENCE');
-        filterPanel.classList.add('expanded');
-        if (toggleIcon) {
-            toggleIcon.classList.add('rotated');
-        }
-        EXTERNAL_INTERFERENCE_DETECTED = true;
-    }
-}
-
-function setupInterferenceProtection() {
-    const filterPanel = document.getElementById('filterPanel');
-    if (!filterPanel) return;
-    
-    const observer = new MutationObserver(function(mutations) {
-        mutations.forEach(function(mutation) {
-            if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
-                const hasExpanded = filterPanel.classList.contains('expanded');
-                
-                if (PANEL_IS_MANUALLY_EXPANDED && !hasExpanded) {
-                    console.log('🚨 EXTERNAL INTERFERENCE DETECTED! PANEL WAS COLLAPSED BY EXTERNAL CODE');
-                    console.log('🛡️ RESTORING EXPANDED STATE');
-                    
-                    filterPanel.classList.add('expanded');
-                    const toggleIcon = document.getElementById('filterToggleIcon');
-                    if (toggleIcon) {
-                        toggleIcon.classList.add('rotated');
-                    }
-                    
-                    EXTERNAL_INTERFERENCE_DETECTED = true;
-                }
-            }
-        });
-    });
-    
-    observer.observe(filterPanel, {
-        attributes: true,
-        attributeFilter: ['class']
-    });
-    
-    console.log('🛡️ Interference protection activated');
-}
-
-function toggleFilters() {
-    console.log('🔄🔄 Toggle filters called - MANUAL USER ACTION 🔄🔄');
-    const filterPanel = document.getElementById('filterPanel');
-    const toggleIcon = document.getElementById('filterToggleIcon');
-    
-    if (!filterPanel || !toggleIcon) {
-        console.log('❌ Panel or icon not found');
-        return;
-    }
-    
-    const isExpanded = filterPanel.classList.contains('expanded') || filterPanel.classList.contains('force-expanded');
-    console.log(`📊📊 Current state: ${isExpanded ? 'expanded' : 'collapsed'} 📊📊`);
-    console.log(`🔍 Panel classes: ${filterPanel.className}`);
-    
-    if (isExpanded) {
-        console.log('📉📉 MANUAL COLLAPSE - NUCLEAR OVERRIDE OF ALL PROTECTION 📉📉');
-        
-        PANEL_IS_MANUALLY_EXPANDED = false;
-        sessionStorage.removeItem('FORCE_PANEL_EXPANDED');
-        sessionStorage.removeItem('CLEAR_ALL_PROTECTION');
-        window.PANEL_MUST_STAY_EXPANDED = false;
-        window.CLEAR_ALL_PROTECTION_ACTIVE = false;
-        
-        filterPanel.classList.remove('expanded', 'force-expanded');
-        filterPanel.removeAttribute('data-force-expanded');
-        
-        filterPanel.style.cssText = '';
-        filterPanel.style.display = '';
-        filterPanel.style.visibility = '';
-        filterPanel.style.opacity = '';
-        filterPanel.style.height = '';
-        filterPanel.style.overflow = '';
-        filterPanel.style.padding = '';
-        
-        const filterContent = document.getElementById('filterContent');
-        if (filterContent) {
-            filterContent.style.display = 'none';
-            filterContent.style.visibility = 'hidden';
-            filterContent.style.opacity = '0';
-            filterContent.style.height = '0';
-            filterContent.style.overflow = 'hidden';
-            filterContent.classList.remove('show');
-        }
-        
-        toggleIcon.classList.remove('rotated');
-        
-        console.log('📉📉 Panel FORCE collapsed - ALL PROTECTION NUKED 📉📉');
-        
-        setTimeout(() => {
-            const isStillExpanded = filterPanel.classList.contains('expanded') || filterPanel.classList.contains('force-expanded');
-            console.log(`🔍 Collapse verification: panel still expanded = ${isStillExpanded}`);
-            if (isStillExpanded) {
-                console.log('⚠️ COLLAPSE FAILED - EXTERNAL INTERFERENCE DETECTED');
-                filterPanel.className = filterPanel.className.replace(/\b(expanded|force-expanded)\b/g, '').trim();
-                filterPanel.style.cssText = 'padding: 12px 24px !important;';
-                if (filterContent) {
-                    filterContent.style.cssText = 'display: none !important; visibility: hidden !important; opacity: 0 !important; height: 0 !important; overflow: hidden !important;';
-                }
-            }
-        }, 50);
-        
-    } else {
-        console.log('📈📈 Panel manually expanded - PROTECTION ACTIVATED 📈📈');
-        filterPanel.classList.add('expanded');
-        filterPanel.classList.remove('force-expanded');
-        toggleIcon.classList.add('rotated');
-        PANEL_IS_MANUALLY_EXPANDED = true;
-        
-        const filterContent = document.getElementById('filterContent');
-        if (filterContent) {
-            filterContent.style.display = 'block';
-            filterContent.style.visibility = 'visible';
-            filterContent.style.opacity = '1';
-            filterContent.style.height = 'auto';
-            filterContent.style.overflow = 'visible';
-            filterContent.classList.add('show');
-        }
-    }
-}
-
-function updateActiveFilters() {
-    console.log('🔄 updateActiveFilters called');
-    const searchInput = document.getElementById('searchInput');
-    const propertySelect = document.getElementById('propertySelect');
-    const statusSelect = document.getElementById('statusSelect');
-    const activeFiltersDiv = document.getElementById('activeFilters');
-    const filterTagsDiv = document.getElementById('filterTags');
-    
-    if (!searchInput || !propertySelect || !statusSelect || !activeFiltersDiv || !filterTagsDiv) {
-        console.log('❌ Some elements missing for updateActiveFilters');
-        return;
-    }
-    
-    const search = searchInput.value;
-    const property = propertySelect.value;
-    const propertyText = propertySelect.options[propertySelect.selectedIndex].text;
-    const status = statusSelect.value;
-    
-    console.log(`📊 Filter values - Search: "${search}", Property: "${property}", Status: "${status}"`);
-    
-    filterTagsDiv.innerHTML = '';
-    let hasFilters = false;
-    
-    if (search) {
-        filterTagsDiv.innerHTML += `<span class="filter-tag">Search: "${search}" <button class="remove-tag" onclick="clearFilter('search')">×</button></span>`;
-        hasFilters = true;
-    }
-    
-    if (property) {
-        filterTagsDiv.innerHTML += `<span class="filter-tag">Property: ${propertyText} <button class="remove-tag" onclick="clearFilter('property')">×</button></span>`;
-        hasFilters = true;
-    }
-    
-    if (status) {
-        filterTagsDiv.innerHTML += `<span class="filter-tag">Status: ${status} <button class="remove-tag" onclick="clearFilter('status')">×</button></span>`;
-        hasFilters = true;
-    }
-    
-    activeFiltersDiv.style.display = hasFilters ? 'flex' : 'none';
-    console.log(`✅ Filter tags updated, hasFilters: ${hasFilters}`);
-    
-    console.log('✅ updateActiveFilters completed - panel state UNCHANGED');
-}
-
-function clearFilter(filterType) {
-    console.log(`🧹 clearFilter called for: ${filterType}`);
-    
-    if (PANEL_IS_MANUALLY_EXPANDED) {
-        console.log('🔒 LOCKING PANEL STATE BEFORE INDIVIDUAL FILTER CLEAR');
-        
-        const filterPanel = document.getElementById('filterPanel');
-        
-        if (filterPanel) {
-            filterPanel.classList.add('force-expanded');
-            filterPanel.style.cssText += 'display: block !important;';
-            filterPanel.setAttribute('data-force-expanded', 'true');
-        }
-        
-        sessionStorage.setItem('FORCE_PANEL_EXPANDED', 'true');
-        window.PANEL_MUST_STAY_EXPANDED = true;
-        
-        const originalHide = window.hideFilters;
-        window.hideFilters = function() {
-            console.log('🚫 BLOCKED: hideFilters() call during individual filter clear');
-            return false;
-        };
-        
-        setTimeout(() => {
-            window.hideFilters = originalHide;
-        }, 100);
-    }
-    
-    switch(filterType) {
-        case 'search':
-            const searchInput = document.getElementById('searchInput');
-            if (searchInput) searchInput.value = '';
-            break;
-        case 'property':
-            const propertySelect = document.getElementById('propertySelect');
-            if (propertySelect) propertySelect.value = '';
-            break;
-        case 'status':
-            const statusSelect = document.getElementById('statusSelect');
-            if (statusSelect) statusSelect.value = '';
-            break;
-    }
-    document.getElementById('filterForm').submit();
-}
-
-setInterval(() => {
-    if (EXTERNAL_INTERFERENCE_DETECTED) {
-        console.log('🚨 External interference was detected and blocked');
-        EXTERNAL_INTERFERENCE_DETECTED = false;
-    }
-}, 2000);
-
-console.log('🚀 === PROJECTS SCRIPT COMPLETE ===');
+console.log('🚀 === PROJECTS FILTERS SCRIPT COMPLETE ===');
 </script>
 
 {% endblock %}
-                    window.hideFilters = function() {
-                        console.log('🚫 BLOCKED: hideFilters() call during form submission');
-                        return false;
-                    };
-                    
-                    setTimeout(() => {
-                        window.hideFilters = originalHide;
-                    }, 100);
-                }
-                
-                document.getElementById('filterForm').submit();
-            });
-        }
-    });
-    
-    // Search button functionality
-    const searchBtn = document.getElementById('searchBtn');
-    if (searchBtn) {
-        searchBtn.addEventListener('click', function() {
-            console.log('🔍 Search button clicked');
-            
-            if (PANEL_IS_MANUALLY_EXPANDED) {
-                console.log('🔒 LOCKING PANEL STATE BEFORE SEARCH SUBMISSION');
-                
-                const filterPanel = document.getElementById('filterPanel');
-                
-                if (filterPanel) {
-                    filterPanel.classList.add('force-expanded');
-                    filterPanel.style.cssText += 'display: block !important;';
-                }
-                
-                sessionStorage.setItem('FORCE_PANEL_EXPANDED', 'true');
-                window.PANEL_MUST_STAY_EXPANDED = true;
-                
-                const originalHide = window.hideFilters;

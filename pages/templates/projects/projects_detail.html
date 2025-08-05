@@ -28,301 +28,301 @@ Project Details - {{ project.project_name }}
   </script>
 {% endfor %}
 
-<body>
-  <!-- Action Buttons -->
-  <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 20px;">
-    <a href="{% url 'project_gantt' project.project_id %}" class="btn btn-info">
-      <i class="fas fa-chart-gantt"></i> Gantt Chart
-    </a>
-    <button type="button" class="btn btn-warning" onclick="showDuplicateModal()">
-      <i class="fas fa-copy"></i> Duplicate Project
-    </button>
-    <a href="{% url 'projects' %}" class="btn btn-info">
-      <i class="fas fa-arrow-left"></i> Back to Projects
-    </a>
-  </div>
+<!-- Action Buttons -->
+<div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 20px;">
+  <a href="#" class="btn btn-info" onclick="showTaskListModal()">
+    <i class="fas fa-list-check"></i> Task List
+  </a>
+  <a href="{% url 'project_gantt' project.project_id %}" class="btn btn-info">
+    <i class="fas fa-chart-gantt"></i> Gantt Chart
+  </a>
+  <button type="button" class="btn btn-warning" onclick="showDuplicateModal()">
+    <i class="fas fa-copy"></i> Duplicate Project
+  </button>
+  <a href="{% url 'projects' %}" class="btn btn-info">
+    <i class="fas fa-arrow-left"></i> Back to Projects
+  </a>
+</div>
 
-  <!-- Project Overview Card -->
-  <div class="project-overview-card">
-    <div class="row">
-      <div class="col-md-8">
-        <h3>{{ project.project_name }}</h3>
-        {% if project.project_description %}
-          <p class="project-description">{{ project.project_description }}</p>
-        {% endif %}
-        <p class="project-property">
-          <i class="fas fa-home"></i> <strong>Property:</strong> {{ project.prop.prop_name }}
-        </p>
-      </div>
-      <div class="col-md-4 text-right">
-        <div class="project-status-container">
-          <span class="status-badge 
-            {% if project.get_calculated_status == 'Completed' %}status-completed
-            {% elif project.get_calculated_status == 'In Progress' %}status-in-progress
-            {% else %}status-pending{% endif %}">
-            {{ project.get_calculated_status }}
-          </span>
-          
-          {% if user.is_superuser %}
-            <a href="{% url 'projects_edit' project.project_id %}" class="btn btn-sm btn-info ml-2">
-              <i class="fas fa-edit"></i>
-            </a>
-          {% endif %}
-        </div>
-      </div>
-    </div>
-
-    <!-- Project Statistics -->
-    <div class="row mt-4">
-      <div class="col-md-3">
-        <div class="stat-card">
-          <div class="stat-value">{{ project.get_progress_percentage }}%</div>
-          <div class="stat-label">Progress</div>
-          <div class="progress mt-2">
-            <div class="progress-bar bg-info" style="width: {{ project.get_progress_percentage }}%"></div>
-          </div>
-        </div>
-      </div>
-      <div class="col-md-3">
-        <div class="stat-card">
-          <div class="stat-value">{{ main_tasks.count }}</div>
-          <div class="stat-label">Total Tasks</div>
-        </div>
-      </div>
-      <div class="col-md-3">
-        <div class="stat-card">
-          <div class="stat-value">€{{ project.get_calculated_budgeted_cost|floatformat:2 }}</div>
-          <div class="stat-label">Budgeted Cost</div>
-        </div>
-      </div>
-      <div class="col-md-3">
-        <div class="stat-card">
-          <div class="stat-value">€{{ project.get_calculated_actual_cost|floatformat:2 }}</div>
-          <div class="stat-label">Actual Cost</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Project Dates -->
-    <div class="row mt-3">
-      <div class="col-md-4">
-        <div class="date-info">
-          <strong>Start Date:</strong>
-          {% if project.get_calculated_start_date %}
-            {{ project.get_calculated_start_date|date:"M d, Y" }}
-          {% else %}
-            <span class="text-muted">Not set</span>
-          {% endif %}
-        </div>
-      </div>
-      <div class="col-md-4">
-        <div class="date-info">
-          <strong>Expected Completion:</strong>
-          {% if project.get_calculated_expected_completion %}
-            {{ project.get_calculated_expected_completion|date:"M d, Y" }}
-          {% else %}
-            <span class="text-muted">Not set</span>
-          {% endif %}
-        </div>
-      </div>
-      <div class="col-md-4">
-        <div class="date-info">
-          <strong>Actual Completion:</strong>
-          {% if project.get_calculated_actual_completion %}
-            {{ project.get_calculated_actual_completion|date:"M d, Y" }}
-          {% else %}
-            <span class="text-muted">Not completed</span>
-          {% endif %}
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Tasks Section -->
-  <div class="tasks-section">
-    <h4>
-      <i class="fas fa-tasks"></i> Project Tasks
-      {% if user.is_superuser %}
-        <a href="{% url 'project_tasks_add' project.project_id %}" class="btn btn-sm btn-info ml-3">
-          <i class="fas fa-plus"></i> Add Task
-        </a>
+<!-- Project Overview Card -->
+<div class="project-overview-card">
+  <div class="row">
+    <div class="col-md-8">
+      <h3>{{ project.project_name }}</h3>
+      {% if project.project_description %}
+        <p class="project-description">{{ project.project_description }}</p>
       {% endif %}
-    </h4>
+      <p class="project-property">
+        <i class="fas fa-home"></i> <strong>Property:</strong> {{ project.prop.prop_name }}
+      </p>
+    </div>
+    <div class="col-md-4 text-right">
+      <div class="project-status-container">
+        <span class="status-badge 
+          {% if project.get_calculated_status == 'Completed' %}status-completed
+          {% elif project.get_calculated_status == 'In Progress' %}status-in-progress
+          {% else %}status-pending{% endif %}">
+          {{ project.get_calculated_status }}
+        </span>
+        
+        {% if user.is_superuser %}
+          <a href="{% url 'projects_edit' project.project_id %}" class="btn btn-sm btn-info ml-2">
+            <i class="fas fa-edit"></i>
+          </a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
 
-    {% if main_tasks %}
-      <div class="tasks-container">
-        {% for task in main_tasks %}
-          <div class="task-card">
-            <div class="task-header">
-              <div class="task-title-section">
-                <h5 class="task-title">
-                  <span class="task-priority-indicator priority-{{ task.task_priority|lower }}">
-                    {{ task.task_priority }}
-                  </span>
-                  {{ task.task_name }}
-                  {% if user.is_superuser %}
-                    <a href="{% url 'project_subtasks_add' project.project_id task.task_id %}" class="btn btn-sm btn-info ml-3">
-                      <i class="fas fa-plus"></i> Add Subtask
-                    </a>
-                  {% endif %}
-                </h5>
-                {% if task.task_description %}
-                  <p class="task-description">{{ task.task_description }}</p>
-                {% endif %}
-                
-                <!-- Task Details in one line -->
-                <div class="task-details-inline">
-                  <span class="detail-item">
-                    <strong>Start:</strong>
-                    {% if task.get_calculated_start_date %}
-                      {{ task.get_calculated_start_date|date:"M d, Y" }}
-                    {% else %}
-                      <span class="text-muted">Not set</span>
-                    {% endif %}
-                  </span>
-                  <span class="detail-item">
-                    <strong>Expected End:</strong>
-                    {% if task.get_calculated_expected_completion %}
-                      {{ task.get_calculated_expected_completion|date:"M d, Y" }}
-                    {% else %}
-                      <span class="text-muted">Not set</span>
-                    {% endif %}
-                  </span>
-                  {% if task.get_calculated_status == 'Completed' and task.get_calculated_actual_completion %}
-                    <span class="detail-item">
-                      <strong>Actual End:</strong>
-                      <span style="color: #28a745;">{{ task.get_calculated_actual_completion|date:"M d, Y" }}</span>
-                    </span>
-                  {% endif %}
-                  <span class="detail-item">
-                    <strong>Budgeted:</strong>
-                    €{{ task.get_calculated_budgeted_cost|floatformat:2 }}
-                  </span>
-                  <span class="detail-item">
-                    <strong>Actual:</strong>
-                    €{{ task.get_calculated_actual_cost|floatformat:2 }}
-                  </span>
-                  <span class="detail-item">
-                    <strong>Progress:</strong>
-                    <span class="progress-percentage">{{ task.get_subtask_progress|floatformat:1 }}%</span>
-                  </span>
-                </div>
-              </div>
-              <div class="task-actions">
-                <span class="task-status-badge status-{{ task.get_calculated_status|slugify }}">
-                  {{ task.get_calculated_status }}
+  <!-- Project Statistics -->
+  <div class="row mt-4">
+    <div class="col-md-3">
+      <div class="stat-card">
+        <div class="stat-value">{{ project.get_progress_percentage }}%</div>
+        <div class="stat-label">Progress</div>
+        <div class="progress mt-2">
+          <div class="progress-bar bg-info" style="width: {{ project.get_progress_percentage }}%"></div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="stat-card">
+        <div class="stat-value">{{ main_tasks.count }}</div>
+        <div class="stat-label">Total Tasks</div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="stat-card">
+        <div class="stat-value">€{{ project.get_calculated_budgeted_cost|floatformat:2 }}</div>
+        <div class="stat-label">Budgeted Cost</div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="stat-card">
+        <div class="stat-value">€{{ project.get_calculated_actual_cost|floatformat:2 }}</div>
+        <div class="stat-label">Actual Cost</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Project Dates -->
+  <div class="row mt-3">
+    <div class="col-md-4">
+      <div class="date-info">
+        <strong>Start Date:</strong>
+        {% if project.get_calculated_start_date %}
+          {{ project.get_calculated_start_date|date:"M d, Y" }}
+        {% else %}
+          <span class="text-muted">Not set</span>
+        {% endif %}
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="date-info">
+        <strong>Expected Completion:</strong>
+        {% if project.get_calculated_expected_completion %}
+          {{ project.get_calculated_expected_completion|date:"M d, Y" }}
+        {% else %}
+          <span class="text-muted">Not set</span>
+        {% endif %}
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="date-info">
+        <strong>Actual Completion:</strong>
+        {% if project.get_calculated_actual_completion %}
+          {{ project.get_calculated_actual_completion|date:"M d, Y" }}
+        {% else %}
+          <span class="text-muted">Not completed</span>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Tasks Section -->
+<div class="tasks-section">
+  <h4>
+    <i class="fas fa-tasks"></i> Project Tasks
+    {% if user.is_superuser %}
+      <a href="{% url 'project_tasks_add' project.project_id %}" class="btn btn-sm btn-info ml-3">
+        <i class="fas fa-plus"></i> Add Task
+      </a>
+    {% endif %}
+  </h4>
+
+  {% if main_tasks %}
+    <div class="tasks-container">
+      {% for task in main_tasks %}
+        <div class="task-card">
+          <div class="task-header">
+            <div class="task-title-section">
+              <h5 class="task-title">
+                <span class="task-priority-indicator priority-{{ task.task_priority|lower }}">
+                  {{ task.task_priority }}
                 </span>
+                {{ task.task_name }}
                 {% if user.is_superuser %}
-                  <div class="btn-group ml-2">
-                    <a href="{% url 'project_tasks_edit' project.project_id task.task_id %}" class="btn btn-sm btn-info">
-                      <i class="fas fa-edit"></i>
-                    </a>
-                  </div>
+                  <a href="{% url 'project_subtasks_add' project.project_id task.task_id %}" class="btn btn-sm btn-info ml-3">
+                    <i class="fas fa-plus"></i> Add Subtask
+                  </a>
                 {% endif %}
+              </h5>
+              {% if task.task_description %}
+                <p class="task-description">{{ task.task_description }}</p>
+              {% endif %}
+              
+              <!-- Task Details in one line -->
+              <div class="task-details-inline">
+                <span class="detail-item">
+                  <strong>Start:</strong>
+                  {% if task.get_calculated_start_date %}
+                    {{ task.get_calculated_start_date|date:"M d, Y" }}
+                  {% else %}
+                    <span class="text-muted">Not set</span>
+                  {% endif %}
+                </span>
+                <span class="detail-item">
+                  <strong>Expected End:</strong>
+                  {% if task.get_calculated_expected_completion %}
+                    {{ task.get_calculated_expected_completion|date:"M d, Y" }}
+                  {% else %}
+                    <span class="text-muted">Not set</span>
+                  {% endif %}
+                </span>
+                {% if task.get_calculated_status == 'Completed' and task.get_calculated_actual_completion %}
+                  <span class="detail-item">
+                    <strong>Actual End:</strong>
+                    <span style="color: #28a745;">{{ task.get_calculated_actual_completion|date:"M d, Y" }}</span>
+                  </span>
+                {% endif %}
+                <span class="detail-item">
+                  <strong>Budgeted:</strong>
+                  €{{ task.get_calculated_budgeted_cost|floatformat:2 }}
+                </span>
+                <span class="detail-item">
+                  <strong>Actual:</strong>
+                  €{{ task.get_calculated_actual_cost|floatformat:2 }}
+                </span>
+                <span class="detail-item">
+                  <strong>Progress:</strong>
+                  <span class="progress-percentage">{{ task.get_subtask_progress|floatformat:1 }}%</span>
+                </span>
               </div>
             </div>
+            <div class="task-actions">
+              <span class="task-status-badge status-{{ task.get_calculated_status|slugify }}">
+                {{ task.get_calculated_status }}
+              </span>
+              {% if user.is_superuser %}
+                <div class="btn-group ml-2">
+                  <a href="{% url 'project_tasks_edit' project.project_id task.task_id %}" class="btn btn-sm btn-info">
+                    <i class="fas fa-edit"></i>
+                  </a>
+                </div>
+              {% endif %}
+            </div>
+          </div>
 
-            <!-- Subtasks -->
-            {% if task.subtasks.all %}
-              <div class="subtasks-section">
-                <h6 class="subtasks-header" onclick="toggleSubtasks('task-{{ task.task_id }}')">
-                  <i class="fas fa-indent"></i> Subtasks 
-                  <span class="subtask-progress">({{ task.get_completed_subtask_count }}/{{ task.get_subtask_count }} completed - {{ task.get_subtask_progress }}%)</span>
-                  <i class="fas fa-chevron-down subtasks-toggle-icon" id="toggle-task-{{ task.task_id }}"></i>
-                </h6>
-                <div class="subtasks-container" id="subtasks-task-{{ task.task_id }}">
-                  {% for subtask in task.subtasks.all %}
-                    <div class="subtask-item">
-                      <div class="subtask-header">
-                        <div class="subtask-title">
-                          <span class="subtask-priority-indicator priority-{{ subtask.task_priority|lower }}">
-                            {{ subtask.task_priority }}
-                          </span>
-                          {{ subtask.task_name }}
-                        </div>
-                        <div class="subtask-actions">
-                          {% if user.is_superuser %}
-                            <span class="subtask-status-badge status-{{ subtask.task_status|slugify }} clickable-status" 
-                                  onclick="editTaskStatus('{{ subtask.task_id }}', '{{ subtask.task_status }}')">
-                              {{ subtask.task_status }}
-                            </span>
-                            <a href="{% url 'project_tasks_edit' project.project_id subtask.task_id %}" class="btn btn-xs btn-info ml-1">
-                              <i class="fas fa-edit"></i>
-                            </a>
-                          {% else %}
-                            <span class="subtask-status-badge status-{{ subtask.task_status|slugify }}">
-                              {{ subtask.task_status }}
-                            </span>
-                          {% endif %}
-                        </div>
+          <!-- Subtasks -->
+          {% if task.subtasks.all %}
+            <div class="subtasks-section">
+              <h6 class="subtasks-header" onclick="toggleSubtasks('task-{{ task.task_id }}')">
+                <i class="fas fa-indent"></i> Subtasks 
+                <span class="subtask-progress">({{ task.get_completed_subtask_count }}/{{ task.get_subtask_count }} completed - {{ task.get_subtask_progress }}%)</span>
+                <i class="fas fa-chevron-down subtasks-toggle-icon" id="toggle-task-{{ task.task_id }}"></i>
+              </h6>
+              <div class="subtasks-container" id="subtasks-task-{{ task.task_id }}">
+                {% for subtask in task.subtasks.all %}
+                  <div class="subtask-item">
+                    <div class="subtask-header">
+                      <div class="subtask-title">
+                        <span class="subtask-priority-indicator priority-{{ subtask.task_priority|lower }}">
+                          {{ subtask.task_priority }}
+                        </span>
+                        {{ subtask.task_name }}
                       </div>
-                      {% if subtask.task_description %}
-                        <div class="subtask-description">{{ subtask.task_description }}</div>
-                      {% endif %}
-                      <div class="subtask-details">
-                        <span class="detail-item">
-                          <strong>Start:</strong> 
-                          {% if subtask.task_start_date %}
-                            {{ subtask.task_start_date|date:"M d, Y" }}
-                          {% else %}
-                            <span class="text-muted">Not set</span>
-                          {% endif %}
-                        </span>
-                        <span class="detail-item">
-                          <strong>End:</strong> 
-                          {% if subtask.task_expected_completion_date %}
-                            {{ subtask.task_expected_completion_date|date:"M d, Y" }}
-                          {% else %}
-                            <span class="text-muted">Not set</span>
-                          {% endif %}
-                        </span>
-                        {% if subtask.task_status == 'Completed' and subtask.task_actual_completion_date %}
-                          <span class="detail-item">
-                            <strong>Actual End:</strong> 
-                            <span style="color: #28a745;">{{ subtask.task_actual_completion_date|date:"M d, Y" }}</span>
+                      <div class="subtask-actions">
+                        {% if user.is_superuser %}
+                          <span class="subtask-status-badge status-{{ subtask.task_status|slugify }} clickable-status" 
+                                onclick="editTaskStatus('{{ subtask.task_id }}', '{{ subtask.task_status }}')">
+                            {{ subtask.task_status }}
+                          </span>
+                          <a href="{% url 'project_tasks_edit' project.project_id subtask.task_id %}" class="btn btn-xs btn-info ml-1">
+                            <i class="fas fa-edit"></i>
+                          </a>
+                        {% else %}
+                          <span class="subtask-status-badge status-{{ subtask.task_status|slugify }}">
+                            {{ subtask.task_status }}
                           </span>
                         {% endif %}
-                        <span class="detail-item">
-                          <strong>Budgeted:</strong> €{{ subtask.task_budgeted_cost|floatformat:2 }}
-                        </span>
-                        <span class="detail-item">
-                          <strong>Actual:</strong> €{{ subtask.task_actual_cost|floatformat:2 }}
-                        </span>
-                        {% if subtask.task_assigned_to %}
-                          <span class="detail-item">
-                            <strong>Assigned:</strong> {{ subtask.task_assigned_to }}
-                          </span>
-                        {% endif %}
-                        <span class="detail-item">
-                          <strong>Progress:</strong>
-                          <span class="progress-percentage">{{ subtask.task_progress_percentage|default:0 }}%</span>
-                        </span>
                       </div>
                     </div>
-                  {% endfor %}
-                </div>
+                    {% if subtask.task_description %}
+                      <div class="subtask-description">{{ subtask.task_description }}</div>
+                    {% endif %}
+                    <div class="subtask-details">
+                      <span class="detail-item">
+                        <strong>Start:</strong> 
+                        {% if subtask.task_start_date %}
+                          {{ subtask.task_start_date|date:"M d, Y" }}
+                        {% else %}
+                          <span class="text-muted">Not set</span>
+                        {% endif %}
+                      </span>
+                      <span class="detail-item">
+                        <strong>End:</strong> 
+                        {% if subtask.task_expected_completion_date %}
+                          {{ subtask.task_expected_completion_date|date:"M d, Y" }}
+                        {% else %}
+                          <span class="text-muted">Not set</span>
+                        {% endif %}
+                      </span>
+                      {% if subtask.task_status == 'Completed' and subtask.task_actual_completion_date %}
+                        <span class="detail-item">
+                          <strong>Actual End:</strong> 
+                          <span style="color: #28a745;">{{ subtask.task_actual_completion_date|date:"M d, Y" }}</span>
+                        </span>
+                      {% endif %}
+                      <span class="detail-item">
+                        <strong>Budgeted:</strong> €{{ subtask.task_budgeted_cost|floatformat:2 }}
+                      </span>
+                      <span class="detail-item">
+                        <strong>Actual:</strong> €{{ subtask.task_actual_cost|floatformat:2 }}
+                      </span>
+                      {% if subtask.task_assigned_to %}
+                        <span class="detail-item">
+                          <strong>Assigned:</strong> {{ subtask.task_assigned_to }}
+                        </span>
+                      {% endif %}
+                      <span class="detail-item">
+                        <strong>Progress:</strong>
+                        <span class="progress-percentage">{{ subtask.task_progress_percentage|default:0 }}%</span>
+                      </span>
+                    </div>
+                  </div>
+                {% endfor %}
               </div>
-            {% endif %}
-          </div>
-        {% endfor %}
-      </div>
-    {% else %}
-      <div class="no-tasks-message">
-        <div class="text-center">
-          <i class="fas fa-tasks fa-3x text-muted mb-3"></i>
-          <h5>No tasks yet</h5>
-          <p class="text-muted">Get started by adding your first task to this project.</p>
-          {% if user.is_superuser %}
-            <a href="{% url 'project_tasks_add' project.project_id %}" class="btn btn-info">
-              <i class="fas fa-plus"></i> Add First Task
-            </a>
+            </div>
           {% endif %}
         </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="no-tasks-message">
+      <div class="text-center">
+        <i class="fas fa-tasks fa-3x text-muted mb-3"></i>
+        <h5>No tasks yet</h5>
+        <p class="text-muted">Get started by adding your first task to this project.</p>
+        {% if user.is_superuser %}
+          <a href="{% url 'project_tasks_add' project.project_id %}" class="btn btn-info">
+            <i class="fas fa-plus"></i> Add First Task
+          </a>
+        {% endif %}
       </div>
-    {% endif %}
-  </div>
-
-</body>
+    </div>
+  {% endif %}
+</div>
 
 <!-- Status Update Modal -->
 <div class="modal fade" id="statusModal" tabindex="-1" role="dialog">
@@ -456,6 +456,130 @@ Project Details - {{ project.project_name }}
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
                 <button type="button" class="btn btn-warning" id="duplicateProjectBtn">
                     <i class="fas fa-copy"></i> Duplicate Project
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Task List Modal -->
+<div class="modal fade" id="taskListModal" tabindex="-1" role="dialog" aria-labelledby="taskListModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="taskListModalLabel">
+                    <i class="fas fa-list-check"></i> Generate Task List
+                </h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="taskListForm">
+                    <!-- Assignee Selection - Simplified Custom Dropdown -->
+                    <div class="form-group">
+                        <label>
+                            <i class="fas fa-user"></i> Select Assignee:
+                        </label>
+                        <div class="simple-dropdown">
+                            <button type="button" class="dropdown-btn" id="assigneeDropdownBtn">
+                                <span class="dropdown-text">Loading assignees...</span>
+                                <i class="fas fa-chevron-down"></i>
+                            </button>
+                            <div class="dropdown-menu" id="assigneeDropdownMenu">
+                                <!-- Options will be populated here -->
+                            </div>
+                            <input type="hidden" id="assigneeSelect" name="assigned_to" value="">
+                            <small class="form-text text-muted">
+                                Choose a specific team member or leave blank for all tasks
+                            </small>
+                        </div>
+                    </div>
+                    
+                    <!-- Language Selection -->
+                    <div class="form-group">
+                        <label>
+                            <i class="fas fa-language"></i> Language / Γλώσσα:
+                        </label>
+                        <div class="language-selection">
+                            <div class="custom-control custom-radio">
+                                <input type="radio" 
+                                       id="languageEnglish" 
+                                       name="language" 
+                                       class="custom-control-input" 
+                                       value="english" 
+                                       checked>
+                                <label class="custom-control-label" for="languageEnglish">
+                                    <span class="flag-icon">🇬🇧</span>
+                                    <strong>English</strong>
+                                    <br>
+                                    <small class="text-muted">Display tasks in English (original language)</small>
+                                </label>
+                            </div>
+                            <div class="custom-control custom-radio mt-3">
+                                <input type="radio" 
+                                       id="languageGreek" 
+                                       name="language" 
+                                       class="custom-control-input" 
+                                       value="greek">
+                                <label class="custom-control-label" for="languageGreek">
+                                    <span class="flag-icon">🇬🇷</span>
+                                    <strong>Ελληνικά (Greek)</strong>
+                                    <br>
+                                    <small class="text-muted">Εμφάνιση εργασιών στα Ελληνικά (μετάφραση)</small>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Translation Notice -->
+                    <div class="alert alert-info translation-notice" id="translationNotice" style="display: none;">
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-info-circle mr-2"></i>
+                            <div>
+                                <strong>Translation Note / Σημείωση Μετάφρασης:</strong>
+                                <br>
+                                <span class="english-text">Greek translations will be automatically generated if not already available. The original English text will be shown for untranslated items.</span>
+                                <br>
+                                <span class="greek-text">Οι ελληνικές μεταφράσεις θα δημιουργηθούν αυτόματα εάν δεν είναι ήδη διαθέσιμες. Το αρχικό αγγλικό κείμενο θα εμφανίζεται για τα μη μεταφρασμένα στοιχεία.</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Preview Information -->
+                    <div class="preview-info">
+                        <h6><i class="fas fa-eye"></i> Preview Information:</h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="info-item">
+                                    <strong>Project:</strong>
+                                    <span id="previewProject">{{ project.project_name }}</span>
+                                </div>
+                                <div class="info-item">
+                                    <strong>Property:</strong>
+                                    <span id="previewProperty">{{ project.prop.prop_name }}</span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="info-item">
+                                    <strong>Total Tasks:</strong>
+                                    <span id="previewTotalTasks">{{ main_tasks.count }}</span>
+                                </div>
+                                <div class="info-item">
+                                    <strong>Assignee:</strong>
+                                    <span id="previewAssignee">All Team Members</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+                <button type="button" class="btn btn-success" id="generateTaskListBtn">
+                    <i class="fas fa-list-check"></i> Generate Task List
                 </button>
             </div>
         </div>
@@ -862,15 +986,18 @@ Project Details - {{ project.project_name }}
 }
 
 .btn-warning {
-    background-color: #ffc107;
-    border-color: #ffc107;
-    color: #212529;
+    background-color: #17a2b8;
+    border-color: #17a2b8;
+    color: white;
+    transition: all 0.3s ease;
+    border-radius: 6px;
+    font-weight: 500;
 }
 
 .btn-warning:hover {
-    background-color: #e0a800;
-    border-color: #d39e00;
-    color: #212529;
+    background-color: #138496;
+    border-color: #117a8b;
+    color: white;
     transform: translateY(-1px);
     box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
@@ -938,6 +1065,304 @@ Project Details - {{ project.project_name }}
     font-weight: 600;
 }
 
+/* Task List Modal Styles */
+#taskListModal {
+    z-index: 1050;
+}
+
+#taskListModal .modal-backdrop {
+    z-index: 1040;
+}
+
+#taskListModal .modal-lg {
+    max-width: 700px;
+    z-index: 1060;
+}
+
+#taskListModal .modal-dialog {
+    z-index: 1060;
+}
+
+#taskListModal .modal-content {
+    z-index: 1060;
+}
+
+/* Simplified Custom Dropdown Styles - Fixed */
+.simple-dropdown {
+    position: relative;
+    width: 100%;
+    z-index: 1000;
+}
+
+.dropdown-btn {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    background: white;
+    text-align: left;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.dropdown-btn:hover {
+    border-color: #17a2b8;
+}
+
+.dropdown-btn:focus {
+    outline: none;
+    border-color: #17a2b8;
+    box-shadow: 0 0 0 3px rgba(23, 162, 184, 0.1);
+}
+
+.dropdown-btn.open {
+    border-color: #17a2b8;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.dropdown-btn .fas {
+    transition: transform 0.3s ease;
+    color: #6c757d;
+}
+
+.dropdown-btn.open .fas {
+    transform: rotate(180deg);
+}
+
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 2px solid #17a2b8;
+    border-top: none;
+    border-radius: 0 0 8px 8px;
+    max-height: 200px;
+    overflow-y: auto;
+    z-index: 10000 !important;
+    display: none;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.dropdown-menu.show {
+    display: block !important;
+}
+
+.dropdown-item {
+    padding: 12px 16px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    border-bottom: 1px solid #f8f9fa;
+    color: #333;
+    display: block;
+}
+
+.dropdown-item:hover {
+    background-color: #f8f9fa;
+}
+
+.dropdown-item:last-child {
+    border-bottom: none;
+}
+
+.dropdown-item.active {
+    background-color: #e7f3ff;
+    color: #17a2b8;
+    font-weight: 500;
+}
+
+/* Force visibility for debugging */
+#assigneeDropdownMenu.show {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    z-index: 99999 !important;
+}
+
+/* Remove modal body overflow restrictions for dropdown */
+#taskListModal .modal-body {
+    overflow: visible !important;
+    position: static !important;
+    padding-bottom: 50px; /* Reduced padding */
+}
+
+#taskListModal .modal-dialog {
+    overflow: visible !important;
+    margin-top: 5vh; /* Reduced margin */
+}
+
+#taskListModal .modal-content {
+    overflow: visible !important;
+}
+
+/* Change modal header to blue theme */
+#taskListModal .modal-header {
+    background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+    color: white;
+    border-radius: 8px 8px 0 0;
+}
+
+#taskListModal .modal-title {
+    font-weight: 600;
+}
+
+#taskListModal .modal-title i {
+    margin-right: 8px;
+}
+
+.assignee-selection {
+    position: relative;
+}
+
+.assignee-selection select {
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    position: relative;
+    z-index: 9999 !important;
+    overflow: visible;
+}
+
+.assignee-selection select:focus {
+    border-color: #17a2b8;
+    box-shadow: 0 0 0 3px rgba(23, 162, 184, 0.1);
+    outline: none;
+    z-index: 9999 !important;
+}
+
+/* Force dropdown menu positioning and z-index */
+.assignee-selection .form-control option {
+    z-index: 9999 !important;
+}
+
+/* Ensure dropdown opens properly */
+#taskListModal .modal-body {
+    overflow: visible !important;
+    position: static;
+}
+
+/* Force dropdown to appear above other elements */
+#assigneeSelect {
+    z-index: 9999 !important;
+    overflow: visible !important;
+}
+
+.language-selection {
+    margin-top: 10px;
+}
+
+.flag-icon {
+    font-size: 20px;
+    margin-right: 8px;
+    vertical-align: middle;
+}
+
+.custom-control-input:checked ~ .custom-control-label {
+    color: #17a2b8;
+}
+
+.custom-control-input:checked ~ .custom-control-label strong {
+    color: #17a2b8;
+}
+
+.translation-notice {
+    border-left: 4px solid #17a2b8;
+    background: rgba(23, 162, 184, 0.05);
+}
+
+.english-text {
+    display: block;
+    margin-bottom: 8px;
+}
+
+.greek-text {
+    display: block;
+    font-style: italic;
+    color: #6c757d;
+}
+
+.preview-info {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 15px;
+    border: 1px solid #e9ecef;
+    margin-top: 20px;
+}
+
+.preview-info h6 {
+    color: #2c3e50;
+    margin-bottom: 12px;
+    font-weight: 600;
+}
+
+.preview-info h6 i {
+    color: #17a2b8;
+    margin-right: 8px;
+}
+
+.info-item {
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+.info-item strong {
+    color: #495057;
+    display: inline-block;
+    width: 80px;
+}
+
+.info-item span {
+    color: #2c3e50;
+}
+
+.form-group label {
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 8px;
+}
+
+.form-group label i {
+    color: #17a2b8;
+    margin-right: 8px;
+    width: 16px;
+}
+
+#taskListModal .btn-success {
+    background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+    border: none;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+#taskListModal .btn-success:hover {
+    background: linear-gradient(135deg, #138496 0%, #117a8b 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(23, 162, 184, 0.3);
+}
+
+.btn-secondary {
+    transition: all 0.3s ease;
+}
+
+.btn-secondary:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Loading state for select */
+.assignee-selection select:disabled {
+    background-color: #f8f9fa;
+    opacity: 0.7;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
     .project-overview-card {
@@ -977,6 +1402,21 @@ Project Details - {{ project.project_name }}
     .stat-card {
         margin-bottom: 15px;
     }
+    
+    .modal-lg {
+        max-width: 95%;
+        margin: 20px auto;
+    }
+    
+    .preview-info .row {
+        flex-direction: column;
+    }
+    
+    .info-item strong {
+        width: auto;
+        display: block;
+        margin-bottom: 2px;
+    }
 }
 </style>
 
@@ -985,6 +1425,7 @@ console.log('=== PROJECT DETAILS LOADED ===');
 
 let currentTaskId = null;
 let currentTaskType = 'task'; // 'task' or 'project'
+let projectAssignees = [];
 
 // Show status update modal for projects
 function showStatusModal() {
@@ -1065,6 +1506,195 @@ function showDuplicateModal() {
     });
 }
 
+// Show Task List Modal - CLEAN VERSION
+window.showTaskListModal = function() {
+    console.log('Opening Task List Modal - Clean Version');
+    
+    // Reset form values
+    document.getElementById('languageEnglish').checked = true;
+    document.getElementById('translationNotice').style.display = 'none';
+    document.getElementById('previewAssignee').textContent = 'All Team Members';
+    
+    // Show modal first
+    $('#taskListModal').modal('show');
+    
+    // Set up the dropdown immediately with hardcoded data
+    setTimeout(() => {
+        setupSimpleDropdown();
+    }, 500);
+};
+
+// Remove all old dropdown code and variables
+// Simplified dropdown variables
+let dropdownOpen = false;
+let currentAssignee = '';
+
+function generateTaskList() {
+    const assignedTo = document.getElementById('assigneeSelect').value;
+    const language = document.querySelector('input[name="language"]:checked').value;
+    const projectId = {{ project.project_id }};
+    
+    console.log('Generating task list:', {
+        projectId: projectId,
+        assignedTo: assignedTo,
+        language: language
+    });
+    
+    // Show loading state
+    const generateBtn = document.getElementById('generateTaskListBtn');
+    const originalText = generateBtn.innerHTML;
+    generateBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+    generateBtn.disabled = true;
+    
+    // Build URL to match your existing view
+    let url = `/projects/${projectId}/task-list/?language=${language}`;
+    if (assignedTo) {
+        url += `&assigned_to=${encodeURIComponent(assignedTo)}`;
+    }
+    
+    console.log('Navigating to URL:', url);
+    
+    // Close modal first
+    $('#taskListModal').modal('hide');
+    
+    // Small delay to ensure modal closes, then navigate
+    setTimeout(() => {
+        window.location.href = url;
+    }, 300);
+}
+
+// Make sure showTaskListModal is available globally - simplified version
+window.showTaskListModal = function() {
+    console.log('Opening Task List Modal - Simplified');
+    
+    // Show modal first
+    $('#taskListModal').modal('show');
+    
+    // Set up the dropdown immediately with hardcoded data
+    setTimeout(() => {
+        setupSimpleDropdown();
+    }, 500);
+};
+
+function setupSimpleDropdown() {
+    console.log('Setting up simple dropdown');
+    
+    const btn = document.getElementById('assigneeDropdownBtn');
+    const menu = document.getElementById('assigneeDropdownMenu');
+    
+    if (!btn || !menu) {
+        console.error('Dropdown elements not found');
+        console.log('Button:', btn);
+        console.log('Menu:', menu);
+        return;
+    }
+    
+    // Set initial text
+    const textSpan = btn.querySelector('.dropdown-text');
+    if (textSpan) {
+        textSpan.textContent = 'All Team Members';
+        console.log('Set initial text to: All Team Members');
+    }
+    
+    // Create dropdown options immediately
+    menu.innerHTML = `
+        <div class="dropdown-item active" data-assignee-value="">All Team Members</div>
+        <div class="dropdown-item" data-assignee-value="Angy">Angy</div>
+        <div class="dropdown-item" data-assignee-value="Mark">Mark</div>
+        <div class="dropdown-item" data-assignee-value="Marko">Marko</div>
+        <div class="dropdown-item" data-assignee-value="Yianni">Yianni</div>
+    `;
+    
+    console.log('Created dropdown items:', menu.children.length);
+    
+    // Add click events to the button
+    btn.onclick = function(e) {
+        console.log('Button clicked - current classes:', menu.className);
+        e.preventDefault();
+        e.stopPropagation();
+        
+        const isOpen = menu.classList.contains('show');
+        console.log('Is dropdown open?', isOpen);
+        
+        if (isOpen) {
+            console.log('Closing dropdown');
+            btn.classList.remove('open');
+            menu.classList.remove('show');
+            console.log('After closing - menu classes:', menu.className);
+        } else {
+            console.log('Opening dropdown');
+            btn.classList.add('open');
+            menu.classList.add('show');
+            console.log('After opening - menu classes:', menu.className);
+            console.log('Menu display style:', window.getComputedStyle(menu).display);
+            console.log('Menu visibility:', window.getComputedStyle(menu).visibility);
+        }
+    };
+    
+    // Add click events to dropdown items
+    const items = menu.querySelectorAll('.dropdown-item');
+    console.log('Adding click events to', items.length, 'items');
+    
+    items.forEach((item, index) => {
+        item.onclick = function(e) {
+            console.log('Item clicked:', this.textContent, 'at index:', index);
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const value = this.getAttribute('data-assignee-value');
+            const text = this.textContent;
+            
+            console.log('Selected value:', value, 'text:', text);
+            
+            // Update button text
+            if (textSpan) {
+                textSpan.textContent = text;
+            }
+            
+            // Update hidden input
+            const hiddenInput = document.getElementById('assigneeSelect');
+            if (hiddenInput) {
+                hiddenInput.value = value;
+                console.log('Updated hidden input to:', value);
+            }
+            
+            // Update preview
+            const preview = document.getElementById('previewAssignee');
+            if (preview) {
+                preview.textContent = text;
+                console.log('Updated preview to:', text);
+            }
+            
+            // Update active states
+            items.forEach(i => i.classList.remove('active'));
+            this.classList.add('active');
+            
+            // Close dropdown
+            btn.classList.remove('open');
+            menu.classList.remove('show');
+            console.log('Dropdown closed after selection');
+        };
+    });
+    
+    console.log('Simple dropdown setup complete');
+    
+    // Test if elements are properly positioned
+    setTimeout(() => {
+        console.log('Dropdown position check:');
+        console.log('Button rect:', btn.getBoundingClientRect());
+        console.log('Menu rect:', menu.getBoundingClientRect());
+        console.log('Menu computed styles:');
+        const styles = window.getComputedStyle(menu);
+        console.log('position:', styles.position);
+        console.log('top:', styles.top);
+        console.log('left:', styles.left);
+        console.log('z-index:', styles.zIndex);
+    }, 100);
+}
+
+// Make sure generateTaskList is available globally
+window.generateTaskList = generateTaskList;
+
 // Duplicate project function
 function duplicateProject() {
     const newProjectName = $('#newProjectName').val().trim();
@@ -1109,7 +1739,8 @@ function duplicateProject() {
         project_id: parseInt(projectId),
         new_project_name: newProjectName,
         new_project_start_date: newProjectStartDate,
-        budget_copy_option: budgetCopyOption
+        budget_copy_option: budgetCopyOption,
+        copy_translations: true  // Flag to indicate Greek translations should be copied
     };
     
     console.log('Sending duplicate request with data:', data);
@@ -1140,7 +1771,9 @@ function duplicateProject() {
                 const budgetMessage = budgetCopyOption === 'actual' ? 
                     'Actual costs have been copied as budgeted costs.' : 
                     'Budgeted costs have been copied.';
-                alert(`Project duplicated successfully! All dates have been adjusted to the new start date. ${budgetMessage}`);
+                const translationMessage = response.translations_copied ? 
+                    ' Greek translations have been copied.' : '';
+                alert(`Project duplicated successfully! All dates have been adjusted to the new start date. ${budgetMessage}${translationMessage}`);
                 if (response.new_project_id) {
                     window.location.href = '/projects/detail/' + response.new_project_id + '/';
                 } else {
@@ -1285,9 +1918,38 @@ function updateStatus() {
     });
 }
 
+// Subtasks toggle functionality
+function toggleSubtasks(taskId) {
+    console.log('Toggling subtasks for:', taskId);
+    const subtasksContainer = document.getElementById('subtasks-' + taskId);
+    const toggleIcon = document.getElementById('toggle-' + taskId);
+    
+    if (subtasksContainer && toggleIcon) {
+        const isCollapsed = subtasksContainer.classList.contains('collapsed');
+        
+        if (isCollapsed) {
+            // Expand
+            subtasksContainer.classList.remove('collapsed');
+            toggleIcon.classList.remove('rotated');
+            console.log('Expanded subtasks for:', taskId);
+        } else {
+            // Collapse
+            subtasksContainer.classList.add('collapsed');
+            toggleIcon.classList.add('rotated');
+            console.log('Collapsed subtasks for:', taskId);
+        }
+    }
+}
+
 // Event listeners
 $(document).ready(function() {
     console.log('Document ready - setting up event listeners');
+    
+    // Make functions globally available
+    window.showTaskListModal = showTaskListModal;
+    window.showDuplicateModal = showDuplicateModal;
+    window.editTaskStatus = editTaskStatus;
+    window.toggleSubtasks = toggleSubtasks;
     
     // Ensure Bootstrap modal is available
     if (typeof $.fn.modal === 'undefined') {
@@ -1314,6 +1976,13 @@ $(document).ready(function() {
         duplicateProject();
     });
     
+    // Generate Task List button click
+    $('#generateTaskListBtn').on('click', function(e) {
+        e.preventDefault();
+        console.log('Generate task list button clicked');
+        generateTaskList();
+    });
+    
     // Enter key in duplicate project name field
     $('#newProjectName').on('keypress', function(e) {
         if (e.which === 13) { // Enter key
@@ -1328,6 +1997,50 @@ $(document).ready(function() {
             e.preventDefault();
             duplicateProject();
         }
+    });
+    
+    // Task List Modal event listeners
+    // Language change event
+    document.querySelectorAll('input[name="language"]').forEach(radio => {
+        radio.addEventListener('change', function() {
+            const translationNotice = document.getElementById('translationNotice');
+            if (this.value === 'greek') {
+                translationNotice.style.display = 'block';
+            } else {
+                translationNotice.style.display = 'none';
+            }
+        });
+    });
+    
+    // Assignee change event - Updated for custom dropdown
+    // The custom dropdown handles this internally now
+    
+    // Reset custom dropdown when modal closes - CLEAN VERSION
+    $('#taskListModal').on('hidden.bs.modal', function() {
+        console.log('Task List modal closed');
+        
+        // Reset dropdown state
+        currentAssignee = '';
+        dropdownOpen = false;
+        
+        // Reset UI elements
+        const btn = document.getElementById('assigneeDropdownBtn');
+        const menu = document.getElementById('assigneeDropdownMenu');
+        if (btn && menu) {
+            const textSpan = btn.querySelector('.dropdown-text');
+            if (textSpan) {
+                textSpan.textContent = 'Loading assignees...';
+            }
+            btn.classList.remove('open');
+            menu.classList.remove('show');
+            menu.innerHTML = '';
+        }
+        
+        // Reset form
+        document.getElementById('assigneeSelect').value = '';
+        $('#languageEnglish').prop('checked', true);
+        $('#translationNotice').hide();
+        $('#previewAssignee').text('All Team Members');
     });
     
     // Modal events
@@ -1358,6 +2071,19 @@ $(document).ready(function() {
         $('#copyBudgetedCosts').prop('checked', true);
     });
     
+    $('#taskListModal').on('show.bs.modal', function() {
+        console.log('Task List modal showing');
+    });
+    
+    $('#taskListModal').on('hidden.bs.modal', function() {
+        console.log('Task List modal closed');
+        // Reset form
+        $('#assigneeSelect').html('<option value="">Loading assignees...</option>');
+        $('#languageEnglish').prop('checked', true);
+        $('#translationNotice').hide();
+        $('#previewAssignee').text('All Team Members');
+    });
+    
     // Close button events
     $('.close[data-dismiss="modal"]').on('click', function() {
         console.log('Close button clicked');
@@ -1378,52 +2104,17 @@ $(document).ready(function() {
             if ($('#duplicateModal').hasClass('show')) {
                 $('#duplicateModal').modal('hide');
             }
+            if ($('#taskListModal').hasClass('show')) {
+                $('#taskListModal').modal('hide');
+            }
         }
     });
     
     console.log('Event listeners set up successfully');
+    console.log('Task List Modal scripts loaded');
 });
 
 console.log('🚀 === PROJECT DETAILS SCRIPT COMPLETE ===');
-
-// Subtasks toggle functionality
-function toggleSubtasks(taskId) {
-    console.log('Toggling subtasks for:', taskId);
-    const subtasksContainer = document.getElementById('subtasks-' + taskId);
-    const toggleIcon = document.getElementById('toggle-' + taskId);
-    
-    if (subtasksContainer && toggleIcon) {
-        const isCollapsed = subtasksContainer.classList.contains('collapsed');
-        
-        if (isCollapsed) {
-            // Expand
-            subtasksContainer.classList.remove('collapsed');
-            toggleIcon.classList.remove('rotated');
-            console.log('Expanded subtasks for:', taskId);
-        } else {
-            // Collapse
-            subtasksContainer.classList.add('collapsed');
-            toggleIcon.classList.add('rotated');
-            console.log('Collapsed subtasks for:', taskId);
-        }
-    }
-}
-
-// Initialize subtasks state on page load
-$(document).ready(function() {
-    console.log('Initializing subtasks toggle functionality');
-    
-    // You can set default collapsed state here if desired
-    // For example, to start with all subtasks collapsed:
-    /*
-    document.querySelectorAll('.subtasks-container').forEach(container => {
-        container.classList.add('collapsed');
-    });
-    document.querySelectorAll('.subtasks-toggle-icon').forEach(icon => {
-        icon.classList.add('rotated');
-    });
-    */
-});
 </script>
 
 {% endblock %}

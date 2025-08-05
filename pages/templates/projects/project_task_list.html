@@ -1,0 +1,725 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+Task List - {{ project.project_name }}
+{% endblock %}
+
+{% block content %}
+
+<h2><center>TASK LIST{% if language == 'greek' %} - ΛΙΣΤΑ ΕΡΓΑΣΙΩΝ{% endif %}</center></h2>
+<br/>
+
+{% for msg in messages %}
+  <div class="alert alert-secondary alert-dismissible fade show auto-dismiss" role="alert">
+    <strong></strong> <center>{{ msg }}</center>
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <script>
+    setTimeout(function() {
+      document.querySelectorAll('.auto-dismiss').forEach(alert => {
+        alert.classList.remove('show');
+        alert.classList.add('fade');
+        setTimeout(() => alert.remove(), 500);
+      });
+    }, 2000);
+  </script>
+{% endfor %}
+
+<body>
+  <!-- Action Buttons -->
+  <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 20px;">
+    <button id="printBtn" class="btn btn-info">
+      <i class="fas fa-print"></i> {% if language == 'greek' %}Εκτύπωση{% else %}Print{% endif %}
+    </button>
+    <button id="exportBtn" class="btn btn-info">
+      <i class="fas fa-file-excel"></i> {% if language == 'greek' %}Εξαγωγή Excel{% else %}Export Excel{% endif %}
+    </button>
+    <a href="{% url 'projects_detail' project.project_id %}" class="btn btn-info">
+      <i class="fas fa-arrow-left"></i> {% if language == 'greek' %}Επιστροφή στο Έργο{% else %}Back to Project{% endif %}
+    </a>
+  </div>
+
+  <!-- Project Overview -->
+  <div class="task-list-header">
+    <div class="row">
+      <div class="col-md-8">
+        <h3>{% if language == 'greek' and project.project_name_greek %}{{ project.project_name_greek }}{% else %}{{ project.project_name }}{% endif %}</h3>
+        {% if project.project_description %}
+          {% if language == 'greek' and project.project_description_greek %}
+            <p class="project-description">{{ project.project_description_greek }}</p>
+          {% else %}
+            <p class="project-description">{{ project.project_description }}</p>
+          {% endif %}
+        {% endif %}
+        <p class="project-property">
+          <i class="fas fa-home"></i> <strong>{% if language == 'greek' %}Ακίνητο:{% else %}Property:{% endif %}</strong> {{ project.prop.prop_name }}
+        </p>
+        <p class="assigned-to-info">
+          <i class="fas fa-user"></i> <strong>{% if language == 'greek' %}Ανατέθηκε σε:{% else %}Assigned to:{% endif %}</strong> {{ assigned_to|default:"All Team Members" }}
+        </p>
+        <p class="language-info">
+          <i class="fas fa-language"></i> <strong>{% if language == 'greek' %}Γλώσσα:{% else %}Language:{% endif %}</strong> {% if language == 'greek' %}Ελληνικά{% else %}English{% endif %}
+        </p>
+      </div>
+      <div class="col-md-4 text-right">
+        <div class="task-summary">
+          <div class="summary-stat">
+            <div class="stat-number">{{ total_tasks }}</div>
+            <div class="stat-label">{% if language == 'greek' %}Συνολικές Εργασίες{% else %}Total Tasks{% endif %}</div>
+          </div>
+          <div class="summary-stat">
+            <div class="stat-number">{{ completed_tasks }}</div>
+            <div class="stat-label">{% if language == 'greek' %}Ολοκληρωμένες{% else %}Completed{% endif %}</div>
+          </div>
+          <div class="summary-stat">
+            <div class="stat-number">{{ pending_tasks }}</div>
+            <div class="stat-label">{% if language == 'greek' %}Εκκρεμείς{% else %}Pending{% endif %}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Task List Table -->
+  <div class="task-list-container">
+    <table class="table table-striped task-list-table">
+      <thead>
+        <tr>
+          <th style="width: 35%;">{% if language == 'greek' %}Όνομα Εργασίας{% else %}Task Name{% endif %}</th>
+          <th style="width: 15%;">{% if language == 'greek' %}Τύπος{% else %}Type{% endif %}</th>
+          <th style="width: 12%;">{% if language == 'greek' %}Προτεραιότητα{% else %}Priority{% endif %}</th>
+          <th style="width: 12%;">{% if language == 'greek' %}Κατάσταση{% else %}Status{% endif %}</th>
+          <th style="width: 13%;">{% if language == 'greek' %}Ημ. Έναρξης{% else %}Start Date{% endif %}</th>
+          <th style="width: 13%;">{% if language == 'greek' %}Αναμ. Λήξη{% else %}Expected End{% endif %}</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in task_list %}
+          <tr class="task-row task-type-{{ item.type|lower }}">
+            <td class="task-name-cell">
+              <div class="task-indent-{{ item.indent_level }}">
+                {% if item.type == 'project' %}
+                  <i class="fas fa-folder-open project-icon"></i>
+                {% elif item.type == 'task' %}
+                  <i class="fas fa-tasks task-icon"></i>
+                {% else %}
+                  <i class="fas fa-chevron-right subtask-icon"></i>
+                {% endif %}
+                
+                <strong class="task-name">
+                  {% if language == 'greek' %}
+                    {{ item.name_greek|default:item.name }}
+                  {% else %}
+                    {{ item.name }}
+                  {% endif %}
+                </strong>
+                
+                {% if item.description %}
+                  <div class="task-description">
+                    {% if language == 'greek' %}
+                      {{ item.description_greek|default:item.description|truncatechars:100 }}
+                    {% else %}
+                      {{ item.description|truncatechars:100 }}
+                    {% endif %}
+                  </div>
+                {% endif %}
+              </div>
+            </td>
+            <td>
+              <span class="type-badge type-{{ item.type|lower }}">
+                {% if language == 'greek' %}
+                  {% if item.type == 'project' %}Έργο{% elif item.type == 'task' %}Εργασία{% else %}Υπο-εργασία{% endif %}
+                {% else %}
+                  {% if item.type == 'project' %}Project{% elif item.type == 'task' %}Task{% else %}Subtask{% endif %}
+                {% endif %}
+              </span>
+            </td>
+            <td>
+              {% if item.priority %}
+                <span class="priority-badge priority-{{ item.priority|lower }}">
+                  {% if language == 'greek' %}
+                    {% if item.priority == 'Critical' %}Κρίσιμη
+                    {% elif item.priority == 'High' %}Υψηλή
+                    {% elif item.priority == 'Medium' %}Μέση
+                    {% else %}Χαμηλή
+                    {% endif %}
+                  {% else %}
+                    {{ item.priority }}
+                  {% endif %}
+                </span>
+              {% else %}
+                <span class="text-muted">-</span>
+              {% endif %}
+            </td>
+            <td>
+              <span class="status-badge status-{{ item.status|slugify }}">
+                {% if language == 'greek' %}
+                  {% if item.status == 'Completed' %}Ολοκληρωμένη
+                  {% elif item.status == 'In Progress' %}Σε Εξέλιξη
+                  {% elif item.status == 'On Hold' %}Σε Αναμονή
+                  {% else %}Εκκρεμής
+                  {% endif %}
+                {% else %}
+                  {{ item.status }}
+                {% endif %}
+              </span>
+            </td>
+            <td class="date-cell">
+              {% if item.start_date %}
+                <span class="date-value">{{ item.start_date|date:"d/m/Y" }}</span>
+              {% else %}
+                <span class="text-muted no-date">{% if language == 'greek' %}Δεν ορίστηκε{% else %}Not set{% endif %}</span>
+              {% endif %}
+            </td>
+            <td class="date-cell">
+              {% if item.end_date %}
+                <span class="date-value {% if item.is_overdue %}overdue{% endif %}">
+                  {{ item.end_date|date:"d/m/Y" }}
+                  {% if item.is_overdue %}
+                    <i class="fas fa-exclamation-triangle overdue-icon" title="{% if language == 'greek' %}Καθυστέρηση{% else %}Overdue{% endif %}"></i>
+                  {% endif %}
+                </span>
+              {% else %}
+                <span class="text-muted no-date">{% if language == 'greek' %}Δεν ορίστηκε{% else %}Not set{% endif %}</span>
+              {% endif %}
+            </td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="6" class="text-center text-muted py-4">
+              {% if language == 'greek' %}
+                Δεν βρέθηκαν εργασίες για αυτόν τον χρήστη.
+              {% else %}
+                No tasks found for this assignee.
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Summary Footer -->
+  <div class="task-list-footer">
+    <div class="row">
+      <div class="col-md-6">
+        <div class="summary-info">
+          <h6>{% if language == 'greek' %}Περίληψη{% else %}Summary{% endif %}</h6>
+          <p>{% if language == 'greek' %}Γενήθηκε στις{% else %}Generated on{% endif %}: {{ current_date|date:"d/m/Y H:i" }}</p>
+          <p>{% if language == 'greek' %}Σύνολο εργασιών{% else %}Total tasks{% endif %}: {{ total_tasks }}</p>
+          <p>{% if language == 'greek' %}Ποσοστό ολοκλήρωσης{% else %}Completion rate{% endif %}: {{ completion_percentage|floatformat:1 }}%</p>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="legend">
+          <h6>{% if language == 'greek' %}Υπόμνημα{% else %}Legend{% endif %}</h6>
+          <div class="legend-items">
+            <div class="legend-item">
+              <i class="fas fa-folder-open project-icon"></i>
+              <span>{% if language == 'greek' %}Έργο{% else %}Project{% endif %}</span>
+            </div>
+            <div class="legend-item">
+              <i class="fas fa-tasks task-icon"></i>
+              <span>{% if language == 'greek' %}Κύρια Εργασία{% else %}Main Task{% endif %}</span>
+            </div>
+            <div class="legend-item">
+              <i class="fas fa-chevron-right subtask-icon"></i>
+              <span>{% if language == 'greek' %}Υπο-εργασία{% else %}Subtask{% endif %}</span>
+            </div>
+            <div class="legend-item">
+              <i class="fas fa-exclamation-triangle overdue-icon"></i>
+              <span>{% if language == 'greek' %}Καθυστέρηση{% else %}Overdue{% endif %}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</body>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+<style>
+/* Task List Header */
+.task-list-header {
+    background: white;
+    border-radius: 8px;
+    padding: 25px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    border: 1px solid #dee2e6;
+}
+
+.task-list-header h3 {
+    color: #2c3e50;
+    margin-bottom: 15px;
+    font-weight: 600;
+}
+
+.project-description {
+    color: #6c757d;
+    margin-bottom: 15px;
+    font-style: italic;
+}
+
+.project-property, .assigned-to-info, .language-info {
+    color: #495057;
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+.project-property i, .assigned-to-info i, .language-info i {
+    color: #17a2b8;
+    margin-right: 8px;
+    width: 16px;
+}
+
+.task-summary {
+    display: flex;
+    gap: 20px;
+    justify-content: flex-end;
+}
+
+.summary-stat {
+    text-align: center;
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+    min-width: 80px;
+}
+
+.stat-number {
+    font-size: 24px;
+    font-weight: 700;
+    color: #2c3e50;
+    margin-bottom: 5px;
+}
+
+.stat-label {
+    font-size: 12px;
+    color: #6c757d;
+    font-weight: 500;
+}
+
+/* Task List Table */
+.task-list-container {
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    border: 1px solid #dee2e6;
+    margin-bottom: 20px;
+}
+
+.task-list-table {
+    margin-bottom: 0;
+}
+
+.task-list-table thead th {
+    background: #f8f9fa;
+    border-bottom: 2px solid #dee2e6;
+    font-weight: 600;
+    color: #2c3e50;
+    padding: 15px 12px;
+    vertical-align: middle;
+}
+
+.task-row {
+    transition: background-color 0.2s ease;
+}
+
+.task-row:hover {
+    background-color: rgba(23, 162, 184, 0.05);
+}
+
+/* Task Row Types */
+.task-type-project {
+    background-color: rgba(52, 152, 219, 0.03);
+    border-left: 4px solid #3498db;
+}
+
+.task-type-task {
+    background-color: rgba(46, 204, 113, 0.03);
+    border-left: 4px solid #2ecc71;
+}
+
+.task-type-subtask {
+    background-color: rgba(243, 156, 18, 0.03);
+    border-left: 4px solid #f39c12;
+}
+
+/* Task Name Cell with Indentation */
+.task-name-cell {
+    padding: 12px;
+}
+
+.task-indent-0 {
+    padding-left: 0;
+}
+
+.task-indent-1 {
+    padding-left: 25px;
+}
+
+.task-indent-2 {
+    padding-left: 50px;
+}
+
+.task-name {
+    display: inline-block;
+    margin-left: 8px;
+    color: #2c3e50;
+    font-size: 14px;
+}
+
+.task-description {
+    margin-top: 4px;
+    margin-left: 28px;
+    font-size: 12px;
+    color: #6c757d;
+    font-style: italic;
+}
+
+/* Icons */
+.project-icon {
+    color: #3498db;
+    font-size: 16px;
+}
+
+.task-icon {
+    color: #2ecc71;
+    font-size: 16px;
+}
+
+.subtask-icon {
+    color: #f39c12;
+    font-size: 12px;
+}
+
+.overdue-icon {
+    color: #e74c3c;
+    font-size: 12px;
+    margin-left: 5px;
+}
+
+/* Badges */
+.type-badge {
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+}
+
+.type-project {
+    background: rgba(52, 152, 219, 0.15);
+    color: #2980b9;
+}
+
+.type-task {
+    background: rgba(46, 204, 113, 0.15);
+    color: #27ae60;
+}
+
+.type-subtask {
+    background: rgba(243, 156, 18, 0.15);
+    color: #e67e22;
+}
+
+.priority-badge {
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 500;
+}
+
+.priority-critical {
+    background: #dc3545;
+    color: white;
+}
+
+.priority-high {
+    background: #fd7e14;
+    color: white;
+}
+
+.priority-medium {
+    background: #ffc107;
+    color: #212529;
+}
+
+.priority-low {
+    background: #6c757d;
+    color: white;
+}
+
+.status-badge {
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 500;
+}
+
+.status-completed, .status-ολοκληρωμένη {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status-in-progress, .status-σε-εξέλιξη {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.status-on-hold, .status-σε-αναμονή {
+    background: #e2e3e5;
+    color: #383d41;
+}
+
+.status-pending, .status-εκκρεμής {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+/* Date Cells */
+.date-cell {
+    padding: 12px;
+    vertical-align: middle;
+}
+
+.date-value {
+    font-family: 'Courier New', monospace;
+    font-size: 13px;
+    color: #495057;
+}
+
+.date-value.overdue {
+    color: #e74c3c;
+    font-weight: 600;
+}
+
+.no-date {
+    font-style: italic;
+    font-size: 12px;
+}
+
+/* Footer */
+.task-list-footer {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    border: 1px solid #dee2e6;
+}
+
+.summary-info h6, .legend h6 {
+    color: #2c3e50;
+    font-weight: 600;
+    margin-bottom: 10px;
+}
+
+.summary-info p {
+    margin-bottom: 5px;
+    font-size: 14px;
+    color: #495057;
+}
+
+.legend-items {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: #495057;
+}
+
+/* Button Styles - All buttons now use standard blue */
+.btn-info {
+    background-color: #17a2b8;
+    color: white;
+    border: 1px solid #17a2b8;
+    transition: all 0.3s ease;
+    border-radius: 6px;
+    font-weight: 500;
+}
+
+.btn-info:hover {
+    background-color: #138496;
+    border-color: #117a8b;
+    color: white;
+    text-decoration: none;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+/* Remove the old green success button styling */
+.btn-success {
+    background-color: #17a2b8;
+    border-color: #17a2b8;
+    color: white;
+    transition: all 0.3s ease;
+    border-radius: 6px;
+    font-weight: 500;
+}
+
+.btn-success:hover {
+    background-color: #138496;
+    border-color: #117a8b;
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .task-list-header {
+        padding: 15px;
+    }
+    
+    .task-summary {
+        flex-direction: column;
+        gap: 10px;
+        margin-top: 20px;
+    }
+    
+    .summary-stat {
+        min-width: 60px;
+        padding: 10px;
+    }
+    
+    .stat-number {
+        font-size: 18px;
+    }
+    
+    .task-list-container {
+        overflow-x: auto;
+    }
+    
+    .task-list-table {
+        min-width: 700px;
+    }
+    
+    .task-list-footer .row {
+        flex-direction: column;
+        gap: 20px;
+    }
+}
+
+/* Print Styles */
+@media print {
+    .btn, .action-buttons {
+        display: none !important;
+    }
+    
+    .task-list-container, .task-list-header, .task-list-footer {
+        box-shadow: none;
+        border: 1px solid #000;
+        break-inside: avoid;
+    }
+    
+    .task-row {
+        break-inside: avoid;
+    }
+    
+    body {
+        font-size: 12px;
+    }
+    
+    .task-list-table th, .task-list-table td {
+        padding: 8px 6px;
+    }
+}
+</style>
+
+<script>
+console.log('=== TASK LIST LOADING ===');
+
+// Print functionality
+document.getElementById('printBtn').addEventListener('click', function() {
+    console.log('Print clicked');
+    window.print();
+});
+
+// Export to Excel functionality
+document.getElementById('exportBtn').addEventListener('click', function() {
+    console.log('Export Excel clicked');
+    exportToExcel();
+});
+
+function exportToExcel() {
+    try {
+        // Get table data
+        const table = document.querySelector('.task-list-table');
+        const rows = table.querySelectorAll('tr');
+        
+        const data = [];
+        
+        // Process each row
+        rows.forEach((row, index) => {
+            const cells = row.querySelectorAll('th, td');
+            const rowData = [];
+            
+            cells.forEach(cell => {
+                // Get text content and clean it up
+                let text = cell.textContent.trim();
+                // Remove extra whitespace and line breaks
+                text = text.replace(/\s+/g, ' ');
+                rowData.push(text);
+            });
+            
+            if (rowData.some(cell => cell.length > 0)) {
+                data.push(rowData);
+            }
+        });
+        
+        // Create workbook
+        const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.aoa_to_sheet(data);
+        
+        // Set column widths
+        ws['!cols'] = [
+            { width: 40 }, // Task Name
+            { width: 12 }, // Type
+            { width: 12 }, // Priority
+            { width: 12 }, // Status
+            { width: 12 }, // Start Date
+            { width: 12 }  // End Date
+        ];
+        
+        // Add worksheet to workbook
+        XLSX.utils.book_append_sheet(wb, ws, 'Task List');
+        
+        // Generate filename
+        const projectName = '{{ project.project_name|escapejs }}';
+        const assignedTo = '{{ assigned_to|default:"All"|escapejs }}';
+        const language = '{{ language|default:"english"|escapejs }}';
+        const date = new Date().toISOString().split('T')[0];
+        
+        const filename = `TaskList_${projectName}_${assignedTo}_${language}_${date}.xlsx`;
+        
+        // Save file
+        XLSX.writeFile(wb, filename);
+        
+        console.log('Excel file exported successfully');
+        
+    } catch (error) {
+        console.error('Error exporting to Excel:', error);
+        alert('{% if language == "greek" %}Σφάλμα κατά την εξαγωγή του αρχείου Excel{% else %}Error exporting Excel file{% endif %}');
+    }
+}
+
+console.log('🚀 === TASK LIST SCRIPT COMPLETE ===');
+</script>
+
+{% endblock %}

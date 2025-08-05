@@ -31,7 +31,7 @@ Edit Project - {{ project.project_name }}
 <!-- Action Buttons -->
 <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 20px;">
   {% if from_gantt %}
-    <a href="{% url 'project_gantt' project.project_id %}" class="btn btn-success">
+    <a href="{% url 'project_gantt' project.project_id %}" class="btn btn-info">
       <i class="fas fa-chart-gantt"></i> Back to Gantt Chart
     </a>
   {% else %}

@@ -51,6 +51,8 @@ class Project(models.Model):
     )
     
     project_description = models.TextField(blank=True, null=True)
+    project_name_greek = models.CharField(max_length=255, blank=True, null=True, help_text='Greek translation of project name')
+    project_description_greek = models.TextField(blank=True, null=True, help_text='Greek translation of project description')
     project_total_budgeted_cost = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, default=0.00)
     project_total_actual_cost = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, default=0.00)
     project_created_date = models.DateTimeField(auto_now_add=True)
@@ -223,6 +225,8 @@ class ProjectTask(models.Model):
     parent_task = models.ForeignKey('self', on_delete=models.CASCADE, blank=True, null=True, related_name='subtasks')
     task_name = models.CharField(max_length=255, blank=True, null=True)
     task_description = models.TextField(blank=True, null=True)  # longtext
+    task_name_greek = models.CharField(max_length=255, blank=True, null=True, help_text='Greek translation of task name')
+    task_description_greek = models.TextField(blank=True, null=True, help_text='Greek translation of task description')
     task_start_date = models.DateField(blank=True, null=True)
     task_expected_completion_date = models.DateField(blank=True, null=True)
     task_actual_completion_date = models.DateField(blank=True, null=True)

@@ -345,6 +345,9 @@ Gantt Chart - {{ project.project_name }}
 .gantt_task_text {
     cursor: pointer;
     user-select: none;
+    color: white;
+    font-weight: bold;
+    text-shadow: 1px 1px 1px rgba(0,0,0,0.5);
 }
 
 /* Grid column styling for better hover indication */
@@ -505,6 +508,9 @@ gantt.config.grid_width = 350;
 gantt.config.min_column_width = 50;
 gantt.config.max_column_width = 300;
 
+// Enable open tree by default to show subtasks
+gantt.config.open_tree_initially = true;
+
 // Configure columns (will be updated dynamically)
 function updateGanttColumns() {
     const showStartDate = document.getElementById('showStartDate').checked;
@@ -575,6 +581,8 @@ function handleTaskClick(taskId) {
         window.location.href = `{% url 'project_tasks_edit' project.project_id 0 %}?from_gantt=true`.replace('0', actualSubtaskId);
     }
 }
+
+// Task class template for styling
 gantt.templates.task_class = function(start, end, task) {
     let css = [];
     
@@ -593,24 +601,29 @@ gantt.templates.task_class = function(start, end, task) {
         css.push('overdue');
     }
     
+    // Add clickable class
+    css.push('clickable-task');
+    
     return css.join(' ');
 };
 
-// Custom task text template
+// Custom task text template - FIXED to show progress percentage in bars
 gantt.templates.task_text = function(start, end, task) {
     if (task.type === 'project') {
         const progressPercent = task.progress ? Math.round(task.progress * 100) : 0;
         return `${progressPercent}%`;
     } else if (task.type === 'task') {
-        // Main task - show calculated progress percentage only
-        const progressPercent = task.progress ? Math.round(task.progress * 100) : 0;
+        // Main task - show calculated progress percentage
+        const progressPercent = task.calculated_progress_percentage !== undefined ? 
+            task.calculated_progress_percentage : 
+            (task.progress ? Math.round(task.progress * 100) : 0);
         return `${progressPercent}%`;
     } else if (task.type === 'subtask') {
-        // Subtask - show progress percentage only
-        const progressPercent = task.progress_percentage || 0;
+        // Subtask - show progress percentage
+        const progressPercent = task.progress_percentage !== undefined ? task.progress_percentage : 0;
         return `${progressPercent}%`;
     }
-    return task.text;
+    return '';
 };
 
 // Tooltip template
@@ -624,7 +637,9 @@ gantt.templates.tooltip_text = function(start, end, task) {
         const progressPercent = task.progress ? Math.round(task.progress * 100) : 0;
         html += `Progress: ${progressPercent}%<br/>`;
     } else if (task.type === 'task') {
-        const progressPercent = task.calculated_progress_percentage || (task.progress ? Math.round(task.progress * 100) : 0);
+        const progressPercent = task.calculated_progress_percentage !== undefined ? 
+            task.calculated_progress_percentage : 
+            (task.progress ? Math.round(task.progress * 100) : 0);
         html += `Progress: ${progressPercent}%<br/>`;
     } else if (task.type === 'subtask' && task.progress_percentage !== undefined) {
         html += `Progress: ${task.progress_percentage}%<br/>`;
@@ -651,6 +666,8 @@ const ganttData = {
     data: {{ gantt_data|safe }},
     links: []
 };
+
+console.log('Gantt data loaded:', ganttData);
 
 // Zoom levels configuration
 const zoomLevels = [
@@ -733,6 +750,11 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Set initial zoom
     setZoom(currentZoomLevel);
+    
+    // Expand all tasks to show subtasks
+    gantt.eachTask(function(task) {
+        gantt.open(task.id);
+    });
     
     // Auto-apply "Fit to Screen" on load
     setTimeout(() => {

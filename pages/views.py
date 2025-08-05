@@ -24,6 +24,7 @@ from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from django.views.decorators.http import require_POST
 from django.views.static import serve
+from .translation_service import ensure_project_translations, get_translated_text
 from . import forms
 from .forms import PropForm, TenantForm, PettyForm, InvoicesForm, IssuesForm, DetailsForm, SupplierForm, ValuesForm, RevenueTypesForm, RevenueLineForm, RevenueForm, ExpenseTypesForm, ExpenseLineForm, ExpenseForm, ActExpenseForm 
 from .models import (
@@ -108,38 +109,45 @@ def projects_list(request):
         
         return redirect('projects')
     
-    # Your existing filter logic (unchanged)
+    # FIXED: Get filter parameters from GET request (for proper filtering)
     projects_list = Project.objects.select_related('prop').all().order_by(
         F('project_start_date').desc(nulls_last=True)
     )
     
-    # Initialize filter variables
-    search_query = ""
-    selected_property = ""
-    selected_status = ""
+    # Initialize filter variables from GET parameters
+    search_query = request.GET.get('search', '').strip()
+    selected_property = request.GET.get('property', '')
+    selected_status = request.GET.get('status', '')
     
-    if request.method == 'POST':
-        search_query = request.POST.get('search', '').strip()
-        selected_property = request.POST.get('property', '')
-        selected_status = request.POST.get('status', '')
-        
-        # Apply filters
-        if search_query:
-            projects_list = projects_list.filter(
-                Q(project_name__icontains=search_query) |
-                Q(project_description__icontains=search_query)
-            )
-        
-        if selected_property:
-            projects_list = projects_list.filter(prop_id=selected_property)
-        
-        if selected_status:
+    # Apply filters
+    if search_query:
+        projects_list = projects_list.filter(
+            Q(project_name__icontains=search_query) |
+            Q(project_description__icontains=search_query)
+        )
+    
+    if selected_property:
+        try:
+            # Convert to int to handle proper filtering
+            property_id = int(selected_property)
+            projects_list = projects_list.filter(prop_id=property_id)
+        except (ValueError, TypeError):
+            # Invalid property ID, ignore filter
+            selected_property = ""
+    
+    if selected_status:
+        # Validate that the status is one of the valid choices
+        valid_statuses = [choice[0] for choice in Project.PROJECT_STATUS_CHOICES]
+        if selected_status in valid_statuses:
             projects_list = projects_list.filter(project_status=selected_status)
+        else:
+            # Invalid status, ignore filter
+            selected_status = ""
     
     # Get all properties for filter dropdown
     properties = props.objects.all().order_by('prop_name')
     
-    # Pagination
+    # Pagination with filter preservation
     paginator = Paginator(projects_list, 25)
     page_number = request.GET.get('page')
     projects_page = paginator.get_page(page_number)
@@ -602,12 +610,13 @@ def project_gantt(request, project_id):
         }
         gantt_data.append(project_item)
     
-    # Add main tasks
+    # Add main tasks and their subtasks
     for task in main_tasks:
         task_start = task.get_calculated_start_date()
         task_end = task.get_calculated_expected_completion()
         
         if task_start and task_end:
+            # Add main task
             task_item = {
                 'id': f'task_{task.task_id}',
                 'text': task.task_name,
@@ -615,6 +624,7 @@ def project_gantt(request, project_id):
                 'end_date': task_end.strftime('%Y-%m-%d'),
                 'duration': (task_end - task_start).days + 1,
                 'progress': task.get_subtask_progress() / 100 if task.subtasks.exists() else (1.0 if task.get_calculated_status() == 'Completed' else 0.0),
+                'type': 'task',  # Changed from missing to explicit 'task'
                 'status': task.get_calculated_status(),
                 'budgeted_cost': float(task.get_calculated_budgeted_cost() or 0),
                 'actual_cost': float(task.get_calculated_actual_cost() or 0),
@@ -624,10 +634,47 @@ def project_gantt(request, project_id):
                 'calculated_progress_percentage': round(task.get_subtask_progress(), 1)  # For display
             }
             gantt_data.append(task_item)
+            
+            # Add subtasks for this main task
+            subtasks = task.subtasks.filter(
+                task_start_date__isnull=False,
+                task_expected_completion_date__isnull=False
+            ).order_by('task_start_date', 'task_id')
+            
+            for subtask in subtasks:
+                subtask_start = subtask.task_start_date
+                subtask_end = subtask.task_expected_completion_date
+                
+                if subtask_start and subtask_end:
+                    # Calculate progress for subtask
+                    subtask_progress = 0
+                    if subtask.task_status == 'Completed':
+                        subtask_progress = 1.0
+                    elif subtask.task_status == 'In Progress':
+                        subtask_progress = (subtask.task_progress_percentage or 0) / 100
+                    
+                    subtask_item = {
+                        'id': f'subtask_{subtask.task_id}',
+                        'text': subtask.task_name,
+                        'start_date': subtask_start.strftime('%Y-%m-%d'),
+                        'end_date': subtask_end.strftime('%Y-%m-%d'),
+                        'duration': (subtask_end - subtask_start).days + 1,
+                        'progress': subtask_progress,
+                        'type': 'subtask',
+                        'status': subtask.task_status,
+                        'budgeted_cost': float(subtask.task_budgeted_cost or 0),
+                        'actual_cost': float(subtask.task_actual_cost or 0),
+                        'assigned_to': subtask.task_assigned_to or '',
+                        'parent': f'task_{task.task_id}',  # Link to parent main task
+                        'priority': subtask.task_priority,
+                        'progress_percentage': subtask.task_progress_percentage or 0  # For display in bars
+                    }
+                    gantt_data.append(subtask_item)
     
     # If no tasks have dates, create a placeholder message
     if not gantt_data:
         # Create a simple project timeline with today's date
+        from datetime import datetime
         today = datetime.now().date()
         placeholder_item = {
             'id': 'placeholder_1',
@@ -736,6 +783,7 @@ def ajax_duplicate_project(request):
         new_project_name = data.get('new_project_name', '').strip()
         new_project_start_date_str = data.get('new_project_start_date', '').strip()
         budget_copy_option = data.get('budget_copy_option', 'budgeted')  # 'budgeted' or 'actual'
+        copy_translations = data.get('copy_translations', False)  # NEW: Flag to copy Greek translations
         
         if not project_id or not new_project_name or not new_project_start_date_str:
             return JsonResponse({
@@ -802,6 +850,18 @@ def ajax_duplicate_project(request):
             else:
                 return original_task.task_budgeted_cost
         
+        def copy_translation_fields(source_obj, target_obj, field_prefixes):
+            """Helper function to copy Greek translation fields"""
+            translations_found = False
+            for prefix in field_prefixes:
+                greek_field = f"{prefix}_greek"
+                if hasattr(source_obj, greek_field):
+                    greek_value = getattr(source_obj, greek_field, None)
+                    if greek_value:
+                        setattr(target_obj, greek_field, greek_value)
+                        translations_found = True
+            return translations_found
+        
         # Use transaction to ensure all-or-nothing duplication
         with transaction.atomic():
             # Calculate new project dates
@@ -830,6 +890,18 @@ def ajax_duplicate_project(request):
                 project_total_budgeted_cost=new_project_total_budgeted_cost,  # Use calculated budget
                 project_total_actual_cost=Decimal('0.00'),  # Reset actual cost
             )
+            
+            # Copy Greek translations for project
+            translations_copied = False
+            if copy_translations:
+                project_translations_found = copy_translation_fields(
+                    original_project, 
+                    new_project, 
+                    ['project_name', 'project_description']
+                )
+                if project_translations_found:
+                    translations_copied = True
+                    new_project.save()
             
             # Get all main tasks (tasks without parent_task)
             main_tasks = ProjectTask.objects.filter(
@@ -864,6 +936,18 @@ def ajax_duplicate_project(request):
                     parent_task=None,  # This is a main task
                     task_progress_percentage=0,  # Reset progress
                 )
+                
+                # Copy Greek translations for main task
+                if copy_translations:
+                    task_translations_found = copy_translation_fields(
+                        original_task, 
+                        new_task, 
+                        ['task_name', 'task_description']
+                    )
+                    if task_translations_found:
+                        translations_copied = True
+                        new_task.save()
+                
                 task_mapping[original_task.task_id] = new_task
             
             # Second pass: Create all subtasks
@@ -881,7 +965,7 @@ def ajax_duplicate_project(request):
                     # Get the appropriate cost for the new budget
                     new_subtask_budgeted_cost = get_cost_for_budget(original_subtask, budget_copy_option)
                     
-                    ProjectTask.objects.create(
+                    new_subtask = ProjectTask.objects.create(
                         project=new_project,
                         task_name=original_subtask.task_name,
                         task_description=original_subtask.task_description,
@@ -896,6 +980,17 @@ def ajax_duplicate_project(request):
                         parent_task=task_mapping[original_main_task.task_id],  # Link to new parent
                         task_progress_percentage=0,  # Reset progress
                     )
+                    
+                    # Copy Greek translations for subtask
+                    if copy_translations:
+                        subtask_translations_found = copy_translation_fields(
+                            original_subtask, 
+                            new_subtask, 
+                            ['task_name', 'task_description']
+                        )
+                        if subtask_translations_found:
+                            translations_copied = True
+                            new_subtask.save()
             
             # Copy project documents if they exist
             try:
@@ -915,14 +1010,20 @@ def ajax_duplicate_project(request):
                 # If document copying fails, log it but don't fail the entire duplication
                 pass  # Silent fail for document copying
         
-        # Build success message based on budget option
+        # Build success message based on budget option and translations
         budget_message = ""
         if budget_copy_option == 'actual':
             budget_message = " with actual costs copied as budgeted costs"
         else:
             budget_message = " with budgeted costs copied"
+        
+        translation_message = ""
+        if copy_translations and translations_copied:
+            translation_message = " and Greek translations copied"
+        elif copy_translations and not translations_copied:
+            translation_message = " (no Greek translations found to copy)"
             
-        success_message = f'Project "{new_project_name}" created successfully{budget_message}'
+        success_message = f'Project "{new_project_name}" created successfully{budget_message}{translation_message}'
         if date_offset is not None:
             success_message += f' and all dates adjusted by {date_offset} days'
         
@@ -931,7 +1032,8 @@ def ajax_duplicate_project(request):
             'message': success_message,
             'new_project_id': new_project.project_id,
             'date_offset': date_offset,
-            'budget_copy_option': budget_copy_option
+            'budget_copy_option': budget_copy_option,
+            'translations_copied': translations_copied  # NEW: Return translation status
         })
         
     except json.JSONDecodeError:
@@ -944,6 +1046,205 @@ def ajax_duplicate_project(request):
             'success': False,
             'message': f'An error occurred while duplicating the project: {str(e)}'
         })
+
+@login_required
+def project_task_list(request, project_id):
+    """Display task list for a specific project and assignee"""
+    project = get_object_or_404(Project.objects.select_related('prop'), project_id=project_id)
+    
+    # Get parameters
+    assigned_to = request.GET.get('assigned_to', '')
+    language = request.GET.get('language', 'english')
+    
+    # Ensure Greek translations if language is Greek
+    if language == 'greek':
+        ensure_project_translations(project)
+    
+    # Get all main tasks for this project
+    main_tasks = ProjectTask.objects.filter(
+        project=project, 
+        parent_task__isnull=True
+    ).prefetch_related('subtasks').order_by('task_start_date', 'task_id')
+    
+    # Filter by assigned_to if specified
+    if assigned_to:
+        main_tasks = main_tasks.filter(
+            Q(task_assigned_to=assigned_to) |
+            Q(subtasks__task_assigned_to=assigned_to)
+        ).distinct()
+    
+    # Build task list with hierarchy
+    task_list = []
+    total_tasks = 0
+    completed_tasks = 0
+    pending_tasks = 0
+    
+    # Add project as root item
+    project_item = {
+        'name': project.project_name,
+        'name_greek': get_translated_text(
+            project.project_name, 
+            getattr(project, 'project_name_greek', None), 
+            language
+        ) if language == 'greek' else project.project_name,
+        'description': project.project_description,
+        'description_greek': get_translated_text(
+            project.project_description, 
+            getattr(project, 'project_description_greek', None), 
+            language
+        ) if language == 'greek' else project.project_description,
+        'type': 'project',
+        'status': project.get_calculated_status(),
+        'start_date': project.get_calculated_start_date(),
+        'end_date': project.get_calculated_expected_completion(),
+        'priority': None,
+        'indent_level': 0,
+        'is_overdue': False
+    }
+    task_list.append(project_item)
+    
+    # Process main tasks and subtasks
+    for main_task in main_tasks:
+        # Check if this task or its subtasks match the assigned_to filter
+        include_task = True
+        if assigned_to:
+            task_matches = main_task.task_assigned_to == assigned_to
+            subtask_matches = main_task.subtasks.filter(task_assigned_to=assigned_to).exists()
+            include_task = task_matches or subtask_matches
+        
+        if include_task:
+            # Add main task
+            is_overdue = (
+                main_task.task_expected_completion_date and 
+                main_task.task_expected_completion_date < timezone.now().date() and 
+                main_task.task_status != 'Completed'
+            )
+            
+            main_task_item = {
+                'name': main_task.task_name,
+                'name_greek': get_translated_text(
+                    main_task.task_name, 
+                    getattr(main_task, 'task_name_greek', None), 
+                    language
+                ) if language == 'greek' else main_task.task_name,
+                'description': main_task.task_description,
+                'description_greek': get_translated_text(
+                    main_task.task_description, 
+                    getattr(main_task, 'task_description_greek', None), 
+                    language
+                ) if language == 'greek' else main_task.task_description,
+                'type': 'task',
+                'status': main_task.task_status,
+                'start_date': main_task.task_start_date,
+                'end_date': main_task.task_expected_completion_date,
+                'priority': main_task.task_priority,
+                'indent_level': 1,
+                'is_overdue': is_overdue
+            }
+            task_list.append(main_task_item)
+            total_tasks += 1
+            
+            if main_task.task_status == 'Completed':
+                completed_tasks += 1
+            else:
+                pending_tasks += 1
+            
+            # Add subtasks
+            subtasks = main_task.subtasks.all().order_by('task_start_date', 'task_id')
+            if assigned_to:
+                subtasks = subtasks.filter(task_assigned_to=assigned_to)
+            
+            for subtask in subtasks:
+                is_overdue = (
+                    subtask.task_expected_completion_date and 
+                    subtask.task_expected_completion_date < timezone.now().date() and 
+                    subtask.task_status != 'Completed'
+                )
+                
+                subtask_item = {
+                    'name': subtask.task_name,
+                    'name_greek': get_translated_text(
+                        subtask.task_name, 
+                        getattr(subtask, 'task_name_greek', None), 
+                        language
+                    ) if language == 'greek' else subtask.task_name,
+                    'description': subtask.task_description,
+                    'description_greek': get_translated_text(
+                        subtask.task_description, 
+                        getattr(subtask, 'task_description_greek', None), 
+                        language
+                    ) if language == 'greek' else subtask.task_description,
+                    'type': 'subtask',
+                    'status': subtask.task_status,
+                    'start_date': subtask.task_start_date,
+                    'end_date': subtask.task_expected_completion_date,
+                    'priority': subtask.task_priority,
+                    'indent_level': 2,
+                    'is_overdue': is_overdue
+                }
+                task_list.append(subtask_item)
+                total_tasks += 1
+                
+                if subtask.task_status == 'Completed':
+                    completed_tasks += 1
+                else:
+                    pending_tasks += 1
+    
+    # Calculate completion percentage
+    completion_percentage = (completed_tasks / total_tasks * 100) if total_tasks > 0 else 0
+    
+    context = {
+        'project': project,
+        'task_list': task_list,
+        'assigned_to': assigned_to,
+        'language': language,
+        'total_tasks': total_tasks,
+        'completed_tasks': completed_tasks,
+        'pending_tasks': pending_tasks,
+        'completion_percentage': completion_percentage,
+        'current_date': timezone.now(),
+    }
+    
+    return render(request, 'projects/project_task_list.html', context)
+
+@login_required
+def get_project_assignees(request, project_id):
+    """AJAX endpoint to get all assignees for a project"""
+    project = get_object_or_404(Project, project_id=project_id)
+    
+    # Get all unique assignees from tasks and subtasks
+    assignees = set()
+    
+    # Get assignees from main tasks
+    main_tasks = ProjectTask.objects.filter(
+        project=project, 
+        parent_task__isnull=True,
+        task_assigned_to__isnull=False
+    ).exclude(task_assigned_to='')
+    
+    for task in main_tasks:
+        if task.task_assigned_to:
+            assignees.add(task.task_assigned_to.strip())
+    
+    # Get assignees from subtasks
+    subtasks = ProjectTask.objects.filter(
+        project=project, 
+        parent_task__isnull=False,
+        task_assigned_to__isnull=False
+    ).exclude(task_assigned_to='')
+    
+    for subtask in subtasks:
+        if subtask.task_assigned_to:
+            assignees.add(subtask.task_assigned_to.strip())
+    
+    # Convert to sorted list
+    assignees_list = sorted(list(assignees))
+    
+    return JsonResponse({
+        'success': True,
+        'assignees': assignees_list,
+        'project_name': project.project_name
+    })
 
 def render_to_pdf(template_src, context_dict):
     template = get_template(template_src)

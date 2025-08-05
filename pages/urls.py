@@ -71,6 +71,9 @@ urlpatterns = [
     path('ajax/projects/update-status/', views.ajax_update_project_status, name='ajax_update_project_status'),
     path('ajax/tasks/update-status/', views.ajax_update_task_status, name='ajax_update_task_status'),
     path('projects/ajax/duplicate/', views.ajax_duplicate_project, name='ajax_duplicate_project'),    
+    path('projects/<int:project_id>/assignees/', views.get_project_assignees, name='project_assignees'),
+    path('projects/<int:project_id>/task-list/', views.project_task_list, name='project_task_list'),
+
     #
     # Finance
     path('finance/', views.finance, name='finance'),
