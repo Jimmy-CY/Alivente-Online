@@ -9924,3 +9924,29 @@ Watching for file changes with StatReloader
 "GET / HTTP/1.1" 200 7949
 Watching for file changes with StatReloader
 Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 7949
+"GET /projects/ HTTP/1.1" 200 24819
+"GET /projects/detail/1/ HTTP/1.1" 200 73722
+"GET /projects/1/task-list/?language=greek&assigned_to=Marko HTTP/1.1" 200 22771
+"GET / HTTP/1.1" 200 7949
+"GET /properties/ HTTP/1.1" 200 53656
+"GET /tenant/ HTTP/1.1" 200 54426
+"GET /invoices/ HTTP/1.1" 200 109390
+"GET /petty_cash/ HTTP/1.1" 200 6942
+"GET /suppliers/ HTTP/1.1" 200 44579
+"GET /act_expense_all/?from=home HTTP/1.1" 200 75925
+"GET /admin_apms/ HTTP/1.1" 200 7289
+"GET /property_management_dashboard/ HTTP/1.1" 200 43046
+"GET / HTTP/1.1" 200 7949
+"GET /finance/ HTTP/1.1" 200 10815
+"GET /projects/ HTTP/1.1" 200 24819
+"GET /fsr/ HTTP/1.1" 200 77112
+"GET /friday_status_report/?max_comments=2 HTTP/1.1" 200 26908
+"GET /fsr/ HTTP/1.1" 200 77112
+"GET /act_expense_all/?from=home HTTP/1.1" 200 75925
+"GET /invoices/ HTTP/1.1" 200 109390
+"GET /petty_cash/ HTTP/1.1" 200 6942
+"GET /suppliers/ HTTP/1.1" 200 44579
+"GET /tenant/ HTTP/1.1" 200 54426
+"GET /properties/ HTTP/1.1" 200 53656

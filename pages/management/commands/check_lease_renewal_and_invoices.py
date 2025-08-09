@@ -1,6 +1,7 @@
 from django.core.management.base import BaseCommand
 from django.conf import settings
 from datetime import date, timedelta, datetime
+from .email_utils import get_email_recipients, format_email_recipients_for_header
 import mysql.connector
 import os
 import sys
@@ -332,7 +333,7 @@ class Command(BaseCommand):
             email_port = int(os.environ.get('EMAIL_PORT', '587'))
             email_user = os.environ.get('EMAIL_USER', 'demetrimanias@gmail.com')
             email_password = os.environ.get('EMAIL_PASSWORD')
-            email_to = os.environ.get('EMAIL_TO', 'demetrimanias@gmail.com')
+            email_to_list = get_email_recipients('daily_report')
             
             if not email_password:
                 self.stdout.write('❌ EMAIL_PASSWORD environment variable not set')
@@ -341,7 +342,7 @@ class Command(BaseCommand):
             # Create message
             msg = MIMEMultipart('alternative')
             msg['From'] = email_user
-            msg['To'] = email_to
+            msg['To'] = format_email_recipients_for_header(email_to_list)
             msg['Subject'] = "Alert - Invoices, Leases and Vacant Properties"
             
             # Build HTML email body with formatting
@@ -603,7 +604,7 @@ Automated Report"""
             
             # Send email
             text = msg.as_string()
-            smtp_object.sendmail(email_user, email_to, text)
+            smtp_object.sendmail(email_user, email_to_list, text)
             
             self.stdout.write('✅ Property management notification email sent successfully!')
             return True
