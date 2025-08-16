@@ -64,6 +64,239 @@ import json
 
 logger = logging.getLogger(__name__)
 
+### FINANCIAL DASHBOARD ###
+@login_required
+def financial_indicators_view(request):
+    """
+    Display the Financial Indicators Dashboard - ONLY for Active Properties
+    Using Portfolio-Wide Calculations
+    """
+    if request.method == 'GET' and request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        # AJAX request for property data
+        try:
+            # Get ONLY active properties for all calculations and display
+            properties = props.objects.filter(prop_status='Active')
+            properties_data = []
+            
+            # Portfolio-wide totals for all active properties
+            portfolio_totals = {
+                'total_revenue': Decimal('0.00'),
+                'total_budgeted_expenses': Decimal('0.00'),
+                'total_purchase_price': Decimal('0.00'),
+                'total_current_value': Decimal('0.00'),
+                'total_floor_area': 0,
+                'property_count': 0
+            }
+            
+            for prop in properties:
+                # Get revenue totals using your existing revenue model structure
+                revenue_total = calculate_property_revenue(prop)
+                
+                # Get ONLY budgeted expense totals using your existing expense model
+                budgeted_expense_total = calculate_property_budgeted_expenses(prop)
+                
+                # Get property values - ONLY for active properties
+                property_values = prop_values.objects.filter(prop=prop).first()
+                purchase_price = property_values.prop_values_purchase_price if property_values else 0
+                current_value = property_values.prop_values_current_value if property_values else 0
+                
+                # Add to portfolio totals
+                portfolio_totals['total_revenue'] += revenue_total
+                portfolio_totals['total_budgeted_expenses'] += budgeted_expense_total
+                portfolio_totals['total_purchase_price'] += purchase_price or 0
+                portfolio_totals['total_current_value'] += current_value or 0
+                portfolio_totals['total_floor_area'] += prop.prop_floor_area or 0
+                portfolio_totals['property_count'] += 1
+                
+                # Calculate individual property indicators for display purposes
+                gross_roi = (revenue_total / purchase_price * 100) if purchase_price > 0 else 0
+                net_roi = ((revenue_total - budgeted_expense_total) / purchase_price * 100) if purchase_price > 0 else 0
+                expense_ratio = (budgeted_expense_total / revenue_total * 100) if revenue_total > 0 else 0
+                rent_per_sqm = (revenue_total / 12 / prop.prop_floor_area) if prop.prop_floor_area and prop.prop_floor_area > 0 else 0
+                value_increase = ((current_value - purchase_price) / purchase_price * 100) if purchase_price > 0 and current_value > 0 else 0
+                
+                # Store individual property data
+                properties_data.append({
+                    'id': prop.prop_id,
+                    'name': prop.prop_name or f"Property {prop.prop_id}",
+                    'status': prop.prop_status,
+                    'grossROI': round(float(gross_roi), 2),
+                    'netROI': round(float(net_roi), 2),
+                    'expensesToRevenue': round(float(expense_ratio), 2),
+                    'rentPerSqm': round(float(rent_per_sqm), 2),
+                    'valueIncrease': round(float(value_increase), 2),
+                    'revenue': float(revenue_total),
+                    'expenses': float(budgeted_expense_total),
+                    'profit': float(revenue_total - budgeted_expense_total)
+                })
+            
+            # Calculate TRUE PORTFOLIO-WIDE indicators
+            portfolio_indicators = {
+                'grossROI': round(float(
+                    (portfolio_totals['total_revenue'] / portfolio_totals['total_purchase_price'] * 100) 
+                    if portfolio_totals['total_purchase_price'] > 0 else 0
+                ), 2),
+                'netROI': round(float(
+                    ((portfolio_totals['total_revenue'] - portfolio_totals['total_budgeted_expenses']) / 
+                     portfolio_totals['total_purchase_price'] * 100) 
+                    if portfolio_totals['total_purchase_price'] > 0 else 0
+                ), 2),
+                'expensesToRevenue': round(float(
+                    (portfolio_totals['total_budgeted_expenses'] / portfolio_totals['total_revenue'] * 100) 
+                    if portfolio_totals['total_revenue'] > 0 else 0
+                ), 2),
+                'rentPerSqm': round(float(
+                    (portfolio_totals['total_revenue'] / 12 / portfolio_totals['total_floor_area']) 
+                    if portfolio_totals['total_floor_area'] > 0 else 0
+                ), 2),
+                'valueIncrease': round(float(
+                    ((portfolio_totals['total_current_value'] - portfolio_totals['total_purchase_price']) / 
+                     portfolio_totals['total_purchase_price'] * 100) 
+                    if portfolio_totals['total_purchase_price'] > 0 and portfolio_totals['total_current_value'] > 0 else 0
+                ), 2)
+            }
+            
+            return JsonResponse({
+                'properties': properties_data,
+                'portfolio_indicators': portfolio_indicators,
+                'portfolio_totals': {
+                    'total_revenue': float(portfolio_totals['total_revenue']),
+                    'total_expenses': float(portfolio_totals['total_budgeted_expenses']),
+                    'total_purchase_price': float(portfolio_totals['total_purchase_price']),
+                    'total_current_value': float(portfolio_totals['total_current_value']),
+                    'total_floor_area': portfolio_totals['total_floor_area'],
+                    'property_count': portfolio_totals['property_count']
+                },
+                'total_active_properties': len(properties_data),
+                'message': f'Showing {len(properties_data)} active properties with portfolio-wide calculations (budgeted expenses only)'
+            })
+            
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+    
+    # Regular page load
+    context = {
+        'page_title': 'Financial Indicators Dashboard - Portfolio-Wide Analysis (Active Properties)'
+    }
+    return render(request, 'finance/financial_indicators.html', context)
+
+def calculate_property_revenue(property_obj):
+    """
+    Calculate total annual revenue for a property using your revenue model
+    ONLY processes Active properties
+    """
+    # Additional safety check - only calculate for active properties
+    if property_obj.prop_status != 'Active':
+        return Decimal('0.00')
+        
+    # Get all revenue records for this active property
+    revenue_records = revenue.objects.filter(prop=property_obj)
+    
+    total_revenue = Decimal('0.00')
+    
+    for record in revenue_records:
+        # Sum all monthly revenue amounts
+        monthly_total = (
+            (record.revenue_jan or Decimal('0.00')) +
+            (record.revenue_feb or Decimal('0.00')) +
+            (record.revenue_mar or Decimal('0.00')) +
+            (record.revenue_apr or Decimal('0.00')) +
+            (record.revenue_may or Decimal('0.00')) +
+            (record.revenue_jun or Decimal('0.00')) +
+            (record.revenue_jul or Decimal('0.00')) +
+            (record.revenue_aug or Decimal('0.00')) +
+            (record.revenue_sep or Decimal('0.00')) +
+            (record.revenue_oct or Decimal('0.00')) +
+            (record.revenue_nov or Decimal('0.00')) +
+            (record.revenue_dec or Decimal('0.00'))
+        )
+        total_revenue += monthly_total
+    
+    return total_revenue
+
+def calculate_property_budgeted_expenses(property_obj):
+    """
+    Calculate total annual budgeted expenses for a property using your expense model
+    ONLY processes Active properties
+    """
+    # Additional safety check - only calculate for active properties
+    if property_obj.prop_status != 'Active':
+        return Decimal('0.00')
+        
+    # Get all budgeted expense records for this active property
+    expense_records = expense.objects.filter(prop=property_obj)
+    
+    total_expenses = Decimal('0.00')
+    
+    for record in expense_records:
+        # Sum all monthly expense amounts
+        monthly_total = (
+            (record.expense_jan or Decimal('0.00')) +
+            (record.expense_feb or Decimal('0.00')) +
+            (record.expense_mar or Decimal('0.00')) +
+            (record.expense_apr or Decimal('0.00')) +
+            (record.expense_may or Decimal('0.00')) +
+            (record.expense_jun or Decimal('0.00')) +
+            (record.expense_jul or Decimal('0.00')) +
+            (record.expense_aug or Decimal('0.00')) +
+            (record.expense_sep or Decimal('0.00')) +
+            (record.expense_oct or Decimal('0.00')) +
+            (record.expense_nov or Decimal('0.00')) +
+            (record.expense_dec or Decimal('0.00'))
+        )
+        total_expenses += monthly_total
+    
+    return total_expenses
+
+def calculate_property_actual_expenses(property_obj):
+    """
+    Calculate total actual expenses for a property using your act_expense model
+    ONLY processes Active properties
+    """
+    # Additional safety check - only calculate for active properties
+    if property_obj.prop_status != 'Active':
+        return Decimal('0.00')
+        
+    # Get all actual expense records for this active property
+    actual_expenses = act_expense.objects.filter(prop=property_obj)
+    
+    # Sum all actual expense amounts
+    total_actual = actual_expenses.aggregate(
+        total=Sum('act_expense_amount')
+    )['total'] or Decimal('0.00')
+    
+    return total_actual
+
+# Additional helper function for year-specific calculations if needed
+def calculate_property_revenue_for_year(property_obj, year):
+    """
+    Calculate revenue for a specific year (if you need year filtering later)
+    This would require adding year fields to your revenue model or 
+    filtering by revenue_types that have year information
+    """
+    # This is a placeholder - you'd need to modify based on how you handle years
+    # in your revenue_types model or add year fields to your models
+    return calculate_property_revenue(property_obj)
+
+def calculate_property_expenses_for_year(property_obj, year):
+    """
+    Calculate expenses for a specific year (if you need year filtering later)
+    """
+    # For budgeted expenses
+    budgeted = calculate_property_budgeted_expenses(property_obj)
+    
+    # For actual expenses, you can filter by year using the date field
+    from django.db.models import Q
+    actual_expenses = act_expense.objects.filter(
+        prop=property_obj,
+        act_expense_date__year=year
+    )
+    actual_total = actual_expenses.aggregate(
+        total=Sum('act_expense_amount')
+    )['total'] or Decimal('0.00')
+    
+    return budgeted + actual_total
+
 ### PROJECTS ###
 @login_required
 def projects_list(request):

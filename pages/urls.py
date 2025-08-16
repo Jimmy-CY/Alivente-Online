@@ -117,6 +117,7 @@ urlpatterns = [
     path('revenue-details/', views.revenue_details_view, name='revenue_details_view'),
     path('budget-expense-details/', views.budget_expense_details_view, name='budget_expense_details_view'),
     path('total-expense-details/', views.total_expense_details_view, name='total_expense_details_view'),
+    path('financial-indicators/', views.financial_indicators_view, name='financial_indicators'),
 
     #
     # Tenants
