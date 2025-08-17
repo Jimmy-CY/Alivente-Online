@@ -22,7 +22,7 @@ from django.utils.safestring import mark_safe
 from django.utils.timezone import now
 from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_POST, require_http_methods
 from django.views.static import serve
 from .translation_service import ensure_project_translations, get_translated_text
 from . import forms
@@ -640,91 +640,205 @@ def project_tasks_add(request, project_id):
     
     return render(request, 'projects/project_tasks_add.html', context)
 
-@login_required
+from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib import messages
+from django.core.exceptions import ValidationError
+from django.utils import timezone
+from datetime import datetime
+from decimal import Decimal
+from .models import Project, ProjectTask
+
 def project_tasks_edit(request, project_id, task_id):
-    """Edit existing task - enhanced to handle Gantt chart returns"""
-    if not request.user.is_superuser:
-        messages.error(request, "You don't have permission to edit tasks.")
-        return redirect('projects_detail', project_id=project_id)
-    
+    """
+    Edit a project task or subtask with support for Greek language fields
+    """
     project = get_object_or_404(Project, project_id=project_id)
     task = get_object_or_404(ProjectTask, task_id=task_id, project=project)
     
     # Check if coming from Gantt chart
-    from_gantt = request.GET.get('from_gantt', 'false') == 'true'
+    from_gantt = request.GET.get('from_gantt', False)
     
     if request.method == 'POST':
-        # Only update fields that are not auto-calculated
-        task.task_name = request.POST.get('task_name')
-        task.task_description = request.POST.get('task_description')
-        
-        # For main tasks, don't update calculated fields
-        if not task.parent_task:  # This is a main task
-            # Auto-calculate all fields based on subtasks
-            task.task_status = task.get_calculated_status()
-            task.task_start_date = task.get_calculated_start_date()
-            task.task_expected_completion_date = task.get_calculated_expected_completion()
-            task.task_actual_completion_date = task.get_calculated_actual_completion()
-            task.task_budgeted_cost = task.get_calculated_budgeted_cost()
-            task.task_actual_cost = task.get_calculated_actual_cost()
-        else:  # This is a subtask
-            # Allow manual editing of all fields for subtasks
-            task.task_start_date = request.POST.get('task_start_date') if request.POST.get('task_start_date') else None
-            task.task_expected_completion_date = request.POST.get('task_expected_completion_date') if request.POST.get('task_expected_completion_date') else None
-            task.task_status = request.POST.get('task_status', 'Not Started')
-            task.task_priority = request.POST.get('task_priority', 'Medium')
-            task.task_budgeted_cost = request.POST.get('task_budgeted_cost') if request.POST.get('task_budgeted_cost') else 0.00
-            task.task_actual_cost = request.POST.get('task_actual_cost') if request.POST.get('task_actual_cost') else 0.00
-            task.task_assigned_to = request.POST.get('task_assigned_to')
-            task.task_actual_completion_date = request.POST.get('task_actual_completion_date') if request.POST.get('task_actual_completion_date') else None
-            
-            # Handle progress percentage
-            progress_percentage = request.POST.get('task_progress_percentage')
-            if progress_percentage is not None:
-                task.task_progress_percentage = int(progress_percentage)
-            else:
-                # Set default based on status
-                if task.task_status == 'Pending':
-                    task.task_progress_percentage = 0
-                elif task.task_status == 'Completed':
-                    task.task_progress_percentage = 100
-                else:  # In Progress
-                    task.task_progress_percentage = task.task_progress_percentage or 1
-        
         try:
+            # Update basic task fields (always editable)
+            task.task_name = request.POST.get('task_name', '').strip()
+            task.task_description = request.POST.get('task_description', '').strip()
+            
+            # Update Greek fields
+            task.task_name_greek = request.POST.get('task_name_greek', '').strip()
+            task.task_description_greek = request.POST.get('task_description_greek', '').strip()
+            
+            # Update priority (always editable)
+            task.task_priority = request.POST.get('task_priority')
+            
+            # Handle different logic for main tasks vs subtasks
+            if task.parent_task:  # This is a subtask - most fields are editable
+                # Status is editable for subtasks
+                task.task_status = request.POST.get('task_status')
+                
+                # Dates are editable for subtasks
+                start_date = request.POST.get('task_start_date')
+                if start_date:
+                    task.task_start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
+                else:
+                    task.task_start_date = None
+                
+                expected_date = request.POST.get('task_expected_completion_date')
+                if expected_date:
+                    task.task_expected_completion_date = datetime.strptime(expected_date, '%Y-%m-%d').date()
+                else:
+                    task.task_expected_completion_date = None
+                
+                # Handle actual completion date (only for subtasks when status is Completed)
+                actual_date = request.POST.get('task_actual_completion_date')
+                if actual_date:
+                    task.task_actual_completion_date = datetime.strptime(actual_date, '%Y-%m-%d').date()
+                else:
+                    task.task_actual_completion_date = None
+                
+                # Costs are editable for subtasks
+                budgeted_cost = request.POST.get('task_budgeted_cost')
+                if budgeted_cost:
+                    task.task_budgeted_cost = Decimal(budgeted_cost)
+                else:
+                    task.task_budgeted_cost = Decimal('0.00')
+                
+                actual_cost = request.POST.get('task_actual_cost')
+                if actual_cost:
+                    task.task_actual_cost = Decimal(actual_cost)
+                else:
+                    task.task_actual_cost = Decimal('0.00')
+                
+                # Progress percentage is editable for subtasks
+                progress = request.POST.get('task_progress_percentage')
+                if progress:
+                    task.task_progress_percentage = int(progress)
+                else:
+                    task.task_progress_percentage = 0
+                
+                # Assigned to is editable for subtasks
+                task.task_assigned_to = request.POST.get('task_assigned_to', '').strip()
+                
+            else:  # This is a main task - most fields are auto-calculated
+                # For main tasks, only basic info and priority are directly editable
+                # Status, dates, and costs are calculated from subtasks
+                # The model's calculation methods will handle the auto-calculation
+                pass
+            
+            # Validate the task before saving
+            task.full_clean()
+            
+            # Save the task
             task.save()
             
-            # If this is a subtask, update the parent task's calculated fields
+            # Success message
             if task.parent_task:
-                parent = task.parent_task
-                parent.task_status = parent.get_calculated_status()
-                parent.task_start_date = parent.get_calculated_start_date()
-                parent.task_expected_completion_date = parent.get_calculated_expected_completion()
-                parent.task_actual_completion_date = parent.get_calculated_actual_completion()
-                parent.task_budgeted_cost = parent.get_calculated_budgeted_cost()
-                parent.task_actual_cost = parent.get_calculated_actual_cost()
-                parent.save()
-            
-            messages.success(request, f"Task '{task.task_name}' has been updated successfully.")
-            
-            # Redirect based on where user came from
-            if from_gantt:
-                return redirect('project_gantt', project_id=project_id)
+                messages.success(request, f'Subtask "{task.task_name}" updated successfully!')
             else:
-                return redirect('projects_detail', project_id=project_id)
+                messages.success(request, f'Main task "{task.task_name}" updated successfully!')
+            
+            # Redirect based on where we came from
+            if from_gantt:
+                return redirect('project_gantt', project_id=project.project_id)
+            else:
+                return redirect('projects_detail', project_id=project.project_id)
+                
+        except ValidationError as e:
+            # Handle Django model validation errors
+            error_messages = []
+            if hasattr(e, 'error_dict'):
+                for field, errors in e.error_dict.items():
+                    field_name = field.replace('_', ' ').title()
+                    for error in errors:
+                        error_messages.append(f"{field_name}: {error}")
+            else:
+                error_messages = e.messages if hasattr(e, 'messages') else [str(e)]
+            
+            for error_msg in error_messages:
+                messages.error(request, error_msg)
+                
+        except ValueError as e:
+            # Handle value conversion errors (dates, decimals, etc.)
+            if 'time data' in str(e):
+                messages.error(request, 'Invalid date format. Please use the date picker.')
+            elif 'invalid literal' in str(e):
+                messages.error(request, 'Invalid number format. Please enter valid numbers for costs and percentages.')
+            else:
+                messages.error(request, f'Invalid data: {str(e)}')
                 
         except Exception as e:
-            messages.error(request, f"Error updating task: {str(e)}")
+            # Handle any other unexpected errors
+            messages.error(request, f'Error updating task: {str(e)}')
     
+    # Prepare context for the template
     context = {
         'project': project,
         'task': task,
         'task_status_choices': ProjectTask.TASK_STATUS_CHOICES,
         'task_priority_choices': ProjectTask.TASK_PRIORITY_CHOICES,
-        'from_gantt': from_gantt,  # Pass this to template for form action
+        'from_gantt': from_gantt,
     }
     
     return render(request, 'projects/project_tasks_edit.html', context)
+
+@login_required
+@require_http_methods(["POST"])
+def translate_text(request):
+    """
+    Translate text using Google Translate API
+    """
+    try:
+        data = json.loads(request.body)
+        text = data.get('text', '').strip()
+        target_language = data.get('target_language', 'greek')
+        source_language = data.get('source_language', 'english')
+        
+        if not text:
+            return JsonResponse({'success': False, 'error': 'No text provided'})
+        
+        print(f"Received translation request for: '{text}'")
+        
+        # Use Google Translate service
+        if target_language == 'greek':
+            translated_text = translate_to_greek_service(text)
+        else:
+            translated_text = text
+        
+        print(f"Returning translated text: '{translated_text}'")
+        
+        return JsonResponse({
+            'success': True,
+            'translated_text': translated_text,
+            'source_language': source_language,
+            'target_language': target_language
+        })
+        
+    except Exception as e:
+        print(f"Translation view error: {e}")
+        return JsonResponse({'success': False, 'error': str(e)})
+
+def translate_to_greek_service(text):
+    """
+    Use Google Translate API to translate English text to Greek
+    """
+    try:
+        from googletrans import Translator
+        
+        print(f"Attempting to translate: '{text}' from English to Greek")
+        
+        # Initialize Google Translator
+        translator = Translator()
+        
+        # Translate from English to Greek
+        result = translator.translate(text, dest='el', src='en')
+        
+        print(f"Google Translate result: '{result.text}' (detected source: {result.src})")
+        
+        return result.text
+        
+    except Exception as e:
+        print(f"Google Translation service error: {e}")
+        return text  # Return original text if translation fails
 
 @login_required
 def project_tasks_delete(request, project_id, task_id):

@@ -10296,3 +10296,158 @@ Watching for file changes with StatReloader
 "GET /financial-indicators/ HTTP/1.1" 200 29869
 "GET /financial-indicators/ HTTP/1.1" 200 2729
 "GET / HTTP/1.1" 200 7949
+Watching for file changes with StatReloader
+"GET /finance/ HTTP/1.1" 200 10807
+"GET /financial-indicators/ HTTP/1.1" 200 29869
+"GET /financial-indicators/ HTTP/1.1" 200 2729
+"GET /finance/ HTTP/1.1" 200 10807
+"GET /finance/ HTTP/1.1" 200 10807
+"GET /finance_pl/ HTTP/1.1" 200 232918
+"GET /finance/ HTTP/1.1" 200 10807
+"GET /financial-indicators/ HTTP/1.1" 200 29869
+"GET /financial-indicators/ HTTP/1.1" 200 2729
+"GET /finance/ HTTP/1.1" 200 10807
+"GET /finance_valuations/ HTTP/1.1" 200 11926
+"GET /finance/ HTTP/1.1" 200 10807
+"GET /financial-indicators/ HTTP/1.1" 200 29869
+"GET /financial-indicators/ HTTP/1.1" 200 2729
+"GET /projects/ HTTP/1.1" 200 24819
+"GET /projects/detail/5/ HTTP/1.1" 200 69325
+"GET /projects/5/tasks/edit/16/ HTTP/1.1" 200 21105
+"GET /projects/detail/5/ HTTP/1.1" 200 69325
+"GET /projects/5/tasks/edit/14/ HTTP/1.1" 200 17835
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 7949
+"GET /projects/ HTTP/1.1" 200 24819
+"GET /projects/detail/5/ HTTP/1.1" 200 69325
+"GET /projects/edit/5/ HTTP/1.1" 200 14641
+"GET /projects/ HTTP/1.1" 200 24819
+"GET /projects/detail/5/ HTTP/1.1" 200 69325
+"GET /projects/5/tasks/edit/14/ HTTP/1.1" 200 24787
+"GET /projects/detail/5/ HTTP/1.1" 200 69325
+"GET /projects/5/tasks/edit/16/ HTTP/1.1" 200 28159
+"POST /projects/5/tasks/edit/16/ HTTP/1.1" 302 0
+"GET /projects/detail/5/ HTTP/1.1" 200 69943
+"GET /projects/5/task-list/?language=greek HTTP/1.1" 200 24037
+"GET /projects/5/tasks/edit/15/ HTTP/1.1" 200 28111
+"GET /projects/detail/5/ HTTP/1.1" 200 69325
+"GET /projects/5/tasks/edit/16/ HTTP/1.1" 200 28173
+"GET /projects/detail/5/ HTTP/1.1" 200 69325
+"GET /projects/5/task-list/?language=english HTTP/1.1" 200 23227
+"GET /projects/detail/5/ HTTP/1.1" 200 69325
+"GET /projects/5/task-list/?language=greek HTTP/1.1" 200 24037
+"GET /finance/ HTTP/1.1" 200 10807
+"GET /financial-indicators/ HTTP/1.1" 200 29869
+"GET /financial-indicators/ HTTP/1.1" 200 2729
+"GET /financial-indicators/ HTTP/1.1" 200 29869
+"GET /financial-indicators/ HTTP/1.1" 200 2729
+"GET / HTTP/1.1" 200 7949
+"GET /finance/ HTTP/1.1" 200 10807
+"GET /financial-indicators/ HTTP/1.1" 200 29869
+"GET /financial-indicators/ HTTP/1.1" 200 2729
+"GET /projects/ HTTP/1.1" 200 24819
+"GET /projects/detail/5/ HTTP/1.1" 200 69325
+"GET /projects/5/tasks/edit/16/ HTTP/1.1" 200 28173
+"POST /projects/5/tasks/edit/16/ HTTP/1.1" 302 0
+"GET /projects/detail/5/ HTTP/1.1" 200 69943
+"GET /projects/5/tasks/edit/16/ HTTP/1.1" 200 28173
+"GET /projects/detail/5/ HTTP/1.1" 200 69325
+"GET /projects/5/tasks/edit/14/ HTTP/1.1" 200 24787
+"POST /projects/5/tasks/edit/14/ HTTP/1.1" 302 0
+"GET /projects/detail/5/ HTTP/1.1" 200 69925
+"GET /projects/5/tasks/edit/16/ HTTP/1.1" 200 28173
+"GET /projects/detail/5/ HTTP/1.1" 200 69325
+"GET /projects/5/tasks/edit/15/ HTTP/1.1" 200 28111
+"POST /projects/5/tasks/edit/15/ HTTP/1.1" 302 0
+"GET /projects/detail/5/ HTTP/1.1" 200 69927
+"GET /projects/5/gantt/ HTTP/1.1" 200 28166
+"GET /projects/detail/5/ HTTP/1.1" 200 69325
+"GET /projects/5/task-list/?language=english HTTP/1.1" 200 23227
+"GET /projects/detail/5/ HTTP/1.1" 200 69325
+"GET /projects/5/task-list/?language=greek HTTP/1.1" 200 24121
+"GET /projects/detail/5/ HTTP/1.1" 200 69325
+"GET /projects/5/task-list/?language=english HTTP/1.1" 200 23227
+"GET /projects/detail/5/ HTTP/1.1" 200 69325
+"GET /projects/5/tasks/edit/15/ HTTP/1.1" 200 28153
+"GET /projects/detail/5/ HTTP/1.1" 200 69325
+"GET /projects/5/tasks/edit/16/ HTTP/1.1" 200 28173
+"GET /projects/detail/5/ HTTP/1.1" 200 69325
+"GET /projects/5/task-list/?language=english HTTP/1.1" 200 23519
+"GET /projects/detail/5/ HTTP/1.1" 200 69325
+"GET /projects/5/task-list/?language=greek HTTP/1.1" 200 24587
+"GET /projects/detail/5/ HTTP/1.1" 200 69325
+"GET /projects/5/task-list/?language=english HTTP/1.1" 200 23707
+"GET /projects/detail/5/ HTTP/1.1" 200 69325
+"GET /projects/5/task-list/?language=greek HTTP/1.1" 200 24775
+"GET /projects/detail/5/ HTTP/1.1" 200 69325
+"GET /projects/5/task-list/?language=greek HTTP/1.1" 200 24884
+"GET /projects/ HTTP/1.1" 200 24819
+"GET /projects/detail/5/ HTTP/1.1" 200 69325
+"GET /projects/5/task-list/?language=greek HTTP/1.1" 200 24883
+"GET /projects/detail/5/ HTTP/1.1" 200 69325
+"GET /projects/5/task-list/?language=english HTTP/1.1" 200 23815
+"GET /projects/detail/5/ HTTP/1.1" 200 69325
+"GET /projects/5/tasks/edit/16/ HTTP/1.1" 200 28173
+"POST /projects/5/tasks/edit/16/ HTTP/1.1" 302 0
+"GET /projects/detail/5/ HTTP/1.1" 200 70038
+"GET /projects/5/task-list/?language=english HTTP/1.1" 200 23983
+"GET /projects/detail/5/ HTTP/1.1" 200 69420
+"GET /projects/5/task-list/?language=greek HTTP/1.1" 200 24903
+"GET /projects/detail/5/ HTTP/1.1" 200 69420
+"GET /projects/ HTTP/1.1" 200 24819
+"GET /finance/ HTTP/1.1" 200 10807
+"GET /financial-indicators/ HTTP/1.1" 200 29869
+"GET /financial-indicators/ HTTP/1.1" 200 2729
+"GET / HTTP/1.1" 200 7949
+"GET /finance/ HTTP/1.1" 200 10807
+"GET / HTTP/1.1" 200 7949
+"GET /projects/ HTTP/1.1" 200 24819
+"GET /projects/detail/5/ HTTP/1.1" 200 69420
+"GET /projects/5/tasks/edit/14/ HTTP/1.1" 200 24829
+"GET /projects/ HTTP/1.1" 200 24819
+"GET /projects/detail/5/ HTTP/1.1" 200 69420
+"GET /projects/5/tasks/edit/14/ HTTP/1.1" 200 24754
+"GET /projects/detail/5/ HTTP/1.1" 200 69420
+"GET /projects/5/tasks/edit/14/ HTTP/1.1" 200 24979
+"GET /projects/detail/5/ HTTP/1.1" 200 69420
+"GET /projects/5/tasks/edit/14/ HTTP/1.1" 200 25119
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+"GET /projects/detail/5/ HTTP/1.1" 200 69420
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\urls.py changed, reloading.
+Watching for file changes with StatReloader
+"GET /projects/5/tasks/edit/16/ HTTP/1.1" 200 30029
+"POST /projects/5/tasks/edit/16/ HTTP/1.1" 302 0
+"GET /projects/detail/5/ HTTP/1.1" 200 70038
+"GET /projects/5/tasks/edit/16/ HTTP/1.1" 200 29991
+"POST /translate/ HTTP/1.1" 200 110
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\urls.py changed, reloading.
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 7949
+"GET /projects/ HTTP/1.1" 200 24819
+"GET /projects/detail/5/ HTTP/1.1" 200 69420
+"GET /projects/5/tasks/edit/16/ HTTP/1.1" 200 30321
+"POST /translate/ HTTP/1.1" 200 110
+Not Found: /.well-known/appspecific/com.chrome.devtools.json
+"GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 41336
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 7949
+"GET /projects/ HTTP/1.1" 200 24819
+"GET /projects/detail/5/ HTTP/1.1" 200 69420
+"GET /projects/5/tasks/edit/14/ HTTP/1.1" 200 26983
+"GET /projects/detail/5/ HTTP/1.1" 200 69420
+"GET /projects/5/tasks/edit/16/ HTTP/1.1" 200 30321
+"POST /translate/ HTTP/1.1" 200 208
+"POST /projects/5/tasks/edit/16/ HTTP/1.1" 302 0
+"GET /projects/detail/5/ HTTP/1.1" 200 70038
+"GET / HTTP/1.1" 200 7949
+"GET /finance/ HTTP/1.1" 200 10807
+"GET /financial-indicators/ HTTP/1.1" 200 29869
+"GET /financial-indicators/ HTTP/1.1" 200 2729
+"GET /finance/ HTTP/1.1" 200 10807

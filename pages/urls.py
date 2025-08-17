@@ -73,6 +73,7 @@ urlpatterns = [
     path('projects/ajax/duplicate/', views.ajax_duplicate_project, name='ajax_duplicate_project'),    
     path('projects/<int:project_id>/assignees/', views.get_project_assignees, name='project_assignees'),
     path('projects/<int:project_id>/task-list/', views.project_task_list, name='project_task_list'),
+    path('translate/', views.translate_text, name='translate_text'),
 
     #
     # Finance

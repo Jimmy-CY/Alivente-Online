@@ -117,12 +117,13 @@ Task List - {{ project.project_name }}
                   {% endif %}
                 </strong>
                 
-                {% if item.description %}
+                <!-- FIXED: Check for description in either language -->
+                {% if item.description or item.description_greek %}
                   <div class="task-description">
                     {% if language == 'greek' %}
                       {{ item.description_greek|default:item.description|truncatechars:100 }}
                     {% else %}
-                      {{ item.description|truncatechars:100 }}
+                      {{ item.description|default:item.description_greek|truncatechars:100 }}
                     {% endif %}
                   </div>
                 {% endif %}
@@ -289,10 +290,12 @@ Task List - {{ project.project_name }}
 .summary-stat {
     text-align: center;
     background: #f8f9fa;
-    padding: 15px;
+    padding: 15px 8px;
     border-radius: 8px;
     border: 1px solid #e9ecef;
-    min-width: 80px;
+    min-width: 120px;
+    max-width: 140px;
+    flex: 1;
 }
 
 .stat-number {
@@ -303,9 +306,12 @@ Task List - {{ project.project_name }}
 }
 
 .stat-label {
-    font-size: 12px;
+    font-size: 11px;
     color: #6c757d;
     font-weight: 500;
+    word-wrap: break-word;
+    line-height: 1.2;
+    hyphens: auto;
 }
 
 /* Task List Table */
@@ -358,6 +364,9 @@ Task List - {{ project.project_name }}
 /* Task Name Cell with Indentation */
 .task-name-cell {
     padding: 12px;
+    white-space: nowrap; /* Prevent wrapping in the cell */
+    overflow: hidden;
+    text-overflow: ellipsis; /* Show ... if text is too long */
 }
 
 .task-indent-0 {
@@ -373,10 +382,11 @@ Task List - {{ project.project_name }}
 }
 
 .task-name {
-    display: inline-block;
+    display: inline;
     margin-left: 8px;
     color: #2c3e50;
     font-size: 14px;
+    white-space: nowrap; /* Prevent wrapping */
 }
 
 .task-description {

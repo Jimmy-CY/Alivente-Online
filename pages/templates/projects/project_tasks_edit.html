@@ -50,6 +50,20 @@ Edit Task - {{ task.task_name }}
   {% endif %}
 </div>
 
+<!-- Language Toggle Tabs -->
+<ul class="nav nav-tabs" id="languageTabs" role="tablist" style="margin-bottom: 20px;">
+  <li class="nav-item" role="presentation">
+    <a class="nav-link active" id="english-tab" data-toggle="tab" href="#english" role="tab" aria-controls="english" aria-selected="true">
+      <span class="flag-emoji">🇬🇧</span> English
+    </a>
+  </li>
+  <li class="nav-item" role="presentation">
+    <a class="nav-link" id="greek-tab" data-toggle="tab" href="#greek" role="tab" aria-controls="greek" aria-selected="false">
+      <span class="flag-emoji">🇬🇷</span> Ελληνικά (Greek)
+    </a>
+  </li>
+</ul>
+
 <!-- Edit Task Form - Updated with Gantt support -->
 <form method="post" 
       id="taskForm"
@@ -60,74 +74,154 @@ Edit Task - {{ task.task_name }}
       {% endif %}>
   {% csrf_token %}
   
-  <div class="row">
-    <!-- Task Name -->
-    <div class="col-md-6">
-      <div class="form-group">
-        <label for="task_name">
-          <i class="fas fa-tasks"></i> Task Name <span style="color: red;">*</span>
-        </label>
-        <input type="text" 
-               class="form-control" 
-               id="task_name" 
-               name="task_name" 
-               required
-               value="{{ task.task_name }}"
-               placeholder="Enter task name...">
+  <!-- Tab Content -->
+  <div class="tab-content" id="languageTabContent">
+    
+    <!-- English Tab -->
+    <div class="tab-pane fade show active" id="english" role="tabpanel" aria-labelledby="english-tab">
+      <div class="row">
+        <!-- Task Name -->
+        <div class="col-md-6">
+          <div class="form-group">
+            <label for="task_name">
+              <i class="fas fa-tasks"></i> Task Name <span style="color: red;">*</span>
+            </label>
+            <input type="text" 
+                   class="form-control" 
+                   id="task_name" 
+                   name="task_name" 
+                   required
+                   value="{{ task.task_name }}"
+                   placeholder="Enter task name...">
+          </div>
+        </div>
+
+        <!-- Priority -->
+        <div class="col-md-3">
+          <div class="form-group">
+            <label for="task_priority">
+              <i class="fas fa-flag"></i> Priority
+            </label>
+            <select class="form-control" id="task_priority" name="task_priority">
+              {% for priority_value, priority_display in task_priority_choices %}
+                <option value="{{ priority_value }}" 
+                        {% if priority_value == task.task_priority %}selected{% endif %}>
+                  {{ priority_display }}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+
+        <!-- Status - Show different fields based on whether this is a main task or subtask -->
+        {% if not task.parent_task %}
+          <!-- Main Task: Status is Auto-calculated and Disabled -->
+          <div class="col-md-3">
+            <div class="form-group">
+              <label for="task_status">
+                <i class="fas fa-info-circle"></i> Status (Auto-calculated)
+              </label>
+              <select class="form-control auto-calculated-field" id="task_status" name="task_status" disabled>
+                <option value="{{ task.get_calculated_status }}">{{ task.get_calculated_status }}</option>
+              </select>
+              <small class="form-text text-muted">Status is automatically calculated based on subtasks</small>
+            </div>
+          </div>
+        {% else %}
+          <!-- Subtask: Status is Editable -->
+          <div class="col-md-3">
+            <div class="form-group">
+              <label for="task_status">
+                <i class="fas fa-info-circle"></i> Status
+              </label>
+              <select class="form-control" id="task_status" name="task_status">
+                {% for status_value, status_display in task_status_choices %}
+                  <option value="{{ status_value }}" 
+                          {% if status_value == task.task_status %}selected{% endif %}>
+                    {{ status_display }}
+                  </option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+        {% endif %}
+      </div>
+
+      <!-- Description (English) -->
+      <div class="row">
+        <div class="col-md-12">
+          <div class="form-group">
+            <label for="task_description">
+              <i class="fas fa-align-left"></i> Task Description
+            </label>
+            <textarea class="form-control" 
+                      id="task_description" 
+                      name="task_description" 
+                      rows="4"
+                      placeholder="Enter task description...">{{ task.task_description }}</textarea>
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- Priority -->
-    <div class="col-md-3">
-      <div class="form-group">
-        <label for="task_priority">
-          <i class="fas fa-flag"></i> Priority
-        </label>
-        <select class="form-control" id="task_priority" name="task_priority">
-          {% for priority_value, priority_display in task_priority_choices %}
-            <option value="{{ priority_value }}" 
-                    {% if priority_value == task.task_priority %}selected{% endif %}>
-              {{ priority_display }}
-            </option>
-          {% endfor %}
-        </select>
+    <!-- Greek Tab -->
+    <div class="tab-pane fade" id="greek" role="tabpanel" aria-labelledby="greek-tab">
+      <div class="row">
+        <!-- Task Name (Greek) -->
+        <div class="col-md-12">
+          <div class="form-group">
+            <label for="task_name_greek">
+              <i class="fas fa-tasks"></i> Όνομα Εργασίας (Task Name in Greek)
+            </label>
+            <input type="text" 
+                   class="form-control" 
+                   id="task_name_greek" 
+                   name="task_name_greek"
+                   value="{{ task.task_name_greek }}"
+                   placeholder="Εισάγετε το όνομα της εργασίας στα ελληνικά...">
+            <small class="form-text text-muted">Greek translation of the task name</small>
+          </div>
+        </div>
+      </div>
+
+      <!-- Description (Greek) -->
+      <div class="row">
+        <div class="col-md-12">
+          <div class="form-group">
+            <label for="task_description_greek">
+              <i class="fas fa-align-left"></i> Περιγραφή Εργασίας (Task Description in Greek)
+            </label>
+            <textarea class="form-control" 
+                      id="task_description_greek" 
+                      name="task_description_greek" 
+                      rows="4"
+                      placeholder="Εισάγετε την περιγραφή της εργασίας στα ελληνικά...">{{ task.task_description_greek }}</textarea>
+            <small class="form-text text-muted">Greek translation of the task description</small>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Copy Buttons -->
+      <div class="row">
+        <div class="col-md-12">
+          <div class="form-group">
+            <label>Quick Actions:</label>
+            <div>
+              <button type="button" class="btn btn-sm btn-outline-info" id="translateNameToGreek">
+                <i class="fas fa-language"></i> Translate English Name to Greek
+              </button>
+              <button type="button" class="btn btn-sm btn-outline-info ml-2" id="translateDescToGreek">
+                <i class="fas fa-language"></i> Translate English Description to Greek
+              </button>
+            </div>
+            <small class="form-text text-muted">Use these buttons to automatically translate English text to Greek</small>
+          </div>
+        </div>
       </div>
     </div>
-
-    <!-- Status - Show different fields based on whether this is a main task or subtask -->
-    {% if not task.parent_task %}
-      <!-- Main Task: Status is Auto-calculated and Disabled -->
-      <div class="col-md-3">
-        <div class="form-group">
-          <label for="task_status">
-            <i class="fas fa-info-circle"></i> Status (Auto-calculated)
-          </label>
-          <select class="form-control auto-calculated-field" id="task_status" name="task_status" disabled>
-            <option value="{{ task.get_calculated_status }}">{{ task.get_calculated_status }}</option>
-          </select>
-          <small class="form-text text-muted">Status is automatically calculated based on subtasks</small>
-        </div>
-      </div>
-    {% else %}
-      <!-- Subtask: Status is Editable -->
-      <div class="col-md-3">
-        <div class="form-group">
-          <label for="task_status">
-            <i class="fas fa-info-circle"></i> Status
-          </label>
-          <select class="form-control" id="task_status" name="task_status">
-            {% for status_value, status_display in task_status_choices %}
-              <option value="{{ status_value }}" 
-                      {% if status_value == task.task_status %}selected{% endif %}>
-                {{ status_display }}
-              </option>
-            {% endfor %}
-          </select>
-        </div>
-      </div>
-    {% endif %}
   </div>
 
+  <!-- The rest of the form fields (dates, costs, etc.) -->
   <div class="row">
     {% if not task.parent_task %}
       <!-- Main Task: Dates are Auto-calculated and Disabled -->
@@ -320,22 +414,6 @@ Edit Task - {{ task.task_name }}
     </div>
   {% endif %}
 
-  <!-- Description -->
-  <div class="row">
-    <div class="col-md-12">
-      <div class="form-group">
-        <label for="task_description">
-          <i class="fas fa-align-left"></i> Task Description
-        </label>
-        <textarea class="form-control" 
-                  id="task_description" 
-                  name="task_description" 
-                  rows="4"
-                  placeholder="Enter task description...">{{ task.task_description }}</textarea>
-      </div>
-    </div>
-  </div>
-
   <!-- Form Actions - Updated with Gantt support -->
   <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #dee2e6;">
     <button type="submit" class="btn btn-info">
@@ -355,6 +433,7 @@ Edit Task - {{ task.task_name }}
 </form>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
 <script>
@@ -366,6 +445,93 @@ console.log('From Gantt Chart:', fromGantt);
 
 $(document).ready(function() {
     console.log('Setting up task edit form validation and interactions');
+    
+    // Greek field translation functionality
+    $('#translateNameToGreek').on('click', function() {
+        const englishName = $('#task_name').val();
+        if (englishName.trim()) {
+            translateText(englishName, 'task_name_greek', 'English name');
+        } else {
+            showCopyMessage('No English name to translate', 'warning');
+        }
+    });
+    
+    $('#translateDescToGreek').on('click', function() {
+        const englishDesc = $('#task_description').val();
+        if (englishDesc.trim()) {
+            translateText(englishDesc, 'task_description_greek', 'English description');
+        } else {
+            showCopyMessage('No English description to translate', 'warning');
+        }
+    });
+    
+    // Translation function using your existing backend
+    function translateText(text, targetFieldId, fieldName) {
+        // Show loading state
+        const button = event.target.closest('button');
+        const originalHtml = button.innerHTML;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Translating...';
+        button.disabled = true;
+        
+        console.log('Starting translation for:', text);
+        
+        // Call your existing translation endpoint
+        fetch('/translate/', {  // Make sure this URL matches your urls.py
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify({
+                'text': text,
+                'target_language': 'greek',
+                'source_language': 'english'
+            })
+        })
+        .then(response => {
+            console.log('Response status:', response.status);
+            return response.json();
+        })
+        .then(data => {
+            console.log('Translation response:', data);
+            if (data.success) {
+                $('#' + targetFieldId).val(data.translated_text);
+                showCopyMessage(fieldName + ' translated successfully to Greek');
+            } else {
+                showCopyMessage('Translation failed: ' + (data.error || 'Unknown error'), 'warning');
+                console.error('Translation error:', data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Translation fetch error:', error);
+            showCopyMessage('Translation failed: Network error', 'warning');
+        })
+        .finally(() => {
+            // Restore button state
+            button.innerHTML = originalHtml;
+            button.disabled = false;
+        });
+    }
+    
+    function showCopyMessage(message, type = 'success') {
+        // Create a temporary alert
+        const alertClass = type === 'success' ? 'alert-success' : 'alert-warning';
+        const alert = $(`
+            <div class="alert ${alertClass} alert-dismissible fade show" role="alert" style="position: fixed; top: 20px; right: 20px; z-index: 9999; min-width: 300px;">
+                <i class="fas fa-${type === 'success' ? 'check' : 'exclamation-triangle'}"></i> ${message}
+                <button type="button" class="close" data-dismiss="alert">
+                    <span>&times;</span>
+                </button>
+            </div>
+        `);
+        
+        $('body').append(alert);
+        
+        // Auto-dismiss after 3 seconds
+        setTimeout(() => {
+            alert.alert('close');
+        }, 3000);
+    }
     
     // Status change handler - only for subtasks
     $('#task_status').on('change', function() {
@@ -474,6 +640,8 @@ $(document).ready(function() {
         if (!$('#task_name').val().trim()) {
             alert('Task name is required');
             $('#task_name').focus();
+            // Switch to English tab if not already there
+            $('#english-tab').tab('show');
             isValid = false;
         }
         
@@ -615,6 +783,92 @@ console.log('🚀 === EDIT TASK FORM SCRIPT COMPLETE ===');
 .form-control:focus {
     border-color: #17a2b8;
     box-shadow: 0 0 0 0.2rem rgba(23, 162, 184, 0.25);
+}
+
+/* Language tab styling */
+.nav-tabs {
+    border-bottom: 2px solid #dee2e6;
+}
+
+.nav-tabs .nav-link {
+    border: 1px solid transparent;
+    border-radius: 6px 6px 0 0;
+    font-weight: 500;
+    color: #495057;
+    transition: all 0.3s ease;
+}
+
+.nav-tabs .nav-link:hover {
+    border-color: #e9ecef #e9ecef #dee2e6;
+    background-color: #f8f9fa;
+}
+
+.nav-tabs .nav-link.active {
+    color: #17a2b8;
+    background-color: #fff;
+    border-color: #dee2e6 #dee2e6 #fff;
+    border-bottom-color: transparent;
+}
+
+/* Greek field styling */
+#task_name_greek, #task_description_greek {
+    font-family: Arial, sans-serif; /* Ensure Greek characters display properly */
+}
+
+/* Copy button styling */
+.btn-outline-info {
+    color: #17a2b8;
+    border-color: #17a2b8;
+    transition: all 0.3s ease;
+}
+
+.btn-outline-info:hover {
+    background-color: #17a2b8;
+    border-color: #17a2b8;
+    color: #fff;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+/* Tab content padding */
+.tab-content {
+    padding: 20px 0;
+}
+
+/* Flag emoji styling with better support */
+.flag-emoji {
+    font-size: 16px;
+    margin-right: 6px;
+    display: inline-block;
+    font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Android Emoji", "EmojiSymbols", sans-serif;
+    line-height: 1;
+    vertical-align: middle;
+}
+
+/* Fallback for systems without emoji support */
+.flag-emoji::before {
+    content: attr(data-fallback);
+}
+
+/* Tab styling adjustments */
+.nav-link {
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+}
+
+/* Alert styling for copy notifications */
+.alert {
+    border-radius: 6px;
+    font-weight: 500;
+}
+
+.alert-success {
+    border-color: #28a745;
+}
+
+.alert-warning {
+    border-color: #ffc107;
 }
 </style>
 
