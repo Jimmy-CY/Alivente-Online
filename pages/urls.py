@@ -74,7 +74,7 @@ urlpatterns = [
     path('projects/<int:project_id>/assignees/', views.get_project_assignees, name='project_assignees'),
     path('projects/<int:project_id>/task-list/', views.project_task_list, name='project_task_list'),
     path('translate/', views.translate_text, name='translate_text'),
-
+    path('projects/<int:project_id>/assignees/', views.get_project_assignees, name='get_project_assignees'),
     #
     # Finance
     path('finance/', views.finance, name='finance'),

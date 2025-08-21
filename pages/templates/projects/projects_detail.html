@@ -1577,119 +1577,120 @@ window.showTaskListModal = function() {
 };
 
 function setupSimpleDropdown() {
-    console.log('Setting up simple dropdown');
+    console.log('Setting up dynamic dropdown with real assignees');
     
     const btn = document.getElementById('assigneeDropdownBtn');
     const menu = document.getElementById('assigneeDropdownMenu');
     
     if (!btn || !menu) {
         console.error('Dropdown elements not found');
-        console.log('Button:', btn);
-        console.log('Menu:', menu);
         return;
     }
     
-    // Set initial text
+    // Set loading text
     const textSpan = btn.querySelector('.dropdown-text');
     if (textSpan) {
-        textSpan.textContent = 'All Team Members';
-        console.log('Set initial text to: All Team Members');
+        textSpan.textContent = 'Loading assignees...';
     }
     
-    // Create dropdown options immediately
-    menu.innerHTML = `
-        <div class="dropdown-item active" data-assignee-value="">All Team Members</div>
-        <div class="dropdown-item" data-assignee-value="Angy">Angy</div>
-        <div class="dropdown-item" data-assignee-value="Mark">Mark</div>
-        <div class="dropdown-item" data-assignee-value="Marko">Marko</div>
-        <div class="dropdown-item" data-assignee-value="Yianni">Yianni</div>
-    `;
+    // Fetch assignees from the server
+    const projectId = {{ project.project_id }};
     
-    console.log('Created dropdown items:', menu.children.length);
+    fetch(`/projects/${projectId}/assignees/`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                console.log('Fetched assignees:', data.assignees);
+                
+                // Build dropdown options
+                let menuHTML = '<div class="dropdown-item active" data-assignee-value="">All Team Members</div>';
+                
+                data.assignees.forEach(assignee => {
+                    menuHTML += `<div class="dropdown-item" data-assignee-value="${assignee}">${assignee}</div>`;
+                });
+                
+                menu.innerHTML = menuHTML;
+                
+                // Update button text
+                if (textSpan) {
+                    textSpan.textContent = 'All Team Members';
+                }
+                
+                // Add click events to dropdown items
+                const items = menu.querySelectorAll('.dropdown-item');
+                console.log('Adding click events to', items.length, 'items');
+                
+                items.forEach((item, index) => {
+                    item.onclick = function(e) {
+                        console.log('Item clicked:', this.textContent);
+                        e.preventDefault();
+                        e.stopPropagation();
+                        
+                        const value = this.getAttribute('data-assignee-value');
+                        const text = this.textContent;
+                        
+                        // Update button text
+                        if (textSpan) {
+                            textSpan.textContent = text;
+                        }
+                        
+                        // Update hidden input
+                        const hiddenInput = document.getElementById('assigneeSelect');
+                        if (hiddenInput) {
+                            hiddenInput.value = value;
+                        }
+                        
+                        // Update preview
+                        const preview = document.getElementById('previewAssignee');
+                        if (preview) {
+                            preview.textContent = text;
+                        }
+                        
+                        // Update active states
+                        items.forEach(i => i.classList.remove('active'));
+                        this.classList.add('active');
+                        
+                        // Close dropdown
+                        btn.classList.remove('open');
+                        menu.classList.remove('show');
+                    };
+                });
+                
+            } else {
+                console.error('Failed to fetch assignees:', data.error || 'Unknown error');
+                // Fallback to default options
+                menu.innerHTML = '<div class="dropdown-item active" data-assignee-value="">All Team Members</div>';
+                if (textSpan) {
+                    textSpan.textContent = 'All Team Members';
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching assignees:', error);
+            // Fallback to default options
+            menu.innerHTML = '<div class="dropdown-item active" data-assignee-value="">All Team Members</div>';
+            if (textSpan) {
+                textSpan.textContent = 'All Team Members';
+            }
+        });
     
-    // Add click events to the button
+    // Add click event to the button
     btn.onclick = function(e) {
-        console.log('Button clicked - current classes:', menu.className);
         e.preventDefault();
         e.stopPropagation();
         
         const isOpen = menu.classList.contains('show');
-        console.log('Is dropdown open?', isOpen);
         
         if (isOpen) {
-            console.log('Closing dropdown');
             btn.classList.remove('open');
             menu.classList.remove('show');
-            console.log('After closing - menu classes:', menu.className);
         } else {
-            console.log('Opening dropdown');
             btn.classList.add('open');
             menu.classList.add('show');
-            console.log('After opening - menu classes:', menu.className);
-            console.log('Menu display style:', window.getComputedStyle(menu).display);
-            console.log('Menu visibility:', window.getComputedStyle(menu).visibility);
         }
     };
     
-    // Add click events to dropdown items
-    const items = menu.querySelectorAll('.dropdown-item');
-    console.log('Adding click events to', items.length, 'items');
-    
-    items.forEach((item, index) => {
-        item.onclick = function(e) {
-            console.log('Item clicked:', this.textContent, 'at index:', index);
-            e.preventDefault();
-            e.stopPropagation();
-            
-            const value = this.getAttribute('data-assignee-value');
-            const text = this.textContent;
-            
-            console.log('Selected value:', value, 'text:', text);
-            
-            // Update button text
-            if (textSpan) {
-                textSpan.textContent = text;
-            }
-            
-            // Update hidden input
-            const hiddenInput = document.getElementById('assigneeSelect');
-            if (hiddenInput) {
-                hiddenInput.value = value;
-                console.log('Updated hidden input to:', value);
-            }
-            
-            // Update preview
-            const preview = document.getElementById('previewAssignee');
-            if (preview) {
-                preview.textContent = text;
-                console.log('Updated preview to:', text);
-            }
-            
-            // Update active states
-            items.forEach(i => i.classList.remove('active'));
-            this.classList.add('active');
-            
-            // Close dropdown
-            btn.classList.remove('open');
-            menu.classList.remove('show');
-            console.log('Dropdown closed after selection');
-        };
-    });
-    
-    console.log('Simple dropdown setup complete');
-    
-    // Test if elements are properly positioned
-    setTimeout(() => {
-        console.log('Dropdown position check:');
-        console.log('Button rect:', btn.getBoundingClientRect());
-        console.log('Menu rect:', menu.getBoundingClientRect());
-        console.log('Menu computed styles:');
-        const styles = window.getComputedStyle(menu);
-        console.log('position:', styles.position);
-        console.log('top:', styles.top);
-        console.log('left:', styles.left);
-        console.log('z-index:', styles.zIndex);
-    }, 100);
+    console.log('Dynamic dropdown setup complete');
 }
 
 // Make sure generateTaskList is available globally

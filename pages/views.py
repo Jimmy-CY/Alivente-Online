@@ -1460,7 +1460,7 @@ def project_task_list(request, project_id):
             include_task = task_matches or subtask_matches
         
         if include_task:
-            # Add main task
+            # Add main task to display list but DON'T count it in totals
             is_overdue = (
                 main_task.task_expected_completion_date and 
                 main_task.task_expected_completion_date < timezone.now().date() and 
@@ -1489,14 +1489,9 @@ def project_task_list(request, project_id):
                 'is_overdue': is_overdue
             }
             task_list.append(main_task_item)
-            total_tasks += 1
+            # NOTE: Main tasks are NOT counted in totals anymore
             
-            if main_task.task_status == 'Completed':
-                completed_tasks += 1
-            else:
-                pending_tasks += 1
-            
-            # Add subtasks
+            # Add subtasks - ONLY count these in totals
             subtasks = main_task.subtasks.all().order_by('task_start_date', 'task_id')
             if assigned_to:
                 subtasks = subtasks.filter(task_assigned_to=assigned_to)
@@ -1530,6 +1525,8 @@ def project_task_list(request, project_id):
                     'is_overdue': is_overdue
                 }
                 task_list.append(subtask_item)
+                
+                # ONLY count subtasks in totals
                 total_tasks += 1
                 
                 if subtask.task_status == 'Completed':

@@ -204,42 +204,32 @@ Task List - {{ project.project_name }}
   </div>
 
   <!-- Summary Footer -->
+  <!-- Replace the task-list-footer section in your template with this -->
   <div class="task-list-footer">
     <div class="row">
       <div class="col-md-6">
         <div class="summary-info">
           <h6>{% if language == 'greek' %}Περίληψη{% else %}Summary{% endif %}</h6>
-          <p>{% if language == 'greek' %}Γενήθηκε στις{% else %}Generated on{% endif %}: {{ current_date|date:"d/m/Y H:i" }}</p>
-          <p>{% if language == 'greek' %}Σύνολο εργασιών{% else %}Total tasks{% endif %}: {{ total_tasks }}</p>
-          <p>{% if language == 'greek' %}Ποσοστό ολοκλήρωσης{% else %}Completion rate{% endif %}: {{ completion_percentage|floatformat:1 }}%</p>
+          <p>
+            {% if language == 'greek' %}Δημιουργήθηκε στις{% else %}Generated on{% endif %}: {{ current_date|date:"d/m/Y" }} | 
+            {% if language == 'greek' %}Σύνολο εργασιών{% else %}Total tasks{% endif %}: {{ total_tasks }} | 
+            {% if language == 'greek' %}Ποσοστό ολοκλήρωσης{% else %}Completion rate{% endif %}: {{ completion_percentage|floatformat:1 }}%
+          </p>
         </div>
       </div>
       <div class="col-md-6">
         <div class="legend">
           <h6>{% if language == 'greek' %}Υπόμνημα{% else %}Legend{% endif %}</h6>
-          <div class="legend-items">
-            <div class="legend-item">
-              <i class="fas fa-folder-open project-icon"></i>
-              <span>{% if language == 'greek' %}Έργο{% else %}Project{% endif %}</span>
-            </div>
-            <div class="legend-item">
-              <i class="fas fa-tasks task-icon"></i>
-              <span>{% if language == 'greek' %}Κύρια Εργασία{% else %}Main Task{% endif %}</span>
-            </div>
-            <div class="legend-item">
-              <i class="fas fa-chevron-right subtask-icon"></i>
-              <span>{% if language == 'greek' %}Υπο-εργασία{% else %}Subtask{% endif %}</span>
-            </div>
-            <div class="legend-item">
-              <i class="fas fa-exclamation-triangle overdue-icon"></i>
-              <span>{% if language == 'greek' %}Καθυστέρηση{% else %}Overdue{% endif %}</span>
-            </div>
-          </div>
+          <p>
+            <i class="fas fa-folder-open project-icon"></i> {% if language == 'greek' %}Έργο{% else %}Project{% endif %} | 
+            <i class="fas fa-tasks task-icon"></i> {% if language == 'greek' %}Κύρια Εργασία{% else %}Main Task{% endif %} | 
+            <i class="fas fa-chevron-right subtask-icon"></i> {% if language == 'greek' %}Υπο-εργασία{% else %}Subtask{% endif %} | 
+            <i class="fas fa-exclamation-triangle overdue-icon"></i> {% if language == 'greek' %}Καθυστέρηση{% else %}Overdue{% endif %}
+          </p>
         </div>
       </div>
     </div>
   </div>
-
 </body>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
