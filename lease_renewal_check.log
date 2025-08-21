@@ -10609,3 +10609,16 @@ Watching for file changes with StatReloader
 "GET /projects/3/task-list/?language=english&assigned_to=Peter HTTP/1.1" 200 22264
 "GET /projects/3/task-list/?language=english&assigned_to=Peter HTTP/1.1" 200 21992
 "GET /projects/detail/3/ HTTP/1.1" 200 76299
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 7949
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 41530
+"GET /projects/ HTTP/1.1" 200 24819
+"GET /projects/detail/1/ HTTP/1.1" 200 73856
+"GET /projects/1/assignees/ HTTP/1.1" 200 121
+"GET /projects/1/task-list/?language=greek HTTP/1.1" 200 28251
+"GET / HTTP/1.1" 200 7949
+"GET /projects/ HTTP/1.1" 200 24819
+"GET /projects/detail/1/ HTTP/1.1" 200 73856
+"GET /projects/1/assignees/ HTTP/1.1" 200 121
+"GET /projects/1/task-list/?language=greek HTTP/1.1" 200 30061
