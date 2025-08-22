@@ -446,6 +446,38 @@ console.log('From Gantt Chart:', fromGantt);
 $(document).ready(function() {
     console.log('Setting up task edit form validation and interactions');
     
+    // Initialize tracking of original English values on page load
+    $('#task_name_greek').data('last-english', $('#task_name').val());
+    $('#task_description_greek').data('last-english', $('#task_description').val());
+    console.log('Auto-translation tracking initialized');
+    
+    // Auto-update Greek translations when English fields change
+    $('#task_name').on('blur', function() {
+        const englishText = $(this).val().trim();
+        const greekField = $('#task_name_greek');
+        const currentGreekText = greekField.val().trim();
+        
+        // Only auto-update if Greek translation already exists and English text has changed
+        if (englishText && currentGreekText && englishText !== greekField.data('last-english')) {
+            console.log('English task name changed, auto-updating Greek translation');
+            autoTranslateField(englishText, 'task_name_greek', 'task name');
+        }
+        greekField.data('last-english', englishText);
+    });
+
+    $('#task_description').on('blur', function() {
+        const englishText = $(this).val().trim();
+        const greekField = $('#task_description_greek');
+        const currentGreekText = greekField.val().trim();
+        
+        // Only auto-update if Greek translation already exists and English text has changed
+        if (englishText && currentGreekText && englishText !== greekField.data('last-english')) {
+            console.log('English task description changed, auto-updating Greek translation');
+            autoTranslateField(englishText, 'task_description_greek', 'task description');
+        }
+        greekField.data('last-english', englishText);
+    });
+    
     // Greek field translation functionality
     $('#translateNameToGreek').on('click', function() {
         const englishName = $('#task_name').val();
@@ -465,7 +497,7 @@ $(document).ready(function() {
         }
     });
     
-    // Translation function using your existing backend
+    // Manual translation function
     function translateText(text, targetFieldId, fieldName) {
         // Show loading state
         const button = event.target.closest('button');
@@ -476,7 +508,7 @@ $(document).ready(function() {
         console.log('Starting translation for:', text);
         
         // Call your existing translation endpoint
-        fetch('/translate/', {  // Make sure this URL matches your urls.py
+        fetch('/translate/', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -511,6 +543,83 @@ $(document).ready(function() {
             button.innerHTML = originalHtml;
             button.disabled = false;
         });
+    }
+    
+    // Auto-translation function (different from manual translation)
+    function autoTranslateField(text, targetFieldId, fieldName) {
+        console.log('Auto-translating:', fieldName, text);
+        
+        // Show subtle indicator that translation is happening
+        const targetField = $('#' + targetFieldId);
+        const originalBorder = targetField.css('border-color');
+        targetField.css('border-color', '#ffc107'); // Yellow border to indicate updating
+        
+        // Call translation endpoint
+        fetch('/translate/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify({
+                'text': text,
+                'target_language': 'greek',
+                'source_language': 'english'
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                targetField.val(data.translated_text);
+                console.log('Auto-translation successful for:', fieldName);
+                
+                // Show brief success indicator
+                targetField.css('border-color', '#28a745'); // Green for success
+                setTimeout(() => {
+                    targetField.css('border-color', originalBorder);
+                }, 2000);
+                
+                // Show subtle notification
+                showAutoTranslationNotice(`${fieldName} automatically updated in Greek`);
+            } else {
+                console.error('Auto-translation failed for:', fieldName, data.error);
+                // Restore original border on failure
+                targetField.css('border-color', originalBorder);
+            }
+        })
+        .catch(error => {
+            console.error('Auto-translation error for:', fieldName, error);
+            // Restore original border on error
+            targetField.css('border-color', originalBorder);
+        });
+    }
+    
+    // Subtle notification for auto-translations (less intrusive than manual ones)
+    function showAutoTranslationNotice(message) {
+        // Create a small, unobtrusive notification
+        const notice = $(`
+            <div class="auto-translation-notice" style="
+                position: fixed; 
+                bottom: 20px; 
+                right: 20px; 
+                background: rgba(40, 167, 69, 0.9); 
+                color: white; 
+                padding: 8px 12px; 
+                border-radius: 4px; 
+                font-size: 12px; 
+                z-index: 1000;
+                transition: opacity 0.3s ease;
+            ">
+                <i class="fas fa-language"></i> ${message}
+            </div>
+        `);
+        
+        $('body').append(notice);
+        
+        // Auto-remove after 3 seconds
+        setTimeout(() => {
+            notice.fadeOut(300, () => notice.remove());
+        }, 3000);
     }
     
     function showCopyMessage(message, type = 'success') {

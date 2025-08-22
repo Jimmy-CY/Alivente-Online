@@ -261,6 +261,8 @@ Task List - {{ project.project_name }}
     word-wrap: break-word; /* Break long words */
     overflow-wrap: break-word; /* Modern browsers */
     line-height: 1.4;
+    max-width: 100%;
+    overflow: visible;
 }
 
 .project-property, .assigned-to-info, .language-info {
@@ -332,6 +334,8 @@ Task List - {{ project.project_name }}
     color: #2c3e50;
     padding: 15px 12px;
     vertical-align: middle;
+    font-size: 12px; /* Smaller font for Greek headers */
+    line-height: 1.2;
 }
 
 /* FIXED: Allow wrapping in all table cells */

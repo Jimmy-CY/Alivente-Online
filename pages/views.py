@@ -465,6 +465,10 @@ def projects_edit(request, project_id):
         project.project_actual_completion_date = request.POST.get('project_actual_completion_date') if request.POST.get('project_actual_completion_date') else None
         project.project_description = request.POST.get('project_description')
         
+        # Add Greek translation fields
+        project.project_name_greek = request.POST.get('project_name_greek', '').strip()
+        project.project_description_greek = request.POST.get('project_description_greek', '').strip()
+        
         try:
             # Update the property
             property_obj = get_object_or_404(props, prop_id=prop_id)
@@ -796,15 +800,11 @@ def translate_text(request):
         if not text:
             return JsonResponse({'success': False, 'error': 'No text provided'})
         
-        print(f"Received translation request for: '{text}'")
-        
         # Use Google Translate service
         if target_language == 'greek':
             translated_text = translate_to_greek_service(text)
         else:
             translated_text = text
-        
-        print(f"Returning translated text: '{translated_text}'")
         
         return JsonResponse({
             'success': True,
@@ -824,15 +824,11 @@ def translate_to_greek_service(text):
     try:
         from googletrans import Translator
         
-        print(f"Attempting to translate: '{text}' from English to Greek")
-        
         # Initialize Google Translator
         translator = Translator()
         
         # Translate from English to Greek
         result = translator.translate(text, dest='el', src='en')
-        
-        print(f"Google Translate result: '{result.text}' (detected source: {result.src})")
         
         return result.text
         
@@ -1128,14 +1124,16 @@ def ajax_duplicate_project(request):
         data = json.loads(request.body)
         project_id = data.get('project_id')
         new_project_name = data.get('new_project_name', '').strip()
+        new_project_description = data.get('new_project_description', '').strip()  # NEW: Get description
         new_project_start_date_str = data.get('new_project_start_date', '').strip()
         budget_copy_option = data.get('budget_copy_option', 'budgeted')  # 'budgeted' or 'actual'
-        copy_translations = data.get('copy_translations', False)  # NEW: Flag to copy Greek translations
+        clear_greek_translations = data.get('clear_greek_translations', False)  # NEW: Flag to clear translations
         
-        if not project_id or not new_project_name or not new_project_start_date_str:
+        # Validate required fields
+        if not project_id or not new_project_name or not new_project_description or not new_project_start_date_str:
             return JsonResponse({
                 'success': False,
-                'message': 'Project ID, new project name, and start date are required'
+                'message': 'Project ID, new project name, description, and start date are required'
             })
         
         # Validate budget copy option
@@ -1197,18 +1195,6 @@ def ajax_duplicate_project(request):
             else:
                 return original_task.task_budgeted_cost
         
-        def copy_translation_fields(source_obj, target_obj, field_prefixes):
-            """Helper function to copy Greek translation fields"""
-            translations_found = False
-            for prefix in field_prefixes:
-                greek_field = f"{prefix}_greek"
-                if hasattr(source_obj, greek_field):
-                    greek_value = getattr(source_obj, greek_field, None)
-                    if greek_value:
-                        setattr(target_obj, greek_field, greek_value)
-                        translations_found = True
-            return translations_found
-        
         # Use transaction to ensure all-or-nothing duplication
         with transaction.atomic():
             # Calculate new project dates
@@ -1225,10 +1211,10 @@ def ajax_duplicate_project(request):
                 # Use actual cost as new budget
                 new_project_total_budgeted_cost = original_project.get_calculated_actual_cost()
             
-            # Create new project (copy all fields from original)
+            # Create new project with new name and description, clear Greek translations
             new_project = Project.objects.create(
-                project_name=new_project_name,
-                project_description=original_project.project_description,
+                project_name=new_project_name,  # Use new name
+                project_description=new_project_description,  # Use new description
                 prop=original_project.prop,  # Same property
                 project_start_date=new_project_start_date,  # Use the new start date
                 project_expected_completion_date=new_project_expected_completion,
@@ -1236,19 +1222,16 @@ def ajax_duplicate_project(request):
                 project_actual_completion_date=None,  # Clear completion date
                 project_total_budgeted_cost=new_project_total_budgeted_cost,  # Use calculated budget
                 project_total_actual_cost=Decimal('0.00'),  # Reset actual cost
+                # NEW: Clear Greek translations if requested
+                project_name_greek=None if clear_greek_translations else getattr(original_project, 'project_name_greek', None),
+                project_description_greek=None if clear_greek_translations else getattr(original_project, 'project_description_greek', None),
             )
             
-            # Copy Greek translations for project
-            translations_copied = False
-            if copy_translations:
-                project_translations_found = copy_translation_fields(
-                    original_project, 
-                    new_project, 
-                    ['project_name', 'project_description']
-                )
-                if project_translations_found:
-                    translations_copied = True
-                    new_project.save()
+            # Track if Greek translations were cleared
+            greek_translations_cleared = clear_greek_translations and (
+                hasattr(original_project, 'project_name_greek') and original_project.project_name_greek or
+                hasattr(original_project, 'project_description_greek') and original_project.project_description_greek
+            )
             
             # Get all main tasks (tasks without parent_task)
             main_tasks = ProjectTask.objects.filter(
@@ -1282,18 +1265,10 @@ def ajax_duplicate_project(request):
                     task_assigned_to=original_task.task_assigned_to,
                     parent_task=None,  # This is a main task
                     task_progress_percentage=0,  # Reset progress
+                    # Copy Greek translations for tasks (these are not cleared)
+                    task_name_greek=getattr(original_task, 'task_name_greek', None),
+                    task_description_greek=getattr(original_task, 'task_description_greek', None),
                 )
-                
-                # Copy Greek translations for main task
-                if copy_translations:
-                    task_translations_found = copy_translation_fields(
-                        original_task, 
-                        new_task, 
-                        ['task_name', 'task_description']
-                    )
-                    if task_translations_found:
-                        translations_copied = True
-                        new_task.save()
                 
                 task_mapping[original_task.task_id] = new_task
             
@@ -1326,18 +1301,10 @@ def ajax_duplicate_project(request):
                         task_assigned_to=original_subtask.task_assigned_to,
                         parent_task=task_mapping[original_main_task.task_id],  # Link to new parent
                         task_progress_percentage=0,  # Reset progress
+                        # Copy Greek translations for subtasks (these are not cleared)
+                        task_name_greek=getattr(original_subtask, 'task_name_greek', None),
+                        task_description_greek=getattr(original_subtask, 'task_description_greek', None),
                     )
-                    
-                    # Copy Greek translations for subtask
-                    if copy_translations:
-                        subtask_translations_found = copy_translation_fields(
-                            original_subtask, 
-                            new_subtask, 
-                            ['task_name', 'task_description']
-                        )
-                        if subtask_translations_found:
-                            translations_copied = True
-                            new_subtask.save()
             
             # Copy project documents if they exist
             try:
@@ -1365,10 +1332,8 @@ def ajax_duplicate_project(request):
             budget_message = " with budgeted costs copied"
         
         translation_message = ""
-        if copy_translations and translations_copied:
-            translation_message = " and Greek translations copied"
-        elif copy_translations and not translations_copied:
-            translation_message = " (no Greek translations found to copy)"
+        if greek_translations_cleared:
+            translation_message = " and Greek translations cleared for project name and description"
             
         success_message = f'Project "{new_project_name}" created successfully{budget_message}{translation_message}'
         if date_offset is not None:
@@ -1380,7 +1345,7 @@ def ajax_duplicate_project(request):
             'new_project_id': new_project.project_id,
             'date_offset': date_offset,
             'budget_copy_option': budget_copy_option,
-            'translations_copied': translations_copied  # NEW: Return translation status
+            'greek_translations_cleared': greek_translations_cleared  # NEW: Return translation status
         })
         
     except json.JSONDecodeError:
@@ -1550,6 +1515,93 @@ def project_task_list(request, project_id):
     }
     
     return render(request, 'projects/project_task_list.html', context)
+
+@login_required
+def ajax_delete_task(request):
+    """
+    AJAX view to delete a task or subtask
+    """
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'message': 'Only POST method allowed'})
+    
+    if not request.user.is_superuser:
+        return JsonResponse({
+            'success': False,
+            'message': 'You do not have permission to delete tasks'
+        })
+    
+    try:
+        data = json.loads(request.body)
+        task_id = data.get('task_id')
+        task_type = data.get('task_type')  # 'task' or 'subtask'
+        
+        if not task_id:
+            return JsonResponse({
+                'success': False,
+                'message': 'Task ID is required'
+            })
+        
+        try:
+            task_id = int(task_id)
+        except (ValueError, TypeError):
+            return JsonResponse({
+                'success': False,
+                'message': f'Invalid task ID: {task_id}'
+            })
+        
+        # Get the task to delete
+        try:
+            task_to_delete = ProjectTask.objects.get(task_id=task_id)
+        except ProjectTask.DoesNotExist:
+            return JsonResponse({
+                'success': False,
+                'message': f'Task with ID {task_id} was not found'
+            })
+        
+        # Use transaction to ensure all-or-nothing deletion
+        with transaction.atomic():
+            if task_type == 'task':
+                # Delete main task and all its subtasks
+                subtasks = ProjectTask.objects.filter(parent_task=task_to_delete)
+                subtask_count = subtasks.count()
+                
+                # Delete subtasks first
+                subtasks.delete()
+                
+                # Delete the main task
+                task_name = task_to_delete.task_name
+                task_to_delete.delete()
+                
+                message = f'Task "{task_name}" and {subtask_count} subtask(s) deleted successfully'
+                
+            elif task_type == 'subtask':
+                # Delete only the subtask
+                task_name = task_to_delete.task_name
+                task_to_delete.delete()
+                
+                message = f'Subtask "{task_name}" deleted successfully'
+            
+            else:
+                return JsonResponse({
+                    'success': False,
+                    'message': 'Invalid task type. Must be "task" or "subtask"'
+                })
+        
+        return JsonResponse({
+            'success': True,
+            'message': message
+        })
+        
+    except json.JSONDecodeError:
+        return JsonResponse({
+            'success': False,
+            'message': 'Invalid JSON data'
+        })
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'An error occurred while deleting: {str(e)}'
+        })
 
 @login_required
 def get_project_assignees(request, project_id):

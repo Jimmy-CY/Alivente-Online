@@ -47,7 +47,21 @@ Edit Project - {{ project.project_name }}
 <!-- Check if project has tasks -->
 {% with project.get_total_main_tasks as total_tasks %}
 
-<!-- Project Edit Form - Enhanced with Gantt support -->
+<!-- Language Toggle Tabs -->
+<ul class="nav nav-tabs" id="languageTabs" role="tablist" style="margin-bottom: 20px;">
+  <li class="nav-item" role="presentation">
+    <a class="nav-link active" id="english-tab" data-toggle="tab" href="#english" role="tab" aria-controls="english" aria-selected="true">
+      <span class="flag-emoji">🇬🇧</span> English
+    </a>
+  </li>
+  <li class="nav-item" role="presentation">
+    <a class="nav-link" id="greek-tab" data-toggle="tab" href="#greek" role="tab" aria-controls="greek" aria-selected="false">
+      <span class="flag-emoji">🇬🇷</span> Ελληνικά (Greek)
+    </a>
+  </li>
+</ul>
+
+<!-- Project Edit Form - Enhanced with Greek support -->
 <form method="post" 
       id="projectForm"
       {% if from_gantt %}
@@ -57,42 +71,122 @@ Edit Project - {{ project.project_name }}
       {% endif %}>
   {% csrf_token %}
   
-  <div class="row">
-    <!-- Project Name - Always Editable -->
-    <div class="col-md-6">
-      <div class="form-group">
-        <label for="project_name">
-          <i class="fas fa-project-diagram"></i> Project Name <span style="color: red;">*</span>
-        </label>
-        <input type="text" 
-               class="form-control" 
-               id="project_name" 
-               name="project_name" 
-               required
-               value="{{ project.project_name }}"
-               placeholder="Enter project name...">
+  <!-- Tab Content -->
+  <div class="tab-content" id="languageTabContent">
+    
+    <!-- English Tab -->
+    <div class="tab-pane fade show active" id="english" role="tabpanel" aria-labelledby="english-tab">
+      <div class="row">
+        <!-- Project Name - Always Editable -->
+        <div class="col-md-6">
+          <div class="form-group">
+            <label for="project_name">
+              <i class="fas fa-project-diagram"></i> Project Name <span style="color: red;">*</span>
+            </label>
+            <input type="text" 
+                   class="form-control" 
+                   id="project_name" 
+                   name="project_name" 
+                   required
+                   value="{{ project.project_name }}"
+                   placeholder="Enter project name...">
+          </div>
+        </div>
+
+        <!-- Property - Always Editable -->
+        <div class="col-md-6">
+          <div class="form-group">
+            <label for="prop_id">
+              <i class="fas fa-home"></i> Property <span style="color: red;">*</span>
+            </label>
+            <select class="form-control" id="prop_id" name="prop_id" required>
+              <option value="">Select a property...</option>
+              {% for property in properties %}
+                <option value="{{ property.prop_id }}" 
+                        {% if property.prop_id == project.prop.prop_id %}selected{% endif %}>
+                  {{ property.prop_name }}
+                </option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Description (English) -->
+      <div class="row">
+        <div class="col-md-12">
+          <div class="form-group">
+            <label for="project_description">
+              <i class="fas fa-align-left"></i> Project Description
+            </label>
+            <textarea class="form-control" 
+                      id="project_description" 
+                      name="project_description" 
+                      rows="4"
+                      placeholder="Enter project description...">{{ project.project_description }}</textarea>
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- Property - Always Editable -->
-    <div class="col-md-6">
-      <div class="form-group">
-        <label for="prop_id">
-          <i class="fas fa-home"></i> Property <span style="color: red;">*</span>
-        </label>
-        <select class="form-control" id="prop_id" name="prop_id" required>
-          <option value="">Select a property...</option>
-          {% for property in properties %}
-            <option value="{{ property.prop_id }}" 
-                    {% if property.prop_id == project.prop.prop_id %}selected{% endif %}>
-              {{ property.prop_name }}
-            </option>
-          {% endfor %}
-        </select>
+    <!-- Greek Tab -->
+    <div class="tab-pane fade" id="greek" role="tabpanel" aria-labelledby="greek-tab">
+      <div class="row">
+        <!-- Project Name (Greek) -->
+        <div class="col-md-12">
+          <div class="form-group">
+            <label for="project_name_greek">
+              <i class="fas fa-project-diagram"></i> Όνομα Έργου (Project Name in Greek)
+            </label>
+            <input type="text" 
+                   class="form-control" 
+                   id="project_name_greek" 
+                   name="project_name_greek"
+                   value="{{ project.project_name_greek }}"
+                   placeholder="Εισάγετε το όνομα του έργου στα ελληνικά...">
+            <small class="form-text text-muted">Greek translation of the project name</small>
+          </div>
+        </div>
+      </div>
+
+      <!-- Description (Greek) -->
+      <div class="row">
+        <div class="col-md-12">
+          <div class="form-group">
+            <label for="project_description_greek">
+              <i class="fas fa-align-left"></i> Περιγραφή Έργου (Project Description in Greek)
+            </label>
+            <textarea class="form-control" 
+                      id="project_description_greek" 
+                      name="project_description_greek" 
+                      rows="4"
+                      placeholder="Εισάγετε την περιγραφή του έργου στα ελληνικά...">{{ project.project_description_greek }}</textarea>
+            <small class="form-text text-muted">Greek translation of the project description</small>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Translation Buttons -->
+      <div class="row">
+        <div class="col-md-12">
+          <div class="form-group">
+            <label>Quick Actions:</label>
+            <div>
+              <button type="button" class="btn btn-sm btn-outline-info" id="translateNameToGreek">
+                <i class="fas fa-language"></i> Translate English Name to Greek
+              </button>
+              <button type="button" class="btn btn-sm btn-outline-info ml-2" id="translateDescToGreek">
+                <i class="fas fa-language"></i> Translate English Description to Greek
+              </button>
+            </div>
+            <small class="form-text text-muted">Use these buttons to automatically translate English text to Greek</small>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 
+  <!-- Auto-calculated fields remain the same -->
   <div class="row">
     <!-- Always show dates and status as auto-calculated (greyed out) -->
     <div class="col-md-4">
@@ -101,11 +195,10 @@ Edit Project - {{ project.project_name }}
           <i class="fas fa-calendar-alt"></i> Start Date (Auto-calculated)
         </label>
         <input type="date" 
-               class="form-control" 
+               class="form-control auto-calculated-field" 
                id="project_start_date" 
                name="project_start_date"
                disabled
-               style="background-color: #e9ecef; cursor: not-allowed;"
                value="{% if project.get_calculated_start_date %}{{ project.get_calculated_start_date|date:'Y-m-d' }}{% elif project.project_start_date %}{{ project.project_start_date|date:'Y-m-d' }}{% endif %}">
         <small class="form-text text-muted">
           {% if total_tasks > 0 %}
@@ -123,11 +216,10 @@ Edit Project - {{ project.project_name }}
           <i class="fas fa-calendar-check"></i> Expected Completion (Auto-calculated)
         </label>
         <input type="date" 
-               class="form-control" 
+               class="form-control auto-calculated-field" 
                id="project_expected_completion_date" 
                name="project_expected_completion_date"
                disabled
-               style="background-color: #e9ecef; cursor: not-allowed;"
                value="{% if project.get_calculated_expected_completion %}{{ project.get_calculated_expected_completion|date:'Y-m-d' }}{% elif project.project_expected_completion_date %}{{ project.project_expected_completion_date|date:'Y-m-d' }}{% endif %}">
         <small class="form-text text-muted">
           {% if total_tasks > 0 %}
@@ -144,11 +236,10 @@ Edit Project - {{ project.project_name }}
         <label for="project_status">
           <i class="fas fa-info-circle"></i> Status (Auto-calculated)
         </label>
-        <select class="form-control" 
+        <select class="form-control auto-calculated-field" 
                 id="project_status" 
                 name="project_status" 
-                disabled
-                style="background-color: #e9ecef; cursor: not-allowed;">
+                disabled>
           <option value="{{ project.get_calculated_status|default:project.project_status }}">
             {{ project.get_calculated_status|default:project.project_status }}
           </option>
@@ -173,11 +264,10 @@ Edit Project - {{ project.project_name }}
             <i class="fas fa-calendar-times"></i> Actual Completion Date (Auto-calculated)
           </label>
           <input type="date" 
-                 class="form-control" 
+                 class="form-control auto-calculated-field" 
                  id="project_actual_completion_date" 
                  name="project_actual_completion_date"
                  disabled
-                 style="background-color: #e9ecef; cursor: not-allowed;"
                  value="{% if project.get_calculated_actual_completion %}{{ project.get_calculated_actual_completion|date:'Y-m-d' }}{% elif project.project_actual_completion_date %}{{ project.project_actual_completion_date|date:'Y-m-d' }}{% endif %}">
           <small class="form-text text-muted">
             {% if total_tasks > 0 %}
@@ -190,22 +280,6 @@ Edit Project - {{ project.project_name }}
       </div>
     </div>
   {% endif %}
-
-  <!-- Description - Always Editable -->
-  <div class="row">
-    <div class="col-md-12">
-      <div class="form-group">
-        <label for="project_description">
-          <i class="fas fa-align-left"></i> Project Description
-        </label>
-        <textarea class="form-control" 
-                  id="project_description" 
-                  name="project_description" 
-                  rows="4"
-                  placeholder="Enter project description...">{{ project.project_description }}</textarea>
-      </div>
-    </div>
-  </div>
 
   <!-- Information message for all projects -->
   <div class="alert alert-info" role="alert">
@@ -245,6 +319,7 @@ Edit Project - {{ project.project_name }}
 {% endwith %}
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
 <script>
@@ -257,22 +332,222 @@ console.log('From Gantt Chart:', fromGantt);
 $(document).ready(function() {
     console.log('Setting up project edit form validation and interactions');
     
+    // Initialize tracking of original English values on page load
+    $('#project_name_greek').data('last-english', $('#project_name').val());
+    $('#project_description_greek').data('last-english', $('#project_description').val());
+    console.log('Auto-translation tracking initialized');
+    
+    // Auto-update Greek translations when English fields change
+    $('#project_name').on('blur', function() {
+        const englishText = $(this).val().trim();
+        const greekField = $('#project_name_greek');
+        const currentGreekText = greekField.val().trim();
+        
+        // Only auto-update if Greek translation already exists and English text has changed
+        if (englishText && currentGreekText && englishText !== greekField.data('last-english')) {
+            console.log('English project name changed, auto-updating Greek translation');
+            autoTranslateField(englishText, 'project_name_greek', 'project name');
+        }
+        greekField.data('last-english', englishText);
+    });
+
+    $('#project_description').on('blur', function() {
+        const englishText = $(this).val().trim();
+        const greekField = $('#project_description_greek');
+        const currentGreekText = greekField.val().trim();
+        
+        // Only auto-update if Greek translation already exists and English text has changed
+        if (englishText && currentGreekText && englishText !== greekField.data('last-english')) {
+            console.log('English project description changed, auto-updating Greek translation');
+            autoTranslateField(englishText, 'project_description_greek', 'project description');
+        }
+        greekField.data('last-english', englishText);
+    });
+    
+    // Greek field translation functionality
+    $('#translateNameToGreek').on('click', function() {
+        const englishName = $('#project_name').val();
+        if (englishName.trim()) {
+            translateText(englishName, 'project_name_greek', 'English name');
+        } else {
+            showCopyMessage('No English name to translate', 'warning');
+        }
+    });
+    
+    $('#translateDescToGreek').on('click', function() {
+        const englishDesc = $('#project_description').val();
+        if (englishDesc.trim()) {
+            translateText(englishDesc, 'project_description_greek', 'English description');
+        } else {
+            showCopyMessage('No English description to translate', 'warning');
+        }
+    });
+    
+    // Manual translation function
+    function translateText(text, targetFieldId, fieldName) {
+        // Show loading state
+        const button = event.target.closest('button');
+        const originalHtml = button.innerHTML;
+        button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Translating...';
+        button.disabled = true;
+        
+        console.log('Starting translation for:', text);
+        
+        // Call your existing translation endpoint
+        fetch('/translate/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify({
+                'text': text,
+                'target_language': 'greek',
+                'source_language': 'english'
+            })
+        })
+        .then(response => {
+            console.log('Response status:', response.status);
+            return response.json();
+        })
+        .then(data => {
+            console.log('Translation response:', data);
+            if (data.success) {
+                $('#' + targetFieldId).val(data.translated_text);
+                showCopyMessage(fieldName + ' translated successfully to Greek');
+            } else {
+                showCopyMessage('Translation failed: ' + (data.error || 'Unknown error'), 'warning');
+                console.error('Translation error:', data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Translation fetch error:', error);
+            showCopyMessage('Translation failed: Network error', 'warning');
+        })
+        .finally(() => {
+            // Restore button state
+            button.innerHTML = originalHtml;
+            button.disabled = false;
+        });
+    }
+    
+    // Auto-translation function (different from manual translation)
+    function autoTranslateField(text, targetFieldId, fieldName) {
+        console.log('Auto-translating:', fieldName, text);
+        
+        // Show subtle indicator that translation is happening
+        const targetField = $('#' + targetFieldId);
+        const originalBorder = targetField.css('border-color');
+        targetField.css('border-color', '#ffc107'); // Yellow border to indicate updating
+        
+        // Call translation endpoint
+        fetch('/translate/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify({
+                'text': text,
+                'target_language': 'greek',
+                'source_language': 'english'
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                targetField.val(data.translated_text);
+                console.log('Auto-translation successful for:', fieldName);
+                
+                // Show brief success indicator
+                targetField.css('border-color', '#28a745'); // Green for success
+                setTimeout(() => {
+                    targetField.css('border-color', originalBorder);
+                }, 2000);
+                
+                // Show subtle notification
+                showAutoTranslationNotice(`${fieldName} automatically updated in Greek`);
+            } else {
+                console.error('Auto-translation failed for:', fieldName, data.error);
+                // Restore original border on failure
+                targetField.css('border-color', originalBorder);
+            }
+        })
+        .catch(error => {
+            console.error('Auto-translation error for:', fieldName, error);
+            // Restore original border on error
+            targetField.css('border-color', originalBorder);
+        });
+    }
+    
+    // Subtle notification for auto-translations (less intrusive than manual ones)
+    function showAutoTranslationNotice(message) {
+        // Create a small, unobtrusive notification
+        const notice = $(`
+            <div class="auto-translation-notice" style="
+                position: fixed; 
+                bottom: 20px; 
+                right: 20px; 
+                background: rgba(40, 167, 69, 0.9); 
+                color: white; 
+                padding: 8px 12px; 
+                border-radius: 4px; 
+                font-size: 12px; 
+                z-index: 1000;
+                transition: opacity 0.3s ease;
+            ">
+                <i class="fas fa-language"></i> ${message}
+            </div>
+        `);
+        
+        $('body').append(notice);
+        
+        // Auto-remove after 3 seconds
+        setTimeout(() => {
+            notice.fadeOut(300, () => notice.remove());
+        }, 3000);
+    }
+    
+    function showCopyMessage(message, type = 'success') {
+        // Create a temporary alert
+        const alertClass = type === 'success' ? 'alert-success' : 'alert-warning';
+        const alert = $(`
+            <div class="alert ${alertClass} alert-dismissible fade show" role="alert" style="position: fixed; top: 20px; right: 20px; z-index: 9999; min-width: 300px;">
+                <i class="fas fa-${type === 'success' ? 'check' : 'exclamation-triangle'}"></i> ${message}
+                <button type="button" class="close" data-dismiss="alert">
+                    <span>&times;</span>
+                </button>
+            </div>
+        `);
+        
+        $('body').append(alert);
+        
+        // Auto-dismiss after 3 seconds
+        setTimeout(() => {
+            alert.alert('close');
+        }, 3000);
+    }
+    
     // Form submission validation - only validate editable fields
     $('#projectForm').on('submit', function(e) {
         console.log('Project edit form submission attempted');
         
         let isValid = true;
         
-        // Validate required fields (only name and property are editable)
+        // Validate required fields (only name and property are editable in English tab)
         if (!$('#project_name').val().trim()) {
             alert('Project name is required');
             $('#project_name').focus();
+            // Switch to English tab if not already there
+            $('#english-tab').tab('show');
             isValid = false;
         }
         
         if (!$('#prop_id').val()) {
             alert('Property is required');
             $('#prop_id').focus();
+            // Switch to English tab if not already there
+            $('#english-tab').tab('show');
             isValid = false;
         }
         
@@ -297,21 +572,6 @@ console.log('🚀 === EDIT PROJECT FORM SCRIPT COMPLETE ===');
 
 <style>
 /* Enhanced styling for Gantt navigation */
-.btn-success {
-    background-color: #28a745;
-    border-color: #28a745;
-    transition: all 0.3s ease;
-    border-radius: 6px;
-    font-weight: 500;
-}
-
-.btn-success:hover {
-    background-color: #218838;
-    border-color: #1e7e34;
-    transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-}
-
 .btn-info {
     background-color: #17a2b8;
     border-color: #17a2b8;
@@ -338,10 +598,98 @@ console.log('🚀 === EDIT PROJECT FORM SCRIPT COMPLETE ===');
     box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 
+/* Auto-calculated field styling */
+.auto-calculated-field {
+    background-color: #e9ecef !important;
+    opacity: 1;
+    cursor: not-allowed;
+}
+
 /* Form enhancements */
 .form-control:focus {
     border-color: #17a2b8;
     box-shadow: 0 0 0 0.2rem rgba(23, 162, 184, 0.25);
+}
+
+/* Language tab styling */
+.nav-tabs {
+    border-bottom: 2px solid #dee2e6;
+}
+
+.nav-tabs .nav-link {
+    border: 1px solid transparent;
+    border-radius: 6px 6px 0 0;
+    font-weight: 500;
+    color: #495057;
+    transition: all 0.3s ease;
+}
+
+.nav-tabs .nav-link:hover {
+    border-color: #e9ecef #e9ecef #dee2e6;
+    background-color: #f8f9fa;
+}
+
+.nav-tabs .nav-link.active {
+    color: #17a2b8;
+    background-color: #fff;
+    border-color: #dee2e6 #dee2e6 #fff;
+    border-bottom-color: transparent;
+}
+
+/* Greek field styling */
+#project_name_greek, #project_description_greek {
+    font-family: Arial, sans-serif; /* Ensure Greek characters display properly */
+}
+
+/* Translation button styling */
+.btn-outline-info {
+    color: #17a2b8;
+    border-color: #17a2b8;
+    transition: all 0.3s ease;
+}
+
+.btn-outline-info:hover {
+    background-color: #17a2b8;
+    border-color: #17a2b8;
+    color: #fff;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+/* Tab content padding */
+.tab-content {
+    padding: 20px 0;
+}
+
+/* Flag emoji styling with better support */
+.flag-emoji {
+    font-size: 16px;
+    margin-right: 6px;
+    display: inline-block;
+    font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Android Emoji", "EmojiSymbols", sans-serif;
+    line-height: 1;
+    vertical-align: middle;
+}
+
+/* Tab styling adjustments */
+.nav-link {
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+}
+
+/* Alert styling for translation notifications */
+.alert {
+    border-radius: 6px;
+    font-weight: 500;
+}
+
+.alert-success {
+    border-color: #28a745;
+}
+
+.alert-warning {
+    border-color: #ffc107;
 }
 
 .alert-info {
