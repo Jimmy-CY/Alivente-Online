@@ -1,0 +1,772 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}ALIVENTE ONLINE - NOTIFICATIONS DASHBOARD{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <h2><center>ALIVENTE ONLINE - NOTIFICATIONS DASHBOARD</center></h2>
+    <h5><center>PROPERTY MANAGEMENT ALERTS & STATUS</center></h5>
+    <br/>
+
+    {% for msg in messages %}
+        <div class="alert alert-secondary alert-dismissible fade show auto-dismiss" role="alert">
+            <strong></strong> <center>{{ msg }}</center>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        <script>
+            setTimeout(function() {
+                document.querySelectorAll('.auto-dismiss').forEach(alert => {
+                    alert.classList.remove('show');
+                    alert.classList.add('fade');
+                    setTimeout(() => alert.remove(), 500);
+                });
+            }, 2000);
+        </script>
+    {% endfor %}
+
+    <!-- Action Buttons -->
+    <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 20px;">
+        <button class="btn btn-info" onclick="loadNotificationsData()">Refresh Data</button>
+        <a href="{% url 'finance' %}" class="btn btn-info">Back</a>
+    </div>
+
+    <!-- Loading Indicator -->
+    <div id="loadingIndicator" class="text-center py-5">
+        <div class="spinner-border text-info" role="status">
+            <span class="sr-only">Loading...</span>
+        </div>
+        <p class="mt-3">Loading notifications dashboard...</p>
+    </div>
+
+    <!-- Dashboard Container -->
+    <div id="dashboardContainer" style="display: none;">
+        <!-- This will be populated by the dashboard component -->
+    </div>
+
+    <!-- Error Container -->
+    <div id="errorContainer" class="alert alert-danger" style="display: none;">
+        <h4>Error Loading Dashboard</h4>
+        <p id="errorMessage"></p>
+        <button class="btn btn-info" onclick="loadNotificationsData()">Retry</button>
+    </div>
+</div>
+
+<!-- Chart.js Library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+<style>
+/* Main Styles matching your app's design */
+.indicator-panel {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border: 1px solid #dee2e6;
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 30px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.indicator-header {
+    background-color: #17a2b8;
+    color: white;
+    padding: 12px 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-weight: 600;
+    text-align: center;
+}
+
+.indicator-cards {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.indicator-card {
+    background: white;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    padding: 15px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
+}
+
+.indicator-card:hover {
+    border-color: #17a2b8;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
+}
+
+.indicator-card.active {
+    border-color: #17a2b8;
+    background-color: #e3f2fd;
+    box-shadow: 0 4px 8px rgba(23, 162, 184, 0.2);
+}
+
+.indicator-card.success {
+    border-color: #28a745;
+    background-color: #d4edda;
+}
+
+.indicator-card.urgent {
+    border-color: #dc3545;
+    background-color: #f8d7da;
+}
+
+.indicator-card.warning {
+    border-color: #ffc107;
+    background-color: #fff3cd;
+}
+
+.indicator-icon {
+    font-size: 24px;
+    margin-bottom: 8px;
+}
+
+.indicator-label {
+    font-size: 12px;
+    color: #6c757d;
+    font-weight: 500;
+    margin-bottom: 5px;
+}
+
+.indicator-value {
+    font-size: 18px;
+    font-weight: bold;
+    color: #2c3e50;
+}
+
+.table-panel {
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    margin-bottom: 20px;
+}
+
+.table-header {
+    background: #f8f9fa;
+    padding: 15px 20px;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.table-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #2c3e50;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.table-container {
+    overflow-x: auto;
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0;
+}
+
+.data-table th {
+    background: #f8f9fa;
+    padding: 12px 15px;
+    text-align: center;
+    border-bottom: 2px solid #dee2e6;
+    font-weight: 600;
+    color: #495057;
+    font-size: 14px;
+}
+
+.data-table th:first-child {
+    text-align: left;
+}
+
+.data-table td {
+    padding: 12px 15px;
+    border-bottom: 1px solid #dee2e6;
+    text-align: center;
+    font-size: 14px;
+}
+
+.data-table td:first-child {
+    text-align: left;
+    font-weight: 500;
+}
+
+.data-table tbody tr:hover {
+    background: #f8f9fa;
+}
+
+.data-table tbody tr:nth-child(even) {
+    background: #fdfdfd;
+}
+
+.data-table tbody tr:nth-child(even):hover {
+    background: #f0f0f0;
+}
+
+.status-badge {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.status-urgent {
+    background: #dc3545;
+    color: white;
+}
+
+.status-warning {
+    background: #ffc107;
+    color: #212529;
+}
+
+.status-info {
+    background: #17a2b8;
+    color: white;
+}
+
+.status-success {
+    background: #28a745;
+    color: white;
+}
+
+.btn-info {
+    background-color: #17a2b8;
+    color: white;
+    border: 1px solid #17a2b8;
+    transition: all 0.3s ease;
+    border-radius: 6px;
+    font-weight: 500;
+}
+
+.btn-info:hover {
+    background-color: #138496;
+    border-color: #117a8b;
+    color: white;
+    text-decoration: none;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.no-data-message {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 300px;
+    color: #6c757d;
+    text-align: center;
+}
+
+.no-data-icon {
+    font-size: 48px;
+    margin-bottom: 15px;
+    opacity: 0.5;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+    .indicator-cards {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+    }
+}
+
+@media (max-width: 768px) {
+    .indicator-cards {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+}
+
+@media (max-width: 576px) {
+    .indicator-cards {
+        grid-template-columns: 1fr;
+    }
+    
+    .data-table {
+        font-size: 12px;
+    }
+    
+    .data-table th,
+    .data-table td {
+        padding: 8px 6px;
+    }
+}
+</style>
+
+<script>
+// Fresh Notifications Dashboard Component - Version 2.0
+class NotificationsDashboardV2 {
+    constructor(container, notificationData) {
+        this.container = container;
+        this.data = this.sanitizeData(notificationData);
+        this.selectedCategory = null;
+        
+        this.render();
+    }
+    
+    sanitizeData(data) {
+        // Ensure all data properties exist and are arrays
+        return {
+            summary: {
+                vacantProperties: (data.summary && data.summary.vacantProperties) || 0,
+                expiringLeases: (data.summary && data.summary.expiringLeases) || 0,
+                declinedRenewals: (data.summary && data.summary.declinedRenewals) || 0,
+                overdueInvoices: (data.summary && data.summary.overdueInvoices) || 0,
+                expensesWaitingApproval: (data.summary && data.summary.expensesWaitingApproval) || 0,
+                expensesWaitingPayment: (data.summary && data.summary.expensesWaitingPayment) || 0
+            },
+            vacantProperties: Array.isArray(data.vacantProperties) ? data.vacantProperties : [],
+            expiringLeases: Array.isArray(data.expiringLeases) ? data.expiringLeases : [],
+            declinedRenewals: Array.isArray(data.declinedRenewals) ? data.declinedRenewals : [],
+            overdueInvoices: Array.isArray(data.overdueInvoices) ? data.overdueInvoices : [],
+            expensesWaitingApproval: Array.isArray(data.expensesWaitingApproval) ? data.expensesWaitingApproval : [],
+            expensesWaitingPayment: Array.isArray(data.expensesWaitingPayment) ? data.expensesWaitingPayment : []
+        };
+    }
+    
+    render() {
+        this.container.innerHTML = this.generateHTML();
+        this.attachEventListeners();
+    }
+    
+    generateHTML() {
+        const hasAlerts = this.getTotalAlerts() > 0;
+        
+        return `
+            <!-- Summary Indicators -->
+            <div class="indicator-panel">
+                <div class="indicator-header">
+                    <h5 class="mb-0">PROPERTY MANAGEMENT STATUS SUMMARY</h5>
+                </div>
+                
+                <div class="indicator-cards">
+                    <div class="indicator-card ${this.data.summary.vacantProperties === 0 ? 'success' : 'urgent'}" data-category="vacant">
+                        <div class="indicator-icon">
+                            <i class="fas fa-home" style="color: ${this.data.summary.vacantProperties === 0 ? '#28a745' : '#dc3545'};"></i>
+                        </div>
+                        <div class="indicator-label">Vacant Properties</div>
+                        <div class="indicator-value">${this.data.summary.vacantProperties}</div>
+                    </div>
+
+                    <div class="indicator-card ${this.data.summary.expiringLeases === 0 ? 'success' : 'warning'}" data-category="expiring">
+                        <div class="indicator-icon">
+                            <i class="fas fa-calendar-times" style="color: ${this.data.summary.expiringLeases === 0 ? '#28a745' : '#ffc107'};"></i>
+                        </div>
+                        <div class="indicator-label">Expiring Leases</div>
+                        <div class="indicator-value">${this.data.summary.expiringLeases}</div>
+                    </div>
+
+                    <div class="indicator-card ${this.data.summary.declinedRenewals === 0 ? 'success' : 'urgent'}" data-category="declined">
+                        <div class="indicator-icon">
+                            <i class="fas fa-times-circle" style="color: ${this.data.summary.declinedRenewals === 0 ? '#28a745' : '#dc3545'};"></i>
+                        </div>
+                        <div class="indicator-label">Declined Renewals</div>
+                        <div class="indicator-value">${this.data.summary.declinedRenewals}</div>
+                    </div>
+
+                    <div class="indicator-card ${this.data.summary.overdueInvoices === 0 ? 'success' : 'urgent'}" data-category="overdue">
+                        <div class="indicator-icon">
+                            <i class="fas fa-exclamation-triangle" style="color: ${this.data.summary.overdueInvoices === 0 ? '#28a745' : '#dc3545'};"></i>
+                        </div>
+                        <div class="indicator-label">Overdue Invoices</div>
+                        <div class="indicator-value">${this.data.summary.overdueInvoices}</div>
+                    </div>
+
+                    <div class="indicator-card ${this.data.summary.expensesWaitingApproval === 0 ? 'success' : 'warning'}" data-category="approval">
+                        <div class="indicator-icon">
+                            <i class="fas fa-clipboard-check" style="color: ${this.data.summary.expensesWaitingApproval === 0 ? '#28a745' : '#ffc107'};"></i>
+                        </div>
+                        <div class="indicator-label">Expenses Waiting Approval</div>
+                        <div class="indicator-value">${this.data.summary.expensesWaitingApproval}</div>
+                    </div>
+
+                    <div class="indicator-card ${this.data.summary.expensesWaitingPayment === 0 ? 'success' : 'warning'}" data-category="payment">
+                        <div class="indicator-icon">
+                            <i class="fas fa-credit-card" style="color: ${this.data.summary.expensesWaitingPayment === 0 ? '#28a745' : '#17a2b8'};"></i>
+                        </div>
+                        <div class="indicator-label">Expenses Waiting Payment</div>
+                        <div class="indicator-value">${this.data.summary.expensesWaitingPayment}</div>
+                    </div>
+                </div>
+            </div>
+
+            ${hasAlerts ? this.generateTablesHTML() : this.generateNoAlertsHTML()}
+        `;
+    }
+    
+    getTotalAlerts() {
+        const s = this.data.summary;
+        return s.vacantProperties + s.expiringLeases + s.declinedRenewals + s.overdueInvoices + s.expensesWaitingApproval + s.expensesWaitingPayment;
+    }
+    
+    generateNoAlertsHTML() {
+        return `
+            <div class="table-panel">
+                <div class="no-data-message">
+                    <div class="no-data-icon"><i class="fas fa-check-circle"></i></div>
+                    <h4 style="color: #28a745;">All Clear!</h4>
+                    <p>No property management alerts at this time.</p>
+                </div>
+            </div>
+        `;
+    }
+    
+    generateTablesHTML() {
+        let html = '';
+        
+        // Vacant Properties
+        if (this.data.vacantProperties.length > 0) {
+            html += this.generateVacantTable();
+        }
+        
+        // Expiring Leases
+        if (this.data.expiringLeases.length > 0) {
+            html += this.generateExpiringTable();
+        }
+        
+        // Declined Renewals
+        if (this.data.declinedRenewals.length > 0) {
+            html += this.generateDeclinedTable();
+        }
+        
+        // Overdue Invoices
+        if (this.data.overdueInvoices.length > 0) {
+            html += this.generateOverdueTable();
+        }
+        
+        // Expenses Waiting Approval
+        if (this.data.expensesWaitingApproval.length > 0) {
+            html += this.generateExpensesApprovalTable();
+        }
+        
+        // Expenses Waiting Payment
+        if (this.data.expensesWaitingPayment.length > 0) {
+            html += this.generateExpensesPaymentTable();
+        }
+        
+        return html;
+    }
+    
+    generateVacantTable() {
+        const rows = this.data.vacantProperties.map(prop => `
+            <tr>
+                <td>${prop.prop_name || ''}</td>
+                <td>${prop.prop_country || ''}</td>
+                <td><span class="status-badge status-urgent">VACANT</span></td>
+                <td>Contact estate agents ASAP</td>
+            </tr>
+        `).join('');
+        
+        return `
+            <div class="table-panel">
+                <div class="table-header">
+                    <h5 class="table-title">
+                        <i class="fas fa-home"></i> Vacant Properties (${this.data.vacantProperties.length})
+                    </h5>
+                </div>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Property Name</th>
+                                <th>Country</th>
+                                <th>Status</th>
+                                <th>Action Required</th>
+                            </tr>
+                        </thead>
+                        <tbody>${rows}</tbody>
+                    </table>
+                </div>
+            </div>
+        `;
+    }
+    
+    generateExpiringTable() {
+        const rows = this.data.expiringLeases.map(lease => `
+            <tr>
+                <td>${lease.prop_name || ''}</td>
+                <td>${lease.prop_country || ''}</td>
+                <td>${lease.tenant_name || ''}</td>
+                <td>${lease.lease_end_date || ''}</td>
+                <td>${lease.renewal_date || ''}</td>
+                <td><span class="status-badge status-warning">PENDING</span></td>
+            </tr>
+        `).join('');
+        
+        return `
+            <div class="table-panel">
+                <div class="table-header">
+                    <h5 class="table-title">
+                        <i class="fas fa-calendar-times"></i> Expiring Leases - Pending Renewals (${this.data.expiringLeases.length})
+                    </h5>
+                </div>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Property Name</th>
+                                <th>Country</th>
+                                <th>Tenant</th>
+                                <th>Lease End Date</th>
+                                <th>Renewal Due By</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>${rows}</tbody>
+                    </table>
+                </div>
+            </div>
+        `;
+    }
+    
+    generateDeclinedTable() {
+        const rows = this.data.declinedRenewals.map(declined => `
+            <tr>
+                <td>${declined.prop_name || ''}</td>
+                <td>${declined.prop_country || ''}</td>
+                <td>${declined.tenant_name || ''}</td>
+                <td>${declined.lease_end_date || ''}</td>
+                <td><span class="status-badge status-urgent">NEED NEW TENANT</span></td>
+            </tr>
+        `).join('');
+        
+        return `
+            <div class="table-panel">
+                <div class="table-header">
+                    <h5 class="table-title">
+                        <i class="fas fa-times-circle"></i> Declined Renewals (${this.data.declinedRenewals.length})
+                    </h5>
+                </div>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Property Name</th>
+                                <th>Country</th>
+                                <th>Current Tenant</th>
+                                <th>Lease End Date</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>${rows}</tbody>
+                    </table>
+                </div>
+            </div>
+        `;
+    }
+    
+    generateOverdueTable() {
+        const rows = this.data.overdueInvoices.map(invoice => {
+            const amount = parseFloat(invoice.tenant_rent || 0);
+            const formattedAmount = amount.toLocaleString('en-US', {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            });
+            
+            return `
+                <tr>
+                    <td>${invoice.prop_name || ''}</td>
+                    <td>${invoice.prop_country || ''}</td>
+                    <td>${invoice.tenant_name || ''}</td>
+                    <td>€${formattedAmount}</td>
+                    <td>${invoice.due_date || ''}</td>
+                    <td>${invoice.days_overdue || 0}</td>
+                </tr>
+            `;
+        }).join('');
+        
+        return `
+            <div class="table-panel">
+                <div class="table-header">
+                    <h5 class="table-title">
+                        <i class="fas fa-exclamation-triangle"></i> Overdue Invoices (${this.data.overdueInvoices.length})
+                    </h5>
+                </div>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Property Name</th>
+                                <th>Country</th>
+                                <th>Tenant</th>
+                                <th>Amount</th>
+                                <th>Due Date</th>
+                                <th>Days Overdue</th>
+                            </tr>
+                        </thead>
+                        <tbody>${rows}</tbody>
+                    </table>
+                </div>
+            </div>
+        `;
+    }
+    
+    generateExpensesApprovalTable() {
+        const rows = this.data.expensesWaitingApproval.map(expense => `
+            <tr>
+                <td>${expense.property_name || 'N/A'}</td>
+                <td>${expense.expense_type || 'General'}</td>
+                <td>${expense.description || ''}</td>
+                <td>€${parseFloat(expense.amount || 0).toFixed(2)}</td>
+                <td>${expense.submitted_date || expense.expense_date || ''}</td>
+                <td><span class="status-badge status-warning">PENDING APPROVAL</span></td>
+            </tr>
+        `).join('');
+        
+        return `
+            <div class="table-panel">
+                <div class="table-header">
+                    <h5 class="table-title">
+                        <i class="fas fa-clipboard-check"></i> Expenses Waiting for Approval (${this.data.expensesWaitingApproval.length})
+                    </h5>
+                </div>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Property Name</th>
+                                <th>Expense Type</th>
+                                <th>Description</th>
+                                <th>Amount</th>
+                                <th>Submitted Date</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>${rows}</tbody>
+                    </table>
+                </div>
+            </div>
+        `;
+    }
+    
+    generateExpensesPaymentTable() {
+        const rows = this.data.expensesWaitingPayment.map(expense => `
+            <tr>
+                <td>${expense.property_name || 'N/A'}</td>
+                <td>${expense.expense_type || 'General'}</td>
+                <td>${expense.description || ''}</td>
+                <td>€${parseFloat(expense.amount || 0).toFixed(2)}</td>
+                <td>${expense.approved_date || expense.expense_date || ''}</td>
+                <td><span class="status-badge status-info">APPROVED - AWAITING PAYMENT</span></td>
+            </tr>
+        `).join('');
+        
+        return `
+            <div class="table-panel">
+                <div class="table-header">
+                    <h5 class="table-title">
+                        <i class="fas fa-credit-card"></i> Expenses Waiting for Payment (${this.data.expensesWaitingPayment.length})
+                    </h5>
+                </div>
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Property Name</th>
+                                <th>Expense Type</th>
+                                <th>Description</th>
+                                <th>Amount</th>
+                                <th>Approved Date</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>${rows}</tbody>
+                    </table>
+                </div>
+            </div>
+        `;
+    }
+    
+    attachEventListeners() {
+        // Indicator card clicks
+        document.querySelectorAll('.indicator-card').forEach(card => {
+            card.addEventListener('click', () => {
+                const category = card.dataset.category;
+                this.selectedCategory = category;
+                
+                // Remove active class from all cards
+                document.querySelectorAll('.indicator-card').forEach(c => c.classList.remove('active'));
+                // Add active class to clicked card
+                if (this.getCategoryCount(category) > 0) {
+                    card.classList.add('active');
+                }
+            });
+        });
+    }
+    
+    getCategoryCount(category) {
+        switch(category) {
+            case 'vacant': return this.data.summary.vacantProperties;
+            case 'expiring': return this.data.summary.expiringLeases;
+            case 'declined': return this.data.summary.declinedRenewals;
+            case 'overdue': return this.data.summary.overdueInvoices;
+            case 'approval': return this.data.summary.expensesWaitingApproval;
+            case 'payment': return this.data.summary.expensesWaitingPayment;
+            default: return 0;
+        }
+    }
+}
+
+// Load dashboard data and render
+function loadNotificationsData() {
+    document.getElementById('loadingIndicator').style.display = 'block';
+    document.getElementById('dashboardContainer').style.display = 'none';
+    document.getElementById('errorContainer').style.display = 'none';
+
+    fetch(window.location.href, {
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById('loadingIndicator').style.display = 'none';
+        
+        if (data.error) {
+            document.getElementById('errorMessage').textContent = data.error;
+            document.getElementById('errorContainer').style.display = 'block';
+        } else {
+            document.getElementById('dashboardContainer').style.display = 'block';
+            
+            console.log('Fresh dashboard data loaded:', data);
+            
+            try {
+                const container = document.getElementById('dashboardContainer');
+                new NotificationsDashboardV2(container, data);
+                console.log('Dashboard created successfully!');
+            } catch (error) {
+                console.error('Error creating dashboard:', error);
+                document.getElementById('errorMessage').textContent = 'Error creating dashboard: ' + error.message;
+                document.getElementById('errorContainer').style.display = 'block';
+                document.getElementById('dashboardContainer').style.display = 'none';
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error loading notifications:', error);
+        document.getElementById('loadingIndicator').style.display = 'none';
+        document.getElementById('errorMessage').textContent = error.message;
+        document.getElementById('errorContainer').style.display = 'block';
+    });
+}
+
+// Load notifications when page loads
+document.addEventListener('DOMContentLoaded', loadNotificationsData);
+</script>
+
+{% endblock %}

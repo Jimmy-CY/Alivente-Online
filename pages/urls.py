@@ -53,6 +53,9 @@ urlpatterns = [
     path('property/<int:property_id>/profit-loss/', views.dashboard_pl, name='dashboard_pl'),    
 
     #
+    # Notifications
+    path('notifications/', views.notifications_dashboard, name='notifications_dashboard'),
+    #
     # Projects
     # Projects URLs
     path('projects/', views.projects_list, name='projects'),

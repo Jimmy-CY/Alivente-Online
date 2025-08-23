@@ -64,6 +64,297 @@ import json
 
 logger = logging.getLogger(__name__)
 
+### NOTIFICATIONS ###
+@login_required
+def notifications_dashboard(request):
+    """
+    Notifications Dashboard view - shows property management alerts and status
+    """
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        # AJAX request - return JSON data
+        try:
+            notification_data = get_notification_data()
+            return JsonResponse(notification_data)
+        except Exception as e:
+            return JsonResponse({
+                'error': f'Error loading notification data: {str(e)}'
+            })
+    else:
+        # Regular page load - return template
+        return render(request, 'notifications.html')
+
+def get_notification_data():
+    """
+    Get notification data by running similar queries to the management command
+    """
+    mydb = mysql.connector.connect(
+        host=settings.DATABASES['default']['HOST'],
+        port=settings.DATABASES['default']['PORT'],
+        user=settings.DATABASES['default']['USER'],
+        password=settings.DATABASES['default']['PASSWORD'],
+        database=settings.DATABASES['default']['NAME'],
+        auth_plugin=settings.DATABASES['default']['AUTH_PLUGIN'],
+    )
+    
+    my_cursor = mydb.cursor()
+    today = date.today()
+    
+    try:
+        # Get vacant properties
+        vacant_properties = get_vacant_properties(my_cursor)
+        
+        # Get expiring leases (pending renewals)
+        expiring_leases = get_expiring_leases(my_cursor, today)
+        
+        # Get declined renewals
+        declined_renewals = get_declined_renewals(my_cursor, today)
+        
+        # Get overdue invoices
+        overdue_invoices = get_overdue_invoices(my_cursor, today)
+        
+        # Get expenses waiting for approval
+        expenses_waiting_approval = get_expenses_waiting_approval(my_cursor)
+        
+        # Get expenses waiting for payment
+        expenses_waiting_payment = get_expenses_waiting_payment(my_cursor)
+        
+        return {
+            'summary': {
+                'vacantProperties': len(vacant_properties),
+                'expiringLeases': len(expiring_leases),
+                'declinedRenewals': len(declined_renewals),
+                'overdueInvoices': len(overdue_invoices),
+                'expensesWaitingApproval': len(expenses_waiting_approval),
+                'expensesWaitingPayment': len(expenses_waiting_payment)
+            },
+            'vacantProperties': vacant_properties,
+            'expiringLeases': expiring_leases,
+            'declinedRenewals': declined_renewals,
+            'overdueInvoices': overdue_invoices,
+            'expensesWaitingApproval': expenses_waiting_approval,
+            'expensesWaitingPayment': expenses_waiting_payment,
+            'lastUpdated': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        }
+        
+    finally:
+        if mydb.is_connected():
+            my_cursor.close()
+            mydb.close()
+
+def get_expenses_waiting_approval(cursor):
+    """Get expenses that require approval (status = 'require_approval')"""
+    cursor.execute("""
+        SELECT ae.act_expense_id, ae.act_expense_date, ae.act_expense_description,
+               ae.act_expense_amount, p.prop_name
+        FROM railway.act_expense ae
+        JOIN railway.prop p ON ae.prop_id = p.prop_id
+        WHERE ae.act_expense_approved = 'No' 
+        AND ae.act_expense_paid = 'No'
+        ORDER BY ae.act_expense_date ASC
+    """)
+    
+    expenses_data = cursor.fetchall()
+    expenses_waiting_approval = []
+    
+    for row in expenses_data:
+        expenses_waiting_approval.append({
+            'expense_id': row[0],
+            'expense_date': row[1].strftime('%Y-%m-%d') if row[1] else '',
+            'description': row[2] or '',
+            'amount': float(row[3]) if row[3] else 0.0,
+            'property_name': row[4] or '',
+            'expense_type': 'General Expense',  # You might want to add this field to your database
+            'submitted_date': row[1].strftime('%Y-%m-%d') if row[1] else ''
+        })
+    
+    return expenses_waiting_approval
+
+def get_expenses_waiting_payment(cursor):
+    """Get expenses that are approved but not yet paid"""
+    cursor.execute("""
+        SELECT ae.act_expense_id, ae.act_expense_date, ae.act_expense_description,
+               ae.act_expense_amount, p.prop_name
+        FROM railway.act_expense ae
+        JOIN railway.prop p ON ae.prop_id = p.prop_id
+        WHERE ae.act_expense_approved = 'Yes' 
+        AND ae.act_expense_paid = 'No'
+        ORDER BY ae.act_expense_date ASC
+    """)
+    
+    expenses_data = cursor.fetchall()
+    expenses_waiting_payment = []
+    
+    for row in expenses_data:
+        expenses_waiting_payment.append({
+            'expense_id': row[0],
+            'expense_date': row[1].strftime('%Y-%m-%d') if row[1] else '',
+            'description': row[2] or '',
+            'amount': float(row[3]) if row[3] else 0.0,
+            'property_name': row[4] or '',
+            'expense_type': 'General Expense',  # You might want to add this field to your database
+            'approved_date': row[1].strftime('%Y-%m-%d') if row[1] else ''  # Using expense date as approximation
+        })
+    
+    return expenses_waiting_payment
+
+def get_vacant_properties(cursor):
+    """Get properties that are active and available but have no current tenant"""
+    # Get properties with current tenants
+    cursor.execute("""
+        SELECT prop.prop_name
+        FROM railway.tenant
+        JOIN railway.prop ON prop.prop_id = tenant.prop_id
+        WHERE tenant.tenant_current = 'Yes'
+    """)
+    prop_active_tenant = [row[0] for row in cursor.fetchall()]
+    
+    # Get all active properties available for rent
+    cursor.execute("""
+        SELECT prop.prop_name, prop.prop_country
+        FROM railway.prop
+        WHERE prop.prop_status = 'Active'
+        AND prop.prop_available_for_rent = 'Yes'
+        ORDER BY prop.prop_country ASC, prop.prop_name ASC
+    """)
+    active_properties_data = cursor.fetchall()
+    
+    # Find vacant properties
+    vacant_properties = []
+    for prop_data in active_properties_data:
+        prop_name = prop_data[0]
+        prop_country = prop_data[1]
+        
+        if prop_name not in prop_active_tenant:
+            vacant_properties.append({
+                'prop_name': prop_name,
+                'prop_country': prop_country
+            })
+    
+    return vacant_properties
+
+def get_expiring_leases(cursor, today):
+    """Get leases that are expiring and pending renewal"""
+    cursor.execute("""
+        SELECT prop.prop_name, prop.prop_country, tenant.tenant_name, 
+               tenant.tenant_lease_end_date, tenant.tenant_renewal_period,
+               tenant.tenant_renewal_status
+        FROM railway.tenant
+        JOIN railway.prop ON prop.prop_id = tenant.prop_id
+        WHERE tenant.tenant_current = 'Yes'
+        ORDER BY prop.prop_country ASC, prop.prop_name ASC
+    """)
+    tenant_rows = cursor.fetchall()
+    
+    expiring_leases = []
+    
+    for row in tenant_rows:
+        prop_name = row[0]
+        prop_country = row[1]
+        tenant_name = row[2]
+        lease_end_date = row[3]
+        renewal_period = int(row[4])
+        renewal_status = row[5] if row[5] else 'pending'
+        
+        renewal_date = lease_end_date - timedelta(days=renewal_period)
+        warning_date = renewal_date - timedelta(days=30)
+        
+        if today >= warning_date and renewal_status == 'pending':
+            expiring_leases.append({
+                'prop_name': prop_name,
+                'prop_country': prop_country,
+                'tenant_name': tenant_name,
+                'lease_end_date': lease_end_date.strftime('%Y-%m-%d'),
+                'renewal_date': renewal_date.strftime('%Y-%m-%d')
+            })
+    
+    return expiring_leases
+
+def get_declined_renewals(cursor, today):
+    """Get renewals that have been declined"""
+    cursor.execute("""
+        SELECT prop.prop_name, prop.prop_country, tenant.tenant_name, 
+               tenant.tenant_lease_end_date, tenant.tenant_renewal_period,
+               tenant.tenant_renewal_status
+        FROM railway.tenant
+        JOIN railway.prop ON prop.prop_id = tenant.prop_id
+        WHERE tenant.tenant_current = 'Yes'
+        ORDER BY prop.prop_country ASC, prop.prop_name ASC
+    """)
+    tenant_rows = cursor.fetchall()
+    
+    declined_renewals = []
+    
+    for row in tenant_rows:
+        prop_name = row[0]
+        prop_country = row[1]
+        tenant_name = row[2]
+        lease_end_date = row[3]
+        renewal_period = int(row[4])
+        renewal_status = row[5] if row[5] else 'pending'
+        
+        renewal_date = lease_end_date - timedelta(days=renewal_period)
+        warning_date = renewal_date - timedelta(days=30)
+        
+        if today >= warning_date and renewal_status == 'declined':
+            declined_renewals.append({
+                'prop_name': prop_name,
+                'prop_country': prop_country,
+                'tenant_name': tenant_name,
+                'lease_end_date': lease_end_date.strftime('%Y-%m-%d'),
+                'message': 'CURRENT TENANT NOT RENEWING LEASE - NEED NEW TENANT'
+            })
+    
+    return declined_renewals
+
+def get_overdue_invoices(cursor, today):
+    """Get properties with overdue invoices"""
+    cursor.execute("""
+        SELECT prop.prop_name, prop.prop_country, tenant.tenant_name, 
+               tenant.tenant_payment_terms, tenant.tenant_rent,
+               invoice.invoice_date, invoice.invoice_id
+        FROM railway.invoice
+        JOIN railway.tenant ON invoice.tenant_id = tenant.tenant_id
+        JOIN railway.prop ON tenant.prop_id = prop.prop_id
+        WHERE invoice.invoice_paid = 'No'
+        AND tenant.tenant_current = 'Yes'
+        ORDER BY prop.prop_country ASC, prop.prop_name ASC, invoice.invoice_date ASC
+    """)
+    
+    invoice_data = cursor.fetchall()
+    
+    # Create a flat list of overdue invoices instead of grouping
+    overdue_invoices_list = []
+    
+    for row in invoice_data:
+        prop_name = row[0]
+        prop_country = row[1]
+        tenant_name = row[2]
+        payment_terms = int(row[3]) if row[3] else 0
+        tenant_rent = row[4]
+        invoice_date = row[5]
+        invoice_id = row[6]
+        
+        # Calculate due date based on invoice date and payment terms
+        due_date = invoice_date + timedelta(days=payment_terms)
+        
+        # Only include if invoice is overdue
+        if due_date < today:
+            # Calculate days overdue
+            days_overdue = (today - due_date).days
+            
+            overdue_invoices_list.append({
+                'prop_name': prop_name,
+                'prop_country': prop_country,
+                'tenant_name': tenant_name,
+                'tenant_rent': tenant_rent,
+                'invoice_date': invoice_date.strftime('%Y-%m-%d'),
+                'due_date': due_date.strftime('%Y-%m-%d'),
+                'days_overdue': days_overdue,
+                'invoice_id': invoice_id
+            })
+    
+    return overdue_invoices_list
+
 ### FINANCIAL DASHBOARD ###
 @login_required
 def financial_indicators_view(request):
