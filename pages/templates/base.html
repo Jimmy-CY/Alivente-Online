@@ -23,6 +23,73 @@
       <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 
     <title>{% block title %}Hello, world!{% endblock %}</title>
+
+    <style>
+    /* Superscript notification badge styles */
+    .notification-text-container {
+        position: relative;
+        display: inline-block;
+    }
+    
+    .notification-badge {
+        position: absolute;
+        top: -8px;
+        right: -12px;
+        background-color: #17a2b8;
+        color: white;
+        border-radius: 50%;
+        width: 16px;
+        height: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 10px;
+        font-weight: bold;
+        line-height: 1;
+        border: 2px solid #343a40;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        z-index: 1;
+    }
+    
+    /* Hide badge when count is 0 or empty */
+    .notification-badge[data-count="0"],
+    .notification-badge[data-count=""] {
+        display: none;
+    }
+    
+    /* Adjust for larger numbers */
+    .notification-badge.large-count {
+        width: 20px;
+        height: 16px;
+        border-radius: 8px;
+        right: -14px;
+        font-size: 9px;
+    }
+    
+    /* Subtle pulse animation */
+    @keyframes subtlePulse {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.05); }
+        100% { transform: scale(1); }
+    }
+    
+    .notification-badge.has-notifications {
+        animation: subtlePulse 3s ease-in-out infinite;
+    }
+    
+    /* Ensure nav-link maintains proper styling */
+    .notification-link {
+        display: flex;
+        align-items: center;
+        color: rgba(255,255,255,.5) !important;
+        transition: color 0.3s ease;
+    }
+    
+    .notification-link:hover {
+        color: rgba(255,255,255,.75) !important;
+        text-decoration: none;
+    }
+    </style>
   </head>
   <body>
 
@@ -35,7 +102,17 @@
         <ul class="navbar-nav mr-auto">
           {% if user.is_authenticated %}
             <li class="nav-item">
-              <a class="nav-link" href="{% url 'notifications_dashboard' %}">Notifications</a>
+              <a class="nav-link notification-link" href="{% url 'notifications_dashboard' %}">
+                <span class="notification-text-container">
+                  Notifications
+                  {% if notification_count > 0 %}
+                    <span class="notification-badge has-notifications{% if notification_count > 9 %} large-count{% endif %}" 
+                          data-count="{{ notification_count }}">
+                      {% if notification_count > 99 %}99+{% else %}{{ notification_count }}{% endif %}
+                    </span>
+                  {% endif %}
+                </span>
+              </a>
             </li>
             <li class="nav-item">
               <a class="nav-link" href="{% url 'properties' %}">Properties</a>

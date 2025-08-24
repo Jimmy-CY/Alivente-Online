@@ -11447,3 +11447,84 @@ Not Found: /favicon.ico
 "GET /notifications/ HTTP/1.1" 200 26259
 "GET /notifications/ HTTP/1.1" 200 5288
 "GET / HTTP/1.1" 200 8076
+Watching for file changes with StatReloader
+"GET /notifications/ HTTP/1.1" 200 26259
+"GET /notifications/ HTTP/1.1" 200 5288
+C:\Users\DemetrisManias\Desktop\code\djangoproject\mysite\settings.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\DemetrisManias\Desktop\code\djangoproject\mysite\settings.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\DemetrisManias\Desktop\code\djangoproject\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 9847
+"GET /notifications/ HTTP/1.1" 200 28030
+"GET /notifications/ HTTP/1.1" 200 5288
+"GET /notifications/ HTTP/1.1" 200 5288
+"GET /act_expense_all/?from=home HTTP/1.1" 200 77593
+"GET /media/expense_docs/foti-pitta-20250514-Invoice.pdf HTTP/1.1" 200 461728
+"POST /act_expense_edit_commit/7 HTTP/1.1" 302 0
+"GET /act_expense_all/ HTTP/1.1" 200 78081
+"GET / HTTP/1.1" 200 9847
+"GET /notifications/ HTTP/1.1" 200 28030
+"GET /notifications/ HTTP/1.1" 200 5498
+"GET /act_expense_all/?from=home HTTP/1.1" 200 77823
+"POST /mark_paid/7 HTTP/1.1" 302 0
+"GET /act_expense_all/ HTTP/1.1" 200 77873
+"GET /notifications/ HTTP/1.1" 200 28030
+"GET /notifications/ HTTP/1.1" 200 5288
+"GET / HTTP/1.1" 200 9847
+"GET /properties/ HTTP/1.1" 200 55554
+"GET /tenant/ HTTP/1.1" 200 56324
+"GET /suppliers/ HTTP/1.1" 200 46477
+"GET /petty_cash/ HTTP/1.1" 200 8840
+"GET / HTTP/1.1" 200 9847
+"GET / HTTP/1.1" 200 9847
+"GET / HTTP/1.1" 200 9847
+"GET / HTTP/1.1" 200 9847
+"GET /static/css/my_style.css HTTP/1.1" 200 45
+"GET /static/images/alivente_online_logo.png HTTP/1.1" 200 58508
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 42093
+"GET / HTTP/1.1" 200 9847
+"GET / HTTP/1.1" 200 10451
+"GET / HTTP/1.1" 200 10628
+"GET / HTTP/1.1" 200 10108
+"GET /act_expense_all/?from=home HTTP/1.1" 200 77854
+"POST /act_expense_edit_commit/12 HTTP/1.1" 302 0
+"GET /act_expense_all/ HTTP/1.1" 200 78343
+"GET /notifications/ HTTP/1.1" 200 28291
+"GET /notifications/ HTTP/1.1" 200 5505
+"GET /act_expense_all/?from=home HTTP/1.1" 200 78085
+"GET /notifications/ HTTP/1.1" 200 28291
+"GET /notifications/ HTTP/1.1" 200 5505
+"GET / HTTP/1.1" 200 10108
+"GET /notifications/ HTTP/1.1" 200 28291
+"GET /notifications/ HTTP/1.1" 200 5505
+"GET /projects/ HTTP/1.1" 200 27058
+"GET /projects/detail/15/ HTTP/1.1" 200 58551
+"GET /projects/edit/15/ HTTP/1.1" 200 30060
+"GET /projects/detail/15/ HTTP/1.1" 200 58551
+"GET /projects/15/tasks/edit/59/ HTTP/1.1" 200 37092
+"POST /projects/15/tasks/edit/59/ HTTP/1.1" 302 0
+"GET /projects/detail/15/ HTTP/1.1" 200 59193
+"GET /projects/15/gantt/ HTTP/1.1" 200 31082
+"GET /projects/detail/15/ HTTP/1.1" 200 58591
+"GET /projects/15/assignees/ HTTP/1.1" 200 129
+"GET /projects/15/task-list/?language=english HTTP/1.1" 200 31313
+"GET /projects/detail/15/ HTTP/1.1" 200 58591
+"GET / HTTP/1.1" 200 10108
+"GET /notifications/ HTTP/1.1" 200 28291
+"GET /notifications/ HTTP/1.1" 200 5505
+"GET /act_expense_all/?from=home HTTP/1.1" 200 78085
+"GET /notifications/ HTTP/1.1" 200 28291
+"GET /notifications/ HTTP/1.1" 200 5505
+"GET / HTTP/1.1" 200 10108
+"GET /property_management_dashboard/ HTTP/1.1" 200 43046
+"GET / HTTP/1.1" 200 10108
+"GET /finance/ HTTP/1.1" 200 12966
+"GET /financial-indicators/ HTTP/1.1" 200 32028
+"GET /financial-indicators/ HTTP/1.1" 200 2729
+"GET / HTTP/1.1" 200 10108
