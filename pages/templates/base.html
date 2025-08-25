@@ -25,16 +25,26 @@
     <title>{% block title %}Hello, world!{% endblock %}</title>
 
     <style>
-    /* Superscript notification badge styles */
-    .notification-text-container {
+    /* Bell icon notification badge styles */
+    .notification-bell-container {
         position: relative;
         display: inline-block;
+    }
+    
+    .notification-bell-icon {
+        font-size: 16px;
+        color: rgba(255, 255, 255, 0.75);
+        transition: color 0.3s ease;
+    }
+    
+    .notification-bell-link:hover .notification-bell-icon {
+        color: rgba(255, 255, 255, 0.9);
     }
     
     .notification-badge {
         position: absolute;
         top: -8px;
-        right: -12px;
+        right: -10px;
         background-color: #17a2b8;
         color: white;
         border-radius: 50%;
@@ -78,14 +88,13 @@
     }
     
     /* Ensure nav-link maintains proper styling */
-    .notification-link {
-        display: flex;
-        align-items: center;
+    .notification-bell-link {
         color: rgba(255,255,255,.5) !important;
         transition: color 0.3s ease;
+        padding: 8px 16px !important;
     }
     
-    .notification-link:hover {
+    .notification-bell-link:hover {
         color: rgba(255,255,255,.75) !important;
         text-decoration: none;
     }
@@ -101,19 +110,6 @@
       <div class="collapse navbar-collapse" id="navbarSupportedContent">
         <ul class="navbar-nav mr-auto">
           {% if user.is_authenticated %}
-            <li class="nav-item">
-              <a class="nav-link notification-link" href="{% url 'notifications_dashboard' %}">
-                <span class="notification-text-container">
-                  Notifications
-                  {% if notification_count > 0 %}
-                    <span class="notification-badge has-notifications{% if notification_count > 9 %} large-count{% endif %}" 
-                          data-count="{{ notification_count }}">
-                      {% if notification_count > 99 %}99+{% else %}{{ notification_count }}{% endif %}
-                    </span>
-                  {% endif %}
-                </span>
-              </a>
-            </li>
             <li class="nav-item">
               <a class="nav-link" href="{% url 'properties' %}">Properties</a>
             </li>
@@ -148,6 +144,21 @@
         <ul class="navbar-nav ml-auto">
           
           {% if user.is_authenticated %}
+              <!-- Bell Notification Icon -->
+              <li class="nav-item">
+                <a class="nav-link notification-bell-link" href="{% url 'notifications_dashboard' %}">
+                  <span class="notification-bell-container">
+                    <i class="fas fa-bell notification-bell-icon"></i>
+                    {% if notification_count > 0 %}
+                      <span class="notification-badge has-notifications{% if notification_count > 9 %} large-count{% endif %}" 
+                            data-count="{{ notification_count }}">
+                        {% if notification_count > 99 %}99+{% else %}{{ notification_count }}{% endif %}
+                      </span>
+                    {% endif %}
+                  </span>
+                </a>
+              </li>
+
               {% if user.is_superuser %}
               <li class="nav-item">
                   <a class="nav-link" href="{% url 'projects' %}">Projects</a>
