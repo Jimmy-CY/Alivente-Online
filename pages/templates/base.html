@@ -98,6 +98,67 @@
         color: rgba(255,255,255,.75) !important;
         text-decoration: none;
     }
+
+    /* Custom dropdown styling */
+    .dropdown-menu {
+        background-color: #495057;
+        border: 1px solid #6c757d;
+        border-radius: 6px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+    
+    .dropdown-item {
+        color: rgba(255, 255, 255, 0.8) !important;
+        padding: 10px 20px;
+        transition: all 0.3s ease;
+    }
+    
+    .dropdown-item:hover {
+        background-color: #17a2b8;
+        color: white !important;
+    }
+    
+    .dropdown-item.disabled {
+        color: rgba(255, 255, 255, 0.4) !important;
+        cursor: not-allowed;
+    }
+    
+    .dropdown-item.disabled:hover {
+        background-color: transparent;
+        color: rgba(255, 255, 255, 0.4) !important;
+    }
+    
+    .dropdown-divider {
+        border-color: #6c757d;
+    }
+    
+    /* Hover dropdown functionality */
+    .dropdown:hover .dropdown-menu {
+        display: block;
+        margin-top: 0;
+    }
+    
+    .dropdown-menu {
+        margin-top: 0;
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-10px);
+        transition: opacity 0.3s ease, visibility 0.3s ease, transform 0.3s ease;
+    }
+    
+    .dropdown:hover .dropdown-menu {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+    }
+    
+    /* Ensure dropdown stays open when hovering over menu */
+    .dropdown-menu:hover {
+        display: block;
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+    }
     </style>
   </head>
   <body>
@@ -110,32 +171,47 @@
       <div class="collapse navbar-collapse" id="navbarSupportedContent">
         <ul class="navbar-nav mr-auto">
           {% if user.is_authenticated %}
-            <li class="nav-item">
-              <a class="nav-link" href="{% url 'properties' %}">Properties</a>
+            <!-- Property Operations Dropdown -->
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" id="propertyDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                Property Operations
+              </a>
+              <div class="dropdown-menu" aria-labelledby="propertyDropdown">
+                <a class="dropdown-item" href="{% url 'properties' %}">Properties</a>
+                <a class="dropdown-item" href="{% url 'tenant' %}">Tenants</a>
+                <a class="dropdown-item" href="{% url 'suppliers' %}">Suppliers</a>
+                <a class="dropdown-item" href="{% url 'fsr' %}">Issues</a>
+                <div class="dropdown-divider"></div>
+                {% if user.is_superuser %}
+                  <a class="dropdown-item" href="{% url 'projects' %}">Projects</a>
+                  <a class="dropdown-item" href="{% url 'property_management_dashboard' %}">Dashboard</a>
+                {% else %}
+                  <span class="dropdown-item disabled">Projects</span>
+                  <span class="dropdown-item disabled">Dashboard</span>
+                {% endif %}
+              </div>
             </li>
-            <li class="nav-item">
-              <a class="nav-link" href="{% url 'tenant' %}">Tenants</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="{% url 'suppliers' %}">Suppliers</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="{% url 'petty_cash' %}">Petty Cash</a>
-            </li>
-            {% if user.is_superuser %}
-              <li class="nav-item">
-                  <a class="nav-link" href="{% url 'invoices' %}">Invoices</a>
-              </li>
-              {% else %}
-              <li class="nav-item">
-                  <span class="nav-link text-muted" style="cursor: default;">Invoices</span>
-              </li>
-            {% endif %}
-            <li class="nav-item">
-              <a class="nav-link" href="{% url 'act_expense_all' %}?from=home">Expenses</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="{% url 'fsr' %}">Issues</a>
+
+            <!-- Financial Management Dropdown -->
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" id="financialDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                Financial Management
+              </a>
+              <div class="dropdown-menu" aria-labelledby="financialDropdown">
+                {% if user.is_superuser %}
+                  <a class="dropdown-item" href="{% url 'invoices' %}">Invoices</a>
+                {% else %}
+                  <span class="dropdown-item disabled">Invoices</span>
+                {% endif %}
+                <a class="dropdown-item" href="{% url 'act_expense_all' %}?from=home">Expenses</a>
+                <a class="dropdown-item" href="{% url 'petty_cash' %}">Petty Cash</a>
+                <div class="dropdown-divider"></div>
+                {% if user.is_superuser %}
+                  <a class="dropdown-item" href="{% url 'finance' %}">Financials</a>
+                {% else %}
+                  <span class="dropdown-item disabled">Financials</span>
+                {% endif %}
+              </div>
             </li>
           {% endif %}
         </ul>
@@ -144,7 +220,22 @@
         <ul class="navbar-nav ml-auto">
           
           {% if user.is_authenticated %}
-              <!-- Bell Notification Icon -->
+              <!-- Administration Direct Link -->
+              {% if user.is_superuser %}
+              <li class="nav-item">
+                  <a class="nav-link" href="{% url 'admin_apms' %}">Administration</a>
+              </li>
+              {% else %}
+              <li class="nav-item">
+                  <span class="nav-link text-muted" style="cursor: default;">Administration</span>
+              </li>
+              {% endif %}
+              
+              <li class="nav-item">
+                  <a class="nav-link" href="{% url 'logout' %}">Logout</a>
+              </li>
+
+              <!-- Bell Notification Icon - Far Right -->
               <li class="nav-item">
                 <a class="nav-link notification-bell-link" href="{% url 'notifications_dashboard' %}">
                   <span class="notification-bell-container">
@@ -157,50 +248,6 @@
                     {% endif %}
                   </span>
                 </a>
-              </li>
-
-              {% if user.is_superuser %}
-              <li class="nav-item">
-                  <a class="nav-link" href="{% url 'projects' %}">Projects</a>
-              </li>
-              {% else %}
-              <li class="nav-item">
-                  <span class="nav-link text-muted" style="cursor: default;">Projects</span>
-              </li>
-              {% endif %}
-
-              {% if user.is_superuser %}
-              <li class="nav-item">
-                  <a class="nav-link" href="{% url 'finance' %}">Finance</a>
-              </li>
-              {% else %}
-              <li class="nav-item">
-                  <span class="nav-link text-muted" style="cursor: default;">Finance</span>
-              </li>
-              {% endif %}
-
-              {% if user.is_superuser %}
-              <li class="nav-item">
-                  <a class="nav-link" href="{% url 'property_management_dashboard' %}">Dashboard</a>
-              </li>
-              {% else %}
-              <li class="nav-item">
-                  <span class="nav-link text-muted" style="cursor: default;">Dashboard</span>
-              </li>
-              {% endif %}
-
-              {% if user.is_superuser %}
-              <li class="nav-item">
-                  <a class="nav-link" href="{% url 'admin_apms' %}">Admin</a>
-              </li>
-              {% else %}
-              <li class="nav-item">
-                  <span class="nav-link text-muted" style="cursor: default;">Admin</span>
-              </li>
-              {% endif %}
-              
-              <li class="nav-item">
-                  <a class="nav-link" href="{% url 'logout' %}">Logout</a>
               </li>
           {% else %}
               <li class="nav-item">
@@ -224,5 +271,46 @@
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.14.3/dist/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.1.3/dist/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+    
+    <script>
+    // Enable hover dropdowns while maintaining click functionality for mobile
+    $(document).ready(function() {
+        // Show dropdown on hover
+        $('.dropdown').hover(
+            function() {
+                $(this).addClass('show');
+                $(this).find('.dropdown-menu').addClass('show');
+            },
+            function() {
+                $(this).removeClass('show');
+                $(this).find('.dropdown-menu').removeClass('show');
+            }
+        );
+        
+        // Prevent dropdown from closing when clicking inside it
+        $('.dropdown-menu').click(function(e) {
+            e.stopPropagation();
+        });
+        
+        // Close dropdown when clicking outside
+        $(document).click(function(e) {
+            if (!$(e.target).closest('.dropdown').length) {
+                $('.dropdown').removeClass('show');
+                $('.dropdown-menu').removeClass('show');
+            }
+        });
+        
+        // Handle mobile touch devices - maintain click functionality
+        $('.dropdown-toggle').click(function(e) {
+            // Only prevent default on touch devices or when dropdown is not visible
+            if ('ontouchstart' in window || !$(this).parent().hasClass('show')) {
+                e.preventDefault();
+                $('.dropdown').not($(this).parent()).removeClass('show').find('.dropdown-menu').removeClass('show');
+                $(this).parent().toggleClass('show');
+                $(this).siblings('.dropdown-menu').toggleClass('show');
+            }
+        });
+    });
+    </script>
   </body>
 </html>
