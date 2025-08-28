@@ -4365,8 +4365,15 @@ def mark_approved(request, expense_id):
     if expense.act_expense_approved != 'Yes':  # Only update if not already approved
         expense.act_expense_approved = 'Yes'
         expense.save()
-        # Attempt to send the notification email
-        if send_expense_approved_email(expense.act_expense_description, expense.act_expense_amount):
+        # Attempt to send the notification email with enhanced details
+        from datetime import date
+        if send_expense_approved_email(
+            expense.act_expense_date, 
+            expense.prop.prop_name,  # Access through the foreign key relationship
+            expense.act_expense_description, 
+            expense.act_expense_amount,
+            date.today()
+        ):
             messages.info(request, "Expense approved and notification email sent.")
         else:
             messages.warning(request, "Expense approved, but email could not be sent.")
@@ -4378,8 +4385,15 @@ def mark_paid(request, expense_id):
     if expense.act_expense_paid != 'Yes':  # Only update if not already paid
         expense.act_expense_paid = 'Yes'
         expense.save()
-        # Attempt to send the notification email
-        if send_expense_paid_email(expense.act_expense_description, expense.act_expense_amount):
+        # Attempt to send the notification email with enhanced details
+        from datetime import date
+        if send_expense_paid_email(
+            expense.act_expense_date,
+            expense.prop.prop_name,  # Access through the foreign key relationship
+            expense.act_expense_description,
+            expense.act_expense_amount,
+            date.today()
+        ):
             messages.info(request, "Expense marked as paid and notification email sent.")
         else:
             messages.warning(request, "Expense marked as paid, but email could not be sent.")
@@ -4400,7 +4414,7 @@ def act_expense_add(request):
     results = props.objects.filter(prop_status="Active").order_by('prop_country','prop_name')
     return render(request, "act_expense_add.html", {'props': results})
 
-def send_expense_approved_email(description, amount):
+def send_expense_approved_email(expense_date, property_name, description, amount, approved_date):
     """
     Send email notification of an expense approval for a specific expense
     """
@@ -4409,18 +4423,25 @@ def send_expense_approved_email(description, amount):
         # Create message
         msg = MIMEMultipart()
         msg['From'] = "demetrimanias@gmail.com"
-        msg['To'] = "demetrimanias@gmail.com"
-        msg['Subject'] = "Expense Approval"
+        msg['To'] = "stella.simitopoulos@alivente.com"
+        msg['Cc'] = "demetrimanias@gmail.com"
+        msg['Subject'] = f"Expense Approved - €{amount} for {property_name}"
         
         # Email body with proper formatting
         body = f"""Dear User,
 
-An expense has been approved.  The details are as follows:
- • Description: {description}
- • Amount: € {amount}
+An expense has been APPROVED. The details are as follows:
+
+- Expense Date: {expense_date.strftime('%d/%m/%Y')}
+- Property: {property_name}
+- Description: {description}
+- Amount: €{amount}
+- Approved Date: {approved_date.strftime('%d/%m/%Y')}
+- Status: Approved (Pending Payment)
+
+You can view this expense in the Alivente Property Management System.
 
 Thanks,
-
 Alivente Property Management System"""
         
         msg.attach(MIMEText(body, 'plain'))
@@ -4441,9 +4462,10 @@ Alivente Property Management System"""
         
         smtp_object.login(email, email_password)
         
-        # Send email
+        # Send email to both To and CC recipients
+        recipients = ["stella.simitopoulos@alivente.com", "demetrimanias@gmail.com"]
         text = msg.as_string()
-        smtp_object.sendmail(email, "demetrimanias@gmail.com", text)
+        smtp_object.sendmail(email, recipients, text)
         return True
         
     except smtplib.SMTPAuthenticationError as e:
@@ -4462,7 +4484,7 @@ Alivente Property Management System"""
             except:
                 pass
 
-def send_expense_paid_email(description, amount):
+def send_expense_paid_email(expense_date, property_name, description, amount, paid_date):
     """
     Send email notification of an expense payment for a specific expense
     """
@@ -4471,18 +4493,25 @@ def send_expense_paid_email(description, amount):
         # Create message
         msg = MIMEMultipart()
         msg['From'] = "demetrimanias@gmail.com"
-        msg['To'] = "demetrimanias@gmail.com"
-        msg['Subject'] = "Expense Payment"
+        msg['To'] = "stella.simitopoulos@alivente.com"
+        msg['Cc'] = "demetrimanias@gmail.com"
+        msg['Subject'] = f"Expense Paid - €{amount} for {property_name}"
         
         # Email body with proper formatting
         body = f"""Dear User,
 
-An expense has been paid.  The details are as follows:
- • Description: {description}
- • Amount: € {amount}
+An expense has been PAID. The details are as follows:
+
+- Expense Date: {expense_date.strftime('%d/%m/%Y')}
+- Property: {property_name}
+- Description: {description}
+- Amount: €{amount}
+- Paid Date: {paid_date.strftime('%d/%m/%Y')}
+- Status: Fully Processed
+
+This expense has been completed and processed.
 
 Thanks,
-
 Alivente Property Management System"""
         
         msg.attach(MIMEText(body, 'plain'))
@@ -4503,9 +4532,10 @@ Alivente Property Management System"""
         
         smtp_object.login(email, email_password)
         
-        # Send email
+        # Send email to both To and CC recipients
+        recipients = ["stella.simitopoulos@alivente.com", "demetrimanias@gmail.com"]
         text = msg.as_string()
-        smtp_object.sendmail(email, "demetrimanias@gmail.com", text)
+        smtp_object.sendmail(email, recipients, text)
         return True
         
     except smtplib.SMTPAuthenticationError as e:
@@ -4524,9 +4554,9 @@ Alivente Property Management System"""
             except:
                 pass
 
-def send_expense_approval_email_with_link(description, amount):
+def send_expense_approval_email_with_link(expense_date, property_name, description, amount, created_date):
     """
-    Send email notification for expense approval with link to specific expense
+    Send email notification for expense approval with enhanced details
     """
     smtp_object = None
     try:
@@ -4534,17 +4564,24 @@ def send_expense_approval_email_with_link(description, amount):
         msg = MIMEMultipart()
         msg['From'] = "demetrimanias@gmail.com"
         msg['To'] = "demetrimanias@gmail.com"
-        msg['Subject'] = "Actual Expense Approval"
+        msg['Cc'] = "stella.simitopoulos@alivente.com"
+        msg['Subject'] = f"New Expense Requires Approval - €{amount} for {property_name}"
         
         # Email body with proper formatting
         body = f"""Dear User,
 
-A new Actual Expense has been created that requires your approval.  The details are as follows:
- • Description: {description}
- • Amount: € {amount}
+A new Actual Expense has been created that requires your approval. The details are as follows:
+
+- Expense Date: {expense_date.strftime('%d/%m/%Y')}
+- Property: {property_name}
+- Description: {description}
+- Amount: €{amount}
+- Created Date: {created_date.strftime('%d/%m/%Y')}
+- Status: Pending Approval
+
+You can view this expense in the Alivente Property Management System.
 
 Thanks,
-
 Alivente Property Management System"""
         
         msg.attach(MIMEText(body, 'plain'))
@@ -4565,9 +4602,10 @@ Alivente Property Management System"""
         
         smtp_object.login(email, email_password)
         
-        # Send email
+        # Send email to both To and CC recipients
+        recipients = ["demetrimanias@gmail.com", "stella.simitopoulos@alivente.com"]
         text = msg.as_string()
-        smtp_object.sendmail(email, "demetrimanias@gmail.com", text)
+        smtp_object.sendmail(email, recipients, text)
         return True
         
     except smtplib.SMTPAuthenticationError as e:
@@ -4616,7 +4654,19 @@ def act_expense_commit(request):
             
             # Check if user is not a superuser and send email
             if not request.user.is_superuser:
-                email_sent = send_expense_approval_email_with_link(expense_description, expense_amount)
+                from datetime import date
+                from django.utils.dateparse import parse_date
+                
+                # Parse the expense date for email
+                parsed_expense_date = parse_date(expense_date)
+                
+                email_sent = send_expense_approval_email_with_link(
+                    parsed_expense_date,
+                    expense.prop.prop_name,  # Get property name through foreign key
+                    expense_description,
+                    expense_amount,
+                    date.today()  # Created date
+                )
                 if email_sent:
                     messages.success(request, 'Expense added successfully and approval email sent!')
                 else:
@@ -5117,10 +5167,22 @@ def fsr_notification(request):
         html_content = render_to_string("fsr_email.html", context, request=request)
         text_content = strip_tags(html_content)
         
+        # Determine recipients based on user permissions
+        if request.user.is_superuser:
+            # Supervisor: Send to Stella
+            to_email = "stella.simitopoulos@alivente.com"
+        else:
+            # Non-supervisor: Send to Demetri
+            to_email = "demetrimanias@gmail.com"
+        
+        # Always CC angmaniasbakers
+        cc_email = "angmaniasbakers@gmail.com"
+        
         # Prepare email with report type in subject
         msg = MIMEMultipart("alternative")
         msg['From'] = "demetrimanias@gmail.com"
-        msg['To'] = "demetrimanias@gmail.com"
+        msg['To'] = to_email
+        msg['Cc'] = cc_email
         
         # Include report type in subject
         if is_summarized_report:
@@ -5141,7 +5203,10 @@ def fsr_notification(request):
         password = os.environ.get('EMAIL_PASSWORD')
         
         smtp_object.login(email, password)
-        smtp_object.sendmail(email, "demetrimanias@gmail.com", msg.as_string())
+        
+        # Send email to both To and CC recipients
+        recipients = [to_email, cc_email]
+        smtp_object.sendmail(email, recipients, msg.as_string())
         
         success_message = f"Friday Status Report ({report_type_text}) sent successfully!"
         messages.success(request, success_message)
