@@ -11635,3 +11635,417 @@ Watching for file changes with StatReloader
 "GET /financial-indicators/ HTTP/1.1" 200 36007
 "GET /financial-indicators/ HTTP/1.1" 200 2729
 "GET /finance/ HTTP/1.1" 200 16945
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 7992
+"GET /login/ HTTP/1.1" 200 9421
+"GET /static/css/my_style.css HTTP/1.1" 304 0
+"GET /static/images/alivente_online_logo.png HTTP/1.1" 304 0
+"POST /login/ HTTP/1.1" 302 0
+"GET / HTTP/1.1" 200 14848
+"GET /notifications/ HTTP/1.1" 200 32270
+"GET /notifications/ HTTP/1.1" 200 5667
+"GET / HTTP/1.1" 200 14087
+Internal Server Error: /projects/
+Traceback (most recent call last):
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\db\backends\mysql\base.py", line 76, in execute
+    return self.cursor.execute(query, args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\pymysql\cursors.py", line 153, in execute
+    result = self._query(query)
+             ^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\pymysql\cursors.py", line 322, in _query
+    conn.query(q)
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\pymysql\connections.py", line 563, in query
+    self._affected_rows = self._read_query_result(unbuffered=unbuffered)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\pymysql\connections.py", line 825, in _read_query_result
+    result.read()
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\pymysql\connections.py", line 1199, in read
+    first_packet = self.connection._read_packet()
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\pymysql\connections.py", line 775, in _read_packet
+    packet.raise_for_error()
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\pymysql\protocol.py", line 219, in raise_for_error
+    err.raise_mysql_exception(self._data)
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\pymysql\err.py", line 150, in raise_mysql_exception
+    raise errorclass(errno, errval)
+pymysql.err.OperationalError: (1054, "Unknown column 'projects.project_name_greek' in 'field list'")
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\contrib\auth\decorators.py", line 60, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\pages\views.py", line 688, in projects_list
+    return render(request, 'projects/projects.html', context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\loader.py", line 62, in render_to_string
+    return template.render(context, request)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\backends\django.py", line 107, in render
+    return self.template.render(context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\base.py", line 171, in render
+    return self._render(context)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\base.py", line 163, in _render
+    return self.nodelist.render(context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\base.py", line 1008, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\base.py", line 969, in render_annotated
+    return self.render(context)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\loader_tags.py", line 159, in render
+    return compiled_parent._render(context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\base.py", line 163, in _render
+    return self.nodelist.render(context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\base.py", line 1008, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\base.py", line 969, in render_annotated
+    return self.render(context)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\loader_tags.py", line 65, in render
+    result = block.nodelist.render(context)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\base.py", line 1008, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\base.py", line 969, in render_annotated
+    return self.render(context)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\defaulttags.py", line 199, in render
+    len_values = len(values)
+                 ^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\core\paginator.py", line 191, in __len__
+    return len(self.object_list)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\db\models\query.py", line 382, in __len__
+    self._fetch_all()
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\db\models\query.py", line 1928, in _fetch_all
+    self._result_cache = list(self._iterable_class(self))
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\db\models\query.py", line 91, in __iter__
+    results = compiler.execute_sql(
+              ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\db\models\sql\compiler.py", line 1574, in execute_sql
+    cursor.execute(sql, params)
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\db\backends\utils.py", line 122, in execute
+    return super().execute(sql, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\db\backends\utils.py", line 79, in execute
+    return self._execute_with_wrappers(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\db\backends\utils.py", line 92, in _execute_with_wrappers
+    return executor(sql, params, many, context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\db\backends\utils.py", line 100, in _execute
+    with self.db.wrap_database_errors:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\db\utils.py", line 91, in __exit__
+    raise dj_exc_value.with_traceback(traceback) from exc_value
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\db\backends\utils.py", line 105, in _execute
+    return self.cursor.execute(sql, params)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\db\backends\mysql\base.py", line 76, in execute
+    return self.cursor.execute(query, args)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\pymysql\cursors.py", line 153, in execute
+    result = self._query(query)
+             ^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\pymysql\cursors.py", line 322, in _query
+    conn.query(q)
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\pymysql\connections.py", line 563, in query
+    self._affected_rows = self._read_query_result(unbuffered=unbuffered)
+                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\pymysql\connections.py", line 825, in _read_query_result
+    result.read()
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\pymysql\connections.py", line 1199, in read
+    first_packet = self.connection._read_packet()
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\pymysql\connections.py", line 775, in _read_packet
+    packet.raise_for_error()
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\pymysql\protocol.py", line 219, in raise_for_error
+    err.raise_mysql_exception(self._data)
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\pymysql\err.py", line 150, in raise_mysql_exception
+    raise errorclass(errno, errval)
+django.db.utils.OperationalError: (1054, "Unknown column 'projects.project_name_greek' in 'field list'")
+"GET /projects/ HTTP/1.1" 500 312581
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 14087
+"GET /property_management_dashboard/ HTTP/1.1" 200 43046
+"GET /property/1/profit-loss/ HTTP/1.1" 200 40915
+"GET /property_management_dashboard/?property=1 HTTP/1.1" 200 43046
+"GET / HTTP/1.1" 200 14087
+"GET /projects/ HTTP/1.1" 200 25730
+"GET /projects/detail/1/ HTTP/1.1" 200 56621
+"GET /projects/1/gantt/ HTTP/1.1" 200 34315
+"GET /projects/detail/1/ HTTP/1.1" 200 56621
+"GET /projects/1/assignees/ HTTP/1.1" 200 101
+"GET /projects/1/task-list/?language=greek HTTP/1.1" 200 33090
+"GET /projects/detail/1/ HTTP/1.1" 200 57135
+"GET /projects/1/tasks/edit/3/ HTTP/1.1" 200 41001
+"POST /translate/ HTTP/1.1" 200 128
+"POST /translate/ HTTP/1.1" 200 140
+"POST /translate/ HTTP/1.1" 200 128
+"POST /translate/ HTTP/1.1" 200 140
+"POST /translate/ HTTP/1.1" 200 196
+"GET /projects/detail/1/ HTTP/1.1" 200 57135
+"GET /projects/1/tasks/edit/3/ HTTP/1.1" 200 41001
+"POST /translate/ HTTP/1.1" 200 226
+"POST /translate/ HTTP/1.1" 200 269
+"POST /projects/1/tasks/edit/3/ HTTP/1.1" 302 0
+"GET /projects/detail/1/ HTTP/1.1" 200 57736
+"GET /projects/1/tasks/edit/1/ HTTP/1.1" 200 37714
+"POST /translate/ HTTP/1.1" 200 140
+"POST /translate/ HTTP/1.1" 200 283
+"POST /projects/1/tasks/edit/1/ HTTP/1.1" 200 38414
+"GET /projects/detail/1/ HTTP/1.1" 200 57126
+"GET /projects/1/tasks/edit/3/ HTTP/1.1" 200 41111
+"POST /projects/1/tasks/edit/3/ HTTP/1.1" 302 0
+"GET /projects/detail/1/ HTTP/1.1" 200 57736
+"GET /projects/1/assignees/ HTTP/1.1" 200 101
+"GET /projects/1/task-list/?language=greek HTTP/1.1" 200 33046
+"GET /projects/detail/1/ HTTP/1.1" 200 57126
+"GET /projects/1/gantt/ HTTP/1.1" 200 34315
+"GET /projects/detail/1/ HTTP/1.1" 200 57126
+"GET /projects/ HTTP/1.1" 200 25730
+"GET / HTTP/1.1" 200 14087
+"GET /finance/ HTTP/1.1" 200 16945
+"GET /financial-indicators/ HTTP/1.1" 200 36007
+"GET /financial-indicators/ HTTP/1.1" 200 2731
+"GET /finance/ HTTP/1.1" 200 16945
+"GET /finance_pl_act/ HTTP/1.1" 200 430159
+"GET /finance/ HTTP/1.1" 200 16945
+"GET /finance_pl/ HTTP/1.1" 200 232784
+"GET /finance/ HTTP/1.1" 200 16945
+"GET /finance_valuations/ HTTP/1.1" 200 18064
+"GET /finance/ HTTP/1.1" 200 16945
+"GET /properties/ HTTP/1.1" 200 59794
+"GET /properties/map/ HTTP/1.1" 200 27230
+"GET /properties/ HTTP/1.1" 200 59794
+"GET /tenant/ HTTP/1.1" 200 60564
+"GET /lease_renewal_report/ HTTP/1.1" 200 17987
+"GET /tenant/ HTTP/1.1" 200 60564
+"GET /open_invoices_report/ HTTP/1.1" 200 35202
+"GET /tenant/ HTTP/1.1" 200 60564
+"GET /notifications/ HTTP/1.1" 200 32270
+"GET /notifications/ HTTP/1.1" 200 5667
+"GET /projects/ HTTP/1.1" 200 25730
+"GET /projects/detail/1/ HTTP/1.1" 200 57126
+"GET /projects/1/tasks/edit/1/ HTTP/1.1" 200 37714
+"GET /projects/detail/1/ HTTP/1.1" 200 57126
+"GET /projects/1/tasks/edit/3/ HTTP/1.1" 200 41111
+"POST /projects/1/tasks/edit/3/ HTTP/1.1" 302 0
+"GET /projects/detail/1/ HTTP/1.1" 200 57738
+"GET /projects/1/tasks/edit/2/ HTTP/1.1" 200 37766
+"GET /projects/detail/1/ HTTP/1.1" 200 57128
+"GET /projects/1/tasks/2/subtasks/add/ HTTP/1.1" 200 22005
+"POST /projects/1/tasks/2/subtasks/add/ HTTP/1.1" 302 0
+"GET /projects/detail/1/ HTTP/1.1" 200 60807
+"GET /projects/1/tasks/edit/4/ HTTP/1.1" 200 41025
+"POST /projects/1/tasks/edit/4/ HTTP/1.1" 302 0
+"GET /projects/detail/1/ HTTP/1.1" 200 60805
+"GET /projects/1/assignees/ HTTP/1.1" 200 103
+"GET /projects/1/task-list/?language=greek HTTP/1.1" 200 34666
+"GET /projects/detail/1/ HTTP/1.1" 200 60194
+"GET /projects/ HTTP/1.1" 200 25758
+"GET /projects/delete/1/ HTTP/1.1" 200 21448
+"POST /projects/delete/1/ HTTP/1.1" 302 0
+"GET /projects/ HTTP/1.1" 200 24946
+"GET /projects/add/ HTTP/1.1" 200 15121
+"POST /projects/add/ HTTP/1.1" 302 0
+"GET /projects/ HTTP/1.1" 200 26373
+"GET /projects/edit/2/ HTTP/1.1" 200 33477
+"GET /projects/detail/2/ HTTP/1.1" 200 49256
+"GET /projects/2/tasks/add/ HTTP/1.1" 200 14774
+"POST /projects/2/tasks/add/ HTTP/1.1" 302 0
+"GET /projects/detail/2/ HTTP/1.1" 200 51841
+"GET /projects/2/tasks/add/ HTTP/1.1" 200 14774
+"POST /projects/2/tasks/add/ HTTP/1.1" 302 0
+"GET /projects/detail/2/ HTTP/1.1" 200 54206
+"GET /projects/2/tasks/5/subtasks/add/ HTTP/1.1" 200 21925
+"POST /projects/2/tasks/5/subtasks/add/ HTTP/1.1" 302 0
+"GET /projects/detail/2/ HTTP/1.1" 200 57190
+"GET /projects/2/tasks/edit/7/ HTTP/1.1" 200 41010
+"POST /projects/2/tasks/edit/7/ HTTP/1.1" 302 0
+"GET /projects/detail/2/ HTTP/1.1" 200 57188
+"GET /projects/2/tasks/6/subtasks/add/ HTTP/1.1" 200 21929
+"POST /projects/2/tasks/6/subtasks/add/ HTTP/1.1" 302 0
+"GET /projects/detail/2/ HTTP/1.1" 200 60211
+"GET /projects/2/gantt/ HTTP/1.1" 200 34600
+"GET /projects/detail/2/ HTTP/1.1" 200 59587
+"GET /projects/2/assignees/ HTTP/1.1" 200 92
+"GET /projects/2/task-list/?language=english HTTP/1.1" 200 33364
+"GET /projects/detail/2/ HTTP/1.1" 200 59587
+"GET /projects/2/assignees/ HTTP/1.1" 200 92
+"GET /projects/2/task-list/?language=greek HTTP/1.1" 200 34378
+Watching for file changes with StatReloader
+"GET /projects/detail/2/ HTTP/1.1" 200 60056
+"GET /projects/2/assignees/ HTTP/1.1" 200 92
+"GET /projects/2/task-list/?language=greek HTTP/1.1" 200 34378
+"GET /projects/detail/2/ HTTP/1.1" 200 60056
+"GET /projects/2/assignees/ HTTP/1.1" 200 92
+"GET /projects/2/task-list/?language=english HTTP/1.1" 200 33364
+"GET /projects/detail/2/ HTTP/1.1" 200 60056
+"GET /projects/2/gantt/ HTTP/1.1" 200 34600
+"GET /projects/detail/2/ HTTP/1.1" 200 60056
+"GET /projects/2/assignees/ HTTP/1.1" 200 92
+"GET /projects/2/task-list/?language=english HTTP/1.1" 200 33364
+"GET /projects/detail/2/ HTTP/1.1" 200 60056
+"GET /notifications/ HTTP/1.1" 200 32270
+"GET /notifications/ HTTP/1.1" 200 5667
+"GET / HTTP/1.1" 200 14087
+"GET /finance/ HTTP/1.1" 200 16945
+"GET /financial-indicators/ HTTP/1.1" 200 36007
+"GET /financial-indicators/ HTTP/1.1" 200 2731
+"GET /finance/ HTTP/1.1" 200 16945
+"GET /property_management_dashboard/ HTTP/1.1" 200 43046
+"GET / HTTP/1.1" 200 14087
+"GET /projects/ HTTP/1.1" 200 25726
+"GET /projects/detail/2/ HTTP/1.1" 200 60056
+"GET /projects/ HTTP/1.1" 200 25726
+"GET /fsr/ HTTP/1.1" 200 83250
+"GET /act_expense_all/?from=home HTTP/1.1" 200 80655
+"GET / HTTP/1.1" 200 14087
+"GET /finance/ HTTP/1.1" 200 16945
+"GET / HTTP/1.1" 200 14087
+"GET /projects/ HTTP/1.1" 200 25726
+"GET /projects/detail/2/ HTTP/1.1" 200 60056
+"GET /projects/2/assignees/ HTTP/1.1" 200 92
+"GET /projects/2/task-list/?language=english HTTP/1.1" 200 33364
+"GET /projects/detail/2/ HTTP/1.1" 200 60056
+C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 14087
+"GET /projects/ HTTP/1.1" 200 25726
+"GET /projects/detail/2/ HTTP/1.1" 200 60056
+"GET /projects/2/assignees/ HTTP/1.1" 200 92
+"GET /projects/2/task-list/?language=english HTTP/1.1" 200 33464
+"GET /projects/detail/2/ HTTP/1.1" 200 60056
+"GET /projects/2/assignees/ HTTP/1.1" 200 92
+"GET /projects/2/task-list/?language=greek HTTP/1.1" 200 34413
+"GET / HTTP/1.1" 200 14087
+"GET /finance/ HTTP/1.1" 200 16945
+"GET /financial-indicators/ HTTP/1.1" 200 36007
+"GET /financial-indicators/ HTTP/1.1" 200 2731
+Internal Server Error: /financial-indicators/
+Traceback (most recent call last):
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\contrib\auth\decorators.py", line 60, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\pages\views.py", line 472, in financial_indicators_view
+    return render(request, 'finance/financial_indicators.html', context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\loader.py", line 61, in render_to_string
+    template = get_template(template_name, using=using)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\loader.py", line 15, in get_template
+    return engine.get_template(template_name)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\backends\django.py", line 79, in get_template
+    return Template(self.engine.get_template(template_name), self)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\engine.py", line 177, in get_template
+    template, origin = self.find_template(template_name)
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\engine.py", line 159, in find_template
+    template = loader.get_template(name, skip=skip)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\loaders\cached.py", line 57, in get_template
+    template = super().get_template(template_name, skip)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\loaders\base.py", line 28, in get_template
+    return Template(
+           ^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\base.py", line 154, in __init__
+    self.nodelist = self.compile_nodelist()
+                    ^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\base.py", line 196, in compile_nodelist
+    nodelist = parser.parse()
+               ^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\base.py", line 518, in parse
+    raise self.error(token, e)
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\base.py", line 516, in parse
+    compiled_result = compile_func(self, token)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\loader_tags.py", line 295, in do_extends
+    nodelist = parser.parse()
+               ^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\base.py", line 518, in parse
+    raise self.error(token, e)
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\base.py", line 516, in parse
+    compiled_result = compile_func(self, token)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\loader_tags.py", line 234, in do_block
+    nodelist = parser.parse(("endblock",))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\base.py", line 523, in parse
+    self.unclosed_block_tag(parse_until)
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\base.py", line 586, in unclosed_block_tag
+    raise self.error(token, msg)
+django.template.exceptions.TemplateSyntaxError: Unclosed tag on line 6: 'block'. Looking for one of: endblock.
+"GET /financial-indicators/ HTTP/1.1" 500 179175
+"GET / HTTP/1.1" 200 14087
+"GET /finance/ HTTP/1.1" 200 16945
+"GET /financial-indicators/ HTTP/1.1" 200 51678
+"GET /financial-indicators/ HTTP/1.1" 200 2731
+"GET /financial-indicators/ HTTP/1.1" 200 52714
+"GET /financial-indicators/ HTTP/1.1" 200 2731
+"GET /notifications/ HTTP/1.1" 200 32270
+"GET /notifications/ HTTP/1.1" 200 5667
+"GET /tenant/ HTTP/1.1" 200 60564
+"GET / HTTP/1.1" 200 14087
+"GET /notifications/ HTTP/1.1" 200 32270
+"GET /notifications/ HTTP/1.1" 200 5667
+"GET / HTTP/1.1" 200 14087
+"GET / HTTP/1.1" 200 14093
+"GET / HTTP/1.1" 200 14093
+"GET /petty_cash/ HTTP/1.1" 200 13080
+"GET / HTTP/1.1" 200 14093
+"GET /finance/ HTTP/1.1" 200 16945
+"GET /financial-indicators/ HTTP/1.1" 200 52714
+"GET /financial-indicators/ HTTP/1.1" 200 2731
+"GET / HTTP/1.1" 200 14093
+"GET /notifications/ HTTP/1.1" 200 32270
+"GET /notifications/ HTTP/1.1" 200 5667
+"GET / HTTP/1.1" 200 14093
+"GET /projects/ HTTP/1.1" 200 25726
+"GET /projects/detail/2/ HTTP/1.1" 200 60056
+"GET /projects/2/tasks/edit/5/ HTTP/1.1" 200 37740
+"POST /translate/ HTTP/1.1" 200 239
+"POST /projects/2/tasks/edit/5/ HTTP/1.1" 302 0
+"GET /projects/detail/2/ HTTP/1.1" 200 60670
+"GET /projects/2/assignees/ HTTP/1.1" 200 92
+"GET /projects/2/task-list/?language=greek HTTP/1.1" 200 34419
+"GET /projects/detail/2/ HTTP/1.1" 200 60069
+"GET /projects/2/gantt/ HTTP/1.1" 200 34600
+"GET / HTTP/1.1" 200 14093

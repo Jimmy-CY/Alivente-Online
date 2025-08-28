@@ -1683,6 +1683,14 @@ def project_task_list(request, project_id):
     pending_tasks = 0
     
     # Add project as root item
+    project_start_date = project.get_calculated_start_date()
+    project_end_date = project.get_calculated_expected_completion()
+    project_is_overdue = (
+        project_end_date and 
+        project_end_date < timezone.now().date() and 
+        project.get_calculated_status() != 'Completed'
+    )
+    
     project_item = {
         'name': project.project_name,
         'name_greek': get_translated_text(
@@ -1698,11 +1706,13 @@ def project_task_list(request, project_id):
         ) if language == 'greek' else project.project_description,
         'type': 'project',
         'status': project.get_calculated_status(),
-        'start_date': project.get_calculated_start_date(),
-        'end_date': project.get_calculated_expected_completion(),
+        'start_date': project_start_date,
+        'end_date': project_end_date,
         'priority': None,
         'indent_level': 0,
-        'is_overdue': False
+        'is_overdue': project_is_overdue,
+        # Store the actual project object for template access to methods
+        'project_obj': project
     }
     task_list.append(project_item)
     
@@ -1716,11 +1726,13 @@ def project_task_list(request, project_id):
             include_task = task_matches or subtask_matches
         
         if include_task:
-            # Add main task to display list but DON'T count it in totals
-            is_overdue = (
-                main_task.task_expected_completion_date and 
-                main_task.task_expected_completion_date < timezone.now().date() and 
-                main_task.task_status != 'Completed'
+            # For main tasks, use calculated dates
+            task_start_date = main_task.get_calculated_start_date()
+            task_end_date = main_task.get_calculated_expected_completion()
+            task_is_overdue = (
+                task_end_date and 
+                task_end_date < timezone.now().date() and 
+                main_task.get_calculated_status() != 'Completed'
             )
             
             main_task_item = {
@@ -1737,15 +1749,16 @@ def project_task_list(request, project_id):
                     language
                 ) if language == 'greek' else main_task.task_description,
                 'type': 'task',
-                'status': main_task.task_status,
-                'start_date': main_task.task_start_date,
-                'end_date': main_task.task_expected_completion_date,
+                'status': main_task.get_calculated_status(),
+                'start_date': task_start_date,
+                'end_date': task_end_date,
                 'priority': main_task.task_priority,
                 'indent_level': 1,
-                'is_overdue': is_overdue
+                'is_overdue': task_is_overdue,
+                # Store the actual task object for template access to methods
+                'task_obj': main_task
             }
             task_list.append(main_task_item)
-            # NOTE: Main tasks are NOT counted in totals anymore
             
             # Add subtasks - ONLY count these in totals
             subtasks = main_task.subtasks.all().order_by('task_start_date', 'task_id')
@@ -1753,6 +1766,7 @@ def project_task_list(request, project_id):
                 subtasks = subtasks.filter(task_assigned_to=assigned_to)
             
             for subtask in subtasks:
+                # For subtasks, use direct field access
                 is_overdue = (
                     subtask.task_expected_completion_date and 
                     subtask.task_expected_completion_date < timezone.now().date() and 
@@ -1778,7 +1792,9 @@ def project_task_list(request, project_id):
                     'end_date': subtask.task_expected_completion_date,
                     'priority': subtask.task_priority,
                     'indent_level': 2,
-                    'is_overdue': is_overdue
+                    'is_overdue': is_overdue,
+                    # Store the actual subtask object for template access
+                    'task_obj': subtask
                 }
                 task_list.append(subtask_item)
                 
