@@ -1,3 +1,4 @@
+<!—UPDATED FINANCE_PL_ACT.HTML FILE WITH CLICKABLE FUNCTIONALITY AND PROPERTY SELECTOR-->
 {% extends 'base.html' %}
 {% load static %}
 {% load humanize %}
@@ -40,7 +41,7 @@
     </div>
 </div>
 
-<!-- Invoice Viewer Modal (Second Popup) - Fixed scrollbar issues -->
+<!-- Invoice Viewer Modal -->
 <div class="modal fade" id="invoiceViewerModal" tabindex="-1" aria-labelledby="invoiceViewerModalLabel" aria-hidden="true" data-backdrop="static">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -61,9 +62,9 @@
     </div>
 </div>
 
-<!-- Update your Revenue Details Modal HTML -->
+<!-- Revenue Details Modal -->
 <div class="modal fade" id="revenueDetailsModal" tabindex="-1" aria-labelledby="revenueDetailsModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-md"> <!-- Changed from modal-lg to modal-md for smaller size -->
+    <div class="modal-dialog modal-md">
         <div class="modal-content">
             <div class="modal-header">
                 <div>
@@ -84,9 +85,9 @@
     </div>
 </div>
 
-<!-- Update your Budget Expense Modal HTML -->
+<!-- Budget Expense Details Modal -->
 <div class="modal fade" id="budgetExpenseDetailsModal" tabindex="-1" aria-labelledby="budgetExpenseDetailsModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-md"> <!-- Changed from modal-lg to modal-md for smaller size -->
+    <div class="modal-dialog modal-md">
         <div class="modal-content">
             <div class="modal-header">
                 <div>
@@ -107,1586 +108,1299 @@
     </div>
 </div>
 
-<!-- Total Expense Details Modal -->
-<div class="modal fade" id="totalExpenseDetailsModal" tabindex="-1" aria-labelledby="totalExpenseDetailsModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="totalExpenseDetailsModalLabel">Total Expense Details</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body" id="totalExpenseDetailsContent" style="max-height: 75vh; overflow-y: auto;">
-                <!-- Content loaded here -->
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-            </div>
-        </div>
-    </div>
-</div>
-
 {% if user.is_superuser %}
 
 <div class="d-flex justify-content-end mb-2">
     <!-- Year Selector Button Group -->
-    <div class="btn-group me-3">
-        <button type="button" class="btn btn-info dropdown-toggle" style="margin-right:16px" data-bs-toggle="dropdown" aria-expanded="false">
+    <div class="dropdown" style="margin-right: 16px;">
+        <button class="btn btn-info dropdown-toggle" type="button" id="yearDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
             {{ selected_year }}
         </button>
-        <ul class="dropdown-menu">
+        <div class="dropdown-menu" aria-labelledby="yearDropdown">
             {% for year in available_years %}
-                <li>
-                    <a class="dropdown-item {% if year == selected_year %}active bg-info text-white{% endif %}" 
-                       href="?year={{ year }}&prop={{ active_prop }}">
-                        {{ year }}
-                    </a>
-                </li>
+                <a class="dropdown-item {% if year == selected_year %}active{% endif %}" 
+                   href="#" onclick="updateYearAndReload({{ year }})">
+                    {{ year }}
+                </a>
             {% endfor %}
-        </ul>
+        </div>
     </div>
     
     <!-- Back Button -->
     <a href="{% url 'finance' %}" class="btn btn-info">Back</a>
 </div>
 
-<!-- Property Tabs -->
-<ul class="nav nav-tabs custom-tabs-flex mb-3">
-    <li class="nav-item">
-        <a class="nav-link custom-tab {% if active_prop == 'all' %}active{% endif %}"
-           data-toggle="tab"
-           href="#all"
-           title="All Properties"
-           onclick="updateUrlParam('prop', 'all')">
-            <i class="fas fa-layer-group mr-2"></i>All Properties
-        </a>
-    </li>
-    {% for prop in properties %}
-    <li class="nav-item">
-        <a class="nav-link custom-tab {% if active_prop == prop.prop_id|stringformat:'s' %}active{% endif %}"
-           data-toggle="tab"
-           href="#prop{{ prop.prop_id }}"
-           title="{{ prop.prop_name }}"
-           onclick="updateUrlParam('prop', '{{ prop.prop_id }}')">
-           <i class="fas fa-home mr-2"></i>{{ prop.prop_name|truncatechars:14 }}
-        </a>
-    </li>
-    {% endfor %}
-</ul>
-
-<div class="tab-content">
-    <!-- All Properties Tab -->
-    <div class="tab-pane fade {% if active_prop == 'all' %}show active{% endif %}" id="all">
-        <!-- COMBINED TABLE -->
-        <div class="table-responsive" style="overflow-x: auto; width: 100%;">
-            <table class="table table-sm table-bordered" style="font-size: 0.85rem;">
-                <thead class="thead-light">
-                    <tr>
-                        <th></th>
-                        <th class="text-center">Jan</th>
-                        <th class="text-center">Feb</th>
-                        <th class="text-center">Mar</th>
-                        <th class="text-center">Apr</th>
-                        <th class="text-center">May</th>
-                        <th class="text-center">Jun</th>
-                        <th class="text-center">Jul</th>
-                        <th class="text-center">Aug</th>
-                        <th class="text-center">Sep</th>
-                        <th class="text-center">Oct</th>
-                        <th class="text-center">Nov</th>
-                        <th class="text-center">Dec</th>
-                        <th class="text-center">Total</th>
-                        <th class="text-center">Monthly</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <!-- REVENUE SECTION for all properties -->
-                    <tr class="section-header">
-                        <td class="font-weight-bold" style="background-color: #17a2b8; color: white;">REVENUE</td>
-                        <td colspan="14" style="background-color: #17a2b8;"></td>
-                    </tr>
-                    {% for line_type in revenue_line_types %}
-                    {% with line_totals=revenue_totals_by_line.all|get_item:line_type.revenue_line_types_id %}
-                    {% if line_totals.jan or line_totals.feb or line_totals.mar or line_totals.apr or line_totals.may or line_totals.jun or line_totals.jul or line_totals.aug or line_totals.sep or line_totals.oct or line_totals.nov or line_totals.dec or line_totals.total %}
-                    <tr>
-                        <td>{{ line_type.revenue_line_types_name }}</td>
-                        <td class="text-right">
-                            {% if line_totals.jan %}
-                                <a href="#" class="revenue-details-link" 
-                                   data-url="{% url 'revenue_details_view' %}?year={{ selected_year|floatformat:'0' }}&month=1&line_type={{ line_type.revenue_line_types_id }}&prop={{ active_prop }}">
-                                    {{ line_totals.jan|default:0|floatformat:"0"|intcomma }}
-                                </a>
-                            {% else %}
-                                0
-                            {% endif %}
-                        </td>
-                        <td class="text-right">
-                            {% if line_totals.feb %}
-                                <a href="#" class="revenue-details-link" 
-                                   data-url="{% url 'revenue_details_view' %}?year={{ selected_year|floatformat:'0' }}&month=2&line_type={{ line_type.revenue_line_types_id }}&prop={{ active_prop }}">
-                                    {{ line_totals.feb|default:0|floatformat:"0"|intcomma }}
-                                </a>
-                            {% else %}
-                                0
-                            {% endif %}
-                        </td>                        
-                        <td class="text-right">
-                            {% if line_totals.mar %}
-                                <a href="#" class="revenue-details-link" 
-                                   data-url="{% url 'revenue_details_view' %}?year={{ selected_year|floatformat:'0' }}&month=3&line_type={{ line_type.revenue_line_types_id }}&prop={{ active_prop }}">
-                                    {{ line_totals.mar|default:0|floatformat:"0"|intcomma }}
-                                </a>
-                            {% else %}
-                                0
-                            {% endif %}
-                        </td>
-                        <td class="text-right">
-                            {% if line_totals.apr %}
-                                <a href="#" class="revenue-details-link" 
-                                   data-url="{% url 'revenue_details_view' %}?year={{ selected_year|floatformat:'0' }}&month=4&line_type={{ line_type.revenue_line_types_id }}&prop={{ active_prop }}">
-                                    {{ line_totals.apr|default:0|floatformat:"0"|intcomma }}
-                                </a>
-                            {% else %}
-                                0
-                            {% endif %}
-                        </td>
-                        <td class="text-right">
-                            {% if line_totals.may %}
-                                <a href="#" class="revenue-details-link" 
-                                   data-url="{% url 'revenue_details_view' %}?year={{ selected_year|floatformat:'0' }}&month=5&line_type={{ line_type.revenue_line_types_id }}&prop={{ active_prop }}">
-                                    {{ line_totals.may|default:0|floatformat:"0"|intcomma }}
-                                </a>
-                            {% else %}
-                                0
-                            {% endif %}
-                        </td>
-                        <td class="text-right">
-                            {% if line_totals.jun %}
-                                <a href="#" class="revenue-details-link" 
-                                   data-url="{% url 'revenue_details_view' %}?year={{ selected_year|floatformat:'0' }}&month=6&line_type={{ line_type.revenue_line_types_id }}&prop={{ active_prop }}">
-                                    {{ line_totals.jun|default:0|floatformat:"0"|intcomma }}
-                                </a>
-                            {% else %}
-                                0
-                            {% endif %}
-                        </td>
-                        <td class="text-right">
-                            {% if line_totals.jul %}
-                                <a href="#" class="revenue-details-link" 
-                                   data-url="{% url 'revenue_details_view' %}?year={{ selected_year|floatformat:'0' }}&month=7&line_type={{ line_type.revenue_line_types_id }}&prop={{ active_prop }}">
-                                    {{ line_totals.jul|default:0|floatformat:"0"|intcomma }}
-                                </a>
-                            {% else %}
-                                0
-                            {% endif %}
-                        </td>
-                        <td class="text-right">
-                            {% if line_totals.aug %}
-                                <a href="#" class="revenue-details-link" 
-                                   data-url="{% url 'revenue_details_view' %}?year={{ selected_year|floatformat:'0' }}&month=8&line_type={{ line_type.revenue_line_types_id }}&prop={{ active_prop }}">
-                                    {{ line_totals.aug|default:0|floatformat:"0"|intcomma }}
-                                </a>
-                            {% else %}
-                                0
-                            {% endif %}
-                        </td>
-                        <td class="text-right">
-                            {% if line_totals.sep %}
-                                <a href="#" class="revenue-details-link" 
-                                   data-url="{% url 'revenue_details_view' %}?year={{ selected_year|floatformat:'0' }}&month=9&line_type={{ line_type.revenue_line_types_id }}&prop={{ active_prop }}">
-                                    {{ line_totals.sep|default:0|floatformat:"0"|intcomma }}
-                                </a>
-                            {% else %}
-                                0
-                            {% endif %}
-                        </td>
-                        <td class="text-right">
-                            {% if line_totals.oct %}
-                                <a href="#" class="revenue-details-link" 
-                                   data-url="{% url 'revenue_details_view' %}?year={{ selected_year|floatformat:'0' }}&month=10&line_type={{ line_type.revenue_line_types_id }}&prop={{ active_prop }}">
-                                    {{ line_totals.oct|default:0|floatformat:"0"|intcomma }}
-                                </a>
-                            {% else %}
-                                0
-                            {% endif %}
-                        </td>
-                        <td class="text-right">
-                            {% if line_totals.nov %}
-                                <a href="#" class="revenue-details-link" 
-                                   data-url="{% url 'revenue_details_view' %}?year={{ selected_year|floatformat:'0' }}&month=11&line_type={{ line_type.revenue_line_types_id }}&prop={{ active_prop }}">
-                                    {{ line_totals.nov|default:0|floatformat:"0"|intcomma }}
-                                </a>
-                            {% else %}
-                                0
-                            {% endif %}
-                        </td>
-                        <td class="text-right">
-                            {% if line_totals.dec %}
-                                <a href="#" class="revenue-details-link" 
-                                   data-url="{% url 'revenue_details_view' %}?year={{ selected_year|floatformat:'0' }}&month=12&line_type={{ line_type.revenue_line_types_id }}&prop={{ active_prop }}">
-                                    {{ line_totals.dec|default:0|floatformat:"0"|intcomma }}
-                                </a>
-                            {% else %}
-                                0
-                            {% endif %}
-                        </td>
-                        <td class="text-right font-weight-bold">
-                            {{ line_totals.total|default:0|floatformat:"0"|intcomma }}
-                        </td>
-                        <td class="text-right">{{ line_totals.total|divide:12|default:0|floatformat:"0"|intcomma }}</td>
-                    </tr>
-                    {% endif %}
-                    {% endwith %}
-                    {% endfor %}
-                    <tr class="font-weight-bold" style="background-color: #f8f9fa">
-                        <td>TOTAL REVENUE:</td>
-                        <td class="text-right">{{ revenue_totals.jan|default:0|floatformat:"0"|intcomma }}</td>
-                        <td class="text-right">{{ revenue_totals.feb|default:0|floatformat:"0"|intcomma }}</td>
-                        <td class="text-right">{{ revenue_totals.mar|default:0|floatformat:"0"|intcomma }}</td>
-                        <td class="text-right">{{ revenue_totals.apr|default:0|floatformat:"0"|intcomma }}</td>
-                        <td class="text-right">{{ revenue_totals.may|default:0|floatformat:"0"|intcomma }}</td>
-                        <td class="text-right">{{ revenue_totals.jun|default:0|floatformat:"0"|intcomma }}</td>
-                        <td class="text-right">{{ revenue_totals.jul|default:0|floatformat:"0"|intcomma }}</td>
-                        <td class="text-right">{{ revenue_totals.aug|default:0|floatformat:"0"|intcomma }}</td>
-                        <td class="text-right">{{ revenue_totals.sep|default:0|floatformat:"0"|intcomma }}</td>
-                        <td class="text-right">{{ revenue_totals.oct|default:0|floatformat:"0"|intcomma }}</td>
-                        <td class="text-right">{{ revenue_totals.nov|default:0|floatformat:"0"|intcomma }}</td>
-                        <td class="text-right">{{ revenue_totals.dec|default:0|floatformat:"0"|intcomma }}</td>
-                        <td class="text-right">{{ revenue_totals.year|default:0|floatformat:"0"|intcomma }}</td>
-                        <td class="text-right">{{ revenue_totals.year|divide:12|default:0|floatformat:"0"|intcomma }}</td>
-                    </tr>
-                    
-                    <!-- EXPENSES SECTION for all properties -->
-                    <tr class="section-header">
-                        <td class="font-weight-bold" style="background-color: #17a2b8; color: white;">EXPENSES</td>
-                        <td colspan="14" style="background-color: #17a2b8;"></td>
-                    </tr>
-
-                    <!-- ACTUAL EXPENSES ROW for all properties -->
-                    {% if actual_expense_totals.year > 0 %}
-                    <tr style="background-color: #f8f9fa;">
-                        <td>Actual Expenses</td>
-                        
-                        <!-- January -->
-                        <td class="text-right">
-                            {% if actual_expense_totals.jan %}
-                                <a href="#" class="expense-details-link" 
-                                   data-url="{% url 'act_expense_view' %}?year={{ selected_year|floatformat:"0" }}&month=1&from_finance_pl_act=true&prop={{ active_prop }}">
-                                    {{ actual_expense_totals.jan|floatformat:"0"|intcomma }}
-                                </a>
-                            {% else %}
-                                0
-                            {% endif %}
-                        </td>
-
-                        <!-- February -->
-                        <td class="text-right">
-                            {% if actual_expense_totals.feb %}
-                                <a href="#" class="expense-details-link"
-                                   data-url="{% url 'act_expense_view' %}?year={{ selected_year|floatformat:"0" }}&month=2&from_finance_pl_act=true&prop={{ active_prop }}">
-                                   {{ actual_expense_totals.feb|floatformat:"0"|intcomma }}
-                                </a>
-                            {% else %}
-                                0
-                            {% endif %}
-                        </td>
-                        
-                        <!-- March -->
-                        <td class="text-right">
-                            {% if actual_expense_totals.mar %}
-                                <a href="#" class="expense-details-link"
-                                   data-url="{% url 'act_expense_view' %}?year={{ selected_year|floatformat:"0" }}&month=3&from_finance_pl_act=true&prop={{ active_prop }}">
-                                    {{ actual_expense_totals.mar|floatformat:"0"|intcomma }}
-                                </a>
-                            {% else %}
-                                0
-                            {% endif %}
-                        </td>
-                        
-                        <!-- April -->
-                        <td class="text-right">
-                            {% if actual_expense_totals.apr %}
-                                <a href="#" class="expense-details-link"
-                                   data-url="{% url 'act_expense_view' %}?year={{ selected_year|floatformat:"0" }}&month=4&from_finance_pl_act=true&prop={{ active_prop }}">
-                                    {{ actual_expense_totals.apr|floatformat:"0"|intcomma }}
-                                </a>
-                            {% else %}
-                                0
-                            {% endif %}
-                        </td>
-                        
-                        <!-- May -->
-                        <td class="text-right">
-                            {% if actual_expense_totals.may %}
-                                <a href="#" class="expense-details-link"
-                                   data-url="{% url 'act_expense_view' %}?year={{ selected_year|floatformat:"0" }}&month=5&from_finance_pl_act=true&prop={{ active_prop }}">
-                                    {{ actual_expense_totals.may|floatformat:"0"|intcomma }}
-                                </a>
-                            {% else %}
-                                0
-                            {% endif %}
-                        </td>
-                        
-                        <!-- June -->
-                        <td class="text-right">
-                            {% if actual_expense_totals.jun %}
-                                <a href="#" class="expense-details-link"
-                                   data-url="{% url 'act_expense_view' %}?year={{ selected_year|floatformat:"0" }}&month=6&from_finance_pl_act=true&prop={{ active_prop }}">
-                                    {{ actual_expense_totals.jun|floatformat:"0"|intcomma }}
-                                </a>
-                            {% else %}
-                                0
-                            {% endif %}
-                        </td>
-                        
-                        <!-- July -->
-                        <td class="text-right">
-                            {% if actual_expense_totals.jul %}
-                                <a href="#" class="expense-details-link"
-                                   data-url="{% url 'act_expense_view' %}?year={{ selected_year|floatformat:"0" }}&month=7&from_finance_pl_act=true&prop={{ active_prop }}">
-                                    {{ actual_expense_totals.jul|floatformat:"0"|intcomma }}
-                                </a>
-                            {% else %}
-                                0
-                            {% endif %}
-                        </td>
-                        
-                        <!-- August -->
-                        <td class="text-right">
-                            {% if actual_expense_totals.aug %}
-                                <a href="#" class="expense-details-link"
-                                   data-url="{% url 'act_expense_view' %}?year={{ selected_year|floatformat:"0" }}&month=8&from_finance_pl_act=true&prop={{ active_prop }}">
-                                    {{ actual_expense_totals.aug|floatformat:"0"|intcomma }}
-                                </a>
-                            {% else %}
-                                0
-                            {% endif %}
-                        </td>
-                        
-                        <!-- September -->
-                        <td class="text-right">
-                            {% if actual_expense_totals.sep %}
-                                <a href="#" class="expense-details-link"
-                                   data-url="{% url 'act_expense_view' %}?year={{ selected_year|floatformat:"0" }}&month=9&from_finance_pl_act=true&prop={{ active_prop }}">
-                                    {{ actual_expense_totals.sep|floatformat:"0"|intcomma }}
-                                </a>
-                            {% else %}
-                                0
-                            {% endif %}
-                        </td>
-                        
-                        <!-- October -->
-                        <td class="text-right">
-                            {% if actual_expense_totals.oct %}
-                                <a href="#" class="expense-details-link"
-                                   data-url="{% url 'act_expense_view' %}?year={{ selected_year|floatformat:"0" }}&month=10&from_finance_pl_act=true&prop={{ active_prop }}">
-                                    {{ actual_expense_totals.oct|floatformat:"0"|intcomma }}
-                                </a>
-                            {% else %}
-                                0
-                            {% endif %}
-                        </td>
-                        
-                        <!-- November -->
-                        <td class="text-right">
-                            {% if actual_expense_totals.nov %}
-                                <a href="#" class="expense-details-link"
-                                   data-url="{% url 'act_expense_view' %}?year={{ selected_year|floatformat:"0" }}&month=11&from_finance_pl_act=true&prop={{ active_prop }}">
-                                    {{ actual_expense_totals.nov|floatformat:"0"|intcomma }}
-                                </a>
-                            {% else %}
-                                0
-                            {% endif %}
-                        </td>
-                        
-                        <!-- December -->
-                        <td class="text-right">
-                            {% if actual_expense_totals.dec %}
-                                <a href="#" class="expense-details-link"
-                                   data-url="{% url 'act_expense_view' %}?year={{ selected_year|floatformat:"0" }}&month=12&from_finance_pl_act=true&prop={{ active_prop }}">
-                                    {{ actual_expense_totals.dec|floatformat:"0"|intcomma }}
-                                </a>
-                            {% else %}
-                                0
-                            {% endif %}
-                        </td>
-                        
-                        <!-- Year Total (Clickable) -->
-                        <td class="text-right font-weight-bold">
-                            <a href="#" class="expense-details-link" 
-                                data-url="{% url 'act_expense_view' %}?year={{ selected_year|floatformat:"0" }}&from_finance_pl_act=true&prop={{ active_prop }}">
-                                {{ actual_expense_totals.year|floatformat:"0"|intcomma }}
-                            </a>
-                        </td>
-                        <td class="text-right">{{ actual_expense_totals.year|divide:12|floatformat:"0"|intcomma }}</td>
-                    </tr>
-                    {% endif %}
-
-                    <!-- BUDGETED EXPENSES for all properties -->
-                    {% for line_type in expense_line_types|sort_expense_line_types %}
-                    {% with line_totals=expense_totals_by_line.all|get_item:line_type.expense_line_types_id %}
-                    {% if line_totals.jan or line_totals.feb or line_totals.mar or line_totals.apr or line_totals.may or line_totals.jun or line_totals.jul or line_totals.aug or line_totals.sep or line_totals.oct or line_totals.nov or line_totals.dec or line_totals.total %}
-                    <tr>
-                        <td>{{ line_type.expense_line_types_name }}</td>
-                        <td class="text-right">
-                            {% if line_totals.jan %}
-                                <a href="#" class="budget-expense-details-link" 
-                                   data-url="{% url 'budget_expense_details_view' %}?year={{ selected_year|floatformat:'0' }}&month=1&line_type={{ line_type.expense_line_types_id }}&prop={{ active_prop }}">
-                                    {{ line_totals.jan|default:0|floatformat:"0"|intcomma }}
-                                </a>
-                            {% else %}
-                                0
-                            {% endif %}
-                        </td>
-                        <td class="text-right">
-                            {% if line_totals.feb %}
-                                <a href="#" class="budget-expense-details-link" 
-                                   data-url="{% url 'budget_expense_details_view' %}?year={{ selected_year|floatformat:'0' }}&month=2&line_type={{ line_type.expense_line_types_id }}&prop={{ active_prop }}">
-                                    {{ line_totals.feb|default:0|floatformat:"0"|intcomma }}
-                                </a>
-                            {% else %}
-                                0
-                            {% endif %}
-                        </td>
-                        <td class="text-right">
-                            {% if line_totals.mar %}
-                                <a href="#" class="budget-expense-details-link" 
-                                   data-url="{% url 'budget_expense_details_view' %}?year={{ selected_year|floatformat:'0' }}&month=3&line_type={{ line_type.expense_line_types_id }}&prop={{ active_prop }}">
-                                    {{ line_totals.mar|default:0|floatformat:"0"|intcomma }}
-                                </a>
-                            {% else %}
-                                0
-                            {% endif %}
-                        </td>
-                        <td class="text-right">
-                            {% if line_totals.apr %}
-                                <a href="#" class="budget-expense-details-link" 
-                                   data-url="{% url 'budget_expense_details_view' %}?year={{ selected_year|floatformat:'0' }}&month=4&line_type={{ line_type.expense_line_types_id }}&prop={{ active_prop }}">
-                                    {{ line_totals.apr|default:0|floatformat:"0"|intcomma }}
-                                </a>
-                            {% else %}
-                                0
-                            {% endif %}
-                        </td>
-                        <td class="text-right">
-                            {% if line_totals.may %}
-                                <a href="#" class="budget-expense-details-link" 
-                                   data-url="{% url 'budget_expense_details_view' %}?year={{ selected_year|floatformat:'0' }}&month=5&line_type={{ line_type.expense_line_types_id }}&prop={{ active_prop }}">
-                                    {{ line_totals.may|default:0|floatformat:"0"|intcomma }}
-                                </a>
-                            {% else %}
-                                0
-                            {% endif %}
-                        </td>
-                        <td class="text-right">
-                            {% if line_totals.jun %}
-                                <a href="#" class="budget-expense-details-link" 
-                                   data-url="{% url 'budget_expense_details_view' %}?year={{ selected_year|floatformat:'0' }}&month=6&line_type={{ line_type.expense_line_types_id }}&prop={{ active_prop }}">
-                                    {{ line_totals.jun|default:0|floatformat:"0"|intcomma }}
-                                </a>
-                            {% else %}
-                                0
-                            {% endif %}
-                        </td>
-                        <td class="text-right">
-                            {% if line_totals.jul %}
-                                <a href="#" class="budget-expense-details-link" 
-                                   data-url="{% url 'budget_expense_details_view' %}?year={{ selected_year|floatformat:'0' }}&month=7&line_type={{ line_type.expense_line_types_id }}&prop={{ active_prop }}">
-                                    {{ line_totals.jul|default:0|floatformat:"0"|intcomma }}
-                                </a>
-                            {% else %}
-                                0
-                            {% endif %}
-                        </td>
-                        <td class="text-right">
-                            {% if line_totals.aug %}
-                                <a href="#" class="budget-expense-details-link" 
-                                   data-url="{% url 'budget_expense_details_view' %}?year={{ selected_year|floatformat:'0' }}&month=8&line_type={{ line_type.expense_line_types_id }}&prop={{ active_prop }}">
-                                    {{ line_totals.aug|default:0|floatformat:"0"|intcomma }}
-                                </a>
-                            {% else %}
-                                0
-                            {% endif %}
-                        </td>
-                        <td class="text-right">
-                            {% if line_totals.sep %}
-                                <a href="#" class="budget-expense-details-link" 
-                                   data-url="{% url 'budget_expense_details_view' %}?year={{ selected_year|floatformat:'0' }}&month=9&line_type={{ line_type.expense_line_types_id }}&prop={{ active_prop }}">
-                                    {{ line_totals.sep|default:0|floatformat:"0"|intcomma }}
-                                </a>
-                            {% else %}
-                                0
-                            {% endif %}
-                        </td>
-                        <td class="text-right">
-                            {% if line_totals.oct %}
-                                <a href="#" class="budget-expense-details-link" 
-                                   data-url="{% url 'budget_expense_details_view' %}?year={{ selected_year|floatformat:'0' }}&month=10&line_type={{ line_type.expense_line_types_id }}&prop={{ active_prop }}">
-                                    {{ line_totals.oct|default:0|floatformat:"0"|intcomma }}
-                                </a>
-                            {% else %}
-                                0
-                            {% endif %}
-                        </td>
-                        <td class="text-right">
-                            {% if line_totals.nov %}
-                                <a href="#" class="budget-expense-details-link" 
-                                   data-url="{% url 'budget_expense_details_view' %}?year={{ selected_year|floatformat:'0' }}&month=11&line_type={{ line_type.expense_line_types_id }}&prop={{ active_prop }}">
-                                    {{ line_totals.nov|default:0|floatformat:"0"|intcomma }}
-                                </a>
-                            {% else %}
-                                0
-                            {% endif %}
-                        </td>
-                        <td class="text-right">
-                            {% if line_totals.dec %}
-                                <a href="#" class="budget-expense-details-link" 
-                                   data-url="{% url 'budget_expense_details_view' %}?year={{ selected_year|floatformat:'0' }}&month=12&line_type={{ line_type.expense_line_types_id }}&prop={{ active_prop }}">
-                                    {{ line_totals.dec|default:0|floatformat:"0"|intcomma }}
-                                </a>
-                            {% else %}
-                                0
-                            {% endif %}
-                        </td>
-                        <td class="text-right font-weight-bold">{{ line_totals.total|default:0|floatformat:"0"|intcomma }}</td>
-                        <td class="text-right">{{ line_totals.total|divide:12|default:0|floatformat:"0"|intcomma }}</td>
-                    </tr>
-                    {% endif %}
-                    {% endwith %}
-                    {% endfor %}
-                    <!-- TOTAL EXPENSES (Budgeted + Actual) for all properties -->
-                    <tr class="font-weight-bold" style="background-color: #f8f9fa">
-                        <td>TOTAL EXPENSES:</td>
-                        <td class="text-right">{{ expense_totals.jan|add:actual_expense_totals.jan|default:0|floatformat:"0"|intcomma }}</td>
-                        <td class="text-right">{{ expense_totals.feb|add:actual_expense_totals.feb|default:0|floatformat:"0"|intcomma }}</td>
-                        <td class="text-right">{{ expense_totals.mar|add:actual_expense_totals.mar|default:0|floatformat:"0"|intcomma }}</td>
-                        <td class="text-right">{{ expense_totals.apr|add:actual_expense_totals.apr|default:0|floatformat:"0"|intcomma }}</td>
-                        <td class="text-right">{{ expense_totals.may|add:actual_expense_totals.may|default:0|floatformat:"0"|intcomma }}</td>
-                        <td class="text-right">{{ expense_totals.jun|add:actual_expense_totals.jun|default:0|floatformat:"0"|intcomma }}</td>
-                        <td class="text-right">{{ expense_totals.jul|add:actual_expense_totals.jul|default:0|floatformat:"0"|intcomma }}</td>
-                        <td class="text-right">{{ expense_totals.aug|add:actual_expense_totals.aug|default:0|floatformat:"0"|intcomma }}</td>
-                        <td class="text-right">{{ expense_totals.sep|add:actual_expense_totals.sep|default:0|floatformat:"0"|intcomma }}</td>
-                        <td class="text-right">{{ expense_totals.oct|add:actual_expense_totals.oct|default:0|floatformat:"0"|intcomma }}</td>
-                        <td class="text-right">{{ expense_totals.nov|add:actual_expense_totals.nov|default:0|floatformat:"0"|intcomma }}</td>
-                        <td class="text-right">{{ expense_totals.dec|add:actual_expense_totals.dec|default:0|floatformat:"0"|intcomma }}</td>
-                        <td class="text-right">{{ expense_totals.year|add:actual_expense_totals.year|default:0|floatformat:"0"|intcomma }}</td>
-                        <td class="text-right">{{ expense_totals.year|add:actual_expense_totals.year|divide:12|default:0|floatformat:"0"|intcomma }}</td>
-                    </tr>
-                    
-                    <!-- PROFIT SECTION for all properties -->
-                    <tr class="section-header">
-                        <td class="font-weight-bold" style="background-color: #17a2b8; color: white;">PROFIT</td>
-                        <td colspan="14" style="background-color: #17a2b8;"></td>
-                    </tr>
-                    <tr class="font-weight-bold" style="background-color: #f8f9fa">
-                        <td>NET PROFIT:</td>
-                        <td class="text-right">{{ revenue_totals.jan|subtract:expense_totals.jan|subtract:actual_expense_totals.jan|default:0|floatformat:"0"|intcomma }}</td>
-                        <td class="text-right">{{ revenue_totals.feb|subtract:expense_totals.feb|subtract:actual_expense_totals.feb|default:0|floatformat:"0"|intcomma }}</td>
-                        <td class="text-right">{{ revenue_totals.mar|subtract:expense_totals.mar|subtract:actual_expense_totals.mar|default:0|floatformat:"0"|intcomma }}</td>
-                        <td class="text-right">{{ revenue_totals.apr|subtract:expense_totals.apr|subtract:actual_expense_totals.apr|default:0|floatformat:"0"|intcomma }}</td>
-                        <td class="text-right">{{ revenue_totals.may|subtract:expense_totals.may|subtract:actual_expense_totals.may|default:0|floatformat:"0"|intcomma }}</td>
-                        <td class="text-right">{{ revenue_totals.jun|subtract:expense_totals.jun|subtract:actual_expense_totals.jun|default:0|floatformat:"0"|intcomma }}</td>
-                        <td class="text-right">{{ revenue_totals.jul|subtract:expense_totals.jul|subtract:actual_expense_totals.jul|default:0|floatformat:"0"|intcomma }}</td>
-                        <td class="text-right">{{ revenue_totals.aug|subtract:expense_totals.aug|subtract:actual_expense_totals.aug|default:0|floatformat:"0"|intcomma }}</td>
-                        <td class="text-right">{{ revenue_totals.sep|subtract:expense_totals.sep|subtract:actual_expense_totals.sep|default:0|floatformat:"0"|intcomma }}</td>
-                        <td class="text-right">{{ revenue_totals.oct|subtract:expense_totals.oct|subtract:actual_expense_totals.oct|default:0|floatformat:"0"|intcomma }}</td>
-                        <td class="text-right">{{ revenue_totals.nov|subtract:expense_totals.nov|subtract:actual_expense_totals.nov|default:0|floatformat:"0"|intcomma }}</td>
-                        <td class="text-right">{{ revenue_totals.dec|subtract:expense_totals.dec|subtract:actual_expense_totals.dec|default:0|floatformat:"0"|intcomma }}</td>
-                        <td class="text-right">{{ revenue_totals.year|subtract:expense_totals.year|subtract:actual_expense_totals.year|default:0|floatformat:"0"|intcomma }}</td>
-                        <td class="text-right">{{ revenue_totals.year|subtract:expense_totals.year|subtract:actual_expense_totals.year|divide:12|default:0|floatformat:"0"|intcomma }}</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-
-        <!-- CONSOLIDATED ROI CALCULATIONS for all properties-->
-        <div class="roi-section mt-3">
-            <h6 class="section-title" style="background-color: #17a2b8; color: white; padding: 8px; border-radius: 4px; width: fit-content;">CONSOLIDATED FINANCIAL INDICATORS</h6>
-            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                <!-- GROSS ROI -->
-                <div style="background-color: #f8f9fa; padding: 8px; border-radius: 4px; width: fit-content; border: 1.5px solid #dee2e6;">
-                    <span class="font-weight-bold">Gross ROI: 
-                        {% with total_revenue=revenue_totals.year %}
-                        {% with total_purchase=properties|sum_purchase_prices %}
-                        {% if total_purchase > 0 %}
-                            {{ total_revenue|divide:total_purchase|multiply:100|floatformat:"2" }}%
-                        {% else %}
-                            N/A
-                        {% endif %}
-                        {% endwith %}
-                        {% endwith %}
-                    </span>
-                </div>
-                
-                <!-- NET ROI -->
-                <div style="background-color: #f8f9fa; padding: 8px; border-radius: 4px; width: fit-content; border: 1.5px solid #dee2e6;">
-                    <span class="font-weight-bold">Net ROI: 
-                        {% with total_revenue=revenue_totals.year %}
-                        {% with total_expense=expense_totals.year %}
-                        {% with total_purchase=properties|sum_purchase_prices %}
-                        {% if total_purchase > 0 %}
-                            {{ total_revenue|subtract:total_expense|subtract:actual_expense_totals.year|divide:total_purchase|multiply:100|floatformat:"2" }}%
-                        {% else %}
-                            N/A
-                        {% endif %}
-                        {% endwith %}
-                        {% endwith %}
-                        {% endwith %}
-                    </span>
-                </div>
-                
-                <!-- EXPENSE RATIO -->
-                <div style="background-color: #f8f9fa; padding: 8px; border-radius: 4px; width: fit-content; border: 1.5px solid #dee2e6;">
-                    <span class="font-weight-bold">Expenses to Revenue: 
-                        {% with total_revenue=revenue_totals.year %}
-                        {% with total_expense=expense_totals.year %}
-                        {% if total_revenue > 0 %}
-                            {{ total_expense|add:actual_expense_totals.year|divide:total_revenue|multiply:100|floatformat:"2" }}%
-                        {% else %}
-                            N/A
-                        {% endif %}
-                        {% endwith %}
-                        {% endwith %}
-                    </span>
-                </div>
-                
-                <!-- RENT PER SQ M -->
-                <div style="background-color: #f8f9fa; padding: 8px; border-radius: 4px; width: fit-content; border: 1.5px solid #dee2e6;">
-                    <span class="font-weight-bold">Rent (€/m<sup>2</sup>): 
-                        {% with total_revenue=revenue_totals.year %}
-                        {% with total_area=properties|sum_attr:'prop_floor_area' %}
-                        {% if total_revenue and total_area %}
-                            {{ total_revenue|divide:12|divide:total_area|floatformat:"2" }}
-                        {% else %}
-                            N/A
-                        {% endif %}
-                        {% endwith %}
-                        {% endwith %}
-                    </span>
-                </div>
-
-                <!-- VALUE INCREASE -->
-                <div style="background-color: #f8f9fa; padding: 8px; border-radius: 4px; width: fit-content; border: 1.5px solid #dee2e6;">
-                    <span class="font-weight-bold">% Value Increase: 
-                        {% with total_purchase=properties|sum_purchase_prices %}
-                        {% if total_purchase > 0 and total_current_value > 0 %}
-                            {{ total_current_value|subtract:total_purchase|divide:total_purchase|multiply:100|floatformat:"2" }}%
-                        {% elif total_purchase > 0 %}
-                            (Current values not set)
-                        {% else %}
-                            N/A
-                        {% endif %}
-                        {% endwith %}
-                    </span>
-                </div>                
-            </div>
+<!-- Property Selection Panel -->
+<div class="property-selection-panel">
+    <div class="selection-header">
+        <h6 class="selection-title">
+            <i class="fas fa-building"></i> Property Selection
+        </h6>
+        <div class="selection-buttons">
+            <button class="btn btn-info btn-sm" id="selectAllBtn">Select All</button>
+            <button class="btn btn-secondary btn-sm" id="selectNoneBtn">Select None</button>
         </div>
     </div>
-
     
-                    <!-- Property-specific Tabs -->
-                    {% for prop in properties %}
-                    <div class="tab-pane fade {% if active_prop == prop.prop_id|stringformat:'s' %}show active{% endif %}" id="prop{{ prop.prop_id }}">
-                        <!-- COMBINED TABLE -->
-                        <div class="table-responsive" style="overflow-x: auto; width: 100%;">
-                            <table class="table table-sm table-bordered" style="font-size: 0.85rem;">
-                                <thead class="thead-light">
-                                    <tr>
-                                        <th></th>
-                                        <th class="text-center">Jan</th>
-                                        <th class="text-center">Feb</th>
-                                        <th class="text-center">Mar</th>
-                                        <th class="text-center">Apr</th>
-                                        <th class="text-center">May</th>
-                                        <th class="text-center">Jun</th>
-                                        <th class="text-center">Jul</th>
-                                        <th class="text-center">Aug</th>
-                                        <th class="text-center">Sep</th>
-                                        <th class="text-center">Oct</th>
-                                        <th class="text-center">Nov</th>
-                                        <th class="text-center">Dec</th>
-                                        <th class="text-center">Total</th>
-                                        <th class="text-center">Monthly</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <!-- REVENUE SECTION for specific property -->
-                                    <tr class="section-header">
-                                        <td class="font-weight-bold" style="background-color: #17a2b8; color: white;">REVENUE</td>
-                                        <td colspan="14" style="background-color: #17a2b8;"></td>
-                                    </tr>
-                                    {% for line_type in revenue_line_types %}
-                                    {% with line_totals=revenue_totals_by_line|get_item:prop.prop_id|get_item:line_type.revenue_line_types_id %}
-                                    {% if line_totals.jan or line_totals.feb or line_totals.mar or line_totals.apr or line_totals.may or line_totals.jun or line_totals.jul or line_totals.aug or line_totals.sep or line_totals.oct or line_totals.nov or line_totals.dec or line_totals.total %}
-                                    <tr>
-                                        <td>{{ line_type.revenue_line_types_name }}</td>
-                                        <td class="text-right">{{ line_totals.jan|default:0|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right">{{ line_totals.feb|default:0|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right">{{ line_totals.mar|default:0|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right">{{ line_totals.apr|default:0|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right">{{ line_totals.may|default:0|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right">{{ line_totals.jun|default:0|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right">{{ line_totals.jul|default:0|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right">{{ line_totals.aug|default:0|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right">{{ line_totals.sep|default:0|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right">{{ line_totals.oct|default:0|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right">{{ line_totals.nov|default:0|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right">{{ line_totals.dec|default:0|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right font-weight-bold">{{ line_totals.total|default:0|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right">{{ line_totals.total|divide:12|default:0|floatformat:"0"|intcomma }}</td>
-                                    </tr>
-                                    {% endif %}
-                                    {% endwith %}
-                                    {% endfor %}
-                                    <tr class="font-weight-bold" style="background-color: #f8f9fa">
-                                        <td>TOTAL REVENUE:</td>
-                                        {% with prop_total=revenue_prop_totals|get_item:prop.prop_id %}
-                                        <td class="text-right">{{ prop_total.jan|default:0|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right">{{ prop_total.feb|default:0|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right">{{ prop_total.mar|default:0|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right">{{ prop_total.apr|default:0|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right">{{ prop_total.may|default:0|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right">{{ prop_total.jun|default:0|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right">{{ prop_total.jul|default:0|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right">{{ prop_total.aug|default:0|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right">{{ prop_total.sep|default:0|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right">{{ prop_total.oct|default:0|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right">{{ prop_total.nov|default:0|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right">{{ prop_total.dec|default:0|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right">{{ prop_total.year|default:0|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right">{{ prop_total.year|divide:12|default:0|floatformat:"0"|intcomma }}</td>
-                                        {% endwith %}
-                                    </tr>
-                                    
-                                    <!-- EXPENSES SECTION for specific property -->
-                                    <tr class="section-header">
-                                        <td class="font-weight-bold" style="background-color: #17a2b8; color: white;">EXPENSES</td>
-                                        <td colspan="14" style="background-color: #17a2b8;"></td>
-                                    </tr>
+    <div class="property-grid">
+        {% for prop in all_properties %}
+        <div class="property-checkbox">
+            <input type="checkbox" id="prop-{{ prop.prop_id }}" 
+                   data-prop-id="{{ prop.prop_id }}"
+                   {% if prop.prop_id|stringformat:'s' in selected_properties %}checked{% endif %}>
+            <label for="prop-{{ prop.prop_id }}">{{ prop.prop_name }}</label>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <div class="selection-counter">
+        <span id="selectionCount">
+            {{ selected_properties|length }} of {{ all_properties|length }}
+        </span> properties selected
+    </div>
+</div>
 
-                                    <!-- ACTUAL EXPENSES ROW for specific property -->
-                                    {% with prop_actual_expenses=actual_expense_prop_totals|get_item:prop.prop_id %}
-                                    {% if prop_actual_expenses.year > 0 %}
-                                    <tr style="background-color: #f8f9fa;">
-                                        <td>Actual Expenses</td>
-                                        
-                                        <!-- January -->
-                                        <td class="text-right">
-                                            {% if prop_actual_expenses.jan %}
-                                                <a href="#" class="expense-details-link" 
-                                                    data-url="{% url 'act_expense_view' %}?year={{ selected_year }}&month=1&property_id={{ prop.prop_id }}&from_finance_pl_act=true">
-                                                    {{ prop_actual_expenses.jan|floatformat:"0"|intcomma }}
-                                                </a>
-                                            {% else %}
-                                                0
-                                            {% endif %}
-                                        </td>
-                                        
-                                        <!-- February -->
-                                        <td class="text-right">
-                                            {% if prop_actual_expenses.feb %}
-                                                <a href="#" class="expense-details-link" 
-                                                    data-url="{% url 'act_expense_view' %}?year={{ selected_year }}&month=2&property_id={{ prop.prop_id }}&from_finance_pl_act=true">
-                                                    {{ prop_actual_expenses.feb|floatformat:"0"|intcomma }}
-                                                </a>
-                                            {% else %}
-                                                0
-                                            {% endif %}
-                                        </td>
-                                        
-                                        <!-- March -->
-                                        <td class="text-right">
-                                            {% if prop_actual_expenses.mar %}
-                                                <a href="#" class="expense-details-link" 
-                                                    data-url="{% url 'act_expense_view' %}?year={{ selected_year }}&month=3&property_id={{ prop.prop_id }}&from_finance_pl_act=true">
-                                                    {{ prop_actual_expenses.mar|floatformat:"0"|intcomma }}
-                                                </a>
-                                            {% else %}
-                                                0
-                                            {% endif %}
-                                        </td>
-                                        
-                                        <!-- April -->
-                                        <td class="text-right">
-                                            {% if prop_actual_expenses.apr %}
-                                                <a href="#" class="expense-details-link" 
-                                                    data-url="{% url 'act_expense_view' %}?year={{ selected_year }}&month=4&property_id={{ prop.prop_id }}&from_finance_pl_act=true">
-                                                    {{ prop_actual_expenses.apr|floatformat:"0"|intcomma }}
-                                                </a>
-                                            {% else %}
-                                                0
-                                            {% endif %}
-                                        </td>
-                                        
-                                        <!-- May -->
-                                        <td class="text-right">
-                                            {% if prop_actual_expenses.may %}
-                                                <a href="#" class="expense-details-link" 
-                                                    data-url="{% url 'act_expense_view' %}?year={{ selected_year }}&month=5&property_id={{ prop.prop_id }}&from_finance_pl_act=true">
-                                                    {{ prop_actual_expenses.may|floatformat:"0"|intcomma }}
-                                                </a>
-                                            {% else %}
-                                                0
-                                            {% endif %}
-                                        </td>
-                                        
-                                        <!-- June -->
-                                        <td class="text-right">
-                                            {% if prop_actual_expenses.jun %}
-                                                <a href="#" class="expense-details-link" 
-                                                    data-url="{% url 'act_expense_view' %}?year={{ selected_year }}&month=6&property_id={{ prop.prop_id }}&from_finance_pl_act=true">
-                                                    {{ prop_actual_expenses.jun|floatformat:"0"|intcomma }}
-                                                </a>
-                                            {% else %}
-                                                0
-                                            {% endif %}
-                                        </td>
-                                        
-                                        <!-- July -->
-                                        <td class="text-right">
-                                            {% if prop_actual_expenses.jul %}
-                                                <a href="#" class="expense-details-link" 
-                                                    data-url="{% url 'act_expense_view' %}?year={{ selected_year }}&month=7&property_id={{ prop.prop_id }}&from_finance_pl_act=true">
-                                                    {{ prop_actual_expenses.jul|floatformat:"0"|intcomma }}
-                                                </a>
-                                            {% else %}
-                                                0
-                                            {% endif %}
-                                        </td>
-                                        
-                                        <!-- August -->
-                                        <td class="text-right">
-                                            {% if prop_actual_expenses.aug %}
-                                                <a href="#" class="expense-details-link" 
-                                                    data-url="{% url 'act_expense_view' %}?year={{ selected_year }}&month=8&property_id={{ prop.prop_id }}&from_finance_pl_act=true">
-                                                    {{ prop_actual_expenses.aug|floatformat:"0"|intcomma }}
-                                                </a>
-                                            {% else %}
-                                                0
-                                            {% endif %}
-                                        </td>
-                                        
-                                        <!-- September -->
-                                        <td class="text-right">
-                                            {% if prop_actual_expenses.sep %}
-                                                <a href="#" class="expense-details-link" 
-                                                    data-url="{% url 'act_expense_view' %}?year={{ selected_year }}&month=9&property_id={{ prop.prop_id }}&from_finance_pl_act=true">
-                                                    {{ prop_actual_expenses.sep|floatformat:"0"|intcomma }}
-                                                </a>
-                                            {% else %}
-                                                0
-                                            {% endif %}
-                                        </td>
-                                        
-                                        <!-- October -->
-                                        <td class="text-right">
-                                            {% if prop_actual_expenses.oct %}
-                                                <a href="#" class="expense-details-link" 
-                                                    data-url="{% url 'act_expense_view' %}?year={{ selected_year }}&month=10&property_id={{ prop.prop_id }}&from_finance_pl_act=true">
-                                                    {{ prop_actual_expenses.oct|floatformat:"0"|intcomma }}
-                                                </a>
-                                            {% else %}
-                                                0
-                                            {% endif %}
-                                        </td>
-                                        
-                                        <!-- November -->
-                                        <td class="text-right">
-                                            {% if prop_actual_expenses.nov %}
-                                                <a href="#" class="expense-details-link" 
-                                                    data-url="{% url 'act_expense_view' %}?year={{ selected_year }}&month=11&property_id={{ prop.prop_id }}&from_finance_pl_act=true">
-                                                    {{ prop_actual_expenses.nov|floatformat:"0"|intcomma }}
-                                                </a>
-                                            {% else %}
-                                                0
-                                            {% endif %}
-                                        </td>
-                                        
-                                        <!-- December -->
-                                        <td class="text-right">
-                                            {% if prop_actual_expenses.dec %}
-                                                <a href="#" class="expense-details-link" 
-                                                    data-url="{% url 'act_expense_view' %}?year={{ selected_year }}&month=12&property_id={{ prop.prop_id }}&from_finance_pl_act=true">
-                                                    {{ prop_actual_expenses.dec|floatformat:"0"|intcomma }}
-                                                </a>
-                                            {% else %}
-                                                0
-                                            {% endif %}
-                                        </td>
-                                        
-                                        <!-- Year Total -->
-                                        <td class="text-right font-weight-bold">
-                                            <a href="#" class="expense-details-link" 
-                                               data-url="{% url 'act_expense_view' %}?year={{ selected_year }}&property_id={{ prop.prop_id }}&from_finance_pl_act=true">
-                                                {{ prop_actual_expenses.year|floatformat:"0"|intcomma }}
-                                            </a>
-                                        </td>
-                                        <td class="text-right">{{ prop_actual_expenses.year|divide:12|floatformat:"0"|intcomma }}</td>
-                                    </tr>
-                                    {% endif %}
-                                    {% endwith %}
+<!-- Loading Indicator -->
+<div id="loadingIndicator" class="text-center py-3" style="display: none;">
+    <div class="spinner-border text-info" role="status">
+        <span class="sr-only">Loading...</span>
+    </div>
+    <p class="mt-2">Loading profit & loss data...</p>
+</div>
 
-                                    <!-- BUDGETED EXPENSES for specific property -->
-                                    {% for line_type in expense_line_types|sort_expense_line_types %}
-                                    {% with line_totals=expense_totals_by_line|get_item:prop.prop_id|get_item:line_type.expense_line_types_id %}
-                                    {% if line_totals.jan or line_totals.feb or line_totals.mar or line_totals.apr or line_totals.may or line_totals.jun or line_totals.jul or line_totals.aug or line_totals.sep or line_totals.oct or line_totals.nov or line_totals.dec or line_totals.total %}
-                                    <tr>
-                                        <td>{{ line_type.expense_line_types_name }}</td>
-                                        <td class="text-right">{{ line_totals.jan|default:0|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right">{{ line_totals.feb|default:0|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right">{{ line_totals.mar|default:0|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right">{{ line_totals.apr|default:0|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right">{{ line_totals.may|default:0|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right">{{ line_totals.jun|default:0|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right">{{ line_totals.jul|default:0|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right">{{ line_totals.aug|default:0|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right">{{ line_totals.sep|default:0|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right">{{ line_totals.oct|default:0|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right">{{ line_totals.nov|default:0|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right">{{ line_totals.dec|default:0|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right font-weight-bold">{{ line_totals.total|default:0|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right">{{ line_totals.total|divide:12|default:0|floatformat:"0"|intcomma }}</td>
-                                    </tr>
-                                    {% endif %}
-                                    {% endwith %}
-                                    {% endfor %}
-                                    <tr class="font-weight-bold" style="background-color: #f8f9fa">
-                                        <td>TOTAL EXPENSES:</td>
-                                        {% with prop_total=expense_prop_totals|get_item:prop.prop_id %}
-                                        {% with prop_actual_expenses=actual_expense_prop_totals|get_item:prop.prop_id %}
-                                        <td class="text-right">{{ prop_total.jan|add:prop_actual_expenses.jan|default:0|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right">{{ prop_total.feb|add:prop_actual_expenses.feb|default:0|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right">{{ prop_total.mar|add:prop_actual_expenses.mar|default:0|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right">{{ prop_total.apr|add:prop_actual_expenses.apr|default:0|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right">{{ prop_total.may|add:prop_actual_expenses.may|default:0|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right">{{ prop_total.jun|add:prop_actual_expenses.jun|default:0|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right">{{ prop_total.jul|add:prop_actual_expenses.jul|default:0|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right">{{ prop_total.aug|add:prop_actual_expenses.aug|default:0|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right">{{ prop_total.sep|add:prop_actual_expenses.sep|default:0|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right">{{ prop_total.oct|add:prop_actual_expenses.oct|default:0|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right">{{ prop_total.nov|add:prop_actual_expenses.nov|default:0|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right">{{ prop_total.dec|add:prop_actual_expenses.dec|default:0|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right">{{ prop_total.year|add:prop_actual_expenses.year|default:0|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right">{{ prop_total.year|add:prop_actual_expenses.year|divide:12|default:0|floatformat:"0"|intcomma }}</td>
-                                        {% endwith %}
-                                        {% endwith %}
-                                    </tr>
+<!-- Profit & Loss Container -->
+<div id="profitLossContainer">
+    {% if not selected_properties %}
+    <!-- No Properties Selected Message -->
+    <div class="alert alert-info text-center" id="noPropertiesMessage">
+        <i class="fas fa-building"></i>
+        <h5 class="mt-2">No Properties Selected</h5>
+        <p>Please select one or more properties from the list above to view their Profit & Loss data with actual expenses.</p>
+    </div>
+    {% else %}
+    <!-- COMBINED TABLE -->
+    <div class="table-responsive" style="overflow-x: auto; width: 100%;">
+        <table class="table table-sm table-bordered" style="font-size: 0.85rem;">
+            <thead class="thead-light">
+                <tr>
+                    <th></th>
+                    <th class="text-center">Jan</th>
+                    <th class="text-center">Feb</th>
+                    <th class="text-center">Mar</th>
+                    <th class="text-center">Apr</th>
+                    <th class="text-center">May</th>
+                    <th class="text-center">Jun</th>
+                    <th class="text-center">Jul</th>
+                    <th class="text-center">Aug</th>
+                    <th class="text-center">Sep</th>
+                    <th class="text-center">Oct</th>
+                    <th class="text-center">Nov</th>
+                    <th class="text-center">Dec</th>
+                    <th class="text-center">Total</th>
+                    <th class="text-center">Monthly</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- REVENUE SECTION -->
+                <tr class="section-header">
+                    <td class="font-weight-bold" style="background-color: #17a2b8; color: white;">REVENUE</td>
+                    <td colspan="14" style="background-color: #17a2b8;"></td>
+                </tr>
+                {% for line_type in revenue_line_types %}
+                {% with line_totals=revenue_totals_by_line.all|get_item:line_type.revenue_line_types_id %}
+                {% if line_totals.jan or line_totals.feb or line_totals.mar or line_totals.apr or line_totals.may or line_totals.jun or line_totals.jul or line_totals.aug or line_totals.sep or line_totals.oct or line_totals.nov or line_totals.dec or line_totals.total %}
+                <tr>
+                    <td>{{ line_type.revenue_line_types_name }}</td>
+                    <td class="text-right">
+                        {% if line_totals.jan %}
+                            <a href="#" class="revenue-details-link" 
+                               data-url="{% url 'revenue_details_view' %}?year={{ selected_year|floatformat:'0' }}&month=1&line_type={{ line_type.revenue_line_types_id }}&properties={{ selected_properties|join:',' }}">
+                                {{ line_totals.jan|default:0|floatformat:"0"|intcomma }}
+                            </a>
+                        {% else %}
+                            0
+                        {% endif %}
+                    </td>
+                    <td class="text-right">
+                        {% if line_totals.feb %}
+                            <a href="#" class="revenue-details-link" 
+                               data-url="{% url 'revenue_details_view' %}?year={{ selected_year|floatformat:'0' }}&month=2&line_type={{ line_type.revenue_line_types_id }}&properties={{ selected_properties|join:',' }}">
+                                {{ line_totals.feb|default:0|floatformat:"0"|intcomma }}
+                            </a>
+                        {% else %}
+                            0
+                        {% endif %}
+                    </td>
+                    <td class="text-right">
+                        {% if line_totals.mar %}
+                            <a href="#" class="revenue-details-link" 
+                               data-url="{% url 'revenue_details_view' %}?year={{ selected_year|floatformat:'0' }}&month=3&line_type={{ line_type.revenue_line_types_id }}&properties={{ selected_properties|join:',' }}">
+                                {{ line_totals.mar|default:0|floatformat:"0"|intcomma }}
+                            </a>
+                        {% else %}
+                            0
+                        {% endif %}
+                    </td>
+                    <td class="text-right">
+                        {% if line_totals.apr %}
+                            <a href="#" class="revenue-details-link" 
+                               data-url="{% url 'revenue_details_view' %}?year={{ selected_year|floatformat:'0' }}&month=4&line_type={{ line_type.revenue_line_types_id }}&properties={{ selected_properties|join:',' }}">
+                                {{ line_totals.apr|default:0|floatformat:"0"|intcomma }}
+                            </a>
+                        {% else %}
+                            0
+                        {% endif %}
+                    </td>
+                    <td class="text-right">
+                        {% if line_totals.may %}
+                            <a href="#" class="revenue-details-link" 
+                               data-url="{% url 'revenue_details_view' %}?year={{ selected_year|floatformat:'0' }}&month=5&line_type={{ line_type.revenue_line_types_id }}&properties={{ selected_properties|join:',' }}">
+                                {{ line_totals.may|default:0|floatformat:"0"|intcomma }}
+                            </a>
+                        {% else %}
+                            0
+                        {% endif %}
+                    </td>
+                    <td class="text-right">
+                        {% if line_totals.jun %}
+                            <a href="#" class="revenue-details-link" 
+                               data-url="{% url 'revenue_details_view' %}?year={{ selected_year|floatformat:'0' }}&month=6&line_type={{ line_type.revenue_line_types_id }}&properties={{ selected_properties|join:',' }}">
+                                {{ line_totals.jun|default:0|floatformat:"0"|intcomma }}
+                            </a>
+                        {% else %}
+                            0
+                        {% endif %}
+                    </td>
+                    <td class="text-right">
+                        {% if line_totals.jul %}
+                            <a href="#" class="revenue-details-link" 
+                               data-url="{% url 'revenue_details_view' %}?year={{ selected_year|floatformat:'0' }}&month=7&line_type={{ line_type.revenue_line_types_id }}&properties={{ selected_properties|join:',' }}">
+                                {{ line_totals.jul|default:0|floatformat:"0"|intcomma }}
+                            </a>
+                        {% else %}
+                            0
+                        {% endif %}
+                    </td>
+                    <td class="text-right">
+                        {% if line_totals.aug %}
+                            <a href="#" class="revenue-details-link" 
+                               data-url="{% url 'revenue_details_view' %}?year={{ selected_year|floatformat:'0' }}&month=8&line_type={{ line_type.revenue_line_types_id }}&properties={{ selected_properties|join:',' }}">
+                                {{ line_totals.aug|default:0|floatformat:"0"|intcomma }}
+                            </a>
+                        {% else %}
+                            0
+                        {% endif %}
+                    </td>
+                    <td class="text-right">
+                        {% if line_totals.sep %}
+                            <a href="#" class="revenue-details-link" 
+                               data-url="{% url 'revenue_details_view' %}?year={{ selected_year|floatformat:'0' }}&month=9&line_type={{ line_type.revenue_line_types_id }}&properties={{ selected_properties|join:',' }}">
+                                {{ line_totals.sep|default:0|floatformat:"0"|intcomma }}
+                            </a>
+                        {% else %}
+                            0
+                        {% endif %}
+                    </td>
+                    <td class="text-right">
+                        {% if line_totals.oct %}
+                            <a href="#" class="revenue-details-link" 
+                               data-url="{% url 'revenue_details_view' %}?year={{ selected_year|floatformat:'0' }}&month=10&line_type={{ line_type.revenue_line_types_id }}&properties={{ selected_properties|join:',' }}">
+                                {{ line_totals.oct|default:0|floatformat:"0"|intcomma }}
+                            </a>
+                        {% else %}
+                            0
+                        {% endif %}
+                    </td>
+                    <td class="text-right">
+                        {% if line_totals.nov %}
+                            <a href="#" class="revenue-details-link" 
+                               data-url="{% url 'revenue_details_view' %}?year={{ selected_year|floatformat:'0' }}&month=11&line_type={{ line_type.revenue_line_types_id }}&properties={{ selected_properties|join:',' }}">
+                                {{ line_totals.nov|default:0|floatformat:"0"|intcomma }}
+                            </a>
+                        {% else %}
+                            0
+                        {% endif %}
+                    </td>
+                    <td class="text-right">
+                        {% if line_totals.dec %}
+                            <a href="#" class="revenue-details-link" 
+                               data-url="{% url 'revenue_details_view' %}?year={{ selected_year|floatformat:'0' }}&month=12&line_type={{ line_type.revenue_line_types_id }}&properties={{ selected_properties|join:',' }}">
+                                {{ line_totals.dec|default:0|floatformat:"0"|intcomma }}
+                            </a>
+                        {% else %}
+                            0
+                        {% endif %}
+                    </td>
+                    <td class="text-right font-weight-bold">{{ line_totals.total|default:0|floatformat:"0"|intcomma }}</td>
+                    <td class="text-right">{{ line_totals.total|divide:12|default:0|floatformat:"0"|intcomma }}</td>
+                </tr>
+                {% endif %}
+                {% endwith %}
+                {% endfor %}
+                <tr class="font-weight-bold" style="background-color: #f8f9fa">
+                    <td>TOTAL REVENUE:</td>
+                    <td class="text-right">{{ revenue_totals.jan|default:0|floatformat:"0"|intcomma }}</td>
+                    <td class="text-right">{{ revenue_totals.feb|default:0|floatformat:"0"|intcomma }}</td>
+                    <td class="text-right">{{ revenue_totals.mar|default:0|floatformat:"0"|intcomma }}</td>
+                    <td class="text-right">{{ revenue_totals.apr|default:0|floatformat:"0"|intcomma }}</td>
+                    <td class="text-right">{{ revenue_totals.may|default:0|floatformat:"0"|intcomma }}</td>
+                    <td class="text-right">{{ revenue_totals.jun|default:0|floatformat:"0"|intcomma }}</td>
+                    <td class="text-right">{{ revenue_totals.jul|default:0|floatformat:"0"|intcomma }}</td>
+                    <td class="text-right">{{ revenue_totals.aug|default:0|floatformat:"0"|intcomma }}</td>
+                    <td class="text-right">{{ revenue_totals.sep|default:0|floatformat:"0"|intcomma }}</td>
+                    <td class="text-right">{{ revenue_totals.oct|default:0|floatformat:"0"|intcomma }}</td>
+                    <td class="text-right">{{ revenue_totals.nov|default:0|floatformat:"0"|intcomma }}</td>
+                    <td class="text-right">{{ revenue_totals.dec|default:0|floatformat:"0"|intcomma }}</td>
+                    <td class="text-right">{{ revenue_totals.year|default:0|floatformat:"0"|intcomma }}</td>
+                    <td class="text-right">{{ revenue_totals.year|divide:12|default:0|floatformat:"0"|intcomma }}</td>
+                </tr>
+                
+                <!-- EXPENSES SECTION -->
+                <tr class="section-header">
+                    <td class="font-weight-bold" style="background-color: #17a2b8; color: white;">EXPENSES</td>
+                    <td colspan="14" style="background-color: #17a2b8;"></td>
+                </tr>
 
-                                    
-                                    <!-- PROFIT SECTION for specific property -->
-                                    <tr class="section-header">
-                                        <td class="font-weight-bold" style="background-color: #17a2b8; color: white;">PROFIT</td>
-                                        <td colspan="14" style="background-color: #17a2b8;"></td>
-                                    </tr>
-                                    <tr class="font-weight-bold" style="background-color: #f8f9fa">
-                                        <td>NET PROFIT:</td>
-                                        {% with prop_revenue=revenue_prop_totals|get_item:prop.prop_id %}
-                                        {% with prop_expense=expense_prop_totals|get_item:prop.prop_id %}
-                                        {% with prop_actual=actual_expense_prop_totals|get_item:prop.prop_id %}
-                                        <td class="text-right">{{ prop_revenue.jan|subtract:prop_expense.jan|subtract:prop_actual.jan|default:0|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right">{{ prop_revenue.feb|subtract:prop_expense.feb|subtract:prop_actual.feb|default:0|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right">{{ prop_revenue.mar|subtract:prop_expense.mar|subtract:prop_actual.mar|default:0|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right">{{ prop_revenue.apr|subtract:prop_expense.apr|subtract:prop_actual.apr|default:0|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right">{{ prop_revenue.may|subtract:prop_expense.may|subtract:prop_actual.may|default:0|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right">{{ prop_revenue.jun|subtract:prop_expense.jun|subtract:prop_actual.jun|default:0|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right">{{ prop_revenue.jul|subtract:prop_expense.jul|subtract:prop_actual.jul|default:0|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right">{{ prop_revenue.aug|subtract:prop_expense.aug|subtract:prop_actual.aug|default:0|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right">{{ prop_revenue.sep|subtract:prop_expense.sep|subtract:prop_actual.sep|default:0|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right">{{ prop_revenue.oct|subtract:prop_expense.oct|subtract:prop_actual.oct|default:0|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right">{{ prop_revenue.nov|subtract:prop_expense.nov|subtract:prop_actual.nov|default:0|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right">{{ prop_revenue.dec|subtract:prop_expense.dec|subtract:prop_actual.dec|default:0|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right">{{ prop_revenue.year|subtract:prop_expense.year|subtract:prop_actual.year|default:0|floatformat:"0"|intcomma }}</td>
-                                        <td class="text-right">{{ prop_revenue.year|subtract:prop_expense.year|subtract:prop_actual.year|divide:12|default:0|floatformat:"0"|intcomma }}</td>
-                                        {% endwith %}
-                                        {% endwith %}
-                                        {% endwith %}
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                        
-                        <!-- ROI CALCULATIONS for specific property -->
-                        <div class="roi-section mt-3">
-                            <h6 class="section-title" style="background-color: #17a2b8; color: white; padding: 8px; border-radius: 4px; width: fit-content;">FINANCIAL INDICATORS</h6>
-                            
-                            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-                                <div style="background-color: #f8f9fa; padding: 8px; border-radius: 4px; width: fit-content; border: 1.5px solid #dee2e6;">
-                                    <span class="font-weight-bold">Gross ROI: 
-                                        {% with prop_revenue=revenue_prop_totals|get_item:prop.prop_id %}
-                                        {% with current_value=prop.prop_values_set.first.prop_values_purchase_price %}
-                                        {% if current_value %}
-                                            {{ prop_revenue.year|divide:current_value|multiply:100|floatformat:"2" }}%
-                                        {% else %}
-                                            0.00%
-                                        {% endif %}
-                                        {% endwith %}
-                                        {% endwith %}
-                                    </span>
-                                </div>
-                                
-                                <!-- NET ROI - Updated to include actual expenses -->
-                                <div style="background-color: #f8f9fa; padding: 8px; border-radius: 4px; width: fit-content; border: 1.5px solid #dee2e6;">
-                                    <span class="font-weight-bold">Net ROI: 
-                                        {% with prop_revenue=revenue_prop_totals|get_item:prop.prop_id %}
-                                        {% with prop_expense=expense_prop_totals|get_item:prop.prop_id %}
-                                        {% with prop_actual=actual_expense_prop_totals|get_item:prop.prop_id %}
-                                        {% with current_value=prop.prop_values_set.first.prop_values_purchase_price %}
-                                        {% if current_value %}
-                                            {% with net_profit=prop_revenue.year|subtract:prop_expense.year|subtract:prop_actual.year|default:0 %}
-                                                {{ net_profit|divide:current_value|multiply:100|floatformat:"2" }}%
-                                            {% endwith %}
-                                        {% else %}
-                                            0.00%
-                                        {% endif %}
-                                        {% endwith %}
-                                        {% endwith %}
-                                        {% endwith %}
-                                        {% endwith %}
-                                    </span>
-                                </div>
+                <!-- ACTUAL EXPENSES ROW -->
+                {% if actual_expense_totals.year > 0 %}
+                <tr style="background-color: #f8f9fa;">
+                    <td>Actual Expenses</td>
+                    <td class="text-right">
+                        {% if actual_expense_totals.jan %}
+                            <a href="#" class="expense-details-link" 
+                               data-url="{% url 'act_expense_view' %}?year={{ selected_year|floatformat:"0" }}&month=1&from_finance_pl_act=true&properties={{ selected_properties|join:',' }}">
+                                {{ actual_expense_totals.jan|floatformat:"0"|intcomma }}
+                            </a>
+                        {% else %}
+                            0
+                        {% endif %}
+                    </td>
+                    <td class="text-right">
+                        {% if actual_expense_totals.feb %}
+                            <a href="#" class="expense-details-link"
+                               data-url="{% url 'act_expense_view' %}?year={{ selected_year|floatformat:"0" }}&month=2&from_finance_pl_act=true&properties={{ selected_properties|join:',' }}">
+                               {{ actual_expense_totals.feb|floatformat:"0"|intcomma }}
+                            </a>
+                        {% else %}
+                            0
+                        {% endif %}
+                    </td>
+                    <td class="text-right">
+                        {% if actual_expense_totals.mar %}
+                            <a href="#" class="expense-details-link"
+                               data-url="{% url 'act_expense_view' %}?year={{ selected_year|floatformat:"0" }}&month=3&from_finance_pl_act=true&properties={{ selected_properties|join:',' }}">
+                                {{ actual_expense_totals.mar|floatformat:"0"|intcomma }}
+                            </a>
+                        {% else %}
+                            0
+                        {% endif %}
+                    </td>
+                    <td class="text-right">
+                        {% if actual_expense_totals.apr %}
+                            <a href="#" class="expense-details-link"
+                               data-url="{% url 'act_expense_view' %}?year={{ selected_year|floatformat:"0" }}&month=4&from_finance_pl_act=true&properties={{ selected_properties|join:',' }}">
+                                {{ actual_expense_totals.apr|floatformat:"0"|intcomma }}
+                            </a>
+                        {% else %}
+                            0
+                        {% endif %}
+                    </td>
+                    <td class="text-right">
+                        {% if actual_expense_totals.may %}
+                            <a href="#" class="expense-details-link"
+                               data-url="{% url 'act_expense_view' %}?year={{ selected_year|floatformat:"0" }}&month=5&from_finance_pl_act=true&properties={{ selected_properties|join:',' }}">
+                                {{ actual_expense_totals.may|floatformat:"0"|intcomma }}
+                            </a>
+                        {% else %}
+                            0
+                        {% endif %}
+                    </td>
+                    <td class="text-right">
+                        {% if actual_expense_totals.jun %}
+                            <a href="#" class="expense-details-link"
+                               data-url="{% url 'act_expense_view' %}?year={{ selected_year|floatformat:"0" }}&month=6&from_finance_pl_act=true&properties={{ selected_properties|join:',' }}">
+                                {{ actual_expense_totals.jun|floatformat:"0"|intcomma }}
+                            </a>
+                        {% else %}
+                            0
+                        {% endif %}
+                    </td>
+                    <td class="text-right">
+                        {% if actual_expense_totals.jul %}
+                            <a href="#" class="expense-details-link"
+                               data-url="{% url 'act_expense_view' %}?year={{ selected_year|floatformat:"0" }}&month=7&from_finance_pl_act=true&properties={{ selected_properties|join:',' }}">
+                                {{ actual_expense_totals.jul|floatformat:"0"|intcomma }}
+                            </a>
+                        {% else %}
+                            0
+                        {% endif %}
+                    </td>
+                    <td class="text-right">
+                        {% if actual_expense_totals.aug %}
+                            <a href="#" class="expense-details-link"
+                               data-url="{% url 'act_expense_view' %}?year={{ selected_year|floatformat:"0" }}&month=8&from_finance_pl_act=true&properties={{ selected_properties|join:',' }}">
+                                {{ actual_expense_totals.aug|floatformat:"0"|intcomma }}
+                            </a>
+                        {% else %}
+                            0
+                        {% endif %}
+                    </td>
+                    <td class="text-right">
+                        {% if actual_expense_totals.sep %}
+                            <a href="#" class="expense-details-link"
+                               data-url="{% url 'act_expense_view' %}?year={{ selected_year|floatformat:"0" }}&month=9&from_finance_pl_act=true&properties={{ selected_properties|join:',' }}">
+                                {{ actual_expense_totals.sep|floatformat:"0"|intcomma }}
+                            </a>
+                        {% else %}
+                            0
+                        {% endif %}
+                    </td>
+                    <td class="text-right">
+                        {% if actual_expense_totals.oct %}
+                            <a href="#" class="expense-details-link"
+                               data-url="{% url 'act_expense_view' %}?year={{ selected_year|floatformat:"0" }}&month=10&from_finance_pl_act=true&properties={{ selected_properties|join:',' }}">
+                                {{ actual_expense_totals.oct|floatformat:"0"|intcomma }}
+                            </a>
+                        {% else %}
+                            0
+                        {% endif %}
+                    </td>
+                    <td class="text-right">
+                        {% if actual_expense_totals.nov %}
+                            <a href="#" class="expense-details-link"
+                               data-url="{% url 'act_expense_view' %}?year={{ selected_year|floatformat:"0" }}&month=11&from_finance_pl_act=true&properties={{ selected_properties|join:',' }}">
+                                {{ actual_expense_totals.nov|floatformat:"0"|intcomma }}
+                            </a>
+                        {% else %}
+                            0
+                        {% endif %}
+                    </td>
+                    <td class="text-right">
+                        {% if actual_expense_totals.dec %}
+                            <a href="#" class="expense-details-link"
+                               data-url="{% url 'act_expense_view' %}?year={{ selected_year|floatformat:"0" }}&month=12&from_finance_pl_act=true&properties={{ selected_properties|join:',' }}">
+                                {{ actual_expense_totals.dec|floatformat:"0"|intcomma }}
+                            </a>
+                        {% else %}
+                            0
+                        {% endif %}
+                    </td>
+                    <td class="text-right font-weight-bold">
+                        <a href="#" class="expense-details-link" 
+                            data-url="{% url 'act_expense_view' %}?year={{ selected_year|floatformat:"0" }}&from_finance_pl_act=true&properties={{ selected_properties|join:',' }}">
+                            {{ actual_expense_totals.year|floatformat:"0"|intcomma }}
+                        </a>
+                    </td>
+                    <td class="text-right">{{ actual_expense_totals.year|divide:12|floatformat:"0"|intcomma }}</td>
+                </tr>
+                {% endif %}
 
-                                <!-- EXPENSE RATIO - Updated to include actual expenses -->
-                                <div style="background-color: #f8f9fa; padding: 8px; border-radius: 4px; width: fit-content; border: 1.5px solid #dee2e6;">
-                                    <span class="font-weight-bold">Expenses to Revenue: 
-                                        {% with prop_revenue=revenue_prop_totals|get_item:prop.prop_id %}
-                                        {% with prop_expense=expense_prop_totals|get_item:prop.prop_id %}
-                                        {% with prop_actual=actual_expense_prop_totals|get_item:prop.prop_id %}
-                                        {% if prop_revenue.year %}
-                                            {% with total_expenses=prop_expense.year|add:prop_actual.year|default:0 %}
-                                                {{ total_expenses|divide:prop_revenue.year|multiply:100|floatformat:"2" }}%
-                                            {% endwith %}
-                                        {% else %}
-                                            0.00%
-                                        {% endif %}
-                                        {% endwith %}
-                                        {% endwith %}
-                                        {% endwith %}
-                                    </span>
-                                </div>
-                                
-                                <div style="background-color: #f8f9fa; padding: 8px; border-radius: 4px; width: fit-content; border: 1.5px solid #dee2e6;">
-                                    <span class="font-weight-bold">Rent (€/m<sup>2</sup>): 
-                                        {% with prop_revenue=revenue_prop_totals|get_item:prop.prop_id %}
-                                            {% if prop_revenue.year and prop.prop_floor_area %}
-                                                {{ prop_revenue.year|divide:12|divide:prop.prop_floor_area|floatformat:"2" }}
-                                            {% else %}
-                                                0.00
-                                            {% endif %}
-                                        {% endwith %}
-                                    </span>
-                                </div>
+                <!-- BUDGETED EXPENSES -->
+                {% for line_type in expense_line_types|sort_expense_line_types %}
+                {% with line_totals=expense_totals_by_line.all|get_item:line_type.expense_line_types_id %}
+                {% if line_totals.jan or line_totals.feb or line_totals.mar or line_totals.apr or line_totals.may or line_totals.jun or line_totals.jul or line_totals.aug or line_totals.sep or line_totals.oct or line_totals.nov or line_totals.dec or line_totals.total %}
+                <tr>
+                    <td>{{ line_type.expense_line_types_name }}</td>
+                    <td class="text-right">
+                        {% if line_totals.jan %}
+                            <a href="#" class="budget-expense-details-link" 
+                               data-url="{% url 'budget_expense_details_view' %}?year={{ selected_year|floatformat:'0' }}&month=1&line_type={{ line_type.expense_line_types_id }}&properties={{ selected_properties|join:',' }}">
+                                {{ line_totals.jan|default:0|floatformat:"0"|intcomma }}
+                            </a>
+                        {% else %}
+                            0
+                        {% endif %}
+                    </td>
+                    <td class="text-right">
+                        {% if line_totals.feb %}
+                            <a href="#" class="budget-expense-details-link" 
+                               data-url="{% url 'budget_expense_details_view' %}?year={{ selected_year|floatformat:'0' }}&month=2&line_type={{ line_type.expense_line_types_id }}&properties={{ selected_properties|join:',' }}">
+                                {{ line_totals.feb|default:0|floatformat:"0"|intcomma }}
+                            </a>
+                        {% else %}
+                            0
+                        {% endif %}
+                    </td>
+                    <td class="text-right">
+                        {% if line_totals.mar %}
+                            <a href="#" class="budget-expense-details-link" 
+                               data-url="{% url 'budget_expense_details_view' %}?year={{ selected_year|floatformat:'0' }}&month=3&line_type={{ line_type.expense_line_types_id }}&properties={{ selected_properties|join:',' }}">
+                                {{ line_totals.mar|default:0|floatformat:"0"|intcomma }}
+                            </a>
+                        {% else %}
+                            0
+                        {% endif %}
+                    </td>
+                    <td class="text-right">
+                        {% if line_totals.apr %}
+                            <a href="#" class="budget-expense-details-link" 
+                               data-url="{% url 'budget_expense_details_view' %}?year={{ selected_year|floatformat:'0' }}&month=4&line_type={{ line_type.expense_line_types_id }}&properties={{ selected_properties|join:',' }}">
+                                {{ line_totals.apr|default:0|floatformat:"0"|intcomma }}
+                            </a>
+                        {% else %}
+                            0
+                        {% endif %}
+                    </td>
+                    <td class="text-right">
+                        {% if line_totals.may %}
+                            <a href="#" class="budget-expense-details-link" 
+                               data-url="{% url 'budget_expense_details_view' %}?year={{ selected_year|floatformat:'0' }}&month=5&line_type={{ line_type.expense_line_types_id }}&properties={{ selected_properties|join:',' }}">
+                                {{ line_totals.may|default:0|floatformat:"0"|intcomma }}
+                            </a>
+                        {% else %}
+                            0
+                        {% endif %}
+                    </td>
+                    <td class="text-right">
+                        {% if line_totals.jun %}
+                            <a href="#" class="budget-expense-details-link" 
+                               data-url="{% url 'budget_expense_details_view' %}?year={{ selected_year|floatformat:'0' }}&month=6&line_type={{ line_type.expense_line_types_id }}&properties={{ selected_properties|join:',' }}">
+                                {{ line_totals.jun|default:0|floatformat:"0"|intcomma }}
+                            </a>
+                        {% else %}
+                            0
+                        {% endif %}
+                    </td>
+                    <td class="text-right">
+                        {% if line_totals.jul %}
+                            <a href="#" class="budget-expense-details-link" 
+                               data-url="{% url 'budget_expense_details_view' %}?year={{ selected_year|floatformat:'0' }}&month=7&line_type={{ line_type.expense_line_types_id }}&properties={{ selected_properties|join:',' }}">
+                                {{ line_totals.jul|default:0|floatformat:"0"|intcomma }}
+                            </a>
+                        {% else %}
+                            0
+                        {% endif %}
+                    </td>
+                    <td class="text-right">
+                        {% if line_totals.aug %}
+                            <a href="#" class="budget-expense-details-link" 
+                               data-url="{% url 'budget_expense_details_view' %}?year={{ selected_year|floatformat:'0' }}&month=8&line_type={{ line_type.expense_line_types_id }}&properties={{ selected_properties|join:',' }}">
+                                {{ line_totals.aug|default:0|floatformat:"0"|intcomma }}
+                            </a>
+                        {% else %}
+                            0
+                        {% endif %}
+                    </td>
+                    <td class="text-right">
+                        {% if line_totals.sep %}
+                            <a href="#" class="budget-expense-details-link" 
+                               data-url="{% url 'budget_expense_details_view' %}?year={{ selected_year|floatformat:'0' }}&month=9&line_type={{ line_type.expense_line_types_id }}&properties={{ selected_properties|join:',' }}">
+                                {{ line_totals.sep|default:0|floatformat:"0"|intcomma }}
+                            </a>
+                        {% else %}
+                            0
+                        {% endif %}
+                    </td>
+                    <td class="text-right">
+                        {% if line_totals.oct %}
+                            <a href="#" class="budget-expense-details-link" 
+                               data-url="{% url 'budget_expense_details_view' %}?year={{ selected_year|floatformat:'0' }}&month=10&line_type={{ line_type.expense_line_types_id }}&properties={{ selected_properties|join:',' }}">
+                                {{ line_totals.oct|default:0|floatformat:"0"|intcomma }}
+                            </a>
+                        {% else %}
+                            0
+                        {% endif %}
+                    </td>
+                    <td class="text-right">
+                        {% if line_totals.nov %}
+                            <a href="#" class="budget-expense-details-link" 
+                               data-url="{% url 'budget_expense_details_view' %}?year={{ selected_year|floatformat:'0' }}&month=11&line_type={{ line_type.expense_line_types_id }}&properties={{ selected_properties|join:',' }}">
+                                {{ line_totals.nov|default:0|floatformat:"0"|intcomma }}
+                            </a>
+                        {% else %}
+                            0
+                        {% endif %}
+                    </td>
+                    <td class="text-right">
+                        {% if line_totals.dec %}
+                            <a href="#" class="budget-expense-details-link" 
+                               data-url="{% url 'budget_expense_details_view' %}?year={{ selected_year|floatformat:'0' }}&month=12&line_type={{ line_type.expense_line_types_id }}&properties={{ selected_properties|join:',' }}">
+                                {{ line_totals.dec|default:0|floatformat:"0"|intcomma }}
+                            </a>
+                        {% else %}
+                            0
+                        {% endif %}
+                    </td>
+                    <td class="text-right font-weight-bold">{{ line_totals.total|default:0|floatformat:"0"|intcomma }}</td>
+                    <td class="text-right">{{ line_totals.total|divide:12|default:0|floatformat:"0"|intcomma }}</td>
+                </tr>
+                {% endif %}
+                {% endwith %}
+                {% endfor %}
+                
+                <!-- TOTAL EXPENSES -->
+                <tr class="font-weight-bold" style="background-color: #f8f9fa">
+                    <td>TOTAL EXPENSES:</td>
+                    <td class="text-right">{{ expense_totals.jan|add:actual_expense_totals.jan|default:0|floatformat:"0"|intcomma }}</td>
+                    <td class="text-right">{{ expense_totals.feb|add:actual_expense_totals.feb|default:0|floatformat:"0"|intcomma }}</td>
+                    <td class="text-right">{{ expense_totals.mar|add:actual_expense_totals.mar|default:0|floatformat:"0"|intcomma }}</td>
+                    <td class="text-right">{{ expense_totals.apr|add:actual_expense_totals.apr|default:0|floatformat:"0"|intcomma }}</td>
+                    <td class="text-right">{{ expense_totals.may|add:actual_expense_totals.may|default:0|floatformat:"0"|intcomma }}</td>
+                    <td class="text-right">{{ expense_totals.jun|add:actual_expense_totals.jun|default:0|floatformat:"0"|intcomma }}</td>
+                    <td class="text-right">{{ expense_totals.jul|add:actual_expense_totals.jul|default:0|floatformat:"0"|intcomma }}</td>
+                    <td class="text-right">{{ expense_totals.aug|add:actual_expense_totals.aug|default:0|floatformat:"0"|intcomma }}</td>
+                    <td class="text-right">{{ expense_totals.sep|add:actual_expense_totals.sep|default:0|floatformat:"0"|intcomma }}</td>
+                    <td class="text-right">{{ expense_totals.oct|add:actual_expense_totals.oct|default:0|floatformat:"0"|intcomma }}</td>
+                    <td class="text-right">{{ expense_totals.nov|add:actual_expense_totals.nov|default:0|floatformat:"0"|intcomma }}</td>
+                    <td class="text-right">{{ expense_totals.dec|add:actual_expense_totals.dec|default:0|floatformat:"0"|intcomma }}</td>
+                    <td class="text-right">{{ expense_totals.year|add:actual_expense_totals.year|default:0|floatformat:"0"|intcomma }}</td>
+                    <td class="text-right">{{ expense_totals.year|add:actual_expense_totals.year|divide:12|default:0|floatformat:"0"|intcomma }}</td>
+                </tr>
+                
+                <!-- PROFIT SECTION -->
+                <tr class="section-header">
+                    <td class="font-weight-bold" style="background-color: #17a2b8; color: white;">PROFIT</td>
+                    <td colspan="14" style="background-color: #17a2b8;"></td>
+                </tr>
+                <tr class="font-weight-bold" style="background-color: #f8f9fa">
+                    <td>NET PROFIT:</td>
+                    <td class="text-right">{{ revenue_totals.jan|subtract:expense_totals.jan|subtract:actual_expense_totals.jan|default:0|floatformat:"0"|intcomma }}</td>
+                    <td class="text-right">{{ revenue_totals.feb|subtract:expense_totals.feb|subtract:actual_expense_totals.feb|default:0|floatformat:"0"|intcomma }}</td>
+                    <td class="text-right">{{ revenue_totals.mar|subtract:expense_totals.mar|subtract:actual_expense_totals.mar|default:0|floatformat:"0"|intcomma }}</td>
+                    <td class="text-right">{{ revenue_totals.apr|subtract:expense_totals.apr|subtract:actual_expense_totals.apr|default:0|floatformat:"0"|intcomma }}</td>
+                    <td class="text-right">{{ revenue_totals.may|subtract:expense_totals.may|subtract:actual_expense_totals.may|default:0|floatformat:"0"|intcomma }}</td>
+                    <td class="text-right">{{ revenue_totals.jun|subtract:expense_totals.jun|subtract:actual_expense_totals.jun|default:0|floatformat:"0"|intcomma }}</td>
+                    <td class="text-right">{{ revenue_totals.jul|subtract:expense_totals.jul|subtract:actual_expense_totals.jul|default:0|floatformat:"0"|intcomma }}</td>
+                    <td class="text-right">{{ revenue_totals.aug|subtract:expense_totals.aug|subtract:actual_expense_totals.aug|default:0|floatformat:"0"|intcomma }}</td>
+                    <td class="text-right">{{ revenue_totals.sep|subtract:expense_totals.sep|subtract:actual_expense_totals.sep|default:0|floatformat:"0"|intcomma }}</td>
+                    <td class="text-right">{{ revenue_totals.oct|subtract:expense_totals.oct|subtract:actual_expense_totals.oct|default:0|floatformat:"0"|intcomma }}</td>
+                    <td class="text-right">{{ revenue_totals.nov|subtract:expense_totals.nov|subtract:actual_expense_totals.nov|default:0|floatformat:"0"|intcomma }}</td>
+                    <td class="text-right">{{ revenue_totals.dec|subtract:expense_totals.dec|subtract:actual_expense_totals.dec|default:0|floatformat:"0"|intcomma }}</td>
+                    <td class="text-right">{{ revenue_totals.year|subtract:expense_totals.year|subtract:actual_expense_totals.year|default:0|floatformat:"0"|intcomma }}</td>
+                    <td class="text-right">{{ revenue_totals.year|subtract:expense_totals.year|subtract:actual_expense_totals.year|divide:12|default:0|floatformat:"0"|intcomma }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
 
-                                <!-- VALUE INCREASE - PROPERTY SPECIFIC -->
-                                <div style="background-color: #f8f9fa; padding: 8px; border-radius: 4px; width: fit-content; border: 1.5px solid #dee2e6;">
-                                    <span class="font-weight-bold">% Value Increase: 
-                                        {% with prop_values=prop.prop_values_set.first %}
-                                        {% if prop_values and prop_values.prop_values_purchase_price and prop_values.prop_values_current_value %}
-                                            {{ prop_values.prop_values_current_value|subtract:prop_values.prop_values_purchase_price|divide:prop_values.prop_values_purchase_price|multiply:100|floatformat:"2" }}%
-                                        {% elif prop_values and prop_values.prop_values_purchase_price %}
-                                            (Current value not set)
-                                        {% else %}
-                                            (Purchase price not set)
-                                        {% endif %}
-                                        {% endwith %}
-                                    </span>
-                                </div>   
-                            </div>
-                        </div>
-                    </div>
-                    {% endfor %}
-                </div>
+    <!-- CONSOLIDATED ROI CALCULATIONS -->
+    <div class="roi-section mt-2">
+        <h6 class="section-title" style="background-color: #17a2b8; color: white; padding: 6px 12px; border-radius: 4px; width: fit-content; font-size: 14px;">CONSOLIDATED FINANCIAL INDICATORS</h6>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+            <div style="background-color: #f8f9fa; padding: 6px 10px; border-radius: 4px; width: fit-content; border: 1.5px solid #dee2e6; font-size: 13px;">
+                <span class="font-weight-bold">Gross ROI: 
+                    {% with total_revenue=revenue_totals.year %}
+                    {% with total_purchase=properties|sum_purchase_prices %}
+                    {% if total_purchase > 0 %}
+                        {{ total_revenue|divide:total_purchase|multiply:100|floatformat:"2" }}%
+                    {% else %}
+                        N/A
+                    {% endif %}
+                    {% endwith %}
+                    {% endwith %}
+                </span>
             </div>
+            
+            <div style="background-color: #f8f9fa; padding: 6px 10px; border-radius: 4px; width: fit-content; border: 1.5px solid #dee2e6; font-size: 13px;">
+                <span class="font-weight-bold">Net ROI: 
+                    {% with total_revenue=revenue_totals.year %}
+                    {% with total_expense=expense_totals.year %}
+                    {% with total_actual_expense=actual_expense_totals.year %}
+                    {% with total_purchase=properties|sum_purchase_prices %}
+                    {% if total_purchase > 0 %}
+                        {{ total_revenue|subtract:total_expense|subtract:total_actual_expense|divide:total_purchase|multiply:100|floatformat:"2" }}%
+                    {% else %}
+                        N/A
+                    {% endif %}
+                    {% endwith %}
+                    {% endwith %}
+                    {% endwith %}
+                    {% endwith %}
+                </span>
+            </div>
+            
+            <div style="background-color: #f8f9fa; padding: 6px 10px; border-radius: 4px; width: fit-content; border: 1.5px solid #dee2e6; font-size: 13px;">
+                <span class="font-weight-bold">Expenses to Revenue: 
+                    {% with total_revenue=revenue_totals.year %}
+                    {% with total_expense=expense_totals.year %}
+                    {% with total_actual_expense=actual_expense_totals.year %}
+                    {% if total_revenue > 0 %}
+                        {{ total_expense|add:total_actual_expense|divide:total_revenue|multiply:100|floatformat:"2" }}%
+                    {% else %}
+                        N/A
+                    {% endif %}
+                    {% endwith %}
+                    {% endwith %}
+                    {% endwith %}
+                </span>
+            </div>
+            
+            <div style="background-color: #f8f9fa; padding: 6px 10px; border-radius: 4px; width: fit-content; border: 1.5px solid #dee2e6; font-size: 13px;">
+                <span class="font-weight-bold">Rent (€/m<sup>2</sup>): 
+                    {% with total_revenue=revenue_totals.year %}
+                    {% with total_area=properties|sum_attr:'prop_floor_area' %}
+                    {% if total_revenue and total_area %}
+                        {{ total_revenue|divide:12|divide:total_area|floatformat:"2" }}
+                    {% else %}
+                        N/A
+                    {% endif %}
+                    {% endwith %}
+                    {% endwith %}
+                </span>
+            </div>
+
+            <div style="background-color: #f8f9fa; padding: 6px 10px; border-radius: 4px; width: fit-content; border: 1.5px solid #dee2e6; font-size: 13px;">
+                <span class="font-weight-bold">% Value Increase: 
+                    {% with total_purchase=properties|sum_purchase_prices %}
+                    {% if total_purchase > 0 and total_current_value > 0 %}
+                        {{ total_current_value|subtract:total_purchase|divide:total_purchase|multiply:100|floatformat:"2" }}%
+                    {% elif total_purchase > 0 %}
+                        (Current values not set)
+                    {% else %}
+                        N/A
+                    {% endif %}
+                    {% endwith %}
+                </span>
+            </div>                
         </div>
     </div>
+    {% endif %}
 </div>
 
 {% endif %}
 
 <style>
-    /* Base Styles */
-    body {
-        overflow-x: hidden;
+.property-selection-panel {
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.selection-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.selection-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #2c3e50;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.property-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.property-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    border: 1px solid #e9ecef;
+    border-radius: 6px;
+    background: #f8f9fa;
+    transition: all 0.2s ease;
+    font-size: 13px;
+}
+
+.property-checkbox:hover {
+    background: #e9ecef;
+    border-color: #17a2b8;
+}
+
+.property-checkbox input[type="checkbox"] {
+    width: 14px;
+    height: 14px;
+    accent-color: #17a2b8;
+}
+
+.property-checkbox label {
+    margin: 0;
+    cursor: pointer;
+    font-size: 13px;
+    color: #495057;
+    flex: 1;
+    line-height: 1.2;
+}
+
+.selection-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+.selection-counter {
+    font-size: 13px;
+    color: #6c757d;
+    margin-top: 8px;
+}
+
+.btn-info {
+    background-color: #17a2b8;
+    color: white;
+    border: 1px solid #17a2b8;
+    transition: all 0.3s ease;
+    border-radius: 6px;
+    font-weight: 500;
+}
+
+.btn-info:hover {
+    background-color: #138496;
+    border-color: #117a8b;
+    color: white;
+    text-decoration: none;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.btn-secondary {
+    background-color: #6c757d;
+    border-color: #6c757d;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background-color: #5a6268;
+    border-color: #545b62;
+    color: white;
+    transform: translateY(-1px);
+}
+
+/* Invoice Icon Styles */
+.invoice-icon {
+    color: #28a745;
+    cursor: pointer;
+    font-size: 14px;
+    margin-left: 5px;
+    transition: color 0.2s;
+}
+
+.invoice-icon:hover {
+    color: #1e7e34;
+    text-decoration: none;
+}
+
+/* Modal Styles */
+#invoiceViewerContent {
+    background-color: #f8f9fa;
+    border-radius: 4px;
+}
+
+#invoiceViewerContent iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    border-radius: 4px;
+}
+
+#invoiceViewerContent img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+}
+
+/* Revenue Details Modal Table Styling */
+#revenueDetailsModal .modal-dialog {
+    max-width: 600px;
+}
+
+#revenueDetailsModal .table-responsive {
+    width: 100%;
+    overflow-x: visible;
+    max-height: 60vh;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #c1c1c1 #f1f1f1;
+}
+
+#revenueDetailsModal .table-responsive::-webkit-scrollbar {
+    width: 12px;
+    display: block !important;
+}
+
+#revenueDetailsModal .table-responsive::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 6px;
+    border: 1px solid #e0e0e0;
+}
+
+#revenueDetailsModal .table-responsive::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 6px;
+    border: 1px solid #a8a8a8;
+}
+
+#revenueDetailsModal .table-responsive::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+#revenueDetailsModal .table {
+    width: 100% !important;
+    table-layout: auto;
+    margin-bottom: 0;
+}
+
+#revenueDetailsModal .table td,
+#revenueDetailsModal .table th {
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+    padding: 8px 12px;
+    font-size: 0.9rem;
+}
+
+#revenueDetailsModal .table thead th {
+    position: sticky;
+    top: 0;
+    background-color: #f8f9fa;
+    z-index: 10;
+    border-bottom: 2px solid #dee2e6;
+}
+
+#revenueDetailsModal .table th:nth-child(1),
+#revenueDetailsModal .table td:nth-child(1) {
+    width: 70%;
+    min-width: 200px;
+}
+
+#revenueDetailsModal .table th:nth-child(2),
+#revenueDetailsModal .table td:nth-child(2) {
+    width: 30%;
+    min-width: 100px;
+    text-align: right;
+}
+
+#revenueDetailsModal .modal-header h5 {
+    margin-bottom: 2px;
+}
+
+#revenueDetailsModal .modal-header small {
+    color: #6c757d;
+    font-size: 0.875rem;
+}
+
+/* Budget Expense Details Modal Table Styling */
+#budgetExpenseDetailsModal .modal-dialog {
+    max-width: 600px;
+}
+
+#budgetExpenseDetailsModal .table-responsive {
+    width: 100%;
+    overflow-x: visible;
+    max-height: 60vh;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #c1c1c1 #f1f1f1;
+}
+
+#budgetExpenseDetailsModal .table-responsive::-webkit-scrollbar {
+    width: 12px;
+    display: block !important;
+}
+
+#budgetExpenseDetailsModal .table-responsive::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 6px;
+    border: 1px solid #e0e0e0;
+}
+
+#budgetExpenseDetailsModal .table-responsive::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 6px;
+    border: 1px solid #a8a8a8;
+}
+
+#budgetExpenseDetailsModal .table-responsive::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+#budgetExpenseDetailsModal .table {
+    width: 100% !important;
+    table-layout: auto;
+    margin-bottom: 0;
+}
+
+#budgetExpenseDetailsModal .table td,
+#budgetExpenseDetailsModal .table th {
+    white-space: normal;
+    overflow: visible;
+    padding: 8px 12px;
+    font-size: 0.9rem;
+}
+
+#budgetExpenseDetailsModal .table thead th {
+    position: sticky;
+    top: 0;
+    background-color: #f8f9fa;
+    z-index: 10;
+    border-bottom: 2px solid #dee2e6;
+}
+
+#budgetExpenseDetailsModal .table th:nth-child(1),
+#budgetExpenseDetailsModal .table td:nth-child(1) {
+    width: 70%;
+    min-width: 200px;
+}
+
+#budgetExpenseDetailsModal .table th:nth-child(2),
+#budgetExpenseDetailsModal .table td:nth-child(2) {
+    width: 30%;
+    min-width: 100px;
+    text-align: right;
+}
+
+#budgetExpenseDetailsModal .modal-header h5 {
+    margin-bottom: 2px;
+}
+
+#budgetExpenseDetailsModal .modal-header small {
+    color: #6c757d;
+    font-size: 0.875rem;
+}
+
+/* Expense Details Modal Fixes */
+#expenseDetailsModal .modal-body {
+    max-height: 75vh !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+}
+
+#expenseDetailsContent {
+    max-height: 70vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.modal-backdrop.show {
+    opacity: 0.5;
+}
+
+.modal-backdrop + .modal-backdrop {
+    opacity: 0.7;
+}
+
+#expenseDetailsModal {
+    z-index: 1050;
+}
+
+#invoiceViewerModal {
+    z-index: 1060;
+}
+
+#expenseDetailsModal .modal-body::-webkit-scrollbar {
+    width: 8px;
+    display: block !important;
+}
+
+#expenseDetailsModal .modal-body::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+#expenseDetailsModal .modal-body::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+}
+
+#expenseDetailsModal .modal-body::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+/* Base table styles */
+body {
+    overflow-x: hidden;
+}
+
+.container {
+    max-width: 100%;
+    padding: 0 15px;
+}
+
+.table-responsive {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    -ms-overflow-style: -ms-autohiding-scrollbar;
+}
+
+.table-responsive::-webkit-scrollbar {
+    display: none;
+}
+
+.table-sm {
+    width: 100% !important;
+    max-width: 100%;
+    table-layout: fixed;
+}
+
+.table-sm thead th {
+    position: sticky;
+    top: 0;
+    background-color: #f8f9fa;
+    z-index: 10;
+}
+
+.table-sm td, .table-sm th {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    padding: 4px 8px;
+    font-size: 0.8rem;
+}
+
+.table-sm th:first-child,
+.table-sm td:first-child {
+    width: 150px;
+    min-width: 150px;
+    max-width: 150px;
+}
+
+.table-sm th:not(:first-child),
+.table-sm td:not(:first-child) {
+    width: 70px;
+    min-width: 70px;
+    max-width: 70px;
+}
+
+.table-sm th:last-child,
+.table-sm td:last-child,
+.table-sm th:nth-last-child(2),
+.table-sm td:nth-last-child(2) {
+    width: 80px;
+    min-width: 80px;
+    max-width: 80px;
+}
+
+.section-header td {
+    background-color: #17a2b8 !important;
+    color: white !important;
+    font-weight: bold;
+}
+
+.roi-section {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.roi-section > div {
+    background-color: #f8f9fa;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 1400px) {
+    .property-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+@media (max-width: 1200px) {
+    .table-sm td, .table-sm th {
+        font-size: 0.75rem;
+        padding: 3px 6px;
     }
     
-    /* Main Container */
-    .container {
-        max-width: 100%;
-        padding: 0 15px;
+    .table-sm th:first-child,
+    .table-sm td:first-child {
+        width: 120px;
+        min-width: 120px;
+        max-width: 120px;
     }
     
-    /* Table Styles - No Horizontal Scroll */
-    .table-responsive {
-        width: 100%;
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
-        -ms-overflow-style: -ms-autohiding-scrollbar;
+    .property-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 992px) {
+    .property-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .property-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 6px;
     }
     
-    .table-responsive::-webkit-scrollbar {
-        display: none; /* Hide scrollbar but keep functionality */
+    .property-checkbox {
+        padding: 5px 8px;
+        font-size: 12px;
+    }
+    
+    .property-checkbox label {
+        font-size: 12px;
+    }
+    
+    .selection-header {
+        flex-direction: column;
+        gap: 10px;
+        align-items: stretch;
+    }
+    
+    .selection-buttons {
+        justify-content: center;
     }
     
     .table-sm {
-        width: 100% !important;
-        max-width: 100%;
-        table-layout: fixed; /* Critical for preventing overflow */
+        font-size: 0.7rem;
     }
     
-    .table-sm thead th {
-        position: sticky;
-        top: 0;
-        background-color: #f8f9fa;
-        z-index: 10;
-    }
-    
-    .table-sm td, .table-sm th {
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        padding: 4px 8px;
-        font-size: 0.8rem;
-    }
-    
-    /* Column Widths */
     .table-sm th:first-child,
     .table-sm td:first-child {
-        width: 150px; /* Fixed width for first column */
-        min-width: 150px;
-        max-width: 150px;
+        width: 100px;
+        min-width: 100px;
+        max-width: 100px;
     }
     
     .table-sm th:not(:first-child),
     .table-sm td:not(:first-child) {
-        width: 70px; /* Fixed width for month columns */
-        min-width: 70px;
-        max-width: 70px;
+        width: 60px;
+        min-width: 60px;
+        max-width: 60px;
     }
-    
-    .table-sm th:last-child,
-    .table-sm td:last-child,
-    .table-sm th:nth-last-child(2),
-    .table-sm td:nth-last-child(2) {
-        width: 80px; /* Slightly wider for totals */
-        min-width: 80px;
-        max-width: 80px;
-    }
+}
 
-    /* Custom Tabs */
-    .custom-tabs-flex {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 8px;
-        margin-bottom: 20px;
+@media (max-width: 576px) {
+    .property-grid {
+        grid-template-columns: 1fr;
+        gap: 4px;
     }
     
-    .custom-tabs-flex .nav-item {
-        flex: 1 0 calc(16.666% - 8px);
-        min-width: 120px;
-    }
-    
-    .custom-tabs-flex .nav-item:nth-child(n+7) {
-        flex: 1 0 calc(20% - 8px);
-    }
-    
-    .nav-tabs .nav-link.custom-tab {
-        background-color: #f8f9fa;
-        color: #17a2b8;
-        border: 1.0px solid #17a2b8;
-        border-radius: 6px;
-        padding: 8px 12px;
-        text-align: center;
-        font-weight: bold;
-        transition: all 0.2s;
-    }
-    
-    .nav-tabs .nav-link.custom-tab.active {
-        background-color: #17a2b8;
-        color: white;
-    }
-
-    /* Section Headers */
-    .section-header td {
-        background-color: #17a2b8 !important;
-        color: white !important;
-        font-weight: bold;
-    }
-    
-    /* Financial Indicators */
-    .roi-section {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-        margin-top: 20px;
+    .table-sm {
+        font-size: 0.65rem;
     }
     
     .roi-section > div {
-        background-color: #f8f9fa;
-        padding: 8px 12px;
-        border-radius: 4px;
-        font-size: 0.85rem;
+        flex: 1 0 100%;
     }
-
-    /* Invoice Icon Styles */
-    .invoice-icon {
-        color: #28a745;
-        cursor: pointer;
-        font-size: 14px;
-        margin-left: 5px;
-        transition: color 0.2s;
-    }
-    
-    .invoice-icon:hover {
-        color: #1e7e34;
-        text-decoration: none;
-    }
-
-    /* Modal Styles */
-    .modal-xl {
-        max-width: 95%;
-    }
-    
-    #invoiceViewerContent {
-        background-color: #f8f9fa;
-        border-radius: 4px;
-    }
-    
-    #invoiceViewerContent iframe {
-        width: 100%;
-        height: 100%;
-        border: none;
-        border-radius: 4px;
-    }
-    
-    #invoiceViewerContent img {
-        max-width: 100%;
-        height: auto;
-        display: block;
-        margin: 0 auto;
-    }
-
-    /* Revenue Details Modal Table Styling - Updated for Simplified Design */
-    #revenueDetailsModal .modal-dialog {
-        max-width: 600px; /* Smaller modal like budget expenses */
-    }
-
-    #revenueDetailsModal .table-responsive {
-        width: 100%;
-        overflow-x: visible;
-        max-height: 60vh; /* Limit height to enable scrolling */
-        overflow-y: auto;
-        /* Force scrollbar to always be visible */
-        scrollbar-width: thin; /* Firefox */
-        scrollbar-color: #c1c1c1 #f1f1f1; /* Firefox */
-    }
-
-    /* Custom scrollbar styling for Webkit browsers (Chrome, Safari, Edge) */
-    #revenueDetailsModal .table-responsive::-webkit-scrollbar {
-        width: 12px;
-        display: block !important; /* Force visibility */
-    }
-
-    #revenueDetailsModal .table-responsive::-webkit-scrollbar-track {
-        background: #f1f1f1;
-        border-radius: 6px;
-        border: 1px solid #e0e0e0;
-    }
-
-    #revenueDetailsModal .table-responsive::-webkit-scrollbar-thumb {
-        background: #c1c1c1;
-        border-radius: 6px;
-        border: 1px solid #a8a8a8;
-    }
-
-    #revenueDetailsModal .table-responsive::-webkit-scrollbar-thumb:hover {
-        background: #a8a8a8;
-    }
-
-    #revenueDetailsModal .table-responsive::-webkit-scrollbar-thumb:active {
-        background: #909090;
-    }
-
-    #revenueDetailsModal .table {
-        width: 100% !important;
-        table-layout: auto;
-        margin-bottom: 0;
-    }
-
-    #revenueDetailsModal .table td,
-    #revenueDetailsModal .table th {
-        white-space: normal;
-        overflow: visible;
-        text-overflow: clip;
-        padding: 8px 12px;
-        font-size: 0.9rem;
-    }
-
-    /* Sticky headers for revenue modal */
-    #revenueDetailsModal .table thead th {
-        position: sticky;
-        top: 0;
-        background-color: #f8f9fa;
-        z-index: 10;
-        border-bottom: 2px solid #dee2e6;
-    }
-
-    /* Two column layout for simplified revenue table */
-    #revenueDetailsModal .table th:nth-child(1), /* Property */
-    #revenueDetailsModal .table td:nth-child(1) {
-        width: 70%;
-        min-width: 200px;
-    }
-
-    #revenueDetailsModal .table th:nth-child(2), /* Amount */
-    #revenueDetailsModal .table td:nth-child(2) {
-        width: 30%;
-        min-width: 100px;
-        text-align: right;
-    }
-
-    /* Modal header styling for revenue */
-    #revenueDetailsModal .modal-header h5 {
-        margin-bottom: 2px;
-    }
-
-    #revenueDetailsModal .modal-header small {
-        color: #6c757d;
-        font-size: 0.875rem;
-    }
-
-    /* Budget Expense Details Modal Table Styling */
-    #budgetExpenseDetailsModal .modal-dialog,
-    #totalExpenseDetailsModal .modal-dialog {
-        max-width: 600px; /* Smaller modal for budget expenses */
-    }
-
-    #budgetExpenseDetailsModal .table-responsive,
-    #totalExpenseDetailsModal .table-responsive {
-        width: 100%;
-        overflow-x: visible;
-        max-height: 60vh; /* Limit height to enable scrolling */
-        overflow-y: auto;
-        /* Force scrollbar to always be visible */
-        scrollbar-width: thin; /* Firefox */
-        scrollbar-color: #c1c1c1 #f1f1f1; /* Firefox */
-    }
-
-    /* Custom scrollbar styling for budget expense modals */
-    #budgetExpenseDetailsModal .table-responsive::-webkit-scrollbar,
-    #totalExpenseDetailsModal .table-responsive::-webkit-scrollbar {
-        width: 12px;
-        display: block !important; /* Force visibility */
-    }
-
-    #budgetExpenseDetailsModal .table-responsive::-webkit-scrollbar-track,
-    #totalExpenseDetailsModal .table-responsive::-webkit-scrollbar-track {
-        background: #f1f1f1;
-        border-radius: 6px;
-        border: 1px solid #e0e0e0;
-    }
-
-    #budgetExpenseDetailsModal .table-responsive::-webkit-scrollbar-thumb,
-    #totalExpenseDetailsModal .table-responsive::-webkit-scrollbar-thumb {
-        background: #c1c1c1;
-        border-radius: 6px;
-        border: 1px solid #a8a8a8;
-    }
-
-    #budgetExpenseDetailsModal .table-responsive::-webkit-scrollbar-thumb:hover,
-    #totalExpenseDetailsModal .table-responsive::-webkit-scrollbar-thumb:hover {
-        background: #a8a8a8;
-    }
-
-    #budgetExpenseDetailsModal .table-responsive::-webkit-scrollbar-thumb:active,
-    #totalExpenseDetailsModal .table-responsive::-webkit-scrollbar-thumb:active {
-        background: #909090;
-    }
-
-    #budgetExpenseDetailsModal .table,
-    #totalExpenseDetailsModal .table {
-        width: 100% !important;
-        table-layout: auto;
-        margin-bottom: 0;
-    }
-
-    #budgetExpenseDetailsModal .table td,
-    #budgetExpenseDetailsModal .table th,
-    #totalExpenseDetailsModal .table td,
-    #totalExpenseDetailsModal .table th {
-        white-space: normal;
-        overflow: visible;
-        padding: 8px 12px;
-        font-size: 0.9rem;
-    }
-
-    /* Sticky headers for budget expense modal */
-    #budgetExpenseDetailsModal .table thead th,
-    #totalExpenseDetailsModal .table thead th {
-        position: sticky;
-        top: 0;
-        background-color: #f8f9fa;
-        z-index: 10;
-        border-bottom: 2px solid #dee2e6;
-    }
-
-    /* Two column layout for simplified budget expense table */
-    #budgetExpenseDetailsModal .table th:nth-child(1), /* Property */
-    #budgetExpenseDetailsModal .table td:nth-child(1) {
-        width: 70%;
-        min-width: 200px;
-    }
-
-    #budgetExpenseDetailsModal .table th:nth-child(2), /* Amount */
-    #budgetExpenseDetailsModal .table td:nth-child(2) {
-        width: 30%;
-        min-width: 100px;
-        text-align: right;
-    }
-
-    /* Modal header styling for budget expenses */
-    #budgetExpenseDetailsModal .modal-header h5 {
-        margin-bottom: 2px;
-    }
-
-    #budgetExpenseDetailsModal .modal-header small {
-        color: #6c757d;
-        font-size: 0.875rem;
-    }
-
-    /* Responsive Adjustments */
-    @media (max-width: 1200px) {
-        .table-sm td, .table-sm th {
-            font-size: 0.75rem;
-            padding: 3px 6px;
-        }
-        
-        .table-sm th:first-child,
-        .table-sm td:first-child {
-            width: 120px;
-            min-width: 120px;
-            max-width: 120px;
-        }
-    }
-    
-    @media (max-width: 992px) {
-        .custom-tabs-flex .nav-item {
-            flex: 1 0 calc(25% - 8px);
-        }
-    }
-    
-    @media (max-width: 768px) {
-        .table-sm {
-            font-size: 0.7rem;
-        }
-        
-        .table-sm th:first-child,
-        .table-sm td:first-child {
-            width: 100px;
-            min-width: 100px;
-            max-width: 100px;
-        }
-        
-        .table-sm th:not(:first-child),
-        .table-sm td:not(:first-child) {
-            width: 60px;
-            min-width: 60px;
-            max-width: 60px;
-        }
-        
-        .custom-tabs-flex .nav-item {
-            flex: 1 0 calc(33.333% - 8px);
-        }
-    }
-    
-    @media (max-width: 576px) {
-        .table-sm {
-            font-size: 0.65rem;
-        }
-        
-        .custom-tabs-flex .nav-item {
-            flex: 1 0 calc(50% - 8px);
-            min-width: 100px;
-        }
-        
-        .roi-section > div {
-            flex: 1 0 100%;
-        }
-    }
-
-    /* Additional CSS to fix modal scrollbar issues */
-
-    /* Ensure the first modal maintains its scroll properties */
-    #expenseDetailsModal .modal-body {
-        max-height: 75vh !important;
-        overflow-y: auto !important;
-        -webkit-overflow-scrolling: touch;
-    }
-
-    /* Ensure content within the modal body maintains scrolling */
-    #expenseDetailsContent {
-        max-height: 70vh;
-        overflow-y: auto;
-        overflow-x: hidden;
-    }
-
-    /* Fix for nested modal backdrop issues */
-    .modal-backdrop.show {
-        opacity: 0.5;
-    }
-
-    .modal-backdrop + .modal-backdrop {
-        opacity: 0.7; /* Slightly darker for second modal */
-    }
-
-    /* Ensure modals don't interfere with each other's z-index */
-    #expenseDetailsModal {
-        z-index: 1050;
-    }
-
-    #invoiceViewerModal {
-        z-index: 1060;
-    }
-
-    /* Alternative solution: Force scrollbar to always be visible in first modal */
-    #expenseDetailsModal .modal-body::-webkit-scrollbar {
-        width: 8px;
-        display: block !important;
-    }
-
-    #expenseDetailsModal .modal-body::-webkit-scrollbar-track {
-        background: #f1f1f1;
-        border-radius: 4px;
-    }
-
-    #expenseDetailsModal .modal-body::-webkit-scrollbar-thumb {
-        background: #c1c1c1;
-        border-radius: 4px;
-    }
-
-    #expenseDetailsModal .modal-body::-webkit-scrollbar-thumb:hover {
-        background: #a8a8a8;
-    }
+}
 </style>
 
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.0/js/bootstrap.bundle.min.js"></script>
+
 <script>
-function updateUrlParam(key, value) {
+function updateYearAndReload(year) {
     const url = new URL(window.location.href);
-    url.searchParams.set(key, value);
-    window.history.pushState({}, '', url);
+    url.searchParams.set('year', year);
+    window.location.href = url.toString();
 }
 
 $(document).ready(function() {
+    let allPropertyIds = [{% for prop in all_properties %}'{{ prop.prop_id }}'{% if not forloop.last %}, {% endif %}{% endfor %}];
+    let isUpdating = false;
+    
     // Store the scroll position of the first modal
     let firstModalScrollTop = 0;
     
+    $('input[type="checkbox"]').on('change', function() {
+        if (isUpdating) return;
+        updateSelectionCounter();
+        debouncedUpdate();
+    });
+    
+    $('#selectAllBtn').on('click', function() {
+        if (isUpdating) return;
+        allPropertyIds.forEach(id => {
+            $(`#prop-${id}`)[0].checked = true;
+        });
+        updateSelectionCounter();
+        debouncedUpdate();
+    });
+    
+    $('#selectNoneBtn').on('click', function() {
+        if (isUpdating) return;
+        allPropertyIds.forEach(id => {
+            $(`#prop-${id}`)[0].checked = false;
+        });
+        updateSelectionCounter();
+        debouncedUpdate();
+    });
+    
+    function updateSelectionCounter() {
+        const checkedCount = allPropertyIds.filter(id => 
+            $(`#prop-${id}`)[0].checked
+        ).length;
+        const totalCount = allPropertyIds.length;
+        $('#selectionCount').text(`${checkedCount} of ${totalCount}`);
+    }
+    
+    function updateProfitLossTable() {
+        const selectedProperties = getSelectedProperties();
+        $('#loadingIndicator').show();
+        isUpdating = true;
+        
+        const urlParams = new URLSearchParams();
+        urlParams.set('year', '{{ selected_year }}');
+        
+        selectedProperties.forEach(id => {
+            urlParams.append('properties', id);
+        });
+        
+        const newUrl = window.location.pathname + '?' + urlParams.toString();
+        window.location.href = newUrl;
+    }
+    
+    function getSelectedProperties() {
+        return allPropertyIds.filter(id => 
+            $(`#prop-${id}`)[0].checked
+        );
+    }
+    
+    function initializeFromURL() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const selectedProps = urlParams.getAll('properties');
+        
+        allPropertyIds.forEach(id => {
+            $(`#prop-${id}`)[0].checked = false;
+        });
+        
+        selectedProps.forEach(propId => {
+            if (allPropertyIds.includes(propId)) {
+                $(`#prop-${propId}`)[0].checked = true;
+            }
+        });
+        
+        updateSelectionCounter();
+    }
+    
+    function debounce(func, wait) {
+        let timeout;
+        return function executedFunction(...args) {
+            const later = () => {
+                clearTimeout(timeout);
+                func(...args);
+            };
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+        };
+    }
+    
+    const debouncedUpdate = debounce(updateProfitLossTable, 300);
+    
+    window.addEventListener('popstate', function(event) {
+        initializeFromURL();
+    });
+    
+    initializeFromURL();
+
     // Handle expense details modal
     $(document).on('click', '.expense-details-link', function(e) {
         e.preventDefault();
         var url = $(this).data('url');
         
-        console.log('Expense details URL:', url); // Debug log
+        console.log('Expense details URL:', url);
         
-        // Show loading indicator
         $('#expenseDetailsContent').html(`
             <div class="text-center py-4">
                 <div class="spinner-border text-info" role="status">
@@ -1696,19 +1410,14 @@ $(document).ready(function() {
             </div>
         `);
         
-        // Show modal
         $('#expenseDetailsModal').modal('show');
         
-        // Make AJAX request
         $.ajax({
             url: url,
             type: 'GET',
             success: function(data) {
                 try {
-                    // Create temporary DOM element to parse response
                     var $temp = $('<div>').html(data);
-                    
-                    // Find the table - try multiple selectors
                     var $table = $temp.find('table.table').first();
                     if (!$table.length) $table = $temp.find('table').first();
                     
@@ -1716,8 +1425,6 @@ $(document).ready(function() {
                         $('#expenseDetailsContent').html(
                             $('<div class="table-responsive">').append($table)
                         );
-                        
-                        // After loading the table, set up invoice icon click handlers
                         setupInvoiceIconHandlers();
                     } else {
                         $('#expenseDetailsContent').html(`
@@ -1745,7 +1452,7 @@ $(document).ready(function() {
         });
     });
 
-    // Enhanced Revenue Details Handler with Simplified Design
+    // Handle revenue details modal
     $(document).on('click', '.revenue-details-link', function(e) {
         e.preventDefault();
         var url = $(this).data('url');
@@ -1755,12 +1462,10 @@ $(document).ready(function() {
         console.log('Clicked value:', linkText);
         console.log('Full URL:', url);
         
-        // Extract line type and month from URL for the header
         var urlParams = new URLSearchParams(url.split('?')[1]);
         var lineType = urlParams.get('line_type');
         var month = urlParams.get('month');
         
-        // Get line type name from the current page
         var lineTypeName = 'Revenue';
         var $currentRow = $(this).closest('tr');
         var $lineTypeCell = $currentRow.find('td:first');
@@ -1768,10 +1473,8 @@ $(document).ready(function() {
             lineTypeName = $lineTypeCell.text().trim();
         }
         
-        // Set modal title and subtitle
         $('#revenueDetailsModalLabel').text('Revenue Details - ' + lineTypeName);
         
-        // Set month subtitle
         var monthNames = {
             '1': 'January', '2': 'February', '3': 'March', '4': 'April',
             '5': 'May', '6': 'June', '7': 'July', '8': 'August',
@@ -1780,7 +1483,6 @@ $(document).ready(function() {
         var monthName = monthNames[month] || 'All Months';
         $('#revenueDetailsSubtitle').text(monthName);
         
-        // Show loading with debug info
         $('#revenueDetailsContent').html(`
             <div class="text-center py-4">
                 <div class="spinner-border text-info" role="status">
@@ -1850,19 +1552,17 @@ $(document).ready(function() {
         });
     });
 
-    // Handle budget expense details modal - UPDATED VERSION
+    // Handle budget expense details modal
     $(document).on('click', '.budget-expense-details-link', function(e) {
         e.preventDefault();
         var url = $(this).data('url');
         
         console.log('Budget expense details URL:', url);
         
-        // Extract line type and month from URL for the header
         var urlParams = new URLSearchParams(url.split('?')[1]);
         var lineType = urlParams.get('line_type');
         var month = urlParams.get('month');
         
-        // Get line type name from the current page (you might need to adjust this selector)
         var lineTypeName = 'Budget Expenses';
         var $currentRow = $(this).closest('tr');
         var $lineTypeCell = $currentRow.find('td:first');
@@ -1870,10 +1570,8 @@ $(document).ready(function() {
             lineTypeName = $lineTypeCell.text().trim();
         }
         
-        // Set modal title and subtitle
         $('#budgetExpenseDetailsModalLabel').text('Budget Expense Details - ' + lineTypeName);
         
-        // Set month subtitle
         var monthNames = {
             '1': 'January', '2': 'February', '3': 'March', '4': 'April',
             '5': 'May', '6': 'June', '7': 'July', '8': 'August',
@@ -1917,58 +1615,14 @@ $(document).ready(function() {
         });
     });
 
-    // Handle total expense details modal
-    $(document).on('click', '.total-expense-details-link', function(e) {
-        e.preventDefault();
-        var url = $(this).data('url');
-        
-        console.log('Total expense details URL:', url); // Debug log
-        
-        $('#totalExpenseDetailsContent').html(`
-            <div class="text-center py-4">
-                <div class="spinner-border text-info" role="status">
-                    <span class="sr-only">Loading...</span>
-                </div>
-                <p>Loading total expense details...</p>
-            </div>
-        `);
-        
-        $('#totalExpenseDetailsModal').modal('show');
-        
-        $.ajax({
-            url: url,
-            type: 'GET',
-            success: function(data) {
-                try {
-                    var $temp = $('<div>').html(data);
-                    var $table = $temp.find('table.table').first();
-                    if (!$table.length) $table = $temp.find('table').first();
-                    
-                    if ($table.length) {
-                        $('#totalExpenseDetailsContent').html($('<div class="table-responsive">').append($table));
-                    } else {
-                        $('#totalExpenseDetailsContent').html(`<div class="alert alert-warning">Could not find table in response.</div>`);
-                    }
-                } catch (e) {
-                    $('#totalExpenseDetailsContent').html(`<div class="alert alert-danger">Error: ${e.message}</div>`);
-                }
-            },
-            error: function(xhr) {
-                $('#totalExpenseDetailsContent').html(`<div class="alert alert-danger">Failed to load data: ${xhr.status}</div>`);
-            }
-        });
-    });
-
     // Function to setup invoice icon handlers
     function setupInvoiceIconHandlers() {
-        // Look for the exact pattern from your existing module: fa-file-alt with green color
         $(document).off('click', '.fa-file-alt').on('click', '.fa-file-alt', function(e) {
             var $icon = $(this);
             
-            // Check if it has green color (like in your existing module)
             var color = $icon.css('color');
-            var isGreen = color === 'rgb(40, 167, 69)' || // #28a745
-                         color === 'rgb(0, 128, 0)' ||   // green
+            var isGreen = color === 'rgb(40, 167, 69)' || 
+                         color === 'rgb(0, 128, 0)' ||   
                          color === 'green' ||
                          $icon.hasClass('text-success') ||
                          $icon.attr('style') && $icon.attr('style').includes('color: #28a745');
@@ -1977,26 +1631,20 @@ $(document).ready(function() {
                 e.preventDefault();
                 e.stopPropagation();
                 
-                // Store the current scroll position of the first modal BEFORE opening second modal
                 firstModalScrollTop = $('#expenseDetailsModal .modal-body').scrollTop();
                 
-                // Look for the onclick attribute which should contain the invoice URL
                 var onclickAttr = $icon.attr('onclick');
                 if (onclickAttr) {
-                    // Extract the URL and filename from the onclick attribute
-                    // Pattern: viewInvoiceQuick('URL', 'filename')
                     var matches = onclickAttr.match(/viewInvoiceQuick\('([^']+)',\s*'([^']+)'\)/);
                     if (matches && matches.length >= 2) {
                         var documentUrl = matches[1];
                         var documentName = matches[2] || 'invoice.pdf';
                         
-                        // Use the same function as your existing module
                         showInvoiceModalLikeExisting(documentUrl, documentName);
                         return;
                     }
                 }
                 
-                // Fallback: try to find data attributes
                 var documentUrl = $icon.data('invoice-url') || $icon.data('url');
                 var documentName = $icon.data('filename') || 'invoice.pdf';
                 
@@ -2009,16 +1657,14 @@ $(document).ready(function() {
         });
     }
 
-    // Function to show invoice modal exactly like your existing module
+    // Function to show invoice modal
     function showInvoiceModalLikeExisting(documentUrl, documentName) {
         const invoiceViewer = document.getElementById('invoiceViewerContent');
         const downloadLink = document.getElementById('downloadInvoiceBtn');
         
-        // Set up download link
         downloadLink.href = documentUrl;
         downloadLink.download = documentName;
         
-        // Determine file type and display accordingly (exactly like your existing module)
         const extension = documentName.split('.').pop().toLowerCase();
         
         if (extension === 'pdf') {
@@ -2041,7 +1687,6 @@ $(document).ready(function() {
             `;
         }
         
-        // Show the modal
         $('#invoiceViewerModal').modal('show');
     }
 
@@ -2054,44 +1699,33 @@ $(document).ready(function() {
         $('#budgetExpenseDetailsModal').modal('hide');
     });
 
-    $('#totalExpenseDetailsModal .close, #totalExpenseDetailsModal .btn-secondary').on('click', function() {
-        $('#totalExpenseDetailsModal').modal('hide');
+    $('#expenseDetailsModal .close, #expenseDetailsModal .btn-secondary').on('click', function() {
+        $('#expenseDetailsModal').modal('hide');
+    });
+    
+    $('#invoiceViewerModal .close, #invoiceViewerModal .btn-secondary').on('click', function() {
+        $('#invoiceViewerModal').modal('hide');
     });
 
     // Handle when the second modal (invoice viewer) is closed
     $('#invoiceViewerModal').on('hidden.bs.modal', function() {
-        // Restore the scroll position of the first modal
         setTimeout(function() {
             $('#expenseDetailsModal .modal-body').scrollTop(firstModalScrollTop);
             
-            // Force the modal-body to maintain its overflow settings
             $('#expenseDetailsModal .modal-body').css({
                 'overflow-y': 'auto',
                 'max-height': '75vh'
             });
-        }, 100); // Small delay to ensure modal transition is complete
+        }, 100);
     });
 
-    // Also handle when the second modal is shown (to ensure first modal stays in background properly)
     $('#invoiceViewerModal').on('shown.bs.modal', function() {
-        // Ensure the first modal doesn't lose its scroll properties
         $('#expenseDetailsModal .modal-body').css({
             'overflow-y': 'auto',
             'max-height': '75vh'
         });
     });
 
-    // Proper modal close handling for first modal
-    $('#expenseDetailsModal .close, #expenseDetailsModal .btn-secondary').on('click', function() {
-        $('#expenseDetailsModal').modal('hide');
-    });
-    
-    // Proper modal close handling for second modal
-    $('#invoiceViewerModal .close, #invoiceViewerModal .btn-secondary').on('click', function() {
-        $('#invoiceViewerModal').modal('hide');
-    });
-    
-    // Additional fix: Ensure first modal maintains proper styling when shown
     $('#expenseDetailsModal').on('shown.bs.modal', function() {
         $('#expenseDetailsContent').css({
             'overflow-y': 'auto',
@@ -2099,7 +1733,7 @@ $(document).ready(function() {
         });
     });
 
-    // Test function you can call from browser console to debug
+    // Test function for debugging
     window.testRevenueUrl = function(url) {
         console.log('Testing revenue URL:', url);
         $.get(url)

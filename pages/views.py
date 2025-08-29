@@ -4234,19 +4234,22 @@ def act_expense_view(request):
     selected_month = request.GET.get('month')
     from_finance_pl_act = request.GET.get('from_finance_pl_act', False)
     property_id = request.GET.get('property_id')
+    properties = request.GET.get('properties', '')  # NEW: Handle comma-separated properties
     
-#    template_name = 'act_expense.html'  # default full-page view
-#    if request.GET.get('from_finance_pl_act') == 'true':
-#        template_name = 'act_expense_modal_table.html'
-
     # Base queryset - only approved and paid expenses, ordered by date
     expenses = act_expense.objects.select_related('prop').filter(
         act_expense_approved="Yes",
         act_expense_paid="Yes"
     ).order_by('-act_expense_date')
     
-    # Filter by property if specified
-    if property_id:
+    # Filter by property - UPDATED LOGIC
+    if properties:  # NEW: Handle comma-separated properties
+        try:
+            property_ids = [int(prop_id.strip()) for prop_id in properties.split(',') if prop_id.strip()]
+            expenses = expenses.filter(prop_id__in=property_ids)
+        except ValueError:
+            pass  # Invalid property IDs, skip filtering
+    elif property_id:  # Keep existing single property logic for backward compatibility
         try:
             expenses = expenses.filter(prop_id=int(property_id))
         except (ValueError, TypeError):
@@ -5241,6 +5244,7 @@ def revenue_details_view(request):
     line_type = request.GET.get('line_type')
     property_id = request.GET.get('property_id')
     prop = request.GET.get('prop', 'all')
+    properties = request.GET.get('properties', '')  # NEW: Handle comma-separated properties
     
     # Get all revenue records (no year filtering needed for budgeted revenues)
     revenues = revenue.objects.all().select_related('prop', 'revenue_line_types', 'revenue_types')
@@ -5249,8 +5253,14 @@ def revenue_details_view(request):
     if line_type:
         revenues = revenues.filter(revenue_line_types_id=line_type)
     
-    # Filter by property
-    if property_id and property_id != 'all':
+    # Filter by property - UPDATED LOGIC
+    if properties:  # NEW: Handle comma-separated properties
+        try:
+            property_ids = [int(prop_id.strip()) for prop_id in properties.split(',') if prop_id.strip()]
+            revenues = revenues.filter(prop_id__in=property_ids)
+        except ValueError:
+            pass  # Invalid property IDs, show no results
+    elif property_id and property_id != 'all':
         revenues = revenues.filter(prop_id=property_id)
     elif prop and prop != 'all':
         revenues = revenues.filter(prop_id=prop)
@@ -5317,6 +5327,7 @@ def budget_expense_details_view(request):
     line_type = request.GET.get('line_type')
     property_id = request.GET.get('property_id')
     prop = request.GET.get('prop', 'all')
+    properties = request.GET.get('properties', '')  # NEW: Handle comma-separated properties
     
     # Get all budgeted expense records (no year filtering needed for budgeted expenses)
     expenses = expense.objects.all().select_related('prop', 'expense_line_types', 'expense_types')
@@ -5325,8 +5336,14 @@ def budget_expense_details_view(request):
     if line_type:
         expenses = expenses.filter(expense_line_types_id=line_type)
     
-    # Filter by property
-    if property_id and property_id != 'all':
+    # Filter by property - UPDATED LOGIC
+    if properties:  # NEW: Handle comma-separated properties
+        try:
+            property_ids = [int(prop_id.strip()) for prop_id in properties.split(',') if prop_id.strip()]
+            expenses = expenses.filter(prop_id__in=property_ids)
+        except ValueError:
+            pass  # Invalid property IDs, show no results
+    elif property_id and property_id != 'all':
         expenses = expenses.filter(prop_id=property_id)
     elif prop and prop != 'all':
         expenses = expenses.filter(prop_id=prop)
@@ -5462,14 +5479,46 @@ def total_expense_details_view(request):
 
 @login_required
 def finance_pl(request):
-    # Get all properties with prefetched prop_values to optimize queries
-    properties = props.objects.filter(prop_status="Active").prefetch_related('prop_values_set')
+    # Get selected properties from request
+    selected_properties = request.GET.getlist('properties')
+    
+    # Get all active properties with prefetched prop_values to optimize queries
+    all_properties = props.objects.filter(prop_status="Active").prefetch_related('prop_values_set')
+    
+    # If no properties selected, return empty data
+    if not selected_properties:
+        # Return minimal context with empty data
+        context = {
+            'properties': [],
+            'all_properties': all_properties,
+            'revenue_line_types': revenue_line_types.objects.all(),
+            'expense_line_types': expense_line_types.objects.all(),
+            'revenue_totals': {'jan': 0, 'feb': 0, 'mar': 0, 'apr': 0, 'may': 0, 'jun': 0,
+                             'jul': 0, 'aug': 0, 'sep': 0, 'oct': 0, 'nov': 0, 'dec': 0, 'year': 0},
+            'expense_totals': {'jan': 0, 'feb': 0, 'mar': 0, 'apr': 0, 'may': 0, 'jun': 0,
+                             'jul': 0, 'aug': 0, 'sep': 0, 'oct': 0, 'nov': 0, 'dec': 0, 'year': 0},
+            'profit_totals': {'jan': 0, 'feb': 0, 'mar': 0, 'apr': 0, 'may': 0, 'jun': 0,
+                            'jul': 0, 'aug': 0, 'sep': 0, 'oct': 0, 'nov': 0, 'dec': 0, 'year': 0},
+            'revenue_totals_by_line': {'all': {}},
+            'expense_totals_by_line': {'all': {}},
+            'revenue_prop_totals': {},
+            'expense_prop_totals': {},
+            'total_current_value': 0,
+            'selected_properties': selected_properties,
+        }
+        return render(request, 'finance_pl.html', context)
+    
+    # Convert to integers and filter
+    selected_prop_ids = [int(pid) for pid in selected_properties if pid.isdigit()]
+    properties = all_properties.filter(prop_id__in=selected_prop_ids)
     
     # Revenue Section
     revenue_line_types_list = revenue_line_types.objects.all()
-    revenues = revenue.objects.all()
     
-    # Calculate revenue totals
+    # Filter revenues by selected properties only
+    revenues = revenue.objects.filter(prop_id__in=selected_prop_ids)
+    
+    # Calculate revenue totals for selected properties
     revenue_totals = {
         'jan': sum(r.revenue_jan or 0 for r in revenues),
         'feb': sum(r.revenue_feb or 0 for r in revenues),
@@ -5486,7 +5535,7 @@ def finance_pl(request):
     }
     revenue_totals['year'] = sum(revenue_totals.values())
     
-    # Calculate revenue totals by line type for all properties
+    # Calculate revenue totals by line type for selected properties
     revenue_totals_by_line = {'all': {}}
     for lt in revenue_line_types_list:
         line_revenues = revenues.filter(revenue_line_types=lt)
@@ -5507,7 +5556,7 @@ def finance_pl(request):
         monthly_totals['total'] = sum(monthly_totals.values())
         revenue_totals_by_line['all'][lt.revenue_line_types_id] = monthly_totals
     
-    # Calculate property-specific revenue totals
+    # Calculate property-specific revenue totals for selected properties
     revenue_prop_totals = {}
     for prop in properties:
         prop_revenues = revenues.filter(prop=prop)
@@ -5551,9 +5600,11 @@ def finance_pl(request):
 
     # Expense Section
     expense_line_types_list = expense_line_types.objects.all()
-    expenses = expense.objects.all()
     
-    # Calculate expense totals
+    # Filter expenses by selected properties only
+    expenses = expense.objects.filter(prop_id__in=selected_prop_ids)
+    
+    # Calculate expense totals for selected properties
     expense_totals = {
         'jan': sum(e.expense_jan or 0 for e in expenses),
         'feb': sum(e.expense_feb or 0 for e in expenses),
@@ -5570,7 +5621,7 @@ def finance_pl(request):
     }
     expense_totals['year'] = sum(expense_totals.values())
     
-    # Calculate expense totals by line type for all properties
+    # Calculate expense totals by line type for selected properties
     expense_totals_by_line = {'all': {}}
     for elt in expense_line_types_list:
         line_expenses = expenses.filter(expense_line_types=elt)
@@ -5591,7 +5642,7 @@ def finance_pl(request):
         monthly_totals['total'] = sum(monthly_totals.values())
         expense_totals_by_line['all'][elt.expense_line_types_id] = monthly_totals
     
-    # Calculate property-specific expense totals
+    # Calculate property-specific expense totals for selected properties
     expense_prop_totals = {}
     for prop in properties:
         prop_expenses = expenses.filter(prop=prop)
@@ -5633,7 +5684,7 @@ def finance_pl(request):
             line_monthly_totals['total'] = sum(line_monthly_totals.values())
             expense_totals_by_line[prop.prop_id][elt.expense_line_types_id] = line_monthly_totals
 
-    # Calculate Profit (Revenue - Expenses)
+    # Calculate Profit (Revenue - Expenses) for selected properties
     profit_totals = {
         'jan': revenue_totals['jan'] - expense_totals['jan'],
         'feb': revenue_totals['feb'] - expense_totals['feb'],
@@ -5658,8 +5709,20 @@ def finance_pl(request):
         if prop_values and prop_values.prop_values_current_value is not None:
             total_current_value += prop_values.prop_values_current_value
 
-    return render(request, 'finance_pl.html', {
+    # Handle AJAX requests
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return JsonResponse({
+            'success': True,
+            'properties': [{'id': p.prop_id, 'name': p.prop_name} for p in properties],
+            'revenue_totals': revenue_totals,
+            'expense_totals': expense_totals,
+            'profit_totals': profit_totals,
+            'selected_properties': selected_properties,
+        })
+
+    context = {
         'properties': properties,
+        'all_properties': all_properties,  # For the property selector
         'revenue_line_types': revenue_line_types_list,
         'revenue_totals': revenue_totals,
         'revenue_totals_by_line': revenue_totals_by_line,
@@ -5671,13 +5734,18 @@ def finance_pl(request):
         'profit_totals': profit_totals,
         'prop_values_map': prop_values_map,
         'total_current_value': total_current_value,
-    })
+        'selected_properties': selected_properties,
+    }
+    
+    return render(request, 'finance_pl.html', context)
 
 @login_required
 def finance_pl_act(request):
     # Get selected year from request (default to current year)
     selected_year = request.GET.get('year', datetime.now().year)
-    active_prop = request.GET.get('prop', 'all')  # Default to 'all' properties
+    
+    # Get selected properties from request
+    selected_properties = request.GET.getlist('properties')
 
     try:
         selected_year = int(selected_year)
@@ -5688,14 +5756,46 @@ def finance_pl_act(request):
     if selected_year not in [2024, 2025]:
         selected_year = now().year
     
-    # Get all properties with prefetched prop_values
-    properties = props.objects.filter(prop_status="Active").prefetch_related('prop_values_set')
+    # Get all active properties with prefetched prop_values to optimize queries
+    all_properties = props.objects.filter(prop_status="Active").prefetch_related('prop_values_set')
     
-    # ========= REVENUE SECTION ========= (unchanged as per requirements)
+    # If no properties selected, return empty data
+    if not selected_properties:
+        # Return minimal context with empty data
+        context = {
+            'properties': [],
+            'all_properties': all_properties,
+            'revenue_line_types': revenue_line_types.objects.all(),
+            'expense_line_types': expense_line_types.objects.all(),
+            'revenue_totals': {'jan': 0, 'feb': 0, 'mar': 0, 'apr': 0, 'may': 0, 'jun': 0,
+                             'jul': 0, 'aug': 0, 'sep': 0, 'oct': 0, 'nov': 0, 'dec': 0, 'year': 0},
+            'expense_totals': {'jan': 0, 'feb': 0, 'mar': 0, 'apr': 0, 'may': 0, 'jun': 0,
+                             'jul': 0, 'aug': 0, 'sep': 0, 'oct': 0, 'nov': 0, 'dec': 0, 'year': 0},
+            'profit_totals': {'jan': 0, 'feb': 0, 'mar': 0, 'apr': 0, 'may': 0, 'jun': 0,
+                            'jul': 0, 'aug': 0, 'sep': 0, 'oct': 0, 'nov': 0, 'dec': 0, 'year': 0},
+            'revenue_totals_by_line': {'all': {}},
+            'expense_totals_by_line': {'all': {}},
+            'revenue_prop_totals': {},
+            'expense_prop_totals': {},
+            'actual_expense_totals': {'jan': 0, 'feb': 0, 'mar': 0, 'apr': 0, 'may': 0, 'jun': 0,
+                                    'jul': 0, 'aug': 0, 'sep': 0, 'oct': 0, 'nov': 0, 'dec': 0, 'year': 0},
+            'actual_expense_prop_totals': {},
+            'total_current_value': 0,
+            'selected_properties': selected_properties,
+            'selected_year': selected_year,
+            'available_years': [2024, 2025],
+        }
+        return render(request, 'finance_pl_act.html', context)
+    
+    # Convert to integers and filter
+    selected_prop_ids = [int(pid) for pid in selected_properties if pid.isdigit()]
+    properties = all_properties.filter(prop_id__in=selected_prop_ids)
+    
+    # ========= REVENUE SECTION ========= (filtered by selected properties)
     revenue_line_types_list = revenue_line_types.objects.all()
-    revenues = revenue.objects.all()
+    revenues = revenue.objects.filter(prop_id__in=selected_prop_ids)
     
-    # Calculate revenue totals
+    # Calculate revenue totals for selected properties
     revenue_totals = {
         'jan': sum(r.revenue_jan or 0 for r in revenues),
         'feb': sum(r.revenue_feb or 0 for r in revenues),
@@ -5712,7 +5812,7 @@ def finance_pl_act(request):
     }
     revenue_totals['year'] = sum(revenue_totals.values())
     
-    # Calculate revenue totals by line type for all properties
+    # Calculate revenue totals by line type for selected properties
     revenue_totals_by_line = {'all': {}}
     for lt in revenue_line_types_list:
         line_revenues = revenues.filter(revenue_line_types=lt)
@@ -5733,7 +5833,7 @@ def finance_pl_act(request):
         monthly_totals['total'] = sum(monthly_totals.values())
         revenue_totals_by_line['all'][lt.revenue_line_types_id] = monthly_totals
     
-    # Calculate property-specific revenue totals
+    # Calculate property-specific revenue totals for selected properties
     revenue_prop_totals = {}
     for prop in properties:
         prop_revenues = revenues.filter(prop=prop)
@@ -5775,15 +5875,16 @@ def finance_pl_act(request):
             line_monthly_totals['total'] = sum(line_monthly_totals.values())
             revenue_totals_by_line[prop.prop_id][lt.revenue_line_types_id] = line_monthly_totals
 
-    # ========= EXPENSE SECTION =========
+    # ========= EXPENSE SECTION ========= (filtered by selected properties)
     expense_line_types_list = expense_line_types.objects.all()
-    expenses = expense.objects.all()
+    expenses = expense.objects.filter(prop_id__in=selected_prop_ids)
     
-    # Calculate ACTUAL expenses - FILTERED BY SELECTED YEAR, APPROVED AND PAID
+    # Calculate ACTUAL expenses - FILTERED BY SELECTED YEAR, APPROVED AND PAID, AND SELECTED PROPERTIES
     actual_expenses = act_expense.objects.filter(
         act_expense_date__year=selected_year,
         act_expense_approved="Yes",
-        act_expense_paid="Yes"
+        act_expense_paid="Yes",
+        prop_id__in=selected_prop_ids
     )
     
     # Initialize actual expense totals
@@ -5792,7 +5893,7 @@ def finance_pl_act(request):
         'jul': 0, 'aug': 0, 'sep': 0, 'oct': 0, 'nov': 0, 'dec': 0, 'year': 0
     }
     
-    # Calculate totals for all properties
+    # Calculate totals for selected properties
     for month in ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 
                  'jul', 'aug', 'sep', 'oct', 'nov', 'dec']:
         month_num = {
@@ -5808,7 +5909,7 @@ def finance_pl_act(request):
     
     actual_expense_totals['year'] = sum(actual_expense_totals.values())
     
-    # Calculate property-specific actual expenses
+    # Calculate property-specific actual expenses for selected properties
     actual_expense_prop_totals = {}
     for prop in properties:
         prop_totals = {
@@ -5833,7 +5934,7 @@ def finance_pl_act(request):
         prop_totals['year'] = sum(prop_totals.values())
         actual_expense_prop_totals[prop.prop_id] = prop_totals
     
-    # Calculate budgeted expense totals
+    # Calculate budgeted expense totals for selected properties
     expense_totals = {
         'jan': sum(e.expense_jan or 0 for e in expenses),
         'feb': sum(e.expense_feb or 0 for e in expenses),
@@ -5850,7 +5951,7 @@ def finance_pl_act(request):
     }
     expense_totals['year'] = sum(expense_totals.values())
     
-    # Calculate expense totals by line type for all properties
+    # Calculate expense totals by line type for selected properties
     expense_totals_by_line = {'all': {}}
     for elt in expense_line_types_list:
         line_expenses = expenses.filter(expense_line_types=elt)
@@ -5871,7 +5972,7 @@ def finance_pl_act(request):
         monthly_totals['total'] = sum(monthly_totals.values())
         expense_totals_by_line['all'][elt.expense_line_types_id] = monthly_totals
     
-    # Calculate property-specific expense totals
+    # Calculate property-specific expense totals for selected properties
     expense_prop_totals = {}
     for prop in properties:
         prop_expenses = expenses.filter(prop=prop)
@@ -5915,31 +6016,44 @@ def finance_pl_act(request):
 
     # ========= PROFIT CALCULATION =========
     profit_totals = {
-        'jan': revenue_totals['jan'] - expense_totals['jan'],
-        'feb': revenue_totals['feb'] - expense_totals['feb'],
-        'mar': revenue_totals['mar'] - expense_totals['mar'],
-        'apr': revenue_totals['apr'] - expense_totals['apr'],
-        'may': revenue_totals['may'] - expense_totals['may'],
-        'jun': revenue_totals['jun'] - expense_totals['jun'],
-        'jul': revenue_totals['jul'] - expense_totals['jul'],
-        'aug': revenue_totals['aug'] - expense_totals['aug'],
-        'sep': revenue_totals['sep'] - expense_totals['sep'],
-        'oct': revenue_totals['oct'] - expense_totals['oct'],
-        'nov': revenue_totals['nov'] - expense_totals['nov'],
-        'dec': revenue_totals['dec'] - expense_totals['dec'],
-        'year': revenue_totals['year'] - expense_totals['year']
+        'jan': revenue_totals['jan'] - expense_totals['jan'] - actual_expense_totals['jan'],
+        'feb': revenue_totals['feb'] - expense_totals['feb'] - actual_expense_totals['feb'],
+        'mar': revenue_totals['mar'] - expense_totals['mar'] - actual_expense_totals['mar'],
+        'apr': revenue_totals['apr'] - expense_totals['apr'] - actual_expense_totals['apr'],
+        'may': revenue_totals['may'] - expense_totals['may'] - actual_expense_totals['may'],
+        'jun': revenue_totals['jun'] - expense_totals['jun'] - actual_expense_totals['jun'],
+        'jul': revenue_totals['jul'] - expense_totals['jul'] - actual_expense_totals['jul'],
+        'aug': revenue_totals['aug'] - expense_totals['aug'] - actual_expense_totals['aug'],
+        'sep': revenue_totals['sep'] - expense_totals['sep'] - actual_expense_totals['sep'],
+        'oct': revenue_totals['oct'] - expense_totals['oct'] - actual_expense_totals['oct'],
+        'nov': revenue_totals['nov'] - expense_totals['nov'] - actual_expense_totals['nov'],
+        'dec': revenue_totals['dec'] - expense_totals['dec'] - actual_expense_totals['dec'],
+        'year': revenue_totals['year'] - expense_totals['year'] - actual_expense_totals['year']
     }
 
-    # Prepare property values mapping
+    # Prepare property values mapping for selected properties
     prop_values_map = {prop.prop_id: prop.prop_values_set.first() for prop in properties}
-    total_current_value = sum(
-        pv.prop_values_current_value 
-        for pv in prop_values_map.values() 
-        if pv and pv.prop_values_current_value is not None
-    )
+    total_current_value = 0
+    for prop in properties:
+        prop_values = prop.prop_values_set.first()
+        if prop_values and prop_values.prop_values_current_value is not None:
+            total_current_value += prop_values.prop_values_current_value
+
+    # Handle AJAX requests
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return JsonResponse({
+            'success': True,
+            'properties': [{'id': p.prop_id, 'name': p.prop_name} for p in properties],
+            'revenue_totals': revenue_totals,
+            'expense_totals': expense_totals,
+            'actual_expense_totals': actual_expense_totals,
+            'profit_totals': profit_totals,
+            'selected_properties': selected_properties,
+        })
 
     return render(request, 'finance_pl_act.html', {
         'properties': properties,
+        'all_properties': all_properties,  # For the property selector
         'revenue_line_types': revenue_line_types_list,
         'revenue_totals': revenue_totals,
         'revenue_totals_by_line': revenue_totals_by_line,
@@ -5954,7 +6068,7 @@ def finance_pl_act(request):
         'actual_expense_totals': actual_expense_totals,
         'actual_expense_prop_totals': actual_expense_prop_totals,
         'selected_year': selected_year,
-        'active_prop': active_prop,
+        'selected_properties': selected_properties,
         'available_years': [2024, 2025],
     })
 
