@@ -33,87 +33,125 @@ Home
   </div>
 {% else %}
   <!-- Show module buttons when logged in -->
-  <div class="container mt-4 border rounded p-3 p-md-4" style="max-width: 1200px; border-color: #dee2e6 !important;">
+  <div class="container mt-4 border rounded p-3 p-md-4" style="max-width: 1400px; border-color: #dee2e6 !important;">
     <div class="row justify-content-center">
       
+      <!-- First Row: Properties, Tenants, Suppliers, Issues, Dashboard -->
+      
       <!-- Properties Button -->
-      <div class="col-6 col-md-3 mb-3">
+      <div class="col-6 col-md-2-4 mb-3">
         <a href="{% url 'properties' %}" class="btn btn-info btn-block py-2 py-md-3 home-module-btn">
-          <i class="fas fa-home fa-2x mb-2"></i>
-          <h4>Properties</h4>
+          <i class="fas fa-home fa-lg mb-2"></i>
+          <h5>Properties</h5>
         </a>
       </div>
 
       <!-- Tenants Button -->
-      <div class="col-6 col-md-3 mb-3">
+      <div class="col-6 col-md-2-4 mb-3">
         <a href="{% url 'tenant' %}" class="btn btn-info btn-block py-2 py-md-3 home-module-btn">
-          <i class="fas fa-users fa-2x mb-2"></i>
-          <h4>Tenants</h4>
+          <i class="fas fa-users fa-lg mb-2"></i>
+          <h5>Tenants</h5>
         </a>
       </div>
 
       <!-- Suppliers Button -->
-      <div class="col-6 col-md-3 mb-3">
+      <div class="col-6 col-md-2-4 mb-3">
         <a href="{% url 'suppliers' %}" class="btn btn-info btn-block py-2 py-md-3 home-module-btn">
-          <i class="fas fa-hammer fa-2x mb-2"></i>
-          <h4>Suppliers</h4>
+          <i class="fas fa-hammer fa-lg mb-2"></i>
+          <h5>Suppliers</h5>
         </a>
       </div>
 
       <!-- Issues Button -->
-      <div class="col-6 col-md-3 mb-3">
+      <div class="col-6 col-md-2-4 mb-3">
         <a href="{% url 'fsr' %}" class="btn btn-info btn-block py-2 py-md-3 home-module-btn">
-          <i class="fas fa-exclamation-circle fa-2x mb-2"></i>
-          <h4>Issues</h4>
+          <i class="fas fa-exclamation-circle fa-lg mb-2"></i>
+          <h5>Issues</h5>
         </a>
       </div>
 
-      <!-- Invoices Button (Conditional) -->
+      <!-- Dashboard Button (Conditional) -->
       {% if user.is_superuser %}
-      <div class="col-6 col-md-3 mb-3">
-        <a href="{% url 'invoices' %}" class="btn btn-info btn-block py-2 py-md-3 home-module-btn">
-          <i class="fas fa-file-invoice fa-2x mb-2"></i>
-          <h4>Invoices</h4>
+      <div class="col-6 col-md-2-4 mb-3">
+        <a href="{% url 'property_management_dashboard' %}" class="btn btn-info btn-block py-2 py-md-3 home-module-btn">
+          <i class="fas fa-tachometer-alt fa-lg mb-2"></i>
+          <h5>Dashboard</h5>
         </a>
       </div>
       {% else %}
-      <div class="col-6 col-md-3 mb-3">
+      <div class="col-6 col-md-2-4 mb-3">
         <button class="btn btn-secondary btn-block py-2 py-md-3 home-module-btn" disabled>
-          <i class="fas fa-file-invoice fa-2x mb-2"></i>
-          <h4>Invoices</h4>
+          <i class="fas fa-tachometer-alt fa-lg mb-2"></i>
+          <h5>Dashboard</h5>
+        </button>
+      </div>
+      {% endif %}
+
+      <!-- Second Row: Invoices, Expenses, Petty Cash, Financials, Projects -->
+      
+      <!-- Invoices Button (Conditional) -->
+      {% if user.is_superuser %}
+      <div class="col-6 col-md-2-4 mb-3">
+        <a href="{% url 'invoices' %}" class="btn btn-info btn-block py-2 py-md-3 home-module-btn">
+          <i class="fas fa-file-invoice fa-lg mb-2"></i>
+          <h5>Invoices</h5>
+        </a>
+      </div>
+      {% else %}
+      <div class="col-6 col-md-2-4 mb-3">
+        <button class="btn btn-secondary btn-block py-2 py-md-3 home-module-btn" disabled>
+          <i class="fas fa-file-invoice fa-lg mb-2"></i>
+          <h5>Invoices</h5>
         </button>
       </div>
       {% endif %}
 
       <!-- Expenses Button -->
-      <div class="col-6 col-md-3 mb-3">
+      <div class="col-6 col-md-2-4 mb-3">
         <a href="{% url 'act_expense_all' %}?from=home" class="btn btn-info btn-block py-2 py-md-3 home-module-btn">
-          <i class="fas fa-coins fa-2x mb-2"></i>
-          <h4>Expenses</h4>
+          <i class="fas fa-coins fa-lg mb-2"></i>
+          <h5>Expenses</h5>
         </a>
       </div>
 
       <!-- Petty Cash Button -->
-      <div class="col-6 col-md-3 mb-3">
+      <div class="col-6 col-md-2-4 mb-3">
         <a href="{% url 'petty_cash' %}" class="btn btn-info btn-block py-2 py-md-3 home-module-btn">
-          <i class="fas fa-money-bill-wave fa-2x mb-2"></i>
-          <h4>Petty Cash</h4>
+          <i class="fas fa-money-bill-wave fa-lg mb-2"></i>
+          <h5>Petty Cash</h5>
         </a>
       </div>
 
       <!-- Financials Button (Conditional) -->
       {% if user.is_superuser %}
-      <div class="col-6 col-md-3 mb-3">
+      <div class="col-6 col-md-2-4 mb-3">
         <a href="{% url 'finance' %}" class="btn btn-info btn-block py-2 py-md-3 home-module-btn">
-          <i class="fas fa-chart-line fa-2x mb-2"></i>
-          <h4>Financials</h4>
+          <i class="fas fa-chart-line fa-lg mb-2"></i>
+          <h5>Financials</h5>
         </a>
       </div>
       {% else %}
-      <div class="col-6 col-md-3 mb-3">
+      <div class="col-6 col-md-2-4 mb-3">
         <button class="btn btn-secondary btn-block py-2 py-md-3 home-module-btn" disabled>
-          <i class="fas fa-chart-line fa-2x mb-2"></i>
-          <h4>Financials</h4>
+          <i class="fas fa-chart-line fa-lg mb-2"></i>
+          <h5>Financials</h5>
+        </button>
+      </div>
+      {% endif %}
+
+      <!-- Projects Button (Conditional) -->
+      {% if user.is_superuser %}
+      <div class="col-6 col-md-2-4 mb-3">
+        <a href="{% url 'projects' %}" class="btn btn-info btn-block py-2 py-md-3 home-module-btn">
+          <i class="fas fa-tasks fa-lg mb-2"></i>
+          <h5>Projects</h5>
+        </a>
+      </div>
+      {% else %}
+      <div class="col-6 col-md-2-4 mb-3">
+        <button class="btn btn-secondary btn-block py-2 py-md-3 home-module-btn" disabled>
+          <i class="fas fa-tasks fa-lg mb-2"></i>
+          <h5>Projects</h5>
         </button>
       </div>
       {% endif %}
@@ -122,8 +160,14 @@ Home
   </div>
 
   <style>
+    /* Custom 5-column grid class */
+    .col-md-2-4 {
+      flex: 0 0 20%;
+      max-width: 20%;
+    }
+    
     .home-module-btn {
-      height: 120px;
+      height: 100px; /* Smaller height */
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -140,10 +184,10 @@ Home
       text-decoration: none;
     }
     
-    .home-module-btn h4 {
+    .home-module-btn h5 {
       margin-bottom: 0;
       font-weight: 500;
-      font-size: 1rem;
+      font-size: 0.9rem;
     }
     
     .home-module-btn:disabled {
@@ -152,25 +196,48 @@ Home
     }
     
     /* Media queries for responsive design */
+    @media (max-width: 1200px) {
+      .col-md-2-4 {
+        flex: 0 0 25%;
+        max-width: 25%;
+      }
+    }
+    
+    @media (max-width: 991px) {
+      .col-md-2-4 {
+        flex: 0 0 33.333333%;
+        max-width: 33.333333%;
+      }
+    }
+    
     @media (max-width: 767px) {
       .home-module-btn {
-        height: 100px;
+        height: 80px;
         padding: 8px !important;
       }
       
-      .home-module-btn h4 {
-        font-size: 0.85rem;
+      .home-module-btn h5 {
+        font-size: 0.8rem;
       }
       
       .home-module-btn i {
-        font-size: 1.5rem !important;
-        margin-bottom: 8px !important;
+        font-size: 1.2rem !important;
+        margin-bottom: 6px !important;
       }
     }
     
     @media (max-width: 575px) {
+      .col-md-2-4 {
+        flex: 0 0 50%;
+        max-width: 50%;
+      }
+      
       .home-module-btn {
-        height: 90px;
+        height: 70px;
+      }
+      
+      .home-module-btn h5 {
+        font-size: 0.75rem;
       }
     }
   </style>
