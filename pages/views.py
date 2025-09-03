@@ -47,7 +47,9 @@ from .models import (
     ProjectTask,
     ProjectDocument,
     )
+import decimal
 from decimal import Decimal
+from calendar import monthrange
 from collections import defaultdict
 from datetime import date, datetime, timedelta
 from urllib.parse import urlparse, parse_qs
@@ -63,6 +65,70 @@ import logging
 import json
 
 logger = logging.getLogger(__name__)
+
+### CASH FLOW ###
+@login_required
+def cashflow_forecast(request):
+    if request.headers.get("x-requested-with") == "XMLHttpRequest":
+        horizon_months = int(request.GET.get("horizon", 12))
+        today = date.today()
+        
+        # Calculate horizon cutoff date
+        horizon_year = today.year + (today.month + horizon_months - 1) // 12
+        horizon_month = (today.month + horizon_months - 1) % 12 + 1
+        horizon_last_day = monthrange(horizon_year, horizon_month)[1]
+        cutoff_date = date(horizon_year, horizon_month, horizon_last_day)
+        
+        expenses = []
+        
+        # Handle budget expenses - they repeat every year
+        for exp in expense.objects.select_related("prop", "expense_line_types").all():
+            month_fields = [
+                ("expense_jan", 1), ("expense_feb", 2), ("expense_mar", 3),
+                ("expense_apr", 4), ("expense_may", 5), ("expense_jun", 6),
+                ("expense_jul", 7), ("expense_aug", 8), ("expense_sep", 9),
+                ("expense_oct", 10), ("expense_nov", 11), ("expense_dec", 12),
+            ]
+            
+            for field, month_idx in month_fields:
+                amount = getattr(exp, field)
+                if amount and amount > decimal.Decimal("0.00"):
+                    # Generate expenses for each year within the horizon
+                    current_year = today.year
+                    while True:
+                        last_day = monthrange(current_year, month_idx)[1]
+                        due_date = date(current_year, month_idx, last_day)
+                        
+                        # Break if beyond our cutoff date
+                        if due_date > cutoff_date:
+                            break
+                        
+                        # Only include if the date is today or in the future
+                        if due_date >= today:
+                            days_ahead = (due_date - today).days
+                            if days_ahead <= 30:
+                                color = "red"
+                            elif days_ahead <= 90:
+                                color = "orange"
+                            else:
+                                color = "green"
+                                
+                            expenses.append({
+                                "id": f"{exp.expense_id}-{current_year}-{month_idx}",
+                                "property": exp.prop.prop_name,
+                                "amount": float(amount),
+                                "due_date": due_date.strftime("%Y-%m-%d"),
+                                "description": exp.expense_line_types.expense_line_types_name,
+                                "line_type": exp.expense_line_types.expense_line_types_name,
+                                "color": color,
+                            })
+                        
+                        current_year += 1
+        
+        expenses.sort(key=lambda x: x["due_date"])
+        return JsonResponse({"expenses": expenses})
+    
+    return render(request, "finance/cashflow_forecast.html")
 
 ### NOTIFICATIONS ###
 @login_required
@@ -5741,51 +5807,28 @@ def finance_pl(request):
 
 @login_required
 def finance_pl_act(request):
-    # Get selected year from request (default to current year)
-    selected_year = request.GET.get('year', datetime.now().year)
+    # Get selected year from request (default to 'budget')
+    selected_year = request.GET.get('year', 'budget')
     
     # Get selected properties from request
     selected_properties = request.GET.getlist('properties')
 
-    try:
-        selected_year = int(selected_year)
-    except (ValueError, TypeError):
-        selected_year = now().year
-    
-    # Ensure only 2024 or 2025 is selectable
-    if selected_year not in [2024, 2025]:
-        selected_year = now().year
+    # Handle year parameter - can be 'budget' or a year number
+    if selected_year != 'budget':
+        try:
+            selected_year = int(selected_year)
+            # Ensure only 2024 or 2025 is selectable
+            if selected_year not in [2024, 2025]:
+                selected_year = 'budget'
+        except (ValueError, TypeError):
+            selected_year = 'budget'
     
     # Get all active properties with prefetched prop_values to optimize queries
     all_properties = props.objects.filter(prop_status="Active").prefetch_related('prop_values_set')
     
-    # If no properties selected, return empty data
+    # If no properties selected, default to ALL properties
     if not selected_properties:
-        # Return minimal context with empty data
-        context = {
-            'properties': [],
-            'all_properties': all_properties,
-            'revenue_line_types': revenue_line_types.objects.all(),
-            'expense_line_types': expense_line_types.objects.all(),
-            'revenue_totals': {'jan': 0, 'feb': 0, 'mar': 0, 'apr': 0, 'may': 0, 'jun': 0,
-                             'jul': 0, 'aug': 0, 'sep': 0, 'oct': 0, 'nov': 0, 'dec': 0, 'year': 0},
-            'expense_totals': {'jan': 0, 'feb': 0, 'mar': 0, 'apr': 0, 'may': 0, 'jun': 0,
-                             'jul': 0, 'aug': 0, 'sep': 0, 'oct': 0, 'nov': 0, 'dec': 0, 'year': 0},
-            'profit_totals': {'jan': 0, 'feb': 0, 'mar': 0, 'apr': 0, 'may': 0, 'jun': 0,
-                            'jul': 0, 'aug': 0, 'sep': 0, 'oct': 0, 'nov': 0, 'dec': 0, 'year': 0},
-            'revenue_totals_by_line': {'all': {}},
-            'expense_totals_by_line': {'all': {}},
-            'revenue_prop_totals': {},
-            'expense_prop_totals': {},
-            'actual_expense_totals': {'jan': 0, 'feb': 0, 'mar': 0, 'apr': 0, 'may': 0, 'jun': 0,
-                                    'jul': 0, 'aug': 0, 'sep': 0, 'oct': 0, 'nov': 0, 'dec': 0, 'year': 0},
-            'actual_expense_prop_totals': {},
-            'total_current_value': 0,
-            'selected_properties': selected_properties,
-            'selected_year': selected_year,
-            'available_years': [2024, 2025],
-        }
-        return render(request, 'finance_pl_act.html', context)
+        selected_properties = [str(prop.prop_id) for prop in all_properties]
     
     # Convert to integers and filter
     selected_prop_ids = [int(pid) for pid in selected_properties if pid.isdigit()]
@@ -5879,44 +5922,22 @@ def finance_pl_act(request):
     expense_line_types_list = expense_line_types.objects.all()
     expenses = expense.objects.filter(prop_id__in=selected_prop_ids)
     
-    # Calculate ACTUAL expenses - FILTERED BY SELECTED YEAR, APPROVED AND PAID, AND SELECTED PROPERTIES
-    actual_expenses = act_expense.objects.filter(
-        act_expense_date__year=selected_year,
-        act_expense_approved="Yes",
-        act_expense_paid="Yes",
-        prop_id__in=selected_prop_ids
-    )
-    
     # Initialize actual expense totals
     actual_expense_totals = {
         'jan': 0, 'feb': 0, 'mar': 0, 'apr': 0, 'may': 0, 'jun': 0,
         'jul': 0, 'aug': 0, 'sep': 0, 'oct': 0, 'nov': 0, 'dec': 0, 'year': 0
     }
     
-    # Calculate totals for selected properties
-    for month in ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 
-                 'jul', 'aug', 'sep', 'oct', 'nov', 'dec']:
-        month_num = {
-            'jan': 1, 'feb': 2, 'mar': 3, 'apr': 4, 'may': 5, 'jun': 6,
-            'jul': 7, 'aug': 8, 'sep': 9, 'oct': 10, 'nov': 11, 'dec': 12
-        }[month]
+    # Calculate ACTUAL expenses only if not budget view
+    if selected_year != 'budget':
+        actual_expenses = act_expense.objects.filter(
+            act_expense_date__year=selected_year,
+            act_expense_approved="Yes",
+            act_expense_paid="Yes",
+            prop_id__in=selected_prop_ids
+        )
         
-        monthly_expenses = actual_expenses.filter(
-            act_expense_date__month=month_num
-        ).aggregate(total=Sum('act_expense_amount'))['total'] or 0
-        
-        actual_expense_totals[month] = monthly_expenses
-    
-    actual_expense_totals['year'] = sum(actual_expense_totals.values())
-    
-    # Calculate property-specific actual expenses for selected properties
-    actual_expense_prop_totals = {}
-    for prop in properties:
-        prop_totals = {
-            'jan': 0, 'feb': 0, 'mar': 0, 'apr': 0, 'may': 0, 'jun': 0,
-            'jul': 0, 'aug': 0, 'sep': 0, 'oct': 0, 'nov': 0, 'dec': 0, 'year': 0
-        }
-        
+        # Calculate totals for selected properties
         for month in ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 
                      'jul', 'aug', 'sep', 'oct', 'nov', 'dec']:
             month_num = {
@@ -5925,14 +5946,38 @@ def finance_pl_act(request):
             }[month]
             
             monthly_expenses = actual_expenses.filter(
-                prop=prop,
                 act_expense_date__month=month_num
             ).aggregate(total=Sum('act_expense_amount'))['total'] or 0
             
-            prop_totals[month] = monthly_expenses
+            actual_expense_totals[month] = monthly_expenses
         
-        prop_totals['year'] = sum(prop_totals.values())
-        actual_expense_prop_totals[prop.prop_id] = prop_totals
+        actual_expense_totals['year'] = sum(actual_expense_totals.values())
+    
+    # Calculate property-specific actual expenses for selected properties
+    actual_expense_prop_totals = {}
+    if selected_year != 'budget':
+        for prop in properties:
+            prop_totals = {
+                'jan': 0, 'feb': 0, 'mar': 0, 'apr': 0, 'may': 0, 'jun': 0,
+                'jul': 0, 'aug': 0, 'sep': 0, 'oct': 0, 'nov': 0, 'dec': 0, 'year': 0
+            }
+            
+            for month in ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 
+                         'jul', 'aug', 'sep', 'oct', 'nov', 'dec']:
+                month_num = {
+                    'jan': 1, 'feb': 2, 'mar': 3, 'apr': 4, 'may': 5, 'jun': 6,
+                    'jul': 7, 'aug': 8, 'sep': 9, 'oct': 10, 'nov': 11, 'dec': 12
+                }[month]
+                
+                monthly_expenses = actual_expenses.filter(
+                    prop=prop,
+                    act_expense_date__month=month_num
+                ).aggregate(total=Sum('act_expense_amount'))['total'] or 0
+                
+                prop_totals[month] = monthly_expenses
+            
+            prop_totals['year'] = sum(prop_totals.values())
+            actual_expense_prop_totals[prop.prop_id] = prop_totals
     
     # Calculate budgeted expense totals for selected properties
     expense_totals = {
@@ -6015,21 +6060,40 @@ def finance_pl_act(request):
             expense_totals_by_line[prop.prop_id][elt.expense_line_types_id] = line_monthly_totals
 
     # ========= PROFIT CALCULATION =========
-    profit_totals = {
-        'jan': revenue_totals['jan'] - expense_totals['jan'] - actual_expense_totals['jan'],
-        'feb': revenue_totals['feb'] - expense_totals['feb'] - actual_expense_totals['feb'],
-        'mar': revenue_totals['mar'] - expense_totals['mar'] - actual_expense_totals['mar'],
-        'apr': revenue_totals['apr'] - expense_totals['apr'] - actual_expense_totals['apr'],
-        'may': revenue_totals['may'] - expense_totals['may'] - actual_expense_totals['may'],
-        'jun': revenue_totals['jun'] - expense_totals['jun'] - actual_expense_totals['jun'],
-        'jul': revenue_totals['jul'] - expense_totals['jul'] - actual_expense_totals['jul'],
-        'aug': revenue_totals['aug'] - expense_totals['aug'] - actual_expense_totals['aug'],
-        'sep': revenue_totals['sep'] - expense_totals['sep'] - actual_expense_totals['sep'],
-        'oct': revenue_totals['oct'] - expense_totals['oct'] - actual_expense_totals['oct'],
-        'nov': revenue_totals['nov'] - expense_totals['nov'] - actual_expense_totals['nov'],
-        'dec': revenue_totals['dec'] - expense_totals['dec'] - actual_expense_totals['dec'],
-        'year': revenue_totals['year'] - expense_totals['year'] - actual_expense_totals['year']
-    }
+    if selected_year == 'budget':
+        # Budget view - no actual expenses
+        profit_totals = {
+            'jan': revenue_totals['jan'] - expense_totals['jan'],
+            'feb': revenue_totals['feb'] - expense_totals['feb'],
+            'mar': revenue_totals['mar'] - expense_totals['mar'],
+            'apr': revenue_totals['apr'] - expense_totals['apr'],
+            'may': revenue_totals['may'] - expense_totals['may'],
+            'jun': revenue_totals['jun'] - expense_totals['jun'],
+            'jul': revenue_totals['jul'] - expense_totals['jul'],
+            'aug': revenue_totals['aug'] - expense_totals['aug'],
+            'sep': revenue_totals['sep'] - expense_totals['sep'],
+            'oct': revenue_totals['oct'] - expense_totals['oct'],
+            'nov': revenue_totals['nov'] - expense_totals['nov'],
+            'dec': revenue_totals['dec'] - expense_totals['dec'],
+            'year': revenue_totals['year'] - expense_totals['year']
+        }
+    else:
+        # Actual year view - include both budget and actual expenses
+        profit_totals = {
+            'jan': revenue_totals['jan'] - expense_totals['jan'] - actual_expense_totals['jan'],
+            'feb': revenue_totals['feb'] - expense_totals['feb'] - actual_expense_totals['feb'],
+            'mar': revenue_totals['mar'] - expense_totals['mar'] - actual_expense_totals['mar'],
+            'apr': revenue_totals['apr'] - expense_totals['apr'] - actual_expense_totals['apr'],
+            'may': revenue_totals['may'] - expense_totals['may'] - actual_expense_totals['may'],
+            'jun': revenue_totals['jun'] - expense_totals['jun'] - actual_expense_totals['jun'],
+            'jul': revenue_totals['jul'] - expense_totals['jul'] - actual_expense_totals['jul'],
+            'aug': revenue_totals['aug'] - expense_totals['aug'] - actual_expense_totals['aug'],
+            'sep': revenue_totals['sep'] - expense_totals['sep'] - actual_expense_totals['sep'],
+            'oct': revenue_totals['oct'] - expense_totals['oct'] - actual_expense_totals['oct'],
+            'nov': revenue_totals['nov'] - expense_totals['nov'] - actual_expense_totals['nov'],
+            'dec': revenue_totals['dec'] - expense_totals['dec'] - actual_expense_totals['dec'],
+            'year': revenue_totals['year'] - expense_totals['year'] - actual_expense_totals['year']
+        }
 
     # Prepare property values mapping for selected properties
     prop_values_map = {prop.prop_id: prop.prop_values_set.first() for prop in properties}
@@ -6069,7 +6133,7 @@ def finance_pl_act(request):
         'actual_expense_prop_totals': actual_expense_prop_totals,
         'selected_year': selected_year,
         'selected_properties': selected_properties,
-        'available_years': [2024, 2025],
+        'available_years': [2025, 2024],  # Years in descending order
     })
 
 @login_required
