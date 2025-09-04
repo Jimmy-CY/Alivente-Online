@@ -1,11 +1,11 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}ALIVENTE ONLINE - CASH FLOW FORECAST{% endblock %}
+{% block title %}ALIVENTE ONLINE - FORECASTED CASH OUTFLOWS{% endblock %}
 
 {% block content %}
 <div class="container-fluid">
-    <h2><center>ALIVENTE ONLINE - CASH FLOW FORECAST</center></h2>
+    <h2><center>ALIVENTE ONLINE - FORECASTED CASH OUTFLOWS</center></h2>
     <h5><center>UPCOMING EXPENSE PLANNING DASHBOARD</center></h5>
     <br/>
 
@@ -42,38 +42,31 @@
 
     <!-- Main Dashboard Container -->
     <div id="dashboardContainer" style="display: none;">
-        <!-- Filter Controls Panel -->
-        <div class="filter-panel">
-            <div class="filter-header">
-                <h5 class="mb-0"><i class="fas fa-filter"></i> FORECAST CONTROLS</h5>
-            </div>
-            
-            <div class="filter-controls">
-                <div class="filter-group">
-                    <label>Filter by Property:</label>
-                    <select id="propertyFilter" class="form-control">
-                        <option value="all">All Properties</option>
-                        <!-- Will be populated by JavaScript -->
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <label>Filter by Expense Line Type:</label>
-                    <select id="typeFilter" class="form-control">
-                        <option value="all">All Line Types</option>
-                        <!-- Will be populated by JavaScript -->
-                    </select>
-                </div>
-            </div>
-        </div>
-
         <!-- Timeline Visualization Panel -->
         <div class="chart-panel">
             <div class="chart-header">
                 <h5 class="chart-title">
-                    <i class="fas fa-chart-line"></i> Expense Timeline (12 Months)
+                    <i class="fas fa-chart-line"></i> Forecasted Cash Outflows (12 Months)
                 </h5>
-                <p class="chart-subtitle">Monthly expense distribution - Click bars for details</p>
+                <p class="chart-subtitle">Click bars for detailed expense breakdown by month</p>
             </div>
+            
+            <!-- Legend -->
+            <div class="chart-legend">
+                <div class="legend-item">
+                    <span class="legend-color red"></span>
+                    <span class="legend-text">Current Month</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-color orange"></span>
+                    <span class="legend-text">31-90 Days</span>
+                </div>
+                <div class="legend-item">
+                    <span class="legend-color green"></span>
+                    <span class="legend-text">Over 90 Days</span>
+                </div>
+            </div>
+            
             <div class="chart-container">
                 <div id="timeline" class="timeline-chart">
                     <!-- Timeline will be rendered here -->
@@ -112,87 +105,11 @@
     </div>
 </div>
 
-<!-- Modal for Expense Details -->
-<div class="modal fade" id="expenseModal" tabindex="-1" role="dialog" aria-labelledby="expenseModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="expenseModalLabel">
-                    <i class="fas fa-receipt"></i> Expense Details
-                </h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body" id="expenseModalBody">
-                <!-- Content will be loaded here -->
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- jQuery and Bootstrap JS -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/4.6.0/js/bootstrap.bundle.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
 <style>
-/* Main Styles matching financial indicators page */
-.filter-panel {
-    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-    border: 1px solid #dee2e6;
-    border-radius: 12px;
-    padding: 24px;
-    margin-bottom: 30px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-}
-
-.filter-header {
-    background-color: #17a2b8;
-    color: white;
-    padding: 12px 20px;
-    border-radius: 8px;
-    margin-bottom: 20px;
-    font-weight: 600;
-    text-align: center;
-}
-
-.filter-controls {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 20px;
-    align-items: end;
-}
-
-.filter-group {
-    display: flex;
-    flex-direction: column;
-}
-
-.filter-group label {
-    font-weight: 600;
-    color: #495057;
-    margin-bottom: 8px;
-    font-size: 14px;
-}
-
-.form-control {
-    border: 1px solid #dee2e6;
-    border-radius: 6px;
-    padding: 8px 12px;
-    font-size: 14px;
-    transition: border-color 0.3s ease, box-shadow 0.3s ease;
-}
-
-.form-control:focus {
-    border-color: #17a2b8;
-    box-shadow: 0 0 0 0.2rem rgba(23, 162, 184, 0.25);
-    outline: 0;
-}
-
 .chart-panel {
     background: white;
     border: 1px solid #dee2e6;
@@ -221,39 +138,76 @@
     margin: 0;
 }
 
-.chart-container {
-    position: relative;
+.chart-legend {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+    margin-bottom: 20px;
+    margin-left: 70px;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 6px;
+    border: 1px solid #dee2e6;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.legend-color {
+    width: 20px;
+    height: 15px;
+    border-radius: 3px;
+    border: 1px solid rgba(0,0,0,0.1);
+}
+
+.legend-color.red {
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+}
+
+.legend-color.orange {
+    background: linear-gradient(135deg, #fd7e14 0%, #e8630a 100%);
+}
+
+.legend-color.green {
+    background: linear-gradient(135deg, #28a745 0%, #218838 100%);
+}
+
+.legend-text {
+    font-size: 14px;
+    font-weight: 500;
+    color: #495057;
 }
 
 .timeline-chart {
-    height: 250px;
+    height: 400px;
     width: 100%;
     position: relative;
-    padding-bottom: 50px;
+    padding-bottom: 60px;
 }
 
+/* CORRECTED CSS - Absolute positioning container */
 .timeline-container {
-    display: flex;
-    align-items: flex-end;
+    position: relative;
     height: 100%;
-    justify-content: space-between;
-    padding: 20px 0;
+    padding: 20px 0 20px 70px;
+    width: 100%;
 }
 
+/* CORRECTED CSS - Absolute positioned months */
 .timeline-month {
-    flex: 1;
-    min-width: 60px;
+    position: absolute;
     text-align: center;
-    position: relative;
-    margin: 0 2px;
+    bottom: 0;
 }
 
 .timeline-bar {
-    margin: 0 auto;
     border-radius: 4px 4px 0 0;
-    width: 80%;
     transition: all 0.3s ease;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    cursor: pointer;
 }
 
 .timeline-bar.red {
@@ -273,13 +227,9 @@
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
-.clickable-bar {
-    cursor: pointer;
-}
-
 .timeline-label {
     position: absolute;
-    bottom: -45px;
+    bottom: -55px;
     width: 100%;
     text-align: center;
     font-size: 10px;
@@ -288,22 +238,32 @@
     line-height: 1.2;
 }
 
-.no-expenses-message {
-    text-align: center;
-    padding: 40px 20px;
-    color: #6c757d;
+.grid-line {
+    border-top: 2px solid #000 !important;
+    opacity: 1 !important;
 }
 
-.no-expenses-icon {
-    font-size: 48px;
-    margin-bottom: 15px;
-    opacity: 0.5;
+.grid-label {
+    background: white;
+    padding: 1px 4px;
+    border-radius: 2px;
+    font-size: 11px;
+    color: #6c757d;
+    font-weight: 500;
+    border: 1px solid #e9ecef;
+    white-space: nowrap;
 }
 
 /* Modal Styles */
 .modal-content {
     border-radius: 8px;
     border: 1px solid #dee2e6;
+    transition: all 0.3s ease;
+}
+
+.modal-dialog {
+    transition: all 0.3s ease;
+    min-height: 500px;
 }
 
 .modal-header {
@@ -315,6 +275,11 @@
 .modal-title {
     color: #2c3e50;
     font-weight: 600;
+}
+
+.modal-body {
+    min-height: 400px;
+    transition: all 0.3s ease;
 }
 
 .modal-property-breakdown {
@@ -338,7 +303,31 @@
     font-size: 14px;
 }
 
-/* Button Styles matching the app */
+.table-hover tbody tr {
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.table-hover tbody tr:hover {
+    background-color: #e3f2fd !important;
+    transform: translateX(3px);
+}
+
+.table-hover tbody tr:hover td {
+    border-color: #17a2b8;
+}
+
+.clickable-row {
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border-left: 3px solid transparent;
+}
+
+.clickable-row:hover {
+    background-color: #e3f2fd !important;
+    border-left-color: #17a2b8;
+}
+
 .btn-info {
     background-color: #17a2b8;
     color: white;
@@ -370,11 +359,6 @@
     transform: translateY(-1px);
 }
 
-/* Loading and Error States */
-.text-center.py-5 {
-    padding: 60px 0;
-}
-
 .spinner-border.text-info {
     color: #17a2b8 !important;
     width: 3rem;
@@ -388,86 +372,55 @@
     border-radius: 8px;
 }
 
-/* Responsive Design */
-@media (max-width: 1200px) {
-    .filter-controls {
-        grid-template-columns: 1fr;
-        gap: 15px;
-    }
+.no-expenses-message {
+    text-align: center;
+    padding: 40px 20px;
+    color: #6c757d;
 }
 
 @media (max-width: 768px) {
-    .filter-controls {
-        grid-template-columns: 1fr;
+    .chart-legend {
+        flex-direction: column;
         gap: 15px;
+        align-items: center;
+        margin-left: 0;
     }
     
     .timeline-label {
         font-size: 9px;
-        bottom: -40px;
+        bottom: -50px;
     }
     
     .timeline-month {
         min-width: 25px;
         margin: 0 1px;
     }
-}
-
-@media (max-width: 576px) {
-    .container-fluid {
-        padding: 10px;
-    }
     
-    .filter-panel,
-    .chart-panel {
-        padding: 15px;
-        margin-bottom: 20px;
-    }
-    
-    .timeline-chart {
-        height: 180px;
-        padding-bottom: 50px;
-    }
-    
-    .timeline-month {
-        min-width: 20px;
+    .timeline-container {
+        padding: 20px 0 20px 20px;
     }
 }
 </style>
 
 <script>
 let allExpenses = [];
-let properties = new Set();
-let expenseLineTypes = new Set();
 
 function renderForecast() {
-    const propertyFilter = document.getElementById("propertyFilter").value;
-    const typeFilter = document.getElementById("typeFilter").value;
-    const horizon = 12; // Fixed to 12 months
-
-    console.log("Rendering forecast with:", { propertyFilter, typeFilter, horizon });
-
-    // Get current date and calculate month range
+    const horizon = 12;
     const currentDate = new Date();
     const monthRange = [];
+    
     for (let i = 0; i < horizon; i++) {
         const monthDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + i, 1);
         const monthKey = `${monthDate.getFullYear()}-${monthDate.getMonth()}`;
         let monthName = monthDate.toLocaleString('default', { month: 'short', year: 'numeric' });
-        // Fix September abbreviation
         monthName = monthName.replace('Sept', 'Sep');
         monthRange.push({ key: monthKey, name: monthName });
     }
 
-    // Filter expenses
-    const filteredExpenses = allExpenses
-        .filter(exp => propertyFilter === "all" || exp.property === propertyFilter)
-        .filter(exp => typeFilter === "all" || exp.line_type === typeFilter);
-
-    // Group expenses by type and month
     const expensesByTypeAndMonth = {};
     
-    filteredExpenses.forEach(exp => {
+    allExpenses.forEach(exp => {
         const date = new Date(exp.due_date);
         const monthKey = `${date.getFullYear()}-${date.getMonth()}`;
         
@@ -494,7 +447,7 @@ function renderForecast() {
         }
     });
     
-    renderTimeline(monthRange, filteredExpenses, expensesByTypeAndMonth);
+    renderTimeline(monthRange, allExpenses, expensesByTypeAndMonth);
 }
 
 function renderTimeline(monthRange, expenses, expensesByTypeAndMonth) {
@@ -516,29 +469,93 @@ function renderTimeline(monthRange, expenses, expensesByTypeAndMonth) {
     });
     
     const maxAmount = Math.max(...Object.values(monthlyTotals), 1);
+    const chartHeight = 300;
+    const baseOffset = 60;
+    
+    let gridInterval;
+    if (maxAmount <= 100) {
+        gridInterval = 20;
+    } else if (maxAmount <= 1000) {
+        gridInterval = 200;
+    } else {
+        gridInterval = 1000;
+    }
+    
+    const maxGridValue = Math.ceil(maxAmount / gridInterval) * gridInterval;
     
     const timelineContainer = document.createElement("div");
     timelineContainer.className = "timeline-container";
     
-    monthRange.forEach((month, index) => {
-        const height = (monthlyTotals[month.key] / maxAmount) * 150;
+    // Render gridlines
+    for (let i = 1; i * gridInterval <= maxGridValue; i++) {
+        const gridValue = i * gridInterval;
+        const pixelHeight = Math.round((gridValue / maxGridValue) * chartHeight);
+        const bottomPosition = baseOffset + pixelHeight;
         
-        // Determine color based on month position
-        let colorClass = 'green'; // Default for months 5-12
+        // Gridline
+        const gridLine = document.createElement("div");
+        gridLine.style.position = "absolute";
+        gridLine.style.bottom = `${bottomPosition}px`;
+        gridLine.style.left = "0px";
+        gridLine.style.right = "0px";
+        gridLine.style.height = "1px";
+        gridLine.style.borderTop = "2px solid #000";
+        gridLine.style.backgroundColor = "#000";
+        gridLine.style.zIndex = "1";
+        gridLine.style.opacity = "0.2";
+        
+        // Label
+        const gridLabel = document.createElement("div");
+        gridLabel.style.position = "absolute";
+        gridLabel.style.bottom = `${bottomPosition - 8}px`;
+        gridLabel.style.left = "5px";
+        gridLabel.style.fontSize = "11px";
+        gridLabel.style.color = "#6c757d";
+        gridLabel.style.background = "white";
+        gridLabel.style.padding = "2px 6px";
+        gridLabel.style.borderRadius = "2px";
+        gridLabel.style.fontWeight = "500";
+        gridLabel.style.zIndex = "2";
+        gridLabel.style.border = "1px solid #e9ecef";
+        gridLabel.style.whiteSpace = "nowrap";
+        gridLabel.style.lineHeight = "1";
+        gridLabel.textContent = `€${gridValue.toLocaleString()}`;
+        
+        timelineContainer.appendChild(gridLine);
+        timelineContainer.appendChild(gridLabel);
+    }
+    
+    // Render bars with exact same coordinate system - shifted right to avoid covering labels
+    const barWidthPercent = 85 / monthRange.length; // Use 85% of width for bars
+    const leftMargin = 8; // 8% left margin to clear gridline labels
+    
+    monthRange.forEach((month, index) => {
+        const value = monthlyTotals[month.key];
+        const pixelHeight = Math.round((value / maxGridValue) * chartHeight);
+        const leftPercent = leftMargin + (index * barWidthPercent); // Start after margin
+        
+        let colorClass = 'green';
         if (index === 0) {
-            colorClass = 'red'; // First month
+            colorClass = 'red';
         } else if (index >= 1 && index <= 3) {
-            colorClass = 'orange'; // Months 2-4
+            colorClass = 'orange';
         }
         
         const monthElement = document.createElement("div");
         monthElement.className = "timeline-month";
+        monthElement.style.left = `${leftPercent}%`;
+        monthElement.style.width = `${barWidthPercent * 0.9}%`; // 90% of allocated width for each bar
+        
+        const formattedAmount = value.toLocaleString('en-US', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
+        
         monthElement.innerHTML = `
-            <div class="timeline-bar clickable-bar ${colorClass}" style="height: ${height}px;" data-month="${month.key}" data-month-name="${month.name}"></div>
-            <div class="timeline-label">${month.name}<br>€${monthlyTotals[month.key].toFixed(2)}</div>
+            <div class="timeline-bar ${colorClass}" style="height: ${pixelHeight}px; width: 100%; position: absolute; bottom: ${baseOffset}px; z-index: 3;" data-month="${month.key}" data-month-name="${month.name}"></div>
+            <div class="timeline-label" style="position: absolute; bottom: -55px; width: 100%; text-align: center; font-size: 10px; color: #6c757d; font-weight: 500; line-height: 1.2;"><strong>${month.name}</strong><br><strong>€${formattedAmount}</strong></div>
         `;
         
-        // Add click event to the bar
         const bar = monthElement.querySelector('.timeline-bar');
         bar.addEventListener('click', () => {
             showMonthlyBreakdown(month.key, month.name, expensesByTypeAndMonth);
@@ -553,10 +570,10 @@ function renderTimeline(monthRange, expenses, expensesByTypeAndMonth) {
 function showMonthlyBreakdown(monthKey, monthName, expensesByTypeAndMonth) {
     const modalTitle = document.getElementById('monthlyExpenseModalLabel');
     const modalBody = document.getElementById('monthlyExpenseModalBody');
+    const modalFooter = document.querySelector('#monthlyExpenseModal .modal-footer');
     
     modalTitle.innerHTML = `<i class="fas fa-calendar-alt"></i> Monthly Expense Breakdown - ${monthName}`;
     
-    // Get all expense types for this month
     const monthExpenses = [];
     let totalMonth = 0;
     
@@ -571,6 +588,14 @@ function showMonthlyBreakdown(monthKey, monthName, expensesByTypeAndMonth) {
         }
     }
     
+    window.currentModalState = {
+        view: 'monthly',
+        monthKey: monthKey,
+        monthName: monthName,
+        expenses: monthExpenses,
+        expensesByTypeAndMonth: expensesByTypeAndMonth
+    };
+    
     if (monthExpenses.length === 0) {
         modalBody.innerHTML = `
             <div class="no-expenses-message">
@@ -581,8 +606,7 @@ function showMonthlyBreakdown(monthKey, monthName, expensesByTypeAndMonth) {
             </div>
         `;
     } else {
-        // Sort by amount (highest first)
-        monthExpenses.sort((a, b) => b.amount - a.amount);
+        monthExpenses.sort((a, b) => a.lineType.localeCompare(b.lineType));
         
         let html = `
             <div class="mb-3" style="text-align: center; background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #dee2e6;">
@@ -600,15 +624,17 @@ function showMonthlyBreakdown(monthKey, monthName, expensesByTypeAndMonth) {
                     <tbody>
         `;
         
-        monthExpenses.forEach(expense => {
+        monthExpenses.forEach((expense, index) => {
             html += `
-                <tr style="cursor: pointer;" onclick="showExpenseBreakdown('${monthKey}', '${expense.lineType}', ${JSON.stringify(expense).replace(/"/g, '&quot;')})">
+                <tr class="clickable-row expense-line-row" data-index="${index}" style="cursor: pointer;">
                     <td>
                         <i class="fas fa-receipt" style="color: #17a2b8; margin-right: 8px;"></i>
                         <strong>${expense.lineType}</strong>
+                        <small style="display: block; color: #6c757d;">Click to view property breakdown</small>
                     </td>
                     <td style="text-align: right;">
                         <strong style="color: #17a2b8;">€${expense.amount.toFixed(2)}</strong>
+                        <i class="fas fa-chevron-right" style="color: #6c757d; margin-left: 8px; font-size: 12px;"></i>
                     </td>
                 </tr>
             `;
@@ -626,26 +652,44 @@ function showMonthlyBreakdown(monthKey, monthName, expensesByTypeAndMonth) {
         modalBody.innerHTML = html;
     }
     
+    modalFooter.innerHTML = `
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+    `;
+    
     $('#monthlyExpenseModal').modal('show');
+    
+    setTimeout(() => {
+        $('.expense-line-row').off('click').on('click', function(e) {
+            e.preventDefault();
+            const index = parseInt($(this).data('index'));
+            if (window.currentModalState && window.currentModalState.expenses[index]) {
+                const expense = window.currentModalState.expenses[index];
+                showExpenseBreakdown(expense.lineType, expense);
+            }
+        });
+    }, 100);
 }
 
-function showExpenseBreakdown(monthKey, lineType, data) {
-    const modalTitle = document.getElementById('expenseModalLabel');
-    const modalBody = document.getElementById('expenseModalBody');
+function showExpenseBreakdown(lineType, data) {
+    if (!window.currentModalState) {
+        return;
+    }
     
-    // Parse month key to display name
-    const [year, month] = monthKey.split('-');
-    let monthName = new Date(parseInt(year), parseInt(month), 1).toLocaleString('default', { month: 'short', year: 'numeric' });
-    monthName = monthName.replace('Sept', 'Sep');
+    const modalTitle = document.getElementById('monthlyExpenseModalLabel');
+    const modalBody = document.getElementById('monthlyExpenseModalBody');
+    const modalFooter = document.querySelector('#monthlyExpenseModal .modal-footer');
     
-    modalTitle.innerHTML = `<i class="fas fa-receipt"></i> ${lineType} Expenses - ${monthName}`;
+    window.currentModalState.view = 'property';
+    window.currentModalState.currentExpense = { lineType, data };
+    
+    modalTitle.innerHTML = `<i class="fas fa-receipt"></i> ${lineType} Expenses - ${window.currentModalState.monthName}`;
     
     let html = `
         <div class="mb-4" style="background: #f8f9fa; padding: 20px; border-radius: 8px; border: 1px solid #dee2e6;">
             <div class="row align-items-center">
                 <div class="col-md-8">
-                    <h4 class="mb-0" style="color: #2c3e50;">Total Amount: <span style="color: #17a2b8;">€${data.total.toFixed(2)}</span></h4>
-                    <p class="text-muted mb-0">Breakdown by property for ${monthName}</p>
+                    <h4 class="mb-0" style="color: #2c3e50;">Total Amount: <span style="color: #17a2b8;">€${data.amount.toFixed(2)}</span></h4>
+                    <p class="text-muted mb-0">Breakdown by property for ${window.currentModalState.monthName}</p>
                 </div>
                 <div class="col-md-4 text-right">
                     <div style="background: white; padding: 10px; border-radius: 6px; border: 1px solid #dee2e6;">
@@ -658,28 +702,58 @@ function showExpenseBreakdown(monthKey, lineType, data) {
         <h5 style="color: #2c3e50; margin-bottom: 20px;"><i class="fas fa-building"></i> Property Breakdown:</h5>
     `;
     
-    // Sort properties alphabetically
-    const sortedProperties = Object.entries(data.properties).sort((a, b) => a[0].localeCompare(b[0]));
-    
-    sortedProperties.forEach(([property, amount]) => {
-        const percentage = ((amount / data.total) * 100).toFixed(1);
+    if (!data.properties || Object.keys(data.properties).length === 0) {
         html += `
-            <div class="modal-property-breakdown">
-                <div class="row align-items-center">
-                    <div class="col-md-8">
-                        <h6><i class="fas fa-building"></i> ${property}</h6>
-                    </div>
-                    <div class="col-md-4 text-right">
-                        <p><strong style="color: #17a2b8;">€${amount.toFixed(2)}</strong></p>
-                        <small class="text-muted">${percentage}% of total</small>
+            <div class="text-center py-4">
+                <i class="fas fa-exclamation-circle fa-3x text-muted mb-3"></i>
+                <p class="text-muted">No property breakdown available for this expense type.</p>
+            </div>
+            <div style="height: 200px;"></div>
+        `;
+    } else {
+        const sortedProperties = Object.entries(data.properties).sort((a, b) => a[0].localeCompare(b[0]));
+        
+        sortedProperties.forEach(([property, amount]) => {
+            const percentage = ((amount / data.amount) * 100).toFixed(1);
+            html += `
+                <div class="modal-property-breakdown">
+                    <div class="row align-items-center">
+                        <div class="col-md-8">
+                            <h6><i class="fas fa-building"></i> ${property}</h6>
+                        </div>
+                        <div class="col-md-4 text-right">
+                            <p><strong style="color: #17a2b8;">€${amount.toFixed(2)}</strong></p>
+                            <small class="text-muted">${percentage}% of total</small>
+                        </div>
                     </div>
                 </div>
-            </div>
-        `;
-    });
+            `;
+        });
+        
+        const paddingHeight = Math.max(100, 300 - (sortedProperties.length * 80));
+        html += `<div style="height: ${paddingHeight}px;"></div>`;
+    }
     
     modalBody.innerHTML = html;
-    $('#expenseModal').modal('show');
+    
+    modalFooter.innerHTML = `
+        <button type="button" class="btn btn-info" onclick="showMonthlyView()">
+            <i class="fas fa-arrow-left"></i> Back to Monthly View
+        </button>
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+    `;
+}
+
+function showMonthlyView() {
+    if (!window.currentModalState) {
+        return;
+    }
+    
+    showMonthlyBreakdown(
+        window.currentModalState.monthKey,
+        window.currentModalState.monthName,
+        window.currentModalState.expensesByTypeAndMonth
+    );
 }
 
 function loadForecast() {
@@ -687,7 +761,7 @@ function loadForecast() {
     document.getElementById('dashboardContainer').style.display = 'none';
     document.getElementById('errorContainer').style.display = 'none';
 
-    const horizon = 12; // Fixed to 12 months
+    const horizon = 12;
 
     fetch(`?horizon=${horizon}`, {headers: {"X-Requested-With": "XMLHttpRequest"}})
         .then(res => {
@@ -704,47 +778,11 @@ function loadForecast() {
                 document.getElementById('errorContainer').style.display = 'block';
             } else {
                 document.getElementById('dashboardContainer').style.display = 'block';
-                
                 allExpenses = data.expenses || [];
-                
-                // Extract unique properties and line types
-                properties = new Set();
-                expenseLineTypes = new Set();
-                
-                allExpenses.forEach(exp => {
-                    properties.add(exp.property);
-                    if (exp.line_type) {
-                        expenseLineTypes.add(exp.line_type);
-                    } else if (exp.description) {
-                        expenseLineTypes.add(exp.description);
-                    }
-                });
-                
-                // Update property filter
-                const propertyFilter = document.getElementById("propertyFilter");
-                propertyFilter.innerHTML = '<option value="all">All Properties</option>';
-                Array.from(properties).sort().forEach(property => {
-                    const option = document.createElement("option");
-                    option.value = property;
-                    option.textContent = property;
-                    propertyFilter.appendChild(option);
-                });
-                
-                // Update line type filter
-                const typeFilter = document.getElementById("typeFilter");
-                typeFilter.innerHTML = '<option value="all">All Line Types</option>';
-                Array.from(expenseLineTypes).sort().forEach(lineType => {
-                    const option = document.createElement("option");
-                    option.value = lineType;
-                    option.textContent = lineType;
-                    typeFilter.appendChild(option);
-                });
-                
                 renderForecast();
             }
         })
         .catch(error => {
-            console.error('Error loading forecast:', error);
             document.getElementById('loadingIndicator').style.display = 'none';
             document.getElementById('errorMessage').textContent = error.message;
             document.getElementById('errorContainer').style.display = 'block';
@@ -753,40 +791,17 @@ function loadForecast() {
 
 document.addEventListener("DOMContentLoaded", () => {
     loadForecast();
-    
-    // Re-render when filters change
-    document.getElementById("propertyFilter").addEventListener("change", renderForecast);
-    document.getElementById("typeFilter").addEventListener("change", renderForecast);
-
-    // Setup modal close functionality
-    setupModalCloseHandlers();
 });
 
-function setupModalCloseHandlers() {
-    $('#expenseModal').on('hidden.bs.modal', function () {
-        $(this).removeData('bs.modal');
-    });
-    
-    $('#monthlyExpenseModal').on('hidden.bs.modal', function () {
-        $(this).removeData('bs.modal');
-    });
+$(document).on('click', '[data-dismiss="modal"]', function() {
+    const targetModal = $(this).closest('.modal');
+    targetModal.modal('hide');
+});
 
-    $(document).on('click', '[data-dismiss="modal"]', function() {
-        const targetModal = $(this).closest('.modal');
-        targetModal.modal('hide');
-    });
-
-    $(document).on('keydown', function(e) {
-        if (e.keyCode === 27) {
-            $('.modal.show').modal('hide');
-        }
-    });
-
-    $(document).on('click', '.modal', function(e) {
-        if (e.target === this) {
-            $(this).modal('hide');
-        }
-    });
-}
+$(document).on('keydown', function(e) {
+    if (e.keyCode === 27) {
+        $('.modal.show').modal('hide');
+    }
+});
 </script>
 {% endblock %}
