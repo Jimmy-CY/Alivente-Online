@@ -42,6 +42,43 @@
 
     <!-- Main Dashboard Container -->
     <div id="dashboardContainer" style="display: none;">
+        <!-- Summary Cards -->
+        <div class="row mb-4" id="summaryCardsContainer">
+            <div class="col-md-4">
+                <div class="summary-card current-month">
+                    <div class="card-header">
+                        <h6><i class="fas fa-calendar-day"></i> Current Month</h6>
+                    </div>
+                    <div class="card-body">
+                        <h3 id="currentMonthTotal">€0.00</h3>
+                        <p class="card-subtitle">Immediate expenses</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="summary-card short-term">
+                    <div class="card-header">
+                        <h6><i class="fas fa-calendar-week"></i> Next 3 Months</h6>
+                    </div>
+                    <div class="card-body">
+                        <h3 id="shortTermTotal">€0.00</h3>
+                        <p class="card-subtitle">31-90 days ahead</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="summary-card long-term">
+                    <div class="card-header">
+                        <h6><i class="fas fa-calendar-alt"></i> Remaining Months</h6>
+                    </div>
+                    <div class="card-body">
+                        <h3 id="longTermTotal">€0.00</h3>
+                        <p class="card-subtitle">Over 90 days</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Timeline Visualization Panel -->
         <div class="chart-panel">
             <div class="chart-header">
@@ -110,6 +147,68 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
 <style>
+/* Summary Cards Styles */
+.summary-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+    transition: all 0.3s ease;
+    border: 1px solid #dee2e6;
+    height: 130px;
+}
+
+.summary-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+}
+
+.summary-card .card-header {
+    padding: 12px 20px;
+    margin: 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.summary-card .card-header h6 {
+    margin: 0;
+    font-size: 13px;
+    font-weight: 600;
+    color: white;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.summary-card .card-body {
+    padding: 15px 20px;
+    text-align: center;
+}
+
+.summary-card .card-body h3 {
+    margin: 0 0 5px 0;
+    font-size: 24px;
+    font-weight: 700;
+    color: #2c3e50;
+}
+
+.summary-card .card-subtitle {
+    margin: 0;
+    font-size: 12px;
+    color: #6c757d;
+    font-weight: 500;
+}
+
+.summary-card.current-month .card-header {
+    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+}
+
+.summary-card.short-term .card-header {
+    background: linear-gradient(135deg, #fd7e14 0%, #e8630a 100%);
+}
+
+.summary-card.long-term .card-header {
+    background: linear-gradient(135deg, #28a745 0%, #218838 100%);
+}
+
 .chart-panel {
     background: white;
     border: 1px solid #dee2e6;
@@ -399,11 +498,43 @@
     .timeline-container {
         padding: 20px 0 20px 20px;
     }
+    
+    .summary-card {
+        margin-bottom: 15px;
+        height: auto;
+    }
+    
+    .summary-card .card-body h3 {
+        font-size: 20px;
+    }
 }
 </style>
 
 <script>
 let allExpenses = [];
+
+function updateSummaryCards(monthlyTotals, monthRange) {
+    let currentMonthTotal = 0;
+    let shortTermTotal = 0; // months 1-3 (31-90 days)
+    let longTermTotal = 0;  // months 4+ (over 90 days)
+    
+    monthRange.forEach((month, index) => {
+        const amount = monthlyTotals[month.key] || 0;
+        
+        if (index === 0) {
+            currentMonthTotal = amount;
+        } else if (index >= 1 && index <= 3) {
+            shortTermTotal += amount;
+        } else {
+            longTermTotal += amount;
+        }
+    });
+    
+    // Update the cards with formatted values
+    document.getElementById('currentMonthTotal').textContent = `€${currentMonthTotal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+    document.getElementById('shortTermTotal').textContent = `€${shortTermTotal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+    document.getElementById('longTermTotal').textContent = `€${longTermTotal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+}
 
 function renderForecast() {
     const horizon = 12;
@@ -467,6 +598,9 @@ function renderTimeline(monthRange, expenses, expensesByTypeAndMonth) {
             monthlyTotals[monthKey] += exp.amount;
         }
     });
+    
+    // Update summary cards
+    updateSummaryCards(monthlyTotals, monthRange);
     
     const maxAmount = Math.max(...Object.values(monthlyTotals), 1);
     const chartHeight = 300;
@@ -613,26 +747,25 @@ function showMonthlyBreakdown(monthKey, monthName, expensesByTypeAndMonth) {
                 <h5 style="color: #17a2b8; margin: 0;">Total Month: €${totalMonth.toFixed(2)}</h5>
             </div>
             
-            <div class="table-responsive">
-                <table class="table table-hover">
-                    <thead style="background: #f8f9fa;">
-                        <tr>
-                            <th style="width: 70%; border-top: none;">Expense Line Type</th>
-                            <th style="width: 30%; text-align: right; border-top: none;">Total Amount</th>
-                        </tr>
-                    </thead>
-                    <tbody>
+            <table class="table table-hover" style="table-layout: fixed; width: 100%;">
+                <thead style="background: #f8f9fa;">
+                    <tr>
+                        <th style="width: 65%; border-top: none; white-space: normal; word-wrap: break-word;">Expense Line Type</th>
+                        <th style="width: 35%; text-align: right; border-top: none; white-space: nowrap;">Total Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
         `;
         
         monthExpenses.forEach((expense, index) => {
             html += `
                 <tr class="clickable-row expense-line-row" data-index="${index}" style="cursor: pointer;">
-                    <td>
+                    <td style="white-space: normal; word-wrap: break-word; padding-right: 10px;">
                         <i class="fas fa-receipt" style="color: #17a2b8; margin-right: 8px;"></i>
                         <strong>${expense.lineType}</strong>
-                        <small style="display: block; color: #6c757d;">Click to view property breakdown</small>
+                        <small style="display: block; color: #6c757d; margin-top: 4px;">Click to view property breakdown</small>
                     </td>
-                    <td style="text-align: right;">
+                    <td style="text-align: right; white-space: nowrap; vertical-align: top; padding-top: 12px;">
                         <strong style="color: #17a2b8;">€${expense.amount.toFixed(2)}</strong>
                         <i class="fas fa-chevron-right" style="color: #6c757d; margin-left: 8px; font-size: 12px;"></i>
                     </td>
@@ -641,9 +774,8 @@ function showMonthlyBreakdown(monthKey, monthName, expensesByTypeAndMonth) {
         });
         
         html += `
-                    </tbody>
-                </table>
-            </div>
+                </tbody>
+            </table>
             <div class="text-center mt-3">
                 <small class="text-muted"><i class="fas fa-mouse-pointer"></i> Click any row to see property breakdown</small>
             </div>
