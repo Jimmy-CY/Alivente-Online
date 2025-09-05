@@ -14155,3 +14155,11 @@ C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py change
 Watching for file changes with StatReloader
 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
 Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+"POST /mark_paid/2 HTTP/1.1" 302 0
+"GET /act_expense_all/ HTTP/1.1" 200 85399
+"POST /act_expense_edit_commit/2 HTTP/1.1" 302 0
+"GET /act_expense_all/ HTTP/1.1" 200 85618
+Watching for file changes with StatReloader
+"POST /mark_approved/2 HTTP/1.1" 302 0
+"GET /act_expense_all/ HTTP/1.1" 200 85622
