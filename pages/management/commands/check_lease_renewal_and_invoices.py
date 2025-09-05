@@ -330,9 +330,11 @@ class Command(BaseCommand):
             
             # Get email settings from environment variables
             email_host = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
-            email_port = int(os.environ.get('EMAIL_PORT', '587'))
+            email_port = int(os.environ.get('EMAIL_PORT', 465))
             email_user = os.environ.get('EMAIL_USER', 'demetrimanias@gmail.com')
             email_password = os.environ.get('EMAIL_PASSWORD')
+            email_use_ssl = os.environ.get('EMAIL_USE_SSL', 'False').lower() == 'true'
+            email_use_tls = os.environ.get('EMAIL_USE_TLS', 'True').lower() == 'true'
             email_to_list = get_email_recipients('daily_report')
             
             if not email_password:
@@ -471,7 +473,7 @@ class Command(BaseCommand):
             # Create plain text version as backup
             text_body = f"""Dear User,
 
-REPORT SUMMARY:"""
+    REPORT SUMMARY:"""
 
             # Only show lines with counts > 0
             if created_invoices_count > 0:
@@ -501,9 +503,9 @@ REPORT SUMMARY:"""
                     invoice_text = f"There were {created_invoices_count} new invoices that were automatically created"
                 
                 text_body += f"""INVOICE CREATION SUMMARY ({created_invoices_count}):
-{invoice_text} today for {current_month} {today.year}.
+    {invoice_text} today for {current_month} {today.year}.
 
-"""
+    """
 
             # Add detailed vacant properties list
             if vacant_count > 0:
@@ -514,10 +516,10 @@ REPORT SUMMARY:"""
                 
                 if vacant_count == 1:
                     text_body += f"""VACANT {property_word.upper()} ({vacant_count}):
-This {property_word} {property_verb} active and available for rent but currently has no {tenant_word}. Contact estate agents ASAP."""
+    This {property_word} {property_verb} active and available for rent but currently has no {tenant_word}. Contact estate agents ASAP."""
                 else:
                     text_body += f"""VACANT {property_word.upper()} ({vacant_count}):
-These {property_word} {property_verb} active and available for rent but currently have no {tenant_word}. Contact estate agents ASAP."""
+    These {property_word} {property_verb} active and available for rent but currently have no {tenant_word}. Contact estate agents ASAP."""
                 
                 for prop in vacant_properties:
                     text_body += f"\n • {prop['prop_name']} ({prop['prop_country']})"
@@ -532,10 +534,10 @@ These {property_word} {property_verb} active and available for rent but currentl
                 
                 if expiring_count == 1:
                     text_body += f"""EXPIRING {lease_word.upper()} - PENDING RENEWALS ({expiring_count}):
-This {tenant_word} {tenant_verb} {lease_word} expiring soon that requires a renewal discussion. Contact the {tenant_word} ASAP."""
+    This {tenant_word} {tenant_verb} {lease_word} expiring soon that requires a renewal discussion. Contact the {tenant_word} ASAP."""
                 else:
                     text_body += f"""EXPIRING {lease_word.upper()} - PENDING RENEWALS ({expiring_count}):
-These {tenant_word} {tenant_verb} {lease_word} expiring soon that require renewal discussions. Contact the {tenant_word} ASAP."""
+    These {tenant_word} {tenant_verb} {lease_word} expiring soon that require renewal discussions. Contact the {tenant_word} ASAP."""
                 
                 for lease in expiring_leases:
                     text_body += f"\n • {lease['prop_name']} ({lease['prop_country']}) - Tenant: {lease['tenant_name']}"
@@ -552,10 +554,10 @@ These {tenant_word} {tenant_verb} {lease_word} expiring soon that require renewa
                 
                 if declined_count == 1:
                     text_body += f"""DECLINED RENEWALS - NEED NEW TENANT ({declined_count}):
-This {tenant_word} has declined lease renewal. This {property_word} {property_verb}. Contact estate agents ASAP."""
+    This {tenant_word} has declined lease renewal. This {property_word} {property_verb}. Contact estate agents ASAP."""
                 else:
                     text_body += f"""DECLINED RENEWALS - NEED NEW TENANTS ({declined_count}):
-These {tenant_word} {tenant_verb} declined lease renewals. These {property_word} {property_verb}. Contact estate agents ASAP."""
+    These {tenant_word} {tenant_verb} declined lease renewals. These {property_word} {property_verb}. Contact estate agents ASAP."""
                 
                 for declined in declined_renewals:
                     text_body += f"\n • {declined['prop_name']} ({declined['prop_country']}) - Current Tenant: {declined['tenant_name']}"
@@ -571,10 +573,10 @@ These {tenant_word} {tenant_verb} declined lease renewals. These {property_word}
                 
                 if overdue_count == 1:
                     text_body += f"""{tenant_word.upper()} WITH OVERDUE {invoice_word.upper()} ({overdue_count}):
-This {tenant_word} {tenant_verb} overdue {invoice_word} that requires immediate attention. Contact {tenant_word} ASAP."""
+    This {tenant_word} {tenant_verb} overdue {invoice_word} that requires immediate attention. Contact {tenant_word} ASAP."""
                 else:
                     text_body += f"""{tenant_word.upper()} WITH OVERDUE {invoice_word.upper()} ({overdue_count}):
-These {tenant_word} {tenant_verb} overdue {invoice_word} that require immediate attention. Contact {tenant_word} ASAP."""
+    These {tenant_word} {tenant_verb} overdue {invoice_word} that require immediate attention. Contact {tenant_word} ASAP."""
                 
                 for property_invoice in overdue_invoices:
                     text_body += f"\n • {property_invoice['prop_name']} ({property_invoice['prop_country']}) - Tenant: {property_invoice['tenant_name']}"
@@ -584,9 +586,9 @@ These {tenant_word} {tenant_verb} overdue {invoice_word} that require immediate 
 
             text_body += """Please log into the Alivente Online System for additional details.
 
-Best regards,
-Alivente Property Management System
-Automated Report"""
+    Best regards,
+    Alivente Property Management System
+    Automated Report"""
             
             # Attach both HTML and plain text versions
             part1 = MIMEText(text_body, 'plain')
@@ -595,10 +597,16 @@ Automated Report"""
             msg.attach(part1)
             msg.attach(part2)
             
-            # SMTP setup with detailed error handling
-            smtp_object = smtplib.SMTP(email_host, email_port)
-            smtp_object.ehlo()
-            smtp_object.starttls()
+            # UPDATED SMTP setup with environment variable configuration
+            if email_use_ssl:
+                # Use SSL connection (typically port 465)
+                smtp_object = smtplib.SMTP_SSL(email_host, email_port, timeout=10)
+            else:
+                # Use regular SMTP connection (typically port 587)
+                smtp_object = smtplib.SMTP(email_host, email_port, timeout=10)
+                smtp_object.ehlo()
+                if email_use_tls:
+                    smtp_object.starttls()
             
             smtp_object.login(email_user, email_password)
             

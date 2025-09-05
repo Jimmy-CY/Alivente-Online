@@ -3817,8 +3817,8 @@ def send_invoices_paid_email(tenant, invoice_date):
         body = f"""Dear User,
 
 The rent has been received from the following tenant:
- • Tenant: {tenant}
- • Invoice Date: {invoice_date}
+ - Tenant: {tenant}
+ - Invoice Date: {invoice_date}
 
 Thanks,
 
@@ -3826,20 +3826,29 @@ Alivente Property Management System"""
         
         msg.attach(MIMEText(body, 'plain'))
         
-        # Get email credentials from environment variables
+        # Get email credentials and settings from environment variables
         email_password = os.environ.get('EMAIL_PASSWORD')
+        email_host = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
+        email_port = int(os.environ.get('EMAIL_PORT', 465))
+        email_use_ssl = os.environ.get('EMAIL_USE_SSL', 'False').lower() == 'true'
+        email_use_tls = os.environ.get('EMAIL_USE_TLS', 'True').lower() == 'true'
         
         if not email_password:
             logger.error('❌ EMAIL_PASSWORD environment variable not set')
             return False
         
-        # SMTP setup with more detailed error handling
-        smtp_object = smtplib.SMTP('smtp.gmail.com', 587)
-        smtp_object.ehlo()
-        smtp_object.starttls()
+        # SMTP setup with environment variable configuration
+        if email_use_ssl:
+            # Use SSL connection (typically port 465)
+            smtp_object = smtplib.SMTP_SSL(email_host, email_port, timeout=10)
+        else:
+            # Use regular SMTP connection (typically port 587)
+            smtp_object = smtplib.SMTP(email_host, email_port, timeout=10)
+            smtp_object.ehlo()
+            if email_use_tls:
+                smtp_object.starttls()
         
         email = "demetrimanias@gmail.com"
-        
         smtp_object.login(email, email_password)
         
         # Send email
@@ -4665,20 +4674,29 @@ Alivente Property Management System"""
         
         msg.attach(MIMEText(body, 'plain'))
         
-        # Get email credentials from environment variables
+        # Get email credentials and settings from environment variables
         email_password = os.environ.get('EMAIL_PASSWORD')
+        email_host = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
+        email_port = int(os.environ.get('EMAIL_PORT', 465))
+        email_use_ssl = os.environ.get('EMAIL_USE_SSL', 'False').lower() == 'true'
+        email_use_tls = os.environ.get('EMAIL_USE_TLS', 'True').lower() == 'true'
         
         if not email_password:
             logger.error('❌ EMAIL_PASSWORD environment variable not set')
             return False
         
-        # SMTP setup with more detailed error handling
-        smtp_object = smtplib.SMTP('smtp.gmail.com', 587)
-        smtp_object.ehlo()
-        smtp_object.starttls()
+        # SMTP setup with environment variable configuration
+        if email_use_ssl:
+            # Use SSL connection (typically port 465)
+            smtp_object = smtplib.SMTP_SSL(email_host, email_port, timeout=10)
+        else:
+            # Use regular SMTP connection (typically port 587)
+            smtp_object = smtplib.SMTP(email_host, email_port, timeout=10)
+            smtp_object.ehlo()
+            if email_use_tls:
+                smtp_object.starttls()
         
         email = "demetrimanias@gmail.com"
-        
         smtp_object.login(email, email_password)
         
         # Send email to both To and CC recipients
@@ -5273,15 +5291,31 @@ def fsr_notification(request):
         msg.attach(MIMEText(text_content, 'plain'))
         msg.attach(MIMEText(html_content, 'html'))
         
-        # SMTP setup
-        smtp_object = smtplib.SMTP('smtp.gmail.com', 587)
-        smtp_object.ehlo()
-        smtp_object.starttls()
+        # Get email credentials and settings from environment variables
+        email_password = os.environ.get('EMAIL_PASSWORD')
+        email_host = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
+        email_port = int(os.environ.get('EMAIL_PORT', 465))
+        email_use_ssl = os.environ.get('EMAIL_USE_SSL', 'False').lower() == 'true'
+        email_use_tls = os.environ.get('EMAIL_USE_TLS', 'True').lower() == 'true'
+        
+        if not email_password:
+            logger.error('❌ EMAIL_PASSWORD environment variable not set')
+            messages.error(request, "Failed to send email - No password configured.")
+            return redirect('fsr')
+        
+        # SMTP setup with environment variable configuration
+        if email_use_ssl:
+            # Use SSL connection (typically port 465)
+            smtp_object = smtplib.SMTP_SSL(email_host, email_port, timeout=10)
+        else:
+            # Use regular SMTP connection (typically port 587)
+            smtp_object = smtplib.SMTP(email_host, email_port, timeout=10)
+            smtp_object.ehlo()
+            if email_use_tls:
+                smtp_object.starttls()
         
         email = "demetrimanias@gmail.com"
-        password = os.environ.get('EMAIL_PASSWORD')
-        
-        smtp_object.login(email, password)
+        smtp_object.login(email, email_password)
         
         # Send email to both To and CC recipients
         recipients = [to_email, cc_email]

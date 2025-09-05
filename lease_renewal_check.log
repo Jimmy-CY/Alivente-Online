@@ -14143,3 +14143,15 @@ Not Found: /favicon.ico
 "GET /finance/ HTTP/1.1" 200 16935
 "GET / HTTP/1.1" 200 15437
 Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+"GET /act_expense_all/?from=home HTTP/1.1" 200 85118
+"POST /act_expense_edit_commit/2 HTTP/1.1" 302 0
+"GET /act_expense_all/ HTTP/1.1" 200 85618
+"POST /mark_approved/2 HTTP/1.1" 302 0
+"GET /act_expense_all/ HTTP/1.1" 200 85623
+C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
