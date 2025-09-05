@@ -4498,37 +4498,42 @@ def send_expense_approved_email(expense_date, property_name, description, amount
         
         # Email body with proper formatting
         body = f"""Dear User,
-
 An expense has been APPROVED. The details are as follows:
-
 - Expense Date: {expense_date.strftime('%d/%m/%Y')}
 - Property: {property_name}
 - Description: {description}
 - Amount: €{amount}
 - Approved Date: {approved_date.strftime('%d/%m/%Y')}
 - Status: Approved (Pending Payment)
-
 You can view this expense in the Alivente Property Management System.
-
 Thanks,
 Alivente Property Management System"""
         
         msg.attach(MIMEText(body, 'plain'))
         
-        # Get email credentials from environment variables
+        # Get email credentials and settings from environment variables
         email_password = os.environ.get('EMAIL_PASSWORD')
+        email_host = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
+        email_port = int(os.environ.get('EMAIL_PORT', 465))
+        email_use_ssl = os.environ.get('EMAIL_USE_SSL', 'False').lower() == 'true'
+        email_use_tls = os.environ.get('EMAIL_USE_TLS', 'True').lower() == 'true'
         
         if not email_password:
             logger.error('❌ EMAIL_PASSWORD environment variable not set')
             return False
         
-        # SMTP setup with more detailed error handling
-        smtp_object = smtplib.SMTP('smtp.gmail.com', 587)
-        smtp_object.ehlo()
-        smtp_object.starttls()
+        # SMTP setup with environment variable configuration
+        if email_use_ssl:
+            # Use SSL connection (typically port 465)
+            smtp_object = smtplib.SMTP_SSL(email_host, email_port, timeout=10)
+        else:
+            # Use regular SMTP connection (typically port 587)
+            smtp_object = smtplib.SMTP(email_host, email_port, timeout=10)
+            smtp_object.ehlo()
+            if email_use_tls:
+                smtp_object.starttls()
         
         email = "demetrimanias@gmail.com"
-        
         smtp_object.login(email, email_password)
         
         # Send email to both To and CC recipients
@@ -4568,37 +4573,42 @@ def send_expense_paid_email(expense_date, property_name, description, amount, pa
         
         # Email body with proper formatting
         body = f"""Dear User,
-
 An expense has been PAID. The details are as follows:
-
 - Expense Date: {expense_date.strftime('%d/%m/%Y')}
 - Property: {property_name}
 - Description: {description}
 - Amount: €{amount}
 - Paid Date: {paid_date.strftime('%d/%m/%Y')}
 - Status: Fully Processed
-
 This expense has been completed and processed.
-
 Thanks,
 Alivente Property Management System"""
         
         msg.attach(MIMEText(body, 'plain'))
         
-        # Get email credentials from environment variables
+        # Get email credentials and settings from environment variables
         email_password = os.environ.get('EMAIL_PASSWORD')
+        email_host = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
+        email_port = int(os.environ.get('EMAIL_PORT', 465))
+        email_use_ssl = os.environ.get('EMAIL_USE_SSL', 'False').lower() == 'true'
+        email_use_tls = os.environ.get('EMAIL_USE_TLS', 'True').lower() == 'true'
         
         if not email_password:
             logger.error('❌ EMAIL_PASSWORD environment variable not set')
             return False
         
-        # SMTP setup with more detailed error handling
-        smtp_object = smtplib.SMTP('smtp.gmail.com', 587)
-        smtp_object.ehlo()
-        smtp_object.starttls()
+        # SMTP setup with environment variable configuration
+        if email_use_ssl:
+            # Use SSL connection (typically port 465)
+            smtp_object = smtplib.SMTP_SSL(email_host, email_port, timeout=10)
+        else:
+            # Use regular SMTP connection (typically port 587)
+            smtp_object = smtplib.SMTP(email_host, email_port, timeout=10)
+            smtp_object.ehlo()
+            if email_use_tls:
+                smtp_object.starttls()
         
         email = "demetrimanias@gmail.com"
-        
         smtp_object.login(email, email_password)
         
         # Send email to both To and CC recipients
