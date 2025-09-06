@@ -14163,3 +14163,29 @@ Watching for file changes with StatReloader
 Watching for file changes with StatReloader
 "POST /mark_approved/2 HTTP/1.1" 302 0
 "GET /act_expense_all/ HTTP/1.1" 200 85622
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 15437
+"GET /finance/ HTTP/1.1" 200 16935
+"GET /finance_pl_act/ HTTP/1.1" 200 128337
+"GET /finance_pl_act/?year=2025&properties=1&properties=2&properties=3&properties=4&properties=5&properties=7&properties=9&properties=10&properties=11&properties=12 HTTP/1.1" 200 132828
+"GET /act_expense_view/?year=2025&month=5&from_finance_pl_act=true&properties=1,2,3,4,5,7,9,10,11,12 HTTP/1.1" 200 52933
+"GET /finance/ HTTP/1.1" 200 16935
+"GET /finance_pl_act/ HTTP/1.1" 200 128337
+"GET /finance_pl_act/?year=2025&properties=1&properties=2&properties=3&properties=4&properties=5&properties=7&properties=9&properties=10&properties=11&properties=12 HTTP/1.1" 200 132828
+"GET /act_expense_view/?year=2025&month=4&from_finance_pl_act=true&properties=1,2,3,4,5,7,9,10,11,12 HTTP/1.1" 200 51511
+"GET /finance_pl_act/?year=2024&properties=1&properties=2&properties=3&properties=4&properties=5&properties=7&properties=9&properties=10&properties=11&properties=12 HTTP/1.1" 200 132332
+"GET /finance/ HTTP/1.1" 200 16935
+"GET /finance/ HTTP/1.1" 200 16935
+"GET /static/css/my_style.css HTTP/1.1" 200 45
+"GET /static/images/alivente_online_logo.png HTTP/1.1" 200 58508
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 42361
+"GET /finance_pl_act/ HTTP/1.1" 200 128337
+"GET /finance_pl_act/?year=2025&properties=1&properties=2&properties=3&properties=4&properties=5&properties=7&properties=9&properties=10&properties=11&properties=12 HTTP/1.1" 200 132828
+"GET /act_expense_view/?year=2025&month=5&from_finance_pl_act=true&properties=1,2,3,4,5,7,9,10,11,12 HTTP/1.1" 200 52933
+"GET /finance/ HTTP/1.1" 200 16935
+"GET /petty_cash/ HTTP/1.1" 200 13080
+"GET / HTTP/1.1" 200 15437
+"GET /admin_apms/ HTTP/1.1" 200 13427
+"GET /petty_cash/ HTTP/1.1" 200 13573
+"GET / HTTP/1.1" 200 15437

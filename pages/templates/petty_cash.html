@@ -1,14 +1,10 @@
 {% extends 'base.html' %}
 {% load static %}
-
 {% block title %}
 {% endblock %}
-
 {% block content %}
-
 <h2><center>ALIVENTE ONLINE - PETTY CASH</center></h2>
 <br/>
-
   {% for msg in messages %}
     <div class="alert alert-secondary alert-dismissible fade show auto-dismiss" role="alert">
       <strong></strong> <center>{{ msg }}</center>
@@ -28,32 +24,28 @@
     </script>
   {% endfor %}
   
-	<div style="display: flex ; justify-content: flex-end">
-	   	<a href="{% url 'petty_cash_add' %}" class="btn btn-info" style="margin-right:16px" type="button">Add New</a>
-		<a href="{% url 'home' %}" class="btn btn-info" style="margin-right:16px" role="button">Back</a>
-	</div>
-
-
+  <div style="display: flex ; justify-content: flex-end">
+      <a href="{% url 'petty_cash_add' %}" class="btn btn-info" style="margin-right:16px" type="button">Add New</a>
+    <a href="{% url 'home' %}" class="btn btn-info" style="margin-right:16px" role="button">Back</a>
+  </div>
 <br/>
-
 <body>
 <div>
 <table class="table table-bordered table-striped text-center">
 <thead>
-	<tr><th align="center">Date</th><th align="left">Description</th><th align="center">Amount</th><th align="center">Income / Expense</th></tr>
+  <tr><th align="center">Date</th><th align="left">Description</th><th align="center">Amount</th><th align="center">Income / Expense</th></tr>
 </thead>
 <tbody>
-	{% for presults in petty %}
-		{% if presults.petty_cash_dr_cr == "DR" %}
-			<tr><td align="center">{{presults.petty_cash_date}}</td><td align="left">{{presults.petty_cash_description}}</td><td align="right">{{presults.petty_cash_amount}}</td><td align="center">Income</td></tr>
-		{% else %}
-			<tr><td align="center">{{presults.petty_cash_date}}</td><td align="left">{{presults.petty_cash_description}}</td><td align="right">- {{presults.petty_cash_amount}}</td><td align="center">Expense</td></tr>
-		{% endif %}
-	{% endfor %}
-	<tr><td></td><td style="font-weight:bold" align="left">CLOSING BALANCE</td><td style="font-weight:bold" align="right">{{balance}}</td><td ></td></tr>
+  {% for presults in petty %}
+    {% if presults.petty_cash_dr_cr == "DR" %}
+      <tr><td align="center">{{presults.petty_cash_date}}</td><td align="left">{{presults.petty_cash_description}}</td><td align="right" style="color: green; font-weight: bold;">{{presults.petty_cash_amount}}</td><td align="center">Income</td></tr>
+    {% else %}
+      <tr><td align="center">{{presults.petty_cash_date}}</td><td align="left">{{presults.petty_cash_description}}</td><td align="right" style="color: red; font-weight: bold;">- {{presults.petty_cash_amount}}</td><td align="center">Expense</td></tr>
+    {% endif %}
+  {% endfor %}
+  <tr><td></td><td style="font-weight:bold" align="left">CLOSING BALANCE</td><td style="font-weight:bold; {% if balance >= 0 %}color: green;{% else %}color: red;{% endif %}" align="right">{{balance}}</td><td ></td></tr>
 </tbody>
 </table>    
 </div>
 </body>
-
 {% endblock %}
