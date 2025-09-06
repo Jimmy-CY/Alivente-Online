@@ -4875,6 +4875,27 @@ def fsr(request):
     return render(request, "fsr.html", context)
 
 @login_required
+@require_POST
+def delete_issue(request, issue_id):
+    if not request.user.is_superuser:
+        return JsonResponse({'success': False, 'error': 'Permission denied'})
+    
+    try:
+        with transaction.atomic():
+            # Get the issue (using your actual model name)
+            issue_obj = get_object_or_404(issues, issues_id=issue_id)
+            
+            # Delete all related details first
+            issues_details.objects.filter(issues=issue_obj).delete()
+            
+            # Delete the issue
+            issue_obj.delete()
+            
+        return JsonResponse({'success': True})
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})
+
+@login_required
 def fsr_add(request):
 	results = props.objects.all().order_by('prop_country','prop_name')
 	isresults = issues.objects.all().order_by('issues_date_logged','issues_status')

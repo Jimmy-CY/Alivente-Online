@@ -14189,3 +14189,115 @@ Not Found: /favicon.ico
 "GET /admin_apms/ HTTP/1.1" 200 13427
 "GET /petty_cash/ HTTP/1.1" 200 13573
 "GET / HTTP/1.1" 200 15437
+Watching for file changes with StatReloader
+"GET /notifications/ HTTP/1.1" 200 32270
+"GET /notifications/ HTTP/1.1" 200 6079
+Watching for file changes with StatReloader
+"GET /act_expense_all/?from=home HTTP/1.1" 200 85348
+"GET /fsr/ HTTP/1.1" 200 83250
+"GET /act_expense_all/?from=home HTTP/1.1" 200 85348
+C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\urls.py changed, reloading.
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 15437
+"GET /fsr/ HTTP/1.1" 200 80724
+"GET /fsr_details/49?from=fsr&search=&propcountry=&propname=&issuestatus= HTTP/1.1" 200 25844
+"GET /fsr/?refresh=true HTTP/1.1" 200 80724
+"GET /fsr/ HTTP/1.1" 200 80724
+"GET /fsr_details/49?from=fsr&search=&propcountry=&propname=&issuestatus= HTTP/1.1" 200 25844
+"GET /fsr/?refresh=true HTTP/1.1" 200 80724
+"GET /fsr/ HTTP/1.1" 200 80724
+Internal Server Error: /issues/delete/49/
+Traceback (most recent call last):
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\pages\views.py", line 4884, in delete_issue
+    issue = Issues.objects.get(issues_id=issue_id)
+            ^^^^^^
+NameError: name 'Issues' is not defined. Did you mean: 'issues'?
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\views\decorators\http.py", line 64, in inner
+    return func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\pages\views.py", line 4887, in delete_issue
+    except Issues.DoesNotExist:
+           ^^^^^^
+NameError: name 'Issues' is not defined. Did you mean: 'issues'?
+"POST /issues/delete/49/ HTTP/1.1" 500 79438
+Internal Server Error: /issues/delete/49/
+Traceback (most recent call last):
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\pages\views.py", line 4884, in delete_issue
+    issue = Issues.objects.get(issues_id=issue_id)
+            ^^^^^^
+NameError: name 'Issues' is not defined. Did you mean: 'issues'?
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\views\decorators\http.py", line 64, in inner
+    return func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\views\decorators\csrf.py", line 65, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\pages\views.py", line 4887, in delete_issue
+    except Issues.DoesNotExist:
+           ^^^^^^
+NameError: name 'Issues' is not defined. Did you mean: 'issues'?
+"POST /issues/delete/49/ HTTP/1.1" 500 79438
+"GET /fsr/ HTTP/1.1" 200 83250
+"GET /fsr_details/49?from=fsr&search=&propcountry=&propname=&issuestatus= HTTP/1.1" 200 25844
+"GET /fsr/?refresh=true HTTP/1.1" 200 83250
+"GET /fsr/ HTTP/1.1" 200 83250
+"POST /fsr/ HTTP/1.1" 200 59498
+"GET /fsr_details/34?from=fsr&search=&propcountry=Greece&propname=&issuestatus= HTTP/1.1" 200 26095
+"POST /fsr_comment_add/34 HTTP/1.1" 302 0
+"GET /fsr_details/34?from=fsr&search=&propcountry=Greece&propname=&issuestatus= HTTP/1.1" 200 26807
+"POST /fsr_commit_status_change/ HTTP/1.1" 302 0
+"GET /fsr/?refresh=true HTTP/1.1" 200 83207
+"GET /fsr/ HTTP/1.1" 200 83207
+"POST /fsr/ HTTP/1.1" 200 68101
+"POST /fsr/ HTTP/1.1" 200 83207
+"GET /friday_status_report/?max_comments=2 HTTP/1.1" 200 33228
+"GET /fsr/ HTTP/1.1" 200 83207
+C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 15437
+"GET /fsr/ HTTP/1.1" 200 103045
+"POST /issues/delete/49/ HTTP/1.1" 200 17
+"GET /fsr/ HTTP/1.1" 200 100285
+"POST /fsr/ HTTP/1.1" 200 63815
+"POST /fsr/ HTTP/1.1" 200 100285
+"GET / HTTP/1.1" 200 15437
+"GET /fsr/ HTTP/1.1" 200 101024
+"POST /issues/delete/6/ HTTP/1.1" 200 17
+"GET /fsr/ HTTP/1.1" 200 98240
+"GET / HTTP/1.1" 200 15437
+"GET /logout/ HTTP/1.1" 302 0
+"GET / HTTP/1.1" 200 8752
+"GET /login/ HTTP/1.1" 200 9421
+"POST /login/ HTTP/1.1" 302 0
+"GET / HTTP/1.1" 200 16192
+"GET /fsr/ HTTP/1.1" 200 87491
+"GET /logout/ HTTP/1.1" 302 0
+"GET / HTTP/1.1" 200 8752
+"GET /login/ HTTP/1.1" 200 9421
+"POST /login/ HTTP/1.1" 302 0
+"GET / HTTP/1.1" 200 16198
+"GET /fsr/ HTTP/1.1" 200 98240
+"GET / HTTP/1.1" 200 15437

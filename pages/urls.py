@@ -190,6 +190,7 @@ urlpatterns = [
     path('fsr_comment_add/<issues_id>', views.fsr_comment_add, name='fsr_comment_add'),
     path('fsr_notification/', views.fsr_notification, name='fsr_notification'),
     path('fsr/pdf/', views.fsr_pdf, name='fsr_pdf'),
+    path('issues/delete/<int:issue_id>/', views.delete_issue, name='delete_issue'),
 
 
     ]

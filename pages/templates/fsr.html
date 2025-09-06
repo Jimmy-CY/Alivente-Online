@@ -127,6 +127,70 @@
     </div>
 </div>
 
+<!-- Delete Issue Modal -->
+<div class="modal fade" id="deleteIssueModal" tabindex="-1" role="dialog" aria-labelledby="deleteIssueModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="deleteIssueModalLabel">
+                    <i class="fas fa-exclamation-triangle"></i> Delete Issue Permanently
+                </h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-warning">
+                    <strong>Warning:</strong> This action cannot be undone. The issue and all its comments will be permanently deleted.
+                </div>
+                
+                <div class="issue-details">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <strong>Property:</strong>
+                            <p id="modalPropertyName" class="text-muted"></p>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Status:</strong>
+                            <p id="modalStatus" class="text-muted"></p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <strong>Date Logged:</strong>
+                            <p id="modalDateLogged" class="text-muted"></p>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Issue ID:</strong>
+                            <p id="modalIssueId" class="text-muted"></p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            <strong>Issue Heading:</strong>
+                            <p id="modalIssueHeading" class="text-muted"></p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            <strong>Description:</strong>
+                            <p id="modalIssueDescription" class="text-muted"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">
+                    <i class="fas fa-trash"></i> Delete Permanently
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Action Buttons -->
 <div style="display: flex; justify-content: flex-end; margin-bottom: 20px;">
     <div style="display: flex; gap: 16px;">
@@ -231,12 +295,15 @@
     <table class="table table-bordered table-striped">
         <thead class="thead-light">
             <tr>
-                <th class="text-left" style="width: 18%">Property</th>
-                <th class="text-left" style="width: 22%">Issue</th>
-                <th class="text-left" style="width: 30%">Description</th>
+                <th class="text-left" style="width: {% if request.user.is_superuser %}16%{% else %}18%{% endif %}">Property</th>
+                <th class="text-left" style="width: {% if request.user.is_superuser %}20%{% else %}22%{% endif %}">Issue</th>
+                <th class="text-left" style="width: {% if request.user.is_superuser %}26%{% else %}30%{% endif %}">Description</th>
                 <th class="text-center" style="width: 12%">Date Logged</th>
                 <th class="text-center" style="width: 8%">Status</th>
                 <th class="text-center" style="width: 10%">Comments</th>
+                {% if request.user.is_superuser %}
+                <th class="text-center" style="width: 8%">Delete</th>
+                {% endif %}
             </tr>
         </thead>
         <tbody>
@@ -272,6 +339,21 @@
                                     </a>
                                 </button>
                             </td>
+                            {% if request.user.is_superuser %}
+                            <td class="text-center">
+                                <button type="button" 
+                                        class="btn btn-danger btn-sm delete-issue-btn" 
+                                        data-issue-id="{{ isresults.issues_id }}"
+                                        data-issue-heading="{{ isresults.issues_heading }}"
+                                        data-issue-description="{{ isresults.issues_description }}"
+                                        data-property-name="{{ results.prop_name }}"
+                                        data-date-logged="{{ isresults.issues_date_logged|date:'d/m/Y' }}"
+                                        data-status="{{ isresults.issues_status }}"
+                                        title="Delete Issue">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                            {% endif %}
                         </tr>
                         {% endif %}
                         {% endif %}
@@ -279,7 +361,7 @@
                     {% endif %}
                 {% empty %}
                 <tr>
-                    <td colspan="6" class="text-center">No issues found</td>
+                    <td colspan="{% if request.user.is_superuser %}7{% else %}6{% endif %}" class="text-center">No issues found</td>
                 </tr>
                 {% endfor %}
             {% endfor %}
@@ -632,6 +714,49 @@
     color: #17a2b8;
 }
 
+/* Delete Button Styles */
+.delete-issue-btn {
+    background-color: #dc3545;
+    border-color: #dc3545;
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.delete-issue-btn:hover {
+    background-color: #c82333;
+    border-color: #bd2130;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(220, 53, 69, 0.3);
+}
+
+.delete-issue-btn:focus {
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+}
+
+/* Delete Modal Styles */
+.issue-details {
+    background: #f8f9fa;
+    padding: 20px;
+    border-radius: 8px;
+    margin: 15px 0;
+}
+
+.issue-details .row {
+    margin-bottom: 10px;
+}
+
+.issue-details strong {
+    color: #495057;
+    font-weight: 600;
+}
+
+.issue-details p {
+    margin-bottom: 0;
+    padding: 5px 0;
+}
+
 /* Button Styles */
 .btn-info {
     background-color: #17a2b8;
@@ -876,6 +1001,33 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize Friday Report Modal functionality
     initializeFridayReportModal();
     
+    // Initialize delete functionality
+    initializeDeleteFunctionality();
+    
+    // MODAL CLOSE FIX - Ensure modal close buttons work
+    document.querySelectorAll('[data-dismiss="modal"]').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            const modalId = this.closest('.modal').id;
+            $(`#${modalId}`).modal('hide');
+        });
+    });
+    
+    // Handle escape key to close modals
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            $('.modal.show').modal('hide');
+        }
+    });
+    
+    // Handle modal backdrop clicks
+    $('.modal').on('click', function(e) {
+        if (e.target === this) {
+            $(this).modal('hide');
+        }
+    });
+    
     // Check if panel was forcibly expanded
     const wasForceExpanded = sessionStorage.getItem('FORCE_PANEL_EXPANDED') === 'true';
     const wasClearAllProtected = sessionStorage.getItem('CLEAR_ALL_PROTECTION') === 'true';
@@ -908,7 +1060,7 @@ document.addEventListener('DOMContentLoaded', function() {
             console.log('Panel initialized as collapsed');
         }
     }
-    
+
     // Set up continuous monitoring
     setupInterferenceProtection();
     updateActiveFilters();
@@ -1015,6 +1167,89 @@ document.addEventListener('DOMContentLoaded', function() {
     
     console.log('All FSR event listeners attached');
 });
+
+// Delete functionality
+function initializeDeleteFunctionality() {
+    console.log('🗑️ Initializing delete functionality');
+    
+    // Handle delete button clicks
+    document.querySelectorAll('.delete-issue-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const issueId = this.dataset.issueId;
+            const issueHeading = this.dataset.issueHeading;
+            const issueDescription = this.dataset.issueDescription;
+            const propertyName = this.dataset.propertyName;
+            const dateLogged = this.dataset.dateLogged;
+            const status = this.dataset.status;
+            
+            // Populate modal with issue details
+            document.getElementById('modalPropertyName').textContent = propertyName;
+            document.getElementById('modalStatus').textContent = status;
+            document.getElementById('modalDateLogged').textContent = dateLogged;
+            document.getElementById('modalIssueId').textContent = issueId;
+            document.getElementById('modalIssueHeading').textContent = issueHeading;
+            document.getElementById('modalIssueDescription').textContent = issueDescription;
+            
+            // Store issue ID for deletion
+            document.getElementById('confirmDeleteBtn').dataset.issueId = issueId;
+            
+            // Show modal
+            $('#deleteIssueModal').modal('show');
+        });
+    });
+    
+    // Handle confirm delete
+    document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
+        const issueId = this.dataset.issueId;
+        deleteIssue(issueId);
+    });
+    
+    console.log('✅ Delete functionality initialized');
+}
+
+function deleteIssue(issueId) {
+    console.log(`🗑️ Deleting issue ID: ${issueId}`);
+    
+    // Get CSRF token
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    
+    // Show loading state
+    const confirmBtn = document.getElementById('confirmDeleteBtn');
+    const originalText = confirmBtn.innerHTML;
+    confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Deleting...';
+    confirmBtn.disabled = true;
+    
+    fetch(`/issues/delete/${issueId}/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken,
+        },
+        body: JSON.stringify({}),
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Hide modal
+            $('#deleteIssueModal').modal('hide');
+            
+            // Show success message and refresh page
+            alert('Issue deleted successfully!');
+            window.location.reload();
+        } else {
+            alert('Error deleting issue: ' + (data.error || 'Unknown error'));
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error deleting issue. Please try again.');
+    })
+    .finally(() => {
+        // Reset button state
+        confirmBtn.innerHTML = originalText;
+        confirmBtn.disabled = false;
+    });
+}
 
 // Friday Report Modal Functions
 function initializeFridayReportModal() {
