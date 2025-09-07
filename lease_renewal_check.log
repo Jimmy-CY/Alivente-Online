@@ -14301,3 +14301,10 @@ Watching for file changes with StatReloader
 "GET / HTTP/1.1" 200 16198
 "GET /fsr/ HTTP/1.1" 200 98240
 "GET / HTTP/1.1" 200 15437
+Watching for file changes with StatReloader
+"GET /tenant/ HTTP/1.1" 200 60564
+"GET /tenant_edit/5 HTTP/1.1" 200 18123
+C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+"GET /tenant/ HTTP/1.1" 200 60564
+"GET /lease_renewal_report/ HTTP/1.1" 200 17987
