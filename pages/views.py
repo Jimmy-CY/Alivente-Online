@@ -5223,150 +5223,185 @@ def get_fsr_context_data(request):
 
 @login_required
 def fsr_notification(request):
+    from django.db import connection
+    from django.db.utils import OperationalError, InterfaceError
+    import time
+    import logging
+    
+    logger = logging.getLogger(__name__)
     smtp_object = None
-    try:
-        # Check if there's a max_comments parameter in the session or request
-        # This indicates the user wants a summarized report
-        max_comments = None
-        is_summarized_report = False
-        
-        # Check for max_comments in various places:
-        # 1. Direct GET parameter (if coming from Friday report page)
-        # 2. Session storage (if user navigated from a summarized report)
-        # 3. HTTP_REFERER analysis (check if previous page had max_comments)
-        
-        if 'max_comments' in request.GET:
-            max_comments = request.GET.get('max_comments')
-            is_summarized_report = True
-        elif 'last_report_type' in request.session:
-            # If we stored the last report type in session
-            if request.session['last_report_type'] == 'summarized':
-                max_comments = request.session.get('max_comments', '2')
+    
+    # Close any stale connections before starting
+    connection.close()
+    
+    max_retries = 3
+    for attempt in range(max_retries):
+        try:
+            # Check if there's a max_comments parameter in the session or request
+            # This indicates the user wants a summarized report
+            max_comments = None
+            is_summarized_report = False
+            
+            # Check for max_comments in various places:
+            # 1. Direct GET parameter (if coming from Friday report page)
+            # 2. Session storage (if user navigated from a summarized report)
+            # 3. HTTP_REFERER analysis (check if previous page had max_comments)
+            
+            if 'max_comments' in request.GET:
+                max_comments = request.GET.get('max_comments')
                 is_summarized_report = True
-        else:
-            # Check the HTTP referer to see if it came from a summarized report
-            referer = request.META.get('HTTP_REFERER', '')
-            if 'max_comments=' in referer:
-                # Extract max_comments from referer URL
-                import re
-                match = re.search(r'max_comments=(\d+)', referer)
-                if match:
-                    max_comments = match.group(1)
+            elif 'last_report_type' in request.session:
+                # If we stored the last report type in session
+                if request.session['last_report_type'] == 'summarized':
+                    max_comments = request.session.get('max_comments', '2')
                     is_summarized_report = True
-        
-        # Validate max_comments
-        if is_summarized_report and max_comments:
-            try:
-                max_comments = int(max_comments)
-                if max_comments < 1:
+            else:
+                # Check the HTTP referer to see if it came from a summarized report
+                referer = request.META.get('HTTP_REFERER', '')
+                if 'max_comments=' in referer:
+                    # Extract max_comments from referer URL
+                    import re
+                    match = re.search(r'max_comments=(\d+)', referer)
+                    if match:
+                        max_comments = match.group(1)
+                        is_summarized_report = True
+            
+            # Validate max_comments
+            if is_summarized_report and max_comments:
+                try:
+                    max_comments = int(max_comments)
+                    if max_comments < 1:
+                        max_comments = 2
+                        is_summarized_report = False
+                except (ValueError, TypeError):
                     max_comments = 2
                     is_summarized_report = False
-            except (ValueError, TypeError):
-                max_comments = 2
-                is_summarized_report = False
-        
-        # Create a mock request object with the appropriate parameters for context generation
-        mock_request = type('MockRequest', (), {})()
-        mock_request.user = request.user
-        mock_request.session = request.session
-        mock_request.META = request.META
-        
-        if is_summarized_report:
-            # Create GET parameters for summarized report
-            mock_request.GET = {'max_comments': str(max_comments)}
-            report_type_text = f"Summarized Report (Max {max_comments} comments per issue)"
-        else:
-            # No parameters for detailed report
-            mock_request.GET = {}
-            report_type_text = "Detailed Report (All comments)"
-        
-        # Fetch context data for the report with appropriate parameters
-        context = get_fsr_context_data(mock_request)
-        
-        # Add report type information to context for email template
-        context['is_summarized_report'] = is_summarized_report
-        context['max_comments'] = max_comments if is_summarized_report else None
-        context['report_type_text'] = report_type_text
-        
-        # Render HTML content
-        html_content = render_to_string("fsr_email.html", context, request=request)
-        text_content = strip_tags(html_content)
-        
-        # Determine recipients based on user permissions
-        if request.user.is_superuser:
-            # Supervisor: Send to Stella
-            to_email = "stella.simitopoulos@alivente.com"
-        else:
-            # Non-supervisor: Send to Demetri
-            to_email = "demetrimanias@gmail.com"
-        
-        # Always CC angmaniasbakers
-        cc_email = "angmaniasbakers@gmail.com"
-        
-        # Prepare email with report type in subject
-        msg = MIMEMultipart("alternative")
-        msg['From'] = "demetrimanias@gmail.com"
-        msg['To'] = to_email
-        msg['Cc'] = cc_email
-        
-        # Include report type in subject
-        if is_summarized_report:
-            msg['Subject'] = f"Friday Status Report - Summarized ({max_comments} comments/issue)"
-        else:
-            msg['Subject'] = "Friday Status Report - Detailed"
-        
-        # Attach both plain text and HTML
-        msg.attach(MIMEText(text_content, 'plain'))
-        msg.attach(MIMEText(html_content, 'html'))
-        
-        # Get email credentials and settings from environment variables
-        email_password = os.environ.get('EMAIL_PASSWORD')
-        email_host = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
-        email_port = int(os.environ.get('EMAIL_PORT', 465))
-        email_use_ssl = os.environ.get('EMAIL_USE_SSL', 'False').lower() == 'true'
-        email_use_tls = os.environ.get('EMAIL_USE_TLS', 'True').lower() == 'true'
-        
-        if not email_password:
-            logger.error('❌ EMAIL_PASSWORD environment variable not set')
-            messages.error(request, "Failed to send email - No password configured.")
-            return redirect('fsr')
-        
-        # SMTP setup with environment variable configuration
-        if email_use_ssl:
-            # Use SSL connection (typically port 465)
-            smtp_object = smtplib.SMTP_SSL(email_host, email_port, timeout=10)
-        else:
-            # Use regular SMTP connection (typically port 587)
-            smtp_object = smtplib.SMTP(email_host, email_port, timeout=10)
-            smtp_object.ehlo()
-            if email_use_tls:
-                smtp_object.starttls()
-        
-        email = "demetrimanias@gmail.com"
-        smtp_object.login(email, email_password)
-        
-        # Send email to both To and CC recipients
-        recipients = [to_email, cc_email]
-        smtp_object.sendmail(email, recipients, msg.as_string())
-        
-        success_message = f"Friday Status Report ({report_type_text}) sent successfully!"
-        messages.success(request, success_message)
-    
-    except smtplib.SMTPAuthenticationError as e:
-        logger.error(f"SMTP Authentication Error: {e}")
-        messages.error(request, "Failed to send email - Authentication error.")
-    except smtplib.SMTPException as e:
-        logger.error(f"SMTP Error: {e}")
-        messages.error(request, "Failed to send email - SMTP error.")
-    except Exception as e:
-        logger.error(f"Error sending email: {e}")
-        messages.error(request, f"Failed to send email notification: {str(e)}")
-    finally:
-        if smtp_object:
-            try:
-                smtp_object.quit()
-            except:
-                pass
+            
+            # Create a mock request object with the appropriate parameters for context generation
+            mock_request = type('MockRequest', (), {})()
+            mock_request.user = request.user
+            mock_request.session = request.session
+            mock_request.META = request.META
+            
+            if is_summarized_report:
+                # Create GET parameters for summarized report
+                mock_request.GET = {'max_comments': str(max_comments)}
+                report_type_text = f"Summarized Report (Max {max_comments} comments per issue)"
+            else:
+                # No parameters for detailed report
+                mock_request.GET = {}
+                report_type_text = "Detailed Report (All comments)"
+            
+            # Fetch context data for the report with appropriate parameters
+            # This is the critical database operation that needs protection
+            context = get_fsr_context_data(mock_request)
+            
+            # Add report type information to context for email template
+            context['is_summarized_report'] = is_summarized_report
+            context['max_comments'] = max_comments if is_summarized_report else None
+            context['report_type_text'] = report_type_text
+            
+            # Render HTML content
+            html_content = render_to_string("fsr_email.html", context, request=request)
+            text_content = strip_tags(html_content)
+            
+            # Determine recipients based on user permissions
+            if request.user.is_superuser:
+                # Supervisor: Send to Stella
+                to_email = "stella.simitopoulos@alivente.com"
+            else:
+                # Non-supervisor: Send to Demetri
+                to_email = "demetrimanias@gmail.com"
+            
+            # Always CC angmaniasbakers
+            cc_email = "angmaniasbakers@gmail.com"
+            
+            # Prepare email with report type in subject
+            msg = MIMEMultipart("alternative")
+            msg['From'] = "demetrimanias@gmail.com"
+            msg['To'] = to_email
+            msg['Cc'] = cc_email
+            
+            # Include report type in subject
+            if is_summarized_report:
+                msg['Subject'] = f"Friday Status Report - Summarized ({max_comments} comments/issue)"
+            else:
+                msg['Subject'] = "Friday Status Report - Detailed"
+            
+            # Attach both plain text and HTML
+            msg.attach(MIMEText(text_content, 'plain'))
+            msg.attach(MIMEText(html_content, 'html'))
+            
+            # Get email credentials and settings from environment variables
+            email_password = os.environ.get('EMAIL_PASSWORD')
+            email_host = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
+            email_port = int(os.environ.get('EMAIL_PORT', 465))
+            email_use_ssl = os.environ.get('EMAIL_USE_SSL', 'False').lower() == 'true'
+            email_use_tls = os.environ.get('EMAIL_USE_TLS', 'True').lower() == 'true'
+            
+            if not email_password:
+                logger.error('❌ EMAIL_PASSWORD environment variable not set')
+                messages.error(request, "Failed to send email - No password configured.")
+                return redirect('fsr')
+            
+            # SMTP setup with environment variable configuration
+            if email_use_ssl:
+                # Use SSL connection (typically port 465)
+                smtp_object = smtplib.SMTP_SSL(email_host, email_port, timeout=10)
+            else:
+                # Use regular SMTP connection (typically port 587)
+                smtp_object = smtplib.SMTP(email_host, email_port, timeout=10)
+                smtp_object.ehlo()
+                if email_use_tls:
+                    smtp_object.starttls()
+            
+            email = "demetrimanias@gmail.com"
+            smtp_object.login(email, email_password)
+            
+            # Send email to both To and CC recipients
+            recipients = [to_email, cc_email]
+            smtp_object.sendmail(email, recipients, msg.as_string())
+            
+            success_message = f"Friday Status Report ({report_type_text}) sent successfully!"
+            messages.success(request, success_message)
+            
+            # If we get here, everything worked - break out of retry loop
+            break
+            
+        except (OperationalError, InterfaceError) as e:
+            if attempt < max_retries - 1:
+                # Close connection and wait before retry
+                connection.close()
+                time.sleep(2)  # Wait 2 seconds before retry
+                logger.warning(f"Database connection error on attempt {attempt + 1}, retrying: {e}")
+                continue
+            else:
+                # Final attempt failed
+                logger.error(f"Database connection failed after {max_retries} attempts: {e}")
+                messages.error(request, "Database connection error. Please try again in a moment.")
+                return redirect('fsr')
+                
+        except smtplib.SMTPAuthenticationError as e:
+            logger.error(f"SMTP Authentication Error: {e}")
+            messages.error(request, "Failed to send email - Authentication error.")
+            break
+            
+        except smtplib.SMTPException as e:
+            logger.error(f"SMTP Error: {e}")
+            messages.error(request, "Failed to send email - SMTP error.")
+            break
+            
+        except Exception as e:
+            logger.error(f"Error sending email: {e}")
+            messages.error(request, f"Failed to send email notification: {str(e)}")
+            break
+            
+        finally:
+            if smtp_object:
+                try:
+                    smtp_object.quit()
+                except:
+                    pass
     
     return redirect('fsr')
 
