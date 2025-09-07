@@ -14308,3 +14308,6 @@ C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py change
 Watching for file changes with StatReloader
 "GET /tenant/ HTTP/1.1" 200 60564
 "GET /lease_renewal_report/ HTTP/1.1" 200 17987
+Watching for file changes with StatReloader
+C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+Watching for file changes with StatReloader

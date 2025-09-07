@@ -6811,7 +6811,8 @@ def lease_renewal_report(request):
         if lease_end_date:  # Make sure lease_end_date exists
             renewal_date = lease_end_date - timedelta(days=renewal_period)
             warning_date = renewal_date
-#            warning_date = renewal_date - timedelta(days=30)
+#           This was for the old notification which was 30 days before the renewal date
+#           warning_date = renewal_date - timedelta(days=30)
             renewal_status = tenant_obj.tenant_renewal_status or 'pending'  # Default to pending
             
             if today >= warning_date:

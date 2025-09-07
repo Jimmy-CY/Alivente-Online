@@ -204,8 +204,10 @@ class Command(BaseCommand):
                 renewal_status = row[6] if row[6] else 'pending'  # Default to pending if None
                 
                 renewal_date = lease_end_date - timedelta(days=renewal_period)
-                warning_date = renewal_date - timedelta(days=30)
-                
+#               This was for the old notification which was 30 days before the renewal date
+#               warning_date = renewal_date - timedelta(days=30)
+                warning_date = renewal_date
+
                 if today >= warning_date:
                     if renewal_status == 'pending':
                         # Normal renewal case - add to expiring leases
