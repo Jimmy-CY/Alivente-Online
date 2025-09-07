@@ -6380,139 +6380,164 @@ def fsr_rep(request):
 
 @login_required
 def friday_status_report(request):
-    today = date.today()
-    rep_date = today
+    from django.db import connection
+    from django.db.utils import OperationalError, InterfaceError
+    import time
     
-    # Get max_comments parameter for summarized reports
-    max_comments = request.GET.get('max_comments', None)
-    is_summarized_report = max_comments is not None
+    # Close any stale connections before starting
+    connection.close()
     
-    # Store report type in session for use by fsr_notification
-    if is_summarized_report:
+    max_retries = 3
+    for attempt in range(max_retries):
         try:
-            max_comments = int(max_comments)
-            request.session['last_report_type'] = 'summarized'
-            request.session['max_comments'] = max_comments
-        except (ValueError, TypeError):
-            max_comments = None
-            is_summarized_report = False
-            request.session['last_report_type'] = 'detailed'
-            request.session.pop('max_comments', None)
-    else:
-        request.session['last_report_type'] = 'detailed'
-        request.session.pop('max_comments', None)
-    
-    # Get all properties ordered by country and name
-    properties = props.objects.all().order_by('prop_country', 'prop_name').values('prop_name')
-    
-    # Get all issues with their details, using select_related and prefetch_related for optimization
-    issues_queryset = issues.objects.select_related('prop').prefetch_related(
-        Prefetch(
-            'issues_details_set',
-            queryset=issues_details.objects.all().order_by('-issues_details_id'),
-            to_attr='details_list'
-        )
-    ).order_by('issues_id')
-    
-    # Process issues data
-    issues_data = []
-    for issue_obj in issues_queryset:
-        # Build the issue dictionary
-        issue_dict = {
-            'prop_name': issue_obj.prop.prop_name,
-            'issues_id': issue_obj.issues_id,
-            'issues_heading': issue_obj.issues_heading,
-            'issues_description': issue_obj.issues_description,
-            'issues_status': issue_obj.issues_status,
-            'issues_date_logged': issue_obj.issues_date_logged,
-            'issues_resolution_date': issue_obj.issues_resolution_date,
-            'days_to_resolve': None,  # For resolved issues
-            'days_open': None,       # For unresolved issues
-            'details': []
-        }
-        
-        # Calculate days metrics based on status
-        if issue_dict['issues_date_logged']:
-            if issue_dict['issues_status'] == 'Resolved':
-                if (issue_dict['issues_resolution_date'] and 
-                    issue_dict['issues_resolution_date'] != date(1900, 1, 1)):
-                    issue_dict['days_to_resolve'] = (issue_dict['issues_resolution_date'] - issue_dict['issues_date_logged']).days
-            else:  # For Unresolved and Issue status
-                issue_dict['days_open'] = (today - issue_dict['issues_date_logged']).days
-        
-        # Process details
-        details_data = []
-        for detail in issue_obj.details_list:
-            details_data.append({
-                'issues_details_id': detail.issues_details_id,
-                'issues_details_comment': detail.issues_details_comment,
-                'issues_details_user': detail.issues_details_user,
-                'issues_details_date': detail.issues_details_date
-            })
-        
-        # Apply comment limiting for summarized reports
-        if is_summarized_report and max_comments and len(details_data) > max_comments:
-            total_comments_before_limit = len(details_data)
-            issue_dict['details'] = details_data[:max_comments]
-            issue_dict['has_more_comments'] = True
-            issue_dict['total_comments'] = total_comments_before_limit
-        else:
-            issue_dict['details'] = details_data
-            issue_dict['has_more_comments'] = False
-            issue_dict['total_comments'] = len(details_data)
-        
-        issues_data.append(issue_dict)
-    
-    # Process data by status and property
-    processed_data = {}
-    cut_off_date = date.today() - timedelta(days=7)
-    for status in ['Resolved', 'Unresolved', 'Issue']:
-        processed_data[status] = {}
-        for prop in properties:
-            prop_name = prop['prop_name']
-            processed_data[status][prop_name] = []
+            today = date.today()
+            rep_date = today
+            
+            # Get max_comments parameter for summarized reports
+            max_comments = request.GET.get('max_comments', None)
+            is_summarized_report = max_comments is not None
+            
+            # Store report type in session for use by fsr_notification
+            if is_summarized_report:
+                try:
+                    max_comments = int(max_comments)
+                    request.session['last_report_type'] = 'summarized'
+                    request.session['max_comments'] = max_comments
+                except (ValueError, TypeError):
+                    max_comments = None
+                    is_summarized_report = False
+                    request.session['last_report_type'] = 'detailed'
+                    request.session.pop('max_comments', None)
+            else:
+                request.session['last_report_type'] = 'detailed'
+                request.session.pop('max_comments', None)
+            
+            # Get all properties ordered by country and name
+            properties = props.objects.all().order_by('prop_country', 'prop_name').values('prop_name')
+            
+            # Get all issues with their details, using select_related and prefetch_related for optimization
+            issues_queryset = issues.objects.select_related('prop').prefetch_related(
+                Prefetch(
+                    'issues_details_set',
+                    queryset=issues_details.objects.all().order_by('-issues_details_id'),
+                    to_attr='details_list'
+                )
+            ).order_by('issues_id')
+            
+            # Process issues data
+            issues_data = []
+            for issue_obj in issues_queryset:
+                # Build the issue dictionary
+                issue_dict = {
+                    'prop_name': issue_obj.prop.prop_name,
+                    'issues_id': issue_obj.issues_id,
+                    'issues_heading': issue_obj.issues_heading,
+                    'issues_description': issue_obj.issues_description,
+                    'issues_status': issue_obj.issues_status,
+                    'issues_date_logged': issue_obj.issues_date_logged,
+                    'issues_resolution_date': issue_obj.issues_resolution_date,
+                    'days_to_resolve': None,  # For resolved issues
+                    'days_open': None,       # For unresolved issues
+                    'details': []
+                }
+                
+                # Calculate days metrics based on status
+                if issue_dict['issues_date_logged']:
+                    if issue_dict['issues_status'] == 'Resolved':
+                        if (issue_dict['issues_resolution_date'] and 
+                            issue_dict['issues_resolution_date'] != date(1900, 1, 1)):
+                            issue_dict['days_to_resolve'] = (issue_dict['issues_resolution_date'] - issue_dict['issues_date_logged']).days
+                    else:  # For Unresolved and Issue status
+                        issue_dict['days_open'] = (today - issue_dict['issues_date_logged']).days
+                
+                # Process details
+                details_data = []
+                for detail in issue_obj.details_list:
+                    details_data.append({
+                        'issues_details_id': detail.issues_details_id,
+                        'issues_details_comment': detail.issues_details_comment,
+                        'issues_details_user': detail.issues_details_user,
+                        'issues_details_date': detail.issues_details_date
+                    })
+                
+                # Apply comment limiting for summarized reports
+                if is_summarized_report and max_comments and len(details_data) > max_comments:
+                    total_comments_before_limit = len(details_data)
+                    issue_dict['details'] = details_data[:max_comments]
+                    issue_dict['has_more_comments'] = True
+                    issue_dict['total_comments'] = total_comments_before_limit
+                else:
+                    issue_dict['details'] = details_data
+                    issue_dict['has_more_comments'] = False
+                    issue_dict['total_comments'] = len(details_data)
+                
+                issues_data.append(issue_dict)
+            
+            # Process data by status and property
+            processed_data = {}
+            cut_off_date = date.today() - timedelta(days=7)
+            for status in ['Resolved', 'Unresolved', 'Issue']:
+                processed_data[status] = {}
+                for prop in properties:
+                    prop_name = prop['prop_name']
+                    processed_data[status][prop_name] = []
 
-            # Track unique issues by heading+description
-            unique_issues = set()
+                    # Track unique issues by heading+description
+                    unique_issues = set()
 
-            for issue in issues_data:
-                if (issue['prop_name'] == prop_name and 
-                    issue['issues_status'] == status and 
-                    (issue['issues_heading'], issue['issues_description']) not in unique_issues):
+                    for issue in issues_data:
+                        if (issue['prop_name'] == prop_name and 
+                            issue['issues_status'] == status and 
+                            (issue['issues_heading'], issue['issues_description']) not in unique_issues):
 
-                    # For Resolved, check cutoff date
-                    if status == 'Resolved':
-                        if (issue['issues_resolution_date'] != date(1900, 1, 1) and 
-                            issue['issues_resolution_date'] >= (date.today() - timedelta(days=7))):
-                            processed_data[status][prop_name].append(issue)
-                            unique_issues.add((issue['issues_heading'], issue['issues_description']))
-                    else:
-                        processed_data[status][prop_name].append(issue)
-                        unique_issues.add((issue['issues_heading'], issue['issues_description']))
-    
-    context = {
-        'today': today,
-        'statuses': ['Resolved', 'Unresolved', 'Issue'],
-        'properties': properties,
-        'is_summarized_report': is_summarized_report,
-        'max_comments': max_comments,
-        'status_groups': [
-            {
-                'status': status,
-                'property_issues': [
+                            # For Resolved, check cutoff date
+                            if status == 'Resolved':
+                                if (issue['issues_resolution_date'] != date(1900, 1, 1) and 
+                                    issue['issues_resolution_date'] >= (date.today() - timedelta(days=7))):
+                                    processed_data[status][prop_name].append(issue)
+                                    unique_issues.add((issue['issues_heading'], issue['issues_description']))
+                            else:
+                                processed_data[status][prop_name].append(issue)
+                                unique_issues.add((issue['issues_heading'], issue['issues_description']))
+            
+            context = {
+                'today': today,
+                'statuses': ['Resolved', 'Unresolved', 'Issue'],
+                'properties': properties,
+                'is_summarized_report': is_summarized_report,
+                'max_comments': max_comments,
+                'status_groups': [
                     {
-                        'prop_name': prop['prop_name'],
-                        'issues': processed_data[status][prop['prop_name']]
+                        'status': status,
+                        'property_issues': [
+                            {
+                                'prop_name': prop['prop_name'],
+                                'issues': processed_data[status][prop['prop_name']]
+                            }
+                            for prop in properties
+                            if processed_data[status][prop['prop_name']]  # Only include if issues exist
+                        ]
                     }
-                    for prop in properties
-                    if processed_data[status][prop['prop_name']]  # Only include if issues exist
+                    for status in ['Resolved', 'Unresolved', 'Issue']
                 ]
             }
-            for status in ['Resolved', 'Unresolved', 'Issue']
-        ]
-    }
-    
-    return render(request, 'friday_status_report.html', context)
+            
+            return render(request, 'friday_status_report.html', context)
+            
+        except (OperationalError, InterfaceError) as e:
+            if attempt < max_retries - 1:
+                # Close connection and wait before retry
+                connection.close()
+                time.sleep(2)  # Wait 2 seconds before retry
+                continue
+            else:
+                # Final attempt failed
+                messages.error(request, "Database connection error. Please try again in a moment.")
+                return redirect('fsr')
+        except Exception as e:
+            # Handle any other unexpected errors
+            messages.error(request, f"An error occurred while generating the report: {str(e)}")
+            return redirect('fsr')
 
 @login_required
 def resolved_issues_report(request):

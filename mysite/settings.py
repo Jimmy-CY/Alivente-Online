@@ -103,7 +103,20 @@ DATABASES = {
         "PASSWORD": os.getenv("MYSQLPASSWORD"),
         "HOST": os.getenv("MYSQLHOST"),
         "PORT": os.getenv("MYSQLPORT"),
-        "AUTH_PLUGIN": "mysql_native_password"
+        "OPTIONS": {
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
+            'charset': 'utf8mb4',
+            'connect_timeout': 60,
+            'read_timeout': 60,
+            'write_timeout': 60,
+            'autocommit': True,
+        },
+        'CONN_MAX_AGE': 0,  # Don't persist connections to avoid timeout issues
+        'ATOMIC_REQUESTS': False,
+        'TEST': {
+            'CHARSET': 'utf8mb4',
+            'COLLATION': 'utf8mb4_unicode_ci',
+        }
     }
 }
 
