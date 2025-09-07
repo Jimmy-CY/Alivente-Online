@@ -59,9 +59,11 @@
                         </a>
                         <div class="issue-details">
                             {% for detail in issue.details %}
-                            <div class="detail-row">
+                            <div class="detail-row {% if detail.issues_details_user == 'SS' %}ss-comment{% else %}regular-comment{% endif %}">
                                 <span class="detail-comment">
-                                    {{ detail.issues_details_date|date:"Y-m-d" }} ({{ detail.issues_details_user }}): {{ detail.issues_details_comment }}
+                                    <span class="comment-date">{{ detail.issues_details_date|date:"Y-m-d" }}</span>
+                                    <span class="comment-user">({{ detail.issues_details_user }})</span>:
+                                    <span class="comment-text">{{ detail.issues_details_comment }}</span>
                                 </span>
                             </div>
                             {% endfor %}
@@ -221,10 +223,40 @@
     .detail-row {
         margin-bottom: 8px;
         line-height: 1.4;
+        padding: 6px 10px;
+        border-radius: 4px;
+        border-left: 3px solid transparent;
+    }
+    
+    /* SS User Comments - Orange Highlighting */
+    .detail-row.ss-comment {
+        background-color: #fff3e0;
+        border-left-color: #ff8c00;
+    }
+    
+    .detail-row.ss-comment .comment-date,
+    .detail-row.ss-comment .comment-user,
+    .detail-row.ss-comment .comment-text {
+        color: #ff8c00;
+        font-weight: 600;
+    }
+    
+    /* Regular User Comments - System Blue */
+    .detail-row.regular-comment {
+        background-color: #e3f2fd;
+        border-left-color: #17a2b8;
+    }
+    
+    .detail-row.regular-comment .comment-date,
+    .detail-row.regular-comment .comment-user,
+    .detail-row.regular-comment .comment-text {
+        color: #17a2b8;
+        font-weight: 600;
     }
     
     .detail-comment {
-        color: #495057;
+        display: block;
+        width: 100%;
     }
     
     .more-comments-indicator {
@@ -307,6 +339,17 @@
         .view-all-link {
             display: none;
         }
+        
+        /* Print styles for comments */
+        .detail-row.ss-comment {
+            background-color: #f5f5f5 !important;
+            border-left-color: #333 !important;
+        }
+        
+        .detail-row.regular-comment {
+            background-color: #fafafa !important;
+            border-left-color: #666 !important;
+        }
     }
     
     @media (max-width: 768px) {
@@ -323,6 +366,11 @@
         .badge {
             font-size: 12px;
             padding: 6px 12px;
+        }
+        
+        .detail-row {
+            padding: 4px 8px;
+            margin-bottom: 6px;
         }
     }
 </style>

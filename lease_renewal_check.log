@@ -14332,3 +14332,10 @@ Watching for file changes with StatReloader
 "GET /fsr_details/18?from=fsr&search=&propcountry=&propname=&issuestatus= HTTP/1.1" 200 25822
 "GET /fsr/?refresh=true HTTP/1.1" 200 101714
 "GET /fsr/ HTTP/1.1" 200 101714
+Watching for file changes with StatReloader
+"GET /friday_status_report/ HTTP/1.1" 200 37818
+"GET /friday_status_report/ HTTP/1.1" 200 37622
+"GET /fsr/ HTTP/1.1" 200 101714
+"GET /fsr_details/3?from=fsr&search=&propcountry=&propname=&issuestatus= HTTP/1.1" 200 26133
+"GET /fsr/?refresh=true HTTP/1.1" 200 101714
+"GET /fsr/ HTTP/1.1" 200 101714
