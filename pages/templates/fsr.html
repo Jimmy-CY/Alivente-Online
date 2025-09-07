@@ -307,64 +307,66 @@
             </tr>
         </thead>
         <tbody>
-            {% for results in props %}
-                {% for isresults in issues %}
-                    {% if results.prop_id == isresults.prop_id %}
-                        {% if not request.POST.propcountry or request.POST.propcountry == 'All' or request.POST.propcountry == results.prop_country %}
-                        {% if not request.POST.propname or request.POST.propname == 'All' or request.POST.propname == results.prop_name %}
-                        {% if not request.POST.issuestatus or request.POST.issuestatus == 'All' or request.POST.issuestatus == isresults.issues_status %}
-                        <tr>
-                            <td class="text-left">{{ results.prop_name }}</td>
-                            <td class="text-left">{{ isresults.issues_heading }}</td>
-                            <td class="text-left">{{ isresults.issues_description }}</td>
-                            <td class="text-center date-logged">
-                                {% if isresults.issues_date_logged %}
-                                    {{ isresults.issues_date_logged|date:"d/m/Y" }}
-                                {% else %}
-                                    <span class="text-muted">N/A</span>
+            {% if issues %}
+                {% for results in props %}
+                    {% for isresults in issues %}
+                        {% if results.prop_id == isresults.prop_id %}
+                            {% if not request.POST.propcountry or request.POST.propcountry == 'All' or request.POST.propcountry == results.prop_country %}
+                            {% if not request.POST.propname or request.POST.propname == 'All' or request.POST.propname == results.prop_name %}
+                            {% if not request.POST.issuestatus or request.POST.issuestatus == 'All' or request.POST.issuestatus == isresults.issues_status %}
+                            <tr>
+                                <td class="text-left">{{ results.prop_name }}</td>
+                                <td class="text-left">{{ isresults.issues_heading }}</td>
+                                <td class="text-left">{{ isresults.issues_description }}</td>
+                                <td class="text-center date-logged">
+                                    {% if isresults.issues_date_logged %}
+                                        {{ isresults.issues_date_logged|date:"d/m/Y" }}
+                                    {% else %}
+                                        <span class="text-muted">N/A</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-center">
+                                    <span class="status-badge 
+                                        {% if isresults.issues_status == 'Resolved' %}status-success
+                                        {% elif isresults.issues_status == 'Unresolved' %}status-warning
+                                        {% else %}status-danger{% endif %}">
+                                        {{ isresults.issues_status }}
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    <button type="button" class="btn btn-light action-btn">
+                                        <a href="{% url 'fsr_details' isresults.issues_id %}?from=fsr&search={{ request.POST.search|default:'' }}&propcountry={{ request.POST.propcountry|default:'' }}&propname={{ request.POST.propname|default:'' }}&issuestatus={{ request.POST.issuestatus|default:'' }}" class="issue-heading-link">
+                                            Comments
+                                        </a>
+                                    </button>
+                                </td>
+                                {% if request.user.is_superuser %}
+                                <td class="text-center">
+                                    <button type="button" 
+                                            class="btn btn-danger btn-sm delete-issue-btn" 
+                                            data-issue-id="{{ isresults.issues_id }}"
+                                            data-issue-heading="{{ isresults.issues_heading }}"
+                                            data-issue-description="{{ isresults.issues_description }}"
+                                            data-property-name="{{ results.prop_name }}"
+                                            data-date-logged="{{ isresults.issues_date_logged|date:'d/m/Y' }}"
+                                            data-status="{{ isresults.issues_status }}"
+                                            title="Delete Issue">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
                                 {% endif %}
-                            </td>
-                            <td class="text-center">
-                                <span class="status-badge 
-                                    {% if isresults.issues_status == 'Resolved' %}status-success
-                                    {% elif isresults.issues_status == 'Unresolved' %}status-warning
-                                    {% else %}status-danger{% endif %}">
-                                    {{ isresults.issues_status }}
-                                </span>
-                            </td>
-                            <td class="text-center">
-                                <button type="button" class="btn btn-light action-btn">
-                                    <a href="{% url 'fsr_details' isresults.issues_id %}?from=fsr&search={{ request.POST.search|default:'' }}&propcountry={{ request.POST.propcountry|default:'' }}&propname={{ request.POST.propname|default:'' }}&issuestatus={{ request.POST.issuestatus|default:'' }}" class="issue-heading-link">
-                                        Comments
-                                    </a>
-                                </button>
-                            </td>
-                            {% if request.user.is_superuser %}
-                            <td class="text-center">
-                                <button type="button" 
-                                        class="btn btn-danger btn-sm delete-issue-btn" 
-                                        data-issue-id="{{ isresults.issues_id }}"
-                                        data-issue-heading="{{ isresults.issues_heading }}"
-                                        data-issue-description="{{ isresults.issues_description }}"
-                                        data-property-name="{{ results.prop_name }}"
-                                        data-date-logged="{{ isresults.issues_date_logged|date:'d/m/Y' }}"
-                                        data-status="{{ isresults.issues_status }}"
-                                        title="Delete Issue">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </td>
+                            </tr>
                             {% endif %}
-                        </tr>
+                            {% endif %}
+                            {% endif %}
                         {% endif %}
-                        {% endif %}
-                        {% endif %}
-                    {% endif %}
-                {% empty %}
+                    {% endfor %}
+                {% endfor %}
+            {% else %}
                 <tr>
                     <td colspan="{% if request.user.is_superuser %}7{% else %}6{% endif %}" class="text-center">No issues found</td>
                 </tr>
-                {% endfor %}
-            {% endfor %}
+            {% endif %}
         </tbody>
     </table>
 </div>
