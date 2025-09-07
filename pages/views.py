@@ -4988,40 +4988,47 @@ def fsr_comment_add(request, issues_id):
         # Get comment text from form
         comment_text = request.POST.get('issues_details_comment', '').strip()
         
+        # Get navigation context efficiently
+        next_url = request.POST.get('next', '')
+        from_param = request.GET.get('from', '')
+        
+        # Build redirect URL early to avoid complex logic later
+        if next_url:
+            redirect_url = next_url
+        elif from_param:
+            redirect_url = reverse('fsr_details', args=[issues_id]) + f"?from={from_param}"
+        else:
+            redirect_url = reverse('fsr_details', args=[issues_id])
+        
         # Validate comment exists
         if not comment_text:
             messages.error(request, "Comment cannot be empty")
-            return redirect(reverse('fsr_details', args=[issues_id]) + f"?from={request.GET.get('from', '')}&referrer={request.GET.get('referrer', '')}")
+            return redirect(redirect_url)
         
         # Get user info if authenticated
         user_initials = ''
         if request.user.is_authenticated:
             user_initials = f"{request.user.first_name[:1]}{request.user.last_name[:1]}"
         
-        # Create the comment
-        issues_details.objects.create(
-            issues_details_comment=comment_text,
-            issues_details_user=user_initials,
-            issues_details_date=date.today(),
-            issues_id=issues_id
-        )
-        
-        # Determine where to redirect back to
-        redirect_url = request.POST.get('next', '')
-        if not redirect_url:
-            # Reconstruct the original URL with parameters
-            from_param = request.GET.get('from', '')
-            referrer = request.GET.get('referrer', '')
-            if from_param and referrer:
-                redirect_url = reverse('fsr_details', args=[issues_id]) + f"?from={from_param}&referrer={referrer}"
-            else:
-                redirect_url = reverse('fsr_details', args=[issues_id])
-        
-        messages.success(request, "Comment added successfully")
+        try:
+            # Create the comment - single database operation
+            issues_details.objects.create(
+                issues_details_comment=comment_text,
+                issues_details_user=user_initials,
+                issues_details_date=date.today(),
+                issues_id=issues_id
+            )
+            
+            messages.success(request, "Comment added successfully")
+            
+        except Exception as e:
+            messages.error(request, "Failed to add comment. Please try again.")
+            
+        # Use the pre-built redirect URL
         return redirect(redirect_url)
     
     # If not POST, redirect to details page
-    return redirect(reverse('fsr_details', args=[issues_id]))
+    return redirect('fsr_details', issues_id=issues_id)
 
 def get_fsr_context_data(request):
     status_groups = []

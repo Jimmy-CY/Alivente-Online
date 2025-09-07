@@ -14319,3 +14319,16 @@ Watching for file changes with StatReloader
 "GET /fsr/ HTTP/1.1" 200 98240
 "GET / HTTP/1.1" 200 15437
 "GET /fsr/ HTTP/1.1" 200 98240
+Watching for file changes with StatReloader
+"GET /admin_apms/ HTTP/1.1" 200 13427
+C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 15437
+"GET /fsr/ HTTP/1.1" 200 101714
+"GET /friday_status_report/?max_comments=2 HTTP/1.1" 200 31990
+"GET /fsr_details/5?from=status_report HTTP/1.1" 200 26115
+"GET /friday_status_report/?max_comments=2&refresh=true HTTP/1.1" 200 31990
+"GET /fsr/ HTTP/1.1" 200 101714
+"GET /fsr_details/18?from=fsr&search=&propcountry=&propname=&issuestatus= HTTP/1.1" 200 25822
+"GET /fsr/?refresh=true HTTP/1.1" 200 101714
+"GET /fsr/ HTTP/1.1" 200 101714
