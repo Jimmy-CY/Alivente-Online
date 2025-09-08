@@ -58,6 +58,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "pages.middleware.DatabaseConnectionMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -111,12 +112,8 @@ DATABASES = {
             'write_timeout': 60,
             'autocommit': True,
         },
-        'CONN_MAX_AGE': 0,  # Don't persist connections to avoid timeout issues
+        'CONN_MAX_AGE': 0,  # Don't persist connections
         'ATOMIC_REQUESTS': False,
-        'TEST': {
-            'CHARSET': 'utf8mb4',
-            'COLLATION': 'utf8mb4_unicode_ci',
-        }
     }
 }
 
@@ -172,12 +169,26 @@ LOGGING = {
             'class': 'logging.FileHandler',
             'filename': 'lease_renewal_check.log',
         },
+        'db_connections': {
+            'level': 'INFO',
+            'class': 'logging.FileHandler',
+            'filename': 'database_connections.log',
+        },
+        'console': {
+            'level': 'WARNING',
+            'class': 'logging.StreamHandler',
+        },
     },
     'loggers': {
         'django': {
             'handlers': ['file'],
             'level': 'INFO',
             'propagate': True,
+        },
+        'pages.middleware': {  # Replace 'your_project' with your actual project name
+            'handlers': ['db_connections', 'console'],
+            'level': 'INFO',
+            'propagate': False,
         },
     },
 }

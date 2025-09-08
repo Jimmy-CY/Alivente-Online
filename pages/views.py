@@ -153,19 +153,26 @@ def get_notification_data():
     """
     Get notification data by running similar queries to the management command
     """
-    mydb = mysql.connector.connect(
-        host=settings.DATABASES['default']['HOST'],
-        port=settings.DATABASES['default']['PORT'],
-        user=settings.DATABASES['default']['USER'],
-        password=settings.DATABASES['default']['PASSWORD'],
-        database=settings.DATABASES['default']['NAME'],
-        auth_plugin=settings.DATABASES['default']['AUTH_PLUGIN'],
-    )
+    import logging
+    from django.db import connection as django_connection
     
-    my_cursor = mydb.cursor()
-    today = date.today()
+    logger = logging.getLogger(__name__)
+    mydb = None
+    my_cursor = None
     
     try:
+        mydb = mysql.connector.connect(
+            host=settings.DATABASES['default']['HOST'],
+            port=settings.DATABASES['default']['PORT'],
+            user=settings.DATABASES['default']['USER'],
+            password=settings.DATABASES['default']['PASSWORD'],
+            database=settings.DATABASES['default']['NAME'],
+            auth_plugin=settings.DATABASES['default']['AUTH_PLUGIN'],
+        )
+        
+        my_cursor = mydb.cursor()
+        today = date.today()
+        
         # Get vacant properties
         vacant_properties = get_vacant_properties(my_cursor)
         
@@ -202,10 +209,62 @@ def get_notification_data():
             'lastUpdated': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         }
         
+    except mysql.connector.Error as e:
+        logger.error(f"MySQL connection error in get_notification_data: {e}")
+        # Return empty data structure on error
+        return {
+            'summary': {
+                'vacantProperties': 0,
+                'expiringLeases': 0,
+                'declinedRenewals': 0,
+                'overdueInvoices': 0,
+                'expensesWaitingApproval': 0,
+                'expensesWaitingPayment': 0
+            },
+            'vacantProperties': [],
+            'expiringLeases': [],
+            'declinedRenewals': [],
+            'overdueInvoices': [],
+            'expensesWaitingApproval': [],
+            'expensesWaitingPayment': [],
+            'lastUpdated': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        }
+        
+    except Exception as e:
+        logger.error(f"Unexpected error in get_notification_data: {e}")
+        # Return empty data structure on error
+        return {
+            'summary': {
+                'vacantProperties': 0,
+                'expiringLeases': 0,
+                'declinedRenewals': 0,
+                'overdueInvoices': 0,
+                'expensesWaitingApproval': 0,
+                'expensesWaitingPayment': 0
+            },
+            'vacantProperties': [],
+            'expiringLeases': [],
+            'declinedRenewals': [],
+            'overdueInvoices': [],
+            'expensesWaitingApproval': [],
+            'expensesWaitingPayment': [],
+            'lastUpdated': datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        }
+        
     finally:
-        if mydb.is_connected():
-            my_cursor.close()
-            mydb.close()
+        # Always close cursor and connection
+        if my_cursor:
+            try:
+                my_cursor.close()
+            except:
+                pass
+        if mydb and mydb.is_connected():
+            try:
+                mydb.close()
+            except:
+                pass
+        # Also close Django's connection
+        django_connection.close()
 
 def get_expenses_waiting_approval(cursor):
     """Get expenses that require approval (status = 'require_approval')"""
@@ -3803,9 +3862,14 @@ def invoices_commit(request, invoice_id):
 
 def send_invoices_paid_email(tenant, invoice_date):
     """
-    Send email notification of an expense payment for a specific expense
+    Send email notification of an invoice payment for a specific tenant
     """
+    from django.db import connection
+    import logging
+    
+    logger = logging.getLogger(__name__)
     smtp_object = None
+    
     try:
         # Create message
         msg = MIMEMultipart()
@@ -3834,15 +3898,13 @@ Alivente Property Management System"""
         email_use_tls = os.environ.get('EMAIL_USE_TLS', 'True').lower() == 'true'
         
         if not email_password:
-            logger.error('❌ EMAIL_PASSWORD environment variable not set')
+            logger.error('EMAIL_PASSWORD environment variable not set')
             return False
         
         # SMTP setup with environment variable configuration
         if email_use_ssl:
-            # Use SSL connection (typically port 465)
             smtp_object = smtplib.SMTP_SSL(email_host, email_port, timeout=10)
         else:
-            # Use regular SMTP connection (typically port 587)
             smtp_object = smtplib.SMTP(email_host, email_port, timeout=10)
             smtp_object.ehlo()
             if email_use_tls:
@@ -3871,6 +3933,8 @@ Alivente Property Management System"""
                 smtp_object.quit()
             except:
                 pass
+        # Close database connection
+        connection.close()
 
 ### PROPERTIES ###
 @login_required
@@ -4496,7 +4560,12 @@ def send_expense_approved_email(expense_date, property_name, description, amount
     """
     Send email notification of an expense approval for a specific expense
     """
+    from django.db import connection
+    import logging
+    
+    logger = logging.getLogger(__name__)
     smtp_object = None
+    
     try:
         # Create message
         msg = MIMEMultipart()
@@ -4507,15 +4576,20 @@ def send_expense_approved_email(expense_date, property_name, description, amount
         
         # Email body with proper formatting
         body = f"""Dear User,
+
 An expense has been APPROVED. The details are as follows:
+
 - Expense Date: {expense_date.strftime('%d/%m/%Y')}
 - Property: {property_name}
 - Description: {description}
 - Amount: €{amount}
 - Approved Date: {approved_date.strftime('%d/%m/%Y')}
 - Status: Approved (Pending Payment)
+
 You can view this expense in the Alivente Property Management System.
+
 Thanks,
+
 Alivente Property Management System"""
         
         msg.attach(MIMEText(body, 'plain'))
@@ -4528,15 +4602,13 @@ Alivente Property Management System"""
         email_use_tls = os.environ.get('EMAIL_USE_TLS', 'True').lower() == 'true'
         
         if not email_password:
-            logger.error('❌ EMAIL_PASSWORD environment variable not set')
+            logger.error('EMAIL_PASSWORD environment variable not set')
             return False
         
         # SMTP setup with environment variable configuration
         if email_use_ssl:
-            # Use SSL connection (typically port 465)
             smtp_object = smtplib.SMTP_SSL(email_host, email_port, timeout=10)
         else:
-            # Use regular SMTP connection (typically port 587)
             smtp_object = smtplib.SMTP(email_host, email_port, timeout=10)
             smtp_object.ehlo()
             if email_use_tls:
@@ -4566,12 +4638,19 @@ Alivente Property Management System"""
                 smtp_object.quit()
             except:
                 pass
+        # Close database connection
+        connection.close()
 
 def send_expense_paid_email(expense_date, property_name, description, amount, paid_date):
     """
     Send email notification of an expense payment for a specific expense
     """
+    from django.db import connection
+    import logging
+    
+    logger = logging.getLogger(__name__)
     smtp_object = None
+    
     try:
         # Create message
         msg = MIMEMultipart()
@@ -4582,15 +4661,20 @@ def send_expense_paid_email(expense_date, property_name, description, amount, pa
         
         # Email body with proper formatting
         body = f"""Dear User,
+
 An expense has been PAID. The details are as follows:
+
 - Expense Date: {expense_date.strftime('%d/%m/%Y')}
 - Property: {property_name}
 - Description: {description}
 - Amount: €{amount}
 - Paid Date: {paid_date.strftime('%d/%m/%Y')}
 - Status: Fully Processed
+
 This expense has been completed and processed.
+
 Thanks,
+
 Alivente Property Management System"""
         
         msg.attach(MIMEText(body, 'plain'))
@@ -4603,15 +4687,13 @@ Alivente Property Management System"""
         email_use_tls = os.environ.get('EMAIL_USE_TLS', 'True').lower() == 'true'
         
         if not email_password:
-            logger.error('❌ EMAIL_PASSWORD environment variable not set')
+            logger.error('EMAIL_PASSWORD environment variable not set')
             return False
         
         # SMTP setup with environment variable configuration
         if email_use_ssl:
-            # Use SSL connection (typically port 465)
             smtp_object = smtplib.SMTP_SSL(email_host, email_port, timeout=10)
         else:
-            # Use regular SMTP connection (typically port 587)
             smtp_object = smtplib.SMTP(email_host, email_port, timeout=10)
             smtp_object.ehlo()
             if email_use_tls:
@@ -4641,12 +4723,19 @@ Alivente Property Management System"""
                 smtp_object.quit()
             except:
                 pass
+        # Close database connection
+        connection.close()
 
 def send_expense_approval_email_with_link(expense_date, property_name, description, amount, created_date):
     """
     Send email notification for expense approval with enhanced details
     """
+    from django.db import connection
+    import logging
+    
+    logger = logging.getLogger(__name__)
     smtp_object = None
+    
     try:
         # Create message
         msg = MIMEMultipart()
@@ -4670,6 +4759,7 @@ A new Actual Expense has been created that requires your approval. The details a
 You can view this expense in the Alivente Property Management System.
 
 Thanks,
+
 Alivente Property Management System"""
         
         msg.attach(MIMEText(body, 'plain'))
@@ -4682,15 +4772,13 @@ Alivente Property Management System"""
         email_use_tls = os.environ.get('EMAIL_USE_TLS', 'True').lower() == 'true'
         
         if not email_password:
-            logger.error('❌ EMAIL_PASSWORD environment variable not set')
+            logger.error('EMAIL_PASSWORD environment variable not set')
             return False
         
         # SMTP setup with environment variable configuration
         if email_use_ssl:
-            # Use SSL connection (typically port 465)
             smtp_object = smtplib.SMTP_SSL(email_host, email_port, timeout=10)
         else:
-            # Use regular SMTP connection (typically port 587)
             smtp_object = smtplib.SMTP(email_host, email_port, timeout=10)
             smtp_object.ehlo()
             if email_use_tls:
@@ -4720,6 +4808,8 @@ Alivente Property Management System"""
                 smtp_object.quit()
             except:
                 pass
+        # Close database connection
+        connection.close()
 
 @login_required
 def act_expense_commit(request):
@@ -5030,196 +5120,167 @@ def fsr_comment_add(request, issues_id):
     # If not POST, redirect to details page
     return redirect('fsr_details', issues_id=issues_id)
 
-def get_fsr_context_data(request):
-    status_groups = []
-    # Use your actual model name 'issues' (lowercase as defined)
-    statuses = issues.objects.values_list('issues_status', flat=True).distinct()
-    
-    # Define the desired order for statuses
-    status_order = ['Resolved', 'Unresolved', 'Issue']
-    
-    # Sort statuses according to the defined order
-    # First get statuses that match our order, then any others that might exist
-    ordered_statuses = []
-    for preferred_status in status_order:
-        if preferred_status in statuses:
-            ordered_statuses.append(preferred_status)
-    
-    # Add any other statuses that weren't in our predefined order
-    for status in statuses:
-        if status not in ordered_statuses:
-            ordered_statuses.append(status)
-    
-    for status in ordered_statuses:
-        property_issues = []
-        # Filter using the correct field name
-        issues_with_status = issues.objects.filter(issues_status=status)
-        # Access related property name via ForeignKey
-        properties = issues_with_status.values_list('prop__prop_name', flat=True).distinct()
-        
-        for prop_name in properties:
-            issues_fsr = issues_with_status.filter(prop__prop_name=prop_name)
-            issue_data = []
-            
-            for issue in issues_fsr:
-                # Use the correct foreign key field name 'issues' and primary key 'issues_id'
-                # CHANGED: Added '-issues_details_date' for descending order
-                details = issues_details.objects.filter(issues=issue.issues_id).order_by('-issues_details_date')
-                issue_data.append({
-                    'issues_id': issue.issues_id,  # Use the actual primary key field name
-                    'issues_heading': issue.issues_heading,
-                    'issues_description': issue.issues_description,
-                    'days_to_resolve': getattr(issue, 'days_to_resolve', None),  # This field doesn't exist in your model
-                    'days_open': getattr(issue, 'days_open', None),  # This field doesn't exist in your model
-                    'details': details
-                })
-            
-            property_issues.append({
-                'prop_name': prop_name,
-                'issues': issue_data
-            })
-        
-        status_groups.append({
-            'status': status,
-            'property_issues': property_issues
-        })
-    
-    return {
-        'status_groups': status_groups,
-        'today': date.today(),
-        'request': request
-    }
-
 def fsr_pdf(request):
-    context = get_fsr_context_data(request)
-    return render_to_pdf('fsr_email.html', context)
+    """
+    Generate PDF version of FSR report
+    """
+    from django.db import connection
+    
+    try:
+        context = get_fsr_context_data(request)
+        return render_to_pdf('fsr_email.html', context)
+    finally:
+        # Close database connection
+        connection.close()
 
 def get_fsr_context_data(request):
     """
     Generate context data for Friday Status Report (used by both web view and email)
     Rewritten to use Django ORM instead of raw SQL
     """
-    today = date.today()
+    from django.db import connection
+    import logging
     
-    # Get max_comments parameter for summarized reports
-    max_comments = request.GET.get('max_comments', None) if hasattr(request, 'GET') else None
-    is_summarized_report = max_comments is not None
+    logger = logging.getLogger(__name__)
     
-    if is_summarized_report:
-        try:
-            max_comments = int(max_comments)
-        except (ValueError, TypeError):
-            max_comments = None
-            is_summarized_report = False
-    
-    # Get all properties ordered by country and name
-    properties = props.objects.all().order_by('prop_country', 'prop_name').values('prop_name')
-    
-    # Get all issues with their details, using select_related and prefetch_related for optimization
-    issues_queryset = issues.objects.select_related('prop').prefetch_related(
-        Prefetch(
-            'issues_details_set',
-            queryset=issues_details.objects.all().order_by('-issues_details_id'),
-            to_attr='details_list'
-        )
-    ).order_by('issues_id')
-    
-    # Process issues data
-    issues_data = []
-    for issue_obj in issues_queryset:
-        # Build the issue dictionary
-        issue_dict = {
-            'prop_name': issue_obj.prop.prop_name,
-            'issues_id': issue_obj.issues_id,
-            'issues_heading': issue_obj.issues_heading,
-            'issues_description': issue_obj.issues_description,
-            'issues_status': issue_obj.issues_status,
-            'issues_date_logged': issue_obj.issues_date_logged,
-            'issues_resolution_date': issue_obj.issues_resolution_date,
-            'days_to_resolve': None,
-            'days_open': None,
-            'details': []
-        }
+    try:
+        today = date.today()
         
-        # Calculate days metrics based on status
-        if issue_dict['issues_date_logged']:
-            if issue_dict['issues_status'] == 'Resolved':
-                if (issue_dict['issues_resolution_date'] and 
-                    issue_dict['issues_resolution_date'] != date(1900, 1, 1)):
-                    issue_dict['days_to_resolve'] = (issue_dict['issues_resolution_date'] - issue_dict['issues_date_logged']).days
+        # Get max_comments parameter for summarized reports
+        max_comments = request.GET.get('max_comments', None) if hasattr(request, 'GET') else None
+        is_summarized_report = max_comments is not None
+        
+        if is_summarized_report:
+            try:
+                max_comments = int(max_comments)
+            except (ValueError, TypeError):
+                max_comments = None
+                is_summarized_report = False
+        
+        # Get all properties ordered by country and name
+        properties = props.objects.all().order_by('prop_country', 'prop_name').values('prop_name')
+        
+        # Get all issues with their details, using select_related and prefetch_related for optimization
+        issues_queryset = issues.objects.select_related('prop').prefetch_related(
+            Prefetch(
+                'issues_details_set',
+                queryset=issues_details.objects.all().order_by('-issues_details_id'),
+                to_attr='details_list'
+            )
+        ).order_by('issues_id')
+        
+        # Process issues data
+        issues_data = []
+        for issue_obj in issues_queryset:
+            # Build the issue dictionary
+            issue_dict = {
+                'prop_name': issue_obj.prop.prop_name,
+                'issues_id': issue_obj.issues_id,
+                'issues_heading': issue_obj.issues_heading,
+                'issues_description': issue_obj.issues_description,
+                'issues_status': issue_obj.issues_status,
+                'issues_date_logged': issue_obj.issues_date_logged,
+                'issues_resolution_date': issue_obj.issues_resolution_date,
+                'days_to_resolve': None,
+                'days_open': None,
+                'details': []
+            }
+            
+            # Calculate days metrics based on status
+            if issue_dict['issues_date_logged']:
+                if issue_dict['issues_status'] == 'Resolved':
+                    if (issue_dict['issues_resolution_date'] and 
+                        issue_dict['issues_resolution_date'] != date(1900, 1, 1)):
+                        issue_dict['days_to_resolve'] = (issue_dict['issues_resolution_date'] - issue_dict['issues_date_logged']).days
+                else:
+                    issue_dict['days_open'] = (today - issue_dict['issues_date_logged']).days
+            
+            # Process details
+            details_data = []
+            for detail in issue_obj.details_list:
+                details_data.append({
+                    'issues_details_id': detail.issues_details_id,
+                    'issues_details_comment': detail.issues_details_comment,
+                    'issues_details_user': detail.issues_details_user,
+                    'issues_details_date': detail.issues_details_date
+                })
+            
+            # Apply comment limiting for summarized reports
+            if is_summarized_report and max_comments and len(details_data) > max_comments:
+                total_comments_before_limit = len(details_data)
+                issue_dict['details'] = details_data[:max_comments]
+                issue_dict['has_more_comments'] = True
+                issue_dict['total_comments'] = total_comments_before_limit
             else:
-                issue_dict['days_open'] = (today - issue_dict['issues_date_logged']).days
+                issue_dict['details'] = details_data
+                issue_dict['has_more_comments'] = False
+                issue_dict['total_comments'] = len(details_data)
+            
+            issues_data.append(issue_dict)
         
-        # Process details
-        details_data = []
-        for detail in issue_obj.details_list:
-            details_data.append({
-                'issues_details_id': detail.issues_details_id,
-                'issues_details_comment': detail.issues_details_comment,
-                'issues_details_user': detail.issues_details_user,
-                'issues_details_date': detail.issues_details_date
-            })
-        
-        # Apply comment limiting for summarized reports
-        if is_summarized_report and max_comments and len(details_data) > max_comments:
-            total_comments_before_limit = len(details_data)
-            issue_dict['details'] = details_data[:max_comments]
-            issue_dict['has_more_comments'] = True
-            issue_dict['total_comments'] = total_comments_before_limit
-        else:
-            issue_dict['details'] = details_data
-            issue_dict['has_more_comments'] = False
-            issue_dict['total_comments'] = len(details_data)
-        
-        issues_data.append(issue_dict)
-    
-    # Process data by status and property
-    processed_data = {}
-    for status in ['Resolved', 'Unresolved', 'Issue']:
-        processed_data[status] = {}
-        for prop in properties:
-            prop_name = prop['prop_name']
-            processed_data[status][prop_name] = []
+        # Process data by status and property
+        processed_data = {}
+        for status in ['Resolved', 'Unresolved', 'Issue']:
+            processed_data[status] = {}
+            for prop in properties:
+                prop_name = prop['prop_name']
+                processed_data[status][prop_name] = []
 
-            unique_issues = set()
+                unique_issues = set()
 
-            for issue in issues_data:
-                if (issue['prop_name'] == prop_name and 
-                    issue['issues_status'] == status and 
-                    (issue['issues_heading'], issue['issues_description']) not in unique_issues):
+                for issue in issues_data:
+                    if (issue['prop_name'] == prop_name and 
+                        issue['issues_status'] == status and 
+                        (issue['issues_heading'], issue['issues_description']) not in unique_issues):
 
-                    if status == 'Resolved':
-                        if (issue['issues_resolution_date'] != date(1900, 1, 1) and 
-                            issue['issues_resolution_date'] >= (date.today() - timedelta(days=7))):
+                        if status == 'Resolved':
+                            if (issue['issues_resolution_date'] != date(1900, 1, 1) and 
+                                issue['issues_resolution_date'] >= (date.today() - timedelta(days=7))):
+                                processed_data[status][prop_name].append(issue)
+                                unique_issues.add((issue['issues_heading'], issue['issues_description']))
+                        else:
                             processed_data[status][prop_name].append(issue)
                             unique_issues.add((issue['issues_heading'], issue['issues_description']))
-                    else:
-                        processed_data[status][prop_name].append(issue)
-                        unique_issues.add((issue['issues_heading'], issue['issues_description']))
-    
-    context = {
-        'today': today,
-        'statuses': ['Resolved', 'Unresolved', 'Issue'],
-        'properties': properties,
-        'is_summarized_report': is_summarized_report,
-        'max_comments': max_comments,
-        'status_groups': [
-            {
-                'status': status,
-                'property_issues': [
-                    {
-                        'prop_name': prop['prop_name'],
-                        'issues': processed_data[status][prop['prop_name']]
-                    }
-                    for prop in properties
-                    if processed_data[status][prop['prop_name']]
-                ]
-            }
-            for status in ['Resolved', 'Unresolved', 'Issue']
-        ]
-    }
-    
-    return context
+        
+        context = {
+            'today': today,
+            'statuses': ['Resolved', 'Unresolved', 'Issue'],
+            'properties': properties,
+            'is_summarized_report': is_summarized_report,
+            'max_comments': max_comments,
+            'status_groups': [
+                {
+                    'status': status,
+                    'property_issues': [
+                        {
+                            'prop_name': prop['prop_name'],
+                            'issues': processed_data[status][prop['prop_name']]
+                        }
+                        for prop in properties
+                        if processed_data[status][prop['prop_name']]
+                    ]
+                }
+                for status in ['Resolved', 'Unresolved', 'Issue']
+            ]
+        }
+        
+        return context
+        
+    except Exception as e:
+        logger.error(f"Error in get_fsr_context_data: {e}")
+        # Return minimal context on error
+        return {
+            'today': date.today(),
+            'statuses': ['Resolved', 'Unresolved', 'Issue'],
+            'properties': [],
+            'is_summarized_report': False,
+            'max_comments': None,
+            'status_groups': []
+        }
+        
+    finally:
+        # Close database connection
+        connection.close()
 
 @login_required
 def fsr_notification(request):
@@ -5402,6 +5463,8 @@ def fsr_notification(request):
                     smtp_object.quit()
                 except:
                     pass
+            # Close database connection
+            connection.close()
     
     return redirect('fsr')
 

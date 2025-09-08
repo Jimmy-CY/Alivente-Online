@@ -14362,3 +14362,50 @@ Watching for file changes with StatReloader
 "GET /fsr/ HTTP/1.1" 200 101505
 "GET /friday_status_report/?max_comments=3 HTTP/1.1" 200 36499
 "GET /fsr/ HTTP/1.1" 200 101505
+Watching for file changes with StatReloader
+C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\mysite\settings.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\mysite\settings.py changed, reloading.
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 15228
+"GET /fsr/ HTTP/1.1" 200 101505
+"GET /fsr_details/18?from=fsr&search=&propcountry=&propname=&issuestatus= HTTP/1.1" 200 25613
+"GET /fsr/?refresh=true HTTP/1.1" 200 101505
+"GET /fsr/ HTTP/1.1" 200 101505
+C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\mysite\settings.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\mysite\settings.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 15228
+C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\middleware.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\mysite\settings.py changed, reloading.
+Watching for file changes with StatReloader
+"GET /fsr/ HTTP/1.1" 200 101505
+"GET /friday_status_report/ HTTP/1.1" 200 37413
+"GET /fsr/ HTTP/1.1" 200 101505
+"GET /finance/ HTTP/1.1" 200 16726
+"GET /finance_pl_act/ HTTP/1.1" 200 128128
+"GET /finance/ HTTP/1.1" 200 16726
+"GET /forecast/ HTTP/1.1" 200 39744
+"GET /forecast/?horizon=12 HTTP/1.1" 200 54683
+"GET /finance/ HTTP/1.1" 200 16726
+"GET /finance_valuations/ HTTP/1.1" 200 17855
+"GET /finance/ HTTP/1.1" 200 16726
+"GET /financial-indicators/ HTTP/1.1" 200 52505
+"GET /financial-indicators/ HTTP/1.1" 200 2731
+"GET /finance/ HTTP/1.1" 200 16726
