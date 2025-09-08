@@ -14409,3 +14409,6 @@ Watching for file changes with StatReloader
 "GET /financial-indicators/ HTTP/1.1" 200 52505
 "GET /financial-indicators/ HTTP/1.1" 200 2731
 "GET /finance/ HTTP/1.1" 200 16726
+Watching for file changes with StatReloader
+C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\middleware.py changed, reloading.
+Watching for file changes with StatReloader

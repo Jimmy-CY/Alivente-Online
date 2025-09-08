@@ -1,2 +1,4 @@
 DatabaseConnectionMiddleware initialized with threshold=100
 Cleaned connections: default(query_count=345)
+DatabaseConnectionMiddleware initialized with threshold=100
+Enhanced DatabaseConnectionMiddleware initialized with threshold=100
