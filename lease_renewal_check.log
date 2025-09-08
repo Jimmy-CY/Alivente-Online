@@ -14412,3 +14412,32 @@ Watching for file changes with StatReloader
 Watching for file changes with StatReloader
 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\middleware.py changed, reloading.
 Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 15228
+"GET /finance/ HTTP/1.1" 200 16726
+"GET /finance_pl_act/ HTTP/1.1" 200 128128
+"GET /finance_pl_act/?year=2025&properties=1&properties=2&properties=3&properties=4&properties=5&properties=7&properties=9&properties=10&properties=11&properties=12 HTTP/1.1" 200 132619
+"GET /act_expense_view/?year=2025&month=5&from_finance_pl_act=true&properties=1,2,3,4,5,7,9,10,11,12 HTTP/1.1" 200 52724
+"GET /media/expense_docs/foti-pitta-20250514-Invoice.pdf HTTP/1.1" 200 461728
+"GET /finance_pl_act/?year=2024&properties=1&properties=2&properties=3&properties=4&properties=5&properties=7&properties=9&properties=10&properties=11&properties=12 HTTP/1.1" 200 132123
+"GET /finance/ HTTP/1.1" 200 16726
+"GET /forecast/ HTTP/1.1" 200 39744
+"GET /forecast/?horizon=12 HTTP/1.1" 200 54683
+"GET /finance/ HTTP/1.1" 200 16726
+"GET /financial-indicators/ HTTP/1.1" 200 52505
+"GET /financial-indicators/ HTTP/1.1" 200 2731
+"GET /fsr/ HTTP/1.1" 200 101505
+"GET /resolved_issues_report/?f_date=2025-01-01&t_date=2025-09-08 HTTP/1.1" 200 23090
+"GET /fsr/ HTTP/1.1" 200 101505
+"GET /friday_status_report/ HTTP/1.1" 200 37413
+"GET /fsr/ HTTP/1.1" 200 101505
+"GET / HTTP/1.1" 200 15228
+"GET /fsr/ HTTP/1.1" 200 101505
+"GET /resolved_issues_report/?f_date=2025-01-01&t_date=2025-09-08 HTTP/1.1" 200 23090
+"GET /fsr/ HTTP/1.1" 200 101505
+"GET /friday_status_report/ HTTP/1.1" 200 37413
+"GET /fsr_notification/ HTTP/1.1" 302 0
+"GET /fsr/ HTTP/1.1" 200 102119
+"GET / HTTP/1.1" 200 15228
+C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+Watching for file changes with StatReloader

@@ -2,3 +2,67 @@ DatabaseConnectionMiddleware initialized with threshold=100
 Cleaned connections: default(query_count=345)
 DatabaseConnectionMiddleware initialized with threshold=100
 Enhanced DatabaseConnectionMiddleware initialized with threshold=100
+Enhanced DatabaseConnectionMiddleware initialized with threshold=100
+Starting request req_1757331340_24236: GET / (user: anonymous)
+Starting request req_1757331353_24236: GET /finance/ (user: anonymous)
+Starting request req_1757331354_24236: GET /finance_pl_act/ (user: anonymous)
+Request req_1757331354_24236 stats: duration=0.43s, total_queries=345, breakdown={'default': 345}, path=/finance_pl_act/, user=anonymous
+HIGH QUERY REQUEST req_1757331354_24236: 345 queries for default connection - Path: /finance_pl_act/, User: anonymous, Duration: 0.44s
+CLOSING CONNECTION default for request req_1757331354_24236:
+  Reasons: total_queries=345, request_queries=345
+  Request: GET /finance_pl_act/
+  User: anonymous
+  Query counts: {'initial': 0, 'final': 345, 'this_request': 345}
+  Recent queries: ['SELECT `prop_values`.`prop_values_id`, `prop_values`.`prop_id`, `prop_values`.`prop_values_purchase_...', 'SELECT `prop_values`.`prop_values_id`, `prop_values`.`prop_id`, `prop_values`.`prop_values_purchase_...', 'SELECT `prop_values`.`prop_values_id`, `prop_values`.`prop_id`, `prop_values`.`prop_values_purchase_...', 'SELECT `prop_values`.`prop_values_id`, `prop_values`.`prop_id`, `prop_values`.`prop_values_purchase_...', 'SELECT `prop_values`.`prop_values_id`, `prop_values`.`prop_id`, `prop_values`.`prop_values_purchase_...']
+  Request duration: 0.44s
+  User agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Sa
+Request req_1757331354_24236 - Cleaned connections: default(total_queries=345, request_queries=345)
+Starting request req_1757331358_24236: GET /finance_pl_act/ (user: anonymous)
+Request req_1757331358_24236 stats: duration=0.51s, total_queries=477, breakdown={'default': 477}, path=/finance_pl_act/, user=anonymous
+HIGH QUERY REQUEST req_1757331358_24236: 477 queries for default connection - Path: /finance_pl_act/, User: anonymous, Duration: 0.51s
+CLOSING CONNECTION default for request req_1757331358_24236:
+  Reasons: total_queries=477, request_queries=477
+  Request: GET /finance_pl_act/
+  User: anonymous
+  Query counts: {'initial': 0, 'final': 477, 'this_request': 477}
+  Recent queries: ['SELECT `prop_values`.`prop_values_id`, `prop_values`.`prop_id`, `prop_values`.`prop_values_purchase_...', 'SELECT `prop_values`.`prop_values_id`, `prop_values`.`prop_id`, `prop_values`.`prop_values_purchase_...', 'SELECT `prop_values`.`prop_values_id`, `prop_values`.`prop_id`, `prop_values`.`prop_values_purchase_...', 'SELECT `prop_values`.`prop_values_id`, `prop_values`.`prop_id`, `prop_values`.`prop_values_purchase_...', 'SELECT `prop_values`.`prop_values_id`, `prop_values`.`prop_id`, `prop_values`.`prop_values_purchase_...']
+  Request duration: 0.51s
+  User agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Sa
+Request req_1757331358_24236 - Cleaned connections: default(total_queries=477, request_queries=477)
+Starting request req_1757331362_24236: GET /act_expense_view/ (user: anonymous)
+Starting request req_1757331365_24236: GET /media/expense_docs/foti-pitta-20250514-Invoice.pdf (user: anonymous)
+Starting request req_1757331370_24236: GET /finance_pl_act/ (user: anonymous)
+Request req_1757331370_24236 stats: duration=0.46s, total_queries=477, breakdown={'default': 477}, path=/finance_pl_act/, user=anonymous
+HIGH QUERY REQUEST req_1757331370_24236: 477 queries for default connection - Path: /finance_pl_act/, User: anonymous, Duration: 0.46s
+CLOSING CONNECTION default for request req_1757331370_24236:
+  Reasons: total_queries=477, request_queries=477
+  Request: GET /finance_pl_act/
+  User: anonymous
+  Query counts: {'initial': 0, 'final': 477, 'this_request': 477}
+  Recent queries: ['SELECT `prop_values`.`prop_values_id`, `prop_values`.`prop_id`, `prop_values`.`prop_values_purchase_...', 'SELECT `prop_values`.`prop_values_id`, `prop_values`.`prop_id`, `prop_values`.`prop_values_purchase_...', 'SELECT `prop_values`.`prop_values_id`, `prop_values`.`prop_id`, `prop_values`.`prop_values_purchase_...', 'SELECT `prop_values`.`prop_values_id`, `prop_values`.`prop_id`, `prop_values`.`prop_values_purchase_...', 'SELECT `prop_values`.`prop_values_id`, `prop_values`.`prop_id`, `prop_values`.`prop_values_purchase_...']
+  Request duration: 0.46s
+  User agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Sa
+Request req_1757331370_24236 - Cleaned connections: default(total_queries=477, request_queries=477)
+Starting request req_1757331373_24236: GET /finance/ (user: anonymous)
+Starting request req_1757331374_24236: GET /forecast/ (user: anonymous)
+Starting request req_1757331374_24236: GET /forecast/ (user: anonymous)
+Starting request req_1757331376_24236: GET /finance/ (user: anonymous)
+Starting request req_1757331377_24236: GET /financial-indicators/ (user: anonymous)
+Starting request req_1757331377_24236: GET /financial-indicators/ (user: anonymous)
+Request req_1757331377_24236 stats: duration=0.04s, total_queries=34, breakdown={'default': 34}, path=/financial-indicators/, user=anonymous
+Starting request req_1757331381_24236: GET /fsr/ (user: anonymous)
+Starting request req_1757331389_24236: GET /resolved_issues_report/ (user: anonymous)
+Starting request req_1757331391_24236: GET /fsr/ (user: anonymous)
+Starting request req_1757331394_24236: GET /friday_status_report/ (user: anonymous)
+Request req_1757331394_24236 stats: duration=0.20s, total_queries=22, breakdown={'default': 22}, path=/friday_status_report/, user=anonymous
+Starting request req_1757331395_24236: GET /fsr/ (user: anonymous)
+Starting request req_1757331397_24236: GET / (user: anonymous)
+Starting request req_1757331620_24236: GET /fsr/ (user: anonymous)
+Starting request req_1757331628_24236: GET /resolved_issues_report/ (user: anonymous)
+Starting request req_1757331629_24236: GET /fsr/ (user: anonymous)
+Starting request req_1757331632_24236: GET /friday_status_report/ (user: anonymous)
+Request req_1757331632_24236 stats: duration=0.18s, total_queries=22, breakdown={'default': 22}, path=/friday_status_report/, user=anonymous
+Starting request req_1757331633_24236: GET /fsr_notification/ (user: anonymous)
+Starting request req_1757331635_24236: GET /fsr/ (user: anonymous)
+Starting request req_1757331690_24236: GET / (user: anonymous)
+Enhanced DatabaseConnectionMiddleware initialized with threshold=100
