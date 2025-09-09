@@ -14860,3 +14860,33 @@ Watching for file changes with StatReloader
 "GET /notifications/ HTTP/1.1" 200 31762
 "GET /notifications/ HTTP/1.1" 200 6086
 Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+"GET /notifications/ HTTP/1.1" 200 6086
+"GET /notifications/ HTTP/1.1" 200 6086
+"GET / HTTP/1.1" 200 14929
+"GET /projects/ HTTP/1.1" 200 25218
+C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+"GET /projects/detail/2/ HTTP/1.1" 200 59560
+"GET /projects/2/assignees/ HTTP/1.1" 200 92
+"GET /projects/2/task-list/?language=english HTTP/1.1" 200 32969
+"GET /projects/detail/2/ HTTP/1.1" 200 59560
+"GET /projects/2/gantt/ HTTP/1.1" 200 34092
+"GET /projects/detail/2/ HTTP/1.1" 200 59560
+"POST /projects/ajax/duplicate/ HTTP/1.1" 200 172
+C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 14929
+"GET /projects/ HTTP/1.1" 200 25218
+"GET /projects/detail/2/ HTTP/1.1" 200 59560
+"POST /projects/ajax/duplicate/ HTTP/1.1" 200 304
+"GET /projects/detail/5/ HTTP/1.1" 200 58996
+"GET /projects/ HTTP/1.1" 200 26895
+"GET /projects/detail/5/ HTTP/1.1" 200 58996
+"GET /projects/ HTTP/1.1" 200 26895
+"GET /projects/detail/2/ HTTP/1.1" 200 59560
+"GET /projects/ HTTP/1.1" 200 26895
+"GET /projects/detail/2/ HTTP/1.1" 200 59561
+"GET /projects/ HTTP/1.1" 200 26895
+"GET /projects/detail/2/ HTTP/1.1" 200 59561
+"GET /projects/ HTTP/1.1" 200 26895

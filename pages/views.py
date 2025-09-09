@@ -1553,7 +1553,7 @@ def ajax_update_task_status(request):
 @login_required
 def ajax_duplicate_project(request):
     """
-    AJAX view to duplicate a project with all its tasks and subtasks,
+    OPTIMIZED: AJAX view to duplicate a project with all its tasks and subtasks,
     adjusting all dates based on the new project start date and handling budget copy options
     """
     if request.method != 'POST':
@@ -1570,10 +1570,10 @@ def ajax_duplicate_project(request):
         data = json.loads(request.body)
         project_id = data.get('project_id')
         new_project_name = data.get('new_project_name', '').strip()
-        new_project_description = data.get('new_project_description', '').strip()  # NEW: Get description
+        new_project_description = data.get('new_project_description', '').strip()
         new_project_start_date_str = data.get('new_project_start_date', '').strip()
-        budget_copy_option = data.get('budget_copy_option', 'budgeted')  # 'budgeted' or 'actual'
-        clear_greek_translations = data.get('clear_greek_translations', False)  # NEW: Flag to clear translations
+        budget_copy_option = data.get('budget_copy_option', 'budgeted')
+        clear_greek_translations = data.get('clear_greek_translations', False)
         
         # Validate required fields
         if not project_id or not new_project_name or not new_project_description or not new_project_start_date_str:
@@ -1584,7 +1584,7 @@ def ajax_duplicate_project(request):
         
         # Validate budget copy option
         if budget_copy_option not in ['budgeted', 'actual']:
-            budget_copy_option = 'budgeted'  # Default to budgeted if invalid option
+            budget_copy_option = 'budgeted'
         
         # Parse the new start date
         try:
@@ -1605,9 +1605,14 @@ def ajax_duplicate_project(request):
                 'message': f'Invalid project ID: {project_id}'
             })
         
-        # Get the original project
+        # OPTIMIZED: Get the original project with comprehensive prefetching
         try:
-            original_project = Project.objects.get(project_id=project_id)
+            original_project = Project.objects.select_related('prop').prefetch_related(
+                Prefetch('projecttask_set', 
+                    queryset=ProjectTask.objects.select_related().prefetch_related('subtasks')
+                ),
+                'project_documents'
+            ).get(project_id=project_id)
         except Project.DoesNotExist:
             return JsonResponse({
                 'success': False,
@@ -1654,123 +1659,139 @@ def ajax_duplicate_project(request):
             # Calculate new project budget based on option
             new_project_total_budgeted_cost = original_project.project_total_budgeted_cost
             if budget_copy_option == 'actual':
-                # Use actual cost as new budget
                 new_project_total_budgeted_cost = original_project.get_calculated_actual_cost()
             
-            # Create new project with new name and description, clear Greek translations
+            # Create new project
             new_project = Project.objects.create(
-                project_name=new_project_name,  # Use new name
-                project_description=new_project_description,  # Use new description
-                prop=original_project.prop,  # Same property
-                project_start_date=new_project_start_date,  # Use the new start date
+                project_name=new_project_name,
+                project_description=new_project_description,
+                prop=original_project.prop,
+                project_start_date=new_project_start_date,
                 project_expected_completion_date=new_project_expected_completion,
-                project_status='Pending',  # Reset status to Pending
-                project_actual_completion_date=None,  # Clear completion date
-                project_total_budgeted_cost=new_project_total_budgeted_cost,  # Use calculated budget
-                project_total_actual_cost=Decimal('0.00'),  # Reset actual cost
-                # NEW: Clear Greek translations if requested
+                project_status='Pending',
+                project_actual_completion_date=None,
+                project_total_budgeted_cost=new_project_total_budgeted_cost,
+                project_total_actual_cost=Decimal('0.00'),
                 project_name_greek=None if clear_greek_translations else getattr(original_project, 'project_name_greek', None),
                 project_description_greek=None if clear_greek_translations else getattr(original_project, 'project_description_greek', None),
             )
             
-            # Track if Greek translations were cleared
-            greek_translations_cleared = clear_greek_translations and (
-                hasattr(original_project, 'project_name_greek') and original_project.project_name_greek or
-                hasattr(original_project, 'project_description_greek') and original_project.project_description_greek
-            )
+            # OPTIMIZED: Get all tasks using prefetched data
+            all_original_tasks = list(original_project.projecttask_set.all())
+            main_tasks = [task for task in all_original_tasks if task.parent_task_id is None]
             
-            # Get all main tasks (tasks without parent_task)
-            main_tasks = ProjectTask.objects.filter(
-                project=original_project,
-                parent_task__isnull=True
-            ).order_by('task_id')
+            # OPTIMIZED: Prepare bulk data for main tasks
+            main_tasks_to_create = []
+            task_id_mapping = {}  # Map old task ID to new task index
             
-            # Dictionary to map old task IDs to new task objects
-            task_mapping = {}
-            
-            # First pass: Create all main tasks
+            # First pass: Prepare main tasks for bulk creation
             for original_task in main_tasks:
-                # Adjust main task dates
                 new_task_start_date = adjust_date(original_task.task_start_date, date_offset)
                 new_task_expected_completion = adjust_date(original_task.task_expected_completion_date, date_offset)
-                
-                # Get the appropriate cost for the new budget
                 new_task_budgeted_cost = get_cost_for_budget(original_task, budget_copy_option)
                 
-                new_task = ProjectTask.objects.create(
+                new_task = ProjectTask(
                     project=new_project,
                     task_name=original_task.task_name,
                     task_description=original_task.task_description,
                     task_start_date=new_task_start_date,
                     task_expected_completion_date=new_task_expected_completion,
                     task_budgeted_cost=new_task_budgeted_cost,
-                    task_actual_cost=Decimal('0.00'),  # Reset actual cost
+                    task_actual_cost=Decimal('0.00'),
                     task_priority=original_task.task_priority,
-                    task_status='Pending',  # Reset status to Pending
-                    task_actual_completion_date=None,  # Clear completion date
+                    task_status='Pending',
+                    task_actual_completion_date=None,
                     task_assigned_to=original_task.task_assigned_to,
-                    parent_task=None,  # This is a main task
-                    task_progress_percentage=0,  # Reset progress
-                    # Copy Greek translations for tasks (these are not cleared)
+                    parent_task=None,
+                    task_progress_percentage=0,
                     task_name_greek=getattr(original_task, 'task_name_greek', None),
                     task_description_greek=getattr(original_task, 'task_description_greek', None),
                 )
-                
-                task_mapping[original_task.task_id] = new_task
+                main_tasks_to_create.append(new_task)
+                # Store mapping for later subtask creation
+                task_id_mapping[original_task.task_id] = len(main_tasks_to_create) - 1
             
-            # Second pass: Create all subtasks
-            for original_main_task in main_tasks:
-                subtasks = ProjectTask.objects.filter(
-                    project=original_project,
-                    parent_task=original_main_task
+            # OPTIMIZED: Bulk create main tasks
+            created_main_tasks = ProjectTask.objects.bulk_create(main_tasks_to_create)
+            
+            # IMPORTANT: After bulk_create, we need to fetch the tasks with their IDs
+            # because bulk_create doesn't populate the ID field on the returned objects
+            created_main_tasks_with_ids = list(
+                ProjectTask.objects.filter(
+                    project=new_project, 
+                    parent_task__isnull=True
                 ).order_by('task_id')
-                
-                for original_subtask in subtasks:
-                    # Adjust subtask dates
-                    new_subtask_start_date = adjust_date(original_subtask.task_start_date, date_offset)
-                    new_subtask_expected_completion = adjust_date(original_subtask.task_expected_completion_date, date_offset)
-                    
-                    # Get the appropriate cost for the new budget
-                    new_subtask_budgeted_cost = get_cost_for_budget(original_subtask, budget_copy_option)
-                    
-                    new_subtask = ProjectTask.objects.create(
-                        project=new_project,
-                        task_name=original_subtask.task_name,
-                        task_description=original_subtask.task_description,
-                        task_start_date=new_subtask_start_date,
-                        task_expected_completion_date=new_subtask_expected_completion,
-                        task_budgeted_cost=new_subtask_budgeted_cost,
-                        task_actual_cost=Decimal('0.00'),  # Reset actual cost
-                        task_priority=original_subtask.task_priority,
-                        task_status='Pending',  # Reset status to Pending
-                        task_actual_completion_date=None,  # Clear completion date
-                        task_assigned_to=original_subtask.task_assigned_to,
-                        parent_task=task_mapping[original_main_task.task_id],  # Link to new parent
-                        task_progress_percentage=0,  # Reset progress
-                        # Copy Greek translations for subtasks (these are not cleared)
-                        task_name_greek=getattr(original_subtask, 'task_name_greek', None),
-                        task_description_greek=getattr(original_subtask, 'task_description_greek', None),
-                    )
+            )
             
-            # Copy project documents if they exist
+            # Create mapping from original task ID to new task object (with ID)
+            task_object_mapping = {}
+            for i, original_task in enumerate(main_tasks):
+                if i < len(created_main_tasks_with_ids):
+                    task_object_mapping[original_task.task_id] = created_main_tasks_with_ids[i]
+            
+            # OPTIMIZED: Prepare bulk data for subtasks
+            subtasks_to_create = []
+            
+            # Get all subtasks using prefetched data and group by parent
+            for original_main_task in main_tasks:
+                # Use prefetched subtasks
+                subtasks = list(original_main_task.subtasks.all())
+                
+                if original_main_task.task_id in task_object_mapping:
+                    new_main_task = task_object_mapping[original_main_task.task_id]
+                    
+                    for original_subtask in subtasks:
+                        new_subtask_start_date = adjust_date(original_subtask.task_start_date, date_offset)
+                        new_subtask_expected_completion = adjust_date(original_subtask.task_expected_completion_date, date_offset)
+                        new_subtask_budgeted_cost = get_cost_for_budget(original_subtask, budget_copy_option)
+                        
+                        new_subtask = ProjectTask(
+                            project=new_project,
+                            task_name=original_subtask.task_name,
+                            task_description=original_subtask.task_description,
+                            task_start_date=new_subtask_start_date,
+                            task_expected_completion_date=new_subtask_expected_completion,
+                            task_budgeted_cost=new_subtask_budgeted_cost,
+                            task_actual_cost=Decimal('0.00'),
+                            task_priority=original_subtask.task_priority,
+                            task_status='Pending',
+                            task_actual_completion_date=None,
+                            task_assigned_to=original_subtask.task_assigned_to,
+                            parent_task=new_main_task,
+                            task_progress_percentage=0,
+                            task_name_greek=getattr(original_subtask, 'task_name_greek', None),
+                            task_description_greek=getattr(original_subtask, 'task_description_greek', None),
+                        )
+                        subtasks_to_create.append(new_subtask)
+            
+            # OPTIMIZED: Bulk create subtasks
+            if subtasks_to_create:
+                ProjectTask.objects.bulk_create(subtasks_to_create)
+            
+            # OPTIMIZED: Copy project documents using prefetched data
+            documents_to_create = []
             try:
-                original_documents = original_project.project_documents.all()
+                original_documents = list(original_project.project_documents.all())
                 for original_doc in original_documents:
-                    # Note: This copies the document reference, not the actual file
-                    # If you want to copy the actual files, you'll need additional logic
-                    ProjectDocument.objects.create(
+                    new_document = ProjectDocument(
                         project=new_project,
-                        task=None,  # Project-level document
+                        task=None,
                         document_name=f"Copy of {original_doc.document_name}" if original_doc.document_name else None,
                         document_description=original_doc.document_description,
-                        document_file=original_doc.document_file,  # Same file reference
+                        document_file=original_doc.document_file,
                         document_uploaded_by=request.user.username,
                     )
+                    documents_to_create.append(new_document)
+                
+                # Bulk create documents
+                if documents_to_create:
+                    ProjectDocument.objects.bulk_create(documents_to_create)
+                    
             except Exception as doc_error:
-                # If document copying fails, log it but don't fail the entire duplication
-                pass  # Silent fail for document copying
+                # Silent fail for document copying
+                pass
         
-        # Build success message based on budget option and translations
+        # Build success message
         budget_message = ""
         if budget_copy_option == 'actual':
             budget_message = " with actual costs copied as budgeted costs"
@@ -1778,7 +1799,7 @@ def ajax_duplicate_project(request):
             budget_message = " with budgeted costs copied"
         
         translation_message = ""
-        if greek_translations_cleared:
+        if clear_greek_translations:
             translation_message = " and Greek translations cleared for project name and description"
             
         success_message = f'Project "{new_project_name}" created successfully{budget_message}{translation_message}'
@@ -1791,7 +1812,7 @@ def ajax_duplicate_project(request):
             'new_project_id': new_project.project_id,
             'date_offset': date_offset,
             'budget_copy_option': budget_copy_option,
-            'greek_translations_cleared': greek_translations_cleared  # NEW: Return translation status
+            'greek_translations_cleared': clear_greek_translations
         })
         
     except json.JSONDecodeError:

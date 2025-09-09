@@ -558,3 +558,32 @@ Enhanced DatabaseConnectionMiddleware initialized with threshold=100
 Starting request req_1757392174_35224: GET /notifications/ (user: anonymous)
 Starting request req_1757392175_35224: GET /notifications/ (user: anonymous)
 Enhanced DatabaseConnectionMiddleware initialized with threshold=100
+Enhanced DatabaseConnectionMiddleware initialized with threshold=100
+Starting request req_1757392679_43760: GET /notifications/ (user: anonymous)
+Starting request req_1757392680_43760: GET /notifications/ (user: anonymous)
+Starting request req_1757392682_43760: GET / (user: anonymous)
+Starting request req_1757430919_19880: GET /projects/ (user: anonymous)
+Enhanced DatabaseConnectionMiddleware initialized with threshold=100
+Starting request req_1757431086_41316: GET /projects/detail/2/ (user: anonymous)
+Starting request req_1757431088_41316: GET /projects/2/assignees/ (user: anonymous)
+Starting request req_1757431090_41316: GET /projects/2/task-list/ (user: anonymous)
+Starting request req_1757431093_41316: GET /projects/detail/2/ (user: anonymous)
+Starting request req_1757431094_41316: GET /projects/2/gantt/ (user: anonymous)
+Starting request req_1757431096_41316: GET /projects/detail/2/ (user: anonymous)
+Starting request req_1757431109_41316: POST /projects/ajax/duplicate/ (user: anonymous)
+Enhanced DatabaseConnectionMiddleware initialized with threshold=100
+Starting request req_1757431234_18288: GET / (user: anonymous)
+Starting request req_1757431236_18288: GET /projects/ (user: anonymous)
+Starting request req_1757431238_18288: GET /projects/detail/2/ (user: anonymous)
+Starting request req_1757431252_18288: POST /projects/ajax/duplicate/ (user: anonymous)
+Starting request req_1757431256_18288: GET /projects/detail/5/ (user: anonymous)
+Starting request req_1757431323_18288: GET /projects/ (user: anonymous)
+Starting request req_1757431332_18288: GET /projects/detail/5/ (user: anonymous)
+Starting request req_1757431335_18288: GET /projects/ (user: anonymous)
+Starting request req_1757431336_18288: GET /projects/detail/2/ (user: anonymous)
+Starting request req_1757431723_27768: GET /projects/ (user: anonymous)
+Request req_1757431723_27768 stats: duration=0.05s, total_queries=21, breakdown={'default': 21}, path=/projects/, user=anonymous
+Starting request req_1757431725_27768: GET /projects/detail/2/ (user: anonymous)
+Starting request req_1757431751_27768: GET /projects/ (user: anonymous)
+Starting request req_1757431752_27768: GET /projects/detail/2/ (user: anonymous)
+Starting request req_1757431754_27768: GET /projects/ (user: anonymous)
