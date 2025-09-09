@@ -97,13 +97,14 @@ Suppliers
     <table class="table table-bordered table-striped text-center">
       <thead>
         <tr>
-          <th style="text-align: left; width: 25%">Contact Person</th>
-          <th style="width: 15%">Contact Number</th>
-          <th style="width: 15%">Company Name</th>
-          <th style="width: 15%">Role</th>
-          <th style="width: 10%">Country</th>
-          <th style="width: 10%">Details</th>
-          <th style="width: 10%">Report</th>
+          <th style="text-align: left; width: 20%">Contact Person</th>
+          <th style="width: 12%">Contact Number</th>
+          <th style="width: 12%">Company Name</th>
+          <th style="width: 12%">Role</th>
+          <th style="width: 8%">Country</th>
+          <th style="width: 8%">Details</th>
+          <th style="width: 8%">Report</th>
+          <th style="width: 8%">Delete</th>
         </tr>
       </thead>
       <tbody>
@@ -130,15 +131,84 @@ Suppliers
                 <a href="{% url 'supplier_report' sresults.supplier_id %}">View</a>
               </button>
             </td>
+            <td>
+              {% if user.is_superuser %}
+                <button type="button" class="btn btn-danger action-btn delete-btn" 
+                        data-supplier-id="{{sresults.supplier_id}}"
+                        data-contact-person="{{sresults.supplier_contact_person}}"
+                        data-company-name="{{sresults.supplier_company_name}}"
+                        data-role="{{sresults.supplier_role}}">
+                  <i class="fas fa-trash"></i>
+                </button>
+              {% else %}
+                <button type="button" class="btn btn-danger action-btn" disabled style="opacity: 0.5;">
+                  <i class="fas fa-trash" style="color: #6c757d;"></i>
+                </button>
+              {% endif %}
+            </td>
           </tr>
         {% endfor %}
       </tbody>
     </table>
   </div>
 
+  <!-- Delete Confirmation Modal -->
+  <div class="modal fade" id="deleteSupplierModal" tabindex="-1" role="dialog" aria-labelledby="deleteSupplierModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-danger text-white">
+          <h5 class="modal-title" id="deleteSupplierModalLabel">
+            <i class="fas fa-exclamation-triangle"></i> Delete Supplier Permanently
+          </h5>
+          <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="alert alert-warning" role="alert">
+            <strong>Warning:</strong> This action cannot be undone. The supplier and all associated data will be permanently deleted.
+          </div>
+          
+          <div class="row">
+            <div class="col-md-6">
+              <strong>Contact Person:</strong><br>
+              <span id="modalContactPerson"></span>
+            </div>
+            <div class="col-md-6">
+              <strong>Supplier ID:</strong><br>
+              <span id="modalSupplierId"></span>
+            </div>
+          </div>
+          <br>
+          <div class="row">
+            <div class="col-md-6">
+              <strong>Company Name:</strong><br>
+              <span id="modalCompanyName"></span>
+            </div>
+            <div class="col-md-6">
+              <strong>Role:</strong><br>
+              <span id="modalRole"></span>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">
+            <i class="fas fa-times"></i> Cancel
+          </button>
+          <form method="post" action="{% url 'suppliers_delete' 0 %}" id="deleteSupplierForm" style="display: inline;">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">
+              <i class="fas fa-trash"></i> Delete Permanently
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </body>
 
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<!-- Bootstrap JS is already loaded in base.html, so we don't need to load it again -->
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
 <style>
@@ -445,6 +515,24 @@ Suppliers
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
+/* Delete Button Specific Styles */
+.delete-btn {
+    background-color: #dc3545;
+    border-color: #dc3545;
+    color: white;
+}
+
+.delete-btn:hover {
+    background-color: #c82333;
+    border-color: #bd2130;
+    color: white;
+}
+
+.delete-btn:disabled {
+    background-color: #f8f9fa;
+    border-color: #dee2e6;
+}
+
 /* Button Styles */
 .btn-info {
     background-color: #17a2b8;
@@ -464,6 +552,20 @@ Suppliers
     box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 
+/* Modal Enhancements */
+.modal-header.bg-danger {
+    background-color: #dc3545 !important;
+}
+
+.modal-header .close {
+    color: white;
+    opacity: 0.8;
+}
+
+.modal-header .close:hover {
+    opacity: 1;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
     .filter-grid {
@@ -479,6 +581,15 @@ Suppliers
     
     .search-input-group {
         width: 100%;
+    }
+    
+    /* Make table responsive */
+    .table-container {
+        overflow-x: auto;
+    }
+    
+    table {
+        min-width: 800px;
     }
 }
 </style>
@@ -737,6 +848,30 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('filterForm').submit();
         });
     }
+    
+    // Delete button functionality
+    const deleteButtons = document.querySelectorAll('.delete-btn');
+    deleteButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            const supplierId = this.getAttribute('data-supplier-id');
+            const contactPerson = this.getAttribute('data-contact-person');
+            const companyName = this.getAttribute('data-company-name');
+            const role = this.getAttribute('data-role');
+            
+            // Populate modal with supplier data
+            document.getElementById('modalSupplierId').textContent = supplierId;
+            document.getElementById('modalContactPerson').textContent = contactPerson;
+            document.getElementById('modalCompanyName').textContent = companyName || 'None';
+            document.getElementById('modalRole').textContent = role;
+            
+            // Update form action URL
+            const deleteForm = document.getElementById('deleteSupplierForm');
+            deleteForm.action = deleteForm.action.replace('/0/', `/${supplierId}/`);
+            
+            // Show modal
+            $('#deleteSupplierModal').modal('show');
+        });
+    });
     
     console.log('All supplier event listeners attached');
 });

@@ -79,9 +79,12 @@ class Project(models.Model):
         self.save()
     
     def get_calculated_status(self):
-        """Calculate project status based on all main tasks"""
-        main_tasks = self.projecttask_set.filter(parent_task__isnull=True)
-        if not main_tasks.exists():
+        """Calculate project status based on all main tasks - OPTIMIZED to use prefetched data"""
+        # Use prefetched data instead of new query
+        all_tasks = list(self.projecttask_set.all())
+        main_tasks = [task for task in all_tasks if task.parent_task_id is None]
+        
+        if not main_tasks:
             return 'Pending'
         
         completed_count = 0
@@ -94,7 +97,7 @@ class Project(models.Model):
             elif task_status == 'In Progress':
                 in_progress_count += 1
         
-        total_tasks = main_tasks.count()
+        total_tasks = len(main_tasks)
         
         if completed_count == total_tasks:
             return 'Completed'
@@ -102,10 +105,13 @@ class Project(models.Model):
             return 'In Progress'
         else:
             return 'Pending'
-    
+
     def get_calculated_start_date(self):
-        """Get earliest start date from all main tasks"""
-        main_tasks = self.projecttask_set.filter(parent_task__isnull=True)
+        """Get earliest start date from all main tasks - OPTIMIZED to use prefetched data"""
+        # Use prefetched data instead of new query
+        all_tasks = list(self.projecttask_set.all())
+        main_tasks = [task for task in all_tasks if task.parent_task_id is None]
+        
         earliest_dates = []
         
         for task in main_tasks:
@@ -114,10 +120,13 @@ class Project(models.Model):
                 earliest_dates.append(task_start)
         
         return min(earliest_dates) if earliest_dates else None
-    
+
     def get_calculated_expected_completion(self):
-        """Get latest expected completion from all main tasks"""
-        main_tasks = self.projecttask_set.filter(parent_task__isnull=True)
+        """Get latest expected completion from all main tasks - OPTIMIZED to use prefetched data"""
+        # Use prefetched data instead of new query
+        all_tasks = list(self.projecttask_set.all())
+        main_tasks = [task for task in all_tasks if task.parent_task_id is None]
+        
         latest_dates = []
         
         for task in main_tasks:
@@ -126,11 +135,14 @@ class Project(models.Model):
                 latest_dates.append(task_completion)
         
         return max(latest_dates) if latest_dates else None
-    
+
     def get_calculated_actual_completion(self):
-        """Get latest actual completion when all main tasks completed"""
+        """Get latest actual completion when all main tasks completed - OPTIMIZED to use prefetched data"""
         if self.get_calculated_status() == 'Completed':
-            main_tasks = self.projecttask_set.filter(parent_task__isnull=True)
+            # Use prefetched data instead of new query
+            all_tasks = list(self.projecttask_set.all())
+            main_tasks = [task for task in all_tasks if task.parent_task_id is None]
+            
             latest_dates = []
             
             for task in main_tasks:
@@ -140,24 +152,31 @@ class Project(models.Model):
             
             return max(latest_dates) if latest_dates else None
         return None
-    
+
     def get_calculated_budgeted_cost(self):
-        """Calculate total budgeted cost from all main tasks"""
-        main_tasks = self.projecttask_set.filter(parent_task__isnull=True)
+        """Calculate total budgeted cost from all main tasks - OPTIMIZED to use prefetched data"""
+        # Use prefetched data instead of new query
+        all_tasks = list(self.projecttask_set.all())
+        main_tasks = [task for task in all_tasks if task.parent_task_id is None]
+        
         return sum(task.get_calculated_budgeted_cost() for task in main_tasks)
-    
+
     def get_calculated_actual_cost(self):
-        """Calculate total actual cost from all main tasks"""
-        main_tasks = self.projecttask_set.filter(parent_task__isnull=True)
+        """Calculate total actual cost from all main tasks - OPTIMIZED to use prefetched data"""
+        # Use prefetched data instead of new query
+        all_tasks = list(self.projecttask_set.all())
+        main_tasks = [task for task in all_tasks if task.parent_task_id is None]
+        
         return sum(task.get_calculated_actual_cost() for task in main_tasks)
-    
+
     def get_progress_percentage(self):
-        """Calculate project progress based on subtask completion using day-based calculation"""
+        """Calculate project progress based on subtask completion using day-based calculation - OPTIMIZED to use prefetched data"""
         total_project_days = 0
         completed_project_days = 0
         
-        # Get all main tasks for this project
-        main_tasks = self.projecttask_set.filter(parent_task__isnull=True)
+        # Use prefetched data instead of new query
+        all_tasks = list(self.projecttask_set.all())
+        main_tasks = [task for task in all_tasks if task.parent_task_id is None]
         
         for task in main_tasks:
             completed_days, total_days = task.get_completed_days()
@@ -169,12 +188,14 @@ class Project(models.Model):
         return 0.0
     
     def get_total_main_tasks(self):
-        """Get count of main tasks (not subtasks)"""
-        return self.projecttask_set.filter(parent_task__isnull=True).count()
+        """Get count of main tasks (not subtasks) - OPTIMIZED to use prefetched data"""
+        all_tasks = list(self.projecttask_set.all())
+        return len([task for task in all_tasks if task.parent_task_id is None])
     
     def get_completed_main_tasks(self):
-        """Get count of completed main tasks"""
-        main_tasks = self.projecttask_set.filter(parent_task__isnull=True)
+        """Get count of completed main tasks - OPTIMIZED to use prefetched data"""
+        all_tasks = list(self.projecttask_set.all())
+        main_tasks = [task for task in all_tasks if task.parent_task_id is None]
         completed_count = 0
         
         for task in main_tasks:
@@ -184,15 +205,15 @@ class Project(models.Model):
         return completed_count
     
     def get_total_subtasks(self):
-        """Get count of all subtasks in the project"""
-        return self.projecttask_set.filter(parent_task__isnull=False).count()
+        """Get count of all subtasks in the project - OPTIMIZED to use prefetched data"""
+        all_tasks = list(self.projecttask_set.all())
+        return len([task for task in all_tasks if task.parent_task_id is not None])
     
     def get_completed_subtasks(self):
-        """Get count of completed subtasks in the project"""
-        return self.projecttask_set.filter(
-            parent_task__isnull=False,
-            task_status='Completed'
-        ).count()
+        """Get count of completed subtasks in the project - OPTIMIZED to use prefetched data"""
+        all_tasks = list(self.projecttask_set.all())
+        subtasks = [task for task in all_tasks if task.parent_task_id is not None]
+        return len([task for task in subtasks if task.task_status == 'Completed'])
     
     def update_project_from_tasks(self):
         """Update project fields based on calculated values from tasks"""
@@ -218,6 +239,7 @@ class Project(models.Model):
         verbose_name = "Project"
         verbose_name_plural = "Projects"
         ordering = ['-project_created_date']
+
 
 class ProjectTask(models.Model):
     task_id = models.AutoField(primary_key=True)
@@ -307,9 +329,10 @@ class ProjectTask(models.Model):
                             self.task_progress_percentage = 99  # Set maximum for In Progress
     
     def get_calculated_status(self):
-        """Calculate task status based on subtasks if any"""
-        subtasks = self.subtasks.all()
-        if not subtasks.exists():
+        """Calculate task status based on subtasks if any - OPTIMIZED to use prefetched data"""
+        # Use prefetched data instead of new query
+        subtasks = list(self.subtasks.all())
+        if not subtasks:
             return self.task_status or 'Pending'
         
         completed_count = 0
@@ -321,7 +344,7 @@ class ProjectTask(models.Model):
             elif subtask.task_status == 'In Progress':
                 in_progress_count += 1
         
-        total_subtasks = subtasks.count()
+        total_subtasks = len(subtasks)
         
         if completed_count == total_subtasks:
             return 'Completed'
@@ -331,9 +354,10 @@ class ProjectTask(models.Model):
             return 'Pending'
     
     def get_calculated_start_date(self):
-        """Get earliest start date from subtasks or own start date"""
-        subtasks = self.subtasks.all()
-        if not subtasks.exists():
+        """Get earliest start date from subtasks or own start date - OPTIMIZED to use prefetched data"""
+        # Use prefetched data instead of new query
+        subtasks = list(self.subtasks.all())
+        if not subtasks:
             return self.task_start_date
         
         dates = [self.task_start_date] if self.task_start_date else []
@@ -344,9 +368,10 @@ class ProjectTask(models.Model):
         return min(dates) if dates else None
     
     def get_calculated_expected_completion(self):
-        """Get latest expected completion from subtasks or own date"""
-        subtasks = self.subtasks.all()
-        if not subtasks.exists():
+        """Get latest expected completion from subtasks or own date - OPTIMIZED to use prefetched data"""
+        # Use prefetched data instead of new query
+        subtasks = list(self.subtasks.all())
+        if not subtasks:
             return self.task_expected_completion_date
         
         dates = [self.task_expected_completion_date] if self.task_expected_completion_date else []
@@ -357,10 +382,11 @@ class ProjectTask(models.Model):
         return max(dates) if dates else None
     
     def get_calculated_actual_completion(self):
-        """Get latest actual completion when all subtasks completed"""
+        """Get latest actual completion when all subtasks completed - OPTIMIZED to use prefetched data"""
         if self.get_calculated_status() == 'Completed':
-            subtasks = self.subtasks.all()
-            if not subtasks.exists():
+            # Use prefetched data instead of new query
+            subtasks = list(self.subtasks.all())
+            if not subtasks:
                 return self.task_actual_completion_date
             
             dates = [self.task_actual_completion_date] if self.task_actual_completion_date else []
@@ -372,11 +398,12 @@ class ProjectTask(models.Model):
         return None
     
     def get_calculated_budgeted_cost(self):
-        """Calculate total budgeted cost including subtasks"""
-        subtasks = self.subtasks.all()
+        """Calculate total budgeted cost including subtasks - OPTIMIZED to use prefetched data"""
+        # Use prefetched data instead of new query
+        subtasks = list(self.subtasks.all())
         
         # If this task has subtasks, only count subtask costs (not the main task cost)
-        if subtasks.exists():
+        if subtasks:
             total = Decimal('0.00')
             for subtask in subtasks:
                 total += subtask.task_budgeted_cost or Decimal('0.00')
@@ -386,11 +413,12 @@ class ProjectTask(models.Model):
         return self.task_budgeted_cost or Decimal('0.00')
 
     def get_calculated_actual_cost(self):
-        """Calculate total actual cost including subtasks"""
-        subtasks = self.subtasks.all()
+        """Calculate total actual cost including subtasks - OPTIMIZED to use prefetched data"""
+        # Use prefetched data instead of new query
+        subtasks = list(self.subtasks.all())
         
         # If this task has subtasks, only count subtask costs (not the main task cost)
-        if subtasks.exists():
+        if subtasks:
             total = Decimal('0.00')
             for subtask in subtasks:
                 total += subtask.task_actual_cost or Decimal('0.00')
@@ -400,10 +428,10 @@ class ProjectTask(models.Model):
         return self.task_actual_cost or Decimal('0.00')
     
     def get_completed_days(self):
-        """Calculate completed and total days for progress calculation"""
+        """Calculate completed and total days for progress calculation - OPTIMIZED to use prefetched data"""
         # If this is a main task with subtasks, calculate based on subtasks
-        subtasks = self.subtasks.all()
-        if subtasks.exists():
+        subtasks = list(self.subtasks.all())
+        if subtasks:
             total_subtask_days = 0
             completed_subtask_days = 0
             
@@ -440,17 +468,20 @@ class ProjectTask(models.Model):
             return 0, total_days
     
     def get_completed_subtask_count(self):
-        """Get count of completed subtasks"""
-        return self.subtasks.filter(task_status='Completed').count()
+        """Get count of completed subtasks - OPTIMIZED to use prefetched data"""
+        subtasks = list(self.subtasks.all())
+        return len([subtask for subtask in subtasks if subtask.task_status == 'Completed'])
 
     def get_subtask_count(self):
-        """Get total count of subtasks"""
-        return self.subtasks.count()
+        """Get total count of subtasks - OPTIMIZED to use prefetched data"""
+        subtasks = list(self.subtasks.all())
+        return len(subtasks)
 
     def get_subtask_progress(self):
-        """Get progress percentage for main tasks based on subtask day-based calculation (same as project logic)"""
-        subtasks = self.subtasks.all()
-        if not subtasks.exists():
+        """Get progress percentage for main tasks based on subtask day-based calculation - OPTIMIZED to use prefetched data"""
+        # Use prefetched data instead of new query
+        subtasks = list(self.subtasks.all())
+        if not subtasks:
             # For tasks without subtasks, use simple completion logic
             if self.task_status == 'Completed':
                 return 100.0

@@ -35,7 +35,6 @@ def get_notification_summary():
         user=settings.DATABASES['default']['USER'],
         password=settings.DATABASES['default']['PASSWORD'],
         database=settings.DATABASES['default']['NAME'],
-        auth_plugin=settings.DATABASES['default']['AUTH_PLUGIN'],
     )
     
     my_cursor = mydb.cursor()

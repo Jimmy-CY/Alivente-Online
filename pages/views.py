@@ -167,7 +167,6 @@ def get_notification_data():
             user=settings.DATABASES['default']['USER'],
             password=settings.DATABASES['default']['PASSWORD'],
             database=settings.DATABASES['default']['NAME'],
-            auth_plugin=settings.DATABASES['default']['AUTH_PLUGIN'],
         )
         
         my_cursor = mydb.cursor()
@@ -716,7 +715,7 @@ def calculate_property_expenses_for_year(property_obj, year):
 ### PROJECTS ###
 @login_required
 def projects_list(request):
-    """Display list of projects with filtering and handle modal-based deletion"""
+    """Display list of projects with filtering and handle modal-based deletion - FULLY OPTIMIZED"""
     
     # Handle POST request for modal-based deletion
     if request.method == 'POST' and 'delete_project_id' in request.POST:
@@ -725,16 +724,21 @@ def projects_list(request):
             return redirect('projects')
         
         project_id = request.POST.get('delete_project_id')
-        project = get_object_or_404(Project, project_id=project_id)
+        # OPTIMIZED: Use select_related and prefetch_related for deletion
+        project = get_object_or_404(
+            Project.objects.select_related('prop').prefetch_related('projecttask_set', 'project_documents'), 
+            project_id=project_id
+        )
         
         try:
             with transaction.atomic():
                 logger.info(f"User {request.user.username} deleting project via modal: {project.project_name}")
                 
-                # Get counts for message
-                main_task_count = project.projecttask_set.filter(parent_task__isnull=True).count()
-                subtask_count = project.projecttask_set.filter(parent_task__isnull=False).count()
-                document_count = project.project_documents.count() if hasattr(project, 'project_documents') else 0
+                # OPTIMIZED: Use prefetched data for counts (no additional queries)
+                all_tasks = list(project.projecttask_set.all())
+                main_task_count = sum(1 for task in all_tasks if task.parent_task is None)
+                subtask_count = sum(1 for task in all_tasks if task.parent_task is not None)
+                document_count = len(list(project.project_documents.all())) if hasattr(project, 'project_documents') else 0
                 project_name = project.project_name
                 
                 # Delete the project
@@ -758,46 +762,57 @@ def projects_list(request):
         
         return redirect('projects')
     
-    # FIXED: Get filter parameters from GET request (for proper filtering)
-    projects_list = Project.objects.select_related('prop').all().order_by(
-        F('project_start_date').desc(nulls_last=True)
-    )
-    
-    # Initialize filter variables from GET parameters
+    # Initialize filter variables from GET parameters FIRST
     search_query = request.GET.get('search', '').strip()
     selected_property = request.GET.get('property', '')
     selected_status = request.GET.get('status', '')
     
-    # Apply filters
+    # FULLY OPTIMIZED: Build the base queryset WITHOUT prefetching unnecessary data
+    # Only prefetch what's absolutely needed for the list view
+    projects_queryset = Project.objects.select_related('prop')
+    
+    # Apply filters BEFORE any prefetching to reduce the dataset
     if search_query:
-        projects_list = projects_list.filter(
+        projects_queryset = projects_queryset.filter(
             Q(project_name__icontains=search_query) |
             Q(project_description__icontains=search_query)
         )
     
     if selected_property:
         try:
-            # Convert to int to handle proper filtering
             property_id = int(selected_property)
-            projects_list = projects_list.filter(prop_id=property_id)
+            projects_queryset = projects_queryset.filter(prop_id=property_id)
         except (ValueError, TypeError):
-            # Invalid property ID, ignore filter
             selected_property = ""
     
     if selected_status:
-        # Validate that the status is one of the valid choices
         valid_statuses = [choice[0] for choice in Project.PROJECT_STATUS_CHOICES]
         if selected_status in valid_statuses:
-            projects_list = projects_list.filter(project_status=selected_status)
+            projects_queryset = projects_queryset.filter(project_status=selected_status)
         else:
-            # Invalid status, ignore filter
             selected_status = ""
     
-    # Get all properties for filter dropdown
-    properties = props.objects.all().order_by('prop_name')
+    # Apply ordering AFTER filtering
+    projects_queryset = projects_queryset.order_by(F('project_start_date').desc(nulls_last=True))
+    
+    # REQUIRED: Template calls calculated methods that need task data
+    # The template uses: get_calculated_status, get_progress_percentage, 
+    # get_calculated_start_date, get_calculated_expected_completion
+    # Use comprehensive prefetching to load ALL related task data in minimal queries
+    projects_queryset = projects_queryset.prefetch_related(
+        Prefetch('projecttask_set', 
+            queryset=ProjectTask.objects.select_related().prefetch_related('subtasks')
+        )
+    )
+    
+    # If template only shows basic project info (name, description, dates, status), 
+    # then DON'T prefetch tasks at all
+    
+    # OPTIMIZED: Single query for all properties (only if dropdown is used)
+    properties = props.objects.only('prop_id', 'prop_name').order_by('prop_name')
     
     # Pagination with filter preservation
-    paginator = Paginator(projects_list, 25)
+    paginator = Paginator(projects_queryset, 25)
     page_number = request.GET.get('page')
     projects_page = paginator.get_page(page_number)
     
@@ -917,31 +932,36 @@ def projects_edit(request, project_id):
 
 @login_required
 def projects_delete(request, project_id):
-    """Delete project with enhanced cascade deletion and warnings"""
+    """Delete project with enhanced cascade deletion and warnings - OPTIMIZED"""
     if not request.user.is_superuser:
         messages.error(request, "You don't have permission to delete projects.")
         return redirect('projects')
     
-    project = get_object_or_404(Project, project_id=project_id)
+    # OPTIMIZED: Single query with prefetching for counts
+    project = get_object_or_404(
+        Project.objects.select_related('prop').prefetch_related(
+            'projecttask_set', 'project_documents'
+        ), 
+        project_id=project_id
+    )
     
     if request.method == 'POST':
         try:
             with transaction.atomic():
-                # Log the deletion attempt
                 logger.info(f"User {request.user.username} attempting to delete project: {project.project_name} (ID: {project_id})")
                 
-                # Get counts for the success message BEFORE deletion
-                main_task_count = project.projecttask_set.filter(parent_task__isnull=True).count()
-                subtask_count = project.projecttask_set.filter(parent_task__isnull=False).count()
-                total_task_count = project.projecttask_set.count()
-                document_count = project.project_documents.count() if hasattr(project, 'project_documents') else 0
+                # OPTIMIZED: Use prefetched data for counts (no additional queries)
+                all_tasks = list(project.projecttask_set.all())
+                main_task_count = sum(1 for task in all_tasks if task.parent_task is None)
+                subtask_count = sum(1 for task in all_tasks if task.parent_task is not None)
+                total_task_count = len(all_tasks)
+                document_count = len(list(project.project_documents.all())) if hasattr(project, 'project_documents') else 0
                 
                 project_name = project.project_name
                 
                 # Delete the project (this will cascade to delete all related tasks and subtasks)
                 project.delete()
                 
-                # Log successful deletion
                 logger.info(f"Successfully deleted project: {project_name} (ID: {project_id}) with {main_task_count} main tasks, {subtask_count} subtasks, and {document_count} documents")
                 
                 # Success message with detailed information
@@ -957,30 +977,25 @@ def projects_delete(request, project_id):
                     )
                 
         except Exception as e:
-            # Log the error
             logger.error(f"Error deleting project {project_id}: {str(e)}")
-            
-            # Error message
             messages.error(
                 request, 
                 f"An error occurred while deleting the project '{project.project_name}'. Please try again or contact support."
             )
-            
-            # Redirect back to the delete confirmation page
             return render(request, 'projects/projects_delete.html', {'project': project})
         
         return redirect('projects')
     
-    # GET request - show confirmation page with detailed information
-    # Get counts for the confirmation page
-    main_tasks = project.projecttask_set.filter(parent_task__isnull=True)
-    subtasks = project.projecttask_set.filter(parent_task__isnull=False)
-    documents = project.project_documents.all() if hasattr(project, 'project_documents') else []
+    # OPTIMIZED: Use prefetched data for confirmation page (no additional queries)
+    all_tasks = list(project.projecttask_set.all())
+    main_tasks = [task for task in all_tasks if task.parent_task is None]
+    subtasks = [task for task in all_tasks if task.parent_task is not None]
+    documents = list(project.project_documents.all()) if hasattr(project, 'project_documents') else []
     
     context = {
         'project': project,
-        'main_task_count': main_tasks.count(),
-        'subtask_count': subtasks.count(),
+        'main_task_count': len(main_tasks),
+        'subtask_count': len(subtasks),
         'document_count': len(documents),
         'main_tasks': main_tasks[:5],  # Show first 5 main tasks as examples
         'subtasks': subtasks[:10],     # Show first 10 subtasks as examples
@@ -991,20 +1006,27 @@ def projects_delete(request, project_id):
 
 @login_required
 def projects_detail(request, project_id):
-    """Display project details with tasks and subtasks"""
-    project = get_object_or_404(Project.objects.select_related('prop'), project_id=project_id)  # Updated model name
+    """Display project details with tasks and subtasks - OPTIMIZED"""
+    # OPTIMIZED: Single query with comprehensive prefetching
+    project = get_object_or_404(
+        Project.objects.select_related('prop').prefetch_related(
+            Prefetch('projecttask_set', 
+                queryset=ProjectTask.objects.filter(parent_task__isnull=True).prefetch_related(
+                    Prefetch('subtasks', queryset=ProjectTask.objects.all())
+                ).order_by('task_start_date', 'task_id')
+            )
+        ), 
+        project_id=project_id
+    )
     
-    # Get all tasks for this project (main tasks only, not subtasks)
-    main_tasks = ProjectTask.objects.filter(  # Updated model name
-        project=project, 
-        parent_task__isnull=True
-    ).prefetch_related('subtasks').order_by('task_start_date', 'task_id')
+    # OPTIMIZED: Use prefetched data (no additional queries)
+    main_tasks = list(project.projecttask_set.all())  # These are already filtered and ordered
     
     context = {
         'project': project,
         'main_tasks': main_tasks,
-        'task_status_choices': ProjectTask.TASK_STATUS_CHOICES,  # Updated model name
-        'task_priority_choices': ProjectTask.TASK_PRIORITY_CHOICES,  # Updated model name
+        'task_status_choices': ProjectTask.TASK_STATUS_CHOICES,
+        'task_priority_choices': ProjectTask.TASK_PRIORITY_CHOICES,
     }
     
     return render(request, 'projects/projects_detail.html', context)
@@ -1331,23 +1353,34 @@ def project_subtasks_add(request, project_id, parent_task_id):
 
 @login_required
 def project_gantt(request, project_id):
-    """Display Gantt chart for project with tasks and subtasks"""
-    project = get_object_or_404(Project.objects.select_related('prop'), project_id=project_id)
+    """Display Gantt chart for project with tasks and subtasks - OPTIMIZED"""
+    # OPTIMIZED: Single query with comprehensive prefetching
+    project = get_object_or_404(
+        Project.objects.select_related('prop').prefetch_related(
+            Prefetch('projecttask_set', 
+                queryset=ProjectTask.objects.filter(parent_task__isnull=True).prefetch_related(
+                    Prefetch('subtasks', 
+                        queryset=ProjectTask.objects.filter(
+                            task_start_date__isnull=False,
+                            task_expected_completion_date__isnull=False
+                        ).order_by('task_start_date', 'task_id')
+                    )
+                ).order_by('task_start_date', 'task_id')
+            )
+        ), 
+        project_id=project_id
+    )
     
     # Check if returning from edit page
     from_edit = request.GET.get('from_edit', False)
     if from_edit:
         messages.success(request, "Changes saved successfully. Gantt chart has been refreshed.")
     
-    # Get all main tasks for this project
-    main_tasks = ProjectTask.objects.filter(
-        project=project, 
-        parent_task__isnull=True
-    ).prefetch_related('subtasks').order_by('task_start_date', 'task_id')
+    # OPTIMIZED: Use prefetched data (no additional queries)
+    main_tasks = list(project.projecttask_set.all())
     
-    # Build Gantt data structure
+    # Build Gantt data structure using prefetched data
     gantt_data = []
-    task_counter = 1
     
     # Add project as the main item
     project_start = project.get_calculated_start_date()
@@ -1369,7 +1402,7 @@ def project_gantt(request, project_id):
         }
         gantt_data.append(project_item)
     
-    # Add main tasks and their subtasks
+    # Add main tasks and their subtasks using prefetched data
     for task in main_tasks:
         task_start = task.get_calculated_start_date()
         task_end = task.get_calculated_expected_completion()
@@ -1382,23 +1415,20 @@ def project_gantt(request, project_id):
                 'start_date': task_start.strftime('%Y-%m-%d'),
                 'end_date': task_end.strftime('%Y-%m-%d'),
                 'duration': (task_end - task_start).days + 1,
-                'progress': task.get_subtask_progress() / 100 if task.subtasks.exists() else (1.0 if task.get_calculated_status() == 'Completed' else 0.0),
-                'type': 'task',  # Changed from missing to explicit 'task'
+                'progress': task.get_subtask_progress() / 100 if task.subtasks.all() else (1.0 if task.get_calculated_status() == 'Completed' else 0.0),
+                'type': 'task',
                 'status': task.get_calculated_status(),
                 'budgeted_cost': float(task.get_calculated_budgeted_cost() or 0),
                 'actual_cost': float(task.get_calculated_actual_cost() or 0),
                 'assigned_to': task.task_assigned_to or '',
                 'parent': f'project_{project.project_id}' if project_start and project_end else None,
                 'open': True,
-                'calculated_progress_percentage': round(task.get_subtask_progress(), 1)  # For display
+                'calculated_progress_percentage': round(task.get_subtask_progress(), 1)
             }
             gantt_data.append(task_item)
             
-            # Add subtasks for this main task
-            subtasks = task.subtasks.filter(
-                task_start_date__isnull=False,
-                task_expected_completion_date__isnull=False
-            ).order_by('task_start_date', 'task_id')
+            # Add subtasks for this main task using prefetched data
+            subtasks = list(task.subtasks.all())  # Already filtered in prefetch
             
             for subtask in subtasks:
                 subtask_start = subtask.task_start_date
@@ -1424,15 +1454,14 @@ def project_gantt(request, project_id):
                         'budgeted_cost': float(subtask.task_budgeted_cost or 0),
                         'actual_cost': float(subtask.task_actual_cost or 0),
                         'assigned_to': subtask.task_assigned_to or '',
-                        'parent': f'task_{task.task_id}',  # Link to parent main task
+                        'parent': f'task_{task.task_id}',
                         'priority': subtask.task_priority,
-                        'progress_percentage': subtask.task_progress_percentage or 0  # For display in bars
+                        'progress_percentage': subtask.task_progress_percentage or 0
                     }
                     gantt_data.append(subtask_item)
     
     # If no tasks have dates, create a placeholder message
     if not gantt_data:
-        # Create a simple project timeline with today's date
         from datetime import datetime
         today = datetime.now().date()
         placeholder_item = {
@@ -1777,8 +1806,18 @@ def ajax_duplicate_project(request):
 
 @login_required
 def project_task_list(request, project_id):
-    """Display task list for a specific project and assignee"""
-    project = get_object_or_404(Project.objects.select_related('prop'), project_id=project_id)
+    """Display task list for a specific project and assignee - OPTIMIZED"""
+    # OPTIMIZED: Single query with comprehensive prefetching
+    project = get_object_or_404(
+        Project.objects.select_related('prop').prefetch_related(
+            Prefetch('projecttask_set', 
+                queryset=ProjectTask.objects.filter(parent_task__isnull=True).prefetch_related(
+                    'subtasks'
+                ).order_by('task_start_date', 'task_id')
+            )
+        ), 
+        project_id=project_id
+    )
     
     # Get parameters
     assigned_to = request.GET.get('assigned_to', '')
@@ -1788,20 +1827,20 @@ def project_task_list(request, project_id):
     if language == 'greek':
         ensure_project_translations(project)
     
-    # Get all main tasks for this project
-    main_tasks = ProjectTask.objects.filter(
-        project=project, 
-        parent_task__isnull=True
-    ).prefetch_related('subtasks').order_by('task_start_date', 'task_id')
+    # OPTIMIZED: Use prefetched data
+    main_tasks = list(project.projecttask_set.all())
     
-    # Filter by assigned_to if specified
+    # OPTIMIZED: Filter in Python using prefetched data instead of additional queries
     if assigned_to:
-        main_tasks = main_tasks.filter(
-            Q(task_assigned_to=assigned_to) |
-            Q(subtasks__task_assigned_to=assigned_to)
-        ).distinct()
+        filtered_main_tasks = []
+        for task in main_tasks:
+            task_matches = task.task_assigned_to == assigned_to
+            subtask_matches = any(subtask.task_assigned_to == assigned_to for subtask in task.subtasks.all())
+            if task_matches or subtask_matches:
+                filtered_main_tasks.append(task)
+        main_tasks = filtered_main_tasks
     
-    # Build task list with hierarchy
+    # Build task list with hierarchy using prefetched data
     task_list = []
     total_tasks = 0
     completed_tasks = 0
@@ -1836,100 +1875,91 @@ def project_task_list(request, project_id):
         'priority': None,
         'indent_level': 0,
         'is_overdue': project_is_overdue,
-        # Store the actual project object for template access to methods
         'project_obj': project
     }
     task_list.append(project_item)
     
-    # Process main tasks and subtasks
+    # Process main tasks and subtasks using prefetched data
     for main_task in main_tasks:
-        # Check if this task or its subtasks match the assigned_to filter
-        include_task = True
-        if assigned_to:
-            task_matches = main_task.task_assigned_to == assigned_to
-            subtask_matches = main_task.subtasks.filter(task_assigned_to=assigned_to).exists()
-            include_task = task_matches or subtask_matches
+        # For main tasks, use calculated dates
+        task_start_date = main_task.get_calculated_start_date()
+        task_end_date = main_task.get_calculated_expected_completion()
+        task_is_overdue = (
+            task_end_date and 
+            task_end_date < timezone.now().date() and 
+            main_task.get_calculated_status() != 'Completed'
+        )
         
-        if include_task:
-            # For main tasks, use calculated dates
-            task_start_date = main_task.get_calculated_start_date()
-            task_end_date = main_task.get_calculated_expected_completion()
-            task_is_overdue = (
-                task_end_date and 
-                task_end_date < timezone.now().date() and 
-                main_task.get_calculated_status() != 'Completed'
+        main_task_item = {
+            'name': main_task.task_name,
+            'name_greek': get_translated_text(
+                main_task.task_name, 
+                getattr(main_task, 'task_name_greek', None), 
+                language
+            ) if language == 'greek' else main_task.task_name,
+            'description': main_task.task_description,
+            'description_greek': get_translated_text(
+                main_task.task_description, 
+                getattr(main_task, 'task_description_greek', None), 
+                language
+            ) if language == 'greek' else main_task.task_description,
+            'type': 'task',
+            'status': main_task.get_calculated_status(),
+            'start_date': task_start_date,
+            'end_date': task_end_date,
+            'priority': main_task.task_priority,
+            'indent_level': 1,
+            'is_overdue': task_is_overdue,
+            'task_obj': main_task
+        }
+        task_list.append(main_task_item)
+        
+        # Add subtasks using prefetched data
+        subtasks = list(main_task.subtasks.all())
+        if assigned_to:
+            subtasks = [subtask for subtask in subtasks if subtask.task_assigned_to == assigned_to]
+        
+        # Sort subtasks by start date and task_id
+        subtasks.sort(key=lambda x: (x.task_start_date or timezone.now().date(), x.task_id))
+        
+        for subtask in subtasks:
+            is_overdue = (
+                subtask.task_expected_completion_date and 
+                subtask.task_expected_completion_date < timezone.now().date() and 
+                subtask.task_status != 'Completed'
             )
             
-            main_task_item = {
-                'name': main_task.task_name,
+            subtask_item = {
+                'name': subtask.task_name,
                 'name_greek': get_translated_text(
-                    main_task.task_name, 
-                    getattr(main_task, 'task_name_greek', None), 
+                    subtask.task_name, 
+                    getattr(subtask, 'task_name_greek', None), 
                     language
-                ) if language == 'greek' else main_task.task_name,
-                'description': main_task.task_description,
+                ) if language == 'greek' else subtask.task_name,
+                'description': subtask.task_description,
                 'description_greek': get_translated_text(
-                    main_task.task_description, 
-                    getattr(main_task, 'task_description_greek', None), 
+                    subtask.task_description, 
+                    getattr(subtask, 'task_description_greek', None), 
                     language
-                ) if language == 'greek' else main_task.task_description,
-                'type': 'task',
-                'status': main_task.get_calculated_status(),
-                'start_date': task_start_date,
-                'end_date': task_end_date,
-                'priority': main_task.task_priority,
-                'indent_level': 1,
-                'is_overdue': task_is_overdue,
-                # Store the actual task object for template access to methods
-                'task_obj': main_task
+                ) if language == 'greek' else subtask.task_description,
+                'type': 'subtask',
+                'status': subtask.task_status,
+                'start_date': subtask.task_start_date,
+                'end_date': subtask.task_expected_completion_date,
+                'priority': subtask.task_priority,
+                'indent_level': 2,
+                'is_overdue': is_overdue,
+                'task_obj': subtask
             }
-            task_list.append(main_task_item)
+            task_list.append(subtask_item)
             
-            # Add subtasks - ONLY count these in totals
-            subtasks = main_task.subtasks.all().order_by('task_start_date', 'task_id')
-            if assigned_to:
-                subtasks = subtasks.filter(task_assigned_to=assigned_to)
+            # ONLY count subtasks in totals
+            total_tasks += 1
             
-            for subtask in subtasks:
-                # For subtasks, use direct field access
-                is_overdue = (
-                    subtask.task_expected_completion_date and 
-                    subtask.task_expected_completion_date < timezone.now().date() and 
-                    subtask.task_status != 'Completed'
-                )
-                
-                subtask_item = {
-                    'name': subtask.task_name,
-                    'name_greek': get_translated_text(
-                        subtask.task_name, 
-                        getattr(subtask, 'task_name_greek', None), 
-                        language
-                    ) if language == 'greek' else subtask.task_name,
-                    'description': subtask.task_description,
-                    'description_greek': get_translated_text(
-                        subtask.task_description, 
-                        getattr(subtask, 'task_description_greek', None), 
-                        language
-                    ) if language == 'greek' else subtask.task_description,
-                    'type': 'subtask',
-                    'status': subtask.task_status,
-                    'start_date': subtask.task_start_date,
-                    'end_date': subtask.task_expected_completion_date,
-                    'priority': subtask.task_priority,
-                    'indent_level': 2,
-                    'is_overdue': is_overdue,
-                    # Store the actual subtask object for template access
-                    'task_obj': subtask
-                }
-                task_list.append(subtask_item)
-                
-                # ONLY count subtasks in totals
-                total_tasks += 1
-                
-                if subtask.task_status == 'Completed':
-                    completed_tasks += 1
-                else:
-                    pending_tasks += 1
+            if subtask.task_status == 'Completed':
+                completed_tasks += 1
+            else:
+                pending_tasks += 1
     
     # Calculate completion percentage
     completion_percentage = (completed_tasks / total_tasks * 100) if total_tasks > 0 else 0
@@ -2037,33 +2067,19 @@ def ajax_delete_task(request):
 
 @login_required
 def get_project_assignees(request, project_id):
-    """AJAX endpoint to get all assignees for a project"""
-    project = get_object_or_404(Project, project_id=project_id)
+    """AJAX endpoint to get all assignees for a project - OPTIMIZED"""
+    # OPTIMIZED: Single query with prefetching
+    project = get_object_or_404(
+        Project.objects.prefetch_related('projecttask_set'), 
+        project_id=project_id
+    )
     
-    # Get all unique assignees from tasks and subtasks
+    # OPTIMIZED: Use prefetched data to get assignees
     assignees = set()
     
-    # Get assignees from main tasks
-    main_tasks = ProjectTask.objects.filter(
-        project=project, 
-        parent_task__isnull=True,
-        task_assigned_to__isnull=False
-    ).exclude(task_assigned_to='')
-    
-    for task in main_tasks:
-        if task.task_assigned_to:
+    for task in project.projecttask_set.all():
+        if task.task_assigned_to and task.task_assigned_to.strip():
             assignees.add(task.task_assigned_to.strip())
-    
-    # Get assignees from subtasks
-    subtasks = ProjectTask.objects.filter(
-        project=project, 
-        parent_task__isnull=False,
-        task_assigned_to__isnull=False
-    ).exclude(task_assigned_to='')
-    
-    for subtask in subtasks:
-        if subtask.task_assigned_to:
-            assignees.add(subtask.task_assigned_to.strip())
     
     # Convert to sorted list
     assignees_list = sorted(list(assignees))
@@ -2073,6 +2089,7 @@ def get_project_assignees(request, project_id):
         'assignees': assignees_list,
         'project_name': project.project_name
     })
+
 
 def render_to_pdf(template_src, context_dict):
     template = get_template(template_src)
@@ -3807,6 +3824,22 @@ def suppliers_edit_commit(request, supplier_id):
 	sresults = supplier.objects.all().order_by('supplier_country','supplier_contact_person')
 	return render (request, "suppliers.html", {"supplier":sresults})
 
+@login_required
+def suppliers_delete(request, supplier_id):
+    if request.method == 'POST' and request.user.is_superuser:
+        try:
+            supplier_instance = supplier.objects.get(supplier_id=supplier_id)
+            contact_person = supplier_instance.supplier_contact_person
+            supplier_instance.delete()
+            messages.success(request, f'Supplier "{contact_person}" has been deleted successfully.')
+        except supplier.DoesNotExist:
+            messages.error(request, 'Supplier not found.')
+        except Exception as e:
+            messages.error(request, f'Error deleting supplier: {str(e)}')
+    else:
+        messages.error(request, 'Unauthorized action.')
+    
+    return redirect('suppliers')
 
 ### INVOICES ###
 @login_required
@@ -5993,13 +6026,11 @@ def finance_pl_act(request):
         except (ValueError, TypeError):
             selected_year = 'budget'
     
-    # OPTIMIZED: Get all active properties with proper prefetching to prevent N+1 queries
+    # FULLY OPTIMIZED: Single query with comprehensive prefetching
     all_properties = props.objects.filter(prop_status="Active").select_related().prefetch_related(
-        'prop_values_set',
-        'revenue_set__revenue_line_types',
-        'revenue_set__revenue_types',
-        'expense_set__expense_line_types', 
-        'expense_set__expense_types'
+        'prop_values_set',  # Simplified - no explicit queryset
+        Prefetch('revenue_set', queryset=revenue.objects.select_related('revenue_line_types', 'revenue_types')),
+        Prefetch('expense_set', queryset=expense.objects.select_related('expense_line_types', 'expense_types'))
     )
     
     # If no properties selected, default to ALL properties
@@ -6008,24 +6039,21 @@ def finance_pl_act(request):
     
     # Convert to integers and filter
     selected_prop_ids = [int(pid) for pid in selected_properties if pid.isdigit()]
-    
-    # OPTIMIZED: Filter properties with all necessary prefetches already loaded
     properties = all_properties.filter(prop_id__in=selected_prop_ids)
     
-    # OPTIMIZED: Get revenue and expense line types with single queries
-    revenue_line_types_list = revenue_line_types.objects.all()
-    expense_line_types_list = expense_line_types.objects.all()
+    # OPTIMIZED: Single queries for line types
+    revenue_line_types_list = list(revenue_line_types.objects.all())
+    expense_line_types_list = list(expense_line_types.objects.all())
     
-    # OPTIMIZED: Bulk fetch revenues and expenses with select_related
-    revenues = revenue.objects.filter(prop_id__in=selected_prop_ids).select_related(
-        'prop', 'revenue_line_types', 'revenue_types'
-    )
-    expenses = expense.objects.filter(prop_id__in=selected_prop_ids).select_related(
-        'prop', 'expense_line_types', 'expense_types'
-    )
+    # OPTIMIZED: Use prefetched data instead of separate queries
+    revenues = []
+    expenses = []
+    
+    for prop in properties:
+        revenues.extend(prop.revenue_set.all())
+        expenses.extend(prop.expense_set.all())
     
     # ========= REVENUE SECTION ========= (optimized calculations)
-    # Calculate revenue totals for selected properties
     revenue_totals = {
         'jan': sum(r.revenue_jan or 0 for r in revenues),
         'feb': sum(r.revenue_feb or 0 for r in revenues),
@@ -6042,7 +6070,7 @@ def finance_pl_act(request):
     }
     revenue_totals['year'] = sum(revenue_totals.values())
     
-    # OPTIMIZED: Pre-group revenues by line type to avoid repeated filtering
+    # OPTIMIZED: Pre-group revenues by line type
     revenues_by_line_type = {}
     for rev in revenues:
         line_type_id = rev.revenue_line_types.revenue_line_types_id
@@ -6050,7 +6078,7 @@ def finance_pl_act(request):
             revenues_by_line_type[line_type_id] = []
         revenues_by_line_type[line_type_id].append(rev)
     
-    # Calculate revenue totals by line type for selected properties
+    # Calculate revenue totals by line type
     revenue_totals_by_line = {'all': {}}
     for lt in revenue_line_types_list:
         line_revenues = revenues_by_line_type.get(lt.revenue_line_types_id, [])
@@ -6071,7 +6099,7 @@ def finance_pl_act(request):
         monthly_totals['total'] = sum(monthly_totals.values())
         revenue_totals_by_line['all'][lt.revenue_line_types_id] = monthly_totals
     
-    # OPTIMIZED: Pre-group revenues by property to avoid repeated filtering
+    # OPTIMIZED: Pre-group revenues by property
     revenues_by_property = {}
     for rev in revenues:
         prop_id = rev.prop.prop_id
@@ -6128,51 +6156,53 @@ def finance_pl_act(request):
         'jul': 0, 'aug': 0, 'sep': 0, 'oct': 0, 'nov': 0, 'dec': 0, 'year': 0
     }
     
-    # OPTIMIZED: Single query for actual expenses with aggregation
+    # FULLY OPTIMIZED: Actual expenses with single aggregate query
     actual_expense_prop_totals = {}
     if selected_year != 'budget':
-        # Use database aggregation instead of Python loops
-        from django.db.models import Q, Case, When, IntegerField
+        from django.db.models import Sum
         
-        actual_expenses_qs = act_expense.objects.filter(
+        # Single query to get all actual expenses with month grouping
+        actual_expenses_aggregated = act_expense.objects.filter(
             act_expense_date__year=selected_year,
             act_expense_approved="Yes",
             act_expense_paid="Yes",
             prop_id__in=selected_prop_ids
-        ).select_related('prop')
+        ).values('prop_id', 'act_expense_date__month').annotate(
+            total_amount=Sum('act_expense_amount')
+        ).order_by('prop_id', 'act_expense_date__month')
         
-        # Calculate monthly totals using database aggregation
+        # Calculate monthly totals for all properties in one pass
         month_mapping = {
             1: 'jan', 2: 'feb', 3: 'mar', 4: 'apr', 5: 'may', 6: 'jun',
             7: 'jul', 8: 'aug', 9: 'sep', 10: 'oct', 11: 'nov', 12: 'dec'
         }
         
-        for month_num, month_name in month_mapping.items():
-            month_total = actual_expenses_qs.filter(
-                act_expense_date__month=month_num
-            ).aggregate(total=Sum('act_expense_amount'))['total'] or 0
+        # Initialize all property totals
+        for prop in properties:
+            actual_expense_prop_totals[prop.prop_id] = {month: 0 for month in month_mapping.values()}
+            actual_expense_prop_totals[prop.prop_id]['year'] = 0
+        
+        # Process aggregated results
+        for result in actual_expenses_aggregated:
+            prop_id = result['prop_id']
+            month_num = result['act_expense_date__month']
+            amount = result['total_amount'] or 0
             
-            actual_expense_totals[month_name] = month_total
+            if prop_id in actual_expense_prop_totals:
+                month_name = month_mapping[month_num]
+                actual_expense_prop_totals[prop_id][month_name] = amount
+                actual_expense_prop_totals[prop_id]['year'] += amount
+        
+        # Calculate overall monthly totals
+        for month_name in month_mapping.values():
+            actual_expense_totals[month_name] = sum(
+                actual_expense_prop_totals[prop.prop_id][month_name] 
+                for prop in properties
+            )
         
         actual_expense_totals['year'] = sum(actual_expense_totals.values())
-        
-        # Calculate property-specific actual expenses efficiently
-        for prop in properties:
-            prop_totals = {month: 0 for month in month_mapping.values()}
-            prop_totals['year'] = 0
-            
-            prop_expenses = actual_expenses_qs.filter(prop=prop)
-            for month_num, month_name in month_mapping.items():
-                month_total = prop_expenses.filter(
-                    act_expense_date__month=month_num
-                ).aggregate(total=Sum('act_expense_amount'))['total'] or 0
-                
-                prop_totals[month_name] = month_total
-            
-            prop_totals['year'] = sum(prop_totals[month] for month in month_mapping.values())
-            actual_expense_prop_totals[prop.prop_id] = prop_totals
     
-    # Calculate budgeted expense totals for selected properties
+    # Calculate budgeted expense totals
     expense_totals = {
         'jan': sum(e.expense_jan or 0 for e in expenses),
         'feb': sum(e.expense_feb or 0 for e in expenses),
@@ -6270,7 +6300,6 @@ def finance_pl_act(request):
 
     # ========= PROFIT CALCULATION =========
     if selected_year == 'budget':
-        # Budget view - no actual expenses
         profit_totals = {
             'jan': revenue_totals['jan'] - expense_totals['jan'],
             'feb': revenue_totals['feb'] - expense_totals['feb'],
@@ -6287,7 +6316,6 @@ def finance_pl_act(request):
             'year': revenue_totals['year'] - expense_totals['year']
         }
     else:
-        # Actual year view - include both budget and actual expenses
         profit_totals = {
             'jan': revenue_totals['jan'] - expense_totals['jan'] - actual_expense_totals['jan'],
             'feb': revenue_totals['feb'] - expense_totals['feb'] - actual_expense_totals['feb'],
@@ -6304,12 +6332,12 @@ def finance_pl_act(request):
             'year': revenue_totals['year'] - expense_totals['year'] - actual_expense_totals['year']
         }
 
-    # OPTIMIZED: Property values mapping using prefetched data
+    # FULLY OPTIMIZED: Property values using prefetched data - NO additional queries
     prop_values_map = {}
     total_current_value = 0
     
     for prop in properties:
-        # Use prefetched data instead of making individual queries
+        # Use the prefetched prop_values_set data
         prop_values_list = list(prop.prop_values_set.all())
         if prop_values_list:
             prop_values = prop_values_list[0]

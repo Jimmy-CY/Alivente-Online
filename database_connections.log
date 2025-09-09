@@ -66,3 +66,489 @@ Starting request req_1757331633_24236: GET /fsr_notification/ (user: anonymous)
 Starting request req_1757331635_24236: GET /fsr/ (user: anonymous)
 Starting request req_1757331690_24236: GET / (user: anonymous)
 Enhanced DatabaseConnectionMiddleware initialized with threshold=100
+Enhanced DatabaseConnectionMiddleware initialized with threshold=100
+Starting request req_1757332041_12128: GET /properties/ (user: anonymous)
+Starting request req_1757332044_12128: GET /properties/map/ (user: anonymous)
+Starting request req_1757332049_12128: GET /properties/ (user: anonymous)
+Starting request req_1757332050_12128: GET /media/properties/title_deeds/prop_5_apolloneon-demetri_title_deed.pdf (user: anonymous)
+Starting request req_1757332054_12128: GET /property_report/5 (user: anonymous)
+Starting request req_1757332055_12128: GET /properties/ (user: anonymous)
+Starting request req_1757332057_12128: GET /tenant/ (user: anonymous)
+Starting request req_1757332059_12128: GET /open_invoices_report/ (user: anonymous)
+Starting request req_1757332060_12128: GET /tenant/ (user: anonymous)
+Starting request req_1757332061_12128: GET /lease_renewal_report/ (user: anonymous)
+Starting request req_1757332063_12128: GET /tenant/ (user: anonymous)
+Starting request req_1757332065_12128: GET /tenant_report/5 (user: anonymous)
+Starting request req_1757332066_12128: GET /tenant/ (user: anonymous)
+Starting request req_1757332067_12128: GET /media/tenants/lease_agreements/tenant_5_chrystalla-katelari-and-antigoni-andreou_lease_agreement.pdf (user: anonymous)
+Starting request req_1757332073_12128: GET /suppliers/ (user: anonymous)
+Starting request req_1757332076_12128: GET / (user: anonymous)
+Starting request req_1757332080_12128: GET /fsr/ (user: anonymous)
+Starting request req_1757332088_12128: GET /resolved_issues_report/ (user: anonymous)
+Starting request req_1757332090_12128: GET /fsr/ (user: anonymous)
+Starting request req_1757332096_12128: GET /friday_status_report/ (user: anonymous)
+Request req_1757332096_12128 stats: duration=0.22s, total_queries=22, breakdown={'default': 22}, path=/friday_status_report/, user=anonymous
+Starting request req_1757332098_12128: GET /fsr/ (user: anonymous)
+Starting request req_1757332103_12128: GET /friday_status_report/ (user: anonymous)
+Request req_1757332103_12128 stats: duration=0.17s, total_queries=27, breakdown={'default': 27}, path=/friday_status_report/, user=anonymous
+Starting request req_1757332105_12128: GET /fsr/ (user: anonymous)
+Starting request req_1757332107_12128: GET / (user: anonymous)
+Starting request req_1757332109_12128: GET /property_management_dashboard/ (user: anonymous)
+Starting request req_1757332113_12128: GET /property/1/profit-loss/ (user: anonymous)
+Request req_1757332113_12128 stats: duration=0.15s, total_queries=34, breakdown={'default': 34}, path=/property/1/profit-loss/, user=anonymous
+Starting request req_1757332118_12128: GET /property_management_dashboard/ (user: anonymous)
+Starting request req_1757332121_12128: GET /property_detail/1/title-deed/ (user: anonymous)
+Starting request req_1757332121_12128: GET /media/properties/title_deeds/prop_1_palikaridi_title_deed.pdf (user: anonymous)
+Starting request req_1757332122_12128: GET /property_management_dashboard/ (user: anonymous)
+Starting request req_1757332124_12128: GET /property_detail/1/lease/ (user: anonymous)
+Starting request req_1757332126_12128: GET /property_management_dashboard/ (user: anonymous)
+Starting request req_1757332130_12128: GET /property_detail/1/issues/ (user: anonymous)
+Starting request req_1757332132_12128: GET /property_management_dashboard/ (user: anonymous)
+Starting request req_1757332134_12128: GET / (user: anonymous)
+Starting request req_1757332139_12128: GET /finance/ (user: anonymous)
+Starting request req_1757332141_12128: GET /forecast/ (user: anonymous)
+Starting request req_1757332141_12128: GET /forecast/ (user: anonymous)
+Starting request req_1757332142_12128: GET /finance/ (user: anonymous)
+Starting request req_1757332143_12128: GET /finance_pl_act/ (user: anonymous)
+Request req_1757332143_12128 stats: duration=0.13s, total_queries=53, breakdown={'default': 53}, path=/finance_pl_act/, user=anonymous
+HIGH QUERY REQUEST req_1757332143_12128: 53 queries for default connection - Path: /finance_pl_act/, User: anonymous, Duration: 0.13s
+Starting request req_1757332146_12128: GET /finance_pl_act/ (user: anonymous)
+Starting request req_1757332151_12128: GET /finance_pl_act/ (user: anonymous)
+Request req_1757332151_12128 stats: duration=0.05s, total_queries=26, breakdown={'default': 26}, path=/finance_pl_act/, user=anonymous
+Starting request req_1757332154_12128: GET /finance_pl_act/ (user: anonymous)
+Request req_1757332154_12128 stats: duration=0.13s, total_queries=50, breakdown={'default': 50}, path=/finance_pl_act/, user=anonymous
+Starting request req_1757332158_12128: GET /finance_pl_act/ (user: anonymous)
+Request req_1757332158_12128 stats: duration=0.08s, total_queries=50, breakdown={'default': 50}, path=/finance_pl_act/, user=anonymous
+Starting request req_1757332162_12128: GET /finance_pl_act/ (user: anonymous)
+Request req_1757332162_12128 stats: duration=0.23s, total_queries=185, breakdown={'default': 185}, path=/finance_pl_act/, user=anonymous
+HIGH QUERY REQUEST req_1757332162_12128: 185 queries for default connection - Path: /finance_pl_act/, User: anonymous, Duration: 0.23s
+CLOSING CONNECTION default for request req_1757332162_12128:
+  Reasons: total_queries=185, request_queries=185
+  Request: GET /finance_pl_act/
+  User: anonymous
+  Query counts: {'initial': 0, 'final': 185, 'this_request': 185}
+  Recent queries: ['SELECT `prop_values`.`prop_values_id`, `prop_values`.`prop_id`, `prop_values`.`prop_values_purchase_...', 'SELECT `prop_values`.`prop_values_id`, `prop_values`.`prop_id`, `prop_values`.`prop_values_purchase_...', 'SELECT `prop_values`.`prop_values_id`, `prop_values`.`prop_id`, `prop_values`.`prop_values_purchase_...', 'SELECT `prop_values`.`prop_values_id`, `prop_values`.`prop_id`, `prop_values`.`prop_values_purchase_...', 'SELECT `prop_values`.`prop_values_id`, `prop_values`.`prop_id`, `prop_values`.`prop_values_purchase_...']
+  Request duration: 0.23s
+  User agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Sa
+Request req_1757332162_12128 - Cleaned connections: default(total_queries=185, request_queries=185)
+Starting request req_1757332164_12128: GET /finance_pl_act/ (user: anonymous)
+Request req_1757332164_12128 stats: duration=0.11s, total_queries=53, breakdown={'default': 53}, path=/finance_pl_act/, user=anonymous
+HIGH QUERY REQUEST req_1757332164_12128: 53 queries for default connection - Path: /finance_pl_act/, User: anonymous, Duration: 0.11s
+Starting request req_1757332167_12128: GET /finance/ (user: anonymous)
+Starting request req_1757332168_12128: GET /forecast/ (user: anonymous)
+Starting request req_1757332168_12128: GET /forecast/ (user: anonymous)
+Starting request req_1757332170_12128: GET /finance/ (user: anonymous)
+Running periodic cleanup after 50 requests
+Force cleanup completed. Previous query counts: {'default': 0}
+Starting request req_1757332171_12128: GET /financial-indicators/ (user: anonymous)
+Starting request req_1757332171_12128: GET /financial-indicators/ (user: anonymous)
+Request req_1757332171_12128 stats: duration=0.06s, total_queries=34, breakdown={'default': 34}, path=/financial-indicators/, user=anonymous
+Starting request req_1757332173_12128: GET /finance/ (user: anonymous)
+Starting request req_1757332177_12128: GET /finance_valuations/ (user: anonymous)
+Starting request req_1757332178_12128: GET /finance/ (user: anonymous)
+Enhanced DatabaseConnectionMiddleware initialized with threshold=100
+Starting request req_1757384642_43228: GET / (user: anonymous)
+Starting request req_1757384643_43228: GET /finance/ (user: anonymous)
+Starting request req_1757384644_43228: GET /finance_pl_act/ (user: anonymous)
+Request req_1757384644_43228 stats: duration=0.18s, total_queries=53, breakdown={'default': 53}, path=/finance_pl_act/, user=anonymous
+HIGH QUERY REQUEST req_1757384644_43228: 53 queries for default connection - Path: /finance_pl_act/, User: anonymous, Duration: 0.18s
+Starting request req_1757384647_43228: GET /finance/ (user: anonymous)
+Starting request req_1757384654_43228: GET /forecast/ (user: anonymous)
+Starting request req_1757384654_43228: GET /forecast/ (user: anonymous)
+Starting request req_1757384658_43228: GET /finance/ (user: anonymous)
+Starting request req_1757384659_43228: GET /finance_valuations/ (user: anonymous)
+Starting request req_1757384661_43228: GET /finance/ (user: anonymous)
+Starting request req_1757384662_43228: GET /financial-indicators/ (user: anonymous)
+Starting request req_1757384662_43228: GET /financial-indicators/ (user: anonymous)
+Request req_1757384662_43228 stats: duration=0.04s, total_queries=34, breakdown={'default': 34}, path=/financial-indicators/, user=anonymous
+Starting request req_1757384664_43228: GET /finance/ (user: anonymous)
+Starting request req_1757384665_43228: GET /finance_pl_act/ (user: anonymous)
+Request req_1757384665_43228 stats: duration=0.12s, total_queries=53, breakdown={'default': 53}, path=/finance_pl_act/, user=anonymous
+HIGH QUERY REQUEST req_1757384665_43228: 53 queries for default connection - Path: /finance_pl_act/, User: anonymous, Duration: 0.12s
+Starting request req_1757384670_43228: GET /finance_pl_act/ (user: anonymous)
+Request req_1757384670_43228 stats: duration=0.24s, total_queries=185, breakdown={'default': 185}, path=/finance_pl_act/, user=anonymous
+HIGH QUERY REQUEST req_1757384670_43228: 185 queries for default connection - Path: /finance_pl_act/, User: anonymous, Duration: 0.24s
+CLOSING CONNECTION default for request req_1757384670_43228:
+  Reasons: total_queries=185, request_queries=185
+  Request: GET /finance_pl_act/
+  User: anonymous
+  Query counts: {'initial': 0, 'final': 185, 'this_request': 185}
+  Recent queries: ['SELECT `prop_values`.`prop_values_id`, `prop_values`.`prop_id`, `prop_values`.`prop_values_purchase_...', 'SELECT `prop_values`.`prop_values_id`, `prop_values`.`prop_id`, `prop_values`.`prop_values_purchase_...', 'SELECT `prop_values`.`prop_values_id`, `prop_values`.`prop_id`, `prop_values`.`prop_values_purchase_...', 'SELECT `prop_values`.`prop_values_id`, `prop_values`.`prop_id`, `prop_values`.`prop_values_purchase_...', 'SELECT `prop_values`.`prop_values_id`, `prop_values`.`prop_id`, `prop_values`.`prop_values_purchase_...']
+  Request duration: 0.24s
+  User agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Sa
+Request req_1757384670_43228 - Cleaned connections: default(total_queries=185, request_queries=185)
+Starting request req_1757384678_43228: GET /finance_pl_act/ (user: anonymous)
+Request req_1757384678_43228 stats: duration=0.24s, total_queries=185, breakdown={'default': 185}, path=/finance_pl_act/, user=anonymous
+HIGH QUERY REQUEST req_1757384678_43228: 185 queries for default connection - Path: /finance_pl_act/, User: anonymous, Duration: 0.24s
+CLOSING CONNECTION default for request req_1757384678_43228:
+  Reasons: total_queries=185, request_queries=185
+  Request: GET /finance_pl_act/
+  User: anonymous
+  Query counts: {'initial': 0, 'final': 185, 'this_request': 185}
+  Recent queries: ['SELECT `prop_values`.`prop_values_id`, `prop_values`.`prop_id`, `prop_values`.`prop_values_purchase_...', 'SELECT `prop_values`.`prop_values_id`, `prop_values`.`prop_id`, `prop_values`.`prop_values_purchase_...', 'SELECT `prop_values`.`prop_values_id`, `prop_values`.`prop_id`, `prop_values`.`prop_values_purchase_...', 'SELECT `prop_values`.`prop_values_id`, `prop_values`.`prop_id`, `prop_values`.`prop_values_purchase_...', 'SELECT `prop_values`.`prop_values_id`, `prop_values`.`prop_id`, `prop_values`.`prop_values_purchase_...']
+  Request duration: 0.24s
+  User agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Sa
+Request req_1757384678_43228 - Cleaned connections: default(total_queries=185, request_queries=185)
+Starting request req_1757384682_43228: GET /finance_pl_act/ (user: anonymous)
+Starting request req_1757384686_43228: GET /finance_pl_act/ (user: anonymous)
+Request req_1757384686_43228 stats: duration=0.12s, total_queries=50, breakdown={'default': 50}, path=/finance_pl_act/, user=anonymous
+Starting request req_1757384688_43228: GET /finance/ (user: anonymous)
+Starting request req_1757384694_43228: GET /fsr/ (user: anonymous)
+Starting request req_1757384706_43228: GET /resolved_issues_report/ (user: anonymous)
+Starting request req_1757384708_43228: GET /fsr/ (user: anonymous)
+Starting request req_1757384713_43228: GET /friday_status_report/ (user: anonymous)
+Request req_1757384713_43228 stats: duration=0.21s, total_queries=22, breakdown={'default': 22}, path=/friday_status_report/, user=anonymous
+Starting request req_1757384716_43228: GET /fsr/ (user: anonymous)
+Starting request req_1757384738_43228: GET / (user: anonymous)
+Starting request req_1757384740_43228: GET /finance/ (user: anonymous)
+Starting request req_1757384743_43228: GET /finance_pl_act/ (user: anonymous)
+Request req_1757384743_43228 stats: duration=0.10s, total_queries=53, breakdown={'default': 53}, path=/finance_pl_act/, user=anonymous
+HIGH QUERY REQUEST req_1757384743_43228: 53 queries for default connection - Path: /finance_pl_act/, User: anonymous, Duration: 0.10s
+Enhanced DatabaseConnectionMiddleware initialized with threshold=100
+Starting request req_1757385125_38756: GET / (user: anonymous)
+Starting request req_1757385127_38756: GET /finance/ (user: anonymous)
+Starting request req_1757385129_38756: GET /finance_pl_act/ (user: anonymous)
+Enhanced DatabaseConnectionMiddleware initialized with threshold=100
+Starting request req_1757385547_43036: GET / (user: anonymous)
+Starting request req_1757385549_43036: GET /finance/ (user: anonymous)
+Starting request req_1757385552_43036: GET /finance_pl_act/ (user: anonymous)
+Request req_1757385552_43036 stats: duration=0.13s, total_queries=43, breakdown={'default': 43}, path=/finance_pl_act/, user=anonymous
+Starting request req_1757385557_43036: GET /finance_pl_act/ (user: anonymous)
+Request req_1757385557_43036 stats: duration=0.13s, total_queries=56, breakdown={'default': 56}, path=/finance_pl_act/, user=anonymous
+HIGH QUERY REQUEST req_1757385557_43036: 56 queries for default connection - Path: /finance_pl_act/, User: anonymous, Duration: 0.13s
+Starting request req_1757385563_43036: GET /finance_pl_act/ (user: anonymous)
+Request req_1757385563_43036 stats: duration=0.11s, total_queries=56, breakdown={'default': 56}, path=/finance_pl_act/, user=anonymous
+HIGH QUERY REQUEST req_1757385563_43036: 56 queries for default connection - Path: /finance_pl_act/, User: anonymous, Duration: 0.11s
+Starting request req_1757385566_43036: GET /finance_pl_act/ (user: anonymous)
+Request req_1757385566_43036 stats: duration=0.09s, total_queries=43, breakdown={'default': 43}, path=/finance_pl_act/, user=anonymous
+Starting request req_1757385572_43036: GET /finance_pl_act/ (user: anonymous)
+Starting request req_1757385574_43036: GET /finance_pl_act/ (user: anonymous)
+Request req_1757385574_43036 stats: duration=0.09s, total_queries=43, breakdown={'default': 43}, path=/finance_pl_act/, user=anonymous
+Starting request req_1757385577_43036: GET /finance_pl_act/ (user: anonymous)
+Request req_1757385577_43036 stats: duration=0.10s, total_queries=56, breakdown={'default': 56}, path=/finance_pl_act/, user=anonymous
+HIGH QUERY REQUEST req_1757385577_43036: 56 queries for default connection - Path: /finance_pl_act/, User: anonymous, Duration: 0.10s
+Starting request req_1757385580_43036: GET /finance_pl_act/ (user: anonymous)
+Request req_1757385580_43036 stats: duration=0.13s, total_queries=56, breakdown={'default': 56}, path=/finance_pl_act/, user=anonymous
+HIGH QUERY REQUEST req_1757385580_43036: 56 queries for default connection - Path: /finance_pl_act/, User: anonymous, Duration: 0.13s
+Starting request req_1757385582_43036: GET /finance/ (user: anonymous)
+Starting request req_1757385583_43036: GET /forecast/ (user: anonymous)
+Starting request req_1757385583_43036: GET /forecast/ (user: anonymous)
+Starting request req_1757385585_43036: GET /finance/ (user: anonymous)
+Starting request req_1757385586_43036: GET /finance_valuations/ (user: anonymous)
+Starting request req_1757385588_43036: GET /finance/ (user: anonymous)
+Starting request req_1757385589_43036: GET /finance_pl_act/ (user: anonymous)
+Request req_1757385589_43036 stats: duration=0.11s, total_queries=43, breakdown={'default': 43}, path=/finance_pl_act/, user=anonymous
+Starting request req_1757385595_43036: GET /finance/ (user: anonymous)
+Starting request req_1757385599_43036: GET /finance_pl_act/ (user: anonymous)
+Request req_1757385599_43036 stats: duration=0.11s, total_queries=43, breakdown={'default': 43}, path=/finance_pl_act/, user=anonymous
+Enhanced DatabaseConnectionMiddleware initialized with threshold=100
+Starting request req_1757386251_26320: GET / (user: anonymous)
+Starting request req_1757386253_26320: GET /finance/ (user: anonymous)
+Starting request req_1757386255_26320: GET /finance_pl_act/ (user: anonymous)
+Request req_1757386255_26320 stats: duration=0.10s, total_queries=43, breakdown={'default': 43}, path=/finance_pl_act/, user=anonymous
+Starting request req_1757386258_26320: GET /finance_pl_act/ (user: anonymous)
+Request req_1757386258_26320 stats: duration=0.09s, total_queries=44, breakdown={'default': 44}, path=/finance_pl_act/, user=anonymous
+Starting request req_1757386262_26320: GET /finance_pl_act/ (user: anonymous)
+Request req_1757386262_26320 stats: duration=0.08s, total_queries=44, breakdown={'default': 44}, path=/finance_pl_act/, user=anonymous
+Starting request req_1757386270_26320: GET /finance_pl_act/ (user: anonymous)
+Request req_1757386270_26320 stats: duration=0.08s, total_queries=44, breakdown={'default': 44}, path=/finance_pl_act/, user=anonymous
+Starting request req_1757386272_26320: GET /finance_pl_act/ (user: anonymous)
+Request req_1757386272_26320 stats: duration=0.08s, total_queries=43, breakdown={'default': 43}, path=/finance_pl_act/, user=anonymous
+Starting request req_1757386274_26320: GET /finance/ (user: anonymous)
+Starting request req_1757386276_26320: GET /forecast/ (user: anonymous)
+Starting request req_1757386276_26320: GET /forecast/ (user: anonymous)
+Starting request req_1757386278_26320: GET /finance/ (user: anonymous)
+Starting request req_1757386279_26320: GET /financial-indicators/ (user: anonymous)
+Starting request req_1757386279_26320: GET /financial-indicators/ (user: anonymous)
+Request req_1757386279_26320 stats: duration=0.04s, total_queries=34, breakdown={'default': 34}, path=/financial-indicators/, user=anonymous
+Starting request req_1757386281_26320: GET /finance/ (user: anonymous)
+Starting request req_1757386282_26320: GET /finance_valuations/ (user: anonymous)
+Starting request req_1757386283_26320: GET /finance/ (user: anonymous)
+Starting request req_1757386285_26320: GET /properties/ (user: anonymous)
+Starting request req_1757386286_26320: GET /properties/map/ (user: anonymous)
+Starting request req_1757386292_26320: GET /properties/ (user: anonymous)
+Starting request req_1757386294_26320: GET /property_report/5 (user: anonymous)
+Starting request req_1757386295_26320: GET /properties/ (user: anonymous)
+Starting request req_1757386301_26320: GET /tenant/ (user: anonymous)
+Starting request req_1757386303_26320: GET /open_invoices_report/ (user: anonymous)
+Starting request req_1757386308_26320: GET /tenant/ (user: anonymous)
+Starting request req_1757386309_26320: GET /lease_renewal_report/ (user: anonymous)
+Starting request req_1757386312_26320: GET /tenant/ (user: anonymous)
+Starting request req_1757386315_26320: GET /tenant_report/5 (user: anonymous)
+Starting request req_1757386317_26320: GET /tenant/ (user: anonymous)
+Starting request req_1757386323_26320: GET /suppliers/ (user: anonymous)
+Starting request req_1757386325_26320: GET /supplier_report/9 (user: anonymous)
+Starting request req_1757386326_26320: GET /suppliers/ (user: anonymous)
+Starting request req_1757386328_26320: GET /fsr/ (user: anonymous)
+Starting request req_1757386335_26320: GET /resolved_issues_report/ (user: anonymous)
+Starting request req_1757386337_26320: GET /fsr/ (user: anonymous)
+Starting request req_1757386342_26320: GET /friday_status_report/ (user: anonymous)
+Request req_1757386342_26320 stats: duration=0.21s, total_queries=27, breakdown={'default': 27}, path=/friday_status_report/, user=anonymous
+Starting request req_1757386346_26320: GET /fsr/ (user: anonymous)
+Starting request req_1757386349_26320: GET /friday_status_report/ (user: anonymous)
+Request req_1757386349_26320 stats: duration=0.15s, total_queries=22, breakdown={'default': 22}, path=/friday_status_report/, user=anonymous
+Starting request req_1757386351_26320: GET /fsr/ (user: anonymous)
+Starting request req_1757386353_26320: GET / (user: anonymous)
+Starting request req_1757386355_26320: GET /projects/ (user: anonymous)
+Request req_1757386355_26320 stats: duration=0.20s, total_queries=65, breakdown={'default': 65}, path=/projects/, user=anonymous
+HIGH QUERY REQUEST req_1757386355_26320: 65 queries for default connection - Path: /projects/, User: anonymous, Duration: 0.20s
+Starting request req_1757386468_26320: GET /projects/detail/2/ (user: anonymous)
+Request req_1757386468_26320 stats: duration=0.13s, total_queries=91, breakdown={'default': 91}, path=/projects/detail/2/, user=anonymous
+HIGH QUERY REQUEST req_1757386468_26320: 91 queries for default connection - Path: /projects/detail/2/, User: anonymous, Duration: 0.13s
+Starting request req_1757386471_26320: GET /projects/2/gantt/ (user: anonymous)
+Request req_1757386471_26320 stats: duration=0.12s, total_queries=77, breakdown={'default': 77}, path=/projects/2/gantt/, user=anonymous
+HIGH QUERY REQUEST req_1757386471_26320: 77 queries for default connection - Path: /projects/2/gantt/, User: anonymous, Duration: 0.12s
+Starting request req_1757386474_26320: GET /projects/detail/2/ (user: anonymous)
+Request req_1757386474_26320 stats: duration=0.10s, total_queries=91, breakdown={'default': 91}, path=/projects/detail/2/, user=anonymous
+HIGH QUERY REQUEST req_1757386474_26320: 91 queries for default connection - Path: /projects/detail/2/, User: anonymous, Duration: 0.10s
+Starting request req_1757386477_26320: GET /projects/2/assignees/ (user: anonymous)
+Starting request req_1757386482_26320: GET /projects/2/task-list/ (user: anonymous)
+Request req_1757386482_26320 stats: duration=0.07s, total_queries=24, breakdown={'default': 24}, path=/projects/2/task-list/, user=anonymous
+Starting request req_1757386484_26320: GET /projects/detail/2/ (user: anonymous)
+Request req_1757386484_26320 stats: duration=0.10s, total_queries=91, breakdown={'default': 91}, path=/projects/detail/2/, user=anonymous
+HIGH QUERY REQUEST req_1757386484_26320: 91 queries for default connection - Path: /projects/detail/2/, User: anonymous, Duration: 0.10s
+Enhanced DatabaseConnectionMiddleware initialized with threshold=100
+Enhanced DatabaseConnectionMiddleware initialized with threshold=100
+Starting request req_1757387086_43736: GET / (user: anonymous)
+Starting request req_1757387088_43736: GET /finance/ (user: anonymous)
+Starting request req_1757387089_43736: GET /finance_pl_act/ (user: anonymous)
+Request req_1757387089_43736 stats: duration=0.10s, total_queries=43, breakdown={'default': 43}, path=/finance_pl_act/, user=anonymous
+Starting request req_1757387092_43736: GET /finance_pl_act/ (user: anonymous)
+Request req_1757387092_43736 stats: duration=0.09s, total_queries=44, breakdown={'default': 44}, path=/finance_pl_act/, user=anonymous
+Starting request req_1757387094_43736: GET /finance_pl_act/ (user: anonymous)
+Request req_1757387094_43736 stats: duration=0.08s, total_queries=44, breakdown={'default': 44}, path=/finance_pl_act/, user=anonymous
+Starting request req_1757387095_43736: GET /finance/ (user: anonymous)
+Starting request req_1757387098_43736: GET /projects/ (user: anonymous)
+Request req_1757387098_43736 stats: duration=0.08s, total_queries=67, breakdown={'default': 67}, path=/projects/, user=anonymous
+HIGH QUERY REQUEST req_1757387098_43736: 67 queries for default connection - Path: /projects/, User: anonymous, Duration: 0.08s
+Starting request req_1757387105_43736: GET /projects/detail/2/ (user: anonymous)
+Request req_1757387105_43736 stats: duration=0.07s, total_queries=48, breakdown={'default': 48}, path=/projects/detail/2/, user=anonymous
+Starting request req_1757387107_43736: GET /projects/2/assignees/ (user: anonymous)
+Starting request req_1757387109_43736: GET /projects/2/task-list/ (user: anonymous)
+Starting request req_1757387112_43736: GET /projects/detail/2/ (user: anonymous)
+Request req_1757387112_43736 stats: duration=0.06s, total_queries=48, breakdown={'default': 48}, path=/projects/detail/2/, user=anonymous
+Starting request req_1757387113_43736: GET /projects/2/assignees/ (user: anonymous)
+Starting request req_1757387116_43736: GET /projects/2/task-list/ (user: anonymous)
+Starting request req_1757387118_43736: GET /projects/detail/2/ (user: anonymous)
+Request req_1757387118_43736 stats: duration=0.06s, total_queries=48, breakdown={'default': 48}, path=/projects/detail/2/, user=anonymous
+Starting request req_1757387119_43736: GET /projects/2/gantt/ (user: anonymous)
+Request req_1757387119_43736 stats: duration=0.07s, total_queries=42, breakdown={'default': 42}, path=/projects/2/gantt/, user=anonymous
+Starting request req_1757387123_43736: GET /projects/detail/2/ (user: anonymous)
+Request req_1757387123_43736 stats: duration=0.07s, total_queries=48, breakdown={'default': 48}, path=/projects/detail/2/, user=anonymous
+Starting request req_1757387132_43736: GET /projects/2/tasks/edit/5/ (user: anonymous)
+Request req_1757387132_43736 stats: duration=0.08s, total_queries=22, breakdown={'default': 22}, path=/projects/2/tasks/edit/5/, user=anonymous
+Starting request req_1757387133_43736: GET /projects/detail/2/ (user: anonymous)
+Request req_1757387133_43736 stats: duration=0.07s, total_queries=48, breakdown={'default': 48}, path=/projects/detail/2/, user=anonymous
+Starting request req_1757387140_43736: GET /projects/edit/2/ (user: anonymous)
+Request req_1757387140_43736 stats: duration=0.11s, total_queries=45, breakdown={'default': 45}, path=/projects/edit/2/, user=anonymous
+Starting request req_1757387144_43736: GET /projects/ (user: anonymous)
+Request req_1757387144_43736 stats: duration=0.08s, total_queries=67, breakdown={'default': 67}, path=/projects/, user=anonymous
+HIGH QUERY REQUEST req_1757387144_43736: 67 queries for default connection - Path: /projects/, User: anonymous, Duration: 0.08s
+Enhanced DatabaseConnectionMiddleware initialized with threshold=100
+Starting request req_1757387509_43112: GET / (user: anonymous)
+Starting request req_1757387510_43112: GET /finance/ (user: anonymous)
+Starting request req_1757387512_43112: GET /finance_pl_act/ (user: anonymous)
+Request req_1757387512_43112 stats: duration=0.11s, total_queries=43, breakdown={'default': 43}, path=/finance_pl_act/, user=anonymous
+Starting request req_1757387514_43112: GET /finance_pl_act/ (user: anonymous)
+Request req_1757387514_43112 stats: duration=0.10s, total_queries=44, breakdown={'default': 44}, path=/finance_pl_act/, user=anonymous
+Starting request req_1757387516_43112: GET /finance_pl_act/ (user: anonymous)
+Request req_1757387516_43112 stats: duration=0.09s, total_queries=44, breakdown={'default': 44}, path=/finance_pl_act/, user=anonymous
+Starting request req_1757387518_43112: GET /finance/ (user: anonymous)
+Starting request req_1757387520_43112: GET / (user: anonymous)
+Starting request req_1757387522_43112: GET /projects/ (user: anonymous)
+Request req_1757387522_43112 stats: duration=0.09s, total_queries=66, breakdown={'default': 66}, path=/projects/, user=anonymous
+HIGH QUERY REQUEST req_1757387522_43112: 66 queries for default connection - Path: /projects/, User: anonymous, Duration: 0.09s
+Enhanced DatabaseConnectionMiddleware initialized with threshold=100
+Starting request req_1757387862_42896: GET / (user: anonymous)
+Starting request req_1757387863_42896: GET /finance/ (user: anonymous)
+Starting request req_1757387864_42896: GET /finance_pl_act/ (user: anonymous)
+Request req_1757387864_42896 stats: duration=0.11s, total_queries=43, breakdown={'default': 43}, path=/finance_pl_act/, user=anonymous
+Starting request req_1757387867_42896: GET /finance_pl_act/ (user: anonymous)
+Request req_1757387867_42896 stats: duration=0.10s, total_queries=44, breakdown={'default': 44}, path=/finance_pl_act/, user=anonymous
+Starting request req_1757387869_42896: GET /finance_pl_act/ (user: anonymous)
+Request req_1757387869_42896 stats: duration=0.10s, total_queries=44, breakdown={'default': 44}, path=/finance_pl_act/, user=anonymous
+Starting request req_1757387870_42896: GET /finance/ (user: anonymous)
+Starting request req_1757387873_42896: GET /projects/ (user: anonymous)
+Request req_1757387873_42896 stats: duration=0.07s, total_queries=53, breakdown={'default': 53}, path=/projects/, user=anonymous
+HIGH QUERY REQUEST req_1757387873_42896: 53 queries for default connection - Path: /projects/, User: anonymous, Duration: 0.07s
+Enhanced DatabaseConnectionMiddleware initialized with threshold=100
+Starting request req_1757388045_42540: GET / (user: anonymous)
+Starting request req_1757388049_42540: GET /projects/ (user: anonymous)
+Request req_1757388049_42540 stats: duration=0.08s, total_queries=53, breakdown={'default': 53}, path=/projects/, user=anonymous
+HIGH QUERY REQUEST req_1757388049_42540: 53 queries for default connection - Path: /projects/, User: anonymous, Duration: 0.08s
+Starting request req_1757388053_42540: GET /projects/detail/2/ (user: anonymous)
+Starting request req_1757388055_42540: GET /projects/2/assignees/ (user: anonymous)
+Starting request req_1757388059_42540: GET /projects/2/task-list/ (user: anonymous)
+Starting request req_1757388070_42540: GET /projects/detail/2/ (user: anonymous)
+Starting request req_1757388072_42540: GET /projects/2/gantt/ (user: anonymous)
+Starting request req_1757388076_42540: GET /projects/detail/2/ (user: anonymous)
+Starting request req_1757388089_42540: POST /projects/ajax/duplicate/ (user: anonymous)
+Request req_1757388089_42540 stats: duration=0.23s, total_queries=127, breakdown={'default': 127}, path=/projects/ajax/duplicate/, user=anonymous
+HIGH QUERY REQUEST req_1757388089_42540: 127 queries for default connection - Path: /projects/ajax/duplicate/, User: anonymous, Duration: 0.23s
+CLOSING CONNECTION default for request req_1757388089_42540:
+  Reasons: total_queries=127, request_queries=127
+  Request: POST /projects/ajax/duplicate/
+  User: anonymous
+  Query counts: {'initial': 0, 'final': 127, 'this_request': 127}
+  Recent queries: ['SELECT 1 AS `a` FROM `project_tasks` WHERE `project_tasks`.`parent_task_id` = 9 LIMIT 1', 'SELECT `project_tasks`.`task_id`, `project_tasks`.`project_id`, `project_tasks`.`parent_task_id`, `p...', "UPDATE `projects` SET `project_name` = 'Test', `prop_id` = 5, `project_start_date` = '2025-09-09', `...", 'SELECT `project_documents`.`document_id`, `project_documents`.`project_id`, `project_documents`.`tas...', 'COMMIT']
+  Request duration: 0.23s
+  User agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Sa
+Request req_1757388089_42540 - Cleaned connections: default(total_queries=127, request_queries=127)
+Starting request req_1757388096_42540: GET /projects/detail/3/ (user: anonymous)
+Enhanced DatabaseConnectionMiddleware initialized with threshold=100
+Enhanced DatabaseConnectionMiddleware initialized with threshold=100
+Starting request req_1757388597_34504: GET / (user: anonymous)
+Starting request req_1757388601_34504: GET /projects/ (user: anonymous)
+Starting request req_1757388607_34504: GET /projects/detail/3/ (user: anonymous)
+Starting request req_1757388609_34504: GET /projects/3/assignees/ (user: anonymous)
+Starting request req_1757388612_34504: GET /projects/3/task-list/ (user: anonymous)
+Starting request req_1757388615_34504: GET /projects/detail/3/ (user: anonymous)
+Starting request req_1757388616_34504: GET /projects/3/assignees/ (user: anonymous)
+Starting request req_1757388619_34504: GET /projects/3/task-list/ (user: anonymous)
+Starting request req_1757388620_34504: GET /projects/detail/3/ (user: anonymous)
+Starting request req_1757388621_34504: GET /projects/3/gantt/ (user: anonymous)
+Starting request req_1757388623_34504: GET /projects/detail/3/ (user: anonymous)
+Starting request req_1757388627_34504: GET /projects/edit/3/ (user: anonymous)
+Request req_1757388627_34504 stats: duration=0.04s, total_queries=28, breakdown={'default': 28}, path=/projects/edit/3/, user=anonymous
+Starting request req_1757388629_34504: GET /projects/detail/3/ (user: anonymous)
+Starting request req_1757388631_34504: GET /projects/3/tasks/edit/9/ (user: anonymous)
+Starting request req_1757388632_34504: GET /projects/detail/3/ (user: anonymous)
+Starting request req_1757388686_34504: GET /projects/ (user: anonymous)
+Starting request req_1757388688_34504: GET / (user: anonymous)
+Starting request req_1757388691_34504: GET /projects/ (user: anonymous)
+Starting request req_1757388692_34504: GET /projects/delete/3/ (user: anonymous)
+Starting request req_1757388702_34504: POST /projects/delete/3/ (user: anonymous)
+Request req_1757388702_34504 stats: duration=0.11s, total_queries=49, breakdown={'default': 49}, path=/projects/delete/3/, user=anonymous
+Starting request req_1757388702_34504: GET /projects/ (user: anonymous)
+Starting request req_1757388706_34504: GET /property_management_dashboard/ (user: anonymous)
+Starting request req_1757388713_34504: GET /property/1/profit-loss/ (user: anonymous)
+Request req_1757388713_34504 stats: duration=0.13s, total_queries=34, breakdown={'default': 34}, path=/property/1/profit-loss/, user=anonymous
+Starting request req_1757388718_34504: GET /property_management_dashboard/ (user: anonymous)
+Starting request req_1757388720_34504: GET /property_detail/1/title-deed/ (user: anonymous)
+Starting request req_1757388721_34504: GET /property_management_dashboard/ (user: anonymous)
+Starting request req_1757388724_34504: GET /property_detail/1/issues/ (user: anonymous)
+Starting request req_1757388726_34504: GET /property_management_dashboard/ (user: anonymous)
+Starting request req_1757388728_34504: GET /property_detail/1/open-invoices/ (user: anonymous)
+Starting request req_1757388730_34504: GET /property_management_dashboard/ (user: anonymous)
+Starting request req_1757388732_34504: GET /property_detail/1/valuation/ (user: anonymous)
+Starting request req_1757388734_34504: GET /property_management_dashboard/ (user: anonymous)
+Starting request req_1757388738_34504: GET /property_detail/1/budgeted-expenses/ (user: anonymous)
+Request req_1757388738_34504 stats: duration=0.04s, total_queries=23, breakdown={'default': 23}, path=/property_detail/1/budgeted-expenses/, user=anonymous
+Starting request req_1757388741_34504: GET /property_management_dashboard/ (user: anonymous)
+Starting request req_1757388742_34504: GET / (user: anonymous)
+Starting request req_1757388746_34504: GET /fsr/ (user: anonymous)
+Starting request req_1757388749_34504: GET /friday_status_report/ (user: anonymous)
+Request req_1757388749_34504 stats: duration=0.19s, total_queries=22, breakdown={'default': 22}, path=/friday_status_report/, user=anonymous
+Starting request req_1757388750_34504: GET /fsr/ (user: anonymous)
+Starting request req_1757388807_34504: GET / (user: anonymous)
+Starting request req_1757388815_34504: GET /petty_cash/ (user: anonymous)
+Starting request req_1757388816_34504: GET / (user: anonymous)
+Starting request req_1757388817_34504: GET /act_expense_all/ (user: anonymous)
+Starting request req_1757388819_34504: GET / (user: anonymous)
+Starting request req_1757388941_34504: GET /fsr/ (user: anonymous)
+Starting request req_1757389032_34504: GET /suppliers/ (user: anonymous)
+Enhanced DatabaseConnectionMiddleware initialized with threshold=100
+Starting request req_1757389422_42016: GET / (user: anonymous)
+Starting request req_1757389424_42016: GET /suppliers/ (user: anonymous)
+Starting request req_1757389445_42016: POST /suppliers/delete/6/ (user: anonymous)
+Enhanced DatabaseConnectionMiddleware initialized with threshold=100
+Starting request req_1757389567_43720: GET / (user: anonymous)
+Starting request req_1757389569_43720: GET /suppliers/ (user: anonymous)
+Starting request req_1757389575_43720: POST /suppliers/delete/6/ (user: anonymous)
+Starting request req_1757389575_43720: GET /suppliers/ (user: anonymous)
+Starting request req_1757389692_43720: GET / (user: anonymous)
+Starting request req_1757389694_43720: GET /suppliers/ (user: anonymous)
+Starting request req_1757390142_37372: GET / (user: anonymous)
+Starting request req_1757390144_37372: GET /properties/ (user: anonymous)
+Starting request req_1757390145_37372: GET /tenant/ (user: anonymous)
+Starting request req_1757390147_37372: GET /suppliers/ (user: anonymous)
+Starting request req_1757390154_37372: GET / (user: anonymous)
+Starting request req_1757390156_37372: GET /properties/ (user: anonymous)
+Starting request req_1757390158_37372: GET /property_report/5 (user: anonymous)
+Starting request req_1757390159_37372: GET /properties/ (user: anonymous)
+Starting request req_1757390164_37372: GET /properties/map/ (user: anonymous)
+Starting request req_1757390166_37372: GET /properties/ (user: anonymous)
+Starting request req_1757390168_37372: GET /tenant/ (user: anonymous)
+Starting request req_1757390169_37372: GET /open_invoices_report/ (user: anonymous)
+Starting request req_1757390170_37372: GET /tenant/ (user: anonymous)
+Starting request req_1757390171_37372: GET /lease_renewal_report/ (user: anonymous)
+Starting request req_1757390172_37372: GET /tenant/ (user: anonymous)
+Starting request req_1757390174_37372: GET /tenant_report/5 (user: anonymous)
+Starting request req_1757390176_37372: GET /tenant/ (user: anonymous)
+Starting request req_1757390180_37372: GET / (user: anonymous)
+Starting request req_1757390182_37372: GET /notifications/ (user: anonymous)
+Starting request req_1757390182_37372: GET /notifications/ (user: anonymous)
+Starting request req_1757390194_37372: GET /notifications/ (user: anonymous)
+Starting request req_1757390207_37372: GET /notifications/ (user: anonymous)
+Starting request req_1757390211_37372: GET /suppliers/ (user: anonymous)
+Starting request req_1757390213_37372: GET /supplier_report/9 (user: anonymous)
+Starting request req_1757390214_37372: GET /suppliers/ (user: anonymous)
+Starting request req_1757390218_37372: GET / (user: anonymous)
+Starting request req_1757390220_37372: GET /fsr/ (user: anonymous)
+Starting request req_1757390231_37372: GET /resolved_issues_report/ (user: anonymous)
+Starting request req_1757390233_37372: GET /fsr/ (user: anonymous)
+Starting request req_1757390236_37372: GET /friday_status_report/ (user: anonymous)
+Request req_1757390236_37372 stats: duration=0.21s, total_queries=22, breakdown={'default': 22}, path=/friday_status_report/, user=anonymous
+Starting request req_1757390238_37372: GET /fsr/ (user: anonymous)
+Starting request req_1757390241_37372: GET /fsr_details/18 (user: anonymous)
+Starting request req_1757390242_37372: GET /fsr/ (user: anonymous)
+Starting request req_1757390242_37372: GET /fsr/ (user: anonymous)
+Starting request req_1757390248_37372: GET / (user: anonymous)
+Starting request req_1757390249_37372: GET /projects/ (user: anonymous)
+Starting request req_1757390252_37372: GET /projects/detail/2/ (user: anonymous)
+Starting request req_1757390254_37372: GET /projects/2/assignees/ (user: anonymous)
+Starting request req_1757390257_37372: GET /projects/2/assignees/ (user: anonymous)
+Starting request req_1757390258_37372: GET /projects/2/task-list/ (user: anonymous)
+Starting request req_1757390260_37372: GET /projects/detail/2/ (user: anonymous)
+Starting request req_1757390261_37372: GET /projects/2/gantt/ (user: anonymous)
+Starting request req_1757390264_37372: GET /projects/detail/2/ (user: anonymous)
+Starting request req_1757390265_37372: GET /projects/ (user: anonymous)
+Running periodic cleanup after 50 requests
+Force cleanup completed. Previous query counts: {'default': 0}
+Starting request req_1757390266_37372: GET / (user: anonymous)
+Starting request req_1757390270_37372: GET /property_management_dashboard/ (user: anonymous)
+Starting request req_1757390271_37372: GET / (user: anonymous)
+Starting request req_1757390274_37372: GET /property_management_dashboard/ (user: anonymous)
+Starting request req_1757390277_37372: GET /property/2/profit-loss/ (user: anonymous)
+Request req_1757390277_37372 stats: duration=0.08s, total_queries=34, breakdown={'default': 34}, path=/property/2/profit-loss/, user=anonymous
+Starting request req_1757390279_37372: GET /property_management_dashboard/ (user: anonymous)
+Starting request req_1757390281_37372: GET /property_detail/2/property-report/ (user: anonymous)
+Starting request req_1757390281_37372: GET /property_management_dashboard/ (user: anonymous)
+Starting request req_1757390284_37372: GET /property_detail/2/issues/ (user: anonymous)
+Starting request req_1757390285_37372: GET /property_management_dashboard/ (user: anonymous)
+Starting request req_1757390287_37372: GET / (user: anonymous)
+Starting request req_1757390289_37372: GET /invoices/ (user: anonymous)
+Starting request req_1757390292_37372: GET / (user: anonymous)
+Starting request req_1757390293_37372: GET /act_expense_all/ (user: anonymous)
+Starting request req_1757390295_37372: GET / (user: anonymous)
+Starting request req_1757390298_37372: GET /act_expense_all/ (user: anonymous)
+Starting request req_1757390301_37372: GET /media/expense_docs/pindarou-20250630-Invoice.pdf (user: anonymous)
+Starting request req_1757390310_37372: GET / (user: anonymous)
+Starting request req_1757390312_37372: GET /petty_cash/ (user: anonymous)
+Starting request req_1757390314_37372: GET / (user: anonymous)
+Starting request req_1757390319_37372: GET /finance/ (user: anonymous)
+Starting request req_1757390320_37372: GET /finance_pl_act/ (user: anonymous)
+Request req_1757390320_37372 stats: duration=0.11s, total_queries=43, breakdown={'default': 43}, path=/finance_pl_act/, user=anonymous
+Starting request req_1757390325_37372: GET /budget-expense-details/ (user: anonymous)
+Starting request req_1757390329_37372: GET /finance_pl_act/ (user: anonymous)
+Request req_1757390329_37372 stats: duration=0.09s, total_queries=44, breakdown={'default': 44}, path=/finance_pl_act/, user=anonymous
+Starting request req_1757390332_37372: GET /act_expense_view/ (user: anonymous)
+Starting request req_1757390335_37372: GET /finance/ (user: anonymous)
+Starting request req_1757390336_37372: GET /finance_valuations/ (user: anonymous)
+Starting request req_1757390337_37372: GET /finance/ (user: anonymous)
+Starting request req_1757390338_37372: GET /forecast/ (user: anonymous)
+Starting request req_1757390338_37372: GET /forecast/ (user: anonymous)
+Starting request req_1757390350_37372: GET /finance/ (user: anonymous)
+Starting request req_1757390352_37372: GET /financial-indicators/ (user: anonymous)
+Starting request req_1757390352_37372: GET /financial-indicators/ (user: anonymous)
+Request req_1757390352_37372 stats: duration=0.05s, total_queries=34, breakdown={'default': 34}, path=/financial-indicators/, user=anonymous
+Starting request req_1757390355_37372: GET /finance/ (user: anonymous)
+Starting request req_1757390356_37372: GET /admin_apms/ (user: anonymous)
+Starting request req_1757390358_37372: GET /notifications/ (user: anonymous)
+Starting request req_1757390358_37372: GET /notifications/ (user: anonymous)
+Enhanced DatabaseConnectionMiddleware initialized with threshold=100
+Starting request req_1757390762_8268: GET / (user: anonymous)
+Starting request req_1757390763_8268: GET /notifications/ (user: anonymous)
+Starting request req_1757390764_8268: GET /notifications/ (user: anonymous)
+Enhanced DatabaseConnectionMiddleware initialized with threshold=100
+Starting request req_1757391541_43088: GET / (user: anonymous)

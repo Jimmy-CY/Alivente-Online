@@ -14441,3 +14441,415 @@ Watching for file changes with StatReloader
 "GET / HTTP/1.1" 200 15228
 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
 Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+"GET /properties/ HTTP/1.1" 200 59585
+"GET /properties/map/ HTTP/1.1" 200 27021
+"GET /properties/ HTTP/1.1" 200 59585
+"GET /media/properties/title_deeds/prop_5_apolloneon-demetri_title_deed.pdf HTTP/1.1" 200 3471395
+"GET /property_report/5 HTTP/1.1" 200 18281
+"GET /properties/ HTTP/1.1" 200 59585
+"GET /tenant/ HTTP/1.1" 200 60355
+"GET /open_invoices_report/ HTTP/1.1" 200 34982
+"GET /tenant/ HTTP/1.1" 200 60355
+"GET /lease_renewal_report/ HTTP/1.1" 200 17778
+"GET /tenant/ HTTP/1.1" 200 60355
+"GET /tenant_report/5 HTTP/1.1" 200 20841
+"GET /tenant/ HTTP/1.1" 200 60355
+"GET /media/tenants/lease_agreements/tenant_5_chrystalla-katelari-and-antigoni-andreou_lease_agreement.pdf HTTP/1.1" 200 1387037
+"GET /suppliers/ HTTP/1.1" 200 50508
+"GET / HTTP/1.1" 200 15228
+"GET /fsr/ HTTP/1.1" 200 101505
+"GET /resolved_issues_report/?f_date=2025-01-01&t_date=2025-09-08 HTTP/1.1" 200 23090
+"GET /fsr/ HTTP/1.1" 200 101505
+"GET /friday_status_report/ HTTP/1.1" 200 37413
+"GET /fsr/ HTTP/1.1" 200 101505
+"GET /friday_status_report/?max_comments=3 HTTP/1.1" 200 36499
+"GET /fsr/ HTTP/1.1" 200 101505
+"GET / HTTP/1.1" 200 15228
+"GET /property_management_dashboard/ HTTP/1.1" 200 43046
+"GET /property/1/profit-loss/ HTTP/1.1" 200 40706
+"GET /property_management_dashboard/?property=1 HTTP/1.1" 200 43046
+"GET /property_detail/1/title-deed/ HTTP/1.1" 200 36816
+"GET /media/properties/title_deeds/prop_1_palikaridi_title_deed.pdf HTTP/1.1" 200 3143164
+"GET /property_management_dashboard/?property=1 HTTP/1.1" 200 43046
+"GET /property_detail/1/lease/ HTTP/1.1" 200 38586
+"GET /static/lease_agreements/Palikaridi%20-%20Lease%20Agreement.pdf HTTP/1.1" 200 4609313
+"GET /property_management_dashboard/?property=1 HTTP/1.1" 200 43046
+"GET /property_detail/1/issues/ HTTP/1.1" 200 46659
+"GET /property_management_dashboard/?property=1 HTTP/1.1" 200 43046
+"GET / HTTP/1.1" 200 15228
+"GET /finance/ HTTP/1.1" 200 16726
+"GET /forecast/ HTTP/1.1" 200 39744
+"GET /forecast/?horizon=12 HTTP/1.1" 200 54683
+"GET /finance/ HTTP/1.1" 200 16726
+"GET /finance_pl_act/ HTTP/1.1" 200 128128
+"GET /finance_pl_act/?year=budget&selection_made=true&properties=NONE HTTP/1.1" 200 55217
+"GET /finance_pl_act/?year=budget&selection_made=true&properties=3 HTTP/1.1" 200 84705
+"GET /finance_pl_act/?year=2025&properties=3 HTTP/1.1" 200 85131
+"GET /finance_pl_act/?year=2024&properties=3 HTTP/1.1" 200 85131
+"GET /finance_pl_act/?year=2024&selection_made=true&properties=1&properties=2&properties=3&properties=4&properties=5&properties=7&properties=9&properties=10&properties=11&properties=12 HTTP/1.1" 200 132123
+"GET /finance_pl_act/?year=budget&properties=1&properties=2&properties=3&properties=4&properties=5&properties=7&properties=9&properties=10&properties=11&properties=12 HTTP/1.1" 200 128128
+"GET /finance/ HTTP/1.1" 200 16726
+"GET /forecast/ HTTP/1.1" 200 39744
+"GET /forecast/?horizon=12 HTTP/1.1" 200 54683
+"GET /finance/ HTTP/1.1" 200 16726
+"GET /financial-indicators/ HTTP/1.1" 200 52505
+"GET /financial-indicators/ HTTP/1.1" 200 2731
+"GET /finance/ HTTP/1.1" 200 16726
+"GET /finance_valuations/ HTTP/1.1" 200 17855
+"GET /finance/ HTTP/1.1" 200 16726
+C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 15228
+"GET /finance/ HTTP/1.1" 200 16726
+"GET /finance_pl_act/ HTTP/1.1" 200 128128
+"GET /finance/ HTTP/1.1" 200 16726
+"GET /forecast/ HTTP/1.1" 200 39744
+"GET /forecast/?horizon=12 HTTP/1.1" 200 54683
+"GET /finance/ HTTP/1.1" 200 16726
+"GET /finance_valuations/ HTTP/1.1" 200 17855
+"GET /finance/ HTTP/1.1" 200 16726
+"GET /financial-indicators/ HTTP/1.1" 200 52505
+"GET /financial-indicators/ HTTP/1.1" 200 2731
+"GET /finance/ HTTP/1.1" 200 16726
+"GET /finance_pl_act/ HTTP/1.1" 200 128128
+"GET /finance_pl_act/?year=2025&properties=1&properties=2&properties=3&properties=4&properties=5&properties=7&properties=9&properties=10&properties=11&properties=12 HTTP/1.1" 200 132619
+"GET /finance_pl_act/?year=2024&properties=1&properties=2&properties=3&properties=4&properties=5&properties=7&properties=9&properties=10&properties=11&properties=12 HTTP/1.1" 200 132123
+"GET /finance_pl_act/?year=2024&selection_made=true&properties=NONE HTTP/1.1" 200 55213
+"GET /finance_pl_act/?year=2024&selection_made=true&properties=1 HTTP/1.1" 200 85057
+"GET /finance/ HTTP/1.1" 200 16726
+"GET /fsr/ HTTP/1.1" 200 101505
+"GET /resolved_issues_report/?f_date=2025-01-01&t_date=2025-09-09 HTTP/1.1" 200 23090
+"GET /fsr/ HTTP/1.1" 200 101505
+"GET /friday_status_report/ HTTP/1.1" 200 37413
+"GET /fsr/ HTTP/1.1" 200 101505
+"GET / HTTP/1.1" 200 15228
+"GET /finance/ HTTP/1.1" 200 16726
+"GET /finance_pl_act/ HTTP/1.1" 200 128128
+C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 15228
+"GET /finance/ HTTP/1.1" 200 16726
+Internal Server Error: /finance_pl_act/
+Traceback (most recent call last):
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\contrib\auth\decorators.py", line 60, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\pages\views.py", line 5998, in finance_pl_act
+    Prefetch('prop_values_set', queryset=prop_values.objects.all()),
+                                         ^^^^^^^^^^^
+UnboundLocalError: cannot access local variable 'prop_values' where it is not associated with a value
+"GET /finance_pl_act/ HTTP/1.1" 500 73941
+C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 15228
+"GET /finance/ HTTP/1.1" 200 16726
+"GET /finance_pl_act/ HTTP/1.1" 200 128128
+"GET /finance_pl_act/?year=2025&properties=1&properties=2&properties=3&properties=4&properties=5&properties=7&properties=9&properties=10&properties=11&properties=12 HTTP/1.1" 200 132619
+"GET /finance_pl_act/?year=2024&properties=1&properties=2&properties=3&properties=4&properties=5&properties=7&properties=9&properties=10&properties=11&properties=12 HTTP/1.1" 200 132123
+"GET /finance_pl_act/?year=budget&properties=1&properties=2&properties=3&properties=4&properties=5&properties=7&properties=9&properties=10&properties=11&properties=12 HTTP/1.1" 200 128128
+"GET /finance_pl_act/?year=budget&selection_made=true&properties=NONE HTTP/1.1" 200 55217
+"GET /finance_pl_act/?year=budget&selection_made=true&properties=1&properties=2&properties=3&properties=4&properties=5&properties=7&properties=9&properties=10&properties=11&properties=12 HTTP/1.1" 200 128128
+"GET /finance_pl_act/?year=2025&properties=1&properties=2&properties=3&properties=4&properties=5&properties=7&properties=9&properties=10&properties=11&properties=12 HTTP/1.1" 200 132619
+"GET /finance_pl_act/?year=2024&properties=1&properties=2&properties=3&properties=4&properties=5&properties=7&properties=9&properties=10&properties=11&properties=12 HTTP/1.1" 200 132123
+"GET /finance/ HTTP/1.1" 200 16726
+"GET /forecast/ HTTP/1.1" 200 39744
+"GET /forecast/?horizon=12 HTTP/1.1" 200 54683
+"GET /finance/ HTTP/1.1" 200 16726
+"GET /finance_valuations/ HTTP/1.1" 200 17855
+"GET /finance/ HTTP/1.1" 200 16726
+"GET /finance_pl_act/ HTTP/1.1" 200 128128
+"GET /finance/ HTTP/1.1" 200 16726
+"GET /finance_pl_act/ HTTP/1.1" 200 128128
+C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 15228
+"GET /finance/ HTTP/1.1" 200 16726
+"GET /finance_pl_act/ HTTP/1.1" 200 128128
+"GET /finance_pl_act/?year=2025&properties=1&properties=2&properties=3&properties=4&properties=5&properties=7&properties=9&properties=10&properties=11&properties=12 HTTP/1.1" 200 132619
+"GET /finance_pl_act/?year=2024&properties=1&properties=2&properties=3&properties=4&properties=5&properties=7&properties=9&properties=10&properties=11&properties=12 HTTP/1.1" 200 132123
+"GET /finance_pl_act/?year=2025&properties=1&properties=2&properties=3&properties=4&properties=5&properties=7&properties=9&properties=10&properties=11&properties=12 HTTP/1.1" 200 132619
+"GET /finance_pl_act/?year=budget&properties=1&properties=2&properties=3&properties=4&properties=5&properties=7&properties=9&properties=10&properties=11&properties=12 HTTP/1.1" 200 128128
+"GET /finance/ HTTP/1.1" 200 16726
+"GET /forecast/ HTTP/1.1" 200 39744
+"GET /forecast/?horizon=12 HTTP/1.1" 200 54683
+"GET /finance/ HTTP/1.1" 200 16726
+"GET /financial-indicators/ HTTP/1.1" 200 52505
+"GET /financial-indicators/ HTTP/1.1" 200 2731
+"GET /finance/ HTTP/1.1" 200 16726
+"GET /finance_valuations/ HTTP/1.1" 200 17855
+"GET /finance/ HTTP/1.1" 200 16726
+"GET /properties/ HTTP/1.1" 200 59585
+"GET /properties/map/ HTTP/1.1" 200 27021
+"GET /properties/ HTTP/1.1" 200 59585
+"GET /property_report/5 HTTP/1.1" 200 18281
+"GET /properties/ HTTP/1.1" 200 59585
+"GET /tenant/ HTTP/1.1" 200 60355
+"GET /open_invoices_report/ HTTP/1.1" 200 34989
+"GET /tenant/ HTTP/1.1" 200 60355
+"GET /lease_renewal_report/ HTTP/1.1" 200 17778
+"GET /tenant/ HTTP/1.1" 200 60355
+"GET /tenant_report/5 HTTP/1.1" 200 20841
+"GET /tenant/ HTTP/1.1" 200 60355
+"GET /suppliers/ HTTP/1.1" 200 50508
+"GET /supplier_report/9 HTTP/1.1" 200 15292
+"GET /suppliers/ HTTP/1.1" 200 50508
+"GET /fsr/ HTTP/1.1" 200 101505
+"GET /resolved_issues_report/?f_date=2025-01-01&t_date=2025-09-09 HTTP/1.1" 200 23090
+"GET /fsr/ HTTP/1.1" 200 101505
+"GET /friday_status_report/?max_comments=3 HTTP/1.1" 200 36499
+"GET /fsr/ HTTP/1.1" 200 101505
+"GET /friday_status_report/ HTTP/1.1" 200 37413
+"GET /fsr/ HTTP/1.1" 200 101505
+"GET / HTTP/1.1" 200 15228
+"GET /projects/ HTTP/1.1" 200 25517
+"GET /projects/detail/2/ HTTP/1.1" 200 59860
+"GET /projects/2/gantt/ HTTP/1.1" 200 34391
+"GET /projects/detail/2/ HTTP/1.1" 200 59860
+"GET /projects/2/assignees/ HTTP/1.1" 200 92
+"GET /projects/2/task-list/?language=english HTTP/1.1" 200 33268
+"GET /projects/detail/2/ HTTP/1.1" 200 59860
+C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 15228
+"GET /finance/ HTTP/1.1" 200 16726
+"GET /finance_pl_act/ HTTP/1.1" 200 128128
+"GET /finance_pl_act/?year=2025&properties=1&properties=2&properties=3&properties=4&properties=5&properties=7&properties=9&properties=10&properties=11&properties=12 HTTP/1.1" 200 132619
+"GET /finance_pl_act/?year=2024&properties=1&properties=2&properties=3&properties=4&properties=5&properties=7&properties=9&properties=10&properties=11&properties=12 HTTP/1.1" 200 132123
+"GET /finance/ HTTP/1.1" 200 16726
+"GET /projects/ HTTP/1.1" 200 25517
+"GET /projects/detail/2/ HTTP/1.1" 200 59859
+"GET /projects/2/assignees/ HTTP/1.1" 200 92
+"GET /projects/2/task-list/?language=english HTTP/1.1" 200 33268
+"GET /projects/detail/2/ HTTP/1.1" 200 59859
+"GET /projects/2/assignees/ HTTP/1.1" 200 92
+"GET /projects/2/task-list/?language=greek HTTP/1.1" 200 34210
+"GET /projects/detail/2/ HTTP/1.1" 200 59859
+"GET /projects/2/gantt/ HTTP/1.1" 200 34391
+"GET /projects/detail/2/ HTTP/1.1" 200 59859
+"GET /projects/2/tasks/edit/5/ HTTP/1.1" 200 37550
+"GET /projects/detail/2/ HTTP/1.1" 200 59859
+"GET /projects/edit/2/ HTTP/1.1" 200 33491
+"GET /projects/ HTTP/1.1" 200 25517
+C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 15228
+"GET /finance/ HTTP/1.1" 200 16726
+"GET /finance_pl_act/ HTTP/1.1" 200 128128
+"GET /finance_pl_act/?year=2025&properties=1&properties=2&properties=3&properties=4&properties=5&properties=7&properties=9&properties=10&properties=11&properties=12 HTTP/1.1" 200 132619
+"GET /finance_pl_act/?year=2024&properties=1&properties=2&properties=3&properties=4&properties=5&properties=7&properties=9&properties=10&properties=11&properties=12 HTTP/1.1" 200 132123
+"GET /finance/ HTTP/1.1" 200 16726
+"GET / HTTP/1.1" 200 15228
+"GET /projects/ HTTP/1.1" 200 25517
+C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\models.py changed, reloading.
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 15228
+"GET /finance/ HTTP/1.1" 200 16726
+"GET /finance_pl_act/ HTTP/1.1" 200 128128
+"GET /finance_pl_act/?year=2025&properties=1&properties=2&properties=3&properties=4&properties=5&properties=7&properties=9&properties=10&properties=11&properties=12 HTTP/1.1" 200 132619
+"GET /finance_pl_act/?year=2024&properties=1&properties=2&properties=3&properties=4&properties=5&properties=7&properties=9&properties=10&properties=11&properties=12 HTTP/1.1" 200 132123
+"GET /finance/ HTTP/1.1" 200 16726
+"GET /projects/ HTTP/1.1" 200 25517
+C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 15228
+"GET /projects/ HTTP/1.1" 200 25517
+"GET /projects/detail/2/ HTTP/1.1" 200 59859
+"GET /projects/2/assignees/ HTTP/1.1" 200 92
+"GET /projects/2/task-list/?language=greek HTTP/1.1" 200 34210
+"GET /projects/detail/2/ HTTP/1.1" 200 59859
+"GET /projects/2/gantt/ HTTP/1.1" 200 34391
+"GET /projects/detail/2/ HTTP/1.1" 200 59859
+"POST /projects/ajax/duplicate/ HTTP/1.1" 200 441
+"GET /projects/detail/3/ HTTP/1.1" 200 59289
+C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\models.py changed, reloading.
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 15228
+"GET /projects/ HTTP/1.1" 200 27194
+"GET /projects/detail/3/ HTTP/1.1" 200 59289
+"GET /projects/3/assignees/ HTTP/1.1" 200 76
+"GET /projects/3/task-list/?language=greek HTTP/1.1" 200 33981
+"GET /projects/detail/3/ HTTP/1.1" 200 59670
+"GET /projects/3/assignees/ HTTP/1.1" 200 76
+"GET /projects/3/task-list/?language=english HTTP/1.1" 200 33138
+"GET /projects/detail/3/ HTTP/1.1" 200 59670
+"GET /projects/3/gantt/ HTTP/1.1" 200 34285
+"GET /projects/detail/3/ HTTP/1.1" 200 59670
+"GET /projects/edit/3/ HTTP/1.1" 200 33326
+"GET /projects/detail/3/ HTTP/1.1" 200 59670
+"GET /projects/3/tasks/edit/9/ HTTP/1.1" 200 37526
+"GET /projects/detail/3/ HTTP/1.1" 200 59670
+"GET /projects/ HTTP/1.1" 200 27194
+"GET / HTTP/1.1" 200 15228
+"GET /projects/ HTTP/1.1" 200 27194
+"GET /projects/delete/3/ HTTP/1.1" 200 21096
+"POST /projects/delete/3/ HTTP/1.1" 302 0
+"GET /projects/ HTTP/1.1" 200 26174
+"GET /property_management_dashboard/ HTTP/1.1" 200 43046
+"GET /property/1/profit-loss/ HTTP/1.1" 200 40706
+"GET /property_management_dashboard/?property=1 HTTP/1.1" 200 43046
+"GET /property_detail/1/title-deed/ HTTP/1.1" 200 36816
+"GET /property_management_dashboard/?property=1 HTTP/1.1" 200 43046
+"GET /property_detail/1/issues/ HTTP/1.1" 200 46659
+"GET /property_management_dashboard/?property=1 HTTP/1.1" 200 43046
+"GET /property_detail/1/open-invoices/ HTTP/1.1" 200 40644
+"GET /property_management_dashboard/?property=1 HTTP/1.1" 200 43046
+"GET /property_detail/1/valuation/ HTTP/1.1" 200 39813
+"GET /property_management_dashboard/?property=1 HTTP/1.1" 200 43046
+"GET /property_detail/1/budgeted-expenses/ HTTP/1.1" 200 43534
+"GET /property_management_dashboard/?property=1 HTTP/1.1" 200 43046
+"GET / HTTP/1.1" 200 15228
+"GET /fsr/ HTTP/1.1" 200 101505
+"GET /friday_status_report/ HTTP/1.1" 200 37413
+"GET /fsr/ HTTP/1.1" 200 101505
+"GET / HTTP/1.1" 200 15228
+"GET /petty_cash/ HTTP/1.1" 200 13364
+"GET / HTTP/1.1" 200 15228
+"GET /act_expense_all/?from=home HTTP/1.1" 200 85139
+"GET / HTTP/1.1" 200 15228
+"GET /fsr/ HTTP/1.1" 200 101505
+"GET /suppliers/ HTTP/1.1" 200 50508
+C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\urls.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 15228
+"GET /suppliers/ HTTP/1.1" 200 60331
+Internal Server Error: /suppliers/delete/6/
+Traceback (most recent call last):
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\pages\views.py", line 3832, in suppliers_delete
+    supplier = Supplier.objects.get(supplier_id=supplier_id)
+               ^^^^^^^^
+NameError: name 'Supplier' is not defined. Did you mean: 'supplier'?
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\contrib\auth\decorators.py", line 60, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\pages\views.py", line 3835, in suppliers_delete
+    except Supplier.DoesNotExist:
+           ^^^^^^^^
+NameError: name 'Supplier' is not defined. Did you mean: 'supplier'?
+"POST /suppliers/delete/6/ HTTP/1.1" 500 78372
+C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 15228
+"GET /suppliers/ HTTP/1.1" 200 60331
+"POST /suppliers/delete/6/ HTTP/1.1" 302 0
+"GET /suppliers/ HTTP/1.1" 200 59899
+"GET / HTTP/1.1" 200 15228
+"GET /suppliers/ HTTP/1.1" 200 59376
+"GET / HTTP/1.1" 200 14720
+"GET /properties/ HTTP/1.1" 200 59077
+"GET /tenant/ HTTP/1.1" 200 59847
+"GET /suppliers/ HTTP/1.1" 200 58695
+"GET / HTTP/1.1" 200 14720
+"GET /properties/ HTTP/1.1" 200 59077
+"GET /property_report/5 HTTP/1.1" 200 17773
+"GET /properties/ HTTP/1.1" 200 59077
+"GET /properties/map/ HTTP/1.1" 200 26513
+"GET /properties/ HTTP/1.1" 200 59077
+"GET /tenant/ HTTP/1.1" 200 59847
+"GET /open_invoices_report/ HTTP/1.1" 200 34481
+"GET /tenant/ HTTP/1.1" 200 59847
+"GET /lease_renewal_report/ HTTP/1.1" 200 17270
+"GET /tenant/ HTTP/1.1" 200 59847
+"GET /tenant_report/5 HTTP/1.1" 200 20333
+"GET /tenant/ HTTP/1.1" 200 59847
+"GET / HTTP/1.1" 200 14720
+"GET /notifications/ HTTP/1.1" 200 31553
+"GET /notifications/ HTTP/1.1" 200 353
+"GET /notifications/ HTTP/1.1" 200 353
+"GET /notifications/ HTTP/1.1" 200 353
+"GET /suppliers/ HTTP/1.1" 200 58695
+"GET /supplier_report/9 HTTP/1.1" 200 14784
+"GET /suppliers/ HTTP/1.1" 200 58695
+"GET / HTTP/1.1" 200 14720
+"GET /fsr/ HTTP/1.1" 200 100997
+"GET /resolved_issues_report/?f_date=2025-01-01&t_date=2025-09-09 HTTP/1.1" 200 22582
+"GET /fsr/ HTTP/1.1" 200 100997
+"GET /friday_status_report/ HTTP/1.1" 200 36905
+"GET /fsr/ HTTP/1.1" 200 100997
+"GET /fsr_details/18?from=fsr&search=&propcountry=&propname=&issuestatus= HTTP/1.1" 200 25105
+"GET /fsr/?refresh=true HTTP/1.1" 200 100997
+"GET /fsr/ HTTP/1.1" 200 100997
+"GET / HTTP/1.1" 200 14720
+"GET /projects/ HTTP/1.1" 200 25009
+"GET /projects/detail/2/ HTTP/1.1" 200 59351
+"GET /projects/2/assignees/ HTTP/1.1" 200 92
+"GET /projects/2/assignees/ HTTP/1.1" 200 92
+"GET /projects/2/task-list/?language=english HTTP/1.1" 200 32760
+"GET /projects/detail/2/ HTTP/1.1" 200 59351
+"GET /projects/2/gantt/ HTTP/1.1" 200 33883
+"GET /projects/detail/2/ HTTP/1.1" 200 59351
+"GET /projects/ HTTP/1.1" 200 25009
+"GET / HTTP/1.1" 200 14720
+"GET /property_management_dashboard/ HTTP/1.1" 200 43046
+"GET / HTTP/1.1" 200 14720
+"GET /property_management_dashboard/ HTTP/1.1" 200 43046
+"GET /property/2/profit-loss/ HTTP/1.1" 200 40592
+"GET /property_management_dashboard/?property=2 HTTP/1.1" 200 43046
+"GET /property_detail/2/property-report/ HTTP/1.1" 200 41231
+"GET /property_management_dashboard/?property=2 HTTP/1.1" 200 43046
+"GET /property_detail/2/issues/ HTTP/1.1" 200 44011
+"GET /property_management_dashboard/?property=2 HTTP/1.1" 200 43046
+"GET / HTTP/1.1" 200 14720
+"GET /invoices/ HTTP/1.1" 200 114811
+"GET / HTTP/1.1" 200 14720
+"GET /act_expense_all/?from=home HTTP/1.1" 200 84631
+"GET / HTTP/1.1" 200 14720
+"GET /act_expense_all/?from=home HTTP/1.1" 200 84631
+"GET /media/expense_docs/pindarou-20250630-Invoice.pdf HTTP/1.1" 200 461728
+"GET / HTTP/1.1" 200 14720
+"GET /petty_cash/ HTTP/1.1" 200 12856
+"GET / HTTP/1.1" 200 14720
+"GET /finance/ HTTP/1.1" 200 16218
+"GET /finance_pl_act/ HTTP/1.1" 200 127620
+"GET /budget-expense-details/?month=9&line_type=23&properties=1,2,3,4,5,7,9,10,11,12 HTTP/1.1" 200 915
+"GET /finance_pl_act/?year=2025&properties=1&properties=2&properties=3&properties=4&properties=5&properties=7&properties=9&properties=10&properties=11&properties=12 HTTP/1.1" 200 132111
+"GET /act_expense_view/?year=2025&month=5&from_finance_pl_act=true&properties=1,2,3,4,5,7,9,10,11,12 HTTP/1.1" 200 52216
+"GET /finance/ HTTP/1.1" 200 16218
+"GET /finance_valuations/ HTTP/1.1" 200 17347
+"GET /finance/ HTTP/1.1" 200 16218
+"GET /forecast/ HTTP/1.1" 200 39236
+"GET /forecast/?horizon=12 HTTP/1.1" 200 54683
+"GET /finance/ HTTP/1.1" 200 16218
+"GET /financial-indicators/ HTTP/1.1" 200 51997
+"GET /financial-indicators/ HTTP/1.1" 200 2731
+"GET /finance/ HTTP/1.1" 200 16218
+"GET /admin_apms/ HTTP/1.1" 200 12710
+"GET /notifications/ HTTP/1.1" 200 31553
+"GET /notifications/ HTTP/1.1" 200 353
+C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 14720
+"GET /notifications/ HTTP/1.1" 200 31553
+"GET /notifications/ HTTP/1.1" 200 6086
+C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\mysite\context_processors.py changed, reloading.
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 14929

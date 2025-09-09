@@ -179,6 +179,7 @@ urlpatterns = [
     path('suppliers_edit/<supplier_id>', views.suppliers_edit, name='suppliers_edit'),
     path('suppliers_commit/', views.suppliers_commit, name='suppliers_commit'),
     path('suppliers_edit_commit/<supplier_id>', views.suppliers_edit_commit, name='suppliers_edit_commit'),
+    path('suppliers/delete/<int:supplier_id>/', views.suppliers_delete, name='suppliers_delete'),
     
     #
     # Friday Status Report Capture
