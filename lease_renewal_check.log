@@ -14853,3 +14853,9 @@ Watching for file changes with StatReloader
 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\mysite\context_processors.py changed, reloading.
 Watching for file changes with StatReloader
 "GET / HTTP/1.1" 200 14929
+Watching for file changes with StatReloader
+"GET /fsr/ HTTP/1.1" 200 101206
+C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+Watching for file changes with StatReloader
+"GET /notifications/ HTTP/1.1" 200 31762
+"GET /notifications/ HTTP/1.1" 200 6086

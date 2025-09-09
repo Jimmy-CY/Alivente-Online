@@ -380,7 +380,8 @@ def get_expiring_leases(cursor, today):
         renewal_status = row[5] if row[5] else 'pending'
         
         renewal_date = lease_end_date - timedelta(days=renewal_period)
-        warning_date = renewal_date - timedelta(days=30)
+#        warning_date = renewal_date - timedelta(days=30)
+        warning_date = renewal_date
         
         if today >= warning_date and renewal_status == 'pending':
             expiring_leases.append({
