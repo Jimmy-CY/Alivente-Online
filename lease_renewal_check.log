@@ -14890,3 +14890,211 @@ Watching for file changes with StatReloader
 "GET /projects/ HTTP/1.1" 200 26895
 "GET /projects/detail/2/ HTTP/1.1" 200 59561
 "GET /projects/ HTTP/1.1" 200 26895
+Watching for file changes with StatReloader
+"GET /notifications/ HTTP/1.1" 200 31762
+"GET /notifications/ HTTP/1.1" 200 6086
+"GET /notifications/ HTTP/1.1" 200 6086
+"GET /fsr/ HTTP/1.1" 200 101206
+Internal Server Error: /fsr_details/18
+Traceback (most recent call last):
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\contrib\auth\decorators.py", line 60, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\pages\views.py", line 5089, in fsr_details
+    return render(request, "fsr_details.html", context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\loader.py", line 62, in render_to_string
+    return template.render(context, request)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\backends\django.py", line 107, in render
+    return self.template.render(context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\base.py", line 171, in render
+    return self._render(context)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\base.py", line 163, in _render
+    return self.nodelist.render(context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\base.py", line 1008, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\base.py", line 969, in render_annotated
+    return self.render(context)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\loader_tags.py", line 159, in render
+    return compiled_parent._render(context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\base.py", line 163, in _render
+    return self.nodelist.render(context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\base.py", line 1008, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\base.py", line 969, in render_annotated
+    return self.render(context)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\loader_tags.py", line 65, in render
+    result = block.nodelist.render(context)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\base.py", line 1008, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\base.py", line 969, in render_annotated
+    return self.render(context)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\defaulttags.py", line 480, in render
+    url = reverse(view_name, args=args, kwargs=kwargs, current_app=current_app)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\urls\base.py", line 88, in reverse
+    return resolver._reverse_with_prefix(view, prefix, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\urls\resolvers.py", line 831, in _reverse_with_prefix
+    raise NoReverseMatch(msg)
+django.urls.exceptions.NoReverseMatch: Reverse for 'issues_list' not found. 'issues_list' is not a valid view function or pattern name.
+"GET /fsr_details/18?from=fsr&search=&propcountry=&propname=&issuestatus= HTTP/1.1" 500 189662
+"GET / HTTP/1.1" 200 14929
+"GET /fsr/ HTTP/1.1" 200 101206
+Internal Server Error: /fsr_details/18
+Traceback (most recent call last):
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\contrib\auth\decorators.py", line 60, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\pages\views.py", line 5089, in fsr_details
+    return render(request, "fsr_details.html", context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\loader.py", line 62, in render_to_string
+    return template.render(context, request)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\backends\django.py", line 107, in render
+    return self.template.render(context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\base.py", line 171, in render
+    return self._render(context)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\base.py", line 163, in _render
+    return self.nodelist.render(context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\base.py", line 1008, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\base.py", line 969, in render_annotated
+    return self.render(context)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\loader_tags.py", line 159, in render
+    return compiled_parent._render(context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\base.py", line 163, in _render
+    return self.nodelist.render(context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\base.py", line 1008, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\base.py", line 969, in render_annotated
+    return self.render(context)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\loader_tags.py", line 65, in render
+    result = block.nodelist.render(context)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\base.py", line 1008, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\base.py", line 969, in render_annotated
+    return self.render(context)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\defaulttags.py", line 480, in render
+    url = reverse(view_name, args=args, kwargs=kwargs, current_app=current_app)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\urls\base.py", line 88, in reverse
+    return resolver._reverse_with_prefix(view, prefix, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\urls\resolvers.py", line 831, in _reverse_with_prefix
+    raise NoReverseMatch(msg)
+django.urls.exceptions.NoReverseMatch: Reverse for 'issues_list' not found. 'issues_list' is not a valid view function or pattern name.
+"GET /fsr_details/18?from=fsr&search=&propcountry=&propname=&issuestatus= HTTP/1.1" 500 189662
+"GET / HTTP/1.1" 200 14929
+"GET /fsr/ HTTP/1.1" 200 101206
+"GET /fsr_details/18?from=fsr&search=&propcountry=&propname=&issuestatus= HTTP/1.1" 200 32572
+"GET /fsr/?refresh=true HTTP/1.1" 200 101206
+"GET /fsr/ HTTP/1.1" 200 101206
+"GET /fsr_details/3?from=fsr&search=&propcountry=&propname=&issuestatus= HTTP/1.1" 200 34310
+"POST /fsr_commit_status_change/ HTTP/1.1" 302 0
+"GET /fsr/?refresh=true HTTP/1.1" 200 101158
+"GET /fsr/ HTTP/1.1" 200 101158
+"GET /fsr_details/3?from=fsr&search=&propcountry=&propname=&issuestatus= HTTP/1.1" 200 34307
+"POST /fsr_comment_add/3 HTTP/1.1" 302 0
+"GET /fsr_details/3?from=fsr&search=&propcountry=&propname=&issuestatus= HTTP/1.1" 200 35546
+"GET /fsr/?refresh=true HTTP/1.1" 200 101158
+"GET /fsr/ HTTP/1.1" 200 101158
+"GET /fsr_details/1?from=fsr&search=&propcountry=&propname=&issuestatus= HTTP/1.1" 200 35196
+"POST /fsr_comment_add/1 HTTP/1.1" 302 0
+"GET /fsr_details/1?from=fsr&search=&propcountry=&propname=&issuestatus= HTTP/1.1" 200 36423
+"GET /fsr/?refresh=true HTTP/1.1" 200 101158
+"GET /fsr/ HTTP/1.1" 200 101158
+"GET /friday_status_report/ HTTP/1.1" 200 41211
+"GET /fsr_details/3?from=status_report HTTP/1.1" 200 34958
+"GET / HTTP/1.1" 200 14929
+"GET /fsr/ HTTP/1.1" 200 101158
+"GET /fsr_details/18?from=fsr&search=&propcountry=&propname=&issuestatus= HTTP/1.1" 200 32873
+"GET /fsr_details/18?from=fsr&search=&propcountry=&propname=&issuestatus= HTTP/1.1" 200 32873
+"GET /fsr_details/18?from=fsr&search=&propcountry=&propname=&issuestatus= HTTP/1.1" 200 32873
+"GET /fsr/?refresh=true HTTP/1.1" 200 101158
+"GET /fsr/ HTTP/1.1" 200 101158
+"GET /fsr_details/48?from=fsr&search=&propcountry=&propname=&issuestatus= HTTP/1.1" 200 32980
+"GET /fsr/?refresh=true HTTP/1.1" 200 101158
+"GET /fsr/ HTTP/1.1" 200 101158
+"GET /fsr_details/18?from=fsr&search=&propcountry=&propname=&issuestatus= HTTP/1.1" 200 33581
+"GET /fsr/?refresh=true HTTP/1.1" 200 101158
+"GET /fsr/ HTTP/1.1" 200 101158
+"GET /fsr_details/2?from=fsr&search=&propcountry=&propname=&issuestatus= HTTP/1.1" 200 34184
+"POST /fsr_commit_status_change/ HTTP/1.1" 302 0
+"GET /fsr/?refresh=true HTTP/1.1" 200 101210
+"GET /fsr/ HTTP/1.1" 200 101210
+"GET /fsr_details/3?from=fsr&search=&propcountry=&propname=&issuestatus= HTTP/1.1" 200 35889
+"GET /fsr/?refresh=true HTTP/1.1" 200 101210
+"GET /fsr/ HTTP/1.1" 200 101210
+"GET /resolved_issues_report/?f_date=2025-01-01&t_date=2025-09-09 HTTP/1.1" 200 21055
+"GET /fsr/ HTTP/1.1" 200 101210
+"GET /friday_status_report/ HTTP/1.1" 200 41211
+"GET /fsr_details/5?from=status_report HTTP/1.1" 200 35770
+"POST /fsr_comment_add/5 HTTP/1.1" 302 0
+"GET /fsr_details/5?from=status_report HTTP/1.1" 200 37037
+"GET /friday_status_report/?refresh=true HTTP/1.1" 200 41718
+"GET /fsr_details/36?from=status_report HTTP/1.1" 200 32945
+"GET /friday_status_report/?refresh=true HTTP/1.1" 200 41718
+"GET /fsr/ HTTP/1.1" 200 101210
+"GET /friday_status_report/ HTTP/1.1" 200 41718
+"GET /fsr_details/2?from=status_report HTTP/1.1" 200 34187
+"POST /fsr_comment_add/2 HTTP/1.1" 302 0
+"GET /fsr_details/2?from=status_report HTTP/1.1" 200 35413
+"GET /friday_status_report/?refresh=true HTTP/1.1" 200 42184
+"GET /fsr/ HTTP/1.1" 200 101210
+"GET /resolved_issues_report/?f_date=2025-01-01&t_date=2025-09-09 HTTP/1.1" 200 21055
+"GET /fsr/ HTTP/1.1" 200 101210
+"GET /fsr_details/2?from=fsr&search=&propcountry=&propname=&issuestatus= HTTP/1.1" 200 34907
+"GET /fsr/?refresh=true HTTP/1.1" 200 101210
+"GET /fsr/ HTTP/1.1" 200 101210
+"GET /fsr_details/48?from=fsr&search=&propcountry=&propname=&issuestatus= HTTP/1.1" 200 33136
+"GET /fsr/?refresh=true HTTP/1.1" 200 101210
+"GET /fsr/ HTTP/1.1" 200 101210
+"GET /fsr_details/2?from=fsr&search=&propcountry=&propname=&issuestatus= HTTP/1.1" 200 34907
+"GET /fsr/?refresh=true HTTP/1.1" 200 101210
+"GET /fsr/ HTTP/1.1" 200 101210
+"GET /fsr_details/50?from=fsr&search=&propcountry=&propname=&issuestatus= HTTP/1.1" 200 33137

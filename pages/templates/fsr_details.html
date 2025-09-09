@@ -2,6 +2,7 @@
 {% load static %}
 
 {% block title %}
+Issues (Comments)
 {% endblock %}
 
 {% block content %}
@@ -9,6 +10,7 @@
 <h2><center>ALIVENTE ONLINE - ISSUES (COMMENTS)</center></h2>
 <br/>
 
+<!-- Messages -->
 {% for msg in messages %}
 <div class="alert alert-secondary alert-dismissible fade show auto-dismiss" role="alert">
     <strong></strong> <center>{{ msg }}</center>
@@ -33,72 +35,16 @@
 </div>
 
 <br/>
+
+<!-- Issue Details in Friday Status Report Style -->
 {% for results in props %}
     {% for isresults in issues %}
         {% if results.prop_id == isresults.prop_id %}
-            <form action="{% url 'fsr_commit_status_change' %}" method="post" id="statusForm{{ isresults.issues_id }}">
+            
+            <!-- Status Update Form (Hidden) -->
+            <form action="{% url 'fsr_commit_status_change' %}" method="post" id="statusForm{{ isresults.issues_id }}" style="display: none;">
                 {% csrf_token %}
                 <input type="hidden" name="issues_id" value="{{ isresults.issues_id }}">
-                <input type="hidden" name="next" value="{{ request.get_full_path }}">
-                <!-- Hidden fields to preserve return parameters for status changes -->
-                {% if request.GET.from %}
-                    <input type="hidden" name="from" value="{{ request.GET.from }}">
-                {% endif %}
-                {% if request.GET.property_id %}
-                    <input type="hidden" name="property_id" value="{{ request.GET.property_id }}">
-                {% endif %}
-                {% if request.GET.box_type %}
-                    <input type="hidden" name="box_type" value="{{ request.GET.box_type }}">
-                {% endif %}
-                <div class="form-row">
-                    <div class="form-group col-md-3">
-                        <label for="prop_name"><strong>Property Name</strong></label>
-                        <input placeholder="Property Name" type="text" id="prop_name" class="form-control" name="prop_name" value="{{results.prop_name}}" readonly>
-                    </div>    
-                    <div class="form-group col-md-6">
-                        <label for="issues_heading"><strong>Issue Heading</strong></label>
-                        <input placeholder="Issue Heading" type="text" id="issues_heading" class="form-control" name="issues_heading" value="{{isresults.issues_heading}}" readonly>
-                    </div>
-                    <div class="form-group col-md-1">
-                        <input placeholder="ID" type="hidden" id="issues_id" class="form-control" name="issues_id" value="{{isresults.issues_id}}" readonly>
-                    </div>
-
-                    <div class="form-group col-md-2">
-                        <label for="issues_status"><strong>Issue Status</strong></label>
-                        <select name="issues_status" class="custom-select" id="issues_status_{{ isresults.issues_id }}" aria-label="Example select with button addon">
-                            <option disabled>Select Issue Status</option>
-                            {% if isresults.issues_status == "Resolved" %}
-                                <option selected value="Resolved">Resolved</option>
-                            {% else %}
-                                <option value="Resolved">Resolved</option>
-                            {% endif %}
-                            {% if isresults.issues_status == "Unresolved" %}
-                                <option selected value="Unresolved">Unresolved</option>
-                            {% else %}
-                                <option value="Unresolved">Unresolved</option>
-                            {% endif %}
-                            {% if isresults.issues_status == "Issue" %}
-                                <option selected value="Issue">Issue</option>
-                            {% else %}
-                                <option value="Issue">Issue</option>
-                            {% endif %}
-                        </select>
-                    </div>
-                </div>
-            </form>
-            <div class="form-row">
-                <div class="form-group col-md-10">
-                    <label for="issues_description"><strong>Issue Description</strong></label>
-                    <input placeholder="Issue Description" type="text" id="issues_description" class="form-control" name="issues_description" value="{{isresults.issues_description}}" readonly>
-                </div>
-                <div class="form-group col-md-2">
-                    <label for="issues_date_logged"><strong>Date Logged</strong></label>
-                    <input placeholder="Date Logged" type="text" id="issues_date_logged" class="form-control" name="issues_date_logged" value="{{isresults.issues_date_logged}}" readonly>
-                </div>
-            </div>
-            <hr>
-            <form action="{% url 'fsr_comment_add' isresults.issues_id %}" method="post">
-                {% csrf_token %}
                 <input type="hidden" name="next" value="{{ request.get_full_path }}">
                 <!-- Hidden fields to preserve return parameters -->
                 {% if request.GET.from %}
@@ -110,30 +56,96 @@
                 {% if request.GET.box_type %}
                     <input type="hidden" name="box_type" value="{{ request.GET.box_type }}">
                 {% endif %}
-                <div class="form-row">
-                    <div class="form-group col-md-10">
-                        <input placeholder="Enter New Comment" type="text" id="issues_details_comment" class="form-control" name="issues_details_comment" maxlength="250" required>
-                    </div>
-                    <div style="display: flex ; justify-content: flex-end">
-                        <button class="btn btn-info" style="margin-right:16px; height:39px;" type="submit">Save New Comment</button>
-                    </div>
-                    <br/>
-                </div>
+                <select name="issues_status" id="issues_status_{{ isresults.issues_id }}">
+                    <option value="Resolved" {% if isresults.issues_status == "Resolved" %}selected{% endif %}>Resolved</option>
+                    <option value="Unresolved" {% if isresults.issues_status == "Unresolved" %}selected{% endif %}>Unresolved</option>
+                    <option value="Issue" {% if isresults.issues_status == "Issue" %}selected{% endif %}>Issue</option>
+                </select>
             </form>
-            <strong>Issue Comments</strong>
-            <br/>
-            {% for idresults in issues_details %}
-                {% if idresults.issues_id == isresults.issues_id %}
-                    {{idresults.issues_details_date}} ({{idresults.issues_details_user}}) - {{idresults.issues_details_comment}}
-                    <br/>
-                {% endif %}
-            {% endfor %}
-            
+
+            <!-- Friday Status Report Style Layout -->
+            <div class="report-container">
+                <div class="report-content">
+                    <!-- Status Header -->
+                    <div class="status-card">
+                        <h3 class="status-title">
+                            STATUS: {{ isresults.issues_status|upper }}
+                            <div class="status-actions">
+                                <label for="status_dropdown_{{ isresults.issues_id }}" class="status-label">Change Status:</label>
+                                <select name="issues_status" class="status-dropdown" id="status_dropdown_{{ isresults.issues_id }}" onchange="updateStatus({{ isresults.issues_id }}, this.value)">
+                                    <option value="Resolved" {% if isresults.issues_status == "Resolved" %}selected{% endif %}>Resolved</option>
+                                    <option value="Unresolved" {% if isresults.issues_status == "Unresolved" %}selected{% endif %}>Unresolved</option>
+                                    <option value="Issue" {% if isresults.issues_status == "Issue" %}selected{% endif %}>Issue</option>
+                                </select>
+                            </div>
+                        </h3>
+                        
+                        <!-- Add Comment Form - Positioned between Status and Property -->
+                        <div class="add-comment-container-inline">
+                            <form action="{% url 'fsr_comment_add' isresults.issues_id %}" method="post" class="add-comment-form">
+                                {% csrf_token %}
+                                <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                                <!-- Hidden fields to preserve return parameters -->
+                                {% if request.GET.from %}
+                                    <input type="hidden" name="from" value="{{ request.GET.from }}">
+                                {% endif %}
+                                {% if request.GET.property_id %}
+                                    <input type="hidden" name="property_id" value="{{ request.GET.property_id }}">
+                                {% endif %}
+                                {% if request.GET.box_type %}
+                                    <input type="hidden" name="box_type" value="{{ request.GET.box_type }}">
+                                {% endif %}
+                                
+                                <div class="comment-input-group-inline">
+                                    <input placeholder="Enter New Comment" 
+                                           type="text" 
+                                           class="form-control comment-input-full" 
+                                           name="issues_details_comment" 
+                                           maxlength="250" 
+                                           required>
+                                    <button class="btn btn-info comment-submit" type="submit">Save New Comment</button>
+                                </div>
+                            </form>
+                        </div>
+                        
+                        <!-- Property Card -->
+                        <div class="property-card">
+                            <h4 class="property-name">{{ results.prop_name|upper }}</h4>
+                            
+                            <!-- Issue Group -->
+                            <div class="issue-group">
+                                <h5 class="issue-heading">
+                                    {{ isresults.issues_heading }}
+                                    <span class="issue-description">({{ isresults.issues_description }})</span>
+                                    <span class="issue-date">- Logged: {{ isresults.issues_date_logged|date:"M d, Y" }}</span>
+                                </h5>
+                                
+                                <!-- Issue Details (Comments) -->
+                                <div class="issue-details">
+                                    {% for idresults in issues_details %}
+                                        {% if idresults.issues_id == isresults.issues_id %}
+                                        <div class="detail-row {% if idresults.issues_details_user == 'SS' %}ss-comment{% else %}regular-comment{% endif %}">
+                                            <span class="detail-comment">
+                                                <span class="comment-date">{{ idresults.issues_details_date|date:"Y-m-d" }}</span>
+                                                <span class="comment-user">({{ idresults.issues_details_user }})</span>:
+                                                <span class="comment-text">{{ idresults.issues_details_comment }}</span>
+                                            </span>
+                                        </div>
+                                        {% endif %}
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <script>
             // Auto-submit status form when changed
-            document.getElementById('issues_status_{{ isresults.issues_id }}').addEventListener('change', function() {
-                document.getElementById('statusForm{{ isresults.issues_id }}').submit();
-            });
+            function updateStatus(issueId, newStatus) {
+                document.getElementById('issues_status_' + issueId).value = newStatus;
+                document.getElementById('statusForm' + issueId).submit();
+            }
             </script>
         {% endif %}
     {% endfor %}
@@ -335,5 +347,270 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 </script>
+
+<style>
+/* Friday Status Report Styling - Exact Match */
+.report-container {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    padding: 20px;
+    min-height: 40vh;
+}
+
+.report-content {
+    width: 90%;
+    max-width: 1200px;
+    background: white;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.status-card {
+    margin-bottom: 30px;
+    padding: 25px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    page-break-inside: avoid;
+}
+
+.status-title {
+    font-size: 1.5rem;
+    color: #2c3e50;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #dee2e6;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.status-actions {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.status-label {
+    font-size: 14px;
+    font-weight: 500;
+    color: #495057;
+    margin: 0;
+    white-space: nowrap;
+}
+
+.status-dropdown {
+    padding: 5px 10px;
+    border-radius: 4px;
+    border: 1px solid #ced4da;
+    background-color: white;
+    font-size: 14px;
+    color: #495057;
+}
+
+/* Add Comment Form - Inline between Status and Property */
+.add-comment-container-inline {
+    margin: 20px 0;
+    padding: 15px;
+    background: #ffffff;
+    border-radius: 6px;
+    border: 1px solid #e9ecef;
+}
+
+.comment-input-group-inline {
+    display: flex;
+    gap: 10px;
+    align-items: stretch;
+    width: 100%;
+}
+
+.comment-input-full {
+    flex: 1;
+    border: 2px solid #e9ecef;
+    border-radius: 4px;
+    padding: 8px 12px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    width: 100%;
+}
+
+.comment-input-full:focus {
+    border-color: #17a2b8;
+    box-shadow: 0 0 0 3px rgba(23, 162, 184, 0.1);
+    outline: none;
+}
+
+.comment-submit {
+    background-color: #17a2b8;
+    color: white;
+    border: 1px solid #17a2b8;
+    padding: 8px 16px;
+    border-radius: 4px;
+    font-weight: 500;
+    white-space: nowrap;
+    transition: all 0.3s ease;
+}
+
+.comment-submit:hover {
+    background-color: #138496;
+    border-color: #117a8b;
+    color: white;
+    text-decoration: none;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.property-card {
+    margin-bottom: 20px;
+    padding: 20px;
+    background-color: #ffffff;
+    border-radius: 6px;
+    border-left: 4px solid #17a2b8;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.property-name {
+    font-size: 1.3rem;
+    color: #2c3e50;
+    margin-bottom: 15px;
+}
+
+.issue-group {
+    margin-bottom: 15px;
+}
+
+.issue-heading {
+    font-size: 1.1rem;
+    color: #495057;
+    margin-bottom: 10px;
+    padding-bottom: 5px;
+    border-bottom: 1px dashed #ced4da;
+}
+
+.issue-description {
+    font-weight: normal;
+    color: #6c757d;
+}
+
+.issue-date {
+    font-weight: normal;
+    color: #FF0000;
+    margin-left: 8px;
+}
+
+.issue-details {
+    margin-left: 15px;
+}
+
+.detail-row {
+    margin-bottom: 8px;
+    line-height: 1.4;
+    padding: 6px 10px;
+    border-radius: 4px;
+    border-left: 3px solid transparent;
+}
+
+/* SS User Comments - Orange Highlighting (Exact Match) */
+.detail-row.ss-comment {
+    background-color: #fff3e0;
+    border-left-color: #ff8c00;
+}
+
+.detail-row.ss-comment .comment-date,
+.detail-row.ss-comment .comment-user,
+.detail-row.ss-comment .comment-text {
+    color: #ff8c00;
+    font-weight: 600;
+}
+
+/* Regular User Comments - System Blue (Exact Match) */
+.detail-row.regular-comment {
+    background-color: #e3f2fd;
+    border-left-color: #17a2b8;
+}
+
+.detail-row.regular-comment .comment-date,
+.detail-row.regular-comment .comment-user,
+.detail-row.regular-comment .comment-text {
+    color: #17a2b8;
+    font-weight: 600;
+}
+
+.detail-comment {
+    display: block;
+    width: 100%;
+}
+
+/* Standard Button Styling */
+.btn-info {
+    background-color: #17a2b8;
+    color: white;
+    border: 1px solid #17a2b8;
+    transition: all 0.3s ease;
+    border-radius: 4px;
+    font-weight: 500;
+    padding: 8px 16px;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.btn-info:hover {
+    background-color: #138496;
+    border-color: #117a8b;
+    color: white;
+    text-decoration: none;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .report-container {
+        padding: 10px;
+    }
+    
+    .report-content {
+        width: 95%;
+        padding: 20px;
+    }
+    
+    .status-card {
+        padding: 20px;
+    }
+    
+    .property-card {
+        padding: 15px;
+    }
+    
+    .status-title {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 15px;
+    }
+    
+    .status-actions {
+        margin-left: 0;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+    }
+    
+    .status-label {
+        text-align: left;
+    }
+    
+    .comment-input-group-inline {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .detail-row {
+        padding: 4px 8px;
+        margin-bottom: 6px;
+    }
+}
+</style>
 
 {% endblock %}
