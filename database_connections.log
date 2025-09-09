@@ -557,3 +557,4 @@ Starting request req_1757391619_35324: GET /fsr/ (user: anonymous)
 Enhanced DatabaseConnectionMiddleware initialized with threshold=100
 Starting request req_1757392174_35224: GET /notifications/ (user: anonymous)
 Starting request req_1757392175_35224: GET /notifications/ (user: anonymous)
+Enhanced DatabaseConnectionMiddleware initialized with threshold=100

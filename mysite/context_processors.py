@@ -102,7 +102,7 @@ def get_expiring_leases_count(cursor, today):
         FROM railway.tenant
         WHERE tenant.tenant_current = 'Yes'
         AND COALESCE(tenant.tenant_renewal_status, 'pending') = 'pending'
-        AND DATE_SUB(DATE_SUB(tenant.tenant_lease_end_date, INTERVAL tenant.tenant_renewal_period DAY), INTERVAL 30 DAY) <= %s
+        AND DATE_SUB(tenant.tenant_lease_end_date, INTERVAL tenant.tenant_renewal_period DAY) <= %s
     """, (today,))
     return cursor.fetchone()[0]
 
