@@ -132,7 +132,9 @@ CACHES = {
 # Use cached sessions to bypass database session storage issues
 SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
 SESSION_CACHE_ALIAS = 'default'
-SESSION_COOKIE_AGE = 3600  # 1 hour session timeout
+SESSION_COOKIE_AGE = 21600  # 6 hour session timeout
+SESSION_SAVE_EVERY_REQUEST = True  # Reset timer on each page view
+
 
 #DATABASES = {
 #    "default": {
