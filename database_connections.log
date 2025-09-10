@@ -720,3 +720,4 @@ Starting request req_1757480278_25572: GET /fsr_details/3 (user: anonymous)
 Starting request req_1757480354_25572: GET /fsr/ (user: anonymous)
 Starting request req_1757480354_25572: GET /fsr/ (user: anonymous)
 Starting request req_1757480355_25572: GET /fsr_add/ (user: anonymous)
+Enhanced DatabaseConnectionMiddleware initialized with threshold=100
