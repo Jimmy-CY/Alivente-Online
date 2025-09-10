@@ -704,3 +704,19 @@ Enhanced DatabaseConnectionMiddleware initialized with threshold=100
 Enhanced DatabaseConnectionMiddleware initialized with threshold=100
 Enhanced DatabaseConnectionMiddleware initialized with threshold=100
 Enhanced DatabaseConnectionMiddleware initialized with threshold=100
+Enhanced DatabaseConnectionMiddleware initialized with threshold=100
+Starting request req_1757478804_24312: GET /fsr/ (user: anonymous)
+Starting request req_1757478804_24312: GET /accounts/login/ (user: anonymous)
+Starting request req_1757480240_25572: GET / (user: anonymous)
+Starting request req_1757480244_25572: GET /login/ (user: anonymous)
+Starting request req_1757480251_25572: POST /login/ (user: anonymous)
+Starting request req_1757480252_25572: GET / (user: anonymous)
+Starting request req_1757480255_25572: GET /fsr/ (user: anonymous)
+Starting request req_1757480258_25572: GET /fsr_details/18 (user: anonymous)
+Starting request req_1757480262_25572: GET /fsr/ (user: anonymous)
+Starting request req_1757480262_25572: GET /fsr/ (user: anonymous)
+Starting request req_1757480265_25572: GET /fsr_add/ (user: anonymous)
+Starting request req_1757480278_25572: GET /fsr_details/3 (user: anonymous)
+Starting request req_1757480354_25572: GET /fsr/ (user: anonymous)
+Starting request req_1757480354_25572: GET /fsr/ (user: anonymous)
+Starting request req_1757480355_25572: GET /fsr_add/ (user: anonymous)

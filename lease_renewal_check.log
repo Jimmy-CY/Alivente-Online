@@ -15154,3 +15154,22 @@ Watching for file changes with StatReloader
 Watching for file changes with StatReloader
 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\mysite\settings.py changed, reloading.
 Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+"GET /fsr/ HTTP/1.1" 302 0
+Not Found: /accounts/login/
+"GET /accounts/login/?next=/fsr/ HTTP/1.1" 404 42972
+"GET / HTTP/1.1" 200 7484
+"GET /login/ HTTP/1.1" 200 8913
+"POST /login/ HTTP/1.1" 302 0
+"GET / HTTP/1.1" 200 15690
+"GET /fsr/ HTTP/1.1" 200 101262
+"GET /fsr_details/18?from=fsr&search=&propcountry=&propname=&issuestatus= HTTP/1.1" 200 33820
+"GET /fsr/?refresh=true HTTP/1.1" 200 101262
+"GET /fsr/ HTTP/1.1" 200 101262
+"GET /fsr_add/ HTTP/1.1" 200 12933
+"GET /fsr_details/3?from=fsr&search=&propcountry=&propname=&issuestatus= HTTP/1.1" 200 36701
+"GET /fsr/?refresh=true HTTP/1.1" 200 101262
+"GET /fsr/ HTTP/1.1" 200 101262
+"GET /fsr_add/ HTTP/1.1" 200 12933
+C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\mysite\settings.py changed, reloading.
+Watching for file changes with StatReloader
