@@ -698,3 +698,5 @@ Starting request req_1757434635_23928: GET /fsr_details/18 (user: anonymous)
 Enhanced DatabaseConnectionMiddleware initialized with threshold=100
 Enhanced DatabaseConnectionMiddleware initialized with threshold=100
 Enhanced DatabaseConnectionMiddleware initialized with threshold=100
+Enhanced DatabaseConnectionMiddleware initialized with threshold=100
+Enhanced DatabaseConnectionMiddleware initialized with threshold=100
