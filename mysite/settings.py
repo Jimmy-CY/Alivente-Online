@@ -58,7 +58,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
-#    "pages.middleware.DatabaseConnectionMiddleware",
+    "pages.middleware.DatabaseConnectionMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -112,11 +112,27 @@ DATABASES = {
             'write_timeout': 60,
             'autocommit': True,
         },
-        'CONN_MAX_AGE': 60,  # Shorter timeout - 1 minute instead of 5
-        'CONN_HEALTH_CHECKS': True,
-        'ATOMIC_REQUESTS': False,  # Keep this False - very important
+        'CONN_MAX_AGE': 0,  # Back to no connection pooling
+        'ATOMIC_REQUESTS': False,
     }
 }
+
+# Cache configuration for sessions and performance
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'sessions-cache',
+        'TIMEOUT': 3600,  # 1 hour default timeout
+        'OPTIONS': {
+            'MAX_ENTRIES': 1000,
+        }
+    }
+}
+
+# Use cached sessions to bypass database session storage issues
+SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
+SESSION_CACHE_ALIAS = 'default'
+SESSION_COOKIE_AGE = 3600  # 1 hour session timeout
 
 #DATABASES = {
 #    "default": {

@@ -15125,3 +15125,29 @@ C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\mysite\settings.py ch
 Watching for file changes with StatReloader
 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\mysite\settings.py changed, reloading.
 Watching for file changes with StatReloader
+Watching for file changes with StatReloader
+"GET /logout/ HTTP/1.1" 302 0
+"GET / HTTP/1.1" 200 8244
+Not Found: /favicon.ico
+"GET /favicon.ico HTTP/1.1" 404 42949
+"GET /login/ HTTP/1.1" 200 8913
+"POST /login/ HTTP/1.1" 302 0
+"GET / HTTP/1.1" 200 15684
+"GET /fsr/ HTTP/1.1" 200 89834
+"GET /fsr_details/18?from=fsr&search=&propcountry=&propname=&issuestatus= HTTP/1.1" 200 33810
+"GET /fsr/?refresh=true HTTP/1.1" 200 89834
+"GET /fsr/ HTTP/1.1" 200 89834
+"GET /fsr_details/2?from=fsr&search=&propcountry=&propname=&issuestatus= HTTP/1.1" 200 34975
+"GET /fsr/?refresh=true HTTP/1.1" 200 89834
+"GET /fsr/ HTTP/1.1" 200 89834
+"GET /notifications/ HTTP/1.1" 200 31752
+"GET /notifications/ HTTP/1.1" 200 6086
+"GET /logout/ HTTP/1.1" 302 0
+"GET / HTTP/1.1" 200 8244
+"GET /login/ HTTP/1.1" 200 8913
+"POST /login/ HTTP/1.1" 302 0
+"GET / HTTP/1.1" 200 15690
+C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\mysite\settings.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\mysite\settings.py changed, reloading.
+Watching for file changes with StatReloader
