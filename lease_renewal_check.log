@@ -15098,3 +15098,22 @@ django.urls.exceptions.NoReverseMatch: Reverse for 'issues_list' not found. 'iss
 "GET /fsr/?refresh=true HTTP/1.1" 200 101210
 "GET /fsr/ HTTP/1.1" 200 101210
 "GET /fsr_details/50?from=fsr&search=&propcountry=&propname=&issuestatus= HTTP/1.1" 200 33137
+Watching for file changes with StatReloader
+"GET /fsr/?refresh=true HTTP/1.1" 200 101210
+"GET /fsr/ HTTP/1.1" 200 101210
+"GET /fsr_details/3?from=fsr&search=&propcountry=&propname=&issuestatus= HTTP/1.1" 200 36045
+"POST /fsr_commit_status_change/ HTTP/1.1" 302 0
+"GET /fsr/?refresh=true HTTP/1.1" 200 101262
+"GET /fsr/ HTTP/1.1" 200 101262
+"GET /fsr_details/3?from=fsr&search=&propcountry=&propname=&issuestatus= HTTP/1.1" 200 36050
+"POST /fsr_comment_add/3 HTTP/1.1" 302 0
+"GET /fsr_details/3?from=fsr&search=&propcountry=&propname=&issuestatus= HTTP/1.1" 200 37292
+"POST /fsr_commit_status_change/ HTTP/1.1" 302 0
+"GET /fsr/?refresh=true HTTP/1.1" 200 101210
+"GET /fsr/ HTTP/1.1" 200 101210
+"GET //fsr_details/18 HTTP/1.1" 200 33479
+"POST /fsr_commit_status_change/ HTTP/1.1" 302 0
+"GET /fsr/?refresh=true HTTP/1.1" 200 101262
+"GET /fsr/ HTTP/1.1" 200 101262
+"GET /fsr_details/18?from=fsr&search=&propcountry=&propname=&issuestatus= HTTP/1.1" 200 33820
+Watching for file changes with StatReloader

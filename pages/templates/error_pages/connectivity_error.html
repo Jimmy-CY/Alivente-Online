@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connection Issue - Alivente Online</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: #f8f9fa;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+        
+        .error-container {
+            background: white;
+            padding: 50px 40px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            border: 1px solid #dee2e6;
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .error-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: #17a2b8;
+        }
+        
+        .error-icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+            color: #dc3545;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        .error-title {
+            color: #2c3e50;
+            font-size: 28px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            letter-spacing: -0.5px;
+        }
+        
+        .error-subtitle {
+            color: #dc3545;
+            font-size: 16px;
+            font-weight: 500;
+            margin-bottom: 25px;
+        }
+        
+        .error-message {
+            color: #6c757d;
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 35px;
+            padding: 0 10px;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            background-color: #17a2b8;
+            color: white;
+            padding: 12px 24px;
+            border: 1px solid #17a2b8;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .btn:hover {
+            background-color: #138496;
+            border-color: #117a8b;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            text-decoration: none;
+            color: white;
+        }
+        
+        .btn-secondary {
+            background-color: #6c757d;
+            border-color: #6c757d;
+        }
+        
+        .btn-secondary:hover {
+            background-color: #5a6268;
+            border-color: #545b62;
+            color: white;
+        }
+        
+        .help-text {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid #dee2e6;
+            font-size: 13px;
+            color: #6c757d;
+            line-height: 1.5;
+        }
+        
+        .retry-timer {
+            margin-top: 20px;
+            font-size: 14px;
+            color: #17a2b8;
+            font-weight: 500;
+        }
+        
+        /* Status badge styling matching your system */
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+            background: #f8d7da;
+            color: #721c24;
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+        
+        /* Responsive design */
+        @media (max-width: 480px) {
+            .error-container {
+                padding: 40px 30px;
+                margin: 0 10px;
+            }
+            
+            .error-title {
+                font-size: 24px;
+            }
+            
+            .button-group {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .btn {
+                width: 100%;
+                max-width: 200px;
+                justify-content: center;
+            }
+        }
+        
+        /* Loading animation for retry button */
+        .btn.loading {
+            position: relative;
+            color: transparent;
+        }
+        
+        .btn.loading::after {
+            content: '';
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            top: 50%;
+            left: 50%;
+            margin-left: -8px;
+            margin-top: -8px;
+            border-radius: 50%;
+            border: 2px solid transparent;
+            border-top-color: white;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Alert styling matching your system */
+        .alert {
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 1px solid transparent;
+            border-radius: 4px;
+            background-color: #f8d7da;
+            border-color: #f5c6cb;
+            color: #721c24;
+        }
+    </style>
+</head>
+<body>
+    <div class="error-container">
+        <div class="error-icon">⚠️</div>
+        <h1 class="error-title">ALIVENTE ONLINE</h1>
+        <div class="status-badge">CONNECTION ISSUE</div>
+        <p class="error-message">
+            There seems to be an issue with your connectivity or your internet bandwidth. 
+            Please try again later.
+        </p>
+        
+        <div class="button-group">
+            <button onclick="retryConnection()" class="btn" id="retryBtn">
+                Try Again
+            </button>
+            <a href="javascript:history.back()" class="btn btn-secondary">
+                Go Back
+            </a>
+            <a href="/" class="btn btn-secondary">
+                Home
+            </a>
+        </div>
+        
+        <div class="retry-timer" id="retryTimer" style="display: none;">
+            Auto-retry in <span id="countdown">30</span> seconds
+        </div>
+        
+        <div class="help-text">
+            <strong>What you can try:</strong><br>
+            • Check your internet connection<br>
+            • Refresh the page in a few moments<br>
+            • Clear your browser cache<br>
+            • Contact support if the issue persists
+        </div>
+    </div>
+
+    <script>
+        let retryAttempts = 0;
+        let countdownInterval;
+        let autoRetryTimeout;
+        
+        function retryConnection() {
+            const retryBtn = document.getElementById('retryBtn');
+            retryBtn.classList.add('loading');
+            retryBtn.disabled = true;
+            
+            // Clear any existing timers
+            clearInterval(countdownInterval);
+            clearTimeout(autoRetryTimeout);
+            
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        }
+        
+        function startAutoRetry() {
+            const timerDiv = document.getElementById('retryTimer');
+            const countdownSpan = document.getElementById('countdown');
+            let seconds = 30;
+            
+            timerDiv.style.display = 'block';
+            
+            countdownInterval = setInterval(() => {
+                seconds--;
+                countdownSpan.textContent = seconds;
+                
+                if (seconds <= 0) {
+                    clearInterval(countdownInterval);
+                    retryConnection();
+                }
+            }, 1000);
+        }
+        
+        // Start auto-retry after 5 seconds of page load
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(startAutoRetry, 5000);
+        });
+        
+        // Add keyboard shortcuts
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Enter' || event.key === ' ') {
+                retryConnection();
+            } else if (event.key === 'Escape') {
+                history.back();
+            }
+        });
+        
+        // Track retry attempts for analytics (if needed)
+        function trackRetryAttempt() {
+            retryAttempts++;
+            console.log('Retry attempt:', retryAttempts);
+        }
+    </script>
+</body>
+</html>

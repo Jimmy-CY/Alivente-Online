@@ -1,17 +1,19 @@
-# middleware.py - Enhanced version with detailed query tracking
+# middleware.py - Enhanced version with error handling
 import logging
 import time
 import threading
 import traceback
-from django.db import connections
+from django.db import connections, DatabaseError, InterfaceError
 from django.conf import settings
 from django.utils.deprecation import MiddlewareMixin
+from django.shortcuts import render
+from django.http import HttpResponse
 
 logger = logging.getLogger(__name__)
 
 class DatabaseConnectionMiddleware:
     """
-    Enhanced middleware with detailed query tracking and request correlation
+    Enhanced middleware with detailed query tracking, request correlation, and error handling
     """
     
     def __init__(self, get_response):
@@ -57,8 +59,19 @@ class DatabaseConnectionMiddleware:
             
             return response
             
+        except (DatabaseError, InterfaceError) as e:
+            # Handle database connection errors gracefully
+            logger.error(
+                f"Database connection error in request {self.local.request_id}: {e}\n"
+                f"Path: {self.local.request_path}\n"
+                f"User: {self.local.user}\n"
+                f"Error type: {type(e).__name__}"
+            )
+            self._emergency_cleanup()
+            return self._render_connectivity_error(request)
+            
         except Exception as e:
-            # Enhanced exception logging
+            # Enhanced exception logging for other errors
             self._log_exception_with_context(e)
             self._emergency_cleanup()
             raise
@@ -66,6 +79,73 @@ class DatabaseConnectionMiddleware:
         finally:
             # Enhanced post-request cleanup
             self._enhanced_post_request_cleanup()
+
+    def process_exception(self, request, exception):
+        """Process exceptions that occur during request processing"""
+        if isinstance(exception, (DatabaseError, InterfaceError)):
+            logger.error(
+                f"Database exception caught: {exception}\n"
+                f"Path: {request.path}\n"
+                f"Method: {request.method}\n"
+                f"User: {getattr(request, 'user', 'unknown')}"
+            )
+            self._emergency_cleanup()
+            return self._render_connectivity_error(request)
+        return None
+
+    def _render_connectivity_error(self, request):
+        """Render user-friendly connectivity error page"""
+        try:
+            return render(request, 'error_pages/connectivity_error.html', status=503)
+        except Exception:
+            # Fallback if template rendering fails
+            return HttpResponse(
+                """
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Connection Issue</title>
+                    <style>
+                        body { 
+                            font-family: Arial, sans-serif; 
+                            text-align: center; 
+                            padding: 50px; 
+                            background-color: #f8f9fa;
+                        }
+                        .error-container {
+                            background: white;
+                            padding: 40px;
+                            border-radius: 8px;
+                            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+                            max-width: 500px;
+                            margin: 0 auto;
+                        }
+                        h1 { color: #dc3545; }
+                        p { color: #6c757d; }
+                        .btn {
+                            background-color: #17a2b8;
+                            color: white;
+                            padding: 12px 24px;
+                            border: none;
+                            border-radius: 4px;
+                            text-decoration: none;
+                            display: inline-block;
+                            margin: 10px;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="error-container">
+                        <h1>Connection Issue</h1>
+                        <p>There seems to be an issue with your connectivity or your internet bandwidth. Please try again later.</p>
+                        <a href="javascript:history.back()" class="btn">Go Back</a>
+                        <a href="/" class="btn">Home</a>
+                    </div>
+                </body>
+                </html>
+                """,
+                status=503
+            )
 
     def _pre_request_cleanup(self):
         """Enhanced pre-request cleanup with tracking"""
