@@ -112,7 +112,8 @@ DATABASES = {
             'write_timeout': 60,
             'autocommit': True,
         },
-        'CONN_MAX_AGE': 0,  # Don't persist connections
+        'CONN_MAX_AGE': 300,  # Keep connections alive for 5 minutes
+        'CONN_HEALTH_CHECKS': True,  # Django 4.1+ - checks if connection is still alive
         'ATOMIC_REQUESTS': False,
     }
 }
