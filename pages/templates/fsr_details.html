@@ -66,21 +66,24 @@ Issues (Comments)
             <!-- Friday Status Report Style Layout -->
             <div class="report-container">
                 <div class="report-content">
-                    <!-- Status Header -->
-                    <div class="status-card">
-                        <h3 class="status-title">
-                            STATUS: {{ isresults.issues_status|upper }}
-                            <div class="status-actions">
-                                <label for="status_dropdown_{{ isresults.issues_id }}" class="status-label">Change Status:</label>
-                                <select name="issues_status" class="status-dropdown" id="status_dropdown_{{ isresults.issues_id }}" onchange="updateStatus({{ isresults.issues_id }}, this.value)">
-                                    <option value="Resolved" {% if isresults.issues_status == "Resolved" %}selected{% endif %}>Resolved</option>
-                                    <option value="Unresolved" {% if isresults.issues_status == "Unresolved" %}selected{% endif %}>Unresolved</option>
-                                    <option value="Issue" {% if isresults.issues_status == "Issue" %}selected{% endif %}>Issue</option>
-                                </select>
-                            </div>
+                    <!-- Issue Header Section (NEW - Moved to top) -->
+                    <div class="issue-header-section">
+                        <h3 class="issue-title">
+                            {{ isresults.issues_heading }}
+                            <span class="issue-description">({{ isresults.issues_description }})</span>
                         </h3>
                         
-                        <!-- Add Comment Form - Positioned between Status and Property -->
+                        <!-- Date Logged (NEW - Separate line) -->
+                        <h4 class="date-logged-display">Date Logged: {{ isresults.issues_date_logged|date:"M d, Y" }}</h4>
+                        
+                        <!-- Property Name and Status (NEW - Combined in same box) -->
+                        <h4 class="property-display">Property: {{ results.prop_name|upper }}</h4>
+                        <h4 class="status-display">Status: {{ isresults.issues_status|upper }}</h4>
+                    </div>
+
+                    <!-- Comments and Status Change Section -->
+                    <div class="status-card">
+                        <!-- Add Comment Form with Status Change Controls on same line -->
                         <div class="add-comment-container-inline">
                             <form action="{% url 'fsr_comment_add' isresults.issues_id %}" method="post" class="add-comment-form">
                                 {% csrf_token %}
@@ -103,37 +106,38 @@ Issues (Comments)
                                            name="issues_details_comment" 
                                            maxlength="250" 
                                            required>
-                                    <button class="btn btn-info comment-submit" type="submit">Save New Comment</button>
+                                    <button class="btn btn-info comment-submit" type="submit">Save Comment</button>
+                                    
+                                    <!-- Status Change Controls on same line -->
+                                    <div class="status-actions-inline">
+                                        <label for="status_dropdown_{{ isresults.issues_id }}" class="status-label">Change Status:</label>
+                                        <select name="issues_status" class="status-dropdown" id="status_dropdown_{{ isresults.issues_id }}" onchange="updateStatus({{ isresults.issues_id }}, this.value)">
+                                            <option value="Resolved" {% if isresults.issues_status == "Resolved" %}selected{% endif %}>Resolved</option>
+                                            <option value="Unresolved" {% if isresults.issues_status == "Unresolved" %}selected{% endif %}>Unresolved</option>
+                                            <option value="Issue" {% if isresults.issues_status == "Issue" %}selected{% endif %}>Issue</option>
+                                        </select>
+                                    </div>
                                 </div>
                             </form>
                         </div>
                         
-                        <!-- Property Card -->
-                        <div class="property-card">
-                            <h4 class="property-name">{{ results.prop_name|upper }}</h4>
+                        <!-- Comments Section -->
+                        <div class="comments-section">
+                            <h5 class="comments-heading">Comments:</h5>
                             
-                            <!-- Issue Group -->
-                            <div class="issue-group">
-                                <h5 class="issue-heading">
-                                    {{ isresults.issues_heading }}
-                                    <span class="issue-description">({{ isresults.issues_description }})</span>
-                                    <span class="issue-date">- Logged: {{ isresults.issues_date_logged|date:"M d, Y" }}</span>
-                                </h5>
-                                
-                                <!-- Issue Details (Comments) -->
-                                <div class="issue-details">
-                                    {% for idresults in issues_details %}
-                                        {% if idresults.issues_id == isresults.issues_id %}
-                                        <div class="detail-row {% if idresults.issues_details_user == 'SS' %}ss-comment{% else %}regular-comment{% endif %}">
-                                            <span class="detail-comment">
-                                                <span class="comment-date">{{ idresults.issues_details_date|date:"Y-m-d" }}</span>
-                                                <span class="comment-user">({{ idresults.issues_details_user }})</span>:
-                                                <span class="comment-text">{{ idresults.issues_details_comment }}</span>
-                                            </span>
-                                        </div>
-                                        {% endif %}
-                                    {% endfor %}
-                                </div>
+                            <!-- Issue Details (Comments) -->
+                            <div class="issue-details">
+                                {% for idresults in issues_details %}
+                                    {% if idresults.issues_id == isresults.issues_id %}
+                                    <div class="detail-row {% if idresults.issues_details_user == 'SS' %}ss-comment{% else %}regular-comment{% endif %}">
+                                        <span class="detail-comment">
+                                            <span class="comment-date">{{ idresults.issues_details_date|date:"Y-m-d" }}</span>
+                                            <span class="comment-user">({{ idresults.issues_details_user }})</span>:
+                                            <span class="comment-text">{{ idresults.issues_details_comment }}</span>
+                                        </span>
+                                    </div>
+                                    {% endif %}
+                                {% endfor %}
                             </div>
                         </div>
                     </div>
@@ -349,7 +353,7 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 
 <style>
-/* Friday Status Report Styling - Exact Match */
+/* Friday Status Report Styling - Updated with new structure */
 .report-container {
     display: flex;
     justify-content: center;
@@ -365,6 +369,59 @@ document.addEventListener('DOMContentLoaded', function() {
     padding: 30px;
     border-radius: 8px;
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+/* NEW: Issue Header Section Styling */
+.issue-header-section {
+    margin-bottom: 25px;
+    padding: 20px;
+    background-color: #e8f4f8;
+    border-radius: 8px;
+    border-left: 4px solid #17a2b8;
+}
+
+.issue-title {
+    font-size: 1.4rem;
+    color: #2c3e50;
+    margin-bottom: 15px;
+    font-weight: 600;
+}
+
+.issue-description {
+    font-weight: normal;
+    color: #6c757d;
+    margin-left: 8px;
+}
+
+.issue-date {
+    font-weight: normal;
+    color: #FF0000;
+    margin-left: 8px;
+    font-size: 0.9rem;
+}
+
+.date-logged-display {
+    font-size: 1.2rem;
+    color: #495057;
+    margin-bottom: 10px;
+    font-weight: 600;
+    margin-left: 20px;
+}
+
+.property-display {
+    font-size: 1.2rem;
+    color: #495057;
+    margin-bottom: 10px;
+    font-weight: 600;
+    margin-left: 20px;
+}
+
+.status-display {
+    font-size: 1.2rem;
+    color: #495057;
+    margin-bottom: 0;
+    font-weight: 600;
+    margin-left: 20px;
 }
 
 .status-card {
@@ -410,7 +467,7 @@ document.addEventListener('DOMContentLoaded', function() {
     color: #495057;
 }
 
-/* Add Comment Form - Inline between Status and Property */
+/* Add Comment Form - Inline after Status */
 .add-comment-container-inline {
     margin: 20px 0;
     padding: 15px;
@@ -427,13 +484,22 @@ document.addEventListener('DOMContentLoaded', function() {
 }
 
 .comment-input-full {
-    flex: 1;
+    flex: 1.5;
     border: 2px solid #e9ecef;
     border-radius: 4px;
     padding: 8px 12px;
     font-size: 14px;
     transition: all 0.3s ease;
-    width: 100%;
+    min-width: 0;
+}
+
+/* Status Actions Inline - positioned on same line as comment input */
+.status-actions-inline {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    white-space: nowrap;
+    margin-left: 10px;
 }
 
 .comment-input-full:focus {
@@ -446,11 +512,12 @@ document.addEventListener('DOMContentLoaded', function() {
     background-color: #17a2b8;
     color: white;
     border: 1px solid #17a2b8;
-    padding: 8px 16px;
+    padding: 8px 12px;
     border-radius: 4px;
     font-weight: 500;
     white-space: nowrap;
     transition: all 0.3s ease;
+    flex-shrink: 0;
 }
 
 .comment-submit:hover {
@@ -462,46 +529,22 @@ document.addEventListener('DOMContentLoaded', function() {
     box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 
-.property-card {
-    margin-bottom: 20px;
-    padding: 20px;
-    background-color: #ffffff;
-    border-radius: 6px;
-    border-left: 4px solid #17a2b8;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+/* Comments Section Styling */
+.comments-section {
+    margin-top: 20px;
 }
 
-.property-name {
-    font-size: 1.3rem;
-    color: #2c3e50;
-    margin-bottom: 15px;
-}
-
-.issue-group {
-    margin-bottom: 15px;
-}
-
-.issue-heading {
+.comments-heading {
     font-size: 1.1rem;
     color: #495057;
-    margin-bottom: 10px;
-    padding-bottom: 5px;
+    margin-bottom: 15px;
+    padding-bottom: 8px;
     border-bottom: 1px dashed #ced4da;
-}
-
-.issue-description {
-    font-weight: normal;
-    color: #6c757d;
-}
-
-.issue-date {
-    font-weight: normal;
-    color: #FF0000;
-    margin-left: 8px;
+    font-weight: 600;
 }
 
 .issue-details {
-    margin-left: 15px;
+    margin-left: 0;
 }
 
 .detail-row {
@@ -512,7 +555,7 @@ document.addEventListener('DOMContentLoaded', function() {
     border-left: 3px solid transparent;
 }
 
-/* SS User Comments - Orange Highlighting (Exact Match) */
+/* SS User Comments - Orange Highlighting */
 .detail-row.ss-comment {
     background-color: #fff3e0;
     border-left-color: #ff8c00;
@@ -525,7 +568,7 @@ document.addEventListener('DOMContentLoaded', function() {
     font-weight: 600;
 }
 
-/* Regular User Comments - System Blue (Exact Match) */
+/* Regular User Comments - System Blue */
 .detail-row.regular-comment {
     background-color: #e3f2fd;
     border-left-color: #17a2b8;
@@ -576,12 +619,20 @@ document.addEventListener('DOMContentLoaded', function() {
         padding: 20px;
     }
     
-    .status-card {
-        padding: 20px;
+    .issue-header-section {
+        padding: 15px;
     }
     
-    .property-card {
-        padding: 15px;
+    .issue-title {
+        font-size: 1.2rem;
+    }
+    
+    .property-display {
+        font-size: 1.1rem;
+    }
+    
+    .status-card {
+        padding: 20px;
     }
     
     .status-title {
@@ -604,6 +655,12 @@ document.addEventListener('DOMContentLoaded', function() {
     .comment-input-group-inline {
         flex-direction: column;
         gap: 10px;
+    }
+    
+    .status-actions-inline {
+        margin-left: 0;
+        justify-content: flex-start;
+        margin-top: 5px;
     }
     
     .detail-row {

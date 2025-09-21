@@ -1,0 +1,16 @@
+Watching for file changes with StatReloader
+Not Found: /accounts/login/
+"GET /accounts/login/?next=/fsr/ HTTP/1.1" 404 42972
+"GET / HTTP/1.1" 200 7484
+"GET /login/ HTTP/1.1" 200 8913
+"POST /login/ HTTP/1.1" 302 0
+"GET / HTTP/1.1" 200 15690
+"GET /fsr/ HTTP/1.1" 200 101258
+"GET /fsr_details/18?from=fsr&search=&propcountry=&propname=&issuestatus= HTTP/1.1" 200 33898
+"GET /fsr/?refresh=true HTTP/1.1" 200 101258
+"GET /fsr/ HTTP/1.1" 200 101258
+"GET / HTTP/1.1" 200 14929
+"GET /fsr/ HTTP/1.1" 200 101258
+"GET /fsr_details/2?from=fsr&search=&propcountry=&propname=&issuestatus= HTTP/1.1" 200 36491
+"GET /fsr/?refresh=true HTTP/1.1" 200 101258
+"GET /fsr/ HTTP/1.1" 200 101258
