@@ -122,7 +122,7 @@ CACHES = {
     'default': {
         'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
         'LOCATION': 'sessions-cache',
-        'TIMEOUT': 3600,  # 1 hour default timeout
+        'TIMEOUT': 1209600,  # 2 weeks
         'OPTIONS': {
             'MAX_ENTRIES': 1000,
         }
@@ -132,7 +132,7 @@ CACHES = {
 # Use cached sessions to bypass database session storage issues
 SESSION_ENGINE = 'django.contrib.sessions.backends.cache'
 SESSION_CACHE_ALIAS = 'default'
-SESSION_COOKIE_AGE = 21600  # 6 hour session timeout
+SESSION_COOKIE_AGE = 1209600  # 2 weeks session timeout
 SESSION_SAVE_EVERY_REQUEST = True  # Reset timer on each page view
 
 
