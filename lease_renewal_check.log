@@ -20,3 +20,19 @@ Watching for file changes with StatReloader
 "GET /friday_status_report/?max_comments=2 HTTP/1.1" 200 40855
 "GET /fsr/ HTTP/1.1" 200 101258
 "GET / HTTP/1.1" 200 14929
+Watching for file changes with StatReloader
+"GET /fsr/ HTTP/1.1" 200 101258
+"GET /fsr_details/3?from=fsr&search=&propcountry=&propname=&issuestatus= HTTP/1.1" 200 37542
+"POST /fsr_commit_status_change/ HTTP/1.1" 302 0
+"GET /fsr/?refresh=true HTTP/1.1" 200 101310
+"GET /fsr/ HTTP/1.1" 200 101310
+"GET /fsr_details/34?from=fsr&search=&propcountry=&propname=&issuestatus= HTTP/1.1" 200 35878
+"POST /fsr_commit_status_change/ HTTP/1.1" 302 0
+"GET /fsr/?refresh=true HTTP/1.1" 200 101362
+"GET /fsr/ HTTP/1.1" 200 101362
+"GET /friday_status_report/?max_comments=2 HTTP/1.1" 200 40633
+"GET /friday_status_report/?max_comments=2 HTTP/1.1" 200 40633
+"GET /fsr/ HTTP/1.1" 200 101362
+"GET /friday_status_report/?max_comments=2 HTTP/1.1" 200 42666
+"GET /fsr/ HTTP/1.1" 200 101362
+"GET /friday_status_report/?max_comments=2 HTTP/1.1" 200 42660

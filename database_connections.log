@@ -20,3 +20,23 @@ Starting request req_1758510700_27488: GET /friday_status_report/ (user: anonymo
 Request req_1758510700_27488 stats: duration=0.18s, total_queries=28, breakdown={'default': 28}, path=/friday_status_report/, user=anonymous
 Starting request req_1758510711_27488: GET /fsr/ (user: anonymous)
 Starting request req_1758510717_27488: GET / (user: anonymous)
+Enhanced DatabaseConnectionMiddleware initialized with threshold=100
+Starting request req_1758510790_33108: GET /fsr/ (user: anonymous)
+Starting request req_1758510801_33108: GET /fsr_details/3 (user: anonymous)
+Starting request req_1758510806_33108: POST /fsr_commit_status_change/ (user: anonymous)
+Starting request req_1758510806_33108: GET /fsr/ (user: anonymous)
+Starting request req_1758510806_33108: GET /fsr/ (user: anonymous)
+Starting request req_1758510811_33108: GET /fsr_details/34 (user: anonymous)
+Starting request req_1758510814_33108: POST /fsr_commit_status_change/ (user: anonymous)
+Starting request req_1758510814_33108: GET /fsr/ (user: anonymous)
+Starting request req_1758510814_33108: GET /fsr/ (user: anonymous)
+Starting request req_1758510819_33108: GET /friday_status_report/ (user: anonymous)
+Request req_1758510819_33108 stats: duration=0.18s, total_queries=28, breakdown={'default': 28}, path=/friday_status_report/, user=anonymous
+Starting request req_1758510832_33108: GET /friday_status_report/ (user: anonymous)
+Request req_1758510832_33108 stats: duration=0.22s, total_queries=28, breakdown={'default': 28}, path=/friday_status_report/, user=anonymous
+Starting request req_1758511091_33108: GET /fsr/ (user: anonymous)
+Starting request req_1758511095_33108: GET /friday_status_report/ (user: anonymous)
+Request req_1758511095_33108 stats: duration=0.21s, total_queries=28, breakdown={'default': 28}, path=/friday_status_report/, user=anonymous
+Starting request req_1758511201_33108: GET /fsr/ (user: anonymous)
+Starting request req_1758511204_33108: GET /friday_status_report/ (user: anonymous)
+Request req_1758511204_33108 stats: duration=0.16s, total_queries=28, breakdown={'default': 28}, path=/friday_status_report/, user=anonymous

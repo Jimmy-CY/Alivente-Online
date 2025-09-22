@@ -39,53 +39,63 @@
                 <div class="status-card">
                     <h3 class="status-title">STATUS: {{ status_group.status|upper }}</h3>
                     
-                    {% for property in status_group.property_issues %}
-                    <div class="property-card">
-                        <h4 class="property-name">{{ property.prop_name|upper }}</h4>
-                        
-                        {% for issue in property.issues %}
-                        <div class="issue-group">
-                            <!-- In your Friday status report template -->
-                            <a href="{% url 'fsr_details' issue.issues_id %}?from=status_report" class="issue-heading-link">
-                                <h5 class="issue-heading">
-                                    {{ issue.issues_heading }} 
-                                    <span class="issue-description">({{ issue.issues_description }})</span>
-                                    {% if issue.days_to_resolve and status_group.status == 'Resolved' %}
-                                        <span class="resolution-time">- Resolution: {{ issue.days_to_resolve }} day{{ issue.days_to_resolve|pluralize }}</span>
-                                    {% elif issue.days_open and status_group.status != 'Resolved' %}
-                                        <span class="days-open">- {{ issue.days_open }} day{{ issue.days_open|pluralize }} open</span>
-                                    {% elif issue.days_open == 0 and status_group.status != 'Resolved' %}
-                                        <span class="days-open">- New Issue</span>
+                    {% if status_group.property_issues %}
+                        {% for property in status_group.property_issues %}
+                        <div class="property-card">
+                            <h4 class="property-name">{{ property.prop_name|upper }}</h4>
+                            
+                            {% for issue in property.issues %}
+                            <div class="issue-group">
+                                <!-- In your Friday status report template -->
+                                <a href="{% url 'fsr_details' issue.issues_id %}?from=status_report" class="issue-heading-link">
+                                    <h5 class="issue-heading">
+                                        {{ issue.issues_heading }} 
+                                        <span class="issue-description">({{ issue.issues_description }})</span>
+                                        {% if issue.days_to_resolve and status_group.status == 'Resolved' %}
+                                            <span class="resolution-time">- Resolution: {{ issue.days_to_resolve }} day{{ issue.days_to_resolve|pluralize }}</span>
+                                        {% elif issue.days_open and status_group.status != 'Resolved' %}
+                                            <span class="days-open">- {{ issue.days_open }} day{{ issue.days_open|pluralize }} open</span>
+                                        {% elif issue.days_open == 0 and status_group.status != 'Resolved' %}
+                                            <span class="days-open">- New Issue</span>
+                                        {% endif %}
+                                    </h5>
+                                </a>
+                                <div class="issue-details">
+                                    {% for detail in issue.details %}
+                                    <div class="detail-row {% if detail.issues_details_user == 'SS' %}ss-comment{% else %}regular-comment{% endif %}">
+                                        <span class="detail-comment">
+                                            <span class="comment-date">{{ detail.issues_details_date|date:"Y-m-d" }}</span>
+                                            <span class="comment-user">({{ detail.issues_details_user }})</span>:
+                                            <span class="comment-text">{{ detail.issues_details_comment }}</span>
+                                        </span>
+                                    </div>
+                                    {% endfor %}
+                                    
+                                    <!-- Show indicator if there are more comments in summarized view -->
+                                    {% if is_summarized_report and issue.has_more_comments %}
+                                    <div class="more-comments-indicator">
+                                        <span class="text-muted">
+                                            <i class="fas fa-ellipsis-h"></i>
+                                            <a href="{% url 'fsr_details' issue.issues_id %}?from=status_report" class="view-all-link">
+                                                <em>View all comments</em>
+                                            </a>
+                                        </span>
+                                    </div>
                                     {% endif %}
-                                </h5>
-                            </a>
-                            <div class="issue-details">
-                                {% for detail in issue.details %}
-                                <div class="detail-row {% if detail.issues_details_user == 'SS' %}ss-comment{% else %}regular-comment{% endif %}">
-                                    <span class="detail-comment">
-                                        <span class="comment-date">{{ detail.issues_details_date|date:"Y-m-d" }}</span>
-                                        <span class="comment-user">({{ detail.issues_details_user }})</span>:
-                                        <span class="comment-text">{{ detail.issues_details_comment }}</span>
-                                    </span>
                                 </div>
-                                {% endfor %}
-                                
-                                <!-- Show indicator if there are more comments in summarized view -->
-                                {% if is_summarized_report and issue.has_more_comments %}
-                                <div class="more-comments-indicator">
-                                    <span class="text-muted">
-                                        <i class="fas fa-ellipsis-h"></i>
-                                        <a href="{% url 'fsr_details' issue.issues_id %}?from=status_report" class="view-all-link">
-                                            <em>View all comments</em>
-                                        </a>
-                                    </span>
-                                </div>
-                                {% endif %}
                             </div>
+                            {% endfor %}
                         </div>
                         {% endfor %}
-                    </div>
-                    {% endfor %}
+                    {% else %}
+                        <!-- No Issues for this Status -->
+                        <div class="no-status-issues">
+                            <div class="no-status-issues-content">
+                                <i class="fas fa-info-circle no-status-icon"></i>
+                                <span class="no-status-message">No issues to display for this period.</span>
+                            </div>
+                        </div>
+                    {% endif %}
                 </div>
                 {% endfor %}
             {% else %}
