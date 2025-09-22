@@ -36,3 +36,22 @@ Watching for file changes with StatReloader
 "GET /friday_status_report/?max_comments=2 HTTP/1.1" 200 42666
 "GET /fsr/ HTTP/1.1" 200 101362
 "GET /friday_status_report/?max_comments=2 HTTP/1.1" 200 42660
+Watching for file changes with StatReloader
+"GET /fsr/ HTTP/1.1" 200 101362
+"GET / HTTP/1.1" 200 14929
+"GET /fsr/ HTTP/1.1" 200 101362
+"GET /notifications/ HTTP/1.1" 200 31762
+"GET /notifications/ HTTP/1.1" 200 6086
+"GET / HTTP/1.1" 200 14929
+C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\middleware.py changed, reloading.
+Watching for file changes with StatReloader
+C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\mysite\settings.py changed, reloading.
+INFO 2025-09-22 06:42:55,601 Watching for file changes with StatReloader
+INFO 2025-09-22 06:43:01,878 "GET / HTTP/1.1" 200 14929
+INFO 2025-09-22 06:43:05,175 "GET /logout/ HTTP/1.1" 302 0
+INFO 2025-09-22 06:43:05,189 "GET / HTTP/1.1" 200 8244
+INFO 2025-09-22 06:43:09,040 "GET /login/ HTTP/1.1" 200 8913
+INFO 2025-09-22 06:43:16,896 "POST /login/ HTTP/1.1" 302 0
+INFO 2025-09-22 06:43:16,940 "GET / HTTP/1.1" 200 15690
+INFO 2025-09-22 06:43:19,891 "GET /fsr/ HTTP/1.1" 200 101362
+INFO 2025-09-22 06:43:23,608 "GET /friday_status_report/?max_comments=2 HTTP/1.1" 200 42660

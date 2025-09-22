@@ -58,7 +58,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
-    "pages.middleware.DatabaseConnectionMiddleware",  # Re-enabled with fixes
+    "pages.middleware.DatabaseConnectionMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -107,20 +107,15 @@ DATABASES = {
         "OPTIONS": {
             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
             'charset': 'utf8mb4',
-            'connect_timeout': 30,  # Reduced from 60 for faster timeouts
-            'read_timeout': 30,     # Reduced from 60
-            'write_timeout': 30,    # Reduced from 60
+            'connect_timeout': 60,
+            'read_timeout': 60,
+            'write_timeout': 60,
             'autocommit': True,
         },
-        'CONN_MAX_AGE': 0,  # Back to no connection pooling - good for middleware
+        'CONN_MAX_AGE': 0,  # Back to no connection pooling
         'ATOMIC_REQUESTS': False,
     }
 }
-
-# Database Connection Middleware Settings
-DB_CLEANUP_THRESHOLD = 50           # Clean connections after 50 queries (reduced from 100)
-DB_MAX_CONNECTION_AGE = 180         # Max connection age: 3 minutes (reduced from 300)
-DB_FORCE_CLEANUP_INTERVAL = 25      # Force cleanup every 25 requests (reduced from 50)
 
 # Cache configuration for sessions and performance
 #CACHES = {
@@ -188,40 +183,20 @@ AUTH_PASSWORD_VALIDATORS = [
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
-    'formatters': {
-        'verbose': {
-            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
-            'style': '{',
-        },
-        'simple': {
-            'format': '{levelname} {asctime} {message}',
-            'style': '{',
-        },
-    },
     'handlers': {
         'file': {
             'level': 'INFO',
             'class': 'logging.FileHandler',
             'filename': 'lease_renewal_check.log',
-            'formatter': 'simple',
         },
         'db_connections': {
             'level': 'INFO',
             'class': 'logging.FileHandler',
             'filename': 'database_connections.log',
-            'formatter': 'verbose',
         },
         'console': {
             'level': 'WARNING',
             'class': 'logging.StreamHandler',
-            'formatter': 'simple',
-        },
-        # Add a separate handler for middleware errors to make debugging easier
-        'middleware_errors': {
-            'level': 'ERROR',
-            'class': 'logging.FileHandler',
-            'filename': 'middleware_errors.log',
-            'formatter': 'verbose',
         },
     },
     'loggers': {
@@ -230,15 +205,10 @@ LOGGING = {
             'level': 'INFO',
             'propagate': True,
         },
-        'pages.middleware': {  # Your middleware logger
-            'handlers': ['db_connections', 'console', 'middleware_errors'],
+        'pages.middleware': {  # Replace 'your_project' with your actual project name
+            'handlers': ['db_connections', 'console'],
             'level': 'INFO',
             'propagate': False,
-        },
-        # Add root logger to catch any uncaught exceptions
-        'root': {
-            'handlers': ['console', 'middleware_errors'],
-            'level': 'WARNING',
         },
     },
 }
@@ -293,37 +263,3 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles') # where collectstatic puts f
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
-
-# Additional Performance and Security Settings
-# (These are optional but recommended for production)
-
-# Security settings for production
-if not DEBUG:
-    # Enable these for production
-    SECURE_SSL_REDIRECT = True
-    SECURE_HSTS_SECONDS = 31536000  # 1 year
-    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-    SECURE_HSTS_PRELOAD = True
-    SECURE_CONTENT_TYPE_NOSNIFF = True
-    SECURE_BROWSER_XSS_FILTER = True
-    
-    # Session security
-    SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE = True
-    SESSION_COOKIE_HTTPONLY = True
-    CSRF_COOKIE_HTTPONLY = True
-
-# Optional: Add connection pooling settings if you want to experiment later
-# (Keep these commented out for now since your middleware works with CONN_MAX_AGE = 0)
-"""
-# Alternative database configuration with connection pooling
-# Uncomment and test these only after middleware is working well
-DATABASES['default'].update({
-    'CONN_MAX_AGE': 60,  # Keep connections for 1 minute
-    'CONN_HEALTH_CHECKS': True,  # Check connection health
-    'OPTIONS': {
-        **DATABASES['default']['OPTIONS'],
-        'pool_recycle': 300,  # Recycle connections every 5 minutes
-    }
-})
-"""

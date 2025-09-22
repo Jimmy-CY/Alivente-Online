@@ -40,3 +40,21 @@ Request req_1758511095_33108 stats: duration=0.21s, total_queries=28, breakdown=
 Starting request req_1758511201_33108: GET /fsr/ (user: anonymous)
 Starting request req_1758511204_33108: GET /friday_status_report/ (user: anonymous)
 Request req_1758511204_33108 stats: duration=0.16s, total_queries=28, breakdown={'default': 28}, path=/friday_status_report/, user=anonymous
+Enhanced DatabaseConnectionMiddleware initialized with threshold=100
+Starting request req_1758511238_34032: GET /fsr/ (user: anonymous)
+Starting request req_1758511240_34032: GET / (user: anonymous)
+Starting request req_1758511254_34032: GET /fsr/ (user: anonymous)
+Starting request req_1758511259_34032: GET /notifications/ (user: anonymous)
+Starting request req_1758511259_34032: GET /notifications/ (user: anonymous)
+Starting request req_1758511261_34032: GET / (user: anonymous)
+Enhanced DatabaseConnectionMiddleware initialized with threshold=100
+INFO 2025-09-22 06:42:57,489 middleware 34588 2752 Enhanced DatabaseConnectionMiddleware initialized with threshold=50
+INFO 2025-09-22 06:43:01,656 middleware 34588 25152 Starting request req_1758512581_25152: GET / (user: anonymous)
+INFO 2025-09-22 06:43:05,162 middleware 34588 25152 Starting request req_1758512585_25152: GET /logout/ (user: anonymous)
+INFO 2025-09-22 06:43:05,175 middleware 34588 25152 Starting request req_1758512585_25152: GET / (user: anonymous)
+INFO 2025-09-22 06:43:09,011 middleware 34588 25152 Starting request req_1758512589_25152: GET /login/ (user: anonymous)
+INFO 2025-09-22 06:43:16,177 middleware 34588 25152 Starting request req_1758512596_25152: POST /login/ (user: anonymous)
+INFO 2025-09-22 06:43:16,901 middleware 34588 25152 Starting request req_1758512596_25152: GET / (user: anonymous)
+INFO 2025-09-22 06:43:19,851 middleware 34588 25152 Starting request req_1758512599_25152: GET /fsr/ (user: anonymous)
+INFO 2025-09-22 06:43:23,441 middleware 34588 25152 Starting request req_1758512603_25152: GET /friday_status_report/ (user: anonymous)
+INFO 2025-09-22 06:43:23,608 middleware 34588 25152 Request req_1758512603_25152 stats: duration=0.17s, total_queries=28, breakdown={'default': 28}, path=/friday_status_report/, user=anonymous
