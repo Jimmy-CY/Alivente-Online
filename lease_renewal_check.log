@@ -55,3 +55,16 @@ INFO 2025-09-22 06:43:16,896 "POST /login/ HTTP/1.1" 302 0
 INFO 2025-09-22 06:43:16,940 "GET / HTTP/1.1" 200 15690
 INFO 2025-09-22 06:43:19,891 "GET /fsr/ HTTP/1.1" 200 101362
 INFO 2025-09-22 06:43:23,608 "GET /friday_status_report/?max_comments=2 HTTP/1.1" 200 42660
+INFO 2025-09-22 06:44:04,189 Watching for file changes with StatReloader
+INFO 2025-09-22 06:44:08,587 "GET /fsr/ HTTP/1.1" 200 101362
+INFO 2025-09-22 06:44:10,276 "GET / HTTP/1.1" 200 14929
+INFO 2025-09-22 06:44:12,824 "GET /finance/ HTTP/1.1" 200 16427
+INFO 2025-09-22 06:44:14,240 "GET /finance_pl_act/ HTTP/1.1" 200 127829
+INFO 2025-09-22 06:44:16,993 "GET /finance_pl_act/?year=2025&properties=1&properties=2&properties=3&properties=4&properties=5&properties=7&properties=9&properties=10&properties=11&properties=12 HTTP/1.1" 200 132320
+INFO 2025-09-22 06:44:18,851 "GET /act_expense_view/?year=2025&month=5&from_finance_pl_act=true&properties=1,2,3,4,5,7,9,10,11,12 HTTP/1.1" 200 52425
+INFO 2025-09-22 06:44:21,222 "GET /media/expense_docs/pindarou-20250521-Invoice.pdf HTTP/1.1" 200 461728
+INFO 2025-09-22 06:44:26,426 "GET /finance/ HTTP/1.1" 200 16427
+INFO 2025-09-22 06:44:28,157 "GET /financial-indicators/ HTTP/1.1" 200 52206
+INFO 2025-09-22 06:44:28,375 "GET /financial-indicators/ HTTP/1.1" 200 2731
+INFO 2025-09-22 10:30:05,342 "GET /finance/ HTTP/1.1" 200 16427
+INFO 2025-09-22 10:30:06,763 "GET / HTTP/1.1" 200 14929

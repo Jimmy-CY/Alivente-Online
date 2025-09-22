@@ -58,3 +58,19 @@ INFO 2025-09-22 06:43:16,901 middleware 34588 25152 Starting request req_1758512
 INFO 2025-09-22 06:43:19,851 middleware 34588 25152 Starting request req_1758512599_25152: GET /fsr/ (user: anonymous)
 INFO 2025-09-22 06:43:23,441 middleware 34588 25152 Starting request req_1758512603_25152: GET /friday_status_report/ (user: anonymous)
 INFO 2025-09-22 06:43:23,608 middleware 34588 25152 Request req_1758512603_25152 stats: duration=0.17s, total_queries=28, breakdown={'default': 28}, path=/friday_status_report/, user=anonymous
+INFO 2025-09-22 06:44:06,130 middleware 18372 33252 Enhanced DatabaseConnectionMiddleware initialized with threshold=50
+INFO 2025-09-22 06:44:08,324 middleware 18372 11376 Starting request req_1758512648_11376: GET /fsr/ (user: anonymous)
+INFO 2025-09-22 06:44:10,256 middleware 18372 11376 Starting request req_1758512650_11376: GET / (user: anonymous)
+INFO 2025-09-22 06:44:12,782 middleware 18372 11376 Starting request req_1758512652_11376: GET /finance/ (user: anonymous)
+INFO 2025-09-22 06:44:14,052 middleware 18372 11376 Starting request req_1758512654_11376: GET /finance_pl_act/ (user: anonymous)
+INFO 2025-09-22 06:44:14,240 middleware 18372 11376 Request req_1758512654_11376 stats: duration=0.19s, total_queries=43, breakdown={'default': 43}, path=/finance_pl_act/, user=anonymous
+INFO 2025-09-22 06:44:16,875 middleware 18372 11376 Starting request req_1758512656_11376: GET /finance_pl_act/ (user: anonymous)
+INFO 2025-09-22 06:44:16,993 middleware 18372 11376 Request req_1758512656_11376 stats: duration=0.12s, total_queries=44, breakdown={'default': 44}, path=/finance_pl_act/, user=anonymous
+INFO 2025-09-22 06:44:18,767 middleware 18372 11376 Starting request req_1758512658_11376: GET /act_expense_view/ (user: anonymous)
+INFO 2025-09-22 06:44:21,161 middleware 18372 11376 Starting request req_1758512661_11376: GET /media/expense_docs/pindarou-20250521-Invoice.pdf (user: anonymous)
+INFO 2025-09-22 06:44:26,405 middleware 18372 11376 Starting request req_1758512666_11376: GET /finance/ (user: anonymous)
+INFO 2025-09-22 06:44:28,100 middleware 18372 11376 Starting request req_1758512668_11376: GET /financial-indicators/ (user: anonymous)
+INFO 2025-09-22 06:44:28,307 middleware 18372 11376 Starting request req_1758512668_11376: GET /financial-indicators/ (user: anonymous)
+INFO 2025-09-22 06:44:28,375 middleware 18372 11376 Request req_1758512668_11376 stats: duration=0.07s, total_queries=34, breakdown={'default': 34}, path=/financial-indicators/, user=anonymous
+INFO 2025-09-22 10:30:05,300 middleware 18372 6888 Starting request req_1758526205_6888: GET /finance/ (user: anonymous)
+INFO 2025-09-22 10:30:06,726 middleware 18372 6888 Starting request req_1758526206_6888: GET / (user: anonymous)
