@@ -13,3 +13,10 @@ Starting request req_1758468845_14368: GET /fsr/ (user: anonymous)
 Starting request req_1758468847_14368: GET /fsr_details/2 (user: anonymous)
 Starting request req_1758468856_14368: GET /fsr/ (user: anonymous)
 Starting request req_1758468856_14368: GET /fsr/ (user: anonymous)
+Enhanced DatabaseConnectionMiddleware initialized with threshold=100
+Starting request req_1758510691_27488: GET / (user: anonymous)
+Starting request req_1758510693_27488: GET /fsr/ (user: anonymous)
+Starting request req_1758510700_27488: GET /friday_status_report/ (user: anonymous)
+Request req_1758510700_27488 stats: duration=0.18s, total_queries=28, breakdown={'default': 28}, path=/friday_status_report/, user=anonymous
+Starting request req_1758510711_27488: GET /fsr/ (user: anonymous)
+Starting request req_1758510717_27488: GET / (user: anonymous)

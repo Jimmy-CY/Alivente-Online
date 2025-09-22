@@ -32,60 +32,77 @@
             </div>
         </div>
         <div class="report-body">
-            <!-- Issues Section -->
-            {% for status_group in status_groups %}
-            <div class="status-card">
-                <h3 class="status-title">STATUS: {{ status_group.status|upper }}</h3>
-                
-                {% for property in status_group.property_issues %}
-                <div class="property-card">
-                    <h4 class="property-name">{{ property.prop_name|upper }}</h4>
+            <!-- Check if there are any issues to display -->
+            {% if status_groups %}
+                <!-- Issues Section -->
+                {% for status_group in status_groups %}
+                <div class="status-card">
+                    <h3 class="status-title">STATUS: {{ status_group.status|upper }}</h3>
                     
-                    {% for issue in property.issues %}
-                    <div class="issue-group">
-                        <!-- In your Friday status report template -->
-                        <a href="{% url 'fsr_details' issue.issues_id %}?from=status_report" class="issue-heading-link">
-                            <h5 class="issue-heading">
-                                {{ issue.issues_heading }} 
-                                <span class="issue-description">({{ issue.issues_description }})</span>
-                                {% if issue.days_to_resolve and status_group.status == 'Resolved' %}
-                                    <span class="resolution-time">- Resolution: {{ issue.days_to_resolve }} day{{ issue.days_to_resolve|pluralize }}</span>
-                                {% elif issue.days_open and status_group.status != 'Resolved' %}
-                                    <span class="days-open">- {{ issue.days_open }} day{{ issue.days_open|pluralize }} open</span>
-                                {% elif issue.days_open == 0 and status_group.status != 'Resolved' %}
-                                    <span class="days-open">- New Issue</span>
+                    {% for property in status_group.property_issues %}
+                    <div class="property-card">
+                        <h4 class="property-name">{{ property.prop_name|upper }}</h4>
+                        
+                        {% for issue in property.issues %}
+                        <div class="issue-group">
+                            <!-- In your Friday status report template -->
+                            <a href="{% url 'fsr_details' issue.issues_id %}?from=status_report" class="issue-heading-link">
+                                <h5 class="issue-heading">
+                                    {{ issue.issues_heading }} 
+                                    <span class="issue-description">({{ issue.issues_description }})</span>
+                                    {% if issue.days_to_resolve and status_group.status == 'Resolved' %}
+                                        <span class="resolution-time">- Resolution: {{ issue.days_to_resolve }} day{{ issue.days_to_resolve|pluralize }}</span>
+                                    {% elif issue.days_open and status_group.status != 'Resolved' %}
+                                        <span class="days-open">- {{ issue.days_open }} day{{ issue.days_open|pluralize }} open</span>
+                                    {% elif issue.days_open == 0 and status_group.status != 'Resolved' %}
+                                        <span class="days-open">- New Issue</span>
+                                    {% endif %}
+                                </h5>
+                            </a>
+                            <div class="issue-details">
+                                {% for detail in issue.details %}
+                                <div class="detail-row {% if detail.issues_details_user == 'SS' %}ss-comment{% else %}regular-comment{% endif %}">
+                                    <span class="detail-comment">
+                                        <span class="comment-date">{{ detail.issues_details_date|date:"Y-m-d" }}</span>
+                                        <span class="comment-user">({{ detail.issues_details_user }})</span>:
+                                        <span class="comment-text">{{ detail.issues_details_comment }}</span>
+                                    </span>
+                                </div>
+                                {% endfor %}
+                                
+                                <!-- Show indicator if there are more comments in summarized view -->
+                                {% if is_summarized_report and issue.has_more_comments %}
+                                <div class="more-comments-indicator">
+                                    <span class="text-muted">
+                                        <i class="fas fa-ellipsis-h"></i>
+                                        <a href="{% url 'fsr_details' issue.issues_id %}?from=status_report" class="view-all-link">
+                                            <em>View all comments</em>
+                                        </a>
+                                    </span>
+                                </div>
                                 {% endif %}
-                            </h5>
-                        </a>
-                        <div class="issue-details">
-                            {% for detail in issue.details %}
-                            <div class="detail-row {% if detail.issues_details_user == 'SS' %}ss-comment{% else %}regular-comment{% endif %}">
-                                <span class="detail-comment">
-                                    <span class="comment-date">{{ detail.issues_details_date|date:"Y-m-d" }}</span>
-                                    <span class="comment-user">({{ detail.issues_details_user }})</span>:
-                                    <span class="comment-text">{{ detail.issues_details_comment }}</span>
-                                </span>
                             </div>
-                            {% endfor %}
-                            
-                            <!-- Show indicator if there are more comments in summarized view -->
-                            {% if is_summarized_report and issue.has_more_comments %}
-                            <div class="more-comments-indicator">
-                                <span class="text-muted">
-                                    <i class="fas fa-ellipsis-h"></i>
-                                    <a href="{% url 'fsr_details' issue.issues_id %}?from=status_report" class="view-all-link">
-                                        <em>View all comments</em>
-                                    </a>
-                                </span>
-                            </div>
-                            {% endif %}
                         </div>
+                        {% endfor %}
                     </div>
                     {% endfor %}
                 </div>
                 {% endfor %}
-            </div>
-            {% endfor %}
+            {% else %}
+                <!-- No Issues Message -->
+                <div class="no-issues-container">
+                    <div class="no-issues-card">
+                        <div class="no-issues-icon">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <h3 class="no-issues-title">No Issues to Display</h3>
+                        <p class="no-issues-message">
+                            There are no issues to be displayed for this period.<br>
+                            All properties are operating without any reported issues.
+                        </p>
+                    </div>
+                </div>
+            {% endif %}
         </div>
     </div>
 </div>
@@ -156,6 +173,45 @@
     .badge-success {
         background-color: #28a745;
         color: white;
+    }
+    
+    /* No Issues Styling */
+    .no-issues-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 300px;
+        width: 100%;
+    }
+    
+    .no-issues-card {
+        text-align: center;
+        padding: 40px;
+        background-color: #f8f9fa;
+        border-radius: 12px;
+        border: 2px dashed #28a745;
+        max-width: 500px;
+        width: 100%;
+    }
+    
+    .no-issues-icon {
+        font-size: 4rem;
+        color: #28a745;
+        margin-bottom: 20px;
+    }
+    
+    .no-issues-title {
+        font-size: 1.5rem;
+        color: #2c3e50;
+        margin-bottom: 15px;
+        font-weight: 600;
+    }
+    
+    .no-issues-message {
+        font-size: 1.1rem;
+        color: #6c757d;
+        line-height: 1.6;
+        margin: 0;
     }
     
     .status-card {
@@ -340,6 +396,15 @@
             display: none;
         }
         
+        .no-issues-card {
+            border: 1px solid #28a745;
+            background-color: transparent;
+        }
+        
+        .no-issues-icon {
+            color: #333;
+        }
+        
         /* Print styles for comments */
         .detail-row.ss-comment {
             background-color: #f5f5f5 !important;
@@ -371,6 +436,22 @@
         .detail-row {
             padding: 4px 8px;
             margin-bottom: 6px;
+        }
+        
+        .no-issues-card {
+            padding: 30px 20px;
+        }
+        
+        .no-issues-icon {
+            font-size: 3rem;
+        }
+        
+        .no-issues-title {
+            font-size: 1.3rem;
+        }
+        
+        .no-issues-message {
+            font-size: 1rem;
         }
     }
 </style>

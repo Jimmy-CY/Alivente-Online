@@ -14,3 +14,9 @@ Not Found: /accounts/login/
 "GET /fsr_details/2?from=fsr&search=&propcountry=&propname=&issuestatus= HTTP/1.1" 200 36491
 "GET /fsr/?refresh=true HTTP/1.1" 200 101258
 "GET /fsr/ HTTP/1.1" 200 101258
+Watching for file changes with StatReloader
+"GET / HTTP/1.1" 200 14929
+"GET /fsr/ HTTP/1.1" 200 101258
+"GET /friday_status_report/?max_comments=2 HTTP/1.1" 200 40855
+"GET /fsr/ HTTP/1.1" 200 101258
+"GET / HTTP/1.1" 200 14929
