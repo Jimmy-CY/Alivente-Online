@@ -458,12 +458,88 @@
 .highlighted-column {
     background: #e3f2fd !important;
     font-weight: 600;
+    border-left: 3px solid #17a2b8;
+    border-right: 3px solid #17a2b8;
 }
 
 .selection-counter {
     font-size: 14px;
     color: #6c757d;
     margin-top: 10px;
+}
+
+/* Sortable table header styles */
+.sortable-header {
+    cursor: pointer;
+    position: relative;
+    user-select: none;
+    transition: all 0.2s ease;
+    padding: 12px 25px 12px 15px; /* Add right padding for sort icon */
+}
+
+.sortable-header:hover {
+    background-color: #e9ecef !important;
+    color: #17a2b8;
+}
+
+.sortable-header.sorted-asc,
+.sortable-header.sorted-desc {
+    background-color: #e3f2fd !important;
+    color: #17a2b8;
+    font-weight: 700;
+}
+
+/* Sort icon styles */
+.sort-icon {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 12px;
+    opacity: 0.5;
+    transition: all 0.2s ease;
+}
+
+.sortable-header:hover .sort-icon {
+    opacity: 0.8;
+}
+
+.sortable-header.sorted-asc .sort-icon,
+.sortable-header.sorted-desc .sort-icon {
+    opacity: 1;
+    color: #17a2b8;
+}
+
+/* Ensure the sort icons use Font Awesome */
+.sort-icon.fa-sort-up::before {
+    content: "\f0de";
+}
+
+.sort-icon.fa-sort-down::before {
+    content: "\f0dd";
+}
+
+.sort-icon.fa-sort::before {
+    content: "\f0dc";
+}
+
+/* Enhanced highlighted column styles */
+.highlighted-column {
+    background-color: #e3f2fd !important;
+    font-weight: 600;
+    border-left: 3px solid #17a2b8;
+    border-right: 3px solid #17a2b8;
+}
+
+/* Table row hover effects with highlighted columns */
+.data-table tbody tr:hover .highlighted-column {
+    background-color: #bbdefb !important;
+}
+
+.average-row .highlighted-column {
+    background-color: #138496 !important;
+    border-left: 3px solid #ffffff;
+    border-right: 3px solid #ffffff;
 }
 
 /* Modal Styles */
@@ -674,6 +750,16 @@
     .modal-xl {
         max-width: 95%;
     }
+    
+    .sortable-header {
+        padding: 8px 20px 8px 6px;
+        font-size: 12px;
+    }
+    
+    .sort-icon {
+        right: 4px;
+        font-size: 10px;
+    }
 }
 
 @media (max-width: 576px) {
@@ -693,6 +779,16 @@
     .mini-chart-container {
         height: 180px;
     }
+    
+    .sortable-header {
+        padding: 6px 18px 6px 4px;
+        font-size: 11px;
+    }
+    
+    .sort-icon {
+        right: 2px;
+        font-size: 9px;
+    }
 }
 </style>
 
@@ -711,6 +807,12 @@ class PropertyFinancialDashboard {
         this.selectedIndicator = null; // No default selection - no highlighting
         this.charts = {}; // Store multiple charts
         
+        // Add sorting state
+        this.sortConfig = {
+            column: null,
+            direction: 'asc' // 'asc' or 'desc'
+        };
+        
         // Initialize all properties as selected
         this.properties.forEach(prop => {
             this.selectedProperties[prop.id] = true;
@@ -723,7 +825,8 @@ class PropertyFinancialDashboard {
                 icon: 'fas fa-chart-line', 
                 color: '#17a2b8', 
                 format: (val) => `${val.toFixed(2)}%`,
-                description: 'Gross Return on Investment measures the total return before expenses. Higher values indicate better performance.'
+                description: 'Gross Return on Investment measures the total return before expenses. Higher values indicate better performance.',
+                sortable: true
             },
             { 
                 key: 'netROI', 
@@ -731,7 +834,8 @@ class PropertyFinancialDashboard {
                 icon: 'fas fa-bullseye', 
                 color: '#28a745', 
                 format: (val) => `${val.toFixed(2)}%`,
-                description: 'Net Return on Investment measures the return after all expenses. Higher values indicate better profitability.'
+                description: 'Net Return on Investment measures the return after all expenses. Higher values indicate better profitability.',
+                sortable: true
             },
             { 
                 key: 'expensesToRevenue', 
@@ -739,7 +843,8 @@ class PropertyFinancialDashboard {
                 icon: 'fas fa-chart-pie', 
                 color: '#dc3545', 
                 format: (val) => `${val.toFixed(2)}%`,
-                description: 'Percentage of revenue consumed by expenses. Lower values indicate better efficiency.'
+                description: 'Percentage of revenue consumed by expenses. Lower values indicate better efficiency.',
+                sortable: true
             },
             { 
                 key: 'rentPerSqm', 
@@ -747,7 +852,8 @@ class PropertyFinancialDashboard {
                 icon: 'fas fa-euro-sign', 
                 color: '#ffc107', 
                 format: (val) => `€${val.toFixed(2)}`,
-                description: 'Rental income per square meter. Higher values indicate better space utilization.'
+                description: 'Rental income per square meter. Higher values indicate better space utilization.',
+                sortable: true
             },
             { 
                 key: 'valueIncrease', 
@@ -755,7 +861,8 @@ class PropertyFinancialDashboard {
                 icon: 'fas fa-chart-bar', 
                 color: '#6f42c1', 
                 format: (val) => `${val.toFixed(2)}%`,
-                description: 'Property value appreciation over time. Higher values indicate better capital growth.'
+                description: 'Property value appreciation over time. Higher values indicate better capital growth.',
+                sortable: true
             }
         ];
         
@@ -868,16 +975,20 @@ class PropertyFinancialDashboard {
                                 <tr>
                                     <th>Active Property</th>
                                     ${this.indicators.map(indicator => 
-                                        `<th>${indicator.label}</th>`
+                                        `<th class="sortable-header ${this.sortConfig.column === indicator.key ? 'sorted-' + this.sortConfig.direction : ''}" 
+                                            data-column="${indicator.key}">
+                                            ${indicator.label}
+                                            <i class="fas fa-sort sort-icon ${this.getSortIconClass(indicator.key)}"></i>
+                                        </th>`
                                     ).join('')}
                                 </tr>
                             </thead>
                             <tbody>
-                                ${this.getSelectedProperties().map(property => `
+                                ${this.getSortedProperties().map(property => `
                                     <tr>
                                         <td>${property.name}</td>
                                         ${this.indicators.map(indicator => 
-                                            `<td>${indicator.format(property[indicator.key])}</td>`
+                                            `<td class="${this.sortConfig.column === indicator.key ? 'highlighted-column' : ''}">${indicator.format(property[indicator.key])}</td>`
                                         ).join('')}
                                     </tr>
                                 `).join('')}
@@ -886,7 +997,7 @@ class PropertyFinancialDashboard {
                                 <tr class="average-row">
                                     <td>PORTFOLIO TOTALS</td>
                                     ${this.indicators.map(indicator => 
-                                        `<td>${indicator.format(this.portfolioIndicators[indicator.key] || 0)}</td>`
+                                        `<td class="${this.sortConfig.column === indicator.key ? 'highlighted-column' : ''}">${indicator.format(this.portfolioIndicators[indicator.key] || 0)}</td>`
                                     ).join('')}
                                 </tr>
                             </tbody>
@@ -900,6 +1011,53 @@ class PropertyFinancialDashboard {
                 `}
             </div>
         `;
+    }
+
+    // Add method to get sorted properties
+    getSortedProperties() {
+        const selectedProps = this.getSelectedProperties();
+        
+        if (!this.sortConfig.column) {
+            return selectedProps; // Return unsorted if no column selected
+        }
+        
+        return [...selectedProps].sort((a, b) => {
+            const aValue = a[this.sortConfig.column];
+            const bValue = b[this.sortConfig.column];
+            
+            let comparison = 0;
+            if (aValue < bValue) {
+                comparison = -1;
+            } else if (aValue > bValue) {
+                comparison = 1;
+            }
+            
+            return this.sortConfig.direction === 'desc' ? comparison * -1 : comparison;
+        });
+    }
+
+    // Add method to get sort icon class
+    getSortIconClass(column) {
+        if (this.sortConfig.column !== column) {
+            return ''; // No specific sort icon
+        }
+        
+        return this.sortConfig.direction === 'asc' ? 'fa-sort-up' : 'fa-sort-down';
+    }
+
+    // Add method to handle column sorting
+    handleColumnSort(column) {
+        if (this.sortConfig.column === column) {
+            // Toggle direction if same column
+            this.sortConfig.direction = this.sortConfig.direction === 'asc' ? 'desc' : 'asc';
+        } else {
+            // New column, start with ascending
+            this.sortConfig.column = column;
+            this.sortConfig.direction = 'asc';
+        }
+        
+        // Re-render to update the table
+        this.render();
     }
     
     attachEventListeners() {
@@ -943,6 +1101,14 @@ class PropertyFinancialDashboard {
                 this.render();
             });
         }
+
+        // Add sortable column headers event listeners
+        document.querySelectorAll('.sortable-header').forEach(header => {
+            header.addEventListener('click', () => {
+                const column = header.dataset.column;
+                this.handleColumnSort(column);
+            });
+        });
     }
     
     openIndicatorModal(indicatorKey) {

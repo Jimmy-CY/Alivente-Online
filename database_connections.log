@@ -74,3 +74,12 @@ INFO 2025-09-22 06:44:28,307 middleware 18372 11376 Starting request req_1758512
 INFO 2025-09-22 06:44:28,375 middleware 18372 11376 Request req_1758512668_11376 stats: duration=0.07s, total_queries=34, breakdown={'default': 34}, path=/financial-indicators/, user=anonymous
 INFO 2025-09-22 10:30:05,300 middleware 18372 6888 Starting request req_1758526205_6888: GET /finance/ (user: anonymous)
 INFO 2025-09-22 10:30:06,726 middleware 18372 6888 Starting request req_1758526206_6888: GET / (user: anonymous)
+INFO 2025-09-22 10:54:27,096 middleware 32092 19712 Enhanced DatabaseConnectionMiddleware initialized with threshold=50
+INFO 2025-09-22 10:54:48,531 middleware 32092 8812 Starting request req_1758527688_8812: GET /fsr/ (user: anonymous)
+INFO 2025-09-22 10:54:50,706 middleware 32092 8812 Starting request req_1758527690_8812: GET /notifications/ (user: anonymous)
+INFO 2025-09-22 10:54:50,847 middleware 32092 8812 Starting request req_1758527690_8812: GET /notifications/ (user: anonymous)
+INFO 2025-09-23 09:08:41,256 middleware 32092 12824 Starting request req_1758607721_12824: GET / (user: anonymous)
+INFO 2025-09-23 09:08:45,066 middleware 32092 12824 Starting request req_1758607725_12824: GET /finance/ (user: anonymous)
+INFO 2025-09-23 09:08:46,501 middleware 32092 12824 Starting request req_1758607726_12824: GET /financial-indicators/ (user: anonymous)
+INFO 2025-09-23 09:08:46,675 middleware 32092 12824 Starting request req_1758607726_12824: GET /financial-indicators/ (user: anonymous)
+INFO 2025-09-23 09:08:46,727 middleware 32092 12824 Request req_1758607726_12824 stats: duration=0.05s, total_queries=34, breakdown={'default': 34}, path=/financial-indicators/, user=anonymous
