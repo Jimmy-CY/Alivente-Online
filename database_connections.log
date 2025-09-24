@@ -463,3 +463,22 @@ INFO 2025-09-24 11:10:05,561 middleware 17852 13576 Force cleanup completed. Pre
 INFO 2025-09-24 11:10:06,283 middleware 17852 13576 Starting request req_1758701406_13576: GET / (user: anonymous)
 INFO 2025-09-24 11:10:09,999 middleware 17852 13576 Starting request req_1758701409_13576: GET /properties/ (user: anonymous)
 INFO 2025-09-24 11:33:41,774 middleware 40036 40736 Enhanced DatabaseConnectionMiddleware initialized with threshold=50
+INFO 2025-09-24 11:34:22,118 middleware 984 37724 Enhanced DatabaseConnectionMiddleware initialized with threshold=50
+INFO 2025-09-24 11:34:25,161 middleware 984 41596 Starting request req_1758702865_41596: GET / (user: anonymous)
+INFO 2025-09-24 11:34:27,578 middleware 984 41596 Starting request req_1758702867_41596: GET /properties/ (user: anonymous)
+INFO 2025-09-24 11:34:36,155 middleware 984 41596 Starting request req_1758702876_41596: GET /properties/map/ (user: anonymous)
+INFO 2025-09-24 11:34:38,395 middleware 984 41596 Starting request req_1758702878_41596: GET /properties/ (user: anonymous)
+INFO 2025-09-24 11:38:46,827 middleware 984 41596 Starting request req_1758703126_41596: GET / (user: anonymous)
+INFO 2025-09-24 11:39:14,826 middleware 984 41596 Starting request req_1758703154_41596: GET /admin/ (user: anonymous)
+INFO 2025-09-24 11:39:14,843 middleware 984 41596 Starting request req_1758703154_41596: GET /admin/login/ (user: anonymous)
+INFO 2025-09-24 11:39:19,379 middleware 984 41596 Starting request req_1758703159_41596: POST /admin/login/ (user: anonymous)
+INFO 2025-09-24 11:39:20,017 middleware 984 41596 Starting request req_1758703160_41596: GET /admin/ (user: anonymous)
+INFO 2025-09-24 11:39:22,020 middleware 984 41596 Starting request req_1758703162_41596: GET /admin/auth/group/ (user: anonymous)
+INFO 2025-09-24 11:39:22,202 middleware 984 41596 Starting request req_1758703162_41596: GET /admin/jsi18n/ (user: anonymous)
+INFO 2025-09-24 11:39:24,574 middleware 984 41596 Starting request req_1758703164_41596: GET /admin/auth/group/1/change/ (user: anonymous)
+INFO 2025-09-24 11:39:24,727 middleware 984 41596 Starting request req_1758703164_41596: GET /admin/jsi18n/ (user: anonymous)
+INFO 2025-09-24 11:44:30,693 middleware 984 37884 Starting request req_1758703470_37884: GET /admin/auth/group/ (user: anonymous)
+INFO 2025-09-24 11:44:31,436 middleware 984 37884 Starting request req_1758703471_37884: GET /admin/ (user: anonymous)
+INFO 2025-09-24 11:44:32,187 middleware 984 37884 Starting request req_1758703472_37884: GET /admin/login/ (user: anonymous)
+INFO 2025-09-24 11:44:32,193 middleware 984 37884 Starting request req_1758703472_37884: GET /admin/ (user: anonymous)
+INFO 2025-09-24 11:53:17,508 middleware 32340 9564 Enhanced DatabaseConnectionMiddleware initialized with threshold=50

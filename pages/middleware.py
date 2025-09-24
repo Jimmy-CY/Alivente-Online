@@ -615,6 +615,7 @@ class ModuleAccessMiddleware(MiddlewareMixin):
             'property_management_dashboard': 'auth.can_access_dashboard',
             'act_expenses_all': 'auth.can_access_expenses',
             'petty_cash': 'auth.can_access_petty_cash',
+            'invoices': 'auth.can_access_invoices',
         }
         
         for pattern, permission in exact_matches.items():
@@ -627,9 +628,9 @@ class ModuleAccessMiddleware(MiddlewareMixin):
             'tenant': 'auth.can_access_tenants',
             'suppliers': 'auth.can_access_suppliers',
             'fsr': 'auth.can_access_fsr',
-            'invoices': 'auth.can_access_invoices',
             'finance': 'auth.can_access_financials',
-            'projects': 'auth.can_access_projects',
+            'projects': 'auth.can_access_projects',  # This will catch /projects/
+            'project': 'auth.can_access_projects',   # This will catch /project_gantt/, etc.
         }
         
         for pattern, permission in substring_matches.items():

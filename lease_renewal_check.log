@@ -302,3 +302,24 @@ INFO 2025-09-24 11:10:10,089 "GET /properties/ HTTP/1.1" 200 57058
 INFO 2025-09-24 11:30:05,660 Watching for file changes with StatReloader
 INFO 2025-09-24 11:33:38,515 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\urls.py changed, reloading.
 INFO 2025-09-24 11:33:39,576 Watching for file changes with StatReloader
+INFO 2025-09-24 11:34:20,093 Watching for file changes with StatReloader
+INFO 2025-09-24 11:34:25,451 "GET / HTTP/1.1" 200 14923
+INFO 2025-09-24 11:34:27,615 "GET /properties/ HTTP/1.1" 200 57058
+INFO 2025-09-24 11:34:36,229 "GET /properties/map/ HTTP/1.1" 200 26712
+INFO 2025-09-24 11:34:38,429 "GET /properties/ HTTP/1.1" 200 57058
+INFO 2025-09-24 11:38:46,846 "GET / HTTP/1.1" 200 14923
+INFO 2025-09-24 11:39:14,843 "GET /admin/ HTTP/1.1" 302 0
+INFO 2025-09-24 11:39:15,019 "GET /admin/login/?next=/admin/ HTTP/1.1" 200 3683
+INFO 2025-09-24 11:39:15,104 "GET /static/admin/css/login.css HTTP/1.1" 200 951
+INFO 2025-09-24 11:39:20,012 "POST /admin/login/?next=/admin/ HTTP/1.1" 302 0
+INFO 2025-09-24 11:39:20,102 "GET /admin/ HTTP/1.1" 200 18825
+INFO 2025-09-24 11:39:22,162 "GET /admin/auth/group/ HTTP/1.1" 200 16391
+INFO 2025-09-24 11:39:22,259 "GET /admin/jsi18n/ HTTP/1.1" 200 3342
+INFO 2025-09-24 11:39:24,696 "GET /admin/auth/group/1/change/ HTTP/1.1" 200 26639
+INFO 2025-09-24 11:39:24,736 "GET /admin/jsi18n/ HTTP/1.1" 200 3342
+INFO 2025-09-24 11:44:30,719 "GET /admin/auth/group/ HTTP/1.1" 200 16391
+INFO 2025-09-24 11:44:31,460 "GET /admin/ HTTP/1.1" 200 18825
+INFO 2025-09-24 11:44:32,193 "GET /admin/login/?next=/admin/ HTTP/1.1" 302 0
+INFO 2025-09-24 11:44:32,237 "GET /admin/ HTTP/1.1" 200 18825
+INFO 2025-09-24 11:53:13,680 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\middleware.py changed, reloading.
+INFO 2025-09-24 11:53:14,875 Watching for file changes with StatReloader
