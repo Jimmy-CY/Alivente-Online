@@ -23,6 +23,7 @@ urlpatterns = [
     path('lease/<int:tenant_id>/', views.lease_agreement_report, name='lease_agreement_report'),
     path('lease/<str:filename>/view/', views.serve_lease, name='serve_lease'),
     path('upload_lease_agreement/', views.upload_lease_agreement, name='upload_lease_agreement'),
+    path('setup-permissions/', setup_permissions, name='setup_permissions'),
 
     #
     #Reports - Dashboard

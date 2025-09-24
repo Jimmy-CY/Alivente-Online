@@ -428,3 +428,37 @@ INFO 2025-09-24 09:09:04,608 middleware 41280 16444 Starting request req_1758694
 WARNING 2025-09-24 09:09:04,632 middleware 41280 16444 User StellaSimi denied access to invoices/ (missing permission: auth.can_access_invoices)
 INFO 2025-09-24 09:11:24,446 middleware 41304 25856 Enhanced DatabaseConnectionMiddleware initialized with threshold=50
 INFO 2025-09-24 09:11:31,713 middleware 41304 39740 Starting request req_1758694291_39740: GET /act_expense_all/ (user: anonymous)
+INFO 2025-09-24 09:12:56,531 middleware 17852 41116 Enhanced DatabaseConnectionMiddleware initialized with threshold=50
+INFO 2025-09-24 09:13:23,897 middleware 17852 24676 Starting request req_1758694403_24676: GET /act_expense_all/ (user: anonymous)
+INFO 2025-09-24 09:13:27,859 middleware 17852 24676 Starting request req_1758694407_24676: GET / (user: anonymous)
+INFO 2025-09-24 09:13:41,529 middleware 17852 24676 Starting request req_1758694421_24676: GET /notifications/ (user: anonymous)
+INFO 2025-09-24 09:13:41,680 middleware 17852 24676 Starting request req_1758694421_24676: GET /notifications/ (user: anonymous)
+INFO 2025-09-24 09:13:43,418 middleware 17852 24676 Starting request req_1758694423_24676: GET / (user: anonymous)
+INFO 2025-09-24 09:13:44,327 middleware 17852 24676 Starting request req_1758694424_24676: GET /logout/ (user: anonymous)
+INFO 2025-09-24 09:13:44,350 middleware 17852 24676 Starting request req_1758694424_24676: GET / (user: anonymous)
+INFO 2025-09-24 09:13:44,350 middleware 17852 24676 Unauthenticated user tried to access: 
+INFO 2025-09-24 09:13:44,353 middleware 17852 24676 Starting request req_1758694424_24676: GET /login/ (user: anonymous)
+INFO 2025-09-24 09:13:52,826 middleware 17852 24676 Starting request req_1758694432_24676: POST /login/ (user: anonymous)
+INFO 2025-09-24 09:13:53,503 middleware 17852 24676 Starting request req_1758694433_24676: GET / (user: anonymous)
+INFO 2025-09-24 09:15:33,139 middleware 17852 24676 Starting request req_1758694533_24676: GET /logout/ (user: anonymous)
+INFO 2025-09-24 09:15:33,180 middleware 17852 24676 Starting request req_1758694533_24676: GET / (user: anonymous)
+INFO 2025-09-24 09:15:33,180 middleware 17852 24676 Unauthenticated user tried to access: 
+INFO 2025-09-24 09:15:33,180 middleware 17852 24676 Starting request req_1758694533_24676: GET /login/ (user: anonymous)
+INFO 2025-09-24 09:15:35,439 middleware 17852 24676 Starting request req_1758694535_24676: GET /login/ (user: anonymous)
+INFO 2025-09-24 09:15:39,374 middleware 17852 24676 Starting request req_1758694539_24676: POST /login/ (user: anonymous)
+INFO 2025-09-24 09:15:39,944 middleware 17852 24676 Starting request req_1758694539_24676: GET / (user: anonymous)
+INFO 2025-09-24 09:15:44,801 middleware 17852 24676 Starting request req_1758694544_24676: GET /logout/ (user: anonymous)
+INFO 2025-09-24 09:15:44,832 middleware 17852 24676 Starting request req_1758694544_24676: GET / (user: anonymous)
+INFO 2025-09-24 09:15:44,832 middleware 17852 24676 Unauthenticated user tried to access: 
+INFO 2025-09-24 09:15:44,837 middleware 17852 24676 Starting request req_1758694544_24676: GET /login/ (user: anonymous)
+INFO 2025-09-24 09:15:47,580 middleware 17852 24676 Starting request req_1758694547_24676: POST /login/ (user: anonymous)
+INFO 2025-09-24 09:15:48,163 middleware 17852 24676 Starting request req_1758694548_24676: GET / (user: anonymous)
+INFO 2025-09-24 11:09:55,312 middleware 17852 13576 Starting request req_1758701395_13576: GET /logout/ (user: anonymous)
+INFO 2025-09-24 11:09:55,365 middleware 17852 13576 Starting request req_1758701395_13576: GET / (user: anonymous)
+INFO 2025-09-24 11:09:55,365 middleware 17852 13576 Unauthenticated user tried to access: 
+INFO 2025-09-24 11:09:55,365 middleware 17852 13576 Starting request req_1758701395_13576: GET /login/ (user: anonymous)
+INFO 2025-09-24 11:10:05,500 middleware 17852 13576 Starting request req_1758701405_13576: POST /login/ (user: anonymous)
+INFO 2025-09-24 11:10:05,500 middleware 17852 13576 Running periodic cleanup after 25 requests
+INFO 2025-09-24 11:10:05,561 middleware 17852 13576 Force cleanup completed. Previous query counts: {'default': 0}
+INFO 2025-09-24 11:10:06,283 middleware 17852 13576 Starting request req_1758701406_13576: GET / (user: anonymous)
+INFO 2025-09-24 11:10:09,999 middleware 17852 13576 Starting request req_1758701409_13576: GET /properties/ (user: anonymous)
