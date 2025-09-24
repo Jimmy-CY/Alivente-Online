@@ -482,3 +482,65 @@ INFO 2025-09-24 11:44:31,436 middleware 984 37884 Starting request req_175870347
 INFO 2025-09-24 11:44:32,187 middleware 984 37884 Starting request req_1758703472_37884: GET /admin/login/ (user: anonymous)
 INFO 2025-09-24 11:44:32,193 middleware 984 37884 Starting request req_1758703472_37884: GET /admin/ (user: anonymous)
 INFO 2025-09-24 11:53:17,508 middleware 32340 9564 Enhanced DatabaseConnectionMiddleware initialized with threshold=50
+INFO 2025-09-24 11:54:21,401 middleware 24448 38900 Enhanced DatabaseConnectionMiddleware initialized with threshold=50
+INFO 2025-09-24 11:54:25,444 middleware 24448 6920 Starting request req_1758704065_6920: GET /tenant/ (user: anonymous)
+INFO 2025-09-24 11:54:30,291 middleware 24448 6920 Starting request req_1758704070_6920: GET / (user: anonymous)
+INFO 2025-09-24 11:54:33,715 middleware 24448 6920 Starting request req_1758704073_6920: GET /logout/ (user: anonymous)
+INFO 2025-09-24 11:54:33,761 middleware 24448 6920 Starting request req_1758704073_6920: GET / (user: anonymous)
+INFO 2025-09-24 11:54:33,761 middleware 24448 6920 Unauthenticated user tried to access: 
+INFO 2025-09-24 11:54:33,761 middleware 24448 6920 Starting request req_1758704073_6920: GET /login/ (user: anonymous)
+INFO 2025-09-24 11:55:05,252 middleware 24448 6920 Starting request req_1758704105_6920: POST /login/ (user: anonymous)
+INFO 2025-09-24 11:55:05,885 middleware 24448 6920 Starting request req_1758704105_6920: GET / (user: anonymous)
+INFO 2025-09-24 11:56:04,983 middleware 24448 6920 Starting request req_1758704164_6920: GET /tenant/ (user: anonymous)
+INFO 2025-09-24 11:56:06,139 middleware 24448 6920 Starting request req_1758704166_6920: GET /open_invoices_report/ (user: anonymous)
+INFO 2025-09-24 11:56:08,294 middleware 24448 6920 Starting request req_1758704168_6920: GET /tenant/ (user: anonymous)
+INFO 2025-09-24 11:56:09,314 middleware 24448 6920 Starting request req_1758704169_6920: GET /notifications/ (user: anonymous)
+INFO 2025-09-24 11:56:09,459 middleware 24448 6920 Starting request req_1758704169_6920: GET /notifications/ (user: anonymous)
+INFO 2025-09-24 11:56:12,893 middleware 24448 6920 Starting request req_1758704172_6920: GET / (user: anonymous)
+INFO 2025-09-24 11:56:14,650 middleware 24448 6920 Starting request req_1758704174_6920: GET /finance/ (user: anonymous)
+INFO 2025-09-24 11:56:15,641 middleware 24448 6920 Starting request req_1758704175_6920: GET /financial-indicators/ (user: anonymous)
+INFO 2025-09-24 11:56:15,865 middleware 24448 6920 Starting request req_1758704175_6920: GET /financial-indicators/ (user: anonymous)
+INFO 2025-09-24 11:56:15,926 middleware 24448 6920 Request req_1758704175_6920 stats: duration=0.06s, total_queries=34, breakdown={'default': 34}, path=/financial-indicators/, user=anonymous
+INFO 2025-09-24 11:56:26,996 middleware 24448 6920 Starting request req_1758704186_6920: GET /finance/ (user: anonymous)
+INFO 2025-09-24 12:37:37,490 middleware 24448 35060 Starting request req_1758706657_35060: GET / (user: anonymous)
+INFO 2025-09-24 12:37:41,931 middleware 24448 35060 Starting request req_1758706661_35060: GET /suppliers/ (user: anonymous)
+INFO 2025-09-24 20:59:00,992 middleware 24448 37852 Starting request req_1758736740_37852: GET / (user: anonymous)
+INFO 2025-09-24 20:59:02,556 middleware 24448 37852 Starting request req_1758736742_37852: GET /suppliers/ (user: anonymous)
+INFO 2025-09-24 20:59:05,498 middleware 24448 37852 Starting request req_1758736745_37852: GET /logout/ (user: anonymous)
+INFO 2025-09-24 20:59:05,543 middleware 24448 37852 Starting request req_1758736745_37852: GET / (user: anonymous)
+INFO 2025-09-24 20:59:05,543 middleware 24448 37852 Unauthenticated user tried to access: 
+INFO 2025-09-24 20:59:05,547 middleware 24448 37852 Starting request req_1758736745_37852: GET /login/ (user: anonymous)
+INFO 2025-09-24 20:59:17,581 middleware 24448 37852 Starting request req_1758736757_37852: POST /login/ (user: anonymous)
+INFO 2025-09-24 20:59:17,581 middleware 24448 37852 Running periodic cleanup after 25 requests
+INFO 2025-09-24 20:59:17,658 middleware 24448 37852 Force cleanup completed. Previous query counts: {'default': 0}
+INFO 2025-09-24 20:59:18,242 middleware 24448 37852 Starting request req_1758736758_37852: GET / (user: anonymous)
+INFO 2025-09-24 20:59:22,571 middleware 24448 37852 Starting request req_1758736762_37852: GET /suppliers/ (user: anonymous)
+INFO 2025-09-24 20:59:24,349 middleware 24448 37852 Starting request req_1758736764_37852: GET /supplier_report/9 (user: anonymous)
+INFO 2025-09-24 20:59:25,577 middleware 24448 37852 Starting request req_1758736765_37852: GET /suppliers/ (user: anonymous)
+INFO 2025-09-24 20:59:27,657 middleware 24448 37852 Starting request req_1758736767_37852: GET /supplier_report/13 (user: anonymous)
+INFO 2025-09-24 20:59:28,787 middleware 24448 37852 Starting request req_1758736768_37852: GET /suppliers/ (user: anonymous)
+INFO 2025-09-24 20:59:30,202 middleware 24448 37852 Starting request req_1758736770_37852: GET /logout/ (user: anonymous)
+INFO 2025-09-24 20:59:30,244 middleware 24448 37852 Starting request req_1758736770_37852: GET / (user: anonymous)
+INFO 2025-09-24 20:59:30,244 middleware 24448 37852 Unauthenticated user tried to access: 
+INFO 2025-09-24 20:59:30,244 middleware 24448 37852 Starting request req_1758736770_37852: GET /login/ (user: anonymous)
+INFO 2025-09-24 20:59:32,475 middleware 24448 37852 Starting request req_1758736772_37852: POST /login/ (user: anonymous)
+INFO 2025-09-24 20:59:33,029 middleware 24448 37852 Starting request req_1758736773_37852: GET / (user: anonymous)
+INFO 2025-09-24 20:59:36,397 middleware 24448 37852 Starting request req_1758736776_37852: GET /suppliers/ (user: anonymous)
+INFO 2025-09-24 20:59:41,235 middleware 24448 37852 Starting request req_1758736781_37852: GET / (user: anonymous)
+INFO 2025-09-24 20:59:42,509 middleware 24448 37852 Starting request req_1758736782_37852: GET /logout/ (user: anonymous)
+INFO 2025-09-24 20:59:42,542 middleware 24448 37852 Starting request req_1758736782_37852: GET / (user: anonymous)
+INFO 2025-09-24 20:59:42,542 middleware 24448 37852 Unauthenticated user tried to access: 
+INFO 2025-09-24 20:59:42,546 middleware 24448 37852 Starting request req_1758736782_37852: GET /login/ (user: anonymous)
+INFO 2025-09-24 20:59:53,030 middleware 24448 37852 Starting request req_1758736793_37852: POST /login/ (user: anonymous)
+INFO 2025-09-24 20:59:53,581 middleware 24448 37852 Starting request req_1758736793_37852: GET / (user: anonymous)
+INFO 2025-09-24 20:59:56,857 middleware 24448 37852 Starting request req_1758736796_37852: GET /suppliers/ (user: anonymous)
+INFO 2025-09-24 21:02:23,853 middleware 24448 37852 Starting request req_1758736943_37852: GET /suppliers/ (user: anonymous)
+INFO 2025-09-24 21:02:25,407 middleware 24448 37852 Starting request req_1758736945_37852: GET /suppliers_edit/9 (user: anonymous)
+INFO 2025-09-24 21:02:26,989 middleware 24448 37852 Starting request req_1758736946_37852: GET /suppliers/ (user: anonymous)
+INFO 2025-09-24 21:02:30,459 middleware 24448 37852 Starting request req_1758736950_37852: GET / (user: anonymous)
+INFO 2025-09-24 21:02:32,543 middleware 24448 37852 Starting request req_1758736952_37852: GET /logout/ (user: anonymous)
+INFO 2025-09-24 21:02:32,576 middleware 24448 37852 Starting request req_1758736952_37852: GET / (user: anonymous)
+INFO 2025-09-24 21:02:32,576 middleware 24448 37852 Running periodic cleanup after 50 requests
+INFO 2025-09-24 21:02:32,623 middleware 24448 37852 Force cleanup completed. Previous query counts: {'default': 0}
+INFO 2025-09-24 21:02:32,623 middleware 24448 37852 Unauthenticated user tried to access: 
+INFO 2025-09-24 21:02:32,623 middleware 24448 37852 Starting request req_1758736952_37852: GET /login/ (user: anonymous)

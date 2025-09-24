@@ -104,7 +104,9 @@ Suppliers
           <th style="width: 8%">Country</th>
           <th style="width: 8%">Details</th>
           <th style="width: 8%">Report</th>
-          <th style="width: 8%">Delete</th>
+          {% if user.is_superuser %}
+            <th style="width: 8%">Delete</th>
+          {% endif %}
         </tr>
       </thead>
       <tbody>
@@ -116,23 +118,17 @@ Suppliers
             <td>{{sresults.supplier_role}}</td>
             <td>{{sresults.supplier_country}}</td>
             <td>
-              {% if user.is_superuser %}
-                <button type="button" class="btn btn-light action-btn">
-                  <a href="{% url 'suppliers_edit' sresults.supplier_id %}">Edit</a>
-                </button>
-              {% else %}
-                <button type="button" class="btn btn-light action-btn" disabled style="opacity: 0.5;">
-                  <span style="color: #6c757d;">Edit</span>
-                </button>
-              {% endif %}
+              <button type="button" class="btn btn-light action-btn">
+                <a href="{% url 'suppliers_edit' sresults.supplier_id %}">Edit</a>
+              </button>
             </td>
             <td>
               <button type="button" class="btn btn-light action-btn">
                 <a href="{% url 'supplier_report' sresults.supplier_id %}">View</a>
               </button>
             </td>
-            <td>
-              {% if user.is_superuser %}
+            {% if user.is_superuser %}
+              <td>
                 <button type="button" class="btn btn-danger action-btn delete-btn" 
                         data-supplier-id="{{sresults.supplier_id}}"
                         data-contact-person="{{sresults.supplier_contact_person}}"
@@ -140,12 +136,8 @@ Suppliers
                         data-role="{{sresults.supplier_role}}">
                   <i class="fas fa-trash"></i>
                 </button>
-              {% else %}
-                <button type="button" class="btn btn-danger action-btn" disabled style="opacity: 0.5;">
-                  <i class="fas fa-trash" style="color: #6c757d;"></i>
-                </button>
-              {% endif %}
-            </td>
+              </td>
+            {% endif %}
           </tr>
         {% endfor %}
       </tbody>
