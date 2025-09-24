@@ -76,3 +76,198 @@ INFO 2025-09-23 09:08:41,462 "GET / HTTP/1.1" 200 14929
 INFO 2025-09-23 09:08:45,127 "GET /finance/ HTTP/1.1" 200 16427
 INFO 2025-09-23 09:08:46,543 "GET /financial-indicators/ HTTP/1.1" 200 56892
 INFO 2025-09-23 09:08:46,727 "GET /financial-indicators/ HTTP/1.1" 200 2731
+INFO 2025-09-23 09:17:01,791 Watching for file changes with StatReloader
+INFO 2025-09-24 08:04:31,829 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\middleware.py changed, reloading.
+INFO 2025-09-24 08:04:33,716 Watching for file changes with StatReloader
+INFO 2025-09-24 08:05:18,508 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\mysite\settings.py changed, reloading.
+INFO 2025-09-24 08:05:19,549 Watching for file changes with StatReloader
+INFO 2025-09-24 08:17:18,185 Watching for file changes with StatReloader
+INFO 2025-09-24 08:17:23,587 "GET /admin_apms/ HTTP/1.1" 200 12919
+INFO 2025-09-24 08:17:23,632 "GET /static/css/my_style.css HTTP/1.1" 304 0
+INFO 2025-09-24 08:17:23,711 "GET /static/images/alivente_online_logo.png HTTP/1.1" 304 0
+INFO 2025-09-24 08:17:30,678 "GET /admin/ HTTP/1.1" 200 18663
+INFO 2025-09-24 08:17:30,802 "GET /static/admin/css/dark_mode.css HTTP/1.1" 200 2804
+INFO 2025-09-24 08:17:30,804 "GET /static/admin/css/base.css HTTP/1.1" 200 22092
+INFO 2025-09-24 08:17:30,808 "GET /static/admin/js/theme.js HTTP/1.1" 200 1653
+INFO 2025-09-24 08:17:30,817 "GET /static/admin/css/nav_sidebar.css HTTP/1.1" 200 2810
+INFO 2025-09-24 08:17:30,817 "GET /static/admin/css/dashboard.css HTTP/1.1" 200 441
+INFO 2025-09-24 08:17:30,825 "GET /static/admin/css/responsive.css HTTP/1.1" 200 17972
+INFO 2025-09-24 08:17:30,843 "GET /static/admin/img/icon-changelink.svg HTTP/1.1" 200 380
+INFO 2025-09-24 08:17:30,843 "GET /static/admin/img/icon-addlink.svg HTTP/1.1" 200 331
+INFO 2025-09-24 08:17:30,843 "GET /static/admin/js/nav_sidebar.js HTTP/1.1" 200 3063
+INFO 2025-09-24 08:17:30,857 "GET /static/admin/img/icon-deletelink.svg HTTP/1.1" 200 392
+INFO 2025-09-24 08:17:36,070 "GET /admin/auth/group/ HTTP/1.1" 200 16391
+INFO 2025-09-24 08:17:36,108 "GET /static/admin/css/changelists.css HTTP/1.1" 200 6878
+INFO 2025-09-24 08:17:36,124 "GET /static/admin/js/jquery.init.js HTTP/1.1" 200 347
+INFO 2025-09-24 08:17:36,133 "GET /static/admin/js/admin/RelatedObjectLookups.js HTTP/1.1" 200 9097
+INFO 2025-09-24 08:17:36,136 "GET /static/admin/js/core.js HTTP/1.1" 200 6208
+INFO 2025-09-24 08:17:36,140 "GET /admin/jsi18n/ HTTP/1.1" 200 3342
+INFO 2025-09-24 08:17:36,151 "GET /static/admin/js/actions.js HTTP/1.1" 200 8076
+INFO 2025-09-24 08:17:36,151 "GET /static/admin/js/urlify.js HTTP/1.1" 200 7887
+INFO 2025-09-24 08:17:36,156 "GET /static/admin/img/search.svg HTTP/1.1" 200 458
+INFO 2025-09-24 08:17:36,160 "GET /static/admin/js/prepopulate.js HTTP/1.1" 200 1531
+INFO 2025-09-24 08:17:36,185 "GET /static/admin/js/vendor/jquery/jquery.js HTTP/1.1" 200 285314
+INFO 2025-09-24 08:17:36,227 "GET /static/admin/js/filters.js HTTP/1.1" 200 978
+INFO 2025-09-24 08:17:36,245 "GET /static/admin/js/vendor/xregexp/xregexp.js HTTP/1.1" 200 325171
+INFO 2025-09-24 08:17:36,272 "GET /static/admin/img/tooltag-add.svg HTTP/1.1" 200 331
+INFO 2025-09-24 08:17:40,298 "GET /admin/auth/group/1/change/ HTTP/1.1" 200 26525
+INFO 2025-09-24 08:17:40,337 "GET /admin/jsi18n/ HTTP/1.1" 200 3342
+INFO 2025-09-24 08:17:40,339 "GET /static/admin/css/forms.css HTTP/1.1" 200 8794
+INFO 2025-09-24 08:17:40,348 "GET /static/admin/js/prepopulate_init.js HTTP/1.1" 200 586
+INFO 2025-09-24 08:17:40,353 "GET /static/admin/js/SelectFilter2.js HTTP/1.1" 200 15502
+INFO 2025-09-24 08:17:40,357 "GET /static/admin/js/SelectBox.js HTTP/1.1" 200 4530
+INFO 2025-09-24 08:17:40,376 "GET /static/admin/css/widgets.css HTTP/1.1" 200 11564
+INFO 2025-09-24 08:17:40,395 "GET /static/admin/js/change_form.js HTTP/1.1" 200 606
+INFO 2025-09-24 08:17:40,477 "GET /static/admin/img/icon-unknown.svg HTTP/1.1" 200 655
+INFO 2025-09-24 08:17:40,478 "GET /static/admin/img/icon-unknown-alt.svg HTTP/1.1" 200 655
+INFO 2025-09-24 08:17:40,481 "GET /static/admin/img/selector-icons.svg HTTP/1.1" 200 3291
+INFO 2025-09-24 08:18:39,073 "POST /admin/auth/group/1/change/ HTTP/1.1" 302 0
+INFO 2025-09-24 08:18:39,111 "GET /admin/auth/group/ HTTP/1.1" 200 16598
+INFO 2025-09-24 08:18:39,153 "GET /admin/jsi18n/ HTTP/1.1" 200 3342
+INFO 2025-09-24 08:18:39,179 "GET /static/admin/img/icon-yes.svg HTTP/1.1" 200 436
+INFO 2025-09-24 08:18:44,877 "GET /admin/auth/group/2/change/ HTTP/1.1" 200 26526
+INFO 2025-09-24 08:18:44,923 "GET /admin/jsi18n/ HTTP/1.1" 200 3342
+INFO 2025-09-24 08:19:01,484 "POST /admin/auth/group/2/change/ HTTP/1.1" 302 0
+INFO 2025-09-24 08:19:01,524 "GET /admin/auth/group/ HTTP/1.1" 200 16596
+INFO 2025-09-24 08:19:01,562 "GET /admin/jsi18n/ HTTP/1.1" 200 3342
+INFO 2025-09-24 08:19:03,911 "GET /admin/auth/group/3/change/ HTTP/1.1" 200 26546
+INFO 2025-09-24 08:19:03,950 "GET /admin/jsi18n/ HTTP/1.1" 200 3342
+INFO 2025-09-24 08:19:13,545 "POST /admin/auth/group/3/change/ HTTP/1.1" 302 0
+INFO 2025-09-24 08:19:13,588 "GET /admin/auth/group/ HTTP/1.1" 200 16592
+INFO 2025-09-24 08:19:13,625 "GET /admin/jsi18n/ HTTP/1.1" 200 3342
+INFO 2025-09-24 08:19:15,500 "GET /admin/auth/group/4/change/ HTTP/1.1" 200 26457
+INFO 2025-09-24 08:19:15,532 "GET /admin/jsi18n/ HTTP/1.1" 200 3342
+INFO 2025-09-24 08:19:25,010 "POST /admin/auth/group/4/change/ HTTP/1.1" 302 0
+INFO 2025-09-24 08:19:25,044 "GET /admin/auth/group/ HTTP/1.1" 200 16590
+INFO 2025-09-24 08:19:25,088 "GET /admin/jsi18n/ HTTP/1.1" 200 3342
+INFO 2025-09-24 08:19:27,416 "GET /admin/auth/group/1/change/ HTTP/1.1" 200 26507
+INFO 2025-09-24 08:19:27,449 "GET /admin/jsi18n/ HTTP/1.1" 200 3342
+INFO 2025-09-24 08:20:32,371 "POST /admin/auth/group/1/change/ HTTP/1.1" 302 0
+INFO 2025-09-24 08:20:32,403 "GET /admin/auth/group/ HTTP/1.1" 200 16598
+INFO 2025-09-24 08:20:32,438 "GET /admin/jsi18n/ HTTP/1.1" 200 3342
+INFO 2025-09-24 08:20:44,094 "GET /admin/ HTTP/1.1" 200 18803
+INFO 2025-09-24 08:20:46,069 "GET /admin/auth/user/ HTTP/1.1" 200 19854
+INFO 2025-09-24 08:20:46,101 "GET /admin/jsi18n/ HTTP/1.1" 200 3342
+INFO 2025-09-24 08:20:46,109 "GET /static/admin/img/icon-no.svg HTTP/1.1" 200 560
+INFO 2025-09-24 08:20:46,134 "GET /static/admin/img/icon-viewlink.svg HTTP/1.1" 200 581
+INFO 2025-09-24 08:20:46,134 "GET /static/admin/img/sorting-icons.svg HTTP/1.1" 200 1097
+INFO 2025-09-24 08:20:52,228 "GET /admin/auth/user/5/change/ HTTP/1.1" 200 36797
+INFO 2025-09-24 08:20:52,282 "GET /admin/jsi18n/ HTTP/1.1" 200 3342
+INFO 2025-09-24 08:20:52,283 "GET /static/admin/js/calendar.js HTTP/1.1" 200 9141
+INFO 2025-09-24 08:20:52,284 "GET /static/admin/js/admin/DateTimeShortcuts.js HTTP/1.1" 200 19319
+INFO 2025-09-24 08:20:52,368 "GET /static/admin/img/icon-clock.svg HTTP/1.1" 200 677
+INFO 2025-09-24 08:20:52,369 "GET /static/admin/img/icon-calendar.svg HTTP/1.1" 200 1086
+INFO 2025-09-24 08:21:22,811 "POST /admin/auth/user/5/change/ HTTP/1.1" 302 0
+INFO 2025-09-24 08:21:22,861 "GET /admin/auth/user/ HTTP/1.1" 200 20052
+INFO 2025-09-24 08:21:22,899 "GET /admin/jsi18n/ HTTP/1.1" 200 3342
+INFO 2025-09-24 08:21:26,532 "GET /admin/auth/user/2/change/ HTTP/1.1" 200 36945
+INFO 2025-09-24 08:21:26,565 "GET /admin/jsi18n/ HTTP/1.1" 200 3342
+INFO 2025-09-24 08:21:38,307 "POST /admin/auth/user/2/change/ HTTP/1.1" 302 0
+INFO 2025-09-24 08:21:38,338 "GET /admin/auth/user/ HTTP/1.1" 200 20051
+INFO 2025-09-24 08:21:38,374 "GET /admin/jsi18n/ HTTP/1.1" 200 3342
+INFO 2025-09-24 08:21:40,573 "GET /admin/auth/user/1/change/ HTTP/1.1" 200 36491
+INFO 2025-09-24 08:21:40,606 "GET /admin/jsi18n/ HTTP/1.1" 200 3342
+INFO 2025-09-24 08:21:50,617 "POST /admin/auth/user/1/change/ HTTP/1.1" 302 0
+INFO 2025-09-24 08:21:50,674 "GET /admin/auth/user/ HTTP/1.1" 200 20047
+INFO 2025-09-24 08:21:50,719 "GET /admin/jsi18n/ HTTP/1.1" 200 3342
+INFO 2025-09-24 08:21:52,244 "GET /admin/auth/user/3/change/ HTTP/1.1" 200 36848
+INFO 2025-09-24 08:21:52,293 "GET /admin/jsi18n/ HTTP/1.1" 200 3342
+INFO 2025-09-24 08:21:59,870 "POST /admin/auth/user/3/change/ HTTP/1.1" 302 0
+INFO 2025-09-24 08:21:59,916 "GET /admin/auth/user/ HTTP/1.1" 200 20046
+INFO 2025-09-24 08:21:59,955 "GET /admin/jsi18n/ HTTP/1.1" 200 3342
+INFO 2025-09-24 08:24:21,077 Watching for file changes with StatReloader
+INFO 2025-09-24 08:24:28,560 "GET / HTTP/1.1" 200 14929
+INFO 2025-09-24 08:24:32,178 "GET /logout/ HTTP/1.1" 302 0
+INFO 2025-09-24 08:24:32,196 "GET / HTTP/1.1" 200 8244
+INFO 2025-09-24 08:24:34,263 "GET /login/ HTTP/1.1" 200 8913
+INFO 2025-09-24 08:24:47,577 "POST /login/ HTTP/1.1" 302 0
+INFO 2025-09-24 08:24:47,625 "GET / HTTP/1.1" 200 15684
+INFO 2025-09-24 08:25:10,751 "GET /properties/ HTTP/1.1" 200 57058
+INFO 2025-09-24 08:25:20,329 "GET / HTTP/1.1" 200 14923
+WARNING 2025-09-24 08:25:23,683 Not Found: /tenants
+WARNING 2025-09-24 08:25:23,683 "GET /tenants HTTP/1.1" 404 42937
+INFO 2025-09-24 08:25:40,836 "GET / HTTP/1.1" 200 14923
+INFO 2025-09-24 08:25:50,079 "GET /tenant HTTP/1.1" 301 0
+INFO 2025-09-24 08:25:50,162 "GET /tenant/ HTTP/1.1" 200 60488
+INFO 2025-09-24 08:25:59,477 "GET / HTTP/1.1" 200 14923
+WARNING 2025-09-24 08:26:30,074 Not Found: /act_expenses_all
+WARNING 2025-09-24 08:26:30,076 "GET /act_expenses_all HTTP/1.1" 404 42964
+INFO 2025-09-24 08:26:47,790 "GET /act_expense_all HTTP/1.1" 301 0
+INFO 2025-09-24 08:26:47,900 "GET /act_expense_all/ HTTP/1.1" 200 82618
+INFO 2025-09-24 08:26:54,909 "GET / HTTP/1.1" 200 14923
+INFO 2025-09-24 08:27:37,426 "GET /finance HTTP/1.1" 301 0
+INFO 2025-09-24 08:27:37,476 "GET /finance/ HTTP/1.1" 200 11216
+INFO 2025-09-24 08:32:11,230 Watching for file changes with StatReloader
+INFO 2025-09-24 08:34:59,070 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\middleware.py changed, reloading.
+INFO 2025-09-24 08:35:00,190 Watching for file changes with StatReloader
+INFO 2025-09-24 08:38:45,994 Watching for file changes with StatReloader
+INFO 2025-09-24 08:39:55,095 Watching for file changes with StatReloader
+INFO 2025-09-24 08:40:18,492 "GET /properties/ HTTP/1.1" 200 57058
+INFO 2025-09-24 08:40:30,427 "GET /tenant/ HTTP/1.1" 200 60488
+INFO 2025-09-24 08:40:42,908 "GET /suppliers/ HTTP/1.1" 200 57378
+INFO 2025-09-24 08:40:57,658 "GET / HTTP/1.1" 200 14923
+INFO 2025-09-24 08:41:00,942 "GET /suppliers/ HTTP/1.1" 200 57378
+INFO 2025-09-24 08:41:16,794 "GET /fsr/ HTTP/1.1" 200 89926
+WARNING 2025-09-24 08:41:28,793 Not Found: /act_expenses/
+WARNING 2025-09-24 08:41:28,793 "GET /act_expenses/ HTTP/1.1" 404 42955
+INFO 2025-09-24 08:41:47,359 "GET /petty_cash/ HTTP/1.1" 200 13055
+INFO 2025-09-24 08:42:08,109 "GET /finance/ HTTP/1.1" 200 11216
+INFO 2025-09-24 08:42:22,758 "GET /invoices/ HTTP/1.1" 200 10329
+INFO 2025-09-24 08:42:30,660 "GET / HTTP/1.1" 200 14923
+INFO 2025-09-24 08:42:45,159 "GET /projects/ HTTP/1.1" 200 27026
+WARNING 2025-09-24 08:43:48,608 Not Found: /act_expenses/
+WARNING 2025-09-24 08:43:48,608 "GET /act_expenses/ HTTP/1.1" 404 42955
+INFO 2025-09-24 08:44:35,660 "GET /invoices/ HTTP/1.1" 200 10329
+INFO 2025-09-24 08:45:04,677 "GET /finance/ HTTP/1.1" 200 11216
+INFO 2025-09-24 08:45:53,659 "GET /projects/ HTTP/1.1" 200 27026
+INFO 2025-09-24 08:46:28,328 "GET /property_management_dashboard/ HTTP/1.1" 200 43046
+INFO 2025-09-24 08:51:19,674 Watching for file changes with StatReloader
+INFO 2025-09-24 08:51:32,175 "GET / HTTP/1.1" 200 14923
+INFO 2025-09-24 08:51:39,543 "GET /properties/ HTTP/1.1" 200 57058
+INFO 2025-09-24 08:51:47,776 "GET /tenant/ HTTP/1.1" 200 60488
+INFO 2025-09-24 08:51:54,642 "GET /suppliers/ HTTP/1.1" 200 57378
+INFO 2025-09-24 08:52:03,545 "GET /fsr HTTP/1.1" 301 0
+INFO 2025-09-24 08:52:03,575 "GET /fsr/ HTTP/1.1" 200 89926
+INFO 2025-09-24 08:52:15,175 "GET /property_management_dashboard/ HTTP/1.1" 200 43046
+INFO 2025-09-24 08:52:24,541 "GET /finance/ HTTP/1.1" 200 11216
+INFO 2025-09-24 08:52:33,208 "GET /projects/ HTTP/1.1" 200 27026
+WARNING 2025-09-24 08:52:43,661 Not Found: /act_expenses
+WARNING 2025-09-24 08:52:43,662 "GET /act_expenses HTTP/1.1" 404 42952
+WARNING 2025-09-24 08:52:52,712 Not Found: /act_expense
+WARNING 2025-09-24 08:52:52,713 "GET /act_expense HTTP/1.1" 404 42949
+INFO 2025-09-24 08:54:44,219 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\middleware.py changed, reloading.
+INFO 2025-09-24 08:54:45,191 Watching for file changes with StatReloader
+INFO 2025-09-24 08:54:52,601 Watching for file changes with StatReloader
+INFO 2025-09-24 08:55:03,787 "GET / HTTP/1.1" 200 14923
+INFO 2025-09-24 08:55:10,908 "GET /finance/ HTTP/1.1" 200 11216
+INFO 2025-09-24 08:55:26,092 "GET /projects/ HTTP/1.1" 200 27026
+INFO 2025-09-24 09:00:50,823 Watching for file changes with StatReloader
+INFO 2025-09-24 09:00:57,615 "GET / HTTP/1.1" 200 14923
+INFO 2025-09-24 09:01:08,215 "GET /properties/ HTTP/1.1" 200 57058
+INFO 2025-09-24 09:01:17,266 "GET /tenant/ HTTP/1.1" 200 60488
+INFO 2025-09-24 09:01:23,996 "GET /suppliers/ HTTP/1.1" 200 57378
+INFO 2025-09-24 09:01:32,331 "GET /fsr/ HTTP/1.1" 200 89926
+WARNING 2025-09-24 09:01:41,181 Forbidden: /property_management_dashboard/
+WARNING 2025-09-24 09:01:41,181 "GET /property_management_dashboard/ HTTP/1.1" 403 2814
+WARNING 2025-09-24 09:02:06,165 Forbidden: /property_management_dashboard/
+WARNING 2025-09-24 09:02:06,165 "GET /property_management_dashboard/ HTTP/1.1" 403 2814
+INFO 2025-09-24 09:02:16,364 "GET / HTTP/1.1" 200 14923
+WARNING 2025-09-24 09:02:24,214 Forbidden: /invoices/
+WARNING 2025-09-24 09:02:24,214 "GET /invoices/ HTTP/1.1" 403 2813
+INFO 2025-09-24 09:02:33,211 "GET /petty_cash/ HTTP/1.1" 200 13055
+WARNING 2025-09-24 09:02:40,931 Forbidden: /finance/
+WARNING 2025-09-24 09:02:40,931 "GET /finance/ HTTP/1.1" 403 2815
+WARNING 2025-09-24 09:02:53,747 Forbidden: /projects/
+WARNING 2025-09-24 09:02:53,747 "GET /projects/ HTTP/1.1" 403 2813
+INFO 2025-09-24 09:08:20,648 Watching for file changes with StatReloader
+WARNING 2025-09-24 09:08:23,431 Forbidden: /finance/
+WARNING 2025-09-24 09:08:23,431 "GET /finance/ HTTP/1.1" 403 2815
+INFO 2025-09-24 09:08:28,413 "GET / HTTP/1.1" 200 14923
+WARNING 2025-09-24 09:08:33,279 Forbidden: /projects/
+WARNING 2025-09-24 09:08:33,279 "GET /projects/ HTTP/1.1" 403 2813
+WARNING 2025-09-24 09:08:40,382 Forbidden: /projects/
+WARNING 2025-09-24 09:08:40,382 "GET /projects/ HTTP/1.1" 403 2813
+WARNING 2025-09-24 09:09:04,632 Forbidden: /invoices/
+WARNING 2025-09-24 09:09:04,632 "GET /invoices/ HTTP/1.1" 403 2813
+INFO 2025-09-24 09:11:22,598 Watching for file changes with StatReloader
+INFO 2025-09-24 09:11:31,974 "GET /act_expense_all/ HTTP/1.1" 200 82618

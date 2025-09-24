@@ -1,11 +1,16 @@
-# middleware.py - Fixed version
+# middleware.py - Complete file with both Database and Module Access middleware
 import logging
 import time
 import threading
 import traceback
 from django.db import connections, DatabaseError, InterfaceError
 from django.utils.deprecation import MiddlewareMixin
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseForbidden, HttpResponseRedirect
+from django.urls import resolve, reverse
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth import get_user_model
+from django.template.response import TemplateResponse
+from django.shortcuts import render
 
 logger = logging.getLogger(__name__)
 
@@ -514,3 +519,264 @@ class DatabaseConnectionMiddleware:
         except Exception as e:
             logger.error(f"Error generating connection history summary: {e}")
             return {}
+
+
+class ModuleAccessMiddleware(MiddlewareMixin):
+    """
+    Global middleware to control access to modules based on user permissions.
+    Prevents users from accessing restricted modules via direct URL entry.
+    """
+    
+    def __init__(self, get_response=None):
+        super().__init__(get_response)
+        
+        # URLs that should always be accessible (login, logout, admin, etc.)
+        self.EXEMPT_URL_PATTERNS = [
+            'admin/',
+            'login/',
+            'logout/',
+            'accounts/',
+            'api/',  # If you have API endpoints
+            'media/',  # Media files
+            'static/',  # Static files
+            # Removed empty string '' that was matching everything
+        ]
+        
+        # URLs that require login but no specific module permission
+        self.LOGIN_ONLY_PATTERNS = [
+            'profile/',
+            'settings/',
+            'help/',
+        ]
+
+    def process_view(self, request, view_func, view_args, view_kwargs):
+        """
+        Check permissions before view is called
+        """
+        try:
+            # Get the current URL path
+            current_path = request.path_info.lstrip('/')
+            
+            # Check if this URL should be exempt from permission checking
+            if self._is_exempt_url(current_path):
+                return None
+            
+            # Check if user is authenticated
+            if not request.user.is_authenticated:
+                logger.info(f"Unauthenticated user tried to access: {current_path}")
+                return HttpResponseRedirect(reverse('login') + f'?next={request.path}')
+            
+            # Check if this is a login-only URL (no specific module permission needed)
+            if self._is_login_only_url(current_path):
+                return None
+            
+            # Superusers can access everything
+            if request.user.is_superuser:
+                return None
+            
+            # Check module-specific permissions
+            required_permission = self._get_required_permission(current_path)
+            if required_permission:
+                if not request.user.has_perm(required_permission):
+                    logger.warning(
+                        f"User {request.user.username} denied access to {current_path} "
+                        f"(missing permission: {required_permission})"
+                    )
+                    return self._render_access_denied(request, required_permission)
+            
+            return None
+            
+        except Exception as e:
+            logger.error(f"ModuleAccessMiddleware error for {request.path}: {e}")
+            # Continue processing - don't block on middleware errors
+            return None
+
+    def _is_exempt_url(self, path):
+        """Check if URL is exempt from permission checking"""
+        for exempt_pattern in self.EXEMPT_URL_PATTERNS:
+            if path.startswith(exempt_pattern):
+                return True
+        return False
+
+    def _is_login_only_url(self, path):
+        """Check if URL requires only login, no specific module permission"""
+        for pattern in self.LOGIN_ONLY_PATTERNS:
+            if path.startswith(pattern):
+                return True
+        return False
+
+    def _get_required_permission(self, path):
+        """Determine which permission is required for the given path"""
+        # Remove trailing slashes for consistent matching
+        clean_path = path.rstrip('/')
+        
+        # Check for exact matches first (most specific)
+        exact_matches = {
+            'property_management_dashboard': 'auth.can_access_dashboard',
+            'act_expenses_all': 'auth.can_access_expenses',
+            'petty_cash': 'auth.can_access_petty_cash',
+        }
+        
+        for pattern, permission in exact_matches.items():
+            if clean_path == pattern or clean_path.startswith(pattern + '/'):
+                return permission
+        
+        # Then check for substring matches (less specific)
+        substring_matches = {
+            'properties': 'auth.can_access_properties',
+            'tenant': 'auth.can_access_tenants',
+            'suppliers': 'auth.can_access_suppliers',
+            'fsr': 'auth.can_access_fsr',
+            'invoices': 'auth.can_access_invoices',
+            'finance': 'auth.can_access_financials',
+            'projects': 'auth.can_access_projects',
+        }
+        
+        for pattern, permission in substring_matches.items():
+            if pattern in clean_path:
+                return permission
+        
+        return None
+
+    def _render_access_denied(self, request, required_permission):
+        """Render a user-friendly access denied page"""
+        try:
+            # Try to render a custom template if it exists
+            context = {
+                'required_permission': required_permission,
+                'user': request.user,
+                'requested_path': request.path,
+            }
+            
+            # Try to use your custom template
+            try:
+                return render(request, 'access_denied.html', context, status=403)
+            except:
+                # Fallback to a simple HTML response if template doesn't exist
+                return self._render_simple_access_denied(request, required_permission)
+                
+        except Exception as e:
+            logger.error(f"Error rendering access denied page: {e}")
+            return HttpResponseForbidden("Access Denied: Insufficient permissions")
+
+    def _render_simple_access_denied(self, request, required_permission):
+        """Render a simple HTML access denied page"""
+        html_content = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Access Denied - Alivente</title>
+            <meta name="viewport" content="width=device-width, initial-scale=1">
+            <style>
+                body {{ 
+                    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif; 
+                    text-align: center; 
+                    padding: 20px;
+                    margin: 0;
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    min-height: 100vh;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                }}
+                .error-container {{
+                    background: white;
+                    padding: 40px;
+                    border-radius: 12px;
+                    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+                    max-width: 500px;
+                    width: 90%;
+                }}
+                h1 {{ 
+                    color: #e74c3c; 
+                    margin-top: 0;
+                    font-size: 2em;
+                }}
+                p {{ 
+                    color: #555; 
+                    line-height: 1.6;
+                    margin: 20px 0;
+                }}
+                .btn {{
+                    background: linear-gradient(45deg, #667eea, #764ba2);
+                    color: white;
+                    padding: 12px 24px;
+                    border: none;
+                    border-radius: 6px;
+                    text-decoration: none;
+                    display: inline-block;
+                    margin: 10px;
+                    transition: transform 0.2s;
+                    font-weight: 500;
+                }}
+                .btn:hover {{
+                    transform: translateY(-2px);
+                }}
+                .user-info {{
+                    background: #f8f9fa;
+                    padding: 15px;
+                    border-radius: 6px;
+                    margin: 20px 0;
+                    font-size: 0.9em;
+                }}
+            </style>
+        </head>
+        <body>
+            <div class="error-container">
+                <h1>🔒 Access Denied</h1>
+                <p>You don't have permission to access this module.</p>
+                <div class="user-info">
+                    <strong>User:</strong> {request.user.username}<br>
+                    <strong>Required Permission:</strong> {required_permission.split('.')[-1].replace('_', ' ').title()}
+                </div>
+                <p>Please contact your administrator if you believe you should have access to this feature.</p>
+                <a href="/" class="btn">🏠 Go Home</a>
+                <a href="javascript:history.back()" class="btn">← Go Back</a>
+            </div>
+        </body>
+        </html>
+        """
+        
+        return HttpResponseForbidden(html_content)
+
+
+# Add this function to help create permissions programmatically
+def create_module_permissions():
+    """
+    Helper function to create module permissions.
+    Run this in Django shell or create a management command.
+    """
+    from django.contrib.auth.models import Permission
+    from django.contrib.contenttypes.models import ContentType
+    from django.contrib.auth.models import User
+    
+    # Get content type (you can use any model, or create a custom one)
+    content_type = ContentType.objects.get_for_model(User)
+    
+    permissions = [
+        ('can_access_properties', 'Can access Properties module'),
+        ('can_access_tenants', 'Can access Tenants module'),
+        ('can_access_suppliers', 'Can access Suppliers module'),
+        ('can_access_expenses', 'Can access Expenses module'),
+        ('can_access_petty_cash', 'Can access Petty Cash module'),
+        ('can_access_financials', 'Can access Financials module'),
+        ('can_access_invoices', 'Can access Invoices module'),
+        ('can_access_projects', 'Can access Projects module'),
+        ('can_access_issues', 'Can access Issues module'),
+        ('can_access_dashboard', 'Can access Dashboard module'),
+    ]
+    
+    created_permissions = []
+    for codename, name in permissions:
+        permission, created = Permission.objects.get_or_create(
+            codename=codename,
+            name=name,
+            content_type=content_type,
+        )
+        if created:
+            created_permissions.append(permission)
+            print(f"Created permission: {permission.name}")
+        else:
+            print(f"Permission already exists: {permission.name}")
+    
+    return created_permissions

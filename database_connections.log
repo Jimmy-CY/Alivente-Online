@@ -83,3 +83,348 @@ INFO 2025-09-23 09:08:45,066 middleware 32092 12824 Starting request req_1758607
 INFO 2025-09-23 09:08:46,501 middleware 32092 12824 Starting request req_1758607726_12824: GET /financial-indicators/ (user: anonymous)
 INFO 2025-09-23 09:08:46,675 middleware 32092 12824 Starting request req_1758607726_12824: GET /financial-indicators/ (user: anonymous)
 INFO 2025-09-23 09:08:46,727 middleware 32092 12824 Request req_1758607726_12824 stats: duration=0.05s, total_queries=34, breakdown={'default': 34}, path=/financial-indicators/, user=anonymous
+INFO 2025-09-23 09:17:04,629 middleware 38224 36348 Enhanced DatabaseConnectionMiddleware initialized with threshold=50
+INFO 2025-09-24 08:04:36,818 middleware 20120 40120 Enhanced DatabaseConnectionMiddleware initialized with threshold=50
+INFO 2025-09-24 08:05:21,874 middleware 33108 40068 Enhanced DatabaseConnectionMiddleware initialized with threshold=50
+INFO 2025-09-24 08:17:19,925 middleware 35764 30344 Enhanced DatabaseConnectionMiddleware initialized with threshold=50
+INFO 2025-09-24 08:17:23,157 middleware 35764 13792 Starting request req_1758691043_13792: GET /admin_apms/ (user: anonymous)
+INFO 2025-09-24 08:17:30,517 middleware 35764 13792 Starting request req_1758691050_13792: GET /admin/ (user: anonymous)
+INFO 2025-09-24 08:17:35,897 middleware 35764 13792 Starting request req_1758691055_13792: GET /admin/auth/group/ (user: anonymous)
+INFO 2025-09-24 08:17:36,093 middleware 35764 41372 Starting request req_1758691056_41372: GET /admin/jsi18n/ (user: anonymous)
+INFO 2025-09-24 08:17:40,122 middleware 35764 18580 Starting request req_1758691060_18580: GET /admin/auth/group/1/change/ (user: anonymous)
+INFO 2025-09-24 08:17:40,326 middleware 35764 31896 Starting request req_1758691060_31896: GET /admin/jsi18n/ (user: anonymous)
+INFO 2025-09-24 08:18:39,037 middleware 35764 13592 Starting request req_1758691119_13592: POST /admin/auth/group/1/change/ (user: anonymous)
+INFO 2025-09-24 08:18:39,078 middleware 35764 13592 Starting request req_1758691119_13592: GET /admin/auth/group/ (user: anonymous)
+INFO 2025-09-24 08:18:39,143 middleware 35764 13592 Starting request req_1758691119_13592: GET /admin/jsi18n/ (user: anonymous)
+INFO 2025-09-24 08:18:44,820 middleware 35764 13592 Starting request req_1758691124_13592: GET /admin/auth/group/2/change/ (user: anonymous)
+INFO 2025-09-24 08:18:44,903 middleware 35764 13592 Starting request req_1758691124_13592: GET /admin/jsi18n/ (user: anonymous)
+INFO 2025-09-24 08:19:01,411 middleware 35764 13592 Starting request req_1758691141_13592: POST /admin/auth/group/2/change/ (user: anonymous)
+INFO 2025-09-24 08:19:01,487 middleware 35764 13592 Starting request req_1758691141_13592: GET /admin/auth/group/ (user: anonymous)
+INFO 2025-09-24 08:19:01,555 middleware 35764 13592 Starting request req_1758691141_13592: GET /admin/jsi18n/ (user: anonymous)
+INFO 2025-09-24 08:19:03,852 middleware 35764 13592 Starting request req_1758691143_13592: GET /admin/auth/group/3/change/ (user: anonymous)
+INFO 2025-09-24 08:19:03,943 middleware 35764 13592 Starting request req_1758691143_13592: GET /admin/jsi18n/ (user: anonymous)
+INFO 2025-09-24 08:19:13,513 middleware 35764 13592 Starting request req_1758691153_13592: POST /admin/auth/group/3/change/ (user: anonymous)
+INFO 2025-09-24 08:19:13,549 middleware 35764 13592 Starting request req_1758691153_13592: GET /admin/auth/group/ (user: anonymous)
+INFO 2025-09-24 08:19:13,618 middleware 35764 13592 Starting request req_1758691153_13592: GET /admin/jsi18n/ (user: anonymous)
+INFO 2025-09-24 08:19:15,438 middleware 35764 13592 Starting request req_1758691155_13592: GET /admin/auth/group/4/change/ (user: anonymous)
+INFO 2025-09-24 08:19:15,524 middleware 35764 13592 Starting request req_1758691155_13592: GET /admin/jsi18n/ (user: anonymous)
+INFO 2025-09-24 08:19:24,974 middleware 35764 13592 Starting request req_1758691164_13592: POST /admin/auth/group/4/change/ (user: anonymous)
+INFO 2025-09-24 08:19:25,010 middleware 35764 13592 Starting request req_1758691165_13592: GET /admin/auth/group/ (user: anonymous)
+INFO 2025-09-24 08:19:25,080 middleware 35764 13592 Starting request req_1758691165_13592: GET /admin/jsi18n/ (user: anonymous)
+INFO 2025-09-24 08:19:27,301 middleware 35764 13592 Starting request req_1758691167_13592: GET /admin/auth/group/1/change/ (user: anonymous)
+INFO 2025-09-24 08:19:27,301 middleware 35764 13592 Running periodic cleanup after 25 requests
+INFO 2025-09-24 08:19:27,353 middleware 35764 13592 Force cleanup completed. Previous query counts: {'default': 0}
+INFO 2025-09-24 08:19:27,443 middleware 35764 13592 Starting request req_1758691167_13592: GET /admin/jsi18n/ (user: anonymous)
+INFO 2025-09-24 08:20:32,312 middleware 35764 13592 Starting request req_1758691232_13592: POST /admin/auth/group/1/change/ (user: anonymous)
+INFO 2025-09-24 08:20:32,377 middleware 35764 13592 Starting request req_1758691232_13592: GET /admin/auth/group/ (user: anonymous)
+INFO 2025-09-24 08:20:32,431 middleware 35764 13592 Starting request req_1758691232_13592: GET /admin/jsi18n/ (user: anonymous)
+INFO 2025-09-24 08:20:44,068 middleware 35764 13592 Starting request req_1758691244_13592: GET /admin/ (user: anonymous)
+INFO 2025-09-24 08:20:46,010 middleware 35764 13592 Starting request req_1758691246_13592: GET /admin/auth/user/ (user: anonymous)
+INFO 2025-09-24 08:20:46,094 middleware 35764 13592 Starting request req_1758691246_13592: GET /admin/jsi18n/ (user: anonymous)
+INFO 2025-09-24 08:20:52,091 middleware 35764 41372 Starting request req_1758691252_41372: GET /admin/auth/user/5/change/ (user: anonymous)
+INFO 2025-09-24 08:20:52,255 middleware 35764 41372 Starting request req_1758691252_41372: GET /admin/jsi18n/ (user: anonymous)
+INFO 2025-09-24 08:21:22,712 middleware 35764 13592 Starting request req_1758691282_13592: POST /admin/auth/user/5/change/ (user: anonymous)
+INFO 2025-09-24 08:21:22,815 middleware 35764 13592 Starting request req_1758691282_13592: GET /admin/auth/user/ (user: anonymous)
+INFO 2025-09-24 08:21:22,891 middleware 35764 13592 Starting request req_1758691282_13592: GET /admin/jsi18n/ (user: anonymous)
+INFO 2025-09-24 08:21:26,467 middleware 35764 13592 Starting request req_1758691286_13592: GET /admin/auth/user/2/change/ (user: anonymous)
+INFO 2025-09-24 08:21:26,558 middleware 35764 13592 Starting request req_1758691286_13592: GET /admin/jsi18n/ (user: anonymous)
+INFO 2025-09-24 08:21:38,254 middleware 35764 13592 Starting request req_1758691298_13592: POST /admin/auth/user/2/change/ (user: anonymous)
+INFO 2025-09-24 08:21:38,311 middleware 35764 13592 Starting request req_1758691298_13592: GET /admin/auth/user/ (user: anonymous)
+INFO 2025-09-24 08:21:38,366 middleware 35764 13592 Starting request req_1758691298_13592: GET /admin/jsi18n/ (user: anonymous)
+INFO 2025-09-24 08:21:40,507 middleware 35764 13592 Starting request req_1758691300_13592: GET /admin/auth/user/1/change/ (user: anonymous)
+INFO 2025-09-24 08:21:40,600 middleware 35764 13592 Starting request req_1758691300_13592: GET /admin/jsi18n/ (user: anonymous)
+INFO 2025-09-24 08:21:50,545 middleware 35764 13592 Starting request req_1758691310_13592: POST /admin/auth/user/1/change/ (user: anonymous)
+INFO 2025-09-24 08:21:50,621 middleware 35764 13592 Starting request req_1758691310_13592: GET /admin/auth/user/ (user: anonymous)
+INFO 2025-09-24 08:21:50,709 middleware 35764 13592 Starting request req_1758691310_13592: GET /admin/jsi18n/ (user: anonymous)
+INFO 2025-09-24 08:21:52,178 middleware 35764 13592 Starting request req_1758691312_13592: GET /admin/auth/user/3/change/ (user: anonymous)
+INFO 2025-09-24 08:21:52,270 middleware 35764 13592 Starting request req_1758691312_13592: GET /admin/jsi18n/ (user: anonymous)
+INFO 2025-09-24 08:21:59,743 middleware 35764 13592 Starting request req_1758691319_13592: POST /admin/auth/user/3/change/ (user: anonymous)
+INFO 2025-09-24 08:21:59,743 middleware 35764 13592 Running periodic cleanup after 50 requests
+INFO 2025-09-24 08:21:59,794 middleware 35764 13592 Force cleanup completed. Previous query counts: {'default': 0}
+INFO 2025-09-24 08:21:59,874 middleware 35764 13592 Starting request req_1758691319_13592: GET /admin/auth/user/ (user: anonymous)
+INFO 2025-09-24 08:21:59,947 middleware 35764 13592 Starting request req_1758691319_13592: GET /admin/jsi18n/ (user: anonymous)
+INFO 2025-09-24 08:24:22,826 middleware 39264 40016 Enhanced DatabaseConnectionMiddleware initialized with threshold=50
+INFO 2025-09-24 08:24:28,344 middleware 39264 27788 Starting request req_1758691468_27788: GET / (user: anonymous)
+INFO 2025-09-24 08:24:32,161 middleware 39264 27788 Starting request req_1758691472_27788: GET /logout/ (user: anonymous)
+INFO 2025-09-24 08:24:32,196 middleware 39264 27788 Starting request req_1758691472_27788: GET / (user: anonymous)
+INFO 2025-09-24 08:24:34,233 middleware 39264 27788 Starting request req_1758691474_27788: GET /login/ (user: anonymous)
+INFO 2025-09-24 08:24:47,007 middleware 39264 27788 Starting request req_1758691487_27788: POST /login/ (user: anonymous)
+INFO 2025-09-24 08:24:47,577 middleware 39264 27788 Starting request req_1758691487_27788: GET / (user: anonymous)
+INFO 2025-09-24 08:25:10,677 middleware 39264 27788 Starting request req_1758691510_27788: GET /properties/ (user: anonymous)
+INFO 2025-09-24 08:25:20,293 middleware 39264 27788 Starting request req_1758691520_27788: GET / (user: anonymous)
+INFO 2025-09-24 08:25:23,654 middleware 39264 27788 Starting request req_1758691523_27788: GET /tenants (user: anonymous)
+INFO 2025-09-24 08:25:40,810 middleware 39264 27788 Starting request req_1758691540_27788: GET / (user: anonymous)
+INFO 2025-09-24 08:25:50,078 middleware 39264 27788 Starting request req_1758691550_27788: GET /tenant (user: anonymous)
+INFO 2025-09-24 08:25:50,079 middleware 39264 40924 Starting request req_1758691550_40924: GET /tenant/ (user: anonymous)
+INFO 2025-09-24 08:25:59,450 middleware 39264 40924 Starting request req_1758691559_40924: GET / (user: anonymous)
+INFO 2025-09-24 08:26:30,063 middleware 39264 40924 Starting request req_1758691590_40924: GET /act_expenses_all (user: anonymous)
+INFO 2025-09-24 08:26:47,781 middleware 39264 40924 Starting request req_1758691607_40924: GET /act_expense_all (user: anonymous)
+INFO 2025-09-24 08:26:47,793 middleware 39264 14224 Starting request req_1758691607_14224: GET /act_expense_all/ (user: anonymous)
+INFO 2025-09-24 08:26:54,878 middleware 39264 14224 Starting request req_1758691614_14224: GET / (user: anonymous)
+INFO 2025-09-24 08:27:37,420 middleware 39264 14224 Starting request req_1758691657_14224: GET /finance (user: anonymous)
+INFO 2025-09-24 08:27:37,426 middleware 39264 9948 Starting request req_1758691657_9948: GET /finance/ (user: anonymous)
+INFO 2025-09-24 08:32:13,378 middleware 22632 39064 Enhanced DatabaseConnectionMiddleware initialized with threshold=50
+INFO 2025-09-24 08:35:02,176 middleware 40604 41788 Enhanced DatabaseConnectionMiddleware initialized with threshold=50
+INFO 2025-09-24 08:38:48,093 middleware 41136 29268 Enhanced DatabaseConnectionMiddleware initialized with threshold=50
+INFO 2025-09-24 08:39:56,973 middleware 35656 19992 Enhanced DatabaseConnectionMiddleware initialized with threshold=50
+INFO 2025-09-24 08:40:18,292 middleware 35656 39956 Starting request req_1758692418_39956: GET /properties/ (user: anonymous)
+INFO 2025-09-24 08:40:30,397 middleware 35656 39956 Starting request req_1758692430_39956: GET /tenant/ (user: anonymous)
+INFO 2025-09-24 08:40:42,827 middleware 35656 39956 Starting request req_1758692442_39956: GET /suppliers/ (user: anonymous)
+INFO 2025-09-24 08:40:57,631 middleware 35656 39956 Starting request req_1758692457_39956: GET / (user: anonymous)
+INFO 2025-09-24 08:41:00,909 middleware 35656 39956 Starting request req_1758692460_39956: GET /suppliers/ (user: anonymous)
+INFO 2025-09-24 08:41:16,719 middleware 35656 39956 Starting request req_1758692476_39956: GET /fsr/ (user: anonymous)
+INFO 2025-09-24 08:41:28,793 middleware 35656 39956 Starting request req_1758692488_39956: GET /act_expenses/ (user: anonymous)
+INFO 2025-09-24 08:41:47,304 middleware 35656 39956 Starting request req_1758692507_39956: GET /petty_cash/ (user: anonymous)
+INFO 2025-09-24 08:42:08,086 middleware 35656 39956 Starting request req_1758692528_39956: GET /finance/ (user: anonymous)
+INFO 2025-09-24 08:42:22,675 middleware 35656 39956 Starting request req_1758692542_39956: GET /invoices/ (user: anonymous)
+INFO 2025-09-24 08:42:30,636 middleware 35656 39956 Starting request req_1758692550_39956: GET / (user: anonymous)
+INFO 2025-09-24 08:42:45,026 middleware 35656 39956 Starting request req_1758692565_39956: GET /projects/ (user: anonymous)
+INFO 2025-09-24 08:43:48,608 middleware 35656 41520 Starting request req_1758692628_41520: GET /act_expenses/ (user: anonymous)
+INFO 2025-09-24 08:44:35,639 middleware 35656 41520 Starting request req_1758692675_41520: GET /invoices/ (user: anonymous)
+INFO 2025-09-24 08:45:04,659 middleware 35656 41520 Starting request req_1758692704_41520: GET /finance/ (user: anonymous)
+INFO 2025-09-24 08:45:53,609 middleware 35656 41520 Starting request req_1758692753_41520: GET /projects/ (user: anonymous)
+INFO 2025-09-24 08:46:28,275 middleware 35656 41520 Starting request req_1758692788_41520: GET /property_management_dashboard/ (user: anonymous)
+INFO 2025-09-24 08:51:21,393 middleware 18380 41500 Enhanced DatabaseConnectionMiddleware initialized with threshold=50
+INFO 2025-09-24 08:51:31,976 middleware 18380 24112 Starting request req_1758693091_24112: GET / (user: anonymous)
+INFO 2025-09-24 08:51:39,519 middleware 18380 24112 Starting request req_1758693099_24112: GET /properties/ (user: anonymous)
+INFO 2025-09-24 08:51:47,762 middleware 18380 24112 Starting request req_1758693107_24112: GET /tenant/ (user: anonymous)
+INFO 2025-09-24 08:51:54,618 middleware 18380 24112 Starting request req_1758693114_24112: GET /suppliers/ (user: anonymous)
+INFO 2025-09-24 08:52:03,533 middleware 18380 24112 Starting request req_1758693123_24112: GET /fsr (user: anonymous)
+INFO 2025-09-24 08:52:03,548 middleware 18380 9104 Starting request req_1758693123_9104: GET /fsr/ (user: anonymous)
+INFO 2025-09-24 08:52:15,133 middleware 18380 9104 Starting request req_1758693135_9104: GET /property_management_dashboard/ (user: anonymous)
+INFO 2025-09-24 08:52:24,525 middleware 18380 9104 Starting request req_1758693144_9104: GET /finance/ (user: anonymous)
+INFO 2025-09-24 08:52:33,173 middleware 18380 9104 Starting request req_1758693153_9104: GET /projects/ (user: anonymous)
+INFO 2025-09-24 08:52:43,649 middleware 18380 9104 Starting request req_1758693163_9104: GET /act_expenses (user: anonymous)
+INFO 2025-09-24 08:52:52,701 middleware 18380 9104 Starting request req_1758693172_9104: GET /act_expense (user: anonymous)
+INFO 2025-09-24 08:54:47,230 middleware 33748 40996 Enhanced DatabaseConnectionMiddleware initialized with threshold=50
+INFO 2025-09-24 08:54:54,501 middleware 40132 17348 Enhanced DatabaseConnectionMiddleware initialized with threshold=50
+INFO 2025-09-24 08:55:03,493 middleware 40132 25096 Starting request req_1758693303_25096: GET / (user: anonymous)
+INFO 2025-09-24 08:55:10,894 middleware 40132 25096 Starting request req_1758693310_25096: GET /finance/ (user: anonymous)
+INFO 2025-09-24 08:55:26,048 middleware 40132 25096 Starting request req_1758693326_25096: GET /projects/ (user: anonymous)
+INFO 2025-09-24 09:00:52,696 middleware 38584 24572 Enhanced DatabaseConnectionMiddleware initialized with threshold=50
+INFO 2025-09-24 09:00:57,306 middleware 38584 38376 Starting request req_1758693657_38376: GET / (user: anonymous)
+INFO 2025-09-24 09:00:57,338 middleware 38584 38376 DEBUG: ModuleAccessMiddleware processing path: '' for user: StellaSimi
+INFO 2025-09-24 09:00:57,338 middleware 38584 38376 DEBUG: Checking if path '' is exempt...
+INFO 2025-09-24 09:00:57,338 middleware 38584 38376 DEBUG: Checking exempt pattern: 'admin/' against path: ''
+INFO 2025-09-24 09:00:57,338 middleware 38584 38376 DEBUG: Checking exempt pattern: 'login/' against path: ''
+INFO 2025-09-24 09:00:57,340 middleware 38584 38376 DEBUG: Checking exempt pattern: 'logout/' against path: ''
+INFO 2025-09-24 09:00:57,340 middleware 38584 38376 DEBUG: Checking exempt pattern: 'accounts/' against path: ''
+INFO 2025-09-24 09:00:57,340 middleware 38584 38376 DEBUG: Checking exempt pattern: 'api/' against path: ''
+INFO 2025-09-24 09:00:57,340 middleware 38584 38376 DEBUG: Checking exempt pattern: 'media/' against path: ''
+INFO 2025-09-24 09:00:57,340 middleware 38584 38376 DEBUG: Checking exempt pattern: 'static/' against path: ''
+INFO 2025-09-24 09:00:57,340 middleware 38584 38376 DEBUG: Path '' is NOT exempt
+INFO 2025-09-24 09:00:57,340 middleware 38584 38376 DEBUG: Path '' is NOT exempt - checking authentication...
+INFO 2025-09-24 09:00:57,340 middleware 38584 38376 DEBUG: User StellaSimi is authenticated - checking login-only patterns...
+INFO 2025-09-24 09:00:57,340 middleware 38584 38376 DEBUG: User StellaSimi is regular user - checking module permissions...
+INFO 2025-09-24 09:00:57,340 middleware 38584 38376 DEBUG: Checking permission for path: '' -> clean_path: ''
+INFO 2025-09-24 09:00:57,340 middleware 38584 38376 DEBUG: NO MATCH found for path: ''
+INFO 2025-09-24 09:00:57,340 middleware 38584 38376 DEBUG: No specific permission required for path: ''
+INFO 2025-09-24 09:01:08,192 middleware 38584 38376 Starting request req_1758693668_38376: GET /properties/ (user: anonymous)
+INFO 2025-09-24 09:01:08,198 middleware 38584 38376 DEBUG: ModuleAccessMiddleware processing path: 'properties/' for user: StellaSimi
+INFO 2025-09-24 09:01:08,198 middleware 38584 38376 DEBUG: Checking if path 'properties/' is exempt...
+INFO 2025-09-24 09:01:08,198 middleware 38584 38376 DEBUG: Checking exempt pattern: 'admin/' against path: 'properties/'
+INFO 2025-09-24 09:01:08,198 middleware 38584 38376 DEBUG: Checking exempt pattern: 'login/' against path: 'properties/'
+INFO 2025-09-24 09:01:08,198 middleware 38584 38376 DEBUG: Checking exempt pattern: 'logout/' against path: 'properties/'
+INFO 2025-09-24 09:01:08,198 middleware 38584 38376 DEBUG: Checking exempt pattern: 'accounts/' against path: 'properties/'
+INFO 2025-09-24 09:01:08,198 middleware 38584 38376 DEBUG: Checking exempt pattern: 'api/' against path: 'properties/'
+INFO 2025-09-24 09:01:08,198 middleware 38584 38376 DEBUG: Checking exempt pattern: 'media/' against path: 'properties/'
+INFO 2025-09-24 09:01:08,198 middleware 38584 38376 DEBUG: Checking exempt pattern: 'static/' against path: 'properties/'
+INFO 2025-09-24 09:01:08,198 middleware 38584 38376 DEBUG: Path 'properties/' is NOT exempt
+INFO 2025-09-24 09:01:08,198 middleware 38584 38376 DEBUG: Path 'properties/' is NOT exempt - checking authentication...
+INFO 2025-09-24 09:01:08,198 middleware 38584 38376 DEBUG: User StellaSimi is authenticated - checking login-only patterns...
+INFO 2025-09-24 09:01:08,199 middleware 38584 38376 DEBUG: User StellaSimi is regular user - checking module permissions...
+INFO 2025-09-24 09:01:08,199 middleware 38584 38376 DEBUG: Checking permission for path: 'properties/' -> clean_path: 'properties'
+INFO 2025-09-24 09:01:08,199 middleware 38584 38376 DEBUG: SUBSTRING MATCH found - pattern: 'properties' in 'properties' -> permission: 'auth.can_access_properties'
+INFO 2025-09-24 09:01:08,199 middleware 38584 38376 DEBUG: Required permission: auth.can_access_properties
+INFO 2025-09-24 09:01:08,200 middleware 38584 38376 DEBUG: User StellaSimi HAS permission auth.can_access_properties - allowing access
+INFO 2025-09-24 09:01:17,241 middleware 38584 38376 Starting request req_1758693677_38376: GET /tenant/ (user: anonymous)
+INFO 2025-09-24 09:01:17,248 middleware 38584 38376 DEBUG: ModuleAccessMiddleware processing path: 'tenant/' for user: StellaSimi
+INFO 2025-09-24 09:01:17,248 middleware 38584 38376 DEBUG: Checking if path 'tenant/' is exempt...
+INFO 2025-09-24 09:01:17,248 middleware 38584 38376 DEBUG: Checking exempt pattern: 'admin/' against path: 'tenant/'
+INFO 2025-09-24 09:01:17,248 middleware 38584 38376 DEBUG: Checking exempt pattern: 'login/' against path: 'tenant/'
+INFO 2025-09-24 09:01:17,248 middleware 38584 38376 DEBUG: Checking exempt pattern: 'logout/' against path: 'tenant/'
+INFO 2025-09-24 09:01:17,248 middleware 38584 38376 DEBUG: Checking exempt pattern: 'accounts/' against path: 'tenant/'
+INFO 2025-09-24 09:01:17,248 middleware 38584 38376 DEBUG: Checking exempt pattern: 'api/' against path: 'tenant/'
+INFO 2025-09-24 09:01:17,248 middleware 38584 38376 DEBUG: Checking exempt pattern: 'media/' against path: 'tenant/'
+INFO 2025-09-24 09:01:17,248 middleware 38584 38376 DEBUG: Checking exempt pattern: 'static/' against path: 'tenant/'
+INFO 2025-09-24 09:01:17,248 middleware 38584 38376 DEBUG: Path 'tenant/' is NOT exempt
+INFO 2025-09-24 09:01:17,248 middleware 38584 38376 DEBUG: Path 'tenant/' is NOT exempt - checking authentication...
+INFO 2025-09-24 09:01:17,248 middleware 38584 38376 DEBUG: User StellaSimi is authenticated - checking login-only patterns...
+INFO 2025-09-24 09:01:17,248 middleware 38584 38376 DEBUG: User StellaSimi is regular user - checking module permissions...
+INFO 2025-09-24 09:01:17,248 middleware 38584 38376 DEBUG: Checking permission for path: 'tenant/' -> clean_path: 'tenant'
+INFO 2025-09-24 09:01:17,248 middleware 38584 38376 DEBUG: SUBSTRING MATCH found - pattern: 'tenant' in 'tenant' -> permission: 'auth.can_access_tenants'
+INFO 2025-09-24 09:01:17,248 middleware 38584 38376 DEBUG: Required permission: auth.can_access_tenants
+INFO 2025-09-24 09:01:17,248 middleware 38584 38376 DEBUG: User StellaSimi HAS permission auth.can_access_tenants - allowing access
+INFO 2025-09-24 09:01:23,975 middleware 38584 38376 Starting request req_1758693683_38376: GET /suppliers/ (user: anonymous)
+INFO 2025-09-24 09:01:23,980 middleware 38584 38376 DEBUG: ModuleAccessMiddleware processing path: 'suppliers/' for user: StellaSimi
+INFO 2025-09-24 09:01:23,980 middleware 38584 38376 DEBUG: Checking if path 'suppliers/' is exempt...
+INFO 2025-09-24 09:01:23,980 middleware 38584 38376 DEBUG: Checking exempt pattern: 'admin/' against path: 'suppliers/'
+INFO 2025-09-24 09:01:23,980 middleware 38584 38376 DEBUG: Checking exempt pattern: 'login/' against path: 'suppliers/'
+INFO 2025-09-24 09:01:23,980 middleware 38584 38376 DEBUG: Checking exempt pattern: 'logout/' against path: 'suppliers/'
+INFO 2025-09-24 09:01:23,980 middleware 38584 38376 DEBUG: Checking exempt pattern: 'accounts/' against path: 'suppliers/'
+INFO 2025-09-24 09:01:23,980 middleware 38584 38376 DEBUG: Checking exempt pattern: 'api/' against path: 'suppliers/'
+INFO 2025-09-24 09:01:23,980 middleware 38584 38376 DEBUG: Checking exempt pattern: 'media/' against path: 'suppliers/'
+INFO 2025-09-24 09:01:23,980 middleware 38584 38376 DEBUG: Checking exempt pattern: 'static/' against path: 'suppliers/'
+INFO 2025-09-24 09:01:23,980 middleware 38584 38376 DEBUG: Path 'suppliers/' is NOT exempt
+INFO 2025-09-24 09:01:23,980 middleware 38584 38376 DEBUG: Path 'suppliers/' is NOT exempt - checking authentication...
+INFO 2025-09-24 09:01:23,980 middleware 38584 38376 DEBUG: User StellaSimi is authenticated - checking login-only patterns...
+INFO 2025-09-24 09:01:23,980 middleware 38584 38376 DEBUG: User StellaSimi is regular user - checking module permissions...
+INFO 2025-09-24 09:01:23,980 middleware 38584 38376 DEBUG: Checking permission for path: 'suppliers/' -> clean_path: 'suppliers'
+INFO 2025-09-24 09:01:23,980 middleware 38584 38376 DEBUG: SUBSTRING MATCH found - pattern: 'suppliers' in 'suppliers' -> permission: 'auth.can_access_suppliers'
+INFO 2025-09-24 09:01:23,980 middleware 38584 38376 DEBUG: Required permission: auth.can_access_suppliers
+INFO 2025-09-24 09:01:23,980 middleware 38584 38376 DEBUG: User StellaSimi HAS permission auth.can_access_suppliers - allowing access
+INFO 2025-09-24 09:01:32,292 middleware 38584 38376 Starting request req_1758693692_38376: GET /fsr/ (user: anonymous)
+INFO 2025-09-24 09:01:32,315 middleware 38584 38376 DEBUG: ModuleAccessMiddleware processing path: 'fsr/' for user: StellaSimi
+INFO 2025-09-24 09:01:32,315 middleware 38584 38376 DEBUG: Checking if path 'fsr/' is exempt...
+INFO 2025-09-24 09:01:32,315 middleware 38584 38376 DEBUG: Checking exempt pattern: 'admin/' against path: 'fsr/'
+INFO 2025-09-24 09:01:32,315 middleware 38584 38376 DEBUG: Checking exempt pattern: 'login/' against path: 'fsr/'
+INFO 2025-09-24 09:01:32,315 middleware 38584 38376 DEBUG: Checking exempt pattern: 'logout/' against path: 'fsr/'
+INFO 2025-09-24 09:01:32,315 middleware 38584 38376 DEBUG: Checking exempt pattern: 'accounts/' against path: 'fsr/'
+INFO 2025-09-24 09:01:32,315 middleware 38584 38376 DEBUG: Checking exempt pattern: 'api/' against path: 'fsr/'
+INFO 2025-09-24 09:01:32,315 middleware 38584 38376 DEBUG: Checking exempt pattern: 'media/' against path: 'fsr/'
+INFO 2025-09-24 09:01:32,315 middleware 38584 38376 DEBUG: Checking exempt pattern: 'static/' against path: 'fsr/'
+INFO 2025-09-24 09:01:32,315 middleware 38584 38376 DEBUG: Path 'fsr/' is NOT exempt
+INFO 2025-09-24 09:01:32,315 middleware 38584 38376 DEBUG: Path 'fsr/' is NOT exempt - checking authentication...
+INFO 2025-09-24 09:01:32,315 middleware 38584 38376 DEBUG: User StellaSimi is authenticated - checking login-only patterns...
+INFO 2025-09-24 09:01:32,315 middleware 38584 38376 DEBUG: User StellaSimi is regular user - checking module permissions...
+INFO 2025-09-24 09:01:32,315 middleware 38584 38376 DEBUG: Checking permission for path: 'fsr/' -> clean_path: 'fsr'
+INFO 2025-09-24 09:01:32,315 middleware 38584 38376 DEBUG: SUBSTRING MATCH found - pattern: 'fsr' in 'fsr' -> permission: 'auth.can_access_fsr'
+INFO 2025-09-24 09:01:32,315 middleware 38584 38376 DEBUG: Required permission: auth.can_access_fsr
+INFO 2025-09-24 09:01:32,315 middleware 38584 38376 DEBUG: User StellaSimi HAS permission auth.can_access_fsr - allowing access
+INFO 2025-09-24 09:01:41,174 middleware 38584 38376 Starting request req_1758693701_38376: GET /property_management_dashboard/ (user: anonymous)
+INFO 2025-09-24 09:01:41,174 middleware 38584 38376 DEBUG: ModuleAccessMiddleware processing path: 'property_management_dashboard/' for user: StellaSimi
+INFO 2025-09-24 09:01:41,174 middleware 38584 38376 DEBUG: Checking if path 'property_management_dashboard/' is exempt...
+INFO 2025-09-24 09:01:41,174 middleware 38584 38376 DEBUG: Checking exempt pattern: 'admin/' against path: 'property_management_dashboard/'
+INFO 2025-09-24 09:01:41,174 middleware 38584 38376 DEBUG: Checking exempt pattern: 'login/' against path: 'property_management_dashboard/'
+INFO 2025-09-24 09:01:41,174 middleware 38584 38376 DEBUG: Checking exempt pattern: 'logout/' against path: 'property_management_dashboard/'
+INFO 2025-09-24 09:01:41,174 middleware 38584 38376 DEBUG: Checking exempt pattern: 'accounts/' against path: 'property_management_dashboard/'
+INFO 2025-09-24 09:01:41,174 middleware 38584 38376 DEBUG: Checking exempt pattern: 'api/' against path: 'property_management_dashboard/'
+INFO 2025-09-24 09:01:41,174 middleware 38584 38376 DEBUG: Checking exempt pattern: 'media/' against path: 'property_management_dashboard/'
+INFO 2025-09-24 09:01:41,174 middleware 38584 38376 DEBUG: Checking exempt pattern: 'static/' against path: 'property_management_dashboard/'
+INFO 2025-09-24 09:01:41,174 middleware 38584 38376 DEBUG: Path 'property_management_dashboard/' is NOT exempt
+INFO 2025-09-24 09:01:41,174 middleware 38584 38376 DEBUG: Path 'property_management_dashboard/' is NOT exempt - checking authentication...
+INFO 2025-09-24 09:01:41,174 middleware 38584 38376 DEBUG: User StellaSimi is authenticated - checking login-only patterns...
+INFO 2025-09-24 09:01:41,174 middleware 38584 38376 DEBUG: User StellaSimi is regular user - checking module permissions...
+INFO 2025-09-24 09:01:41,174 middleware 38584 38376 DEBUG: Checking permission for path: 'property_management_dashboard/' -> clean_path: 'property_management_dashboard'
+INFO 2025-09-24 09:01:41,174 middleware 38584 38376 DEBUG: EXACT MATCH found - pattern: 'property_management_dashboard' -> permission: 'auth.can_access_dashboard'
+INFO 2025-09-24 09:01:41,174 middleware 38584 38376 DEBUG: Required permission: auth.can_access_dashboard
+WARNING 2025-09-24 09:01:41,181 middleware 38584 38376 User StellaSimi denied access to property_management_dashboard/ (missing permission: auth.can_access_dashboard)
+INFO 2025-09-24 09:02:06,138 middleware 38584 38376 Starting request req_1758693726_38376: GET /property_management_dashboard/ (user: anonymous)
+INFO 2025-09-24 09:02:06,165 middleware 38584 38376 DEBUG: ModuleAccessMiddleware processing path: 'property_management_dashboard/' for user: StellaSimi
+INFO 2025-09-24 09:02:06,165 middleware 38584 38376 DEBUG: Checking if path 'property_management_dashboard/' is exempt...
+INFO 2025-09-24 09:02:06,165 middleware 38584 38376 DEBUG: Checking exempt pattern: 'admin/' against path: 'property_management_dashboard/'
+INFO 2025-09-24 09:02:06,165 middleware 38584 38376 DEBUG: Checking exempt pattern: 'login/' against path: 'property_management_dashboard/'
+INFO 2025-09-24 09:02:06,165 middleware 38584 38376 DEBUG: Checking exempt pattern: 'logout/' against path: 'property_management_dashboard/'
+INFO 2025-09-24 09:02:06,165 middleware 38584 38376 DEBUG: Checking exempt pattern: 'accounts/' against path: 'property_management_dashboard/'
+INFO 2025-09-24 09:02:06,165 middleware 38584 38376 DEBUG: Checking exempt pattern: 'api/' against path: 'property_management_dashboard/'
+INFO 2025-09-24 09:02:06,165 middleware 38584 38376 DEBUG: Checking exempt pattern: 'media/' against path: 'property_management_dashboard/'
+INFO 2025-09-24 09:02:06,165 middleware 38584 38376 DEBUG: Checking exempt pattern: 'static/' against path: 'property_management_dashboard/'
+INFO 2025-09-24 09:02:06,165 middleware 38584 38376 DEBUG: Path 'property_management_dashboard/' is NOT exempt
+INFO 2025-09-24 09:02:06,165 middleware 38584 38376 DEBUG: Path 'property_management_dashboard/' is NOT exempt - checking authentication...
+INFO 2025-09-24 09:02:06,165 middleware 38584 38376 DEBUG: User StellaSimi is authenticated - checking login-only patterns...
+INFO 2025-09-24 09:02:06,165 middleware 38584 38376 DEBUG: User StellaSimi is regular user - checking module permissions...
+INFO 2025-09-24 09:02:06,165 middleware 38584 38376 DEBUG: Checking permission for path: 'property_management_dashboard/' -> clean_path: 'property_management_dashboard'
+INFO 2025-09-24 09:02:06,165 middleware 38584 38376 DEBUG: EXACT MATCH found - pattern: 'property_management_dashboard' -> permission: 'auth.can_access_dashboard'
+INFO 2025-09-24 09:02:06,165 middleware 38584 38376 DEBUG: Required permission: auth.can_access_dashboard
+WARNING 2025-09-24 09:02:06,165 middleware 38584 38376 User StellaSimi denied access to property_management_dashboard/ (missing permission: auth.can_access_dashboard)
+INFO 2025-09-24 09:02:16,338 middleware 38584 38376 Starting request req_1758693736_38376: GET / (user: anonymous)
+INFO 2025-09-24 09:02:16,353 middleware 38584 38376 DEBUG: ModuleAccessMiddleware processing path: '' for user: StellaSimi
+INFO 2025-09-24 09:02:16,353 middleware 38584 38376 DEBUG: Checking if path '' is exempt...
+INFO 2025-09-24 09:02:16,353 middleware 38584 38376 DEBUG: Checking exempt pattern: 'admin/' against path: ''
+INFO 2025-09-24 09:02:16,354 middleware 38584 38376 DEBUG: Checking exempt pattern: 'login/' against path: ''
+INFO 2025-09-24 09:02:16,354 middleware 38584 38376 DEBUG: Checking exempt pattern: 'logout/' against path: ''
+INFO 2025-09-24 09:02:16,354 middleware 38584 38376 DEBUG: Checking exempt pattern: 'accounts/' against path: ''
+INFO 2025-09-24 09:02:16,354 middleware 38584 38376 DEBUG: Checking exempt pattern: 'api/' against path: ''
+INFO 2025-09-24 09:02:16,354 middleware 38584 38376 DEBUG: Checking exempt pattern: 'media/' against path: ''
+INFO 2025-09-24 09:02:16,354 middleware 38584 38376 DEBUG: Checking exempt pattern: 'static/' against path: ''
+INFO 2025-09-24 09:02:16,354 middleware 38584 38376 DEBUG: Path '' is NOT exempt
+INFO 2025-09-24 09:02:16,355 middleware 38584 38376 DEBUG: Path '' is NOT exempt - checking authentication...
+INFO 2025-09-24 09:02:16,355 middleware 38584 38376 DEBUG: User StellaSimi is authenticated - checking login-only patterns...
+INFO 2025-09-24 09:02:16,355 middleware 38584 38376 DEBUG: User StellaSimi is regular user - checking module permissions...
+INFO 2025-09-24 09:02:16,355 middleware 38584 38376 DEBUG: Checking permission for path: '' -> clean_path: ''
+INFO 2025-09-24 09:02:16,355 middleware 38584 38376 DEBUG: NO MATCH found for path: ''
+INFO 2025-09-24 09:02:16,355 middleware 38584 38376 DEBUG: No specific permission required for path: ''
+INFO 2025-09-24 09:02:24,187 middleware 38584 38376 Starting request req_1758693744_38376: GET /invoices/ (user: anonymous)
+INFO 2025-09-24 09:02:24,214 middleware 38584 38376 DEBUG: ModuleAccessMiddleware processing path: 'invoices/' for user: StellaSimi
+INFO 2025-09-24 09:02:24,214 middleware 38584 38376 DEBUG: Checking if path 'invoices/' is exempt...
+INFO 2025-09-24 09:02:24,214 middleware 38584 38376 DEBUG: Checking exempt pattern: 'admin/' against path: 'invoices/'
+INFO 2025-09-24 09:02:24,214 middleware 38584 38376 DEBUG: Checking exempt pattern: 'login/' against path: 'invoices/'
+INFO 2025-09-24 09:02:24,214 middleware 38584 38376 DEBUG: Checking exempt pattern: 'logout/' against path: 'invoices/'
+INFO 2025-09-24 09:02:24,214 middleware 38584 38376 DEBUG: Checking exempt pattern: 'accounts/' against path: 'invoices/'
+INFO 2025-09-24 09:02:24,214 middleware 38584 38376 DEBUG: Checking exempt pattern: 'api/' against path: 'invoices/'
+INFO 2025-09-24 09:02:24,214 middleware 38584 38376 DEBUG: Checking exempt pattern: 'media/' against path: 'invoices/'
+INFO 2025-09-24 09:02:24,214 middleware 38584 38376 DEBUG: Checking exempt pattern: 'static/' against path: 'invoices/'
+INFO 2025-09-24 09:02:24,214 middleware 38584 38376 DEBUG: Path 'invoices/' is NOT exempt
+INFO 2025-09-24 09:02:24,214 middleware 38584 38376 DEBUG: Path 'invoices/' is NOT exempt - checking authentication...
+INFO 2025-09-24 09:02:24,214 middleware 38584 38376 DEBUG: User StellaSimi is authenticated - checking login-only patterns...
+INFO 2025-09-24 09:02:24,214 middleware 38584 38376 DEBUG: User StellaSimi is regular user - checking module permissions...
+INFO 2025-09-24 09:02:24,214 middleware 38584 38376 DEBUG: Checking permission for path: 'invoices/' -> clean_path: 'invoices'
+INFO 2025-09-24 09:02:24,214 middleware 38584 38376 DEBUG: SUBSTRING MATCH found - pattern: 'invoices' in 'invoices' -> permission: 'auth.can_access_invoices'
+INFO 2025-09-24 09:02:24,214 middleware 38584 38376 DEBUG: Required permission: auth.can_access_invoices
+WARNING 2025-09-24 09:02:24,214 middleware 38584 38376 User StellaSimi denied access to invoices/ (missing permission: auth.can_access_invoices)
+INFO 2025-09-24 09:02:33,187 middleware 38584 38376 Starting request req_1758693753_38376: GET /petty_cash/ (user: anonymous)
+INFO 2025-09-24 09:02:33,191 middleware 38584 38376 DEBUG: ModuleAccessMiddleware processing path: 'petty_cash/' for user: StellaSimi
+INFO 2025-09-24 09:02:33,191 middleware 38584 38376 DEBUG: Checking if path 'petty_cash/' is exempt...
+INFO 2025-09-24 09:02:33,191 middleware 38584 38376 DEBUG: Checking exempt pattern: 'admin/' against path: 'petty_cash/'
+INFO 2025-09-24 09:02:33,191 middleware 38584 38376 DEBUG: Checking exempt pattern: 'login/' against path: 'petty_cash/'
+INFO 2025-09-24 09:02:33,191 middleware 38584 38376 DEBUG: Checking exempt pattern: 'logout/' against path: 'petty_cash/'
+INFO 2025-09-24 09:02:33,191 middleware 38584 38376 DEBUG: Checking exempt pattern: 'accounts/' against path: 'petty_cash/'
+INFO 2025-09-24 09:02:33,191 middleware 38584 38376 DEBUG: Checking exempt pattern: 'api/' against path: 'petty_cash/'
+INFO 2025-09-24 09:02:33,191 middleware 38584 38376 DEBUG: Checking exempt pattern: 'media/' against path: 'petty_cash/'
+INFO 2025-09-24 09:02:33,191 middleware 38584 38376 DEBUG: Checking exempt pattern: 'static/' against path: 'petty_cash/'
+INFO 2025-09-24 09:02:33,191 middleware 38584 38376 DEBUG: Path 'petty_cash/' is NOT exempt
+INFO 2025-09-24 09:02:33,191 middleware 38584 38376 DEBUG: Path 'petty_cash/' is NOT exempt - checking authentication...
+INFO 2025-09-24 09:02:33,191 middleware 38584 38376 DEBUG: User StellaSimi is authenticated - checking login-only patterns...
+INFO 2025-09-24 09:02:33,191 middleware 38584 38376 DEBUG: User StellaSimi is regular user - checking module permissions...
+INFO 2025-09-24 09:02:33,191 middleware 38584 38376 DEBUG: Checking permission for path: 'petty_cash/' -> clean_path: 'petty_cash'
+INFO 2025-09-24 09:02:33,191 middleware 38584 38376 DEBUG: EXACT MATCH found - pattern: 'petty_cash' -> permission: 'auth.can_access_petty_cash'
+INFO 2025-09-24 09:02:33,191 middleware 38584 38376 DEBUG: Required permission: auth.can_access_petty_cash
+INFO 2025-09-24 09:02:33,196 middleware 38584 38376 DEBUG: User StellaSimi HAS permission auth.can_access_petty_cash - allowing access
+INFO 2025-09-24 09:02:40,929 middleware 38584 38376 Starting request req_1758693760_38376: GET /finance/ (user: anonymous)
+INFO 2025-09-24 09:02:40,931 middleware 38584 38376 DEBUG: ModuleAccessMiddleware processing path: 'finance/' for user: StellaSimi
+INFO 2025-09-24 09:02:40,931 middleware 38584 38376 DEBUG: Checking if path 'finance/' is exempt...
+INFO 2025-09-24 09:02:40,931 middleware 38584 38376 DEBUG: Checking exempt pattern: 'admin/' against path: 'finance/'
+INFO 2025-09-24 09:02:40,931 middleware 38584 38376 DEBUG: Checking exempt pattern: 'login/' against path: 'finance/'
+INFO 2025-09-24 09:02:40,931 middleware 38584 38376 DEBUG: Checking exempt pattern: 'logout/' against path: 'finance/'
+INFO 2025-09-24 09:02:40,931 middleware 38584 38376 DEBUG: Checking exempt pattern: 'accounts/' against path: 'finance/'
+INFO 2025-09-24 09:02:40,931 middleware 38584 38376 DEBUG: Checking exempt pattern: 'api/' against path: 'finance/'
+INFO 2025-09-24 09:02:40,931 middleware 38584 38376 DEBUG: Checking exempt pattern: 'media/' against path: 'finance/'
+INFO 2025-09-24 09:02:40,931 middleware 38584 38376 DEBUG: Checking exempt pattern: 'static/' against path: 'finance/'
+INFO 2025-09-24 09:02:40,931 middleware 38584 38376 DEBUG: Path 'finance/' is NOT exempt
+INFO 2025-09-24 09:02:40,931 middleware 38584 38376 DEBUG: Path 'finance/' is NOT exempt - checking authentication...
+INFO 2025-09-24 09:02:40,931 middleware 38584 38376 DEBUG: User StellaSimi is authenticated - checking login-only patterns...
+INFO 2025-09-24 09:02:40,931 middleware 38584 38376 DEBUG: User StellaSimi is regular user - checking module permissions...
+INFO 2025-09-24 09:02:40,931 middleware 38584 38376 DEBUG: Checking permission for path: 'finance/' -> clean_path: 'finance'
+INFO 2025-09-24 09:02:40,931 middleware 38584 38376 DEBUG: SUBSTRING MATCH found - pattern: 'finance' in 'finance' -> permission: 'auth.can_access_financials'
+INFO 2025-09-24 09:02:40,931 middleware 38584 38376 DEBUG: Required permission: auth.can_access_financials
+WARNING 2025-09-24 09:02:40,931 middleware 38584 38376 User StellaSimi denied access to finance/ (missing permission: auth.can_access_financials)
+INFO 2025-09-24 09:02:53,741 middleware 38584 38376 Starting request req_1758693773_38376: GET /projects/ (user: anonymous)
+INFO 2025-09-24 09:02:53,747 middleware 38584 38376 DEBUG: ModuleAccessMiddleware processing path: 'projects/' for user: StellaSimi
+INFO 2025-09-24 09:02:53,747 middleware 38584 38376 DEBUG: Checking if path 'projects/' is exempt...
+INFO 2025-09-24 09:02:53,747 middleware 38584 38376 DEBUG: Checking exempt pattern: 'admin/' against path: 'projects/'
+INFO 2025-09-24 09:02:53,747 middleware 38584 38376 DEBUG: Checking exempt pattern: 'login/' against path: 'projects/'
+INFO 2025-09-24 09:02:53,747 middleware 38584 38376 DEBUG: Checking exempt pattern: 'logout/' against path: 'projects/'
+INFO 2025-09-24 09:02:53,747 middleware 38584 38376 DEBUG: Checking exempt pattern: 'accounts/' against path: 'projects/'
+INFO 2025-09-24 09:02:53,747 middleware 38584 38376 DEBUG: Checking exempt pattern: 'api/' against path: 'projects/'
+INFO 2025-09-24 09:02:53,747 middleware 38584 38376 DEBUG: Checking exempt pattern: 'media/' against path: 'projects/'
+INFO 2025-09-24 09:02:53,747 middleware 38584 38376 DEBUG: Checking exempt pattern: 'static/' against path: 'projects/'
+INFO 2025-09-24 09:02:53,747 middleware 38584 38376 DEBUG: Path 'projects/' is NOT exempt
+INFO 2025-09-24 09:02:53,747 middleware 38584 38376 DEBUG: Path 'projects/' is NOT exempt - checking authentication...
+INFO 2025-09-24 09:02:53,747 middleware 38584 38376 DEBUG: User StellaSimi is authenticated - checking login-only patterns...
+INFO 2025-09-24 09:02:53,747 middleware 38584 38376 DEBUG: User StellaSimi is regular user - checking module permissions...
+INFO 2025-09-24 09:02:53,747 middleware 38584 38376 DEBUG: Checking permission for path: 'projects/' -> clean_path: 'projects'
+INFO 2025-09-24 09:02:53,747 middleware 38584 38376 DEBUG: SUBSTRING MATCH found - pattern: 'projects' in 'projects' -> permission: 'auth.can_access_projects'
+INFO 2025-09-24 09:02:53,747 middleware 38584 38376 DEBUG: Required permission: auth.can_access_projects
+WARNING 2025-09-24 09:02:53,747 middleware 38584 38376 User StellaSimi denied access to projects/ (missing permission: auth.can_access_projects)
+INFO 2025-09-24 09:08:22,729 middleware 41280 38012 Enhanced DatabaseConnectionMiddleware initialized with threshold=50
+INFO 2025-09-24 09:08:23,410 middleware 41280 16444 Starting request req_1758694103_16444: GET /finance/ (user: anonymous)
+WARNING 2025-09-24 09:08:23,431 middleware 41280 16444 User StellaSimi denied access to finance/ (missing permission: auth.can_access_financials)
+INFO 2025-09-24 09:08:28,196 middleware 41280 16444 Starting request req_1758694108_16444: GET / (user: anonymous)
+INFO 2025-09-24 09:08:33,269 middleware 41280 16444 Starting request req_1758694113_16444: GET /projects/ (user: anonymous)
+WARNING 2025-09-24 09:08:33,279 middleware 41280 16444 User StellaSimi denied access to projects/ (missing permission: auth.can_access_projects)
+INFO 2025-09-24 09:08:40,379 middleware 41280 16444 Starting request req_1758694120_16444: GET /projects/ (user: anonymous)
+WARNING 2025-09-24 09:08:40,382 middleware 41280 16444 User StellaSimi denied access to projects/ (missing permission: auth.can_access_projects)
+INFO 2025-09-24 09:09:04,608 middleware 41280 16444 Starting request req_1758694144_16444: GET /invoices/ (user: anonymous)
+WARNING 2025-09-24 09:09:04,632 middleware 41280 16444 User StellaSimi denied access to invoices/ (missing permission: auth.can_access_invoices)
+INFO 2025-09-24 09:11:24,446 middleware 41304 25856 Enhanced DatabaseConnectionMiddleware initialized with threshold=50
+INFO 2025-09-24 09:11:31,713 middleware 41304 39740 Starting request req_1758694291_39740: GET /act_expense_all/ (user: anonymous)
