@@ -299,3 +299,6 @@ INFO 2025-09-24 11:09:55,365 "GET /login/?next=/ HTTP/1.1" 200 8913
 INFO 2025-09-24 11:10:06,277 "POST /login/?next=/ HTTP/1.1" 302 0
 INFO 2025-09-24 11:10:06,305 "GET / HTTP/1.1" 200 16444
 INFO 2025-09-24 11:10:10,089 "GET /properties/ HTTP/1.1" 200 57058
+INFO 2025-09-24 11:30:05,660 Watching for file changes with StatReloader
+INFO 2025-09-24 11:33:38,515 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\urls.py changed, reloading.
+INFO 2025-09-24 11:33:39,576 Watching for file changes with StatReloader

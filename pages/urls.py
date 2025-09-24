@@ -2,6 +2,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.urls import path
 from . import views
+from .views_setup import setup_permissions  # Add this import
 
 urlpatterns = [
     # Home
@@ -23,7 +24,7 @@ urlpatterns = [
     path('lease/<int:tenant_id>/', views.lease_agreement_report, name='lease_agreement_report'),
     path('lease/<str:filename>/view/', views.serve_lease, name='serve_lease'),
     path('upload_lease_agreement/', views.upload_lease_agreement, name='upload_lease_agreement'),
-    path('setup-permissions/', setup_permissions, name='setup_permissions'),
+    path('setup-permissions/', setup_permissions, name='setup_permissions'),  # Now properly imported
 
     #
     #Reports - Dashboard
@@ -194,5 +195,4 @@ urlpatterns = [
     path('fsr/pdf/', views.fsr_pdf, name='fsr_pdf'),
     path('issues/delete/<int:issue_id>/', views.delete_issue, name='delete_issue'),
 
-
-    ]
+]

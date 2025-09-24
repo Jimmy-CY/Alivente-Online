@@ -462,3 +462,4 @@ INFO 2025-09-24 11:10:05,500 middleware 17852 13576 Running periodic cleanup aft
 INFO 2025-09-24 11:10:05,561 middleware 17852 13576 Force cleanup completed. Previous query counts: {'default': 0}
 INFO 2025-09-24 11:10:06,283 middleware 17852 13576 Starting request req_1758701406_13576: GET / (user: anonymous)
 INFO 2025-09-24 11:10:09,999 middleware 17852 13576 Starting request req_1758701409_13576: GET /properties/ (user: anonymous)
+INFO 2025-09-24 11:33:41,774 middleware 40036 40736 Enhanced DatabaseConnectionMiddleware initialized with threshold=50
