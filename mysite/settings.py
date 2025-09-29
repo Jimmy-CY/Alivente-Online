@@ -105,6 +105,7 @@ DATABASES = {
         "PASSWORD": os.getenv("MYSQLPASSWORD"),
         "HOST": os.getenv("MYSQLHOST"),
         "PORT": os.getenv("MYSQLPORT"),
+        "AUTH_PLUGIN": "mysql_native_password",
         "OPTIONS": {
             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
             'charset': 'utf8mb4',

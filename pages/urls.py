@@ -131,6 +131,11 @@ urlpatterns = [
     path('financial-indicators/', views.financial_indicators_view, name='financial_indicators'),
 
     #
+    # Lease Agreement Generation
+    path('generate-lease-agreement/', views.generate_lease_agreement_view, name='generate_lease_agreement'),
+    path('get-property-tenant-data/', views.get_property_tenant_data, name='get_property_tenant_data'),
+
+    #
     # Tenants
     path('tenant/', views.tenant_page, name='tenant'),
     path('tenant_add/', views.tenant_add, name='tenant_add'),

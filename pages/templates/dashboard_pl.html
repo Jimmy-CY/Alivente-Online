@@ -273,6 +273,43 @@
         page-break-inside: avoid;
     }
 }
+
+/* More specific styling to override Bootstrap */
+.year-selector select.form-control.year-dropdown {
+    background-color: #17a2b8 !important;
+    color: white !important;
+    border: 1px solid #17a2b8 !important;
+    border-radius: 6px !important;
+    padding: 8px 16px !important;
+    font-weight: 500 !important;
+    font-size: 14px !important;
+    min-width: 120px;
+    cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+    transition: all 0.2s ease;
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e") !important;
+    background-repeat: no-repeat !important;
+    background-position: right 12px center !important;
+    background-size: 16px !important;
+    padding-right: 40px !important;
+}
+
+.year-selector select.form-control.year-dropdown:hover {
+    background-color: #138496 !important;
+    border-color: #117a8b !important;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15) !important;
+}
+
+.year-selector select.form-control.year-dropdown:focus {
+    background-color: #138496 !important;
+    border-color: #117a8b !important;
+    outline: none !important;
+    box-shadow: 0 0 0 0.2rem rgba(23, 162, 184, 0.25) !important;
+}
+
 </style>
 {% endblock %}
 
@@ -303,29 +340,31 @@
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <h5><i class="fas fa-chart-pie text-info"></i> Profit & Loss Statement</h5>
                             
-                            <!-- Year Selector -->
+                            <!-- Year Selector - Inline Styled Select -->
                             <div class="year-selector">
-                                <div class="btn-group">
-                                    <button type="button" class="btn btn-info dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-                                        {{ selected_year_display }}
-                                    </button>
-                                    <ul class="dropdown-menu">
-                                        <li>
-                                            <a class="dropdown-item {% if selected_year == 'budget' %}active bg-info text-white{% endif %}" 
-                                               href="?year=budget">
-                                                Budget
-                                            </a>
-                                        </li>
-                                        {% for year in available_years %}
-                                            <li>
-                                                <a class="dropdown-item {% if year == selected_year %}active bg-info text-white{% endif %}" 
-                                                   href="?year={{ year }}">
-                                                    {{ year }}
-                                                </a>
-                                            </li>
-                                        {% endfor %}
-                                    </ul>
-                                </div>
+                                <select onchange="window.location.href='?year=' + this.value" 
+                                        style="background-color: #17a2b8 !important; 
+                                               color: white !important; 
+                                               border: 1px solid #17a2b8 !important; 
+                                               border-radius: 6px !important; 
+                                               padding: 8px 16px !important; 
+                                               font-weight: 500 !important; 
+                                               font-size: 14px !important; 
+                                               min-width: 120px !important;
+                                               cursor: pointer !important;
+                                               appearance: none !important;
+                                               -webkit-appearance: none !important;
+                                               -moz-appearance: none !important;
+                                               background-image: url('data:image/svg+xml;charset=UTF-8,%3csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22white%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3e%3cpolyline points=%226,9 12,15 18,9%22%3e%3c/polyline%3e%3c/svg%3e') !important;
+                                               background-repeat: no-repeat !important;
+                                               background-position: right 12px center !important;
+                                               background-size: 16px !important;
+                                               padding-right: 40px !important;">
+                                    <option value="budget" {% if selected_year == 'budget' %}selected{% endif %}>Budget</option>
+                                    {% for year in available_years %}
+                                        <option value="{{ year }}" {% if year == selected_year %}selected{% endif %}>{{ year }}</option>
+                                    {% endfor %}
+                                </select>
                             </div>
                         </div>
 

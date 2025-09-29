@@ -1,0 +1,1323 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Generate Lease Agreement{% endblock %}
+
+{% block content %}
+
+<!-- CSS GOES HERE -->
+<style>
+  .furniture-item {
+    display: flex;
+    align-items: center;
+    background: white;
+    border: 1px solid #e9ecef;
+    border-radius: 4px;
+    padding: 8px 12px;
+    margin-bottom: 8px;
+    min-height: 40px;
+  }
+  
+  .quantity-input {
+    width: 35px;
+    height: 28px;
+    text-align: center;
+    border: 1px solid #ced4da;
+    border-radius: 3px;
+    font-size: 14px;
+    font-weight: 500;
+    margin-right: 12px;
+    flex-shrink: 0;
+  }
+  
+  .quantity-input:focus {
+    border-color: #17a2b8;
+    box-shadow: 0 0 0 0.2rem rgba(23, 162, 184, 0.25);
+    outline: none;
+  }
+  
+  .item-label {
+    font-size: 13px;
+    color: #495057;
+    margin: 0;
+    flex-grow: 1;
+    font-weight: 500;
+  }
+  
+  .furniture-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+
+  .form-check {
+    margin-bottom: 0;
+    display: inline-flex;
+    align-items: center;
+    margin-left: 15px;
+  }
+
+  .form-check-input {
+    margin-top: 0;
+    margin-right: 8px;
+  }
+
+  .form-check-label {
+    font-size: 14px;
+    color: #6c757d;
+    font-weight: normal;
+    margin-bottom: 0;
+  }
+
+  .d-flex {
+    display: flex !important;
+  }
+
+  .align-items-center {
+    align-items: center !important;
+  }
+
+  .me-3 {
+    margin-right: 1rem !important;
+  }
+
+  .ms-2 {
+    margin-left: 0.5rem !important;
+  }
+
+  .justify-content-between {
+    justify-content: space-between !important;
+  }
+
+  .btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    border-radius: 0.2rem;
+  }
+
+  .btn-light {
+    color: #212529;
+    background-color: #f8f9fa;
+    border-color: #f8f9fa;
+  }
+
+  .btn-light:hover {
+    color: #212529;
+    background-color: #e2e6ea;
+    border-color: #dae0e5;
+  }
+
+  #add-second-tenant-btn,
+  #remove-second-tenant-btn {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+  }
+  
+  @media (max-width: 768px) {
+    .furniture-row {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+  
+  @media (max-width: 576px) {
+    .furniture-row {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+
+<h2><center>GENERATE LEASE AGREEMENT</center></h2>
+<br/>
+
+{% for msg in messages %}
+  <div class="alert alert-secondary alert-dismissible fade show auto-dismiss" role="alert">
+    <strong></strong> <center>{{ msg }}</center>
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <script>
+    setTimeout(function() {
+      document.querySelectorAll('.auto-dismiss').forEach(alert => {
+        alert.classList.remove('show');
+        alert.classList.add('fade');
+        setTimeout(() => alert.remove(), 500);
+      });
+    }, 2000);
+  </script>
+{% endfor %}
+
+<body>
+  <div style="display: flex; justify-content: flex-end">
+    <a href="{% url 'admin_apms' %}" class="btn btn-info" style="margin-right:16px" role="button">Back to Administration</a>
+  </div>
+  <br>
+
+  {% if user.is_superuser %}
+  
+  <div class="container mt-4 border rounded p-4" style="max-width: 800px; border-color: #dee2e6 !important;">
+    <form method="post" id="lease-generation-form">
+      {% csrf_token %}
+      
+      <!-- Step 1: Country and Language Selection -->
+      <div class="card mb-4">
+        <div class="card-header bg-info text-white">
+          <h5 class="mb-0"><i class="fas fa-globe-americas"></i> Step 1: Select Country and Language</h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label for="country-select" class="form-label"><strong>Country:</strong></label>
+              <select class="form-control" id="country-select" name="country" required>
+                <option value="">Select Country</option>
+                <option value="cyprus">Cyprus</option>
+                <option value="greece">Greece</option>
+                <option value="spain">Spain</option>
+              </select>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="language-select" class="form-label"><strong>Language:</strong></label>
+              <select class="form-control" id="language-select" name="language" required>
+                <option value="">Select Language</option>
+              </select>
+            </div>
+          </div>
+          <div id="selection-preview" class="alert alert-info" style="display: none;">
+            <strong>Selected:</strong> <span id="selected-country"></span> - <span id="selected-language"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2: Property and Tenant Information -->
+      <div class="card mb-4" id="property-tenant-section" style="display: none;">
+        <div class="card-header bg-info text-white">
+          <h5 class="mb-0"><i class="fas fa-home"></i> Step 2: Property and Tenant Information</h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6 mb-3">
+              <label for="property-select" class="form-label"><strong>Property:</strong></label>
+              <select class="form-control" id="property-select" name="property" required>
+                <option value="">Select Property</option>
+                {% for property in properties %}
+                  <option value="{{ property.prop_id }}" data-country="{{ property.prop_country|lower }}">
+                    {{ property.prop_name }} - {{ property.prop_city }}
+                  </option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-6 mb-3">
+              <label for="tenant-select" class="form-label"><strong>Tenant:</strong></label>
+              <select class="form-control" id="tenant-select" name="tenant" required>
+                <option value="">Select Tenant</option>
+                <option value="new_tenant">+ New Tenant</option>
+                {% for tenant in tenants %}
+                  <option value="{{ tenant.tenant_id }}" data-property="{{ tenant.prop.prop_id }}">
+                    {{ tenant.tenant_name }}
+                  </option>
+                {% endfor %}
+              </select>
+            </div>
+          </div>
+          <div id="data-preview" class="alert alert-info" style="display: none;">
+            <h6><strong>Selected Data Preview:</strong></h6>
+            <div id="preview-content"></div>
+            <button type="button" class="btn btn-info btn-sm mt-2" id="review-data-btn">
+              <i class="fas fa-edit"></i> Review & Complete Data
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 3: Generate Document -->
+      <div class="card mb-4" id="generate-section" style="display: none;">
+        <div class="card-header bg-info text-white">
+          <h5 class="mb-0"><i class="fas fa-file-download"></i> Step 3: Generate Document</h5>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-12 text-center">
+              <p class="mb-3">Review your selections and click the button below to generate the lease agreement.</p>
+              <button type="submit" class="btn btn-secondary btn-lg" id="generate-btn" disabled>
+                <i class="fas fa-file-contract"></i> Generate Lease Agreement
+              </button>
+            </div>
+          </div>
+          <div id="generation-progress" class="mt-3" style="display: none;">
+            <div class="progress">
+              <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                   role="progressbar" style="width: 100%">
+                Generating Document...
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <input type="hidden" name="additional_data" id="additional-data-input">
+    </form>
+  </div>
+
+  <!-- MODAL GOES HERE -->
+  <!-- Modal for Additional Data Collection -->
+<div class="modal fade" id="additionalDataModal" tabindex="-1" aria-labelledby="additionalDataModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header bg-info text-white">
+        <h5 class="modal-title" id="additionalDataModalLabel">
+          <i class="fas fa-edit"></i> Complete Lease Agreement Data
+        </h5>
+        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <!-- Database Information Display -->
+        <div class="row mb-4">
+          <div class="col-md-6">
+            <div class="card">
+              <div class="card-header bg-info text-white">
+                <h6 class="mb-0">Property Information</h6>
+              </div>
+              <div class="card-body" id="property-info">
+                <!-- Property info will be populated by JavaScript -->
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="card">
+              <div class="card-header bg-info text-white">
+                <div class="d-flex justify-content-between align-items-center">
+                  <h6 class="mb-0">Tenant Information</h6>
+                  <button type="button" id="add-second-tenant-btn" class="btn btn-light btn-sm" style="display: none;">
+                    <i class="fas fa-plus"></i> Add Second Tenant
+                  </button>
+                </div>
+              </div>
+              <div class="card-body" id="tenant-info">
+                <!-- Tenant info will be populated by JavaScript -->
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Existing Tenant Additional Information Section -->
+        <div id="existing-tenant-section" style="display: none;">
+          <div class="card mb-3">
+            <div class="card-header bg-info text-white">
+              <h6 class="mb-0">Additional Information Required for Tenant: <span id="tenant-name-display"></span></h6>
+            </div>
+            <div class="card-body">
+              <div class="row">
+                <div class="col-md-6 mb-3" id="existing-passport-field" style="display: none;">
+                  <label for="existing-tenant-passport" class="form-label">Passport/ID Number: <span class="text-danger">*</span></label>
+                  <input type="text" class="form-control" id="existing-tenant-passport" name="existing_tenant_passport_id" required>
+                </div>
+                <div class="col-md-6 mb-3" id="existing-passport-country-field" style="display: none;">
+                  <label for="existing-tenant-passport-country" class="form-label">Passport/ID Country: <span class="text-danger">*</span></label>
+                  <input type="text" class="form-control" id="existing-tenant-passport-country" name="existing_tenant_passport_country" required>
+                </div>
+                <div class="col-md-6 mb-3" id="existing-registration-field" style="display: none;">
+                  <label for="existing-tenant-registration" class="form-label">Company Registration Number: <span class="text-danger">*</span></label>
+                  <input type="text" class="form-control" id="existing-tenant-registration" name="existing_tenant_registration_number" required>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- New Tenant Section -->
+        <div id="new-tenant-section" style="display: none;">
+          <div class="card mb-3">
+            <div class="card-header bg-warning text-dark">
+              <h6 class="mb-0">New Tenant Information</h6>
+            </div>
+            <div class="card-body">
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label for="new-tenant-type" class="form-label">Tenant Type:</label>
+                  <select class="form-control" id="new-tenant-type" name="new_tenant_type" onchange="updateTenantFields()">
+                    <option value="Individual">Individual</option>
+                    <option value="Company">Company</option>
+                  </select>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="new-tenant-name" class="form-label">
+                    <span id="tenant-name-label">Individual Name:</span> <span class="text-danger">*</span>
+                  </label>
+                  <input type="text" class="form-control" id="new-tenant-name" name="new_tenant_name" required>
+                </div>
+                <div class="col-md-6 mb-3" id="passport-field" style="display: none;">
+                  <label for="new-tenant-passport" class="form-label">
+                    <span id="passport-label">Passport/ID Number:</span> <span class="text-danger">*</span>
+                  </label>
+                  <input type="text" class="form-control" id="new-tenant-passport" name="new_tenant_passport_id">
+                </div>
+                <div class="col-md-6 mb-3" id="passport-country-field" style="display: none;">
+                  <label for="new-tenant-passport-country" class="form-label">
+                    <span id="passport-country-label">Passport/ID Country:</span> <span class="text-danger">*</span>
+                  </label>
+                  <input type="text" class="form-control" id="new-tenant-passport-country" name="new_tenant_passport_country">
+                </div>
+                <div class="col-md-6 mb-3" id="registration-field" style="display: none;">
+                  <label for="new-tenant-registration" class="form-label">Company Registration Number: <span class="text-danger">*</span></label>
+                  <input type="text" class="form-control" id="new-tenant-registration" name="new_tenant_registration_number">
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="new-tenant-email" class="form-label">Email: <span class="text-danger">*</span></label>
+                  <input type="email" class="form-control" id="new-tenant-email" name="new_tenant_email" required>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="new-tenant-phone" class="form-label">Phone: <span class="text-danger">*</span></label>
+                  <input type="tel" class="form-control" id="new-tenant-phone" name="new_tenant_contact_number" required>
+                </div>
+                <div class="col-12 mb-3" id="address-field">
+                  <label for="new-tenant-address" class="form-label">Tenant Address: <span class="text-danger">*</span></label>
+                  <textarea class="form-control" id="new-tenant-address" name="new_tenant_address" rows="2" required></textarea>
+                  <small class="form-text text-muted">For existing tenants, property address will be used automatically.</small>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Second Tenant Section -->
+        <div id="second-tenant-section" style="display: none;">
+          <div class="card mb-3">
+            <div class="card-header bg-success text-white">
+              <div class="d-flex justify-content-between align-items-center">
+                <h6 class="mb-0">Second Tenant Information</h6>
+                <button type="button" id="remove-second-tenant-btn" class="btn btn-light btn-sm">
+                  <i class="fas fa-minus"></i> Remove
+                </button>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label for="second-tenant-name" class="form-label">Name: <span class="text-danger">*</span></label>
+                  <input type="text" class="form-control" id="second-tenant-name" name="second_tenant_name">
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="second-tenant-contact" class="form-label">Contact Person:</label>
+                  <input type="text" class="form-control" id="second-tenant-contact" name="second_tenant_contact_person">
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="second-tenant-email" class="form-label">Email: <span class="text-danger">*</span></label>
+                  <input type="email" class="form-control" id="second-tenant-email" name="second_tenant_email">
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="second-tenant-phone" class="form-label">Phone: <span class="text-danger">*</span></label>
+                  <input type="tel" class="form-control" id="second-tenant-phone" name="second_tenant_contact_number">
+                </div>
+                <div class="col-12 mb-3">
+                  <label for="second-tenant-address" class="form-label">Address: <span class="text-danger">*</span></label>
+                  <textarea class="form-control" id="second-tenant-address" name="second_tenant_address" rows="2"></textarea>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="second-tenant-passport" class="form-label">Passport/ID Number: <span class="text-danger">*</span></label>
+                  <input type="text" class="form-control" id="second-tenant-passport" name="second_tenant_passport_id">
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="second-tenant-passport-country" class="form-label">Passport/ID Country: <span class="text-danger">*</span></label>
+                  <input type="text" class="form-control" id="second-tenant-passport-country" name="second_tenant_passport_country">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Amenities Section -->
+        <div class="card mb-3">
+          <div class="card-header bg-light">
+            <h6 class="mb-0">Amenities</h6>
+          </div>
+          <div class="card-body">
+            <div class="d-flex align-items-center">
+              <div class="form-check me-3">
+                <input class="form-check-input" type="checkbox" id="amenity-parking" name="amenity_parking" value="true">
+                <label class="form-check-label" for="amenity-parking">
+                  Parking
+                </label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="amenity-storeroom" name="amenity_storeroom" value="true">
+                <label class="form-check-label" for="amenity-storeroom">
+                  Storeroom
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Additional Data Form -->
+        <form id="additional-data-form">
+          <!-- Lease Terms Section -->
+          <div class="card mb-3">
+            <div class="card-header bg-light">
+              <h6 class="mb-0">Lease Terms</h6>
+            </div>
+            <div class="card-body">
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label for="modal-start-date" class="form-label">Start Date:</label>
+                  <input type="date" class="form-control" id="modal-start-date" name="start_date">
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="modal-end-date" class="form-label">End Date:</label>
+                  <input type="date" class="form-control" id="modal-end-date" name="end_date">
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="modal-monthly-rent" class="form-label">Monthly Rent (€):</label>
+                  <input type="number" class="form-control" id="modal-monthly-rent" name="monthly_rent" step="0.01">
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="modal-security-deposit" class="form-label">Security Deposit (€):</label>
+                  <input type="number" class="form-control" id="modal-security-deposit" name="security_deposit" step="0.01">
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="modal-communal-expenses" class="form-label">Communal Expenses (€):</label>
+                  <input type="number" class="form-control" id="modal-communal-expenses" name="communal_expenses" step="0.01" value="0">
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="modal-extension-period" class="form-label">Extension Period (months):</label>
+                  <input type="number" class="form-control" id="modal-extension-period" name="extension_period" min="0" value="0" onchange="calculateExtensionDate()">
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="modal-extension-date" class="form-label">Extension Date: <small class="text-muted">(auto-calculated)</small></label>
+                  <input type="date" class="form-control" id="modal-extension-date" name="extension_date" readonly style="background-color: #f8f9fa;">
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="modal-rental-increase" class="form-label">Rental Increase (%):</label>
+                  <input type="number" class="form-control" id="modal-rental-increase" name="rental_increase" step="0.1" min="0" value="0">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Landlord Information Section -->
+          <div class="card mb-3">
+            <div class="card-header bg-light">
+              <h6 class="mb-0">Landlord Information</h6>
+            </div>
+            <div class="card-body">
+              <div class="row">
+                <div class="col-md-6 mb-3">
+                  <label for="modal-landlord-name" class="form-label">Landlord Name:</label>
+                  <input type="text" class="form-control" id="modal-landlord-name" name="landlord_name" value="Alivente Limited">
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="modal-landlord-contact" class="form-label">Contact Person:</label>
+                  <input type="text" class="form-control" id="modal-landlord-contact" name="landlord_contact_person" value="Demetri Manias">
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="modal-landlord-registration" class="form-label">Company Registration Number:</label>
+                  <input type="text" class="form-control" id="modal-landlord-registration" name="landlord_registration_number" value="HE123456">
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="modal-landlord-phone" class="form-label">Phone:</label>
+                  <input type="text" class="form-control" id="modal-landlord-phone" name="landlord_phone" value="+357-96668557">
+                </div>
+                <div class="col-12 mb-3">
+                  <label for="modal-landlord-email" class="form-label">Email:</label>
+                  <input type="email" class="form-control" id="modal-landlord-email" name="landlord_email" value="demetri.manias@alivente.com">
+                </div>
+                <div class="col-12 mb-3">
+                  <label for="modal-landlord-address" class="form-label">Address:</label>
+                  <textarea class="form-control" id="modal-landlord-address" name="landlord_address" rows="2">Alivente House, Dikaiosynis 13A, Engomi, Nicosia, Cyprus, 2412</textarea>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Furniture and Appliances Section -->
+          <div class="card mb-3">
+            <div class="card-header bg-light">
+              <h6 class="mb-0" style="display: inline-block;">Furniture and Appliances</h6>
+              <span style="margin-left: 20px; font-size: 14px; color: #6c757d;">
+                (Fully Furnished 
+                <input type="checkbox" id="fully-furnished-checkbox" name="fully_furnished" value="true" style="margin: 0 3px;">
+                )
+              </span>
+            </div>
+            <div class="card-body">
+              <!-- Row 1 -->
+              <div class="furniture-row">
+                <div class="furniture-item">
+                  <input type="number" class="quantity-input" min="0" max="9" value="0" name="furniture_television">
+                  <label class="item-label">Television</label>
+                </div>
+                <div class="furniture-item">
+                  <input type="number" class="quantity-input" min="0" max="9" value="0" name="furniture_washing_machine">
+                  <label class="item-label">Washing Machine</label>
+                </div>
+                <div class="furniture-item">
+                  <input type="number" class="quantity-input" min="0" max="9" value="0" name="furniture_dishwasher">
+                  <label class="item-label">Dishwasher</label>
+                </div>
+                <div class="furniture-item">
+                  <input type="number" class="quantity-input" min="0" max="9" value="0" name="furniture_oven">
+                  <label class="item-label">Oven</label>
+                </div>
+              </div>
+              
+              <!-- Row 2 -->
+              <div class="furniture-row">
+                <div class="furniture-item">
+                  <input type="number" class="quantity-input" min="0" max="9" value="0" name="furniture_stove">
+                  <label class="item-label">Stove</label>
+                </div>
+                <div class="furniture-item">
+                  <input type="number" class="quantity-input" min="0" max="9" value="0" name="furniture_extractor_fan">
+                  <label class="item-label">Extractor Fan</label>
+                </div>
+                <div class="furniture-item">
+                  <input type="number" class="quantity-input" min="0" max="9" value="0" name="furniture_fridge_freezer">
+                  <label class="item-label">Fridge/Freezer</label>
+                </div>
+                <div class="furniture-item">
+                  <input type="number" class="quantity-input" min="0" max="9" value="0" name="furniture_airconditioner">
+                  <label class="item-label">Air Conditioner</label>
+                </div>
+              </div>
+              
+              <!-- Row 3 -->
+              <div class="furniture-row">
+                <div class="furniture-item">
+                  <input type="number" class="quantity-input" min="0" max="9" value="0" name="furniture_microwave">
+                  <label class="item-label">Microwave</label>
+                </div>
+                <div class="furniture-item">
+                  <input type="number" class="quantity-input" min="0" max="9" value="0" name="furniture_three_seater_couch">
+                  <label class="item-label">Three-Seater Couch</label>
+                </div>
+                <div class="furniture-item">
+                  <input type="number" class="quantity-input" min="0" max="9" value="0" name="furniture_two_seater_couch">
+                  <label class="item-label">Two-Seater Couch</label>
+                </div>
+                <div class="furniture-item">
+                  <input type="number" class="quantity-input" min="0" max="9" value="0" name="furniture_lounge_chair">
+                  <label class="item-label">Lounge Chair</label>
+                </div>
+              </div>
+              
+              <!-- Row 4 -->
+              <div class="furniture-row">
+                <div class="furniture-item">
+                  <input type="number" class="quantity-input" min="0" max="9" value="0" name="furniture_coffee_table">
+                  <label class="item-label">Coffee Table</label>
+                </div>
+                <div class="furniture-item">
+                  <input type="number" class="quantity-input" min="0" max="9" value="0" name="furniture_corner_table">
+                  <label class="item-label">Corner Table</label>
+                </div>
+                <div class="furniture-item">
+                  <input type="number" class="quantity-input" min="0" max="9" value="0" name="furniture_standing_lamp">
+                  <label class="item-label">Standing Lamp</label>
+                </div>
+                <div class="furniture-item">
+                  <input type="number" class="quantity-input" min="0" max="9" value="0" name="furniture_table_lamp">
+                  <label class="item-label">Table Lamp</label>
+                </div>
+              </div>
+              
+              <!-- Row 5 -->
+              <div class="furniture-row">
+                <div class="furniture-item">
+                  <input type="number" class="quantity-input" min="0" max="9" value="0" name="furniture_dining_table">
+                  <label class="item-label">Dining Table</label>
+                </div>
+                <div class="furniture-item">
+                  <input type="number" class="quantity-input" min="0" max="9" value="0" name="furniture_dining_chair">
+                  <label class="item-label">Dining Chair</label>
+                </div>
+                <div class="furniture-item">
+                  <input type="number" class="quantity-input" min="0" max="9" value="0" name="furniture_single_bed">
+                  <label class="item-label">Single Bed</label>
+                </div>
+                <div class="furniture-item">
+                  <input type="number" class="quantity-input" min="0" max="9" value="0" name="furniture_queen_bed">
+                  <label class="item-label">Queen Bed</label>
+                </div>
+              </div>
+              
+              <!-- Row 6 -->
+              <div class="furniture-row">
+                <div class="furniture-item">
+                  <input type="number" class="quantity-input" min="0" max="9" value="0" name="furniture_tv_table">
+                  <label class="item-label">TV Table</label>
+                </div>
+                <div class="furniture-item">
+                  <input type="number" class="quantity-input" min="0" max="9" value="0" name="furniture_outside_chair">
+                  <label class="item-label">Outside Chair</label>
+                </div>
+                <div class="furniture-item">
+                  <input type="number" class="quantity-input" min="0" max="9" value="0" name="furniture_outside_table">
+                  <label class="item-label">Outside Table</label>
+                </div>
+                <div class="furniture-item">
+                  <!-- Empty slot -->
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Keys Section -->
+          <div class="card mb-3">
+            <div class="card-header bg-light">
+              <h6 class="mb-0">Keys Provided</h6>
+            </div>
+            <div class="card-body">
+              <div class="furniture-row">
+                <div class="furniture-item">
+                  <input type="number" class="quantity-input" min="0" max="9" value="0" name="keys_building">
+                  <label class="item-label">Apartment Building Key</label>
+                </div>
+                <div class="furniture-item">
+                  <input type="number" class="quantity-input" min="0" max="9" value="0" name="keys_front_door">
+                  <label class="item-label">Apartment Front Door Key</label>
+                </div>
+                <div class="furniture-item">
+                  <input type="number" class="quantity-input" min="0" max="9" value="0" name="keys_storeroom">
+                  <label class="item-label">Storeroom Key</label>
+                </div>
+                <div class="furniture-item">
+                  <input type="number" class="quantity-input" min="0" max="9" value="0" name="keys_post_box">
+                  <label class="item-label">Post Box Key</label>
+                </div>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-info" id="save-additional-data">
+          <i class="fas fa-save"></i> Save & Continue
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+  <!-- JAVASCRIPT GOES HERE -->
+  <script>
+// Language options based on country
+const languageOptions = {
+  'cyprus': [
+    {value: 'english', text: 'English'},
+    {value: 'greek', text: 'Greek'}
+  ],
+  'greece': [
+    {value: 'greek', text: 'Greek'}
+  ],
+  'spain': [
+    {value: 'spanish', text: 'Spanish'}
+  ]
+};
+
+// Global variables
+let propertyData = {};
+let tenantData = {};
+let additionalDataCompleted = false;
+
+// Wait for DOM to be ready
+document.addEventListener('DOMContentLoaded', function() {
+  
+  // Country selection handler
+  document.getElementById('country-select').addEventListener('change', function(e) {
+    const selectedCountry = e.target.value;
+    const languageSelect = document.getElementById('language-select');
+    const propertySelect = document.getElementById('property-select');
+    
+    // Clear language selection
+    languageSelect.innerHTML = '<option value="">Select Language</option>';
+    
+    // Filter properties by country
+    const propertyOptions = propertySelect.querySelectorAll('option[data-country]');
+    propertyOptions.forEach(option => {
+      if (selectedCountry && option.dataset.country === selectedCountry) {
+        option.style.display = 'block';
+      } else {
+        option.style.display = 'none';
+      }
+    });
+    
+    // Populate language options
+    if (selectedCountry && languageOptions[selectedCountry]) {
+      languageOptions[selectedCountry].forEach(lang => {
+        const option = document.createElement('option');
+        option.value = lang.value;
+        option.textContent = lang.text;
+        languageSelect.appendChild(option);
+      });
+    }
+    
+    updatePreview();
+    showNextSection();
+    resetDataCompletion();
+  });
+
+  // Language selection handler
+  document.getElementById('language-select').addEventListener('change', function(e) {
+    updatePreview();
+    showNextSection();
+    resetDataCompletion();
+  });
+
+  // Property and tenant selection handlers
+  document.getElementById('property-select').addEventListener('change', function(e) {
+    filterTenantsByProperty();
+    loadPropertyTenantData();
+    resetDataCompletion();
+  });
+  
+  document.getElementById('tenant-select').addEventListener('change', function(e) {
+    loadPropertyTenantData();
+    resetDataCompletion();
+  });
+
+  // Modal handlers
+  document.getElementById('review-data-btn').addEventListener('click', function() {
+    populateModal();
+    $('#additionalDataModal').modal('show');
+  });
+
+  // Form submission handler
+  document.getElementById('lease-generation-form').addEventListener('submit', function(e) {
+    document.getElementById('generation-progress').style.display = 'block';
+    setTimeout(() => {
+        document.getElementById('generation-progress').style.display = 'none';
+    }, 5000);      
+  });
+
+  // Save additional data handler
+  document.getElementById('save-additional-data').addEventListener('click', function() {
+      saveAdditionalData();
+      $('#additionalDataModal').modal('hide');
+      additionalDataCompleted = true;
+      
+      setTimeout(() => {
+          document.getElementById('generate-section').style.display = 'block';
+          const btn = document.getElementById('generate-btn');
+          btn.disabled = false;
+          btn.classList.remove('btn-secondary');
+          btn.classList.add('btn-info');
+      }, 500);
+  });
+
+  // Add second tenant button handler
+  document.getElementById('add-second-tenant-btn').addEventListener('click', function() {
+    document.getElementById('second-tenant-section').style.display = 'block';
+    document.getElementById('add-second-tenant-btn').style.display = 'none';
+  });
+
+  // Remove second tenant button handler
+  document.getElementById('remove-second-tenant-btn').addEventListener('click', function() {
+    document.getElementById('second-tenant-section').style.display = 'none';
+    document.getElementById('add-second-tenant-btn').style.display = 'inline-block';
+    
+    // Clear second tenant fields
+    document.getElementById('second-tenant-name').value = '';
+    document.getElementById('second-tenant-contact').value = '';
+    document.getElementById('second-tenant-email').value = '';
+    document.getElementById('second-tenant-phone').value = '';
+    document.getElementById('second-tenant-address').value = '';
+    document.getElementById('second-tenant-passport').value = '';
+    document.getElementById('second-tenant-passport-country').value = '';
+  });
+
+  // Ensure only single digits are entered in quantity inputs
+  document.querySelectorAll('.quantity-input').forEach(input => {
+    input.addEventListener('input', function(e) {
+      if (this.value.length > 1) {
+        this.value = this.value.slice(0, 1);
+      }
+      if (this.value > 9) {
+        this.value = 9;
+      }
+      if (this.value < 0) {
+        this.value = 0;
+      }
+    });
+  });
+  
+}); // End DOMContentLoaded
+
+// Helper functions
+function filterTenantsByProperty() {
+  const propertyId = document.getElementById('property-select').value;
+  const tenantSelect = document.getElementById('tenant-select');
+  
+  tenantSelect.value = '';
+  
+  const tenantOptions = tenantSelect.querySelectorAll('option[data-property]');
+  tenantOptions.forEach(option => {
+    if (propertyId && option.dataset.property === propertyId) {
+      option.style.display = 'block';
+    } else {
+      option.style.display = 'none';
+    }
+  });
+  
+  const newTenantOption = tenantSelect.querySelector('option[value="new_tenant"]');
+  if (newTenantOption) {
+    newTenantOption.style.display = 'block';
+  }
+}
+
+function updatePreview() {
+  const country = document.getElementById('country-select').value;
+  const language = document.getElementById('language-select').value;
+  const preview = document.getElementById('selection-preview');
+  
+  if (country && language) {
+    document.getElementById('selected-country').textContent = 
+      document.getElementById('country-select').selectedOptions[0].text;
+    document.getElementById('selected-language').textContent = 
+      document.getElementById('language-select').selectedOptions[0].text;
+    preview.style.display = 'block';
+  } else {
+    preview.style.display = 'none';
+  }
+}
+
+function showNextSection() {
+  const country = document.getElementById('country-select').value;
+  const language = document.getElementById('language-select').value;
+  const property = document.getElementById('property-select').value;
+  const tenant = document.getElementById('tenant-select').value;
+  
+  if (country && language) {
+    document.getElementById('property-tenant-section').style.display = 'block';
+  } else {
+    document.getElementById('property-tenant-section').style.display = 'none';
+    document.getElementById('generate-section').style.display = 'none';
+  }
+  
+  if (country && language && property && tenant) {
+    document.getElementById('generate-section').style.display = 'block';
+  } else {
+    document.getElementById('generate-section').style.display = 'none';
+  }
+  
+  updateGenerateButton();
+}
+
+function resetDataCompletion() {
+  additionalDataCompleted = false;
+  document.getElementById('data-preview').style.display = 'none';
+  updateGenerateButton();
+}
+
+function updateGenerateButton() {
+    const country = document.getElementById('country-select').value;
+    const language = document.getElementById('language-select').value;
+    const property = document.getElementById('property-select').value;
+    const tenant = document.getElementById('tenant-select').value;
+    const generateBtn = document.getElementById('generate-btn');
+    
+    if (country && language && property && tenant && additionalDataCompleted) {
+        document.getElementById('generate-section').style.display = 'block';
+        generateBtn.disabled = false;
+        generateBtn.classList.remove('btn-secondary');
+        generateBtn.classList.add('btn-info');
+    } else {
+        document.getElementById('generate-section').style.display = 'none';
+        generateBtn.disabled = true;
+        generateBtn.classList.remove('btn-info');
+        generateBtn.classList.add('btn-secondary');
+    }
+}
+
+async function loadPropertyTenantData() {
+  const propertyId = document.getElementById('property-select').value;
+  const tenantId = document.getElementById('tenant-select').value;
+  
+  if (!propertyId) {
+    return;
+  }
+
+  try {
+    const response = await fetch('{% url "get_property_tenant_data" %}', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+      },
+      body: JSON.stringify({
+        property_id: propertyId,
+        tenant_id: tenantId === 'new_tenant' ? null : tenantId
+      })
+    });
+
+    const data = await response.json();
+    
+    if (data.error) {
+      console.error('Error loading data:', data.error);
+      return;
+    }
+
+    propertyData = data.property || {};
+    
+    if (tenantId === 'new_tenant') {
+      tenantData = {
+        tenant_name: '',
+        tenant_contact_person: '',
+        tenant_email: '',
+        tenant_contact_number: '',
+        tenant_type: 'Individual',
+        is_new_tenant: true
+      };
+    } else {
+      tenantData = data.tenant || {};
+    }
+
+    showDataPreview();
+    
+  } catch (error) {
+    console.error('Error fetching data:', error);
+  }
+}
+
+function showDataPreview() {
+  const propertyId = document.getElementById('property-select').value;
+  const tenantId = document.getElementById('tenant-select').value;
+  
+  if (!propertyId || !tenantId) {
+    return;
+  }
+
+  let previewHtml = '<div class="row">';
+  
+  if (Object.keys(propertyData).length > 0) {
+    previewHtml += '<div class="col-md-6"><strong>Property:</strong><br>';
+    previewHtml += `${propertyData.prop_name || 'N/A'}<br>`;
+    previewHtml += `${propertyData.full_address || 'N/A'}`;
+    previewHtml += '</div>';
+  }
+  
+  if (tenantId === 'new_tenant') {
+    previewHtml += '<div class="col-md-6"><strong>Tenant:</strong><br>';
+    previewHtml += 'New Tenant<br>';
+    previewHtml += '<em>Tenant information will be collected in the next step</em>';
+    previewHtml += '</div>';
+  } else if (Object.keys(tenantData).length > 0) {
+    previewHtml += '<div class="col-md-6"><strong>Tenant:</strong><br>';
+    previewHtml += `${tenantData.tenant_name || 'N/A'}<br>`;
+    previewHtml += `Email: ${tenantData.tenant_email || 'N/A'}<br>`;
+    previewHtml += `Phone: ${tenantData.tenant_contact_number || 'N/A'}`;
+    previewHtml += '</div>';
+  }
+  
+  previewHtml += '</div>';
+  
+  document.getElementById('preview-content').innerHTML = previewHtml;
+  document.getElementById('data-preview').style.display = 'block';
+}
+
+function calculateExtensionDate() {
+  const endDate = document.getElementById('modal-end-date').value;
+  const extensionMonths = parseInt(document.getElementById('modal-extension-period').value) || 0;
+  
+  if (endDate && extensionMonths > 0) {
+    const endDateObj = new Date(endDate);
+    const extensionDate = new Date(endDateObj);
+    extensionDate.setMonth(extensionDate.getMonth() + extensionMonths);
+    extensionDate.setMonth(extensionDate.getMonth() + 1, 0);
+    
+    const formattedDate = extensionDate.toISOString().split('T')[0];
+    document.getElementById('modal-extension-date').value = formattedDate;
+  } else {
+    document.getElementById('modal-extension-date').value = '';
+  }
+}
+
+function updateTenantFields() {
+  const tenantType = document.getElementById('new-tenant-type').value;
+  const tenantNameLabel = document.getElementById('tenant-name-label');
+  const passportField = document.getElementById('passport-field');
+  const passportCountryField = document.getElementById('passport-country-field');
+  const registrationField = document.getElementById('registration-field');
+  
+  if (tenantType === 'Company') {
+    tenantNameLabel.textContent = 'Company Name:';
+    passportField.style.display = 'none';
+    passportCountryField.style.display = 'none';
+    registrationField.style.display = 'block';
+    document.getElementById('new-tenant-registration').required = true;
+    document.getElementById('new-tenant-passport').required = false;
+    document.getElementById('new-tenant-passport-country').required = false;
+  } else {
+    tenantNameLabel.textContent = 'Individual Name:';
+    passportField.style.display = 'block';
+    passportCountryField.style.display = 'block';
+    registrationField.style.display = 'none';
+    document.getElementById('new-tenant-registration').required = false;
+    document.getElementById('new-tenant-passport').required = true;
+    document.getElementById('new-tenant-passport-country').required = true;
+  }
+}
+
+function populateModal() {
+  const tenantId = document.getElementById('tenant-select').value;
+  
+  let propertyHtml = '';
+  if (Object.keys(propertyData).length > 0) {
+    propertyHtml = `
+      <p><strong>Name:</strong> ${propertyData.prop_name || 'N/A'}</p>
+      <p><strong>Address:</strong> ${propertyData.full_address || 'N/A'}</p>
+      <p><strong>City:</strong> ${propertyData.prop_city || 'N/A'}</p>
+      <p><strong>Country:</strong> ${propertyData.prop_country || 'N/A'}</p>
+    `;
+  } else {
+    propertyHtml = '<p>No property data available</p>';
+  }
+  document.getElementById('property-info').innerHTML = propertyHtml;
+
+  let tenantHtml = '';
+  const newTenantSection = document.getElementById('new-tenant-section');
+  const existingTenantSection = document.getElementById('existing-tenant-section');
+  const addSecondTenantBtn = document.getElementById('add-second-tenant-btn');
+  const secondTenantSection = document.getElementById('second-tenant-section');
+  
+  if (tenantId === 'new_tenant') {
+      tenantHtml = '<p><strong>New Tenant:</strong> Please fill in the tenant information below.</p>';
+      newTenantSection.style.display = 'block';
+      existingTenantSection.style.display = 'none';
+      
+      addSecondTenantBtn.style.display = 'inline-block';
+      secondTenantSection.style.display = 'none';
+      
+      // Clear form fields
+      document.getElementById('new-tenant-name').value = '';
+      document.getElementById('new-tenant-type').value = 'Individual';
+      document.getElementById('new-tenant-passport').value = '';
+      document.getElementById('new-tenant-passport-country').value = '';
+      document.getElementById('new-tenant-registration').value = '';
+      document.getElementById('new-tenant-email').value = '';
+      document.getElementById('new-tenant-phone').value = '';
+      document.getElementById('new-tenant-address').value = '';
+      
+      document.getElementById('modal-start-date').value = '';
+      document.getElementById('modal-end-date').value = '';
+      document.getElementById('modal-monthly-rent').value = '';
+      document.getElementById('modal-security-deposit').value = '';
+      document.getElementById('modal-communal-expenses').value = '';
+      document.getElementById('modal-extension-period').value = '0';
+      document.getElementById('modal-extension-date').value = '';
+      document.getElementById('modal-rental-increase').value = '0';
+      
+      // Pre-populate amenities checkboxes as checked
+      document.getElementById('amenity-parking').checked = true;
+      document.getElementById('amenity-storeroom').checked = true;
+      
+      const furnitureFields = document.querySelectorAll('[name^="furniture_"]');
+      furnitureFields.forEach(field => field.value = '0');
+      
+      const keyFields = document.querySelectorAll('[name^="keys_"]');
+      keyFields.forEach(field => field.value = '0');
+      
+      document.getElementById('modal-end-date').addEventListener('change', calculateExtensionDate);
+      updateTenantFields();
+  } else {
+    newTenantSection.style.display = 'none';
+    existingTenantSection.style.display = 'block';
+    
+    if (Object.keys(tenantData).length > 0) {
+      tenantHtml = `
+        <p><strong>Name:</strong> ${tenantData.tenant_name || 'N/A'}</p>
+        <p><strong>Contact:</strong> ${tenantData.tenant_contact_person || 'N/A'}</p>
+        <p><strong>Email:</strong> ${tenantData.tenant_email || 'N/A'}</p>
+        <p><strong>Phone:</strong> ${tenantData.tenant_contact_number || 'N/A'}</p>
+        <p><strong>Address:</strong> ${propertyData.full_address || 'N/A'}</p>
+      `;
+      
+      document.getElementById('tenant-name-display').textContent = tenantData.tenant_name || 'N/A';
+      
+      const tenantType = tenantData.tenant_type || 'Individual';
+      if (tenantType === 'Individual') {
+        addSecondTenantBtn.style.display = 'inline-block';
+      } else {
+        addSecondTenantBtn.style.display = 'none';
+        secondTenantSection.style.display = 'none';
+      }
+      
+      const existingPassportField = document.getElementById('existing-passport-field');
+      const existingPassportCountryField = document.getElementById('existing-passport-country-field');
+      const existingRegistrationField = document.getElementById('existing-registration-field');
+      
+      if (tenantType === 'Company') {
+        existingPassportField.style.display = 'none';
+        existingPassportCountryField.style.display = 'none';
+        existingRegistrationField.style.display = 'block';
+        document.getElementById('existing-tenant-registration').required = true;
+        document.getElementById('existing-tenant-passport').required = false;
+        document.getElementById('existing-tenant-passport-country').required = false;
+      } else {
+        existingPassportField.style.display = 'block';
+        existingPassportCountryField.style.display = 'block';
+        existingRegistrationField.style.display = 'none';
+        document.getElementById('existing-tenant-registration').required = false;
+        document.getElementById('existing-tenant-passport').required = true;
+        document.getElementById('existing-tenant-passport-country').required = true;
+      }
+      
+      document.getElementById('existing-tenant-passport').value = '';
+      document.getElementById('existing-tenant-passport-country').value = '';
+      document.getElementById('existing-tenant-registration').value = '';
+    } else {
+      tenantHtml = '<p>No tenant data available</p>';
+      existingTenantSection.style.display = 'none';
+      addSecondTenantBtn.style.display = 'none';
+      secondTenantSection.style.display = 'none';
+    }
+    
+    if (tenantData.tenant_lease_start_date) {
+      document.getElementById('modal-start-date').value = tenantData.tenant_lease_start_date;
+    }
+    if (tenantData.tenant_lease_end_date) {
+      document.getElementById('modal-end-date').value = tenantData.tenant_lease_end_date;
+      document.getElementById('modal-end-date').addEventListener('change', calculateExtensionDate);
+    }
+    if (tenantData.tenant_rent) {
+      document.getElementById('modal-monthly-rent').value = tenantData.tenant_rent;
+    }
+    if (tenantData.tenant_deposit) {
+      document.getElementById('modal-security-deposit').value = tenantData.tenant_deposit;
+    }
+    if (tenantData.tenant_levies) {
+      document.getElementById('modal-communal-expenses').value = tenantData.tenant_levies;
+    } else {
+      document.getElementById('modal-communal-expenses').value = '0';
+    }
+    
+    // Pre-populate amenities checkboxes as checked for existing tenants too
+    document.getElementById('amenity-parking').checked = true;
+    document.getElementById('amenity-storeroom').checked = true;
+  }
+  
+  document.getElementById('tenant-info').innerHTML = tenantHtml;
+}
+
+function saveAdditionalData() {
+  const formData = new FormData(document.getElementById('additional-data-form'));
+  const additionalData = {};
+  
+  for (let [key, value] of formData.entries()) {
+    additionalData[key] = value;
+  }
+  
+  // Handle checkbox values explicitly - CORRECTED FIELD NAMES
+  additionalData.amenity_parking = document.getElementById('amenity-parking').checked;
+  additionalData.amenity_storeroom = document.getElementById('amenity-storeroom').checked;
+ 
+  
+  const tenantId = document.getElementById('tenant-select').value;
+  if (tenantId === 'new_tenant') {
+    const tenantType = document.getElementById('new-tenant-type').value;
+    const newTenantData = {
+      tenant_name: document.getElementById('new-tenant-name').value,
+      tenant_type: tenantType,
+      tenant_passport_id: document.getElementById('new-tenant-passport').value,
+      tenant_passport_country: document.getElementById('new-tenant-passport-country').value,
+      tenant_email: document.getElementById('new-tenant-email').value,
+      tenant_contact_number: document.getElementById('new-tenant-phone').value,
+      tenant_address: document.getElementById('new-tenant-address').value
+    };
+    
+    if (tenantType === 'Company') {
+      newTenantData.tenant_registration_number = document.getElementById('new-tenant-registration').value;
+    }
+    
+    let requiredFields = ['tenant_name', 'tenant_email', 'tenant_contact_number', 'tenant_address'];
+    
+    if (tenantType === 'Company') {
+      requiredFields.push('tenant_registration_number');
+    } else {
+      requiredFields.push('tenant_passport_id', 'tenant_passport_country');
+    }
+    
+    for (let field of requiredFields) {
+      if (!newTenantData[field] || newTenantData[field].trim() === '') {
+        const fieldName = field.replace('tenant_', '').replace('_', ' ');
+        alert(`Please fill in the ${fieldName} field.`);
+        return;
+      }
+    }
+    
+    additionalData.new_tenant_data = newTenantData;
+    additionalData.is_new_tenant = true;
+  } else {
+    const tenantType = tenantData.tenant_type || 'Individual';
+    const existingTenantData = {};
+    
+    if (tenantType === 'Company') {
+      existingTenantData.tenant_registration_number = document.getElementById('existing-tenant-registration').value;
+      if (!existingTenantData.tenant_registration_number || existingTenantData.tenant_registration_number.trim() === '') {
+        alert('Please fill in the Company Registration Number field.');
+        return;
+      }
+    } else {
+      existingTenantData.tenant_passport_id = document.getElementById('existing-tenant-passport').value;
+      existingTenantData.tenant_passport_country = document.getElementById('existing-tenant-passport-country').value;
+      if (!existingTenantData.tenant_passport_id || existingTenantData.tenant_passport_id.trim() === '') {
+        alert('Please fill in the Passport/ID Number field.');
+        return;
+      }
+      if (!existingTenantData.tenant_passport_country || existingTenantData.tenant_passport_country.trim() === '') {
+        alert('Please fill in the Passport/ID Country field.');
+        return;
+      }
+    }
+    
+    additionalData.existing_tenant_data = existingTenantData;
+    additionalData.is_new_tenant = false;
+  }
+  
+  const secondTenantSection = document.getElementById('second-tenant-section');
+  if (secondTenantSection.style.display !== 'none') {
+    const secondTenantData = {
+      tenant_name: document.getElementById('second-tenant-name').value,
+      tenant_contact_person: document.getElementById('second-tenant-contact').value,
+      tenant_email: document.getElementById('second-tenant-email').value,
+      tenant_contact_number: document.getElementById('second-tenant-phone').value,
+      tenant_address: document.getElementById('second-tenant-address').value,
+      tenant_passport_id: document.getElementById('second-tenant-passport').value,
+      tenant_passport_country: document.getElementById('second-tenant-passport-country').value
+    };
+    
+    const requiredSecondTenantFields = ['tenant_name', 'tenant_email', 'tenant_contact_number', 'tenant_address', 'tenant_passport_id', 'tenant_passport_country'];
+    
+    for (let field of requiredSecondTenantFields) {
+      if (!secondTenantData[field] || secondTenantData[field].trim() === '') {
+        const fieldName = field.replace('tenant_', '').replace('_', ' ');
+        alert(`Please fill in the second tenant ${fieldName} field.`);
+        return;
+      }
+    }
+    
+    additionalData.second_tenant_data = secondTenantData;
+    additionalData.has_second_tenant = true;
+  } else {
+    additionalData.has_second_tenant = false;
+  }
+  
+  document.getElementById('additional-data-input').value = JSON.stringify(additionalData);
+  
+  const previewContent = document.getElementById('preview-content');
+  const existingMessages = previewContent.querySelectorAll('.alert-success');
+  existingMessages.forEach(msg => msg.remove());
+
+  previewContent.innerHTML += '<br><div class="alert alert-success mt-2 mb-0"><i class="fas fa-check"></i> Additional data completed!</div>';
+}
+</script>
+
+  {% else %}
+    <center><img src="{% static 'images/alivente_online_logo.png' %}" alt="Alivente" width="480" height="300"></center>
+  {% endif %}
+
+</body>
+
+{% endblock %}

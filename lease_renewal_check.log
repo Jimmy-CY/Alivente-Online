@@ -375,3 +375,1259 @@ INFO 2025-09-24 21:02:30,491 "GET / HTTP/1.1" 200 14923
 INFO 2025-09-24 21:02:32,558 "GET /logout/ HTTP/1.1" 302 0
 INFO 2025-09-24 21:02:32,623 "GET / HTTP/1.1" 302 0
 INFO 2025-09-24 21:02:32,629 "GET /login/?next=/ HTTP/1.1" 200 8913
+INFO 2025-09-24 21:03:47,106 Watching for file changes with StatReloader
+INFO 2025-09-25 06:40:03,558 "POST /login/?next=/ HTTP/1.1" 302 0
+INFO 2025-09-25 06:40:03,751 "GET / HTTP/1.1" 200 16450
+INFO 2025-09-25 08:45:16,290 "GET /admin_apms/ HTTP/1.1" 200 12919
+ERROR 2025-09-25 08:51:55,322 Internal Server Error: /admin_apms/
+Traceback (most recent call last):
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\contrib\auth\decorators.py", line 60, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\pages\views.py", line 2137, in admin_apms
+    return render(request, "admin_apms.html", {
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\loader.py", line 62, in render_to_string
+    return template.render(context, request)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\backends\django.py", line 107, in render
+    return self.template.render(context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\base.py", line 171, in render
+    return self._render(context)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\base.py", line 163, in _render
+    return self.nodelist.render(context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\base.py", line 1008, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\base.py", line 969, in render_annotated
+    return self.render(context)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\loader_tags.py", line 159, in render
+    return compiled_parent._render(context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\base.py", line 163, in _render
+    return self.nodelist.render(context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\base.py", line 1008, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\base.py", line 969, in render_annotated
+    return self.render(context)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\loader_tags.py", line 65, in render
+    result = block.nodelist.render(context)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\base.py", line 1008, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\base.py", line 969, in render_annotated
+    return self.render(context)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\defaulttags.py", line 327, in render
+    return nodelist.render(context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\base.py", line 1008, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\base.py", line 969, in render_annotated
+    return self.render(context)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\defaulttags.py", line 480, in render
+    url = reverse(view_name, args=args, kwargs=kwargs, current_app=current_app)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\urls\base.py", line 88, in reverse
+    return resolver._reverse_with_prefix(view, prefix, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\urls\resolvers.py", line 831, in _reverse_with_prefix
+    raise NoReverseMatch(msg)
+django.urls.exceptions.NoReverseMatch: Reverse for 'generate_lease_agreement' not found. 'generate_lease_agreement' is not a valid view function or pattern name.
+ERROR 2025-09-25 08:51:55,340 "GET /admin_apms/ HTTP/1.1" 500 190956
+INFO 2025-09-25 08:57:19,455 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+INFO 2025-09-25 08:57:21,038 Watching for file changes with StatReloader
+INFO 2025-09-25 08:58:16,255 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+INFO 2025-09-25 08:58:17,021 Watching for file changes with StatReloader
+INFO 2025-09-25 09:18:38,447 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+INFO 2025-09-25 09:18:39,370 Watching for file changes with StatReloader
+INFO 2025-09-25 09:39:23,214 Watching for file changes with StatReloader
+INFO 2025-09-25 09:39:39,478 "GET / HTTP/1.1" 200 14929
+INFO 2025-09-25 09:39:42,854 "GET /admin_apms/ HTTP/1.1" 200 13287
+ERROR 2025-09-25 09:39:46,194 Internal Server Error: /generate-lease-agreement/
+Traceback (most recent call last):
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\contrib\auth\decorators.py", line 60, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\contrib\auth\decorators.py", line 60, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\pages\views.py", line 160, in generate_lease_agreement_view
+    return render(request, 'generate_lease_agreement.html', context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\loader.py", line 62, in render_to_string
+    return template.render(context, request)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\backends\django.py", line 107, in render
+    return self.template.render(context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\base.py", line 171, in render
+    return self._render(context)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\base.py", line 163, in _render
+    return self.nodelist.render(context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\base.py", line 1008, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\base.py", line 969, in render_annotated
+    return self.render(context)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\loader_tags.py", line 159, in render
+    return compiled_parent._render(context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\base.py", line 163, in _render
+    return self.nodelist.render(context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\base.py", line 1008, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\base.py", line 969, in render_annotated
+    return self.render(context)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\loader_tags.py", line 65, in render
+    result = block.nodelist.render(context)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\base.py", line 1008, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\base.py", line 969, in render_annotated
+    return self.render(context)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\defaulttags.py", line 480, in render
+    url = reverse(view_name, args=args, kwargs=kwargs, current_app=current_app)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\urls\base.py", line 88, in reverse
+    return resolver._reverse_with_prefix(view, prefix, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\urls\resolvers.py", line 831, in _reverse_with_prefix
+    raise NoReverseMatch(msg)
+django.urls.exceptions.NoReverseMatch: Reverse for 'administration' not found. 'administration' is not a valid view function or pattern name.
+ERROR 2025-09-25 09:39:46,206 "GET /generate-lease-agreement/ HTTP/1.1" 500 180098
+INFO 2025-09-25 09:40:02,271 "GET / HTTP/1.1" 200 14929
+INFO 2025-09-25 09:44:41,001 Watching for file changes with StatReloader
+INFO 2025-09-25 09:44:48,667 "GET /admin_apms/ HTTP/1.1" 200 13287
+ERROR 2025-09-25 09:44:52,221 Internal Server Error: /generate-lease-agreement/
+Traceback (most recent call last):
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\contrib\auth\decorators.py", line 60, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\contrib\auth\decorators.py", line 60, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\pages\views.py", line 160, in generate_lease_agreement_view
+    return render(request, 'generate_lease_agreement.html', context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\loader.py", line 62, in render_to_string
+    return template.render(context, request)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\backends\django.py", line 107, in render
+    return self.template.render(context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\base.py", line 171, in render
+    return self._render(context)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\base.py", line 163, in _render
+    return self.nodelist.render(context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\base.py", line 1008, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\base.py", line 969, in render_annotated
+    return self.render(context)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\loader_tags.py", line 159, in render
+    return compiled_parent._render(context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\base.py", line 163, in _render
+    return self.nodelist.render(context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\base.py", line 1008, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\base.py", line 969, in render_annotated
+    return self.render(context)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\loader_tags.py", line 65, in render
+    result = block.nodelist.render(context)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\base.py", line 1008, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\base.py", line 969, in render_annotated
+    return self.render(context)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\defaulttags.py", line 480, in render
+    url = reverse(view_name, args=args, kwargs=kwargs, current_app=current_app)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\urls\base.py", line 88, in reverse
+    return resolver._reverse_with_prefix(view, prefix, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\urls\resolvers.py", line 831, in _reverse_with_prefix
+    raise NoReverseMatch(msg)
+django.urls.exceptions.NoReverseMatch: Reverse for 'administration' not found. 'administration' is not a valid view function or pattern name.
+ERROR 2025-09-25 09:44:52,230 "GET /generate-lease-agreement/ HTTP/1.1" 500 180098
+INFO 2025-09-25 09:45:23,932 "GET /tenant_lease_agreement/ HTTP/1.1" 200 29111
+INFO 2025-09-25 09:45:28,985 "GET /admin_apms/ HTTP/1.1" 200 13287
+INFO 2025-09-25 09:45:30,086 "GET /properties_title_deed/ HTTP/1.1" 200 30369
+INFO 2025-09-25 09:45:31,185 "GET /admin_apms/ HTTP/1.1" 200 13287
+ERROR 2025-09-25 09:45:31,834 Internal Server Error: /admin_invoices/
+Traceback (most recent call last):
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\contrib\auth\decorators.py", line 60, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\pages\views.py", line 2817, in admin_invoices
+    open_invoices.create_invoices(months[today.month],today.year,request)
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\open_invoices.py", line 120, in create_invoices
+    auth_plugin=settings.DATABASES['default']['AUTH_PLUGIN'],
+                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+KeyError: 'AUTH_PLUGIN'
+ERROR 2025-09-25 09:45:31,837 "GET /admin_invoices/ HTTP/1.1" 500 81489
+ERROR 2025-09-25 09:46:00,547 Internal Server Error: /generate-lease-agreement/
+Traceback (most recent call last):
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\contrib\auth\decorators.py", line 60, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\contrib\auth\decorators.py", line 60, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\pages\views.py", line 160, in generate_lease_agreement_view
+    return render(request, 'generate_lease_agreement.html', context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\loader.py", line 62, in render_to_string
+    return template.render(context, request)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\backends\django.py", line 107, in render
+    return self.template.render(context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\base.py", line 171, in render
+    return self._render(context)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\base.py", line 163, in _render
+    return self.nodelist.render(context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\base.py", line 1008, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\base.py", line 969, in render_annotated
+    return self.render(context)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\loader_tags.py", line 159, in render
+    return compiled_parent._render(context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\base.py", line 163, in _render
+    return self.nodelist.render(context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\base.py", line 1008, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\base.py", line 969, in render_annotated
+    return self.render(context)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\loader_tags.py", line 65, in render
+    result = block.nodelist.render(context)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\base.py", line 1008, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\base.py", line 969, in render_annotated
+    return self.render(context)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\defaulttags.py", line 480, in render
+    url = reverse(view_name, args=args, kwargs=kwargs, current_app=current_app)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\urls\base.py", line 88, in reverse
+    return resolver._reverse_with_prefix(view, prefix, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\urls\resolvers.py", line 831, in _reverse_with_prefix
+    raise NoReverseMatch(msg)
+django.urls.exceptions.NoReverseMatch: Reverse for 'administration' not found. 'administration' is not a valid view function or pattern name.
+ERROR 2025-09-25 09:46:00,547 "GET /generate-lease-agreement/ HTTP/1.1" 500 180098
+INFO 2025-09-25 09:47:07,499 "GET /generate-lease-agreement/ HTTP/1.1" 200 36827
+INFO 2025-09-25 09:47:18,804 "POST /get-property-tenant-data/ HTTP/1.1" 200 561
+INFO 2025-09-25 09:47:22,942 "POST /get-property-tenant-data/ HTTP/1.1" 200 1153
+INFO 2025-09-25 09:47:51,487 "GET /admin_apms/ HTTP/1.1" 200 13287
+INFO 2025-09-25 09:48:12,338 Watching for file changes with StatReloader
+INFO 2025-09-25 09:48:18,737 "GET / HTTP/1.1" 200 14929
+INFO 2025-09-25 09:48:19,904 "GET /admin_apms/ HTTP/1.1" 200 13287
+INFO 2025-09-25 09:48:21,742 "GET /generate-lease-agreement/ HTTP/1.1" 200 36827
+INFO 2025-09-25 09:48:39,570 "POST /get-property-tenant-data/ HTTP/1.1" 200 580
+INFO 2025-09-25 09:48:49,562 "POST /get-property-tenant-data/ HTTP/1.1" 200 1080
+INFO 2025-09-25 09:49:23,520 "GET /admin_apms/ HTTP/1.1" 200 13287
+INFO 2025-09-25 10:17:53,802 Watching for file changes with StatReloader
+INFO 2025-09-25 10:19:37,204 "GET /admin_apms/ HTTP/1.1" 200 13284
+INFO 2025-09-25 10:19:38,687 "GET /admin_apms/ HTTP/1.1" 200 13284
+INFO 2025-09-25 10:20:56,919 "GET /admin_apms/ HTTP/1.1" 200 13288
+INFO 2025-09-25 10:22:10,037 "GET /admin_apms/ HTTP/1.1" 200 13286
+INFO 2025-09-25 10:22:18,290 "GET /generate-lease-agreement/ HTTP/1.1" 200 36827
+INFO 2025-09-25 10:23:55,470 "GET /admin_apms/ HTTP/1.1" 200 13286
+ERROR 2025-09-25 10:23:57,370 Internal Server Error: /generate-lease-agreement/
+Traceback (most recent call last):
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\contrib\auth\decorators.py", line 60, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\contrib\auth\decorators.py", line 60, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\pages\views.py", line 160, in generate_lease_agreement_view
+    return render(request, 'generate_lease_agreement.html', context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\shortcuts.py", line 25, in render
+    content = loader.render_to_string(template_name, context, request, using=using)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\loader.py", line 62, in render_to_string
+    return template.render(context, request)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\backends\django.py", line 107, in render
+    return self.template.render(context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\base.py", line 171, in render
+    return self._render(context)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\base.py", line 163, in _render
+    return self.nodelist.render(context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\base.py", line 1008, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\base.py", line 969, in render_annotated
+    return self.render(context)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\loader_tags.py", line 159, in render
+    return compiled_parent._render(context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\base.py", line 163, in _render
+    return self.nodelist.render(context)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\base.py", line 1008, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\base.py", line 969, in render_annotated
+    return self.render(context)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\loader_tags.py", line 65, in render
+    result = block.nodelist.render(context)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\base.py", line 1008, in render
+    return SafeString("".join([node.render_annotated(context) for node in self]))
+                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\base.py", line 969, in render_annotated
+    return self.render(context)
+           ^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\template\defaulttags.py", line 480, in render
+    url = reverse(view_name, args=args, kwargs=kwargs, current_app=current_app)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\urls\base.py", line 88, in reverse
+    return resolver._reverse_with_prefix(view, prefix, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\urls\resolvers.py", line 831, in _reverse_with_prefix
+    raise NoReverseMatch(msg)
+django.urls.exceptions.NoReverseMatch: Reverse for 'administration' not found. 'administration' is not a valid view function or pattern name.
+ERROR 2025-09-25 10:23:57,387 "GET /generate-lease-agreement/ HTTP/1.1" 500 180098
+INFO 2025-09-25 10:26:33,836 "GET / HTTP/1.1" 200 14929
+INFO 2025-09-25 10:26:35,386 "GET /admin_apms/ HTTP/1.1" 200 13286
+INFO 2025-09-25 10:26:36,432 "GET /generate-lease-agreement/ HTTP/1.1" 200 36828
+INFO 2025-09-25 10:26:59,287 "POST /get-property-tenant-data/ HTTP/1.1" 200 580
+INFO 2025-09-25 10:28:39,920 "POST /get-property-tenant-data/ HTTP/1.1" 200 1080
+INFO 2025-09-25 10:34:30,551 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+INFO 2025-09-25 10:34:31,748 Watching for file changes with StatReloader
+INFO 2025-09-25 10:34:50,252 Watching for file changes with StatReloader
+INFO 2025-09-25 10:37:52,168 Watching for file changes with StatReloader
+INFO 2025-09-25 10:42:38,597 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+INFO 2025-09-25 10:42:39,468 Watching for file changes with StatReloader
+INFO 2025-09-25 10:42:50,851 Watching for file changes with StatReloader
+INFO 2025-09-25 10:42:59,169 "GET /admin_apms/ HTTP/1.1" 200 13286
+INFO 2025-09-25 10:43:00,285 "GET / HTTP/1.1" 200 14929
+INFO 2025-09-25 10:43:01,236 "GET /admin_apms/ HTTP/1.1" 200 13286
+INFO 2025-09-25 10:43:02,439 "GET /generate-lease-agreement/ HTTP/1.1" 200 42766
+INFO 2025-09-25 10:43:24,901 "POST /get-property-tenant-data/ HTTP/1.1" 200 580
+INFO 2025-09-25 10:43:28,754 "POST /get-property-tenant-data/ HTTP/1.1" 200 1080
+INFO 2025-09-25 12:28:38,139 "POST /get-property-tenant-data/ HTTP/1.1" 200 596
+INFO 2025-09-25 12:31:13,874 "GET /admin_apms/ HTTP/1.1" 200 13286
+INFO 2025-09-25 12:31:15,111 "GET /generate-lease-agreement/ HTTP/1.1" 200 42810
+INFO 2025-09-25 12:31:21,257 "POST /get-property-tenant-data/ HTTP/1.1" 200 549
+INFO 2025-09-25 12:31:23,141 "POST /get-property-tenant-data/ HTTP/1.1" 200 565
+INFO 2025-09-25 12:32:38,450 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+INFO 2025-09-25 12:32:40,608 Watching for file changes with StatReloader
+INFO 2025-09-25 12:32:45,372 "GET / HTTP/1.1" 200 14929
+INFO 2025-09-25 12:32:47,756 "GET /admin_apms/ HTTP/1.1" 200 13286
+INFO 2025-09-25 12:32:49,306 "GET /generate-lease-agreement/ HTTP/1.1" 200 42810
+INFO 2025-09-25 12:33:04,375 "POST /get-property-tenant-data/ HTTP/1.1" 200 582
+INFO 2025-09-25 12:33:07,955 "POST /get-property-tenant-data/ HTTP/1.1" 200 1142
+INFO 2025-09-25 15:07:27,336 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+INFO 2025-09-25 15:07:28,802 Watching for file changes with StatReloader
+INFO 2025-09-25 15:07:32,735 "GET / HTTP/1.1" 200 14929
+INFO 2025-09-25 15:07:34,835 "GET /admin_apms/ HTTP/1.1" 200 13286
+INFO 2025-09-25 15:07:35,918 "GET /generate-lease-agreement/ HTTP/1.1" 200 49874
+INFO 2025-09-25 15:07:42,919 "POST /get-property-tenant-data/ HTTP/1.1" 200 580
+INFO 2025-09-25 15:07:46,389 "POST /get-property-tenant-data/ HTTP/1.1" 200 1080
+WARNING 2025-09-25 15:46:46,965 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-25 15:46:46,965 "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 43919
+INFO 2025-09-25 15:49:03,990 "GET /admin_apms/ HTTP/1.1" 200 13286
+INFO 2025-09-25 15:49:06,108 "GET /generate-lease-agreement/ HTTP/1.1" 200 49874
+INFO 2025-09-25 15:49:18,400 "POST /get-property-tenant-data/ HTTP/1.1" 200 580
+INFO 2025-09-25 15:49:20,367 "POST /get-property-tenant-data/ HTTP/1.1" 200 1080
+WARNING 2025-09-25 15:51:10,964 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-25 15:51:10,964 "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 43919
+INFO 2025-09-25 15:55:27,869 "POST /generate-lease-agreement/ HTTP/1.1" 200 37194
+WARNING 2025-09-25 15:55:29,983 Not Found: /sourceMap/chrome/css/download_scan_popup.css.map
+WARNING 2025-09-25 15:55:29,983 "GET /sourceMap/chrome/css/download_scan_popup.css.map HTTP/1.1" 404 43919
+WARNING 2025-09-25 15:55:30,026 Not Found: /sourceMap/chrome/css/interactive_balloon.css.map
+WARNING 2025-09-25 15:55:30,036 Not Found: /sourceMap/chrome/css/download_scan_popup.css.map
+WARNING 2025-09-25 15:55:30,036 "GET /sourceMap/chrome/css/interactive_balloon.css.map HTTP/1.1" 404 43919
+WARNING 2025-09-25 15:55:30,043 "GET /sourceMap/chrome/css/download_scan_popup.css.map HTTP/1.1" 404 43919
+INFO 2025-09-25 17:03:44,175 "POST /generate-lease-agreement/ HTTP/1.1" 200 37194
+INFO 2025-09-25 17:11:19,853 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+INFO 2025-09-25 17:11:21,042 Watching for file changes with StatReloader
+INFO 2025-09-25 17:11:32,175 "POST /generate-lease-agreement/ HTTP/1.1" 200 61396
+INFO 2025-09-25 19:13:41,233 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+INFO 2025-09-25 19:13:42,497 Watching for file changes with StatReloader
+INFO 2025-09-25 19:13:46,167 "POST /generate-lease-agreement/ HTTP/1.1" 200 61118
+INFO 2025-09-25 19:24:19,463 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+INFO 2025-09-25 19:24:20,749 Watching for file changes with StatReloader
+INFO 2025-09-25 19:24:24,177 "POST /generate-lease-agreement/ HTTP/1.1" 200 61249
+INFO 2025-09-25 19:25:19,017 "POST /generate-lease-agreement/ HTTP/1.1" 200 61249
+INFO 2025-09-25 19:30:48,351 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+INFO 2025-09-25 19:30:49,545 Watching for file changes with StatReloader
+INFO 2025-09-25 19:30:59,025 Watching for file changes with StatReloader
+INFO 2025-09-25 19:31:06,031 "POST /generate-lease-agreement/ HTTP/1.1" 200 61249
+INFO 2025-09-25 19:37:20,316 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+INFO 2025-09-25 19:37:21,496 Watching for file changes with StatReloader
+INFO 2025-09-25 19:37:47,797 "POST /generate-lease-agreement/ HTTP/1.1" 200 61020
+INFO 2025-09-25 19:40:37,371 "POST /generate-lease-agreement/ HTTP/1.1" 200 60916
+INFO 2025-09-25 19:45:17,337 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+INFO 2025-09-25 19:45:18,408 Watching for file changes with StatReloader
+INFO 2025-09-25 19:45:22,398 "POST /generate-lease-agreement/ HTTP/1.1" 200 60917
+INFO 2025-09-25 19:47:42,770 Watching for file changes with StatReloader
+INFO 2025-09-25 19:47:48,247 "POST /generate-lease-agreement/ HTTP/1.1" 200 60917
+INFO 2025-09-25 19:48:31,547 "GET /admin_apms/ HTTP/1.1" 200 20117
+INFO 2025-09-25 19:48:36,632 "GET /generate-lease-agreement/ HTTP/1.1" 200 49864
+INFO 2025-09-25 19:48:43,114 "POST /get-property-tenant-data/ HTTP/1.1" 200 549
+INFO 2025-09-25 19:48:47,248 "POST /get-property-tenant-data/ HTTP/1.1" 200 1052
+WARNING 2025-09-25 19:50:27,597 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-25 19:50:27,598 "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 43919
+INFO 2025-09-26 06:27:43,017 "POST /generate-lease-agreement/ HTTP/1.1" 200 60915
+WARNING 2025-09-26 06:27:45,314 Not Found: /sourceMap/chrome/css/interactive_balloon.css.map
+WARNING 2025-09-26 06:27:45,331 Not Found: /sourceMap/chrome/css/download_scan_popup.css.map
+WARNING 2025-09-26 06:27:45,331 "GET /sourceMap/chrome/css/interactive_balloon.css.map HTTP/1.1" 404 43919
+WARNING 2025-09-26 06:27:45,331 "GET /sourceMap/chrome/css/download_scan_popup.css.map HTTP/1.1" 404 43919
+WARNING 2025-09-26 06:27:45,348 Not Found: /sourceMap/chrome/css/download_scan_popup.css.map
+WARNING 2025-09-26 06:27:45,348 "GET /sourceMap/chrome/css/download_scan_popup.css.map HTTP/1.1" 404 43919
+INFO 2025-09-26 06:43:01,336 "GET /admin_apms/ HTTP/1.1" 200 13907
+WARNING 2025-09-26 06:43:01,391 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-26 06:43:01,392 "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 43919
+INFO 2025-09-26 06:43:05,398 "GET /generate-lease-agreement/ HTTP/1.1" 200 51020
+INFO 2025-09-26 06:43:14,062 "POST /get-property-tenant-data/ HTTP/1.1" 200 549
+INFO 2025-09-26 06:43:16,798 "POST /get-property-tenant-data/ HTTP/1.1" 200 1052
+INFO 2025-09-26 06:44:48,314 "POST /generate-lease-agreement/ HTTP/1.1" 200 60900
+INFO 2025-09-26 07:23:00,111 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+INFO 2025-09-26 07:23:01,787 Watching for file changes with StatReloader
+INFO 2025-09-26 07:23:09,785 "GET /admin_apms/ HTTP/1.1" 200 13907
+INFO 2025-09-26 07:23:13,457 "GET /generate-lease-agreement/ HTTP/1.1" 200 54074
+INFO 2025-09-26 07:23:20,788 "POST /get-property-tenant-data/ HTTP/1.1" 200 580
+INFO 2025-09-26 07:23:24,835 "POST /get-property-tenant-data/ HTTP/1.1" 200 1080
+INFO 2025-09-26 07:24:45,289 "POST /get-property-tenant-data/ HTTP/1.1" 200 596
+INFO 2025-09-26 07:31:59,816 "GET /admin_apms/ HTTP/1.1" 200 13286
+INFO 2025-09-26 07:32:01,488 "GET /generate-lease-agreement/ HTTP/1.1" 200 55405
+INFO 2025-09-26 07:32:08,183 "POST /get-property-tenant-data/ HTTP/1.1" 200 580
+INFO 2025-09-26 07:32:11,233 "POST /get-property-tenant-data/ HTTP/1.1" 200 596
+INFO 2025-09-26 07:33:02,533 "POST /get-property-tenant-data/ HTTP/1.1" 200 1080
+INFO 2025-09-26 07:34:40,683 "POST /get-property-tenant-data/ HTTP/1.1" 200 596
+INFO 2025-09-26 07:38:16,202 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+INFO 2025-09-26 07:38:17,284 Watching for file changes with StatReloader
+INFO 2025-09-26 07:38:20,695 "GET /admin_apms/ HTTP/1.1" 200 13286
+INFO 2025-09-26 07:38:22,316 "GET /generate-lease-agreement/ HTTP/1.1" 200 60648
+INFO 2025-09-26 07:38:29,286 "POST /get-property-tenant-data/ HTTP/1.1" 200 580
+INFO 2025-09-26 07:38:31,919 "POST /get-property-tenant-data/ HTTP/1.1" 200 1080
+INFO 2025-09-26 07:39:45,356 "POST /generate-lease-agreement/ HTTP/1.1" 200 61270
+INFO 2025-09-26 07:40:34,119 "POST /get-property-tenant-data/ HTTP/1.1" 200 580
+INFO 2025-09-26 07:40:38,068 "POST /get-property-tenant-data/ HTTP/1.1" 200 549
+INFO 2025-09-26 07:40:40,340 "POST /get-property-tenant-data/ HTTP/1.1" 200 1052
+INFO 2025-09-26 07:41:39,918 "POST /generate-lease-agreement/ HTTP/1.1" 200 60934
+INFO 2025-09-26 07:44:09,808 "POST /get-property-tenant-data/ HTTP/1.1" 200 565
+INFO 2025-09-26 07:45:41,330 "POST /generate-lease-agreement/ HTTP/1.1" 200 61859
+INFO 2025-09-26 07:47:33,492 "POST /get-property-tenant-data/ HTTP/1.1" 200 580
+INFO 2025-09-26 07:47:35,577 "POST /get-property-tenant-data/ HTTP/1.1" 200 1080
+INFO 2025-09-26 07:48:18,688 "POST /generate-lease-agreement/ HTTP/1.1" 200 61159
+INFO 2025-09-26 07:56:37,308 "POST /get-property-tenant-data/ HTTP/1.1" 200 596
+INFO 2025-09-26 07:58:10,844 "POST /get-property-tenant-data/ HTTP/1.1" 200 1080
+INFO 2025-09-26 10:20:17,046 "GET /admin_apms/ HTTP/1.1" 200 13907
+INFO 2025-09-26 10:20:20,807 "GET / HTTP/1.1" 200 14929
+INFO 2025-09-26 10:20:27,486 "GET /property_management_dashboard/ HTTP/1.1" 200 43046
+INFO 2025-09-26 10:20:36,021 "GET /property/1/profit-loss/ HTTP/1.1" 200 40407
+INFO 2025-09-26 10:20:42,631 "GET /property_management_dashboard/?property=1 HTTP/1.1" 200 43046
+INFO 2025-09-26 10:20:44,432 "GET /property_detail/1/actual-expenses/ HTTP/1.1" 200 42728
+INFO 2025-09-26 10:20:47,075 "GET /property_management_dashboard/?property=1 HTTP/1.1" 200 43046
+INFO 2025-09-26 10:20:48,712 "GET / HTTP/1.1" 200 14929
+INFO 2025-09-26 11:22:35,002 "GET /admin_apms/ HTTP/1.1" 200 13286
+INFO 2025-09-26 11:22:36,018 "GET /generate-lease-agreement/ HTTP/1.1" 200 61041
+INFO 2025-09-26 11:22:42,749 "POST /get-property-tenant-data/ HTTP/1.1" 200 561
+INFO 2025-09-26 11:22:44,603 "POST /get-property-tenant-data/ HTTP/1.1" 200 577
+INFO 2025-09-26 11:22:55,581 "POST /get-property-tenant-data/ HTTP/1.1" 200 1153
+INFO 2025-09-26 11:26:32,125 "GET / HTTP/1.1" 200 14929
+INFO 2025-09-26 11:26:33,751 "GET /admin_apms/ HTTP/1.1" 200 13286
+INFO 2025-09-26 11:26:34,598 "GET /generate-lease-agreement/ HTTP/1.1" 200 62714
+INFO 2025-09-26 11:26:41,147 "POST /get-property-tenant-data/ HTTP/1.1" 200 580
+INFO 2025-09-26 11:26:42,918 "POST /get-property-tenant-data/ HTTP/1.1" 200 1080
+INFO 2025-09-26 11:27:41,303 "POST /get-property-tenant-data/ HTTP/1.1" 200 596
+INFO 2025-09-26 11:38:35,934 "GET /admin_apms/ HTTP/1.1" 200 13286
+INFO 2025-09-26 11:38:37,368 "GET /generate-lease-agreement/ HTTP/1.1" 200 66300
+INFO 2025-09-26 11:40:19,757 "GET /admin_apms/ HTTP/1.1" 200 13286
+INFO 2025-09-26 11:40:20,999 "GET /generate-lease-agreement/ HTTP/1.1" 200 65372
+INFO 2025-09-26 11:40:25,231 "GET /admin_apms/ HTTP/1.1" 200 13286
+INFO 2025-09-26 11:40:26,466 "GET /generate-lease-agreement/ HTTP/1.1" 200 65372
+WARNING 2025-09-26 11:41:16,691 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-26 11:41:16,693 "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 43919
+INFO 2025-09-26 11:43:03,096 "GET / HTTP/1.1" 200 14929
+WARNING 2025-09-26 11:43:03,145 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-26 11:43:03,146 "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 43919
+INFO 2025-09-26 11:43:04,246 "GET /admin_apms/ HTTP/1.1" 200 13286
+WARNING 2025-09-26 11:43:04,289 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-26 11:43:04,291 "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 43919
+INFO 2025-09-26 11:43:05,247 "GET /generate-lease-agreement/ HTTP/1.1" 200 72064
+WARNING 2025-09-26 11:43:05,311 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-26 11:43:05,312 "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 43919
+INFO 2025-09-26 11:44:29,028 "GET /admin_apms/ HTTP/1.1" 200 13286
+WARNING 2025-09-26 11:44:29,128 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-26 11:44:29,128 "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 43919
+INFO 2025-09-26 11:44:30,522 "GET /generate-lease-agreement/ HTTP/1.1" 200 72103
+WARNING 2025-09-26 11:44:30,569 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-26 11:44:30,570 "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 43919
+INFO 2025-09-26 11:45:46,044 "GET / HTTP/1.1" 200 14929
+WARNING 2025-09-26 11:45:46,089 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-26 11:45:46,090 "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 43919
+INFO 2025-09-26 11:45:47,713 "GET /suppliers/ HTTP/1.1" 200 58496
+WARNING 2025-09-26 11:45:47,759 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-26 11:45:47,761 "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 43919
+INFO 2025-09-26 11:45:49,011 "GET /admin_apms/ HTTP/1.1" 200 13286
+WARNING 2025-09-26 11:45:49,054 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-26 11:45:49,056 "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 43919
+INFO 2025-09-26 11:45:50,446 "GET /generate-lease-agreement/ HTTP/1.1" 200 72103
+WARNING 2025-09-26 11:45:50,498 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-26 11:45:50,499 "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 43919
+INFO 2025-09-26 11:52:28,466 "GET /properties/ HTTP/1.1" 200 59286
+WARNING 2025-09-26 11:52:28,562 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-26 11:52:28,568 "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 43919
+INFO 2025-09-26 11:52:31,746 "GET /admin_apms/ HTTP/1.1" 200 13286
+INFO 2025-09-26 11:52:32,930 "GET /generate-lease-agreement/ HTTP/1.1" 200 65865
+INFO 2025-09-26 11:52:41,152 "POST /get-property-tenant-data/ HTTP/1.1" 200 580
+INFO 2025-09-26 11:52:43,880 "POST /get-property-tenant-data/ HTTP/1.1" 200 1080
+INFO 2025-09-26 11:54:34,895 "POST /generate-lease-agreement/ HTTP/1.1" 200 61295
+INFO 2025-09-26 11:57:09,913 "POST /generate-lease-agreement/ HTTP/1.1" 200 67076
+INFO 2025-09-26 11:57:37,447 "POST /get-property-tenant-data/ HTTP/1.1" 200 580
+INFO 2025-09-26 11:57:39,169 "POST /get-property-tenant-data/ HTTP/1.1" 200 1080
+INFO 2025-09-26 11:58:01,380 "POST /get-property-tenant-data/ HTTP/1.1" 200 596
+INFO 2025-09-26 11:58:51,512 "POST /generate-lease-agreement/ HTTP/1.1" 200 61078
+INFO 2025-09-26 12:05:29,778 "POST /get-property-tenant-data/ HTTP/1.1" 200 1080
+INFO 2025-09-26 12:06:06,061 "POST /generate-lease-agreement/ HTTP/1.1" 200 61401
+INFO 2025-09-26 12:08:30,028 "POST /generate-lease-agreement/ HTTP/1.1" 200 61550
+INFO 2025-09-26 12:11:26,079 "POST /get-property-tenant-data/ HTTP/1.1" 200 596
+INFO 2025-09-26 12:12:13,528 "POST /generate-lease-agreement/ HTTP/1.1" 200 61444
+INFO 2025-09-26 14:04:09,640 "POST /generate-lease-agreement/ HTTP/1.1" 200 69604
+INFO 2025-09-26 14:04:11,931 "GET /admin_apms/ HTTP/1.1" 200 13286
+INFO 2025-09-26 14:04:13,130 "GET /generate-lease-agreement/ HTTP/1.1" 200 66626
+INFO 2025-09-26 14:04:19,646 "POST /get-property-tenant-data/ HTTP/1.1" 200 561
+INFO 2025-09-26 14:04:21,548 "POST /get-property-tenant-data/ HTTP/1.1" 200 1153
+INFO 2025-09-26 14:06:35,101 "GET /admin_apms/ HTTP/1.1" 200 13286
+INFO 2025-09-26 14:06:36,101 "GET /generate-lease-agreement/ HTTP/1.1" 200 65865
+INFO 2025-09-26 14:06:41,397 "POST /get-property-tenant-data/ HTTP/1.1" 200 561
+INFO 2025-09-26 14:06:42,861 "POST /get-property-tenant-data/ HTTP/1.1" 200 1153
+INFO 2025-09-26 14:07:54,481 "GET /admin_apms/ HTTP/1.1" 200 13286
+INFO 2025-09-26 14:07:55,330 "GET /generate-lease-agreement/ HTTP/1.1" 200 65865
+INFO 2025-09-26 14:08:00,215 "POST /get-property-tenant-data/ HTTP/1.1" 200 561
+INFO 2025-09-26 14:08:01,528 "POST /get-property-tenant-data/ HTTP/1.1" 200 1153
+INFO 2025-09-26 14:08:55,055 "GET /admin_apms/ HTTP/1.1" 200 13286
+INFO 2025-09-26 14:08:56,005 "GET /generate-lease-agreement/ HTTP/1.1" 200 65865
+INFO 2025-09-26 14:09:01,030 "POST /get-property-tenant-data/ HTTP/1.1" 200 561
+INFO 2025-09-26 14:09:02,882 "POST /get-property-tenant-data/ HTTP/1.1" 200 1153
+INFO 2025-09-26 14:09:24,700 "GET /generate-lease-agreement/ HTTP/1.1" 200 65865
+INFO 2025-09-26 14:09:24,743 "GET /static/css/my_style.css HTTP/1.1" 200 45
+INFO 2025-09-26 14:09:24,747 "GET /static/images/alivente_online_logo.png HTTP/1.1" 200 58508
+WARNING 2025-09-26 14:09:25,082 Not Found: /favicon.ico
+WARNING 2025-09-26 14:09:25,082 "GET /favicon.ico HTTP/1.1" 404 43808
+INFO 2025-09-26 14:09:32,029 "POST /get-property-tenant-data/ HTTP/1.1" 200 580
+INFO 2025-09-26 14:09:33,412 "POST /get-property-tenant-data/ HTTP/1.1" 200 1080
+INFO 2025-09-26 14:10:26,945 "GET /admin_apms/ HTTP/1.1" 200 13286
+INFO 2025-09-26 14:10:27,997 "GET /generate-lease-agreement/ HTTP/1.1" 200 65865
+INFO 2025-09-26 14:10:33,563 "POST /get-property-tenant-data/ HTTP/1.1" 200 561
+INFO 2025-09-26 14:10:35,162 "POST /get-property-tenant-data/ HTTP/1.1" 200 1153
+INFO 2025-09-26 14:11:18,979 "GET /generate-lease-agreement/ HTTP/1.1" 200 65865
+INFO 2025-09-26 14:11:19,023 "GET /static/css/my_style.css HTTP/1.1" 200 45
+INFO 2025-09-26 14:11:19,023 "GET /static/images/alivente_online_logo.png HTTP/1.1" 200 58508
+WARNING 2025-09-26 14:11:19,449 Not Found: /favicon.ico
+WARNING 2025-09-26 14:11:19,496 "GET /favicon.ico HTTP/1.1" 404 43808
+INFO 2025-09-26 14:11:25,450 "POST /get-property-tenant-data/ HTTP/1.1" 200 561
+INFO 2025-09-26 14:11:27,396 "POST /get-property-tenant-data/ HTTP/1.1" 200 1153
+INFO 2025-09-26 14:12:23,965 "GET /generate-lease-agreement/ HTTP/1.1" 200 65865
+INFO 2025-09-26 14:12:23,998 "GET /static/css/my_style.css HTTP/1.1" 200 45
+INFO 2025-09-26 14:12:24,000 "GET /static/images/alivente_online_logo.png HTTP/1.1" 200 58508
+WARNING 2025-09-26 14:12:24,375 Not Found: /favicon.ico
+WARNING 2025-09-26 14:12:24,375 "GET /favicon.ico HTTP/1.1" 404 43808
+INFO 2025-09-26 14:12:31,330 "POST /get-property-tenant-data/ HTTP/1.1" 200 561
+INFO 2025-09-26 14:12:32,849 "POST /get-property-tenant-data/ HTTP/1.1" 200 1153
+WARNING 2025-09-26 14:13:06,395 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-26 14:13:06,396 "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 43919
+INFO 2025-09-26 14:14:28,211 Watching for file changes with StatReloader
+INFO 2025-09-26 14:14:36,328 "GET /generate-lease-agreement/ HTTP/1.1" 200 65865
+WARNING 2025-09-26 14:14:36,374 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-26 14:14:36,376 "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 43919
+INFO 2025-09-26 14:14:36,420 "GET /static/css/my_style.css HTTP/1.1" 200 45
+INFO 2025-09-26 14:14:36,469 "GET /static/images/alivente_online_logo.png HTTP/1.1" 200 58508
+WARNING 2025-09-26 14:14:36,817 Not Found: /favicon.ico
+WARNING 2025-09-26 14:14:36,819 "GET /favicon.ico HTTP/1.1" 404 43808
+INFO 2025-09-26 14:15:26,677 "POST /get-property-tenant-data/ HTTP/1.1" 200 561
+INFO 2025-09-26 14:15:28,262 "POST /get-property-tenant-data/ HTTP/1.1" 200 1153
+INFO 2025-09-26 16:46:23,309 "GET /admin_apms/ HTTP/1.1" 200 13286
+WARNING 2025-09-26 16:46:23,355 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-26 16:46:23,357 "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 43919
+INFO 2025-09-26 16:46:24,675 "GET /generate-lease-agreement/ HTTP/1.1" 200 66174
+WARNING 2025-09-26 16:46:24,711 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-26 16:46:24,712 "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 43919
+INFO 2025-09-26 16:46:31,158 "POST /get-property-tenant-data/ HTTP/1.1" 200 580
+INFO 2025-09-26 16:46:32,759 "POST /get-property-tenant-data/ HTTP/1.1" 200 1080
+INFO 2025-09-26 16:48:19,429 "GET /admin_apms/ HTTP/1.1" 200 13286
+INFO 2025-09-26 16:48:20,464 "GET /generate-lease-agreement/ HTTP/1.1" 200 66225
+INFO 2025-09-26 16:48:34,898 "POST /get-property-tenant-data/ HTTP/1.1" 200 580
+INFO 2025-09-26 16:48:36,550 "POST /get-property-tenant-data/ HTTP/1.1" 200 1080
+INFO 2025-09-26 16:49:54,012 "GET /admin_apms/ HTTP/1.1" 200 13286
+INFO 2025-09-26 16:49:55,001 "GET /generate-lease-agreement/ HTTP/1.1" 200 66190
+INFO 2025-09-26 16:50:00,004 "POST /get-property-tenant-data/ HTTP/1.1" 200 580
+INFO 2025-09-26 16:50:02,066 "POST /get-property-tenant-data/ HTTP/1.1" 200 1080
+INFO 2025-09-26 17:08:15,757 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+INFO 2025-09-26 17:08:17,041 Watching for file changes with StatReloader
+INFO 2025-09-26 17:59:19,800 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+INFO 2025-09-26 17:59:20,910 Watching for file changes with StatReloader
+INFO 2025-09-26 17:59:26,804 "GET /admin_apms/ HTTP/1.1" 200 13286
+INFO 2025-09-26 17:59:27,857 "GET /generate-lease-agreement/ HTTP/1.1" 200 66190
+INFO 2025-09-26 17:59:34,685 "POST /get-property-tenant-data/ HTTP/1.1" 200 561
+INFO 2025-09-26 17:59:36,149 "POST /get-property-tenant-data/ HTTP/1.1" 200 1153
+INFO 2025-09-26 18:00:13,966 "POST /generate-lease-agreement/ HTTP/1.1" 200 61695
+INFO 2025-09-26 18:01:28,504 "GET /admin_apms/ HTTP/1.1" 200 13907
+INFO 2025-09-26 18:03:58,689 "GET /generate-lease-agreement/ HTTP/1.1" 200 66190
+INFO 2025-09-26 18:04:05,112 "POST /get-property-tenant-data/ HTTP/1.1" 200 580
+INFO 2025-09-26 18:04:06,546 "POST /get-property-tenant-data/ HTTP/1.1" 200 1080
+INFO 2025-09-26 18:04:44,530 "POST /generate-lease-agreement/ HTTP/1.1" 200 61630
+INFO 2025-09-26 18:06:22,769 "POST /generate-lease-agreement/ HTTP/1.1" 200 61553
+INFO 2025-09-26 18:09:20,978 "POST /generate-lease-agreement/ HTTP/1.1" 200 61572
+INFO 2025-09-26 18:11:05,831 "POST /generate-lease-agreement/ HTTP/1.1" 200 61637
+INFO 2025-09-26 18:13:19,705 "POST /generate-lease-agreement/ HTTP/1.1" 200 61875
+INFO 2025-09-26 18:14:48,440 "POST /generate-lease-agreement/ HTTP/1.1" 200 61639
+INFO 2025-09-26 18:15:20,291 "POST /get-property-tenant-data/ HTTP/1.1" 200 549
+INFO 2025-09-26 18:15:22,446 "POST /get-property-tenant-data/ HTTP/1.1" 200 1052
+INFO 2025-09-26 18:15:50,025 "POST /generate-lease-agreement/ HTTP/1.1" 200 61679
+INFO 2025-09-26 18:17:29,011 "POST /generate-lease-agreement/ HTTP/1.1" 200 61753
+INFO 2025-09-26 18:18:55,653 "POST /generate-lease-agreement/ HTTP/1.1" 200 61772
+INFO 2025-09-26 18:21:04,936 "POST /generate-lease-agreement/ HTTP/1.1" 200 61757
+INFO 2025-09-26 18:31:27,238 "GET /admin_apms/ HTTP/1.1" 200 19496
+INFO 2025-09-26 18:31:31,801 "GET / HTTP/1.1" 200 14929
+INFO 2025-09-26 18:31:40,486 Watching for file changes with StatReloader
+INFO 2025-09-26 18:31:49,741 "GET /admin_apms/ HTTP/1.1" 200 13286
+INFO 2025-09-26 18:31:50,679 "GET /generate-lease-agreement/ HTTP/1.1" 200 76986
+INFO 2025-09-26 18:35:34,745 "GET /admin_apms/ HTTP/1.1" 200 13286
+INFO 2025-09-26 18:35:35,831 "GET /generate-lease-agreement/ HTTP/1.1" 200 66190
+INFO 2025-09-26 18:54:34,133 "GET /admin_apms/ HTTP/1.1" 200 13286
+INFO 2025-09-26 18:54:35,122 "GET /generate-lease-agreement/ HTTP/1.1" 200 67516
+INFO 2025-09-26 18:54:41,801 "POST /get-property-tenant-data/ HTTP/1.1" 200 549
+INFO 2025-09-26 18:54:44,701 "POST /get-property-tenant-data/ HTTP/1.1" 200 1052
+INFO 2025-09-26 18:55:32,718 "POST /generate-lease-agreement/ HTTP/1.1" 200 61674
+INFO 2025-09-26 19:03:21,075 "POST /generate-lease-agreement/ HTTP/1.1" 200 61545
+INFO 2025-09-26 22:08:28,388 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+INFO 2025-09-26 22:08:29,699 Watching for file changes with StatReloader
+INFO 2025-09-26 22:08:38,503 "GET /admin_apms/ HTTP/1.1" 200 14528
+INFO 2025-09-26 22:08:40,862 "GET /generate-lease-agreement/ HTTP/1.1" 200 67516
+INFO 2025-09-26 22:08:46,393 "POST /get-property-tenant-data/ HTTP/1.1" 200 549
+INFO 2025-09-26 22:08:47,973 "POST /get-property-tenant-data/ HTTP/1.1" 200 1052
+INFO 2025-09-26 22:10:05,234 "POST /generate-lease-agreement/ HTTP/1.1" 200 68138
+INFO 2025-09-26 22:10:20,203 "POST /get-property-tenant-data/ HTTP/1.1" 200 580
+INFO 2025-09-26 22:10:22,053 "POST /get-property-tenant-data/ HTTP/1.1" 200 549
+INFO 2025-09-26 22:10:23,787 "POST /get-property-tenant-data/ HTTP/1.1" 200 1052
+INFO 2025-09-26 22:11:28,570 "POST /generate-lease-agreement/ HTTP/1.1" 200 61968
+INFO 2025-09-26 22:12:48,287 "POST /generate-lease-agreement/ HTTP/1.1" 200 62225
+INFO 2025-09-26 22:13:34,486 "POST /generate-lease-agreement/ HTTP/1.1" 200 61891
+INFO 2025-09-26 22:14:11,303 "POST /get-property-tenant-data/ HTTP/1.1" 200 565
+INFO 2025-09-26 22:19:16,844 "GET /admin_apms/ HTTP/1.1" 200 15149
+INFO 2025-09-26 22:19:20,237 "GET /generate-lease-agreement/ HTTP/1.1" 200 67792
+INFO 2025-09-26 22:20:35,802 "GET /admin_apms/ HTTP/1.1" 200 13286
+INFO 2025-09-26 22:20:36,819 "GET /generate-lease-agreement/ HTTP/1.1" 200 67788
+INFO 2025-09-26 22:20:42,669 "POST /get-property-tenant-data/ HTTP/1.1" 200 549
+INFO 2025-09-26 22:20:45,085 "POST /get-property-tenant-data/ HTTP/1.1" 200 565
+INFO 2025-09-26 22:21:37,052 "GET /admin_apms/ HTTP/1.1" 200 13286
+INFO 2025-09-26 22:24:38,207 "GET /generate-lease-agreement/ HTTP/1.1" 200 67788
+INFO 2025-09-26 22:24:44,453 "POST /get-property-tenant-data/ HTTP/1.1" 200 549
+INFO 2025-09-26 22:24:46,169 "POST /get-property-tenant-data/ HTTP/1.1" 200 1052
+INFO 2025-09-26 22:25:49,555 "POST /generate-lease-agreement/ HTTP/1.1" 200 62075
+INFO 2025-09-26 22:27:22,882 "POST /generate-lease-agreement/ HTTP/1.1" 200 61630
+INFO 2025-09-26 22:28:49,486 "POST /generate-lease-agreement/ HTTP/1.1" 200 61887
+INFO 2025-09-26 22:30:03,929 "POST /generate-lease-agreement/ HTTP/1.1" 200 61599
+INFO 2025-09-26 22:30:39,263 "POST /generate-lease-agreement/ HTTP/1.1" 200 61846
+INFO 2025-09-26 22:31:53,318 "POST /generate-lease-agreement/ HTTP/1.1" 200 62260
+INFO 2025-09-26 22:40:30,154 "POST /generate-lease-agreement/ HTTP/1.1" 200 62166
+INFO 2025-09-26 22:41:38,944 "POST /generate-lease-agreement/ HTTP/1.1" 200 62149
+INFO 2025-09-26 22:42:29,835 "POST /get-property-tenant-data/ HTTP/1.1" 200 580
+INFO 2025-09-26 22:42:33,221 "POST /get-property-tenant-data/ HTTP/1.1" 200 1080
+INFO 2025-09-26 22:42:48,784 "POST /generate-lease-agreement/ HTTP/1.1" 200 61738
+INFO 2025-09-26 22:47:10,667 "POST /generate-lease-agreement/ HTTP/1.1" 200 61728
+INFO 2025-09-26 22:51:54,237 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+INFO 2025-09-26 22:51:55,939 Watching for file changes with StatReloader
+INFO 2025-09-26 22:52:23,050 "POST /generate-lease-agreement/ HTTP/1.1" 200 61743
+INFO 2025-09-26 22:54:08,272 "POST /generate-lease-agreement/ HTTP/1.1" 200 61827
+INFO 2025-09-26 22:55:22,250 "POST /generate-lease-agreement/ HTTP/1.1" 200 62074
+INFO 2025-09-26 22:56:25,516 "GET /admin_apms/ HTTP/1.1" 200 21359
+ERROR 2025-09-26 22:56:36,174 Internal Server Error: /admin_invoices/
+Traceback (most recent call last):
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\contrib\auth\decorators.py", line 60, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\pages\views.py", line 3094, in admin_invoices
+    open_invoices.create_invoices(months[today.month],today.year,request)
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\open_invoices.py", line 120, in create_invoices
+    auth_plugin=settings.DATABASES['default']['AUTH_PLUGIN'],
+                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^
+KeyError: 'AUTH_PLUGIN'
+ERROR 2025-09-26 22:56:36,180 "GET /admin_invoices/ HTTP/1.1" 500 81489
+INFO 2025-09-26 22:59:28,465 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\mysite\settings.py changed, reloading.
+INFO 2025-09-26 23:00:47,220 Watching for file changes with StatReloader
+INFO 2025-09-26 23:00:55,577 "GET / HTTP/1.1" 200 14929
+INFO 2025-09-26 23:00:56,450 "GET /admin_apms/ HTTP/1.1" 200 13286
+INFO 2025-09-26 23:00:57,413 "GET /admin_invoices/ HTTP/1.1" 302 0
+INFO 2025-09-26 23:00:57,433 "GET /admin_apms/ HTTP/1.1" 200 13916
+INFO 2025-09-26 23:01:08,483 "GET /properties/ HTTP/1.1" 200 59286
+INFO 2025-09-26 23:01:10,451 "GET /properties_edit/5 HTTP/1.1" 200 26358
+INFO 2025-09-26 23:01:12,435 "GET /properties/ HTTP/1.1" 200 59286
+INFO 2025-09-26 23:01:13,551 "GET /properties/map/ HTTP/1.1" 200 26722
+INFO 2025-09-26 23:01:17,837 "GET /properties/ HTTP/1.1" 200 59286
+INFO 2025-09-26 23:01:19,257 "GET /property_report/5 HTTP/1.1" 200 17982
+INFO 2025-09-26 23:01:20,435 "GET /properties/ HTTP/1.1" 200 59286
+INFO 2025-09-26 23:01:21,921 "GET /media/properties/title_deeds/prop_5_apolloneon-demetri_title_deed.pdf HTTP/1.1" 200 3471395
+INFO 2025-09-26 23:01:25,783 "GET /tenant/ HTTP/1.1" 200 60056
+INFO 2025-09-26 23:01:27,317 "GET /open_invoices_report/ HTTP/1.1" 200 37600
+INFO 2025-09-26 23:01:28,683 "GET /tenant/ HTTP/1.1" 200 60056
+INFO 2025-09-26 23:01:29,717 "GET /lease_renewal_report/ HTTP/1.1" 200 17479
+INFO 2025-09-26 23:01:30,967 "GET /tenant/ HTTP/1.1" 200 60056
+INFO 2025-09-26 23:01:32,506 "GET /tenant_add/ HTTP/1.1" 200 18405
+INFO 2025-09-26 23:01:33,986 "GET /tenant/ HTTP/1.1" 200 60056
+INFO 2025-09-26 23:01:35,763 "GET /tenant_edit/5 HTTP/1.1" 200 17615
+INFO 2025-09-26 23:01:37,433 "GET /tenant/ HTTP/1.1" 200 60056
+INFO 2025-09-26 23:01:38,517 "GET /tenant_report/5 HTTP/1.1" 200 20542
+INFO 2025-09-26 23:01:39,883 "GET /tenant/ HTTP/1.1" 200 60056
+INFO 2025-09-26 23:01:40,832 "GET /media/tenants/lease_agreements/tenant_5_chrystalla-katelari-and-antigoni-andreou_lease_agreement.pdf HTTP/1.1" 200 1387037
+INFO 2025-09-26 23:01:44,733 "GET /notifications/ HTTP/1.1" 200 31762
+INFO 2025-09-26 23:01:44,846 "GET /notifications/ HTTP/1.1" 200 7859
+INFO 2025-09-26 23:01:54,720 "GET /admin_apms/ HTTP/1.1" 200 13286
+INFO 2025-09-26 23:01:56,222 "GET /tenant_lease_agreement/ HTTP/1.1" 200 29111
+INFO 2025-09-26 23:02:00,418 "GET /admin_apms/ HTTP/1.1" 200 13286
+INFO 2025-09-26 23:02:01,366 "GET /properties_title_deed/ HTTP/1.1" 200 30369
+INFO 2025-09-26 23:02:06,547 "GET /admin_apms/ HTTP/1.1" 200 13286
+INFO 2025-09-26 23:02:07,583 "GET /generate-lease-agreement/ HTTP/1.1" 200 67788
+INFO 2025-09-26 23:02:09,516 "GET /admin_apms/ HTTP/1.1" 200 13286
+INFO 2025-09-26 23:02:13,749 "GET /suppliers/ HTTP/1.1" 200 58496
+INFO 2025-09-26 23:02:15,333 "GET /suppliers_edit/9 HTTP/1.1" 200 12276
+INFO 2025-09-26 23:02:17,165 "GET /suppliers/ HTTP/1.1" 200 58496
+INFO 2025-09-26 23:02:18,371 "GET /supplier_report/9 HTTP/1.1" 200 14993
+INFO 2025-09-26 23:02:19,449 "GET /suppliers/ HTTP/1.1" 200 58496
+INFO 2025-09-26 23:02:20,274 "GET /suppliers_add/ HTTP/1.1" 200 12156
+INFO 2025-09-26 23:02:21,150 "GET /suppliers/ HTTP/1.1" 200 58496
+INFO 2025-09-26 23:02:22,366 "GET / HTTP/1.1" 200 14929
+INFO 2025-09-26 23:02:24,524 "GET /fsr/ HTTP/1.1" 200 101362
+INFO 2025-09-26 23:02:25,917 "GET /fsr_details/18?from=fsr&search=&propcountry=&propname=&issuestatus= HTTP/1.1" 200 34821
+INFO 2025-09-26 23:02:27,365 "GET /fsr/?refresh=true HTTP/1.1" 200 101362
+INFO 2025-09-26 23:02:27,460 "GET /fsr/ HTTP/1.1" 200 101362
+INFO 2025-09-26 23:02:33,358 "GET /resolved_issues_report/?f_date=2025-03-05&t_date=2025-09-26 HTTP/1.1" 200 23240
+INFO 2025-09-26 23:02:34,309 "GET /fsr/ HTTP/1.1" 200 101362
+INFO 2025-09-26 23:02:36,805 "GET /friday_status_report/ HTTP/1.1" 200 48647
+INFO 2025-09-26 23:02:38,283 "GET /fsr/ HTTP/1.1" 200 101362
+INFO 2025-09-26 23:02:39,632 "GET / HTTP/1.1" 200 14929
+INFO 2025-09-26 23:02:41,766 "GET /invoices/ HTTP/1.1" 200 145599
+INFO 2025-09-26 23:02:48,832 "GET /invoices_commit/4 HTTP/1.1" 302 0
+INFO 2025-09-26 23:02:48,883 "GET /invoices/ HTTP/1.1" 200 142385
+INFO 2025-09-26 23:02:51,084 "GET / HTTP/1.1" 200 14929
+INFO 2025-09-26 23:02:53,816 "GET /act_expense_all/?from=home HTTP/1.1" 200 84840
+INFO 2025-09-26 23:02:56,381 "GET /media/expense_docs/pindarou-20250630-Invoice.pdf HTTP/1.1" 200 461728
+INFO 2025-09-26 23:03:03,784 "GET /projects/ HTTP/1.1" 200 26895
+INFO 2025-09-26 23:03:05,862 "GET /projects/detail/5/ HTTP/1.1" 200 58997
+INFO 2025-09-26 23:03:49,687 "GET /property_management_dashboard/ HTTP/1.1" 200 43046
+INFO 2025-09-26 23:03:55,855 "GET /property/1/profit-loss/ HTTP/1.1" 200 40407
+INFO 2025-09-26 23:04:00,602 "GET /property_management_dashboard/?property=1 HTTP/1.1" 200 43046
+INFO 2025-09-26 23:04:02,311 "GET /property_detail/1/actual-expenses/ HTTP/1.1" 200 42728
+INFO 2025-09-26 23:04:05,633 "GET /property_management_dashboard/?property=1 HTTP/1.1" 200 43046
+INFO 2025-09-26 23:04:14,404 "GET /property/1/profit-loss/ HTTP/1.1" 200 40407
+INFO 2025-09-26 23:06:51,300 "GET /property_management_dashboard/?property=1 HTTP/1.1" 200 43046
+INFO 2025-09-26 23:06:57,166 "GET /property/1/profit-loss/ HTTP/1.1" 200 40407
+INFO 2025-09-26 23:07:52,800 "GET /property_management_dashboard/?property=1 HTTP/1.1" 200 43046
+INFO 2025-09-26 23:13:30,167 "GET /property_detail/1/actual-expenses/ HTTP/1.1" 200 42728
+INFO 2025-09-26 23:16:57,465 "GET /property_management_dashboard/?property=1 HTTP/1.1" 200 43046
+WARNING 2025-09-26 23:17:03,377 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-26 23:17:03,378 "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 43919
+INFO 2025-09-26 23:17:21,267 "GET /property/1/profit-loss/ HTTP/1.1" 200 40407
+WARNING 2025-09-26 23:17:21,325 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-26 23:17:21,326 "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 43919
+INFO 2025-09-27 07:31:26,639 "GET /property_management_dashboard/?property=1 HTTP/1.1" 200 43046
+WARNING 2025-09-27 07:31:26,692 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-27 07:31:26,694 "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 43919
+INFO 2025-09-27 07:31:28,977 "GET /property_detail/1/actual-expenses/ HTTP/1.1" 200 42728
+WARNING 2025-09-27 07:31:29,031 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-27 07:31:29,032 "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 43919
+WARNING 2025-09-27 07:32:26,417 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-27 07:32:26,419 "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 43919
+INFO 2025-09-27 07:33:40,340 "GET /property_management_dashboard/?property=1 HTTP/1.1" 200 43046
+WARNING 2025-09-27 07:33:40,401 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-27 07:33:40,403 "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 43919
+INFO 2025-09-27 07:36:48,072 "GET / HTTP/1.1" 200 14929
+WARNING 2025-09-27 07:36:48,118 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-27 07:36:48,119 "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 43919
+INFO 2025-09-27 07:36:50,081 "GET /act_expense_all/?from=home HTTP/1.1" 200 84840
+WARNING 2025-09-27 07:36:50,140 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-27 07:36:50,141 "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 43919
+INFO 2025-09-27 07:36:55,520 "GET /act_expense_all/?from=home&search=&property=1&status=&from_date=&to_date= HTTP/1.1" 200 59044
+WARNING 2025-09-27 07:36:55,561 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-09-27 07:36:55,562 "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 43919
+INFO 2025-09-27 07:38:51,307 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+INFO 2025-09-27 07:38:52,636 Watching for file changes with StatReloader
+INFO 2025-09-27 07:39:07,591 "GET /property_management_dashboard/ HTTP/1.1" 200 43046
+INFO 2025-09-27 07:39:15,244 "GET /property_detail/1/actual-expenses/ HTTP/1.1" 200 42728
+INFO 2025-09-27 07:39:17,923 "GET /property_management_dashboard/?property=1 HTTP/1.1" 200 43046
+ERROR 2025-09-27 07:39:22,209 Internal Server Error: /property/1/profit-loss/
+Traceback (most recent call last):
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\contrib\auth\decorators.py", line 60, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\pages\views.py", line 3387, in dashboard_pl
+    print(f"ID: {exp.id}")
+                 ^^^^^^
+AttributeError: 'act_expense' object has no attribute 'id'
+ERROR 2025-09-27 07:39:22,221 "GET /property/1/profit-loss/ HTTP/1.1" 500 76593
+INFO 2025-09-27 07:40:54,596 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+INFO 2025-09-27 07:40:55,627 Watching for file changes with StatReloader
+INFO 2025-09-27 07:41:14,618 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+INFO 2025-09-27 07:41:15,411 Watching for file changes with StatReloader
+INFO 2025-09-27 07:41:30,806 "GET /property/1/profit-loss/ HTTP/1.1" 200 40407
+INFO 2025-09-27 07:44:35,292 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+INFO 2025-09-27 07:44:36,303 Watching for file changes with StatReloader
+INFO 2025-09-27 07:44:43,656 "GET /property_management_dashboard/?property=1 HTTP/1.1" 200 43046
+INFO 2025-09-27 07:44:50,059 "GET /property/1/profit-loss/ HTTP/1.1" 200 40407
+INFO 2025-09-27 07:49:55,228 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+INFO 2025-09-27 07:49:56,381 Watching for file changes with StatReloader
+INFO 2025-09-27 07:50:39,970 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+INFO 2025-09-27 07:50:41,033 Watching for file changes with StatReloader
+INFO 2025-09-27 07:51:04,016 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+INFO 2025-09-27 07:51:04,880 Watching for file changes with StatReloader
+INFO 2025-09-27 07:51:25,679 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+INFO 2025-09-27 07:51:26,552 Watching for file changes with StatReloader
+INFO 2025-09-27 07:51:32,174 "GET /property_management_dashboard/?property=1 HTTP/1.1" 200 43046
+INFO 2025-09-27 07:51:35,331 "GET /property/1/profit-loss/ HTTP/1.1" 200 40407
+INFO 2025-09-27 07:52:20,629 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+INFO 2025-09-27 07:52:21,667 Watching for file changes with StatReloader
+INFO 2025-09-27 07:54:27,254 "GET /property_management_dashboard/?property=1 HTTP/1.1" 200 43046
+INFO 2025-09-27 07:54:29,772 "GET /property/1/profit-loss/ HTTP/1.1" 200 40964
+INFO 2025-09-27 07:57:08,856 "GET /property_management_dashboard/?property=1 HTTP/1.1" 200 43046
+INFO 2025-09-27 07:57:14,038 "GET /property/1/profit-loss/ HTTP/1.1" 200 40565
+INFO 2025-09-27 07:59:20,727 "GET /admin_apms/ HTTP/1.1" 200 13286
+INFO 2025-09-27 07:59:26,938 "GET /property_management_dashboard/ HTTP/1.1" 200 43046
+INFO 2025-09-27 07:59:32,467 "GET /property/1/profit-loss/ HTTP/1.1" 200 40404
+INFO 2025-09-27 08:01:47,007 "GET /property_management_dashboard/?property=1 HTTP/1.1" 200 43046
+INFO 2025-09-27 08:01:49,820 "GET /property_detail/1/budgeted-expenses/ HTTP/1.1" 200 43235
+INFO 2025-09-27 08:01:51,140 "GET /property_management_dashboard/?property=1 HTTP/1.1" 200 43046
+INFO 2025-09-27 08:01:52,689 "GET /property_detail/1/actual-expenses/ HTTP/1.1" 200 42728
+INFO 2025-09-27 08:01:53,837 "GET /property_management_dashboard/?property=1 HTTP/1.1" 200 43046
+INFO 2025-09-27 08:01:56,406 "GET /property/1/profit-loss/ HTTP/1.1" 200 39876
+INFO 2025-09-27 08:03:10,626 "GET /property_management_dashboard/?property=1 HTTP/1.1" 200 43046
+INFO 2025-09-27 08:03:12,921 "GET /property_detail/1/actual-expenses/ HTTP/1.1" 200 42728
+INFO 2025-09-27 08:04:50,254 "GET /property_management_dashboard/?property=1 HTTP/1.1" 200 43046
+INFO 2025-09-27 08:04:52,006 "GET /property/1/profit-loss/ HTTP/1.1" 200 39636
+INFO 2025-09-27 08:05:00,086 "GET /property/1/profit-loss/?year=2025 HTTP/1.1" 200 41035
+INFO 2025-09-27 08:05:12,103 "GET /property/1/profit-loss/?year=budget HTTP/1.1" 200 39636
+INFO 2025-09-27 08:08:32,758 "GET /property_management_dashboard/?property=1 HTTP/1.1" 200 43046
+INFO 2025-09-27 08:08:34,854 "GET /property/1/profit-loss/ HTTP/1.1" 200 39606
+INFO 2025-09-27 08:09:17,971 Watching for file changes with StatReloader
+INFO 2025-09-27 08:09:27,151 "GET /properties/ HTTP/1.1" 200 59286
+INFO 2025-09-27 08:09:29,554 "GET /property_management_dashboard/ HTTP/1.1" 200 43046
+INFO 2025-09-27 08:09:35,073 "GET /property/1/profit-loss/ HTTP/1.1" 200 39606
+INFO 2025-09-27 08:11:41,971 "GET /property_management_dashboard/?property=1 HTTP/1.1" 200 43046
+INFO 2025-09-27 08:11:44,004 "GET /property_detail/1/budgeted-expenses/ HTTP/1.1" 200 43235
+INFO 2025-09-27 08:11:45,273 "GET /property_management_dashboard/?property=1 HTTP/1.1" 200 43046
+INFO 2025-09-27 08:11:47,138 "GET /property/1/profit-loss/ HTTP/1.1" 200 39606
+INFO 2025-09-27 08:14:25,304 "GET /property_management_dashboard/?property=1 HTTP/1.1" 200 43046
+INFO 2025-09-27 08:14:27,037 "GET /property/1/profit-loss/ HTTP/1.1" 200 41232
+INFO 2025-09-27 08:14:31,018 "GET /property/1/profit-loss/?year=2025 HTTP/1.1" 200 42631
+INFO 2025-09-27 08:14:32,708 "GET /property/1/profit-loss/?year=budget HTTP/1.1" 200 41232
+INFO 2025-09-27 08:15:06,336 "GET /property_management_dashboard/?property=1 HTTP/1.1" 200 43046
+INFO 2025-09-27 08:15:08,791 "GET / HTTP/1.1" 200 14929
+INFO 2025-09-27 08:15:10,720 "GET /finance/ HTTP/1.1" 200 16427
+INFO 2025-09-27 08:15:12,204 "GET /finance_pl_act/ HTTP/1.1" 200 127829
+INFO 2025-09-27 08:15:15,318 "GET /finance_pl_act/?year=2025&properties=1&properties=2&properties=3&properties=4&properties=5&properties=7&properties=9&properties=10&properties=11&properties=12 HTTP/1.1" 200 132320
+INFO 2025-09-27 08:15:17,169 "GET /finance_pl_act/?year=2024&properties=1&properties=2&properties=3&properties=4&properties=5&properties=7&properties=9&properties=10&properties=11&properties=12 HTTP/1.1" 200 131824
+INFO 2025-09-27 08:16:41,469 "GET /finance/ HTTP/1.1" 200 16427
+INFO 2025-09-27 08:16:43,086 "GET / HTTP/1.1" 200 14929
+INFO 2025-09-27 08:16:44,919 "GET /property_management_dashboard/ HTTP/1.1" 200 43046
+INFO 2025-09-27 08:16:49,607 "GET /property/1/profit-loss/ HTTP/1.1" 200 41232
+INFO 2025-09-27 08:16:51,712 "GET /property/1/profit-loss/?year=2025 HTTP/1.1" 200 42631
+INFO 2025-09-27 08:16:56,069 "GET / HTTP/1.1" 200 14929
+INFO 2025-09-27 08:17:11,533 "GET /admin_apms/ HTTP/1.1" 200 13286
+INFO 2025-09-27 08:17:12,652 "GET /generate-lease-agreement/ HTTP/1.1" 200 67788
+INFO 2025-09-27 08:17:23,320 "POST /get-property-tenant-data/ HTTP/1.1" 200 549
+INFO 2025-09-27 08:17:25,787 "POST /get-property-tenant-data/ HTTP/1.1" 200 1052
+INFO 2025-09-27 08:20:23,060 "POST /generate-lease-agreement/ HTTP/1.1" 200 62608
+INFO 2025-09-27 08:24:28,762 "POST /generate-lease-agreement/ HTTP/1.1" 200 62688
+INFO 2025-09-27 08:27:04,640 "POST /generate-lease-agreement/ HTTP/1.1" 200 62745
+INFO 2025-09-27 08:27:44,672 "POST /get-property-tenant-data/ HTTP/1.1" 200 561
+INFO 2025-09-27 08:27:47,473 "POST /get-property-tenant-data/ HTTP/1.1" 200 1153
+INFO 2025-09-27 08:28:00,657 "POST /get-property-tenant-data/ HTTP/1.1" 200 580
+INFO 2025-09-27 08:28:02,487 "POST /get-property-tenant-data/ HTTP/1.1" 200 1080
+INFO 2025-09-27 08:28:22,101 "POST /generate-lease-agreement/ HTTP/1.1" 200 62206
+INFO 2025-09-27 08:29:05,035 "POST /get-property-tenant-data/ HTTP/1.1" 200 549
+INFO 2025-09-27 08:29:07,863 "POST /get-property-tenant-data/ HTTP/1.1" 200 1052
+INFO 2025-09-27 08:29:27,473 "POST /generate-lease-agreement/ HTTP/1.1" 200 62262
+INFO 2025-09-27 08:30:02,537 "GET /admin_apms/ HTTP/1.1" 200 16391
+INFO 2025-09-27 08:30:06,219 "GET / HTTP/1.1" 200 14929
+INFO 2025-09-27 13:14:33,257 "GET /admin_apms/ HTTP/1.1" 200 13286
+INFO 2025-09-27 13:14:35,400 "GET /generate-lease-agreement/ HTTP/1.1" 200 67788
+INFO 2025-09-27 13:14:44,682 "POST /get-property-tenant-data/ HTTP/1.1" 200 561
+INFO 2025-09-27 13:14:47,171 "POST /get-property-tenant-data/ HTTP/1.1" 200 1153
+INFO 2025-09-27 13:15:05,396 "POST /generate-lease-agreement/ HTTP/1.1" 200 62106
+INFO 2025-09-27 13:21:56,280 "GET /admin_apms/ HTTP/1.1" 200 13907
+INFO 2025-09-27 13:21:57,666 "GET /generate-lease-agreement/ HTTP/1.1" 200 67788
+INFO 2025-09-27 13:22:05,553 "POST /get-property-tenant-data/ HTTP/1.1" 200 580
+INFO 2025-09-27 13:22:12,447 "POST /get-property-tenant-data/ HTTP/1.1" 200 1080
+INFO 2025-09-27 13:22:24,251 "POST /generate-lease-agreement/ HTTP/1.1" 200 37043
+INFO 2025-09-27 13:25:41,880 "POST /generate-lease-agreement/ HTTP/1.1" 200 32011
+INFO 2025-09-27 13:39:10,795 "POST /get-property-tenant-data/ HTTP/1.1" 200 549
+INFO 2025-09-27 13:39:12,928 "POST /get-property-tenant-data/ HTTP/1.1" 200 1052
+INFO 2025-09-27 13:39:44,830 "POST /generate-lease-agreement/ HTTP/1.1" 200 69588
+INFO 2025-09-27 13:40:07,321 "POST /get-property-tenant-data/ HTTP/1.1" 200 549
+INFO 2025-09-27 13:40:08,931 "POST /get-property-tenant-data/ HTTP/1.1" 200 1052
+INFO 2025-09-27 13:40:56,813 "POST /generate-lease-agreement/ HTTP/1.1" 200 68410
+INFO 2025-09-27 13:43:19,163 "POST /get-property-tenant-data/ HTTP/1.1" 200 580
+INFO 2025-09-27 13:48:24,316 "POST /get-property-tenant-data/ HTTP/1.1" 200 1080
+INFO 2025-09-27 13:48:35,862 "POST /generate-lease-agreement/ HTTP/1.1" 200 32463
+INFO 2025-09-27 13:52:16,996 "POST /generate-lease-agreement/ HTTP/1.1" 200 32494
+INFO 2025-09-27 13:53:14,494 "POST /generate-lease-agreement/ HTTP/1.1" 200 32213
+INFO 2025-09-27 13:54:01,610 "POST /generate-lease-agreement/ HTTP/1.1" 200 32412
+INFO 2025-09-27 13:54:47,016 "POST /get-property-tenant-data/ HTTP/1.1" 200 549
+INFO 2025-09-27 13:54:49,196 "POST /get-property-tenant-data/ HTTP/1.1" 200 1052
+INFO 2025-09-27 13:55:16,663 "POST /generate-lease-agreement/ HTTP/1.1" 200 32743
+INFO 2025-09-27 14:03:53,277 "POST /generate-lease-agreement/ HTTP/1.1" 200 32769
+INFO 2025-09-28 07:58:41,806 "POST /generate-lease-agreement/ HTTP/1.1" 200 32636
+INFO 2025-09-28 08:09:01,540 "POST /generate-lease-agreement/ HTTP/1.1" 200 32826
+INFO 2025-09-28 08:27:34,712 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+INFO 2025-09-28 08:27:36,601 Watching for file changes with StatReloader
+INFO 2025-09-28 08:27:44,796 "GET /admin_apms/ HTTP/1.1" 200 18254
+INFO 2025-09-28 08:27:48,701 "GET /generate-lease-agreement/ HTTP/1.1" 200 67788
+INFO 2025-09-28 08:28:02,967 "POST /get-property-tenant-data/ HTTP/1.1" 200 580
+INFO 2025-09-28 08:28:05,630 "POST /get-property-tenant-data/ HTTP/1.1" 200 1080
+INFO 2025-09-28 08:28:45,747 "POST /generate-lease-agreement/ HTTP/1.1" 200 32410
+INFO 2025-09-28 08:32:01,612 "POST /generate-lease-agreement/ HTTP/1.1" 200 32511
+INFO 2025-09-28 08:38:31,058 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+INFO 2025-09-28 08:38:32,100 Watching for file changes with StatReloader
+INFO 2025-09-28 08:38:44,213 "POST /generate-lease-agreement/ HTTP/1.1" 200 32559
+INFO 2025-09-28 08:39:22,114 "GET /admin_apms/ HTTP/1.1" 200 15149
+INFO 2025-09-28 08:39:25,634 "GET /generate-lease-agreement/ HTTP/1.1" 200 67788
+INFO 2025-09-28 08:39:31,231 "POST /get-property-tenant-data/ HTTP/1.1" 200 580
+INFO 2025-09-28 08:39:32,807 "POST /get-property-tenant-data/ HTTP/1.1" 200 1080
+INFO 2025-09-28 08:40:02,190 "POST /generate-lease-agreement/ HTTP/1.1" 200 32545
+INFO 2025-09-28 08:48:01,823 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+INFO 2025-09-28 08:48:02,969 Watching for file changes with StatReloader
+INFO 2025-09-28 08:48:22,445 "POST /generate-lease-agreement/ HTTP/1.1" 200 32549
+INFO 2025-09-28 08:48:54,182 "GET /properties/ HTTP/1.1" 200 60464
+INFO 2025-09-28 08:48:58,680 "GET /properties_edit/4 HTTP/1.1" 200 26355
+INFO 2025-09-28 08:49:08,395 "POST /properties_edit_commit/4 HTTP/1.1" 302 0
+INFO 2025-09-28 08:49:08,445 "GET /properties/ HTTP/1.1" 200 59864
+INFO 2025-09-28 08:49:13,295 "GET /admin_apms/ HTTP/1.1" 200 13286
+INFO 2025-09-28 08:49:14,229 "GET /generate-lease-agreement/ HTTP/1.1" 200 67788
+INFO 2025-09-28 08:49:19,995 "POST /get-property-tenant-data/ HTTP/1.1" 200 582
+INFO 2025-09-28 08:49:22,062 "POST /get-property-tenant-data/ HTTP/1.1" 200 1082
+INFO 2025-09-28 08:50:10,046 "POST /generate-lease-agreement/ HTTP/1.1" 200 32409
+INFO 2025-09-28 08:51:22,334 "POST /get-property-tenant-data/ HTTP/1.1" 200 561
+INFO 2025-09-28 08:51:24,680 "POST /get-property-tenant-data/ HTTP/1.1" 200 1153
+INFO 2025-09-28 08:51:39,062 "POST /generate-lease-agreement/ HTTP/1.1" 200 32302
+INFO 2025-09-28 08:53:20,290 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+INFO 2025-09-28 08:53:21,379 Watching for file changes with StatReloader
+INFO 2025-09-28 08:53:32,779 "POST /generate-lease-agreement/ HTTP/1.1" 200 32302
+INFO 2025-09-28 08:53:47,830 "GET /admin_apms/ HTTP/1.1" 200 15149
+INFO 2025-09-28 08:53:48,981 "GET /generate-lease-agreement/ HTTP/1.1" 200 67788
+INFO 2025-09-28 08:53:54,929 "POST /get-property-tenant-data/ HTTP/1.1" 200 561
+INFO 2025-09-28 08:53:56,802 "POST /get-property-tenant-data/ HTTP/1.1" 200 1153
+INFO 2025-09-28 08:54:10,062 "POST /generate-lease-agreement/ HTTP/1.1" 200 32301
+INFO 2025-09-28 08:55:57,759 "GET /admin_apms/ HTTP/1.1" 200 13907
+INFO 2025-09-28 08:55:59,253 "GET / HTTP/1.1" 200 14929
+INFO 2025-09-28 08:56:01,345 "GET /admin_apms/ HTTP/1.1" 200 13286
+INFO 2025-09-28 08:56:02,528 "GET /generate-lease-agreement/ HTTP/1.1" 200 67788
+INFO 2025-09-28 08:56:08,214 "POST /get-property-tenant-data/ HTTP/1.1" 200 561
+INFO 2025-09-28 08:56:10,162 "POST /get-property-tenant-data/ HTTP/1.1" 200 1153
+INFO 2025-09-28 08:56:24,211 "POST /generate-lease-agreement/ HTTP/1.1" 200 32301
+INFO 2025-09-28 08:56:41,267 "GET /tenant/ HTTP/1.1" 200 60645
+INFO 2025-09-28 08:56:47,068 "GET /properties/ HTTP/1.1" 200 59286
+INFO 2025-09-28 08:56:48,882 "GET /properties_edit/5 HTTP/1.1" 200 26358
+INFO 2025-09-28 08:57:05,262 "GET /properties/ HTTP/1.1" 200 59286
+INFO 2025-09-28 08:57:08,745 "GET /properties_edit/5 HTTP/1.1" 200 26358
+INFO 2025-09-28 08:57:18,056 "GET /properties/ HTTP/1.1" 200 59286
+INFO 2025-09-28 08:57:19,464 "GET /properties_edit/5 HTTP/1.1" 200 26358
+INFO 2025-09-28 08:57:23,711 "GET /properties/ HTTP/1.1" 200 59286
+INFO 2025-09-28 08:57:29,511 "GET /properties_edit/5 HTTP/1.1" 200 26358
+INFO 2025-09-28 08:58:06,001 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+INFO 2025-09-28 08:58:07,177 Watching for file changes with StatReloader
+INFO 2025-09-28 08:58:11,695 "GET /properties/ HTTP/1.1" 200 59286
+INFO 2025-09-28 08:58:13,485 "GET /admin_apms/ HTTP/1.1" 200 13286
+INFO 2025-09-28 08:58:14,461 "GET /generate-lease-agreement/ HTTP/1.1" 200 67788
+INFO 2025-09-28 08:58:19,430 "POST /get-property-tenant-data/ HTTP/1.1" 200 561
+INFO 2025-09-28 08:58:20,819 "POST /get-property-tenant-data/ HTTP/1.1" 200 1153
+INFO 2025-09-28 08:58:32,844 "POST /generate-lease-agreement/ HTTP/1.1" 200 32304
+INFO 2025-09-28 08:59:26,597 "POST /get-property-tenant-data/ HTTP/1.1" 200 543
+INFO 2025-09-28 08:59:29,395 "POST /get-property-tenant-data/ HTTP/1.1" 200 559
+INFO 2025-09-28 09:00:04,111 "POST /generate-lease-agreement/ HTTP/1.1" 200 68999
+INFO 2025-09-28 09:00:27,578 "GET /properties/ HTTP/1.1" 200 59286
+INFO 2025-09-28 09:00:32,895 "GET /properties_edit/6 HTTP/1.1" 200 26344
+INFO 2025-09-28 09:02:39,093 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+INFO 2025-09-28 09:02:40,393 Watching for file changes with StatReloader
+INFO 2025-09-28 09:03:24,438 "GET /properties/ HTTP/1.1" 200 59286
+INFO 2025-09-28 09:03:33,551 "GET /properties_edit/2 HTTP/1.1" 200 26344
+INFO 2025-09-28 09:04:42,129 "GET /properties/ HTTP/1.1" 200 59286
+INFO 2025-09-28 09:05:52,384 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+INFO 2025-09-28 09:05:53,479 Watching for file changes with StatReloader
+INFO 2025-09-28 12:59:22,248 "GET / HTTP/1.1" 200 14929
+INFO 2025-09-28 12:59:25,233 "GET /admin_apms/ HTTP/1.1" 200 13286
+INFO 2025-09-28 12:59:26,708 "GET /generate-lease-agreement/ HTTP/1.1" 200 67788
+INFO 2025-09-28 12:59:36,772 "POST /get-property-tenant-data/ HTTP/1.1" 200 549
+INFO 2025-09-28 12:59:38,882 "POST /get-property-tenant-data/ HTTP/1.1" 200 1052
+INFO 2025-09-28 12:59:52,649 "POST /generate-lease-agreement/ HTTP/1.1" 200 32282
+INFO 2025-09-28 13:00:22,341 "POST /get-property-tenant-data/ HTTP/1.1" 200 543
+INFO 2025-09-28 13:00:24,436 "POST /get-property-tenant-data/ HTTP/1.1" 200 559
+INFO 2025-09-28 13:00:57,332 "POST /generate-lease-agreement/ HTTP/1.1" 200 68999
+INFO 2025-09-28 13:02:01,915 "POST /get-property-tenant-data/ HTTP/1.1" 200 648
+INFO 2025-09-28 13:04:16,712 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+INFO 2025-09-28 13:04:18,697 Watching for file changes with StatReloader
+INFO 2025-09-28 13:04:27,004 "GET /admin_apms/ HTTP/1.1" 200 13286
+INFO 2025-09-28 13:04:28,108 "GET /generate-lease-agreement/ HTTP/1.1" 200 67788
+INFO 2025-09-28 13:04:34,932 "POST /get-property-tenant-data/ HTTP/1.1" 200 648
+INFO 2025-09-28 13:04:36,497 "POST /get-property-tenant-data/ HTTP/1.1" 200 664
+INFO 2025-09-28 13:07:52,821 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+INFO 2025-09-28 13:07:53,990 Watching for file changes with StatReloader
+INFO 2025-09-28 13:08:35,248 "POST /generate-lease-agreement/ HTTP/1.1" 200 68410
+INFO 2025-09-28 13:10:09,334 Watching for file changes with StatReloader
+INFO 2025-09-28 13:10:15,374 "GET /admin_apms/ HTTP/1.1" 200 13286
+INFO 2025-09-28 13:10:16,776 "GET /generate-lease-agreement/ HTTP/1.1" 200 67788
+INFO 2025-09-28 13:10:56,530 "GET /properties/ HTTP/1.1" 200 59286
+INFO 2025-09-28 13:11:03,297 "GET /properties_edit/7 HTTP/1.1" 200 26427
+INFO 2025-09-28 13:14:14,418 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+INFO 2025-09-28 13:14:15,773 Watching for file changes with StatReloader
+INFO 2025-09-28 13:15:39,918 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+INFO 2025-09-28 13:15:41,777 Watching for file changes with StatReloader
+INFO 2025-09-28 13:15:50,096 "GET /admin_apms/ HTTP/1.1" 200 13286
+INFO 2025-09-28 13:15:52,797 "GET /generate-lease-agreement/ HTTP/1.1" 200 67340
+INFO 2025-09-28 13:16:02,749 "POST /get-property-tenant-data/ HTTP/1.1" 200 582
+INFO 2025-09-28 13:16:04,752 "POST /get-property-tenant-data/ HTTP/1.1" 200 1142
+INFO 2025-09-28 13:17:13,198 "POST /get-property-tenant-data/ HTTP/1.1" 200 572
+INFO 2025-09-28 13:17:15,398 "POST /get-property-tenant-data/ HTTP/1.1" 200 1080
+INFO 2025-09-28 13:21:32,329 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+INFO 2025-09-28 13:21:33,513 Watching for file changes with StatReloader
+INFO 2025-09-28 13:21:37,944 "GET /admin_apms/ HTTP/1.1" 200 13286
+INFO 2025-09-28 13:21:44,026 "GET /generate-lease-agreement/ HTTP/1.1" 200 67340
+INFO 2025-09-28 13:21:55,780 "POST /get-property-tenant-data/ HTTP/1.1" 200 582
+INFO 2025-09-28 13:21:57,848 "POST /get-property-tenant-data/ HTTP/1.1" 200 1142
+INFO 2025-09-28 13:22:08,764 "POST /generate-lease-agreement/ HTTP/1.1" 200 32343
+INFO 2025-09-28 13:22:36,613 "POST /get-property-tenant-data/ HTTP/1.1" 200 572
+INFO 2025-09-28 13:22:38,947 "POST /get-property-tenant-data/ HTTP/1.1" 200 1080
+INFO 2025-09-28 13:22:49,226 "POST /generate-lease-agreement/ HTTP/1.1" 200 32267
+INFO 2025-09-28 13:33:04,049 "GET / HTTP/1.1" 200 16465
+INFO 2025-09-28 13:33:07,345 "GET /admin_apms/ HTTP/1.1" 200 13286
+INFO 2025-09-28 13:33:08,579 "GET /generate-lease-agreement/ HTTP/1.1" 200 67340
+INFO 2025-09-28 13:33:15,914 "POST /get-property-tenant-data/ HTTP/1.1" 200 572
+INFO 2025-09-28 13:33:17,347 "POST /get-property-tenant-data/ HTTP/1.1" 200 1080
+INFO 2025-09-28 13:33:37,564 "POST /generate-lease-agreement/ HTTP/1.1" 200 69204
+INFO 2025-09-28 13:39:01,604 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+INFO 2025-09-28 13:39:02,881 Watching for file changes with StatReloader
+INFO 2025-09-28 13:39:11,380 "GET /admin_apms/ HTTP/1.1" 200 13907
+INFO 2025-09-28 13:39:14,711 "GET /generate-lease-agreement/ HTTP/1.1" 200 67340
+INFO 2025-09-28 13:39:20,780 "POST /get-property-tenant-data/ HTTP/1.1" 200 572
+INFO 2025-09-28 13:39:22,099 "POST /get-property-tenant-data/ HTTP/1.1" 200 1080
+INFO 2025-09-28 13:39:39,997 "POST /generate-lease-agreement/ HTTP/1.1" 200 69215
+INFO 2025-09-28 13:46:09,665 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+INFO 2025-09-28 13:46:10,778 Watching for file changes with StatReloader
+INFO 2025-09-28 13:46:32,560 "GET /admin_apms/ HTTP/1.1" 200 13907
+INFO 2025-09-28 13:46:35,814 "GET /generate-lease-agreement/ HTTP/1.1" 200 67340
+INFO 2025-09-28 13:46:41,129 "POST /get-property-tenant-data/ HTTP/1.1" 200 572
+INFO 2025-09-28 13:46:42,512 "POST /get-property-tenant-data/ HTTP/1.1" 200 1080
+INFO 2025-09-28 13:47:21,563 "POST /generate-lease-agreement/ HTTP/1.1" 200 69132
+INFO 2025-09-28 13:51:07,878 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+INFO 2025-09-28 13:51:09,020 Watching for file changes with StatReloader
+INFO 2025-09-28 13:51:15,664 "POST /generate-lease-agreement/ HTTP/1.1" 200 69148
+INFO 2025-09-28 13:51:39,994 "GET /notifications/ HTTP/1.1" 200 33208
+INFO 2025-09-28 13:51:40,217 "GET /notifications/ HTTP/1.1" 200 7646
+INFO 2025-09-28 13:51:40,979 "GET /admin_apms/ HTTP/1.1" 200 13286
+INFO 2025-09-28 13:51:42,144 "GET /generate-lease-agreement/ HTTP/1.1" 200 67340
+INFO 2025-09-28 13:51:48,135 "POST /get-property-tenant-data/ HTTP/1.1" 200 572
+INFO 2025-09-28 13:51:49,515 "POST /get-property-tenant-data/ HTTP/1.1" 200 1080
+INFO 2025-09-28 13:52:18,128 "POST /generate-lease-agreement/ HTTP/1.1" 200 69111
+INFO 2025-09-28 13:54:45,292 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+INFO 2025-09-28 13:54:46,385 Watching for file changes with StatReloader
+INFO 2025-09-28 13:54:56,122 "GET /notifications/ HTTP/1.1" 200 32485
+INFO 2025-09-28 13:54:56,342 "GET /notifications/ HTTP/1.1" 200 7646
+INFO 2025-09-28 13:54:57,177 "GET /admin_apms/ HTTP/1.1" 200 13286
+INFO 2025-09-28 13:54:58,479 "GET /generate-lease-agreement/ HTTP/1.1" 200 67340
+INFO 2025-09-28 13:55:04,328 "POST /get-property-tenant-data/ HTTP/1.1" 200 572
+INFO 2025-09-28 13:55:05,815 "POST /get-property-tenant-data/ HTTP/1.1" 200 1080
+INFO 2025-09-28 13:55:34,946 "POST /generate-lease-agreement/ HTTP/1.1" 200 69112
+INFO 2025-09-28 13:57:15,985 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+INFO 2025-09-28 13:57:17,072 Watching for file changes with StatReloader
+INFO 2025-09-28 13:57:21,084 "GET / HTTP/1.1" 200 15697
+INFO 2025-09-28 13:57:25,250 "GET /admin_apms/ HTTP/1.1" 200 13286
+INFO 2025-09-28 13:57:26,060 "GET /generate-lease-agreement/ HTTP/1.1" 200 67340
+INFO 2025-09-28 13:57:31,021 "POST /get-property-tenant-data/ HTTP/1.1" 200 572
+INFO 2025-09-28 13:57:32,661 "POST /get-property-tenant-data/ HTTP/1.1" 200 1080
+INFO 2025-09-28 13:57:59,761 "POST /generate-lease-agreement/ HTTP/1.1" 200 69088
+INFO 2025-09-28 14:05:09,866 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+INFO 2025-09-28 14:05:11,068 Watching for file changes with StatReloader
+INFO 2025-09-28 14:05:18,628 "GET /notifications/ HTTP/1.1" 200 32485
+INFO 2025-09-28 14:05:18,821 "GET /notifications/ HTTP/1.1" 200 7646
+INFO 2025-09-28 14:05:20,278 "GET /admin_apms/ HTTP/1.1" 200 13286
+INFO 2025-09-28 14:05:21,345 "GET /generate-lease-agreement/ HTTP/1.1" 200 67340
+INFO 2025-09-28 14:05:26,898 "POST /get-property-tenant-data/ HTTP/1.1" 200 572
+INFO 2025-09-28 14:05:28,481 "POST /get-property-tenant-data/ HTTP/1.1" 200 1080
+INFO 2025-09-28 14:05:52,811 "POST /generate-lease-agreement/ HTTP/1.1" 200 69091
+INFO 2025-09-28 14:06:11,731 "POST /generate-lease-agreement/ HTTP/1.1" 200 69091
+INFO 2025-09-28 14:08:17,830 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+INFO 2025-09-28 14:08:18,939 Watching for file changes with StatReloader
+INFO 2025-09-28 14:08:26,288 "GET /suppliers/ HTTP/1.1" 200 59674
+INFO 2025-09-28 14:08:29,752 "GET /admin_apms/ HTTP/1.1" 200 13286
+INFO 2025-09-28 14:08:30,783 "GET /generate-lease-agreement/ HTTP/1.1" 200 67340
+INFO 2025-09-28 14:08:36,135 "POST /get-property-tenant-data/ HTTP/1.1" 200 572
+INFO 2025-09-28 14:08:37,562 "POST /get-property-tenant-data/ HTTP/1.1" 200 1080
+INFO 2025-09-28 14:09:06,095 "POST /generate-lease-agreement/ HTTP/1.1" 200 69101
+INFO 2025-09-28 14:10:40,871 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+INFO 2025-09-28 14:10:41,876 Watching for file changes with StatReloader
+INFO 2025-09-28 14:16:07,628 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+INFO 2025-09-28 14:16:08,707 Watching for file changes with StatReloader
+INFO 2025-09-28 14:16:13,599 "GET /properties/ HTTP/1.1" 200 59875
+INFO 2025-09-28 14:16:14,863 "GET /admin_apms/ HTTP/1.1" 200 13286
+INFO 2025-09-28 14:16:15,617 "GET /generate-lease-agreement/ HTTP/1.1" 200 67340
+INFO 2025-09-28 14:16:20,794 "POST /get-property-tenant-data/ HTTP/1.1" 200 572
+INFO 2025-09-28 14:16:22,133 "POST /get-property-tenant-data/ HTTP/1.1" 200 1080
+INFO 2025-09-28 14:16:54,738 "POST /generate-lease-agreement/ HTTP/1.1" 200 69171
+INFO 2025-09-28 14:21:16,402 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+INFO 2025-09-28 14:21:17,481 Watching for file changes with StatReloader
+INFO 2025-09-28 14:21:28,725 "GET /notifications/ HTTP/1.1" 200 32485
+INFO 2025-09-28 14:21:28,915 "GET /notifications/ HTTP/1.1" 200 7646
+INFO 2025-09-28 14:21:30,127 "GET /admin_apms/ HTTP/1.1" 200 13286
+INFO 2025-09-28 14:21:31,485 "GET /generate-lease-agreement/ HTTP/1.1" 200 67340
+INFO 2025-09-28 14:21:36,665 "POST /get-property-tenant-data/ HTTP/1.1" 200 572
+INFO 2025-09-28 14:21:38,378 "POST /get-property-tenant-data/ HTTP/1.1" 200 1080
+INFO 2025-09-28 14:22:06,528 "POST /generate-lease-agreement/ HTTP/1.1" 200 69215
+INFO 2025-09-29 05:36:30,621 "POST /generate-lease-agreement/ HTTP/1.1" 200 69470
+INFO 2025-09-29 05:37:09,781 "POST /generate-lease-agreement/ HTTP/1.1" 200 69468
+INFO 2025-09-29 05:38:29,520 "POST /generate-lease-agreement/ HTTP/1.1" 200 69467
+INFO 2025-09-29 05:56:25,638 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+INFO 2025-09-29 05:56:27,430 Watching for file changes with StatReloader
+INFO 2025-09-29 06:16:53,902 "GET / HTTP/1.1" 200 18001
+INFO 2025-09-29 06:18:27,873 "GET /admin_apms/ HTTP/1.1" 200 13286
+INFO 2025-09-29 06:18:29,061 "GET /generate-lease-agreement/ HTTP/1.1" 200 68665
+INFO 2025-09-29 06:18:36,219 "POST /get-property-tenant-data/ HTTP/1.1" 200 572
+INFO 2025-09-29 06:18:37,986 "POST /get-property-tenant-data/ HTTP/1.1" 200 1080
+INFO 2025-09-29 06:19:04,652 "POST /generate-lease-agreement/ HTTP/1.1" 200 68949
+INFO 2025-09-29 06:24:38,515 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+INFO 2025-09-29 06:24:39,876 Watching for file changes with StatReloader
+INFO 2025-09-29 06:26:24,980 "GET /admin_apms/ HTTP/1.1" 200 13907
+INFO 2025-09-29 06:26:26,437 "GET /generate-lease-agreement/ HTTP/1.1" 200 68730
+INFO 2025-09-29 06:26:37,737 "POST /get-property-tenant-data/ HTTP/1.1" 200 572
+INFO 2025-09-29 06:26:39,624 "POST /get-property-tenant-data/ HTTP/1.1" 200 1080
+INFO 2025-09-29 06:26:58,335 "POST /generate-lease-agreement/ HTTP/1.1" 200 68971
+INFO 2025-09-29 06:28:00,402 "POST /generate-lease-agreement/ HTTP/1.1" 200 68950
+INFO 2025-09-29 06:28:26,378 "POST /generate-lease-agreement/ HTTP/1.1" 200 68985
+INFO 2025-09-29 06:29:05,935 "POST /generate-lease-agreement/ HTTP/1.1" 200 68954
+INFO 2025-09-29 06:30:05,202 "POST /generate-lease-agreement/ HTTP/1.1" 200 69229
+INFO 2025-09-29 06:37:30,901 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+INFO 2025-09-29 06:37:32,218 Watching for file changes with StatReloader
+INFO 2025-09-29 06:39:00,784 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+INFO 2025-09-29 06:39:01,979 Watching for file changes with StatReloader
+INFO 2025-09-29 06:40:47,450 "GET /admin_apms/ HTTP/1.1" 200 16391
+INFO 2025-09-29 06:40:50,963 "GET /generate-lease-agreement/ HTTP/1.1" 200 68868
+INFO 2025-09-29 06:40:57,488 "POST /get-property-tenant-data/ HTTP/1.1" 200 572
+INFO 2025-09-29 06:40:59,224 "POST /get-property-tenant-data/ HTTP/1.1" 200 1080
+INFO 2025-09-29 06:41:29,201 "POST /generate-lease-agreement/ HTTP/1.1" 200 69248
+INFO 2025-09-29 08:27:07,070 "POST /generate-lease-agreement/ HTTP/1.1" 200 69201
+INFO 2025-09-29 08:27:48,862 "POST /generate-lease-agreement/ HTTP/1.1" 200 69341
+INFO 2025-09-29 08:30:14,300 "GET / HTTP/1.1" 200 17233
+INFO 2025-09-29 08:30:17,620 "GET /admin_apms/ HTTP/1.1" 200 13286
+INFO 2025-09-29 08:30:18,659 "GET /generate-lease-agreement/ HTTP/1.1" 200 68868
+INFO 2025-09-29 08:30:26,819 "POST /get-property-tenant-data/ HTTP/1.1" 200 561
+INFO 2025-09-29 08:30:28,071 "POST /get-property-tenant-data/ HTTP/1.1" 200 1153
+INFO 2025-09-29 08:31:10,520 "POST /generate-lease-agreement/ HTTP/1.1" 200 69428
+INFO 2025-09-29 08:33:41,161 "GET /admin_apms/ HTTP/1.1" 200 13907
+INFO 2025-09-29 08:33:46,490 "GET / HTTP/1.1" 200 14929
+INFO 2025-09-29 12:40:23,840 "GET /admin_apms/ HTTP/1.1" 200 13286
+INFO 2025-09-29 12:40:25,423 "GET /generate-lease-agreement/ HTTP/1.1" 200 68868
+INFO 2025-09-29 12:42:01,099 "POST /get-property-tenant-data/ HTTP/1.1" 200 561
+INFO 2025-09-29 12:42:03,858 "POST /get-property-tenant-data/ HTTP/1.1" 200 577
+INFO 2025-09-29 12:44:13,323 "POST /generate-lease-agreement/ HTTP/1.1" 200 69490
+INFO 2025-09-29 12:45:12,991 "POST /get-property-tenant-data/ HTTP/1.1" 200 561
+INFO 2025-09-29 12:45:14,587 "POST /get-property-tenant-data/ HTTP/1.1" 200 577
+INFO 2025-09-29 13:28:09,842 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+INFO 2025-09-29 13:28:12,104 Watching for file changes with StatReloader
