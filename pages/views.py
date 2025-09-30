@@ -180,7 +180,7 @@ def generate_lease_agreement_view(request):
                         as_attachment=True,
                         filename=filename
                     )
-                    messages.success(request, 'Lease agreement generated successfully!')
+                    # messages.success(request, 'Lease agreement generated successfully!')
                     return response
                 except Exception as e:
                     logger.error(f"Error returning file: {str(e)}")
@@ -553,13 +553,11 @@ def translate_to_greek(text):
     
     # Simple direct matching - no regex complications
     if text in translations:
-        print(f"TRANSLATE FOUND: '{text}' -> '{translations[text]}'")
         return translations[text]
     
     # Case insensitive fallback
     for eng, greek in translations.items():
         if text.lower() == eng.lower():
-            print(f"TRANSLATE CASE: '{text}' -> '{greek}'")
             return greek
     
     # Handle compound names and addresses by translating individual parts
@@ -586,10 +584,8 @@ def translate_to_greek(text):
         
         result = ' '.join(translated_words)
         if result != text:
-            print(f"TRANSLATE PARTS: '{text}' -> '{result}'")
             return result
     
-    print(f"TRANSLATE NONE: '{text}' -> '{text}'")
     return text
 
 def generate_lease_document(country, language, property_obj, tenant_obj, additional_data):
@@ -774,13 +770,21 @@ def prepare_lease_template_data(country, language, property_obj, tenant_obj, add
     if additional_data.get('is_new_tenant') and additional_data.get('new_tenant_data'):
         new_tenant_data = additional_data['new_tenant_data']
         tenant_name = new_tenant_data.get('tenant_name', 'N/A')
-        tenant_passport_id = new_tenant_data.get('tenant_passport_id', 'N/A')
-        tenant_passport_country = new_tenant_data.get('tenant_passport_country', 'N/A')
         tenant_address = new_tenant_data.get('tenant_address', 'N/A')
         tenant_phone = new_tenant_data.get('tenant_contact_number', 'N/A')
         tenant_email = new_tenant_data.get('tenant_email', 'N/A')
         tenant_type = new_tenant_data.get('tenant_type', 'Individual')
-        tenant_registration_number = new_tenant_data.get('tenant_registration_number', 'N/A') if tenant_type == 'Company' else 'N/A'
+        
+        if tenant_type == 'Company':
+            tenant_passport_id = 'N/A'
+            tenant_passport_country = 'N/A'
+            tenant_registration_number = new_tenant_data.get('tenant_registration_number', 'N/A')
+            tenant_contact_person = new_tenant_data.get('tenant_contact_person', 'N/A')
+        else:
+            tenant_passport_id = new_tenant_data.get('tenant_passport_id', 'N/A')
+            tenant_passport_country = new_tenant_data.get('tenant_passport_country', 'N/A')
+            tenant_registration_number = 'N/A'
+            tenant_contact_person = 'N/A'
     else:
         tenant_name = tenant_obj.tenant_name or 'N/A'
         # Use property address as tenant address for existing tenants
@@ -891,7 +895,7 @@ def prepare_lease_template_data(country, language, property_obj, tenant_obj, add
         'landlord_contact_person_greek': translate_to_greek(additional_data.get('landlord_contact_person', 'Demetri Manias')),
         'landlord_registration_number': additional_data.get('landlord_registration_number', 'HE123456'),
         'landlord_phone': additional_data.get('landlord_phone', '+357-96668557'),
-        'landlord_phone_number': additional_data.get('landlord_phone', '+357-96668557'),  # Fixed template variable
+        'landlord_phone_number': additional_data.get('landlord_phone', '+357-96668557'),
         'landlord_email': additional_data.get('landlord_email', 'demetri.manias@alivente.com'),
         'landlord_address': additional_data.get('landlord_address', 'Alivente House, Dikaiosynis 13A, Engomi, Nicosia, Cyprus, 2412'),
         
@@ -942,14 +946,14 @@ def prepare_lease_template_data(country, language, property_obj, tenant_obj, add
         'lease_start_date_short': start_date_obj.strftime('%d/%m/%Y') if start_date_obj else 'N/A',
         'lease_end_date_short': end_date_obj.strftime('%d/%m/%Y') if end_date_obj else 'N/A',
         'duration_months': duration_months,
-        'duration_months_words': number_to_words(duration_months),  # Fixed: duration in words
+        'duration_months_words': number_to_words(duration_months),
         'duration_days': duration_days,
         
         # Financial terms - numbers (without decimals)
         'rental_amount': monthly_rent,
         'communal_expenses': communal_expenses,
-        'security_deposit': security_deposit,  # Added for template compatibility
-        'deposit_amount': security_deposit,  # Legacy compatibility
+        'security_deposit': security_deposit,
+        'deposit_amount': security_deposit,
         
         # Financial terms - words (with proper capitalization)
         'rental_amount_words': number_to_words(monthly_rent),
@@ -962,9 +966,9 @@ def prepare_lease_template_data(country, language, property_obj, tenant_obj, add
         'communal_expenses_words_greek': number_to_words_greek(communal_expenses),
         
         # Financial terms - with thousand separators (the template uses the raw numbers)
-        'rental_amount': f'{monthly_rent:,}',  # Template expects formatted string with separators
-        'communal_expenses': f'{communal_expenses:,}',  # Template expects formatted string with separators  
-        'security_deposit': f'{security_deposit:,}',  # Template expects formatted string with separators
+        'rental_amount': f'{monthly_rent:,}',
+        'communal_expenses': f'{communal_expenses:,}',
+        'security_deposit': f'{security_deposit:,}',
         
         # Additional formatted versions for compatibility
         'rental_amount_formatted': f'{currency}{monthly_rent:,}',
@@ -976,11 +980,11 @@ def prepare_lease_template_data(country, language, property_obj, tenant_obj, add
         
         # Extension and increase terms
         'lease_extension_period': extension_period,
-        'lease_extension_period_words': number_to_words(extension_period),  # Fixed: extension period in words
-        'lease_extension_period_words_greek': number_to_words_greek(extension_period),  # Greek extension period in words
+        'lease_extension_period_words': number_to_words(extension_period),
+        'lease_extension_period_words_greek': number_to_words_greek(extension_period),
         'lease_extension_date': extension_date_obj.strftime('%B %d, %Y') if extension_date_obj else 'N/A',
         'lease_extension_date_greek': format_date_greek(extension_date_obj) if extension_date_obj else 'N/A',
-        'percentage_rental_increase': rental_increase_formatted,  # Fixed: remove decimals if whole number
+        'percentage_rental_increase': rental_increase_formatted,
         
         # Currency
         'currency': currency,
@@ -989,7 +993,7 @@ def prepare_lease_template_data(country, language, property_obj, tenant_obj, add
         'furniture_items': furniture_items,
         'furniture_list': ', '.join(furniture_list) if furniture_list else 'None',
         'furniture_list_greek': ', '.join(furniture_list_greek) if furniture_list_greek else 'Κανένα',
-        'fully_furnished': fully_furnished,  # Added fully furnished checkbox value
+        'fully_furnished': fully_furnished,
         
         # Parking and Storeroom
         'has_parking': has_parking,

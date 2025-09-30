@@ -415,3 +415,6 @@ ERROR 2025-09-28 09:00:04,093 views 16992 25800 Error in generate_lease_document
 ERROR 2025-09-28 13:00:57,316 views 46360 10716 Error in generate_lease_document: cannot access local variable 'tenant_contact_person' where it is not associated with a value
 ERROR 2025-09-28 13:08:34,998 views 22820 20100 Error in generate_lease_document: cannot access local variable 'tenant_contact_person' where it is not associated with a value
 ERROR 2025-09-29 12:44:13,286 views 24060 172 Error in generate_lease_document: could not convert string to float: ''
+ERROR 2025-09-29 19:55:46,330 views 37240 38692 Error in generate_lease_document: cannot access local variable 'tenant_contact_person' where it is not associated with a value
+ERROR 2025-09-29 19:59:56,603 views 39616 36976 Error in generate_lease_document: cannot access local variable 'tenant_contact_person' where it is not associated with a value
+ERROR 2025-09-29 20:00:55,129 views 39616 36976 Error in generate_lease_document: cannot access local variable 'tenant_contact_person' where it is not associated with a value

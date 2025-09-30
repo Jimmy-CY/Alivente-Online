@@ -1631,3 +1631,124 @@ INFO 2025-09-29 12:45:12,991 "POST /get-property-tenant-data/ HTTP/1.1" 200 561
 INFO 2025-09-29 12:45:14,587 "POST /get-property-tenant-data/ HTTP/1.1" 200 577
 INFO 2025-09-29 13:28:09,842 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
 INFO 2025-09-29 13:28:12,104 Watching for file changes with StatReloader
+INFO 2025-09-29 16:06:41,235 Watching for file changes with StatReloader
+INFO 2025-09-29 19:52:13,829 "GET / HTTP/1.1" 200 14929
+INFO 2025-09-29 19:52:16,500 "GET /admin_apms/ HTTP/1.1" 200 13286
+INFO 2025-09-29 19:52:17,746 "GET /generate-lease-agreement/ HTTP/1.1" 200 72368
+INFO 2025-09-29 19:52:24,498 "POST /get-property-tenant-data/ HTTP/1.1" 200 582
+INFO 2025-09-29 19:52:26,097 "POST /get-property-tenant-data/ HTTP/1.1" 200 598
+INFO 2025-09-29 19:53:40,764 "POST /get-property-tenant-data/ HTTP/1.1" 200 1082
+INFO 2025-09-29 19:54:56,928 "POST /get-property-tenant-data/ HTTP/1.1" 200 598
+INFO 2025-09-29 19:55:46,361 "POST /generate-lease-agreement/ HTTP/1.1" 200 72990
+INFO 2025-09-29 19:59:00,807 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+INFO 2025-09-29 19:59:02,339 Watching for file changes with StatReloader
+INFO 2025-09-29 19:59:08,229 "GET /admin_apms/ HTTP/1.1" 200 13286
+INFO 2025-09-29 19:59:09,115 "GET /generate-lease-agreement/ HTTP/1.1" 200 72368
+INFO 2025-09-29 19:59:14,580 "POST /get-property-tenant-data/ HTTP/1.1" 200 561
+INFO 2025-09-29 19:59:16,365 "POST /get-property-tenant-data/ HTTP/1.1" 200 577
+INFO 2025-09-29 19:59:56,663 "POST /generate-lease-agreement/ HTTP/1.1" 200 72990
+INFO 2025-09-29 20:00:17,630 "POST /get-property-tenant-data/ HTTP/1.1" 200 549
+INFO 2025-09-29 20:00:19,013 "POST /get-property-tenant-data/ HTTP/1.1" 200 565
+INFO 2025-09-29 20:00:55,158 "POST /generate-lease-agreement/ HTTP/1.1" 200 72990
+INFO 2025-09-29 20:05:54,755 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+INFO 2025-09-29 20:05:55,895 Watching for file changes with StatReloader
+INFO 2025-09-29 20:05:59,227 "GET / HTTP/1.1" 200 14929
+INFO 2025-09-29 20:06:00,373 "GET /admin_apms/ HTTP/1.1" 200 13286
+INFO 2025-09-29 20:06:01,204 "GET /generate-lease-agreement/ HTTP/1.1" 200 72368
+INFO 2025-09-29 20:06:06,211 "POST /get-property-tenant-data/ HTTP/1.1" 200 549
+INFO 2025-09-29 20:06:07,630 "POST /get-property-tenant-data/ HTTP/1.1" 200 565
+INFO 2025-09-29 20:06:46,696 "POST /generate-lease-agreement/ HTTP/1.1" 200 64981
+INFO 2025-09-29 20:08:05,379 "POST /get-property-tenant-data/ HTTP/1.1" 200 1052
+INFO 2025-09-29 20:08:50,396 "POST /generate-lease-agreement/ HTTP/1.1" 200 64981
+INFO 2025-09-30 11:55:44,136 "GET / HTTP/1.1" 200 16465
+INFO 2025-09-30 11:56:06,952 "GET /admin_apms/ HTTP/1.1" 200 13286
+INFO 2025-09-30 11:56:10,718 "GET /generate-lease-agreement/ HTTP/1.1" 200 72368
+INFO 2025-09-30 11:57:22,151 "POST /get-property-tenant-data/ HTTP/1.1" 200 549
+INFO 2025-09-30 11:57:23,686 "POST /get-property-tenant-data/ HTTP/1.1" 200 1052
+INFO 2025-09-30 11:57:40,559 "POST /generate-lease-agreement/ HTTP/1.1" 200 65117
+INFO 2025-09-30 11:57:49,986 "POST /generate-lease-agreement/ HTTP/1.1" 200 65117
+INFO 2025-09-30 11:57:56,046 "POST /generate-lease-agreement/ HTTP/1.1" 200 65117
+INFO 2025-09-30 11:58:03,568 "GET /admin_apms/ HTTP/1.1" 200 13284
+INFO 2025-09-30 11:58:47,309 "GET /generate-lease-agreement/ HTTP/1.1" 200 74135
+INFO 2025-09-30 11:59:41,987 "POST /get-property-tenant-data/ HTTP/1.1" 200 582
+INFO 2025-09-30 11:59:44,060 "POST /get-property-tenant-data/ HTTP/1.1" 200 1082
+INFO 2025-09-30 11:59:56,219 "POST /generate-lease-agreement/ HTTP/1.1" 200 65064
+INFO 2025-09-30 12:00:01,968 "POST /generate-lease-agreement/ HTTP/1.1" 200 65064
+INFO 2025-09-30 12:00:07,549 "POST /generate-lease-agreement/ HTTP/1.1" 200 65064
+INFO 2025-09-30 12:00:14,885 "GET /admin_apms/ HTTP/1.1" 200 13282
+INFO 2025-09-30 12:00:19,703 "GET /properties/ HTTP/1.1" 200 61053
+INFO 2025-09-30 12:00:51,385 "GET /admin_apms/ HTTP/1.1" 200 13286
+INFO 2025-09-30 12:00:52,401 "GET /generate-lease-agreement/ HTTP/1.1" 200 72368
+INFO 2025-09-30 12:02:52,664 "GET /admin_apms/ HTTP/1.1" 200 13286
+INFO 2025-09-30 12:02:53,869 "GET /generate-lease-agreement/ HTTP/1.1" 200 72456
+INFO 2025-09-30 12:03:16,285 "POST /get-property-tenant-data/ HTTP/1.1" 200 549
+INFO 2025-09-30 12:03:17,855 "POST /get-property-tenant-data/ HTTP/1.1" 200 1052
+INFO 2025-09-30 12:10:21,484 "GET /admin_apms/ HTTP/1.1" 200 13286
+INFO 2025-09-30 12:10:22,723 "GET /generate-lease-agreement/ HTTP/1.1" 200 72939
+INFO 2025-09-30 12:10:29,735 "POST /get-property-tenant-data/ HTTP/1.1" 200 582
+INFO 2025-09-30 12:10:31,417 "POST /get-property-tenant-data/ HTTP/1.1" 200 1082
+INFO 2025-09-30 12:11:15,737 "POST /get-property-tenant-data/ HTTP/1.1" 200 598
+INFO 2025-09-30 12:22:00,497 "GET / HTTP/1.1" 200 14929
+INFO 2025-09-30 12:22:02,332 "GET /admin_apms/ HTTP/1.1" 200 13286
+INFO 2025-09-30 12:22:03,300 "GET /generate-lease-agreement/ HTTP/1.1" 200 72668
+INFO 2025-09-30 12:22:11,101 "POST /get-property-tenant-data/ HTTP/1.1" 200 549
+INFO 2025-09-30 12:22:14,235 "POST /get-property-tenant-data/ HTTP/1.1" 200 1052
+INFO 2025-09-30 12:22:40,700 "POST /get-property-tenant-data/ HTTP/1.1" 200 582
+INFO 2025-09-30 12:22:42,234 "POST /get-property-tenant-data/ HTTP/1.1" 200 1082
+INFO 2025-09-30 12:22:53,184 "POST /get-property-tenant-data/ HTTP/1.1" 200 598
+INFO 2025-09-30 12:23:31,266 "POST /get-property-tenant-data/ HTTP/1.1" 200 549
+INFO 2025-09-30 12:23:32,749 "POST /get-property-tenant-data/ HTTP/1.1" 200 1052
+INFO 2025-09-30 12:24:01,551 "POST /generate-lease-agreement/ HTTP/1.1" 200 65534
+INFO 2025-09-30 12:27:10,383 "POST /get-property-tenant-data/ HTTP/1.1" 200 582
+INFO 2025-09-30 12:27:12,667 "POST /get-property-tenant-data/ HTTP/1.1" 200 1082
+INFO 2025-09-30 12:31:22,565 "GET / HTTP/1.1" 200 15697
+INFO 2025-09-30 12:31:26,815 "GET /admin_apms/ HTTP/1.1" 200 13286
+INFO 2025-09-30 12:31:28,017 "GET /generate-lease-agreement/ HTTP/1.1" 200 66007
+INFO 2025-09-30 12:31:37,202 "POST /get-property-tenant-data/ HTTP/1.1" 200 549
+INFO 2025-09-30 12:31:38,983 "POST /get-property-tenant-data/ HTTP/1.1" 200 1052
+INFO 2025-09-30 12:41:33,341 "GET / HTTP/1.1" 200 14929
+INFO 2025-09-30 12:41:34,754 "GET /admin_apms/ HTTP/1.1" 200 13286
+INFO 2025-09-30 12:41:35,865 "GET /generate-lease-agreement/ HTTP/1.1" 200 72735
+INFO 2025-09-30 12:41:41,665 "POST /get-property-tenant-data/ HTTP/1.1" 200 549
+INFO 2025-09-30 12:41:43,833 "POST /get-property-tenant-data/ HTTP/1.1" 200 1052
+INFO 2025-09-30 12:43:11,736 "POST /get-property-tenant-data/ HTTP/1.1" 200 582
+INFO 2025-09-30 12:43:14,014 "POST /get-property-tenant-data/ HTTP/1.1" 200 1082
+INFO 2025-09-30 13:06:51,314 "GET /admin_apms/ HTTP/1.1" 200 13286
+INFO 2025-09-30 13:06:52,482 "GET /generate-lease-agreement/ HTTP/1.1" 200 72329
+INFO 2025-09-30 13:07:00,081 "POST /get-property-tenant-data/ HTTP/1.1" 200 582
+INFO 2025-09-30 13:07:02,535 "POST /get-property-tenant-data/ HTTP/1.1" 200 1082
+INFO 2025-09-30 13:07:43,187 "POST /get-property-tenant-data/ HTTP/1.1" 200 549
+INFO 2025-09-30 13:07:45,981 "POST /get-property-tenant-data/ HTTP/1.1" 200 1052
+INFO 2025-09-30 13:08:35,715 "GET /admin_apms/ HTTP/1.1" 200 13286
+INFO 2025-09-30 13:09:30,414 "GET /generate-lease-agreement/ HTTP/1.1" 200 72329
+INFO 2025-09-30 13:09:39,100 "POST /get-property-tenant-data/ HTTP/1.1" 200 549
+INFO 2025-09-30 13:09:41,197 "POST /get-property-tenant-data/ HTTP/1.1" 200 1052
+INFO 2025-09-30 13:09:54,330 "POST /generate-lease-agreement/ HTTP/1.1" 200 65109
+INFO 2025-09-30 13:10:05,698 "GET /admin_apms/ HTTP/1.1" 200 13907
+INFO 2025-09-30 13:11:05,851 "GET /generate-lease-agreement/ HTTP/1.1" 200 72329
+INFO 2025-09-30 13:15:29,396 "GET / HTTP/1.1" 200 14929
+INFO 2025-09-30 13:15:31,397 "GET /admin_apms/ HTTP/1.1" 200 13286
+INFO 2025-09-30 13:15:32,425 "GET /generate-lease-agreement/ HTTP/1.1" 200 73321
+INFO 2025-09-30 13:15:37,898 "POST /get-property-tenant-data/ HTTP/1.1" 200 582
+INFO 2025-09-30 13:15:39,449 "POST /get-property-tenant-data/ HTTP/1.1" 200 1082
+INFO 2025-09-30 13:15:49,048 "POST /generate-lease-agreement/ HTTP/1.1" 200 65064
+INFO 2025-09-30 13:16:02,040 "GET /admin_apms/ HTTP/1.1" 200 13907
+INFO 2025-09-30 13:16:19,303 "GET /generate-lease-agreement/ HTTP/1.1" 200 73321
+INFO 2025-09-30 13:16:23,747 "POST /get-property-tenant-data/ HTTP/1.1" 200 582
+INFO 2025-09-30 13:16:25,187 "POST /get-property-tenant-data/ HTTP/1.1" 200 1082
+INFO 2025-09-30 13:16:34,381 "POST /generate-lease-agreement/ HTTP/1.1" 200 65064
+INFO 2025-09-30 13:16:54,761 "GET /admin_apms/ HTTP/1.1" 200 13907
+INFO 2025-09-30 13:17:24,789 "GET /generate-lease-agreement/ HTTP/1.1" 200 73321
+INFO 2025-09-30 13:18:57,397 "POST /get-property-tenant-data/ HTTP/1.1" 200 582
+INFO 2025-09-30 13:18:58,765 "POST /get-property-tenant-data/ HTTP/1.1" 200 1082
+INFO 2025-09-30 13:19:07,430 "POST /generate-lease-agreement/ HTTP/1.1" 200 65064
+INFO 2025-09-30 13:19:14,598 "GET /admin_apms/ HTTP/1.1" 200 13907
+INFO 2025-09-30 13:20:36,041 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+INFO 2025-09-30 13:20:38,104 Watching for file changes with StatReloader
+INFO 2025-09-30 13:20:50,307 "GET /generate-lease-agreement/ HTTP/1.1" 200 73433
+INFO 2025-09-30 13:20:57,134 "POST /get-property-tenant-data/ HTTP/1.1" 200 582
+INFO 2025-09-30 13:20:58,714 "POST /get-property-tenant-data/ HTTP/1.1" 200 1082
+INFO 2025-09-30 13:21:18,439 "POST /generate-lease-agreement/ HTTP/1.1" 200 65064
+INFO 2025-09-30 13:21:25,615 "GET /admin_apms/ HTTP/1.1" 200 13286
+INFO 2025-09-30 13:24:36,940 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+INFO 2025-09-30 13:24:38,311 Watching for file changes with StatReloader

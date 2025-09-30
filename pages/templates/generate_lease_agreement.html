@@ -172,8 +172,8 @@
               <select class="form-control" id="country-select" name="country" required>
                 <option value="">Select Country</option>
                 <option value="cyprus">Cyprus</option>
-                <option value="greece">Greece</option>
-                <option value="spain">Spain</option>
+                <option value="greece" disabled style="color: #999;">Greece (Coming Soon)</option>
+                <option value="spain" disabled style="color: #999;">Spain (Coming Soon)</option>
               </select>
             </div>
             <div class="col-md-6 mb-3">
@@ -348,6 +348,10 @@
                   </label>
                   <input type="text" class="form-control" id="new-tenant-name" name="new_tenant_name" required>
                 </div>
+                <div class="col-md-6 mb-3" id="contact-person-field" style="display: none;">
+                  <label for="new-tenant-contact-person" class="form-label">Contact Person: <span class="text-danger">*</span></label>
+                  <input type="text" class="form-control" id="new-tenant-contact-person" name="new_tenant_contact_person">
+                </div>
                 <div class="col-md-6 mb-3" id="passport-field" style="display: none;">
                   <label for="new-tenant-passport" class="form-label">
                     <span id="passport-label">Passport/ID Number:</span> <span class="text-danger">*</span>
@@ -375,7 +379,6 @@
                 <div class="col-12 mb-3" id="address-field">
                   <label for="new-tenant-address" class="form-label">Tenant Address: <span class="text-danger">*</span></label>
                   <textarea class="form-control" id="new-tenant-address" name="new_tenant_address" rows="2" required></textarea>
-                  <small class="form-text text-muted">For existing tenants, property address will be used automatically.</small>
                 </div>
               </div>
             </div>
@@ -387,7 +390,7 @@
           <div class="card mb-3">
             <div class="card-header bg-success text-white">
               <div class="d-flex justify-content-between align-items-center">
-                <h6 class="mb-0">Second Tenant Information</h6>
+                <h6 class="mb-0">Second Tenant Information (Individual Only)</h6>
                 <button type="button" id="remove-second-tenant-btn" class="btn btn-light btn-sm">
                   <i class="fas fa-minus"></i> Remove
                 </button>
@@ -395,26 +398,13 @@
             </div>
             <div class="card-body">
               <div class="row">
-                <div class="col-md-6 mb-3">
+                <!-- Row 1: Name -->
+                <div class="col-12 mb-3">
                   <label for="second-tenant-name" class="form-label">Name: <span class="text-danger">*</span></label>
                   <input type="text" class="form-control" id="second-tenant-name" name="second_tenant_name">
                 </div>
-                <div class="col-md-6 mb-3">
-                  <label for="second-tenant-contact" class="form-label">Contact Person:</label>
-                  <input type="text" class="form-control" id="second-tenant-contact" name="second_tenant_contact_person">
-                </div>
-                <div class="col-md-6 mb-3">
-                  <label for="second-tenant-email" class="form-label">Email: <span class="text-danger">*</span></label>
-                  <input type="email" class="form-control" id="second-tenant-email" name="second_tenant_email">
-                </div>
-                <div class="col-md-6 mb-3">
-                  <label for="second-tenant-phone" class="form-label">Phone: <span class="text-danger">*</span></label>
-                  <input type="tel" class="form-control" id="second-tenant-phone" name="second_tenant_contact_number">
-                </div>
-                <div class="col-12 mb-3">
-                  <label for="second-tenant-address" class="form-label">Address: <span class="text-danger">*</span></label>
-                  <textarea class="form-control" id="second-tenant-address" name="second_tenant_address" rows="2"></textarea>
-                </div>
+                
+                <!-- Row 2: Passport/ID Number and Country -->
                 <div class="col-md-6 mb-3">
                   <label for="second-tenant-passport" class="form-label">Passport/ID Number: <span class="text-danger">*</span></label>
                   <input type="text" class="form-control" id="second-tenant-passport" name="second_tenant_passport_id">
@@ -423,11 +413,26 @@
                   <label for="second-tenant-passport-country" class="form-label">Passport/ID Country: <span class="text-danger">*</span></label>
                   <input type="text" class="form-control" id="second-tenant-passport-country" name="second_tenant_passport_country">
                 </div>
+                
+                <!-- Row 3: Email and Phone -->
+                <div class="col-md-6 mb-3">
+                  <label for="second-tenant-email" class="form-label">Email: <span class="text-danger">*</span></label>
+                  <input type="email" class="form-control" id="second-tenant-email" name="second_tenant_email">
+                </div>
+                <div class="col-md-6 mb-3">
+                  <label for="second-tenant-phone" class="form-label">Phone: <span class="text-danger">*</span></label>
+                  <input type="tel" class="form-control" id="second-tenant-phone" name="second_tenant_contact_number">
+                </div>
+                
+                <!-- Row 4: Address -->
+                <div class="col-12 mb-3">
+                  <label for="second-tenant-address" class="form-label">Address: <span class="text-danger">*</span></label>
+                  <textarea class="form-control" id="second-tenant-address" name="second_tenant_address" rows="2"></textarea>
+                </div>
               </div>
             </div>
           </div>
         </div>
-
         <!-- Amenities Section -->
         <div class="card mb-3">
           <div class="card-header bg-light">
@@ -461,36 +466,36 @@
             <div class="card-body">
               <div class="row">
                 <div class="col-md-6 mb-3">
-                  <label for="modal-start-date" class="form-label">Start Date:</label>
-                  <input type="date" class="form-control" id="modal-start-date" name="start_date">
+                  <label for="modal-start-date" class="form-label">Start Date: <span class="text-danger">*</span></label>
+                  <input type="date" class="form-control" id="modal-start-date" name="start_date" required>
                 </div>
                 <div class="col-md-6 mb-3">
-                  <label for="modal-end-date" class="form-label">End Date:</label>
-                  <input type="date" class="form-control" id="modal-end-date" name="end_date">
+                  <label for="modal-end-date" class="form-label">End Date: <span class="text-danger">*</span></label>
+                  <input type="date" class="form-control" id="modal-end-date" name="end_date" required>
                 </div>
                 <div class="col-md-6 mb-3">
-                  <label for="modal-monthly-rent" class="form-label">Monthly Rent (€):</label>
-                  <input type="number" class="form-control" id="modal-monthly-rent" name="monthly_rent" step="0.01">
+                  <label for="modal-monthly-rent" class="form-label">Monthly Rent (€): <span class="text-danger">*</span></label>
+                  <input type="number" class="form-control" id="modal-monthly-rent" name="monthly_rent" step="0.01" required>
                 </div>
                 <div class="col-md-6 mb-3">
-                  <label for="modal-security-deposit" class="form-label">Security Deposit (€):</label>
-                  <input type="number" class="form-control" id="modal-security-deposit" name="security_deposit" step="0.01">
+                  <label for="modal-security-deposit" class="form-label">Security Deposit (€): <span class="text-danger">*</span></label>
+                  <input type="number" class="form-control" id="modal-security-deposit" name="security_deposit" step="0.01" required>
                 </div>
                 <div class="col-md-6 mb-3">
-                  <label for="modal-communal-expenses" class="form-label">Communal Expenses (€):</label>
-                  <input type="number" class="form-control" id="modal-communal-expenses" name="communal_expenses" step="0.01" value="0">
+                  <label for="modal-communal-expenses" class="form-label">Communal Expenses (€): <span class="text-danger">*</span></label>
+                  <input type="number" class="form-control" id="modal-communal-expenses" name="communal_expenses" step="0.01" value="0" required>
                 </div>
                 <div class="col-md-6 mb-3">
-                  <label for="modal-extension-period" class="form-label">Extension Period (months):</label>
-                  <input type="number" class="form-control" id="modal-extension-period" name="extension_period" min="0" value="0" onchange="calculateExtensionDate()">
+                  <label for="modal-extension-period" class="form-label">Extension Period (months): <span class="text-danger">*</span></label>
+                  <input type="number" class="form-control" id="modal-extension-period" name="extension_period" min="0" value="0" onchange="calculateExtensionDate()" required>
                 </div>
                 <div class="col-md-6 mb-3">
                   <label for="modal-extension-date" class="form-label">Extension Date: <small class="text-muted">(auto-calculated)</small></label>
                   <input type="date" class="form-control" id="modal-extension-date" name="extension_date" readonly style="background-color: #f8f9fa;">
                 </div>
                 <div class="col-md-6 mb-3">
-                  <label for="modal-rental-increase" class="form-label">Rental Increase (%):</label>
-                  <input type="number" class="form-control" id="modal-rental-increase" name="rental_increase" step="0.1" min="0" value="0">
+                  <label for="modal-rental-increase" class="form-label">Rental Increase (%): <span class="text-danger">*</span></label>
+                  <input type="number" class="form-control" id="modal-rental-increase" name="rental_increase" step="0.1" min="0" value="0" required>
                 </div>
               </div>
             </div>
@@ -787,24 +792,53 @@ document.addEventListener('DOMContentLoaded', function() {
   // Form submission handler
   document.getElementById('lease-generation-form').addEventListener('submit', function(e) {
     document.getElementById('generation-progress').style.display = 'block';
+    
+    // After a short delay, show success message and hide progress
     setTimeout(() => {
-        document.getElementById('generation-progress').style.display = 'none';
-    }, 5000);      
+      document.getElementById('generation-progress').style.display = 'none';
+      
+      // Show success message at the top of the page
+      const successMessage = `
+        <div class="alert alert-secondary alert-dismissible fade show auto-dismiss" role="alert" id="lease-success-message">
+          <strong></strong> <center>Lease agreement generated successfully!</center>
+          <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+      `;
+      
+      // Insert message after the h2 title
+      const pageTitle = document.querySelector('h2');
+      pageTitle.insertAdjacentHTML('afterend', successMessage);
+      
+      // Auto-dismiss and remove from DOM after 3 seconds
+      setTimeout(function() {
+        const messageElement = document.getElementById('lease-success-message');
+        if (messageElement) {
+          messageElement.classList.remove('show');
+          messageElement.classList.add('fade');
+          setTimeout(() => messageElement.remove(), 500);
+        }
+      }, 3000);
+    }, 2000);
   });
-
   // Save additional data handler
   document.getElementById('save-additional-data').addEventListener('click', function() {
-      saveAdditionalData();
-      $('#additionalDataModal').modal('hide');
-      additionalDataCompleted = true;
+      const isValid = saveAdditionalData();  // Get validation result
       
-      setTimeout(() => {
-          document.getElementById('generate-section').style.display = 'block';
-          const btn = document.getElementById('generate-btn');
-          btn.disabled = false;
-          btn.classList.remove('btn-secondary');
-          btn.classList.add('btn-info');
-      }, 500);
+      if (isValid) {  // Only proceed if validation passed
+        $('#additionalDataModal').modal('hide');
+        additionalDataCompleted = true;
+        
+        setTimeout(() => {
+            document.getElementById('generate-section').style.display = 'block';
+            const btn = document.getElementById('generate-btn');
+            btn.disabled = false;
+            btn.classList.remove('btn-secondary');
+            btn.classList.add('btn-info');
+        }, 500);
+      }
+      // If isValid is false, modal stays open and user must fix the errors
   });
 
   // Add second tenant button handler
@@ -818,9 +852,8 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('second-tenant-section').style.display = 'none';
     document.getElementById('add-second-tenant-btn').style.display = 'inline-block';
     
-    // Clear second tenant fields
+    // Clear second tenant fields (removed second-tenant-contact)
     document.getElementById('second-tenant-name').value = '';
-    document.getElementById('second-tenant-contact').value = '';
     document.getElementById('second-tenant-email').value = '';
     document.getElementById('second-tenant-phone').value = '';
     document.getElementById('second-tenant-address').value = '';
@@ -1040,23 +1073,47 @@ function updateTenantFields() {
   const passportField = document.getElementById('passport-field');
   const passportCountryField = document.getElementById('passport-country-field');
   const registrationField = document.getElementById('registration-field');
+  const contactPersonField = document.getElementById('contact-person-field');
+  const addSecondTenantBtn = document.getElementById('add-second-tenant-btn');
+  const secondTenantSection = document.getElementById('second-tenant-section');
   
   if (tenantType === 'Company') {
     tenantNameLabel.textContent = 'Company Name:';
     passportField.style.display = 'none';
     passportCountryField.style.display = 'none';
     registrationField.style.display = 'block';
+    contactPersonField.style.display = 'block';
+    
     document.getElementById('new-tenant-registration').required = true;
+    document.getElementById('new-tenant-contact-person').required = true;
     document.getElementById('new-tenant-passport').required = false;
     document.getElementById('new-tenant-passport-country').required = false;
+    
+    // Check if second tenant is currently visible
+    if (secondTenantSection.style.display !== 'none') {
+      alert('You must remove the second tenant before changing to Company type. Second tenants are only allowed for Individual tenants.');
+      document.getElementById('new-tenant-type').value = 'Individual';
+      return;
+    }
+    
+    // Hide add second tenant button for companies
+    addSecondTenantBtn.style.display = 'none';
   } else {
     tenantNameLabel.textContent = 'Individual Name:';
     passportField.style.display = 'block';
     passportCountryField.style.display = 'block';
     registrationField.style.display = 'none';
+    contactPersonField.style.display = 'none';
+    
     document.getElementById('new-tenant-registration').required = false;
+    document.getElementById('new-tenant-contact-person').required = false;
     document.getElementById('new-tenant-passport').required = true;
     document.getElementById('new-tenant-passport-country').required = true;
+    
+    // Show add second tenant button for individuals
+    if (secondTenantSection.style.display === 'none') {
+      addSecondTenantBtn.style.display = 'inline-block';
+    }
   }
 }
 
@@ -1088,36 +1145,39 @@ function populateModal() {
       existingTenantSection.style.display = 'none';
       
       addSecondTenantBtn.style.display = 'inline-block';
-      secondTenantSection.style.display = 'none';
+      // Don't hide second tenant section here - preserve its state
       
-      // Clear form fields
-      document.getElementById('new-tenant-name').value = '';
-      document.getElementById('new-tenant-type').value = 'Individual';
-      document.getElementById('new-tenant-passport').value = '';
-      document.getElementById('new-tenant-passport-country').value = '';
-      document.getElementById('new-tenant-registration').value = '';
-      document.getElementById('new-tenant-email').value = '';
-      document.getElementById('new-tenant-phone').value = '';
-      document.getElementById('new-tenant-address').value = '';
-      
-      document.getElementById('modal-start-date').value = '';
-      document.getElementById('modal-end-date').value = '';
-      document.getElementById('modal-monthly-rent').value = '';
-      document.getElementById('modal-security-deposit').value = '';
-      document.getElementById('modal-communal-expenses').value = '';
-      document.getElementById('modal-extension-period').value = '0';
-      document.getElementById('modal-extension-date').value = '';
-      document.getElementById('modal-rental-increase').value = '0';
-      
-      // Pre-populate amenities checkboxes as checked
-      document.getElementById('amenity-parking').checked = true;
-      document.getElementById('amenity-storeroom').checked = true;
-      
-      const furnitureFields = document.querySelectorAll('[name^="furniture_"]');
-      furnitureFields.forEach(field => field.value = '0');
-      
-      const keyFields = document.querySelectorAll('[name^="keys_"]');
-      keyFields.forEach(field => field.value = '0');
+      // Clear form fields only if empty (first time opening)
+      if (!document.getElementById('new-tenant-name').value) {
+        document.getElementById('new-tenant-name').value = '';
+        document.getElementById('new-tenant-type').value = 'Individual';
+        document.getElementById('new-tenant-passport').value = '';
+        document.getElementById('new-tenant-passport-country').value = '';
+        document.getElementById('new-tenant-registration').value = '';
+        document.getElementById('new-tenant-email').value = '';
+        document.getElementById('new-tenant-phone').value = '';
+        document.getElementById('new-tenant-address').value = '';
+        document.getElementById('new-tenant-contact-person').value = '';
+        
+        document.getElementById('modal-start-date').value = '';
+        document.getElementById('modal-end-date').value = '';
+        document.getElementById('modal-monthly-rent').value = '';
+        document.getElementById('modal-security-deposit').value = '';
+        document.getElementById('modal-communal-expenses').value = '';
+        document.getElementById('modal-extension-period').value = '0';
+        document.getElementById('modal-extension-date').value = '';
+        document.getElementById('modal-rental-increase').value = '0';
+        
+        // Only check amenities on first modal open (when fields are empty)
+        document.getElementById('amenity-parking').checked = true;
+        document.getElementById('amenity-storeroom').checked = true;
+        
+        const furnitureFields = document.querySelectorAll('[name^="furniture_"]');
+        furnitureFields.forEach(field => field.value = '0');
+        
+        const keyFields = document.querySelectorAll('[name^="keys_"]');
+        keyFields.forEach(field => field.value = '0');
+      }
       
       document.getElementById('modal-end-date').addEventListener('change', calculateExtensionDate);
       updateTenantFields();
@@ -1163,10 +1223,6 @@ function populateModal() {
         document.getElementById('existing-tenant-passport').required = true;
         document.getElementById('existing-tenant-passport-country').required = true;
       }
-      
-      document.getElementById('existing-tenant-passport').value = '';
-      document.getElementById('existing-tenant-passport-country').value = '';
-      document.getElementById('existing-tenant-registration').value = '';
     } else {
       tenantHtml = '<p>No tenant data available</p>';
       existingTenantSection.style.display = 'none';
@@ -1193,9 +1249,7 @@ function populateModal() {
       document.getElementById('modal-communal-expenses').value = '0';
     }
     
-    // Pre-populate amenities checkboxes as checked for existing tenants too
-    document.getElementById('amenity-parking').checked = true;
-    document.getElementById('amenity-storeroom').checked = true;
+    // REMOVED - Don't force amenities checkboxes to be checked, preserve their state
   }
   
   document.getElementById('tenant-info').innerHTML = tenantHtml;
@@ -1209,10 +1263,47 @@ function saveAdditionalData() {
     additionalData[key] = value;
   }
   
-  // Handle checkbox values explicitly - CORRECTED FIELD NAMES
+  // Handle checkbox values explicitly
   additionalData.amenity_parking = document.getElementById('amenity-parking').checked;
   additionalData.amenity_storeroom = document.getElementById('amenity-storeroom').checked;
- 
+  
+  // Validate mandatory lease terms
+  const startDate = document.getElementById('modal-start-date').value;
+  const endDate = document.getElementById('modal-end-date').value;
+  const monthlyRent = document.getElementById('modal-monthly-rent').value;
+  const securityDeposit = document.getElementById('modal-security-deposit').value;
+  const communalExpenses = document.getElementById('modal-communal-expenses').value;
+  const extensionPeriod = document.getElementById('modal-extension-period').value;
+  const rentalIncrease = document.getElementById('modal-rental-increase').value;
+  
+  if (!startDate || startDate.trim() === '') {
+    alert('Please fill in the Start Date field.');
+    return false;
+  }
+  if (!endDate || endDate.trim() === '') {
+    alert('Please fill in the End Date field.');
+    return false;
+  }
+  if (!monthlyRent || monthlyRent.trim() === '') {
+    alert('Please fill in the Monthly Rent field.');
+    return false;
+  }
+  if (!securityDeposit || securityDeposit.trim() === '') {
+    alert('Please fill in the Security Deposit field.');
+    return false;
+  }
+  if (communalExpenses === '' || communalExpenses === null) {
+    alert('Please fill in the Communal Expenses field (enter 0 if not applicable).');
+    return false;
+  }
+  if (extensionPeriod === '' || extensionPeriod === null) {
+    alert('Please fill in the Extension Period field (enter 0 if not applicable).');
+    return false;
+  }
+  if (rentalIncrease === '' || rentalIncrease === null) {
+    alert('Please fill in the Rental Increase field (enter 0 if not applicable).');
+    return false;
+  }
   
   const tenantId = document.getElementById('tenant-select').value;
   if (tenantId === 'new_tenant') {
@@ -1220,22 +1311,20 @@ function saveAdditionalData() {
     const newTenantData = {
       tenant_name: document.getElementById('new-tenant-name').value,
       tenant_type: tenantType,
-      tenant_passport_id: document.getElementById('new-tenant-passport').value,
-      tenant_passport_country: document.getElementById('new-tenant-passport-country').value,
       tenant_email: document.getElementById('new-tenant-email').value,
       tenant_contact_number: document.getElementById('new-tenant-phone').value,
       tenant_address: document.getElementById('new-tenant-address').value
     };
     
-    if (tenantType === 'Company') {
-      newTenantData.tenant_registration_number = document.getElementById('new-tenant-registration').value;
-    }
-    
     let requiredFields = ['tenant_name', 'tenant_email', 'tenant_contact_number', 'tenant_address'];
     
     if (tenantType === 'Company') {
-      requiredFields.push('tenant_registration_number');
+      newTenantData.tenant_registration_number = document.getElementById('new-tenant-registration').value;
+      newTenantData.tenant_contact_person = document.getElementById('new-tenant-contact-person').value;
+      requiredFields.push('tenant_registration_number', 'tenant_contact_person');
     } else {
+      newTenantData.tenant_passport_id = document.getElementById('new-tenant-passport').value;
+      newTenantData.tenant_passport_country = document.getElementById('new-tenant-passport-country').value;
       requiredFields.push('tenant_passport_id', 'tenant_passport_country');
     }
     
@@ -1243,7 +1332,7 @@ function saveAdditionalData() {
       if (!newTenantData[field] || newTenantData[field].trim() === '') {
         const fieldName = field.replace('tenant_', '').replace('_', ' ');
         alert(`Please fill in the ${fieldName} field.`);
-        return;
+        return false;
       }
     }
     
@@ -1257,18 +1346,18 @@ function saveAdditionalData() {
       existingTenantData.tenant_registration_number = document.getElementById('existing-tenant-registration').value;
       if (!existingTenantData.tenant_registration_number || existingTenantData.tenant_registration_number.trim() === '') {
         alert('Please fill in the Company Registration Number field.');
-        return;
+        return false;
       }
     } else {
       existingTenantData.tenant_passport_id = document.getElementById('existing-tenant-passport').value;
       existingTenantData.tenant_passport_country = document.getElementById('existing-tenant-passport-country').value;
       if (!existingTenantData.tenant_passport_id || existingTenantData.tenant_passport_id.trim() === '') {
         alert('Please fill in the Passport/ID Number field.');
-        return;
+        return false;
       }
       if (!existingTenantData.tenant_passport_country || existingTenantData.tenant_passport_country.trim() === '') {
         alert('Please fill in the Passport/ID Country field.');
-        return;
+        return false;
       }
     }
     
@@ -1280,7 +1369,6 @@ function saveAdditionalData() {
   if (secondTenantSection.style.display !== 'none') {
     const secondTenantData = {
       tenant_name: document.getElementById('second-tenant-name').value,
-      tenant_contact_person: document.getElementById('second-tenant-contact').value,
       tenant_email: document.getElementById('second-tenant-email').value,
       tenant_contact_number: document.getElementById('second-tenant-phone').value,
       tenant_address: document.getElementById('second-tenant-address').value,
@@ -1294,7 +1382,7 @@ function saveAdditionalData() {
       if (!secondTenantData[field] || secondTenantData[field].trim() === '') {
         const fieldName = field.replace('tenant_', '').replace('_', ' ');
         alert(`Please fill in the second tenant ${fieldName} field.`);
-        return;
+        return false;
       }
     }
     
@@ -1311,7 +1399,10 @@ function saveAdditionalData() {
   existingMessages.forEach(msg => msg.remove());
 
   previewContent.innerHTML += '<br><div class="alert alert-success mt-2 mb-0"><i class="fas fa-check"></i> Additional data completed!</div>';
+  
+  return true;
 }
+
 </script>
 
   {% else %}
