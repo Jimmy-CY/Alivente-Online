@@ -497,6 +497,12 @@ def translate_to_greek(text):
         'Bookshelves': 'Βιβλιοθήκες',
         'AC': 'Κλιματιστικό',
         'ACs': 'Κλιματιστικά',
+        'Bedside Table': 'Κομοδίνο',
+        'Bedside Tables': 'Κομοδίνα',
+        'Roller Blind': 'Ρολό',
+        'Roller Blinds': 'Ρολά',
+        'Stool': 'Σκαμπό',
+        'Stools': 'Σκαμπό',
         
         # Keys - Complete singular and plural forms
         'Key': 'Κλειδί',
@@ -841,9 +847,6 @@ def prepare_lease_template_data(country, language, property_obj, tenant_obj, add
             item_name_greek = translate_to_greek(pluralized_name)
             furniture_list_greek.append(f"{count} x {item_name_greek}")
             
-            # Debug logging
-            print(f"DEBUG: {pluralized_name} -> {item_name_greek}")
-    
     # Get fully furnished checkbox value
     fully_furnished = additional_data.get('fully_furnished') == 'true'
     
@@ -867,9 +870,6 @@ def prepare_lease_template_data(country, language, property_obj, tenant_obj, add
             key_name_greek = translate_to_greek(pluralized_key)
             keys_list_greek.append(f"{count} x {key_name_greek}")
             
-            # Debug logging
-            print(f"DEBUG KEY: {pluralized_key} -> {key_name_greek}")
-    
     # Prepare template data
     template_data = {
         # Current date components with ordinal day
