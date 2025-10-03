@@ -5,6 +5,7 @@ def open_invoices (rep_output,check,email,fname):
 	import send_email
 	import pdf_display
 	from django.conf import settings
+	from django.contrib import messages
 
 	# CONNECT TO DATBASE (FIRST HAVE TO LEAVE database line off until have created database)
 	mydb = mysql.connector.connect(
@@ -108,7 +109,7 @@ def create_invoices(M, Y, request):
     import mysql.connector
     from datetime import datetime
     from django.conf import settings
-    from django.contrib import messages  # for displaying messages
+    from django.contrib import messages
 
     # CONNECT TO DATABASE
     mydb = mysql.connector.connect(
@@ -132,10 +133,10 @@ def create_invoices(M, Y, request):
     """)
     tenants = my_cursor.fetchall()
 
+    # FIXED: Check ALL invoices, not just unpaid ones
     my_cursor.execute("""
         SELECT invoice.invoice_id, invoice.tenant_id, invoice.invoice_date, invoice.invoice_paid 
         FROM railway.invoice 
-        WHERE invoice.invoice_paid = 'No' 
         ORDER BY invoice.invoice_date ASC
     """)
     existing_invoices = my_cursor.fetchall()
@@ -155,6 +156,7 @@ def create_invoices(M, Y, request):
     # INSERT NEW INVOICES
     for tenant in tenants:
         tenant_id = tenant[4]
+        # This now checks against ALL invoices (paid and unpaid)
         already_exists = any(inv[1] == tenant_id and inv[2] == new_invoice_date for inv in existing_invoices)
 
         if not already_exists:
