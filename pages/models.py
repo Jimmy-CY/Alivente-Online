@@ -941,3 +941,33 @@ def update_project_on_task_delete(sender, instance, **kwargs):
     except Exception as e:
         # Log error but don't break the delete operation
         print(f"Error updating project from task delete: {e}")
+
+class Passport(models.Model):
+    DOCUMENT_TYPE_CHOICES = [
+        ('passport', 'Passport'),
+        ('id', 'ID'),
+        ('drivers_license', 'Driver\'s License'),
+        ('visa', 'Visa'),
+        ('arc', 'Alien Registration Card'),
+    ]
+    
+    STATUS_CHOICES = [
+        ('active', 'Active'),
+        ('renewal', 'Applied for Renewal'),
+        ('inactive', 'Inactive'),
+    ]
+    
+    holder_name = models.CharField(max_length=200)
+    document_type = models.CharField(max_length=20, choices=DOCUMENT_TYPE_CHOICES)
+    document_number = models.CharField(max_length=50)
+    country_of_issue = models.CharField(max_length=100)
+    date_of_issue = models.DateField(null=True, blank=True)  # ADD null=True, blank=True
+    expiry_date = models.DateField(null=True, blank=True)  # ADD null=True, blank=True
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active')
+    document_file = models.FileField(upload_to='passports/', null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return f"{self.holder_name} - {self.get_document_type_display()}"
+

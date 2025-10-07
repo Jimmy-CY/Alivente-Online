@@ -47,6 +47,7 @@ from .models import (
     Project, 
     ProjectTask,
     ProjectDocument,
+    Passport,
     )
 import decimal
 from decimal import Decimal
@@ -67,6 +68,125 @@ import json
 import tempfile
 
 logger = logging.getLogger(__name__)
+
+### PASSPORT MANAGEMENT ###
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from datetime import date, timedelta
+from .models import Passport  # Adjust import based on your app structure
+
+
+@login_required
+def passport_management(request):
+    if not request.user.is_superuser:
+        messages.error(request, "You don't have permission to access this page.")
+        return redirect('home')
+    
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        
+        # ADD NEW PASSPORT/ID
+        if action == 'add':
+            holder_name = request.POST.get('holder_name')
+            document_type = request.POST.get('document_type')
+            document_number = request.POST.get('document_number')
+            country_of_issue = request.POST.get('country_of_issue')
+            date_of_issue = request.POST.get('date_of_issue') or None
+            expiry_date = request.POST.get('expiry_date') or None
+            status = request.POST.get('status')
+            document_file = request.FILES.get('document_file')
+            
+            try:
+                Passport.objects.create(
+                    holder_name=holder_name,
+                    document_type=document_type,
+                    document_number=document_number,
+                    country_of_issue=country_of_issue,
+                    date_of_issue=date_of_issue,
+                    expiry_date=expiry_date,
+                    status=status,
+                    document_file=document_file
+                )
+                messages.success(request, f'Passport/ID for {holder_name} added successfully!')
+            except Exception as e:
+                messages.error(request, f'Error adding passport/ID: {str(e)}')
+        
+        # EDIT PASSPORT/ID
+        elif action == 'edit':
+            passport_id = request.POST.get('passport_id')
+            passport = get_object_or_404(Passport, id=passport_id)
+            
+            passport.holder_name = request.POST.get('holder_name')
+            passport.document_type = request.POST.get('document_type')
+            passport.document_number = request.POST.get('document_number')
+            passport.country_of_issue = request.POST.get('country_of_issue')
+            passport.date_of_issue = request.POST.get('date_of_issue') or None
+            passport.expiry_date = request.POST.get('expiry_date') or None
+            passport.status = request.POST.get('status')
+            
+            # Update file if a new one is uploaded
+            if request.FILES.get('document_file'):
+                passport.document_file = request.FILES.get('document_file')
+            
+            try:
+                passport.save()
+                messages.success(request, f'Passport/ID for {passport.holder_name} updated successfully!')
+            except Exception as e:
+                messages.error(request, f'Error updating passport/ID: {str(e)}')
+        
+        # UPLOAD DOCUMENT
+        elif action == 'upload':
+            passport_id = request.POST.get('passport_id')
+            passport = get_object_or_404(Passport, id=passport_id)
+            document_file = request.FILES.get('document_file')
+            
+            if document_file:
+                passport.document_file = document_file
+                try:
+                    passport.save()
+                    messages.success(request, f'Document uploaded successfully for {passport.holder_name}!')
+                except Exception as e:
+                    messages.error(request, f'Error uploading document: {str(e)}')
+            else:
+                messages.error(request, 'No file selected.')
+        
+        # DELETE PASSPORT/ID
+        elif action == 'delete':
+            passport_id = request.POST.get('passport_id')
+            passport = get_object_or_404(Passport, id=passport_id)
+            holder_name = passport.holder_name
+            
+            try:
+                # Delete the file from storage
+                if passport.document_file:
+                    passport.document_file.delete()
+                passport.delete()
+                messages.success(request, f'Passport/ID for {holder_name} deleted successfully!')
+            except Exception as e:
+                messages.error(request, f'Error deleting passport/ID: {str(e)}')
+        
+        return redirect('passport_management')
+    
+    # GET request - display all passports
+    passports = Passport.objects.all().order_by('-created_at')
+    
+    # Add expiry warning flag to each passport (for 6-month warning)
+    today = date.today()
+    six_months_from_now = today + timedelta(days=180)
+    
+    for passport in passports:
+        if passport.expiry_date:
+            # Flag if expiry date is within 6 months or already expired
+            passport.expiring_soon = passport.expiry_date <= six_months_from_now
+        else:
+            passport.expiring_soon = False
+    
+    context = {
+        'passports': passports,
+    }
+    
+    return render(request, 'passport_management.html', context)
 
 ### LEASE TEMPLATE GENERATOR ###
 import re

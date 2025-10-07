@@ -200,4 +200,7 @@ urlpatterns = [
     path('fsr/pdf/', views.fsr_pdf, name='fsr_pdf'),
     path('issues/delete/<int:issue_id>/', views.delete_issue, name='delete_issue'),
 
+    #
+    # Passports
+    path('passport-management/', views.passport_management, name='passport_management'),
 ]

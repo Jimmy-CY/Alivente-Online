@@ -1822,3 +1822,177 @@ INFO 2025-10-03 08:22:06,132 "GET /invoices/ HTTP/1.1" 200 169298
 INFO 2025-10-03 08:22:11,533 "GET /admin_apms/ HTTP/1.1" 200 13286
 INFO 2025-10-03 08:22:14,201 "GET /admin_invoices/ HTTP/1.1" 302 0
 INFO 2025-10-03 08:22:14,249 "GET /admin_apms/ HTTP/1.1" 200 13916
+INFO 2025-10-03 08:23:22,782 Watching for file changes with StatReloader
+INFO 2025-10-03 08:26:46,750 "GET /admin_apms/ HTTP/1.1" 200 13286
+WARNING 2025-10-03 08:26:47,094 Not Found: /favicon.ico
+WARNING 2025-10-03 08:26:47,095 "GET /favicon.ico HTTP/1.1" 404 43808
+INFO 2025-10-07 11:20:33,874 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\urls.py changed, reloading.
+INFO 2025-10-07 11:20:36,632 Watching for file changes with StatReloader
+INFO 2025-10-07 11:21:46,536 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\models.py changed, reloading.
+INFO 2025-10-07 11:21:47,711 Watching for file changes with StatReloader
+INFO 2025-10-07 11:27:07,793 Watching for file changes with StatReloader
+INFO 2025-10-07 11:27:22,143 "GET / HTTP/1.1" 200 14929
+INFO 2025-10-07 11:27:22,180 "GET /static/css/my_style.css HTTP/1.1" 304 0
+INFO 2025-10-07 11:27:22,247 "GET /static/images/alivente_online_logo.png HTTP/1.1" 304 0
+INFO 2025-10-07 11:27:23,582 "GET /admin_apms/ HTTP/1.1" 200 13582
+INFO 2025-10-07 11:27:27,849 "GET /passport-management/ HTTP/1.1" 200 22552
+INFO 2025-10-07 11:29:27,298 "POST /passport-management/ HTTP/1.1" 302 0
+INFO 2025-10-07 11:29:27,346 "GET /passport-management/ HTTP/1.1" 200 24447
+INFO 2025-10-07 11:29:37,211 "GET /media/passports/Passport_-_Greece_Expiry_2027-02-25.pdf HTTP/1.1" 200 544660
+INFO 2025-10-07 11:29:47,615 "GET /admin_apms/ HTTP/1.1" 200 13582
+INFO 2025-10-07 11:31:30,312 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\models.py changed, reloading.
+INFO 2025-10-07 11:31:31,719 Watching for file changes with StatReloader
+INFO 2025-10-07 11:32:53,386 Watching for file changes with StatReloader
+INFO 2025-10-07 11:34:44,967 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+INFO 2025-10-07 11:34:45,966 Watching for file changes with StatReloader
+INFO 2025-10-07 11:35:13,363 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+INFO 2025-10-07 11:35:14,601 Watching for file changes with StatReloader
+INFO 2025-10-07 11:35:27,447 "GET / HTTP/1.1" 200 14929
+INFO 2025-10-07 11:35:29,414 "GET /admin_apms/ HTTP/1.1" 200 13582
+INFO 2025-10-07 11:35:30,511 "GET /passport-management/ HTTP/1.1" 200 23877
+INFO 2025-10-07 11:35:36,832 "POST /passport-management/ HTTP/1.1" 302 0
+INFO 2025-10-07 11:35:36,863 "GET /passport-management/ HTTP/1.1" 200 23124
+INFO 2025-10-07 11:36:35,660 "GET / HTTP/1.1" 200 14929
+INFO 2025-10-07 11:36:37,090 "GET /admin_apms/ HTTP/1.1" 200 13582
+INFO 2025-10-07 11:36:38,056 "GET /passport-management/ HTTP/1.1" 200 22959
+INFO 2025-10-07 11:37:41,027 "POST /passport-management/ HTTP/1.1" 302 0
+INFO 2025-10-07 11:37:41,057 "GET /passport-management/ HTTP/1.1" 200 24919
+INFO 2025-10-07 11:38:02,492 "GET /media/passports/Passport_-_Greece_Expiry_2027-02-25.pdf HTTP/1.1" 200 544660
+INFO 2025-10-07 11:40:38,908 "GET / HTTP/1.1" 200 14929
+INFO 2025-10-07 11:40:40,189 "GET /admin_apms/ HTTP/1.1" 200 13582
+INFO 2025-10-07 11:40:41,243 "GET /passport-management/ HTTP/1.1" 200 24581
+INFO 2025-10-07 14:57:00,554 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\models.py changed, reloading.
+INFO 2025-10-07 14:57:03,031 Watching for file changes with StatReloader
+INFO 2025-10-07 14:57:26,199 Watching for file changes with StatReloader
+INFO 2025-10-07 14:58:20,125 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+INFO 2025-10-07 14:58:21,237 Watching for file changes with StatReloader
+INFO 2025-10-07 14:58:55,862 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+INFO 2025-10-07 14:58:57,152 Watching for file changes with StatReloader
+INFO 2025-10-07 14:59:55,080 "GET / HTTP/1.1" 200 14929
+INFO 2025-10-07 14:59:56,938 "GET /admin_apms/ HTTP/1.1" 200 13582
+INFO 2025-10-07 14:59:58,147 "GET /passport-management/ HTTP/1.1" 200 24641
+INFO 2025-10-07 15:02:41,704 "GET /admin_apms/ HTTP/1.1" 200 13582
+INFO 2025-10-07 15:02:43,097 "GET /passport-management/ HTTP/1.1" 200 25326
+INFO 2025-10-07 15:02:53,748 "POST /passport-management/ HTTP/1.1" 302 0
+INFO 2025-10-07 15:02:53,798 "GET /passport-management/ HTTP/1.1" 200 25901
+INFO 2025-10-07 15:04:13,986 "GET /admin_apms/ HTTP/1.1" 200 13582
+INFO 2025-10-07 15:04:15,080 "GET /passport-management/ HTTP/1.1" 200 25331
+INFO 2025-10-07 15:04:25,190 "GET /media/passports/Passport_-_Greece_Expiry_2027-02-25.pdf HTTP/1.1" 304 0
+INFO 2025-10-07 15:06:33,990 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\models.py changed, reloading.
+INFO 2025-10-07 15:06:35,252 Watching for file changes with StatReloader
+INFO 2025-10-07 15:09:33,148 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\models.py changed, reloading.
+INFO 2025-10-07 15:09:34,274 Watching for file changes with StatReloader
+INFO 2025-10-07 15:10:06,738 Watching for file changes with StatReloader
+INFO 2025-10-07 15:11:14,105 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\models.py changed, reloading.
+INFO 2025-10-07 15:11:15,182 Watching for file changes with StatReloader
+INFO 2025-10-07 15:11:42,568 Watching for file changes with StatReloader
+INFO 2025-10-07 15:11:48,231 "GET /admin_apms/ HTTP/1.1" 200 13582
+INFO 2025-10-07 15:11:49,400 "GET /passport-management/ HTTP/1.1" 200 25331
+INFO 2025-10-07 15:13:28,086 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\models.py changed, reloading.
+INFO 2025-10-07 15:13:29,191 Watching for file changes with StatReloader
+INFO 2025-10-07 15:13:34,008 "GET / HTTP/1.1" 200 14929
+INFO 2025-10-07 15:13:35,452 "GET /admin_apms/ HTTP/1.1" 200 13582
+INFO 2025-10-07 15:13:36,697 "GET /passport-management/ HTTP/1.1" 200 25331
+INFO 2025-10-07 15:15:31,533 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\models.py changed, reloading.
+INFO 2025-10-07 15:15:32,638 Watching for file changes with StatReloader
+INFO 2025-10-07 15:15:47,266 "GET /admin_apms/ HTTP/1.1" 200 13582
+INFO 2025-10-07 15:15:48,146 "GET /passport-management/ HTTP/1.1" 200 25519
+INFO 2025-10-07 15:16:00,948 "POST /passport-management/ HTTP/1.1" 302 0
+INFO 2025-10-07 15:16:01,001 "GET /passport-management/ HTTP/1.1" 200 26076
+INFO 2025-10-07 15:16:07,128 "POST /passport-management/ HTTP/1.1" 302 0
+INFO 2025-10-07 15:16:07,180 "GET /passport-management/ HTTP/1.1" 200 26108
+INFO 2025-10-07 15:16:13,213 "POST /passport-management/ HTTP/1.1" 302 0
+INFO 2025-10-07 15:16:13,262 "GET /passport-management/ HTTP/1.1" 200 26083
+INFO 2025-10-07 15:16:18,683 "POST /passport-management/ HTTP/1.1" 302 0
+INFO 2025-10-07 15:16:18,718 "GET /passport-management/ HTTP/1.1" 200 26078
+INFO 2025-10-07 15:16:28,664 "POST /passport-management/ HTTP/1.1" 302 0
+INFO 2025-10-07 15:16:28,713 "GET /passport-management/ HTTP/1.1" 200 26091
+INFO 2025-10-07 15:22:25,476 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\models.py changed, reloading.
+INFO 2025-10-07 15:22:26,574 Watching for file changes with StatReloader
+INFO 2025-10-07 15:22:50,678 Watching for file changes with StatReloader
+INFO 2025-10-07 15:24:03,829 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+INFO 2025-10-07 15:24:05,360 Watching for file changes with StatReloader
+INFO 2025-10-07 15:24:11,618 "GET /admin_apms/ HTTP/1.1" 200 13582
+INFO 2025-10-07 15:24:13,197 "GET /passport-management/ HTTP/1.1" 200 28715
+INFO 2025-10-07 15:26:29,349 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+INFO 2025-10-07 15:26:30,445 Watching for file changes with StatReloader
+INFO 2025-10-07 15:26:39,081 "GET / HTTP/1.1" 200 14929
+INFO 2025-10-07 15:26:40,129 "GET /admin_apms/ HTTP/1.1" 200 13582
+INFO 2025-10-07 15:26:41,229 "GET /passport-management/ HTTP/1.1" 200 28715
+INFO 2025-10-07 15:28:49,691 "GET / HTTP/1.1" 200 14929
+INFO 2025-10-07 15:28:51,127 "GET /admin_apms/ HTTP/1.1" 200 13582
+INFO 2025-10-07 15:28:52,200 "GET /passport-management/ HTTP/1.1" 200 28699
+INFO 2025-10-07 15:29:16,713 "POST /passport-management/ HTTP/1.1" 302 0
+INFO 2025-10-07 15:29:16,752 "GET /passport-management/ HTTP/1.1" 200 30815
+INFO 2025-10-07 15:31:20,046 "POST /passport-management/ HTTP/1.1" 302 0
+INFO 2025-10-07 15:31:20,079 "GET /passport-management/ HTTP/1.1" 200 30817
+INFO 2025-10-07 15:31:23,116 "GET /media/passports/Passport_-_Greece_Expiry_2027-02-25.pdf HTTP/1.1" 304 0
+INFO 2025-10-07 15:31:25,799 "GET /media/passports/ID_Card_-_Greece_both_sides.pdf HTTP/1.1" 200 149766
+INFO 2025-10-07 15:32:21,985 "GET / HTTP/1.1" 200 14929
+INFO 2025-10-07 15:32:24,793 "GET /admin_apms/ HTTP/1.1" 200 13582
+INFO 2025-10-07 15:32:25,829 "GET /passport-management/ HTTP/1.1" 200 30818
+INFO 2025-10-07 15:33:55,516 "POST /passport-management/ HTTP/1.1" 302 0
+INFO 2025-10-07 15:33:55,555 "GET /passport-management/ HTTP/1.1" 200 33084
+INFO 2025-10-07 15:35:54,579 "POST /passport-management/ HTTP/1.1" 302 0
+INFO 2025-10-07 15:35:54,612 "GET /passport-management/ HTTP/1.1" 200 34751
+INFO 2025-10-07 15:37:07,147 "POST /passport-management/ HTTP/1.1" 302 0
+INFO 2025-10-07 15:37:07,181 "GET /passport-management/ HTTP/1.1" 200 36353
+INFO 2025-10-07 15:38:40,658 "GET /admin_apms/ HTTP/1.1" 200 13582
+INFO 2025-10-07 15:38:41,845 "GET /passport-management/ HTTP/1.1" 200 35784
+INFO 2025-10-07 15:39:40,052 "GET /admin_apms/ HTTP/1.1" 200 13582
+INFO 2025-10-07 15:39:41,464 "GET /passport-management/ HTTP/1.1" 200 35798
+INFO 2025-10-07 15:40:53,345 "GET /passport-management/ HTTP/1.1" 200 36294
+INFO 2025-10-07 15:41:00,096 "GET /passport-management/ HTTP/1.1" 200 36294
+INFO 2025-10-07 15:41:02,861 "GET /passport-management/ HTTP/1.1" 200 36294
+WARNING 2025-10-07 15:41:07,901 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-10-07 15:41:07,901 "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 44200
+INFO 2025-10-07 15:41:10,828 "GET /admin_apms/ HTTP/1.1" 200 13582
+WARNING 2025-10-07 15:41:10,880 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-10-07 15:41:10,881 "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 44200
+INFO 2025-10-07 15:41:13,046 "GET /passport-management/ HTTP/1.1" 200 36294
+WARNING 2025-10-07 15:41:13,097 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-10-07 15:41:13,098 "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 44200
+INFO 2025-10-07 15:42:15,528 "GET / HTTP/1.1" 200 14929
+WARNING 2025-10-07 15:42:15,571 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-10-07 15:42:15,573 "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 44200
+INFO 2025-10-07 15:42:16,962 "GET /admin_apms/ HTTP/1.1" 200 13582
+WARNING 2025-10-07 15:42:17,002 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-10-07 15:42:17,003 "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 44200
+INFO 2025-10-07 15:42:18,079 "GET /passport-management/ HTTP/1.1" 200 36260
+WARNING 2025-10-07 15:42:18,144 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-10-07 15:42:18,145 "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 44200
+INFO 2025-10-07 15:43:24,331 "GET / HTTP/1.1" 200 14929
+WARNING 2025-10-07 15:43:24,376 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-10-07 15:43:24,376 "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 44200
+INFO 2025-10-07 15:43:25,547 "GET /admin_apms/ HTTP/1.1" 200 13582
+WARNING 2025-10-07 15:43:25,589 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-10-07 15:43:25,590 "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 44200
+INFO 2025-10-07 15:43:27,596 "GET /passport-management/ HTTP/1.1" 200 36273
+WARNING 2025-10-07 15:43:27,655 Not Found: /.well-known/appspecific/com.chrome.devtools.json
+WARNING 2025-10-07 15:43:27,656 "GET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1" 404 44200
+INFO 2025-10-07 15:44:42,629 "GET /media/passports/Passport_-_Cyprus_Expiry_2034-08-30.pdf HTTP/1.1" 200 839836
+INFO 2025-10-07 15:46:51,291 "GET /admin_apms/ HTTP/1.1" 200 13582
+INFO 2025-10-07 15:46:52,461 "GET /passport-management/ HTTP/1.1" 200 36274
+INFO 2025-10-07 15:54:26,618 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+INFO 2025-10-07 15:54:27,996 Watching for file changes with StatReloader
+INFO 2025-10-07 15:56:19,617 "GET / HTTP/1.1" 200 14929
+INFO 2025-10-07 15:56:20,646 "GET /admin_apms/ HTTP/1.1" 200 13582
+INFO 2025-10-07 15:56:22,461 "GET /passport-management/ HTTP/1.1" 200 36739
+INFO 2025-10-07 15:58:26,759 "GET /passport-management/ HTTP/1.1" 200 37000
+INFO 2025-10-07 16:00:29,131 "GET / HTTP/1.1" 200 14929
+INFO 2025-10-07 16:00:30,792 "GET /admin_apms/ HTTP/1.1" 200 13582
+INFO 2025-10-07 16:00:32,231 "GET /passport-management/ HTTP/1.1" 200 36711
+INFO 2025-10-07 16:00:36,026 "GET /media/passports/ID-Cyprus_Exp_2033.pdf HTTP/1.1" 200 306373
+INFO 2025-10-07 16:01:18,039 "GET /media/passports/Passport_-_South_Africa_Expiry_2025-12-16.pdf HTTP/1.1" 200 275403
+INFO 2025-10-07 16:01:35,210 "GET /admin_apms/ HTTP/1.1" 200 13582
+INFO 2025-10-07 16:01:39,477 "GET /passport-management/ HTTP/1.1" 200 36711
+INFO 2025-10-07 16:02:05,844 "POST /passport-management/ HTTP/1.1" 302 0
+INFO 2025-10-07 16:02:05,894 "GET /passport-management/ HTTP/1.1" 200 37296
+INFO 2025-10-07 16:02:16,362 "POST /passport-management/ HTTP/1.1" 302 0
+INFO 2025-10-07 16:02:16,412 "GET /passport-management/ HTTP/1.1" 200 37302
+INFO 2025-10-07 16:02:25,827 "POST /passport-management/ HTTP/1.1" 302 0
+INFO 2025-10-07 16:02:25,861 "GET /passport-management/ HTTP/1.1" 200 37296
+INFO 2025-10-07 16:02:33,308 "POST /passport-management/ HTTP/1.1" 302 0
+INFO 2025-10-07 16:02:33,346 "GET /passport-management/ HTTP/1.1" 200 37282
+INFO 2025-10-07 16:02:38,926 "GET /admin_apms/ HTTP/1.1" 200 13582
+INFO 2025-10-07 16:02:48,160 "GET / HTTP/1.1" 200 14929

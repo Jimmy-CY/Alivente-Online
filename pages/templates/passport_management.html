@@ -1,0 +1,535 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+{% block title %}Passport/ID Management{% endblock %}
+{% block content %}
+<h2><center>ALIVENTE ONLINE - PASSPORT/ID MANAGEMENT</center></h2>
+<h4><center>UPLOAD / VIEW / DELETE</center></h4>
+<br/>
+{% for msg in messages %}
+<div class="alert alert-secondary alert-dismissible fade show auto-dismiss" role="alert">
+  <strong></strong> <center>{{ msg }}</center>
+  <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+    <span aria-hidden="true">&times;</span>
+  </button>
+</div>
+<script>
+  setTimeout(function() {
+    document.querySelectorAll('.auto-dismiss').forEach(alert => {
+      alert.classList.remove('show');
+      alert.classList.add('fade');
+      setTimeout(() => alert.remove(), 500);
+    });
+  }, 2000);
+</script>
+{% endfor %}
+<div style="display: flex ; justify-content: flex-end">
+    <a href="{% url 'admin_apms' %}" class="btn btn-info" style="margin-right:16px" role="button">Back</a>
+</div>
+<br/>
+
+{% if user.is_superuser %}
+
+<div>
+<table class="table table-bordered table-striped text-center" id="passportTable">
+<thead>
+    <tr>
+        <th style="text-align: left; width: 16%; cursor: pointer;" onclick="sortTable(0)">
+            Passport/ID Holder Name <i class="fas fa-sort"></i>
+        </th>
+        <th style="text-align: center; width: 12%; cursor: pointer;" onclick="sortTable(1)">
+            Document Type <i class="fas fa-sort"></i>
+        </th>
+        <th style="text-align: center; width: 12%; cursor: pointer;" onclick="sortTable(2)">
+            Document Number <i class="fas fa-sort"></i>
+        </th>
+        <th style="text-align: center; width: 12%; cursor: pointer;" onclick="sortTable(3)">
+            Country of Issue <i class="fas fa-sort"></i>
+        </th>
+        <th style="text-align: center; width: 11%; cursor: pointer; white-space: nowrap;" onclick="sortTable(4)">
+            Date of Issue <i class="fas fa-sort"></i>
+        </th>
+        <th style="text-align: center; width: 11%; cursor: pointer; white-space: nowrap;" onclick="sortTable(5)">
+            Expiry Date <i class="fas fa-sort"></i>
+        </th>
+        <th style="text-align: center; width: 12%; cursor: pointer;" onclick="sortTable(6)">
+            Status <i class="fas fa-sort"></i>
+        </th>
+        <th style="text-align: center; width: 14%">Actions</th>
+    </tr>
+</thead>
+<tbody>
+    {% for passport in passports %}
+    <tr>
+        <td style="text-align: left">{{ passport.holder_name }}</td>
+        <td style="text-align: center">
+            {% if passport.document_type == 'passport' %}
+                <span class="badge badge-primary">Passport</span>
+            {% elif passport.document_type == 'id' %}
+                <span class="badge badge-info">ID</span>
+            {% elif passport.document_type == 'drivers_license' %}
+                <span class="badge badge-secondary">Driver's License</span>
+            {% elif passport.document_type == 'visa' %}
+                <span class="badge badge-warning">Visa</span>
+            {% elif passport.document_type == 'arc' %}
+                <span class="badge badge-dark">ARC</span>
+            {% else %}
+                <span class="badge badge-secondary">{{ passport.get_document_type_display }}</span>
+            {% endif %}
+        </td>
+        <td style="text-align: center">{{ passport.document_number|default:"-" }}</td>
+        <td style="text-align: center">{{ passport.country_of_issue|default:"-" }}</td>
+        <td style="text-align: center; white-space: nowrap;">{{ passport.date_of_issue|date:"Y-m-d"|default:"-" }}</td>
+        <td style="text-align: center; white-space: nowrap;">
+            {% if passport.expiry_date %}
+                {% now "Y-m-d" as today_date %}
+                {% with expiry_str=passport.expiry_date|date:"Y-m-d" %}
+                    {% if expiry_str < today_date %}
+                        <!-- Already expired -->
+                        <span style="color: red; font-weight: bold;">{{ expiry_str }}</span>
+                    {% elif passport.expiring_soon %}
+                        <!-- Expiring within 6 months -->
+                        <span style="color: red; font-weight: bold;">{{ expiry_str }}</span>
+                    {% else %}
+                        <!-- More than 6 months away -->
+                        {{ expiry_str }}
+                    {% endif %}
+                {% endwith %}
+            {% else %}
+                -
+            {% endif %}
+        </td>
+        <td style="text-align: center">
+            {% if passport.status == 'active' %}
+                <span class="badge badge-success">Active</span>
+            {% elif passport.status == 'renewal' %}
+                <span class="badge badge-warning">Applied for Renewal</span>
+            {% elif passport.status == 'inactive' %}
+                <span class="badge badge-secondary">Inactive</span>
+            {% else %}
+                <span class="badge badge-secondary">-</span>
+            {% endif %}
+        </td>
+        <td style="text-align: center">
+            {% if passport.document_file %}
+                <!-- View, Edit, and Delete Buttons -->
+                <button type="button" class="btn btn-sm btn-success" onclick="viewDocument('{{ passport.document_file.url }}', '{{ passport.document_file.name }}', '{{ passport.holder_name }}')" title="View Document">
+                    <i class="fas fa-eye"></i>
+                </button>
+                <button type="button" class="btn btn-sm btn-warning" onclick="editDocument({{ passport.id }}, '{{ passport.holder_name }}', '{{ passport.document_type }}', '{{ passport.document_number }}', '{{ passport.country_of_issue }}', '{{ passport.date_of_issue|date:'Y-m-d' }}', '{{ passport.expiry_date|date:'Y-m-d' }}', '{{ passport.status }}')" title="Edit">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button type="button" class="btn btn-sm btn-danger" onclick="deleteDocument({{ passport.id }}, '{{ passport.holder_name }}')" title="Delete">
+                    <i class="fas fa-trash"></i>
+                </button>
+            {% else %}
+                <!-- Upload and Edit Buttons -->
+                <button type="button" class="btn btn-sm btn-outline-primary" onclick="uploadDocument({{ passport.id }})" title="Upload Document">
+                    <i class="fas fa-upload"></i>
+                </button>
+                <button type="button" class="btn btn-sm btn-warning" onclick="editDocument({{ passport.id }}, '{{ passport.holder_name }}', '{{ passport.document_type }}', '{{ passport.document_number }}', '{{ passport.country_of_issue }}', '{{ passport.date_of_issue|date:'Y-m-d' }}', '{{ passport.expiry_date|date:'Y-m-d' }}', '{{ passport.status }}')" title="Edit">
+                    <i class="fas fa-edit"></i>
+                </button>
+            {% endif %}
+        </td>
+    </tr>
+    {% endfor %}
+</tbody>
+</table>    
+</div>
+
+<!-- Add New Passport/ID Button -->
+<div style="display: flex; justify-content: flex-start; margin-bottom: 20px;">
+    <button type="button" class="btn btn-info" onclick="addNewDocument()">
+        <i class="fas fa-plus"></i> Add New Passport/ID
+    </button>
+</div>
+
+<!-- Add/Edit Document Modal -->
+<div class="modal fade" id="addEditModal" tabindex="-1" role="dialog" aria-labelledby="addEditModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="addEditModalLabel">Add Passport/ID</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="$('#addEditModal').modal('hide');">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <form method="post" enctype="multipart/form-data" id="addEditForm">
+        <div class="modal-body">
+          {% csrf_token %}
+          <input type="hidden" id="passport_id" name="passport_id">
+          <input type="hidden" id="form_action" name="action" value="add">
+          
+          <div class="form-group">
+            <label for="holder_name">Passport/ID Holder Name: <span class="text-danger">*</span></label>
+            <select class="form-control" id="holder_name" name="holder_name" required>
+              <option value="">-- Select Holder --</option>
+              <option value="Demetri Manias">Demetri Manias</option>
+              <option value="Angela Manias">Angela Manias</option>
+              <option value="Erene Manias">Erene Manias</option>
+              <option value="Alexandra Manias">Alexandra Manias</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="document_type">Document Type: <span class="text-danger">*</span></label>
+            <select class="form-control" id="document_type" name="document_type" required>
+              <option value="">-- Select Type --</option>
+              <option value="passport">Passport</option>
+              <option value="id">ID</option>
+              <option value="drivers_license">Driver's License</option>
+              <option value="visa">Visa</option>
+              <option value="arc">Alien Registration Card</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="document_number">Document Number: <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" id="document_number" name="document_number" required>
+          </div>
+
+          <div class="form-group">
+            <label for="country_of_issue">Country of Issue: <span class="text-danger">*</span></label>
+            <select class="form-control" id="country_of_issue" name="country_of_issue" required>
+              <option value="">-- Select Country --</option>
+              <option value="Cyprus">Cyprus</option>
+              <option value="Greece">Greece</option>
+              <option value="South Africa">South Africa</option>
+              <option value="Zimbabwe">Zimbabwe</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="date_of_issue">Date of Issue:</label>
+            <input type="date" class="form-control" id="date_of_issue" name="date_of_issue">
+          </div>
+
+          <div class="form-group">
+            <label for="expiry_date">Expiry Date:</label>
+            <input type="date" class="form-control" id="expiry_date" name="expiry_date">
+          </div>
+
+          <div class="form-group">
+            <label for="status">Status: <span class="text-danger">*</span></label>
+            <select class="form-control" id="status" name="status" required>
+              <option value="">-- Select Status --</option>
+              <option value="active">Active</option>
+              <option value="renewal">Applied for Renewal</option>
+              <option value="inactive">Inactive</option>
+            </select>
+          </div>
+
+          <div class="form-group" id="file_upload_group">
+            <label for="document_file">Upload Document (PDF, JPG, PNG): <span class="text-danger">*</span></label>
+            <input type="file" class="form-control-file" id="document_file" name="document_file" accept=".pdf,.jpg,.jpeg,.png">
+            <small class="form-text text-muted">Max file size: 10MB (Recommended: PDF format)</small>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="$('#addEditModal').modal('hide');">Cancel</button>
+          <button type="submit" class="btn btn-info" id="submitBtn">
+            <i class="fas fa-save"></i> <span id="submitBtnText">Save</span>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Upload Document Modal -->
+<div class="modal fade" id="uploadModal" tabindex="-1" role="dialog" aria-labelledby="uploadModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="uploadModalLabel">Upload Passport/ID Document</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="$('#uploadModal').modal('hide');">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <form method="post" enctype="multipart/form-data" id="uploadForm">
+        <div class="modal-body">
+          {% csrf_token %}
+          <input type="hidden" id="upload_passport_id" name="passport_id">
+          <input type="hidden" name="action" value="upload">
+          
+          <div class="form-group">
+            <label for="upload_document_file">Select Document (PDF, JPG, PNG):</label>
+            <input type="file" class="form-control-file" id="upload_document_file" name="document_file" accept=".pdf,.jpg,.jpeg,.png" required>
+            <small class="form-text text-muted">Max file size: 10MB (Recommended: PDF format)</small>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="$('#uploadModal').modal('hide');">Cancel</button>
+          <button type="submit" class="btn btn-info">
+            <i class="fas fa-upload"></i> Upload Document
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title" id="deleteModalLabel">Confirm Delete</h5>
+        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close" onclick="$('#deleteModal').modal('hide');">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <form method="post" id="deleteForm">
+        <div class="modal-body">
+          {% csrf_token %}
+          <input type="hidden" id="delete_passport_id" name="passport_id">
+          <input type="hidden" name="action" value="delete">
+          
+          <div class="text-center">
+            <i class="fas fa-exclamation-triangle fa-3x text-danger mb-3"></i>
+            <h5>Are you sure you want to delete this passport/ID document?</h5>
+            <p class="text-muted">This action cannot be undone.</p>
+            <p><strong>Holder:</strong> <span id="deleteHolderName"></span></p>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="$('#deleteModal').modal('hide');">Cancel</button>
+          <button type="submit" class="btn btn-danger">
+            <i class="fas fa-trash"></i> Delete Document
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- View Document Modal -->
+<div class="modal fade" id="viewModal" tabindex="-1" role="dialog" aria-labelledby="viewModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="viewModalLabel">View Passport/ID Document</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="$('#viewModal').modal('hide');">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div id="documentViewer">
+          <!-- Document content will be loaded here -->
+        </div>
+      </div>
+      <div class="modal-footer">
+        <a id="downloadLink" href="#" target="_blank" class="btn btn-info">Download</a>
+        <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="$('#viewModal').modal('hide');">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endif %}
+
+<script>
+// Initialize sort directions object in global scope
+var sortDirections = {};
+
+function addNewDocument() {
+    // Reset form
+    document.getElementById('addEditForm').reset();
+    document.getElementById('passport_id').value = '';
+    document.getElementById('form_action').value = 'add';
+    document.getElementById('addEditModalLabel').textContent = 'Add New Passport/ID';
+    document.getElementById('submitBtnText').textContent = 'Save';
+    document.getElementById('document_file').required = true;
+    document.getElementById('file_upload_group').style.display = 'block';
+    
+    $('#addEditModal').modal('show');
+}
+
+function editDocument(passportId, holderName, docType, docNumber, country, issueDate, expiryDate, status) {
+    // Populate form with existing data
+    document.getElementById('passport_id').value = passportId;
+    document.getElementById('form_action').value = 'edit';
+    document.getElementById('holder_name').value = holderName;
+    document.getElementById('document_type').value = docType;
+    document.getElementById('document_number').value = docNumber;
+    document.getElementById('country_of_issue').value = country;
+    document.getElementById('date_of_issue').value = issueDate;
+    document.getElementById('expiry_date').value = expiryDate;
+    document.getElementById('status').value = status;
+    
+    // Update modal title and button
+    document.getElementById('addEditModalLabel').textContent = 'Edit Passport/ID Information';
+    document.getElementById('submitBtnText').textContent = 'Update';
+    document.getElementById('document_file').required = false;
+    
+    $('#addEditModal').modal('show');
+}
+
+function uploadDocument(passportId) {
+    document.getElementById('upload_passport_id').value = passportId;
+    $('#uploadModal').modal('show');
+}
+
+function deleteDocument(passportId, holderName) {
+    document.getElementById('delete_passport_id').value = passportId;
+    document.getElementById('deleteHolderName').textContent = holderName;
+    $('#deleteModal').modal('show');
+}
+
+function viewDocument(documentUrl, documentName, holderName) {
+    const documentViewer = document.getElementById('documentViewer');
+    const downloadLink = document.getElementById('downloadLink');
+    const viewModalLabel = document.getElementById('viewModalLabel');
+
+    // Update modal title
+    viewModalLabel.textContent = `Passport/ID Document (${holderName})`;
+
+    // Set download link
+    downloadLink.href = documentUrl;
+    downloadLink.download = documentName;
+
+    // Clear previous content
+    documentViewer.innerHTML = '';
+
+    // Get file extension
+    const extension = documentName.split('.').pop().toLowerCase();
+
+    if (extension === 'pdf') {
+        documentViewer.innerHTML = `
+            <embed src="${documentUrl}#toolbar=0&navpanes=0&scrollbar=0" type="application/pdf" width="100%" height="500px">
+            <p class="text-center mt-2">
+                <small>If the PDF doesn't display, <a href="${documentUrl}" target="_blank">click here to open it in a new tab</a></small>
+            </p>
+        `;
+    } else if (['jpg', 'jpeg', 'png'].includes(extension)) {
+        documentViewer.innerHTML = `
+            <img src="${documentUrl}" alt="Passport/ID Document" class="img-fluid" style="max-width: 100%; height: auto;">
+        `;
+    } else {
+        documentViewer.innerHTML = `
+            <div class="text-center">
+                <i class="fas fa-passport fa-5x text-muted mb-3"></i>
+                <p>This file type cannot be previewed in the browser.</p>
+                <p>File: <strong>${documentName}</strong></p>
+                <p>Click the Download button below to view the file.</p>
+            </div>
+        `;
+    }
+
+    $('#viewModal').modal('show');
+}
+
+// Auto-hide modals on form submission success
+$(document).ready(function() {
+    // Hide modals after successful form submission
+    $('#addEditForm, #uploadForm, #deleteForm').on('submit', function() {
+        setTimeout(function() {
+            $('.modal').modal('hide');
+        }, 100);
+    });
+});
+
+// Table sorting functionality
+function sortTable(columnIndex) {
+    const table = document.getElementById("passportTable");
+    
+    if (!table) {
+        console.error('Table not found!');
+        return;
+    }
+    
+    const tbody = table.getElementsByTagName("tbody")[0];
+    
+    if (!tbody) {
+        console.error('Tbody not found!');
+        return;
+    }
+    
+    const rows = Array.from(tbody.getElementsByTagName("tr"));
+    
+    if (rows.length === 0) {
+        console.error('No rows found!');
+        return;
+    }
+    
+    // Initialize sort direction for this column if not exists
+    if (sortDirections[columnIndex] === undefined) {
+        sortDirections[columnIndex] = 'asc';
+    }
+    
+    // Toggle sort direction
+    const isAscending = sortDirections[columnIndex] === 'asc';
+    sortDirections[columnIndex] = isAscending ? 'desc' : 'asc';
+    
+    // Sort rows
+    rows.sort((rowA, rowB) => {
+        const cellA = rowA.cells[columnIndex];
+        const cellB = rowB.cells[columnIndex];
+        
+        if (!cellA || !cellB) {
+            return 0;
+        }
+        
+        // Get text content, handling badges and special elements
+        let valueA = cellA.textContent.trim();
+        let valueB = cellB.textContent.trim();
+        
+        // Special handling for date columns (columns 4 and 5)
+        if (columnIndex === 4 || columnIndex === 5) {
+            // Convert date strings to comparable format
+            valueA = valueA === '-' ? '0000-00-00' : valueA;
+            valueB = valueB === '-' ? '0000-00-00' : valueB;
+        }
+        
+        // Handle empty values
+        if (valueA === '-') valueA = '';
+        if (valueB === '-') valueB = '';
+        
+        // Compare values
+        let comparison = 0;
+        if (valueA < valueB) {
+            comparison = -1;
+        } else if (valueA > valueB) {
+            comparison = 1;
+        }
+        
+        return isAscending ? comparison : -comparison;
+    });
+    
+    // Clear tbody
+    while (tbody.firstChild) {
+        tbody.removeChild(tbody.firstChild);
+    }
+    
+    // Re-append sorted rows
+    rows.forEach(row => tbody.appendChild(row));
+    
+    // Update sort icons
+    updateSortIcons(columnIndex, isAscending);
+}
+
+function updateSortIcons(activeColumn, isAscending) {
+    // Get all header cells
+    const headers = document.querySelectorAll('#passportTable thead th');
+    
+    // Reset all icons to default sort icon
+    headers.forEach((header, index) => {
+        if (index < 7) { // Only first 7 columns are sortable
+            const icon = header.querySelector('i');
+            if (icon) {
+                icon.className = 'fas fa-sort';
+            }
+        }
+    });
+    
+    // Update active column icon
+    const activeHeader = headers[activeColumn];
+    const activeIcon = activeHeader.querySelector('i');
+    if (activeIcon) {
+        activeIcon.className = isAscending ? 'fas fa-sort-up' : 'fas fa-sort-down';
+    }
+}
+</script>
+
+{% endblock %}
