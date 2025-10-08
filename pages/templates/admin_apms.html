@@ -1,101 +1,137 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}
-{% endblock %}
+{% block title %}Administration{% endblock %}
 
 {% block content %}
 
-  <h2><center>ALIVENTE ONLINE - ADMINISTRATION</center></h2>
-  <br/>
-  
-  {% for msg in messages %}
-    <div class="alert alert-secondary alert-dismissible fade show auto-dismiss" role="alert">
-      <strong></strong> <center>{{ msg }}</center>
-      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-        <span aria-hidden="true">&times;</span>
-      </button>
-    </div>
-    <script>
-      setTimeout(function() {
-        document.querySelectorAll('.auto-dismiss').forEach(alert => {
-          alert.classList.remove('show');
-          alert.classList.add('fade');
-          setTimeout(() => alert.remove(), 500);
-        });
-      }, 2000);
-    </script>
-  {% endfor %}
+<h2><center>ALIVENTE ONLINE - ADMINISTRATION</center></h2>
+<br/>
+
+{% for msg in messages %}
+  <div class="alert alert-secondary alert-dismissible fade show auto-dismiss" role="alert">
+    <strong></strong> <center>{{ msg }}</center>
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <script>
+    setTimeout(function() {
+      document.querySelectorAll('.auto-dismiss').forEach(alert => {
+        alert.classList.remove('show');
+        alert.classList.add('fade');
+        setTimeout(() => alert.remove(), 500);
+      });
+    }, 2000);
+  </script>
+{% endfor %}
 
 <body>  
-  <div style="display: flex ; justify-content: flex-end">
+  <div style="display: flex; justify-content: flex-end">
     <a href="{% url 'home' %}" class="btn btn-info" style="margin-right:16px" role="button">Back</a>
   </div>
 <br>
 
 {% if user.is_superuser %}
 
-<!-- Show module buttons when logged in -->
-  <div class="container mt-4 border rounded p-3 p-md-4" style="max-width: 1200px; border-color: #dee2e6 !important;">
-    <div class="row justify-content-center">
+<!-- Two section layout: Alivente (left) and Personal (right) -->
+<div style="display: flex; gap: 30px; max-width: 1400px; margin: 0 auto;">
+  
+  <!-- ALIVENTE Section (Left) - 2x2 Grid -->
+  <div style="flex: 2; border: 3px solid #17a2b8; border-radius: 10px; padding: 30px; background-color: #f8f9fa;">
+    <h3 style="color: #17a2b8; margin-bottom: 25px; text-align: center; font-weight: bold;">
+      <i class="fas fa-building"></i> ALIVENTE
+    </h3>
+    
+    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
       
       <!-- Manage Lease Agreements Button -->
-      <div class="col-6 col-md-3 mb-3">
-        <a href="{% url 'tenant_lease_agreement' %}" class="btn btn-info btn-block py-2 py-md-3 home-module-btn">
-          <i class="fas fa-file-contract fa-2x mb-2"></i>
-          <h6>Manage Lease Agreements</h6>
-        </a>
-      </div>
+      <a href="{% url 'tenant_lease_agreement' %}" class="btn btn-info" 
+         style="height: 140px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-decoration: none; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: transform 0.2s;"
+         onmouseover="this.style.transform='scale(1.05)'" 
+         onmouseout="this.style.transform='scale(1)'">
+        <i class="fas fa-file-contract fa-3x mb-3"></i>
+        <h6 style="margin: 0; font-weight: 600;">Manage Lease Agreements</h6>
+      </a>
 
       <!-- Generate Lease Agreement Button -->
-      <div class="col-6 col-md-3 mb-3">
-        <a href="{% url 'generate_lease_agreement' %}" class="btn btn-info btn-block py-2 py-md-3 home-module-btn">
-          <i class="fas fa-plus-circle fa-2x mb-2"></i>
-          <h6>Generate Lease Agreement</h6>
-        </a>
-      </div>
-
-      <!-- Manage Passports Button - NEW -->
-      <div class="col-6 col-md-3 mb-3">
-        <a href="{% url 'passport_management' %}" class="btn btn-info btn-block py-2 py-md-3 home-module-btn">
-          <i class="fas fa-passport fa-2x mb-2"></i>
-          <h6>Manage Passports</h6>
-        </a>
-      </div>
+      <a href="{% url 'generate_lease_agreement' %}" class="btn btn-info" 
+         style="height: 140px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-decoration: none; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: transform 0.2s;"
+         onmouseover="this.style.transform='scale(1.05)'" 
+         onmouseout="this.style.transform='scale(1)'">
+        <i class="fas fa-plus-circle fa-3x mb-3"></i>
+        <h6 style="margin: 0; font-weight: 600;">Generate Lease Agreement</h6>
+      </a>
 
       <!-- Manage Title Deeds Button -->
-      <div class="col-6 col-md-3 mb-3">
-        <a href="{% url 'properties_title_deed' %}" class="btn btn-info btn-block py-2 py-md-3 home-module-btn">
-          <i class="fas fa-scroll fa-2x mb-2"></i>
-          <h6>Manage Title Deeds</h6>
-        </a>
-      </div>
+      <a href="{% url 'properties_title_deed' %}" class="btn btn-info" 
+         style="height: 140px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-decoration: none; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: transform 0.2s;"
+         onmouseover="this.style.transform='scale(1.05)'" 
+         onmouseout="this.style.transform='scale(1)'">
+        <i class="fas fa-scroll fa-3x mb-3"></i>
+        <h6 style="margin: 0; font-weight: 600;">Manage Title Deeds</h6>
+      </a>
 
       <!-- Generate Invoices Button -->
-      <div class="col-6 col-md-3 mb-3">
-        <a href="{% url 'admin_invoices' %}" class="btn btn-info btn-block py-2 py-md-3 home-module-btn">
-          <i class="fas fa-file-invoice fa-2x mb-2"></i>
-          <h6>Generate Invoices</h6>
-        </a>
-      </div>
+      <a href="{% url 'admin_invoices' %}" class="btn btn-info" 
+         style="height: 140px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-decoration: none; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: transform 0.2s;"
+         onmouseover="this.style.transform='scale(1.05)'" 
+         onmouseout="this.style.transform='scale(1)'">
+        <i class="fas fa-file-invoice fa-3x mb-3"></i>
+        <h6 style="margin: 0; font-weight: 600;">Generate Invoices</h6>
+      </a>
+
     </div>
   </div>
 
-  <script>
-    // Title Deed file input handler
-    document.getElementById('title-deed-upload').addEventListener('change', function(e) {
+  <!-- PERSONAL Section (Right) - Space for 4 buttons in 2x2 grid -->
+  <div style="flex: 1; border: 3px solid #28a745; border-radius: 10px; padding: 30px; background-color: #f8f9fa;">
+    <h3 style="color: #28a745; margin-bottom: 25px; text-align: center; font-weight: bold;">
+      <i class="fas fa-user"></i> PERSONAL
+    </h3>
+    
+    <div style="display: grid; grid-template-columns: 1fr; gap: 20px;">
+      
+      <!-- Manage Passports Button -->
+      <a href="{% url 'passport_management' %}" class="btn btn-success" 
+         style="height: 140px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-decoration: none; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: transform 0.2s;"
+         onmouseover="this.style.transform='scale(1.05)'" 
+         onmouseout="this.style.transform='scale(1)'">
+        <i class="fas fa-passport fa-3x mb-3"></i>
+        <h6 style="margin: 0; font-weight: 600;">Manage Passports</h6>
+      </a>
+
+      <!-- Placeholder for future button -->
+      <!-- You can add more buttons here in the future -->
+
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // Title Deed file input handler
+  const titleDeedUpload = document.getElementById('title-deed-upload');
+  if (titleDeedUpload) {
+    titleDeedUpload.addEventListener('change', function(e) {
       var fileName = e.target.files[0].name;
       e.target.nextElementSibling.innerText = fileName;
     });
+  }
 
-    // Lease Agreement file input handler
-    document.getElementById('lease-upload').addEventListener('change', function(e) {
+  // Lease Agreement file input handler
+  const leaseUpload = document.getElementById('lease-upload');
+  if (leaseUpload) {
+    leaseUpload.addEventListener('change', function(e) {
       var fileName = e.target.files[0].name;
       e.target.nextElementSibling.innerText = fileName;
     });
+  }
 
-    // Title Deed property selection preview
-    document.getElementById('property-select').addEventListener('change', function(e) {
+  // Title Deed property selection preview
+  const propertySelect = document.getElementById('property-select');
+  if (propertySelect) {
+    propertySelect.addEventListener('change', function(e) {
       const selected = e.target.value;
       const preview = document.getElementById('title-deed-preview');
       const span = document.getElementById('selected-property');
@@ -107,9 +143,12 @@
         preview.style.display = 'none';
       }
     });
+  }
 
-    // Lease Agreement tenant selection preview
-    document.getElementById('tenant-select').addEventListener('change', function(e) {
+  // Lease Agreement tenant selection preview
+  const tenantSelect = document.getElementById('tenant-select');
+  if (tenantSelect) {
+    tenantSelect.addEventListener('change', function(e) {
       const selectedOption = e.target.options[e.target.selectedIndex];
       const propName = selectedOption.getAttribute('data-prop-name');
       const preview = document.getElementById('lease-preview');
@@ -122,7 +161,8 @@
         preview.style.display = 'none';
       }
     });
-  </script>
+  }
+</script>
 </body>
 
 {% else %}

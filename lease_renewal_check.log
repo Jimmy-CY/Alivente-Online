@@ -2031,3 +2031,40 @@ INFO 2025-10-08 12:02:06,693 "GET /passport-management/ HTTP/1.1" 200 40958
 INFO 2025-10-08 12:02:32,395 "POST /passport-management/ HTTP/1.1" 302 0
 INFO 2025-10-08 12:02:32,426 "GET /passport-management/ HTTP/1.1" 200 42733
 INFO 2025-10-08 12:04:39,603 Watching for file changes with StatReloader
+INFO 2025-10-08 12:11:33,747 Watching for file changes with StatReloader
+INFO 2025-10-08 14:37:49,164 "GET /notifications/ HTTP/1.1" 200 31762
+INFO 2025-10-08 14:37:49,375 "GET /notifications/ HTTP/1.1" 200 9690
+INFO 2025-10-08 14:37:51,966 "GET / HTTP/1.1" 200 14929
+INFO 2025-10-08 14:38:01,615 "GET /admin_apms/ HTTP/1.1" 200 13582
+INFO 2025-10-08 14:43:11,598 "GET /admin_apms/ HTTP/1.1" 200 16111
+INFO 2025-10-08 14:43:49,198 "GET /passport-management/ HTTP/1.1" 200 42164
+INFO 2025-10-08 14:43:50,832 "GET /admin_apms/ HTTP/1.1" 200 16111
+INFO 2025-10-08 14:43:52,831 "GET /generate-lease-agreement/ HTTP/1.1" 200 75217
+INFO 2025-10-08 14:43:54,181 "GET /admin_apms/ HTTP/1.1" 200 16111
+INFO 2025-10-08 14:43:55,314 "GET /tenant_lease_agreement/ HTTP/1.1" 200 29201
+INFO 2025-10-08 14:43:56,930 "GET /admin_apms/ HTTP/1.1" 200 16111
+INFO 2025-10-08 14:43:57,901 "GET /properties_title_deed/ HTTP/1.1" 200 30370
+INFO 2025-10-08 14:43:59,482 "GET /admin_apms/ HTTP/1.1" 200 16111
+INFO 2025-10-08 14:44:01,781 "GET /passport-management/ HTTP/1.1" 200 42164
+INFO 2025-10-08 14:44:05,200 "GET /admin_apms/ HTTP/1.1" 200 16111
+INFO 2025-10-08 14:44:32,300 "GET /passport-management/ HTTP/1.1" 200 42164
+INFO 2025-10-08 14:44:48,098 "GET /act_expense_all/?from=home HTTP/1.1" 200 84840
+INFO 2025-10-08 14:44:54,466 "GET / HTTP/1.1" 200 14929
+INFO 2025-10-08 14:49:33,801 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+INFO 2025-10-08 14:49:35,605 Watching for file changes with StatReloader
+INFO 2025-10-08 14:52:40,863 "GET /admin_apms/ HTTP/1.1" 200 16111
+INFO 2025-10-08 14:52:42,175 "GET /passport-management/ HTTP/1.1" 200 58128
+INFO 2025-10-08 14:52:52,197 "GET /passport-management/?search=&holder=Demetri+Manias&doc_type=&status= HTTP/1.1" 200 49439
+INFO 2025-10-08 14:52:55,164 "GET /passport-management/?search=&holder=Demetri+Manias&doc_type=passport&status= HTTP/1.1" 200 47725
+INFO 2025-10-08 14:52:58,397 "GET /passport-management/?search=&holder=Demetri+Manias&doc_type=passport&status=active HTTP/1.1" 200 47733
+INFO 2025-10-08 14:53:01,182 "GET /passport-management/?search=&holder=&doc_type=passport&status=active HTTP/1.1" 200 49539
+INFO 2025-10-08 14:53:03,718 "GET /passport-management/?search=&holder=&doc_type=passport&status= HTTP/1.1" 200 49531
+INFO 2025-10-08 14:53:06,532 "GET /passport-management/?search=&holder=&doc_type=&status= HTTP/1.1" 200 58128
+INFO 2025-10-08 14:53:19,681 "GET /passport-management/?search=&holder=&doc_type=&status=renewal HTTP/1.1" 200 45830
+INFO 2025-10-08 14:53:23,000 "GET /passport-management/?search=&holder=&doc_type=&status= HTTP/1.1" 200 58128
+INFO 2025-10-08 14:53:28,013 "GET /passport-management/?search=&holder=Angela+Manias&doc_type=&status= HTTP/1.1" 200 49384
+INFO 2025-10-08 14:53:36,281 "GET /passport-management/?search=&holder=Angela+Manias&doc_type=&status=inactive HTTP/1.1" 200 45821
+INFO 2025-10-08 14:53:38,532 "GET /passport-management/?search=&holder=&doc_type=&status= HTTP/1.1" 200 58128
+INFO 2025-10-08 14:53:46,163 "GET /passport-management/?search=dde&holder=&doc_type=&status= HTTP/1.1" 200 45825
+INFO 2025-10-08 14:53:53,266 "GET /passport-management/?search=greece&holder=&doc_type=&status= HTTP/1.1" 200 44037
+INFO 2025-10-08 14:54:05,634 "GET /passport-management/?search=&holder=&doc_type=&status= HTTP/1.1" 200 58128

@@ -3,9 +3,178 @@
 {% load humanize %}
 {% block title %}Passport/ID Management{% endblock %}
 {% block content %}
+
+<style>
+/* Passport Filter Panel Styles */
+.passport-filter-panel {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border: 1px solid #dee2e6;
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 30px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.passport-filter-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #dee2e6;
+    cursor: pointer;
+}
+
+.passport-filter-title {
+    margin: 0;
+    color: #2c3e50;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 18px;
+}
+
+.passport-filter-title i.fas {
+    color: #17a2b8;
+    font-size: 16px;
+}
+
+.passport-filter-toggle-icon {
+    transition: transform 0.3s ease;
+    margin-left: 8px;
+    font-size: 14px;
+}
+
+.passport-filter-content {
+    display: none;
+}
+
+.passport-filter-content.expanded {
+    display: block;
+}
+
+.passport-filter-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr;
+    gap: 20px;
+    align-items: end;
+    margin-bottom: 20px;
+}
+
+.passport-filter-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.passport-filter-label {
+    font-weight: 500;
+    color: #495057;
+    margin-bottom: 6px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.passport-search-input-group {
+    display: flex;
+}
+
+.passport-search-input {
+    border: 2px solid #e9ecef;
+    border-radius: 8px 0 0 8px;
+    border-right: none;
+    padding: 10px 14px;
+    font-size: 14px;
+    background: white;
+    flex: 1;
+    height: 44px;
+}
+
+.passport-search-btn {
+    background: #17a2b8;
+    border: 2px solid #17a2b8;
+    border-left: none;
+    border-radius: 0 8px 8px 0;
+    color: white;
+    padding: 10px 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 44px;
+}
+
+.passport-filter-select {
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 14px;
+    background: white;
+    width: 100%;
+    height: 44px;
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 12px center;
+    background-repeat: no-repeat;
+    background-size: 16px 12px;
+    padding-right: 40px;
+}
+
+.passport-active-filters {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid #dee2e6;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.passport-filter-tags {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.passport-filter-tag {
+    background: #17a2b8;
+    color: white;
+    padding: 4px 12px;
+    border-radius: 16px;
+    font-size: 12px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.passport-remove-tag {
+    background: rgba(255, 255, 255, 0.3);
+    border: none;
+    color: white;
+    border-radius: 50%;
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 10px;
+    line-height: 1;
+}
+
+.passport-remove-tag:hover {
+    background: rgba(255, 255, 255, 0.5);
+}
+</style>
+
 <h2><center>ALIVENTE ONLINE - PASSPORT/ID MANAGEMENT</center></h2>
 <h4><center>UPLOAD / VIEW / DELETE</center></h4>
 <br/>
+
 {% for msg in messages %}
 <div class="alert alert-secondary alert-dismissible fade show auto-dismiss" role="alert">
   <strong></strong> <center>{{ msg }}</center>
@@ -23,6 +192,7 @@
   }, 2000);
 </script>
 {% endfor %}
+
 <div style="display: flex ; justify-content: flex-end">
     <a href="{% url 'admin_apms' %}" class="btn btn-info" style="margin-right:16px" role="button">Back</a>
 </div>
@@ -30,6 +200,93 @@
 
 {% if user.is_superuser %}
 
+<!-- Filter Panel -->
+<div class="passport-filter-panel" id="passportFilterPanel">
+    <div class="passport-filter-header" onclick="togglePassportFilterPanel()">
+        <h5 class="passport-filter-title">
+            <i class="fas fa-filter"></i> Document Filters
+            <i class="fas fa-chevron-down passport-filter-toggle-icon" id="passportFilterToggleIcon"></i>
+        </h5>
+        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="clearAllPassportFilters(event)">
+            <i class="fas fa-times-circle"></i> Clear All
+        </button>
+    </div>
+    
+    <div class="passport-filter-content" id="passportFilterContent">
+        <form action="{% url 'passport_management' %}" method="GET" id="passportFilterForm">
+            
+            <div class="passport-filter-grid">
+                <!-- Search Bar -->
+                <div class="passport-filter-group">
+                    <label class="passport-filter-label">
+                        <i class="fas fa-search"></i> Search
+                    </label>
+                    <div class="passport-search-input-group">
+                        <input type="text" 
+                               name="search" 
+                               id="passportSearchInput"
+                               class="form-control passport-search-input" 
+                               placeholder="Search by name or document number..."
+                               value="{{ search_query|default:'' }}">
+                        <button type="button" class="passport-search-btn" id="passportSearchBtn">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Holder Name Filter -->
+                <div class="passport-filter-group">
+                    <label class="passport-filter-label">
+                        <i class="fas fa-user"></i> Holder
+                    </label>
+                    <select name="holder" class="form-control passport-filter-select" id="holderSelect">
+                        <option value="">All Holders</option>
+                        <option value="Demetri Manias" {% if selected_holder == 'Demetri Manias' %}selected{% endif %}>Demetri Manias</option>
+                        <option value="Angela Manias" {% if selected_holder == 'Angela Manias' %}selected{% endif %}>Angela Manias</option>
+                        <option value="Erene Manias" {% if selected_holder == 'Erene Manias' %}selected{% endif %}>Erene Manias</option>
+                        <option value="Alexandra Manias" {% if selected_holder == 'Alexandra Manias' %}selected{% endif %}>Alexandra Manias</option>
+                    </select>
+                </div>
+
+                <!-- Document Type Filter -->
+                <div class="passport-filter-group">
+                    <label class="passport-filter-label">
+                        <i class="fas fa-passport"></i> Type
+                    </label>
+                    <select name="doc_type" class="form-control passport-filter-select" id="docTypeSelect">
+                        <option value="">All Types</option>
+                        <option value="passport" {% if selected_doc_type == 'passport' %}selected{% endif %}>Passport</option>
+                        <option value="id" {% if selected_doc_type == 'id' %}selected{% endif %}>ID</option>
+                        <option value="drivers_license" {% if selected_doc_type == 'drivers_license' %}selected{% endif %}>Driver's License</option>
+                        <option value="visa" {% if selected_doc_type == 'visa' %}selected{% endif %}>Visa</option>
+                        <option value="arc" {% if selected_doc_type == 'arc' %}selected{% endif %}>ARC</option>
+                    </select>
+                </div>
+
+                <!-- Status Filter -->
+                <div class="passport-filter-group">
+                    <label class="passport-filter-label">
+                        <i class="fas fa-check-circle"></i> Status
+                    </label>
+                    <select name="status" class="form-control passport-filter-select" id="statusSelect">
+                        <option value="">All Statuses</option>
+                        <option value="active" {% if selected_status == 'active' %}selected{% endif %}>Active</option>
+                        <option value="renewal" {% if selected_status == 'renewal' %}selected{% endif %}>Applied for Renewal</option>
+                        <option value="inactive" {% if selected_status == 'inactive' %}selected{% endif %}>Inactive</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Active Filters Display -->
+            <div class="passport-active-filters" id="passportActiveFilters" style="display: none;">
+                <span>Active filters:</span>
+                <div class="passport-filter-tags" id="passportFilterTags"></div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Passports Table -->
 <div>
 <table class="table table-bordered table-striped text-center" id="passportTable">
 <thead>
@@ -330,6 +587,225 @@
 {% endif %}
 
 <script>
+// Passport Filter System JavaScript
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Passport filter system initializing...');
+    
+    // Always start collapsed on page load
+    const filterContent = document.getElementById('passportFilterContent');
+    const toggleIcon = document.getElementById('passportFilterToggleIcon');
+    
+    if (filterContent && toggleIcon) {
+        filterContent.classList.remove('expanded');
+        toggleIcon.style.transform = 'rotate(0deg)';
+        console.log('Passport panel set to collapsed state');
+    }
+    
+    // Auto-submit form when filters change
+    const filterElements = ['holderSelect', 'docTypeSelect', 'statusSelect'];
+    
+    filterElements.forEach(id => {
+        const element = document.getElementById(id);
+        if (element) {
+            element.addEventListener('change', function() {
+                console.log(`Passport filter changed: ${id} = ${this.value}`);
+                sessionStorage.setItem('passportUserInteracted', 'true');
+                sessionStorage.setItem('passportJustUsedDropdown', 'true');
+                expandPassportFilterPanel();
+                document.getElementById('passportFilterForm').submit();
+            });
+        }
+    });
+    
+    // Search input - submit on Enter key
+    const searchInput = document.getElementById('passportSearchInput');
+    if (searchInput) {
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                sessionStorage.setItem('passportUserInteracted', 'true');
+                expandPassportFilterPanel();
+                document.getElementById('passportFilterForm').submit();
+            }
+        });
+    }
+    
+    // Search button click
+    const searchBtn = document.getElementById('passportSearchBtn');
+    if (searchBtn) {
+        searchBtn.addEventListener('click', function() {
+            sessionStorage.setItem('passportUserInteracted', 'true');
+            expandPassportFilterPanel();
+            document.getElementById('passportFilterForm').submit();
+        });
+    }
+    
+    // Update active filters display
+    updatePassportActiveFilters();
+    
+    // Auto-expand logic
+    const userHasInteracted = sessionStorage.getItem('passportUserInteracted') === 'true';
+    const hasActiveFilters = checkForPassportActiveFilters();
+    const justClearedFilters = sessionStorage.getItem('passportJustClearedFilters') === 'true';
+    const justUsedDropdown = sessionStorage.getItem('passportJustUsedDropdown') === 'true';
+    
+    if ((userHasInteracted && hasActiveFilters) || justClearedFilters || justUsedDropdown) {
+        setTimeout(() => {
+            expandPassportFilterPanel();
+        }, 100);
+    }
+    
+    // Clear temporary flags
+    if (justClearedFilters) {
+        setTimeout(() => {
+            sessionStorage.removeItem('passportJustClearedFilters');
+        }, 200);
+    }
+    
+    if (justUsedDropdown) {
+        setTimeout(() => {
+            sessionStorage.removeItem('passportJustUsedDropdown');
+        }, 200);
+    }
+    
+    console.log('Passport filter system ready');
+});
+
+function checkForPassportActiveFilters() {
+    const searchInput = document.getElementById('passportSearchInput');
+    const holderSelect = document.getElementById('holderSelect');
+    const docTypeSelect = document.getElementById('docTypeSelect');
+    const statusSelect = document.getElementById('statusSelect');
+    
+    return (searchInput && searchInput.value) ||
+           (holderSelect && holderSelect.value) ||
+           (docTypeSelect && docTypeSelect.value) ||
+           (statusSelect && statusSelect.value);
+}
+
+function expandPassportFilterPanel() {
+    const filterContent = document.getElementById('passportFilterContent');
+    const toggleIcon = document.getElementById('passportFilterToggleIcon');
+    
+    if (filterContent && toggleIcon) {
+        filterContent.classList.add('expanded');
+        toggleIcon.style.transform = 'rotate(180deg)';
+        console.log('Passport panel expanded due to user interaction');
+    }
+}
+
+function togglePassportFilterPanel() {
+    const filterContent = document.getElementById('passportFilterContent');
+    const toggleIcon = document.getElementById('passportFilterToggleIcon');
+    
+    if (filterContent.classList.contains('expanded')) {
+        filterContent.classList.remove('expanded');
+        toggleIcon.style.transform = 'rotate(0deg)';
+        sessionStorage.setItem('passportUserInteracted', 'false');
+    } else {
+        filterContent.classList.add('expanded');
+        toggleIcon.style.transform = 'rotate(180deg)';
+        sessionStorage.setItem('passportUserInteracted', 'true');
+    }
+}
+
+function clearAllPassportFilters(event) {
+    event.stopPropagation();
+    
+    sessionStorage.setItem('passportUserInteracted', 'true');
+    sessionStorage.setItem('passportJustClearedFilters', 'true');
+    expandPassportFilterPanel();
+    
+    document.getElementById('passportSearchInput').value = '';
+    document.getElementById('holderSelect').value = '';
+    document.getElementById('docTypeSelect').value = '';
+    document.getElementById('statusSelect').value = '';
+    
+    document.getElementById('passportFilterForm').submit();
+}
+
+function clearPassportFilter(filterType) {
+    sessionStorage.setItem('passportUserInteracted', 'true');
+    sessionStorage.setItem('passportJustClearedFilters', 'true');
+    expandPassportFilterPanel();
+    
+    switch(filterType) {
+        case 'search':
+            document.getElementById('passportSearchInput').value = '';
+            break;
+        case 'holder':
+            document.getElementById('holderSelect').value = '';
+            break;
+        case 'doc_type':
+            document.getElementById('docTypeSelect').value = '';
+            break;
+        case 'status':
+            document.getElementById('statusSelect').value = '';
+            break;
+    }
+    
+    document.getElementById('passportFilterForm').submit();
+}
+
+function updatePassportActiveFilters() {
+    const searchInput = document.getElementById('passportSearchInput');
+    const holderSelect = document.getElementById('holderSelect');
+    const docTypeSelect = document.getElementById('docTypeSelect');
+    const statusSelect = document.getElementById('statusSelect');
+    const activeFiltersDiv = document.getElementById('passportActiveFilters');
+    const filterTagsDiv = document.getElementById('passportFilterTags');
+    
+    if (!filterTagsDiv) return;
+    
+    const search = searchInput.value;
+    const holder = holderSelect.value;
+    const docType = docTypeSelect.value;
+    const status = statusSelect.value;
+    
+    filterTagsDiv.innerHTML = '';
+    let hasFilters = false;
+    
+    if (search) {
+        filterTagsDiv.innerHTML += `
+            <span class="passport-filter-tag">
+                Search: "${search}" 
+                <button class="passport-remove-tag" onclick="clearPassportFilter('search')" type="button">×</button>
+            </span>`;
+        hasFilters = true;
+    }
+    
+    if (holder) {
+        filterTagsDiv.innerHTML += `
+            <span class="passport-filter-tag">
+                Holder: ${holder} 
+                <button class="passport-remove-tag" onclick="clearPassportFilter('holder')" type="button">×</button>
+            </span>`;
+        hasFilters = true;
+    }
+    
+    if (docType) {
+        const docTypeText = docTypeSelect.options[docTypeSelect.selectedIndex].text;
+        filterTagsDiv.innerHTML += `
+            <span class="passport-filter-tag">
+                Type: ${docTypeText} 
+                <button class="passport-remove-tag" onclick="clearPassportFilter('doc_type')" type="button">×</button>
+            </span>`;
+        hasFilters = true;
+    }
+    
+    if (status) {
+        const statusText = statusSelect.options[statusSelect.selectedIndex].text;
+        filterTagsDiv.innerHTML += `
+            <span class="passport-filter-tag">
+                Status: ${statusText} 
+                <button class="passport-remove-tag" onclick="clearPassportFilter('status')" type="button">×</button>
+            </span>`;
+        hasFilters = true;
+    }
+    
+    activeFiltersDiv.style.display = hasFilters ? 'flex' : 'none';
+}
+
 // Initialize sort directions object in global scope
 var sortDirections = {};
 

@@ -168,8 +168,36 @@ def passport_management(request):
         
         return redirect('passport_management')
     
-    # GET request - display all passports
-    passports = Passport.objects.all().order_by('-created_at')
+    # GET request - display all passports with filters
+    passports = Passport.objects.all()
+    
+    # Get filter parameters from request
+    search_query = request.GET.get('search', '').strip()
+    selected_holder = request.GET.get('holder', '')
+    selected_doc_type = request.GET.get('doc_type', '')
+    selected_status = request.GET.get('status', '')
+    
+    # Apply search filter (searches holder name and document number)
+    if search_query:
+        passports = passports.filter(
+            Q(holder_name__icontains=search_query) |
+            Q(document_number__icontains=search_query)
+        )
+    
+    # Apply holder filter
+    if selected_holder:
+        passports = passports.filter(holder_name=selected_holder)
+    
+    # Apply document type filter
+    if selected_doc_type:
+        passports = passports.filter(document_type=selected_doc_type)
+    
+    # Apply status filter
+    if selected_status:
+        passports = passports.filter(status=selected_status)
+    
+    # Order by creation date (newest first)
+    passports = passports.order_by('-created_at')
     
     # Add expiry warning flag to each passport (for 6-month warning)
     today = date.today()
@@ -184,10 +212,13 @@ def passport_management(request):
     
     context = {
         'passports': passports,
+        'search_query': search_query,
+        'selected_holder': selected_holder,
+        'selected_doc_type': selected_doc_type,
+        'selected_status': selected_status,
     }
     
     return render(request, 'passport_management.html', context)
-
 ### LEASE TEMPLATE GENERATOR ###
 import re
 
