@@ -1996,3 +1996,38 @@ INFO 2025-10-07 16:02:33,308 "POST /passport-management/ HTTP/1.1" 302 0
 INFO 2025-10-07 16:02:33,346 "GET /passport-management/ HTTP/1.1" 200 37282
 INFO 2025-10-07 16:02:38,926 "GET /admin_apms/ HTTP/1.1" 200 13582
 INFO 2025-10-07 16:02:48,160 "GET / HTTP/1.1" 200 14929
+INFO 2025-10-07 16:42:02,131 Watching for file changes with StatReloader
+INFO 2025-10-08 11:13:45,047 "GET /admin_apms/ HTTP/1.1" 200 13582
+INFO 2025-10-08 11:13:47,111 "GET /passport-management/ HTTP/1.1" 200 36711
+INFO 2025-10-08 11:27:13,594 Watching for file changes with StatReloader
+INFO 2025-10-08 11:42:18,493 Watching for file changes with StatReloader
+INFO 2025-10-08 11:42:21,513 "GET /passport-management/ HTTP/1.1" 200 36711
+INFO 2025-10-08 11:42:38,985 "POST /passport-management/ HTTP/1.1" 302 0
+INFO 2025-10-08 11:42:39,025 "GET /passport-management/ HTTP/1.1" 200 37335
+INFO 2025-10-08 11:43:07,143 "POST /passport-management/ HTTP/1.1" 302 0
+INFO 2025-10-08 11:43:07,198 "GET /passport-management/ HTTP/1.1" 200 37380
+INFO 2025-10-08 11:43:10,596 "GET /admin_apms/ HTTP/1.1" 200 13582
+INFO 2025-10-08 11:43:33,528 Watching for file changes with StatReloader
+INFO 2025-10-08 11:44:38,837 "GET /passport-management/ HTTP/1.1" 200 36808
+INFO 2025-10-08 11:44:54,961 "POST /passport-management/ HTTP/1.1" 302 0
+INFO 2025-10-08 11:44:55,012 "GET /passport-management/ HTTP/1.1" 200 37423
+INFO 2025-10-08 11:45:09,879 "GET /media/passports/ID-Cyprus_Exp_2033.pdf HTTP/1.1" 304 0
+INFO 2025-10-08 11:45:24,108 "POST /passport-management/ HTTP/1.1" 302 0
+INFO 2025-10-08 11:45:24,145 "GET /passport-management/ HTTP/1.1" 200 37423
+INFO 2025-10-08 11:45:53,610 "GET /media/passports/Passport_-_Greece_Expiry_2027-02-25.pdf HTTP/1.1" 304 0
+INFO 2025-10-08 11:46:15,261 "POST /passport-management/ HTTP/1.1" 302 0
+INFO 2025-10-08 11:46:15,311 "GET /passport-management/ HTTP/1.1" 200 37424
+INFO 2025-10-08 11:46:29,727 "POST /passport-management/ HTTP/1.1" 302 0
+INFO 2025-10-08 11:46:29,777 "GET /passport-management/ HTTP/1.1" 200 37601
+INFO 2025-10-08 11:46:53,135 Watching for file changes with StatReloader
+INFO 2025-10-08 11:49:56,842 "POST /passport-management/ HTTP/1.1" 302 0
+INFO 2025-10-08 11:49:57,044 "GET /passport-management/ HTTP/1.1" 200 37610
+INFO 2025-10-08 11:51:07,800 Watching for file changes with StatReloader
+INFO 2025-10-08 11:58:09,230 Watching for file changes with StatReloader
+INFO 2025-10-08 12:01:39,594 "POST /passport-management/ HTTP/1.1" 302 0
+INFO 2025-10-08 12:01:39,825 "GET /passport-management/ HTTP/1.1" 200 39171
+INFO 2025-10-08 12:02:06,661 "POST /passport-management/ HTTP/1.1" 302 0
+INFO 2025-10-08 12:02:06,693 "GET /passport-management/ HTTP/1.1" 200 40958
+INFO 2025-10-08 12:02:32,395 "POST /passport-management/ HTTP/1.1" 302 0
+INFO 2025-10-08 12:02:32,426 "GET /passport-management/ HTTP/1.1" 200 42733
+INFO 2025-10-08 12:04:39,603 Watching for file changes with StatReloader

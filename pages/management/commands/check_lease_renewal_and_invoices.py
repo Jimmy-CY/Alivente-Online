@@ -11,7 +11,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 class Command(BaseCommand):
-    help = 'Check lease renewals, vacant properties, outstanding invoices, and create new invoices if needed'
+    help = 'Check lease renewals, vacant properties, outstanding invoices, passport expiries, and create new invoices if needed'
     
     def add_arguments(self, parser):
         parser.add_argument(
@@ -29,7 +29,7 @@ class Command(BaseCommand):
         self.dry_run = options.get('dry_run', False)
         self.force_run = options.get('force', False)
         
-        self.stdout.write('=== STARTING LEASE RENEWAL, INVOICE CHECK, AND INVOICE CREATION ===')
+        self.stdout.write('=== STARTING LEASE RENEWAL, INVOICE CHECK, PASSPORT CHECK, AND INVOICE CREATION ===')
         self.stdout.write(f'Current working directory: {os.getcwd()}')
         self.stdout.write(f'Python path: {sys.executable}')
         self.stdout.write(f'Dry run mode: {self.dry_run}')
@@ -53,7 +53,7 @@ class Command(BaseCommand):
             logger.error(f'Database connection failed: {e}')
             return
         
-        self.stdout.write('Starting invoice creation, lease renewal and invoice checks...')
+        self.stdout.write('Starting invoice creation, lease renewal, invoice checks, and passport expiry checks...')
         
         try:
             # First, create invoices if needed
@@ -62,33 +62,49 @@ class Command(BaseCommand):
             # Then get all the data with property details
             vacant_properties, expiring_leases, declined_renewals, overdue_invoices = self.get_all_property_details()
             
+            # Check for expiring passports
+            expiring_passports = self.get_expiring_passports()
+            
             vacant_count = len(vacant_properties)
             expiring_count = len(expiring_leases)
             declined_count = len(declined_renewals)
             overdue_count = len(overdue_invoices)
+            passport_count = len(expiring_passports)
             
             self.stdout.write(f'Invoices created today: {created_invoices_count}')
             self.stdout.write(f'Vacant properties: {vacant_count}')
             self.stdout.write(f'Expiring leases (pending): {expiring_count}')
             self.stdout.write(f'Declined renewals (need new tenants): {declined_count}')
             self.stdout.write(f'Overdue invoices: {overdue_count}')
+            self.stdout.write(f'Expiring passports (within 6 months): {passport_count}')
             
-            # Check if action is needed (including invoice creation)
-            if vacant_count == 0 and expiring_count == 0 and declined_count == 0 and overdue_count == 0 and created_invoices_count == 0:
-                self.stdout.write('No action needed - no vacant properties, expiring leases, declined renewals, overdue invoices, or new invoices created')
-                return
-            
-            # Action needed - send notification
+            # Check if action is needed for property management email
             if vacant_count > 0 or expiring_count > 0 or declined_count > 0 or overdue_count > 0 or created_invoices_count > 0:
-                self.stdout.write('Action needed! Running notification function...')
+                self.stdout.write('Action needed! Sending property management notification...')
                 
                 if self.dry_run:
-                    self.stdout.write('DRY RUN: Would send email notification here')
+                    self.stdout.write('DRY RUN: Would send property management email here')
                     result = True
                 else:
                     result = self.run_notification_function(vacant_properties, expiring_leases, declined_renewals, overdue_invoices, created_invoices_count)
                 
-                self.stdout.write(f'Email function returned: {result}')
+                self.stdout.write(f'Property management email function returned: {result}')
+            else:
+                self.stdout.write('No property management action needed')
+            
+            # Send separate passport expiry notification if needed
+            if passport_count > 0:
+                self.stdout.write('Expiring passports detected! Sending passport notification...')
+                
+                if self.dry_run:
+                    self.stdout.write('DRY RUN: Would send passport expiry email here')
+                    passport_result = True
+                else:
+                    passport_result = self.send_passport_expiry_notification(expiring_passports)
+                
+                self.stdout.write(f'Passport expiry email function returned: {passport_result}')
+            else:
+                self.stdout.write('No expiring passports found')
                 
         except Exception as e:
             self.stdout.write(f'❌ Error during execution: {e}')
@@ -101,7 +117,7 @@ class Command(BaseCommand):
             except Exception as e:
                 logger.warning(f'Error closing database connections: {e}')
         
-        self.stdout.write('=== LEASE RENEWAL, INVOICE CHECK, AND INVOICE CREATION COMPLETED ===')
+        self.stdout.write('=== LEASE RENEWAL, INVOICE CHECK, PASSPORT CHECK, AND INVOICE CREATION COMPLETED ===')
     
     def create_invoices(self):
         """Create invoices for current month if they don't already exist"""
@@ -339,6 +355,242 @@ class Command(BaseCommand):
             self.stdout.write(f'❌ Error getting outstanding invoices: {e}')
             logger.error(f'Error getting outstanding invoices: {e}', exc_info=True)
             return []
+    
+    def get_expiring_passports(self):
+        """Get passports expiring within 6 months OR already expired (only active documents with expiry dates)"""
+        from pages.models import Passport  # Adjust import based on your app name
+        
+        today = date.today()
+        six_months_from_now = today + timedelta(days=180)
+        
+        try:
+            # Query passports expiring within 6 months OR already expired
+            # Only include documents with:
+            # 1. An expiry date (not blank)
+            # 2. Status = 'active'
+            # 3. Expiry date within 6 months or already expired
+            expiring_passports = Passport.objects.filter(
+                expiry_date__isnull=False,  # Must have an expiry date
+                status='active',             # Must be active status
+                expiry_date__lte=six_months_from_now  # Expiring within 6 months or already expired
+            ).order_by('expiry_date')
+            
+            passport_list = []
+            for passport in expiring_passports:
+                days_until_expiry = (passport.expiry_date - today).days
+                
+                passport_list.append({
+                    'holder_name': passport.holder_name,
+                    'document_type': passport.get_document_type_display(),
+                    'document_number': passport.document_number,
+                    'country_of_issue': passport.country_of_issue,
+                    'expiry_date': passport.expiry_date.strftime('%Y-%m-%d'),
+                    'days_until_expiry': days_until_expiry,
+                    'already_expired': passport.expiry_date < today
+                })
+            
+            self.stdout.write(f'Found {len(passport_list)} active passports with expiry dates expiring within 6 months (or already expired)')
+            return passport_list
+            
+        except Exception as e:
+            self.stdout.write(f'❌ Error getting expiring passports: {e}')
+            logger.error(f'Error getting expiring passports: {e}', exc_info=True)
+            return []
+    
+    def send_passport_expiry_notification(self, expiring_passports):
+        """Send separate email notification for expiring passports - only on 1st or 15th of month"""
+        import smtplib
+        from email.mime.multipart import MIMEMultipart
+        from email.mime.text import MIMEText
+        
+        smtp_object = None
+        passport_count = len(expiring_passports)
+        
+        if passport_count == 0:
+            self.stdout.write('No expiring passports to notify about')
+            return True
+        
+        # Check if today is 1st or 15th of the month
+        today = date.today()
+        if today.day not in [1, 15]:
+            self.stdout.write(f'📅 Passport notification skipped - only sent on 1st or 15th of month (Today is {today.day}th)')
+            self.stdout.write(f'   Found {passport_count} expiring passport(s), but no email will be sent today')
+            return True
+        
+        try:
+            self.stdout.write('=== SENDING PASSPORT EXPIRY NOTIFICATION ===')
+            self.stdout.write(f'📅 Today is the {today.day}th - sending passport expiry notification')
+            
+            # Get email settings from environment variables
+            email_host = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
+            email_port = int(os.environ.get('EMAIL_PORT', 465))
+            email_user = os.environ.get('EMAIL_USER', 'demetrimanias@gmail.com')
+            email_password = os.environ.get('EMAIL_PASSWORD')
+            email_use_ssl = os.environ.get('EMAIL_USE_SSL', 'True').lower() == 'true'
+            email_use_tls = os.environ.get('EMAIL_USE_TLS', 'False').lower() == 'true'
+            
+            # Use the standard email recipients utility
+            email_to_list = get_email_recipients('passport_expiry')
+            
+            if not email_password:
+                self.stdout.write('❌ EMAIL_PASSWORD environment variable not set')
+                return False
+            
+            # Create message
+            msg = MIMEMultipart('alternative')
+            msg['From'] = email_user
+            msg['To'] = format_email_recipients_for_header(email_to_list)
+            msg['Subject'] = f"Alert - Documents Expiring Within 6 Months ({passport_count})"
+            
+            # Build HTML email body
+            html_body = f"""
+            <html>
+            <head>
+            <style>
+            p {{ margin: 0; padding: 0; }}
+            ul {{ margin: 0; padding: 0; padding-left: 20px; }}
+            li {{ margin: 0; padding: 0; margin-bottom: 15px; }}
+            .expired {{ color: red; font-weight: bold; }}
+            .expiring-soon {{ color: orange; font-weight: bold; }}
+            .warning {{ color: #cc0000; font-weight: bold; }}
+            .normal {{ color: #4a4a4a; font-weight: bold; }}
+            </style>
+            </head>
+            <body>
+                <p>Dear User,</p>
+                <br>
+                <p><b><u>DOCUMENT EXPIRY ALERT:</u></b></p>
+                <p>The following document(s) are expiring within the next 6 months and require renewal action:</p>
+                <br>
+                <ul>"""
+            
+            for passport in expiring_passports:
+                days = passport['days_until_expiry']
+                
+                # Color code based on urgency
+                if days < 0:
+                    urgency_class = "expired"
+                    urgency_text = f"<span class='expired'>EXPIRED {abs(days)} days ago!</span>"
+                elif days <= 30:
+                    urgency_class = "warning"
+                    urgency_text = f"<span class='warning'>URGENT - Expires in {days} days!</span>"
+                elif days <= 90:
+                    urgency_class = "expiring-soon"
+                    urgency_text = f"<span class='expiring-soon'>Expires in {days} days</span>"
+                else:
+                    urgency_class = "normal"
+                    urgency_text = f"<span class='normal'>Expires in {days} days</span>"
+                
+                html_body += f"""
+                <li>
+                    <b>{passport['holder_name']}</b> - {passport['document_type']}<br>
+                    Document Number: {passport['document_number']}<br>
+                    Country of Issue: {passport['country_of_issue']}<br>
+                    Expiry Date: {passport['expiry_date']}<br>
+                    {urgency_text}
+                </li>"""
+            
+            html_body += """
+                </ul>
+                <br>
+                <p><b>ACTION REQUIRED:</b></p>
+                <p>Please begin the renewal process for these documents as soon as possible to avoid any travel disruptions or legal issues.</p>
+                <br>
+                <p>Please log into the Alivente Online System at <a href="https://alivente.online">alivente.online</a> for additional details and to manage passport/ID records.</p>
+                <br>
+                <p>Best regards,<br>
+                Alivente Property Management System<br>
+                Automated Passport/ID Monitoring</p>
+            </body>
+            </html>
+            """
+            
+            # Create plain text version
+            text_body = f"""Dear User,
+
+    DOCUMENT EXPIRY ALERT:
+
+    The following document(s) are expiring within the next 6 months and require renewal action:
+
+    """
+            
+            for passport in expiring_passports:
+                days = passport['days_until_expiry']
+                
+                if days < 0:
+                    urgency_text = f"EXPIRED {abs(days)} days ago!"
+                elif days <= 30:
+                    urgency_text = f"URGENT - Expires in {days} days!"
+                elif days <= 90:
+                    urgency_text = f"Expires in {days} days"
+                else:
+                    urgency_text = f"Expires in {days} days"
+                
+                text_body += f"""
+    • {passport['holder_name']} - {passport['document_type']}
+      Document Number: {passport['document_number']}
+      Country of Issue: {passport['country_of_issue']}
+      Expiry Date: {passport['expiry_date']}
+      {urgency_text}
+
+    """
+            
+            text_body += """ACTION REQUIRED:
+    Please begin the renewal process for these documents as soon as possible to avoid any travel disruptions or legal issues.
+
+    Please log into the Alivente Online System at alivente.online for additional details and to manage passport/ID records.
+
+    Best regards,
+    Alivente Property Management System
+    Automated Passport/ID Monitoring"""
+            
+            # Attach both HTML and plain text versions
+            part1 = MIMEText(text_body, 'plain')
+            part2 = MIMEText(html_body, 'html')
+            
+            msg.attach(part1)
+            msg.attach(part2)
+            
+            # SMTP setup
+            if email_use_ssl:
+                smtp_object = smtplib.SMTP_SSL(email_host, email_port, timeout=10)
+            else:
+                smtp_object = smtplib.SMTP(email_host, email_port, timeout=10)
+                smtp_object.ehlo()
+                if email_use_tls:
+                    smtp_object.starttls()
+            
+            smtp_object.login(email_user, email_password)
+            
+            # Send email
+            text = msg.as_string()
+            smtp_object.sendmail(email_user, email_to_list, text)
+            
+            self.stdout.write('✅ Passport expiry notification email sent successfully!')
+            logger.info('Passport expiry notification email sent successfully')
+            return True
+            
+        except smtplib.SMTPAuthenticationError as e:
+            error_msg = f"SMTP Authentication Error: {e}"
+            logger.error(error_msg)
+            self.stdout.write(f'❌ {error_msg}')
+            return False
+        except smtplib.SMTPException as e:
+            error_msg = f"SMTP Error: {e}"
+            logger.error(error_msg)
+            self.stdout.write(f'❌ {error_msg}')
+            return False
+        except Exception as e:
+            error_msg = f"Error sending passport expiry email: {e}"
+            logger.error(error_msg, exc_info=True)
+            self.stdout.write(f'❌ {error_msg}')
+            return False
+        finally:
+            if smtp_object:
+                try:
+                    smtp_object.quit()
+                except:
+                    pass
     
     def run_notification_function(self, vacant_properties, expiring_leases, declined_renewals, overdue_invoices, created_invoices_count):
         """Send email notification for lease renewals, vacant properties, declined renewals, overdue invoices, and invoice creation"""

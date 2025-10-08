@@ -12,6 +12,7 @@ def get_email_recipients(email_type='general'):
             - 'expense_approved': Expense approval notifications
             - 'expense_paid': Expense payment notifications
             - 'fsr': Financial Status Reports
+            - 'passport_expiry': Passport/ID expiry notifications
             - 'general': Default fallback
     
     Returns:
@@ -25,6 +26,7 @@ def get_email_recipients(email_type='general'):
         'expense_approved': 'EMAIL_TO_EXPENSE_APPROVED', 
         'expense_paid': 'EMAIL_TO_EXPENSE_PAID',
         'fsr': 'EMAIL_TO_FSR',
+        'passport_expiry': 'EMAIL_TO_PASSPORT_EXPIRY',
         'general': 'EMAIL_TO'
     }
     
@@ -39,6 +41,7 @@ def get_email_recipients(email_type='general'):
     
     # Return the list (or fallback to default if empty)
     return email_list if email_list else ['demetrimanias@gmail.com']
+
 
 def format_email_recipients_for_header(email_list):
     """

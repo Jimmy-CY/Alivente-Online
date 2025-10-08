@@ -1683,3 +1683,38 @@ INFO 2025-10-07 16:02:33,277 middleware 10760 56076 Starting request req_1759842
 INFO 2025-10-07 16:02:33,314 middleware 10760 56076 Starting request req_1759842153_56076: GET /passport-management/ (user: anonymous)
 INFO 2025-10-07 16:02:38,897 middleware 10760 56076 Starting request req_1759842158_56076: GET /admin_apms/ (user: anonymous)
 INFO 2025-10-07 16:02:48,146 middleware 10760 56076 Starting request req_1759842168_56076: GET / (user: anonymous)
+INFO 2025-10-07 16:42:04,236 middleware 10676 51732 Enhanced DatabaseConnectionMiddleware initialized with threshold=50
+INFO 2025-10-08 11:13:44,328 middleware 10676 61168 Starting request req_1759911224_61168: GET /admin_apms/ (user: anonymous)
+INFO 2025-10-08 11:13:46,999 middleware 10676 61168 Starting request req_1759911226_61168: GET /passport-management/ (user: anonymous)
+INFO 2025-10-08 11:27:15,957 middleware 11452 46644 Enhanced DatabaseConnectionMiddleware initialized with threshold=50
+INFO 2025-10-08 11:42:20,824 middleware 57608 44568 Enhanced DatabaseConnectionMiddleware initialized with threshold=50
+INFO 2025-10-08 11:42:21,278 middleware 57608 56896 Starting request req_1759912941_56896: GET /passport-management/ (user: anonymous)
+INFO 2025-10-08 11:42:38,860 middleware 57608 56896 Starting request req_1759912958_56896: POST /passport-management/ (user: anonymous)
+INFO 2025-10-08 11:42:38,997 middleware 57608 56896 Starting request req_1759912958_56896: GET /passport-management/ (user: anonymous)
+INFO 2025-10-08 11:43:07,093 middleware 57608 56896 Starting request req_1759912987_56896: POST /passport-management/ (user: anonymous)
+INFO 2025-10-08 11:43:07,143 middleware 57608 56896 Starting request req_1759912987_56896: GET /passport-management/ (user: anonymous)
+INFO 2025-10-08 11:43:10,562 middleware 57608 56896 Starting request req_1759912990_56896: GET /admin_apms/ (user: anonymous)
+INFO 2025-10-08 11:43:35,959 middleware 60824 49184 Enhanced DatabaseConnectionMiddleware initialized with threshold=50
+INFO 2025-10-08 11:44:38,626 middleware 60824 53008 Starting request req_1759913078_53008: GET /passport-management/ (user: anonymous)
+INFO 2025-10-08 11:44:54,893 middleware 60824 53008 Starting request req_1759913094_53008: POST /passport-management/ (user: anonymous)
+INFO 2025-10-08 11:44:54,975 middleware 60824 53008 Starting request req_1759913094_53008: GET /passport-management/ (user: anonymous)
+INFO 2025-10-08 11:45:09,875 middleware 60824 53008 Starting request req_1759913109_53008: GET /media/passports/ID-Cyprus_Exp_2033.pdf (user: anonymous)
+INFO 2025-10-08 11:45:24,078 middleware 60824 53008 Starting request req_1759913124_53008: POST /passport-management/ (user: anonymous)
+INFO 2025-10-08 11:45:24,112 middleware 60824 53008 Starting request req_1759913124_53008: GET /passport-management/ (user: anonymous)
+INFO 2025-10-08 11:45:53,610 middleware 60824 53008 Starting request req_1759913153_53008: GET /media/passports/Passport_-_Greece_Expiry_2027-02-25.pdf (user: anonymous)
+INFO 2025-10-08 11:46:15,194 middleware 60824 53008 Starting request req_1759913175_53008: POST /passport-management/ (user: anonymous)
+INFO 2025-10-08 11:46:15,277 middleware 60824 53008 Starting request req_1759913175_53008: GET /passport-management/ (user: anonymous)
+INFO 2025-10-08 11:46:29,653 middleware 60824 53008 Starting request req_1759913189_53008: POST /passport-management/ (user: anonymous)
+INFO 2025-10-08 11:46:29,727 middleware 60824 53008 Starting request req_1759913189_53008: GET /passport-management/ (user: anonymous)
+INFO 2025-10-08 11:46:55,448 middleware 26072 60456 Enhanced DatabaseConnectionMiddleware initialized with threshold=50
+INFO 2025-10-08 11:49:56,743 middleware 26072 57976 Starting request req_1759913396_57976: POST /passport-management/ (user: anonymous)
+INFO 2025-10-08 11:49:56,842 middleware 26072 57976 Starting request req_1759913396_57976: GET /passport-management/ (user: anonymous)
+INFO 2025-10-08 11:51:10,232 middleware 49884 47188 Enhanced DatabaseConnectionMiddleware initialized with threshold=50
+INFO 2025-10-08 11:58:11,538 middleware 45960 61140 Enhanced DatabaseConnectionMiddleware initialized with threshold=50
+INFO 2025-10-08 12:01:39,541 middleware 45960 25844 Starting request req_1759914099_25844: POST /passport-management/ (user: anonymous)
+INFO 2025-10-08 12:01:39,600 middleware 45960 25844 Starting request req_1759914099_25844: GET /passport-management/ (user: anonymous)
+INFO 2025-10-08 12:02:06,608 middleware 45960 25844 Starting request req_1759914126_25844: POST /passport-management/ (user: anonymous)
+INFO 2025-10-08 12:02:06,661 middleware 45960 25844 Starting request req_1759914126_25844: GET /passport-management/ (user: anonymous)
+INFO 2025-10-08 12:02:32,355 middleware 45960 25844 Starting request req_1759914152_25844: POST /passport-management/ (user: anonymous)
+INFO 2025-10-08 12:02:32,395 middleware 45960 25844 Starting request req_1759914152_25844: GET /passport-management/ (user: anonymous)
+INFO 2025-10-08 12:04:41,926 middleware 2120 22860 Enhanced DatabaseConnectionMiddleware initialized with threshold=50
