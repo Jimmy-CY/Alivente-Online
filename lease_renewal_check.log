@@ -2068,3 +2068,22 @@ INFO 2025-10-08 14:53:38,532 "GET /passport-management/?search=&holder=&doc_type
 INFO 2025-10-08 14:53:46,163 "GET /passport-management/?search=dde&holder=&doc_type=&status= HTTP/1.1" 200 45825
 INFO 2025-10-08 14:53:53,266 "GET /passport-management/?search=greece&holder=&doc_type=&status= HTTP/1.1" 200 44037
 INFO 2025-10-08 14:54:05,634 "GET /passport-management/?search=&holder=&doc_type=&status= HTTP/1.1" 200 58128
+INFO 2025-10-08 14:54:42,767 Watching for file changes with StatReloader
+INFO 2025-10-08 14:55:02,647 "GET /admin_apms/ HTTP/1.1" 200 16111
+INFO 2025-10-08 14:55:03,867 "GET /passport-management/ HTTP/1.1" 200 58128
+INFO 2025-10-09 06:38:40,039 "GET /passport-management/ HTTP/1.1" 200 58134
+INFO 2025-10-09 06:39:11,556 "GET /passport-management/ HTTP/1.1" 200 58140
+INFO 2025-10-09 06:39:54,756 "GET /passport-management/ HTTP/1.1" 200 58122
+INFO 2025-10-09 06:40:49,640 "GET /passport-management/ HTTP/1.1" 200 58119
+INFO 2025-10-09 06:42:05,807 "GET /passport-management/ HTTP/1.1" 200 58110
+INFO 2025-10-09 06:42:36,332 "GET /admin_apms/ HTTP/1.1" 200 16111
+INFO 2025-10-09 06:42:46,372 "GET /passport-management/ HTTP/1.1" 200 58110
+INFO 2025-10-09 06:43:19,673 "GET /passport-management/ HTTP/1.1" 200 58107
+INFO 2025-10-09 06:44:08,390 "GET /passport-management/ HTTP/1.1" 200 58079
+INFO 2025-10-09 06:44:18,671 "GET /admin_apms/ HTTP/1.1" 200 16111
+INFO 2025-10-09 06:44:23,453 "GET /passport-management/ HTTP/1.1" 200 58079
+INFO 2025-10-09 06:44:38,923 "GET /passport-management/?search=&holder=&doc_type=&status= HTTP/1.1" 200 58079
+INFO 2025-10-09 06:44:54,740 "GET /admin_apms/ HTTP/1.1" 200 16111
+INFO 2025-10-09 06:45:40,922 "GET /admin_apms/ HTTP/1.1" 200 16121
+INFO 2025-10-09 06:45:52,208 "GET /passport-management/ HTTP/1.1" 200 58079
+INFO 2025-10-09 06:46:05,890 "GET /admin_apms/ HTTP/1.1" 200 16121
