@@ -172,17 +172,10 @@ def passport_management(request):
     passports = Passport.objects.all()
     
     # Get filter parameters from request
-    search_query = request.GET.get('search', '').strip()
     selected_holder = request.GET.get('holder', '')
     selected_doc_type = request.GET.get('doc_type', '')
+    selected_country = request.GET.get('country', '')
     selected_status = request.GET.get('status', '')
-    
-    # Apply search filter (searches holder name and document number)
-    if search_query:
-        passports = passports.filter(
-            Q(holder_name__icontains=search_query) |
-            Q(document_number__icontains=search_query)
-        )
     
     # Apply holder filter
     if selected_holder:
@@ -191,6 +184,10 @@ def passport_management(request):
     # Apply document type filter
     if selected_doc_type:
         passports = passports.filter(document_type=selected_doc_type)
+    
+    # Apply country filter
+    if selected_country:
+        passports = passports.filter(country_of_issue=selected_country)
     
     # Apply status filter
     if selected_status:
@@ -212,13 +209,14 @@ def passport_management(request):
     
     context = {
         'passports': passports,
-        'search_query': search_query,
         'selected_holder': selected_holder,
         'selected_doc_type': selected_doc_type,
+        'selected_country': selected_country,
         'selected_status': selected_status,
     }
     
     return render(request, 'passport_management.html', context)
+
 ### LEASE TEMPLATE GENERATOR ###
 import re
 

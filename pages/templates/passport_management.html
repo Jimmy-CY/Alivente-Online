@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 {% load humanize %}
-{% block title %}Document Management{% endblock %}
+{% block title %}Passport/ID Management{% endblock %}
 {% block content %}
 
 <style>
@@ -56,7 +56,7 @@
 
 .passport-filter-grid {
     display: grid;
-    grid-template-columns: 2fr 1fr 1fr 1fr;
+    grid-template-columns: repeat(4, 1fr);
     gap: 20px;
     align-items: end;
     margin-bottom: 20px;
@@ -171,7 +171,7 @@
 }
 </style>
 
-<h2><center>ALIVENTE ONLINE - DOCUMENT MANAGEMENT</center></h2>
+<h2><center>ALIVENTE ONLINE - PASSPORT/ID MANAGEMENT</center></h2>
 <h4><center>UPLOAD / VIEW / DELETE</center></h4>
 <br/>
 
@@ -216,24 +216,6 @@
         <form action="{% url 'passport_management' %}" method="GET" id="passportFilterForm">
             
             <div class="passport-filter-grid">
-                <!-- Search Bar -->
-                <div class="passport-filter-group">
-                    <label class="passport-filter-label">
-                        <i class="fas fa-search"></i> Search
-                    </label>
-                    <div class="passport-search-input-group">
-                        <input type="text" 
-                               name="search" 
-                               id="passportSearchInput"
-                               class="form-control passport-search-input" 
-                               placeholder="Search by name or document number..."
-                               value="{{ search_query|default:'' }}">
-                        <button type="button" class="passport-search-btn" id="passportSearchBtn">
-                            <i class="fas fa-search"></i>
-                        </button>
-                    </div>
-                </div>
-
                 <!-- Holder Name Filter -->
                 <div class="passport-filter-group">
                     <label class="passport-filter-label">
@@ -260,6 +242,20 @@
                         <option value="drivers_license" {% if selected_doc_type == 'drivers_license' %}selected{% endif %}>Driver's License</option>
                         <option value="visa" {% if selected_doc_type == 'visa' %}selected{% endif %}>Visa</option>
                         <option value="arc" {% if selected_doc_type == 'arc' %}selected{% endif %}>ARC</option>
+                    </select>
+                </div>
+
+                <!-- Country Filter -->
+                <div class="passport-filter-group">
+                    <label class="passport-filter-label">
+                        <i class="fas fa-globe"></i> Country
+                    </label>
+                    <select name="country" class="form-control passport-filter-select" id="countrySelect">
+                        <option value="">All Countries</option>
+                        <option value="Cyprus" {% if selected_country == 'Cyprus' %}selected{% endif %}>Cyprus</option>
+                        <option value="Greece" {% if selected_country == 'Greece' %}selected{% endif %}>Greece</option>
+                        <option value="South Africa" {% if selected_country == 'South Africa' %}selected{% endif %}>South Africa</option>
+                        <option value="Zimbabwe" {% if selected_country == 'Zimbabwe' %}selected{% endif %}>Zimbabwe</option>
                     </select>
                 </div>
 
@@ -292,16 +288,16 @@
 <thead>
     <tr>
         <th style="text-align: left; width: 16%; cursor: pointer;" onclick="sortTable(0)">
-            Holder Name <i class="fas fa-sort"></i>
+            Passport/ID Holder Name <i class="fas fa-sort"></i>
         </th>
         <th style="text-align: center; width: 12%; cursor: pointer;" onclick="sortTable(1)">
-            Type <i class="fas fa-sort"></i>
+            Document Type <i class="fas fa-sort"></i>
         </th>
         <th style="text-align: center; width: 12%; cursor: pointer;" onclick="sortTable(2)">
-            Number <i class="fas fa-sort"></i>
+            Document Number <i class="fas fa-sort"></i>
         </th>
         <th style="text-align: center; width: 12%; cursor: pointer;" onclick="sortTable(3)">
-            Country<i class="fas fa-sort"></i>
+            Country of Issue <i class="fas fa-sort"></i>
         </th>
         <th style="text-align: center; width: 11%; cursor: pointer; white-space: nowrap;" onclick="sortTable(4)">
             Date of Issue <i class="fas fa-sort"></i>
@@ -398,7 +394,7 @@
 <!-- Add New Passport/ID Button -->
 <div style="display: flex; justify-content: flex-start; margin-bottom: 20px;">
     <button type="button" class="btn btn-info" onclick="addNewDocument()">
-        <i class="fas fa-plus"></i> Add New Document
+        <i class="fas fa-plus"></i> Add New Passport/ID
     </button>
 </div>
 
@@ -602,7 +598,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Auto-submit form when filters change
-    const filterElements = ['holderSelect', 'docTypeSelect', 'statusSelect'];
+    const filterElements = ['holderSelect', 'docTypeSelect', 'countrySelect', 'statusSelect'];
     
     filterElements.forEach(id => {
         const element = document.getElementById(id);
@@ -616,29 +612,6 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
     });
-    
-    // Search input - submit on Enter key
-    const searchInput = document.getElementById('passportSearchInput');
-    if (searchInput) {
-        searchInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                sessionStorage.setItem('passportUserInteracted', 'true');
-                expandPassportFilterPanel();
-                document.getElementById('passportFilterForm').submit();
-            }
-        });
-    }
-    
-    // Search button click
-    const searchBtn = document.getElementById('passportSearchBtn');
-    if (searchBtn) {
-        searchBtn.addEventListener('click', function() {
-            sessionStorage.setItem('passportUserInteracted', 'true');
-            expandPassportFilterPanel();
-            document.getElementById('passportFilterForm').submit();
-        });
-    }
     
     // Update active filters display
     updatePassportActiveFilters();
@@ -672,14 +645,14 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 function checkForPassportActiveFilters() {
-    const searchInput = document.getElementById('passportSearchInput');
     const holderSelect = document.getElementById('holderSelect');
     const docTypeSelect = document.getElementById('docTypeSelect');
+    const countrySelect = document.getElementById('countrySelect');
     const statusSelect = document.getElementById('statusSelect');
     
-    return (searchInput && searchInput.value) ||
-           (holderSelect && holderSelect.value) ||
+    return (holderSelect && holderSelect.value) ||
            (docTypeSelect && docTypeSelect.value) ||
+           (countrySelect && countrySelect.value) ||
            (statusSelect && statusSelect.value);
 }
 
@@ -716,9 +689,9 @@ function clearAllPassportFilters(event) {
     sessionStorage.setItem('passportJustClearedFilters', 'true');
     expandPassportFilterPanel();
     
-    document.getElementById('passportSearchInput').value = '';
     document.getElementById('holderSelect').value = '';
     document.getElementById('docTypeSelect').value = '';
+    document.getElementById('countrySelect').value = '';
     document.getElementById('statusSelect').value = '';
     
     document.getElementById('passportFilterForm').submit();
@@ -730,14 +703,14 @@ function clearPassportFilter(filterType) {
     expandPassportFilterPanel();
     
     switch(filterType) {
-        case 'search':
-            document.getElementById('passportSearchInput').value = '';
-            break;
         case 'holder':
             document.getElementById('holderSelect').value = '';
             break;
         case 'doc_type':
             document.getElementById('docTypeSelect').value = '';
+            break;
+        case 'country':
+            document.getElementById('countrySelect').value = '';
             break;
         case 'status':
             document.getElementById('statusSelect').value = '';
@@ -748,31 +721,22 @@ function clearPassportFilter(filterType) {
 }
 
 function updatePassportActiveFilters() {
-    const searchInput = document.getElementById('passportSearchInput');
     const holderSelect = document.getElementById('holderSelect');
     const docTypeSelect = document.getElementById('docTypeSelect');
+    const countrySelect = document.getElementById('countrySelect');
     const statusSelect = document.getElementById('statusSelect');
     const activeFiltersDiv = document.getElementById('passportActiveFilters');
     const filterTagsDiv = document.getElementById('passportFilterTags');
     
     if (!filterTagsDiv) return;
     
-    const search = searchInput.value;
     const holder = holderSelect.value;
     const docType = docTypeSelect.value;
+    const country = countrySelect.value;
     const status = statusSelect.value;
     
     filterTagsDiv.innerHTML = '';
     let hasFilters = false;
-    
-    if (search) {
-        filterTagsDiv.innerHTML += `
-            <span class="passport-filter-tag">
-                Search: "${search}" 
-                <button class="passport-remove-tag" onclick="clearPassportFilter('search')" type="button">×</button>
-            </span>`;
-        hasFilters = true;
-    }
     
     if (holder) {
         filterTagsDiv.innerHTML += `
@@ -789,6 +753,15 @@ function updatePassportActiveFilters() {
             <span class="passport-filter-tag">
                 Type: ${docTypeText} 
                 <button class="passport-remove-tag" onclick="clearPassportFilter('doc_type')" type="button">×</button>
+            </span>`;
+        hasFilters = true;
+    }
+    
+    if (country) {
+        filterTagsDiv.innerHTML += `
+            <span class="passport-filter-tag">
+                Country: ${country} 
+                <button class="passport-remove-tag" onclick="clearPassportFilter('country')" type="button">×</button>
             </span>`;
         hasFilters = true;
     }

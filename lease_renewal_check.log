@@ -2087,3 +2087,34 @@ INFO 2025-10-09 06:44:54,740 "GET /admin_apms/ HTTP/1.1" 200 16111
 INFO 2025-10-09 06:45:40,922 "GET /admin_apms/ HTTP/1.1" 200 16121
 INFO 2025-10-09 06:45:52,208 "GET /passport-management/ HTTP/1.1" 200 58079
 INFO 2025-10-09 06:46:05,890 "GET /admin_apms/ HTTP/1.1" 200 16121
+INFO 2025-10-09 06:46:29,671 Watching for file changes with StatReloader
+INFO 2025-10-09 06:46:37,377 "GET /passport-management/ HTTP/1.1" 200 58079
+INFO 2025-10-09 06:47:15,623 "GET /passport-management/?search=&holder=&doc_type=drivers_license&status= HTTP/1.1" 200 45551
+INFO 2025-10-09 06:47:19,575 "GET /media/passports/Covid_Certificate.pdf HTTP/1.1" 200 195122
+INFO 2025-10-09 06:47:29,940 "GET /admin_apms/ HTTP/1.1" 200 16121
+INFO 2025-10-12 06:36:21,951 "GET /admin_apms/ HTTP/1.1" 302 0
+INFO 2025-10-12 06:36:22,083 "GET /login/?next=/admin_apms/ HTTP/1.1" 200 8913
+WARNING 2025-10-12 06:36:23,077 Not Found: /favicon.ico
+WARNING 2025-10-12 06:36:23,079 "GET /favicon.ico HTTP/1.1" 404 44089
+INFO 2025-10-12 06:41:59,443 Watching for file changes with StatReloader
+INFO 2025-10-13 11:17:23,058 "POST /login/?next=/admin_apms/ HTTP/1.1" 302 0
+INFO 2025-10-13 11:17:23,458 "GET / HTTP/1.1" 200 15690
+WARNING 2025-10-13 11:17:23,642 Not Found: /favicon.ico
+WARNING 2025-10-13 11:17:23,642 "GET /favicon.ico HTTP/1.1" 404 44089
+INFO 2025-10-13 11:17:27,458 "GET /admin_apms/ HTTP/1.1" 200 16121
+INFO 2025-10-13 11:17:28,393 "GET /passport-management/ HTTP/1.1" 200 58079
+INFO 2025-10-13 11:23:00,878 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+INFO 2025-10-13 11:23:03,228 Watching for file changes with StatReloader
+INFO 2025-10-13 11:23:15,758 "GET / HTTP/1.1" 200 14929
+INFO 2025-10-13 11:23:18,092 "GET /admin_apms/ HTTP/1.1" 200 16121
+INFO 2025-10-13 11:23:19,290 "GET /passport-management/ HTTP/1.1" 200 57112
+INFO 2025-10-13 11:23:23,509 "GET /passport-management/?holder=Demetri+Manias&doc_type=&country=&status= HTTP/1.1" 200 48423
+INFO 2025-10-13 11:23:25,825 "GET /passport-management/?holder=Demetri+Manias&doc_type=&country=Cyprus&status= HTTP/1.1" 200 43031
+INFO 2025-10-13 11:23:28,458 "GET /passport-management/?holder=Demetri+Manias&doc_type=&country=Greece&status= HTTP/1.1" 200 46580
+INFO 2025-10-13 11:23:38,045 "GET /passport-management/?holder=Demetri+Manias&doc_type=id&country=Greece&status= HTTP/1.1" 200 44761
+INFO 2025-10-13 11:23:49,992 "GET /passport-management/?holder=Demetri+Manias&doc_type=id&country=&status= HTTP/1.1" 200 44753
+INFO 2025-10-13 11:23:51,758 "GET /passport-management/?holder=Demetri+Manias&doc_type=&country=&status= HTTP/1.1" 200 48423
+INFO 2025-10-13 11:23:53,559 "GET /passport-management/?holder=&doc_type=&country=&status= HTTP/1.1" 200 57112
+INFO 2025-10-13 11:23:56,192 "GET /passport-management/?holder=&doc_type=&country=Cyprus&status= HTTP/1.1" 200 49929
+INFO 2025-10-13 11:24:02,925 "GET /passport-management/?holder=&doc_type=&country=&status= HTTP/1.1" 200 57112
+INFO 2025-10-13 11:24:08,376 "GET /admin_apms/ HTTP/1.1" 200 16121
