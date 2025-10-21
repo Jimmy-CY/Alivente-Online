@@ -54,6 +54,7 @@ from decimal import Decimal
 from calendar import monthrange
 from collections import defaultdict
 from datetime import date, datetime, timedelta
+from pages.management.commands.email_utils import get_email_recipients, format_email_recipients_for_header
 from urllib.parse import urlparse, parse_qs
 from xhtml2pdf import pisa
 import mysql.connector
@@ -5164,36 +5165,47 @@ def invoices_commit(request, invoice_id):
     inv_tbp = invoices.objects.filter(pk=invoice_id).update(invoice_paid="Yes")
     iresults = invoices.objects.get(pk=invoice_id)
     tresults = tenant.objects.get(pk=iresults.tenant_id)
+    
+    # Get property information - FIXED: Changed 'prop' to 'props'
+    presults = props.objects.get(pk=tresults.prop_id)
+    
     # Attempt to send the notification email
-    if send_invoices_paid_email(tresults, iresults.invoice_date):
+    if send_invoices_paid_email(tresults, presults, iresults.invoice_date):
         messages.info(request, "Invoice marked as Paid notification email sent.")
     else:
         messages.warning(request, "Invoice marked as Paid, but email could not be sent.")
     return redirect('invoices')
 
-def send_invoices_paid_email(tenant, invoice_date):
+
+def send_invoices_paid_email(tenant_obj, property_obj, invoice_date):
     """
     Send email notification of an invoice payment for a specific tenant
     """
     from django.db import connection
+    from pages.management.commands.email_utils import get_email_recipients, format_email_recipients_for_header
     import logging
     
     logger = logging.getLogger(__name__)
     smtp_object = None
     
     try:
+        # Get email recipients for invoice paid notifications
+        email_to_list = get_email_recipients('invoice_paid')
+        
         # Create message
         msg = MIMEMultipart()
-        msg['From'] = "demetrimanias@gmail.com"
-        msg['To'] = "demetrimanias@gmail.com"
+        msg['From'] = os.environ.get('EMAIL_USER', 'demetrimanias@gmail.com')
+        msg['To'] = format_email_recipients_for_header(email_to_list)
         msg['Subject'] = "Rent Payment"
         
-        # Email body with proper formatting
+        # Email body with proper formatting including Property and Amount
         body = f"""Dear User,
 
 The rent has been received from the following tenant:
- - Tenant: {tenant}
+ - Tenant: {tenant_obj.tenant_name}
+ - Property: {property_obj.prop_name}
  - Invoice Date: {invoice_date}
+ - Amount: €{tenant_obj.tenant_rent:,.2f}
 
 Thanks,
 
@@ -5205,8 +5217,9 @@ Alivente Property Management System"""
         email_password = os.environ.get('EMAIL_PASSWORD')
         email_host = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
         email_port = int(os.environ.get('EMAIL_PORT', 465))
-        email_use_ssl = os.environ.get('EMAIL_USE_SSL', 'False').lower() == 'true'
-        email_use_tls = os.environ.get('EMAIL_USE_TLS', 'True').lower() == 'true'
+        email_use_ssl = os.environ.get('EMAIL_USE_SSL', 'True').lower() == 'true'
+        email_use_tls = os.environ.get('EMAIL_USE_TLS', 'False').lower() == 'true'
+        email_user = os.environ.get('EMAIL_USER', 'demetrimanias@gmail.com')
         
         if not email_password:
             logger.error('EMAIL_PASSWORD environment variable not set')
@@ -5221,12 +5234,11 @@ Alivente Property Management System"""
             if email_use_tls:
                 smtp_object.starttls()
         
-        email = "demetrimanias@gmail.com"
-        smtp_object.login(email, email_password)
+        smtp_object.login(email_user, email_password)
         
         # Send email
         text = msg.as_string()
-        smtp_object.sendmail(email, "demetrimanias@gmail.com", text)
+        smtp_object.sendmail(email_user, email_to_list, text)
         return True
         
     except smtplib.SMTPAuthenticationError as e:

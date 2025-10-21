@@ -2118,3 +2118,89 @@ INFO 2025-10-13 11:23:53,559 "GET /passport-management/?holder=&doc_type=&countr
 INFO 2025-10-13 11:23:56,192 "GET /passport-management/?holder=&doc_type=&country=Cyprus&status= HTTP/1.1" 200 49929
 INFO 2025-10-13 11:24:02,925 "GET /passport-management/?holder=&doc_type=&country=&status= HTTP/1.1" 200 57112
 INFO 2025-10-13 11:24:08,376 "GET /admin_apms/ HTTP/1.1" 200 16121
+INFO 2025-10-13 11:24:40,557 Watching for file changes with StatReloader
+INFO 2025-10-14 08:46:23,291 "GET /passport-management/ HTTP/1.1" 200 57112
+INFO 2025-10-14 08:46:28,291 "GET /passport-management/?holder=&doc_type=&country=Zimbabwe&status= HTTP/1.1" 200 43023
+INFO 2025-10-14 08:46:31,174 "GET /passport-management/?holder=&doc_type=&country=&status= HTTP/1.1" 200 57112
+INFO 2025-10-14 08:46:40,725 "GET /passport-management/?holder=&doc_type=&country=&status=renewal HTTP/1.1" 200 44814
+INFO 2025-10-14 08:46:46,375 "GET /admin_apms/ HTTP/1.1" 200 16121
+INFO 2025-10-14 08:46:54,308 "GET /passport-management/ HTTP/1.1" 200 57112
+INFO 2025-10-14 08:47:22,092 "GET /admin_apms/ HTTP/1.1" 200 16121
+INFO 2025-10-14 08:47:24,565 "GET / HTTP/1.1" 200 14929
+INFO 2025-10-16 07:23:40,922 Watching for file changes with StatReloader
+INFO 2025-10-16 07:23:56,831 "GET /notifications/ HTTP/1.1" 200 31762
+INFO 2025-10-16 07:23:56,863 "GET /static/images/alivente_online_logo.png HTTP/1.1" 304 0
+INFO 2025-10-16 07:23:56,864 "GET /static/css/my_style.css HTTP/1.1" 304 0
+INFO 2025-10-16 07:23:57,149 "GET /notifications/ HTTP/1.1" 200 9697
+WARNING 2025-10-16 07:23:57,179 Not Found: /favicon.ico
+WARNING 2025-10-16 07:23:57,181 "GET /favicon.ico HTTP/1.1" 404 44089
+INFO 2025-10-21 07:36:12,987 "GET /notifications/ HTTP/1.1" 200 31762
+INFO 2025-10-21 07:36:13,250 "GET /notifications/ HTTP/1.1" 200 9697
+INFO 2025-10-21 07:36:17,460 "GET / HTTP/1.1" 200 14929
+INFO 2025-10-21 07:36:23,610 "GET /invoices/ HTTP/1.1" 200 168701
+INFO 2025-10-21 07:43:20,959 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+INFO 2025-10-21 07:43:23,675 Watching for file changes with StatReloader
+ERROR 2025-10-21 07:43:35,085 Internal Server Error: /invoices_commit/16
+Traceback (most recent call last):
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\contrib\auth\decorators.py", line 60, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\pages\views.py", line 5170, in invoices_commit
+    presults = prop.objects.get(pk=tresults.prop_id)
+               ^^^^
+NameError: name 'prop' is not defined. Did you mean: 'props'?
+ERROR 2025-10-21 07:43:35,093 "GET /invoices_commit/16 HTTP/1.1" 500 77088
+INFO 2025-10-21 07:46:16,985 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+INFO 2025-10-21 07:46:17,995 Watching for file changes with StatReloader
+ERROR 2025-10-21 07:46:23,958 Internal Server Error: /invoices_commit/16
+Traceback (most recent call last):
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\contrib\auth\decorators.py", line 60, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\pages\views.py", line 5173, in invoices_commit
+    if send_invoices_paid_email(tresults, presults, iresults.invoice_date):
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\pages\views.py", line 5185, in send_invoices_paid_email
+    from .email_utils import get_email_recipients, format_email_recipients_for_header
+ModuleNotFoundError: No module named 'pages.email_utils'
+ERROR 2025-10-21 07:46:23,958 "GET /invoices_commit/16 HTTP/1.1" 500 81835
+INFO 2025-10-21 07:49:50,770 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+INFO 2025-10-21 07:49:51,939 Watching for file changes with StatReloader
+INFO 2025-10-21 07:49:55,039 "GET / HTTP/1.1" 200 14929
+INFO 2025-10-21 07:49:58,212 "GET /invoices/ HTTP/1.1" 200 164890
+ERROR 2025-10-21 07:50:00,659 Internal Server Error: /invoices_commit/51
+Traceback (most recent call last):
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\contrib\auth\decorators.py", line 60, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\pages\views.py", line 5173, in invoices_commit
+    if send_invoices_paid_email(tresults, presults, iresults.invoice_date):
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\pages\views.py", line 5185, in send_invoices_paid_email
+    from .email_utils import get_email_recipients, format_email_recipients_for_header
+ModuleNotFoundError: No module named 'pages.email_utils'
+ERROR 2025-10-21 07:50:00,659 "GET /invoices_commit/51 HTTP/1.1" 500 81835
+INFO 2025-10-21 07:51:54,076 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+INFO 2025-10-21 07:51:55,106 Watching for file changes with StatReloader
+INFO 2025-10-21 07:52:09,934 "GET / HTTP/1.1" 200 14929
+INFO 2025-10-21 07:52:11,376 "GET /invoices/ HTTP/1.1" 200 161078
+INFO 2025-10-21 07:52:21,841 "GET /invoices_commit/17 HTTP/1.1" 302 0
+INFO 2025-10-21 07:52:21,891 "GET /invoices/ HTTP/1.1" 200 157868

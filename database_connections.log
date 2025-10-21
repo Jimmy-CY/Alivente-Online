@@ -1802,3 +1802,33 @@ INFO 2025-10-13 11:23:53,533 middleware 31004 7792 Starting request req_17603438
 INFO 2025-10-13 11:23:56,148 middleware 31004 7792 Starting request req_1760343836_7792: GET /passport-management/ (user: anonymous)
 INFO 2025-10-13 11:24:02,886 middleware 31004 7792 Starting request req_1760343842_7792: GET /passport-management/ (user: anonymous)
 INFO 2025-10-13 11:24:08,361 middleware 31004 7792 Starting request req_1760343848_7792: GET /admin_apms/ (user: anonymous)
+INFO 2025-10-13 11:24:43,335 middleware 23608 6216 Enhanced DatabaseConnectionMiddleware initialized with threshold=50
+INFO 2025-10-14 08:46:22,891 middleware 23608 33084 Starting request req_1760420782_33084: GET /passport-management/ (user: anonymous)
+INFO 2025-10-14 08:46:28,271 middleware 23608 33084 Starting request req_1760420788_33084: GET /passport-management/ (user: anonymous)
+INFO 2025-10-14 08:46:31,150 middleware 23608 33084 Starting request req_1760420791_33084: GET /passport-management/ (user: anonymous)
+INFO 2025-10-14 08:46:40,693 middleware 23608 33084 Starting request req_1760420800_33084: GET /passport-management/ (user: anonymous)
+INFO 2025-10-14 08:46:46,303 middleware 23608 33084 Starting request req_1760420806_33084: GET /admin_apms/ (user: anonymous)
+INFO 2025-10-14 08:46:54,272 middleware 23608 33084 Starting request req_1760420814_33084: GET /passport-management/ (user: anonymous)
+INFO 2025-10-14 08:47:22,063 middleware 23608 33084 Starting request req_1760420842_33084: GET /admin_apms/ (user: anonymous)
+INFO 2025-10-14 08:47:24,498 middleware 23608 33084 Starting request req_1760420844_33084: GET / (user: anonymous)
+INFO 2025-10-16 07:23:47,790 middleware 26932 26284 Enhanced DatabaseConnectionMiddleware initialized with threshold=50
+INFO 2025-10-16 07:23:56,396 middleware 26932 28752 Starting request req_1760588636_28752: GET /notifications/ (user: anonymous)
+INFO 2025-10-16 07:23:57,107 middleware 26932 28052 Starting request req_1760588637_28052: GET /notifications/ (user: anonymous)
+INFO 2025-10-16 07:23:57,139 middleware 26932 28752 Starting request req_1760588637_28752: GET /favicon.ico (user: anonymous)
+INFO 2025-10-21 07:36:12,678 middleware 26932 39868 Starting request req_1761021372_39868: GET /notifications/ (user: anonymous)
+INFO 2025-10-21 07:36:13,203 middleware 26932 39868 Starting request req_1761021373_39868: GET /notifications/ (user: anonymous)
+INFO 2025-10-21 07:36:17,394 middleware 26932 39868 Starting request req_1761021377_39868: GET / (user: anonymous)
+INFO 2025-10-21 07:36:23,477 middleware 26932 39868 Starting request req_1761021383_39868: GET /invoices/ (user: anonymous)
+INFO 2025-10-21 07:43:30,891 middleware 22588 30148 Enhanced DatabaseConnectionMiddleware initialized with threshold=50
+INFO 2025-10-21 07:43:34,892 middleware 22588 35120 Starting request req_1761021814_35120: GET /invoices_commit/16 (user: anonymous)
+INFO 2025-10-21 07:46:20,779 middleware 38580 38528 Enhanced DatabaseConnectionMiddleware initialized with threshold=50
+INFO 2025-10-21 07:46:23,877 middleware 38580 34904 Starting request req_1761021983_34904: GET /invoices_commit/16 (user: anonymous)
+INFO 2025-10-21 07:49:54,612 middleware 9604 34588 Enhanced DatabaseConnectionMiddleware initialized with threshold=50
+INFO 2025-10-21 07:49:54,628 middleware 9604 9360 Starting request req_1761022194_9360: GET / (user: anonymous)
+INFO 2025-10-21 07:49:58,134 middleware 9604 9360 Starting request req_1761022198_9360: GET /invoices/ (user: anonymous)
+INFO 2025-10-21 07:50:00,592 middleware 9604 9360 Starting request req_1761022200_9360: GET /invoices_commit/51 (user: anonymous)
+INFO 2025-10-21 07:51:57,573 middleware 40704 9780 Enhanced DatabaseConnectionMiddleware initialized with threshold=50
+INFO 2025-10-21 07:52:09,725 middleware 40704 33616 Starting request req_1761022329_33616: GET / (user: anonymous)
+INFO 2025-10-21 07:52:11,319 middleware 40704 33616 Starting request req_1761022331_33616: GET /invoices/ (user: anonymous)
+INFO 2025-10-21 07:52:18,127 middleware 40704 33616 Starting request req_1761022338_33616: GET /invoices_commit/17 (user: anonymous)
+INFO 2025-10-21 07:52:21,841 middleware 40704 33616 Starting request req_1761022341_33616: GET /invoices/ (user: anonymous)

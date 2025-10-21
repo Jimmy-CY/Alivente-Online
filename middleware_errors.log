@@ -418,3 +418,55 @@ ERROR 2025-09-29 12:44:13,286 views 24060 172 Error in generate_lease_document: 
 ERROR 2025-09-29 19:55:46,330 views 37240 38692 Error in generate_lease_document: cannot access local variable 'tenant_contact_person' where it is not associated with a value
 ERROR 2025-09-29 19:59:56,603 views 39616 36976 Error in generate_lease_document: cannot access local variable 'tenant_contact_person' where it is not associated with a value
 ERROR 2025-09-29 20:00:55,129 views 39616 36976 Error in generate_lease_document: cannot access local variable 'tenant_contact_person' where it is not associated with a value
+ERROR 2025-10-21 07:43:35,085 log 22588 35120 Internal Server Error: /invoices_commit/16
+Traceback (most recent call last):
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\contrib\auth\decorators.py", line 60, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\pages\views.py", line 5170, in invoices_commit
+    presults = prop.objects.get(pk=tresults.prop_id)
+               ^^^^
+NameError: name 'prop' is not defined. Did you mean: 'props'?
+ERROR 2025-10-21 07:43:35,093 basehttp 22588 35120 "GET /invoices_commit/16 HTTP/1.1" 500 77088
+ERROR 2025-10-21 07:46:23,958 log 38580 34904 Internal Server Error: /invoices_commit/16
+Traceback (most recent call last):
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\contrib\auth\decorators.py", line 60, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\pages\views.py", line 5173, in invoices_commit
+    if send_invoices_paid_email(tresults, presults, iresults.invoice_date):
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\pages\views.py", line 5185, in send_invoices_paid_email
+    from .email_utils import get_email_recipients, format_email_recipients_for_header
+ModuleNotFoundError: No module named 'pages.email_utils'
+ERROR 2025-10-21 07:46:23,958 basehttp 38580 34904 "GET /invoices_commit/16 HTTP/1.1" 500 81835
+ERROR 2025-10-21 07:50:00,659 log 9604 9360 Internal Server Error: /invoices_commit/51
+Traceback (most recent call last):
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\core\handlers\base.py", line 197, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\contrib\auth\decorators.py", line 60, in _view_wrapper
+    return view_func(request, *args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\pages\views.py", line 5173, in invoices_commit
+    if send_invoices_paid_email(tresults, presults, iresults.invoice_date):
+       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\pages\views.py", line 5185, in send_invoices_paid_email
+    from .email_utils import get_email_recipients, format_email_recipients_for_header
+ModuleNotFoundError: No module named 'pages.email_utils'
+ERROR 2025-10-21 07:50:00,659 basehttp 9604 9360 "GET /invoices_commit/51 HTTP/1.1" 500 81835
