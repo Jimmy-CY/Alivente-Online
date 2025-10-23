@@ -2204,3 +2204,64 @@ INFO 2025-10-21 07:52:09,934 "GET / HTTP/1.1" 200 14929
 INFO 2025-10-21 07:52:11,376 "GET /invoices/ HTTP/1.1" 200 161078
 INFO 2025-10-21 07:52:21,841 "GET /invoices_commit/17 HTTP/1.1" 302 0
 INFO 2025-10-21 07:52:21,891 "GET /invoices/ HTTP/1.1" 200 157868
+INFO 2025-10-21 07:54:45,973 Watching for file changes with StatReloader
+INFO 2025-10-23 08:28:18,550 "GET / HTTP/1.1" 200 14929
+INFO 2025-10-23 08:29:25,454 "GET /act_expense_all/?from=home HTTP/1.1" 200 84840
+INFO 2025-10-23 08:29:43,122 "GET /act_expense_add/ HTTP/1.1" 200 12480
+INFO 2025-10-23 08:29:48,597 "GET /act_expense_all/ HTTP/1.1" 200 84764
+INFO 2025-10-23 08:32:16,673 "GET /media/expense_docs/pindarou-20250630-Invoice.pdf HTTP/1.1" 200 461728
+INFO 2025-10-23 08:43:42,178 Watching for file changes with StatReloader
+INFO 2025-10-23 08:50:14,101 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+INFO 2025-10-23 08:50:15,170 Watching for file changes with StatReloader
+INFO 2025-10-23 08:51:40,431 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+INFO 2025-10-23 08:51:41,409 Watching for file changes with StatReloader
+INFO 2025-10-23 08:57:23,961 Watching for file changes with StatReloader
+INFO 2025-10-23 08:57:33,420 "GET / HTTP/1.1" 200 14929
+INFO 2025-10-23 08:57:35,553 "GET /act_expense_all/?from=home HTTP/1.1" 200 84840
+INFO 2025-10-23 08:58:05,232 "GET /media/expense_docs/palikaridi-20250620-%CE%A4%CE%A0%CE%A5_%CE%91%CE%93%CE%93%CE%95%CE%9B%CE%91%CE%A4%CE%9F%CE%A3.pdf HTTP/1.1" 200 100445
+INFO 2025-10-23 09:00:31,180 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\manage.py changed, reloading.
+INFO 2025-10-23 09:00:32,279 Watching for file changes with StatReloader
+INFO 2025-10-23 09:01:18,644 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\manage.py changed, reloading.
+INFO 2025-10-23 09:01:19,704 Watching for file changes with StatReloader
+INFO 2025-10-23 09:01:46,175 Watching for file changes with StatReloader
+INFO 2025-10-23 09:02:16,006 "GET /media/expense_docs/pindarou-20250521-Invoice.pdf HTTP/1.1" 200 461728
+INFO 2025-10-23 09:12:44,366 "GET / HTTP/1.1" 200 14929
+INFO 2025-10-23 09:12:45,884 "GET /act_expense_all/?from=home HTTP/1.1" 200 84840
+INFO 2025-10-23 09:25:12,941 "GET /act_expense_all/?from=home HTTP/1.1" 200 84840
+INFO 2025-10-23 09:36:52,600 "GET / HTTP/1.1" 200 14929
+INFO 2025-10-23 09:36:53,697 "GET /act_expense_all/?from=home HTTP/1.1" 200 87052
+INFO 2025-10-23 09:37:22,970 "POST /act_expense_manage_document/ HTTP/1.1" 302 0
+INFO 2025-10-23 09:37:22,999 "GET /act_expense_all/ HTTP/1.1" 200 87382
+INFO 2025-10-23 09:37:29,074 "GET /media/expense_docs/pindarou-20250630-Proof_of_Address.pdf HTTP/1.1" 200 969136
+INFO 2025-10-23 09:40:21,362 C:\Users\demet\OneDrive\Desktop\PythonApps\Alivente-Online\pages\views.py changed, reloading.
+INFO 2025-10-23 09:40:22,477 Watching for file changes with StatReloader
+INFO 2025-10-23 09:40:30,519 "GET / HTTP/1.1" 200 14929
+INFO 2025-10-23 09:40:31,803 "GET /act_expense_all/?from=home HTTP/1.1" 200 87088
+INFO 2025-10-23 09:40:33,808 "GET /media/expense_docs/pindarou-20250630-Proof_of_Address.pdf HTTP/1.1" 304 0
+INFO 2025-10-23 09:41:01,898 "POST /act_expense_manage_document/ HTTP/1.1" 302 0
+INFO 2025-10-23 09:41:01,940 "GET /act_expense_all/ HTTP/1.1" 200 87477
+INFO 2025-10-23 09:41:06,847 "GET /media/expense_docs/pindarou-20250630-pindarou-20250630-Proof_of_Address_merged.pdf HTTP/1.1" 200 1118313
+INFO 2025-10-23 09:41:27,952 "POST /act_expense_manage_document/ HTTP/1.1" 302 0
+INFO 2025-10-23 09:41:28,011 "GET /act_expense_all/ HTTP/1.1" 200 87382
+INFO 2025-10-23 09:41:31,949 "GET /media/expense_docs/pindarou-20250630-ID_Card_-_Greece.pdf HTTP/1.1" 200 149766
+INFO 2025-10-23 09:41:41,980 "POST /act_expense_manage_document/ HTTP/1.1" 302 0
+INFO 2025-10-23 09:41:42,014 "GET /act_expense_all/ HTTP/1.1" 200 86923
+INFO 2025-10-23 09:42:02,586 "POST /act_expense_manage_document/ HTTP/1.1" 302 0
+INFO 2025-10-23 09:42:02,616 "GET /act_expense_all/ HTTP/1.1" 200 87422
+INFO 2025-10-23 09:42:07,267 "GET /media/expense_docs/spain-eusebi-guell-20250819-Proof_of_Address.pdf HTTP/1.1" 200 969136
+INFO 2025-10-23 09:42:15,495 "GET /media/expense_docs/spain-eusebi-guell-20250819-Proof_of_Address.pdf HTTP/1.1" 304 0
+INFO 2025-10-23 09:43:02,514 "POST /act_expense_manage_document/ HTTP/1.1" 302 0
+INFO 2025-10-23 09:43:02,555 "GET /act_expense_all/ HTTP/1.1" 200 87427
+INFO 2025-10-23 09:43:07,587 "GET /media/expense_docs/spain-eusebi-guell-20250819-Proof_of_Address.pdf HTTP/1.1" 304 0
+INFO 2025-10-23 09:43:24,918 "POST /act_expense_manage_document/ HTTP/1.1" 302 0
+INFO 2025-10-23 09:43:24,969 "GET /act_expense_all/ HTTP/1.1" 200 87936
+INFO 2025-10-23 09:43:42,930 "POST /act_expense_manage_document/ HTTP/1.1" 302 0
+INFO 2025-10-23 09:43:42,965 "GET /act_expense_all/ HTTP/1.1" 200 87421
+INFO 2025-10-23 09:45:34,751 "POST /act_expense_manage_document/ HTTP/1.1" 302 0
+INFO 2025-10-23 09:45:34,788 "GET /act_expense_all/ HTTP/1.1" 200 87525
+INFO 2025-10-23 09:45:38,916 "GET /media/expense_docs/palikaridi-20250620-palikaridi-20250620-%CE%A4%CE%A0%CE%A5_%CE%91%CE%93%CE%93%CE%95%CE%9B%CE%91%CE%A4%CE%9F%CE%A3_merged.pdf HTTP/1.1" 200 165808
+INFO 2025-10-23 09:45:51,819 "GET /media/expense_docs/palikaridi-20250620-palikaridi-20250620-%CE%A4%CE%A0%CE%A5_%CE%91%CE%93%CE%93%CE%95%CE%9B%CE%91%CE%A4%CE%9F%CE%A3_merged.pdf HTTP/1.1" 304 0
+INFO 2025-10-23 09:46:49,046 "GET /admin_apms/ HTTP/1.1" 200 16121
+INFO 2025-10-23 09:46:57,779 "GET / HTTP/1.1" 200 14929
+INFO 2025-10-23 09:47:02,780 "GET /act_expense_all/?from=home HTTP/1.1" 200 87236
+INFO 2025-10-23 09:47:08,337 "GET /media/expense_docs/spain-eusebi-guell-20250819-Proof_of_Address.pdf HTTP/1.1" 304 0

@@ -3,6 +3,9 @@
 import os
 import sys
 
+# Force UTF-8 encoding for Windows console
+if sys.platform == "win32":
+    os.environ["PYTHONIOENCODING"] = "utf-8"
 
 def main():
     """Run administrative tasks."""
@@ -16,7 +19,6 @@ def main():
             "forget to activate a virtual environment?"
         ) from exc
     execute_from_command_line(sys.argv)
-
 
 if __name__ == "__main__":
     main()

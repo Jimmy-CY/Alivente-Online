@@ -995,6 +995,16 @@ function populateInvoiceTab(documentUrl, documentName, expenseId) {
             `;
         }
         
+        // Add "Add to Existing" button for PDFs only
+        let addButton = '';
+        if (extension === 'pdf') {
+            addButton = `
+                <button type="button" class="btn btn-success btn-sm" onclick="showAddToExisting(${expenseId})">
+                    <i class="fas fa-plus"></i> Add to Existing
+                </button>
+            `;
+        }
+        
         invoiceContent.innerHTML = `
             <h6>Current Invoice Document:</h6>
             ${previewHtml}
@@ -1002,12 +1012,29 @@ function populateInvoiceTab(documentUrl, documentName, expenseId) {
                 <a href="${documentUrl}" download="${documentName}" class="btn btn-info btn-sm">
                     <i class="fas fa-download"></i> Download
                 </a>
+                ${addButton}
                 <button type="button" class="btn btn-warning btn-sm" onclick="showReplaceUpload(${expenseId})">
                     <i class="fas fa-sync"></i> Replace
                 </button>
                 <button type="button" class="btn btn-danger btn-sm" onclick="deleteInvoiceDocument(${expenseId})">
                     <i class="fas fa-trash"></i> Delete Document
                 </button>
+            </div>
+            <div id="addToExistingForm" style="display: none;" class="mt-3 bg-light p-3 border rounded">
+                <h6 class="text-success"><i class="fas fa-plus-circle"></i> Add to Existing PDF</h6>
+                <form method="post" enctype="multipart/form-data" id="addToExistingDocumentForm">
+                    <input type="hidden" name="csrfmiddlewaretoken" value="${document.querySelector('[name=csrfmiddlewaretoken]').value}">
+                    <input type="hidden" name="expense_id" value="${expenseId}">
+                    <input type="hidden" name="action" value="upload">
+                    <input type="hidden" name="document_action" value="add_to_existing">
+                    <div class="form-group">
+                        <label>Select PDF to Merge:</label>
+                        <input type="file" class="form-control-file" name="act_expense_document" accept=".pdf" required>
+                        <small class="form-text text-warning"><i class="fas fa-exclamation-triangle"></i> Only PDF files can be merged. Max file size: 5MB</small>
+                    </div>
+                    <button type="submit" class="btn btn-success btn-sm"><i class="fas fa-plus"></i> Merge PDFs</button>
+                    <button type="button" class="btn btn-secondary btn-sm" onclick="hideAddToExisting()">Cancel</button>
+                </form>
             </div>
             <div id="replaceUploadForm" style="display: none;" class="mt-3">
                 <form method="post" enctype="multipart/form-data" id="replaceDocumentForm">
@@ -1046,8 +1073,18 @@ function populateInvoiceTab(documentUrl, documentName, expenseId) {
     }
 }
 
+function showAddToExisting(expenseId) {
+    document.getElementById('addToExistingForm').style.display = 'block';
+    document.getElementById('replaceUploadForm').style.display = 'none';
+}
+
+function hideAddToExisting() {
+    document.getElementById('addToExistingForm').style.display = 'none';
+}
+
 function showReplaceUpload(expenseId) {
     document.getElementById('replaceUploadForm').style.display = 'block';
+    document.getElementById('addToExistingForm').style.display = 'none';
 }
 
 function hideReplaceUpload() {
@@ -1154,7 +1191,7 @@ $(document).on('submit', '#deleteExpenseForm', function(e) {
 });
 
 // Handle document upload forms
-$(document).on('submit', '#uploadDocumentForm, #replaceDocumentForm', function(e) {
+$(document).on('submit', '#uploadDocumentForm, #replaceDocumentForm, #addToExistingDocumentForm', function(e) {
     e.preventDefault();
     this.action = '{% url "act_expense_manage_document" %}';
     this.submit();
@@ -1165,7 +1202,7 @@ $('#manageModal').on('hidden.bs.modal', function () {
     $('#expenseEditForm')[0].reset();
     document.getElementById('deleteConfirmation').checked = false;
     document.getElementById('confirmDeleteBtn').disabled = true;
-    hideReplaceUpload();
+    hideReplaceUpload(); hideAddToExisting();
 });
 
 $('#quickViewModal').on('hidden.bs.modal', function () {

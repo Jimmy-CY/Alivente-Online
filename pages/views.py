@@ -61,6 +61,7 @@ import mysql.connector
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from .utils import merge_pdfs, is_pdf
 import os
 import re
 import uuid
@@ -5482,6 +5483,7 @@ def act_expense_manage_document(request):
     """
     if request.method == 'POST':
         action = request.POST.get('action')
+        document_action = request.POST.get('document_action')  # NEW: Get the document action type
         expense_id = request.POST.get('expense_id')
         
         if not expense_id:
@@ -5524,14 +5526,49 @@ def act_expense_manage_document(request):
                         messages.error(request, 'Invalid file type. Please upload PDF, JPG, PNG, Excel, or Word files only.')
                         return redirect('act_expense_all')
                     
-                    # Delete existing file if present
-                    if expense.act_expense_document:
-                        if expense.act_expense_document.storage.exists(expense.act_expense_document.name):
-                            expense.act_expense_document.delete(save=False)
-                    
-                    expense.act_expense_document = uploaded_file
-                    expense.save()
-                    messages.success(request, f'Invoice document uploaded successfully for expense on {expense.act_expense_date}!')
+                    # NEW: Check if we're adding to existing or replacing
+                    if document_action == 'add_to_existing' and expense.act_expense_document:
+                        # Validate both files are PDFs before attempting merge
+                        if not is_pdf(expense.act_expense_document):
+                            messages.error(request, 'Cannot merge: Existing document is not a PDF. Please use Replace instead.')
+                            return redirect('act_expense_all')
+                        
+                        if not is_pdf(uploaded_file):
+                            messages.error(request, 'Cannot merge: New document is not a PDF. Only PDF files can be merged.')
+                            return redirect('act_expense_all')
+                        
+                        try:
+                            # Merge the PDFs
+                            merged_pdf = merge_pdfs(expense.act_expense_document, uploaded_file)
+                            
+                            # Generate a new filename
+                            original_name = os.path.splitext(os.path.basename(expense.act_expense_document.name))[0]
+                            new_filename = f"{original_name}_merged.pdf"
+                            
+                            # Delete the old file
+                            if expense.act_expense_document.storage.exists(expense.act_expense_document.name):
+                                expense.act_expense_document.delete(save=False)
+                            
+                            # Save the merged PDF
+                            expense.act_expense_document.save(new_filename, merged_pdf, save=True)
+                            
+                            messages.success(request, f'PDF documents merged successfully for expense on {expense.act_expense_date}!')
+                        except ValueError as e:
+                            messages.error(request, f'Error: {str(e)}')
+                            return redirect('act_expense_all')
+                        except Exception as e:
+                            messages.error(request, f'Error merging documents: {str(e)}')
+                            return redirect('act_expense_all')
+                    else:
+                        # Regular upload/replacement
+                        # Delete existing file if present
+                        if expense.act_expense_document:
+                            if expense.act_expense_document.storage.exists(expense.act_expense_document.name):
+                                expense.act_expense_document.delete(save=False)
+                        
+                        expense.act_expense_document = uploaded_file
+                        expense.save()
+                        messages.success(request, f'Invoice document uploaded successfully for expense on {expense.act_expense_date}!')
                 else:
                     messages.error(request, 'Please select a file to upload')
                     
@@ -5628,6 +5665,7 @@ def act_expense_upload_inv(request):
     
     if request.method == 'POST':
         action = request.POST.get('action')
+        document_action = request.POST.get('document_action')  # NEW: Get the document action type
         expense_id = request.POST.get('expense_id')
         
         if not expense_id:
@@ -5653,7 +5691,7 @@ def act_expense_upload_inv(request):
                     messages.warning(request, 'No document found to delete.')
                     
             elif action == 'upload':
-                # Handle file upload (your existing code)
+                # Handle file upload
                 if 'act_expense_document' in request.FILES:
                     uploaded_file = request.FILES['act_expense_document']
                     
@@ -5670,14 +5708,49 @@ def act_expense_upload_inv(request):
                         messages.error(request, 'Invalid file type. Please upload PDF, JPG, PNG, Excel, or Word files only.')
                         return redirect('act_expense_upload_inv')
                     
-                    # Delete existing file if present
-                    if expense.act_expense_document:
-                        if expense.act_expense_document.storage.exists(expense.act_expense_document.name):
-                            expense.act_expense_document.delete(save=False)
-                    
-                    expense.act_expense_document = uploaded_file
-                    expense.save()
-                    messages.success(request, f'Document uploaded successfully for expense on {expense.act_expense_date}!')
+                    # NEW: Check if we're adding to existing or replacing
+                    if document_action == 'add_to_existing' and expense.act_expense_document:
+                        # Validate both files are PDFs before attempting merge
+                        if not is_pdf(expense.act_expense_document):
+                            messages.error(request, 'Cannot merge: Existing document is not a PDF. Please use Replace instead.')
+                            return redirect('act_expense_upload_inv')
+                        
+                        if not is_pdf(uploaded_file):
+                            messages.error(request, 'Cannot merge: New document is not a PDF. Only PDF files can be merged.')
+                            return redirect('act_expense_upload_inv')
+                        
+                        try:
+                            # Merge the PDFs
+                            merged_pdf = merge_pdfs(expense.act_expense_document, uploaded_file)
+                            
+                            # Generate a new filename
+                            original_name = os.path.splitext(os.path.basename(expense.act_expense_document.name))[0]
+                            new_filename = f"{original_name}_merged.pdf"
+                            
+                            # Delete the old file
+                            if expense.act_expense_document.storage.exists(expense.act_expense_document.name):
+                                expense.act_expense_document.delete(save=False)
+                            
+                            # Save the merged PDF
+                            expense.act_expense_document.save(new_filename, merged_pdf, save=True)
+                            
+                            messages.success(request, f'PDF documents merged successfully for expense on {expense.act_expense_date}!')
+                        except ValueError as e:
+                            messages.error(request, f'Error: {str(e)}')
+                            return redirect('act_expense_upload_inv')
+                        except Exception as e:
+                            messages.error(request, f'Error merging documents: {str(e)}')
+                            return redirect('act_expense_upload_inv')
+                    else:
+                        # Regular upload/replace
+                        # Delete existing file if present
+                        if expense.act_expense_document:
+                            if expense.act_expense_document.storage.exists(expense.act_expense_document.name):
+                                expense.act_expense_document.delete(save=False)
+                        
+                        expense.act_expense_document = uploaded_file
+                        expense.save()
+                        messages.success(request, f'Document uploaded successfully for expense on {expense.act_expense_date}!')
                 else:
                     messages.error(request, 'Please select a file to upload')
                     
