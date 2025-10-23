@@ -1,5 +1,6 @@
 # middleware.py - Complete file with both Database and Module Access middleware
 import logging
+import sys
 import time
 import threading
 import traceback
@@ -11,6 +12,15 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth import get_user_model
 from django.template.response import TemplateResponse
 from django.shortcuts import render
+
+# Configure logging to handle Unicode
+if sys.platform == "win32":
+    import io
+    # Reconfigure stdout and stderr with UTF-8 encoding
+    if isinstance(sys.stdout, io.TextIOWrapper):
+        sys.stdout.reconfigure(encoding='utf-8')
+    if isinstance(sys.stderr, io.TextIOWrapper):
+        sys.stderr.reconfigure(encoding='utf-8')
 
 logger = logging.getLogger(__name__)
 
@@ -215,12 +225,28 @@ class DatabaseConnectionMiddleware:
         try:
             self.request_count += 1
             
-            # Log request start
-            logger.info(
-                f"Starting request {getattr(self.local, 'request_id', 'unknown')}: "
-                f"{getattr(self.local, 'request_method', 'unknown')} {getattr(self.local, 'request_path', 'unknown')} "
-                f"(user: {getattr(self.local, 'user', 'unknown')})"
-            )
+            # Log request start with Unicode-safe handling
+            request_id = getattr(self.local, 'request_id', 'unknown')
+            request_method = getattr(self.local, 'request_method', 'unknown')
+            request_path = getattr(self.local, 'request_path', 'unknown')
+            user = getattr(self.local, 'user', 'unknown')
+            
+            # Try to encode the path to ASCII to check for special characters
+            try:
+                request_path.encode('ascii')
+                # If successful, log normally
+                logger.info(
+                    f"Starting request {request_id}: "
+                    f"{request_method} {request_path} "
+                    f"(user: {user})"
+                )
+            except (UnicodeEncodeError, AttributeError):
+                # If path contains special characters, log simplified version
+                logger.info(
+                    f"Starting request {request_id}: "
+                    f"{request_method} /media/[file with special characters] "
+                    f"(user: {user})"
+                )
             
             if self.request_count % self.force_cleanup_interval == 0:
                 logger.info(f"Running periodic cleanup after {self.request_count} requests")
@@ -228,6 +254,7 @@ class DatabaseConnectionMiddleware:
                 
         except Exception as e:
             logger.warning(f"Pre-request cleanup error: {e}")
+
 
     def _enhanced_post_request_cleanup(self):
         """Enhanced cleanup with detailed connection tracking"""

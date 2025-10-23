@@ -470,3 +470,25 @@ Traceback (most recent call last):
     from .email_utils import get_email_recipients, format_email_recipients_for_header
 ModuleNotFoundError: No module named 'pages.email_utils'
 ERROR 2025-10-21 07:50:00,659 basehttp 9604 9360 "GET /invoices_commit/51 HTTP/1.1" 500 81835
+ERROR 2025-10-23 10:01:58,481 middleware 37140 27356 EXCEPTION in request req_1761202918_27356:
+  Exception: 'DatabaseConnectionMiddleware' object has no attribute '_pre_request_cleanup'
+  Request: GET /
+  User: anonymous
+  Duration so far: 0.00s
+  Traceback: Traceback (most recent call last):
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\pages\middleware.py", line 66, in __call__
+    self._pre_request_cleanup()
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'DatabaseConnectionMiddleware' object has no attribute '_pre_request_cleanup'
+
+ERROR 2025-10-23 10:01:58,531 middleware 37140 27356 EMERGENCY CLEANUP for request req_1761202918_27356: GET /
+ERROR 2025-10-23 10:01:58,628 log 37140 27356 Internal Server Error: /
+Traceback (most recent call last):
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\code\Lib\site-packages\django\core\handlers\exception.py", line 55, in inner
+    response = get_response(request)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\pages\middleware.py", line 66, in __call__
+    self._pre_request_cleanup()
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'DatabaseConnectionMiddleware' object has no attribute '_pre_request_cleanup'
+ERROR 2025-10-23 10:01:58,633 basehttp 37140 27356 "GET / HTTP/1.1" 500 65872
