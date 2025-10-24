@@ -1028,11 +1028,11 @@ function populateInvoiceTab(documentUrl, documentName, expenseId) {
                     <input type="hidden" name="action" value="upload">
                     <input type="hidden" name="document_action" value="add_to_existing">
                     <div class="form-group">
-                        <label>Select PDF to Merge:</label>
-                        <input type="file" class="form-control-file" name="act_expense_document" accept=".pdf" required>
-                        <small class="form-text text-warning"><i class="fas fa-exclamation-triangle"></i> Only PDF files can be merged. Max file size: 5MB</small>
+                        <label>Select Document to Merge:</label>
+                        <input type="file" class="form-control-file" name="act_expense_document" accept=".pdf,.jpg,.jpeg,.png,.xlsx,.xls,.doc,.docx" required>
+                        <small class="form-text text-success"><i class="fas fa-info-circle"></i> All file types will be converted to PDF and merged. Max file size: 5MB</small>
                     </div>
-                    <button type="submit" class="btn btn-success btn-sm"><i class="fas fa-plus"></i> Merge PDFs</button>
+                    <button type="submit" class="btn btn-success btn-sm"><i class="fas fa-plus"></i> Merge Documents</button>
                     <button type="button" class="btn btn-secondary btn-sm" onclick="hideAddToExisting()">Cancel</button>
                 </form>
             </div>

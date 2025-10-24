@@ -61,7 +61,8 @@ import mysql.connector
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-from .utils import merge_pdfs, is_pdf
+from .utils import merge_pdfs, is_pdf, convert_to_pdf
+import io
 import os
 import re
 import uuid
@@ -5483,7 +5484,7 @@ def act_expense_manage_document(request):
     """
     if request.method == 'POST':
         action = request.POST.get('action')
-        document_action = request.POST.get('document_action')  # NEW: Get the document action type
+        document_action = request.POST.get('document_action')  # Get the document action type
         expense_id = request.POST.get('expense_id')
         
         if not expense_id:
@@ -5526,20 +5527,19 @@ def act_expense_manage_document(request):
                         messages.error(request, 'Invalid file type. Please upload PDF, JPG, PNG, Excel, or Word files only.')
                         return redirect('act_expense_all')
                     
-                    # NEW: Check if we're adding to existing or replacing
+                    # Check if we're adding to existing or replacing
                     if document_action == 'add_to_existing' and expense.act_expense_document:
-                        # Validate both files are PDFs before attempting merge
+                        # For merge, existing file must be PDF
                         if not is_pdf(expense.act_expense_document):
                             messages.error(request, 'Cannot merge: Existing document is not a PDF. Please use Replace instead.')
                             return redirect('act_expense_all')
                         
-                        if not is_pdf(uploaded_file):
-                            messages.error(request, 'Cannot merge: New document is not a PDF. Only PDF files can be merged.')
-                            return redirect('act_expense_all')
-                        
+                        # Convert uploaded file to PDF first if necessary
                         try:
-                            # Merge the PDFs
-                            merged_pdf = merge_pdfs(expense.act_expense_document, uploaded_file)
+                            pdf_content, pdf_filename = convert_to_pdf(uploaded_file)
+                            
+                            # Merge the PDFs (pdf_content is already a ContentFile)
+                            merged_pdf = merge_pdfs(expense.act_expense_document, pdf_content)
                             
                             # Generate a new filename
                             original_name = os.path.splitext(os.path.basename(expense.act_expense_document.name))[0]
@@ -5552,7 +5552,7 @@ def act_expense_manage_document(request):
                             # Save the merged PDF
                             expense.act_expense_document.save(new_filename, merged_pdf, save=True)
                             
-                            messages.success(request, f'PDF documents merged successfully for expense on {expense.act_expense_date}!')
+                            messages.success(request, f'Documents merged successfully for expense on {expense.act_expense_date}!')
                         except ValueError as e:
                             messages.error(request, f'Error: {str(e)}')
                             return redirect('act_expense_all')
@@ -5560,15 +5560,25 @@ def act_expense_manage_document(request):
                             messages.error(request, f'Error merging documents: {str(e)}')
                             return redirect('act_expense_all')
                     else:
-                        # Regular upload/replacement
+                        # Regular upload/replace with automatic PDF conversion
                         # Delete existing file if present
                         if expense.act_expense_document:
                             if expense.act_expense_document.storage.exists(expense.act_expense_document.name):
                                 expense.act_expense_document.delete(save=False)
                         
-                        expense.act_expense_document = uploaded_file
-                        expense.save()
-                        messages.success(request, f'Invoice document uploaded successfully for expense on {expense.act_expense_date}!')
+                        # Convert to PDF if necessary
+                        try:
+                            pdf_content, pdf_filename = convert_to_pdf(uploaded_file)
+                            expense.act_expense_document.save(pdf_filename, pdf_content, save=True)
+                            
+                            # Show different message if conversion happened
+                            if file_extension != '.pdf':
+                                messages.success(request, f'Document uploaded and converted to PDF successfully for expense on {expense.act_expense_date}!')
+                            else:
+                                messages.success(request, f'Document uploaded successfully for expense on {expense.act_expense_date}!')
+                        except Exception as e:
+                            messages.error(request, f'Error processing document: {str(e)}')
+                            return redirect('act_expense_all')
                 else:
                     messages.error(request, 'Please select a file to upload')
                     
@@ -5665,7 +5675,7 @@ def act_expense_upload_inv(request):
     
     if request.method == 'POST':
         action = request.POST.get('action')
-        document_action = request.POST.get('document_action')  # NEW: Get the document action type
+        document_action = request.POST.get('document_action')  # Get the document action type
         expense_id = request.POST.get('expense_id')
         
         if not expense_id:
@@ -5708,20 +5718,19 @@ def act_expense_upload_inv(request):
                         messages.error(request, 'Invalid file type. Please upload PDF, JPG, PNG, Excel, or Word files only.')
                         return redirect('act_expense_upload_inv')
                     
-                    # NEW: Check if we're adding to existing or replacing
+                    # Check if we're adding to existing or replacing
                     if document_action == 'add_to_existing' and expense.act_expense_document:
-                        # Validate both files are PDFs before attempting merge
+                        # For merge, existing file must be PDF
                         if not is_pdf(expense.act_expense_document):
                             messages.error(request, 'Cannot merge: Existing document is not a PDF. Please use Replace instead.')
                             return redirect('act_expense_upload_inv')
                         
-                        if not is_pdf(uploaded_file):
-                            messages.error(request, 'Cannot merge: New document is not a PDF. Only PDF files can be merged.')
-                            return redirect('act_expense_upload_inv')
-                        
+                        # Convert uploaded file to PDF first if necessary
                         try:
-                            # Merge the PDFs
-                            merged_pdf = merge_pdfs(expense.act_expense_document, uploaded_file)
+                            pdf_content, pdf_filename = convert_to_pdf(uploaded_file)
+                            
+                            # Merge the PDFs (pdf_content is already a ContentFile)
+                            merged_pdf = merge_pdfs(expense.act_expense_document, pdf_content)
                             
                             # Generate a new filename
                             original_name = os.path.splitext(os.path.basename(expense.act_expense_document.name))[0]
@@ -5734,7 +5743,7 @@ def act_expense_upload_inv(request):
                             # Save the merged PDF
                             expense.act_expense_document.save(new_filename, merged_pdf, save=True)
                             
-                            messages.success(request, f'PDF documents merged successfully for expense on {expense.act_expense_date}!')
+                            messages.success(request, f'Documents merged successfully for expense on {expense.act_expense_date}!')
                         except ValueError as e:
                             messages.error(request, f'Error: {str(e)}')
                             return redirect('act_expense_upload_inv')
@@ -5742,15 +5751,25 @@ def act_expense_upload_inv(request):
                             messages.error(request, f'Error merging documents: {str(e)}')
                             return redirect('act_expense_upload_inv')
                     else:
-                        # Regular upload/replace
+                        # Regular upload/replace with automatic PDF conversion
                         # Delete existing file if present
                         if expense.act_expense_document:
                             if expense.act_expense_document.storage.exists(expense.act_expense_document.name):
                                 expense.act_expense_document.delete(save=False)
                         
-                        expense.act_expense_document = uploaded_file
-                        expense.save()
-                        messages.success(request, f'Document uploaded successfully for expense on {expense.act_expense_date}!')
+                        # Convert to PDF if necessary
+                        try:
+                            pdf_content, pdf_filename = convert_to_pdf(uploaded_file)
+                            expense.act_expense_document.save(pdf_filename, pdf_content, save=True)
+                            
+                            # Show different message if conversion happened
+                            if file_extension != '.pdf':
+                                messages.success(request, f'Document uploaded and converted to PDF successfully for expense on {expense.act_expense_date}!')
+                            else:
+                                messages.success(request, f'Document uploaded successfully for expense on {expense.act_expense_date}!')
+                        except Exception as e:
+                            messages.error(request, f'Error processing document: {str(e)}')
+                            return redirect('act_expense_upload_inv')
                 else:
                     messages.error(request, 'Please select a file to upload')
                     

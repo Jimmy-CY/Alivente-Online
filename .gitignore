@@ -1,4 +1,37 @@
+# Python
 __pycache__/
-*.env*
-*.log 
- 
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual Environment
+code/
+venv/
+env/
+
+# Environment Variables (IMPORTANT - NEVER COMMIT!)
+.env
+*.env
+.env.*
+*.env.*
+!.env.example
+
+# Django
+*.log
+db.sqlite3
+*.sqlite3
+media/
+staticfiles/
+static_root/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini

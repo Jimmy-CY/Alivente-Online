@@ -49,7 +49,7 @@
         <td>{{ expense.act_expense_amount|floatformat:2|intcomma }}</td>
         <td>
             {% if expense.act_expense_document %}
-                <button type="button" class="btn btn-sm btn-success" onclick="viewDocument('{{ expense.act_expense_document.url }}', '{{ expense.act_expense_document.name }}', {{ expense.act_expense_id }}, '{{ expense.act_expense_date|date:"Y-m-d" }}')">
+                <button type="button" class="btn btn-sm btn-success" onclick="viewDocument('{{ expense.act_expense_document.url }}', '{{ expense.act_expense_document.name }}')">
                     <i class="fas fa-file"></i> Invoice
                 </button>
             {% else %}
@@ -165,18 +165,7 @@
         </div>
       </div>
       <div class="modal-footer">
-        <a id="downloadLink" href="#" target="_blank" class="btn btn-info">
-          <i class="fas fa-download"></i> Download
-        </a>
-        <button type="button" id="addButton" class="btn btn-success" style="display:none;">
-          <i class="fas fa-plus"></i> Add to Existing
-        </button>
-        <button type="button" class="btn btn-warning" onclick="replaceDocument()">
-          <i class="fas fa-sync"></i> Replace
-        </button>
-        <button type="button" id="deleteButtonModal" class="btn btn-danger">
-          <i class="fas fa-trash"></i> Delete Document
-        </button>
+        <a id="downloadLink" href="#" target="_blank" class="btn btn-info">Download</a>
         <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="$('#viewModal').modal('hide');">Close</button>
       </div>
     </div>
@@ -240,17 +229,18 @@ function addToExisting(expenseId) {
     // Update the modal text to inform user
     const modalLabel = document.getElementById('uploadModalLabel');
     if (modalLabel) {
-        modalLabel.textContent = 'Add to Existing Document (PDF Only)';
+        modalLabel.textContent = 'Add to Existing Document';
     }
     
-    // Update the file input to accept only PDFs
-    fileInput.setAttribute('accept', '.pdf');
+    // Accept all file types (they will be converted to PDF automatically)
+    fileInput.setAttribute('accept', '.pdf,.jpg,.jpeg,.png,.xlsx,.xls,.doc,.docx');
     
     // Update the helper text
     const helperText = fileInput.nextElementSibling;
     if (helperText && helperText.classList.contains('form-text')) {
-        helperText.textContent = 'Only PDF files can be merged. Max file size: 5MB';
-        helperText.classList.add('text-warning');
+        helperText.textContent = 'All file types will be converted to PDF and merged. Max file size: 5MB';
+        helperText.classList.remove('text-warning');
+        helperText.classList.add('text-success');
     }
     
     $('#uploadModal').modal('show');
@@ -262,20 +252,9 @@ function deleteDocument(expenseId, expenseDate) {
     $('#deleteModal').modal('show');
 }
 
-function replaceDocument() {
-    $('#viewModal').modal('hide');
-    uploadDocument(window.currentExpenseId);
-}
-
-function viewDocument(documentUrl, documentName, expenseId, expenseDate) {
+function viewDocument(documentUrl, documentName) {
     const documentViewer = document.getElementById('documentViewer');
     const downloadLink = document.getElementById('downloadLink');
-    const addButton = document.getElementById('addButton');
-    const deleteButtonModal = document.getElementById('deleteButtonModal');
-    
-    // Store the expense ID and date for later use
-    window.currentExpenseId = expenseId;
-    window.currentExpenseDate = expenseDate;
     
     // Set download link
     downloadLink.href = documentUrl;
@@ -286,23 +265,6 @@ function viewDocument(documentUrl, documentName, expenseId, expenseDate) {
     
     // Get file extension
     const extension = documentName.split('.').pop().toLowerCase();
-    
-    // Show/hide Add button based on file type (only for PDFs)
-    if (extension === 'pdf') {
-        addButton.style.display = 'inline-block';
-        addButton.onclick = function() {
-            $('#viewModal').modal('hide');
-            addToExisting(window.currentExpenseId);
-        };
-    } else {
-        addButton.style.display = 'none';
-    }
-    
-    // Set up delete button
-    deleteButtonModal.onclick = function() {
-        $('#viewModal').modal('hide');
-        deleteDocument(window.currentExpenseId, window.currentExpenseDate);
-    };
     
     if (extension === 'pdf') {
         // For PDF files
