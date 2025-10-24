@@ -1885,3 +1885,32 @@ INFO 2025-10-23 09:46:48,950 middleware 41488 38868 Starting request req_1761202
 INFO 2025-10-23 09:46:57,754 middleware 41488 38868 Starting request req_1761202017_38868: GET / (user: anonymous)
 INFO 2025-10-23 09:47:02,737 middleware 41488 38868 Starting request req_1761202022_38868: GET /act_expense_all/ (user: anonymous)
 INFO 2025-10-23 09:47:08,336 middleware 41488 38868 Starting request req_1761202028_38868: GET /media/expense_docs/spain-eusebi-guell-20250819-Proof_of_Address.pdf (user: anonymous)
+INFO 2025-10-23 09:49:58,253 middleware 40804 31636 Enhanced DatabaseConnectionMiddleware initialized with threshold=50
+INFO 2025-10-23 09:53:30,272 middleware 14256 6932 Enhanced DatabaseConnectionMiddleware initialized with threshold=50
+INFO 2025-10-23 09:53:39,320 middleware 24976 41080 Enhanced DatabaseConnectionMiddleware initialized with threshold=50
+INFO 2025-10-23 09:55:12,544 middleware 39728 39076 Enhanced DatabaseConnectionMiddleware initialized with threshold=50
+INFO 2025-10-23 09:56:14,809 middleware 8836 35532 Enhanced DatabaseConnectionMiddleware initialized with threshold=50
+INFO 2025-10-23 09:56:20,985 middleware 8836 20900 Starting request req_1761202580_20900: GET / (user: anonymous)
+INFO 2025-10-23 09:56:22,398 middleware 8836 20900 Starting request req_1761202582_20900: GET /act_expense_all/ (user: anonymous)
+INFO 2025-10-23 09:57:28,781 middleware 31376 39848 Enhanced DatabaseConnectionMiddleware initialized with threshold=50
+INFO 2025-10-23 09:57:33,217 middleware 31376 25064 Starting request req_1761202653_25064: GET / (user: anonymous)
+INFO 2025-10-23 09:57:35,021 middleware 31376 25064 Starting request req_1761202655_25064: GET /act_expense_all/ (user: anonymous)
+INFO 2025-10-23 10:01:31,823 middleware 40860 39748 Enhanced DatabaseConnectionMiddleware initialized with threshold=50
+INFO 2025-10-23 10:01:53,027 middleware 37140 4024 Enhanced DatabaseConnectionMiddleware initialized with threshold=50
+ERROR 2025-10-23 10:01:58,481 middleware 37140 27356 EXCEPTION in request req_1761202918_27356:
+  Exception: 'DatabaseConnectionMiddleware' object has no attribute '_pre_request_cleanup'
+  Request: GET /
+  User: anonymous
+  Duration so far: 0.00s
+  Traceback: Traceback (most recent call last):
+  File "C:\users\demet\onedrive\desktop\pythonapps\alivente-online\pages\middleware.py", line 66, in __call__
+    self._pre_request_cleanup()
+    ^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'DatabaseConnectionMiddleware' object has no attribute '_pre_request_cleanup'
+
+ERROR 2025-10-23 10:01:58,531 middleware 37140 27356 EMERGENCY CLEANUP for request req_1761202918_27356: GET /
+INFO 2025-10-23 10:29:53,024 middleware 40068 5848 Enhanced DatabaseConnectionMiddleware initialized with threshold=50
+INFO 2025-10-23 10:33:00,475 middleware 38064 25504 Enhanced DatabaseConnectionMiddleware initialized with threshold=50
+INFO 2025-10-23 10:33:06,023 middleware 38064 30152 Starting request req_1761204786_30152: GET / (user: anonymous)
+INFO 2025-10-23 10:33:07,393 middleware 38064 30152 Starting request req_1761204787_30152: GET /act_expense_all/ (user: anonymous)
+INFO 2025-10-23 10:33:10,500 middleware 38064 30152 Starting request req_1761204790_30152: GET /media/[file with special characters] (user: anonymous)
