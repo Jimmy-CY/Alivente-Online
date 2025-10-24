@@ -1914,3 +1914,4 @@ INFO 2025-10-23 10:33:00,475 middleware 38064 25504 Enhanced DatabaseConnectionM
 INFO 2025-10-23 10:33:06,023 middleware 38064 30152 Starting request req_1761204786_30152: GET / (user: anonymous)
 INFO 2025-10-23 10:33:07,393 middleware 38064 30152 Starting request req_1761204787_30152: GET /act_expense_all/ (user: anonymous)
 INFO 2025-10-23 10:33:10,500 middleware 38064 30152 Starting request req_1761204790_30152: GET /media/[file with special characters] (user: anonymous)
+INFO 2025-10-24 10:21:03,890 middleware 7720 2276 Enhanced DatabaseConnectionMiddleware initialized with threshold=50
