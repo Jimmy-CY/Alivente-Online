@@ -65,11 +65,15 @@ class Command(BaseCommand):
             # Check for expiring passports
             expiring_passports = self.get_expiring_passports()
             
+            # NEW: Check for new leases that need to be uploaded
+            new_leases_to_upload = self.get_new_leases_to_upload()
+            
             vacant_count = len(vacant_properties)
             expiring_count = len(expiring_leases)
             declined_count = len(declined_renewals)
             overdue_count = len(overdue_invoices)
             passport_count = len(expiring_passports)
+            new_lease_count = len(new_leases_to_upload)
             
             self.stdout.write(f'Invoices created today: {created_invoices_count}')
             self.stdout.write(f'Vacant properties: {vacant_count}')
@@ -77,6 +81,7 @@ class Command(BaseCommand):
             self.stdout.write(f'Declined renewals (need new tenants): {declined_count}')
             self.stdout.write(f'Overdue invoices: {overdue_count}')
             self.stdout.write(f'Expiring passports (within 6 months): {passport_count}')
+            self.stdout.write(f'New leases to upload: {new_lease_count}')
             
             # Check if action is needed for property management email
             if vacant_count > 0 or expiring_count > 0 or declined_count > 0 or overdue_count > 0 or created_invoices_count > 0:
@@ -105,6 +110,20 @@ class Command(BaseCommand):
                 self.stdout.write(f'Passport expiry email function returned: {passport_result}')
             else:
                 self.stdout.write('No expiring passports found')
+            
+            # NEW: Send new lease upload reminder if needed
+            if new_lease_count > 0:
+                self.stdout.write('New leases need to be uploaded! Sending upload reminder...')
+                
+                if self.dry_run:
+                    self.stdout.write('DRY RUN: Would send new lease upload reminder email here')
+                    lease_upload_result = True
+                else:
+                    lease_upload_result = self.send_new_lease_upload_reminder(new_leases_to_upload)
+                
+                self.stdout.write(f'New lease upload reminder email function returned: {lease_upload_result}')
+            else:
+                self.stdout.write('No new lease uploads needed')
                 
         except Exception as e:
             self.stdout.write(f'❌ Error during execution: {e}')
@@ -396,6 +415,216 @@ class Command(BaseCommand):
             self.stdout.write(f'❌ Error getting expiring passports: {e}')
             logger.error(f'Error getting expiring passports: {e}', exc_info=True)
             return []
+    
+    def get_new_leases_to_upload(self):
+        """Get tenants with renewal status 'new_lease_signed' where lease end date is today"""
+        today = date.today()
+        
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute("""
+                    SELECT prop.prop_name, prop.prop_country, tenant.tenant_name, 
+                           tenant.tenant_lease_end_date
+                    FROM railway.tenant
+                    JOIN railway.prop ON prop.prop_id = tenant.prop_id
+                    WHERE tenant.tenant_current = 'Yes'
+                    AND tenant.tenant_renewal_status = 'new_lease_signed'
+                    AND tenant.tenant_lease_end_date = %s
+                    ORDER BY prop.prop_country ASC, prop.prop_name ASC
+                """, [today])
+                
+                lease_rows = cursor.fetchall()
+                
+                leases_to_upload = []
+                for row in lease_rows:
+                    leases_to_upload.append({
+                        'prop_name': row[0],
+                        'prop_country': row[1],
+                        'tenant_name': row[2],
+                        'lease_end_date': row[3].strftime('%Y-%m-%d')
+                    })
+                
+                self.stdout.write(f'Found {len(leases_to_upload)} new lease(s) that need to be uploaded today')
+                return leases_to_upload
+                
+        except Exception as e:
+            self.stdout.write(f'❌ Error getting new leases to upload: {e}')
+            logger.error(f'Error getting new leases to upload: {e}', exc_info=True)
+            return []
+    
+    def send_new_lease_upload_reminder(self, new_leases_to_upload):
+        """Send email reminder to upload new lease agreements"""
+        import smtplib
+        from email.mime.multipart import MIMEMultipart
+        from email.mime.text import MIMEText
+        
+        smtp_object = None
+        lease_count = len(new_leases_to_upload)
+        
+        if lease_count == 0:
+            self.stdout.write('No new leases to upload')
+            return True
+        
+        try:
+            self.stdout.write('=== SENDING NEW LEASE UPLOAD REMINDER ===')
+            
+            # Get email settings from environment variables
+            email_host = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
+            email_port = int(os.environ.get('EMAIL_PORT', 465))
+            email_user = os.environ.get('EMAIL_USER', 'demetrimanias@gmail.com')
+            email_password = os.environ.get('EMAIL_PASSWORD')
+            email_use_ssl = os.environ.get('EMAIL_USE_SSL', 'True').lower() == 'true'
+            email_use_tls = os.environ.get('EMAIL_USE_TLS', 'False').lower() == 'true'
+            
+            # Send only to demetrimanias@gmail.com
+            email_to_list = ['demetrimanias@gmail.com']
+            
+            if not email_password:
+                self.stdout.write('❌ EMAIL_PASSWORD environment variable not set')
+                return False
+            
+            # Create message
+            msg = MIMEMultipart('alternative')
+            msg['From'] = email_user
+            msg['To'] = email_to_list[0]
+            
+            # Determine correct grammar
+            lease_word = "Lease" if lease_count == 1 else "Leases"
+            agreement_word = "Agreement" if lease_count == 1 else "Agreements"
+            
+            msg['Subject'] = f"URGENT: Upload New {lease_word} {agreement_word} ({lease_count})"
+            
+            # Build HTML email body
+            html_body = f"""
+            <html>
+            <head>
+            <style>
+            p {{ margin: 0; padding: 0; }}
+            ul {{ margin: 0; padding: 0; padding-left: 20px; }}
+            li {{ margin: 0; padding: 0; margin-bottom: 15px; }}
+            .urgent {{ color: #cc0000; font-weight: bold; }}
+            </style>
+            </head>
+            <body>
+                <p>Dear User,</p>
+                <br>
+                <p><b><u class="urgent">NEW LEASE AGREEMENT UPLOAD REQUIRED:</u></b></p>
+                <p>The following {"lease has" if lease_count == 1 else "leases have"} ended today and {"a new lease agreement needs" if lease_count == 1 else "new lease agreements need"} to be uploaded to the system:</p>
+                <br>
+                <ul>"""
+            
+            for lease in new_leases_to_upload:
+                html_body += f"""
+                <li>
+                    <b>{lease['prop_name']} ({lease['prop_country']})</b><br>
+                    Tenant: {lease['tenant_name']}<br>
+                    Previous Lease End Date: {lease['lease_end_date']}<br>
+                    <span class="urgent">⚠️ NEW LEASE AGREEMENT MUST BE UPLOADED TODAY</span>
+                </li>"""
+            
+            html_body += """
+                </ul>
+                <br>
+                <p><b>ACTION REQUIRED:</b></p>
+                <p>Please log into the Alivente Online System at <a href="https://alivente.online">alivente.online</a> and upload the new lease agreement document(s) immediately.</p>
+                <br>
+                <p><b>Steps to Upload:</b></p>
+                <ol>
+                    <li>Navigate to the Tenants section</li>
+                    <li>Find the tenant listed above</li>
+                    <li>Click on "Edit Tenant"</li>
+                    <li>Update the Lease Start Date, Lease End Date, Deposit, Rental and Renewal Status</li>                    
+                    <li>Save the changes</li>
+                    <li>Upload the new lease agreement in the "Administration --> Manage Lease Agreements" module</li>
+                </ol>
+                <br>
+                <p>Best regards,<br>
+                Alivente Property Management System<br>
+                Automated Lease Management</p>
+            </body>
+            </html>
+            """
+            
+            # Create plain text version
+            text_body = f"""Dear User,
+
+NEW LEASE AGREEMENT UPLOAD REQUIRED:
+
+The following {"lease has" if lease_count == 1 else "leases have"} ended today and {"a new lease agreement needs" if lease_count == 1 else "new lease agreements need"} to be uploaded to the system:
+
+"""
+            
+            for lease in new_leases_to_upload:
+                text_body += f"""
+• {lease['prop_name']} ({lease['prop_country']})
+  Tenant: {lease['tenant_name']}
+  Previous Lease End Date: {lease['lease_end_date']}
+  ⚠️ NEW LEASE AGREEMENT MUST BE UPLOADED TODAY
+
+"""
+            
+            text_body += """ACTION REQUIRED:
+Please log into the Alivente Online System at alivente.online and upload the new lease agreement document(s) immediately.
+
+Steps to Upload:
+1. Navigate to the Tenants section
+2. Find the tenant listed above
+3. Click on "Edit Tenant"
+4. Update the Lease Start Date, Lease End Date, Deposit, Rental and Renewal Status
+5. Save the changes
+6. Upload the new lease agreement in the "Administration --> Manage Lease Agreements" module
+
+Best regards,
+Alivente Property Management System
+Automated Lease Management"""
+            
+            # Attach both HTML and plain text versions
+            part1 = MIMEText(text_body, 'plain')
+            part2 = MIMEText(html_body, 'html')
+            
+            msg.attach(part1)
+            msg.attach(part2)
+            
+            # SMTP setup
+            if email_use_ssl:
+                smtp_object = smtplib.SMTP_SSL(email_host, email_port, timeout=10)
+            else:
+                smtp_object = smtplib.SMTP(email_host, email_port, timeout=10)
+                smtp_object.ehlo()
+                if email_use_tls:
+                    smtp_object.starttls()
+            
+            smtp_object.login(email_user, email_password)
+            
+            # Send email
+            text = msg.as_string()
+            smtp_object.sendmail(email_user, email_to_list, text)
+            
+            self.stdout.write('✅ New lease upload reminder email sent successfully!')
+            logger.info('New lease upload reminder email sent successfully')
+            return True
+            
+        except smtplib.SMTPAuthenticationError as e:
+            error_msg = f"SMTP Authentication Error: {e}"
+            logger.error(error_msg)
+            self.stdout.write(f'❌ {error_msg}')
+            return False
+        except smtplib.SMTPException as e:
+            error_msg = f"SMTP Error: {e}"
+            logger.error(error_msg)
+            self.stdout.write(f'❌ {error_msg}')
+            return False
+        except Exception as e:
+            error_msg = f"Error sending new lease upload reminder email: {e}"
+            logger.error(error_msg, exc_info=True)
+            self.stdout.write(f'❌ {error_msg}')
+            return False
+        finally:
+            if smtp_object:
+                try:
+                    smtp_object.quit()
+                except:
+                    pass
     
     def send_passport_expiry_notification(self, expiring_passports):
         """Send separate email notification for expiring passports - only on 1st or 15th of month"""
