@@ -1,0 +1,1838 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+{% block title %}Recipe Management{% endblock %}
+{% block content %}
+
+<style>
+/* Recipe Filter Panel Styles */
+.recipe-filter-panel {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border: 1px solid #dee2e6;
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 30px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.recipe-filter-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #dee2e6;
+    cursor: pointer;
+}
+
+.recipe-filter-title {
+    margin: 0;
+    color: #2c3e50;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 18px;
+}
+
+.recipe-filter-title i.fas {
+    color: #28a745;
+    font-size: 16px;
+}
+
+.recipe-filter-toggle-icon {
+    transition: transform 0.3s ease;
+    margin-left: 8px;
+    font-size: 14px;
+}
+
+.recipe-filter-content {
+    display: none;
+}
+
+.recipe-filter-content.expanded {
+    display: block;
+}
+
+.recipe-filter-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 16px;
+    align-items: start;
+    margin-bottom: 20px;
+}
+
+.recipe-filter-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.recipe-filter-label {
+    font-weight: 500;
+    color: #495057;
+    margin-bottom: 6px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.recipe-search-input-group {
+    display: flex;
+}
+
+.recipe-search-input {
+    border: 2px solid #e9ecef;
+    border-radius: 8px 0 0 8px;
+    border-right: none;
+    padding: 10px 14px;
+    font-size: 14px;
+    background: white;
+    flex: 1;
+    height: 44px;
+}
+
+.recipe-search-btn {
+    background: #28a745;
+    border: 2px solid #28a745;
+    border-left: none;
+    border-radius: 0 8px 8px 0;
+    color: white;
+    padding: 10px 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 44px;
+}
+
+/* Multi-Select Filter Dropdown Styles */
+.filter-multiselect-dropdown {
+    position: relative;
+}
+
+.filter-multiselect-button {
+    width: 100%;
+    padding: 10px 16px;
+    background: white;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 14px;
+    transition: all 0.2s;
+    height: 44px;
+    text-align: left;
+}
+
+.filter-multiselect-button:hover {
+    border-color: #28a745;
+}
+
+.filter-multiselect-button.active {
+    border-color: #28a745;
+    background: #f8f9fa;
+}
+
+.filter-multiselect-placeholder {
+    color: #6c757d;
+}
+
+.filter-multiselect-count {
+    background: #28a745;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.filter-multiselect-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 2px solid #28a745;
+    border-radius: 8px;
+    margin-top: 4px;
+    max-height: 250px;
+    overflow-y: auto;
+    display: none;
+    z-index: 1000;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.filter-multiselect-menu.show {
+    display: block;
+}
+
+.filter-multiselect-item {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: background 0.2s;
+    font-size: 14px;
+}
+
+.filter-multiselect-item:hover {
+    background: #f8f9fa;
+}
+
+.filter-multiselect-item input[type="checkbox"] {
+    margin-right: 8px;
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+}
+
+.filter-multiselect-item label {
+    cursor: pointer;
+    margin: 0;
+    flex: 1;
+}
+
+.recipe-active-filters {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid #dee2e6;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.recipe-filter-tags {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.recipe-filter-tag {
+    background: #28a745;
+    color: white;
+    padding: 4px 12px;
+    border-radius: 16px;
+    font-size: 12px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.recipe-remove-tag {
+    background: rgba(255, 255, 255, 0.3);
+    border: none;
+    color: white;
+    border-radius: 50%;
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 10px;
+    line-height: 1;
+}
+
+.recipe-remove-tag:hover {
+    background: rgba(255, 255, 255, 0.5);
+}
+
+/* A-Z Letter Filter Styles */
+.letter-filter-container {
+    background: white;
+    border: 2px solid #dee2e6;
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.letter-filter-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+    scrollbar-color: #28a745 #f1f1f1;
+}
+
+.letter-filter-wrapper::-webkit-scrollbar {
+    height: 6px;
+}
+
+.letter-filter-wrapper::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.letter-filter-wrapper::-webkit-scrollbar-thumb {
+    background: #28a745;
+    border-radius: 3px;
+}
+
+.letter-filter-wrapper::-webkit-scrollbar-thumb:hover {
+    background: #218838;
+}
+
+.letter-filter-list {
+    display: flex;
+    gap: 4px;
+    min-width: min-content;
+    padding: 2px 0;
+    justify-content: center;
+}
+
+.letter-filter-item {
+    flex-shrink: 0;
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1.5px solid #dee2e6;
+    border-radius: 4px;
+    font-weight: 600;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: white;
+    color: #495057;
+    text-decoration: none;
+}
+
+.letter-filter-item:hover {
+    text-decoration: none;
+}
+
+.letter-filter-item.available {
+    color: #28a745;
+    border-color: #28a745;
+}
+
+.letter-filter-item.available:hover {
+    background: #28a745;
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(40, 167, 69, 0.3);
+}
+
+.letter-filter-item.disabled {
+    color: #d0d0d0;
+    border-color: #e9ecef;
+    cursor: not-allowed;
+    background: #f8f9fa;
+}
+
+.letter-filter-item.active {
+    background: #28a745;
+    color: white;
+    border-color: #28a745;
+    box-shadow: 0 2px 4px rgba(40, 167, 69, 0.3);
+}
+
+/* View Toggle Styles */
+.view-toggle-container {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.view-toggle-buttons {
+    display: inline-flex;
+    border: 2px solid #dee2e6;
+    border-radius: 8px;
+    overflow: hidden;
+    background: white;
+}
+
+.view-toggle-btn {
+    padding: 10px 20px;
+    border: none;
+    background: white;
+    color: #6c757d;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s;
+    border-right: 1px solid #dee2e6;
+}
+
+.view-toggle-btn:last-child {
+    border-right: none;
+}
+
+.view-toggle-btn:hover {
+    background: #f8f9fa;
+}
+
+.view-toggle-btn.active {
+    background: #28a745;
+    color: white;
+}
+
+.view-toggle-btn i {
+    font-size: 16px;
+}
+
+/* Grid View Styles */
+.recipe-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 24px;
+    margin-bottom: 30px;
+}
+
+.recipe-card {
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+    background: white;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.recipe-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+}
+
+.recipe-image-container {
+    position: relative;
+    width: 100%;
+    height: 200px;
+}
+
+.recipe-image {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    background: #f8f9fa;
+}
+
+.recipe-image-placeholder {
+    width: 100%;
+    height: 200px;
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 48px;
+}
+
+.recipe-image-actions {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    display: flex;
+    gap: 6px;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.recipe-card:hover .recipe-image-actions {
+    opacity: 1;
+}
+
+.recipe-image-action-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 14px;
+    transition: transform 0.2s;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.recipe-image-action-btn:hover {
+    transform: scale(1.1);
+}
+
+.recipe-view-btn {
+    background: #28a745;
+    color: white;
+}
+
+.recipe-edit-btn {
+    background: #ffc107;
+    color: white;
+}
+
+.recipe-delete-btn {
+    background: #dc3545;
+    color: white;
+}
+
+.recipe-card-body {
+    padding: 16px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.recipe-card-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #2c3e50;
+}
+
+.recipe-card-meta {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+}
+
+.recipe-meta-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 13px;
+    color: #6c757d;
+}
+
+.recipe-card-tags {
+    display: flex;
+    gap: 6px;
+    margin-top: auto;
+    flex-wrap: wrap;
+}
+
+/* List View Styles */
+.recipe-list {
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 30px;
+}
+
+.recipe-list-item {
+    display: flex;
+    align-items: center;
+    padding: 10px 14px;
+    border-bottom: 1px solid #dee2e6;
+    transition: background 0.2s;
+}
+
+.recipe-list-item:last-child {
+    border-bottom: none;
+}
+
+.recipe-list-item:nth-child(even) {
+    background: #f8f9fa;
+}
+
+.recipe-list-item:hover {
+    background: #e9ecef;
+}
+
+.recipe-list-image {
+    width: 50px;
+    height: 50px;
+    border-radius: 6px;
+    object-fit: cover;
+    margin-right: 12px;
+    flex-shrink: 0;
+}
+
+.recipe-list-image-placeholder {
+    width: 50px;
+    height: 50px;
+    border-radius: 6px;
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 20px;
+    margin-right: 12px;
+    flex-shrink: 0;
+}
+
+.recipe-list-content {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.recipe-list-name {
+    flex: 1;
+    min-width: 180px;
+}
+
+.recipe-list-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: #2c3e50;
+    margin: 0 0 4px 0;
+}
+
+.recipe-list-tags {
+    display: flex;
+    gap: 4px;
+    flex-wrap: wrap;
+}
+
+.recipe-list-tag {
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-weight: 500;
+}
+
+.recipe-list-tag.course {
+    background: #e3f2fd;
+    color: #1976d2;
+}
+
+.recipe-list-tag.category {
+    background: #e0f7fa;
+    color: #00838f;
+}
+
+.recipe-list-tag.protein {
+    background: #fff3e0;
+    color: #e65100;
+}
+
+.recipe-list-tag.vegetarian {
+    background: #e8f5e9;
+    color: #2e7d32;
+}
+
+.recipe-list-tag.author {
+    background: #f3e5f5;
+    color: #7b1fa2;
+}
+
+.recipe-list-meta-group {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+}
+
+.recipe-list-meta-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 60px;
+}
+
+.recipe-list-meta-label {
+    font-size: 9px;
+    color: #6c757d;
+    text-transform: uppercase;
+    font-weight: 600;
+    margin-bottom: 2px;
+}
+
+.recipe-list-meta-value {
+    font-size: 12px;
+    font-weight: 600;
+    color: #2c3e50;
+    display: flex;
+    align-items: center;
+    gap: 3px;
+}
+
+.recipe-list-meta-value i {
+    font-size: 11px;
+}
+
+.recipe-list-time-group {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.recipe-list-time-item {
+    font-size: 11px;
+    color: #6c757d;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.recipe-list-time-item i {
+    font-size: 10px;
+    width: 12px;
+}
+
+.recipe-list-difficulty {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.recipe-list-difficulty-icon {
+    font-size: 11px;
+}
+
+.recipe-list-actions {
+    display: flex;
+    gap: 4px;
+    margin-left: 12px;
+}
+
+.recipe-list-action-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 11px;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.recipe-list-action-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+/* Load More Button */
+.load-more-container {
+    display: flex;
+    justify-content: center;
+    padding: 30px 0;
+}
+
+.load-more-btn {
+    padding: 12px 32px;
+    background: #28a745;
+    color: white;
+    border: 2px solid #28a745;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.load-more-btn:hover {
+    background: #218838;
+    border-color: #218838;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+}
+
+.load-more-btn:disabled {
+    background: #6c757d;
+    border-color: #6c757d;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.load-more-btn .spinner {
+    display: none;
+}
+
+.load-more-btn.loading .spinner {
+    display: inline-block;
+    animation: spin 1s linear infinite;
+}
+
+.load-more-btn.loading .load-more-text {
+    display: none;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.filter-action-buttons {
+    display: flex;
+    gap: 10px;
+    grid-column: 1 / -1;
+    justify-content: center;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .recipe-filter-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .recipe-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .recipe-list-content {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+    
+    .recipe-list-name {
+        width: 100%;
+    }
+    
+    .recipe-list-meta-group {
+        width: 100%;
+        justify-content: flex-start;
+        gap: 12px;
+    }
+    
+    .recipe-list-actions {
+        margin-left: 0;
+        margin-top: 6px;
+    }
+    
+    .letter-filter-list {
+        gap: 3px;
+    }
+    
+    .letter-filter-item {
+        width: 26px;
+        height: 26px;
+        font-size: 11px;
+    }
+    
+    .recipe-list-item {
+        padding: 8px 10px;
+    }
+}
+</style>
+
+<h2><center>ALIVENTE ONLINE - RECIPE MANAGEMENT</center></h2>
+<h4><center>CREATE / VIEW / EDIT / DELETE RECIPES</center></h4>
+<br/>
+
+{% for msg in messages %}
+<div class="alert alert-secondary alert-dismissible fade show auto-dismiss" role="alert">
+  <strong></strong> <center>{{ msg }}</center>
+  <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+    <span aria-hidden="true">&times;</span>
+  </button>
+</div>
+<script>
+  setTimeout(function() {
+    document.querySelectorAll('.auto-dismiss').forEach(alert => {
+      alert.classList.remove('show');
+      alert.classList.add('fade');
+      setTimeout(() => alert.remove(), 500);
+    });
+  }, 2000);
+</script>
+{% endfor %}
+
+<div style="display: flex; justify-content: space-between; align-items: center;">
+    <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+        <a href="{% url 'create_recipe' %}" class="btn btn-success">
+            <i class="fas fa-plus"></i> Add New Recipe
+        </a>
+        <a href="{% url 'import_recipe' %}" class="btn btn-info">
+            <i class="fas fa-robot"></i> Import with AI
+        </a>
+        <a href="{% url 'meal_plans' %}" class="btn btn-primary">
+            <i class="fas fa-calendar-alt"></i> Meal Plans
+        </a>
+    </div>
+    <a href="{% url 'admin_apms' %}" class="btn btn-success" role="button">Back</a>
+</div>
+<br/>
+
+{% if user.is_superuser %}
+
+<!-- Filter Panel -->
+<div class="recipe-filter-panel" id="recipeFilterPanel">
+    <div class="recipe-filter-header" onclick="toggleRecipeFilterPanel()">
+        <h5 class="recipe-filter-title">
+            <i class="fas fa-filter"></i> Recipe Filters
+            <i class="fas fa-chevron-down recipe-filter-toggle-icon" id="recipeFilterToggleIcon"></i>
+        </h5>
+        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="clearAllRecipeFilters(event)">
+            <i class="fas fa-times-circle"></i> Clear All
+        </button>
+    </div>
+    
+    <div class="recipe-filter-content" id="recipeFilterContent">
+        <form action="{% url 'recipe_management' %}" method="GET" id="recipeFilterForm">
+            
+            <div class="recipe-filter-grid">
+                <!-- Search Filter -->
+                <div class="recipe-filter-group">
+                    <label class="recipe-filter-label">
+                        <i class="fas fa-search"></i> Search Recipe
+                    </label>
+                    <div class="recipe-search-input-group">
+                        <input type="text" name="search" class="recipe-search-input" id="searchInput" placeholder="Search by name..." value="{{ search_query }}">
+                        <button type="submit" class="recipe-search-btn">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Course Filter -->
+                <div class="recipe-filter-group">
+                    <label class="recipe-filter-label">
+                        <i class="fas fa-utensils"></i> Courses
+                    </label>
+                    <div class="filter-multiselect-dropdown">
+                        <button type="button" class="filter-multiselect-button" onclick="toggleFilterDropdown('courseFilterDropdown')">
+                            <span class="filter-multiselect-placeholder" id="courseFilterPlaceholder">All Courses</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                        <div class="filter-multiselect-menu" id="courseFilterDropdown">
+                            {% for course in courses %}
+                            <div class="filter-multiselect-item" onclick="toggleFilterCheckbox(event, 'course-filter-{{ course.recipe_course_id }}')">
+                                <input type="checkbox" 
+                                       id="course-filter-{{ course.recipe_course_id }}" 
+                                       name="course" 
+                                       value="{{ course.recipe_course_id }}"
+                                       {% if course.recipe_course_id|stringformat:"s" in selected_courses %}checked{% endif %}
+                                       onchange="updateFilterDisplay('course')">
+                                <label for="course-filter-{{ course.recipe_course_id }}">{{ course.name }}</label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Category Filter -->
+                <div class="recipe-filter-group">
+                    <label class="recipe-filter-label">
+                        <i class="fas fa-tag"></i> Categories
+                    </label>
+                    <div class="filter-multiselect-dropdown">
+                        <button type="button" class="filter-multiselect-button" onclick="toggleFilterDropdown('categoryFilterDropdown')">
+                            <span class="filter-multiselect-placeholder" id="categoryFilterPlaceholder">All Categories</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                        <div class="filter-multiselect-menu" id="categoryFilterDropdown">
+                            {% for cat in categories %}
+                            <div class="filter-multiselect-item" onclick="toggleFilterCheckbox(event, 'category-filter-{{ cat.recipe_category_id }}')">
+                                <input type="checkbox" 
+                                       id="category-filter-{{ cat.recipe_category_id }}" 
+                                       name="category" 
+                                       value="{{ cat.recipe_category_id }}"
+                                       {% if cat.recipe_category_id|stringformat:"s" in selected_categories %}checked{% endif %}
+                                       onchange="updateFilterDisplay('category')">
+                                <label for="category-filter-{{ cat.recipe_category_id }}">{{ cat.name }}</label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Protein Filter -->
+                <div class="recipe-filter-group">
+                    <label class="recipe-filter-label">
+                        <i class="fas fa-drumstick-bite"></i> Proteins
+                    </label>
+                    <div class="filter-multiselect-dropdown">
+                        <button type="button" class="filter-multiselect-button" onclick="toggleFilterDropdown('proteinFilterDropdown')">
+                            <span class="filter-multiselect-placeholder" id="proteinFilterPlaceholder">All Proteins</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                        <div class="filter-multiselect-menu" id="proteinFilterDropdown">
+                            {% for protein in proteins %}
+                            <div class="filter-multiselect-item" onclick="toggleFilterCheckbox(event, 'protein-filter-{{ protein.custom_protein_id }}')">
+                                <input type="checkbox" 
+                                       id="protein-filter-{{ protein.custom_protein_id }}" 
+                                       name="protein" 
+                                       value="{{ protein.custom_protein_id }}"
+                                       {% if protein.custom_protein_id|stringformat:"s" in selected_proteins %}checked{% endif %}
+                                       onchange="updateFilterDisplay('protein')">
+                                <label for="protein-filter-{{ protein.custom_protein_id }}">{{ protein.name }}</label>
+                            </div>
+                            {% endfor %}
+                            <div class="filter-multiselect-item" onclick="toggleFilterCheckbox(event, 'protein-filter-vegetarian')">
+                                <input type="checkbox" 
+                                       id="protein-filter-vegetarian" 
+                                       name="protein" 
+                                       value="vegetarian"
+                                       {% if 'vegetarian' in selected_proteins %}checked{% endif %}
+                                       onchange="updateFilterDisplay('protein')">
+                                <label for="protein-filter-vegetarian">Vegetarian</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Author Filter -->
+                <div class="recipe-filter-group">
+                    <label class="recipe-filter-label">
+                        <i class="fas fa-user-edit"></i> Author
+                    </label>
+                    <div class="filter-multiselect-dropdown">
+                        <button type="button" class="filter-multiselect-button" onclick="toggleFilterDropdown('authorFilterDropdown')">
+                            <span class="filter-multiselect-placeholder" id="authorFilterPlaceholder">All Authors</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                        <div class="filter-multiselect-menu" id="authorFilterDropdown">
+                            {% for author in authors %}
+                            <div class="filter-multiselect-item" onclick="toggleFilterCheckbox(event, 'author-filter-{{ forloop.counter }}')">
+                                <input type="checkbox" 
+                                       id="author-filter-{{ forloop.counter }}" 
+                                       name="author" 
+                                       value="{{ author.value }}"
+                                       {% if author.value in selected_authors %}checked{% endif %}
+                                       onchange="updateFilterDisplay('author')">
+                                <label for="author-filter-{{ forloop.counter }}">{{ author.name }}</label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="filter-action-buttons">
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-filter"></i> Apply Filters
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary" onclick="clearAllRecipeFilters(event)">
+                        <i class="fas fa-times"></i> Clear All
+                    </button>
+                </div>
+            </div>
+
+            <!-- Active Filters Display -->
+            <div class="recipe-active-filters" id="recipeActiveFilters" style="display: none;">
+                <span>Active filters:</span>
+                <div class="recipe-filter-tags" id="recipeFilterTags"></div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- A-Z Letter Filter -->
+<div class="letter-filter-container">
+    <div class="letter-filter-wrapper">
+        <div class="letter-filter-list">
+            {% for letter_info in letter_data %}
+                {% if letter_info.available %}
+                    <a href="?{% if search_query %}search={{ search_query }}&{% endif %}{% for course in selected_courses %}course={{ course }}&{% endfor %}{% for cat in selected_categories %}category={{ cat }}&{% endfor %}{% for prot in selected_proteins %}protein={{ prot }}&{% endfor %}{% for auth in selected_authors %}author={{ auth }}&{% endfor %}letter={{ letter_info.letter }}" 
+                       class="letter-filter-item available {% if selected_letter == letter_info.letter %}active{% endif %}"
+                       onclick="return handleLetterClick(event, '{{ letter_info.letter }}');">
+                        {{ letter_info.letter }}
+                    </a>
+                {% else %}
+                    <span class="letter-filter-item disabled">{{ letter_info.letter }}</span>
+                {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- View Toggle -->
+<div class="view-toggle-container">
+    <div class="view-toggle-buttons">
+        <button type="button" class="view-toggle-btn active" id="gridViewBtn" onclick="switchView('grid')">
+            <i class="fas fa-th-large"></i> Grid
+        </button>
+        <button type="button" class="view-toggle-btn" id="listViewBtn" onclick="switchView('list')">
+            <i class="fas fa-list"></i> List
+        </button>
+    </div>
+</div>
+
+<!-- Grid View -->
+<div class="recipe-grid" id="recipeGridView">
+    {% for recipe in recipes %}
+    <div class="recipe-card">
+        <div class="recipe-image-container">
+            {% if recipe.recipe_image %}
+            <img src="{{ recipe.recipe_image.url }}" alt="{{ recipe.recipe_name }}" class="recipe-image">
+            {% else %}
+            <div class="recipe-image-placeholder">
+                <i class="fas fa-utensils"></i>
+            </div>
+            {% endif %}
+            
+            <div class="recipe-image-actions">
+                <a href="{% url 'view_recipe' recipe.recipe_id %}" class="recipe-image-action-btn recipe-view-btn" title="View Recipe">
+                    <i class="fas fa-eye"></i>
+                </a>
+                <a href="{% url 'edit_recipe' recipe.recipe_id %}" class="recipe-image-action-btn recipe-edit-btn" title="Edit Recipe">
+                    <i class="fas fa-pencil-alt"></i>
+                </a>
+                <button type="button" class="recipe-image-action-btn recipe-delete-btn" onclick="deleteRecipe({{ recipe.recipe_id }}, '{{ recipe.recipe_name }}')" title="Delete Recipe">
+                    <i class="fas fa-trash-alt"></i>
+                </button>
+            </div>
+        </div>
+        
+        <div class="recipe-card-body">
+            <h5 class="recipe-card-title">{{ recipe.recipe_name }}</h5>
+            
+            <div class="recipe-card-meta">
+                {% if recipe.prep_time %}
+                <span class="recipe-meta-item">
+                    <i class="fas fa-clock"></i> {{ recipe.prep_time }}m prep
+                </span>
+                {% endif %}
+                {% if recipe.cook_time %}
+                <span class="recipe-meta-item">
+                    <i class="fas fa-fire"></i> {{ recipe.cook_time }}m cook
+                </span>
+                {% endif %}
+                {% if recipe.servings %}
+                <span class="recipe-meta-item">
+                    <i class="fas fa-users"></i> {{ recipe.servings }} servings
+                </span>
+                {% endif %}
+                {% if recipe.difficulty_level %}
+                <span class="recipe-meta-item">
+                    <i class="fas fa-signal"></i> {{ recipe.difficulty_level }}
+                </span>
+                {% endif %}
+            </div>
+            
+            <div class="recipe-card-tags">
+                {% for course in recipe.courses.all %}
+                <span class="badge badge-primary">
+                    <i class="fas fa-utensils"></i> {{ course.name }}
+                </span>
+                {% endfor %}
+                
+                {% for category in recipe.categories.all %}
+                <span class="badge badge-info">
+                    <i class="fas fa-tag"></i> {{ category.name }}
+                </span>
+                {% endfor %}
+                
+                {% if recipe.is_vegetarian %}
+                <span class="badge badge-success">
+                    <i class="fas fa-leaf"></i> Vegetarian
+                </span>
+                {% else %}
+                    {% for protein in recipe.proteins.all %}
+                    <span class="badge badge-warning">
+                        <i class="fas fa-drumstick-bite"></i> {{ protein.name }}
+                    </span>
+                    {% endfor %}
+                {% endif %}
+                
+                {% if recipe.author %}
+                <span class="badge badge-dark">
+                    <i class="fas fa-user-edit"></i> {{ recipe.author }}
+                </span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div style="grid-column: 1 / -1; text-align: center; padding: 60px 20px;">
+        <i class="fas fa-utensils fa-4x text-muted mb-3"></i>
+        <h4>No recipes found</h4>
+        <p class="text-muted">Try adjusting your filters or add a new recipe!</p>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- List View -->
+<div class="recipe-list" id="recipeListView" style="display: none;">
+    {% for recipe in recipes %}
+    <div class="recipe-list-item">
+        {% if recipe.recipe_image %}
+        <img src="{{ recipe.recipe_image.url }}" alt="{{ recipe.recipe_name }}" class="recipe-list-image">
+        {% else %}
+        <div class="recipe-list-image-placeholder">
+            <i class="fas fa-utensils"></i>
+        </div>
+        {% endif %}
+        
+        <div class="recipe-list-content">
+            <div class="recipe-list-name">
+                <h5 class="recipe-list-title">{{ recipe.recipe_name }}</h5>
+                <div class="recipe-list-tags">
+                    {% for course in recipe.courses.all %}
+                    <span class="recipe-list-tag course">{{ course.name }}</span>
+                    {% endfor %}
+                    {% for category in recipe.categories.all %}
+                    <span class="recipe-list-tag category">{{ category.name }}</span>
+                    {% endfor %}
+                    {% if recipe.is_vegetarian %}
+                    <span class="recipe-list-tag vegetarian">Vegetarian</span>
+                    {% else %}
+                        {% for protein in recipe.proteins.all %}
+                        <span class="recipe-list-tag protein">{{ protein.name }}</span>
+                        {% endfor %}
+                    {% endif %}
+                    {% if recipe.author %}
+                    <span class="recipe-list-tag author">{{ recipe.author }}</span>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="recipe-list-meta-group">
+                {% if recipe.prep_time or recipe.cook_time %}
+                <div class="recipe-list-meta-item">
+                    <span class="recipe-list-meta-label">Time</span>
+                    <div class="recipe-list-time-group">
+                        {% if recipe.prep_time %}
+                        <span class="recipe-list-time-item">
+                            <i class="fas fa-clock"></i> {{ recipe.prep_time }}m prep
+                        </span>
+                        {% endif %}
+                        {% if recipe.cook_time %}
+                        <span class="recipe-list-time-item">
+                            <i class="fas fa-fire"></i> {{ recipe.cook_time }}m cook
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+                
+                {% if recipe.difficulty_level %}
+                <div class="recipe-list-meta-item">
+                    <span class="recipe-list-meta-label">Difficulty</span>
+                    <span class="recipe-list-meta-value recipe-list-difficulty">
+                        {% if recipe.difficulty_level == 'Easy' %}
+                            <i class="fas fa-signal recipe-list-difficulty-icon" style="color: #28a745;"></i>
+                        {% elif recipe.difficulty_level == 'Medium' %}
+                            <i class="fas fa-signal recipe-list-difficulty-icon" style="color: #ffc107;"></i>
+                        {% elif recipe.difficulty_level == 'Hard' %}
+                            <i class="fas fa-signal recipe-list-difficulty-icon" style="color: #dc3545;"></i>
+                        {% endif %}
+                        {{ recipe.difficulty_level }}
+                    </span>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="recipe-list-actions">
+            <a href="{% url 'view_recipe' recipe.recipe_id %}" class="recipe-list-action-btn recipe-view-btn" title="View Recipe">
+                <i class="fas fa-eye"></i>
+            </a>
+            <a href="{% url 'edit_recipe' recipe.recipe_id %}" class="recipe-list-action-btn recipe-edit-btn" title="Edit Recipe">
+                <i class="fas fa-pencil-alt"></i>
+            </a>
+            <button type="button" class="recipe-list-action-btn recipe-delete-btn" onclick="deleteRecipe({{ recipe.recipe_id }}, '{{ recipe.recipe_name }}')" title="Delete Recipe">
+                <i class="fas fa-trash-alt"></i>
+            </button>
+        </div>
+    </div>
+    {% empty %}
+    <div style="text-align: center; padding: 60px 20px;">
+        <i class="fas fa-utensils fa-4x text-muted mb-3"></i>
+        <h4>No recipes found</h4>
+        <p class="text-muted">Try adjusting your filters or add a new recipe!</p>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Load More Button -->
+{% if has_next %}
+<div class="load-more-container">
+    <button type="button" class="load-more-btn" id="loadMoreBtn" onclick="loadMoreRecipes()">
+        <i class="fas fa-spinner spinner"></i>
+        <span class="load-more-text">
+            <i class="fas fa-plus-circle"></i> Load More Recipes
+        </span>
+    </button>
+</div>
+{% endif %}
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title" id="deleteModalLabel">Confirm Delete</h5>
+        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close" onclick="$('#deleteModal').modal('hide');">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <form method="post" id="deleteForm">
+        <div class="modal-body">
+          {% csrf_token %}
+          <input type="hidden" id="delete_recipe_id" name="recipe_id">
+          <input type="hidden" name="action" value="delete">
+          
+          <div class="text-center">
+            <i class="fas fa-exclamation-triangle fa-3x text-danger mb-3"></i>
+            <h5>Are you sure you want to delete this recipe?</h5>
+            <p class="text-muted">This action cannot be undone.</p>
+            <p><strong>Recipe:</strong> <span id="deleteRecipeName"></span></p>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="$('#deleteModal').modal('hide');">Cancel</button>
+          <button type="submit" class="btn btn-danger">
+            <i class="fas fa-trash"></i> Delete Recipe
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% endif %}
+
+<script>
+// View toggle functionality
+let currentView = localStorage.getItem('recipeView') || 'grid'; // Load saved preference or default to grid
+
+function switchView(view) {
+    currentView = view;
+    localStorage.setItem('recipeView', view); // Save preference
+    
+    const gridView = document.getElementById('recipeGridView');
+    const listView = document.getElementById('recipeListView');
+    const gridBtn = document.getElementById('gridViewBtn');
+    const listBtn = document.getElementById('listViewBtn');
+    
+    if (view === 'grid') {
+        gridView.style.display = 'grid';
+        listView.style.display = 'none';
+        gridBtn.classList.add('active');
+        listBtn.classList.remove('active');
+    } else {
+        gridView.style.display = 'none';
+        listView.style.display = 'block';
+        listBtn.classList.add('active');
+        gridBtn.classList.remove('active');
+    }
+}
+
+// Handle letter filter clicks - clicking same letter clears it
+function handleLetterClick(event, letter) {
+    const selectedLetter = '{{ selected_letter }}';
+    
+    // If clicking the same letter that's already selected, clear it
+    if (selectedLetter === letter) {
+        event.preventDefault();
+        // Build URL without letter parameter
+        const url = new URL(window.location.href);
+        url.searchParams.delete('letter');
+        window.location.href = url.toString();
+        return false;
+    }
+    
+    // Otherwise, let the link navigate normally (selects new letter)
+    return true;
+}
+
+// Load More functionality
+let currentPage = 1;
+let isLoading = false;
+
+function loadMoreRecipes() {
+    if (isLoading) return;
+    
+    isLoading = true;
+    const btn = document.getElementById('loadMoreBtn');
+    btn.classList.add('loading');
+    btn.disabled = true;
+    
+    currentPage++;
+    
+    // Build URL with all current filters
+    const urlParams = new URLSearchParams(window.location.search);
+    urlParams.set('page', currentPage);
+    
+    fetch(`?${urlParams.toString()}`, {
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Append recipes to current view
+        if (currentView === 'grid') {
+            appendGridRecipes(data.recipes);
+        } else {
+            appendListRecipes(data.recipes);
+        }
+        
+        // Hide Load More button if no more recipes
+        if (!data.has_next) {
+            btn.style.display = 'none';
+        }
+        
+        isLoading = false;
+        btn.classList.remove('loading');
+        btn.disabled = false;
+    })
+    .catch(error => {
+        console.error('Error loading more recipes:', error);
+        isLoading = false;
+        btn.classList.remove('loading');
+        btn.disabled = false;
+    });
+}
+
+function appendGridRecipes(recipes) {
+    const gridView = document.getElementById('recipeGridView');
+    
+    recipes.forEach(recipe => {
+        const card = createGridRecipeCard(recipe);
+        gridView.insertAdjacentHTML('beforeend', card);
+    });
+}
+
+function appendListRecipes(recipes) {
+    const listView = document.getElementById('recipeListView');
+    
+    recipes.forEach(recipe => {
+        const item = createListRecipeItem(recipe);
+        listView.insertAdjacentHTML('beforeend', item);
+    });
+}
+
+function createGridRecipeCard(recipe) {
+    const imageHtml = recipe.recipe_image 
+        ? `<img src="${recipe.recipe_image}" alt="${recipe.recipe_name}" class="recipe-image">`
+        : `<div class="recipe-image-placeholder"><i class="fas fa-utensils"></i></div>`;
+    
+    const prepTime = recipe.prep_time ? `<span class="recipe-meta-item"><i class="fas fa-clock"></i> ${recipe.prep_time}m prep</span>` : '';
+    const cookTime = recipe.cook_time ? `<span class="recipe-meta-item"><i class="fas fa-fire"></i> ${recipe.cook_time}m cook</span>` : '';
+    const servings = recipe.servings ? `<span class="recipe-meta-item"><i class="fas fa-users"></i> ${recipe.servings} servings</span>` : '';
+    
+    const courseBadges = recipe.courses.map(c => `<span class="badge badge-primary"><i class="fas fa-utensils"></i> ${c.name}</span>`).join('');
+    const categoryBadges = recipe.categories.map(c => `<span class="badge badge-info"><i class="fas fa-tag"></i> ${c.name}</span>`).join('');
+    const proteinBadges = recipe.is_vegetarian 
+        ? '<span class="badge badge-success"><i class="fas fa-leaf"></i> Vegetarian</span>'
+        : recipe.proteins.map(p => `<span class="badge badge-warning"><i class="fas fa-drumstick-bite"></i> ${p.name}</span>`).join('');
+    const difficultyBadge = recipe.difficulty_level ? `<span class="badge badge-secondary"><i class="fas fa-signal"></i> ${recipe.difficulty_level}</span>` : '';
+    const authorBadge = recipe.author ? `<span class="badge badge-dark"><i class="fas fa-user-edit"></i> ${recipe.author}</span>` : '';
+    
+    return `
+        <div class="recipe-card">
+            <div class="recipe-image-container">
+                ${imageHtml}
+                <div class="recipe-image-actions">
+                    <a href="/recipes/view/${recipe.recipe_id}/" class="recipe-image-action-btn recipe-view-btn" title="View Recipe">
+                        <i class="fas fa-eye"></i>
+                    </a>
+                    <a href="/recipes/edit/${recipe.recipe_id}/" class="recipe-image-action-btn recipe-edit-btn" title="Edit Recipe">
+                        <i class="fas fa-pencil-alt"></i>
+                    </a>
+                    <button type="button" class="recipe-image-action-btn recipe-delete-btn" onclick="deleteRecipe(${recipe.recipe_id}, '${recipe.recipe_name}')" title="Delete Recipe">
+                        <i class="fas fa-trash-alt"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="recipe-card-body">
+                <h5 class="recipe-card-title">${recipe.recipe_name}</h5>
+                <div class="recipe-card-meta">
+                    ${prepTime}${cookTime}${servings}
+                </div>
+                <div class="recipe-card-tags">
+                    ${courseBadges}${categoryBadges}${proteinBadges}${difficultyBadge}${authorBadge}
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+function createListRecipeItem(recipe) {
+    const imageHtml = recipe.recipe_image 
+        ? `<img src="${recipe.recipe_image}" alt="${recipe.recipe_name}" class="recipe-list-image">`
+        : `<div class="recipe-list-image-placeholder"><i class="fas fa-utensils"></i></div>`;
+    
+    // Build tags
+    let tagsHtml = '<div class="recipe-list-tags">';
+    
+    // Course tags
+    recipe.courses.forEach(c => {
+        tagsHtml += `<span class="recipe-list-tag course">${c.name}</span>`;
+    });
+    
+    // Category tags
+    recipe.categories.forEach(c => {
+        tagsHtml += `<span class="recipe-list-tag category">${c.name}</span>`;
+    });
+    
+    // Protein/Vegetarian tags
+    if (recipe.is_vegetarian) {
+        tagsHtml += `<span class="recipe-list-tag vegetarian">Vegetarian</span>`;
+    } else {
+        recipe.proteins.forEach(p => {
+            tagsHtml += `<span class="recipe-list-tag protein">${p.name}</span>`;
+        });
+    }
+    
+    // Author tag
+    if (recipe.author) {
+        tagsHtml += `<span class="recipe-list-tag author">${recipe.author}</span>`;
+    }
+    
+    tagsHtml += '</div>';
+    
+    // Build time section
+    let timeHtml = '';
+    if (recipe.prep_time || recipe.cook_time) {
+        timeHtml = `
+            <div class="recipe-list-meta-item">
+                <span class="recipe-list-meta-label">Time</span>
+                <div class="recipe-list-time-group">`;
+        
+        if (recipe.prep_time) {
+            timeHtml += `<span class="recipe-list-time-item"><i class="fas fa-clock"></i> ${recipe.prep_time}m prep</span>`;
+        }
+        if (recipe.cook_time) {
+            timeHtml += `<span class="recipe-list-time-item"><i class="fas fa-fire"></i> ${recipe.cook_time}m cook</span>`;
+        }
+        
+        timeHtml += `</div></div>`;
+    }
+    
+    // Build difficulty section
+    let difficultyHtml = '';
+    if (recipe.difficulty_level) {
+        let difficultyIcon = '';
+        if (recipe.difficulty_level === 'Easy') {
+            difficultyIcon = '<i class="fas fa-signal recipe-list-difficulty-icon" style="color: #28a745;"></i>';
+        } else if (recipe.difficulty_level === 'Medium') {
+            difficultyIcon = '<i class="fas fa-signal recipe-list-difficulty-icon" style="color: #ffc107;"></i>';
+        } else if (recipe.difficulty_level === 'Hard') {
+            difficultyIcon = '<i class="fas fa-signal recipe-list-difficulty-icon" style="color: #dc3545;"></i>';
+        }
+        
+        difficultyHtml = `
+            <div class="recipe-list-meta-item">
+                <span class="recipe-list-meta-label">Difficulty</span>
+                <span class="recipe-list-meta-value recipe-list-difficulty">
+                    ${difficultyIcon} ${recipe.difficulty_level}
+                </span>
+            </div>`;
+    }
+    
+    return `
+        <div class="recipe-list-item">
+            ${imageHtml}
+            <div class="recipe-list-content">
+                <div class="recipe-list-name">
+                    <h5 class="recipe-list-title">${recipe.recipe_name}</h5>
+                    ${tagsHtml}
+                </div>
+                <div class="recipe-list-meta-group">
+                    ${timeHtml}${difficultyHtml}
+                </div>
+            </div>
+            <div class="recipe-list-actions">
+                <a href="/recipes/view/${recipe.recipe_id}/" class="recipe-list-action-btn recipe-view-btn" title="View Recipe">
+                    <i class="fas fa-eye"></i>
+                </a>
+                <a href="/recipes/edit/${recipe.recipe_id}/" class="recipe-list-action-btn recipe-edit-btn" title="Edit Recipe">
+                    <i class="fas fa-pencil-alt"></i>
+                </a>
+                <button type="button" class="recipe-list-action-btn recipe-delete-btn" onclick="deleteRecipe(${recipe.recipe_id}, '${recipe.recipe_name}')" title="Delete Recipe">
+                    <i class="fas fa-trash-alt"></i>
+                </button>
+            </div>
+        </div>
+    `;
+}
+
+// Multi-select filter dropdown functionality
+function toggleFilterDropdown(dropdownId) {
+    const dropdown = document.getElementById(dropdownId);
+    const button = dropdown.previousElementSibling;
+    
+    document.querySelectorAll('.filter-multiselect-menu').forEach(menu => {
+        if (menu.id !== dropdownId) {
+            menu.classList.remove('show');
+            menu.previousElementSibling.classList.remove('active');
+        }
+    });
+    
+    dropdown.classList.toggle('show');
+    button.classList.toggle('active');
+}
+
+function toggleFilterCheckbox(event, checkboxId) {
+    const checkbox = document.getElementById(checkboxId);
+    if (event.target.type !== 'checkbox' && event.target.tagName !== 'LABEL') {
+        checkbox.checked = !checkbox.checked;
+        checkbox.dispatchEvent(new Event('change'));
+    }
+}
+
+document.addEventListener('click', function(event) {
+    if (!event.target.closest('.filter-multiselect-dropdown')) {
+        document.querySelectorAll('.filter-multiselect-menu').forEach(menu => {
+            menu.classList.remove('show');
+            menu.previousElementSibling.classList.remove('active');
+        });
+    }
+});
+
+function updateFilterDisplay(filterType) {
+    const checkboxes = document.querySelectorAll(`input[name="${filterType}"]:checked`);
+    const placeholder = document.getElementById(`${filterType}FilterPlaceholder`);
+    
+    if (checkboxes.length === 0) {
+        if (filterType === 'course') {
+            placeholder.innerHTML = 'All Courses';
+        } else if (filterType === 'category') {
+            placeholder.innerHTML = 'All Categories';
+        } else if (filterType === 'protein') {
+            placeholder.innerHTML = 'All Proteins';
+        } else if (filterType === 'author') {
+            placeholder.innerHTML = 'All Authors';
+        }
+        placeholder.classList.add('filter-multiselect-placeholder');
+    } else if (checkboxes.length === 1) {
+        placeholder.textContent = checkboxes[0].nextElementSibling.textContent;
+        placeholder.classList.remove('filter-multiselect-placeholder');
+    } else {
+        placeholder.innerHTML = `<span class="filter-multiselect-count">${checkboxes.length}</span> selected`;
+        placeholder.classList.remove('filter-multiselect-placeholder');
+    }
+    
+    updateRecipeActiveFilters();
+}
+
+// Recipe Filter System JavaScript
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Recipe filter system initializing...');
+    
+    // Apply saved view preference FIRST
+    const savedView = localStorage.getItem('recipeView') || 'grid';
+    switchView(savedView);
+    
+    // Always start filter panel collapsed on page load
+    const filterContent = document.getElementById('recipeFilterContent');
+    const toggleIcon = document.getElementById('recipeFilterToggleIcon');
+    
+    if (filterContent && toggleIcon) {
+        filterContent.classList.remove('expanded');
+        toggleIcon.style.transform = 'rotate(0deg)';
+        console.log('Recipe panel set to collapsed state');
+    }
+    
+    // Initialize filter displays
+    updateFilterDisplay('course');
+    updateFilterDisplay('category');
+    updateFilterDisplay('protein');
+    updateFilterDisplay('author');
+    updateRecipeActiveFilters();
+    
+    // Auto-expand logic
+    const userHasInteracted = sessionStorage.getItem('recipeUserInteracted') === 'true';
+    const hasActiveFilters = checkForRecipeActiveFilters();
+    const justClearedFilters = sessionStorage.getItem('recipeJustClearedFilters') === 'true';
+    const justAppliedFilters = sessionStorage.getItem('recipeJustAppliedFilters') === 'true';
+    
+    if ((userHasInteracted && hasActiveFilters) || justClearedFilters || justAppliedFilters) {
+        setTimeout(() => {
+            expandRecipeFilterPanel();
+        }, 100);
+    }
+    
+    // Clear temporary flags
+    if (justClearedFilters) {
+        setTimeout(() => {
+            sessionStorage.removeItem('recipeJustClearedFilters');
+        }, 200);
+    }
+    
+    if (justAppliedFilters) {
+        setTimeout(() => {
+            sessionStorage.removeItem('recipeJustAppliedFilters');
+        }, 200);
+    }
+    
+    console.log('Recipe filter system ready');
+});
+
+function checkForRecipeActiveFilters() {
+    const searchInput = document.getElementById('searchInput');
+    const courseChecked = document.querySelectorAll('input[name="course"]:checked').length > 0;
+    const categoryChecked = document.querySelectorAll('input[name="category"]:checked').length > 0;
+    const proteinChecked = document.querySelectorAll('input[name="protein"]:checked').length > 0;
+    const authorChecked = document.querySelectorAll('input[name="author"]:checked').length > 0;
+    
+    return (searchInput && searchInput.value) || courseChecked || categoryChecked || proteinChecked || authorChecked;
+}
+
+function expandRecipeFilterPanel() {
+    const filterContent = document.getElementById('recipeFilterContent');
+    const toggleIcon = document.getElementById('recipeFilterToggleIcon');
+    
+    if (filterContent && toggleIcon) {
+        filterContent.classList.add('expanded');
+        toggleIcon.style.transform = 'rotate(180deg)';
+    }
+}
+
+function toggleRecipeFilterPanel() {
+    const filterContent = document.getElementById('recipeFilterContent');
+    const toggleIcon = document.getElementById('recipeFilterToggleIcon');
+    
+    if (filterContent.classList.contains('expanded')) {
+        filterContent.classList.remove('expanded');
+        toggleIcon.style.transform = 'rotate(0deg)';
+        sessionStorage.setItem('recipeUserInteracted', 'false');
+    } else {
+        filterContent.classList.add('expanded');
+        toggleIcon.style.transform = 'rotate(180deg)';
+        sessionStorage.setItem('recipeUserInteracted', 'true');
+    }
+}
+
+function clearAllRecipeFilters(event) {
+    event.stopPropagation();
+    
+    sessionStorage.setItem('recipeUserInteracted', 'true');
+    sessionStorage.setItem('recipeJustClearedFilters', 'true');
+    expandRecipeFilterPanel();
+    
+    document.getElementById('searchInput').value = '';
+    document.querySelectorAll('input[name="course"]').forEach(cb => cb.checked = false);
+    document.querySelectorAll('input[name="category"]').forEach(cb => cb.checked = false);
+    document.querySelectorAll('input[name="protein"]').forEach(cb => cb.checked = false);
+    document.querySelectorAll('input[name="author"]').forEach(cb => cb.checked = false);
+    
+    updateFilterDisplay('course');
+    updateFilterDisplay('category');
+    updateFilterDisplay('protein');
+    updateFilterDisplay('author');
+    
+    // Clear letter filter too
+    window.location.href = '{% url "recipe_management" %}';
+}
+
+function clearRecipeFilterGroup(filterType) {
+    sessionStorage.setItem('recipeUserInteracted', 'true');
+    sessionStorage.setItem('recipeJustAppliedFilters', 'true');
+    expandRecipeFilterPanel();
+    
+    if (filterType === 'search') {
+        document.getElementById('searchInput').value = '';
+    } else {
+        document.querySelectorAll(`input[name="${filterType}"]`).forEach(cb => cb.checked = false);
+        updateFilterDisplay(filterType);
+    }
+    
+    document.getElementById('recipeFilterForm').submit();
+}
+
+function updateRecipeActiveFilters() {
+    const searchInput = document.getElementById('searchInput');
+    const activeFiltersDiv = document.getElementById('recipeActiveFilters');
+    const filterTagsDiv = document.getElementById('recipeFilterTags');
+    
+    if (!filterTagsDiv) return;
+    
+    const search = searchInput.value;
+    const courseCheckboxes = document.querySelectorAll('input[name="course"]:checked');
+    const categoryCheckboxes = document.querySelectorAll('input[name="category"]:checked');
+    const proteinCheckboxes = document.querySelectorAll('input[name="protein"]:checked');
+    const authorCheckboxes = document.querySelectorAll('input[name="author"]:checked');
+    
+    filterTagsDiv.innerHTML = '';
+    let hasFilters = false;
+    
+    if (search) {
+        filterTagsDiv.innerHTML += `
+            <span class="recipe-filter-tag">
+                Search: ${search} 
+                <button class="recipe-remove-tag" onclick="clearRecipeFilterGroup('search')" type="button">×</button>
+            </span>`;
+        hasFilters = true;
+    }
+    
+    if (courseCheckboxes.length > 0) {
+        courseCheckboxes.forEach(cb => {
+            const label = cb.nextElementSibling.textContent;
+            filterTagsDiv.innerHTML += `
+                <span class="recipe-filter-tag">
+                    Course: ${label} 
+                    <button class="recipe-remove-tag" onclick="clearSingleFilter('course', '${cb.value}')" type="button">×</button>
+                </span>`;
+        });
+        hasFilters = true;
+    }
+    
+    if (categoryCheckboxes.length > 0) {
+        categoryCheckboxes.forEach(cb => {
+            const label = cb.nextElementSibling.textContent;
+            filterTagsDiv.innerHTML += `
+                <span class="recipe-filter-tag">
+                    Category: ${label} 
+                    <button class="recipe-remove-tag" onclick="clearSingleFilter('category', '${cb.value}')" type="button">×</button>
+                </span>`;
+        });
+        hasFilters = true;
+    }
+    
+    if (proteinCheckboxes.length > 0) {
+        proteinCheckboxes.forEach(cb => {
+            const label = cb.nextElementSibling.textContent;
+            filterTagsDiv.innerHTML += `
+                <span class="recipe-filter-tag">
+                    Protein: ${label} 
+                    <button class="recipe-remove-tag" onclick="clearSingleFilter('protein', '${cb.value}')" type="button">×</button>
+                </span>`;
+        });
+        hasFilters = true;
+    }
+    
+    if (authorCheckboxes.length > 0) {
+        authorCheckboxes.forEach(cb => {
+            const label = cb.nextElementSibling.textContent;
+            filterTagsDiv.innerHTML += `
+                <span class="recipe-filter-tag">
+                    Author: ${label} 
+                    <button class="recipe-remove-tag" onclick="clearSingleFilter('author', '${cb.value}')" type="button">×</button>
+                </span>`;
+        });
+        hasFilters = true;
+    }
+    
+    activeFiltersDiv.style.display = hasFilters ? 'flex' : 'none';
+}
+
+function clearSingleFilter(filterType, value) {
+    sessionStorage.setItem('recipeUserInteracted', 'true');
+    sessionStorage.setItem('recipeJustAppliedFilters', 'true');
+    expandRecipeFilterPanel();
+    
+    const checkbox = document.querySelector(`input[name="${filterType}"][value="${value}"]`);
+    if (checkbox) {
+        checkbox.checked = false;
+        updateFilterDisplay(filterType);
+    }
+    
+    document.getElementById('recipeFilterForm').submit();
+}
+
+document.getElementById('recipeFilterForm').addEventListener('submit', function() {
+    sessionStorage.setItem('recipeUserInteracted', 'true');
+    sessionStorage.setItem('recipeJustAppliedFilters', 'true');
+});
+
+function deleteRecipe(recipeId, recipeName) {
+    document.getElementById('delete_recipe_id').value = recipeId;
+    document.getElementById('deleteRecipeName').textContent = recipeName;
+    $('#deleteModal').modal('show');
+}
+
+$(document).ready(function() {
+    $('#deleteForm').on('submit', function() {
+        setTimeout(function() {
+            $('.modal').modal('hide');
+        }, 100);
+    });
+});
+</script>
+
+{% endblock %}

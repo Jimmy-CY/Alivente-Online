@@ -1,6 +1,7 @@
 from django.db import models
 from django.db import connections
 from django.db.models import Min, Max, Sum
+from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.utils.text import slugify
 from django.utils import timezone
@@ -543,27 +544,27 @@ class ProjectDocument(models.Model):
         ordering = ['-document_uploaded_date']
 
 def expense_document_upload_path(instance, filename):
-	"""
-	Generate custom upload path for expense documents
-	Format: expense_docs/PropertyName-YYYYMMDD-OriginalFileName.ext
-	"""
-	# Get the file extension
-	ext = filename.split('.')[-1]
+    """
+    Generate custom upload path for expense documents
+    Format: expense_docs/PropertyName-YYYYMMDD-OriginalFileName.ext
+    """
+    # Get the file extension
+    ext = filename.split('.')[-1]
 
-	# Get property name and clean it (remove spaces, special chars)
-	property_name = slugify(instance.prop.prop_name)
+    # Get property name and clean it (remove spaces, special chars)
+    property_name = slugify(instance.prop.prop_name)
 
-	# Format the date as YYYYMMDD
-	date_str = instance.act_expense_date.strftime('%Y%m%d')
+    # Format the date as YYYYMMDD
+    date_str = instance.act_expense_date.strftime('%Y%m%d')
 
-	# Get the original filename without extension
-	original_name = os.path.splitext(filename)[0]
+    # Get the original filename without extension
+    original_name = os.path.splitext(filename)[0]
 
-	# Create the new filename
-	new_filename = f"{property_name}-{date_str}-{original_name}.{ext}"
+    # Create the new filename
+    new_filename = f"{property_name}-{date_str}-{original_name}.{ext}"
 
-	# Return the full path
-	return os.path.join('expense_docs', new_filename)
+    # Return the full path
+    return os.path.join('expense_docs', new_filename)
 
 def title_deed_upload_path(instance, filename):
     """Generate upload path for title deeds"""
@@ -628,17 +629,17 @@ class props(models.Model):
         verbose_name_plural = "Properties"
 
 class petty(models.Model):
-	petty_cash_id = models.AutoField(primary_key=True)
-	petty_cash_date = models.DateField(blank=True, null=True)
-	petty_cash_description = models.CharField(max_length=55, blank=True, null=True)
-	petty_cash_amount = models.DecimalField(max_digits=6, decimal_places=2, blank=True, null=True)
-	petty_cash_dr_cr = models.CharField(max_length=2, blank=True, null=True)
+    petty_cash_id = models.AutoField(primary_key=True)
+    petty_cash_date = models.DateField(blank=True, null=True)
+    petty_cash_description = models.CharField(max_length=55, blank=True, null=True)
+    petty_cash_amount = models.DecimalField(max_digits=6, decimal_places=2, blank=True, null=True)
+    petty_cash_dr_cr = models.CharField(max_length=2, blank=True, null=True)
 
-	def __str__(self):
-		return self.petty_cash_description
+    def __str__(self):
+        return self.petty_cash_description
 
-	class Meta:
-		db_table="petty_cash"
+    class Meta:
+        db_table="petty_cash"
 
 class tenant(models.Model):
     tenant_id = models.AutoField(primary_key=True)
@@ -720,207 +721,207 @@ class tenant(models.Model):
         verbose_name_plural = "Tenants"
 
 class supplier(models.Model):
-	supplier_id = models.AutoField(primary_key=True)
-	supplier_contact_person = models.CharField(max_length=255, blank=True, null=True)
-	supplier_contact_number = models.CharField(max_length=255, blank=True, null=True)
-	supplier_email = models.CharField(max_length=255, blank=True, null=True)
-	supplier_company_name = models.CharField(max_length=255, blank=True, null=True)
-	supplier_role = models.CharField(max_length=255, blank=True, null=True)
-	supplier_country = models.CharField(max_length=255, blank=True, null=True)
-	
-	def __str__(self):
-		return self.supplier_contact_person
+    supplier_id = models.AutoField(primary_key=True)
+    supplier_contact_person = models.CharField(max_length=255, blank=True, null=True)
+    supplier_contact_number = models.CharField(max_length=255, blank=True, null=True)
+    supplier_email = models.CharField(max_length=255, blank=True, null=True)
+    supplier_company_name = models.CharField(max_length=255, blank=True, null=True)
+    supplier_role = models.CharField(max_length=255, blank=True, null=True)
+    supplier_country = models.CharField(max_length=255, blank=True, null=True)
+    
+    def __str__(self):
+        return self.supplier_contact_person
 
-	class Meta:
-		db_table="supplier"
+    class Meta:
+        db_table="supplier"
 
 class invoices(models.Model):
-	invoice_id = models.AutoField(primary_key=True)
-	tenant = models.ForeignKey(tenant, on_delete=models.CASCADE)
-	invoice_date = models.DateField(blank=True, null=True)
-	invoice_paid = models.CharField(max_length=255, blank=True, null=True)
-	
-	class Meta:
-		db_table="invoice"
+    invoice_id = models.AutoField(primary_key=True)
+    tenant = models.ForeignKey(tenant, on_delete=models.CASCADE)
+    invoice_date = models.DateField(blank=True, null=True)
+    invoice_paid = models.CharField(max_length=255, blank=True, null=True)
+    
+    class Meta:
+        db_table="invoice"
 
 class issues(models.Model):
-	issues_id = models.AutoField(primary_key=True)
-	prop = models.ForeignKey(props, on_delete=models.CASCADE)
-	issues_heading = models.CharField(max_length=255, blank=True, null=True)
-	issues_description = models.CharField(max_length=255, blank=True, null=True)
-	issues_date_logged = models.DateField(blank=True, null=True)
-	issues_status = models.CharField(max_length=255, blank=True, null=True)
-	issues_resolution_date = models.DateField(blank=True, null=True, default=None)
-	issues_resolving_user = models.CharField(max_length=255, blank=True, null=True)
+    issues_id = models.AutoField(primary_key=True)
+    prop = models.ForeignKey(props, on_delete=models.CASCADE)
+    issues_heading = models.CharField(max_length=255, blank=True, null=True)
+    issues_description = models.CharField(max_length=255, blank=True, null=True)
+    issues_date_logged = models.DateField(blank=True, null=True)
+    issues_status = models.CharField(max_length=255, blank=True, null=True)
+    issues_resolution_date = models.DateField(blank=True, null=True, default=None)
+    issues_resolving_user = models.CharField(max_length=255, blank=True, null=True)
 
-	def __str__(self):
-		return self.issues_heading
+    def __str__(self):
+        return self.issues_heading
 
-	class Meta:
-		db_table="issues"
+    class Meta:
+        db_table="issues"
 
 class issues_details(models.Model):
-	issues_details_id = models.AutoField(primary_key=True)
-	issues = models.ForeignKey(issues, on_delete=models.CASCADE)
-	issues_details_comment = models.CharField(max_length=255, blank=True, null=True)
-	issues_details_user = models.CharField(max_length=255, blank=True, null=True)
-	issues_details_date = models.DateField(blank=True, null=True)
+    issues_details_id = models.AutoField(primary_key=True)
+    issues = models.ForeignKey(issues, on_delete=models.CASCADE)
+    issues_details_comment = models.CharField(max_length=255, blank=True, null=True)
+    issues_details_user = models.CharField(max_length=255, blank=True, null=True)
+    issues_details_date = models.DateField(blank=True, null=True)
 
-	def __str__(self):
-		return self.issues_details_comment
+    def __str__(self):
+        return self.issues_details_comment
 
-	class Meta:
-		db_table="issues_details"
+    class Meta:
+        db_table="issues_details"
 
 class prop_values(models.Model):
-	prop_values_id = models.AutoField(primary_key=True)
-	prop = models.ForeignKey(props, on_delete=models.CASCADE)
-	prop_values_purchase_price = models.IntegerField(blank=True, null=True)
-	prop_values_current_value = models.IntegerField(blank=True, null=True)
+    prop_values_id = models.AutoField(primary_key=True)
+    prop = models.ForeignKey(props, on_delete=models.CASCADE)
+    prop_values_purchase_price = models.IntegerField(blank=True, null=True)
+    prop_values_current_value = models.IntegerField(blank=True, null=True)
 
-	def __str__(self):
-		return str(self.prop_values_purchase_price)
+    def __str__(self):
+        return str(self.prop_values_purchase_price)
 
-	class Meta:
-		db_table="prop_values"
+    class Meta:
+        db_table="prop_values"
 
 class revenue_types(models.Model):
-	revenue_types_id = models.AutoField(primary_key=True)
-	revenue_types_name = models.CharField(max_length=255, blank=True, null=True)
-	revenue_types_jan = models.CharField(max_length=3, blank=True, null=True)
-	revenue_types_feb = models.CharField(max_length=3, blank=True, null=True)
-	revenue_types_mar = models.CharField(max_length=3, blank=True, null=True)
-	revenue_types_apr = models.CharField(max_length=3, blank=True, null=True)
-	revenue_types_may = models.CharField(max_length=3, blank=True, null=True)
-	revenue_types_jun = models.CharField(max_length=3, blank=True, null=True)
-	revenue_types_jul = models.CharField(max_length=3, blank=True, null=True)
-	revenue_types_aug = models.CharField(max_length=3, blank=True, null=True)
-	revenue_types_sep = models.CharField(max_length=3, blank=True, null=True)
-	revenue_types_oct = models.CharField(max_length=3, blank=True, null=True)
-	revenue_types_nov = models.CharField(max_length=3, blank=True, null=True)
-	revenue_types_dec = models.CharField(max_length=3, blank=True, null=True)
+    revenue_types_id = models.AutoField(primary_key=True)
+    revenue_types_name = models.CharField(max_length=255, blank=True, null=True)
+    revenue_types_jan = models.CharField(max_length=3, blank=True, null=True)
+    revenue_types_feb = models.CharField(max_length=3, blank=True, null=True)
+    revenue_types_mar = models.CharField(max_length=3, blank=True, null=True)
+    revenue_types_apr = models.CharField(max_length=3, blank=True, null=True)
+    revenue_types_may = models.CharField(max_length=3, blank=True, null=True)
+    revenue_types_jun = models.CharField(max_length=3, blank=True, null=True)
+    revenue_types_jul = models.CharField(max_length=3, blank=True, null=True)
+    revenue_types_aug = models.CharField(max_length=3, blank=True, null=True)
+    revenue_types_sep = models.CharField(max_length=3, blank=True, null=True)
+    revenue_types_oct = models.CharField(max_length=3, blank=True, null=True)
+    revenue_types_nov = models.CharField(max_length=3, blank=True, null=True)
+    revenue_types_dec = models.CharField(max_length=3, blank=True, null=True)
 
-	def __str__(self):
-		return str(self.revenue_types_name)
+    def __str__(self):
+        return str(self.revenue_types_name)
 
-	class Meta:
-		db_table="revenue_types"
+    class Meta:
+        db_table="revenue_types"
 
 class revenue_line_types(models.Model):
-	revenue_line_types_id = models.AutoField(primary_key=True)
-	revenue_line_types_name = models.CharField(max_length=255, blank=True, null=True)
-	revenue_line_types_description = models.CharField(max_length=255, blank=True, null=True)
-	
-	def __str__(self):
-		return str(self.revenue_line_types_name)
+    revenue_line_types_id = models.AutoField(primary_key=True)
+    revenue_line_types_name = models.CharField(max_length=255, blank=True, null=True)
+    revenue_line_types_description = models.CharField(max_length=255, blank=True, null=True)
+    
+    def __str__(self):
+        return str(self.revenue_line_types_name)
 
-	class Meta:
-		db_table="revenue_line_types"
+    class Meta:
+        db_table="revenue_line_types"
 
 class revenue(models.Model):
-	revenue_id = models.AutoField(primary_key=True)
-	revenue_types = models.ForeignKey(revenue_types, on_delete=models.CASCADE)
-	prop = models.ForeignKey(props, on_delete=models.CASCADE)
-	revenue_line_types = models.ForeignKey(revenue_line_types, on_delete=models.CASCADE)
-	revenue_amount = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
-	revenue_jan = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
-	revenue_feb = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
-	revenue_mar = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
-	revenue_apr = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
-	revenue_may = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
-	revenue_jun = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
-	revenue_jul = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
-	revenue_aug = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
-	revenue_sep = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
-	revenue_oct = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
-	revenue_nov = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
-	revenue_dec = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
+    revenue_id = models.AutoField(primary_key=True)
+    revenue_types = models.ForeignKey(revenue_types, on_delete=models.CASCADE)
+    prop = models.ForeignKey(props, on_delete=models.CASCADE)
+    revenue_line_types = models.ForeignKey(revenue_line_types, on_delete=models.CASCADE)
+    revenue_amount = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
+    revenue_jan = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
+    revenue_feb = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
+    revenue_mar = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
+    revenue_apr = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
+    revenue_may = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
+    revenue_jun = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
+    revenue_jul = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
+    revenue_aug = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
+    revenue_sep = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
+    revenue_oct = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
+    revenue_nov = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
+    revenue_dec = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
 
-	def __str__(self):
-		return str(self.revenue_id)
+    def __str__(self):
+        return str(self.revenue_id)
 
-	class Meta:
-		db_table="revenue"
+    class Meta:
+        db_table="revenue"
 
 class expense_types(models.Model):
-	expense_types_id = models.AutoField(primary_key=True)
-	expense_types_name = models.CharField(max_length=255, blank=True, null=True)
-	expense_types_jan = models.CharField(max_length=3, blank=True, null=True)
-	expense_types_feb = models.CharField(max_length=3, blank=True, null=True)
-	expense_types_mar = models.CharField(max_length=3, blank=True, null=True)
-	expense_types_apr = models.CharField(max_length=3, blank=True, null=True)
-	expense_types_may = models.CharField(max_length=3, blank=True, null=True)
-	expense_types_jun = models.CharField(max_length=3, blank=True, null=True)
-	expense_types_jul = models.CharField(max_length=3, blank=True, null=True)
-	expense_types_aug = models.CharField(max_length=3, blank=True, null=True)
-	expense_types_sep = models.CharField(max_length=3, blank=True, null=True)
-	expense_types_oct = models.CharField(max_length=3, blank=True, null=True)
-	expense_types_nov = models.CharField(max_length=3, blank=True, null=True)
-	expense_types_dec = models.CharField(max_length=3, blank=True, null=True)
+    expense_types_id = models.AutoField(primary_key=True)
+    expense_types_name = models.CharField(max_length=255, blank=True, null=True)
+    expense_types_jan = models.CharField(max_length=3, blank=True, null=True)
+    expense_types_feb = models.CharField(max_length=3, blank=True, null=True)
+    expense_types_mar = models.CharField(max_length=3, blank=True, null=True)
+    expense_types_apr = models.CharField(max_length=3, blank=True, null=True)
+    expense_types_may = models.CharField(max_length=3, blank=True, null=True)
+    expense_types_jun = models.CharField(max_length=3, blank=True, null=True)
+    expense_types_jul = models.CharField(max_length=3, blank=True, null=True)
+    expense_types_aug = models.CharField(max_length=3, blank=True, null=True)
+    expense_types_sep = models.CharField(max_length=3, blank=True, null=True)
+    expense_types_oct = models.CharField(max_length=3, blank=True, null=True)
+    expense_types_nov = models.CharField(max_length=3, blank=True, null=True)
+    expense_types_dec = models.CharField(max_length=3, blank=True, null=True)
 
-	def __str__(self):
-		return str(self.expense_types_name)
+    def __str__(self):
+        return str(self.expense_types_name)
 
-	class Meta:
-		db_table="expense_types"
+    class Meta:
+        db_table="expense_types"
 
 class expense_line_types(models.Model):
-	expense_line_types_id = models.AutoField(primary_key=True)
-	expense_line_types_name = models.CharField(max_length=255, blank=True, null=True)
-	expense_line_types_description = models.CharField(max_length=255, blank=True, null=True)
-	expense_line_types_prorata = models.CharField(max_length=3, blank=True, null=True)
-	expense_line_types_pr_amount = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
+    expense_line_types_id = models.AutoField(primary_key=True)
+    expense_line_types_name = models.CharField(max_length=255, blank=True, null=True)
+    expense_line_types_description = models.CharField(max_length=255, blank=True, null=True)
+    expense_line_types_prorata = models.CharField(max_length=3, blank=True, null=True)
+    expense_line_types_pr_amount = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
 
-	def __str__(self):
-		return str(self.expense_line_types_name)
+    def __str__(self):
+        return str(self.expense_line_types_name)
 
-	class Meta:
-		db_table="expense_line_types"
+    class Meta:
+        db_table="expense_line_types"
 
 class expense(models.Model):
-	expense_id = models.AutoField(primary_key=True)
-	expense_types = models.ForeignKey(expense_types, on_delete=models.CASCADE)
-	expense_line_types = models.ForeignKey(expense_line_types, on_delete=models.CASCADE)
-	expense_amount = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
-	prop = models.ForeignKey(props, on_delete=models.CASCADE)
-	expense_jan = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
-	expense_feb = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
-	expense_mar = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
-	expense_apr = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
-	expense_may = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
-	expense_jun = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
-	expense_jul = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
-	expense_aug = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
-	expense_sep = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
-	expense_oct = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
-	expense_nov = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
-	expense_dec = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
+    expense_id = models.AutoField(primary_key=True)
+    expense_types = models.ForeignKey(expense_types, on_delete=models.CASCADE)
+    expense_line_types = models.ForeignKey(expense_line_types, on_delete=models.CASCADE)
+    expense_amount = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
+    prop = models.ForeignKey(props, on_delete=models.CASCADE)
+    expense_jan = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
+    expense_feb = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
+    expense_mar = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
+    expense_apr = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
+    expense_may = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
+    expense_jun = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
+    expense_jul = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
+    expense_aug = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
+    expense_sep = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
+    expense_oct = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
+    expense_nov = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
+    expense_dec = models.DecimalField(max_digits=8, decimal_places=2, blank=True, null=True)
 
-	def __str__(self):
-		return str(self.expense_id)
+    def __str__(self):
+        return str(self.expense_id)
 
-	class Meta:
-		db_table="expense"
+    class Meta:
+        db_table="expense"
 
 class act_expense(models.Model):
-	act_expense_id = models.AutoField(primary_key=True)
-	act_expense_date = models.DateField(blank=True, null=True)
-	prop = models.ForeignKey(props, on_delete=models.CASCADE)
-	act_expense_description = models.CharField(max_length=55, blank=True, null=True)
-	act_expense_amount = models.DecimalField(max_digits=6, decimal_places=2, blank=True, null=True)
-	act_expense_approved = models.CharField(max_length=3, blank=True, null=True)
-	act_expense_paid = models.CharField(max_length=3, blank=True, null=True)
-	act_expense_document = models.FileField(upload_to=expense_document_upload_path, blank=True, null=True)
+    act_expense_id = models.AutoField(primary_key=True)
+    act_expense_date = models.DateField(blank=True, null=True)
+    prop = models.ForeignKey(props, on_delete=models.CASCADE)
+    act_expense_description = models.CharField(max_length=55, blank=True, null=True)
+    act_expense_amount = models.DecimalField(max_digits=6, decimal_places=2, blank=True, null=True)
+    act_expense_approved = models.CharField(max_length=3, blank=True, null=True)
+    act_expense_paid = models.CharField(max_length=3, blank=True, null=True)
+    act_expense_document = models.FileField(upload_to=expense_document_upload_path, blank=True, null=True)
 
-	def __str__(self):
-		return self.act_expense_description
-	def approved_display(self):
-	    return "Yes" if self.act_expense_approved == 'Yes' else "No"
-	def paid_display(self):
-		return "Yes" if self.act_expense_paid == 'Yes' else "No"
+    def __str__(self):
+        return self.act_expense_description
+    def approved_display(self):
+        return "Yes" if self.act_expense_approved == 'Yes' else "No"
+    def paid_display(self):
+        return "Yes" if self.act_expense_paid == 'Yes' else "No"
 
-	class Meta:
-		db_table="act_expense"
+    class Meta:
+        db_table="act_expense"
 
 @receiver(post_save, sender=ProjectTask)
 def update_project_on_task_save(sender, instance, **kwargs):
@@ -970,4 +971,482 @@ class Passport(models.Model):
     
     def __str__(self):
         return f"{self.holder_name} - {self.get_document_type_display()}"
+    
+    class Meta:
+        db_table = "passports"
+        verbose_name = "Passport/ID Document"
+        verbose_name_plural = "Passport/ID Documents"
 
+
+##### RECIPE KEEPER MODELS #####
+
+class MeasurementUnit(models.Model):
+    """Units of measurement for recipe ingredients"""
+    UNIT_TYPE_CHOICES = [
+        ('volume', 'Volume'),
+        ('weight', 'Weight'),
+        ('count', 'Count'),
+        ('other', 'Other'),
+    ]
+    
+    measurement_unit_id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=50, help_text='Full name (e.g., teaspoon, cup, gram)')
+    abbreviation = models.CharField(max_length=10, blank=True, null=True, help_text='Short form (e.g., tsp, cup, g)')
+    unit_type = models.CharField(max_length=20, choices=UNIT_TYPE_CHOICES, default='other')
+    created_date = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return f"{self.name} ({self.abbreviation})" if self.abbreviation else self.name
+    
+    class Meta:
+        db_table = "measurement_units"
+        verbose_name = "Measurement Unit"
+        verbose_name_plural = "Measurement Units"
+        ordering = ['unit_type', 'name']
+
+
+class IngredientCategory(models.Model):
+    """Categories for organizing ingredients"""
+    ingredient_category_id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=100, unique=True, help_text='e.g., Vegetables, Poultry, Dairy')
+    description = models.TextField(blank=True, null=True)
+    created_date = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return self.name
+    
+    class Meta:
+        db_table = "ingredient_categories"
+        verbose_name = "Ingredient Category"
+        verbose_name_plural = "Ingredient Categories"
+        ordering = ['name']
+
+
+class Ingredient(models.Model):
+    """Master list of ingredients"""
+    ingredient_id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=200, unique=True, help_text='e.g., Onion, Chicken Breast')
+    category = models.ForeignKey(IngredientCategory, on_delete=models.SET_NULL, null=True, blank=True)
+    default_unit = models.ForeignKey(
+        MeasurementUnit, 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True,
+        help_text='Default measurement unit for this ingredient'
+    )
+    notes = models.TextField(blank=True, null=True, help_text='Storage tips, substitutions, etc.')
+    created_date = models.DateTimeField(auto_now_add=True)
+    updated_date = models.DateTimeField(auto_now=True)
+    
+    def __str__(self):
+        return self.name
+    
+    class Meta:
+        db_table = "ingredients"
+        verbose_name = "Ingredient"
+        verbose_name_plural = "Ingredients"
+        ordering = ['name']
+
+
+class RecipeCourse(models.Model):
+    """Course types for recipes (Starter, Main, Dessert, etc.)"""
+    recipe_course_id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=50, unique=True, help_text='e.g., Starter, Main, Dessert, Snack')
+    display_order = models.IntegerField(default=0, help_text='Order for display (lower numbers first)')
+    created_date = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return self.name
+    
+    class Meta:
+        db_table = "recipe_courses"
+        verbose_name = "Recipe Course"
+        verbose_name_plural = "Recipe Courses"
+        ordering = ['display_order', 'name']
+
+
+class RecipeCategory(models.Model):
+    """Categories for recipes (Pasta, Salad, Asian, etc.)"""
+    recipe_category_id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=100, unique=True, help_text='e.g., Pasta, Salad, Asian, Burgers')
+    description = models.TextField(blank=True, null=True)
+    created_date = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return self.name
+    
+    class Meta:
+        db_table = "recipe_categories"
+        verbose_name = "Recipe Category"
+        verbose_name_plural = "Recipe Categories"
+        ordering = ['name']
+
+
+def recipe_image_upload_path(instance, filename):
+    """Generate upload path for recipe images"""
+    ext = filename.split('.')[-1]
+    recipe_name_slug = slugify(instance.recipe_name or 'recipe')
+    date_str = timezone.now().strftime('%Y%m%d')
+    new_filename = f"recipe-{recipe_name_slug}-{date_str}.{ext}"
+    return os.path.join('recipe_images', new_filename)
+
+class Recipe(models.Model):
+    """Main recipe table"""
+    DIFFICULTY_CHOICES = [
+        ('Easy', 'Easy'),
+        ('Medium', 'Medium'),
+        ('Hard', 'Hard'),
+    ]
+    
+    recipe_id = models.AutoField(primary_key=True)
+    recipe_name = models.CharField(max_length=255, help_text='Name of the recipe')
+    recipe_description = models.TextField(blank=True, null=True, help_text='Brief description or introduction')
+    
+    # Time fields (in minutes)
+    prep_time = models.IntegerField(blank=True, null=True, help_text='Preparation time in minutes')
+    cook_time = models.IntegerField(blank=True, null=True, help_text='Cooking time in minutes')
+    total_time = models.IntegerField(blank=True, null=True, help_text='Total time in minutes (auto-calculated if not provided)')
+    
+    servings = models.IntegerField(default=4, help_text='Number of servings')
+    
+    # Classification - CHANGED TO MANY-TO-MANY
+    courses = models.ManyToManyField(RecipeCourse, blank=True, related_name='recipes')
+    categories = models.ManyToManyField(RecipeCategory, blank=True, related_name='recipes')
+    
+    # Dietary information - CHANGED TO MANY-TO-MANY
+    is_vegetarian = models.BooleanField(default=False)
+    proteins = models.ManyToManyField('CustomProtein', blank=True, related_name='recipes')
+    
+    # Additional fields
+    difficulty_level = models.CharField(max_length=20, choices=DIFFICULTY_CHOICES, blank=True, null=True)
+    recipe_image = models.ImageField(upload_to=recipe_image_upload_path, blank=True, null=True)
+    
+    # AI Import fields (NEW)
+    is_ai_imported = models.BooleanField(default=False, help_text='Flag to indicate if recipe was imported via AI')
+    ai_extracted_data = models.JSONField(blank=True, null=True, help_text='Raw AI extraction data including structured ingredients')
+    
+    # Tracking
+    created_date = models.DateTimeField(auto_now_add=True)
+    updated_date = models.DateTimeField(auto_now=True)
+    created_by = models.CharField(max_length=255, blank=True, null=True, help_text='User who created this recipe')
+    
+    AUTHOR_CHOICES = [
+        ('General', 'General'),
+        ('Demetri & Angy', 'Demetri & Angy'),
+        ('Erene', 'Erene'),
+        ('Alexandra', 'Alexandra'),
+    ]
+    
+    author = models.CharField(
+        max_length=50,
+        choices=AUTHOR_CHOICES,
+        default='General',
+        help_text='Recipe author or source'
+    )
+    
+
+    def save(self, *args, **kwargs):
+        # Auto-calculate total_time if not provided
+        if not self.total_time and self.prep_time and self.cook_time:
+            self.total_time = self.prep_time + self.cook_time
+        super().save(*args, **kwargs)
+    
+    def get_total_time_display(self):
+        """Return formatted total time"""
+        if self.total_time:
+            hours = self.total_time // 60
+            minutes = self.total_time % 60
+            if hours > 0:
+                return f"{hours}h {minutes}m" if minutes > 0 else f"{hours}h"
+            return f"{minutes}m"
+        return "N/A"
+    
+    def __str__(self):
+        return self.recipe_name
+    
+    class Meta:
+        db_table = "recipes"
+        verbose_name = "Recipe"
+        verbose_name_plural = "Recipes"
+        ordering = ['-created_date']
+
+class PreparationMethod(models.Model):
+    """Common preparation methods for ingredients"""
+    preparation_method_id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=100, unique=True, help_text='e.g., chopped, diced, minced, grated')
+    created_date = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return self.name
+    
+    class Meta:
+        db_table = "preparation_methods"
+        verbose_name = "Preparation Method"
+        verbose_name_plural = "Preparation Methods"
+        ordering = ['name']
+        
+class RecipeIngredient(models.Model):
+    """Junction table linking recipes to ingredients with amounts and units"""
+    recipe_ingredient_id = models.AutoField(primary_key=True)
+    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE, related_name='recipe_ingredients')
+    ingredient = models.ForeignKey(Ingredient, on_delete=models.CASCADE)
+    
+    # Amount stored as decimal (1.5 for 1½)
+    amount = models.DecimalField(max_digits=8, decimal_places=3, help_text='Amount (use decimal: 1.5 for 1½)')
+    unit = models.ForeignKey(MeasurementUnit, on_delete=models.SET_NULL, null=True, blank=True)
+    
+    # CHANGED: Use ForeignKey instead of CharField
+    preparation = models.ForeignKey(
+        PreparationMethod,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        help_text='e.g., diced, chopped finely, minced'
+    )
+    
+    # Keep this for backward compatibility or remove if not needed
+    preparation_note = models.CharField(
+        max_length=255, 
+        blank=True, 
+        null=True, 
+        help_text='Additional preparation notes'
+    )
+    
+    ingredient_order = models.IntegerField(default=0, help_text='Display order in recipe')
+    ingredient_group = models.CharField(
+        max_length=100, 
+        blank=True, 
+        null=True, 
+        help_text='e.g., "For the sauce", "For garnish"'
+    )
+    
+    def get_amount_display(self):
+        """Return a nicely formatted string for the amount, removing unnecessary zeros and converting common decimals to fractions."""
+        if self.amount is None:
+            return ''
+        try:
+            amount_float = float(self.amount)
+        except (TypeError, ValueError):
+            return str(self.amount)
+        
+        # If the amount is a whole number, return it as an integer
+        if amount_float.is_integer():
+            return str(int(amount_float))
+        
+        # Map of decimal to common fraction symbols
+        fraction_map = {
+            0.125: '⅛',
+            0.25: '¼',
+            0.333: '⅓',
+            0.375: '⅜',
+            0.5: '½',
+            0.625: '⅝',
+            0.666: '⅔',
+            0.75: '¾',
+            0.875: '⅞',
+        }
+
+        whole_part = int(amount_float)
+        decimal_part = round(amount_float - whole_part, 3)
+
+        # Check if decimal part matches a common fraction
+        for dec_value, symbol in fraction_map.items():
+            if abs(decimal_part - dec_value) < 0.001:
+                return f"{whole_part}{symbol}" if whole_part > 0 else symbol
+
+        # Otherwise, format to up to 3 decimal places, removing trailing zeros and dot
+        formatted = '{:.3f}'.format(amount_float).rstrip('0').rstrip('.')
+        return formatted
+
+    
+    def __str__(self):
+        unit_str = self.unit.abbreviation if self.unit and self.unit.abbreviation else (self.unit.name if self.unit else '')
+        prep_str = f", {self.preparation_note}" if self.preparation_note else ''
+        return f"{self.get_amount_display()} {unit_str} {self.ingredient.name}{prep_str}"
+    
+    class Meta:
+        db_table = "recipe_ingredients"
+        verbose_name = "Recipe Ingredient"
+        verbose_name_plural = "Recipe Ingredients"
+        ordering = ['ingredient_group', 'ingredient_order']
+
+
+class RecipeIngredientText(models.Model):
+    """Simple text-based ingredients for AI-imported recipes"""
+    recipe_ingredient_text_id = models.AutoField(primary_key=True)
+    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE, related_name='text_ingredients')
+    ingredient_text = models.CharField(max_length=500, help_text='Plain text ingredient')
+    ingredient_group = models.CharField(max_length=100, blank=True, null=True, help_text='Ingredient grouping')  # ADD THIS
+    order = models.IntegerField(default=0, help_text='Display order')
+    
+    def __str__(self):
+        return self.ingredient_text
+    
+    class Meta:
+        db_table = "recipe_ingredient_text"
+        verbose_name = "Recipe Ingredient (Text)"
+        verbose_name_plural = "Recipe Ingredients (Text)"
+        ordering = ['ingredient_group', 'order']  # UPDATED to order by group first
+
+
+def instruction_image_upload_path(instance, filename):
+    """Generate upload path for instruction step images"""
+    ext = filename.split('.')[-1]
+    recipe_name_slug = slugify(instance.recipe.recipe_name or 'recipe')
+    step_num = instance.step_number
+    new_filename = f"recipe-{recipe_name_slug}-step{step_num}.{ext}"
+    return os.path.join('recipe_instructions', new_filename)
+
+
+class RecipeInstruction(models.Model):
+    """Step-by-step instructions for recipes"""
+    recipe_instruction_id = models.AutoField(primary_key=True)
+    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE, related_name='instructions')
+    step_number = models.IntegerField(help_text='Step number in sequence')
+    instruction_text = models.TextField(help_text='Detailed instruction for this step')
+    
+    # Optional grouping and timing
+    instruction_group = models.CharField(
+        max_length=100, 
+        blank=True, 
+        null=True, 
+        help_text='e.g., "Preparation", "Cooking", "Assembly"'
+    )
+    time_estimate = models.IntegerField(
+        blank=True, 
+        null=True, 
+        help_text='Estimated time for this step in minutes'
+    )
+    
+    # Optional step image
+    step_image = models.ImageField(upload_to=instruction_image_upload_path, blank=True, null=True)
+    
+    def __str__(self):
+        return f"Step {self.step_number}: {self.instruction_text[:50]}..."
+    
+    class Meta:
+        db_table = "recipe_instructions"
+        verbose_name = "Recipe Instruction"
+        verbose_name_plural = "Recipe Instructions"
+        ordering = ['step_number']
+
+class CustomProtein(models.Model):
+    """Store custom protein types added by users"""
+    custom_protein_id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=50, unique=True)
+    created_date = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return self.name
+    
+    class Meta:
+        db_table = "custom_proteins"
+        verbose_name = "Custom Protein"
+        verbose_name_plural = "Custom Proteins"
+        ordering = ['name']
+
+# ========== MEAL PLANNING MODELS ==========
+
+class MealPlan(models.Model):
+    """Main meal plan header - represents a weekly meal plan"""
+    meal_plan_id = models.AutoField(primary_key=True)
+    plan_name = models.CharField(max_length=200)
+    start_date = models.DateField()
+    end_date = models.DateField()
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        db_table = 'meal_plans'
+        ordering = ['-start_date']
+    
+    def __str__(self):
+        return f"{self.plan_name} ({self.start_date} to {self.end_date})"
+    
+    @property
+    def total_days(self):
+        """Calculate total number of days in the meal plan"""
+        return (self.end_date - self.start_date).days + 1
+    
+    @property
+    def total_recipes(self):
+        """Count total recipes across all days"""
+        return MealPlanRecipe.objects.filter(
+            meal_plan_day__meal_plan=self
+        ).count()
+    
+    @property
+    def date_range_display(self):
+        """Format date range for display"""
+        return f"{self.start_date.strftime('%b %d')} - {self.end_date.strftime('%b %d, %Y')}"
+
+
+class MealPlanDay(models.Model):
+    """Individual day within a meal plan"""
+    meal_plan_day_id = models.AutoField(primary_key=True)
+    meal_plan = models.ForeignKey(MealPlan, on_delete=models.CASCADE, related_name='days')
+    date = models.DateField()
+    
+    class Meta:
+        db_table = 'meal_plan_days'
+        ordering = ['date']
+        unique_together = ['meal_plan', 'date']
+    
+    def __str__(self):
+        return f"{self.date.strftime('%A, %B %d, %Y')}"
+    
+    @property
+    def day_name(self):
+        """Get day name (Monday, Tuesday, etc.)"""
+        return self.date.strftime('%A')
+    
+    @property
+    def formatted_date(self):
+        """Get formatted date for display"""
+        return self.date.strftime('%B %d, %Y')
+
+
+class MealPlanRecipe(models.Model):
+    """Recipe assignment to a specific day in a meal plan"""
+    meal_plan_recipe_id = models.AutoField(primary_key=True)
+    meal_plan_day = models.ForeignKey(MealPlanDay, on_delete=models.CASCADE, related_name='recipes')
+    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)
+    servings = models.IntegerField()  # Can override recipe's default servings
+    sort_order = models.IntegerField(default=0)
+    
+    class Meta:
+        db_table = 'meal_plan_recipes'
+        ordering = ['sort_order', 'meal_plan_recipe_id']
+    
+    def __str__(self):
+        return f"{self.recipe.recipe_name} ({self.servings} servings)"
+    
+    @property
+    def servings_multiplier(self):
+        """Calculate multiplier for scaling ingredients"""
+        return self.servings / self.recipe.servings
+
+
+class UnitConversion(models.Model):
+    """Conversion rates between different measurement units"""
+    unit_conversion_id = models.AutoField(primary_key=True)
+    from_unit = models.ForeignKey(
+        MeasurementUnit, 
+        on_delete=models.CASCADE, 
+        related_name='conversions_from'
+    )
+    to_unit = models.ForeignKey(
+        MeasurementUnit, 
+        on_delete=models.CASCADE, 
+        related_name='conversions_to'
+    )
+    multiplier = models.DecimalField(max_digits=10, decimal_places=6)
+    notes = models.CharField(max_length=200, blank=True)
+    
+    class Meta:
+        db_table = 'unit_conversions'
+        unique_together = ['from_unit', 'to_unit']
+    
+    def __str__(self):
+        return f"1 {self.from_unit.name} = {self.multiplier} {self.to_unit.name}"

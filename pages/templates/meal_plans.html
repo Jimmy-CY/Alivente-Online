@@ -1,0 +1,401 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Meal Plans{% endblock %}
+{% block content %}
+
+<style>
+.meal-plans-container {
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.page-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 40px;
+    border-radius: 12px;
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+.page-header h1 {
+    font-size: 36px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.page-header p {
+    font-size: 18px;
+    opacity: 0.9;
+}
+
+.action-buttons {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.btn-create {
+    background: #28a745;
+    color: white;
+    padding: 12px 30px;
+    font-size: 16px;
+    font-weight: 500;
+    border-radius: 8px;
+    border: none;
+}
+
+.btn-create:hover {
+    background: #218838;
+    color: white;
+}
+
+.meal-plan-card {
+    background: white;
+    border-radius: 8px;
+    padding: 18px 25px;
+    margin-bottom: 12px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
+    transition: all 0.2s;
+    display: grid;
+    grid-template-columns: minmax(250px, 1fr) auto auto;
+    align-items: center;
+    gap: 25px;
+}
+
+.meal-plan-card:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.meal-plan-title {
+    font-size: 17px;
+    font-weight: 600;
+    color: #2c3e50;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.meal-plan-meta {
+    display: flex;
+    gap: 20px;
+    color: #6c757d;
+    font-size: 13px;
+    white-space: nowrap;
+}
+
+.meal-plan-meta span {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.meal-plan-meta i {
+    color: #667eea;
+    font-size: 12px;
+}
+
+.meal-plan-actions {
+    display: flex;
+    gap: 6px;
+    justify-self: end;
+}
+
+.meal-plan-actions .btn {
+    padding: 6px 12px;
+    font-size: 12px;
+    border-radius: 5px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    white-space: nowrap;
+    font-weight: 500;
+}
+
+.meal-plan-actions .btn i {
+    font-size: 11px;
+}
+
+.btn-view {
+    background: #007bff;
+    color: white;
+    border: none;
+}
+
+.btn-view:hover {
+    background: #0056b3;
+    color: white;
+}
+
+.btn-edit {
+    background: #ffc107;
+    color: #000;
+    border: none;
+}
+
+.btn-edit:hover {
+    background: #e0a800;
+    color: #000;
+}
+
+.btn-shopping {
+    background: #28a745;
+    color: white;
+    border: none;
+}
+
+.btn-shopping:hover {
+    background: #218838;
+    color: white;
+}
+
+.btn-duplicate {
+    background: #17a2b8;
+    color: white;
+    border: none;
+}
+
+.btn-duplicate:hover {
+    background: #138496;
+    color: white;
+}
+
+.btn-delete {
+    background: #dc3545;
+    color: white;
+    border: none;
+}
+
+.btn-delete:hover {
+    background: #c82333;
+    color: white;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+}
+
+.empty-state i {
+    font-size: 80px;
+    color: #dee2e6;
+    margin-bottom: 20px;
+}
+
+.empty-state h3 {
+    color: #6c757d;
+    margin-bottom: 10px;
+}
+
+.empty-state p {
+    color: #adb5bd;
+    margin-bottom: 30px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+    .meal-plan-card {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    
+    .meal-plan-actions {
+        justify-self: start;
+    }
+}
+</style>
+
+<div class="meal-plans-container">
+    
+    <!-- Page Header -->
+    <div class="page-header">
+        <h1><i class="fas fa-calendar-alt"></i> Meal Plans</h1>
+        <p>Plan your weekly meals and generate shopping lists</p>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="action-buttons">
+        <a href="{% url 'create_meal_plan' %}" class="btn btn-create">
+            <i class="fas fa-plus"></i> Create New Meal Plan
+        </a>
+        <a href="{% url 'recipe_management' %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Recipes
+        </a>
+    </div>
+
+    <!-- Meal Plans List -->
+    {% if meal_plans %}
+        {% for plan in meal_plans %}
+        <div class="meal-plan-card">
+            <!-- Title -->
+            <h3 class="meal-plan-title">{{ plan.plan_name }}</h3>
+            
+            <!-- Metadata -->
+            <div class="meal-plan-meta">
+                <span>
+                    <i class="fas fa-calendar"></i>
+                    {{ plan.start_date|date:"M d" }} - {{ plan.end_date|date:"M d, Y" }}
+                </span>
+                <span>
+                    <i class="fas fa-utensils"></i>
+                    {{ plan.recipe_count }} recipe{{ plan.recipe_count|pluralize }}
+                </span>
+                <span>
+                    <i class="fas fa-clock"></i>
+                    {{ plan.total_days }} day{{ plan.total_days|pluralize }}
+                </span>
+            </div>
+            
+            <!-- Actions -->
+            <div class="meal-plan-actions">
+                <a href="{% url 'view_meal_plan' plan.meal_plan_id %}" class="btn btn-view">
+                    <i class="fas fa-eye"></i> View
+                </a>
+                <a href="{% url 'edit_meal_plan' plan.meal_plan_id %}" class="btn btn-edit">
+                    <i class="fas fa-edit"></i> Edit
+                </a>
+                <a href="{% url 'meal_plan_shopping_list' plan.meal_plan_id %}" class="btn btn-shopping">
+                    <i class="fas fa-shopping-cart"></i> List
+                </a>
+                <button type="button" 
+                        class="btn btn-duplicate"
+                        data-duplicate-url="{% url 'duplicate_meal_plan' plan.meal_plan_id %}"
+                        onclick="confirmDuplicate(this, '{{ plan.plan_name|escapejs }}')">
+                    <i class="fas fa-copy"></i> Copy
+                </button>
+                <button type="button" 
+                        class="btn btn-delete"
+                        data-delete-url="{% url 'delete_meal_plan' plan.meal_plan_id %}"
+                        onclick="confirmDelete(this, '{{ plan.plan_name|escapejs }}')">
+                    <i class="fas fa-trash"></i> Delete
+                </button>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <!-- Empty State -->
+        <div class="empty-state">
+            <i class="fas fa-calendar-times"></i>
+            <h3>No Meal Plans Yet</h3>
+            <p>Start planning your meals by creating your first meal plan!</p>
+            <a href="{% url 'create_meal_plan' %}" class="btn btn-create btn-lg">
+                <i class="fas fa-plus"></i> Create Your First Meal Plan
+            </a>
+        </div>
+    {% endif %}
+
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title" id="deleteModalLabel">
+                    <i class="fas fa-exclamation-triangle"></i> Confirm Delete
+                </h5>
+                <button type="button" class="close text-white" onclick="$('#deleteModal').modal('hide');" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to delete this meal plan?</p>
+                <p class="mb-0"><strong id="deletePlanName"></strong></p>
+                <p class="text-muted small mt-2">This action cannot be undone.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="$('#deleteModal').modal('hide');">
+                    Cancel
+                </button>
+                <form id="deleteForm" method="POST" style="display: inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash"></i> Delete Meal Plan
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Duplicate Confirmation Modal -->
+<div class="modal fade" id="duplicateModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-copy"></i> Duplicate Meal Plan
+                </h5>
+                <button type="button" class="close text-white" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <form id="duplicateForm" method="POST">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <p>Create a copy of: <strong id="duplicatePlanName"></strong></p>
+                    
+                    <div class="form-group">
+                        <label for="new_plan_name">New Meal Plan Name: <span class="text-danger">*</span></label>
+                        <input type="text" 
+                               class="form-control" 
+                               id="new_plan_name" 
+                               name="new_plan_name" 
+                               required
+                               maxlength="200"
+                               placeholder="Enter name for duplicated meal plan">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="new_start_date">New Start Date: <span class="text-danger">*</span></label>
+                        <input type="date" 
+                               class="form-control" 
+                               id="new_start_date" 
+                               name="new_start_date" 
+                               required>
+                        <small class="form-text text-muted">
+                            The plan will maintain the same duration as the original.
+                        </small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-info">
+                        <i class="fas fa-copy"></i> Duplicate Meal Plan
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+// Delete meal plan confirmation
+function confirmDelete(button, mealPlanName) {
+    const deleteUrl = button.getAttribute('data-delete-url');
+    document.getElementById('deleteForm').action = deleteUrl;
+    document.getElementById('deletePlanName').textContent = mealPlanName;
+    $('#deleteModal').modal('show');
+}
+
+// Duplicate meal plan
+function confirmDuplicate(button, mealPlanName) {
+    const duplicateUrl = button.getAttribute('data-duplicate-url');
+    document.getElementById('duplicateForm').action = duplicateUrl;
+    document.getElementById('duplicatePlanName').textContent = mealPlanName;
+    
+    // Pre-populate the new name field with original name + " (Copy)"
+    document.getElementById('new_plan_name').value = mealPlanName + ' (Copy)';
+    
+    // Set minimum date to today
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('new_start_date').setAttribute('min', today);
+    
+    $('#duplicateModal').modal('show');
+}
+</script>
+
+{% endblock %}

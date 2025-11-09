@@ -1,0 +1,482 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Create Meal Plan{% endblock %}
+{% block content %}
+
+<style>
+.meal-plan-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.page-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 40px;
+    border-radius: 12px;
+    margin-bottom: 30px;
+}
+
+.page-header h1 {
+    font-size: 36px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.form-section {
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    margin-bottom: 30px;
+}
+
+.section-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #667eea;
+    padding-bottom: 10px;
+}
+
+.form-group label {
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 8px;
+}
+
+.date-range-inputs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.date-input {
+    padding: 10px;
+    border: 2px solid #dee2e6;
+    border-radius: 8px;
+    font-size: 15px;
+}
+
+.date-input:focus {
+    border-color: #667eea;
+    outline: none;
+}
+
+.day-card {
+    background: #f8f9fa;
+    border: 2px solid #dee2e6;
+    border-radius: 12px;
+    padding: 25px;
+    margin-bottom: 20px;
+}
+
+.day-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.day-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: #667eea;
+}
+
+.day-date {
+    color: #6c757d;
+    font-size: 14px;
+}
+
+.recipe-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.recipe-item {
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 15px;
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
+.recipe-select {
+    flex: 1;
+    padding: 10px;
+    border: 2px solid #dee2e6;
+    border-radius: 6px;
+    font-size: 15px;
+}
+
+.recipe-select:focus {
+    border-color: #667eea;
+    outline: none;
+}
+
+.servings-input {
+    width: 100px;
+    padding: 10px;
+    border: 2px solid #dee2e6;
+    border-radius: 6px;
+    text-align: center;
+}
+
+.btn-remove-recipe {
+    background: #dc3545;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.btn-remove-recipe:hover {
+    background: #c82333;
+}
+
+.btn-add-recipe {
+    background: #28a745;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+.btn-add-recipe:hover {
+    background: #218838;
+}
+
+.action-buttons {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 30px;
+}
+
+.alert-info {
+    background: #d1ecf1;
+    border: 1px solid #bee5eb;
+    color: #0c5460;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+#daysContainer {
+    display: block;
+}
+
+.empty-day-state {
+    text-align: center;
+    padding: 30px;
+    color: #6c757d;
+}
+
+.empty-day-state i {
+    font-size: 48px;
+    margin-bottom: 10px;
+    opacity: 0.3;
+}
+</style>
+
+<div class="meal-plan-container">
+    
+    <!-- Page Header -->
+    <div class="page-header">
+        <h1><i class="fas fa-calendar-plus"></i> Create Meal Plan</h1>
+        <p>Plan your meals for the week</p>
+    </div>
+
+    <form method="POST" id="mealPlanForm">
+        {% csrf_token %}
+        
+        <!-- Basic Information -->
+        <div class="form-section">
+            <h2 class="section-title">
+                <i class="fas fa-info-circle"></i> Basic Information
+            </h2>
+            
+            <div class="form-group">
+                <label for="plan_name">Meal Plan Name *</label>
+                <input type="text" 
+                       class="form-control" 
+                       id="plan_name" 
+                       name="plan_name" 
+                       placeholder="e.g., Week of November 11-17" 
+                       required>
+            </div>
+            
+            <div class="alert-info">
+                <i class="fas fa-info-circle"></i> Select a date range between 1 and 7 days
+            </div>
+            
+            <div class="date-range-inputs">
+                <div class="form-group">
+                    <label for="start_date">Start Date *</label>
+                    <input type="date" 
+                           class="date-input form-control" 
+                           id="start_date" 
+                           name="start_date" 
+                           min="{{ today|date:'Y-m-d' }}"
+                           required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="end_date">End Date *</label>
+                    <input type="date" 
+                           class="date-input form-control" 
+                           id="end_date" 
+                           name="end_date" 
+                           min="{{ today|date:'Y-m-d' }}"
+                           required>
+                </div>
+            </div>
+        </div>
+
+        <!-- Days and Recipes -->
+        <div class="form-section" id="daysSection" style="display: none;">
+            <h2 class="section-title">
+                <i class="fas fa-utensils"></i> Assign Recipes to Days
+            </h2>
+            
+            <div id="daysContainer">
+                <!-- Days will be dynamically added here -->
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+            <a href="{% url 'meal_plans' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Cancel
+            </a>
+            <button type="submit" class="btn btn-success" id="saveBtn" disabled>
+                <i class="fas fa-save"></i> Save Meal Plan
+            </button>
+        </div>
+        
+    </form>
+
+</div>
+
+<script>
+// Recipe data from Django
+const recipes = [
+    {% for recipe in recipes %}
+    {
+        id: {{ recipe.recipe_id }},
+        name: "{{ recipe.recipe_name|escapejs }}",
+        servings: {{ recipe.servings }}
+    }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+];
+
+// Debug
+console.log('Total recipes loaded:', recipes.length);
+console.log('Recipes:', recipes);
+
+// State
+let selectedDates = [];
+
+// Listen for date changes
+document.getElementById('start_date').addEventListener('change', updateDateRange);
+document.getElementById('end_date').addEventListener('change', updateDateRange);
+
+function updateDateRange() {
+    const startDate = document.getElementById('start_date').value;
+    const endDate = document.getElementById('end_date').value;
+    
+    if (!startDate || !endDate) return;
+    
+    const start = new Date(startDate + 'T00:00:00');
+    const end = new Date(endDate + 'T00:00:00');
+    
+    // Validate date range
+    if (end < start) {
+        alert('End date must be after start date');
+        document.getElementById('end_date').value = '';
+        return;
+    }
+    
+    const daysDiff = Math.floor((end - start) / (1000 * 60 * 60 * 24)) + 1;
+    
+    if (daysDiff > 7) {
+        alert('Meal plan cannot exceed 7 days');
+        document.getElementById('end_date').value = '';
+        return;
+    }
+    
+    console.log('Generating days:', daysDiff, 'from', start, 'to', end);
+    
+    // Generate days
+    generateDays(start, end);
+}
+
+function generateDays(startDate, endDate) {
+    const container = document.getElementById('daysContainer');
+    const section = document.getElementById('daysSection');
+    const saveBtn = document.getElementById('saveBtn');
+    
+    container.innerHTML = '';
+    selectedDates = [];
+    
+    let currentDate = new Date(startDate);
+    
+    while (currentDate <= endDate) {
+        selectedDates.push(new Date(currentDate));
+        createDayCard(new Date(currentDate), container);
+        currentDate.setDate(currentDate.getDate() + 1);
+    }
+    
+    section.style.display = 'block';
+    saveBtn.disabled = false;
+    
+    console.log('Generated', selectedDates.length, 'day cards');
+}
+
+function createDayCard(date, container) {
+    const dayCard = document.createElement('div');
+    dayCard.className = 'day-card';
+    
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const dateStr = `${year}-${month}-${day}`;
+    
+    const dayName = date.toLocaleDateString('en-US', { weekday: 'long' });
+    const dateDisplay = date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+    
+    dayCard.innerHTML = `
+        <div class="day-header">
+            <div>
+                <h3 class="day-title"><i class="fas fa-calendar-day"></i> ${dayName}</h3>
+                <p class="day-date">${dateDisplay}</p>
+            </div>
+        </div>
+        
+        <div class="recipe-list" id="recipes-${dateStr}">
+            <div class="empty-day-state">
+                <i class="fas fa-utensils"></i>
+                <p>No recipes added yet. Click "Add Recipe" below.</p>
+            </div>
+        </div>
+        
+        <button type="button" class="btn-add-recipe" onclick="addRecipe('${dateStr}')">
+            <i class="fas fa-plus"></i> Add Recipe
+        </button>
+    `;
+    
+    container.appendChild(dayCard);
+}
+
+function addRecipe(dateStr) {
+    const recipeList = document.getElementById(`recipes-${dateStr}`);
+    
+    // Remove empty state if exists
+    const emptyState = recipeList.querySelector('.empty-day-state');
+    if (emptyState) {
+        emptyState.remove();
+    }
+    
+    const recipeItem = document.createElement('div');
+    recipeItem.className = 'recipe-item';
+    
+    // Build recipe options
+    let optionsHtml = '<option value="">-- Select Recipe --</option>';
+    recipes.forEach(recipe => {
+        optionsHtml += `<option value="${recipe.id}" data-servings="${recipe.servings}">${recipe.name}</option>`;
+    });
+    
+    recipeItem.innerHTML = `
+        <select name="recipes_${dateStr}[]" class="recipe-select" onchange="updateServings(this)" required>
+            ${optionsHtml}
+        </select>
+        
+        <div style="display: flex; align-items: center; gap: 5px;">
+            <input type="number" 
+                   name="servings_${dateStr}[]" 
+                   class="servings-input" 
+                   min="1" 
+                   value="1" 
+                   required>
+            <span style="color: #6c757d; font-size: 14px;">servings</span>
+        </div>
+        
+        <button type="button" class="btn-remove-recipe" onclick="removeRecipe(this)">
+            <i class="fas fa-trash"></i>
+        </button>
+    `;
+    
+    recipeList.appendChild(recipeItem);
+}
+
+function updateServings(selectElement) {
+    const selectedOption = selectElement.options[selectElement.selectedIndex];
+    const servings = selectedOption.getAttribute('data-servings');
+    
+    if (servings) {
+        const servingsInput = selectElement.closest('.recipe-item').querySelector('.servings-input');
+        servingsInput.value = servings;
+    }
+}
+
+function removeRecipe(button) {
+    const recipeItem = button.closest('.recipe-item');
+    const recipeList = recipeItem.parentElement;
+    
+    recipeItem.remove();
+    
+    // Show empty state if no recipes left
+    if (recipeList.querySelectorAll('.recipe-item').length === 0) {
+        recipeList.innerHTML = `
+            <div class="empty-day-state">
+                <i class="fas fa-utensils"></i>
+                <p>No recipes added yet. Click "Add Recipe" below.</p>
+            </div>
+        `;
+    }
+}
+
+// Auto-generate plan name based on dates
+document.getElementById('start_date').addEventListener('change', updatePlanName);
+document.getElementById('end_date').addEventListener('change', updatePlanName);
+
+function updatePlanName() {
+    const startDate = document.getElementById('start_date').value;
+    const endDate = document.getElementById('end_date').value;
+    const planNameInput = document.getElementById('plan_name');
+    
+    if (startDate && endDate && !planNameInput.value) {
+        const start = new Date(startDate + 'T00:00:00');
+        const end = new Date(endDate + 'T00:00:00');
+        
+        const startStr = start.toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
+        const endStr = end.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+        
+        planNameInput.value = `Week of ${startStr} - ${endStr}`;
+    }
+}
+
+// Form validation
+document.getElementById('mealPlanForm').addEventListener('submit', function(e) {
+    const startDate = document.getElementById('start_date').value;
+    const endDate = document.getElementById('end_date').value;
+    
+    if (!startDate || !endDate) {
+        e.preventDefault();
+        alert('Please select both start and end dates');
+        return false;
+    }
+    
+    return true;
+});
+</script>
+
+{% endblock %}

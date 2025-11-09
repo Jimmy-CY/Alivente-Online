@@ -1,0 +1,1144 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Create New Recipe{% endblock %}
+{% block content %}
+
+<style>
+.recipe-form-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.recipe-form-header {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+    padding: 30px;
+    border-radius: 12px;
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+.recipe-form-section {
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    margin-bottom: 30px;
+}
+
+.section-title {
+    font-size: 24px;
+    font-weight: 600;
+    color: #2c3e50;
+    border-bottom: 3px solid #28a745;
+    padding-bottom: 10px;
+    margin-bottom: 25px;
+}
+
+.form-row-custom {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.form-row-custom-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.form-row-custom-4 {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.ingredient-row, .instruction-row {
+    background: #f8f9fa;
+    padding: 16px;
+    border-radius: 8px;
+    border-left: 4px solid #28a745;
+    margin-bottom: 12px;
+    position: relative;
+}
+
+.remove-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    line-height: 1;
+}
+
+.remove-btn:hover {
+    background: #c82333;
+}
+
+.add-more-btn {
+    background: #28a745;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.add-more-btn:hover {
+    background: #218838;
+}
+
+.image-preview {
+    max-width: 300px;
+    max-height: 300px;
+    margin-top: 12px;
+    border-radius: 8px;
+    display: none;
+}
+
+.form-actions {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    margin-top: 30px;
+}
+
+.add-new-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: #28a745;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    margin-top: 6px;
+    text-decoration: none;
+}
+
+.add-new-link:hover {
+    color: #218838;
+    text-decoration: underline;
+}
+
+.select-with-add {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Dropdown Multi-Select Styles */
+.multiselect-container {
+    margin-bottom: 20px;
+}
+
+.multiselect-dropdown {
+    position: relative;
+}
+
+.multiselect-button {
+    width: 100%;
+    padding: 10px 16px;
+    background: white;
+    border: 2px solid #dee2e6;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.multiselect-button:hover {
+    border-color: #28a745;
+}
+
+.multiselect-button.active {
+    border-color: #28a745;
+    background: #f8f9fa;
+}
+
+.multiselect-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 2px solid #28a745;
+    border-radius: 8px;
+    margin-top: 4px;
+    max-height: 300px;
+    overflow-y: auto;
+    display: none;
+    z-index: 1000;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.multiselect-menu.show {
+    display: block;
+}
+
+.multiselect-item {
+    display: flex;
+    align-items: center;
+    padding: 10px 16px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.multiselect-item:hover {
+    background: #f8f9fa;
+}
+
+.multiselect-item input[type="checkbox"] {
+    margin-right: 10px;
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+.multiselect-item label {
+    cursor: pointer;
+    margin: 0;
+    flex: 1;
+    font-weight: 500;
+}
+
+.selected-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+    min-height: 32px;
+}
+
+.selected-tag {
+    background: #28a745;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 16px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.selected-tag .remove-tag {
+    background: rgba(255, 255, 255, 0.3);
+    border: none;
+    color: white;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 16px;
+    line-height: 1;
+}
+
+.selected-tag .remove-tag:hover {
+    background: rgba(255, 255, 255, 0.5);
+}
+
+/* Ingredient Display Styles */
+.ingredient-display-group {
+    margin-bottom: 20px;
+}
+
+.ingredient-display-group-title {
+    font-weight: 600;
+    color: #2c3e50;
+    font-size: 15px;
+    margin-bottom: 10px;
+    padding-bottom: 5px;
+    border-bottom: 2px solid #28a745;
+}
+
+.ingredient-display-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 10px;
+    background: #f8f9fa;
+    border-radius: 4px;
+    margin-bottom: 6px;
+    font-size: 14px;
+}
+
+.ingredient-display-item:hover {
+    background: #e9ecef;
+}
+
+.ingredient-display-info {
+    flex: 1;
+}
+
+.ingredient-display-name {
+    font-weight: 500;
+    color: #2c3e50;
+}
+
+.ingredient-display-details {
+    color: #6c757d;
+    font-size: 13px;
+}
+
+.ingredient-remove-btn {
+    background: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 4px 8px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.ingredient-remove-btn:hover {
+    background: #c82333;
+}
+</style>
+
+<div class="recipe-form-container">
+    
+    <div style="display: flex; justify-content: flex-end; margin-bottom: 20px;">
+        <a href="{% url 'recipe_management' %}" class="btn btn-secondary" role="button">
+            <i class="fas fa-times"></i> Cancel
+        </a>
+    </div>
+
+    <div class="recipe-form-header">
+        <h1><i class="fas fa-plus-circle"></i> Create New Recipe</h1>
+        <p style="margin: 0; font-size: 16px; opacity: 0.9;">Fill in the details below to add a new recipe to your collection</p>
+    </div>
+
+    <form method="post" enctype="multipart/form-data" id="recipeForm">
+        {% csrf_token %}
+
+        <!-- Basic Information Section -->
+        <div class="recipe-form-section">
+            <h2 class="section-title"><i class="fas fa-info-circle"></i> Basic Information</h2>
+            
+            <div class="form-group">
+                <label for="recipe_name">Recipe Name <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="recipe_name" name="recipe_name" required placeholder="e.g., Grilled Chicken with Vegetables">
+            </div>
+
+            <div class="form-group">
+                <label for="recipe_description">Description</label>
+                <textarea class="form-control" id="recipe_description" name="recipe_description" rows="1" placeholder="Brief description of your recipe..."></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="recipe_image">Recipe Image</label>
+                <input type="file" class="form-control-file" id="recipe_image" name="recipe_image" accept="image/*" onchange="previewImage(event)">
+                <img id="imagePreview" class="image-preview">
+            </div>
+        </div>
+
+        <!-- Classification Section (DROPDOWN MULTI-SELECT) -->
+        <div class="recipe-form-section">
+            <h2 class="section-title"><i class="fas fa-tag"></i> Classification</h2>
+            
+            <div class="row">
+                <!-- Courses (Dropdown Multi-Select) -->
+                <div class="col-md-4 multiselect-container">
+                    <label class="form-label"><i class="fas fa-utensils"></i> Courses</label>
+                    <div class="multiselect-dropdown">
+                        <button type="button" class="multiselect-button" onclick="toggleDropdown('courseDropdown')">
+                            <span>Select courses...</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                        <div class="multiselect-menu" id="courseDropdown">
+                            {% for course in courses %}
+                            <div class="multiselect-item" onclick="toggleCheckboxInDropdown(event, 'course-{{ course.recipe_course_id }}')">
+                                <input type="checkbox" 
+                                       id="course-{{ course.recipe_course_id }}" 
+                                       name="course[]" 
+                                       value="{{ course.recipe_course_id }}"
+                                       onchange="updateSelectedTags('course')">
+                                <label for="course-{{ course.recipe_course_id }}">{{ course.name }}</label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="selected-tags" id="courseSelectedTags"></div>
+                    <a class="add-new-link" onclick="openAddCourseModal()">
+                        <i class="fas fa-plus-circle"></i> Add New Course
+                    </a>
+                </div>
+
+                <!-- Categories (Dropdown Multi-Select) -->
+                <div class="col-md-4 multiselect-container">
+                    <label class="form-label"><i class="fas fa-list"></i> Categories</label>
+                    <div class="multiselect-dropdown">
+                        <button type="button" class="multiselect-button" onclick="toggleDropdown('categoryDropdown')">
+                            <span>Select categories...</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                        <div class="multiselect-menu" id="categoryDropdown">
+                            {% for category in categories %}
+                            <div class="multiselect-item" onclick="toggleCheckboxInDropdown(event, 'category-{{ category.recipe_category_id }}')">
+                                <input type="checkbox" 
+                                       id="category-{{ category.recipe_category_id }}" 
+                                       name="category[]" 
+                                       value="{{ category.recipe_category_id }}"
+                                       onchange="updateSelectedTags('category')">
+                                <label for="category-{{ category.recipe_category_id }}">{{ category.name }}</label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="selected-tags" id="categorySelectedTags"></div>
+                    <a class="add-new-link" onclick="openAddCategoryModal()">
+                        <i class="fas fa-plus-circle"></i> Add New Category
+                    </a>
+                </div>
+
+                <!-- Difficulty Level (Single Select - No Change) -->
+                <div class="col-md-4">
+                    <label for="difficultyLevel" class="form-label"><i class="fas fa-signal"></i> Difficulty Level</label>
+                    <select class="form-control" id="difficultyLevel" name="difficulty_level">
+                        <option value="">-- Select Difficulty --</option>
+                        <option value="Easy">Easy</option>
+                        <option value="Medium">Medium</option>
+                        <option value="Hard">Hard</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Time & Servings Section -->
+        <div class="recipe-form-section">
+            <h2 class="section-title"><i class="fas fa-clock"></i> Time & Servings</h2>
+            
+            <div class="form-row-custom-4">
+                <div class="form-group">
+                    <label for="prep_time">Prep Time (minutes)</label>
+                    <input type="number" class="form-control" id="prep_time" name="prep_time" min="0" placeholder="15">
+                </div>
+
+                <div class="form-group">
+                    <label for="cook_time">Cook Time (minutes)</label>
+                    <input type="number" class="form-control" id="cook_time" name="cook_time" min="0" placeholder="30">
+                </div>
+
+                <div class="form-group">
+                    <label for="total_time">Total Time (minutes)</label>
+                    <input type="number" class="form-control" id="total_time" name="total_time" min="0" placeholder="Auto-calculated" readonly style="background-color: #e9ecef;">
+                </div>
+
+                <div class="form-group">
+                    <label for="servings">Servings <span class="text-danger">*</span></label>
+                    <input type="number" class="form-control" id="servings" name="servings" min="1" value="4" required>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dietary Information Section (DROPDOWN MULTI-SELECT) -->
+        <div class="recipe-form-section">
+            <h2 class="section-title"><i class="fas fa-leaf"></i> Dietary Information</h2>
+            
+            <div class="row">
+                <!-- Vegetarian Checkbox -->
+                <div class="col-md-12 mb-3">
+                    <div class="form-check">
+                        <input type="checkbox" 
+                               class="form-check-input" 
+                               id="isVegetarian" 
+                               name="is_vegetarian" 
+                               value="1"
+                               onchange="toggleProteinSection()">
+                        <label class="form-check-label" for="isVegetarian">
+                            <i class="fas fa-seedling"></i> This is a vegetarian recipe
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Proteins (Dropdown Multi-Select) -->
+                <div class="col-md-12 multiselect-container" id="proteinContainer">
+                    <label class="form-label"><i class="fas fa-drumstick-bite"></i> Proteins</label>
+                    <div class="multiselect-dropdown">
+                        <button type="button" class="multiselect-button" onclick="toggleDropdown('proteinDropdown')">
+                            <span>Select proteins...</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                        <div class="multiselect-menu" id="proteinDropdown">
+                            {% for protein in proteins %}
+                            <div class="multiselect-item" onclick="toggleCheckboxInDropdown(event, 'protein-{{ protein.custom_protein_id }}')">
+                                <input type="checkbox" 
+                                       id="protein-{{ protein.custom_protein_id }}" 
+                                       name="protein[]" 
+                                       value="{{ protein.custom_protein_id }}"
+                                       onchange="updateSelectedTags('protein')">
+                                <label for="protein-{{ protein.custom_protein_id }}">{{ protein.name }}</label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="selected-tags" id="proteinSelectedTags"></div>
+                    <a class="add-new-link" onclick="openAddProteinModal()">
+                        <i class="fas fa-plus-circle"></i> Add New Protein
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ingredients Section -->
+        <div class="recipe-form-section">
+            <h2 class="section-title"><i class="fas fa-list-ul"></i> Ingredients</h2>
+            
+            <div style="display: grid; grid-template-columns: 1fr 400px; gap: 30px;">
+                <!-- Left Side - Input Form -->
+                <div>
+                    <div id="ingredientInputForm">
+                        <div style="background: #f8f9fa; padding: 16px; border-radius: 8px; border-left: 4px solid #28a745;">
+                            <div class="form-row-custom">
+                                <div class="form-group">
+                                    <label>Amount <span class="text-danger">*</span></label>
+                                    <input type="number" step="0.001" class="form-control" id="amount_input" placeholder="1.5">
+                                    <small class="form-text text-muted">Use decimals (e.g., 1.5 for 1½)</small>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Unit</label>
+                                    <select class="form-control" id="unit_select">
+                                        <option value="">-- Select Unit --</option>
+                                        {% for unit in units %}
+                                        <option value="{{ unit.measurement_unit_id }}" data-name="{{ unit.name }}" data-abbr="{{ unit.abbreviation }}">{{ unit.name }} ({{ unit.abbreviation }})</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-row-custom">
+                                <div class="form-group">
+                                    <label>Ingredient <span class="text-danger">*</span></label>
+                                    <div class="select-with-add">
+                                        <select class="form-control" id="ingredient_select">
+                                            <option value="">-- Select Ingredient --</option>
+                                            {% for ing in ingredients %}
+                                            <option value="{{ ing.ingredient_id }}" data-name="{{ ing.name }}" data-category="{{ ing.category.name|default:'Other' }}">{{ ing.name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                        <a class="add-new-link" onclick="openAddIngredientModal()">
+                                            <i class="fas fa-plus-circle"></i> Add New Ingredient
+                                        </a>
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>Preparation Note</label>
+                                    <input type="text" class="form-control" id="prep_note_input" placeholder="e.g., diced, chopped">
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Group (Optional)</label>
+                                <input type="text" class="form-control" id="group_input" placeholder="e.g., For the sauce">
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="button" class="add-more-btn" onclick="addIngredientToList()" style="margin-top: 12px;">
+                        <i class="fas fa-plus"></i> Add Ingredient
+                    </button>
+                </div>
+
+                <!-- Right Side - Display Table -->
+                <div>
+                    <div style="background: #fff; border: 2px solid #28a745; border-radius: 8px; padding: 20px; max-height: 600px; overflow-y: auto;">
+                        <h5 style="margin: 0 0 15px 0; color: #28a745; font-weight: 600;">
+                            <i class="fas fa-list"></i> Added Ingredients (<span id="ingredient_count">0</span>)
+                        </h5>
+                        <div id="ingredients_display">
+                            <p style="text-align: center; color: #6c757d; padding: 40px 20px;">
+                                <i class="fas fa-info-circle"></i><br>
+                                No ingredients added yet.<br>
+                                <small>Fill in the form and click "Add Ingredient"</small>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Hidden container for form submission -->
+            <div id="hidden_ingredients_container" style="display: none;"></div>
+        </div>
+
+        <!-- Instructions Section -->
+        <div class="recipe-form-section">
+            <h2 class="section-title"><i class="fas fa-tasks"></i> Instructions</h2>
+            
+            <div id="instructionsContainer">
+                <div class="instruction-row" data-index="0">
+                    <div class="form-row-custom">
+                        <div class="form-group">
+                            <label>Step Number <span class="text-danger">*</span></label>
+                            <input type="number" class="form-control" name="step_number[]" value="1" min="1" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Time Estimate (minutes)</label>
+                            <input type="number" class="form-control" name="time_estimate[]" min="0" placeholder="Optional">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Instruction Group (Optional)</label>
+                        <input type="text" class="form-control" name="instruction_group[]" placeholder="e.g., Preparation, Cooking">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Instruction Text <span class="text-danger">*</span></label>
+                        <textarea class="form-control" name="instruction_text[]" rows="3" required placeholder="Detailed instruction for this step..."></textarea>
+                    </div>
+                </div>
+            </div>
+
+            <button type="button" class="add-more-btn" onclick="addInstruction()">
+                <i class="fas fa-plus"></i> Add Another Step
+            </button>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-success btn-lg">
+                <i class="fas fa-save"></i> Save Recipe
+            </button>
+            <a href="{% url 'recipe_management' %}" class="btn btn-secondary btn-lg">
+                <i class="fas fa-times"></i> Cancel
+            </a>
+        </div>
+    </form>
+
+</div>
+
+<!-- Add Course Modal -->
+<div class="modal fade" id="addCourseModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header bg-success text-white">
+        <h5 class="modal-title">Add New Course</h5>
+        <button type="button" class="close text-white" data-dismiss="modal" onclick="$('#addCourseModal').modal('hide');">
+          <span>&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="new_course_name">Course Name <span class="text-danger">*</span></label>
+          <input type="text" class="form-control" id="new_course_name" placeholder="e.g., Appetizer">
+        </div>
+        <div class="form-group">
+          <label for="new_course_order">Display Order</label>
+          <input type="number" class="form-control" id="new_course_order" min="0" value="0">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="$('#addCourseModal').modal('hide');">Cancel</button>
+        <button type="button" class="btn btn-success" onclick="saveCourse()"><i class="fas fa-save"></i> Add Course</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add Category Modal -->
+<div class="modal fade" id="addCategoryModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header bg-success text-white">
+        <h5 class="modal-title">Add New Category</h5>
+        <button type="button" class="close text-white" data-dismiss="modal" onclick="$('#addCategoryModal').modal('hide');">
+          <span>&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="new_category_name">Category Name <span class="text-danger">*</span></label>
+          <input type="text" class="form-control" id="new_category_name" placeholder="e.g., Italian, Asian">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="$('#addCategoryModal').modal('hide');">Cancel</button>
+        <button type="button" class="btn btn-success" onclick="saveCategory()"><i class="fas fa-save"></i> Add Category</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add Protein Modal -->
+<div class="modal fade" id="addProteinModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header bg-success text-white">
+        <h5 class="modal-title">Add New Protein</h5>
+        <button type="button" class="close text-white" data-dismiss="modal" onclick="$('#addProteinModal').modal('hide');">
+          <span>&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="new_protein_name">Protein Name <span class="text-danger">*</span></label>
+          <input type="text" class="form-control" id="new_protein_name" placeholder="e.g., Venison, Tofu">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="$('#addProteinModal').modal('hide');">Cancel</button>
+        <button type="button" class="btn btn-success" onclick="saveProtein()"><i class="fas fa-save"></i> Add Protein</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Add Ingredient Modal -->
+<div class="modal fade" id="addIngredientModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header bg-success text-white">
+        <h5 class="modal-title">Add New Ingredient</h5>
+        <button type="button" class="close text-white" data-dismiss="modal" onclick="$('#addIngredientModal').modal('hide');">
+          <span>&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label for="new_ingredient_name">Ingredient Name <span class="text-danger">*</span></label>
+          <input type="text" class="form-control" id="new_ingredient_name" placeholder="e.g., Basil, Tomato">
+        </div>
+        <div class="form-group">
+          <label for="new_ingredient_category">Category</label>
+          <select class="form-control" id="new_ingredient_category">
+            <option value="">-- Select Category --</option>
+            {% for cat in ingredient_categories %}
+            <option value="{{ cat.ingredient_category_id }}">{{ cat.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="$('#addIngredientModal').modal('hide');">Cancel</button>
+        <button type="button" class="btn btn-success" onclick="saveIngredient()"><i class="fas fa-save"></i> Add Ingredient</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Dropdown functionality
+function toggleDropdown(dropdownId) {
+    const dropdown = document.getElementById(dropdownId);
+    const button = dropdown.previousElementSibling;
+    
+    // Close all other dropdowns
+    document.querySelectorAll('.multiselect-menu').forEach(menu => {
+        if (menu.id !== dropdownId) {
+            menu.classList.remove('show');
+            menu.previousElementSibling.classList.remove('active');
+        }
+    });
+    
+    // Toggle current dropdown
+    dropdown.classList.toggle('show');
+    button.classList.toggle('active');
+}
+
+function toggleCheckboxInDropdown(event, checkboxId) {
+    const checkbox = document.getElementById(checkboxId);
+    if (event.target.type !== 'checkbox' && event.target.tagName !== 'LABEL') {
+        checkbox.checked = !checkbox.checked;
+        checkbox.dispatchEvent(new Event('change'));
+    }
+}
+
+// Close dropdowns when clicking outside
+document.addEventListener('click', function(event) {
+    if (!event.target.closest('.multiselect-dropdown')) {
+        document.querySelectorAll('.multiselect-menu').forEach(menu => {
+            menu.classList.remove('show');
+            menu.previousElementSibling.classList.remove('active');
+        });
+    }
+});
+
+function updateSelectedTags(type) {
+    const checkboxes = document.querySelectorAll(`input[name="${type}[]"]:checked`);
+    const tagsContainer = document.getElementById(`${type}SelectedTags`);
+    
+    tagsContainer.innerHTML = '';
+    
+    checkboxes.forEach(checkbox => {
+        const label = checkbox.parentElement.querySelector('label').textContent;
+        const tag = document.createElement('div');
+        tag.className = 'selected-tag';
+        tag.innerHTML = `
+            ${label}
+            <button type="button" class="remove-tag" onclick="removeTag('${checkbox.id}', '${type}')">×</button>
+        `;
+        tagsContainer.appendChild(tag);
+    });
+}
+
+function removeTag(checkboxId, type) {
+    const checkbox = document.getElementById(checkboxId);
+    checkbox.checked = false;
+    updateSelectedTags(type);
+}
+
+function toggleProteinSection() {
+    const isVegetarian = document.getElementById('isVegetarian').checked;
+    const proteinContainer = document.getElementById('proteinContainer');
+    
+    if (isVegetarian) {
+        proteinContainer.style.display = 'none';
+        document.querySelectorAll('input[name="protein[]"]').forEach(cb => {
+            cb.checked = false;
+        });
+        updateSelectedTags('protein');
+    } else {
+        proteinContainer.style.display = 'block';
+    }
+}
+
+// Ingredient management
+let ingredientsList = [];
+let ingredientIndex = 0;
+
+function addIngredientToList() {
+    const ingredientSelect = document.getElementById('ingredient_select');
+    const amountInput = document.getElementById('amount_input');
+    const unitSelect = document.getElementById('unit_select');
+    const prepNoteInput = document.getElementById('prep_note_input');
+    const groupInput = document.getElementById('group_input');
+
+    if (!ingredientSelect.value) {
+        alert('Please select an ingredient');
+        return;
+    }
+    if (!amountInput.value) {
+        alert('Please enter an amount');
+        return;
+    }
+
+    const selectedIngredient = ingredientSelect.options[ingredientSelect.selectedIndex];
+    const selectedUnit = unitSelect.value ? unitSelect.options[unitSelect.selectedIndex] : null;
+
+    const ingredient = {
+        id: ingredientIndex++,
+        ingredient_id: ingredientSelect.value,
+        ingredient_name: selectedIngredient.dataset.name,
+        category: selectedIngredient.dataset.category || 'Other',
+        amount: amountInput.value,
+        unit_id: unitSelect.value,
+        unit_name: selectedUnit ? selectedUnit.dataset.name : '',
+        unit_abbr: selectedUnit ? selectedUnit.dataset.abbr : '',
+        prep_note: prepNoteInput.value,
+        group: groupInput.value,
+        order: ingredientsList.length
+    };
+
+    ingredientsList.push(ingredient);
+
+    ingredientSelect.value = '';
+    amountInput.value = '';
+    unitSelect.value = '';
+    prepNoteInput.value = '';
+
+    updateIngredientsDisplay();
+}
+
+function removeIngredient(id) {
+    ingredientsList = ingredientsList.filter(ing => ing.id !== id);
+    updateIngredientsDisplay();
+}
+
+function updateIngredientsDisplay() {
+    const displayDiv = document.getElementById('ingredients_display');
+    const countSpan = document.getElementById('ingredient_count');
+    const hiddenContainer = document.getElementById('hidden_ingredients_container');
+
+    countSpan.textContent = ingredientsList.length;
+
+    if (ingredientsList.length === 0) {
+        displayDiv.innerHTML = `
+            <p style="text-align: center; color: #6c757d; padding: 40px 20px;">
+                <i class="fas fa-info-circle"></i><br>
+                No ingredients added yet.<br>
+                <small>Fill in the form and click "Add Ingredient"</small>
+            </p>
+        `;
+        hiddenContainer.innerHTML = '';
+        return;
+    }
+
+    const grouped = {};
+    
+    ingredientsList.forEach(ing => {
+        const groupKey = ing.group || 'Main Ingredients';
+        if (!grouped[groupKey]) {
+            grouped[groupKey] = [];
+        }
+        grouped[groupKey].push(ing);
+    });
+
+    let html = '';
+    Object.keys(grouped).sort().forEach(groupName => {
+        html += `<div class="ingredient-display-group">`;
+        if (Object.keys(grouped).length > 1) {
+            html += `<div class="ingredient-display-group-title">${groupName}</div>`;
+        }
+
+        grouped[groupName].forEach(ing => {
+            const amountText = ing.amount + (ing.unit_abbr ? ' ' + ing.unit_abbr : '');
+            const prepNote = ing.prep_note ? `, ${ing.prep_note}` : '';
+            
+            html += `
+                <div class="ingredient-display-item">
+                    <div class="ingredient-display-info">
+                        <div class="ingredient-display-name">${amountText} ${ing.ingredient_name}${prepNote}</div>
+                    </div>
+                    <button type="button" class="ingredient-remove-btn" onclick="removeIngredient(${ing.id})">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            `;
+        });
+
+        html += `</div>`;
+    });
+
+    displayDiv.innerHTML = html;
+
+    hiddenContainer.innerHTML = '';
+    ingredientsList.forEach((ing, index) => {
+        hiddenContainer.innerHTML += `
+            <input type="hidden" name="ingredient[]" value="${ing.ingredient_id}">
+            <input type="hidden" name="amount[]" value="${ing.amount}">
+            <input type="hidden" name="unit[]" value="${ing.unit_id}">
+            <input type="hidden" name="preparation_note[]" value="${ing.prep_note}">
+            <input type="hidden" name="ingredient_group[]" value="${ing.group}">
+            <input type="hidden" name="ingredient_order[]" value="${ing.order}">
+        `;
+    });
+}
+
+// Instruction management
+let instructionIndex = 1;
+
+document.getElementById('prep_time').addEventListener('input', calculateTotalTime);
+document.getElementById('cook_time').addEventListener('input', calculateTotalTime);
+
+function calculateTotalTime() {
+    const prepTime = parseInt(document.getElementById('prep_time').value) || 0;
+    const cookTime = parseInt(document.getElementById('cook_time').value) || 0;
+    document.getElementById('total_time').value = prepTime + cookTime;
+}
+
+function previewImage(event) {
+    const preview = document.getElementById('imagePreview');
+    const file = event.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            preview.src = e.target.result;
+            preview.style.display = 'block';
+        }
+        reader.readAsDataURL(file);
+    }
+}
+
+function addInstruction() {
+    const container = document.getElementById('instructionsContainer');
+    const newRow = document.createElement('div');
+    newRow.className = 'instruction-row';
+    newRow.setAttribute('data-index', instructionIndex);
+    newRow.innerHTML = `
+        <button type="button" class="remove-btn" onclick="removeRow(this)">×</button>
+        <div class="form-row-custom">
+            <div class="form-group">
+                <label>Step Number <span class="text-danger">*</span></label>
+                <input type="number" class="form-control" name="step_number[]" value="${instructionIndex + 1}" min="1" required>
+            </div>
+            <div class="form-group">
+                <label>Time Estimate (minutes)</label>
+                <input type="number" class="form-control" name="time_estimate[]" min="0" placeholder="Optional">
+            </div>
+        </div>
+        <div class="form-group">
+            <label>Instruction Group (Optional)</label>
+            <input type="text" class="form-control" name="instruction_group[]" placeholder="e.g., Preparation, Cooking">
+        </div>
+        <div class="form-group">
+            <label>Instruction Text <span class="text-danger">*</span></label>
+            <textarea class="form-control" name="instruction_text[]" rows="3" required placeholder="Detailed instruction for this step..."></textarea>
+        </div>
+    `;
+    container.appendChild(newRow);
+    instructionIndex++;
+}
+
+function removeRow(button) {
+    button.parentElement.remove();
+}
+
+function openAddCourseModal() { $('#addCourseModal').modal('show'); }
+function openAddCategoryModal() { $('#addCategoryModal').modal('show'); }
+function openAddProteinModal() { $('#addProteinModal').modal('show'); }
+function openAddIngredientModal() { $('#addIngredientModal').modal('show'); }
+
+function saveCourse() {
+    const courseName = document.getElementById('new_course_name').value.trim();
+    const courseOrder = document.getElementById('new_course_order').value;
+    if (!courseName) { alert('Please enter a course name'); return; }
+    
+    fetch('{% url "add_recipe_course" %}', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
+        body: JSON.stringify({ name: courseName, display_order: courseOrder })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const dropdown = document.getElementById('courseDropdown');
+            const newItem = document.createElement('div');
+            newItem.className = 'multiselect-item';
+            newItem.onclick = function(e) { toggleCheckboxInDropdown(e, 'course-' + data.course_id); };
+            newItem.innerHTML = `
+                <input type="checkbox" id="course-${data.course_id}" name="course[]" value="${data.course_id}" onchange="updateSelectedTags('course')">
+                <label for="course-${data.course_id}">${data.name}</label>
+            `;
+            dropdown.appendChild(newItem);
+            $('#addCourseModal').modal('hide');
+            document.getElementById('new_course_name').value = '';
+            document.getElementById('new_course_order').value = '0';
+            alert('Course added successfully!');
+        } else { alert('Error: ' + data.error); }
+    });
+}
+
+function saveCategory() {
+    const categoryName = document.getElementById('new_category_name').value.trim();
+    if (!categoryName) { alert('Please enter a category name'); return; }
+    
+    fetch('{% url "add_recipe_category" %}', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
+        body: JSON.stringify({ name: categoryName })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const dropdown = document.getElementById('categoryDropdown');
+            const newItem = document.createElement('div');
+            newItem.className = 'multiselect-item';
+            newItem.onclick = function(e) { toggleCheckboxInDropdown(e, 'category-' + data.category_id); };
+            newItem.innerHTML = `
+                <input type="checkbox" id="category-${data.category_id}" name="category[]" value="${data.category_id}" onchange="updateSelectedTags('category')">
+                <label for="category-${data.category_id}">${data.name}</label>
+            `;
+            dropdown.appendChild(newItem);
+            $('#addCategoryModal').modal('hide');
+            document.getElementById('new_category_name').value = '';
+            alert('Category added successfully!');
+        } else { alert('Error: ' + data.error); }
+    });
+}
+
+function saveProtein() {
+    const proteinName = document.getElementById('new_protein_name').value.trim();
+    if (!proteinName) { alert('Please enter a protein name'); return; }
+    
+    fetch('{% url "add_recipe_protein" %}', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
+        body: JSON.stringify({ name: proteinName })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const dropdown = document.getElementById('proteinDropdown');
+            const newItem = document.createElement('div');
+            newItem.className = 'multiselect-item';
+            newItem.onclick = function(e) { toggleCheckboxInDropdown(e, 'protein-' + data.protein_id); };
+            newItem.innerHTML = `
+                <input type="checkbox" id="protein-${data.protein_id}" name="protein[]" value="${data.protein_id}" onchange="updateSelectedTags('protein')">
+                <label for="protein-${data.protein_id}">${data.name}</label>
+            `;
+            dropdown.appendChild(newItem);
+            $('#addProteinModal').modal('hide');
+            document.getElementById('new_protein_name').value = '';
+            alert('Protein added successfully!');
+        } else { 
+            alert('Error: ' + data.error); 
+        }
+    });
+}
+
+function saveIngredient() {
+    const ingredientName = document.getElementById('new_ingredient_name').value.trim();
+    const categoryId = document.getElementById('new_ingredient_category').value;
+    if (!ingredientName) { alert('Please enter an ingredient name'); return; }
+    
+    fetch('{% url "add_recipe_ingredient" %}', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' },
+        body: JSON.stringify({ name: ingredientName, category_id: categoryId })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const select = document.getElementById('ingredient_select');
+            const option = document.createElement('option');
+            option.value = data.ingredient_id;
+            option.text = data.name;
+            option.setAttribute('data-name', data.name);
+            option.setAttribute('data-category', 'Other');
+            select.appendChild(option);
+            
+            $('#addIngredientModal').modal('hide');
+            document.getElementById('new_ingredient_name').value = '';
+            document.getElementById('new_ingredient_category').value = '';
+            alert('Ingredient added successfully!');
+        } else { alert('Error: ' + data.error); }
+    });
+}
+
+document.getElementById('recipeForm').addEventListener('submit', function(e) {
+    const recipeName = document.getElementById('recipe_name').value.trim();
+    if (!recipeName) { e.preventDefault(); alert('Please enter a recipe name'); return false; }
+    const servings = document.getElementById('servings').value;
+    if (!servings || servings < 1) { e.preventDefault(); alert('Please enter a valid number of servings'); return false; }
+    
+    if (ingredientsList.length === 0) {
+        e.preventDefault();
+        alert('Please add at least one ingredient');
+        return false;
+    }
+    
+    return true;
+});
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    updateSelectedTags('course');
+    updateSelectedTags('category');
+    updateSelectedTags('protein');
+});
+</script>
+
+{% endblock %}

@@ -4,11 +4,13 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm, PasswordChangeForm
 from django.core.exceptions import ValidationError
-from django.core.files.storage import FileSystemStorage
+from django.core.files.base import ContentFile
+from django.core.files.storage import FileSystemStorage, default_storage
+from django.core.mail import EmailMultiAlternatives
 from django.core.paginator import Paginator
 from django.core.serializers import serialize
 from django.db import connection, transaction
-from django.db.models import Q, Prefetch, Subquery, OuterRef, Sum, F
+from django.db.models import Q, Prefetch, Subquery, OuterRef, Sum, F, Count
 from django.db.models.functions import Coalesce
 from django.http import HttpResponse, HttpResponseServerError, FileResponse, Http404, JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
@@ -25,7 +27,16 @@ from django.views.decorators.csrf import csrf_exempt, csrf_protect
 from django.views.decorators.http import require_POST, require_http_methods
 from django.views.static import serve
 from docxtpl import DocxTemplate
-from .translation_service import ensure_project_translations, get_translated_text
+
+
+#from .translation_service import ensure_project_translations, get_translated_text
+# Temporarily disabled translation
+def ensure_project_translations(request):
+    pass
+
+def get_translated_text(text, target_language='en'):
+    return text
+
 from . import forms
 from .forms import PropForm, TenantForm, PettyForm, InvoicesForm, IssuesForm, DetailsForm, SupplierForm, ValuesForm, RevenueTypesForm, RevenueLineForm, RevenueForm, ExpenseTypesForm, ExpenseLineForm, ExpenseForm, ActExpenseForm 
 from .models import (
@@ -48,20 +59,39 @@ from .models import (
     ProjectTask,
     ProjectDocument,
     Passport,
+    Recipe,
+    RecipeIngredient,
+    RecipeIngredientText,
+    RecipeInstruction,
+    RecipeCourse,
+    RecipeCategory,
+    Ingredient,
+    MeasurementUnit,
+    IngredientCategory,
+    CustomProtein,
+    PreparationMethod,
+    MealPlan,
+    MealPlanDay,
+    MealPlanRecipe,
+    UnitConversion
     )
-import decimal
 from decimal import Decimal
+from fractions import Fraction
 from calendar import monthrange
 from collections import defaultdict
 from datetime import date, datetime, timedelta
 from pages.management.commands.email_utils import get_email_recipients, format_email_recipients_for_header
 from urllib.parse import urlparse, parse_qs
 from xhtml2pdf import pisa
-import mysql.connector
-import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from .utils import merge_pdfs, is_pdf, convert_to_pdf
+from PIL import Image
+from docx import Document
+from io import BytesIO
+import decimal
+import mysql.connector
+import smtplib
 import io
 import os
 import re
@@ -69,6 +99,10 @@ import uuid
 import logging
 import json
 import tempfile
+import base64
+import anthropic
+import PyPDF2
+import string
 
 logger = logging.getLogger(__name__)
 
@@ -8528,3 +8562,2064 @@ def logout_user(request):
     logout(request)
     messages.success(request, ('You Have Succefully Logged Out.'))
     return redirect('home')
+
+### RECIPE MANAGEMENT ###
+# HELPER FUNCTION
+
+def convert_to_decimal(quantity_str):
+    """Convert fractions like '1/4' to Decimal(0.25)"""
+    try:
+        quantity_str = str(quantity_str).strip()
+        
+        if '/' in quantity_str:
+            if ' ' in quantity_str:  # Mixed number like "1 1/2"
+                parts = quantity_str.split(' ')
+                whole = Decimal(parts[0])
+                frac = Fraction(parts[1])
+                return whole + Decimal(frac.numerator) / Decimal(frac.denominator)
+            else:  # Simple fraction like "1/4"
+                frac = Fraction(quantity_str)
+                return Decimal(frac.numerator) / Decimal(frac.denominator)
+        else:
+            return Decimal(quantity_str)
+    except Exception as e:
+        print(f"Error converting '{quantity_str}': {e}")
+        return Decimal("1")
+
+def format_quantity(quantity_str):
+    """Format for display - keep fractions as-is"""
+    try:
+        quantity_str = str(quantity_str).strip()
+        
+        # Keep fractions as fractions
+        if '/' in quantity_str:
+            return quantity_str
+        
+        # Remove trailing zeros from decimals
+        num = float(quantity_str)
+        return '{:g}'.format(num)
+        
+    except:
+        return str(quantity_str)
+
+def get_or_create_ingredient(name):
+    """Get or create an ingredient by name (case-insensitive)"""
+    name = name.strip()
+    # Capitalize each word
+    name = ' '.join(word.capitalize() for word in name.split())
+    
+    ingredient, created = Ingredient.objects.get_or_create(
+        name__iexact=name,
+        defaults={'name': name}
+    )
+    return ingredient
+
+
+def get_or_create_unit(name):
+    """Get or create a measurement unit by name (case-insensitive)"""
+    name = name.strip().lower()
+    
+    # Try to find existing
+    unit = MeasurementUnit.objects.filter(name__iexact=name).first()
+    if unit:
+        return unit
+    
+    # Create new with abbreviation
+    abbr = name[:5] if len(name) <= 5 else name[:4] + '.'
+    unit = MeasurementUnit.objects.create(
+        name=name,
+        abbreviation=abbr,
+        unit_type='other'
+    )
+    return unit
+
+
+def get_or_create_preparation(name):
+    """Get or create a preparation method by name (case-insensitive)"""
+    if not name or not name.strip():
+        return None
+    
+    name = name.strip().lower()
+    
+    prep, created = PreparationMethod.objects.get_or_create(
+        name__iexact=name,
+        defaults={'name': name}
+    )
+    return prep
+
+# RECIPE MANAGEMENT
+
+@login_required
+@require_POST
+def send_shopping_list(request):
+    """Send shopping list via email with category grouping"""
+    if not request.user.is_superuser:
+        return JsonResponse({'success': False, 'error': 'Permission denied'}, status=403)
+    
+    try:
+        data = json.loads(request.body)
+        
+        recipe_name = data.get('recipe_name')
+        servings = data.get('servings')
+        original_servings = data.get('original_servings')
+        email_to = data.get('email_to')
+        shopping_list_categorized = data.get('shopping_list_categorized', {})
+        
+        # Validate
+        if not email_to or not shopping_list_categorized:
+            return JsonResponse({'success': False, 'error': 'Missing required fields'}, status=400)
+        
+        # Build email content
+        subject = f'🛒 Shopping List for {recipe_name}'
+        
+        # Plain text version
+        text_content = f"""Shopping List for {recipe_name}
+
+Servings: {servings} ({servings / original_servings:.1f}x original recipe)
+Generated: {data.get('generated_date', '')}
+
+Items to Buy:
+"""
+        
+        for category in sorted(shopping_list_categorized.keys()):
+            text_content += f"\n{category}:\n"
+            for item in shopping_list_categorized[category]:
+                text_content += f"☐ {item}\n"
+        
+        text_content += "\n---\nGenerated by ALIVENTE ONLINE - Recipe Management"
+        
+        # HTML version
+        html_content = f"""
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {{
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            color: #2c3e50;
+        }}
+        h2 {{
+            color: #28a745;
+            border-bottom: 3px solid #28a745;
+            padding-bottom: 10px;
+        }}
+        .recipe-info {{
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }}
+        .recipe-info p {{
+            margin: 8px 0;
+        }}
+        .category {{
+            margin-bottom: 25px;
+        }}
+        .category-header {{
+            color: #28a745;
+            font-size: 18px;
+            font-weight: 600;
+            padding-bottom: 8px;
+            border-bottom: 2px solid #e9ecef;
+            margin-bottom: 12px;
+        }}
+        ul {{
+            list-style: none;
+            padding-left: 0;
+        }}
+        li {{
+            padding: 12px;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }}
+        li:hover {{
+            background: #f8f9fa;
+        }}
+        li:last-child {{
+            border-bottom: none;
+        }}
+        .checkbox {{
+            width: 18px;
+            height: 18px;
+            border: 2px solid #28a745;
+            border-radius: 3px;
+            display: inline-block;
+            flex-shrink: 0;
+        }}
+        .footer {{
+            margin-top: 40px;
+            padding-top: 20px;
+            border-top: 2px solid #e9ecef;
+            text-align: center;
+            color: #6c757d;
+            font-size: 14px;
+        }}
+    </style>
+</head>
+<body>
+    <h2>🛒 Shopping List for {recipe_name}</h2>
+    
+    <div class="recipe-info">
+        <p><strong>Servings:</strong> {servings} ({servings / original_servings:.1f}x original recipe)</p>
+        <p><strong>Generated:</strong> {data.get('generated_date', '')}</p>
+    </div>
+"""
+        
+        # Add categories
+        for category in sorted(shopping_list_categorized.keys()):
+            html_content += f"""
+    <div class="category">
+        <div class="category-header">📌 {category}</div>
+        <ul>
+"""
+            for item in shopping_list_categorized[category]:
+                html_content += f"""
+            <li>
+                <div class="checkbox"></div>
+                <span>{item}</span>
+            </li>
+"""
+            html_content += """
+        </ul>
+    </div>
+"""
+        
+        html_content += f"""
+    <div class="footer">
+        <p>Generated by <strong>ALIVENTE ONLINE</strong> - Recipe Management</p>
+        <p>{datetime.now().strftime("%B %d, %Y at %I:%M %p")}</p>
+    </div>
+</body>
+</html>
+"""
+        
+        # Send email
+        msg = EmailMultiAlternatives(
+            subject,
+            text_content,
+            settings.DEFAULT_FROM_EMAIL,
+            [email_to]
+        )
+        msg.attach_alternative(html_content, "text/html")
+        msg.send()
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'Shopping list sent to {email_to}'
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=500)
+
+@login_required
+def recipe_management(request):
+    """Recipe management page with multi-select filtering, A-Z filter, and pagination"""
+    if not request.user.is_superuser:
+        messages.error(request, 'You do not have permission to access this page.')
+        return redirect('home')
+    
+    # Handle delete action
+    if request.method == 'POST' and request.POST.get('action') == 'delete':
+        recipe_id = request.POST.get('recipe_id')
+        try:
+            recipe = Recipe.objects.get(recipe_id=recipe_id)
+            recipe_name = recipe.recipe_name
+            recipe.delete()
+            messages.success(request, f'Recipe "{recipe_name}" has been deleted successfully.')
+        except Recipe.DoesNotExist:
+            messages.error(request, 'Recipe not found.')
+        return redirect('recipe_management')
+    
+    # Get all recipes with prefetch
+    recipes = Recipe.objects.all().prefetch_related('courses', 'categories', 'proteins')
+    
+    # Get filter parameters
+    search_query = request.GET.get('search', '')
+    selected_courses = request.GET.getlist('course')
+    selected_categories = request.GET.getlist('category')
+    selected_proteins = request.GET.getlist('protein')
+    selected_authors = request.GET.getlist('author')
+    selected_letter = request.GET.get('letter', '')
+    
+    # Apply filters
+    if search_query:
+        recipes = recipes.filter(recipe_name__icontains=search_query)
+    
+    if selected_courses:
+        recipes = recipes.filter(courses__recipe_course_id__in=selected_courses)
+    
+    if selected_categories:
+        recipes = recipes.filter(categories__recipe_category_id__in=selected_categories)
+    
+    if selected_proteins:
+        if 'vegetarian' in selected_proteins:
+            protein_ids = [p for p in selected_proteins if p != 'vegetarian']
+            if protein_ids:
+                recipes = recipes.filter(
+                    Q(is_vegetarian=True) | 
+                    Q(proteins__custom_protein_id__in=protein_ids)
+                )
+            else:
+                recipes = recipes.filter(is_vegetarian=True)
+        else:
+            recipes = recipes.filter(proteins__custom_protein_id__in=selected_proteins)
+    
+    if selected_authors:
+        recipes = recipes.filter(author__in=selected_authors)
+    
+    recipes = recipes.distinct().order_by('recipe_name')
+    
+    # Calculate available letters BEFORE applying letter filter
+    # This allows users to switch between letters without deselecting first
+    all_letters = list(string.ascii_uppercase)
+    available_letters = set()
+    
+    # Get first letter of each recipe name (without letter filter applied)
+    for recipe in recipes:
+        if recipe.recipe_name:
+            first_letter = recipe.recipe_name[0].upper()
+            if first_letter.isalpha():
+                available_letters.add(first_letter)
+    
+    # Create letter data for template
+    letter_data = []
+    for letter in all_letters:
+        letter_data.append({
+            'letter': letter,
+            'available': letter in available_letters
+        })
+    
+    # NOW apply letter filter (after calculating available letters)
+    # This allows users to see all available letters and click them to switch
+    if selected_letter:
+        recipes = recipes.filter(recipe_name__istartswith=selected_letter)
+    
+    # Handle AJAX request for Load More
+    page = request.GET.get('page', 1)
+    is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+    
+    # Pagination: 48 recipes per page
+    paginator = Paginator(recipes, 48)
+    page_obj = paginator.get_page(page)
+    
+    if is_ajax:
+        # Return JSON for AJAX requests
+        recipes_data = []
+        for recipe in page_obj:
+            recipes_data.append({
+                'recipe_id': recipe.recipe_id,
+                'recipe_name': recipe.recipe_name,
+                'recipe_image': recipe.recipe_image.url if recipe.recipe_image else None,
+                'prep_time': recipe.prep_time,
+                'cook_time': recipe.cook_time,
+                'servings': recipe.servings,
+                'difficulty_level': recipe.difficulty_level,
+                'is_vegetarian': recipe.is_vegetarian,
+                'author': recipe.author,
+                'courses': [{'name': c.name} for c in recipe.courses.all()],
+                'categories': [{'name': c.name} for c in recipe.categories.all()],
+                'proteins': [{'name': p.name} for p in recipe.proteins.all()],
+            })
+        
+        return JsonResponse({
+            'recipes': recipes_data,
+            'has_next': page_obj.has_next(),
+            'next_page': page_obj.next_page_number() if page_obj.has_next() else None,
+        })
+    
+    # Get all for filter dropdowns
+    courses = RecipeCourse.objects.all().order_by('name')
+    categories = RecipeCategory.objects.all().order_by('name')
+    proteins = CustomProtein.objects.all().order_by('name')
+    
+    # Get distinct authors from Recipe.AUTHOR_CHOICES
+    authors = [
+        {'value': 'General', 'name': 'General'},
+        {'value': 'Demetri & Angy', 'name': 'Demetri & Angy'},
+        {'value': 'Erene', 'name': 'Erene'},
+        {'value': 'Alexandra', 'name': 'Alexandra'},
+    ]
+    
+    context = {
+        'recipes': page_obj,
+        'courses': courses,
+        'categories': categories,
+        'proteins': proteins,
+        'authors': authors,
+        'search_query': search_query,
+        'selected_courses': selected_courses,
+        'selected_categories': selected_categories,
+        'selected_proteins': selected_proteins,
+        'selected_authors': selected_authors,
+        'selected_letter': selected_letter,
+        'letter_data': letter_data,
+        'has_next': page_obj.has_next(),
+        'next_page': page_obj.next_page_number() if page_obj.has_next() else None,
+    }
+    
+    return render(request, 'recipe_management.html', context)
+
+# ============================================
+# VIEW: View Recipe
+# ============================================
+
+@login_required
+def view_recipe(request, recipe_id):
+    """View recipe detail page"""
+    if not request.user.is_superuser:
+        messages.error(request, 'You do not have permission to access this page.')
+        return redirect('home')
+    
+    recipe = get_object_or_404(Recipe, recipe_id=recipe_id)
+    
+    # Get ingredients - ONLY from normalized table
+    ingredients = RecipeIngredient.objects.filter(recipe=recipe).select_related(
+        'ingredient', 'ingredient__category', 'unit', 'preparation'
+    ).order_by('ingredient_group', 'ingredient_order')
+
+    # Format amounts
+    for ingredient in ingredients:
+        ingredient.formatted_amount = format_quantity(ingredient.amount)
+
+    # Get instructions
+    instructions = RecipeInstruction.objects.filter(recipe=recipe).order_by(
+        'instruction_group', 'step_number'
+    )
+    
+    context = {
+        'recipe': recipe,
+        'ingredients': ingredients,
+        'instructions': instructions,
+    }
+    
+    return render(request, 'view_recipe.html', context)
+
+
+# ============================================
+# VIEW: Create Recipe
+# ============================================
+
+@login_required
+def create_recipe(request):
+    """Create new recipe - same for manual and AI import"""
+    if not request.user.is_superuser:
+        messages.error(request, 'You do not have permission to access this page.')
+        return redirect('home')
+    
+    if request.method == 'POST':
+        try:
+            # Basic info
+            recipe = Recipe()
+            recipe.recipe_name = request.POST.get('recipe_name')
+            recipe.recipe_description = request.POST.get('recipe_description', '')
+            recipe.author = request.POST.get('author', 'General')
+            recipe.prep_time = request.POST.get('prep_time') or None
+            recipe.cook_time = request.POST.get('cook_time') or None
+            recipe.total_time = request.POST.get('total_time') or None
+            recipe.servings = int(request.POST.get('servings', 4))
+            recipe.difficulty_level = request.POST.get('difficulty_level', '')
+            recipe.is_vegetarian = request.POST.get('is_vegetarian') == '1'
+            
+            if 'recipe_image' in request.FILES:
+                recipe.recipe_image = request.FILES['recipe_image']
+            
+            recipe.created_by = request.user.username
+            recipe.save()
+            
+            # Many-to-many
+            course_ids = request.POST.getlist('course[]')
+            if course_ids:
+                recipe.courses.set(course_ids)
+            
+            category_ids = request.POST.getlist('category[]')
+            if category_ids:
+                recipe.categories.set(category_ids)
+            
+            if not recipe.is_vegetarian:
+                protein_ids = request.POST.getlist('protein[]')
+                if protein_ids:
+                    recipe.proteins.set(protein_ids)
+            
+            # ========== SAVE INGREDIENTS (NORMALIZED) ==========
+            ingredient_quantities = request.POST.getlist('ingredient_quantity[]')
+            ingredient_measurements = request.POST.getlist('ingredient_measurement[]')
+            ingredient_names = request.POST.getlist('ingredient_name[]')
+            ingredient_preparations = request.POST.getlist('ingredient_preparation[]')
+            ingredient_groups = request.POST.getlist('ingredient_group[]')
+            
+            for i in range(len(ingredient_names)):
+                if ingredient_names[i].strip():
+                    # Get or create related objects
+                    ingredient = get_or_create_ingredient(ingredient_names[i])
+                    unit = get_or_create_unit(ingredient_measurements[i])
+                    
+                    prep = None
+                    if i < len(ingredient_preparations) and ingredient_preparations[i].strip():
+                        prep = get_or_create_preparation(ingredient_preparations[i])
+                    
+                    # Convert quantity (handles fractions!)
+                    quantity_str = ingredient_quantities[i]
+
+                    # Create normalized record
+                    RecipeIngredient.objects.create(
+                        recipe=recipe,
+                        ingredient=ingredient,
+                        unit=unit,
+                        amount=convert_to_decimal(quantity_str),  # ← CHANGED
+                        preparation=prep,
+                        ingredient_group=ingredient_groups[i] if i < len(ingredient_groups) else '',
+                        ingredient_order=i
+                    )
+            
+            # ========== SAVE INSTRUCTIONS ==========
+            instructions = request.POST.getlist('instruction[]')
+            instruction_groups = request.POST.getlist('instruction_group[]')
+            
+            for idx, instruction_text in enumerate(instructions):
+                if instruction_text.strip():
+                    group = instruction_groups[idx] if idx < len(instruction_groups) else ''
+                    RecipeInstruction.objects.create(
+                        recipe=recipe,
+                        step_number=idx + 1,
+                        instruction_text=instruction_text,
+                        instruction_group=group
+                    )
+            
+            messages.success(request, f'Recipe "{recipe.recipe_name}" has been created successfully!')
+            return redirect('recipe_management')
+            
+        except Exception as e:
+            messages.error(request, f'Error creating recipe: {str(e)}')
+            return redirect('create_recipe')
+    
+    # GET request - show empty form
+    extracted_data = {
+        'recipe_name': '',
+        'description': '',
+        'author': 'General',
+        'prep_time': 0,
+        'cook_time': 0,
+        'total_time': 0,
+        'servings': 4,
+        'difficulty_level': '',
+        'is_vegetarian': False,
+        'ingredients': [],
+        'instructions': [],
+    }
+    
+    # Get lookups
+    existing_measurements = list(MeasurementUnit.objects.values_list('name', flat=True))
+    existing_ingredients_list = list(Ingredient.objects.values_list('name', flat=True))
+    existing_preparations = list(PreparationMethod.objects.values_list('name', flat=True))
+    courses = RecipeCourse.objects.all().order_by('name')
+    categories = RecipeCategory.objects.all().order_by('name')
+    proteins = CustomProtein.objects.all().order_by('name')
+    ingredient_categories = IngredientCategory.objects.all().order_by('name')  # ← ADD THIS
+    
+    context = {
+        'mode': 'create',
+        'temp_recipe_id': None,
+        'extracted_data': extracted_data,
+        'existing_measurements': json.dumps(existing_measurements),
+        'existing_ingredients': json.dumps(existing_ingredients_list),
+        'existing_preparations': json.dumps(existing_preparations),
+        'courses': courses,
+        'categories': categories,
+        'proteins': proteins,
+        'ingredient_categories': ingredient_categories,  # ← ADD THIS
+    }
+    
+    return render(request, 'preview_imported_recipe.html', context)
+
+
+# ============================================
+# VIEW: Edit Recipe
+# ============================================
+
+@login_required
+def edit_recipe(request, recipe_id):
+    """Edit an existing recipe"""
+    if not request.user.is_superuser:
+        messages.error(request, 'You do not have permission to access this page.')
+        return redirect('home')
+    
+    # OPTIMIZED: Prefetch all related data upfront
+    recipe = get_object_or_404(
+        Recipe.objects.prefetch_related(
+            'courses', 
+            'categories', 
+            'proteins',
+            'recipe_ingredients__ingredient',
+            'recipe_ingredients__unit',
+            'recipe_ingredients__preparation',
+            'instructions'
+        ),
+        recipe_id=recipe_id
+    )
+    
+    if request.method == 'POST':
+        try:
+            # Basic information
+            recipe.recipe_name = request.POST.get('recipe_name')
+            recipe.recipe_description = request.POST.get('recipe_description', '')
+            recipe.author = request.POST.get('author', 'General')
+            recipe.prep_time = request.POST.get('prep_time') or None
+            recipe.cook_time = request.POST.get('cook_time') or None
+            recipe.total_time = request.POST.get('total_time') or None
+            recipe.servings = request.POST.get('servings')
+            
+            # Image handling
+            if request.POST.get('remove_image') == '1':
+                if recipe.recipe_image:
+                    recipe.recipe_image.delete(save=False)
+                    recipe.recipe_image = None
+            
+            if 'recipe_image' in request.FILES:
+                if recipe.recipe_image:
+                    recipe.recipe_image.delete(save=False)
+                recipe.recipe_image = request.FILES['recipe_image']
+            
+            # Classification
+            course_ids = request.POST.getlist('course[]')
+            category_ids = request.POST.getlist('category[]')
+            recipe.difficulty_level = request.POST.get('difficulty_level')
+            
+            # Dietary
+            recipe.is_vegetarian = request.POST.get('is_vegetarian') == '1'
+            protein_ids = request.POST.getlist('protein[]')
+            
+            # Save recipe
+            recipe.save()
+            
+            # Update many-to-many
+            if course_ids:
+                recipe.courses.set(course_ids)
+            if category_ids:
+                recipe.categories.set(category_ids)
+            if recipe.is_vegetarian:
+                recipe.proteins.clear()
+            elif protein_ids:
+                recipe.proteins.set(protein_ids)
+            
+            # ========== OPTIMIZED INGREDIENTS SECTION ==========
+            # Delete old ingredients
+            recipe.recipe_ingredients.all().delete()
+            
+            # Get form data
+            ingredient_quantities = request.POST.getlist('ingredient_quantity[]')
+            ingredient_measurements = request.POST.getlist('ingredient_measurement[]')
+            ingredient_names = request.POST.getlist('ingredient_name[]')
+            ingredient_preparations = request.POST.getlist('ingredient_preparation[]')
+            ingredient_groups = request.POST.getlist('ingredient_group[]')
+            
+            # OPTIMIZATION: Bulk fetch all existing ingredients, units, and preparations
+            ingredient_name_set = {name.strip() for name in ingredient_names if name.strip()}
+            measurement_name_set = {meas.strip() for meas in ingredient_measurements if meas.strip()}
+            preparation_name_set = {prep.strip() for prep in ingredient_preparations if prep.strip()}
+            
+            # Fetch existing records in bulk
+            existing_ingredients = {
+                ing.name: ing 
+                for ing in Ingredient.objects.filter(name__in=ingredient_name_set)
+            }
+            existing_units = {
+                unit.name: unit 
+                for unit in MeasurementUnit.objects.filter(name__in=measurement_name_set)
+            }
+            existing_preparations = {
+                prep.name: prep 
+                for prep in PreparationMethod.objects.filter(name__in=preparation_name_set)
+            }
+            
+            # Create new ingredients/units/preparations in bulk
+            new_ingredients = []
+            for name in ingredient_name_set:
+                if name not in existing_ingredients:
+                    new_ingredients.append(Ingredient(name=name))
+            if new_ingredients:
+                Ingredient.objects.bulk_create(new_ingredients)
+                # Re-fetch to get IDs
+                existing_ingredients = {
+                    ing.name: ing 
+                    for ing in Ingredient.objects.filter(name__in=ingredient_name_set)
+                }
+            
+            new_units = []
+            for name in measurement_name_set:
+                if name not in existing_units:
+                    new_units.append(MeasurementUnit(name=name))
+            if new_units:
+                MeasurementUnit.objects.bulk_create(new_units)
+                # Re-fetch to get IDs
+                existing_units = {
+                    unit.name: unit 
+                    for unit in MeasurementUnit.objects.filter(name__in=measurement_name_set)
+                }
+            
+            new_preparations = []
+            for name in preparation_name_set:
+                if name not in existing_preparations:
+                    new_preparations.append(PreparationMethod(name=name))
+            if new_preparations:
+                PreparationMethod.objects.bulk_create(new_preparations)
+                # Re-fetch to get IDs
+                existing_preparations = {
+                    prep.name: prep 
+                    for prep in PreparationMethod.objects.filter(name__in=preparation_name_set)
+                }
+            
+            # Build RecipeIngredient objects
+            recipe_ingredients = []
+            for i in range(len(ingredient_names)):
+                if ingredient_names[i].strip():
+                    ingredient = existing_ingredients.get(ingredient_names[i].strip())
+                    unit = existing_units.get(ingredient_measurements[i].strip())
+                    
+                    prep = None
+                    if i < len(ingredient_preparations) and ingredient_preparations[i].strip():
+                        prep = existing_preparations.get(ingredient_preparations[i].strip())
+                    
+                    quantity_str = ingredient_quantities[i]
+                    
+                    recipe_ingredients.append(RecipeIngredient(
+                        recipe=recipe,
+                        ingredient=ingredient,
+                        unit=unit,
+                        amount=convert_to_decimal(quantity_str),
+                        preparation=prep,
+                        ingredient_group=ingredient_groups[i] if i < len(ingredient_groups) else '',
+                        ingredient_order=i
+                    ))
+            
+            # Bulk create all recipe ingredients
+            if recipe_ingredients:
+                RecipeIngredient.objects.bulk_create(recipe_ingredients)
+            
+            # ========== OPTIMIZED INSTRUCTIONS SECTION ==========
+            recipe.instructions.all().delete()
+            
+            instructions = request.POST.getlist('instruction[]')
+            instruction_groups = request.POST.getlist('instruction_group[]')
+            
+            # Build instruction objects
+            instruction_objects = []
+            for idx, instruction_text in enumerate(instructions):
+                if instruction_text.strip():
+                    group = instruction_groups[idx] if idx < len(instruction_groups) else ''
+                    instruction_objects.append(RecipeInstruction(
+                        recipe=recipe,
+                        step_number=idx + 1,
+                        instruction_text=instruction_text,
+                        instruction_group=group
+                    ))
+            
+            # Bulk create all instructions
+            if instruction_objects:
+                RecipeInstruction.objects.bulk_create(instruction_objects)
+            
+            messages.success(request, f'Recipe "{recipe.recipe_name}" has been updated successfully!')
+            return redirect('view_recipe', recipe_id=recipe.recipe_id)
+            
+        except Exception as e:
+            messages.error(request, f'Error updating recipe: {str(e)}')
+            return redirect('view_recipe', recipe_id=recipe.recipe_id)
+    
+    # ========== GET request - prepare data for editing ==========
+    # OPTIMIZED: Use select_related to fetch related objects in one query
+    existing_ingredients = []
+    
+    for ing in recipe.recipe_ingredients.select_related(
+        'ingredient', 'unit', 'preparation'
+    ).order_by('ingredient_order'):
+        existing_ingredients.append({
+            'quantity': format_quantity(ing.amount),
+            'measurement': ing.unit.name if ing.unit else '',
+            'ingredient': ing.ingredient.name,
+            'preparation': ing.preparation.name if ing.preparation else '',
+            'group': ing.ingredient_group or ''
+        })
+    
+    existing_instructions = [
+        {
+            'instruction': inst.instruction_text,
+            'group': inst.instruction_group or ''
+        }
+        for inst in recipe.instructions.all().order_by('step_number')
+    ]
+    
+    extracted_data = {
+        'recipe_name': recipe.recipe_name,
+        'description': recipe.recipe_description or '',
+        'author': recipe.author,
+        'prep_time': recipe.prep_time or 0,
+        'cook_time': recipe.cook_time or 0,
+        'total_time': recipe.total_time or 0,
+        'servings': recipe.servings or 1,
+        'difficulty_level': recipe.difficulty_level or '',
+        'is_vegetarian': recipe.is_vegetarian,
+        'recipe_image': recipe.recipe_image.url if recipe.recipe_image else None,
+        'ingredients': existing_ingredients,
+        'instructions': existing_instructions,
+    }
+    
+    # Get lookups
+    existing_measurements = list(MeasurementUnit.objects.values_list('name', flat=True))
+    existing_ingredients_list = list(Ingredient.objects.values_list('name', flat=True))
+    existing_preparations = list(PreparationMethod.objects.values_list('name', flat=True))
+    courses = RecipeCourse.objects.all().order_by('name')
+    categories = RecipeCategory.objects.all().order_by('name')
+    proteins = CustomProtein.objects.all().order_by('name')
+    ingredient_categories = IngredientCategory.objects.all().order_by('name')  # ← ADD THIS
+    
+    # OPTIMIZED: Use values_list to get IDs without additional queries
+    selected_course_ids = list(recipe.courses.values_list('recipe_course_id', flat=True))
+    selected_category_ids = list(recipe.categories.values_list('recipe_category_id', flat=True))
+    selected_protein_ids = list(recipe.proteins.values_list('custom_protein_id', flat=True))
+
+    context = {
+        'mode': 'edit',
+        'temp_recipe_id': recipe_id,
+        'recipe': recipe,
+        'extracted_data': extracted_data,
+        'existing_measurements': json.dumps(existing_measurements),
+        'existing_ingredients': json.dumps(existing_ingredients_list),
+        'existing_preparations': json.dumps(existing_preparations),
+        'courses': courses,
+        'categories': categories,
+        'proteins': proteins,
+        'ingredient_categories': ingredient_categories,  # ← ADD THIS
+        'selected_courses': json.dumps(selected_course_ids),
+        'selected_categories': json.dumps(selected_category_ids),
+        'selected_proteins': json.dumps(selected_protein_ids),
+    }
+
+    return render(request, 'preview_imported_recipe.html', context)
+
+@login_required
+@require_POST
+def add_recipe_course(request):
+    """AJAX view to add a new recipe course"""
+    if not request.user.is_superuser:
+        return JsonResponse({'success': False, 'error': 'Permission denied'})
+    
+    try:
+        data = json.loads(request.body)
+        name = data.get('name', '').strip()
+        display_order = data.get('display_order', 0)
+        
+        if not name:
+            return JsonResponse({'success': False, 'error': 'Course name is required'})
+        
+        if RecipeCourse.objects.filter(name__iexact=name).exists():
+            return JsonResponse({'success': False, 'error': 'A course with this name already exists'})
+        
+        course = RecipeCourse.objects.create(
+            name=name,
+            display_order=int(display_order)
+        )
+        
+        return JsonResponse({
+            'success': True,
+            'course_id': course.recipe_course_id,
+            'name': course.name,
+            'display_order': course.display_order
+        })
+        
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})
+
+
+@login_required
+@require_POST
+def add_recipe_category(request):
+    """AJAX view to add a new recipe category"""
+    if not request.user.is_superuser:
+        return JsonResponse({'success': False, 'error': 'Permission denied'})
+    
+    try:
+        data = json.loads(request.body)
+        name = data.get('name', '').strip()
+        
+        if not name:
+            return JsonResponse({'success': False, 'error': 'Category name is required'})
+        
+        if RecipeCategory.objects.filter(name__iexact=name).exists():
+            return JsonResponse({'success': False, 'error': 'A category with this name already exists'})
+        
+        category = RecipeCategory.objects.create(name=name)
+        
+        return JsonResponse({
+            'success': True,
+            'category_id': category.recipe_category_id,
+            'name': category.name
+        })
+        
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})
+
+
+@login_required
+@require_POST
+def add_recipe_ingredient(request):
+    """AJAX view to add a new ingredient"""
+    if not request.user.is_superuser:
+        return JsonResponse({'success': False, 'error': 'Permission denied'})
+    
+    try:
+        data = json.loads(request.body)
+        name = data.get('name', '').strip()
+        category_id = data.get('category_id', None)
+        
+        if not name:
+            return JsonResponse({'success': False, 'error': 'Ingredient name is required'})
+        
+        if Ingredient.objects.filter(name__iexact=name).exists():
+            return JsonResponse({'success': False, 'error': 'An ingredient with this name already exists'})
+        
+        ingredient = Ingredient.objects.create(name=name)
+        
+        if category_id:
+            ingredient.category_id = category_id
+            ingredient.save()
+        
+        return JsonResponse({
+            'success': True,
+            'ingredient_id': ingredient.ingredient_id,
+            'name': ingredient.name
+        })
+        
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})
+
+
+@login_required
+@require_POST
+def add_recipe_protein(request):
+    """AJAX view to add a new custom protein - UPDATED"""
+    if not request.user.is_superuser:
+        return JsonResponse({'success': False, 'error': 'Permission denied'})
+    
+    try:
+        data = json.loads(request.body)
+        name = data.get('name', '').strip()
+        
+        if not name:
+            return JsonResponse({'success': False, 'error': 'Protein name is required'})
+        
+        # CHANGED: Only check if it exists in CustomProtein table
+        if CustomProtein.objects.filter(name__iexact=name).exists():
+            return JsonResponse({'success': False, 'error': 'This protein already exists'})
+        
+        # REMOVED: Check against MAIN_PROTEIN_CHOICES (no longer exists)
+        
+        protein = CustomProtein.objects.create(name=name)
+        
+        return JsonResponse({
+            'success': True,
+            'protein_id': protein.custom_protein_id,  # CHANGED: Return ID
+            'name': protein.name
+        })
+        
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})
+
+# Temporary storage for extracted recipe data (use session or database)
+class TempRecipeData:
+    """Temporary storage for AI-extracted recipe data"""
+    def __init__(self, recipe_id, data):
+        self.recipe_id = recipe_id
+        self.data = data
+
+@login_required
+def import_recipe(request):
+    """Upload recipe file for AI extraction"""
+    
+    if request.method == 'POST':
+        uploaded_file = request.FILES.get('recipe_file')
+        
+        if not uploaded_file:
+            messages.error(request, 'Please select a file to upload.')
+            return redirect('import_recipe')
+        
+        try:
+            file_name = uploaded_file.name
+            file_ext = file_name.split('.')[-1].lower()
+            
+            # Extract text based on file type
+            if file_ext == 'pdf':
+                text_content = extract_text_from_pdf(uploaded_file)
+            elif file_ext in ['doc', 'docx']:
+                text_content = extract_text_from_docx(uploaded_file)
+            elif file_ext in ['jpg', 'jpeg', 'png']:
+                text_content = extract_text_from_image(uploaded_file)
+            else:
+                messages.error(request, 'Unsupported file format.')
+                return redirect('import_recipe')
+            
+            # Use Claude AI to extract
+            extracted_data = extract_recipe_with_ai(text_content, file_ext)
+            
+            if not extracted_data:
+                messages.error(request, 'Could not extract recipe data. Please try a different file.')
+                return redirect('import_recipe')
+            
+            # Store in session
+            import uuid
+            temp_id = str(uuid.uuid4())
+            request.session[f'temp_recipe_{temp_id}'] = extracted_data
+            request.session[f'temp_recipe_{temp_id}_file'] = file_name
+            
+            messages.success(request, 'Recipe extracted successfully! Please review and edit as needed.')
+            return redirect('preview_imported_recipe', temp_id=temp_id)
+            
+        except Exception as e:
+            messages.error(request, f'Error processing file: {str(e)}')
+            return redirect('import_recipe')
+    
+    return render(request, 'import_recipe.html')
+
+
+# ============================================
+# VIEW: Preview Imported Recipe
+# ============================================
+
+@login_required
+def preview_imported_recipe(request, temp_id):
+    """Preview and edit AI-extracted recipe data - SAME save logic as create_recipe"""
+    
+    extracted_data = request.session.get(f'temp_recipe_{temp_id}')
+    
+    if not extracted_data:
+        messages.error(request, 'Recipe data not found. Please import again.')
+        return redirect('import_recipe')
+    
+    if request.method == 'POST':
+        # ========== SAVE LOGIC - IDENTICAL TO create_recipe ==========
+        try:
+            recipe = Recipe()
+            recipe.recipe_name = request.POST.get('recipe_name')
+            recipe.recipe_description = request.POST.get('recipe_description', '')
+            recipe.author = request.POST.get('author', 'General')
+            recipe.prep_time = request.POST.get('prep_time') or None
+            recipe.cook_time = request.POST.get('cook_time') or None
+            recipe.total_time = request.POST.get('total_time') or None
+            recipe.servings = request.POST.get('servings')
+            recipe.difficulty_level = request.POST.get('difficulty_level')
+            recipe.is_vegetarian = request.POST.get('is_vegetarian') == '1'
+            recipe.created_by = request.user.username if request.user.is_authenticated else 'Anonymous'
+            recipe.is_ai_imported = True
+            
+            if 'recipe_image' in request.FILES:
+                recipe.recipe_image = request.FILES['recipe_image']
+            
+            recipe.save()
+            
+            # Many-to-many
+            course_ids = request.POST.getlist('course[]')
+            if course_ids:
+                recipe.courses.set(course_ids)
+            
+            category_ids = request.POST.getlist('category[]')
+            if category_ids:
+                recipe.categories.set(category_ids)
+            
+            protein_ids = request.POST.getlist('protein[]')
+            if not recipe.is_vegetarian and protein_ids:
+                recipe.proteins.set(protein_ids)
+            
+            # ========== SAVE INGREDIENTS (NORMALIZED) - SAME AS create_recipe ==========
+            ingredient_quantities = request.POST.getlist('ingredient_quantity[]')
+            ingredient_measurements = request.POST.getlist('ingredient_measurement[]')
+            ingredient_names = request.POST.getlist('ingredient_name[]')
+            ingredient_preparations = request.POST.getlist('ingredient_preparation[]')
+            ingredient_groups = request.POST.getlist('ingredient_group[]')
+            
+            for i in range(len(ingredient_names)):
+                if ingredient_names[i].strip():
+                    ingredient = get_or_create_ingredient(ingredient_names[i])
+                    unit = get_or_create_unit(ingredient_measurements[i])
+                    
+                    prep = None
+                    if i < len(ingredient_preparations) and ingredient_preparations[i].strip():
+                        prep = get_or_create_preparation(ingredient_preparations[i])
+                    
+                    quantity_str = ingredient_quantities[i]
+
+                    RecipeIngredient.objects.create(
+                        recipe=recipe,
+                        ingredient=ingredient,
+                        unit=unit,
+                        amount=convert_to_decimal(quantity_str),  # ← CHANGED
+                        preparation=prep,
+                        ingredient_group=ingredient_groups[i] if i < len(ingredient_groups) else '',
+                        ingredient_order=i
+                    )
+            
+            # ========== SAVE INSTRUCTIONS ==========
+            instructions = request.POST.getlist('instruction[]')
+            instruction_groups = request.POST.getlist('instruction_group[]')
+            
+            for idx, instruction_text in enumerate(instructions):
+                if instruction_text.strip():
+                    group = instruction_groups[idx] if idx < len(instruction_groups) else ''
+                    RecipeInstruction.objects.create(
+                        recipe=recipe,
+                        step_number=idx + 1,
+                        instruction_text=instruction_text,
+                        instruction_group=group
+                    )
+            
+            # Clear session
+            del request.session[f'temp_recipe_{temp_id}']
+            if f'temp_recipe_{temp_id}_file' in request.session:
+                del request.session[f'temp_recipe_{temp_id}_file']
+            
+            messages.success(request, f'Recipe "{recipe.recipe_name}" has been imported successfully!')
+            return redirect('recipe_management')
+            
+        except Exception as e:
+            messages.error(request, f'Error saving recipe: {str(e)}')
+            return redirect('recipe_management')
+    
+    # GET request - show preview
+    existing_measurements = list(MeasurementUnit.objects.values_list('name', flat=True))
+    existing_ingredients_list = list(Ingredient.objects.values_list('name', flat=True))
+    existing_preparations = list(PreparationMethod.objects.values_list('name', flat=True))
+    courses = RecipeCourse.objects.all().order_by('name')
+    categories = RecipeCategory.objects.all().order_by('name')
+    proteins = CustomProtein.objects.all().order_by('name')
+    ingredient_categories = IngredientCategory.objects.all().order_by('name')  # ← ADD THIS LINE
+
+    context = {
+        'mode': 'import',
+        'temp_recipe_id': temp_id,
+        'extracted_data': extracted_data,
+        'existing_measurements': json.dumps(existing_measurements),
+        'existing_ingredients': json.dumps(existing_ingredients_list),
+        'existing_preparations': json.dumps(existing_preparations),
+        'courses': courses,
+        'categories': categories,
+        'proteins': proteins,
+        'ingredient_categories': ingredient_categories,
+    }
+
+    return render(request, 'preview_imported_recipe.html', context)
+
+def aggregate_meal_plan_ingredients(meal_plan):
+    """
+    Aggregate ingredients across all recipes in a meal plan.
+    Groups by ingredient name (ignoring preparation) and sums quantities with unit conversion.
+    Prioritizes database categories, uses smart categorization as fallback.
+    """
+    from collections import defaultdict
+    from decimal import Decimal
+    
+    def smart_categorize(ingredient_name):
+        """Intelligently categorize ingredients based on name - IMPROVED ORDER"""
+        ingredient_lower = ingredient_name.lower()
+        
+        # PRIORITY 1: Canned & Packaged (check these FIRST before vegetables)
+        canned_terms = [
+            'stock', 'broth', 'cube', 'bouillon', 'canned', 'tinned', 'tin',
+            'paste', 'sauce', 'puree', 'concentrate'
+        ]
+        for term in canned_terms:
+            if term in ingredient_lower:
+                return 'Canned & Packaged'
+        
+        # PRIORITY 2: Beverages (check before dairy to catch "cream sherry")
+        beverages = ['wine', 'beer', 'sherry', 'brandy', 'rum', 'vodka', 'whiskey', 'liqueur']
+        for term in beverages:
+            if term in ingredient_lower:
+                return 'Beverages'
+        
+        # PRIORITY 3: Herbs & Spices
+        herbs_spices = [
+            'oregano', 'origanum', 'basil', 'thyme', 'rosemary', 'sage', 'parsley', 'cilantro',
+            'pepper', 'salt', 'paprika', 'cumin', 'turmeric', 'cinnamon', 'nutmeg',
+            'cloves', 'curry', 'chili', 'cayenne'
+        ]
+        for term in herbs_spices:
+            if term in ingredient_lower:
+                return 'Herbs & Spices'
+        
+        # PRIORITY 4: Meats & Proteins
+        meats = [
+            'beef', 'pork', 'chicken', 'lamb', 'mince', 'meat', 'bacon', 'sausage',
+            'fish', 'salmon', 'tuna', 'shrimp', 'prawns'
+        ]
+        for term in meats:
+            if term in ingredient_lower:
+                return 'Meat & Seafood'
+        
+        # PRIORITY 5: Dairy
+        dairy = ['milk', 'cream', 'yogurt', 'cheese', 'butter']
+        # Exclude if it's a beverage (like cream sherry)
+        is_beverage = any(bev in ingredient_lower for bev in beverages)
+        if not is_beverage:
+            for term in dairy:
+                if term in ingredient_lower:
+                    return 'Dairy'
+        
+        # PRIORITY 6: Oils & Fats
+        oils_fats = ['oil', 'olive oil', 'vegetable oil', 'butter', 'margarine', 'lard', 'ghee']
+        for term in oils_fats:
+            if term in ingredient_lower:
+                return 'Oils & Fats'
+        
+        # PRIORITY 7: Grains & Pasta
+        grains = [
+            'flour', 'rice', 'pasta', 'spaghetti', 'noodles', 'bread', 'quinoa',
+            'couscous', 'oats', 'macaroni'
+        ]
+        for term in grains:
+            if term in ingredient_lower:
+                return 'Grains & Pasta'
+        
+        # PRIORITY 8: Vegetables (check LAST so canned items don't match here)
+        vegetables = [
+            'onion', 'garlic', 'tomato', 'potato', 'carrot', 'celery', 'pepper',
+            'lettuce', 'spinach', 'broccoli', 'mushroom', 'peas', 'corn'
+        ]
+        for term in vegetables:
+            if term in ingredient_lower:
+                return 'Vegetables'
+        
+        # Default
+        return 'Other'
+    
+    # Dictionary to hold aggregated ingredients
+    aggregated = defaultdict(lambda: {'units': defaultdict(Decimal), 'category': None})
+    
+    # Get all meal plan days with recipes
+    for day in meal_plan.days.all().order_by('date'):
+        for meal_recipe in day.recipes.all():
+            recipe = meal_recipe.recipe
+            servings_multiplier = Decimal(meal_recipe.servings) / Decimal(recipe.servings or 1)
+            
+            # Get all ingredients for this recipe
+            for recipe_ingredient in recipe.recipe_ingredients.all():
+                ingredient_name = recipe_ingredient.ingredient.name
+                quantity = Decimal(recipe_ingredient.amount or 0) * servings_multiplier
+                unit = recipe_ingredient.unit.name if recipe_ingredient.unit else "unit"
+                
+                # Get category from database
+                if recipe_ingredient.ingredient.category:
+                    db_category = recipe_ingredient.ingredient.category.name
+                else:
+                    db_category = None
+                
+                # Aggregate by ingredient and unit
+                aggregated[ingredient_name]['units'][unit] += quantity
+                aggregated[ingredient_name]['category'] = db_category
+    
+    # Convert to a cleaner format grouped by category
+    categorized_ingredients = defaultdict(list)
+    
+    for ingredient_name in sorted(aggregated.keys()):
+        db_category = aggregated[ingredient_name]['category']
+        
+        # PRIORITIZE database category if it exists and is not "Other"
+        if db_category and db_category != 'Other':
+            final_category = db_category
+        else:
+            # Use smart categorization as fallback
+            final_category = smart_categorize(ingredient_name)
+        
+        for unit, quantity in aggregated[ingredient_name]['units'].items():
+            categorized_ingredients[final_category].append({
+                'ingredient': ingredient_name,
+                'quantity': float(quantity),
+                'unit': unit
+            })
+    
+    # Sort categories
+    sorted_categories = sorted(categorized_ingredients.items())
+    
+    return dict(sorted_categories)
+
+@login_required
+def meal_plans(request):
+    """List all meal plans"""
+    if not request.user.is_superuser:
+        messages.error(request, 'You do not have permission to access this page.')
+        return redirect('home')
+    
+    # Get all meal plans with recipe counts, sorted by most recent first
+    meal_plans_list = MealPlan.objects.annotate(
+        recipe_count=Count('days__recipes')
+    ).order_by('-start_date')  # ← This orders newest first
+    
+    context = {
+        'meal_plans': meal_plans_list,
+    }
+    
+    return render(request, 'meal_plans.html', context)
+
+@login_required
+def create_meal_plan(request):
+    """Create a new meal plan"""
+    if not request.user.is_superuser:
+        messages.error(request, 'You do not have permission to access this page.')
+        return redirect('home')
+    
+    if request.method == 'POST':
+        try:
+            # Get basic info
+            plan_name = request.POST.get('plan_name')
+            start_date_str = request.POST.get('start_date')
+            end_date_str = request.POST.get('end_date')
+            
+            # Parse dates
+            start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
+            end_date = datetime.strptime(end_date_str, '%Y-%m-%d').date()
+            
+            # Validate date range
+            days_diff = (end_date - start_date).days + 1
+            if days_diff < 1 or days_diff > 7:
+                messages.error(request, 'Meal plan must be between 1 and 7 days.')
+                return redirect('create_meal_plan')
+            
+            # Create meal plan
+            meal_plan = MealPlan.objects.create(
+                plan_name=plan_name,
+                start_date=start_date,
+                end_date=end_date,
+                created_by=request.user
+            )
+            
+            # Create days and assign recipes
+            current_date = start_date
+            while current_date <= end_date:
+                # Create day
+                meal_day = MealPlanDay.objects.create(
+                    meal_plan=meal_plan,
+                    date=current_date
+                )
+                
+                # Get recipes for this day using date string (YYYY-MM-DD format)
+                date_key = current_date.strftime('%Y-%m-%d')
+                recipe_ids = request.POST.getlist(f'recipes_{date_key}[]')
+                servings_list = request.POST.getlist(f'servings_{date_key}[]')
+                
+                # Add recipes to this day
+                for idx, recipe_id in enumerate(recipe_ids):
+                    if recipe_id:  # Skip empty values
+                        recipe = Recipe.objects.get(recipe_id=recipe_id)
+                        servings = int(servings_list[idx]) if idx < len(servings_list) else recipe.servings
+                        
+                        MealPlanRecipe.objects.create(
+                            meal_plan_day=meal_day,
+                            recipe=recipe,
+                            servings=servings,
+                            sort_order=idx
+                        )
+                        
+        
+                current_date += timedelta(days=1)
+            
+            messages.success(request, f'Meal plan "{plan_name}" created successfully!')
+            return redirect('view_meal_plan', meal_plan_id=meal_plan.meal_plan_id)
+            
+        except Exception as e:
+            print(f"\n!!! ERROR: {str(e)} !!!")
+            import traceback
+            traceback.print_exc()
+            messages.error(request, f'Error creating meal plan: {str(e)}')
+            return redirect('create_meal_plan')
+    
+    # GET request - show form
+    # Get all recipes for dropdown
+    recipes = Recipe.objects.all().order_by('recipe_name')
+    
+    # Suggest a default date range (today + 6 days)
+    today = datetime.now().date()
+    default_end = today + timedelta(days=6)
+    
+    context = {
+        'recipes': recipes,
+        'default_start_date': today.strftime('%Y-%m-%d'),
+        'default_end_date': default_end.strftime('%Y-%m-%d'),
+    }
+    
+    return render(request, 'create_meal_plan.html', context)
+
+@login_required
+def view_meal_plan(request, meal_plan_id):
+    """View a meal plan with all days and recipes"""
+    if not request.user.is_superuser:
+        messages.error(request, 'You do not have permission to access this page.')
+        return redirect('home')
+    
+    # Get meal plan with optimized prefetch
+    meal_plan = get_object_or_404(
+        MealPlan.objects.prefetch_related(
+            Prefetch(
+                'days',
+                queryset=MealPlanDay.objects.order_by('date').prefetch_related(
+                    Prefetch(
+                        'recipes',
+                        queryset=MealPlanRecipe.objects.select_related('recipe')
+                    )
+                )
+            )
+        ),
+        meal_plan_id=meal_plan_id
+    )
+    
+    # Days are already prefetched and ordered
+    days = meal_plan.days.all()
+    
+    context = {
+        'meal_plan': meal_plan,
+        'days': days,
+    }
+    
+    return render(request, 'view_meal_plan.html', context)
+
+@login_required
+def delete_meal_plan(request, meal_plan_id):
+    """Delete a meal plan"""
+    if not request.user.is_superuser:
+        messages.error(request, 'You do not have permission to perform this action.')
+        return redirect('meal_plans')
+    
+    # Only allow POST requests for deletion
+    if request.method != 'POST':
+        messages.error(request, 'Invalid request method.')
+        return redirect('meal_plans')
+    
+    try:
+        meal_plan = MealPlan.objects.get(meal_plan_id=meal_plan_id)
+        plan_name = meal_plan.plan_name
+        
+        # Delete the meal plan (cascade will delete days and recipes)
+        meal_plan.delete()
+        
+        messages.success(request, f'Meal plan "{plan_name}" has been deleted successfully.')
+        
+    except MealPlan.DoesNotExist:
+        messages.error(request, 'Meal plan not found.')
+    
+    return redirect('meal_plans')
+
+@login_required
+def edit_meal_plan(request, meal_plan_id):
+    messages.info(request, 'Coming soon!')
+    return redirect('meal_plans')
+
+@login_required
+def duplicate_meal_plan(request, meal_plan_id):
+    """Duplicate a meal plan to new dates"""
+    if not request.user.is_superuser:
+        messages.error(request, 'You do not have permission to perform this action.')
+        return redirect('meal_plans')
+    
+    try:
+        # Get the original meal plan with all related data
+        original_plan = MealPlan.objects.prefetch_related(
+            'days__recipes__recipe'
+        ).get(meal_plan_id=meal_plan_id)
+        
+        if request.method == 'POST':
+            new_plan_name = request.POST.get('new_plan_name', '').strip()
+            new_start_date = request.POST.get('new_start_date')
+            
+            if not new_plan_name:
+                messages.error(request, 'Please enter a name for the duplicated meal plan.')
+                return redirect('view_meal_plan', meal_plan_id=meal_plan_id)
+            
+            if not new_start_date:
+                messages.error(request, 'Please select a start date.')
+                return redirect('view_meal_plan', meal_plan_id=meal_plan_id)
+            
+            try:
+                # Parse the new start date
+                new_start = datetime.strptime(new_start_date, '%Y-%m-%d').date()
+                
+                # Calculate duration of original plan
+                duration = (original_plan.end_date - original_plan.start_date).days
+                new_end = new_start + timedelta(days=duration)
+                
+                # Create new meal plan with user-provided name
+                new_plan = MealPlan.objects.create(
+                    plan_name=new_plan_name,
+                    start_date=new_start,
+                    end_date=new_end,
+                    created_by=request.user
+                )
+                
+                # Duplicate all days and recipes
+                for day in original_plan.days.all().order_by('date'):
+                    # Calculate the offset from original start date
+                    day_offset = (day.date - original_plan.start_date).days
+                    new_day_date = new_start + timedelta(days=day_offset)
+                    
+                    # Create new day
+                    new_day = MealPlanDay.objects.create(
+                        meal_plan=new_plan,
+                        date=new_day_date
+                    )
+                    
+                    # Copy all recipes for this day
+                    for meal_recipe in day.recipes.all():
+                        MealPlanRecipe.objects.create(
+                            meal_plan_day=new_day,
+                            recipe=meal_recipe.recipe,
+                            servings=meal_recipe.servings
+                        )
+                
+                messages.success(request, f'Meal plan "{new_plan_name}" created successfully starting on {new_start.strftime("%B %d, %Y")}.')
+                return redirect('view_meal_plan', meal_plan_id=new_plan.meal_plan_id)
+                
+            except ValueError as e:
+                messages.error(request, f'Invalid date format: {str(e)}')
+                return redirect('view_meal_plan', meal_plan_id=meal_plan_id)
+            except Exception as e:
+                messages.error(request, f'Error duplicating meal plan: {str(e)}')
+                return redirect('view_meal_plan', meal_plan_id=meal_plan_id)
+        
+        # GET request - should not happen with modal, but redirect just in case
+        return redirect('view_meal_plan', meal_plan_id=meal_plan_id)
+        
+    except MealPlan.DoesNotExist:
+        messages.error(request, 'Meal plan not found.')
+        return redirect('meal_plans')
+
+@login_required
+def meal_plan_shopping_list(request, meal_plan_id):
+    """Display shopping list for a meal plan with all aggregated ingredients"""
+    if not request.user.is_superuser:
+        messages.error(request, 'You do not have permission to access this page.')
+        return redirect('meal_plans')
+    
+    try:
+        # Get meal plan with optimized prefetching
+        meal_plan = get_object_or_404(
+            MealPlan.objects.prefetch_related(
+                Prefetch(
+                    'days',
+                    queryset=MealPlanDay.objects.order_by('date').prefetch_related(
+                        Prefetch(
+                            'recipes',
+                            queryset=MealPlanRecipe.objects.select_related('recipe').prefetch_related(
+                                Prefetch(
+                                    'recipe__recipe_ingredients',
+                                    queryset=RecipeIngredient.objects.select_related(
+                                        'ingredient',
+                                        'ingredient__category',
+                                        'unit'
+                                    )
+                                )
+                            )
+                        )
+                    )
+                )
+            ),
+            meal_plan_id=meal_plan_id
+        )
+        
+        # Aggregate ingredients
+        ingredients = aggregate_meal_plan_ingredients(meal_plan)
+        
+        context = {
+            'meal_plan': meal_plan,
+            'ingredients': ingredients,
+            'total_ingredients': sum(len(items) for items in ingredients.values()),
+        }
+        
+        return render(request, 'meal_plan_shopping_list.html', context)
+        
+    except Exception as e:
+        messages.error(request, f'Error generating shopping list: {str(e)}')
+        return redirect('view_meal_plan', meal_plan_id=meal_plan_id)
+
+@login_required
+@require_POST
+def send_meal_plan_shopping_list(request):
+    """Send meal plan shopping list via email"""
+    if not request.user.is_superuser:
+        return JsonResponse({'success': False, 'error': 'Permission denied'}, status=403)
+    
+    try:
+        data = json.loads(request.body)
+        
+        meal_plan_name = data.get('meal_plan_name')
+        date_range = data.get('date_range')
+        total_recipes = data.get('total_recipes')
+        email = data.get('email')
+        ingredients_by_category = data.get('ingredients', {})
+        
+        # Validate
+        if not email:
+            return JsonResponse({'success': False, 'error': 'Email address is required'}, status=400)
+        
+        if not ingredients_by_category:
+            return JsonResponse({'success': False, 'error': 'No ingredients to send'}, status=400)
+        
+        # Build email content
+        subject = f'🛒 Shopping List for {meal_plan_name}'
+        
+        # Plain text version
+        text_content = f"""Shopping List for {meal_plan_name}
+
+{date_range}
+{total_recipes} recipes
+
+Items to Buy:
+"""
+        
+        for category in sorted(ingredients_by_category.keys()):
+            text_content += f"\n{category}:\n"
+            for item in ingredients_by_category[category]:
+                qty = item['quantity']
+                # Format quantity nicely
+                if qty % 1 == 0:
+                    qty_str = f"{int(qty)}"
+                else:
+                    qty_str = f"{qty:.2f}".rstrip('0').rstrip('.')
+                text_content += f"☐ {qty_str} {item['unit']} {item['ingredient']}\n"
+        
+        text_content += "\n---\nGenerated by ALIVENTE ONLINE - Recipe Management"
+        
+        # HTML version
+        html_content = f"""
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {{
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            color: #2c3e50;
+        }}
+        .header {{
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+        }}
+        .header h1 {{
+            margin: 0 0 10px 0;
+            font-size: 28px;
+        }}
+        .header p {{
+            margin: 5px 0;
+            opacity: 0.95;
+        }}
+        .category {{
+            margin-bottom: 25px;
+        }}
+        .category-header {{
+            color: #28a745;
+            font-size: 20px;
+            font-weight: 600;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e9ecef;
+            margin-bottom: 15px;
+        }}
+        ul {{
+            list-style: none;
+            padding-left: 0;
+        }}
+        li {{
+            padding: 12px;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }}
+        li:hover {{
+            background: #f8f9fa;
+        }}
+        li:last-child {{
+            border-bottom: none;
+        }}
+        .checkbox {{
+            width: 18px;
+            height: 18px;
+            border: 2px solid #28a745;
+            border-radius: 3px;
+            flex-shrink: 0;
+        }}
+        .quantity {{
+            font-weight: 600;
+            color: #28a745;
+            margin-right: 5px;
+        }}
+        .footer {{
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid #e9ecef;
+            text-align: center;
+            color: #6c757d;
+            font-size: 14px;
+        }}
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🛒 Shopping List</h1>
+        <p><strong>{meal_plan_name}</strong></p>
+        <p>{date_range}</p>
+        <p>{total_recipes} recipes</p>
+    </div>
+"""
+        
+        # Add categories
+        for category in sorted(ingredients_by_category.keys()):
+            html_content += f"""
+    <div class="category">
+        <div class="category-header">📌 {category}</div>
+        <ul>
+"""
+            for item in ingredients_by_category[category]:
+                qty = item['quantity']
+                if qty % 1 == 0:
+                    qty_str = f"{int(qty)}"
+                else:
+                    qty_str = f"{qty:.2f}".rstrip('0').rstrip('.')
+                
+                html_content += f"""
+            <li>
+                <div class="checkbox"></div>
+                <span><span class="quantity">{qty_str} {item['unit']}</span> {item['ingredient']}</span>
+            </li>
+"""
+            html_content += """
+        </ul>
+    </div>
+"""
+        
+        html_content += f"""
+    <div class="footer">
+        <p>Generated by <strong>ALIVENTE ONLINE</strong> - Recipe Management</p>
+        <p>{datetime.now().strftime("%B %d, %Y at %I:%M %p")}</p>
+    </div>
+</body>
+</html>
+"""
+        
+        # Send email using same method as recipe shopping list
+        msg = EmailMultiAlternatives(
+            subject,
+            text_content,
+            settings.DEFAULT_FROM_EMAIL,
+            [email]
+        )
+        msg.attach_alternative(html_content, "text/html")
+        msg.send()
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'Shopping list sent to {email}'
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=500)
+
+# ============================================
+# FILE EXTRACTION FUNCTIONS
+# ============================================
+
+def extract_text_from_pdf(file):
+    """Extract text from PDF file"""
+    try:
+        pdf_reader = PyPDF2.PdfReader(file)
+        text = ""
+        for page in pdf_reader.pages:
+            text += page.extract_text()
+        return text
+    except Exception as e:
+        raise Exception(f"Error reading PDF: {str(e)}")
+
+
+def extract_text_from_docx(file):
+    """Extract text from Word document"""
+    try:
+        doc = Document(file)
+        text = ""
+        for paragraph in doc.paragraphs:
+            text += paragraph.text + "\n"
+        return text
+    except Exception as e:
+        raise Exception(f"Error reading Word document: {str(e)}")
+
+
+def extract_text_from_image(file):
+    """For images, we'll pass directly to Claude's vision API"""
+    # Convert to base64 for Claude API
+    try:
+        image = Image.open(file)
+        buffered = BytesIO()
+        image.save(buffered, format="PNG")
+        img_base64 = base64.b64encode(buffered.getvalue()).decode()
+        return img_base64
+    except Exception as e:
+        raise Exception(f"Error processing image: {str(e)}")
+
+
+# ============================================
+# AI EXTRACTION FUNCTION
+# ============================================
+
+# Replace the extract_recipe_with_ai function in your views.py
+
+def extract_recipe_with_ai(content, file_type):
+    """Use Claude AI to extract recipe data with structured ingredients"""
+    
+    # Get API key from settings
+    api_key = getattr(settings, 'ANTHROPIC_API_KEY', None)
+    if not api_key:
+        raise Exception("ANTHROPIC_API_KEY not found in settings")
+    
+    client = anthropic.Anthropic(api_key=api_key)
+    
+    # Updated prompt for structured ingredient extraction
+    system_prompt = """You are a recipe extraction expert. Extract recipe information from the provided content and return it in JSON format.
+
+Extract the following fields:
+- recipe_name: The name of the recipe
+- description: A brief description (if available)
+- prep_time: Preparation time in minutes (number only)
+- cook_time: Cooking time in minutes (number only)
+- total_time: Total time in minutes (number only)
+- servings: Number of servings (number only)
+- ingredients: Array of ingredient objects with these fields:
+  * quantity: The amount (e.g., "2", "1/4", "1.5") - extract the number only
+  * measurement: The unit (e.g., "cups", "tablespoons", "teaspoons", "packets", "cloves") - use singular lowercase
+  * ingredient: The ingredient name (e.g., "flour", "olive oil", "frozen artichokes")
+  * preparation: Any preparation notes (e.g., "chopped", "diced", "minced", "grated") - empty string if none
+- instructions: Array of instruction strings (step by step)
+
+For ingredients, parse each one carefully:
+Example: "2 packets Frozen Artichokes" should be:
+  {"quantity": "2", "measurement": "packets", "ingredient": "Frozen Artichokes", "preparation": ""}
+
+Example: "1/4 teaspoon salt" should be:
+  {"quantity": "1/4", "measurement": "teaspoon", "ingredient": "salt", "preparation": ""}
+
+Example: "2 tablespoons olive oil, extra virgin" should be:
+  {"quantity": "2", "measurement": "tablespoons", "ingredient": "olive oil", "preparation": "extra virgin"}
+
+Example: "1 teaspoon minced fresh garlic" should be:
+  {"quantity": "1", "measurement": "teaspoon", "ingredient": "fresh garlic", "preparation": "minced"}
+
+Return ONLY valid JSON with these fields. If a field is not found, use null for numbers or empty string/array for text."""
+    
+    try:
+        if file_type in ['jpg', 'jpeg', 'png']:
+            # Use vision API for images
+            message = client.messages.create(
+                model="claude-sonnet-4-20250514",
+                max_tokens=4096,
+                messages=[
+                    {
+                        "role": "user",
+                        "content": [
+                            {
+                                "type": "image",
+                                "source": {
+                                    "type": "base64",
+                                    "media_type": f"image/{file_type}",
+                                    "data": content,
+                                },
+                            },
+                            {
+                                "type": "text",
+                                "text": "Extract the recipe information from this image and return it in the JSON format specified."
+                            }
+                        ],
+                    }
+                ],
+                system=system_prompt
+            )
+        else:
+            # Use text API for PDF/Word
+            message = client.messages.create(
+                model="claude-sonnet-4-20250514",
+                max_tokens=4096,
+                messages=[
+                    {
+                        "role": "user",
+                        "content": f"Extract the recipe information from this text and return it in the JSON format specified:\n\n{content}"
+                    }
+                ],
+                system=system_prompt
+            )
+        
+        # Parse the response
+        response_text = message.content[0].text
+        
+        # Extract JSON from response (Claude might wrap it in markdown)
+        if "```json" in response_text:
+            json_start = response_text.find("```json") + 7
+            json_end = response_text.find("```", json_start)
+            response_text = response_text[json_start:json_end].strip()
+        elif "```" in response_text:
+            json_start = response_text.find("```") + 3
+            json_end = response_text.find("```", json_start)
+            response_text = response_text[json_start:json_end].strip()
+        
+        recipe_data = json.loads(response_text)
+        
+        # Validate and set defaults
+        recipe_data.setdefault('recipe_name', 'Imported Recipe')
+        recipe_data.setdefault('description', '')
+        recipe_data.setdefault('prep_time', None)
+        recipe_data.setdefault('cook_time', None)
+        recipe_data.setdefault('total_time', None)
+        recipe_data.setdefault('servings', 4)
+        recipe_data.setdefault('ingredients', [])
+        recipe_data.setdefault('instructions', [])
+        
+        # Ensure ingredients have all required fields
+        for ing in recipe_data['ingredients']:
+            ing.setdefault('quantity', '')
+            ing.setdefault('measurement', '')
+            ing.setdefault('ingredient', '')
+            ing.setdefault('preparation', '')
+        
+        return recipe_data
+        
+    except Exception as e:
+        print(f"AI Extraction Error: {str(e)}")
+        return None
+
+# AJAX endpoint to add new measurement
+@login_required
+@require_POST
+def add_measurement_ajax(request):
+    """Add new measurement unit via AJAX"""
+    try:
+        data = json.loads(request.body)
+        name = data.get('name', '').strip()
+        
+        if not name:
+            return JsonResponse({'success': False, 'message': 'Name is required'})
+        
+        # Check if already exists
+        if MeasurementUnit.objects.filter(name__iexact=name).exists():
+            return JsonResponse({'success': False, 'message': 'Measurement already exists'})
+        
+        # Create new measurement
+        measurement = MeasurementUnit.objects.create(
+            name=name,
+            abbreviation=name[:5] if len(name) <= 5 else name[:4] + '.',
+            unit_type='other'
+        )
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Measurement added successfully',
+            'measurement_id': measurement.measurement_unit_id,
+            'name': measurement.name
+        })
+        
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': str(e)})
+
+
+# AJAX endpoint to add new ingredient
+@login_required
+@require_POST
+def add_ingredient_ajax(request):
+    try:
+        data = json.loads(request.body)
+        name = data.get('name', '').strip()
+        category_id = data.get('category_id')  # ← NEW: Get category from request
+        
+        if not name:
+            return JsonResponse({'success': False, 'message': 'Ingredient name is required'})
+        
+        # Check if already exists
+        if Ingredient.objects.filter(name__iexact=name).exists():
+            return JsonResponse({'success': False, 'message': 'Ingredient already exists'})
+        
+        # Create ingredient with category
+        ingredient = Ingredient.objects.create(
+            name=name,
+            category_id=category_id if category_id else None  # ← NEW: Save category
+        )
+        
+        return JsonResponse({
+            'success': True,
+            'ingredient_id': ingredient.ingredient_id,
+            'name': ingredient.name
+        })
+        
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': str(e)})
+
+@login_required
+@require_POST
+def add_preparation_ajax(request):
+    """Add new preparation method via AJAX"""
+    try:
+        data = json.loads(request.body)
+        name = data.get('name', '').strip()
+        
+        if not name:
+            return JsonResponse({'success': False, 'message': 'Name is required'})
+        
+        # Lowercase for consistency
+        name = name.lower()
+        
+        # Check if already exists
+        if PreparationMethod.objects.filter(name__iexact=name).exists():
+            return JsonResponse({'success': False, 'message': 'Preparation method already exists'})
+        
+        # Create new preparation method
+        preparation = PreparationMethod.objects.create(name=name)
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Preparation method added successfully',
+            'preparation_id': preparation.preparation_method_id,
+            'name': preparation.name
+        })
+        
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': str(e)})
+
+@login_required
+@require_POST
+def add_preparation_ajax(request):
+    """Add new preparation method via AJAX"""
+    try:
+        data = json.loads(request.body)
+        name = data.get('name', '').strip().lower()
+        
+        if not name:
+            return JsonResponse({'success': False, 'message': 'Name is required'})
+        
+        # Check if already exists
+        if PreparationMethod.objects.filter(name__iexact=name).exists():
+            return JsonResponse({'success': False, 'message': 'Preparation method already exists'})
+        
+        # Create new preparation method
+        preparation = PreparationMethod.objects.create(name=name)
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Preparation method added successfully',
+            'preparation_id': preparation.preparation_method_id,
+            'name': preparation.name
+        })
+        
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': str(e)})

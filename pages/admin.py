@@ -1,7 +1,15 @@
 from django.contrib import admin
-from .models import props, petty, tenant, invoices, issues, issues_details, supplier, prop_values, revenue_types, revenue_line_types, revenue, expense_types, expense_line_types, expense, act_expense
+from .models import (
+    props, petty, tenant, invoices, issues, issues_details, supplier, 
+    prop_values, revenue_types, revenue_line_types, revenue, expense_types, 
+    expense_line_types, expense, act_expense,
+    # Recipe Keeper Models
+    MeasurementUnit, IngredientCategory, Ingredient,
+    RecipeCourse, RecipeCategory, Recipe, CustomProtein,
+    RecipeIngredient, RecipeInstruction
+)
 
-# Register your models here.
+# Register your existing models
 admin.site.register(props)
 admin.site.register(petty)
 admin.site.register(tenant)
@@ -17,3 +25,189 @@ admin.site.register(expense_types)
 admin.site.register(expense_line_types)
 admin.site.register(expense)
 admin.site.register(act_expense)
+
+
+##### RECIPE KEEPER ADMIN CONFIGURATION #####
+
+# ===== MEASUREMENT UNITS =====
+@admin.register(MeasurementUnit)
+class MeasurementUnitAdmin(admin.ModelAdmin):
+    list_display = ['name', 'abbreviation', 'unit_type', 'created_date']
+    list_filter = ['unit_type']
+    search_fields = ['name', 'abbreviation']
+    ordering = ['unit_type', 'name']
+
+
+# ===== INGREDIENT CATEGORY =====
+@admin.register(IngredientCategory)
+class IngredientCategoryAdmin(admin.ModelAdmin):
+    list_display = ['name', 'created_date']
+    search_fields = ['name']
+    ordering = ['name']
+
+
+# ===== INGREDIENTS =====
+@admin.register(Ingredient)
+class IngredientAdmin(admin.ModelAdmin):
+    list_display = ['name', 'category', 'default_unit', 'created_date']
+    list_filter = ['category']
+    search_fields = ['name']
+    ordering = ['name']
+    autocomplete_fields = ['category', 'default_unit']
+    
+    fieldsets = (
+        ('Basic Information', {
+            'fields': ('name', 'category', 'default_unit')
+        }),
+        ('Additional Details', {
+            'fields': ('notes',),
+            'classes': ('collapse',)
+        }),
+    )
+
+
+# ===== RECIPE COURSE =====
+@admin.register(RecipeCourse)
+class RecipeCourseAdmin(admin.ModelAdmin):
+    list_display = ['name', 'display_order', 'created_date']
+    ordering = ['display_order', 'name']
+
+
+# ===== RECIPE CATEGORY =====
+@admin.register(RecipeCategory)
+class RecipeCategoryAdmin(admin.ModelAdmin):
+    list_display = ['name', 'created_date']
+    search_fields = ['name']
+    ordering = ['name']
+
+
+# ===== CUSTOM PROTEIN =====
+@admin.register(CustomProtein)
+class CustomProteinAdmin(admin.ModelAdmin):
+    list_display = ['name', 'created_date']
+    search_fields = ['name']
+    ordering = ['name']
+
+
+# ===== RECIPE INGREDIENT INLINE =====
+class RecipeIngredientInline(admin.TabularInline):
+    model = RecipeIngredient
+    extra = 1
+    autocomplete_fields = ['ingredient', 'unit']
+    fields = ['ingredient_order', 'ingredient', 'amount', 'unit', 'preparation_note', 'ingredient_group']
+    ordering = ['ingredient_order']
+
+
+# ===== RECIPE INSTRUCTION INLINE =====
+class RecipeInstructionInline(admin.TabularInline):
+    model = RecipeInstruction
+    extra = 1
+    fields = ['step_number', 'instruction_text', 'instruction_group', 'time_estimate', 'step_image']
+    ordering = ['step_number']
+
+
+# ===== RECIPE =====
+@admin.register(Recipe)
+class RecipeAdmin(admin.ModelAdmin):
+    list_display = [
+        'recipe_name', 
+        'get_courses', 
+        'get_categories', 
+        'get_proteins',
+        'servings',
+        'get_total_time_display',
+        'difficulty_level',
+        'is_vegetarian',
+        'created_date'
+    ]
+    list_filter = [
+        'difficulty_level', 
+        'is_vegetarian',
+        'created_date'
+    ]
+    search_fields = ['recipe_name', 'recipe_description']
+    ordering = ['-created_date']
+    inlines = [RecipeIngredientInline, RecipeInstructionInline]
+    filter_horizontal = ['courses', 'categories', 'proteins']  # Makes M2M easier to manage in admin
+    
+    fieldsets = (
+        ('Basic Information', {
+            'fields': ('recipe_name', 'recipe_description', 'recipe_image')
+        }),
+        ('Classification', {
+            'fields': ('courses', 'categories', 'difficulty_level')
+        }),
+        ('Timing', {
+            'fields': ('prep_time', 'cook_time', 'total_time', 'servings')
+        }),
+        ('Dietary Information', {
+            'fields': ('is_vegetarian', 'proteins')
+        }),
+        ('Metadata', {
+            'fields': ('created_by',),
+            'classes': ('collapse',)
+        }),
+    )
+    
+    readonly_fields = ['created_date', 'updated_date']
+    
+    def get_courses(self, obj):
+        """Display all courses as comma-separated list"""
+        return ", ".join([course.name for course in obj.courses.all()])
+    get_courses.short_description = 'Courses'
+    
+    def get_categories(self, obj):
+        """Display all categories as comma-separated list"""
+        return ", ".join([cat.name for cat in obj.categories.all()])
+    get_categories.short_description = 'Categories'
+    
+    def get_proteins(self, obj):
+        """Display all proteins as comma-separated list"""
+        if obj.is_vegetarian:
+            return "Vegetarian"
+        proteins = obj.proteins.all()
+        return ", ".join([protein.name for protein in proteins]) if proteins else "-"
+    get_proteins.short_description = 'Proteins'
+    
+    def get_readonly_fields(self, request, obj=None):
+        # Make total_time readonly if prep_time and cook_time are set
+        if obj and obj.prep_time and obj.cook_time:
+            return self.readonly_fields + ['total_time']
+        return self.readonly_fields
+
+
+# ===== STANDALONE RECIPE INGREDIENT ADMIN (for bulk editing) =====
+@admin.register(RecipeIngredient)
+class RecipeIngredientAdmin(admin.ModelAdmin):
+    list_display = [
+        'recipe', 
+        'ingredient', 
+        'amount', 
+        'unit', 
+        'preparation_note',
+        'ingredient_group',
+        'ingredient_order'
+    ]
+    list_filter = ['recipe', 'ingredient__category']
+    search_fields = ['recipe__recipe_name', 'ingredient__name']
+    autocomplete_fields = ['recipe', 'ingredient', 'unit']
+    ordering = ['recipe', 'ingredient_order']
+
+
+# ===== STANDALONE RECIPE INSTRUCTION ADMIN (for bulk editing) =====
+@admin.register(RecipeInstruction)
+class RecipeInstructionAdmin(admin.ModelAdmin):
+    list_display = [
+        'recipe',
+        'step_number',
+        'instruction_text_short',
+        'instruction_group',
+        'time_estimate'
+    ]
+    list_filter = ['recipe', 'instruction_group']
+    search_fields = ['recipe__recipe_name', 'instruction_text']
+    ordering = ['recipe', 'step_number']
+    
+    def instruction_text_short(self, obj):
+        return obj.instruction_text[:100] + '...' if len(obj.instruction_text) > 100 else obj.instruction_text
+    instruction_text_short.short_description = 'Instruction'

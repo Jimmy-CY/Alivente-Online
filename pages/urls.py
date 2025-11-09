@@ -203,4 +203,31 @@ urlpatterns = [
     #
     # Passports
     path('passport-management/', views.passport_management, name='passport_management'),
+
+    #
+    # Recipe Management URLs
+    path('recipe_management/', views.recipe_management, name='recipe_management'),
+    path('view_recipe/<int:recipe_id>/', views.view_recipe, name='view_recipe'),
+    path('create_recipe/', views.create_recipe, name='create_recipe'),
+    path('recipe/<int:recipe_id>/edit/', views.edit_recipe, name='edit_recipe'),
+    path('ajax/add_recipe_course/', views.add_recipe_course, name='add_recipe_course'),
+    path('ajax/add_recipe_category/', views.add_recipe_category, name='add_recipe_category'),
+    path('ajax/add_recipe_ingredient/', views.add_recipe_ingredient, name='add_recipe_ingredient'),
+    path('add-recipe-protein/', views.add_recipe_protein, name='add_recipe_protein'),
+    path('import_recipe/', views.import_recipe, name='import_recipe'),
+    path('preview_imported_recipe/<str:temp_id>/', views.preview_imported_recipe, name='preview_imported_recipe'),
+    path('ajax/add_measurement/', views.add_measurement_ajax, name='add_measurement_ajax'),
+    path('ajax/add_ingredient/', views.add_ingredient_ajax, name='add_ingredient_ajax'),
+    path('ajax/add_preparation/', views.add_preparation_ajax, name='add_preparation_ajax'),
+    path('recipe/send_shopping_list/', views.send_shopping_list, name='send_shopping_list'),
+    # Meal Planning URLs
+    path('meal_plans/', views.meal_plans, name='meal_plans'),
+    path('meal_plans/create/', views.create_meal_plan, name='create_meal_plan'),
+    path('meal_plans/<int:meal_plan_id>/', views.view_meal_plan, name='view_meal_plan'),
+    path('meal_plans/<int:meal_plan_id>/edit/', views.edit_meal_plan, name='edit_meal_plan'),
+    path('meal_plans/<int:meal_plan_id>/duplicate/', views.duplicate_meal_plan, name='duplicate_meal_plan'),
+    path('meal_plans/<int:meal_plan_id>/delete/', views.delete_meal_plan, name='delete_meal_plan'),
+    path('meal_plans/<int:meal_plan_id>/shopping_list/', views.meal_plan_shopping_list, name='meal_plan_shopping_list'),
+    path('meal_plans/send_shopping_list/', views.send_meal_plan_shopping_list, name='send_meal_plan_shopping_list'),
+
 ]

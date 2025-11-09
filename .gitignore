@@ -3,6 +3,7 @@ __pycache__/
 *.pyc
 *.pyo
 *.pyd
+requirements_check.txt
 
 # Virtual Environment
 code/

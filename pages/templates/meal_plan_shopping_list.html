@@ -1,0 +1,470 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Shopping List - {{ meal_plan.plan_name }}{% endblock %}
+{% block content %}
+
+<style>
+.shopping-list-container {
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.page-header {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+    padding: 30px 40px;
+    border-radius: 12px;
+    margin-bottom: 30px;
+}
+
+.page-header h1 {
+    font-size: 32px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.page-header-meta {
+    display: flex;
+    gap: 25px;
+    margin-top: 15px;
+    font-size: 15px;
+    opacity: 0.95;
+}
+
+.action-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.share-buttons {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.share-buttons .btn {
+    padding: 10px 20px;
+    font-size: 14px;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.ingredients-card {
+    background: white;
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.ingredients-card h2 {
+    font-size: 24px;
+    font-weight: 700;
+    color: #2c3e50;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 3px solid #28a745;
+}
+
+.category-section {
+    margin-bottom: 30px;
+}
+
+.category-header {
+    color: #28a745;
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #e9ecef;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.ingredient-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.ingredient-item {
+    padding: 15px;
+    border-bottom: 1px solid #e9ecef;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    transition: background 0.2s;
+}
+
+.ingredient-item:hover {
+    background: #f8f9fa;
+}
+
+.ingredient-item:last-child {
+    border-bottom: none;
+}
+
+.ingredient-checkbox {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+}
+
+.ingredient-text {
+    flex: 1;
+    font-size: 16px;
+    color: #2c3e50;
+}
+
+.ingredient-item.checked .ingredient-text {
+    text-decoration: line-through;
+    color: #6c757d;
+    opacity: 0.6;
+}
+
+.ingredient-quantity {
+    font-weight: 600;
+    color: #28a745;
+    margin-right: 8px;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #6c757d;
+}
+
+.empty-state i {
+    font-size: 80px;
+    color: #dee2e6;
+    margin-bottom: 20px;
+}
+
+/* Email Section */
+.email-section {
+    margin-top: 30px;
+    padding-top: 30px;
+    border-top: 2px solid #dee2e6;
+}
+
+.email-section h3 {
+    color: #2c3e50;
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.email-section select {
+    width: 100% !important;
+    max-width: none !important;
+    padding: 12px;
+    border: 2px solid #28a745;
+    border-radius: 8px;
+    font-size: 15px;
+    margin-bottom: 20px;
+}
+
+.email-controls {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+/* Print Styles */
+@media print {
+    .action-bar,
+    .share-buttons,
+    .email-section,
+    .ingredient-checkbox {
+        display: none !important;
+    }
+    
+    .shopping-list-container {
+        max-width: 100%;
+    }
+    
+    .page-header {
+        background: white !important;
+        color: black !important;
+        border: 2px solid #28a745;
+    }
+    
+    .ingredients-card {
+        box-shadow: none;
+        border: 1px solid #dee2e6;
+    }
+    
+    .ingredient-item {
+        page-break-inside: avoid;
+    }
+    
+    .ingredient-item::before {
+        content: "☐ ";
+        margin-right: 10px;
+    }
+    
+    .category-section {
+        page-break-inside: avoid;
+    }
+}
+</style>
+
+<div class="shopping-list-container">
+    
+    <!-- Action Bar -->
+    <div class="action-bar">
+        <a href="{% url 'view_meal_plan' meal_plan.meal_plan_id %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Meal Plan
+        </a>
+    </div>
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <h1><i class="fas fa-shopping-cart"></i> Shopping List</h1>
+        <p style="font-size: 18px; margin-bottom: 0;">{{ meal_plan.plan_name }}</p>
+        <div class="page-header-meta">
+            <span>
+                <i class="fas fa-calendar"></i>
+                {{ meal_plan.start_date|date:"M d" }} - {{ meal_plan.end_date|date:"M d, Y" }}
+            </span>
+            <span>
+                <i class="fas fa-utensils"></i>
+                {{ meal_plan.total_recipes }} recipe{{ meal_plan.total_recipes|pluralize }}
+            </span>
+            <span>
+                <i class="fas fa-list"></i>
+                {{ total_ingredients }} ingredient{{ total_ingredients|pluralize }}
+            </span>
+        </div>
+    </div>
+
+    <!-- Ingredients Card -->
+    <div class="ingredients-card">
+        <h2>Items to Buy</h2>
+        
+        {% if ingredients %}
+            {% for category, items in ingredients.items %}
+            <div class="category-section">
+                <h3 class="category-header">
+                    <i class="fas fa-tag"></i> {{ category }}
+                </h3>
+                <ul class="ingredient-list">
+                    {% for item in items %}
+                    <li class="ingredient-item">
+                        <input type="checkbox" 
+                               class="ingredient-checkbox" 
+                               onchange="toggleItem(this)"
+                               data-ingredient="{{ item.ingredient }}"
+                               data-quantity="{{ item.quantity }}"
+                               data-unit="{{ item.unit }}"
+                               data-category="{{ category }}">
+                        <span class="ingredient-text">
+                            <span class="ingredient-quantity">{{ item.quantity|floatformat:"-2" }} {{ item.unit }}</span>
+                            {{ item.ingredient }}
+                        </span>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endfor %}
+            
+            <!-- Share Section - Modal Style -->
+            <div class="email-section">
+                <h3 style="color: #2c3e50; font-size: 18px; font-weight: 600; margin-bottom: 15px;">
+                    <i class="fas fa-envelope"></i> Email this list to:
+                </h3>
+                <select id="emailSelect" style="margin-bottom: 20px; width: 100%; padding: 12px; border: 2px solid #28a745; border-radius: 8px; font-size: 15px;">
+                    <option value="">Select email address...</option>
+                    <option value="demetrimanias@gmail.com">demetrimanias@gmail.com</option>
+                    <option value="angmaniasbakers@gmail.com">angmaniasbakers@gmail.com</option>
+                    <option value="erenemanias@gmail.com">erenemanias@gmail.com</option>
+                    <option value="leximanias@gmail.com">leximanias@gmail.com</option>
+                </select>
+                
+                <!-- Action Buttons - Same style as recipe modal -->
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 20px;">
+                    <button onclick="printList()" class="btn" style="background: #6c757d; color: white; padding: 12px; border-radius: 8px; display: flex; flex-direction: column; align-items: center; gap: 5px; border: none;">
+                        <i class="fas fa-print" style="font-size: 20px;"></i>
+                        <span style="font-size: 13px;">Print</span>
+                    </button>
+                    
+                    <button onclick="copyToClipboard()" class="btn" style="background: #17a2b8; color: white; padding: 12px; border-radius: 8px; display: flex; flex-direction: column; align-items: center; gap: 5px; border: none;">
+                        <i class="fas fa-copy" style="font-size: 20px;"></i>
+                        <span style="font-size: 13px;">Copy</span>
+                    </button>
+                    
+                    <button onclick="sendEmail()" id="sendEmailBtn" class="btn" style="background: #28a745; color: white; padding: 12px; border-radius: 8px; display: flex; flex-direction: column; align-items: center; gap: 5px; border: none;">
+                        <i class="fas fa-paper-plane" style="font-size: 20px;"></i>
+                        <span style="font-size: 13px;">Email</span>
+                    </button>
+                    
+                    <button onclick="shareToWhatsApp()" class="btn" style="background: #25D366; color: white; padding: 12px; border-radius: 8px; display: flex; flex-direction: column; align-items: center; gap: 5px; border: none;">
+                        <i class="fab fa-whatsapp" style="font-size: 20px;"></i>
+                        <span style="font-size: 13px;">WhatsApp</span>
+                    </button>
+                </div>
+                
+                <div id="emailStatus" style="margin-top: 15px;"></div>
+            </div>
+            
+        {% else %}
+            <div class="empty-state">
+                <i class="fas fa-shopping-basket"></i>
+                <h3>No Ingredients Found</h3>
+                <p>This meal plan doesn't have any recipes with ingredients yet.</p>
+            </div>
+        {% endif %}
+    </div>
+
+</div>
+
+<script>
+// Toggle checked state for ingredient items
+function toggleItem(checkbox) {
+    const listItem = checkbox.closest('.ingredient-item');
+    if (checkbox.checked) {
+        listItem.classList.add('checked');
+    } else {
+        listItem.classList.remove('checked');
+    }
+}
+
+// Get unchecked ingredients for sharing
+function getActiveIngredients() {
+    const items = [];
+    document.querySelectorAll('.ingredient-item:not(.checked)').forEach(item => {
+        const checkbox = item.querySelector('.ingredient-checkbox');
+        items.push({
+            ingredient: checkbox.dataset.ingredient,
+            quantity: parseFloat(checkbox.dataset.quantity),
+            unit: checkbox.dataset.unit,
+            category: checkbox.dataset.category
+        });
+    });
+    return items;
+}
+
+// Format ingredients as text grouped by category
+function formatIngredientsText() {
+    const items = getActiveIngredients();
+    
+    // Group by category
+    const grouped = {};
+    items.forEach(item => {
+        if (!grouped[item.category]) {
+            grouped[item.category] = [];
+        }
+        grouped[item.category].push(item);
+    });
+    
+    let text = `🛒 Shopping List for {{ meal_plan.plan_name }}\n`;
+    text += `{{ meal_plan.start_date|date:"M d" }} - {{ meal_plan.end_date|date:"M d, Y" }}\n\n`;
+    
+    // Add items by category
+    Object.keys(grouped).sort().forEach(category => {
+        text += `${category}:\n`;
+        grouped[category].forEach(item => {
+            const qty = item.quantity % 1 === 0 ? item.quantity.toFixed(0) : item.quantity.toFixed(2).replace(/\.?0+$/, '');
+            text += `☐ ${qty} ${item.unit} ${item.ingredient}\n`;
+        });
+        text += `\n`;
+    });
+    
+    text += `---\nGenerated by ALIVENTE ONLINE`;
+    return text;
+}
+
+// Print shopping list
+function printList() {
+    window.print();
+}
+
+// Copy to clipboard
+function copyToClipboard() {
+    const text = formatIngredientsText();
+    navigator.clipboard.writeText(text).then(() => {
+        alert('Shopping list copied to clipboard!');
+    }).catch(err => {
+        alert('Failed to copy: ' + err);
+    });
+}
+
+// Share to WhatsApp
+function shareToWhatsApp() {
+    const text = formatIngredientsText();
+    const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
+    window.open(url, '_blank');
+}
+
+// Send email
+function sendEmail() {
+    const email = document.getElementById('emailSelect').value;
+    
+    if (!email) {
+        alert('Please select an email address');
+        return;
+    }
+    
+    const items = getActiveIngredients();
+    const btn = document.getElementById('sendEmailBtn');
+    const status = document.getElementById('emailStatus');
+    
+    // Group by category for email
+    const grouped = {};
+    items.forEach(item => {
+        if (!grouped[item.category]) {
+            grouped[item.category] = [];
+        }
+        grouped[item.category].push(item);
+    });
+    
+    // Disable button and show loading
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin" style="font-size: 20px;"></i><span style="font-size: 13px;">Sending...</span>';
+    status.innerHTML = '';
+    
+    // Send via AJAX
+    fetch("{% url 'send_meal_plan_shopping_list' %}", {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: JSON.stringify({
+            email: email,
+            meal_plan_name: '{{ meal_plan.plan_name }}',
+            date_range: '{{ meal_plan.start_date|date:"M d" }} - {{ meal_plan.end_date|date:"M d, Y" }}',
+            total_recipes: {{ meal_plan.total_recipes }},
+            ingredients: grouped  // Send grouped by category
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            status.innerHTML = '<div class="alert alert-success" style="padding: 12px; border-radius: 8px;"><i class="fas fa-check-circle"></i> Email sent successfully to ' + email + '!</div>';
+        } else {
+            status.innerHTML = '<div class="alert alert-danger" style="padding: 12px; border-radius: 8px;"><i class="fas fa-exclamation-circle"></i> ' + data.error + '</div>';
+        }
+    })
+    .catch(error => {
+        status.innerHTML = '<div class="alert alert-danger" style="padding: 12px; border-radius: 8px;"><i class="fas fa-exclamation-circle"></i> Failed to send email. Please try again.</div>';
+    })
+    .finally(() => {
+        // Re-enable button
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-paper-plane" style="font-size: 20px;"></i><span style="font-size: 13px;">Email</span>';
+    });
+}
+</script>
+
+{% endblock %}

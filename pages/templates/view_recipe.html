@@ -1,0 +1,1443 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}{{ recipe.recipe_name }}{% endblock %}
+{% block content %}
+
+<style>
+/* Keep all your existing styles */
+.recipe-detail-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.recipe-header {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+    padding: 40px;
+    border-radius: 12px;
+    margin-bottom: 30px;
+    display: flex;
+    gap: 30px;
+    align-items: flex-start;
+}
+
+.recipe-header-content {
+    flex: 1;
+}
+
+.recipe-header-image {
+    flex-shrink: 0;
+}
+
+.recipe-thumbnail {
+    width: 200px;
+    height: 200px;
+    object-fit: cover;
+    border-radius: 12px;
+    border: 4px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.recipe-thumbnail-placeholder {
+    width: 200px;
+    height: 200px;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    border: 4px solid rgba(255, 255, 255, 0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 80px;
+}
+
+.recipe-title {
+    font-size: 36px;
+    font-weight: bold;
+    margin-bottom: 16px;
+}
+
+.recipe-meta-row {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-top: 20px;
+}
+
+.recipe-meta-box {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 12px 20px;
+    border-radius: 8px;
+}
+
+.recipe-tags {
+    margin-top: 20px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.tag-course {
+    background: #17a2b8;
+    color: white;
+    font-size: 14px;
+    padding: 8px 16px;
+    border-radius: 20px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 500;
+}
+
+.tag-category {
+    background: #6f42c1;
+    color: white;
+    font-size: 14px;
+    padding: 8px 16px;
+    border-radius: 20px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 500;
+}
+
+.tag-protein {
+    background: #fd7e14;
+    color: white;
+    font-size: 14px;
+    padding: 8px 16px;
+    border-radius: 20px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 500;
+}
+
+.tag-vegetarian {
+    background: #28a745;
+    color: white;
+    font-size: 14px;
+    padding: 8px 16px;
+    border-radius: 20px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 500;
+}
+
+.tag-author {
+    background: #546e7a;
+    color: white;
+    font-size: 14px;
+    padding: 8px 16px;
+    border-radius: 20px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-weight: 500;
+}
+
+.recipe-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    margin-bottom: 30px;
+}
+
+.recipe-info-section {
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.recipe-section-title {
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    color: #2c3e50;
+    border-bottom: 3px solid #28a745;
+    padding-bottom: 10px;
+}
+
+.ingredients-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+}
+
+.ingredients-column {
+    display: flex;
+    flex-direction: column;
+}
+
+.ingredient-group-wrapper {
+    margin-bottom: 24px;
+}
+
+.ingredient-group-title {
+    font-weight: 600;
+    color: #28a745;
+    margin-bottom: 12px;
+    font-size: 17px;
+    padding-bottom: 6px;
+    border-bottom: 2px solid #e0e0e0;
+}
+
+.ingredient-group-title.continued {
+    font-style: italic;
+    color: #28a745;
+}
+
+.ingredient-item {
+    padding: 10px 0;
+    border-bottom: 1px solid #f0f0f0;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.ingredient-item:last-child {
+    border-bottom: none;
+}
+
+.ingredient-checkbox {
+    width: 20px;
+    height: 20px;
+    margin-top: 2px;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.ingredient-text {
+    flex: 1;
+    cursor: pointer;
+    line-height: 1.5;
+}
+
+.ingredient-text.completed {
+    text-decoration: line-through;
+    color: #6c757d;
+}
+
+.instructions-section {
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    margin-bottom: 30px;
+    grid-column: 1 / -1;
+}
+
+.instruction-group-wrapper {
+    margin-bottom: 30px;
+}
+
+.instruction-group-title {
+    font-weight: 600;
+    color: #28a745;
+    margin-bottom: 16px;
+    font-size: 18px;
+}
+
+.instruction-step {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 20px;
+    padding: 16px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border-left: 4px solid #28a745;
+}
+
+.step-number {
+    background: #28a745;
+    color: white;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    flex-shrink: 0;
+}
+
+.step-content {
+    flex: 1;
+}
+
+.step-text {
+    color: #2c3e50;
+    line-height: 1.6;
+}
+
+.step-time {
+    color: #6c757d;
+    font-size: 13px;
+    margin-top: 6px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.action-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    margin: 40px 0;
+}
+
+.action-buttons .btn {
+    padding: 12px 30px;
+    font-size: 16px;
+    font-weight: 500;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-edit {
+    background: #ffc107;
+    color: #000;
+    border: none;
+}
+
+.btn-edit:hover {
+    background: #e0a800;
+    color: #000;
+}
+
+.btn-print {
+    background: #6c757d;
+    color: white;
+    border: none;
+}
+
+.btn-print:hover {
+    background: #5a6268;
+    color: white;
+}
+
+.btn-shopping {
+    background: #28a745;
+    color: white;
+    border: none;
+}
+
+.btn-shopping:hover {
+    background: #218838;
+    color: white;
+}
+
+/* Shopping List Modal Styles */
+.modal-step {
+    display: none;
+}
+
+.modal-step.active {
+    display: block;
+}
+
+.servings-calculator {
+    background: #f8f9fa;
+    padding: 30px;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.servings-input-group {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    margin: 30px 0;
+}
+
+.servings-input {
+    width: 100px;
+    height: 50px;
+    font-size: 24px;
+    text-align: center;
+    border: 2px solid #28a745;
+    border-radius: 8px;
+}
+
+.multiplier-display {
+    background: #28a745;
+    color: white;
+    padding: 15px 25px;
+    border-radius: 8px;
+    font-size: 18px;
+    font-weight: 600;
+    margin-top: 20px;
+}
+
+.shopping-list-preview {
+    max-height: 400px;
+    overflow-y: auto;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 20px;
+}
+
+.shopping-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.shopping-item:hover {
+    background: #f8f9fa;
+}
+
+.shopping-item input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+}
+
+.shopping-item label {
+    flex: 1;
+    cursor: pointer;
+    margin: 0;
+}
+
+.shopping-item label.excluded {
+    text-decoration: line-through;
+    color: #6c757d;
+}
+
+.final-shopping-list {
+    background: #f8f9fa;
+    padding: 25px;
+    border-radius: 8px;
+    max-height: 350px;
+    overflow-y: auto;
+}
+
+.final-shopping-list h5 {
+    color: #28a745;
+    margin-bottom: 15px;
+}
+
+.final-shopping-list ul {
+    list-style: none;
+    padding-left: 0;
+}
+
+.final-shopping-list li {
+    padding: 10px;
+    border-bottom: 1px solid #e0e0e0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.email-selector {
+    margin-top: 25px;
+    padding-top: 25px;
+    border-top: 2px solid #dee2e6;
+}
+
+.email-selector label {
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 10px;
+    display: block;
+}
+
+.email-selector select {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #28a745;
+    border-radius: 8px;
+    font-size: 14px;
+    height: auto;
+    line-height: 1.5;
+}
+
+.email-selector select option {
+    padding: 10px;
+    font-size: 14px;
+}
+
+.share-buttons {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 20px;
+}
+
+.share-buttons .btn {
+    flex: 1;
+    min-width: 120px;
+}
+
+.modal-navigation {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    margin-top: 25px;
+    padding-top: 25px;
+    border-top: 1px solid #dee2e6;
+}
+
+/* Print Styles */
+@media print {
+    /* Only hide things when printing FROM the shopping list modal */
+    body.printing-shopping-list * {
+        visibility: hidden;
+    }
+    
+    body.printing-shopping-list #shoppingListModal,
+    body.printing-shopping-list #shoppingListModal * {
+        visibility: visible;
+    }
+    
+    body.printing-shopping-list #shoppingListModal {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+    }
+    
+    /* Hide modal chrome when printing shopping list */
+    body.printing-shopping-list .modal-header,
+    body.printing-shopping-list .modal-footer,
+    body.printing-shopping-list .share-buttons,
+    body.printing-shopping-list .email-selector,
+    body.printing-shopping-list .modal-navigation {
+        display: none !important;
+    }
+    
+    /* Style shopping list for print */
+    body.printing-shopping-list .final-shopping-list {
+        max-height: none;
+        background: white;
+        box-shadow: none;
+    }
+    
+    body.printing-shopping-list .final-shopping-list li {
+        page-break-inside: avoid;
+    }
+    
+    /* Normal recipe page print styles */
+    body:not(.printing-shopping-list) .recipe-detail-container {
+        max-width: 100%;
+    }
+    
+    /* Hide buttons and navigation when printing recipe */
+    body:not(.printing-shopping-list) .action-buttons,
+    body:not(.printing-shopping-list) .btn,
+    body:not(.printing-shopping-list) button,
+    body:not(.printing-shopping-list) .ingredient-checkbox {
+        display: none !important;
+    }
+    
+    /* Optimize recipe layout for print */
+    body:not(.printing-shopping-list) .recipe-header {
+        background: white !important;
+        color: black !important;
+        border: 2px solid #28a745;
+    }
+    
+    body:not(.printing-shopping-list) .recipe-meta-box {
+        background: #f8f9fa !important;
+        border: 1px solid #dee2e6;
+    }
+    
+    body:not(.printing-shopping-list) .recipe-content {
+        grid-template-columns: 1fr;
+    }
+    
+    body:not(.printing-shopping-list) .ingredients-container {
+        display: block;
+        columns: 2;
+        column-gap: 30px;
+    }
+    
+    body:not(.printing-shopping-list) .ingredient-group-wrapper {
+        break-inside: avoid;
+    }
+}
+</style>
+
+<div class="recipe-detail-container">
+    
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; gap: 10px;">
+        <div style="display: flex; gap: 10px;">
+            <button onclick="openShoppingListModal()" class="btn btn-success">
+                <i class="fas fa-shopping-cart"></i> Shopping List
+            </button>
+            <a href="{% url 'edit_recipe' recipe.recipe_id %}" class="btn btn-warning">
+                <i class="fas fa-edit"></i> Edit Recipe
+            </a>
+            <button onclick="window.print()" class="btn btn-secondary">
+                <i class="fas fa-print"></i> Print Recipe
+            </button>
+        </div>
+        <a href="{% url 'recipe_management' %}" class="btn btn-success" role="button">
+            <i class="fas fa-arrow-left"></i> Back to Recipes
+        </a>
+    </div>
+
+    <!-- Recipe Header with Image -->
+    <div class="recipe-header">
+        <div class="recipe-header-content">
+            <h1 class="recipe-title">{{ recipe.recipe_name }}</h1>
+            
+            {% if recipe.recipe_description %}
+            <p style="font-size: 18px; margin-bottom: 0;">{{ recipe.recipe_description }}</p>
+            {% endif %}
+            
+            <div class="recipe-meta-row">
+                {% if recipe.prep_time %}
+                <div class="recipe-meta-box">
+                    <i class="fas fa-clock fa-lg"></i>
+                    <div>
+                        <div style="font-size: 12px; opacity: 0.9;">Prep Time</div>
+                        <div style="font-weight: 600;">{{ recipe.prep_time }} minutes</div>
+                    </div>
+                </div>
+                {% endif %}
+                
+                {% if recipe.cook_time %}
+                <div class="recipe-meta-box">
+                    <i class="fas fa-fire fa-lg"></i>
+                    <div>
+                        <div style="font-size: 12px; opacity: 0.9;">Cook Time</div>
+                        <div style="font-weight: 600;">{{ recipe.cook_time }} minutes</div>
+                    </div>
+                </div>
+                {% endif %}
+                
+                {% if recipe.total_time %}
+                <div class="recipe-meta-box">
+                    <i class="fas fa-hourglass-half fa-lg"></i>
+                    <div>
+                        <div style="font-size: 12px; opacity: 0.9;">Total Time</div>
+                        <div style="font-weight: 600;">{{ recipe.total_time }} minutes</div>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <div class="recipe-meta-box">
+                    <i class="fas fa-users fa-lg"></i>
+                    <div>
+                        <div style="font-size: 12px; opacity: 0.9;">Servings</div>
+                        <div style="font-weight: 600;">{{ recipe.servings }}</div>
+                    </div>
+                </div>
+                
+                {% if recipe.difficulty_level %}
+                <div class="recipe-meta-box">
+                    <i class="fas fa-signal fa-lg"></i>
+                    <div>
+                        <div style="font-size: 12px; opacity: 0.9;">Difficulty</div>
+                        <div style="font-weight: 600;">{{ recipe.difficulty_level }}</div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+            
+            <!-- Colored Tags -->
+            <div class="recipe-tags">
+                {% for course in recipe.courses.all %}
+                <span class="tag-course">
+                    <i class="fas fa-utensils"></i> {{ course.name }}
+                </span>
+                {% endfor %}
+                
+                {% for category in recipe.categories.all %}
+                <span class="tag-category">
+                    <i class="fas fa-tag"></i> {{ category.name }}
+                </span>
+                {% endfor %}
+                
+                {% if recipe.is_vegetarian %}
+                <span class="tag-vegetarian">
+                    <i class="fas fa-leaf"></i> Vegetarian
+                </span>
+                {% else %}
+                    {% for protein in recipe.proteins.all %}
+                    <span class="tag-protein">
+                        <i class="fas fa-drumstick-bite"></i> {{ protein.name }}
+                    </span>
+                    {% endfor %}
+                {% endif %}
+                
+                {% if recipe.author %}
+                <span class="tag-author">
+                    <i class="fas fa-user-edit"></i> {{ recipe.author }}
+                </span>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Thumbnail Image in Header -->
+        <div class="recipe-header-image">
+            {% if recipe.recipe_image %}
+            <img src="{{ recipe.recipe_image.url }}" alt="{{ recipe.recipe_name }}" class="recipe-thumbnail">
+            {% else %}
+            <div class="recipe-thumbnail-placeholder">
+                <i class="fas fa-utensils"></i>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Recipe Content Grid -->
+    <div class="recipe-content">
+        <!-- Ingredients Section (Two Columns) -->
+        <div class="recipe-info-section" style="grid-column: 1 / -1;">
+            <h2 class="recipe-section-title">
+                <i class="fas fa-list-ul"></i> Ingredients
+            </h2>
+            
+            {% if ingredients %}
+                {% regroup ingredients by ingredient_group as ingredient_groups %}
+                
+                <div class="ingredients-container">
+                    <div class="ingredients-column" id="ingredients-col-1"></div>
+                    <div class="ingredients-column" id="ingredients-col-2"></div>
+                </div>
+
+                <!-- Hidden template for JavaScript -->
+                <div id="ingredient-groups-data" style="display: none;">
+                    {% for group in ingredient_groups %}
+                    <div class="ingredient-group-data" data-group-name="{{ group.grouper|default:'' }}">
+                        {% for ing in group.list %}
+                        <div class="ingredient-data" 
+                             data-id="{{ ing.recipe_ingredient_id }}"
+                             data-amount="{{ ing.formatted_amount }}"
+                             data-unit="{{ ing.unit.name|default:'' }}"
+                             data-ingredient="{{ ing.ingredient.name }}"
+                             data-preparation="{{ ing.preparation.name|default:'' }}"
+                             data-group="{{ group.grouper|default:'' }}"
+                             data-category="{{ ing.ingredient.category.name|default:'Other' }}">
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p class="text-muted" style="text-align: center; padding: 20px;">
+                    <em>No ingredients available</em>
+                </p>
+            {% endif %}
+        </div>
+
+        <!-- Instructions Section (Full Width) -->
+        <div class="instructions-section">
+            <h2 class="recipe-section-title">
+                <i class="fas fa-tasks"></i> Instructions
+            </h2>
+            
+            {% regroup instructions by instruction_group as instruction_groups %}
+            {% for group in instruction_groups %}
+                <div class="instruction-group-wrapper">
+                    {% if group.grouper %}
+                    <h3 class="instruction-group-title">{{ group.grouper }}</h3>
+                    {% endif %}
+                    
+                    {% for instruction in group.list %}
+                    <div class="instruction-step">
+                        <div class="step-number">{{ instruction.step_number }}</div>
+                        <div class="step-content">
+                            <div class="step-text">{{ instruction.instruction_text }}</div>
+                            {% if instruction.time_estimate %}
+                            <div class="step-time">
+                                <i class="fas fa-clock"></i> Approximately {{ instruction.time_estimate }} minutes
+                            </div>
+                            {% endif %}
+                            
+                            {% if instruction.step_image %}
+                            <div style="margin-top: 12px;">
+                                <img src="{{ instruction.step_image.url }}" alt="Step {{ instruction.step_number }}" style="max-width: 100%; border-radius: 8px;">
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+</div>
+
+<!-- Shopping List Modal -->
+<div class="modal fade" id="shoppingListModal" tabindex="-1" role="dialog" aria-labelledby="shoppingListModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="shoppingListModalLabel">
+                    <i class="fas fa-shopping-cart"></i> Create Shopping List
+                </h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                
+                <!-- Step 1: Select Servings -->
+                <div id="step1" class="modal-step active">
+                    <div class="servings-calculator">
+                        <h4>How many servings do you need?</h4>
+                        <p class="text-muted">This recipe serves: <strong>{{ recipe.servings }} people</strong></p>
+                        
+                        <div class="servings-input-group">
+                            <button class="btn btn-outline-secondary" onclick="adjustServings(-1)">
+                                <i class="fas fa-minus"></i>
+                            </button>
+                            <input type="number" 
+                                   id="desiredServings" 
+                                   class="servings-input" 
+                                   value="{{ recipe.servings }}" 
+                                   min="1" 
+                                   oninput="updateMultiplier()">
+                            <button class="btn btn-outline-secondary" onclick="adjustServings(1)">
+                                <i class="fas fa-plus"></i>
+                            </button>
+                        </div>
+                        
+                        <div class="multiplier-display" id="multiplierDisplay">
+                            Ingredients will be multiplied by 1.0x
+                        </div>
+                        
+                        <p class="text-muted mt-3">
+                            <i class="fas fa-info-circle"></i> All ingredient quantities will be adjusted automatically
+                        </p>
+                    </div>
+                </div>
+                
+                <!-- Step 2: Review Ingredients -->
+                <div id="step2" class="modal-step">
+                    <h5>Review Ingredients</h5>
+                    <p class="text-muted">Check the items you already have at home. They will be excluded from the shopping list.</p>
+                    
+                    <div class="shopping-list-preview" id="ingredientReview">
+                        <!-- Populated by JavaScript -->
+                    </div>
+                    
+                    <div class="alert alert-info mt-3">
+                        <i class="fas fa-lightbulb"></i> <strong>Tip:</strong> Checked items will not appear in your final shopping list
+                    </div>
+                </div>
+                
+                <!-- Step 3: Final Shopping List -->
+                <div id="step3" class="modal-step">
+                    <h5>Your Shopping List</h5>
+                    
+                    <div class="final-shopping-list" id="finalShoppingList">
+                        <!-- Populated by JavaScript -->
+                    </div>
+                    
+                    <div class="email-selector">
+                        <label for="emailSelect">
+                            <i class="fas fa-envelope"></i> Email this list to:
+                        </label>
+                        <select id="emailSelect" class="form-control">
+                            <option value="">Select email address...</option>
+                            <option value="demetrimanias@gmail.com">demetrimanias@gmail.com</option>
+                            <option value="angmaniasbakers@gmail.com">angmaniasbakers@gmail.com</option>
+                            <option value="erenemanias@gmail.com">erenemanias@gmail.com</option>
+                            <option value="leximanias@gmail.com">leximanias@gmail.com</option>
+                        </select>
+                    </div>
+                    
+                    <div class="share-buttons">
+                        <button class="btn btn-secondary" onclick="printShoppingList()">
+                            <i class="fas fa-print"></i> Print
+                        </button>
+                        <button class="btn btn-info" onclick="copyToClipboard()">
+                            <i class="fas fa-copy"></i> Copy
+                        </button>
+                        <button class="btn btn-success" onclick="sendEmail()">
+                            <i class="fas fa-envelope"></i> Email
+                        </button>
+                        <button class="btn btn-success" onclick="shareToWhatsApp()">
+                            <i class="fab fa-whatsapp"></i> WhatsApp
+                        </button>
+                    </div>
+                </div>
+                
+            </div>
+            <div class="modal-footer">
+                <div class="modal-navigation">
+                    <button type="button" class="btn btn-secondary" onclick="previousStep()" id="prevBtn" style="display: none;">
+                        <i class="fas fa-arrow-left"></i> Back
+                    </button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal" id="cancelBtn">Cancel</button>
+                    <button type="button" class="btn btn-success" data-dismiss="modal" id="doneBtn" style="display: none;">
+                        <i class="fas fa-check"></i> Done
+                    </button>
+                    <button type="button" class="btn btn-primary" onclick="nextStep()" id="nextBtn">
+                        Next <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// ========== RECIPE DATA ==========
+const recipeData = {
+    id: {{ recipe.recipe_id }},
+    name: "{{ recipe.recipe_name|escapejs }}",
+    originalServings: {{ recipe.servings }},
+    ingredients: []
+};
+
+// ========== SHOPPING LIST STATE ==========
+let currentStep = 1;
+let shoppingListData = {
+    desiredServings: {{ recipe.servings }},
+    multiplier: 1.0,
+    scaledIngredients: [],
+    excludedItems: new Set(),
+    finalList: [],
+    categorizedList: {}
+};
+
+// ========== UTILITY: Format ingredient from normalized data ==========
+function formatIngredientText(amount, unit, ingredient, preparation) {
+    let text = `<strong>${amount}</strong> ${unit} ${ingredient}`;
+    if (preparation) {
+        text += ` <em style='color: #6c757d;'>(${preparation})</em>`;
+    }
+    return text;
+}
+
+// ========== SMART CATEGORIZATION ==========
+function smartCategorize(ingredientName, unit, dbCategory) {
+    // If database category is set and not "Other", use it
+    if (dbCategory && dbCategory !== 'Other') {
+        return dbCategory;
+    }
+    
+    const ingredient_lower = ingredientName.toLowerCase();
+    const unit_lower = (unit || '').toLowerCase();
+    
+    // PRIORITY 1: Canned & Packaged (check unit and name)
+    if (unit_lower.includes('tin') || unit_lower.includes('can')) {
+        return 'Canned & Packaged';
+    }
+    
+    const canned_terms = ['stock', 'broth', 'cube', 'bouillon', 'canned', 'tinned', 'tin', 'paste', 'sauce', 'puree', 'concentrate'];
+    for (const term of canned_terms) {
+        if (ingredient_lower.includes(term)) {
+            return 'Canned & Packaged';
+        }
+    }
+    
+    // PRIORITY 2: Beverages
+    const beverages = ['wine', 'beer', 'sherry', 'brandy', 'rum', 'vodka', 'whiskey', 'liqueur'];
+    for (const term of beverages) {
+        if (ingredient_lower.includes(term)) {
+            return 'Beverages';
+        }
+    }
+    
+    // PRIORITY 3: Herbs & Spices
+    const herbs_spices = ['oregano', 'origanum', 'basil', 'thyme', 'rosemary', 'sage', 'parsley', 'cilantro', 'pepper', 'salt', 'paprika', 'cumin', 'turmeric', 'cinnamon', 'nutmeg', 'cloves', 'curry', 'chili', 'cayenne'];
+    for (const term of herbs_spices) {
+        if (ingredient_lower.includes(term)) {
+            return 'Herbs & Spices';
+        }
+    }
+    
+    // PRIORITY 4: Meats & Proteins
+    const meats = ['beef', 'pork', 'chicken', 'lamb', 'mince', 'meat', 'bacon', 'sausage', 'fish', 'salmon', 'tuna', 'shrimp', 'prawns'];
+    for (const term of meats) {
+        if (ingredient_lower.includes(term)) {
+            return 'Meat & Seafood';
+        }
+    }
+    
+    // PRIORITY 5: Dairy
+    const dairy = ['milk', 'cream', 'yogurt', 'cheese', 'butter'];
+    // Exclude if it's a beverage (like cream sherry)
+    const is_beverage = beverages.some(bev => ingredient_lower.includes(bev));
+    if (!is_beverage) {
+        for (const term of dairy) {
+            if (ingredient_lower.includes(term)) {
+                return 'Dairy';
+            }
+        }
+    }
+    
+    // PRIORITY 6: Oils & Fats
+    const oils_fats = ['oil', 'olive oil', 'vegetable oil', 'butter', 'margarine', 'lard', 'ghee'];
+    for (const term of oils_fats) {
+        if (ingredient_lower.includes(term)) {
+            return 'Oils & Fats';
+        }
+    }
+    
+    // PRIORITY 7: Grains & Pasta
+    const grains = ['flour', 'rice', 'pasta', 'spaghetti', 'noodles', 'bread', 'quinoa', 'couscous', 'oats', 'macaroni'];
+    for (const term of grains) {
+        if (ingredient_lower.includes(term)) {
+            return 'Grains & Pasta';
+        }
+    }
+    
+    // PRIORITY 8: Vegetables
+    const vegetables = ['onion', 'garlic', 'tomato', 'potato', 'carrot', 'celery', 'pepper', 'lettuce', 'spinach', 'broccoli', 'mushroom', 'peas', 'corn'];
+    for (const term of vegetables) {
+        if (ingredient_lower.includes(term)) {
+            return 'Vegetables';
+        }
+    }
+    
+    return 'Other';
+}
+
+// ========== LOAD INGREDIENTS ==========
+function loadIngredients() {
+    const dataContainer = document.getElementById('ingredient-groups-data');
+    if (!dataContainer) return;
+    
+    const groups = dataContainer.querySelectorAll('.ingredient-group-data');
+    
+    groups.forEach(groupData => {
+        const groupName = groupData.getAttribute('data-group-name');
+        const ingredients = groupData.querySelectorAll('.ingredient-data');
+        
+        ingredients.forEach(ingData => {
+            recipeData.ingredients.push({
+                id: ingData.getAttribute('data-id'),
+                amount: parseFloat(ingData.getAttribute('data-amount')),
+                unit: ingData.getAttribute('data-unit'),
+                ingredient: ingData.getAttribute('data-ingredient'),
+                preparation: ingData.getAttribute('data-preparation'),
+                group: groupName || '',
+                category: ingData.getAttribute('data-category') || 'Other'
+            });
+        });
+    });
+}
+
+// ========== DYNAMIC TWO-COLUMN INGREDIENT LAYOUT ==========
+document.addEventListener('DOMContentLoaded', function() {
+    const dataContainer = document.getElementById('ingredient-groups-data');
+    if (!dataContainer) return;
+
+    const col1 = document.getElementById('ingredients-col-1');
+    const col2 = document.getElementById('ingredients-col-2');
+    const groups = dataContainer.querySelectorAll('.ingredient-group-data');
+    
+    // Count total ingredients
+    let totalItems = 0;
+    groups.forEach(group => {
+        totalItems += group.querySelectorAll('.ingredient-data').length;
+    });
+
+    // Calculate midpoint for balanced columns
+    const midpoint = Math.ceil(totalItems / 2);
+    
+    let currentColumn = col1;
+    let itemCounter = 0;
+    let currentGroupWrapper = null;
+    let currentGroupName = '';
+
+    groups.forEach((groupData, groupIndex) => {
+        const groupName = groupData.getAttribute('data-group-name');
+        const ingredients = groupData.querySelectorAll('.ingredient-data');
+        
+        const hasGroupName = groupName && groupName.trim() !== '' && groupName !== 'None';
+        
+        if (hasGroupName) {
+            currentGroupWrapper = document.createElement('div');
+            currentGroupWrapper.className = 'ingredient-group-wrapper';
+            
+            const groupTitle = document.createElement('div');
+            groupTitle.className = 'ingredient-group-title';
+            groupTitle.textContent = groupName;
+            currentGroupWrapper.appendChild(groupTitle);
+            
+            currentGroupName = groupName;
+        } else {
+            if (!currentGroupWrapper) {
+                currentGroupWrapper = document.createElement('div');
+                currentGroupWrapper.className = 'ingredient-group-wrapper';
+            }
+        }
+
+        ingredients.forEach((ingData, ingIndex) => {
+            itemCounter++;
+            
+            const ingId = ingData.getAttribute('data-id');
+            const amount = ingData.getAttribute('data-amount');
+            const unit = ingData.getAttribute('data-unit');
+            const ingredient = ingData.getAttribute('data-ingredient');
+            const preparation = ingData.getAttribute('data-preparation');
+
+            const ingItem = document.createElement('div');
+            ingItem.className = 'ingredient-item';
+
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.className = 'ingredient-checkbox';
+            checkbox.id = `ing-${ingId}`;
+
+            const label = document.createElement('label');
+            label.className = 'ingredient-text';
+            label.setAttribute('for', `ing-${ingId}`);
+            label.innerHTML = formatIngredientText(amount, unit, ingredient, preparation);
+
+            ingItem.appendChild(checkbox);
+            ingItem.appendChild(label);
+            currentGroupWrapper.appendChild(ingItem);
+
+            if (itemCounter === midpoint && currentColumn === col1) {
+                currentColumn.appendChild(currentGroupWrapper);
+                currentColumn = col2;
+                
+                if (ingIndex < ingredients.length - 1) {
+                    currentGroupWrapper = document.createElement('div');
+                    currentGroupWrapper.className = 'ingredient-group-wrapper';
+                    
+                    if (hasGroupName) {
+                        const groupTitle = document.createElement('div');
+                        groupTitle.className = 'ingredient-group-title continued';
+                        groupTitle.textContent = `${currentGroupName} (cont.)`;
+                        currentGroupWrapper.appendChild(groupTitle);
+                    }
+                } else {
+                    currentGroupWrapper = null;
+                }
+            }
+        });
+
+        if (currentGroupWrapper && currentGroupWrapper.parentElement === null) {
+            currentColumn.appendChild(currentGroupWrapper);
+        }
+        
+        currentGroupWrapper = null;
+        currentGroupName = '';
+    });
+    
+    // Load ingredients for shopping list
+    loadIngredients();
+});
+
+// ========== INGREDIENT CHECKBOX FUNCTIONALITY ==========
+document.addEventListener('change', function(e) {
+    if (e.target.classList.contains('ingredient-checkbox')) {
+        const label = e.target.nextElementSibling;
+        if (e.target.checked) {
+            label.classList.add('completed');
+        } else {
+            label.classList.remove('completed');
+        }
+    }
+});
+
+// ========== SHOPPING LIST MODAL ==========
+function openShoppingListModal() {
+    currentStep = 1;
+    shoppingListData.desiredServings = recipeData.originalServings;
+    shoppingListData.multiplier = 1.0;
+    shoppingListData.excludedItems.clear();
+    
+    document.getElementById('desiredServings').value = recipeData.originalServings;
+    updateMultiplier();
+    showStep(1);
+    
+    $('#shoppingListModal').modal('show');
+}
+
+function showStep(step) {
+    // Hide all steps
+    document.querySelectorAll('.modal-step').forEach(s => s.classList.remove('active'));
+    
+    // Show current step
+    document.getElementById(`step${step}`).classList.add('active');
+    
+    // Update buttons
+    document.getElementById('prevBtn').style.display = step > 1 ? 'block' : 'none';
+    
+    const nextBtn = document.getElementById('nextBtn');
+    const cancelBtn = document.getElementById('cancelBtn');
+    const doneBtn = document.getElementById('doneBtn');
+    
+    if (step === 3) {
+        // Final step - hide Next and Cancel, show Done
+        nextBtn.style.display = 'none';
+        cancelBtn.style.display = 'none';
+        doneBtn.style.display = 'block';
+    } else {
+        // Steps 1-2 - show Next and Cancel, hide Done
+        nextBtn.style.display = 'block';
+        cancelBtn.style.display = 'block';
+        doneBtn.style.display = 'none';
+        nextBtn.innerHTML = step === 1 ? 'Next: Review <i class="fas fa-arrow-right"></i>' : 'Generate List <i class="fas fa-arrow-right"></i>';
+    }
+    
+    currentStep = step;
+}
+
+function nextStep() {
+    if (currentStep === 1) {
+        calculateScaledIngredients();
+        populateIngredientReview();
+        showStep(2);
+    } else if (currentStep === 2) {
+        generateFinalList();
+        showStep(3);
+    }
+}
+
+function previousStep() {
+    if (currentStep > 1) {
+        showStep(currentStep - 1);
+    }
+}
+
+function calculateScaledIngredients() {
+    shoppingListData.scaledIngredients = recipeData.ingredients.map(ing => {
+        const scaledAmount = ing.amount * shoppingListData.multiplier;
+        const formattedAmount = scaledAmount % 1 === 0 ? scaledAmount.toFixed(0) : scaledAmount.toFixed(2).replace(/\.?0+$/, '');
+        
+        // Apply smart categorization
+        const finalCategory = smartCategorize(ing.ingredient, ing.unit, ing.category);
+        
+        return {
+            ...ing,
+            scaledAmount: scaledAmount,
+            displayText: `${formattedAmount} ${ing.unit} ${ing.ingredient}${ing.preparation ? ` (${ing.preparation})` : ''}`,
+            category: finalCategory  // Use smart category
+        };
+    });
+}
+
+function adjustServings(delta) {
+    const input = document.getElementById('desiredServings');
+    const newValue = Math.max(1, parseInt(input.value) + delta);
+    input.value = newValue;
+    updateMultiplier();
+}
+
+function updateMultiplier() {
+    const desiredServings = parseInt(document.getElementById('desiredServings').value) || 1;
+    shoppingListData.desiredServings = desiredServings;
+    shoppingListData.multiplier = desiredServings / recipeData.originalServings;
+    
+    const display = document.getElementById('multiplierDisplay');
+    display.textContent = `Ingredients will be multiplied by ${shoppingListData.multiplier.toFixed(1)}x`;
+}
+
+function populateIngredientReview() {
+    const container = document.getElementById('ingredientReview');
+    container.innerHTML = '';
+    
+    let currentGroup = null;
+    
+    shoppingListData.scaledIngredients.forEach((ing, index) => {
+        // Add group header if needed
+        if (ing.group && ing.group !== currentGroup) {
+            const groupHeader = document.createElement('div');
+            groupHeader.style.cssText = 'font-weight: 600; color: #28a745; margin-top: 20px; margin-bottom: 10px; padding-bottom: 5px; border-bottom: 2px solid #e0e0e0;';
+            groupHeader.textContent = ing.group;
+            container.appendChild(groupHeader);
+            currentGroup = ing.group;
+        }
+        
+        const item = document.createElement('div');
+        item.className = 'shopping-item';
+        
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.id = `review-${index}`;
+        checkbox.onchange = () => toggleExcluded(index);
+        
+        const label = document.createElement('label');
+        label.setAttribute('for', `review-${index}`);
+        label.textContent = ing.displayText;
+        
+        item.appendChild(checkbox);
+        item.appendChild(label);
+        container.appendChild(item);
+    });
+}
+
+function toggleExcluded(index) {
+    const checkbox = document.getElementById(`review-${index}`);
+    const label = checkbox.nextElementSibling;
+    
+    if (checkbox.checked) {
+        shoppingListData.excludedItems.add(index);
+        label.classList.add('excluded');
+    } else {
+        shoppingListData.excludedItems.delete(index);
+        label.classList.remove('excluded');
+    }
+}
+
+function generateFinalList() {
+    // Get non-excluded items
+    const items = shoppingListData.scaledIngredients
+        .filter((ing, index) => !shoppingListData.excludedItems.has(index));
+    
+    // Group by category
+    const categorizedItems = {};
+    items.forEach(ing => {
+        const category = ing.category || 'Other';
+        if (!categorizedItems[category]) {
+            categorizedItems[category] = [];
+        }
+        categorizedItems[category].push(ing.displayText);
+    });
+    
+    // Store for other functions
+    shoppingListData.finalList = items.map(ing => ing.displayText);
+    shoppingListData.categorizedList = categorizedItems;
+    
+    const container = document.getElementById('finalShoppingList');
+    container.innerHTML = '';
+    
+    // Add header
+    const header = document.createElement('h5');
+    header.innerHTML = `<i class="fas fa-shopping-cart"></i> Items to Buy (${shoppingListData.finalList.length} items)`;
+    container.appendChild(header);
+    
+    // Add recipe info
+    const info = document.createElement('p');
+    info.className = 'text-muted';
+    info.innerHTML = `<strong>${recipeData.name}</strong> - ${shoppingListData.desiredServings} servings (${shoppingListData.multiplier.toFixed(1)}x original)`;
+    container.appendChild(info);
+    
+    // Add items grouped by category
+    if (Object.keys(categorizedItems).length === 0) {
+        const emptyMsg = document.createElement('p');
+        emptyMsg.textContent = 'You have all ingredients!';
+        emptyMsg.style.fontStyle = 'italic';
+        container.appendChild(emptyMsg);
+    } else {
+        // Sort categories alphabetically
+        const sortedCategories = Object.keys(categorizedItems).sort();
+        
+        sortedCategories.forEach(category => {
+            // Category header
+            const categoryHeader = document.createElement('h6');
+            categoryHeader.style.cssText = 'color: #28a745; font-weight: 600; margin-top: 20px; margin-bottom: 10px; padding-bottom: 5px; border-bottom: 2px solid #e0e0e0;';
+            categoryHeader.innerHTML = `<i class="fas fa-tag"></i> ${category}`;
+            container.appendChild(categoryHeader);
+            
+            // Category items
+            const list = document.createElement('ul');
+            list.style.cssText = 'list-style: none; padding-left: 0;';
+            
+            categorizedItems[category].forEach(item => {
+                const li = document.createElement('li');
+                li.style.cssText = 'padding: 10px; border-bottom: 1px solid #e0e0e0; display: flex; align-items: center; gap: 8px;';
+                li.innerHTML = `<span style="color: #28a745;">☐</span> ${item}`;
+                list.appendChild(li);
+            });
+            
+            container.appendChild(list);
+        });
+    }
+}
+
+// ========== SHARING FUNCTIONS ==========
+function printShoppingList() {
+    document.body.classList.add('printing-shopping-list');
+    window.print();
+    document.body.classList.remove('printing-shopping-list');
+}
+
+function copyToClipboard() {
+    let text = `Shopping List for ${recipeData.name}\n\nServings: ${shoppingListData.desiredServings} (${shoppingListData.multiplier.toFixed(1)}x original)\n\nItems to Buy:\n`;
+    
+    // Group by category
+    const sortedCategories = Object.keys(shoppingListData.categorizedList).sort();
+    sortedCategories.forEach(category => {
+        text += `\n${category}:\n`;
+        shoppingListData.categorizedList[category].forEach(item => {
+            text += `☐ ${item}\n`;
+        });
+    });
+    
+    text += `\n---\nGenerated by ALIVENTE ONLINE`;
+    
+    navigator.clipboard.writeText(text).then(() => {
+        alert('✓ Shopping list copied to clipboard!');
+    }).catch(err => {
+        console.error('Failed to copy:', err);
+        alert('Failed to copy to clipboard');
+    });
+}
+
+function sendEmail() {
+    const email = document.getElementById('emailSelect').value;
+    
+    if (!email) {
+        alert('Please select an email address');
+        return;
+    }
+    
+    const data = {
+        recipe_name: recipeData.name,
+        servings: shoppingListData.desiredServings,
+        original_servings: recipeData.originalServings,
+        email_to: email,
+        shopping_list_categorized: shoppingListData.categorizedList,
+        generated_date: new Date().toLocaleDateString('en-US', { 
+            year: 'numeric', 
+            month: 'long', 
+            day: 'numeric' 
+        })
+    };
+    
+    fetch('/recipe/send_shopping_list/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.success) {
+            alert('✓ Shopping list sent to ' + email);
+        } else {
+            alert('✗ Error: ' + result.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('✗ Failed to send email');
+    });
+}
+
+function shareToWhatsApp() {
+    let message = `🛒 Shopping List for ${recipeData.name}\n\nServings: ${shoppingListData.desiredServings} (${shoppingListData.multiplier.toFixed(1)}x original)\n\nItems to Buy:\n`;
+    
+    const sortedCategories = Object.keys(shoppingListData.categorizedList).sort();
+    sortedCategories.forEach(category => {
+        message += `\n*${category}:*\n`;
+        shoppingListData.categorizedList[category].forEach(item => {
+            message += `• ${item}\n`;
+        });
+    });
+    
+    message += `\n---\nGenerated by ALIVENTE ONLINE`;
+    
+    const url = `https://wa.me/?text=${encodeURIComponent(message)}`;
+    window.open(url, '_blank');
+}
+</script>
+
+{% endblock %}

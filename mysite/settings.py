@@ -119,6 +119,16 @@ DATABASES = {
     }
 }
 
+# ========== EMAIL CONFIGURATION ==========
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.gmail.com')
+EMAIL_PORT = int(os.getenv('EMAIL_PORT', 465))
+EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'False') == 'True'
+EMAIL_USE_SSL = os.getenv('EMAIL_USE_SSL', 'True') == 'True'
+EMAIL_HOST_USER = os.getenv('EMAIL_USER')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_PASSWORD')
+DEFAULT_FROM_EMAIL = os.getenv('EMAIL_USER')
+
 # Database Connection Middleware Settings
 DB_CLEANUP_THRESHOLD = 50           # Clean connections after 50 queries (reduced from 100)
 DB_MAX_CONNECTION_AGE = 180         # Max connection age: 3 minutes (reduced from 300)
@@ -314,6 +324,9 @@ if not DEBUG:
     CSRF_COOKIE_SECURE = True
     SESSION_COOKIE_HTTPONLY = True
     CSRF_COOKIE_HTTPONLY = True
+
+# Anthropic API Key (from environment variable)
+ANTHROPIC_API_KEY = os.getenv('ANTHROPIC_API_KEY')
 
 # Optional: Add connection pooling settings if you want to experiment later
 # (Keep these commented out for now since your middleware works with CONN_MAX_AGE = 0)

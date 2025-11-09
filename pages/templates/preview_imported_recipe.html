@@ -1,0 +1,2245 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}{% if mode == 'edit' %}Edit Recipe{% else %}Review Imported Recipe{% endif %}{% endblock %}
+{% block content %}
+
+<!-- Add SortableJS for drag and drop -->
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+
+<style>
+.preview-container {
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.preview-header {
+    {% if mode == 'edit' %}
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    {% elif mode == 'create' %}
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    {% else %}
+    background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+    {% endif %}
+    color: white;
+    padding: 30px;
+    border-radius: 12px;
+    margin-bottom: 30px;
+    text-align: center;
+}
+
+.preview-section {
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    margin-bottom: 30px;
+}
+
+.section-title {
+    font-size: 24px;
+    font-weight: 600;
+    color: #2c3e50;
+    border-bottom: 3px solid #17a2b8;
+    padding-bottom: 10px;
+    margin-bottom: 25px;
+}
+
+.ai-badge {
+    display: inline-block;
+    background: #17a2b8;
+    color: white;
+    padding: 4px 12px;
+    border-radius: 16px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-left: 10px;
+}
+
+/* Image Upload & Preview Styles */
+.image-upload-container {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+    margin-top: 15px;
+}
+
+.image-preview-wrapper {
+    flex-shrink: 0;
+}
+
+.image-preview {
+    max-width: 250px;
+    max-height: 250px;
+    border-radius: 8px;
+    border: 3px solid #dee2e6;
+    display: none;
+    object-fit: cover;
+}
+
+.image-preview.show {
+    display: block;
+}
+
+.current-image {
+    max-width: 250px;
+    max-height: 250px;
+    border-radius: 8px;
+    border: 3px solid #28a745;
+    object-fit: cover;
+}
+
+.image-upload-controls {
+    flex: 1;
+}
+
+.image-info-box {
+    background: #f8f9fa;
+    border-left: 4px solid #17a2b8;
+    padding: 12px 15px;
+    border-radius: 4px;
+    margin-top: 10px;
+}
+
+.image-info-box i {
+    color: #17a2b8;
+    margin-right: 8px;
+}
+
+.remove-image-btn {
+    background: #dc3545;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+    margin-top: 10px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.remove-image-btn:hover {
+    background: #c82333;
+}
+
+.ingredient-table-wrapper {
+    /* IMPORTANT: No overflow hidden so dropdowns can extend */
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.ingredient-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #f8f9fa;
+    border-radius: 8px;
+    overflow: visible; /* Allow overflow */
+}
+
+.ingredient-table thead {
+    background: #17a2b8;
+    color: white;
+}
+
+.ingredient-table th {
+    padding: 12px;
+    text-align: left;
+    font-weight: 600;
+}
+
+.ingredient-table tbody tr {
+    background: white;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.ingredient-table tbody tr:last-child {
+    border-bottom: none;
+}
+
+.ingredient-table td {
+    padding: 8px;
+    position: relative;
+}
+
+.ingredient-table input {
+    width: 100%;
+    border: 2px solid #dee2e6;
+    border-radius: 4px;
+    padding: 6px 8px;
+}
+
+.ingredient-table input.valid {
+    border-color: #28a745;
+    background-color: #f0fff4;
+    color: #28a745;
+    font-weight: 500;
+}
+
+.ingredient-table input.invalid {
+    border-color: #dc3545;
+    background-color: #fff5f5;
+    color: #dc3545;
+    font-weight: 500;
+}
+
+.ingredient-table .drag-col {
+    width: 4%;
+    text-align: center;
+}
+
+.ingredient-table .quantity-col {
+    width: 7%;
+}
+
+.ingredient-table .measurement-col {
+    width: 15%;
+}
+
+.ingredient-table .ingredient-col {
+    width: 27%;
+}
+
+.ingredient-table .preparation-col {
+    width: 17%;
+}
+
+.ingredient-table .group-col {
+    width: 12%;
+}
+
+.ingredient-table .actions-col {
+    width: 8%;
+    text-align: center;
+}
+
+/* Drag and Drop Styles */
+.drag-handle {
+    cursor: grab;
+    color: #6c757d;
+    padding: 0 8px;
+    display: inline-block;
+}
+
+.drag-handle:hover {
+    color: #17a2b8;
+}
+
+.drag-handle:active {
+    cursor: grabbing;
+}
+
+.sortable-ghost {
+    opacity: 0.4;
+    background: #f8f9fa;
+}
+
+.sortable-drag {
+    opacity: 0.8;
+    background: white;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+
+tr.sortable-chosen {
+    background: #e3f2fd;
+}
+
+/* Autocomplete Dropdown Styles */
+.autocomplete-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.autocomplete-dropdown {
+    position: absolute;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 2px solid #17a2b8;
+    border-radius: 0 0 8px 8px;
+    max-height: 250px;
+    overflow-y: auto;
+    display: none;
+    z-index: 1000;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Show dropdown above when needed */
+.autocomplete-dropdown.show-upward {
+    top: auto;
+    bottom: 100%;
+    border-radius: 8px 8px 0 0;
+    border-top: 2px solid #17a2b8;
+    border-bottom: none;
+}
+
+.autocomplete-dropdown.show {
+    display: block;
+}
+
+.autocomplete-item {
+    padding: 10px 12px;
+    cursor: pointer;
+    transition: background 0.2s;
+    border-bottom: 1px solid #f0f0f0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.autocomplete-item:hover {
+    background: #f8f9fa;
+}
+
+.autocomplete-item:last-child {
+    border-bottom: none;
+}
+
+.autocomplete-item i {
+    color: #28a745;
+    font-size: 12px;
+}
+
+.autocomplete-add-new {
+    padding: 10px 12px;
+    background: #fff3cd;
+    border-top: 2px solid #ffc107;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #856404;
+    font-weight: 500;
+}
+
+.autocomplete-add-new:hover {
+    background: #ffe69c;
+}
+
+.autocomplete-add-new i {
+    color: #ffc107;
+}
+
+.autocomplete-no-results {
+    padding: 15px;
+    text-align: center;
+    color: #6c757d;
+    font-style: italic;
+}
+
+/* Multi-Select Dropdown Styles (matching create_recipe.html) */
+.multiselect-dropdown {
+    position: relative;
+}
+
+.multiselect-button {
+    width: 100%;
+    padding: 10px 16px;
+    background: white;
+    border: 2px solid #dee2e6;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.multiselect-button:hover {
+    border-color: #17a2b8;
+}
+
+.multiselect-button.active {
+    border-color: #17a2b8;
+    background: #f8f9fa;
+}
+
+.multiselect-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 2px solid #17a2b8;
+    border-radius: 8px;
+    margin-top: 4px;
+    max-height: 300px;
+    overflow-y: auto;
+    display: none;
+    z-index: 1000;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.multiselect-menu.show {
+    display: block;
+}
+
+.multiselect-item {
+    display: flex;
+    align-items: center;
+    padding: 10px 16px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.multiselect-item:hover {
+    background: #f8f9fa;
+}
+
+.multiselect-item input[type="checkbox"] {
+    margin-right: 10px;
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+.multiselect-item label {
+    cursor: pointer;
+    margin: 0;
+    flex: 1;
+    font-weight: 500;
+}
+
+.selected-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+    min-height: 32px;
+}
+
+.selected-tag {
+    background: #17a2b8;
+    color: white;
+    padding: 6px 12px;
+    border-radius: 16px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.selected-tag .remove-tag {
+    background: rgba(255, 255, 255, 0.3);
+    border: none;
+    color: white;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 16px;
+    line-height: 1;
+}
+
+.selected-tag .remove-tag:hover {
+    background: rgba(255, 255, 255, 0.5);
+}
+
+.add-new-btn-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: #17a2b8;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    margin-top: 8px;
+    text-decoration: none;
+    border: none;
+    background: none;
+    padding: 0;
+}
+
+.add-new-btn-link:hover {
+    color: #138496;
+    text-decoration: underline;
+}
+
+/* Step number badge for table */
+.step-number-badge-table {
+    background: #17a2b8;
+    color: white;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+/* Instruction textarea styling */
+.instruction-textarea {
+    width: 100%;
+    border: 2px solid #dee2e6;
+    border-radius: 4px;
+    padding: 6px 8px;
+    resize: vertical;
+    min-height: 38px;
+    font-family: inherit;
+    line-height: 1.4;
+}
+
+.instruction-textarea:focus {
+    outline: none;
+    border-color: #17a2b8;
+    box-shadow: 0 0 0 0.2rem rgba(23, 162, 184, 0.25);
+}
+
+.add-item-btn {
+    background: #17a2b8;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+
+.add-item-btn:hover {
+    background: #138496;
+}
+
+.remove-item-btn {
+    background: #dc3545;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 4px 8px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.remove-item-btn:hover {
+    background: #c82333;
+}
+
+.alert-info-custom {
+    background: #d1ecf1;
+    border-left: 4px solid #17a2b8;
+    padding: 15px;
+    border-radius: 6px;
+    margin-bottom: 20px;
+}
+
+/* Drag Handle Styles */
+.drag-handle {
+    cursor: move;
+    color: #6c757d;
+    font-size: 18px;
+    padding: 0 8px;
+    display: inline-block;
+    user-select: none;
+}
+
+.drag-handle:hover {
+    color: #17a2b8;
+}
+
+/* Sortable row styles */
+.sortable-ghost {
+    opacity: 0.4;
+    background: #f8f9fa;
+}
+
+.sortable-drag {
+    opacity: 1;
+    background: white;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+
+.sortable-chosen {
+    background: #e3f2fd;
+}
+
+/* Row with drag handle */
+.ingredient-row, .instruction-row {
+    transition: background-color 0.2s;
+}
+
+.ingredient-row:hover, .instruction-row:hover {
+    background: #f8f9fa;
+}
+</style>
+
+<div class="preview-container">
+    
+    <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+        <div style="display: flex; gap: 10px;">
+            {% if mode == 'edit' %}
+            <a href="{% url 'view_recipe' recipe.recipe_id %}" class="btn btn-success">
+                <i class="fas fa-eye"></i> View Recipe
+            </a>
+            {% endif %}
+            
+            <a href="{% if mode == 'import' %}{% url 'import_recipe' %}{% else %}{% url 'recipe_management' %}{% endif %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> {% if mode == 'import' %}Back to Import{% else %}Back to Recipes{% endif %}
+            </a>
+        </div>
+    </div>
+
+    <div class="preview-header">
+        <h1><i class="fas fa-check-circle"></i> 
+            {% if mode == 'create' %}Create New Recipe
+            {% elif mode == 'edit' %}Edit Recipe
+            {% else %}Review Imported Recipe{% endif %}
+        </h1>
+        <p style="margin: 10px 0 0 0; font-size: 16px; opacity: 0.9;">
+            {% if mode == 'create' %}
+            Fill in the details below to add a new recipe to your collection
+            {% elif mode == 'edit' %}
+            Review and edit your recipe details
+            {% else %}
+            Review and edit the AI-extracted recipe data before saving
+            {% endif %}
+        </p>
+    </div>
+
+    <div class="alert-info-custom">
+        <strong><i class="fas fa-info-circle"></i> Instructions:</strong>
+        Click or type in measurement/ingredient/preparation fields. <span style="color: #28a745; font-weight: bold;">Green</span> means valid, <span style="color: #dc3545; font-weight: bold;">Red</span> means new. Select from dropdown or add new item.
+    </div>
+
+    <form method="post" enctype="multipart/form-data" id="saveRecipeForm">
+        {% csrf_token %}
+        <input type="hidden" name="temp_recipe_id" value="{{ temp_recipe_id }}">
+        <input type="hidden" name="remove_image" id="remove_image" value="0">
+
+        <!-- Basic Information Section -->
+        <div class="preview-section">
+            <h2 class="section-title">
+                <i class="fas fa-info-circle"></i> Basic Information
+                {% if mode == 'import' %}<span class="ai-badge"><i class="fas fa-robot"></i> AI Extracted</span>{% endif %}
+            </h2>
+            
+            <div class="form-group">
+                <label for="recipe_name"><strong>Recipe Name</strong> <span class="text-danger">*</span></label>
+                <input type="text" class="form-control" id="recipe_name" name="recipe_name" value="{{ extracted_data.recipe_name }}" required>
+            </div>
+
+            <div class="form-group">
+                <label for="recipe_description"><strong>Description</strong></label>
+                <textarea class="form-control" id="recipe_description" name="recipe_description" rows="3">{{ extracted_data.description }}</textarea>
+            </div>
+
+            <!-- Author Field -->
+            <div class="form-group" style="margin-top: 20px;">
+                <label for="author" style="font-size: 16px; font-weight: 600; color: #2c3e50; display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+                    <i class="fas fa-user-edit" style="color: #17a2b8;"></i>
+                    Recipe Author
+                </label>
+                <div style="max-width: 400px;">
+                    <select class="form-control" 
+                            id="author" 
+                            name="author" 
+                            style="border: 2px solid #dee2e6; border-radius: 8px; padding: 10px 16px; font-size: 15px; background: white; height: auto;">
+                        <option value="General" {% if extracted_data.author == 'General' %}selected{% endif %}>General</option>
+                        <option value="Demetri & Angy" {% if extracted_data.author == 'Demetri & Angy' %}selected{% endif %}>Demetri & Angy</option>
+                        <option value="Erene" {% if extracted_data.author == 'Erene' %}selected{% endif %}>Erene</option>
+                        <option value="Alexandra" {% if extracted_data.author == 'Alexandra' %}selected{% endif %}>Alexandra</option>
+                    </select>
+                    <small class="form-text text-muted" style="margin-top: 6px; display: block;">
+                        <i class="fas fa-info-circle"></i> Select who created or contributed this recipe
+                    </small>
+                </div>
+            </div>
+
+            <!-- Recipe Image Upload Section -->
+            <div class="form-group">
+                <label for="recipe_image"><strong><i class="fas fa-image"></i> Recipe Image</strong></label>
+                
+                <div class="image-upload-container">
+                    <div class="image-preview-wrapper">
+                        {% if mode == 'edit' and extracted_data.recipe_image %}
+                        <!-- Show existing image in edit mode -->
+                        <img src="{{ extracted_data.recipe_image }}" class="current-image" id="currentImage" alt="Current recipe image">
+                        {% endif %}
+                        <!-- Preview for newly uploaded image -->
+                        <img id="imagePreview" class="image-preview" alt="Image preview">
+                    </div>
+
+                    <div class="image-upload-controls">
+                        <input type="file" 
+                               class="form-control-file" 
+                               id="recipe_image" 
+                               name="recipe_image" 
+                               accept="image/*" 
+                               onchange="previewImage(event)">
+                        
+                        <div class="image-info-box">
+                            <i class="fas fa-info-circle"></i>
+                            <strong>Image Guidelines:</strong> Upload a JPG, PNG, or WebP image. Maximum file size: 5MB. Recommended dimensions: 800x600px or larger.
+                        </div>
+
+                        {% if mode == 'edit' and extracted_data.recipe_image %}
+                        <button type="button" class="remove-image-btn" onclick="removeCurrentImage()">
+                            <i class="fas fa-trash"></i> Remove Current Image
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Time & Servings Section -->
+        <div class="preview-section">
+            <h2 class="section-title">
+                <i class="fas fa-clock"></i> Time & Servings
+                {% if mode == 'import' %}<span class="ai-badge"><i class="fas fa-robot"></i> AI Extracted</span>{% endif %}
+            </h2>
+            
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label for="prep_time">Prep Time (minutes) <span class="text-danger">*</span></label>
+                        <input type="number" class="form-control" id="prep_time" name="prep_time" value="{{ extracted_data.prep_time }}" min="0" required>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label for="cook_time">Cook Time (minutes) <span class="text-danger">*</span></label>
+                        <input type="number" class="form-control" id="cook_time" name="cook_time" value="{{ extracted_data.cook_time }}" min="0" required>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label for="total_time">Total Time (minutes)</label>
+                        <input type="number" class="form-control" id="total_time" name="total_time" value="{{ extracted_data.total_time }}" min="0" readonly style="background-color: #e9ecef;">
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label for="servings">Servings <span class="text-danger">*</span></label>
+                        <input type="number" class="form-control" id="servings" name="servings" value="{{ extracted_data.servings }}" min="1" required>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Classification Section -->
+        <div class="preview-section">
+            <h2 class="section-title">
+                <i class="fas fa-tags"></i> Classification
+            </h2>
+            
+            <div class="row">
+                <!-- Courses (Dropdown Multi-Select) -->
+                <div class="col-md-4">
+                    <label class="form-label"><strong><i class="fas fa-utensils"></i> Courses</strong> <span class="text-danger">*</span></label>
+                    <div class="multiselect-dropdown">
+                        <button type="button" class="multiselect-button" onclick="toggleDropdown('courseDropdown')">
+                            <span>Select courses...</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                        <div class="multiselect-menu" id="courseDropdown">
+                            {% for course in courses %}
+                            <div class="multiselect-item" onclick="toggleCheckboxInDropdown(event, 'course-{{ course.recipe_course_id }}')">
+                                <input type="checkbox" 
+                                       id="course-{{ course.recipe_course_id }}" 
+                                       name="course[]" 
+                                       value="{{ course.recipe_course_id }}"
+                                       onchange="updateSelectedTags('course')">
+                                <label for="course-{{ course.recipe_course_id }}">{{ course.name }}</label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="selected-tags" id="courseSelectedTags"></div>
+                    <button type="button" class="add-new-btn-link" onclick="showAddCourseModal()">
+                        <i class="fas fa-plus-circle"></i> Add New Course
+                    </button>
+                </div>
+                
+                <!-- Categories (Dropdown Multi-Select) -->
+                <div class="col-md-4">
+                    <label class="form-label"><strong><i class="fas fa-list"></i> Categories</strong> <span class="text-danger">*</span></label>
+                    <div class="multiselect-dropdown">
+                        <button type="button" class="multiselect-button" onclick="toggleDropdown('categoryDropdown')">
+                            <span>Select categories...</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                        <div class="multiselect-menu" id="categoryDropdown">
+                            {% for category in categories %}
+                            <div class="multiselect-item" onclick="toggleCheckboxInDropdown(event, 'category-{{ category.recipe_category_id }}')">
+                                <input type="checkbox" 
+                                       id="category-{{ category.recipe_category_id }}" 
+                                       name="category[]" 
+                                       value="{{ category.recipe_category_id }}"
+                                       onchange="updateSelectedTags('category')">
+                                <label for="category-{{ category.recipe_category_id }}">{{ category.name }}</label>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    <div class="selected-tags" id="categorySelectedTags"></div>
+                    <button type="button" class="add-new-btn-link" onclick="showAddCategoryModal()">
+                        <i class="fas fa-plus-circle"></i> Add New Category
+                    </button>
+                </div>
+                
+                <!-- Difficulty Level (Single Select) -->
+                <div class="col-md-4">
+                    <label for="difficulty_level" class="form-label"><strong><i class="fas fa-signal"></i> Difficulty Level</strong> <span class="text-danger">*</span></label>
+                    <select id="difficulty_level" name="difficulty_level" class="form-control" required>
+                        <option value="">-- Select Difficulty --</option>
+                        <option value="Easy" {% if extracted_data.difficulty_level == 'Easy' %}selected{% endif %}>Easy</option>
+                        <option value="Medium" {% if extracted_data.difficulty_level == 'Medium' %}selected{% endif %}>Medium</option>
+                        <option value="Hard" {% if extracted_data.difficulty_level == 'Hard' %}selected{% endif %}>Hard</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dietary Information Section -->
+        <div class="preview-section">
+            <h2 class="section-title">
+                <i class="fas fa-carrot"></i> Dietary Information
+            </h2>
+            
+            <div class="form-group">
+                <div class="form-check">
+                    <input type="checkbox" class="form-check-input" id="is_vegetarian" name="is_vegetarian" value="1" {% if extracted_data.is_vegetarian %}checked{% endif %} onchange="toggleProteinField()">
+                    <label class="form-check-label" for="is_vegetarian">
+                        <i class="fas fa-leaf"></i> <strong>This is a vegetarian recipe</strong>
+                    </label>
+                </div>
+            </div>
+            
+            <div id="proteinSection">
+                <label class="form-label"><strong><i class="fas fa-drumstick-bite"></i> Proteins</strong> <span class="text-danger" id="proteinRequired">*</span></label>
+                <div class="multiselect-dropdown">
+                    <button type="button" class="multiselect-button" onclick="toggleDropdown('proteinDropdown')">
+                        <span>Select proteins...</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <div class="multiselect-menu" id="proteinDropdown">
+                        {% for protein in proteins %}
+                        <div class="multiselect-item" onclick="toggleCheckboxInDropdown(event, 'protein-{{ protein.custom_protein_id }}')">
+                            <input type="checkbox" 
+                                   id="protein-{{ protein.custom_protein_id }}" 
+                                   name="protein[]" 
+                                   value="{{ protein.custom_protein_id }}"
+                                   onchange="updateSelectedTags('protein')">
+                            <label for="protein-{{ protein.custom_protein_id }}">{{ protein.name }}</label>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                <div class="selected-tags" id="proteinSelectedTags"></div>
+                <button type="button" class="add-new-btn-link" onclick="showAddProteinModal()">
+                    <i class="fas fa-plus-circle"></i> Add New Protein
+                </button>
+            </div>
+        </div>
+
+        <!-- Ingredients Section with TABLE -->
+        <div class="preview-section">
+            <h2 class="section-title">
+                <i class="fas fa-list-ul"></i> Ingredients
+                {% if mode == 'import' %}<span class="ai-badge"><i class="fas fa-robot"></i> AI Extracted</span>{% endif %}
+            </h2>
+            
+            <div class="ingredient-table-wrapper">
+                <table class="ingredient-table" id="ingredientsTable">
+                    <thead>
+                        <tr>
+                            <th class="drag-col"><i class="fas fa-grip-vertical"></i></th>
+                            <th class="quantity-col">Quantity</th>
+                            <th class="measurement-col">Measurement</th>
+                            <th class="ingredient-col">Ingredient</th>
+                            <th class="preparation-col">Preparation</th>
+                            <th class="group-col">Group</th>
+                            <th class="actions-col">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ingredientsTableBody">
+                        {% for ing in extracted_data.ingredients %}
+                        <tr class="ingredient-row">
+                            <td class="drag-col">
+                                <span class="drag-handle"><i class="fas fa-grip-vertical"></i></span>
+                            </td>
+                            <td>
+                                <input type="text" name="ingredient_quantity[]" value="{{ ing.quantity }}" required>
+                            </td>
+                            <td>
+                                <div class="autocomplete-wrapper">
+                                    <input type="text" 
+                                           name="ingredient_measurement[]" 
+                                           value="{{ ing.measurement }}"
+                                           class="measurement-input"
+                                           onclick="showMeasurementDropdown(this)"
+                                           oninput="filterMeasurementDropdown(this)"
+                                           onblur="hideDropdownDelayed(this, 'measurement')"
+                                           required>
+                                    <div class="autocomplete-dropdown measurement-dropdown"></div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="autocomplete-wrapper">
+                                    <input type="text" 
+                                           name="ingredient_name[]" 
+                                           value="{{ ing.ingredient }}"
+                                           class="ingredient-input"
+                                           onclick="showIngredientDropdown(this)"
+                                           oninput="filterIngredientDropdown(this)"
+                                           onblur="hideDropdownDelayed(this, 'ingredient')"
+                                           required>
+                                    <div class="autocomplete-dropdown ingredient-dropdown"></div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="autocomplete-wrapper">
+                                    <input type="text" 
+                                           name="ingredient_preparation[]" 
+                                           value="{{ ing.preparation }}"
+                                           class="preparation-input"
+                                           onclick="showPreparationDropdown(this)"
+                                           oninput="filterPreparationDropdown(this)"
+                                           onblur="hideDropdownDelayed(this, 'preparation')">
+                                    <div class="autocomplete-dropdown preparation-dropdown"></div>
+                                </div>
+                            </td>
+                            <td>
+                                <input type="text" 
+                                       name="ingredient_group[]" 
+                                       value="{{ ing.group }}"
+                                       placeholder="e.g., For the sauce">
+                            </td>
+                            <td>
+                                <button type="button" class="remove-item-btn" onclick="removeIngredientRow(this)">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <button type="button" class="add-item-btn" onclick="addIngredientRow()">
+                <i class="fas fa-plus"></i> Add Another Ingredient
+            </button>
+        </div>
+
+        <!-- Instructions Section -->
+        <div class="preview-section">
+            <h2 class="section-title">
+                <i class="fas fa-tasks"></i> Instructions
+                {% if mode == 'import' %}<span class="ai-badge"><i class="fas fa-robot"></i> AI Extracted</span>{% endif %}
+            </h2>
+            
+            <div class="ingredient-table-wrapper">
+                <table class="ingredient-table" id="instructionsTable">
+                    <thead>
+                        <tr>
+                            <th style="width: 4%; text-align: center;"><i class="fas fa-grip-vertical"></i></th>
+                            <th style="width: 8%;">Step #</th>
+                            <th style="width: 56%;">Instruction</th>
+                            <th style="width: 20%;">Group</th>
+                            <th style="width: 12%; text-align: center;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="instructionsTableBody">
+                        {% for instruction in extracted_data.instructions %}
+                        <tr class="instruction-row">
+                            <td style="text-align: center;">
+                                <span class="drag-handle"><i class="fas fa-grip-vertical"></i></span>
+                            </td>
+                            <td style="text-align: center;">
+                                <div class="step-number-badge-table">{{ forloop.counter }}</div>
+                                <input type="hidden" name="step_number[]" value="{{ forloop.counter }}">
+                            </td>
+                            <td>
+                                <textarea class="form-control instruction-textarea" 
+                                          name="instruction[]" 
+                                          rows="1" 
+                                          required 
+                                          oninput="autoResize(this)">{% if instruction.instruction %}{{ instruction.instruction }}{% else %}{{ instruction }}{% endif %}</textarea>
+                            </td>
+                            <td>
+                                <input type="text" 
+                                       name="instruction_group[]"
+                                       value="{{ instruction.group }}"
+                                       placeholder="e.g., Preparation">
+                            </td>
+                            <td style="text-align: center;">
+                                <button type="button" class="remove-item-btn" onclick="removeInstructionRow(this)">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            <button type="button" class="add-item-btn" onclick="addInstructionRow()">
+                <i class="fas fa-plus"></i> Add Another Step
+            </button>
+        </div>
+
+        <!-- Action Buttons -->
+        <div style="display: flex; justify-content: center; gap: 16px; margin-top: 30px; margin-bottom: 50px;">
+            <button type="submit" class="btn btn-success btn-lg">
+                <i class="fas fa-save"></i> 
+                {% if mode == 'create' %}Save Recipe
+                {% elif mode == 'edit' %}Update Recipe
+                {% else %}Save Recipe to Collection{% endif %}
+            </button>
+            <a href="{% url 'import_recipe' %}" class="btn btn-secondary btn-lg">
+                <i class="fas fa-times"></i> Cancel
+            </a>
+        </div>
+    </form>
+
+    <!-- Add New Ingredient Modal -->
+    <div class="modal fade" id="addIngredientModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white;">
+                    <h5 class="modal-title">
+                        <i class="fas fa-plus-circle"></i> Add New Ingredient
+                    </h5>
+                    <button type="button" class="close" data-dismiss="modal" style="color: white;">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="newIngredientName"><strong>Ingredient Name</strong></label>
+                        <input type="text" class="form-control" id="newIngredientName" readonly style="background: #e9ecef; font-weight: 600; font-size: 16px;">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="newIngredientCategory"><strong>Category</strong></label>
+                        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                            <span id="smartSuggestionBadge" style="background: #17a2b8; color: white; padding: 6px 12px; border-radius: 16px; font-size: 13px; font-weight: 600; display: none;">
+                                ✨ Smart Suggestion
+                            </span>
+                        </div>
+                        <select class="form-control" id="newIngredientCategory" style="border: 2px solid #28a745; font-size: 15px;">
+                            <!-- Populated dynamically -->
+                        </select>
+                        <small class="form-text text-muted" style="margin-top: 8px;">
+                            <i class="fas fa-info-circle"></i> Smart categorization pre-selected. You can change it if needed.
+                        </small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-success" onclick="confirmAddIngredient()">
+                        <i class="fas fa-check"></i> Add Ingredient
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+// ========== DATA CONSTANTS ==========
+// Store existing data from database (sorted alphabetically)
+const existingMeasurements = {{ existing_measurements|safe }}.sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
+const existingIngredients = {{ existing_ingredients|safe }}.sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
+const existingPreparations = {{ existing_preparations|safe }}.sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
+
+// Ingredient categories for smart categorization
+const ingredientCategories = [
+    {% for cat in ingredient_categories %}
+    { id: {{ cat.ingredient_category_id }}, name: "{{ cat.name|escapejs }}" }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+];
+
+console.log('Ingredient Categories:', ingredientCategories);
+
+// ==================== IMAGE PREVIEW FUNCTIONALITY ====================
+
+function previewImage(event) {
+    const file = event.target.files[0];
+    const preview = document.getElementById('imagePreview');
+    const currentImage = document.getElementById('currentImage');
+    
+    if (file) {
+        // Check file size (5MB limit)
+        if (file.size > 5 * 1024 * 1024) {
+            alert('Image file size must be less than 5MB');
+            event.target.value = '';
+            return;
+        }
+        
+        // Check file type
+        const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+        if (!validTypes.includes(file.type)) {
+            alert('Please upload a valid image file (JPG, PNG, or WebP)');
+            event.target.value = '';
+            return;
+        }
+        
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            preview.src = e.target.result;
+            preview.classList.add('show');
+            
+            // Hide current image if exists
+            if (currentImage) {
+                currentImage.style.display = 'none';
+            }
+        }
+        reader.readAsDataURL(file);
+    }
+}
+
+function removeCurrentImage() {
+    if (confirm('Are you sure you want to remove the current image?')) {
+        const currentImage = document.getElementById('currentImage');
+        const removeImageInput = document.getElementById('remove_image');
+        
+        if (currentImage) {
+            currentImage.style.display = 'none';
+        }
+        
+        // Set hidden field to indicate image removal
+        removeImageInput.value = '1';
+        
+        // Show feedback
+        alert('Image will be removed when you save the recipe.');
+    }
+}
+
+// Auto-calculate total time
+document.getElementById('prep_time').addEventListener('input', calculateTotalTime);
+document.getElementById('cook_time').addEventListener('input', calculateTotalTime);
+
+function calculateTotalTime() {
+    const prepTime = parseInt(document.getElementById('prep_time').value) || 0;
+    const cookTime = parseInt(document.getElementById('cook_time').value) || 0;
+    document.getElementById('total_time').value = prepTime + cookTime;
+}
+
+// Toggle protein field based on vegetarian checkbox
+function toggleProteinField() {
+    const isVegetarian = document.getElementById('is_vegetarian').checked;
+    const proteinSection = document.getElementById('proteinSection');
+    const proteinCheckboxes = document.querySelectorAll('input[name="protein[]"]');
+    const proteinRequired = document.getElementById('proteinRequired');
+    
+    if (isVegetarian) {
+        proteinSection.style.display = 'none';
+        // Clear protein selections
+        proteinCheckboxes.forEach(cb => {
+            cb.checked = false;
+        });
+        updateSelectedTags('protein');
+        if (proteinRequired) proteinRequired.style.display = 'none';
+    } else {
+        proteinSection.style.display = 'block';
+        if (proteinRequired) proteinRequired.style.display = 'inline';
+    }
+}
+
+// Dropdown multi-select functionality
+function toggleDropdown(dropdownId) {
+    const dropdown = document.getElementById(dropdownId);
+    const button = dropdown.previousElementSibling;
+    
+    // Close all other dropdowns
+    document.querySelectorAll('.multiselect-menu').forEach(menu => {
+        if (menu.id !== dropdownId) {
+            menu.classList.remove('show');
+            menu.previousElementSibling.classList.remove('active');
+        }
+    });
+    
+    // Toggle current dropdown
+    dropdown.classList.toggle('show');
+    button.classList.toggle('active');
+}
+
+function toggleCheckboxInDropdown(event, checkboxId) {
+    const checkbox = document.getElementById(checkboxId);
+    if (event.target.type !== 'checkbox' && event.target.tagName !== 'LABEL') {
+        checkbox.checked = !checkbox.checked;
+        checkbox.dispatchEvent(new Event('change'));
+    }
+}
+
+// Close dropdowns when clicking outside
+document.addEventListener('click', function(event) {
+    if (!event.target.closest('.multiselect-dropdown')) {
+        document.querySelectorAll('.multiselect-menu').forEach(menu => {
+            menu.classList.remove('show');
+            menu.previousElementSibling.classList.remove('active');
+        });
+    }
+});
+
+function updateSelectedTags(type) {
+    const checkboxes = document.querySelectorAll(`input[name="${type}[]"]:checked`);
+    const tagsContainer = document.getElementById(`${type}SelectedTags`);
+    
+    if (!tagsContainer) return;
+    
+    tagsContainer.innerHTML = '';
+    
+    checkboxes.forEach(checkbox => {
+        const label = checkbox.parentElement.querySelector('label').textContent;
+        const tag = document.createElement('div');
+        tag.className = 'selected-tag';
+        tag.innerHTML = `
+            ${label}
+            <button type="button" class="remove-tag" onclick="removeTag('${checkbox.id}', '${type}')">×</button>
+        `;
+        tagsContainer.appendChild(tag);
+    });
+}
+
+function removeTag(checkboxId, type) {
+    const checkbox = document.getElementById(checkboxId);
+    checkbox.checked = false;
+    updateSelectedTags(type);
+}
+
+// Modal functions for adding new items
+function showAddCourseModal() {
+    const name = prompt('Enter new course name (e.g., Starter, Main, Dessert):');
+    if (name && name.trim()) {
+        addNewCourse(name.trim());
+    }
+}
+
+function showAddCategoryModal() {
+    const name = prompt('Enter new category name (e.g., Pasta, Asian, Salad):');
+    if (name && name.trim()) {
+        addNewCategory(name.trim());
+    }
+}
+
+function showAddProteinModal() {
+    const name = prompt('Enter new protein name (e.g., Chicken, Beef, Fish):');
+    if (name && name.trim()) {
+        addNewProtein(name.trim());
+    }
+}
+
+function addNewCourse(name) {
+    fetch('{% url "add_recipe_course" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: JSON.stringify({ name: name, display_order: 0 })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const dropdown = document.getElementById('courseDropdown');
+            const newItem = document.createElement('div');
+            newItem.className = 'multiselect-item';
+            newItem.onclick = function(e) { toggleCheckboxInDropdown(e, 'course-' + data.course_id); };
+            newItem.innerHTML = `
+                <input type="checkbox" 
+                       id="course-${data.course_id}" 
+                       name="course[]" 
+                       value="${data.course_id}"
+                       onchange="updateSelectedTags('course')"
+                       checked>
+                <label for="course-${data.course_id}">${data.name}</label>
+            `;
+            dropdown.appendChild(newItem);
+            updateSelectedTags('course');
+            alert(`✓ "${name}" added to courses and selected!`);
+        } else {
+            alert('Error: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error adding course');
+    });
+}
+
+function addNewCategory(name) {
+    fetch('{% url "add_recipe_category" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: JSON.stringify({ name: name })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const dropdown = document.getElementById('categoryDropdown');
+            const newItem = document.createElement('div');
+            newItem.className = 'multiselect-item';
+            newItem.onclick = function(e) { toggleCheckboxInDropdown(e, 'category-' + data.category_id); };
+            newItem.innerHTML = `
+                <input type="checkbox" 
+                       id="category-${data.category_id}" 
+                       name="category[]" 
+                       value="${data.category_id}"
+                       onchange="updateSelectedTags('category')"
+                       checked>
+                <label for="category-${data.category_id}">${data.name}</label>
+            `;
+            dropdown.appendChild(newItem);
+            updateSelectedTags('category');
+            alert(`✓ "${name}" added to categories and selected!`);
+        } else {
+            alert('Error: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error adding category');
+    });
+}
+
+function addNewProtein(name) {
+    fetch('{% url "add_recipe_protein" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: JSON.stringify({ name: name })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const dropdown = document.getElementById('proteinDropdown');
+            const newItem = document.createElement('div');
+            newItem.className = 'multiselect-item';
+            newItem.onclick = function(e) { toggleCheckboxInDropdown(e, 'protein-' + data.protein_id); };
+            newItem.innerHTML = `
+                <input type="checkbox" 
+                       id="protein-${data.protein_id}" 
+                       name="protein[]" 
+                       value="${data.protein_id}"
+                       onchange="updateSelectedTags('protein')"
+                       checked>
+                <label for="protein-${data.protein_id}">${data.name}</label>
+            `;
+            dropdown.appendChild(newItem);
+            updateSelectedTags('protein');
+            alert(`✓ "${name}" added to proteins and selected!`);
+        } else {
+            alert('Error: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error adding protein');
+    });
+}
+
+// ==================== UTILITY FUNCTIONS ====================
+
+// Capitalize text
+function capitalizeText(text) {
+    return text.split(' ').map(word => 
+        word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+    ).join(' ');
+}
+
+// Validate functions
+function validateMeasurement(value) {
+    const trimmed = value.trim().toLowerCase();
+    return trimmed && existingMeasurements.some(m => m.toLowerCase() === trimmed);
+}
+
+function validateIngredient(value) {
+    const trimmed = value.trim();
+    const capitalized = capitalizeText(trimmed);
+    return trimmed && existingIngredients.some(i => i.toLowerCase() === capitalized.toLowerCase());
+}
+
+function validatePreparation(value) {
+    const trimmed = value.trim().toLowerCase();
+    return trimmed && existingPreparations.some(p => p.toLowerCase() === trimmed);
+}
+
+// Check if dropdown should show upward
+function shouldShowUpward(input) {
+    const rect = input.getBoundingClientRect();
+    const spaceBelow = window.innerHeight - rect.bottom;
+    const spaceAbove = rect.top;
+    const dropdownHeight = 250; // Approximate max height
+    
+    // Show upward if not enough space below AND more space above
+    return spaceBelow < dropdownHeight && spaceAbove > spaceBelow;
+}
+
+// ==================== SMART CATEGORIZATION ====================
+
+function smartCategorize(ingredientName) {
+    const ingredient_lower = ingredientName.toLowerCase();
+    
+    // PRIORITY 1: Canned & Jarred
+    const canned_terms = ['stock', 'broth', 'cube', 'bouillon', 'canned', 'tinned', 'tin', 'paste', 'sauce', 'puree', 'concentrate'];
+    for (const term of canned_terms) {
+        if (ingredient_lower.includes(term)) {
+            return 'Canned & Jarred';
+        }
+    }
+    
+    // PRIORITY 2: Beverages
+    const beverages = ['wine', 'beer', 'sherry', 'brandy', 'rum', 'vodka', 'whiskey', 'liqueur'];
+    for (const term of beverages) {
+        if (ingredient_lower.includes(term)) {
+            return 'Beverages';
+        }
+    }
+    
+    // PRIORITY 3: Herbs & Spices
+    const herbs_spices = ['oregano', 'origanum', 'basil', 'thyme', 'rosemary', 'sage', 'parsley', 'cilantro', 'pepper', 'salt', 'paprika', 'cumin', 'turmeric', 'cinnamon', 'nutmeg', 'cloves', 'curry', 'chili', 'cayenne'];
+    for (const term of herbs_spices) {
+        if (ingredient_lower.includes(term)) {
+            return 'Herbs & Spices';
+        }
+    }
+    
+    // PRIORITY 4: Poultry (check before general meat)
+    const poultry = ['chicken', 'turkey', 'duck', 'drumstick'];
+    for (const term of poultry) {
+        if (ingredient_lower.includes(term)) {
+            return 'Poultry';
+        }
+    }
+    
+    // PRIORITY 5: Meat (after poultry check)
+    const meats = ['beef', 'pork', 'lamb', 'mince', 'meat', 'bacon', 'sausage'];
+    for (const term of meats) {
+        if (ingredient_lower.includes(term)) {
+            return 'Meat';
+        }
+    }
+    
+    // PRIORITY 6: Fish & Seafood
+    const seafood = ['fish', 'salmon', 'tuna', 'shrimp', 'prawns', 'crab', 'lobster', 'mussel', 'oyster'];
+    for (const term of seafood) {
+        if (ingredient_lower.includes(term)) {
+            return 'Fish & Seafood';
+        }
+    }
+    
+    // PRIORITY 7: Dairy
+    const dairy = ['milk', 'cream', 'yogurt', 'cheese', 'butter'];
+    const is_beverage = beverages.some(bev => ingredient_lower.includes(bev));
+    if (!is_beverage) {
+        for (const term of dairy) {
+            if (ingredient_lower.includes(term)) {
+                return 'Dairy';
+            }
+        }
+    }
+    
+    // PRIORITY 8: Oils & Fats
+    const oils_fats = ['oil', 'olive oil', 'vegetable oil', 'margarine', 'lard', 'ghee'];
+    for (const term of oils_fats) {
+        if (ingredient_lower.includes(term)) {
+            return 'Oils & Fats';
+        }
+    }
+    
+    // PRIORITY 9: Grains & Pasta
+    const grains = ['flour', 'rice', 'pasta', 'spaghetti', 'noodles', 'bread', 'quinoa', 'couscous', 'oats', 'macaroni'];
+    for (const term of grains) {
+        if (ingredient_lower.includes(term)) {
+            return 'Grains & Pasta';
+        }
+    }
+    
+    // PRIORITY 10: Legumes
+    const legumes = ['bean', 'lentil', 'chickpea', 'pea'];
+    for (const term of legumes) {
+        if (ingredient_lower.includes(term)) {
+            return 'Legumes';
+        }
+    }
+    
+    // PRIORITY 11: Vegetables
+    const vegetables = ['onion', 'garlic', 'tomato', 'potato', 'carrot', 'celery', 'pepper', 'lettuce', 'spinach', 'broccoli', 'mushroom', 'corn'];
+    for (const term of vegetables) {
+        if (ingredient_lower.includes(term)) {
+            return 'Vegetables';
+        }
+    }
+    
+    return 'Other';
+}
+
+// ==================== MEASUREMENT DROPDOWN ====================
+
+function showMeasurementDropdown(input) {
+    const wrapper = input.parentElement;
+    const dropdown = wrapper.querySelector('.measurement-dropdown');
+    
+    populateMeasurementDropdown(dropdown, '', input);
+    
+    // Check direction before showing
+    if (shouldShowUpward(input)) {
+        dropdown.classList.add('show-upward');
+    } else {
+        dropdown.classList.remove('show-upward');
+    }
+    
+    dropdown.classList.add('show');
+}
+
+function filterMeasurementDropdown(input) {
+    const value = input.value.trim().toLowerCase();
+    const wrapper = input.parentElement;
+    const dropdown = wrapper.querySelector('.measurement-dropdown');
+    
+    // Validate and color
+    if (value === '') {
+        input.classList.remove('valid', 'invalid');
+    } else if (validateMeasurement(value)) {
+        input.classList.remove('invalid');
+        input.classList.add('valid');
+    } else {
+        input.classList.remove('valid');
+        input.classList.add('invalid');
+    }
+    
+    populateMeasurementDropdown(dropdown, value, input);
+    
+    // Check direction before showing
+    if (shouldShowUpward(input)) {
+        dropdown.classList.add('show-upward');
+    } else {
+        dropdown.classList.remove('show-upward');
+    }
+    
+    dropdown.classList.add('show');
+}
+
+function populateMeasurementDropdown(dropdown, searchTerm, input) {
+    const filtered = existingMeasurements.filter(m => 
+        m.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    
+    dropdown.innerHTML = '';
+    
+    if (filtered.length > 0) {
+        filtered.forEach(measurement => {
+            const item = document.createElement('div');
+            item.className = 'autocomplete-item';
+            item.innerHTML = `<i class="fas fa-check-circle"></i> ${measurement}`;
+            item.onmousedown = (e) => {
+                e.preventDefault();
+                selectMeasurement(input, measurement);
+            };
+            dropdown.appendChild(item);
+        });
+    } else {
+        const noResults = document.createElement('div');
+        noResults.className = 'autocomplete-no-results';
+        noResults.textContent = 'No matching measurements found';
+        dropdown.appendChild(noResults);
+    }
+    
+    if (searchTerm && !validateMeasurement(searchTerm)) {
+        const addNew = document.createElement('div');
+        addNew.className = 'autocomplete-add-new';
+        addNew.innerHTML = `<i class="fas fa-plus-circle"></i> Add "${searchTerm}" as new measurement`;
+        addNew.onmousedown = (e) => {
+            e.preventDefault();
+            addNewMeasurement(input, searchTerm);
+        };
+        dropdown.appendChild(addNew);
+    }
+}
+
+function selectMeasurement(input, value) {
+    input.value = value;
+    input.classList.remove('invalid');
+    input.classList.add('valid');
+    hideDropdown(input, 'measurement');
+}
+
+function addNewMeasurement(input, name) {
+    fetch('{% url "add_measurement_ajax" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: JSON.stringify({ name: name })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            existingMeasurements.push(name);
+            existingMeasurements.sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
+            input.value = name;
+            input.classList.remove('invalid');
+            input.classList.add('valid');
+            hideDropdown(input, 'measurement');
+            alert(`✓ "${name}" added to measurements!`);
+        } else {
+            alert('Error: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error adding measurement');
+    });
+}
+
+// ==================== INGREDIENT DROPDOWN ====================
+
+function showIngredientDropdown(input) {
+    const wrapper = input.parentElement;
+    const dropdown = wrapper.querySelector('.ingredient-dropdown');
+    
+    populateIngredientDropdown(dropdown, '', input);
+    
+    // Check direction before showing
+    if (shouldShowUpward(input)) {
+        dropdown.classList.add('show-upward');
+    } else {
+        dropdown.classList.remove('show-upward');
+    }
+    
+    dropdown.classList.add('show');
+}
+
+function filterIngredientDropdown(input) {
+    let value = input.value.trim();
+    const capitalized = capitalizeText(value);
+    const wrapper = input.parentElement;
+    const dropdown = wrapper.querySelector('.ingredient-dropdown');
+    
+    // Auto-capitalize
+    if (value && value !== capitalized) {
+        input.value = capitalized;
+        value = capitalized;
+    }
+    
+    // Validate and color
+    if (value === '') {
+        input.classList.remove('valid', 'invalid');
+    } else if (validateIngredient(value)) {
+        input.classList.remove('invalid');
+        input.classList.add('valid');
+    } else {
+        input.classList.remove('valid');
+        input.classList.add('invalid');
+    }
+    
+    populateIngredientDropdown(dropdown, value, input);
+    
+    // Check direction before showing
+    if (shouldShowUpward(input)) {
+        dropdown.classList.add('show-upward');
+    } else {
+        dropdown.classList.remove('show-upward');
+    }
+    
+    dropdown.classList.add('show');
+}
+
+function populateIngredientDropdown(dropdown, searchTerm, input) {
+    const filtered = existingIngredients.filter(i => 
+        i.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    
+    dropdown.innerHTML = '';
+    
+    if (filtered.length > 0) {
+        filtered.slice(0, 50).forEach(ingredient => {
+            const item = document.createElement('div');
+            item.className = 'autocomplete-item';
+            item.innerHTML = `<i class="fas fa-check-circle"></i> ${ingredient}`;
+            item.onmousedown = (e) => {
+                e.preventDefault();
+                selectIngredient(input, ingredient);
+            };
+            dropdown.appendChild(item);
+        });
+        
+        if (filtered.length > 50) {
+            const more = document.createElement('div');
+            more.className = 'autocomplete-no-results';
+            more.textContent = `... and ${filtered.length - 50} more. Keep typing to narrow down.`;
+            dropdown.appendChild(more);
+        }
+    } else {
+        const noResults = document.createElement('div');
+        noResults.className = 'autocomplete-no-results';
+        noResults.textContent = 'No matching ingredients found';
+        dropdown.appendChild(noResults);
+    }
+    
+    if (searchTerm && !validateIngredient(searchTerm)) {
+        const addNew = document.createElement('div');
+        addNew.className = 'autocomplete-add-new';
+        addNew.innerHTML = `<i class="fas fa-plus-circle"></i> Add "${capitalizeText(searchTerm)}" as new ingredient`;
+        addNew.onmousedown = (e) => {
+            e.preventDefault();
+            addNewIngredient(input, capitalizeText(searchTerm));
+        };
+        dropdown.appendChild(addNew);
+    }
+}
+
+function selectIngredient(input, value) {
+    input.value = value;
+    input.classList.remove('invalid');
+    input.classList.add('valid');
+    hideDropdown(input, 'ingredient');
+}
+
+// ==================== ADD NEW INGREDIENT WITH CATEGORY ====================
+
+// Store context for modal
+let pendingIngredientInput = null;
+let pendingIngredientName = null;
+
+function addNewIngredient(input, name) {
+    console.log('Adding ingredient:', name);
+    console.log('Available categories:', ingredientCategories);
+    
+    // Store context
+    pendingIngredientInput = input;
+    pendingIngredientName = name;
+    
+    // Set ingredient name in modal
+    document.getElementById('newIngredientName').value = name;
+    
+    // Get smart suggestion
+    const suggestedCategory = smartCategorize(name);
+    console.log('Suggested category:', suggestedCategory);
+    
+    // Populate category dropdown
+    const categorySelect = document.getElementById('newIngredientCategory');
+    categorySelect.innerHTML = '';
+    
+    if (ingredientCategories && ingredientCategories.length > 0) {
+        ingredientCategories.forEach(cat => {
+            const option = document.createElement('option');
+            option.value = cat.id;
+            option.textContent = cat.name;
+            
+            // Pre-select the suggested category
+            if (cat.name === suggestedCategory) {
+                option.selected = true;
+                // Show smart suggestion badge
+                document.getElementById('smartSuggestionBadge').style.display = 'inline-block';
+            }
+            
+            categorySelect.appendChild(option);
+        });
+    } else {
+        console.error('No ingredient categories available!');
+        const option = document.createElement('option');
+        option.textContent = 'No categories available';
+        categorySelect.appendChild(option);
+    }
+    
+    // Show modal
+    $('#addIngredientModal').modal('show');
+}
+
+function confirmAddIngredient() {
+    const name = pendingIngredientName;
+    const categoryId = document.getElementById('newIngredientCategory').value;
+    const input = pendingIngredientInput;
+    
+    if (!categoryId) {
+        alert('Please select a category');
+        return;
+    }
+    
+    // Disable button during request
+    const confirmBtn = event.target;
+    confirmBtn.disabled = true;
+    confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding...';
+    
+    fetch('{% url "add_ingredient_ajax" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: JSON.stringify({ 
+            name: name,
+            category_id: categoryId
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            existingIngredients.push(name);
+            existingIngredients.sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
+            input.value = name;
+            input.classList.remove('invalid');
+            input.classList.add('valid');
+            hideDropdown(input, 'ingredient');
+            
+            // Hide modal
+            $('#addIngredientModal').modal('hide');
+            
+            // Show success message
+            alert(`✓ "${name}" added to ingredients with category!`);
+        } else {
+            alert('Error: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error adding ingredient');
+    })
+    .finally(() => {
+        // Re-enable button
+        confirmBtn.disabled = false;
+        confirmBtn.innerHTML = '<i class="fas fa-check"></i> Add Ingredient';
+        
+        // Clear pending context
+        pendingIngredientInput = null;
+        pendingIngredientName = null;
+    });
+}
+
+// ==================== PREPARATION DROPDOWN ====================
+
+function showPreparationDropdown(input) {
+    const wrapper = input.parentElement;
+    const dropdown = wrapper.querySelector('.preparation-dropdown');
+    
+    populatePreparationDropdown(dropdown, '', input);
+    
+    // Check direction before showing
+    if (shouldShowUpward(input)) {
+        dropdown.classList.add('show-upward');
+    } else {
+        dropdown.classList.remove('show-upward');
+    }
+    
+    dropdown.classList.add('show');
+}
+
+function filterPreparationDropdown(input) {
+    const value = input.value.trim().toLowerCase();
+    const wrapper = input.parentElement;
+    const dropdown = wrapper.querySelector('.preparation-dropdown');
+    
+    // Auto-lowercase for preparation
+    if (input.value !== value) {
+        input.value = value;
+    }
+    
+    // Validate and color
+    if (value === '') {
+        input.classList.remove('valid', 'invalid');
+    } else if (validatePreparation(value)) {
+        input.classList.remove('invalid');
+        input.classList.add('valid');
+    } else {
+        input.classList.remove('valid');
+        input.classList.add('invalid');
+    }
+    
+    populatePreparationDropdown(dropdown, value, input);
+    
+    // Check direction before showing
+    if (shouldShowUpward(input)) {
+        dropdown.classList.add('show-upward');
+    } else {
+        dropdown.classList.remove('show-upward');
+    }
+    
+    dropdown.classList.add('show');
+}
+
+function populatePreparationDropdown(dropdown, searchTerm, input) {
+    const filtered = existingPreparations.filter(p => 
+        p.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    
+    dropdown.innerHTML = '';
+    
+    if (filtered.length > 0) {
+        filtered.forEach(preparation => {
+            const item = document.createElement('div');
+            item.className = 'autocomplete-item';
+            item.innerHTML = `<i class="fas fa-check-circle"></i> ${preparation}`;
+            item.onmousedown = (e) => {
+                e.preventDefault();
+                selectPreparation(input, preparation);
+            };
+            dropdown.appendChild(item);
+        });
+    } else {
+        const noResults = document.createElement('div');
+        noResults.className = 'autocomplete-no-results';
+        noResults.textContent = 'No matching preparations found';
+        dropdown.appendChild(noResults);
+    }
+    
+    if (searchTerm && !validatePreparation(searchTerm)) {
+        const addNew = document.createElement('div');
+        addNew.className = 'autocomplete-add-new';
+        addNew.innerHTML = `<i class="fas fa-plus-circle"></i> Add "${searchTerm}" as new preparation`;
+        addNew.onmousedown = (e) => {
+            e.preventDefault();
+            addNewPreparation(input, searchTerm);
+        };
+        dropdown.appendChild(addNew);
+    }
+}
+
+function selectPreparation(input, value) {
+    input.value = value;
+    input.classList.remove('invalid');
+    input.classList.add('valid');
+    hideDropdown(input, 'preparation');
+}
+
+function addNewPreparation(input, name) {
+    fetch('{% url "add_preparation_ajax" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: JSON.stringify({ name: name })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            existingPreparations.push(name);
+            existingPreparations.sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
+            input.value = name;
+            input.classList.remove('invalid');
+            input.classList.add('valid');
+            hideDropdown(input, 'preparation');
+            alert(`✓ "${name}" added to preparations!`);
+        } else {
+            alert('Error: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error adding preparation');
+    });
+}
+
+// ==================== UNIFIED HIDE FUNCTIONS ====================
+
+function hideDropdown(input, type) {
+    const wrapper = input.parentElement;
+    const dropdown = wrapper.querySelector(`.${type}-dropdown`);
+    dropdown.classList.remove('show', 'show-upward');
+}
+
+function hideDropdownDelayed(input, type) {
+    setTimeout(() => hideDropdown(input, type), 200);
+}
+
+// ==================== TABLE MANAGEMENT ====================
+
+function addIngredientRow() {
+    const tbody = document.getElementById('ingredientsTableBody');
+    const newRow = document.createElement('tr');
+    newRow.className = 'ingredient-row';
+    newRow.innerHTML = `
+        <td class="drag-col">
+            <span class="drag-handle"><i class="fas fa-grip-vertical"></i></span>
+        </td>
+        <td>
+            <input type="text" name="ingredient_quantity[]" required>
+        </td>
+        <td>
+            <div class="autocomplete-wrapper">
+                <input type="text" 
+                       name="ingredient_measurement[]"
+                       class="measurement-input"
+                       autocomplete="off"
+                       onclick="showMeasurementDropdown(this)"
+                       oninput="filterMeasurementDropdown(this)"
+                       onblur="hideDropdownDelayed(this, 'measurement')"
+                       required>
+                <div class="autocomplete-dropdown measurement-dropdown"></div>
+            </div>
+        </td>
+        <td>
+            <div class="autocomplete-wrapper">
+                <input type="text" 
+                       name="ingredient_name[]"
+                       class="ingredient-input"
+                       autocomplete="off"
+                       onclick="showIngredientDropdown(this)"
+                       oninput="filterIngredientDropdown(this)"
+                       onblur="hideDropdownDelayed(this, 'ingredient')"
+                       required>
+                <div class="autocomplete-dropdown ingredient-dropdown"></div>
+            </div>
+        </td>
+        <td>
+            <div class="autocomplete-wrapper">
+                <input type="text" 
+                       name="ingredient_preparation[]"
+                       class="preparation-input"
+                       autocomplete="off"
+                       onclick="showPreparationDropdown(this)"
+                       oninput="filterPreparationDropdown(this)"
+                       onblur="hideDropdownDelayed(this, 'preparation')">
+                <div class="autocomplete-dropdown preparation-dropdown"></div>
+            </div>
+        </td>
+        <td>
+            <input type="text" 
+                   name="ingredient_group[]" 
+                   placeholder="e.g., For the sauce">
+        </td>
+        <td>
+            <button type="button" class="remove-item-btn" onclick="removeIngredientRow(this)">
+                <i class="fas fa-times"></i>
+            </button>
+        </td>
+    `;
+    tbody.appendChild(newRow);
+}
+
+function removeIngredientRow(button) {
+    const rows = document.querySelectorAll('.ingredient-row');
+    if (rows.length > 1) {
+        button.closest('tr').remove();
+    } else {
+        alert('You must have at least one ingredient!');
+    }
+}
+
+// ==================== INSTRUCTION TABLE MANAGEMENT ====================
+
+// Auto-resize textarea as user types
+function autoResize(textarea) {
+    textarea.style.height = 'auto';
+    textarea.style.height = textarea.scrollHeight + 'px';
+}
+
+function addInstructionRow() {
+    const tbody = document.getElementById('instructionsTableBody');
+    const rows = tbody.querySelectorAll('.instruction-row');
+    const newStepNumber = rows.length + 1;
+    
+    const newRow = document.createElement('tr');
+    newRow.className = 'instruction-row';
+    newRow.innerHTML = `
+        <td style="text-align: center;">
+            <span class="drag-handle"><i class="fas fa-grip-vertical"></i></span>
+        </td>
+        <td style="text-align: center;">
+            <div class="step-number-badge-table">${newStepNumber}</div>
+            <input type="hidden" name="step_number[]" value="${newStepNumber}">
+        </td>
+        <td>
+            <textarea class="form-control instruction-textarea" 
+                      name="instruction[]" 
+                      rows="1" 
+                      required 
+                      oninput="autoResize(this)"></textarea>
+        </td>
+        <td>
+            <input type="text" 
+                   name="instruction_group[]" 
+                   placeholder="e.g., Preparation">
+        </td>
+        <td style="text-align: center;">
+            <button type="button" class="remove-item-btn" onclick="removeInstructionRow(this)">
+                <i class="fas fa-times"></i>
+            </button>
+        </td>
+    `;
+    tbody.appendChild(newRow);
+}
+
+function removeInstructionRow(button) {
+    const rows = document.querySelectorAll('.instruction-row');
+    if (rows.length > 1) {
+        button.closest('tr').remove();
+        updateInstructionStepNumbers();
+    } else {
+        alert('You must have at least one instruction step!');
+    }
+}
+
+function updateInstructionStepNumbers() {
+    const rows = document.querySelectorAll('.instruction-row');
+    rows.forEach((row, index) => {
+        const stepNumber = index + 1;
+        const badge = row.querySelector('.step-number-badge-table');
+        const hiddenInput = row.querySelector('input[name="step_number[]"]');
+        
+        badge.textContent = stepNumber;
+        hiddenInput.value = stepNumber;
+    });
+}
+
+// ==================== FORM VALIDATION ====================
+
+// Custom form validation for multi-select dropdowns
+document.querySelector('form').addEventListener('submit', function(e) {
+    // Check if at least one course is selected
+    const selectedCourses = document.querySelectorAll('input[name="course[]"]:checked');
+    if (selectedCourses.length === 0) {
+        e.preventDefault();
+        alert('⚠️ Please select at least one Course.');
+        document.querySelector('.multiselect-button').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return false;
+    }
+    
+    // Check if at least one category is selected
+    const selectedCategories = document.querySelectorAll('input[name="category[]"]:checked');
+    if (selectedCategories.length === 0) {
+        e.preventDefault();
+        alert('⚠️ Please select at least one Category.');
+        document.querySelectorAll('.multiselect-button')[1].scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return false;
+    }
+    
+    // Check difficulty level
+    const difficulty = document.getElementById('difficulty_level').value;
+    if (!difficulty) {
+        e.preventDefault();
+        alert('⚠️ Please select a Difficulty Level.');
+        document.getElementById('difficulty_level').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return false;
+    }
+    
+    // Check proteins (only if not vegetarian)
+    const isVegetarian = document.getElementById('is_vegetarian').checked;
+    if (!isVegetarian) {
+        const selectedProteins = document.querySelectorAll('input[name="protein[]"]:checked');
+        if (selectedProteins.length === 0) {
+            e.preventDefault();
+            alert('⚠️ Please select at least one Protein, or mark the recipe as vegetarian.');
+            document.getElementById('proteinSection').scrollIntoView({ behavior: 'smooth', block: 'center' });
+            return false;
+        }
+    }
+    
+    // If all validation passes, allow form submission
+    return true;
+});
+
+// ==================== INITIALIZATION ====================
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Validate all fields on page load
+    document.querySelectorAll('.measurement-input').forEach(input => {
+        if (input.value.trim()) {
+            if (validateMeasurement(input.value)) {
+                input.classList.add('valid');
+            } else {
+                input.classList.add('invalid');
+            }
+        }
+    });
+    
+    document.querySelectorAll('.ingredient-input').forEach(input => {
+        if (input.value.trim()) {
+            if (validateIngredient(input.value)) {
+                input.classList.add('valid');
+            } else {
+                input.classList.add('invalid');
+            }
+        }
+    });
+    
+    document.querySelectorAll('.preparation-input').forEach(input => {
+        if (input.value.trim()) {
+            if (validatePreparation(input.value)) {
+                input.classList.add('valid');
+            } else {
+                input.classList.add('invalid');
+            }
+        }
+    });
+    
+    // Auto-resize all instruction textareas on load
+    document.querySelectorAll('.instruction-textarea').forEach(textarea => {
+        autoResize(textarea);
+    });
+    
+    // Initialize selected tags display
+    updateSelectedTags('course');
+    updateSelectedTags('category');
+    updateSelectedTags('protein');
+    
+    {% if mode == 'edit' %}
+    // PRE-SELECT VALUES FOR EDIT MODE
+    // Pre-select courses
+    const selectedCourses = {{ selected_courses|safe }};
+    selectedCourses.forEach(courseId => {
+        const checkbox = document.getElementById(`course-${courseId}`);
+        if (checkbox) checkbox.checked = true;
+    });
+    updateSelectedTags('course');
+    
+    // Pre-select categories
+    const selectedCategories = {{ selected_categories|safe }};
+    selectedCategories.forEach(categoryId => {
+        const checkbox = document.getElementById(`category-${categoryId}`);
+        if (checkbox) checkbox.checked = true;
+    });
+    updateSelectedTags('category');
+    
+    // Pre-select proteins
+    const selectedProteins = {{ selected_proteins|safe }};
+    selectedProteins.forEach(proteinId => {
+        const checkbox = document.getElementById(`protein-${proteinId}`);
+        if (checkbox) checkbox.checked = true;
+    });
+    updateSelectedTags('protein');
+    
+    // Toggle protein section based on vegetarian status
+    toggleProteinField();
+    {% endif %}
+    
+    // Initialize drag and drop for ingredients table
+    const ingredientsTableBody = document.getElementById('ingredientsTableBody');
+    if (ingredientsTableBody) {
+        new Sortable(ingredientsTableBody, {
+            animation: 150,
+            handle: '.drag-handle',
+            ghostClass: 'sortable-ghost',
+            dragClass: 'sortable-drag',
+            chosenClass: 'sortable-chosen',
+            onEnd: function(evt) {
+                // No need to update anything for ingredients
+                console.log('Ingredient reordered');
+            }
+        });
+    }
+    
+    // Initialize drag and drop for instructions table
+    const instructionsTableBody = document.getElementById('instructionsTableBody');
+    if (instructionsTableBody) {
+        new Sortable(instructionsTableBody, {
+            animation: 150,
+            handle: '.drag-handle',
+            ghostClass: 'sortable-ghost',
+            dragClass: 'sortable-drag',
+            chosenClass: 'sortable-chosen',
+            onEnd: function(evt) {
+                // Update step numbers after reordering
+                updateInstructionStepNumbers();
+            }
+        });
+    }
+});
+</script>
+
+{% endblock %}
