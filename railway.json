@@ -3,9 +3,6 @@
     "builder": "NIXPACKS",
     "installCommand": "python -m pip install -r cron-requirements.txt"
   },
-  "deploy": {
-    "startCommand": "python manage.py migrate && gunicorn mysite.wsgi:application"
-  },
   "crons": [
     {
       "name": "Lease Renewal Check",
