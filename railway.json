@@ -1,7 +1,7 @@
 {
   "build": {
     "builder": "NIXPACKS",
-    "installCommand": "python -m pip install -r cron-requirements.txt"
+    "installCommand": "python -m pip install -r mysite/cron-requirements.txt"
   },
   "crons": [
     {
