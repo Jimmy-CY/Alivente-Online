@@ -846,6 +846,183 @@
         padding: 8px 10px;
     }
 }
+
+/* Ingredient Matcher Modal Styles */
+.ingredient-category-card {
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    overflow: hidden;
+}
+
+.category-header {
+    background: #f8f9fa;
+    padding: 12px 15px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: background 0.2s;
+}
+
+.category-header:hover {
+    background: #e9ecef;
+}
+
+.toggle-icon {
+    transition: transform 0.3s;
+    color: #28a745;
+}
+
+.toggle-icon.rotated {
+    transform: rotate(-90deg);
+}
+
+.category-ingredients {
+    padding: 15px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 10px;
+    max-height: 300px;
+    overflow-y: auto;
+    background: white;
+}
+
+.category-ingredients.collapsed {
+    display: none;
+}
+
+.ingredient-checkbox-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.2s;
+    margin: 0;
+}
+
+.ingredient-checkbox-item:hover {
+    background: #f8f9fa;
+}
+
+.ingredient-checkbox {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+
+/* Recipe Match Card */
+.recipe-match-card {
+    border: 2px solid #dee2e6;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 15px;
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    transition: all 0.2s;
+}
+
+.recipe-match-card:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    transform: translateY(-2px);
+}
+
+.recipe-match-card.perfect-match {
+    border-color: #28a745;
+    background: #f0fff4;
+}
+
+.recipe-match-card.good-match {
+    border-color: #ffc107;
+    background: #fffbf0;
+}
+
+.recipe-match-card.okay-match {
+    border-color: #17a2b8;
+    background: #f0f9ff;
+}
+
+.match-badge {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+    font-size: 24px;
+    font-weight: bold;
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+    min-width: 80px;
+}
+
+.recipe-match-image {
+    width: 80px;
+    height: 80px;
+    border-radius: 8px;
+    object-fit: cover;
+}
+
+.recipe-match-image-placeholder {
+    width: 80px;
+    height: 80px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 32px;
+}
+
+.recipe-match-info {
+    flex: 1;
+}
+
+.recipe-match-title {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.match-stats {
+    display: flex;
+    gap: 15px;
+    font-size: 14px;
+    color: #6c757d;
+    margin-bottom: 8px;
+}
+
+.missing-ingredients {
+    margin-top: 8px;
+}
+
+.missing-badge {
+    display: inline-block;
+    background: #fff3cd;
+    color: #856404;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    margin-right: 6px;
+    margin-bottom: 4px;
+}
+
+.missing-badge.protein {
+    background: #f8d7da;
+    color: #721c24;
+    font-weight: 600;
+}
+
+.perfect-match-badge {
+    background: #28a745;
+    color: white;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
 </style>
 
 <h2><center>ALIVENTE ONLINE - RECIPE MANAGEMENT</center></h2>
@@ -881,6 +1058,9 @@
         <a href="{% url 'meal_plans' %}" class="btn btn-primary">
             <i class="fas fa-calendar-alt"></i> Meal Plans
         </a>
+        <button type="button" class="btn btn-primary" onclick="openIngredientMatcher()">
+            <i class="fas fa-search"></i> What Can I Make?
+        </button>
     </div>
     <a href="{% url 'admin_apms' %}" class="btn btn-success" role="button">Back</a>
 </div>
@@ -1312,6 +1492,118 @@
       </form>
     </div>
   </div>
+</div>
+
+<!-- Ingredient Matcher Modal -->
+<div class="modal fade" id="ingredientMatcherModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white;">
+                <h5 class="modal-title">
+                    <i class="fas fa-search"></i> What Can I Make?
+                </h5>
+                <button type="button" class="close" data-dismiss="modal" style="color: white;">
+                    <span>&times;</span>
+                </button>
+            </div>
+            
+            <div class="modal-body">
+                
+                <!-- Info Box -->
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle"></i> 
+                    <strong>Select ingredients you currently have.</strong> 
+                    We'll automatically include herbs, spices, oil, and water.
+                </div>
+                
+                <!-- Search Bar -->
+                <div class="form-group">
+                    <input type="text" 
+                           class="form-control form-control-lg" 
+                           id="ingredientSearchBox"
+                           placeholder="🔍 Search ingredients..."
+                           onkeyup="filterIngredientsBySearch()">
+                </div>
+                
+                <!-- Quick Actions -->
+                <div style="margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
+                    <button type="button" class="btn btn-sm btn-outline-success" onclick="selectAllInCategory('Vegetables')">
+                        <i class="fas fa-check"></i> All Vegetables
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-success" onclick="selectAllInCategory('Meat')">
+                        <i class="fas fa-check"></i> All Meat
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-success" onclick="selectAllInCategory('Dairy')">
+                        <i class="fas fa-check"></i> All Dairy
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-success" onclick="selectAllInCategory('Grains & Pasta')">
+                        <i class="fas fa-check"></i> All Grains & Pasta
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-danger" onclick="clearAllSelections()">
+                        <i class="fas fa-times"></i> Clear All
+                    </button>
+                </div>
+                
+                <!-- Ingredients by Category (Collapsible) -->
+                <div id="ingredientCategoriesContainer">
+                    {% for category in ingredient_categories %}
+                    {% if category.ingredient_set.count > 0 %}
+                    <div class="ingredient-category-card" data-category="{{ category.name }}">
+                        <div class="category-header" onclick="toggleCategory('category-{{ category.ingredient_category_id }}')">
+                            <i class="fas fa-chevron-down toggle-icon" id="icon-category-{{ category.ingredient_category_id }}"></i>
+                            <strong>{{ category.name }}</strong>
+                            <span class="badge badge-secondary">{{ category.ingredient_set.count }}</span>
+                        </div>
+                        
+                        <div class="category-ingredients collapsed" id="category-{{ category.ingredient_category_id }}">
+                            {% for ingredient in category.ingredient_set.all %}
+                            <label class="ingredient-checkbox-item" data-ingredient-name="{{ ingredient.name|lower }}">
+                                <input type="checkbox" 
+                                       class="ingredient-checkbox"
+                                       data-category="{{ category.name }}"
+                                       value="{{ ingredient.ingredient_id }}"
+                                       onchange="updateSelectedCount()">
+                                <span>{{ ingredient.name }}</span>
+                            </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% endfor %}
+                </div>
+                
+                <!-- Selected Count -->
+                <div style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px; text-align: center;">
+                    <strong id="selectedIngredientCount">0 ingredients selected</strong>
+                    <small class="text-muted d-block mt-1">
+                        (Herbs, spices, oil, and water are automatically included)
+                    </small>
+                </div>
+                
+                <!-- Results Area (Hidden initially) -->
+                <div id="matchingResultsArea" style="display: none; margin-top: 30px;">
+                    <hr>
+                    <h5><i class="fas fa-utensils"></i> Matching Recipes</h5>
+                    <div id="matchingResultsContent"></div>
+                    
+                    <!-- Show More Button -->
+                    <div id="showMoreContainer" style="text-align: center; margin-top: 20px; display: none;">
+                        <button type="button" class="btn btn-outline-primary" onclick="showMoreResults()">
+                            <i class="fas fa-plus-circle"></i> Show More Recipes
+                        </button>
+                    </div>
+                </div>
+                
+            </div>
+            
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-success" onclick="findMatchingRecipes()">
+                    <i class="fas fa-search"></i> Find Recipes
+                </button>
+            </div>
+        </div>
+    </div>
 </div>
 
 {% endif %}
@@ -1865,6 +2157,328 @@ $(document).ready(function() {
         }, 100);
     });
 });
+
+// ==================== INGREDIENT MATCHER FUNCTIONALITY ====================
+
+// Global variables for ingredient matcher
+var allResults = [];
+var displayedResults = 0;
+var RESULTS_PER_PAGE = 10;
+
+// Open the ingredient matcher modal
+function openIngredientMatcher() {
+    // Load saved selections from localStorage
+    loadSavedSelections();
+    
+    // Update the count
+    updateSelectedCount();
+    
+    // Clear previous results
+    document.getElementById('matchingResultsArea').style.display = 'none';
+    document.getElementById('matchingResultsContent').innerHTML = '';
+    allResults = [];
+    displayedResults = 0;
+    
+    // Open modal - Bootstrap 5 way (no jQuery needed)
+    const modal = new bootstrap.Modal(document.getElementById('ingredientMatcherModal'));
+    modal.show();
+}
+
+// Toggle category collapse/expand
+function toggleCategory(categoryId) {
+    const categoryDiv = document.getElementById(categoryId);
+    const icon = document.getElementById('icon-' + categoryId);
+    
+    if (categoryDiv.classList.contains('collapsed')) {
+        categoryDiv.classList.remove('collapsed');
+        icon.classList.remove('rotated');
+    } else {
+        categoryDiv.classList.add('collapsed');
+        icon.classList.add('rotated');
+    }
+}
+
+// Filter ingredients by search box
+function filterIngredientsBySearch() {
+    const searchTerm = document.getElementById('ingredientSearchBox').value.toLowerCase();
+    const ingredientItems = document.querySelectorAll('.ingredient-checkbox-item');
+    const categories = document.querySelectorAll('.ingredient-category-card');
+    
+    if (searchTerm === '') {
+        // Show all
+        ingredientItems.forEach(item => {
+            item.style.display = 'flex';
+        });
+        categories.forEach(cat => {
+            cat.style.display = 'block';
+        });
+    } else {
+        // Filter
+        ingredientItems.forEach(item => {
+            const ingredientName = item.getAttribute('data-ingredient-name');
+            if (ingredientName.includes(searchTerm)) {
+                item.style.display = 'flex';
+                // Show parent category
+                const parentCategory = item.closest('.ingredient-category-card');
+                if (parentCategory) {
+                    parentCategory.style.display = 'block';
+                    // Expand category to show results
+                    const categoryContent = parentCategory.querySelector('.category-ingredients');
+                    if (categoryContent) {
+                        categoryContent.classList.remove('collapsed');
+                    }
+                    const icon = parentCategory.querySelector('.toggle-icon');
+                    if (icon) {
+                        icon.classList.remove('rotated');
+                    }
+                }
+            } else {
+                item.style.display = 'none';
+            }
+        });
+        
+        // Hide categories with no visible ingredients
+        categories.forEach(cat => {
+            const visibleItems = cat.querySelectorAll('.ingredient-checkbox-item[style*="display: flex"]');
+            if (visibleItems.length === 0) {
+                cat.style.display = 'none';
+            }
+        });
+    }
+}
+
+// Select all in a category
+function selectAllInCategory(categoryName) {
+    const checkboxes = document.querySelectorAll(`.ingredient-checkbox[data-category="${categoryName}"]`);
+    checkboxes.forEach(cb => {
+        cb.checked = true;
+    });
+    updateSelectedCount();
+    saveSelections();
+}
+
+// Clear all selections
+function clearAllSelections() {
+    const checkboxes = document.querySelectorAll('.ingredient-checkbox');
+    checkboxes.forEach(cb => {
+        cb.checked = false;
+    });
+    updateSelectedCount();
+    saveSelections();
+}
+
+// Update selected ingredient count
+function updateSelectedCount() {
+    const checkboxes = document.querySelectorAll('.ingredient-checkbox:checked');
+    const count = checkboxes.length;
+    document.getElementById('selectedIngredientCount').textContent = `${count} ingredient${count !== 1 ? 's' : ''} selected`;
+}
+
+// Save selections to localStorage
+function saveSelections() {
+    const checkboxes = document.querySelectorAll('.ingredient-checkbox:checked');
+    const selectedIds = Array.from(checkboxes).map(cb => cb.value);
+    localStorage.setItem('selectedIngredients', JSON.stringify(selectedIds));
+}
+
+// Load saved selections from localStorage
+function loadSavedSelections() {
+    const savedSelections = localStorage.getItem('selectedIngredients');
+    if (savedSelections) {
+        const selectedIds = JSON.parse(savedSelections);
+        selectedIds.forEach(id => {
+            const checkbox = document.querySelector(`.ingredient-checkbox[value="${id}"]`);
+            if (checkbox) {
+                checkbox.checked = true;
+            }
+        });
+    }
+}
+
+// Find matching recipes (AJAX call to backend)
+function findMatchingRecipes() {
+    const checkboxes = document.querySelectorAll('.ingredient-checkbox:checked');
+    const selectedIds = Array.from(checkboxes).map(cb => cb.value);
+    
+    if (selectedIds.length === 0) {
+        alert('Please select at least one ingredient!');
+        return;
+    }
+    
+    // Save selections
+    saveSelections();
+    
+    // Show loading state
+    const resultsArea = document.getElementById('matchingResultsArea');
+    const resultsContent = document.getElementById('matchingResultsContent');
+    resultsArea.style.display = 'block';
+    resultsContent.innerHTML = '<div style="text-align: center; padding: 40px;"><i class="fas fa-spinner fa-spin fa-3x text-primary"></i><p class="mt-3">Finding matching recipes...</p></div>';
+    
+    // Make AJAX call
+    fetch('/recipes/find-matching/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({
+            ingredient_ids: selectedIds
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            allResults = data.all_results;
+            displayedResults = 0;
+            
+            if (allResults.length === 0) {
+                resultsContent.innerHTML = `
+                    <div style="text-align: center; padding: 40px;">
+                        <i class="fas fa-utensils fa-4x text-muted mb-3"></i>
+                        <h5>No Matching Recipes Found</h5>
+                        <p class="text-muted">Try selecting different ingredients or fewer ingredients.</p>
+                    </div>
+                `;
+                document.getElementById('showMoreContainer').style.display = 'none';
+            } else {
+                resultsContent.innerHTML = '';
+                showMoreResults(); // Show first batch
+            }
+        } else {
+            resultsContent.innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle"></i> Error: ${data.error}
+                </div>
+            `;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        resultsContent.innerHTML = `
+            <div class="alert alert-danger">
+                <i class="fas fa-exclamation-triangle"></i> Error connecting to server. Please try again.
+            </div>
+        `;
+    });
+}
+
+// Show more results (pagination)
+function showMoreResults() {
+    const resultsContent = document.getElementById('matchingResultsContent');
+    const showMoreContainer = document.getElementById('showMoreContainer');
+    
+    const start = displayedResults;
+    const end = Math.min(start + RESULTS_PER_PAGE, allResults.length);
+    
+    for (let i = start; i < end; i++) {
+        const recipe = allResults[i];
+        resultsContent.innerHTML += createRecipeMatchCard(recipe);
+    }
+    
+    displayedResults = end;
+    
+    // Show/hide "Show More" button
+    if (displayedResults < allResults.length) {
+        showMoreContainer.style.display = 'block';
+    } else {
+        showMoreContainer.style.display = 'none';
+    }
+}
+
+// Create recipe match card HTML
+function createRecipeMatchCard(recipe) {
+    // Determine match class
+    let matchClass = 'okay-match';
+    if (recipe.match_percentage === 100) {
+        matchClass = 'perfect-match';
+    } else if (recipe.match_percentage >= 80) {
+        matchClass = 'good-match';
+    }
+    
+    // Badge color
+    let badgeGradient = 'linear-gradient(135deg, #28a745 0%, #20c997 100%)';
+    if (recipe.match_percentage >= 90) {
+        badgeGradient = 'linear-gradient(135deg, #28a745 0%, #20c997 100%)'; // Green
+    } else if (recipe.match_percentage >= 70) {
+        badgeGradient = 'linear-gradient(135deg, #ffc107 0%, #ff9800 100%)'; // Orange
+    } else {
+        badgeGradient = 'linear-gradient(135deg, #17a2b8 0%, #138496 100%)'; // Blue
+    }
+    
+    // Image HTML
+    let imageHtml;
+    if (recipe.recipe_image) {
+        imageHtml = `<img src="${recipe.recipe_image}" class="recipe-match-image" alt="${recipe.recipe_name}">`;
+    } else {
+        imageHtml = `<div class="recipe-match-image-placeholder"><i class="fas fa-utensils"></i></div>`;
+    }
+    
+    // Missing ingredients HTML
+    let missingHtml = '';
+    if (recipe.missing_ingredients.length === 0) {
+        missingHtml = '<span class="perfect-match-badge">🎉 You have everything!</span>';
+    } else {
+        missingHtml = '<div class="missing-ingredients"><strong>Missing:</strong> ';
+        recipe.missing_ingredients.forEach(missing => {
+            const proteinClass = missing.is_protein ? ' protein' : '';
+            missingHtml += `<span class="missing-badge${proteinClass}">${missing.name}</span>`;
+        });
+        missingHtml += '</div>';
+    }
+    
+    // Meta info
+    const prepTime = recipe.prep_time ? `<span><i class="fas fa-clock"></i> ${recipe.prep_time}m</span>` : '';
+    const cookTime = recipe.cook_time ? `<span><i class="fas fa-fire"></i> ${recipe.cook_time}m</span>` : '';
+    const difficulty = recipe.difficulty_level ? `<span><i class="fas fa-signal"></i> ${recipe.difficulty_level}</span>` : '';
+    
+    return `
+        <div class="recipe-match-card ${matchClass}">
+            <div class="match-badge" style="background: ${badgeGradient};">
+                ${recipe.match_percentage}%
+            </div>
+            
+            ${imageHtml}
+            
+            <div class="recipe-match-info">
+                <h5 class="recipe-match-title">${recipe.recipe_name}</h5>
+                
+                <div class="match-stats">
+                    <span><i class="fas fa-check-circle" style="color: #28a745;"></i> You have ${recipe.matched_count}/${recipe.total_ingredients} ingredients</span>
+                    ${prepTime}
+                    ${cookTime}
+                    ${difficulty}
+                </div>
+                
+                ${missingHtml}
+            </div>
+            
+            <div>
+                <a href="/recipes/view/${recipe.recipe_id}/" class="btn btn-success" target="_blank">
+                    <i class="fas fa-eye"></i> View Recipe
+                </a>
+            </div>
+        </div>
+    `;
+}
+
+// Get CSRF token from cookies
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+
+// ==================== END INGREDIENT MATCHER ====================
+
 </script>
 
 {% endblock %}

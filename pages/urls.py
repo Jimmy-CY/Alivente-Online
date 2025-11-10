@@ -229,5 +229,6 @@ urlpatterns = [
     path('meal_plans/<int:meal_plan_id>/delete/', views.delete_meal_plan, name='delete_meal_plan'),
     path('meal_plans/<int:meal_plan_id>/shopping_list/', views.meal_plan_shopping_list, name='meal_plan_shopping_list'),
     path('meal_plans/send_shopping_list/', views.send_meal_plan_shopping_list, name='send_meal_plan_shopping_list'),
+    path('recipes/find-matching/', views.find_matching_recipes, name='find_matching_recipes'),
 
 ]

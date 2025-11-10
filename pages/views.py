@@ -73,7 +73,7 @@ from .models import (
     MealPlan,
     MealPlanDay,
     MealPlanRecipe,
-    UnitConversion
+    UnitConversion,
     )
 from decimal import Decimal
 from fractions import Fraction
@@ -8963,6 +8963,7 @@ def recipe_management(request):
         'letter_data': letter_data,
         'has_next': page_obj.has_next(),
         'next_page': page_obj.next_page_number() if page_obj.has_next() else None,
+        'ingredient_categories': IngredientCategory.objects.prefetch_related('ingredient_set').all().order_by('name'),  # ← ADD THIS LINE
     }
     
     return render(request, 'recipe_management.html', context)
@@ -10621,3 +10622,141 @@ def add_preparation_ajax(request):
         
     except Exception as e:
         return JsonResponse({'success': False, 'message': str(e)})
+
+@login_required
+@require_POST
+def find_matching_recipes(request):
+    """
+    Find recipes that match selected ingredients with smart weighting.
+    
+    Logic:
+    1. Auto-include herbs/spices, oil, water
+    2. Calculate match % for each recipe
+    3. Weight protein ingredients heavily
+    4. Return top matches sorted by %
+    """
+    try:
+        # Get selected ingredient IDs from frontend
+        data = json.loads(request.body)
+        selected_ingredient_ids = data.get('ingredient_ids', [])
+        
+        # Convert to integers
+        selected_ingredient_ids = [int(id) for id in selected_ingredient_ids]
+        
+        # ========== AUTO-INCLUDE COMMON INGREDIENTS ==========
+        # Get all ingredients in "Herbs & Spices" category
+        herbs_spices_category = IngredientCategory.objects.filter(
+            name='Herbs & Spices'
+        ).first()
+        
+        if herbs_spices_category:
+            herbs_spices_ids = list(
+                Ingredient.objects.filter(
+                    category=herbs_spices_category
+                ).values_list('ingredient_id', flat=True)
+            )
+            selected_ingredient_ids.extend(herbs_spices_ids)
+        
+        # Auto-include Oil and Water (by name search)
+        common_items = Ingredient.objects.filter(
+            name__in=['Oil', 'Olive Oil', 'Vegetable Oil', 'Water']
+        ).values_list('ingredient_id', flat=True)
+        selected_ingredient_ids.extend(list(common_items))
+        
+        # Remove duplicates
+        selected_ingredient_ids = list(set(selected_ingredient_ids))
+        
+        # ========== CHECK IF USER SELECTED ANY PROTEIN ==========
+        # Get all proteins from "Meat", "Poultry", "Fish & Seafood" categories
+        protein_categories = IngredientCategory.objects.filter(
+            name__in=['Meat', 'Poultry', 'Fish & Seafood']
+        )
+        protein_ingredient_ids = list(
+            Ingredient.objects.filter(
+                category__in=protein_categories
+            ).values_list('ingredient_id', flat=True)
+        )
+        
+        # Check if user selected any protein
+        user_selected_protein = any(
+            ing_id in selected_ingredient_ids 
+            for ing_id in protein_ingredient_ids
+        )
+        
+        # ========== FIND MATCHING RECIPES ==========
+        recipes = Recipe.objects.prefetch_related(
+            'recipe_ingredients__ingredient',
+            'recipe_ingredients__ingredient__category'
+        ).all()
+        
+        results = []
+        
+        for recipe in recipes:
+            required_ingredients = recipe.recipe_ingredients.all()
+            total_ingredients = required_ingredients.count()
+            
+            if total_ingredients == 0:
+                continue  # Skip recipes with no ingredients
+            
+            matched_count = 0
+            weighted_matched = 0
+            weighted_total = 0
+            missing_ingredients = []
+            
+            for req_ing in required_ingredients:
+                ing_id = req_ing.ingredient.ingredient_id
+                is_protein = ing_id in protein_ingredient_ids
+                
+                # Assign weights
+                if user_selected_protein and is_protein:
+                    weight = 3.0  # Protein is 3x more important
+                else:
+                    weight = 1.0
+                
+                weighted_total += weight
+                
+                # Check if user has this ingredient
+                if ing_id in selected_ingredient_ids:
+                    matched_count += 1
+                    weighted_matched += weight
+                else:
+                    missing_ingredients.append({
+                        'name': req_ing.ingredient.name,
+                        'is_protein': is_protein
+                    })
+            
+            # Calculate weighted match percentage
+            match_percentage = (weighted_matched / weighted_total * 100) if weighted_total > 0 else 0
+            
+            # Only include recipes with at least 50% match
+            if match_percentage >= 50:
+                results.append({
+                    'recipe_id': recipe.recipe_id,
+                    'recipe_name': recipe.recipe_name,
+                    'recipe_image': recipe.recipe_image.url if recipe.recipe_image else None,
+                    'match_percentage': round(match_percentage, 1),
+                    'matched_count': matched_count,
+                    'total_ingredients': total_ingredients,
+                    'missing_ingredients': missing_ingredients,
+                    'prep_time': recipe.prep_time,
+                    'cook_time': recipe.cook_time,
+                    'difficulty_level': recipe.difficulty_level
+                })
+        
+        # Sort by match percentage (highest first)
+        results.sort(key=lambda x: x['match_percentage'], reverse=True)
+        
+        # Return top 10 for initial display
+        # Frontend can request more with pagination
+        return JsonResponse({
+            'success': True,
+            'total_results': len(results),
+            'results': results[:10],  # Top 10
+            'all_results': results  # All results for "Show More"
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=400)
