@@ -991,7 +991,7 @@ tr.sortable-chosen {
                 {% elif mode == 'edit' %}Update Recipe
                 {% else %}Save Recipe to Collection{% endif %}
             </button>
-            <a href="{% url 'import_recipe' %}" class="btn btn-secondary btn-lg">
+            <a href="{% if mode == 'import' %}{% url 'import_recipe' %}{% else %}{% url 'recipe_management' %}{% endif %}" class="btn btn-secondary btn-lg">
                 <i class="fas fa-times"></i> Cancel
             </a>
         </div>

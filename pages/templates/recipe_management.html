@@ -333,6 +333,22 @@
     box-shadow: 0 2px 4px rgba(40, 167, 69, 0.3);
 }
 
+/* Top button bar mobile styles */
+.top-button-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.top-button-group {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
 /* View Toggle Styles */
 .view-toggle-container {
     display: flex;
@@ -771,6 +787,22 @@
 
 /* Responsive Design */
 @media (max-width: 768px) {
+    /* Top button bar */
+    .top-button-bar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .top-button-group {
+        width: 100%;
+        flex-direction: column;
+    }
+    
+    .top-button-group .btn {
+        width: 100%;
+        justify-content: center;
+    }
+    
     .recipe-filter-grid {
         grid-template-columns: 1fr;
     }
@@ -838,8 +870,8 @@
 </script>
 {% endfor %}
 
-<div style="display: flex; justify-content: space-between; align-items: center;">
-    <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+<div class="top-button-bar">
+    <div class="top-button-group">
         <a href="{% url 'create_recipe' %}" class="btn btn-success">
             <i class="fas fa-plus"></i> Add New Recipe
         </a>

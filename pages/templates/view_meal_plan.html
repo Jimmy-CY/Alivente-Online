@@ -5,224 +5,285 @@
 
 <style>
 .meal-plan-container {
-    max-width: 1200px;
+    max-width: 1400px;
     margin: 0 auto;
 }
 
 .page-header {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
-    padding: 25px 40px;
-    border-radius: 12px;
-    margin-bottom: 25px;
+    padding: 12px 20px;
+    border-radius: 8px;
+    margin-bottom: 15px;
     display: flex;
     justify-content: space-between;
     align-items: center;
 }
 
 .page-header h1 {
-    font-size: 28px;
+    font-size: 20px;
     font-weight: bold;
     margin: 0;
 }
 
 .header-meta {
     display: flex;
-    gap: 25px;
-    font-size: 15px;
+    gap: 15px;
+    font-size: 13px;
     opacity: 0.95;
 }
 
 .header-meta span {
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: 5px;
 }
 
 .action-bar {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 25px;
+    margin-bottom: 15px;
     gap: 10px;
     flex-wrap: wrap;
 }
 
 .action-buttons {
     display: flex;
-    gap: 8px;
+    gap: 6px;
     flex-wrap: wrap;
 }
 
 .action-buttons .btn {
-    padding: 8px 18px;
-    font-size: 14px;
-    border-radius: 8px;
+    padding: 6px 14px;
+    font-size: 13px;
+    border-radius: 6px;
     display: inline-flex;
     align-items: center;
-    gap: 6px;
+    gap: 5px;
+}
+
+/* Two-column grid for days */
+.days-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+    margin-bottom: 20px;
 }
 
 .day-card {
     background: white;
-    border-radius: 12px;
-    padding: 20px 25px;
-    margin-bottom: 20px;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+    border-radius: 8px;
+    padding: 12px 15px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
 }
 
 .day-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 18px;
-    padding-bottom: 12px;
+    margin-bottom: 10px;
+    padding-bottom: 8px;
     border-bottom: 2px solid #667eea;
 }
 
 .day-header-left h2 {
-    font-size: 20px;
+    font-size: 16px;
     font-weight: 700;
     color: #667eea;
     margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
 }
 
 .day-header-right {
     display: flex;
     align-items: center;
-    gap: 20px;
+    gap: 12px;
+    font-size: 12px;
 }
 
 .day-date {
     color: #6c757d;
-    font-size: 14px;
 }
 
 .recipe-count {
     color: #667eea;
-    font-size: 13px;
     font-weight: 600;
 }
 
+/* Clickable recipe card */
 .recipe-card {
     background: #f8f9fa;
     border: 1px solid #dee2e6;
-    border-radius: 8px;
-    padding: 12px 16px;
-    margin-bottom: 12px;
+    border-radius: 6px;
+    padding: 8px 12px;
+    margin-bottom: 8px;
     display: flex;
-    gap: 16px;
+    gap: 12px;
     align-items: center;
-    transition: transform 0.2s, box-shadow 0.2s;
+    transition: all 0.2s;
+    text-decoration: none;
+    color: inherit;
 }
 
 .recipe-card:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+    border-color: #667eea;
+    text-decoration: none;
+    color: inherit;
 }
 
 .recipe-image {
-    width: 60px;
-    height: 60px;
+    width: 50px;
+    height: 50px;
     object-fit: cover;
-    border-radius: 6px;
+    border-radius: 5px;
     flex-shrink: 0;
 }
 
 .recipe-image-placeholder {
-    width: 60px;
-    height: 60px;
+    width: 50px;
+    height: 50px;
     background: #dee2e6;
-    border-radius: 6px;
+    border-radius: 5px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 24px;
+    font-size: 20px;
     color: #6c757d;
     flex-shrink: 0;
 }
 
 .recipe-info {
     flex: 1;
+    min-width: 0;
 }
 
 .recipe-name {
-    font-size: 16px;
+    font-size: 14px;
     font-weight: 600;
     color: #2c3e50;
-    margin-bottom: 6px;
+    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .recipe-meta {
     display: flex;
-    gap: 12px;
+    gap: 10px;
     flex-wrap: wrap;
-    margin-bottom: 6px;
+    margin-bottom: 4px;
 }
 
 .recipe-meta span {
     color: #6c757d;
-    font-size: 12px;
-}
-
-.recipe-meta i {
-    margin-right: 4px;
+    font-size: 11px;
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
 }
 
 .recipe-tags {
     display: flex;
-    gap: 6px;
+    gap: 4px;
     flex-wrap: wrap;
 }
 
 .recipe-tag {
     background: #667eea;
     color: white;
-    padding: 3px 10px;
-    border-radius: 10px;
-    font-size: 11px;
-}
-
-.recipe-actions {
-    display: flex;
-    gap: 8px;
-}
-
-.btn-view-recipe {
-    background: #28a745;
-    color: white;
-    padding: 6px 14px;
-    border-radius: 5px;
-    text-decoration: none;
-    font-size: 13px;
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-}
-
-.btn-view-recipe:hover {
-    background: #218838;
-    color: white;
-    text-decoration: none;
+    padding: 2px 8px;
+    border-radius: 8px;
+    font-size: 10px;
 }
 
 .empty-day {
     text-align: center;
-    padding: 30px;
+    padding: 20px;
     color: #6c757d;
+    font-size: 13px;
 }
 
 .empty-day i {
-    font-size: 40px;
+    font-size: 30px;
     opacity: 0.3;
-    margin-bottom: 8px;
+    margin-bottom: 5px;
+}
+
+/* Mobile responsive - stack to single column */
+@media (max-width: 768px) {
+    .days-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    /* Top action bar */
+    .action-bar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .action-buttons {
+        width: 100%;
+        flex-direction: column;
+    }
+    
+    .action-buttons .btn {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .page-header {
+        flex-direction: column;
+        gap: 10px;
+        text-align: center;
+        padding: 15px;
+    }
+    
+    .header-meta {
+        flex-direction: column;
+        gap: 5px;
+    }
+    
+    /* Recipe cards on mobile */
+    .recipe-card {
+        padding: 6px 10px;
+    }
+    
+    .recipe-image,
+    .recipe-image-placeholder {
+        width: 45px;
+        height: 45px;
+    }
+    
+    .recipe-name {
+        font-size: 13px;
+    }
+    
+    .recipe-meta span {
+        font-size: 10px;
+    }
+    
+    .recipe-tag {
+        font-size: 9px;
+        padding: 2px 6px;
+    }
+    
+    .day-header-left h2 {
+        font-size: 14px;
+    }
+    
+    .day-header-right {
+        font-size: 11px;
+    }
 }
 
 /* Print Styles */
 @media print {
-    .action-bar,
-    .recipe-actions,
-    .btn-view-recipe {
+    .action-bar {
         display: none !important;
     }
     
@@ -234,6 +295,11 @@
         background: white !important;
         color: black !important;
         border: 2px solid #667eea;
+    }
+    
+    .days-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
     }
     
     .day-card {
@@ -301,84 +367,81 @@
         </div>
     </div>
 
-    <!-- Days and Recipes -->
-    {% for day in days %}
-    <div class="day-card">
-        <div class="day-header">
-            <div class="day-header-left">
-                <h2><i class="fas fa-calendar-day"></i> {{ day.day_name }}</h2>
+    <!-- Two-column Days Grid -->
+    <div class="days-grid">
+        {% for day in days %}
+        <div class="day-card">
+            <div class="day-header">
+                <div class="day-header-left">
+                    <h2>
+                        <i class="fas fa-calendar-day"></i> 
+                        {{ day.day_name|slice:":3" }} {{ day.formatted_date|date:"M d" }}
+                    </h2>
+                </div>
+                <div class="day-header-right">
+                    <span class="recipe-count">{{ day.recipes.count }} recipe{{ day.recipes.count|pluralize }}</span>
+                </div>
             </div>
-            <div class="day-header-right">
-                <span class="day-date">{{ day.formatted_date }}</span>
-                <span class="recipe-count">{{ day.recipes.count }} recipe{{ day.recipes.count|pluralize }}</span>
-            </div>
-        </div>
-        
-        {% if day.recipes.all %}
-            {% for meal_recipe in day.recipes.all %}
-            <div class="recipe-card">
-                {% if meal_recipe.recipe.recipe_image %}
-                <img src="{{ meal_recipe.recipe.recipe_image.url }}" 
-                     alt="{{ meal_recipe.recipe.recipe_name }}" 
-                     class="recipe-image">
-                {% else %}
-                <div class="recipe-image-placeholder">
+            
+            {% if day.recipes.all %}
+                {% for meal_recipe in day.recipes.all %}
+                <a href="{% url 'view_recipe' meal_recipe.recipe.recipe_id %}" 
+                   class="recipe-card">
+                    {% if meal_recipe.recipe.recipe_image %}
+                    <img src="{{ meal_recipe.recipe.recipe_image.url }}" 
+                         alt="{{ meal_recipe.recipe.recipe_name }}" 
+                         class="recipe-image">
+                    {% else %}
+                    <div class="recipe-image-placeholder">
+                        <i class="fas fa-utensils"></i>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="recipe-info">
+                        <h3 class="recipe-name">{{ meal_recipe.recipe.recipe_name }}</h3>
+                        
+                        <div class="recipe-meta">
+                            <span>
+                                <i class="fas fa-users"></i>
+                                {{ meal_recipe.servings }}
+                            </span>
+                            
+                            {% if meal_recipe.recipe.total_time %}
+                            <span>
+                                <i class="fas fa-clock"></i>
+                                {{ meal_recipe.recipe.total_time }}min
+                            </span>
+                            {% endif %}
+                            
+                            {% if meal_recipe.recipe.difficulty_level %}
+                            <span>
+                                <i class="fas fa-signal"></i>
+                                {{ meal_recipe.recipe.difficulty_level }}
+                            </span>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="recipe-tags">
+                            {% for course in meal_recipe.recipe.courses.all %}
+                            <span class="recipe-tag">{{ course.name }}</span>
+                            {% endfor %}
+                            
+                            {% for category in meal_recipe.recipe.categories.all %}
+                            <span class="recipe-tag" style="background: #6f42c1;">{{ category.name }}</span>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </a>
+                {% endfor %}
+            {% else %}
+                <div class="empty-day">
                     <i class="fas fa-utensils"></i>
+                    <p>No meals planned</p>
                 </div>
-                {% endif %}
-                
-                <div class="recipe-info">
-                    <h3 class="recipe-name">{{ meal_recipe.recipe.recipe_name }}</h3>
-                    
-                    <div class="recipe-meta">
-                        <span>
-                            <i class="fas fa-users"></i>
-                            {{ meal_recipe.servings }} servings
-                        </span>
-                        
-                        {% if meal_recipe.recipe.total_time %}
-                        <span>
-                            <i class="fas fa-clock"></i>
-                            {{ meal_recipe.recipe.total_time }} min
-                        </span>
-                        {% endif %}
-                        
-                        {% if meal_recipe.recipe.difficulty_level %}
-                        <span>
-                            <i class="fas fa-signal"></i>
-                            {{ meal_recipe.recipe.difficulty_level }}
-                        </span>
-                        {% endif %}
-                    </div>
-                    
-                    <div class="recipe-tags">
-                        {% for course in meal_recipe.recipe.courses.all %}
-                        <span class="recipe-tag">{{ course.name }}</span>
-                        {% endfor %}
-                        
-                        {% for category in meal_recipe.recipe.categories.all %}
-                        <span class="recipe-tag" style="background: #6f42c1;">{{ category.name }}</span>
-                        {% endfor %}
-                    </div>
-                </div>
-                
-                <div class="recipe-actions">
-                    <a href="{% url 'view_recipe' meal_recipe.recipe.recipe_id %}" 
-                       class="btn-view-recipe"
-                       target="_blank">
-                        <i class="fas fa-eye"></i> View
-                    </a>
-                </div>
-            </div>
-            {% endfor %}
-        {% else %}
-            <div class="empty-day">
-                <i class="fas fa-utensils"></i>
-                <p>No meals planned for this day</p>
-            </div>
-        {% endif %}
+            {% endif %}
+        </div>
+        {% endfor %}
     </div>
-    {% endfor %}
 
 </div>
 
@@ -457,8 +520,8 @@
                     <button type="submit" class="btn btn-info">
                         <i class="fas fa-copy"></i> Duplicate Meal Plan
                     </button>
-                </div>
-            </form>
+                </form>
+            </div>
         </div>
     </div>
 </div>

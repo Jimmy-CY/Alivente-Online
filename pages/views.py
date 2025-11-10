@@ -8990,9 +8990,7 @@ def view_recipe(request, recipe_id):
         ingredient.formatted_amount = format_quantity(ingredient.amount)
 
     # Get instructions
-    instructions = RecipeInstruction.objects.filter(recipe=recipe).order_by(
-        'instruction_group', 'step_number'
-    )
+    instructions = RecipeInstruction.objects.filter(recipe=recipe).order_by('step_number')
     
     context = {
         'recipe': recipe,
@@ -9326,11 +9324,11 @@ def edit_recipe(request, recipe_id):
                 RecipeInstruction.objects.bulk_create(instruction_objects)
             
             messages.success(request, f'Recipe "{recipe.recipe_name}" has been updated successfully!')
-            return redirect('view_recipe', recipe_id=recipe.recipe_id)
+            return redirect('recipe_management')
             
         except Exception as e:
             messages.error(request, f'Error updating recipe: {str(e)}')
-            return redirect('view_recipe', recipe_id=recipe.recipe_id)
+            return redirect('recipe_management')
     
     # ========== GET request - prepare data for editing ==========
     # OPTIMIZED: Use select_related to fetch related objects in one query

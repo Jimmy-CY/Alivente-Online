@@ -489,6 +489,90 @@
     border-top: 1px solid #dee2e6;
 }
 
+/* Mobile Responsive Styles */
+@media (max-width: 768px) {
+    /* Top button bar */
+    .recipe-detail-container > div:first-of-type {
+        flex-direction: column !important;
+        gap: 10px !important;
+    }
+    
+    .recipe-detail-container > div:first-of-type > div:first-child {
+        width: 100%;
+        flex-direction: column;
+    }
+    
+    .recipe-detail-container > div:first-of-type .btn {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    /* Recipe header - hide image on mobile */
+    .recipe-header {
+        flex-direction: column;
+        padding: 20px;
+    }
+    
+    .recipe-header-image {
+        display: none; /* Hide the large thumbnail on mobile */
+    }
+    
+    .recipe-header-content {
+        width: 100%;
+    }
+    
+    .recipe-title {
+        font-size: 24px;
+    }
+    
+    .recipe-meta-row {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .recipe-meta-box {
+        width: 100%;
+    }
+    
+    .recipe-tags {
+        gap: 6px;
+    }
+    
+    /* Recipe content grid */
+    .recipe-content {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    /* Ingredients columns on mobile */
+    .ingredients-container {
+        grid-template-columns: 1fr; /* Single column on mobile */
+    }
+    
+    /* Instructions */
+    .instruction-step {
+        flex-direction: column;
+        padding: 12px;
+    }
+    
+    .step-number {
+        align-self: flex-start;
+    }
+}
+
+/* Tablet view - smaller image but still visible */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .recipe-thumbnail,
+    .recipe-thumbnail-placeholder {
+        width: 150px;
+        height: 150px;
+    }
+    
+    .recipe-title {
+        font-size: 28px;
+    }
+}
+
 /* Print Styles */
 @media print {
     /* Only hide things when printing FROM the shopping list modal */
@@ -583,9 +667,9 @@
                 <i class="fas fa-print"></i> Print Recipe
             </button>
         </div>
-        <a href="{% url 'recipe_management' %}" class="btn btn-success" role="button">
-            <i class="fas fa-arrow-left"></i> Back to Recipes
-        </a>
+        <button onclick="window.history.back()" class="btn btn-success">
+            <i class="fas fa-arrow-left"></i> Back
+        </button>
     </div>
 
     <!-- Recipe Header with Image -->
@@ -876,7 +960,7 @@
                         <i class="fas fa-arrow-left"></i> Back
                     </button>
                     <button type="button" class="btn btn-secondary" data-dismiss="modal" id="cancelBtn">Cancel</button>
-                    <button type="button" class="btn btn-success" data-dismiss="modal" id="doneBtn" style="display: none;">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal" id="doneBtn" style="display: none;">
                         <i class="fas fa-check"></i> Done
                     </button>
                     <button type="button" class="btn btn-primary" onclick="nextStep()" id="nextBtn">
