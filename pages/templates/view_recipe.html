@@ -4,6 +4,65 @@
 {% block content %}
 
 <style>
+
+/* Hide elements when displayed in modal */
+{% if request.GET.modal %}
+/* Hide navigation, header, and action buttons in modal view */
+nav, 
+.navbar,
+.navbar-brand,
+header,
+.action-buttons {
+    display: none !important;
+}
+
+/* Hide the button group at the top of the recipe page */
+.recipe-detail-container > div:first-of-type {
+    display: none !important;
+}
+
+/* Hide the page title above the green box */
+.recipe-detail-container > h1,
+.recipe-detail-container > h2,
+body > .container > h1,
+body > .container > h2 {
+    display: none !important;
+}
+
+/* Remove extra top spacing */
+body {
+    padding-top: 0 !important;
+    margin-top: 0 !important;
+}
+
+.container {
+    padding-top: 0 !important;
+}
+
+.recipe-detail-container {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+}
+
+/* Move green header to the very top with no margin */
+.recipe-header {
+    padding: 25px !important;
+    margin-bottom: 20px !important;
+    margin-top: 0 !important;
+    border-radius: 0 !important;  /* Optional: remove rounded corners at top */
+}
+
+.recipe-title {
+    font-size: 28px !important;
+}
+
+.recipe-thumbnail,
+.recipe-thumbnail-placeholder {
+    width: 150px !important;
+    height: 150px !important;
+}
+{% endif %}
+
 /* Keep all your existing styles */
 .recipe-detail-container {
     max-width: 1200px;

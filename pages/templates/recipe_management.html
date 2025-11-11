@@ -916,18 +916,24 @@
 /* Recipe Match Card */
 .recipe-match-card {
     border: 2px solid #dee2e6;
-    border-radius: 8px;
-    padding: 15px;
+    border-radius: 12px;
+    padding: 0;
     margin-bottom: 15px;
     display: flex;
-    gap: 15px;
-    align-items: center;
-    transition: all 0.2s;
+    gap: 0;
+    align-items: stretch;
+    transition: all 0.3s;
+    cursor: pointer;
+    overflow: hidden;
+    position: relative;
+    text-decoration: none;
+    color: inherit;
 }
 
 .recipe-match-card:hover {
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.15);
+    transform: translateY(-4px);
+    text-decoration: none;
 }
 
 .recipe-match-card.perfect-match {
@@ -946,43 +952,59 @@
 }
 
 .match-badge {
+    position: absolute;
+    top: 12px;
+    right: 12px;
     background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
     color: white;
-    font-size: 24px;
+    font-size: 16px;
     font-weight: bold;
-    padding: 20px;
+    padding: 8px 12px;
     border-radius: 8px;
     text-align: center;
-    min-width: 80px;
+    min-width: 60px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    z-index: 10;
+}
+
+.recipe-match-image-container {
+    width: 180px;
+    height: 180px;
+    flex-shrink: 0;
+    position: relative;
 }
 
 .recipe-match-image {
-    width: 80px;
-    height: 80px;
-    border-radius: 8px;
+    width: 100%;
+    height: 100%;
     object-fit: cover;
 }
 
 .recipe-match-image-placeholder {
-    width: 80px;
-    height: 80px;
-    border-radius: 8px;
+    width: 100%;
+    height: 100%;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     display: flex;
     align-items: center;
     justify-content: center;
     color: white;
-    font-size: 32px;
+    font-size: 64px;
 }
 
 .recipe-match-info {
     flex: 1;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
 .recipe-match-title {
-    font-size: 18px;
+    font-size: 20px;
     font-weight: 600;
-    margin-bottom: 8px;
+    margin-bottom: 12px;
+    color: #2c3e50;
+    padding-right: 80px;  /* Add space for the badge */
 }
 
 .match-stats {
@@ -990,7 +1012,14 @@
     gap: 15px;
     font-size: 14px;
     color: #6c757d;
-    margin-bottom: 8px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+}
+
+.match-stats span {
+    display: flex;
+    align-items: center;
+    gap: 4px;
 }
 
 .missing-ingredients {
@@ -1001,7 +1030,7 @@
     display: inline-block;
     background: #fff3cd;
     color: #856404;
-    padding: 4px 8px;
+    padding: 4px 10px;
     border-radius: 4px;
     font-size: 12px;
     margin-right: 6px;
@@ -1017,10 +1046,83 @@
 .perfect-match-badge {
     background: #28a745;
     color: white;
-    padding: 4px 12px;
+    padding: 6px 14px;
     border-radius: 12px;
     font-size: 13px;
     font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Recipe View Modal Styling */
+#recipeViewModal .recipe-header-box {
+    padding: 20px 25px !important;
+    border-radius: 8px !important;
+}
+
+#recipeViewModal .recipe-header-box h2 {
+    font-size: 24px !important;
+    margin-bottom: 15px !important;
+}
+
+#recipeViewModal .recipe-meta-grid {
+    gap: 10px !important;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)) !important;
+}
+
+#recipeViewModal .recipe-meta-item {
+    padding: 10px 15px !important;
+}
+
+#recipeViewModal .recipe-meta-item .recipe-meta-label {
+    font-size: 11px !important;
+    margin-bottom: 4px !important;
+}
+
+#recipeViewModal .recipe-meta-item .recipe-meta-value {
+    font-size: 16px !important;
+}
+
+#recipeViewModal .recipe-header-image {
+    max-height: 180px !important;
+    border-radius: 8px !important;
+}
+
+#recipeViewModal .recipe-tags {
+    margin-top: 15px !important;
+}
+
+/* Mobile Responsive for Recipe Modal */
+@media (max-width: 768px) {
+    #recipeViewModal .modal-dialog {
+        max-width: 95% !important;
+        margin: 10px auto !important;
+    }
+    
+    #recipeViewModal .recipe-header-box {
+        padding: 15px !important;
+        flex-direction: column !important;
+    }
+    
+    #recipeViewModal .recipe-header-box h2 {
+        font-size: 20px !important;
+    }
+    
+    #recipeViewModal .recipe-meta-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+    
+    #recipeViewModal .recipe-header-image {
+        width: 100% !important;
+        max-height: 200px !important;
+        margin-bottom: 15px !important;
+    }
+    
+    #recipeViewModal .modal-body {
+        padding: 15px !important;
+        max-height: 80vh !important;
+    }
 }
 
 </style>
@@ -1466,7 +1568,7 @@
     <div class="modal-content">
       <div class="modal-header bg-danger text-white">
         <h5 class="modal-title" id="deleteModalLabel">Confirm Delete</h5>
-        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close" onclick="$('#deleteModal').modal('hide');">
+        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
@@ -1484,7 +1586,7 @@
           </div>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="$('#deleteModal').modal('hide');">Cancel</button>
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
           <button type="submit" class="btn btn-danger">
             <i class="fas fa-trash"></i> Delete Recipe
           </button>
@@ -1601,6 +1703,23 @@
                 <button type="button" class="btn btn-success" onclick="findMatchingRecipes()">
                     <i class="fas fa-search"></i> Find Recipes
                 </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recipe View Modal - iframe approach -->
+<div class="modal fade" id="recipeViewModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-xl" role="document" style="max-width: 900px;">
+        <div class="modal-content">
+            <div class="modal-header" style="border-bottom: none; padding: 8px 15px 0 15px; min-height: 40px;">
+                <h5 class="modal-title" id="recipeViewModalTitle" style="display: none;"></h5>
+                <button type="button" class="close" data-dismiss="modal" style="font-size: 28px; font-weight: 300; opacity: 0.5; position: absolute; right: 15px; top: 8px; z-index: 1000;">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" style="padding: 0;">
+                <iframe id="recipeViewIframe" style="width: 100%; height: 75vh; border: none;"></iframe>
             </div>
         </div>
     </div>
@@ -2147,15 +2266,23 @@ document.getElementById('recipeFilterForm').addEventListener('submit', function(
 function deleteRecipe(recipeId, recipeName) {
     document.getElementById('delete_recipe_id').value = recipeId;
     document.getElementById('deleteRecipeName').textContent = recipeName;
-    $('#deleteModal').modal('show');
+    const modal = new bootstrap.Modal(document.getElementById('deleteModal'));
+    modal.show();
 }
 
-$(document).ready(function() {
-    $('#deleteForm').on('submit', function() {
-        setTimeout(function() {
-            $('.modal').modal('hide');
-        }, 100);
-    });
+document.addEventListener('DOMContentLoaded', function() {
+    const deleteForm = document.getElementById('deleteForm');
+    if (deleteForm) {
+        deleteForm.addEventListener('submit', function() {
+            setTimeout(function() {
+                const modalElement = document.getElementById('deleteModal');
+                const modalInstance = bootstrap.Modal.getInstance(modalElement);
+                if (modalInstance) {
+                    modalInstance.hide();
+                }
+            }, 100);
+        });
+    }
 });
 
 // ==================== INGREDIENT MATCHER FUNCTIONALITY ====================
@@ -2416,7 +2543,7 @@ function createRecipeMatchCard(recipe) {
     // Missing ingredients HTML
     let missingHtml = '';
     if (recipe.missing_ingredients.length === 0) {
-        missingHtml = '<span class="perfect-match-badge">🎉 You have everything!</span>';
+        missingHtml = '<span class="perfect-match-badge"><i class="fas fa-check-circle"></i> You have everything!</span>';
     } else {
         missingHtml = '<div class="missing-ingredients"><strong>Missing:</strong> ';
         recipe.missing_ingredients.forEach(missing => {
@@ -2426,36 +2553,27 @@ function createRecipeMatchCard(recipe) {
         missingHtml += '</div>';
     }
     
-    // Meta info
-    const prepTime = recipe.prep_time ? `<span><i class="fas fa-clock"></i> ${recipe.prep_time}m</span>` : '';
-    const cookTime = recipe.cook_time ? `<span><i class="fas fa-fire"></i> ${recipe.cook_time}m</span>` : '';
-    const difficulty = recipe.difficulty_level ? `<span><i class="fas fa-signal"></i> ${recipe.difficulty_level}</span>` : '';
+    // Ingredient count with icon
+    const ingredientInfo = `<span><i class="fas fa-check-circle" style="color: #28a745;"></i> ${recipe.matched_count}/${recipe.total_ingredients} ingredients</span>`;
     
     return `
-        <div class="recipe-match-card ${matchClass}">
+        <div class="recipe-match-card ${matchClass}" onclick="openRecipeInModal(${recipe.recipe_id}, '${recipe.recipe_name.replace(/'/g, "\\'")}')">
             <div class="match-badge" style="background: ${badgeGradient};">
                 ${recipe.match_percentage}%
             </div>
             
-            ${imageHtml}
+            <div class="recipe-match-image-container">
+                ${imageHtml}
+            </div>
             
             <div class="recipe-match-info">
                 <h5 class="recipe-match-title">${recipe.recipe_name}</h5>
                 
                 <div class="match-stats">
-                    <span><i class="fas fa-check-circle" style="color: #28a745;"></i> You have ${recipe.matched_count}/${recipe.total_ingredients} ingredients</span>
-                    ${prepTime}
-                    ${cookTime}
-                    ${difficulty}
+                    ${ingredientInfo}
                 </div>
                 
                 ${missingHtml}
-            </div>
-            
-            <div>
-                <a href="/recipes/view/${recipe.recipe_id}/" class="btn btn-success" target="_blank">
-                    <i class="fas fa-eye"></i> View Recipe
-                </a>
             </div>
         </div>
     `;
@@ -2478,6 +2596,21 @@ function getCookie(name) {
 }
 
 // ==================== END INGREDIENT MATCHER ====================
+
+// Open recipe in iframe modal
+function openRecipeInModal(recipeId, recipeName) {
+    console.log('🎯 Opening recipe in iframe:', recipeId);
+    
+    // Set modal title
+    document.getElementById('recipeViewModalTitle').textContent = recipeName;
+    
+    // Set iframe source with modal parameter
+    document.getElementById('recipeViewIframe').src = `/view_recipe/${recipeId}/?modal=1`;
+    
+    // Open modal
+    const modal = new bootstrap.Modal(document.getElementById('recipeViewModal'));
+    modal.show();
+}
 
 </script>
 

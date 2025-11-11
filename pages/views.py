@@ -10727,24 +10727,35 @@ def find_matching_recipes(request):
             
             # Calculate weighted match percentage
             match_percentage = (weighted_matched / weighted_total * 100) if weighted_total > 0 else 0
-            
-            # Only include recipes with at least 50% match
-            if match_percentage >= 50:
-                results.append({
-                    'recipe_id': recipe.recipe_id,
-                    'recipe_name': recipe.recipe_name,
-                    'recipe_image': recipe.recipe_image.url if recipe.recipe_image else None,
-                    'match_percentage': round(match_percentage, 1),
-                    'matched_count': matched_count,
-                    'total_ingredients': total_ingredients,
-                    'missing_ingredients': missing_ingredients,
-                    'prep_time': recipe.prep_time,
-                    'cook_time': recipe.cook_time,
-                    'difficulty_level': recipe.difficulty_level
-                })
-        
-        # Sort by match percentage (highest first)
-        results.sort(key=lambda x: x['match_percentage'], reverse=True)
+
+            # Store ALL recipes with their match percentages (no filtering yet)
+            results.append({
+                'recipe_id': recipe.recipe_id,
+                'recipe_name': recipe.recipe_name,
+                'recipe_image': recipe.recipe_image.url if recipe.recipe_image else None,
+                'match_percentage': round(match_percentage, 1),
+                'matched_count': matched_count,
+                'total_ingredients': total_ingredients,
+                'missing_ingredients': missing_ingredients,
+                'prep_time': recipe.prep_time,
+                'cook_time': recipe.cook_time,
+                'difficulty_level': recipe.difficulty_level
+            })
+
+            # Sort by match percentage (highest first)
+            results.sort(key=lambda x: x['match_percentage'], reverse=True)
+
+            # SMART FILTERING LOGIC
+            # If we have 5+ recipes with ≥50% match, use 50% threshold
+            # Otherwise, take top 5 recipes regardless of percentage
+            recipes_above_50 = [r for r in results if r['match_percentage'] >= 50]
+
+            if len(recipes_above_50) >= 5:
+                # Use standard 50% threshold
+                results = recipes_above_50
+            else:
+                # Take top 5 recipes (or all if less than 5 total)
+                results = results[:5]
         
         # Return top 10 for initial display
         # Frontend can request more with pagination
