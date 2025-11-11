@@ -2294,10 +2294,13 @@ var RESULTS_PER_PAGE = 10;
 
 // Open the ingredient matcher modal
 function openIngredientMatcher() {
-    // Load saved selections from localStorage
-    loadSavedSelections();
+    // CLEAR all previous selections (don't load saved selections)
+    const checkboxes = document.querySelectorAll('.ingredient-checkbox');
+    checkboxes.forEach(cb => {
+        cb.checked = false;
+    });
     
-    // Update the count
+    // Update the count to 0
     updateSelectedCount();
     
     // Clear previous results
@@ -2306,7 +2309,11 @@ function openIngredientMatcher() {
     allResults = [];
     displayedResults = 0;
     
-    // Open modal - Bootstrap 5 way (no jQuery needed)
+    // Show ingredient selection area, hide results
+    document.getElementById('ingredientCategoriesContainer').parentElement.style.display = 'block';
+    document.querySelector('.modal-footer').style.display = 'flex';
+    
+    // Open modal
     const modal = new bootstrap.Modal(document.getElementById('ingredientMatcherModal'));
     modal.show();
 }
@@ -2432,14 +2439,59 @@ function findMatchingRecipes() {
         return;
     }
     
-    // Save selections
-    saveSelections();
+    console.log('Finding recipes with ingredients:', selectedIds);
     
-    // Show loading state
+    // Find and hide the ingredient selection section
+    const infoBox = document.querySelector('.alert.alert-info');
+    const searchBox = document.getElementById('ingredientSearch');
+    const categoriesContainer = document.getElementById('ingredientCategoriesContainer');
+
+    // Hide info box
+    if (infoBox) infoBox.style.display = 'none';
+
+    // Hide search box - try multiple approaches
+    if (searchBox) {
+        searchBox.style.display = 'none';
+        // Hide parent container
+        const searchParent = searchBox.closest('.form-group, .mb-3, div');
+        if (searchParent) searchParent.style.display = 'none';
+    }
+
+    // Also try to find search by placeholder
+    const searchByPlaceholder = document.querySelector('input[placeholder*="Search ingredients"]');
+    if (searchByPlaceholder) {
+        searchByPlaceholder.style.display = 'none';
+        const searchContainer = searchByPlaceholder.closest('.form-group, .mb-3, div');
+        if (searchContainer) searchContainer.style.display = 'none';
+    }
+
+    // Hide ALL buttons (quick select + clear all)
+    const allButtons = document.querySelectorAll('#ingredientMatcherModal .btn:not([data-dismiss])');
+    allButtons.forEach(btn => {
+        if (btn.textContent.includes('All Vegetables') || 
+            btn.textContent.includes('All Meat') || 
+            btn.textContent.includes('All Dairy') || 
+            btn.textContent.includes('All Grains') || 
+            btn.textContent.includes('Clear All')) {
+            btn.style.display = 'none';
+        }
+    });
+
+    // Hide categories container
+    if (categoriesContainer) categoriesContainer.style.display = 'none';
+
+    // Show and populate results area
     const resultsArea = document.getElementById('matchingResultsArea');
     const resultsContent = document.getElementById('matchingResultsContent');
+    
     resultsArea.style.display = 'block';
     resultsContent.innerHTML = '<div style="text-align: center; padding: 40px;"><i class="fas fa-spinner fa-spin fa-3x text-primary"></i><p class="mt-3">Finding matching recipes...</p></div>';
+    
+    // Update footer buttons
+    const modalFooter = document.querySelector('#ingredientMatcherModal .modal-footer');
+    if (modalFooter) {
+        modalFooter.innerHTML = '<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>';
+    }
     
     // Make AJAX call
     fetch('/recipes/find-matching/', {
@@ -2454,6 +2506,8 @@ function findMatchingRecipes() {
     })
     .then(response => response.json())
     .then(data => {
+        console.log('Received data:', data);
+        
         if (data.success) {
             allResults = data.all_results;
             displayedResults = 0;
