@@ -10241,9 +10241,15 @@ def meal_plan_shopping_list(request, meal_plan_id):
 
 def get_base_unit_for_ingredient(ingredient):
     """
-    Determine the best base unit for an ingredient based on its category.
+    Determine the best base unit for an ingredient.
+    Priority: 1) ingredient.default_unit, 2) category defaults, 3) gram
     Returns a MeasurementUnit object.
     """
+    # PRIORITY 1: Use ingredient's default_unit if set
+    if ingredient.default_unit:
+        return ingredient.default_unit
+    
+    # PRIORITY 2: Use category-based defaults
     base_unit_map = {
         'Vegetables': 'gram',
         'Fruits': 'gram',
@@ -10263,12 +10269,15 @@ def get_base_unit_for_ingredient(ingredient):
     else:
         preferred_unit_name = 'gram'
     
+    # PRIORITY 3: Try to get the preferred unit
     try:
         return MeasurementUnit.objects.get(name__iexact=preferred_unit_name)
     except MeasurementUnit.DoesNotExist:
+        # PRIORITY 4: Fallback to gram
         try:
             return MeasurementUnit.objects.get(name__iexact='gram')
         except:
+            # PRIORITY 5: Last resort - any unit
             return MeasurementUnit.objects.first()
 
 def convert_quantity(amount, from_unit, to_unit):
@@ -10341,6 +10350,285 @@ def save_unit_conversion(request):
             'message': f'Conversion saved: 1 {from_unit.name} = {mult} {to_unit.name}'
         })
         
+    except MeasurementUnit.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Unit not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+# ============================================
+# UNIT CONVERSION MANAGEMENT
+# ============================================
+
+@login_required
+def unit_conversions_management(request):
+    """Manage unit conversions"""
+    if not request.user.is_superuser:
+        messages.error(request, 'You do not have permission to access this page.')
+        return redirect('home')
+    
+    conversions = UnitConversion.objects.all().select_related('from_unit', 'to_unit').order_by('from_unit__name', 'to_unit__name')
+    all_units = MeasurementUnit.objects.all().order_by('name')
+    
+    context = {
+        'conversions': conversions,
+        'all_units': all_units,
+    }
+    
+    return render(request, 'unit_conversions_management.html', context)
+
+
+@login_required
+@require_POST
+def add_unit_conversion_manual(request):
+    """Add a new unit conversion"""
+    if not request.user.is_superuser:
+        return JsonResponse({'success': False, 'error': 'Permission denied'}, status=403)
+    
+    try:
+        data = json.loads(request.body)
+        
+        from_unit_id = data.get('from_unit_id')
+        to_unit_id = data.get('to_unit_id')
+        multiplier = data.get('multiplier')
+        
+        if not all([from_unit_id, to_unit_id, multiplier]):
+            return JsonResponse({'success': False, 'error': 'All fields are required'}, status=400)
+        
+        # Check if same unit
+        if from_unit_id == to_unit_id:
+            return JsonResponse({'success': False, 'error': 'Cannot convert a unit to itself'}, status=400)
+        
+        from_unit = MeasurementUnit.objects.get(measurement_unit_id=from_unit_id)
+        to_unit = MeasurementUnit.objects.get(measurement_unit_id=to_unit_id)
+        
+        mult = Decimal(multiplier)
+        if mult <= 0:
+            return JsonResponse({'success': False, 'error': 'Multiplier must be positive'}, status=400)
+        
+        # Check if already exists
+        if UnitConversion.objects.filter(from_unit=from_unit, to_unit=to_unit).exists():
+            return JsonResponse({'success': False, 'error': 'This conversion already exists'}, status=400)
+        
+        # Create conversion
+        conversion = UnitConversion.objects.create(
+            from_unit=from_unit,
+            to_unit=to_unit,
+            multiplier=mult
+        )
+        
+        return JsonResponse({
+            'success': True,
+            'conversion': {
+                'id': conversion.unit_conversion_id,
+                'from_unit': from_unit.name,
+                'to_unit': to_unit.name,
+                'multiplier': str(mult)
+            }
+        })
+        
+    except MeasurementUnit.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Unit not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@login_required
+@require_POST
+def edit_unit_conversion(request):
+    """Edit an existing unit conversion"""
+    if not request.user.is_superuser:
+        return JsonResponse({'success': False, 'error': 'Permission denied'}, status=403)
+    
+    try:
+        data = json.loads(request.body)
+        
+        conversion_id = data.get('conversion_id')
+        multiplier = data.get('multiplier')
+        
+        if not all([conversion_id, multiplier]):
+            return JsonResponse({'success': False, 'error': 'Missing required fields'}, status=400)
+        
+        conversion = UnitConversion.objects.get(unit_conversion_id=conversion_id)
+        
+        mult = Decimal(multiplier)
+        if mult <= 0:
+            return JsonResponse({'success': False, 'error': 'Multiplier must be positive'}, status=400)
+        
+        conversion.multiplier = mult
+        conversion.save()
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'Updated: 1 {conversion.from_unit.name} = {mult} {conversion.to_unit.name}'
+        })
+        
+    except UnitConversion.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Conversion not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+@login_required
+@require_POST
+def delete_unit_conversion(request):
+    """Delete a unit conversion"""
+    if not request.user.is_superuser:
+        return JsonResponse({'success': False, 'error': 'Permission denied'}, status=403)
+    
+    try:
+        data = json.loads(request.body)
+        conversion_id = data.get('conversion_id')
+        
+        if not conversion_id:
+            return JsonResponse({'success': False, 'error': 'Conversion ID required'}, status=400)
+        
+        conversion = UnitConversion.objects.get(unit_conversion_id=conversion_id)
+        conversion_text = f"1 {conversion.from_unit.name} = {conversion.multiplier} {conversion.to_unit.name}"
+        conversion.delete()
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'Deleted conversion: {conversion_text}'
+        })
+        
+    except UnitConversion.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Conversion not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+
+# ============================================
+# INGREDIENT BASE UNIT MANAGEMENT
+# ============================================
+
+@login_required
+def ingredient_base_units_management(request):
+    """Manage ingredient default units"""
+    if not request.user.is_superuser:
+        messages.error(request, 'You do not have permission to access this page.')
+        return redirect('home')
+    
+    # Get filter parameters
+    search_query = request.GET.get('search', '')
+    category_filter = request.GET.get('category', '')
+    
+    # Query ingredients with prefetch to avoid N+1 queries
+    ingredients = Ingredient.objects.select_related('category', 'default_unit').all()
+    
+    if search_query:
+        ingredients = ingredients.filter(name__icontains=search_query)
+    
+    if category_filter:
+        ingredients = ingredients.filter(category__ingredient_category_id=category_filter)
+    
+    ingredients = ingredients.order_by('name')
+    
+    # Load all units ONCE (not per ingredient)
+    all_units = list(MeasurementUnit.objects.all().order_by('name'))
+    
+    # Build a category-to-unit mapping ONCE to avoid repeated lookups
+    base_unit_map = {
+        'Vegetables': 'gram',
+        'Fruits': 'gram',
+        'Meat & Seafood': 'gram',
+        'Poultry': 'gram',
+        'Dairy': 'milliliter',
+        'Grains & Pasta': 'gram',
+        'Oils & Fats': 'milliliter',
+        'Baking': 'gram',
+        'Herbs & Spices': 'gram',
+        'Canned & Packaged': 'gram',
+        'Beverages': 'milliliter',
+    }
+    
+    # Create a lookup dictionary for unit names
+    unit_lookup = {unit.name.lower(): unit for unit in all_units}
+    
+    # Helper function to calculate auto unit
+    def calculate_auto_unit(ingredient):
+        """Calculate what the auto unit would be based on category"""
+        if ingredient.category:
+            preferred_unit_name = base_unit_map.get(ingredient.category.name, 'gram')
+        else:
+            preferred_unit_name = 'gram'
+        
+        # Look up from our pre-loaded units
+        auto_unit = unit_lookup.get(preferred_unit_name.lower())
+        if not auto_unit:
+            # Fallback
+            auto_unit = unit_lookup.get('gram') or all_units[0] if all_units else None
+        return auto_unit
+    
+    # Compute the effective base unit for each ingredient efficiently
+    ingredients_with_base = []
+    for ingredient in ingredients:
+        # Always calculate what the auto unit would be
+        auto_unit = calculate_auto_unit(ingredient)
+        
+        # Determine effective unit (what's currently being used)
+        if ingredient.default_unit:
+            effective_base_unit = ingredient.default_unit
+        else:
+            effective_base_unit = auto_unit
+        
+        ingredients_with_base.append({
+            'ingredient': ingredient,
+            'effective_base_unit': effective_base_unit,
+            'auto_base_unit': auto_unit,  # NEW: Always include the auto-calculated unit
+            'is_manual': ingredient.default_unit is not None
+        })
+    
+    # Get all categories for filters
+    categories = IngredientCategory.objects.all().order_by('name')
+    
+    context = {
+        'ingredients_with_base': ingredients_with_base,
+        'categories': categories,
+        'all_units': all_units,
+        'search_query': search_query,
+        'category_filter': category_filter,
+    }
+    
+    return render(request, 'ingredient_base_units_management.html', context)
+
+@login_required
+@require_POST
+def update_ingredient_base_unit(request):
+    """Update an ingredient's default unit"""
+    if not request.user.is_superuser:
+        return JsonResponse({'success': False, 'error': 'Permission denied'}, status=403)
+    
+    try:
+        data = json.loads(request.body)
+        
+        ingredient_id = data.get('ingredient_id')
+        base_unit_id = data.get('base_unit_id')
+        
+        if not ingredient_id:
+            return JsonResponse({'success': False, 'error': 'Ingredient ID required'}, status=400)
+        
+        ingredient = Ingredient.objects.get(ingredient_id=ingredient_id)
+        
+        # If base_unit_id is None or empty, clear the override
+        if not base_unit_id:
+            ingredient.default_unit = None
+            ingredient.save()
+            return JsonResponse({
+                'success': True,
+                'message': f'Cleared override for {ingredient.name} - now using automatic unit'
+            })
+        
+        base_unit = MeasurementUnit.objects.get(measurement_unit_id=base_unit_id)
+        ingredient.default_unit = base_unit
+        ingredient.save()
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'Updated {ingredient.name} default unit to {base_unit.name}'
+        })
+        
+    except Ingredient.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Ingredient not found'}, status=404)
     except MeasurementUnit.DoesNotExist:
         return JsonResponse({'success': False, 'error': 'Unit not found'}, status=404)
     except Exception as e:

@@ -1152,10 +1152,10 @@
 <div class="top-button-bar">
     <div class="top-button-group">
         <a href="{% url 'create_recipe' %}" class="btn btn-success">
-            <i class="fas fa-plus"></i> Add New Recipe
+            <i class="fas fa-plus"></i> Add Recipe
         </a>
         <a href="{% url 'import_recipe' %}" class="btn btn-info">
-            <i class="fas fa-robot"></i> Import with AI
+            <i class="fas fa-robot"></i> Import Recipe
         </a>
         <a href="{% url 'meal_plans' %}" class="btn btn-primary">
             <i class="fas fa-calendar-alt"></i> Meal Plans
@@ -1163,6 +1163,12 @@
         <button type="button" class="btn btn-primary" onclick="openIngredientMatcher()">
             <i class="fas fa-search"></i> What Can I Make?
         </button>
+        <a href="{% url 'unit_conversions_management' %}" class="btn btn-info">
+            <i class="fas fa-exchange-alt"></i> Unit Conversions
+        </a>
+        <a href="{% url 'ingredient_base_units_management' %}" class="btn btn-success">
+            <i class="fas fa-balance-scale"></i> Ingredient Units
+        </a>
     </div>
     <a href="{% url 'admin_apms' %}" class="btn btn-success" role="button">Back</a>
 </div>

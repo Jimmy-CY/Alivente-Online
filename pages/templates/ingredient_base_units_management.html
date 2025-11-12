@@ -1,0 +1,473 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load custom_filters %}
+{% block title %}Ingredient Shopping Units{% endblock %}
+{% block content %}
+
+<style>
+.ingredients-container {
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.page-header {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+    padding: 30px 40px;
+    border-radius: 12px;
+    margin-bottom: 30px;
+}
+
+.page-header h1 {
+    font-size: 32px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.action-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.filter-bar {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    margin-bottom: 25px;
+}
+
+.filter-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr auto;
+    gap: 15px;
+    align-items: end;
+}
+
+.ingredients-card {
+    background: white;
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.ingredients-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.ingredients-table thead {
+    background: #f8f9fa;
+}
+
+.ingredients-table th {
+    padding: 10px 15px;
+    text-align: left;
+    font-weight: 600;
+    color: #2c3e50;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.ingredients-table td {
+    padding: 8px 15px;
+    border-bottom: 1px solid #e9ecef;
+    vertical-align: middle;
+}
+
+.ingredients-table tbody tr:hover {
+    background: #f8f9fa;
+}
+
+.category-badge {
+    background: #17a2b8;
+    color: white;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 13px;
+}
+
+.mode-select, .unit-select {
+    padding: 6px 10px;
+    border: 2px solid #dee2e6;
+    border-radius: 6px;
+    font-size: 13px;
+    width: 100%;
+    max-width: 150px;
+}
+
+.mode-select:focus, .unit-select:focus {
+    border-color: #28a745;
+    outline: none;
+}
+
+.unit-select:disabled {
+    background: #e9ecef;
+    cursor: not-allowed;
+}
+
+.btn-update {
+    background: #28a745;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.btn-update:hover {
+    background: #218838;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #6c757d;
+}
+
+.empty-state i {
+    font-size: 80px;
+    color: #dee2e6;
+    margin-bottom: 20px;
+}
+
+.unit-display {
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.unit-display-auto {
+    font-weight: 600;
+    color: #6c757d;
+}
+
+.search-with-icon {
+    position: relative;
+}
+
+.search-with-icon input {
+    padding-right: 38px;  /* Changed from padding-left */
+}
+
+.search-icon {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #6c757d;
+    font-size: 16px;
+    cursor: pointer;
+    transition: color 0.2s ease;  /* Smooth transition */
+}
+
+.search-icon:hover {
+    color: #343a40;  /* Much darker gray */
+}
+</style>
+
+<div class="ingredients-container">
+    
+    <!-- Action Bar -->
+    <div class="action-bar">
+        <a href="{% url 'recipe_management' %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Recipe Management
+        </a>
+        <a href="{% url 'unit_conversions_management' %}" class="btn btn-info">
+            <i class="fas fa-exchange-alt"></i> Manage Unit Conversions
+        </a>
+    </div>
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <h1><i class="fas fa-balance-scale"></i> Ingredient Shopping Units</h1>
+        <p style="font-size: 16px; margin-bottom: 0;">Set default units for shopping list aggregation</p>
+    </div>
+
+    <!-- Filter Bar -->
+    <div class="filter-bar">
+        <form method="GET" id="filterForm">
+            <div class="filter-row">
+                <div class="form-group" style="margin: 0;">
+                    <label style="font-weight: 600; margin-bottom: 8px;">Search Ingredient</label>
+                    <div class="search-with-icon">
+                        <input type="text" name="search" class="form-control" placeholder="Search by name..." value="{{ search_query }}">
+                        <i class="fas fa-search search-icon" onclick="document.getElementById('filterForm').submit()"></i>
+                    </div>
+                </div>
+                
+                <div class="form-group" style="margin: 0;">
+                    <label style="font-weight: 600; margin-bottom: 8px;">Filter by Category</label>
+                    <select name="category" class="form-control" id="categoryFilter" onchange="this.form.submit()">
+                        <option value="">All Categories</option>
+                        {% for cat in categories %}
+                        <option value="{{ cat.ingredient_category_id }}" {% if category_filter == cat.ingredient_category_id|stringformat:"s" %}selected{% endif %}>
+                            {{ cat.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div style="display: flex; gap: 10px; align-items: end;">
+                    <a href="{% url 'ingredient_base_units_management' %}" class="btn btn-secondary" style="height: 42px;">
+                        <i class="fas fa-times"></i> Clear
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Ingredients Table -->
+    <div class="ingredients-card">
+        <h2 style="font-size: 22px; font-weight: 600; margin-bottom: 20px; color: #2c3e50;">
+            <i class="fas fa-list"></i> Ingredients ({{ ingredients_with_base|length }})
+        </h2>
+        
+        {% if ingredients_with_base %}
+        <table class="ingredients-table">
+            <thead>
+                <tr>
+                    <th style="width: 30%;">Ingredient Name</th>
+                    <th style="width: 20%;">Category</th>
+                    <th style="width: 15%;">Mode</th>
+                    <th style="width: 25%;">Shopping Unit</th>
+                    <th style="width: 10%; text-align: center;">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in ingredients_with_base %}
+                <tr id="ingredient-row-{{ item.ingredient.ingredient_id }}">
+                    <td><strong>{{ item.ingredient.name }}</strong></td>
+                    <td>
+                        {% if item.ingredient.category %}
+                        <span class="category-badge">{{ item.ingredient.category.name }}</span>
+                        {% else %}
+                        <span style="color: #6c757d; font-style: italic;">No category</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <select class="mode-select" 
+                                id="mode-{{ item.ingredient.ingredient_id }}" 
+                                data-ingredient-id="{{ item.ingredient.ingredient_id }}"
+                                data-auto-unit="{{ item.auto_base_unit.name }}"
+                                data-category="{% if item.ingredient.category %}{{ item.ingredient.category.name }}{% endif %}">
+                            <option value="auto" {% if not item.is_manual %}selected{% endif %}>Auto</option>
+                            <option value="manual" {% if item.is_manual %}selected{% endif %}>Manual</option>
+                        </select>
+                    </td>
+                    <td>
+                        <!-- Auto mode: show text -->
+                        <span class="unit-display-auto" 
+                              id="unit-text-{{ item.ingredient.ingredient_id }}" 
+                              style="{% if item.is_manual %}display: none;{% else %}display: block;{% endif %}">
+                            {{ item.effective_base_unit.name }}
+                        </span>
+                        
+                        <!-- Manual mode: show dropdown -->
+                        <select class="unit-select" 
+                                id="unit-select-{{ item.ingredient.ingredient_id }}" 
+                                data-ingredient-id="{{ item.ingredient.ingredient_id }}"
+                                style="{% if item.is_manual %}display: block;{% else %}display: none;{% endif %}">
+                            <option value="">-- Select Unit --</option>
+                            {% for unit in all_units %}
+                            <option value="{{ unit.measurement_unit_id }}" 
+                                    data-unit-name="{{ unit.name }}"
+                                    {% if item.ingredient.default_unit and item.ingredient.default_unit.measurement_unit_id == unit.measurement_unit_id %}selected{% endif %}>
+                                {{ unit.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </td>
+                    <td style="text-align: center;">
+                        <button onclick="updateIngredientUnit({{ item.ingredient.ingredient_id }})" 
+                                class="btn-update"
+                                id="btn-{{ item.ingredient.ingredient_id }}">
+                            <i class="fas fa-save"></i>
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-carrot"></i>
+            <h3>No Ingredients Found</h3>
+            <p>Try adjusting your search or filter criteria.</p>
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+
+<script>
+// Track original values to detect changes
+const originalValues = {};
+
+// Initialize tracking on page load
+document.addEventListener('DOMContentLoaded', function() {
+    {% for item in ingredients_with_base %}
+    (function() {
+        const ingredientId = {{ item.ingredient.ingredient_id }};
+        const modeSelect = document.getElementById(`mode-${ingredientId}`);
+        const unitSelect = document.getElementById(`unit-select-${ingredientId}`);
+        const unitText = document.getElementById(`unit-text-${ingredientId}`);
+        const btn = document.getElementById(`btn-${ingredientId}`);
+        
+        if (!modeSelect || !unitSelect || !unitText || !btn) {
+            console.error('Missing elements for ingredient:', ingredientId);
+            return;
+        }
+        
+        // Store original values
+        originalValues[ingredientId] = {
+            mode: modeSelect.value,
+            unit: unitSelect.value
+        };
+        
+        // Set initial display state
+        updateDisplayState(ingredientId);
+        
+        // Disable save button initially
+        btn.disabled = true;
+        btn.style.background = '#6c757d';
+        btn.style.cursor = 'not-allowed';
+        
+        // Add change listeners
+        modeSelect.addEventListener('change', function() {
+            updateDisplayState(ingredientId);
+            checkForChanges(ingredientId);
+        });
+        
+        unitSelect.addEventListener('change', function() {
+            checkForChanges(ingredientId);
+        });
+    })();
+    {% endfor %}
+});
+
+// Update display state based on mode
+function updateDisplayState(ingredientId) {
+    const modeSelect = document.getElementById(`mode-${ingredientId}`);
+    const unitText = document.getElementById(`unit-text-${ingredientId}`);
+    const unitSelect = document.getElementById(`unit-select-${ingredientId}`);
+    
+    if (!modeSelect || !unitText || !unitSelect) {
+        return;
+    }
+    
+    if (modeSelect.value === 'auto') {
+        // Show the auto-calculated unit
+        const autoUnit = modeSelect.getAttribute('data-auto-unit');
+        unitText.textContent = autoUnit;
+        unitText.style.display = 'block';
+        unitSelect.style.display = 'none';
+    } else {
+        // Hide text, show dropdown
+        unitText.style.display = 'none';
+        unitSelect.style.display = 'block';
+    }
+}
+
+// Check if values have changed
+function checkForChanges(ingredientId) {
+    const modeSelect = document.getElementById(`mode-${ingredientId}`);
+    const unitSelect = document.getElementById(`unit-select-${ingredientId}`);
+    const btn = document.getElementById(`btn-${ingredientId}`);
+    
+    if (!modeSelect || !unitSelect || !btn) {
+        return;
+    }
+    
+    const currentMode = modeSelect.value;
+    const currentUnit = unitSelect.value;
+    const original = originalValues[ingredientId];
+    
+    if (!original) {
+        return;
+    }
+    
+    // Check if anything changed
+    const hasChanged = (currentMode !== original.mode) || (currentUnit !== original.unit);
+    
+    if (hasChanged) {
+        // Enable button and make it green
+        btn.disabled = false;
+        btn.style.background = '#28a745';
+        btn.style.cursor = 'pointer';
+    } else {
+        // Disable button and make it grey
+        btn.disabled = true;
+        btn.style.background = '#6c757d';
+        btn.style.cursor = 'not-allowed';
+    }
+}
+
+// Update ingredient default unit
+async function updateIngredientUnit(ingredientId) {
+    const modeSelect = document.getElementById(`mode-${ingredientId}`);
+    const unitSelect = document.getElementById(`unit-select-${ingredientId}`);
+    const btn = document.getElementById(`btn-${ingredientId}`);
+    
+    if (!modeSelect || !unitSelect || !btn) {
+        return;
+    }
+    
+    const mode = modeSelect.value;
+    let baseUnitId = null;
+    
+    if (mode === 'manual') {
+        baseUnitId = unitSelect.value;
+        if (!baseUnitId) {
+            alert('Please select a unit for manual mode');
+            return;
+        }
+    }
+    
+    // Disable button and show loading
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    btn.style.background = '#6c757d';
+    btn.style.cursor = 'not-allowed';
+    
+    try {
+        const response = await fetch("{% url 'update_ingredient_base_unit' %}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({
+                ingredient_id: ingredientId,
+                base_unit_id: baseUnitId
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            // Show success feedback
+            btn.innerHTML = '<i class="fas fa-check"></i>';
+            btn.style.background = '#28a745';
+            
+            // Reload to show updated base unit
+            setTimeout(() => {
+                location.reload();
+            }, 500);
+        } else {
+            alert('Error: ' + data.error);
+            btn.innerHTML = '<i class="fas fa-save"></i>';
+            checkForChanges(ingredientId);
+        }
+    } catch (error) {
+        alert('Error updating ingredient');
+        btn.innerHTML = '<i class="fas fa-save"></i>';
+        checkForChanges(ingredientId);
+    }
+}
+</script>
+
+{% endblock %}

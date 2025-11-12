@@ -196,3 +196,39 @@ def sum_field(queryset, field_name):
     except (ValueError, TypeError):
         pass
     return total
+
+@register.filter
+def normalize_decimal(value):
+    """Remove trailing zeros from decimal numbers without using scientific notation"""
+    if value is None:
+        return ''
+    
+    try:
+        # Convert to Decimal if not already
+        if not isinstance(value, Decimal):
+            value = Decimal(str(value))
+        
+        # Normalize removes trailing zeros but may use scientific notation
+        normalized = value.normalize()
+        
+        # Check if it's in scientific notation (has 'E' in string)
+        str_value = str(normalized)
+        if 'E' in str_value.upper():
+            # Convert back without scientific notation
+            # Use a context with enough precision
+            from decimal import Context, ROUND_HALF_UP
+            ctx = Context(prec=50, rounding=ROUND_HALF_UP)
+            normalized = ctx.create_decimal(value)
+            
+            # Format as fixed-point, then strip trailing zeros
+            str_value = format(normalized, 'f')
+            
+            # Remove trailing zeros after decimal point
+            if '.' in str_value:
+                str_value = str_value.rstrip('0').rstrip('.')
+            
+            return str_value
+        
+        return str_value
+    except:
+        return str(value)

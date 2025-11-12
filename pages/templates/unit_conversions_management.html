@@ -1,0 +1,447 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load custom_filters %}
+{% block title %}Unit Conversions Management{% endblock %}
+{% block content %}
+
+<style>
+.conversions-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.page-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 30px 40px;
+    border-radius: 12px;
+    margin-bottom: 30px;
+}
+
+.page-header h1 {
+    font-size: 32px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.action-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.conversions-card {
+    background: white;
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.conversions-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.conversions-table thead {
+    background: #f8f9fa;
+}
+
+.conversions-table th {
+    padding: 12px 15px;
+    text-align: left;
+    font-weight: 600;
+    color: #2c3e50;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.conversions-table td {
+    padding: 8px 15px;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.conversions-table tbody tr:hover {
+    background: #f8f9fa;
+}
+
+.conversion-formula {
+    background: #f8f9fa;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+.btn-icon {
+    padding: 4px 8px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 12px;
+    margin-right: 5px;
+}
+
+.btn-edit {
+    background: #17a2b8;
+    color: white;
+}
+
+.btn-edit:hover {
+    background: #138496;
+}
+
+.btn-delete {
+    background: #dc3545;
+    color: white;
+}
+
+.btn-delete:hover {
+    background: #c82333;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #6c757d;
+}
+
+.empty-state i {
+    font-size: 80px;
+    color: #dee2e6;
+    margin-bottom: 20px;
+}
+
+.actions-cell {
+    white-space: nowrap;
+}
+</style>
+
+<div class="conversions-container">
+    
+    <!-- Action Bar -->
+    <div class="action-bar">
+        <a href="{% url 'recipe_management' %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Recipe Management
+        </a>
+        <button onclick="openAddModal()" class="btn btn-success">
+            <i class="fas fa-plus"></i> Add New Conversion
+        </button>
+    </div>
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <h1><i class="fas fa-exchange-alt"></i> Unit Conversions Management</h1>
+        <p style="font-size: 16px; margin-bottom: 0;">Manage unit conversion rates for ingredient aggregation</p>
+    </div>
+
+    <!-- Conversions Table -->
+    <div class="conversions-card">
+        <h2 style="font-size: 22px; font-weight: 600; margin-bottom: 20px; color: #2c3e50;">
+            <i class="fas fa-list"></i> All Conversions ({{ conversions.count }})
+        </h2>
+        
+        {% if conversions %}
+        <table class="conversions-table">
+            <thead>
+                <tr>
+                    <th style="width: 20%;">From Unit</th>
+                    <th style="width: 8%; text-align: center;">→</th>
+                    <th style="width: 20%;">To Unit</th>
+                    <th style="width: 25%; text-align: center;">Conversion</th>
+                    <th style="width: 12%; text-align: center;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for conversion in conversions %}
+                <tr id="conversion-row-{{ conversion.unit_conversion_id }}">
+                    <td><strong>{{ conversion.from_unit.name }}</strong></td>
+                    <td style="text-align: center; font-size: 18px; color: #28a745;">
+                        <i class="fas fa-arrow-right"></i>
+                    </td>
+                    <td><strong>{{ conversion.to_unit.name }}</strong></td>
+                    <td style="text-align: center;">
+                        <span class="conversion-formula">
+                            <strong>1 : {{ conversion.multiplier|normalize_decimal }}</strong>
+                        </span>
+                    </td>
+                    <td class="actions-cell" style="text-align: center;">
+                        <button onclick="openEditModal({{ conversion.unit_conversion_id }}, '{{ conversion.from_unit.name }}', '{{ conversion.to_unit.name }}', '{{ conversion.multiplier }}')" 
+                                class="btn-icon btn-edit" 
+                                title="Edit">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button onclick="deleteConversion({{ conversion.unit_conversion_id }}, '{{ conversion.from_unit.name }}', '{{ conversion.to_unit.name }}')" 
+                                class="btn-icon btn-delete" 
+                                title="Delete">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-state">
+            <i class="fas fa-exchange-alt"></i>
+            <h3>No Conversions Defined</h3>
+            <p>Click "Add New Conversion" to create your first unit conversion.</p>
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+
+<!-- Add Conversion Modal -->
+<div class="modal fade" id="addConversionModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header" style="background: #28a745; color: white;">
+                <h5 class="modal-title"><i class="fas fa-plus"></i> Add New Conversion</h5>
+                <button type="button" class="close" data-dismiss="modal" style="color: white;">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>From Unit *</label>
+                    <select id="addFromUnit" class="form-control">
+                        <option value="">-- Select Unit --</option>
+                        {% for unit in all_units %}
+                        <option value="{{ unit.measurement_unit_id }}">{{ unit.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>To Unit *</label>
+                    <select id="addToUnit" class="form-control">
+                        <option value="">-- Select Unit --</option>
+                        {% for unit in all_units %}
+                        <option value="{{ unit.measurement_unit_id }}">{{ unit.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Multiplier *</label>
+                    <input type="number" step="0.001" min="0.001" id="addMultiplier" class="form-control" placeholder="e.g., 1000">
+                    <small class="form-text text-muted">1 [From Unit] = [Multiplier] [To Unit]</small>
+                </div>
+                
+                <div id="addPreview" style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-top: 15px; display: none;">
+                    <strong>Preview:</strong> <span id="addPreviewText"></span>
+                </div>
+                
+                <div id="addStatus"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success" onclick="saveNewConversion()">
+                    <i class="fas fa-save"></i> Save Conversion
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Edit Conversion Modal -->
+<div class="modal fade" id="editConversionModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header" style="background: #17a2b8; color: white;">
+                <h5 class="modal-title"><i class="fas fa-edit"></i> Edit Conversion</h5>
+                <button type="button" class="close" data-dismiss="modal" style="color: white;">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="editConversionId">
+                
+                <div class="alert alert-info">
+                    <strong>Editing:</strong> <span id="editConversionInfo"></span>
+                </div>
+                
+                <div class="form-group">
+                    <label>New Multiplier *</label>
+                    <input type="number" step="0.001" min="0.001" id="editMultiplier" class="form-control">
+                    <small class="form-text text-muted">1 [From Unit] = [Multiplier] [To Unit]</small>
+                </div>
+                
+                <div id="editStatus"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="saveEditConversion()">
+                    <i class="fas fa-save"></i> Update Conversion
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Preview conversion formula while typing
+document.addEventListener('DOMContentLoaded', function() {
+    const fromSelect = document.getElementById('addFromUnit');
+    const toSelect = document.getElementById('addToUnit');
+    const multiplierInput = document.getElementById('addMultiplier');
+    const preview = document.getElementById('addPreview');
+    const previewText = document.getElementById('addPreviewText');
+    
+    function updatePreview() {
+        const fromUnit = fromSelect.options[fromSelect.selectedIndex]?.text;
+        const toUnit = toSelect.options[toSelect.selectedIndex]?.text;
+        const multiplier = multiplierInput.value;
+        
+        if (fromUnit && toUnit && multiplier && fromUnit !== '-- Select Unit --' && toUnit !== '-- Select Unit --') {
+            previewText.textContent = `1 ${fromUnit} : ${multiplier} ${toUnit}`;
+            preview.style.display = 'block';
+        } else {
+            preview.style.display = 'none';
+        }
+    }
+    
+    fromSelect.addEventListener('change', updatePreview);
+    toSelect.addEventListener('change', updatePreview);
+    multiplierInput.addEventListener('input', updatePreview);
+});
+
+// Open add modal
+function openAddModal() {
+    document.getElementById('addFromUnit').value = '';
+    document.getElementById('addToUnit').value = '';
+    document.getElementById('addMultiplier').value = '';
+    document.getElementById('addStatus').innerHTML = '';
+    document.getElementById('addPreview').style.display = 'none';
+    $('#addConversionModal').modal('show');
+}
+
+// Save new conversion
+async function saveNewConversion() {
+    const fromUnitId = document.getElementById('addFromUnit').value;
+    const toUnitId = document.getElementById('addToUnit').value;
+    const multiplier = document.getElementById('addMultiplier').value;
+    const status = document.getElementById('addStatus');
+    
+    if (!fromUnitId || !toUnitId || !multiplier) {
+        status.innerHTML = '<div class="alert alert-danger mt-3">Please fill in all fields</div>';
+        return;
+    }
+    
+    if (fromUnitId === toUnitId) {
+        status.innerHTML = '<div class="alert alert-danger mt-3">From and To units must be different</div>';
+        return;
+    }
+    
+    try {
+        const response = await fetch("{% url 'add_unit_conversion_manual' %}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({
+                from_unit_id: fromUnitId,
+                to_unit_id: toUnitId,
+                multiplier: multiplier
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            status.innerHTML = '<div class="alert alert-success mt-3">Conversion added successfully!</div>';
+            setTimeout(() => {
+                location.reload();
+            }, 1000);
+        } else {
+            status.innerHTML = `<div class="alert alert-danger mt-3">${data.error}</div>`;
+        }
+    } catch (error) {
+        status.innerHTML = '<div class="alert alert-danger mt-3">Error saving conversion</div>';
+    }
+}
+
+// Open edit modal
+function openEditModal(conversionId, fromUnit, toUnit, multiplier) {
+    document.getElementById('editConversionId').value = conversionId;
+    document.getElementById('editConversionInfo').textContent = `${fromUnit} → ${toUnit}`;
+    document.getElementById('editMultiplier').value = multiplier;
+    document.getElementById('editStatus').innerHTML = '';
+    $('#editConversionModal').modal('show');
+}
+
+// Save edit
+async function saveEditConversion() {
+    const conversionId = document.getElementById('editConversionId').value;
+    const multiplier = document.getElementById('editMultiplier').value;
+    const status = document.getElementById('editStatus');
+    
+    if (!multiplier) {
+        status.innerHTML = '<div class="alert alert-danger mt-3">Please enter a multiplier</div>';
+        return;
+    }
+    
+    try {
+        const response = await fetch("{% url 'edit_unit_conversion' %}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({
+                conversion_id: conversionId,
+                multiplier: multiplier
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            status.innerHTML = '<div class="alert alert-success mt-3">Conversion updated!</div>';
+            setTimeout(() => {
+                location.reload();
+            }, 1000);
+        } else {
+            status.innerHTML = `<div class="alert alert-danger mt-3">${data.error}</div>`;
+        }
+    } catch (error) {
+        status.innerHTML = '<div class="alert alert-danger mt-3">Error updating conversion</div>';
+    }
+}
+
+// Delete conversion
+async function deleteConversion(conversionId, fromUnit, toUnit) {
+    if (!confirm(`Delete conversion: ${fromUnit} → ${toUnit}?`)) {
+        return;
+    }
+    
+    try {
+        const response = await fetch("{% url 'delete_unit_conversion' %}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({
+                conversion_id: conversionId
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            document.getElementById(`conversion-row-${conversionId}`).remove();
+            alert('Conversion deleted successfully');
+        } else {
+            alert('Error: ' + data.error);
+        }
+    } catch (error) {
+        alert('Error deleting conversion');
+    }
+}
+</script>
+
+{% endblock %}

@@ -231,4 +231,13 @@ urlpatterns = [
     path('meal_plans/send_shopping_list/', views.send_meal_plan_shopping_list, name='send_meal_plan_shopping_list'),
     path('recipes/find-matching/', views.find_matching_recipes, name='find_matching_recipes'),
     path('save_unit_conversion/', views.save_unit_conversion, name='save_unit_conversion'),
+    # Unit Conversion Management
+    path('unit_conversions/', views.unit_conversions_management, name='unit_conversions_management'),
+    path('add_unit_conversion_manual/', views.add_unit_conversion_manual, name='add_unit_conversion_manual'),
+    path('edit_unit_conversion/', views.edit_unit_conversion, name='edit_unit_conversion'),
+    path('delete_unit_conversion/', views.delete_unit_conversion, name='delete_unit_conversion'),
+    # Ingredient Base Unit Management
+    path('ingredient_base_units/', views.ingredient_base_units_management, name='ingredient_base_units_management'),
+    path('update_ingredient_base_unit/', views.update_ingredient_base_unit, name='update_ingredient_base_unit'),
+
 ]
