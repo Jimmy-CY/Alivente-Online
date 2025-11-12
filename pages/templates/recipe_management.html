@@ -2294,7 +2294,9 @@ var RESULTS_PER_PAGE = 10;
 
 // Open the ingredient matcher modal
 function openIngredientMatcher() {
-    // CLEAR all previous selections (don't load saved selections)
+    console.log('Opening ingredient matcher - resetting view');
+    
+    // CLEAR all previous selections
     const checkboxes = document.querySelectorAll('.ingredient-checkbox');
     checkboxes.forEach(cb => {
         cb.checked = false;
@@ -2303,15 +2305,59 @@ function openIngredientMatcher() {
     // Update the count to 0
     updateSelectedCount();
     
-    // Clear previous results
+    // Clear and hide previous results
     document.getElementById('matchingResultsArea').style.display = 'none';
     document.getElementById('matchingResultsContent').innerHTML = '';
     allResults = [];
     displayedResults = 0;
     
-    // Show ingredient selection area, hide results
-    document.getElementById('ingredientCategoriesContainer').parentElement.style.display = 'block';
-    document.querySelector('.modal-footer').style.display = 'flex';
+    // SHOW all the ingredient selection elements again
+    const infoBox = document.querySelector('.alert.alert-info');
+    const searchBox = document.getElementById('ingredientSearch');
+    const categoriesContainer = document.getElementById('ingredientCategoriesContainer');
+    
+    if (infoBox) infoBox.style.display = 'block';
+    
+    if (searchBox) {
+        searchBox.style.display = 'block';
+        if (searchBox.parentElement) searchBox.parentElement.style.display = 'block';
+        const searchContainer = searchBox.closest('.form-group, .mb-3, div');
+        if (searchContainer) searchContainer.style.display = 'block';
+    }
+    
+    // Show search by placeholder
+    const searchByPlaceholder = document.querySelector('input[placeholder*="Search ingredients"]');
+    if (searchByPlaceholder) {
+        searchByPlaceholder.style.display = 'block';
+        const searchContainer = searchByPlaceholder.closest('.form-group, .mb-3, div');
+        if (searchContainer) searchContainer.style.display = 'block';
+    }
+    
+    // Show ALL buttons again
+    const allButtons = document.querySelectorAll('#ingredientMatcherModal .btn:not([data-dismiss])');
+    allButtons.forEach(btn => {
+        if (btn.textContent.includes('All Vegetables') || 
+            btn.textContent.includes('All Meat') || 
+            btn.textContent.includes('All Dairy') || 
+            btn.textContent.includes('All Grains') || 
+            btn.textContent.includes('Clear All')) {
+            btn.style.display = 'inline-block';
+        }
+    });
+    
+    // Show categories container
+    if (categoriesContainer) categoriesContainer.style.display = 'block';
+    
+    // Reset footer to show "Find Recipes" button
+    const modalFooter = document.querySelector('#ingredientMatcherModal .modal-footer');
+    if (modalFooter) {
+        modalFooter.innerHTML = `
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-primary" onclick="findMatchingRecipes()">
+                <i class="fas fa-search"></i> Find Recipes
+            </button>
+        `;
+    }
     
     // Open modal
     const modal = new bootstrap.Modal(document.getElementById('ingredientMatcherModal'));

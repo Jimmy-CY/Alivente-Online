@@ -9871,6 +9871,7 @@ def create_meal_plan(request):
         return redirect('home')
     
     if request.method == 'POST':
+        # ... existing POST code stays the same ...
         try:
             # Get basic info
             plan_name = request.POST.get('plan_name')
@@ -9921,8 +9922,7 @@ def create_meal_plan(request):
                             servings=servings,
                             sort_order=idx
                         )
-                        
-        
+                
                 current_date += timedelta(days=1)
             
             messages.success(request, f'Meal plan "{plan_name}" created successfully!')
@@ -9936,15 +9936,54 @@ def create_meal_plan(request):
             return redirect('create_meal_plan')
     
     # GET request - show form
-    # Get all recipes for dropdown
-    recipes = Recipe.objects.all().order_by('recipe_name')
+    recipes_qs = Recipe.objects.prefetch_related(
+        'courses', 
+        'categories', 
+        'proteins'
+    ).all().order_by('recipe_name')
     
+    recipes = []
+    for recipe in recipes_qs:
+        recipe_data = {
+            'recipe_id': recipe.recipe_id,
+            'recipe_name': recipe.recipe_name,
+            'servings': recipe.servings,
+            'prep_time': recipe.prep_time,
+            'cook_time': recipe.cook_time,
+            'difficulty_level': recipe.difficulty_level or '',
+            'is_vegetarian': recipe.is_vegetarian,
+            'author': recipe.author,
+            'recipe_image': recipe.recipe_image.url if recipe.recipe_image else None,
+            'courses': [course.name for course in recipe.courses.all()],
+            'categories': [cat.name for cat in recipe.categories.all()],
+            'proteins': [protein.name for protein in recipe.proteins.all()]
+        }
+        recipes.append(recipe_data)
+    
+    # Get all filter options
+    all_courses = list(RecipeCourse.objects.all().order_by('name').values('recipe_course_id', 'name'))
+    all_categories = list(RecipeCategory.objects.all().order_by('name').values('recipe_category_id', 'name'))
+    all_proteins = list(CustomProtein.objects.all().order_by('name').values('custom_protein_id', 'name'))
+    
+    # Add authors
+    all_authors = [
+        {'value': 'General', 'name': 'General'},
+        {'value': 'Demetri & Angy', 'name': 'Demetri & Angy'},
+        {'value': 'Erene', 'name': 'Erene'},
+        {'value': 'Alexandra', 'name': 'Alexandra'},
+    ]
+
     # Suggest a default date range (today + 6 days)
     today = datetime.now().date()
     default_end = today + timedelta(days=6)
     
     context = {
-        'recipes': recipes,
+        'recipes_json': json.dumps(recipes),  # ← Serialize to JSON
+        'all_courses_json': json.dumps(all_courses),
+        'all_categories_json': json.dumps(all_categories),
+        'all_proteins_json': json.dumps(all_proteins),
+        'all_authors_json': json.dumps(all_authors),
+        'today': today,
         'default_start_date': today.strftime('%Y-%m-%d'),
         'default_end_date': default_end.strftime('%Y-%m-%d'),
     }

@@ -185,6 +185,87 @@
     margin-bottom: 10px;
     opacity: 0.3;
 }
+
+/* Recipe Selector Modal Styles */
+.recipe-selector-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 20px;
+    max-height: 500px;
+    overflow-y: auto;
+    padding: 10px;
+}
+
+.recipe-selector-card {
+    background: white;
+    border: 2px solid #e0e0e0;
+    border-radius: 12px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.recipe-selector-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.15);
+    border-color: #28a745;
+}
+
+.recipe-selector-card-image {
+    width: 100%;
+    height: 150px;
+    object-fit: cover;
+}
+
+.recipe-selector-card-placeholder {
+    width: 100%;
+    height: 150px;
+    background: linear-gradient(135deg, #e0e0e0 0%, #f5f5f5 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 48px;
+    color: #999;
+}
+
+.recipe-selector-card-body {
+    padding: 12px;
+}
+
+.recipe-selector-card-title {
+    font-weight: 600;
+    font-size: 14px;
+    margin-bottom: 8px;
+    color: #2c3e50;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.recipe-selector-card-meta {
+    font-size: 12px;
+    color: #6c757d;
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.recipe-selector-card-badge {
+    background: #f8f9fa;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+}
+
+#daysSection {
+    display: none; /* Hidden by default */
+}
+
+#daysSection.show {
+    display: block !important;
+}
+
 </style>
 
 <div class="meal-plan-container">
@@ -267,20 +348,17 @@
 </div>
 
 <script>
-// Recipe data from Django
-const recipes = [
-    {% for recipe in recipes %}
-    {
-        id: {{ recipe.recipe_id }},
-        name: "{{ recipe.recipe_name|escapejs }}",
-        servings: {{ recipe.servings }}
-    }{% if not forloop.last %},{% endif %}
-    {% endfor %}
-];
+
+// Parse JSON data from Django
+const recipes = JSON.parse('{{ recipes_json|escapejs }}');
+const allCourses = JSON.parse('{{ all_courses_json|escapejs }}');
+const allCategories = JSON.parse('{{ all_categories_json|escapejs }}');
+const allProteins = JSON.parse('{{ all_proteins_json|escapejs }}');
+const allAuthors = JSON.parse('{{ all_authors_json|escapejs }}');
 
 // Debug
 console.log('Total recipes loaded:', recipes.length);
-console.log('Recipes:', recipes);
+console.log('Sample recipe:', recipes[0]);
 
 // State
 let selectedDates = [];
@@ -290,13 +368,30 @@ document.getElementById('start_date').addEventListener('change', updateDateRange
 document.getElementById('end_date').addEventListener('change', updateDateRange);
 
 function updateDateRange() {
-    const startDate = document.getElementById('start_date').value;
-    const endDate = document.getElementById('end_date').value;
+    const startDateStr = document.getElementById('start_date').value;
+    const endDateStr = document.getElementById('end_date').value;
     
-    if (!startDate || !endDate) return;
+    console.log('Start date value:', startDateStr);
+    console.log('End date value:', endDateStr);
     
-    const start = new Date(startDate + 'T00:00:00');
-    const end = new Date(endDate + 'T00:00:00');
+    if (!startDateStr || !endDateStr) {
+        console.log('Missing date values');
+        return;
+    }
+    
+    // Parse dates properly - input type="date" gives YYYY-MM-DD format
+    const start = new Date(startDateStr + 'T00:00:00');
+    const end = new Date(endDateStr + 'T00:00:00');
+    
+    console.log('Parsed start:', start);
+    console.log('Parsed end:', end);
+    
+    // Check if dates are valid
+    if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+        console.error('Invalid date format');
+        alert('Invalid date format. Please select valid dates.');
+        return;
+    }
     
     // Validate date range
     if (end < start) {
@@ -306,6 +401,7 @@ function updateDateRange() {
     }
     
     const daysDiff = Math.floor((end - start) / (1000 * 60 * 60 * 24)) + 1;
+    console.log('Days difference:', daysDiff);
     
     if (daysDiff > 7) {
         alert('Meal plan cannot exceed 7 days');
@@ -313,32 +409,47 @@ function updateDateRange() {
         return;
     }
     
-    console.log('Generating days:', daysDiff, 'from', start, 'to', end);
+    console.log('✓ Valid date range - generating', daysDiff, 'days');
     
     // Generate days
     generateDays(start, end);
 }
 
 function generateDays(startDate, endDate) {
+    console.log('generateDays called with:', startDate, endDate);
+    
     const container = document.getElementById('daysContainer');
     const section = document.getElementById('daysSection');
     const saveBtn = document.getElementById('saveBtn');
+    
+    if (!container || !section || !saveBtn) {
+        console.error('Required elements not found:', {
+            container: !!container,
+            section: !!section,
+            saveBtn: !!saveBtn
+        });
+        return;
+    }
     
     container.innerHTML = '';
     selectedDates = [];
     
     let currentDate = new Date(startDate);
+    let dayCount = 0;
     
     while (currentDate <= endDate) {
+        dayCount++;
         selectedDates.push(new Date(currentDate));
         createDayCard(new Date(currentDate), container);
         currentDate.setDate(currentDate.getDate() + 1);
     }
     
+    console.log('Created', dayCount, 'day cards');
+    
     section.style.display = 'block';
     saveBtn.disabled = false;
     
-    console.log('Generated', selectedDates.length, 'day cards');
+    console.log('✓ Days section shown, save button enabled');
 }
 
 function createDayCard(date, container) {
@@ -377,54 +488,10 @@ function createDayCard(date, container) {
 }
 
 function addRecipe(dateStr) {
-    const recipeList = document.getElementById(`recipes-${dateStr}`);
-    
-    // Remove empty state if exists
-    const emptyState = recipeList.querySelector('.empty-day-state');
-    if (emptyState) {
-        emptyState.remove();
-    }
-    
-    const recipeItem = document.createElement('div');
-    recipeItem.className = 'recipe-item';
-    
-    // Build recipe options
-    let optionsHtml = '<option value="">-- Select Recipe --</option>';
-    recipes.forEach(recipe => {
-        optionsHtml += `<option value="${recipe.id}" data-servings="${recipe.servings}">${recipe.name}</option>`;
-    });
-    
-    recipeItem.innerHTML = `
-        <select name="recipes_${dateStr}[]" class="recipe-select" onchange="updateServings(this)" required>
-            ${optionsHtml}
-        </select>
-        
-        <div style="display: flex; align-items: center; gap: 5px;">
-            <input type="number" 
-                   name="servings_${dateStr}[]" 
-                   class="servings-input" 
-                   min="1" 
-                   value="1" 
-                   required>
-            <span style="color: #6c757d; font-size: 14px;">servings</span>
-        </div>
-        
-        <button type="button" class="btn-remove-recipe" onclick="removeRecipe(this)">
-            <i class="fas fa-trash"></i>
-        </button>
-    `;
-    
-    recipeList.appendChild(recipeItem);
-}
-
-function updateServings(selectElement) {
-    const selectedOption = selectElement.options[selectElement.selectedIndex];
-    const servings = selectedOption.getAttribute('data-servings');
-    
-    if (servings) {
-        const servingsInput = selectElement.closest('.recipe-item').querySelector('.servings-input');
-        servingsInput.value = servings;
-    }
+    currentMealPlanDate = dateStr;
+    const dayCard = document.getElementById(`recipes-${dateStr}`).closest('.day-card');
+    const dayName = dayCard.querySelector('.day-title').textContent.trim();
+    openRecipeSelector(dateStr, dayName);
 }
 
 function removeRecipe(button) {
@@ -433,7 +500,6 @@ function removeRecipe(button) {
     
     recipeItem.remove();
     
-    // Show empty state if no recipes left
     if (recipeList.querySelectorAll('.recipe-item').length === 0) {
         recipeList.innerHTML = `
             <div class="empty-day-state">
@@ -444,7 +510,6 @@ function removeRecipe(button) {
     }
 }
 
-// Auto-generate plan name based on dates
 document.getElementById('start_date').addEventListener('change', updatePlanName);
 document.getElementById('end_date').addEventListener('change', updatePlanName);
 
@@ -464,7 +529,6 @@ function updatePlanName() {
     }
 }
 
-// Form validation
 document.getElementById('mealPlanForm').addEventListener('submit', function(e) {
     const startDate = document.getElementById('start_date').value;
     const endDate = document.getElementById('end_date').value;
@@ -477,6 +541,317 @@ document.getElementById('mealPlanForm').addEventListener('submit', function(e) {
     
     return true;
 });
+
+// Recipe Selector Modal Functions
+let currentMealPlanDate = null;
+let allRecipesForSelector = [];
+let filteredRecipes = [];
+let displayedRecipesInSelector = 0;
+const RECIPES_PER_LOAD = 12;
+
+function openRecipeSelector(dateStr, dayName) {
+    currentMealPlanDate = dateStr;
+    document.getElementById('selectedDayName').textContent = dayName;
+    
+    allRecipesForSelector = [...recipes];
+    filteredRecipes = [...recipes];
+    
+    populateFilterDropdowns();
+    
+    displayedRecipesInSelector = 0;
+    displayRecipesInSelector();
+    
+    const modal = new bootstrap.Modal(document.getElementById('recipeSelectorModal'));
+    modal.show();
+}
+
+function displayRecipesInSelector() {
+    const grid = document.getElementById('recipeSelectorGrid');
+    
+    if (displayedRecipesInSelector === 0) {
+        grid.innerHTML = '';
+    }
+    
+    if (filteredRecipes.length === 0) {
+        grid.innerHTML = `
+            <div class="text-center py-5 col-span-full">
+                <i class="fas fa-search fa-3x text-muted mb-3"></i>
+                <h5>No recipes found</h5>
+                <p class="text-muted">Try adjusting your search or filters</p>
+            </div>
+        `;
+        document.getElementById('recipeSelectorShowMore').style.display = 'none';
+        return;
+    }
+    
+    const recipesToShow = filteredRecipes.slice(
+        displayedRecipesInSelector,
+        displayedRecipesInSelector + RECIPES_PER_LOAD
+    );
+    
+    recipesToShow.forEach(recipe => {
+        const card = createRecipeSelectorCard(recipe);
+        grid.appendChild(card);
+    });
+    
+    displayedRecipesInSelector += recipesToShow.length;
+    
+    const showMoreBtn = document.getElementById('recipeSelectorShowMore');
+    if (displayedRecipesInSelector < filteredRecipes.length) {
+        showMoreBtn.style.display = 'block';
+    } else {
+        showMoreBtn.style.display = 'none';
+    }
+}
+
+function populateFilterDropdowns() {
+    const courseSelect = document.getElementById('recipeSelectorCourse');
+    courseSelect.innerHTML = '<option value="">🍽️ All Courses</option>';
+    allCourses.forEach(course => {
+        courseSelect.innerHTML += `<option value="${course.name}">${course.name}</option>`;
+    });
+    
+    const categorySelect = document.getElementById('recipeSelectorCategory');
+    categorySelect.innerHTML = '<option value="">🏷️ All Categories</option>';
+    allCategories.forEach(cat => {
+        categorySelect.innerHTML += `<option value="${cat.name}">${cat.name}</option>`;
+    });
+    
+    const proteinSelect = document.getElementById('recipeSelectorProtein');
+    proteinSelect.innerHTML = '<option value="">🥩 All Proteins</option>';
+    allProteins.forEach(protein => {
+        proteinSelect.innerHTML += `<option value="${protein.name}">${protein.name}</option>`;
+    });
+    proteinSelect.innerHTML += '<option value="vegetarian">🌱 Vegetarian</option>';
+
+    const authorSelect = document.getElementById('recipeSelectorAuthor');
+    authorSelect.innerHTML = '<option value="">👤 All Authors</option>';
+    allAuthors.forEach(author => {
+        authorSelect.innerHTML += `<option value="${author.value}">${author.name}</option>`;
+    });
+}
+
+function createRecipeSelectorCard(recipe) {
+    const card = document.createElement('div');
+    card.className = 'recipe-selector-card';
+    card.onclick = () => selectRecipeForDay(recipe.recipe_id, recipe.recipe_name, recipe.servings);
+    
+    let imageHtml;
+    if (recipe.recipe_image) {
+        imageHtml = `<img src="${recipe.recipe_image}" class="recipe-selector-card-image" alt="${recipe.recipe_name}">`;
+    } else {
+        imageHtml = `<div class="recipe-selector-card-placeholder"><i class="fas fa-utensils"></i></div>`;
+    }
+    
+    let metaHtml = `<span class="recipe-selector-card-badge"><i class="fas fa-users"></i> ${recipe.servings}</span>`;
+    
+    if (recipe.prep_time) {
+        metaHtml += `<span class="recipe-selector-card-badge"><i class="fas fa-clock"></i> ${recipe.prep_time}m</span>`;
+    }
+    
+    if (recipe.difficulty_level) {
+        metaHtml += `<span class="recipe-selector-card-badge"><i class="fas fa-signal"></i> ${recipe.difficulty_level}</span>`;
+    }
+    
+    let tagsHtml = '';
+    recipe.courses.forEach(course => {
+        tagsHtml += `<span class="recipe-selector-card-badge" style="background: #17a2b8; color: white;">${course}</span>`;
+    });
+    recipe.categories.forEach(cat => {
+        tagsHtml += `<span class="recipe-selector-card-badge" style="background: #6f42c1; color: white;">${cat}</span>`;
+    });
+    
+    if (recipe.is_vegetarian) {
+        tagsHtml += `<span class="recipe-selector-card-badge" style="background: #28a745; color: white;"><i class="fas fa-leaf"></i> Vegetarian</span>`;
+    } else {
+        recipe.proteins.forEach(protein => {
+            tagsHtml += `<span class="recipe-selector-card-badge" style="background: #fd7e14; color: white;">${protein}</span>`;
+        });
+    }
+    
+    card.innerHTML = `
+        ${imageHtml}
+        <div class="recipe-selector-card-body">
+            <div class="recipe-selector-card-title">${recipe.recipe_name}</div>
+            <div class="recipe-selector-card-meta">
+                ${metaHtml}
+                ${tagsHtml}
+            </div>
+        </div>
+    `;
+    
+    return card;
+}
+
+function selectRecipeForDay(recipeId, recipeName, servings) {
+    const recipeList = document.getElementById(`recipes-${currentMealPlanDate}`);
+    
+    const emptyState = recipeList.querySelector('.empty-day-state');
+    if (emptyState) {
+        emptyState.remove();
+    }
+    
+    const recipeItem = document.createElement('div');
+    recipeItem.className = 'recipe-item';
+    
+    recipeItem.innerHTML = `
+        <input type="hidden" name="recipes_${currentMealPlanDate}[]" value="${recipeId}">
+        <div style="flex: 1;">
+            <strong>${recipeName}</strong>
+        </div>
+        
+        <div style="display: flex; align-items: center; gap: 5px;">
+            <input type="number" 
+                   name="servings_${currentMealPlanDate}[]" 
+                   class="servings-input" 
+                   min="1" 
+                   value="${servings}" 
+                   required>
+            <span style="color: #6c757d; font-size: 14px;">servings</span>
+        </div>
+        
+        <button type="button" class="btn-remove-recipe" onclick="removeRecipe(this)">
+            <i class="fas fa-trash"></i>
+        </button>
+    `;
+    
+    recipeList.appendChild(recipeItem);
+    
+    const modal = bootstrap.Modal.getInstance(document.getElementById('recipeSelectorModal'));
+    modal.hide();
+}
+
+function searchRecipesInSelector() {
+    const searchTerm = document.getElementById('recipeSelectorSearch').value.toLowerCase();
+    const courseFilter = document.getElementById('recipeSelectorCourse').value;
+    const categoryFilter = document.getElementById('recipeSelectorCategory').value;
+    const proteinFilter = document.getElementById('recipeSelectorProtein').value;
+    const authorFilter = document.getElementById('recipeSelectorAuthor').value;  // ← ADD THIS
+    
+    filteredRecipes = allRecipesForSelector.filter(recipe => {
+        const matchesSearch = !searchTerm || recipe.recipe_name.toLowerCase().includes(searchTerm);
+        const matchesCourse = !courseFilter || recipe.courses.includes(courseFilter);
+        const matchesCategory = !categoryFilter || recipe.categories.includes(categoryFilter);
+        const matchesProtein = !proteinFilter || 
+            (proteinFilter === 'vegetarian' ? recipe.is_vegetarian : recipe.proteins.includes(proteinFilter));
+        const matchesAuthor = !authorFilter || recipe.author === authorFilter;  // ← ADD THIS
+        
+        return matchesSearch && matchesCourse && matchesCategory && matchesProtein && matchesAuthor;  // ← UPDATE THIS
+    });
+    
+    displayedRecipesInSelector = 0;
+    displayRecipesInSelector();
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('recipeSelectorSearch');
+    if (searchInput) {
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                searchRecipesInSelector();
+            }
+        });
+    }
+});
+
+function filterRecipesInSelector() {
+    searchRecipesInSelector();
+}
+
+function clearRecipeFilters() {
+    document.getElementById('recipeSelectorSearch').value = '';
+    document.getElementById('recipeSelectorCourse').value = '';
+    document.getElementById('recipeSelectorCategory').value = '';
+    document.getElementById('recipeSelectorProtein').value = '';
+    document.getElementById('recipeSelectorAuthor').value = '';  // ← ADD THIS
+    
+    filteredRecipes = [...allRecipesForSelector];
+    displayedRecipesInSelector = 0;
+    displayRecipesInSelector();
+}
+
+function loadMoreRecipesInSelector() {
+    displayRecipesInSelector();
+}
+
 </script>
+
+<!-- Recipe Selector Modal - ADD THIS HERE -->
+<div class="modal fade" id="recipeSelectorModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-xl" role="document" style="max-width: 1000px;">
+        <div class="modal-content">
+            <div class="modal-header" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white;">
+                <h5 class="modal-title">
+                    <i class="fas fa-utensils"></i> Select Recipe/s for <span id="selectedDayName"></span>
+                </h5>
+                <button type="button" class="close" data-dismiss="modal" style="color: white; opacity: 0.8;">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <!-- Search & Clear Filters (Top Row) -->
+                <div class="mb-3">
+                    <div class="row g-2">
+                        <div class="col-md-9">
+                            <div class="input-group">
+                                <input type="text" id="recipeSelectorSearch" class="form-control" placeholder="🔎 Search recipes by name...">
+                                <button class="btn btn-primary" onclick="searchRecipesInSelector()">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <button class="btn btn-outline-danger w-100" onclick="clearRecipeFilters()">
+                                <i class="fas fa-times-circle"></i> Clear Filters
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Filter Dropdowns (Second Row) -->
+                <div class="mb-4">
+                    <div class="row g-2">
+                        <div class="col-md-3">
+                            <select id="recipeSelectorCourse" class="form-control" onchange="filterRecipesInSelector()">
+                                <option value="">🍽️ All Courses</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <select id="recipeSelectorCategory" class="form-control" onchange="filterRecipesInSelector()">
+                                <option value="">🏷️ All Categories</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <select id="recipeSelectorProtein" class="form-control" onchange="filterRecipesInSelector()">
+                                <option value="">🥩 All Proteins</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <select id="recipeSelectorAuthor" class="form-control" onchange="filterRecipesInSelector()">
+                                <option value="">👤 All Authors</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Recipe Cards Grid -->
+                <div id="recipeSelectorGrid" class="recipe-selector-grid">
+                    <div class="text-center py-5">
+                        <i class="fas fa-spinner fa-spin fa-3x text-primary"></i>
+                        <p class="mt-3">Loading recipes...</p>
+                    </div>
+                </div>
+                
+                <!-- Show More -->
+                <div id="recipeSelectorShowMore" class="text-center mt-3" style="display: none;">
+                    <button class="btn btn-outline-primary" onclick="loadMoreRecipesInSelector()">
+                        <i class="fas fa-chevron-down"></i> Show More
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
 {% endblock %}
