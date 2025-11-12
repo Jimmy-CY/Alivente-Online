@@ -180,12 +180,89 @@
     flex-wrap: wrap;
 }
 
+/* Missing Conversions Styles */
+.conversions-needed-card {
+    background: #fff3cd;
+    border: 2px solid #ffc107;
+    border-radius: 12px;
+    padding: 30px;
+    margin-bottom: 30px;
+}
+
+.conversions-needed-card h2 {
+    color: #856404;
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.conversions-needed-card .alert {
+    background: white;
+    border: 1px solid #ffc107;
+    color: #856404;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.conversion-form-group {
+    background: white;
+    border: 2px solid #dee2e6;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 15px;
+}
+
+.conversion-form-group h4 {
+    color: #2c3e50;
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.conversion-input-row {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr auto;
+    gap: 10px;
+    align-items: center;
+}
+
+.conversion-input-row input {
+    padding: 10px;
+    border: 2px solid #28a745;
+    border-radius: 6px;
+    font-size: 15px;
+    width: 100%;
+}
+
+.conversion-input-row .equals-sign {
+    font-size: 20px;
+    font-weight: bold;
+    color: #6c757d;
+}
+
+.conversion-example {
+    background: #f8f9fa;
+    padding: 10px;
+    border-radius: 6px;
+    margin-top: 10px;
+    font-size: 13px;
+    color: #6c757d;
+}
+
 /* Print Styles */
 @media print {
     .action-bar,
     .share-buttons,
     .email-section,
-    .ingredient-checkbox {
+    .ingredient-checkbox,
+    .conversions-needed-card {
         display: none !important;
     }
     
@@ -239,16 +316,198 @@
             </span>
             <span>
                 <i class="fas fa-utensils"></i>
-                {{ meal_plan.total_recipes }} recipe{{ meal_plan.total_recipes|pluralize }}
-            </span>
-            <span>
-                <i class="fas fa-list"></i>
-                {{ total_ingredients }} ingredient{{ total_ingredients|pluralize }}
+                {% if meal_plan.days.count %}{{ meal_plan.days.count }}{% else %}0{% endif %} day{{ meal_plan.days.count|pluralize }}
             </span>
         </div>
     </div>
 
-    <!-- Ingredients Card -->
+    {% if has_missing_conversions %}
+    <!-- Missing Conversions Card -->
+    <div class="conversions-needed-card">
+        <h2>
+            <i class="fas fa-exchange-alt"></i>
+            Unit Conversions Needed
+        </h2>
+        
+        <div class="alert">
+            <i class="fas fa-info-circle"></i>
+            <strong>We need your help!</strong> Some ingredients use different units that need to be converted. 
+            Please provide the conversion rates below to generate your shopping list.
+        </div>
+
+        <div id="conversionsContainer">
+            <!-- Conversion forms will be inserted here by JavaScript -->
+        </div>
+
+        <div style="display: flex; gap: 10px; margin-top: 25px;">
+            <button onclick="saveAllConversions()" id="saveConversionsBtn" class="btn btn-success" style="flex: 1; padding: 15px; font-size: 16px;">
+                <i class="fas fa-save"></i> Save Conversions & Generate List
+            </button>
+            <a href="{% url 'view_meal_plan' meal_plan.meal_plan_id %}" class="btn btn-secondary" style="padding: 15px;">
+                <i class="fas fa-times"></i> Cancel
+            </a>
+        </div>
+
+        <div id="conversionStatus" style="margin-top: 15px;"></div>
+    </div>
+
+    <script>
+    // Parse missing conversions from Django
+    const missingConversions = {{ missing_conversions|safe }};
+    
+    console.log('Missing conversions:', missingConversions);
+    
+    // Store conversion values
+    const conversionValues = {};
+    
+    // Render conversion forms
+    function renderConversionForms() {
+        const container = document.getElementById('conversionsContainer');
+        container.innerHTML = '';
+        
+        missingConversions.forEach((conv, index) => {
+            const formGroup = document.createElement('div');
+            formGroup.className = 'conversion-form-group';
+            
+            formGroup.innerHTML = `
+                <h4>
+                    <span style="background: #28a745; color: white; padding: 4px 10px; border-radius: 4px; font-size: 14px;">
+                        ${index + 1}
+                    </span>
+                    ${conv.ingredient} (from "${conv.recipe}")
+                </h4>
+                
+                <div class="conversion-input-row">
+                    <div>
+                        <label style="font-size: 13px; color: #6c757d; margin-bottom: 5px; display: block;">
+                            Original Unit
+                        </label>
+                        <input type="text" value="1 ${conv.from_unit}" readonly style="background: #f8f9fa;">
+                    </div>
+                    
+                    <div class="equals-sign">=</div>
+                    
+                    <div>
+                        <label style="font-size: 13px; color: #6c757d; margin-bottom: 5px; display: block;">
+                            Conversion to ${conv.to_unit}
+                        </label>
+                        <input type="number" 
+                               step="0.001" 
+                               min="0.001"
+                               placeholder="e.g., 15" 
+                               id="conversion_${index}"
+                               data-from-unit-id="${conv.from_unit_id}"
+                               data-to-unit-id="${conv.to_unit_id}"
+                               data-from-unit="${conv.from_unit}"
+                               data-to-unit="${conv.to_unit}"
+                               style="border-color: #28a745;">
+                    </div>
+                    
+                    <div>
+                        <label style="font-size: 13px; color: #6c757d; margin-bottom: 5px; display: block;">
+                            &nbsp;
+                        </label>
+                        <span style="padding: 10px; display: block; font-weight: 600;">${conv.to_unit}</span>
+                    </div>
+                </div>
+                
+                <div class="conversion-example">
+                    <i class="fas fa-lightbulb"></i> 
+                    <strong>Example:</strong> If 1 ${conv.from_unit} = 15 ${conv.to_unit}, enter "15"
+                </div>
+            `;
+            
+            container.appendChild(formGroup);
+        });
+    }
+    
+    // Save all conversions
+    async function saveAllConversions() {
+        const btn = document.getElementById('saveConversionsBtn');
+        const status = document.getElementById('conversionStatus');
+        
+        // Collect all conversion values
+        const conversions = [];
+        let hasErrors = false;
+        
+        missingConversions.forEach((conv, index) => {
+            const input = document.getElementById(`conversion_${index}`);
+            const value = input.value.trim();
+            
+            if (!value || parseFloat(value) <= 0) {
+                input.style.borderColor = '#dc3545';
+                hasErrors = true;
+            } else {
+                input.style.borderColor = '#28a745';
+                conversions.push({
+                    from_unit_id: input.dataset.fromUnitId,
+                    to_unit_id: input.dataset.toUnitId,
+                    multiplier: value
+                });
+            }
+        });
+        
+        if (hasErrors) {
+            status.innerHTML = '<div class="alert alert-danger"><i class="fas fa-exclamation-triangle"></i> Please fill in all conversion values.</div>';
+            return;
+        }
+        
+        // Disable button
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving conversions...';
+        status.innerHTML = '';
+        
+        // Save each conversion
+        let savedCount = 0;
+        let failedCount = 0;
+        
+        for (const conversion of conversions) {
+            try {
+                const response = await fetch("{% url 'save_unit_conversion' %}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: JSON.stringify(conversion)
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    savedCount++;
+                } else {
+                    failedCount++;
+                    console.error('Failed to save conversion:', data.error);
+                }
+            } catch (error) {
+                failedCount++;
+                console.error('Error saving conversion:', error);
+            }
+        }
+        
+        if (failedCount === 0) {
+            // All saved successfully - reload page to regenerate list
+            status.innerHTML = `<div class="alert alert-success"><i class="fas fa-check-circle"></i> All conversions saved! Generating shopping list...</div>`;
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        } else {
+            // Some failed
+            status.innerHTML = `<div class="alert alert-warning"><i class="fas fa-exclamation-triangle"></i> Saved ${savedCount} conversions, but ${failedCount} failed. Please try again.</div>`;
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-save"></i> Save Conversions & Generate List';
+        }
+    }
+    
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+        renderConversionForms();
+    });
+    </script>
+
+    {% else %}
+    <!-- Normal Shopping List (No Missing Conversions) -->
     <div class="ingredients-card">
         <h2>Items to Buy</h2>
         
@@ -278,7 +537,7 @@
             </div>
             {% endfor %}
             
-            <!-- Share Section - Modal Style -->
+            <!-- Share Section -->
             <div class="email-section">
                 <h3 style="color: #2c3e50; font-size: 18px; font-weight: 600; margin-bottom: 15px;">
                     <i class="fas fa-envelope"></i> Email this list to:
@@ -291,7 +550,6 @@
                     <option value="leximanias@gmail.com">leximanias@gmail.com</option>
                 </select>
                 
-                <!-- Action Buttons - Same style as recipe modal -->
                 <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 20px;">
                     <button onclick="printList()" class="btn" style="background: #6c757d; color: white; padding: 12px; border-radius: 8px; display: flex; flex-direction: column; align-items: center; gap: 5px; border: none;">
                         <i class="fas fa-print" style="font-size: 20px;"></i>
@@ -326,145 +584,135 @@
         {% endif %}
     </div>
 
-</div>
-
-<script>
-// Toggle checked state for ingredient items
-function toggleItem(checkbox) {
-    const listItem = checkbox.closest('.ingredient-item');
-    if (checkbox.checked) {
-        listItem.classList.add('checked');
-    } else {
-        listItem.classList.remove('checked');
-    }
-}
-
-// Get unchecked ingredients for sharing
-function getActiveIngredients() {
-    const items = [];
-    document.querySelectorAll('.ingredient-item:not(.checked)').forEach(item => {
-        const checkbox = item.querySelector('.ingredient-checkbox');
-        items.push({
-            ingredient: checkbox.dataset.ingredient,
-            quantity: parseFloat(checkbox.dataset.quantity),
-            unit: checkbox.dataset.unit,
-            category: checkbox.dataset.category
-        });
-    });
-    return items;
-}
-
-// Format ingredients as text grouped by category
-function formatIngredientsText() {
-    const items = getActiveIngredients();
-    
-    // Group by category
-    const grouped = {};
-    items.forEach(item => {
-        if (!grouped[item.category]) {
-            grouped[item.category] = [];
-        }
-        grouped[item.category].push(item);
-    });
-    
-    let text = `🛒 Shopping List for {{ meal_plan.plan_name }}\n`;
-    text += `{{ meal_plan.start_date|date:"M d" }} - {{ meal_plan.end_date|date:"M d, Y" }}\n\n`;
-    
-    // Add items by category
-    Object.keys(grouped).sort().forEach(category => {
-        text += `${category}:\n`;
-        grouped[category].forEach(item => {
-            const qty = item.quantity % 1 === 0 ? item.quantity.toFixed(0) : item.quantity.toFixed(2).replace(/\.?0+$/, '');
-            text += `☐ ${qty} ${item.unit} ${item.ingredient}\n`;
-        });
-        text += `\n`;
-    });
-    
-    text += `---\nGenerated by ALIVENTE ONLINE`;
-    return text;
-}
-
-// Print shopping list
-function printList() {
-    window.print();
-}
-
-// Copy to clipboard
-function copyToClipboard() {
-    const text = formatIngredientsText();
-    navigator.clipboard.writeText(text).then(() => {
-        alert('Shopping list copied to clipboard!');
-    }).catch(err => {
-        alert('Failed to copy: ' + err);
-    });
-}
-
-// Share to WhatsApp
-function shareToWhatsApp() {
-    const text = formatIngredientsText();
-    const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
-    window.open(url, '_blank');
-}
-
-// Send email
-function sendEmail() {
-    const email = document.getElementById('emailSelect').value;
-    
-    if (!email) {
-        alert('Please select an email address');
-        return;
-    }
-    
-    const items = getActiveIngredients();
-    const btn = document.getElementById('sendEmailBtn');
-    const status = document.getElementById('emailStatus');
-    
-    // Group by category for email
-    const grouped = {};
-    items.forEach(item => {
-        if (!grouped[item.category]) {
-            grouped[item.category] = [];
-        }
-        grouped[item.category].push(item);
-    });
-    
-    // Disable button and show loading
-    btn.disabled = true;
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin" style="font-size: 20px;"></i><span style="font-size: 13px;">Sending...</span>';
-    status.innerHTML = '';
-    
-    // Send via AJAX
-    fetch("{% url 'send_meal_plan_shopping_list' %}", {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': '{{ csrf_token }}'
-        },
-        body: JSON.stringify({
-            email: email,
-            meal_plan_name: '{{ meal_plan.plan_name }}',
-            date_range: '{{ meal_plan.start_date|date:"M d" }} - {{ meal_plan.end_date|date:"M d, Y" }}',
-            total_recipes: {{ meal_plan.total_recipes }},
-            ingredients: grouped  // Send grouped by category
-        })
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            status.innerHTML = '<div class="alert alert-success" style="padding: 12px; border-radius: 8px;"><i class="fas fa-check-circle"></i> Email sent successfully to ' + email + '!</div>';
+    <script>
+    // Toggle checked state
+    function toggleItem(checkbox) {
+        const listItem = checkbox.closest('.ingredient-item');
+        if (checkbox.checked) {
+            listItem.classList.add('checked');
         } else {
-            status.innerHTML = '<div class="alert alert-danger" style="padding: 12px; border-radius: 8px;"><i class="fas fa-exclamation-circle"></i> ' + data.error + '</div>';
+            listItem.classList.remove('checked');
         }
-    })
-    .catch(error => {
-        status.innerHTML = '<div class="alert alert-danger" style="padding: 12px; border-radius: 8px;"><i class="fas fa-exclamation-circle"></i> Failed to send email. Please try again.</div>';
-    })
-    .finally(() => {
-        // Re-enable button
-        btn.disabled = false;
-        btn.innerHTML = '<i class="fas fa-paper-plane" style="font-size: 20px;"></i><span style="font-size: 13px;">Email</span>';
-    });
-}
-</script>
+    }
+
+    // Get unchecked ingredients
+    function getActiveIngredients() {
+        const items = [];
+        document.querySelectorAll('.ingredient-item:not(.checked)').forEach(item => {
+            const checkbox = item.querySelector('.ingredient-checkbox');
+            items.push({
+                ingredient: checkbox.dataset.ingredient,
+                quantity: parseFloat(checkbox.dataset.quantity),
+                unit: checkbox.dataset.unit,
+                category: checkbox.dataset.category
+            });
+        });
+        return items;
+    }
+
+    // Format as text
+    function formatIngredientsText() {
+        const items = getActiveIngredients();
+        const grouped = {};
+        items.forEach(item => {
+            if (!grouped[item.category]) {
+                grouped[item.category] = [];
+            }
+            grouped[item.category].push(item);
+        });
+        
+        let text = `🛒 Shopping List for {{ meal_plan.plan_name }}\n`;
+        text += `{{ meal_plan.start_date|date:"M d" }} - {{ meal_plan.end_date|date:"M d, Y" }}\n\n`;
+        
+        Object.keys(grouped).sort().forEach(category => {
+            text += `${category}:\n`;
+            grouped[category].forEach(item => {
+                const qty = item.quantity % 1 === 0 ? item.quantity.toFixed(0) : item.quantity.toFixed(2).replace(/\.?0+$/, '');
+                text += `☐ ${qty} ${item.unit} ${item.ingredient}\n`;
+            });
+            text += `\n`;
+        });
+        
+        text += `---\nGenerated by ALIVENTE ONLINE`;
+        return text;
+    }
+
+    function printList() {
+        window.print();
+    }
+
+    function copyToClipboard() {
+        const text = formatIngredientsText();
+        navigator.clipboard.writeText(text).then(() => {
+            alert('Shopping list copied to clipboard!');
+        }).catch(err => {
+            alert('Failed to copy: ' + err);
+        });
+    }
+
+    function shareToWhatsApp() {
+        const text = formatIngredientsText();
+        const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
+        window.open(url, '_blank');
+    }
+
+    function sendEmail() {
+        const email = document.getElementById('emailSelect').value;
+        
+        if (!email) {
+            alert('Please select an email address');
+            return;
+        }
+        
+        const items = getActiveIngredients();
+        const btn = document.getElementById('sendEmailBtn');
+        const status = document.getElementById('emailStatus');
+        
+        const grouped = {};
+        items.forEach(item => {
+            if (!grouped[item.category]) {
+                grouped[item.category] = [];
+            }
+            grouped[item.category].push(item);
+        });
+        
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin" style="font-size: 20px;"></i><span style="font-size: 13px;">Sending...</span>';
+        status.innerHTML = '';
+        
+        fetch("{% url 'send_meal_plan_shopping_list' %}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({
+                email: email,
+                meal_plan_name: '{{ meal_plan.plan_name }}',
+                date_range: '{{ meal_plan.start_date|date:"M d" }} - {{ meal_plan.end_date|date:"M d, Y" }}',
+                total_recipes: {{ meal_plan.days.count }},
+                ingredients: grouped
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                status.innerHTML = '<div class="alert alert-success" style="padding: 12px; border-radius: 8px;"><i class="fas fa-check-circle"></i> Email sent successfully to ' + email + '!</div>';
+            } else {
+                status.innerHTML = '<div class="alert alert-danger" style="padding: 12px; border-radius: 8px;"><i class="fas fa-exclamation-circle"></i> ' + data.error + '</div>';
+            }
+        })
+        .catch(error => {
+            status.innerHTML = '<div class="alert alert-danger" style="padding: 12px; border-radius: 8px;"><i class="fas fa-exclamation-circle"></i> Failed to send email.</div>';
+        })
+        .finally(() => {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-paper-plane" style="font-size: 20px;"></i><span style="font-size: 13px;">Email</span>';
+        });
+    }
+    </script>
+    {% endif %}
+
+</div>
 
 {% endblock %}

@@ -9714,18 +9714,17 @@ def preview_imported_recipe(request, temp_id):
 
 def aggregate_meal_plan_ingredients(meal_plan):
     """
-    Aggregate ingredients across all recipes in a meal plan.
-    Groups by ingredient name (ignoring preparation) and sums quantities with unit conversion.
-    Prioritizes database categories, uses smart categorization as fallback.
+    Aggregate ingredients across all recipes with smart unit conversion.
+    Returns: (aggregated_dict, missing_conversions_list)
     """
     from collections import defaultdict
     from decimal import Decimal
     
     def smart_categorize(ingredient_name):
-        """Intelligently categorize ingredients based on name - IMPROVED ORDER"""
+        """Intelligently categorize ingredients based on name"""
         ingredient_lower = ingredient_name.lower()
         
-        # PRIORITY 1: Canned & Packaged (check these FIRST before vegetables)
+        # PRIORITY 1: Canned & Packaged
         canned_terms = [
             'stock', 'broth', 'cube', 'bouillon', 'canned', 'tinned', 'tin',
             'paste', 'sauce', 'puree', 'concentrate'
@@ -9734,7 +9733,7 @@ def aggregate_meal_plan_ingredients(meal_plan):
             if term in ingredient_lower:
                 return 'Canned & Packaged'
         
-        # PRIORITY 2: Beverages (check before dairy to catch "cream sherry")
+        # PRIORITY 2: Beverages
         beverages = ['wine', 'beer', 'sherry', 'brandy', 'rum', 'vodka', 'whiskey', 'liqueur']
         for term in beverages:
             if term in ingredient_lower:
@@ -9761,7 +9760,6 @@ def aggregate_meal_plan_ingredients(meal_plan):
         
         # PRIORITY 5: Dairy
         dairy = ['milk', 'cream', 'yogurt', 'cheese', 'butter']
-        # Exclude if it's a beverage (like cream sherry)
         is_beverage = any(bev in ingredient_lower for bev in beverages)
         if not is_beverage:
             for term in dairy:
@@ -9783,7 +9781,7 @@ def aggregate_meal_plan_ingredients(meal_plan):
             if term in ingredient_lower:
                 return 'Grains & Pasta'
         
-        # PRIORITY 8: Vegetables (check LAST so canned items don't match here)
+        # PRIORITY 8: Vegetables
         vegetables = [
             'onion', 'garlic', 'tomato', 'potato', 'carrot', 'celery', 'pepper',
             'lettuce', 'spinach', 'broccoli', 'mushroom', 'peas', 'corn'
@@ -9792,11 +9790,19 @@ def aggregate_meal_plan_ingredients(meal_plan):
             if term in ingredient_lower:
                 return 'Vegetables'
         
-        # Default
         return 'Other'
     
-    # Dictionary to hold aggregated ingredients
-    aggregated = defaultdict(lambda: {'units': defaultdict(Decimal), 'category': None})
+    # Track missing conversions
+    missing_conversions = []
+    seen_missing = set()
+    
+    # Dictionary: {ingredient_name: {base_unit: amount}}
+    aggregated = defaultdict(lambda: {
+        'unit': None, 
+        'amount': Decimal('0'), 
+        'ingredient_obj': None,
+        'failed_conversions': []  # Track items that couldn't be converted
+    })
     
     # Get all meal plan days with recipes
     for day in meal_plan.days.all().order_by('date'):
@@ -9806,44 +9812,85 @@ def aggregate_meal_plan_ingredients(meal_plan):
             
             # Get all ingredients for this recipe
             for recipe_ingredient in recipe.recipe_ingredients.all():
-                ingredient_name = recipe_ingredient.ingredient.name
+                ingredient = recipe_ingredient.ingredient
+                ingredient_name = ingredient.name
                 quantity = Decimal(recipe_ingredient.amount or 0) * servings_multiplier
-                unit = recipe_ingredient.unit.name if recipe_ingredient.unit else "unit"
+                from_unit = recipe_ingredient.unit
                 
-                # Get category from database
-                if recipe_ingredient.ingredient.category:
-                    db_category = recipe_ingredient.ingredient.category.name
+                # Skip if no unit
+                if not from_unit:
+                    continue
+                
+                # Determine base unit for this ingredient
+                if aggregated[ingredient_name]['unit'] is None:
+                    # First time seeing this ingredient - set base unit to first unit seen
+                    aggregated[ingredient_name]['unit'] = from_unit
+                    aggregated[ingredient_name]['ingredient_obj'] = ingredient
+                    aggregated[ingredient_name]['amount'] = quantity
                 else:
-                    db_category = None
-                
-                # Aggregate by ingredient and unit
-                aggregated[ingredient_name]['units'][unit] += quantity
-                aggregated[ingredient_name]['category'] = db_category
+                    # Try to convert to base unit
+                    base_unit = aggregated[ingredient_name]['unit']
+                    
+                    if from_unit.measurement_unit_id == base_unit.measurement_unit_id:
+                        # Same unit - just add
+                        aggregated[ingredient_name]['amount'] += quantity
+                    else:
+                        # Different unit - need conversion
+                        converted_qty, multiplier = convert_quantity(quantity, from_unit, base_unit)
+                        
+                        if converted_qty is not None:
+                            # Conversion successful
+                            aggregated[ingredient_name]['amount'] += converted_qty
+                        else:
+                            # Conversion missing - track it
+                            conversion_key = f"{from_unit.measurement_unit_id}-{base_unit.measurement_unit_id}"
+                            if conversion_key not in seen_missing:
+                                seen_missing.add(conversion_key)
+                                missing_conversions.append({
+                                    'ingredient': ingredient_name,
+                                    'from_unit': from_unit.name,
+                                    'from_unit_id': from_unit.measurement_unit_id,
+                                    'to_unit': base_unit.name,
+                                    'to_unit_id': base_unit.measurement_unit_id,
+                                    'quantity': float(quantity),
+                                    'recipe': recipe.recipe_name
+                                })
+                            
+                            # Track this failed conversion
+                            aggregated[ingredient_name]['failed_conversions'].append({
+                                'quantity': float(quantity),
+                                'unit': from_unit.name,
+                                'recipe': recipe.recipe_name
+                            })
     
-    # Convert to a cleaner format grouped by category
+    # Convert to categorized format
     categorized_ingredients = defaultdict(list)
     
     for ingredient_name in sorted(aggregated.keys()):
-        db_category = aggregated[ingredient_name]['category']
+        data = aggregated[ingredient_name]
+        ingredient_obj = data['ingredient_obj']
         
-        # PRIORITIZE database category if it exists and is not "Other"
-        if db_category and db_category != 'Other':
-            final_category = db_category
+        # Determine category
+        if ingredient_obj and ingredient_obj.category:
+            category = ingredient_obj.category.name
         else:
-            # Use smart categorization as fallback
-            final_category = smart_categorize(ingredient_name)
+            category = smart_categorize(ingredient_name)
         
-        for unit, quantity in aggregated[ingredient_name]['units'].items():
-            categorized_ingredients[final_category].append({
-                'ingredient': ingredient_name,
-                'quantity': float(quantity),
-                'unit': unit
-            })
+        # Build ingredient entry
+        entry = {
+            'ingredient': ingredient_name,
+            'quantity': float(data['amount']),
+            'unit': data['unit'].name
+        }
+        
+        # Add note about failed conversions if any
+        if data['failed_conversions']:
+            entry['note'] = f"Note: Some amounts couldn't be converted ({len(data['failed_conversions'])} items)"
+            entry['failed_items'] = data['failed_conversions']
+        
+        categorized_ingredients[category].append(entry)
     
-    # Sort categories
-    sorted_categories = sorted(categorized_ingredients.items())
-    
-    return dict(sorted_categories)
+    return (dict(categorized_ingredients), missing_conversions)
 
 @login_required
 def meal_plans(request):
@@ -10134,7 +10181,7 @@ def duplicate_meal_plan(request, meal_plan_id):
 
 @login_required
 def meal_plan_shopping_list(request, meal_plan_id):
-    """Display shopping list for a meal plan with all aggregated ingredients"""
+    """Display shopping list with unit conversion and prompt for missing conversions"""
     if not request.user.is_superuser:
         messages.error(request, 'You do not have permission to access this page.')
         return redirect('meal_plans')
@@ -10165,20 +10212,139 @@ def meal_plan_shopping_list(request, meal_plan_id):
             meal_plan_id=meal_plan_id
         )
         
-        # Aggregate ingredients
-        ingredients = aggregate_meal_plan_ingredients(meal_plan)
+        # Aggregate ingredients with conversion
+        ingredients, missing_conversions = aggregate_meal_plan_ingredients(meal_plan)
         
-        context = {
-            'meal_plan': meal_plan,
-            'ingredients': ingredients,
-            'total_ingredients': sum(len(items) for items in ingredients.values()),
-        }
+        # If there are missing conversions, show modal to collect them
+        if missing_conversions:
+            context = {
+                'meal_plan': meal_plan,
+                'missing_conversions': json.dumps(missing_conversions),
+                'has_missing_conversions': True,
+            }
+        else:
+            # No missing conversions - show the shopping list
+            context = {
+                'meal_plan': meal_plan,
+                'ingredients': ingredients,
+                'total_ingredients': sum(len(items) for items in ingredients.values()),
+                'has_missing_conversions': False,
+            }
         
         return render(request, 'meal_plan_shopping_list.html', context)
         
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         messages.error(request, f'Error generating shopping list: {str(e)}')
         return redirect('view_meal_plan', meal_plan_id=meal_plan_id)
+
+def get_base_unit_for_ingredient(ingredient):
+    """
+    Determine the best base unit for an ingredient based on its category.
+    Returns a MeasurementUnit object.
+    """
+    base_unit_map = {
+        'Vegetables': 'gram',
+        'Fruits': 'gram',
+        'Meat & Seafood': 'gram',
+        'Poultry': 'gram',
+        'Dairy': 'milliliter',
+        'Grains & Pasta': 'gram',
+        'Oils & Fats': 'milliliter',
+        'Baking': 'gram',
+        'Herbs & Spices': 'gram',
+        'Canned & Packaged': 'gram',
+        'Beverages': 'milliliter',
+    }
+    
+    if ingredient.category:
+        preferred_unit_name = base_unit_map.get(ingredient.category.name, 'gram')
+    else:
+        preferred_unit_name = 'gram'
+    
+    try:
+        return MeasurementUnit.objects.get(name__iexact=preferred_unit_name)
+    except MeasurementUnit.DoesNotExist:
+        try:
+            return MeasurementUnit.objects.get(name__iexact='gram')
+        except:
+            return MeasurementUnit.objects.first()
+
+def convert_quantity(amount, from_unit, to_unit):
+    """
+    Convert a quantity from one unit to another using the UnitConversion table.
+    Returns (converted_amount, multiplier) or (None, None) if no conversion exists.
+    """
+    if from_unit.measurement_unit_id == to_unit.measurement_unit_id:
+        return (amount, Decimal('1'))
+    
+    # Check if direct conversion exists
+    try:
+        conversion = UnitConversion.objects.get(from_unit=from_unit, to_unit=to_unit)
+        converted = Decimal(amount) * conversion.multiplier
+        return (converted, conversion.multiplier)
+    except UnitConversion.DoesNotExist:
+        pass
+    
+    # Check if reverse conversion exists
+    try:
+        conversion = UnitConversion.objects.get(from_unit=to_unit, to_unit=from_unit)
+        converted = Decimal(amount) / conversion.multiplier
+        return (converted, Decimal('1') / conversion.multiplier)
+    except UnitConversion.DoesNotExist:
+        pass
+    
+    # No conversion found
+    return (None, None)
+
+@login_required
+@require_POST
+def save_unit_conversion(request):
+    """Save a new unit conversion"""
+    if not request.user.is_superuser:
+        return JsonResponse({'success': False, 'error': 'Permission denied'}, status=403)
+    
+    try:
+        data = json.loads(request.body)
+        
+        from_unit_id = data.get('from_unit_id')
+        to_unit_id = data.get('to_unit_id')
+        multiplier = data.get('multiplier')
+        
+        if not all([from_unit_id, to_unit_id, multiplier]):
+            return JsonResponse({'success': False, 'error': 'Missing required fields'}, status=400)
+        
+        from_unit = MeasurementUnit.objects.get(measurement_unit_id=from_unit_id)
+        to_unit = MeasurementUnit.objects.get(measurement_unit_id=to_unit_id)
+        
+        try:
+            mult = Decimal(multiplier)
+            if mult <= 0:
+                return JsonResponse({'success': False, 'error': 'Multiplier must be positive'}, status=400)
+        except:
+            return JsonResponse({'success': False, 'error': 'Invalid multiplier'}, status=400)
+        
+        existing = UnitConversion.objects.filter(from_unit=from_unit, to_unit=to_unit).first()
+        if existing:
+            existing.multiplier = mult
+            existing.save()
+        else:
+            UnitConversion.objects.create(
+                from_unit=from_unit,
+                to_unit=to_unit,
+                multiplier=mult
+            )
+        
+        return JsonResponse({
+            'success': True,
+            'message': f'Conversion saved: 1 {from_unit.name} = {mult} {to_unit.name}'
+        })
+        
+    except MeasurementUnit.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'Unit not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
 @login_required
 @require_POST
