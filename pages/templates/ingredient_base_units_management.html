@@ -230,10 +230,9 @@
         <table class="ingredients-table">
             <thead>
                 <tr>
-                    <th style="width: 30%;">Ingredient Name</th>
-                    <th style="width: 20%;">Category</th>
-                    <th style="width: 15%;">Mode</th>
-                    <th style="width: 25%;">Shopping Unit</th>
+                    <th style="width: 35%;">Ingredient Name</th>
+                    <th style="width: 25%;">Category</th>
+                    <th style="width: 30%;">Shopping Unit</th>
                     <th style="width: 10%; text-align: center;">Action</th>
                 </tr>
             </thead>
@@ -249,32 +248,13 @@
                         {% endif %}
                     </td>
                     <td>
-                        <select class="mode-select" 
-                                id="mode-{{ item.ingredient.ingredient_id }}" 
-                                data-ingredient-id="{{ item.ingredient.ingredient_id }}"
-                                data-auto-unit="{{ item.auto_base_unit.name }}"
-                                data-category="{% if item.ingredient.category %}{{ item.ingredient.category.name }}{% endif %}">
-                            <option value="auto" {% if not item.is_manual %}selected{% endif %}>Auto</option>
-                            <option value="manual" {% if item.is_manual %}selected{% endif %}>Manual</option>
-                        </select>
-                    </td>
-                    <td>
-                        <!-- Auto mode: show text -->
-                        <span class="unit-display-auto" 
-                              id="unit-text-{{ item.ingredient.ingredient_id }}" 
-                              style="{% if item.is_manual %}display: none;{% else %}display: block;{% endif %}">
-                            {{ item.effective_base_unit.name }}
-                        </span>
-                        
-                        <!-- Manual mode: show dropdown -->
                         <select class="unit-select" 
                                 id="unit-select-{{ item.ingredient.ingredient_id }}" 
                                 data-ingredient-id="{{ item.ingredient.ingredient_id }}"
-                                style="{% if item.is_manual %}display: block;{% else %}display: none;{% endif %}">
+                                data-original-value="{% if item.ingredient.default_unit %}{{ item.ingredient.default_unit.measurement_unit_id }}{% endif %}">
                             <option value="">-- Select Unit --</option>
                             {% for unit in all_units %}
                             <option value="{{ unit.measurement_unit_id }}" 
-                                    data-unit-name="{{ unit.name }}"
                                     {% if item.ingredient.default_unit and item.ingredient.default_unit.measurement_unit_id == unit.measurement_unit_id %}selected{% endif %}>
                                 {{ unit.name }}
                             </option>
@@ -304,44 +284,27 @@
 </div>
 
 <script>
-// Track original values to detect changes
+// Track original values
 const originalValues = {};
 
-// Initialize tracking on page load
 document.addEventListener('DOMContentLoaded', function() {
     {% for item in ingredients_with_base %}
     (function() {
         const ingredientId = {{ item.ingredient.ingredient_id }};
-        const modeSelect = document.getElementById(`mode-${ingredientId}`);
         const unitSelect = document.getElementById(`unit-select-${ingredientId}`);
-        const unitText = document.getElementById(`unit-text-${ingredientId}`);
         const btn = document.getElementById(`btn-${ingredientId}`);
         
-        if (!modeSelect || !unitSelect || !unitText || !btn) {
-            console.error('Missing elements for ingredient:', ingredientId);
-            return;
-        }
+        if (!unitSelect || !btn) return;
         
-        // Store original values
-        originalValues[ingredientId] = {
-            mode: modeSelect.value,
-            unit: unitSelect.value
-        };
+        // Store original value
+        originalValues[ingredientId] = unitSelect.value;
         
-        // Set initial display state
-        updateDisplayState(ingredientId);
-        
-        // Disable save button initially
+        // Disable button initially
         btn.disabled = true;
         btn.style.background = '#6c757d';
         btn.style.cursor = 'not-allowed';
         
-        // Add change listeners
-        modeSelect.addEventListener('change', function() {
-            updateDisplayState(ingredientId);
-            checkForChanges(ingredientId);
-        });
-        
+        // Add change listener
         unitSelect.addEventListener('change', function() {
             checkForChanges(ingredientId);
         });
@@ -349,51 +312,16 @@ document.addEventListener('DOMContentLoaded', function() {
     {% endfor %}
 });
 
-// Update display state based on mode
-function updateDisplayState(ingredientId) {
-    const modeSelect = document.getElementById(`mode-${ingredientId}`);
-    const unitText = document.getElementById(`unit-text-${ingredientId}`);
-    const unitSelect = document.getElementById(`unit-select-${ingredientId}`);
-    
-    if (!modeSelect || !unitText || !unitSelect) {
-        return;
-    }
-    
-    if (modeSelect.value === 'auto') {
-        // Show the auto-calculated unit
-        const autoUnit = modeSelect.getAttribute('data-auto-unit');
-        unitText.textContent = autoUnit;
-        unitText.style.display = 'block';
-        unitSelect.style.display = 'none';
-    } else {
-        // Hide text, show dropdown
-        unitText.style.display = 'none';
-        unitSelect.style.display = 'block';
-    }
-}
-
-// Check if values have changed
 function checkForChanges(ingredientId) {
-    const modeSelect = document.getElementById(`mode-${ingredientId}`);
     const unitSelect = document.getElementById(`unit-select-${ingredientId}`);
     const btn = document.getElementById(`btn-${ingredientId}`);
     
-    if (!modeSelect || !unitSelect || !btn) {
-        return;
-    }
+    if (!unitSelect || !btn) return;
     
-    const currentMode = modeSelect.value;
-    const currentUnit = unitSelect.value;
-    const original = originalValues[ingredientId];
+    const currentValue = unitSelect.value;
+    const originalValue = originalValues[ingredientId];
     
-    if (!original) {
-        return;
-    }
-    
-    // Check if anything changed
-    const hasChanged = (currentMode !== original.mode) || (currentUnit !== original.unit);
-    
-    if (hasChanged) {
+    if (currentValue !== originalValue) {
         // Enable button and make it green
         btn.disabled = false;
         btn.style.background = '#28a745';
@@ -406,25 +334,17 @@ function checkForChanges(ingredientId) {
     }
 }
 
-// Update ingredient default unit
 async function updateIngredientUnit(ingredientId) {
-    const modeSelect = document.getElementById(`mode-${ingredientId}`);
     const unitSelect = document.getElementById(`unit-select-${ingredientId}`);
     const btn = document.getElementById(`btn-${ingredientId}`);
     
-    if (!modeSelect || !unitSelect || !btn) {
+    if (!unitSelect || !btn) return;
+    
+    const shoppingUnitId = unitSelect.value;
+    
+    if (!shoppingUnitId) {
+        alert('Please select a shopping unit');
         return;
-    }
-    
-    const mode = modeSelect.value;
-    let baseUnitId = null;
-    
-    if (mode === 'manual') {
-        baseUnitId = unitSelect.value;
-        if (!baseUnitId) {
-            alert('Please select a unit for manual mode');
-            return;
-        }
     }
     
     // Disable button and show loading
@@ -442,21 +362,25 @@ async function updateIngredientUnit(ingredientId) {
             },
             body: JSON.stringify({
                 ingredient_id: ingredientId,
-                base_unit_id: baseUnitId
+                base_unit_id: shoppingUnitId
             })
         });
         
         const data = await response.json();
         
         if (data.success) {
+            // Update original value
+            originalValues[ingredientId] = shoppingUnitId;
+            
             // Show success feedback
             btn.innerHTML = '<i class="fas fa-check"></i>';
             btn.style.background = '#28a745';
             
-            // Reload to show updated base unit
             setTimeout(() => {
-                location.reload();
-            }, 500);
+                btn.innerHTML = '<i class="fas fa-save"></i>';
+                btn.disabled = true;
+                btn.style.background = '#6c757d';
+            }, 1500);
         } else {
             alert('Error: ' + data.error);
             btn.innerHTML = '<i class="fas fa-save"></i>';

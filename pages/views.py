@@ -9123,6 +9123,9 @@ def create_recipe(request):
     proteins = CustomProtein.objects.all().order_by('name')
     ingredient_categories = IngredientCategory.objects.all().order_by('name')  # ← ADD THIS
     
+    # Load all units for the modal
+    all_units = MeasurementUnit.objects.all().order_by('name')
+
     context = {
         'mode': 'create',
         'temp_recipe_id': None,
@@ -9133,7 +9136,8 @@ def create_recipe(request):
         'courses': courses,
         'categories': categories,
         'proteins': proteins,
-        'ingredient_categories': ingredient_categories,  # ← ADD THIS
+        'ingredient_categories': ingredient_categories,
+        'all_units': all_units,  # ← ADD THIS
     }
     
     return render(request, 'preview_imported_recipe.html', context)
@@ -9383,6 +9387,9 @@ def edit_recipe(request, recipe_id):
     selected_category_ids = list(recipe.categories.values_list('recipe_category_id', flat=True))
     selected_protein_ids = list(recipe.proteins.values_list('custom_protein_id', flat=True))
 
+    # Load all units for the modal
+    all_units = MeasurementUnit.objects.all().order_by('name')
+
     context = {
         'mode': 'edit',
         'temp_recipe_id': recipe_id,
@@ -9394,7 +9401,8 @@ def edit_recipe(request, recipe_id):
         'courses': courses,
         'categories': categories,
         'proteins': proteins,
-        'ingredient_categories': ingredient_categories,  # ← ADD THIS
+        'ingredient_categories': ingredient_categories,
+        'all_units': all_units,  # ← ADD THIS
         'selected_courses': json.dumps(selected_course_ids),
         'selected_categories': json.dumps(selected_category_ids),
         'selected_proteins': json.dumps(selected_protein_ids),
@@ -9697,6 +9705,9 @@ def preview_imported_recipe(request, temp_id):
     proteins = CustomProtein.objects.all().order_by('name')
     ingredient_categories = IngredientCategory.objects.all().order_by('name')  # ← ADD THIS LINE
 
+    # Load all units for the modal
+    all_units = MeasurementUnit.objects.all().order_by('name')
+
     context = {
         'mode': 'import',
         'temp_recipe_id': temp_id,
@@ -9708,6 +9719,7 @@ def preview_imported_recipe(request, temp_id):
         'categories': categories,
         'proteins': proteins,
         'ingredient_categories': ingredient_categories,
+        'all_units': all_units,  # ← ADD THIS
     }
 
     return render(request, 'preview_imported_recipe.html', context)
@@ -10503,7 +10515,7 @@ def delete_unit_conversion(request):
 
 @login_required
 def ingredient_base_units_management(request):
-    """Manage ingredient default units"""
+    """Manage ingredient shopping units"""
     if not request.user.is_superuser:
         messages.error(request, 'You do not have permission to access this page.')
         return redirect('home')
@@ -10512,7 +10524,7 @@ def ingredient_base_units_management(request):
     search_query = request.GET.get('search', '')
     category_filter = request.GET.get('category', '')
     
-    # Query ingredients with prefetch to avoid N+1 queries
+    # Query ingredients
     ingredients = Ingredient.objects.select_related('category', 'default_unit').all()
     
     if search_query:
@@ -10523,26 +10535,22 @@ def ingredient_base_units_management(request):
     
     ingredients = ingredients.order_by('name')
     
-    # Load all units ONCE (not per ingredient)
-    all_units = list(MeasurementUnit.objects.all().order_by('name'))
+    # Get all units and categories
+    all_units = MeasurementUnit.objects.all().order_by('name')
+    categories = IngredientCategory.objects.all().order_by('name')
     
-    # Build a category-to-unit mapping ONCE to avoid repeated lookups
-    base_unit_map = {
-        'Vegetables': 'gram',
-        'Fruits': 'gram',
-        'Meat & Seafood': 'gram',
-        'Poultry': 'gram',
-        'Dairy': 'milliliter',
-        'Grains & Pasta': 'gram',
-        'Oils & Fats': 'milliliter',
-        'Baking': 'gram',
-        'Herbs & Spices': 'gram',
-        'Canned & Packaged': 'gram',
-        'Beverages': 'milliliter',
+    # Simple list - no auto-calculation
+    ingredients_with_base = [{'ingredient': ing} for ing in ingredients]
+    
+    context = {
+        'ingredients_with_base': ingredients_with_base,
+        'categories': categories,
+        'all_units': all_units,
+        'search_query': search_query,
+        'category_filter': category_filter,
     }
     
-    # Create a lookup dictionary for unit names
-    unit_lookup = {unit.name.lower(): unit for unit in all_units}
+    return render(request, 'ingredient_base_units_management.html', context)
     
     # Helper function to calculate auto unit
     def calculate_auto_unit(ingredient):
@@ -11033,19 +11041,24 @@ def add_ingredient_ajax(request):
     try:
         data = json.loads(request.body)
         name = data.get('name', '').strip()
-        category_id = data.get('category_id')  # ← NEW: Get category from request
+        category_id = data.get('category_id')
+        shopping_unit_id = data.get('shopping_unit_id')  # NEW
         
         if not name:
             return JsonResponse({'success': False, 'message': 'Ingredient name is required'})
+        
+        if not shopping_unit_id:
+            return JsonResponse({'success': False, 'message': 'Shopping unit is required'})
         
         # Check if already exists
         if Ingredient.objects.filter(name__iexact=name).exists():
             return JsonResponse({'success': False, 'message': 'Ingredient already exists'})
         
-        # Create ingredient with category
+        # Create ingredient with category AND shopping unit
         ingredient = Ingredient.objects.create(
             name=name,
-            category_id=category_id if category_id else None  # ← NEW: Save category
+            category_id=category_id if category_id else None,
+            default_unit_id=shopping_unit_id  # NEW: Set shopping unit
         )
         
         return JsonResponse({

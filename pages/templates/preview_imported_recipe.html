@@ -1022,11 +1022,24 @@ tr.sortable-chosen {
                                 ✨ Smart Suggestion
                             </span>
                         </div>
-                        <select class="form-control" id="newIngredientCategory" style="border: 2px solid #28a745; font-size: 15px;">
+                        <select class="form-control" id="newIngredientCategory" style="border: 2px solid #28a745; font-size: 15px;" onchange="suggestShoppingUnit()">
                             <!-- Populated dynamically -->
                         </select>
                         <small class="form-text text-muted" style="margin-top: 8px;">
                             <i class="fas fa-info-circle"></i> Smart categorization pre-selected. You can change it if needed.
+                        </small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="newIngredientShoppingUnit"><strong>Shopping Unit</strong> <span class="text-danger">*</span></label>
+                        <select class="form-control" id="newIngredientShoppingUnit" style="border: 2px solid #28a745; font-size: 15px;" required>
+                            <option value="">-- Select Shopping Unit --</option>
+                            {% for unit in all_units %}
+                            <option value="{{ unit.measurement_unit_id }}">{{ unit.name }}</option>
+                            {% endfor %}
+                        </select>
+                        <small class="form-text text-muted" style="margin-top: 8px;">
+                            <i class="fas fa-shopping-cart"></i> This unit will be used when generating shopping lists.
                         </small>
                     </div>
                 </div>
@@ -1039,6 +1052,7 @@ tr.sortable-chosen {
             </div>
         </div>
     </div>
+
 
 </div>
 
@@ -1751,13 +1765,57 @@ function addNewIngredient(input, name) {
     $('#addIngredientModal').modal('show');
 }
 
+// Suggest shopping unit based on category
+function suggestShoppingUnit() {
+    const categorySelect = document.getElementById('newIngredientCategory');
+    const shoppingUnitSelect = document.getElementById('newIngredientShoppingUnit');
+    
+    if (!categorySelect || !shoppingUnitSelect) return;
+    
+    const selectedCategoryName = categorySelect.options[categorySelect.selectedIndex]?.text;
+    
+    // Map categories to suggested units
+    const categoryToUnit = {
+        'Vegetables': 'gram',
+        'Fruits': 'gram',
+        'Meat': 'gram',
+        'Meat & Seafood': 'gram',
+        'Poultry': 'gram',
+        'Dairy': 'milliliter',
+        'Grains & Pasta': 'gram',
+        'Oils & Fats': 'milliliter',
+        'Baking': 'gram',
+        'Herbs & Spices': 'gram',
+        'Canned & Packaged': 'gram',
+        'Canned & Jarred': 'gram',
+        'Beverages': 'milliliter',
+    };
+    
+    const suggestedUnitName = categoryToUnit[selectedCategoryName] || 'gram';
+    
+    // Find and select the suggested unit
+    for (let i = 0; i < shoppingUnitSelect.options.length; i++) {
+        const option = shoppingUnitSelect.options[i];
+        if (option.text.toLowerCase() === suggestedUnitName.toLowerCase()) {
+            shoppingUnitSelect.selectedIndex = i;
+            break;
+        }
+    }
+}
+
 function confirmAddIngredient() {
     const name = pendingIngredientName;
     const categoryId = document.getElementById('newIngredientCategory').value;
+    const shoppingUnitId = document.getElementById('newIngredientShoppingUnit').value;
     const input = pendingIngredientInput;
     
     if (!categoryId) {
         alert('Please select a category');
+        return;
+    }
+    
+    if (!shoppingUnitId) {
+        alert('Please select a shopping unit');
         return;
     }
     
@@ -1774,7 +1832,8 @@ function confirmAddIngredient() {
         },
         body: JSON.stringify({ 
             name: name,
-            category_id: categoryId
+            category_id: categoryId,
+            shopping_unit_id: shoppingUnitId
         })
     })
     .then(response => response.json())
@@ -1791,7 +1850,7 @@ function confirmAddIngredient() {
             $('#addIngredientModal').modal('hide');
             
             // Show success message
-            alert(`✓ "${name}" added to ingredients with category!`);
+            alert(`✓ "${name}" added to ingredients!`);
         } else {
             alert('Error: ' + data.message);
         }
@@ -1809,6 +1868,51 @@ function confirmAddIngredient() {
         pendingIngredientInput = null;
         pendingIngredientName = null;
     });
+}
+
+// Update addNewIngredient to suggest shopping unit
+function addNewIngredient(input, name) {
+    console.log('Adding ingredient:', name);
+    
+    // Store context
+    pendingIngredientInput = input;
+    pendingIngredientName = name;
+    
+    // Set ingredient name in modal
+    document.getElementById('newIngredientName').value = name;
+    
+    // Get smart suggestion
+    const suggestedCategory = smartCategorize(name);
+    console.log('Suggested category:', suggestedCategory);
+    
+    // Populate category dropdown
+    const categorySelect = document.getElementById('newIngredientCategory');
+    categorySelect.innerHTML = '';
+    
+    if (ingredientCategories && ingredientCategories.length > 0) {
+        ingredientCategories.forEach(cat => {
+            const option = document.createElement('option');
+            option.value = cat.id;
+            option.textContent = cat.name;
+            
+            // Pre-select the suggested category
+            if (cat.name === suggestedCategory) {
+                option.selected = true;
+                // Show smart suggestion badge
+                document.getElementById('smartSuggestionBadge').style.display = 'inline-block';
+            }
+            
+            categorySelect.appendChild(option);
+        });
+        
+        // Suggest shopping unit based on selected category
+        suggestShoppingUnit();
+    } else {
+        console.error('No ingredient categories available!');
+    }
+    
+    // Show modal
+    $('#addIngredientModal').modal('show');
 }
 
 // ==================== PREPARATION DROPDOWN ====================
