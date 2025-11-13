@@ -9713,6 +9713,9 @@ def aggregate_meal_plan_ingredients(meal_plan):
         
         return 'Other'
     
+    # Pre-load all unit conversions for fast lookups (prevents N+1 queries)
+    conversion_cache = get_conversion_cache()
+    
     # Track issues
     missing_conversions = []
     missing_shopping_units = []
@@ -9779,8 +9782,8 @@ def aggregate_meal_plan_ingredients(meal_plan):
                     # Same unit - just add
                     aggregated[ingredient_id]['amount'] += quantity
                 else:
-                    # Need conversion
-                    converted_qty, multiplier = convert_quantity(quantity, from_unit, shopping_unit)
+                    # Need conversion - USE CACHE for fast lookup
+                    converted_qty, multiplier = convert_quantity(quantity, from_unit, shopping_unit, ingredient, conversion_cache)
                     
                     if converted_qty is not None:
                         # Conversion successful
@@ -10211,6 +10214,9 @@ def generate_recipe_shopping_list(request):
         missing_shopping_units = []
         seen_missing_conversions = set()
         seen_missing_units = set()
+
+        # Pre-load all unit conversions for fast lookups
+        conversion_cache = get_conversion_cache()
         
         # Aggregate by ingredient ID
         aggregated = defaultdict(lambda: {
@@ -10266,7 +10272,7 @@ def generate_recipe_shopping_list(request):
                 aggregated[ingredient_id]['amount'] += quantity
             else:
                 # Need conversion
-                converted_qty, multiplier = convert_quantity(quantity, from_unit, shopping_unit)
+                converted_qty, multiplier = convert_quantity(quantity, from_unit, shopping_unit, ingredient, conversion_cache)
                 
                 if converted_qty is not None:
                     # Conversion successful
@@ -10380,31 +10386,140 @@ def get_base_unit_for_ingredient(ingredient):
             # PRIORITY 5: Last resort - any unit
             return MeasurementUnit.objects.first()
 
-def convert_quantity(amount, from_unit, to_unit):
+def get_conversion_cache():
+    """
+    Pre-load all unit conversions into memory for fast lookups.
+    Returns a dictionary structure for O(1) lookup time.
+    """
+    cache = {
+        'specific': {},  # ingredient_id -> {(from_id, to_id): multiplier}
+        'generic': {}    # (from_id, to_id): multiplier
+    }
+    
+    # Load all conversions in one query
+    conversions = UnitConversion.objects.select_related('specific_ingredient').all()
+    
+    for conv in conversions:
+        from_id = conv.from_unit_id
+        to_id = conv.to_unit_id
+        multiplier = conv.multiplier
+        
+        if conv.specific_ingredient_id:
+            # Ingredient-specific conversion
+            ing_id = conv.specific_ingredient_id
+            if ing_id not in cache['specific']:
+                cache['specific'][ing_id] = {}
+            cache['specific'][ing_id][(from_id, to_id)] = multiplier
+        else:
+            # Generic conversion
+            cache['generic'][(from_id, to_id)] = multiplier
+    
+    return cache
+
+def convert_quantity(amount, from_unit, to_unit, ingredient=None, conversion_cache=None):
     """
     Convert a quantity from one unit to another using the UnitConversion table.
+    Priority: 1) Ingredient-specific conversion, 2) Generic conversion
     Returns (converted_amount, multiplier) or (None, None) if no conversion exists.
+    
+    If conversion_cache is provided, uses in-memory lookups (much faster).
+    Otherwise falls back to database queries.
     """
     if from_unit.measurement_unit_id == to_unit.measurement_unit_id:
         return (amount, Decimal('1'))
     
-    # Check if direct conversion exists
+    from_id = from_unit.measurement_unit_id
+    to_id = to_unit.measurement_unit_id
+    
+    # Use cache if provided (fast path)
+    if conversion_cache:
+        # PRIORITY 1: Check ingredient-specific conversion
+        if ingredient and ingredient.ingredient_id in conversion_cache['specific']:
+            specific_cache = conversion_cache['specific'][ingredient.ingredient_id]
+            
+            # Direct conversion
+            if (from_id, to_id) in specific_cache:
+                multiplier = specific_cache[(from_id, to_id)]
+                converted = Decimal(amount) * multiplier
+                return (converted, multiplier)
+            
+            # Reverse conversion
+            if (to_id, from_id) in specific_cache:
+                multiplier = specific_cache[(to_id, from_id)]
+                converted = Decimal(amount) / multiplier
+                return (converted, Decimal('1') / multiplier)
+        
+        # PRIORITY 2: Check generic conversion
+        generic_cache = conversion_cache['generic']
+        
+        # Direct conversion
+        if (from_id, to_id) in generic_cache:
+            multiplier = generic_cache[(from_id, to_id)]
+            converted = Decimal(amount) * multiplier
+            return (converted, multiplier)
+        
+        # Reverse conversion
+        if (to_id, from_id) in generic_cache:
+            multiplier = generic_cache[(to_id, from_id)]
+            converted = Decimal(amount) / multiplier
+            return (converted, Decimal('1') / multiplier)
+        
+        # No conversion found
+        return (None, None)
+    
+    # Fallback to database queries (slow path - for backwards compatibility)
+    # PRIORITY 1: Check for INGREDIENT-SPECIFIC conversion (if ingredient provided)
+    if ingredient:
+        # Try direct conversion
+        try:
+            conversion = UnitConversion.objects.get(
+                from_unit=from_unit, 
+                to_unit=to_unit,
+                specific_ingredient=ingredient
+            )
+            converted = Decimal(amount) * conversion.multiplier
+            return (converted, conversion.multiplier)
+        except UnitConversion.DoesNotExist:
+            pass
+        
+        # Try reverse conversion
+        try:
+            conversion = UnitConversion.objects.get(
+                from_unit=to_unit, 
+                to_unit=from_unit,
+                specific_ingredient=ingredient
+            )
+            converted = Decimal(amount) / conversion.multiplier
+            return (converted, Decimal('1') / conversion.multiplier)
+        except UnitConversion.DoesNotExist:
+            pass
+    
+    # PRIORITY 2: Check for GENERIC conversion (specific_ingredient IS NULL)
+    # Try direct conversion
     try:
-        conversion = UnitConversion.objects.get(from_unit=from_unit, to_unit=to_unit)
+        conversion = UnitConversion.objects.get(
+            from_unit=from_unit, 
+            to_unit=to_unit,
+            specific_ingredient=None
+        )
         converted = Decimal(amount) * conversion.multiplier
         return (converted, conversion.multiplier)
     except UnitConversion.DoesNotExist:
         pass
     
-    # Check if reverse conversion exists
+    # Try reverse conversion
     try:
-        conversion = UnitConversion.objects.get(from_unit=to_unit, to_unit=from_unit)
+        conversion = UnitConversion.objects.get(
+            from_unit=to_unit, 
+            to_unit=from_unit,
+            specific_ingredient=None
+        )
         converted = Decimal(amount) / conversion.multiplier
         return (converted, Decimal('1') / conversion.multiplier)
     except UnitConversion.DoesNotExist:
         pass
     
-    # No conversion found
+    # No conversion found (neither ingredient-specific nor generic)
     return (None, None)
 
 @login_required
@@ -10416,17 +10531,26 @@ def save_unit_conversion(request):
     
     try:
         data = json.loads(request.body)
-        
+
         from_unit_id = data.get('from_unit_id')
         to_unit_id = data.get('to_unit_id')
         multiplier = data.get('multiplier')
+        ingredient_name = data.get('ingredient_name')  # ← NEW: Get ingredient name if provided
         
         if not all([from_unit_id, to_unit_id, multiplier]):
             return JsonResponse({'success': False, 'error': 'Missing required fields'}, status=400)
         
         from_unit = MeasurementUnit.objects.get(measurement_unit_id=from_unit_id)
         to_unit = MeasurementUnit.objects.get(measurement_unit_id=to_unit_id)
-        
+
+        # Get specific ingredient if provided
+        specific_ingredient = None
+        if ingredient_name:
+            try:
+                specific_ingredient = Ingredient.objects.get(name__iexact=ingredient_name)
+            except Ingredient.DoesNotExist:
+                return JsonResponse({'success': False, 'error': f'Ingredient "{ingredient_name}" not found'}, status=404)
+
         try:
             mult = Decimal(multiplier)
             if mult <= 0:
@@ -10434,14 +10558,22 @@ def save_unit_conversion(request):
         except:
             return JsonResponse({'success': False, 'error': 'Invalid multiplier'}, status=400)
         
-        existing = UnitConversion.objects.filter(from_unit=from_unit, to_unit=to_unit).first()
+        # Check for existing conversion (with the same specific_ingredient setting)
+        existing = UnitConversion.objects.filter(
+            from_unit=from_unit, 
+            to_unit=to_unit,
+            specific_ingredient=specific_ingredient
+        ).first()
+
         if existing:
             existing.multiplier = mult
             existing.save()
         else:
+            # Create conversion (generic or ingredient-specific based on user choice)
             UnitConversion.objects.create(
                 from_unit=from_unit,
                 to_unit=to_unit,
+                specific_ingredient=specific_ingredient,
                 multiplier=mult
             )
         
@@ -10466,16 +10598,22 @@ def unit_conversions_management(request):
         messages.error(request, 'You do not have permission to access this page.')
         return redirect('home')
     
-    conversions = UnitConversion.objects.all().select_related('from_unit', 'to_unit').order_by('from_unit__name', 'to_unit__name')
+    conversions = UnitConversion.objects.all().select_related(
+        'from_unit', 
+        'to_unit', 
+        'specific_ingredient'  # ← NEW: Include specific_ingredient
+    ).order_by('from_unit__name', 'to_unit__name')
+    
     all_units = MeasurementUnit.objects.all().order_by('name')
+    all_ingredients = Ingredient.objects.all().order_by('name')  # ← NEW: Get all ingredients
     
     context = {
         'conversions': conversions,
         'all_units': all_units,
+        'all_ingredients': all_ingredients,  # ← NEW: Add to context
     }
     
     return render(request, 'unit_conversions_management.html', context)
-
 
 @login_required
 @require_POST
@@ -10489,10 +10627,11 @@ def add_unit_conversion_manual(request):
         
         from_unit_id = data.get('from_unit_id')
         to_unit_id = data.get('to_unit_id')
+        specific_ingredient_id = data.get('specific_ingredient_id')  # ← NEW
         multiplier = data.get('multiplier')
         
         if not all([from_unit_id, to_unit_id, multiplier]):
-            return JsonResponse({'success': False, 'error': 'All fields are required'}, status=400)
+            return JsonResponse({'success': False, 'error': 'All required fields must be filled'}, status=400)
         
         # Check if same unit
         if from_unit_id == to_unit_id:
@@ -10501,18 +10640,34 @@ def add_unit_conversion_manual(request):
         from_unit = MeasurementUnit.objects.get(measurement_unit_id=from_unit_id)
         to_unit = MeasurementUnit.objects.get(measurement_unit_id=to_unit_id)
         
+        # Get specific ingredient if provided
+        specific_ingredient = None
+        if specific_ingredient_id:
+            try:
+                specific_ingredient = Ingredient.objects.get(ingredient_id=specific_ingredient_id)
+            except Ingredient.DoesNotExist:
+                return JsonResponse({'success': False, 'error': 'Ingredient not found'}, status=404)
+        
         mult = Decimal(multiplier)
         if mult <= 0:
             return JsonResponse({'success': False, 'error': 'Multiplier must be positive'}, status=400)
         
-        # Check if already exists
-        if UnitConversion.objects.filter(from_unit=from_unit, to_unit=to_unit).exists():
-            return JsonResponse({'success': False, 'error': 'This conversion already exists'}, status=400)
+        # Check if already exists (now includes specific_ingredient in the check)
+        if UnitConversion.objects.filter(
+            from_unit=from_unit, 
+            to_unit=to_unit,
+            specific_ingredient=specific_ingredient
+        ).exists():
+            if specific_ingredient:
+                return JsonResponse({'success': False, 'error': f'This conversion already exists for {specific_ingredient.name}'}, status=400)
+            else:
+                return JsonResponse({'success': False, 'error': 'This generic conversion already exists'}, status=400)
         
         # Create conversion
         conversion = UnitConversion.objects.create(
             from_unit=from_unit,
             to_unit=to_unit,
+            specific_ingredient=specific_ingredient,  # ← NEW
             multiplier=mult
         )
         
@@ -10522,6 +10677,7 @@ def add_unit_conversion_manual(request):
                 'id': conversion.unit_conversion_id,
                 'from_unit': from_unit.name,
                 'to_unit': to_unit.name,
+                'specific_ingredient': specific_ingredient.name if specific_ingredient else 'Generic',
                 'multiplier': str(mult)
             }
         })
@@ -10530,7 +10686,6 @@ def add_unit_conversion_manual(request):
         return JsonResponse({'success': False, 'error': 'Unit not found'}, status=404)
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
-
 
 @login_required
 @require_POST
@@ -10544,6 +10699,7 @@ def edit_unit_conversion(request):
         
         conversion_id = data.get('conversion_id')
         multiplier = data.get('multiplier')
+        specific_ingredient_id = data.get('specific_ingredient_id')  # ← NEW
         
         if not all([conversion_id, multiplier]):
             return JsonResponse({'success': False, 'error': 'Missing required fields'}, status=400)
@@ -10554,19 +10710,43 @@ def edit_unit_conversion(request):
         if mult <= 0:
             return JsonResponse({'success': False, 'error': 'Multiplier must be positive'}, status=400)
         
+        # Get specific ingredient if provided
+        specific_ingredient = None
+        if specific_ingredient_id:
+            try:
+                specific_ingredient = Ingredient.objects.get(ingredient_id=specific_ingredient_id)
+            except Ingredient.DoesNotExist:
+                return JsonResponse({'success': False, 'error': 'Ingredient not found'}, status=404)
+        
+        # Check if changing specific_ingredient would create a duplicate
+        duplicate = UnitConversion.objects.filter(
+            from_unit=conversion.from_unit,
+            to_unit=conversion.to_unit,
+            specific_ingredient=specific_ingredient
+        ).exclude(unit_conversion_id=conversion_id).exists()
+        
+        if duplicate:
+            if specific_ingredient:
+                return JsonResponse({'success': False, 'error': f'A conversion for {specific_ingredient.name} already exists'}, status=400)
+            else:
+                return JsonResponse({'success': False, 'error': 'A generic conversion already exists'}, status=400)
+        
+        # Update the conversion
         conversion.multiplier = mult
+        conversion.specific_ingredient = specific_ingredient
         conversion.save()
+        
+        applies_to = specific_ingredient.name if specific_ingredient else 'all ingredients'
         
         return JsonResponse({
             'success': True,
-            'message': f'Updated: 1 {conversion.from_unit.name} = {mult} {conversion.to_unit.name}'
+            'message': f'Updated: 1 {conversion.from_unit.name} = {mult} {conversion.to_unit.name} (applies to {applies_to})'
         })
         
     except UnitConversion.DoesNotExist:
         return JsonResponse({'success': False, 'error': 'Conversion not found'}, status=404)
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
-
 
 @login_required
 @require_POST

@@ -1427,7 +1427,6 @@ class MealPlanRecipe(models.Model):
         """Calculate multiplier for scaling ingredients"""
         return self.servings / self.recipe.servings
 
-
 class UnitConversion(models.Model):
     """Conversion rates between different measurement units"""
     unit_conversion_id = models.AutoField(primary_key=True)
@@ -1441,12 +1440,20 @@ class UnitConversion(models.Model):
         on_delete=models.CASCADE, 
         related_name='conversions_to'
     )
+    specific_ingredient = models.ForeignKey(
+        'Ingredient',
+        on_delete=models.CASCADE,
+        related_name='specific_conversions',
+        null=True,
+        blank=True,
+        help_text='If set, this conversion only applies to this specific ingredient. If NULL, conversion is generic.'
+    )
     multiplier = models.DecimalField(max_digits=10, decimal_places=6)
     notes = models.CharField(max_length=200, blank=True)
     
     class Meta:
         db_table = 'unit_conversions'
-        unique_together = ['from_unit', 'to_unit']
+        unique_together = ['from_unit', 'to_unit', 'specific_ingredient']
     
     def __str__(self):
         return f"1 {self.from_unit.name} = {self.multiplier} {self.to_unit.name}"

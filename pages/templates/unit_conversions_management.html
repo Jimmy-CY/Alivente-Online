@@ -146,11 +146,12 @@
         <table class="conversions-table">
             <thead>
                 <tr>
-                    <th style="width: 20%;">From Unit</th>
-                    <th style="width: 8%; text-align: center;">→</th>
-                    <th style="width: 20%;">To Unit</th>
-                    <th style="width: 25%; text-align: center;">Conversion</th>
-                    <th style="width: 12%; text-align: center;">Actions</th>
+                    <th style="width: 18%;">From Unit</th>
+                    <th style="width: 6%; text-align: center;">→</th>
+                    <th style="width: 18%;">To Unit</th>
+                    <th style="width: 20%; text-align: center;">Conversion</th>
+                    <th style="width: 23%;">Applies To</th>
+                    <th style="width: 15%; text-align: center;">Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -166,8 +167,19 @@
                             <strong>1 : {{ conversion.multiplier|normalize_decimal }}</strong>
                         </span>
                     </td>
+                    <td>
+                        {% if conversion.specific_ingredient %}
+                            <span style="background: #ffc107; color: #000; padding: 4px 10px; border-radius: 6px; font-size: 13px; font-weight: 500;">
+                                <i class="fas fa-star"></i> {{ conversion.specific_ingredient.name }}
+                            </span>
+                        {% else %}
+                            <span style="background: #28a745; color: white; padding: 4px 10px; border-radius: 6px; font-size: 13px; font-weight: 500;">
+                                <i class="fas fa-globe"></i> Generic (All)
+                            </span>
+                        {% endif %}
+                    </td>
                     <td class="actions-cell" style="text-align: center;">
-                        <button onclick="openEditModal({{ conversion.unit_conversion_id }}, '{{ conversion.from_unit.name }}', '{{ conversion.to_unit.name }}', '{{ conversion.multiplier }}')" 
+                        <button onclick="openEditModal({{ conversion.unit_conversion_id }}, '{{ conversion.from_unit.name }}', '{{ conversion.to_unit.name }}', '{{ conversion.multiplier }}', {% if conversion.specific_ingredient %}{{ conversion.specific_ingredient.ingredient_id }}{% else %}null{% endif %}, '{% if conversion.specific_ingredient %}{{ conversion.specific_ingredient.name }}{% endif %}')" 
                                 class="btn-icon btn-edit" 
                                 title="Edit">
                             <i class="fas fa-edit"></i>
@@ -225,6 +237,20 @@
                 </div>
                 
                 <div class="form-group">
+                    <label>Applies To</label>
+                    <select id="addSpecificIngredient" class="form-control">
+                        <option value="">Generic (All Ingredients)</option>
+                        {% for ingredient in all_ingredients %}
+                        <option value="{{ ingredient.ingredient_id }}">{{ ingredient.name }}</option>
+                        {% endfor %}
+                    </select>
+                    <small class="form-text text-muted">
+                        Leave as "Generic" for universal conversions (e.g., 1 cup = 240ml).<br>
+                        Select a specific ingredient for unique conversions (e.g., 1 cup Flour = 125g).
+                    </small>
+                </div>
+
+                <div class="form-group">
                     <label>Multiplier *</label>
                     <input type="number" step="0.001" min="0.001" id="addMultiplier" class="form-control" placeholder="e.g., 1000">
                     <small class="form-text text-muted">1 [From Unit] = [Multiplier] [To Unit]</small>
@@ -263,6 +289,17 @@
                     <strong>Editing:</strong> <span id="editConversionInfo"></span>
                 </div>
                 
+                <div class="form-group">
+                    <label>Applies To</label>
+                    <select id="editSpecificIngredient" class="form-control">
+                        <option value="">Generic (All Ingredients)</option>
+                        {% for ingredient in all_ingredients %}
+                        <option value="{{ ingredient.ingredient_id }}">{{ ingredient.name }}</option>
+                        {% endfor %}
+                    </select>
+                    <small class="form-text text-muted">Change whether this conversion is generic or ingredient-specific</small>
+                </div>
+
                 <div class="form-group">
                     <label>New Multiplier *</label>
                     <input type="number" step="0.001" min="0.001" id="editMultiplier" class="form-control">
@@ -322,6 +359,7 @@ function openAddModal() {
 async function saveNewConversion() {
     const fromUnitId = document.getElementById('addFromUnit').value;
     const toUnitId = document.getElementById('addToUnit').value;
+    const specificIngredientId = document.getElementById('addSpecificIngredient').value;  // ← NEW
     const multiplier = document.getElementById('addMultiplier').value;
     const status = document.getElementById('addStatus');
     
@@ -345,6 +383,7 @@ async function saveNewConversion() {
             body: JSON.stringify({
                 from_unit_id: fromUnitId,
                 to_unit_id: toUnitId,
+                specific_ingredient_id: specificIngredientId || null,  // ← NEW: Send null if empty
                 multiplier: multiplier
             })
         });
@@ -365,10 +404,11 @@ async function saveNewConversion() {
 }
 
 // Open edit modal
-function openEditModal(conversionId, fromUnit, toUnit, multiplier) {
+function openEditModal(conversionId, fromUnit, toUnit, multiplier, specificIngredientId, specificIngredientName) {
     document.getElementById('editConversionId').value = conversionId;
     document.getElementById('editConversionInfo').textContent = `${fromUnit} → ${toUnit}`;
     document.getElementById('editMultiplier').value = multiplier;
+    document.getElementById('editSpecificIngredient').value = specificIngredientId || '';
     document.getElementById('editStatus').innerHTML = '';
     $('#editConversionModal').modal('show');
 }
@@ -377,6 +417,7 @@ function openEditModal(conversionId, fromUnit, toUnit, multiplier) {
 async function saveEditConversion() {
     const conversionId = document.getElementById('editConversionId').value;
     const multiplier = document.getElementById('editMultiplier').value;
+    const specificIngredientId = document.getElementById('editSpecificIngredient').value;
     const status = document.getElementById('editStatus');
     
     if (!multiplier) {
@@ -393,7 +434,8 @@ async function saveEditConversion() {
             },
             body: JSON.stringify({
                 conversion_id: conversionId,
-                multiplier: multiplier
+                multiplier: multiplier,
+                specific_ingredient_id: specificIngredientId || null
             })
         });
         

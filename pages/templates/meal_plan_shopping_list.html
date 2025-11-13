@@ -415,6 +415,35 @@
                     <i class="fas fa-lightbulb"></i> 
                     <strong>Example:</strong> If 1 ${conv.from_unit} = 15 ${conv.to_unit}, enter "15"
                 </div>
+
+                <div style="margin-top: 15px; padding: 15px; background: white; border: 2px solid #dee2e6; border-radius: 8px;">
+                    <label style="font-weight: 600; color: #2c3e50; margin-bottom: 10px; display: block;">
+                        <i class="fas fa-tag"></i> Apply this conversion to:
+                    </label>
+                    <div style="display: flex; gap: 15px;">
+                        <label style="cursor: pointer; padding: 10px; border-radius: 6px; display: flex; align-items: center; gap: 8px; flex: 1; border: 2px solid #dee2e6;">
+                            <input type="radio" 
+                                   name="conversion_type_${index}" 
+                                   value="generic" 
+                                   checked
+                                   style="width: 18px; height: 18px;">
+                            <div>
+                                <div style="font-weight: 600; font-size: 14px;">Generic</div>
+                                <div style="font-size: 11px; color: #6c757d;">All ingredients</div>
+                            </div>
+                        </label>
+                        <label style="cursor: pointer; padding: 10px; border-radius: 6px; display: flex; align-items: center; gap: 8px; flex: 1; border: 2px solid #dee2e6;">
+                            <input type="radio" 
+                                   name="conversion_type_${index}" 
+                                   value="specific"
+                                   style="width: 18px; height: 18px;">
+                            <div>
+                                <div style="font-weight: 600; font-size: 14px;">${conv.ingredient}</div>
+                                <div style="font-size: 11px; color: #6c757d;">This ingredient only</div>
+                            </div>
+                        </label>
+                    </div>
+                </div>
             `;
             
             container.appendChild(formGroup);
@@ -434,16 +463,27 @@
             const input = document.getElementById(`conversion_${index}`);
             const value = input.value.trim();
             
+            // Get the selected radio button
+            const conversionType = document.querySelector(`input[name="conversion_type_${index}"]:checked`).value;
+            
             if (!value || parseFloat(value) <= 0) {
                 input.style.borderColor = '#dc3545';
                 hasErrors = true;
             } else {
                 input.style.borderColor = '#28a745';
-                conversions.push({
+                
+                const conversionData = {
                     from_unit_id: input.dataset.fromUnitId,
                     to_unit_id: input.dataset.toUnitId,
                     multiplier: value
-                });
+                };
+                
+                // If specific, include the ingredient name
+                if (conversionType === 'specific') {
+                    conversionData.ingredient_name = conv.ingredient;
+                }
+                
+                conversions.push(conversionData);
             }
         });
         
