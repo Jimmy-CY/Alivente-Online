@@ -928,8 +928,7 @@ body {
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <div class="modal-body">
-                
+            <div class="modal-body">            
                 <!-- Step 1: Select Servings -->
                 <div id="step1" class="modal-step active">
                     <div class="servings-calculator">
@@ -1011,7 +1010,23 @@ body {
                         </button>
                     </div>
                 </div>
-                
+                <!-- Step 4: Enter Conversions -->
+                <div id="step4" class="modal-step">
+                    <h5 style="color: #856404; margin-bottom: 15px;">
+                        <i class="fas fa-exchange-alt"></i> Unit Conversions Needed
+                    </h5>
+                    
+                    <div class="alert alert-warning">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>We need your help!</strong> Some ingredients use different units that need to be converted. 
+                        Please provide the conversion rates below to generate your shopping list.
+                    </div>
+
+                    <div id="conversionsFormContainer" style="max-height: 350px; overflow-y: auto;">
+                        <!-- Conversion forms will be inserted here by JavaScript -->
+                    </div>
+                </div>                
+
             </div>
             <div class="modal-footer">
                 <div class="modal-navigation">
@@ -1319,6 +1334,12 @@ function showStep(step) {
         nextBtn.style.display = 'none';
         cancelBtn.style.display = 'none';
         doneBtn.style.display = 'block';
+    } else if (step === 4) {
+        // Conversion step - show Save button
+        nextBtn.style.display = 'block';
+        cancelBtn.style.display = 'block';
+        doneBtn.style.display = 'none';
+        nextBtn.innerHTML = '<i class="fas fa-save"></i> Save Conversions & Generate List';
     } else {
         // Steps 1-2 - show Next and Cancel, hide Done
         nextBtn.style.display = 'block';
@@ -1336,14 +1357,21 @@ function nextStep() {
         populateIngredientReview();
         showStep(2);
     } else if (currentStep === 2) {
-        generateFinalList();
-        showStep(3);
+        generateFinalListFromServer();  // ← CHANGED: Now calls server
+    } else if (currentStep === 4) {
+        // Coming from conversion input - save and retry
+        saveConversionsAndRetry();
     }
 }
 
 function previousStep() {
     if (currentStep > 1) {
-        showStep(currentStep - 1);
+        // Don't go back to step 4 (conversions) - go straight to step 2
+        if (currentStep === 4) {
+            showStep(2);
+        } else {
+            showStep(currentStep - 1);
+        }
     }
 }
 
@@ -1491,6 +1519,256 @@ function generateFinalList() {
             container.appendChild(list);
         });
     }
+}
+
+// ========== NEW: Generate list from server with conversion handling ==========
+function generateFinalListFromServer() {
+    // Show loading state
+    const container = document.getElementById('finalShoppingList');
+    container.innerHTML = '<div class="text-center"><i class="fas fa-spinner fa-spin fa-2x"></i><p>Generating shopping list...</p></div>';
+    
+    // Call server-side endpoint
+    fetch('/recipe/generate_shopping_list/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: JSON.stringify({
+            recipe_id: recipeData.id,
+            servings: shoppingListData.desiredServings
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Filter excluded items and show list
+            const categorizedItems = {};
+            
+            Object.keys(data.shopping_list_categorized).forEach(category => {
+                const items = data.shopping_list_categorized[category];
+                const filteredItems = [];
+                
+                items.forEach(itemStr => {
+                    const isExcluded = shoppingListData.scaledIngredients.some((ing, idx) => {
+                        if (shoppingListData.excludedItems.has(idx)) {
+                            return itemStr.includes(ing.ingredient);
+                        }
+                        return false;
+                    });
+                    
+                    if (!isExcluded) {
+                        filteredItems.push(itemStr);
+                    }
+                });
+                
+                if (filteredItems.length > 0) {
+                    categorizedItems[category] = filteredItems;
+                }
+            });
+            
+            shoppingListData.categorizedList = categorizedItems;
+            shoppingListData.finalList = Object.values(categorizedItems).flat();
+            
+            displayFinalShoppingList(categorizedItems);
+            showStep(3);
+            
+        } else if (data.needs_conversions) {
+            // Missing conversions - show input form
+            showConversionForm(data.missing_conversions, data.missing_shopping_units);
+        } else {
+            alert('Error: ' + (data.error || 'Unknown error'));
+            showStep(2);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Failed to generate shopping list');
+        showStep(2);
+    });
+}
+
+// ========== NEW: Show conversion input form ==========
+function showConversionForm(missingConversions, missingShoppingUnits) {
+    const container = document.getElementById('conversionsFormContainer');
+    container.innerHTML = '';
+    
+    window.currentMissingConversions = missingConversions || [];
+    window.currentMissingShoppingUnits = missingShoppingUnits || [];
+    
+    // Show warning about missing shopping units
+    if (missingShoppingUnits && missingShoppingUnits.length > 0) {
+        const warning = document.createElement('div');
+        warning.className = 'alert alert-info';
+        warning.style.marginBottom = '20px';
+        warning.innerHTML = `
+            <strong><i class="fas fa-info-circle"></i> Note:</strong>
+            Some ingredients don't have shopping units set. They will use their recipe units.
+        `;
+        container.appendChild(warning);
+    }
+    
+    // Render conversion forms
+    missingConversions.forEach((conv, index) => {
+        const formGroup = document.createElement('div');
+        formGroup.style.cssText = 'background: white; border: 2px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 15px;';
+        
+        formGroup.innerHTML = `
+            <h4 style="color: #2c3e50; font-size: 16px; font-weight: 600; margin-bottom: 15px;">
+                <span style="background: #28a745; color: white; padding: 4px 10px; border-radius: 4px; font-size: 14px;">
+                    ${index + 1}
+                </span>
+                ${conv.ingredient}
+            </h4>
+            
+            <div style="display: grid; grid-template-columns: 1fr auto 1fr auto; gap: 10px; align-items: center;">
+                <div>
+                    <label style="font-size: 13px; color: #6c757d; margin-bottom: 5px; display: block;">Original Unit</label>
+                    <input type="text" value="1 ${conv.from_unit}" readonly 
+                           style="width: 100%; padding: 10px; border: 2px solid #dee2e6; border-radius: 6px; background: #f8f9fa;">
+                </div>
+                
+                <div style="font-size: 20px; font-weight: bold; color: #6c757d;">=</div>
+                
+                <div>
+                    <label style="font-size: 13px; color: #6c757d; margin-bottom: 5px; display: block;">Amount</label>
+                    <input type="number" step="0.001" min="0.001" placeholder="e.g., 15" 
+                           id="conversion_${index}"
+                           data-from-unit-id="${conv.from_unit_id}"
+                           data-to-unit-id="${conv.to_unit_id}"
+                           style="width: 100%; padding: 10px; border: 2px solid #28a745; border-radius: 6px;">
+                </div>
+                
+                <div>
+                    <label style="font-size: 13px; color: #6c757d; margin-bottom: 5px; display: block;">&nbsp;</label>
+                    <span style="padding: 10px; display: block; font-weight: 600;">${conv.to_unit}</span>
+                </div>
+            </div>
+            
+            <div style="background: #f8f9fa; padding: 10px; border-radius: 6px; margin-top: 10px; font-size: 13px; color: #6c757d;">
+                <i class="fas fa-lightbulb"></i> If 1 ${conv.from_unit} = 15 ${conv.to_unit}, enter "15"
+            </div>
+        `;
+        
+        container.appendChild(formGroup);
+    });
+    
+    showStep(4);
+}
+
+// ========== NEW: Save conversions and retry ==========
+async function saveConversionsAndRetry() {
+    const missingConversions = window.currentMissingConversions || [];
+    
+    if (missingConversions.length === 0) {
+        generateFinalListFromServer();
+        return;
+    }
+    
+    // Collect values
+    const conversions = [];
+    let hasErrors = false;
+    
+    missingConversions.forEach((conv, index) => {
+        const input = document.getElementById(`conversion_${index}`);
+        const value = input.value.trim();
+        
+        if (!value || parseFloat(value) <= 0) {
+            input.style.borderColor = '#dc3545';
+            hasErrors = true;
+        } else {
+            input.style.borderColor = '#28a745';
+            conversions.push({
+                from_unit_id: input.dataset.fromUnitId,
+                to_unit_id: input.dataset.toUnitId,
+                multiplier: value
+            });
+        }
+    });
+    
+    if (hasErrors) {
+        alert('Please fill in all conversion values');
+        return;
+    }
+    
+    // Show saving state
+    const nextBtn = document.getElementById('nextBtn');
+    const originalText = nextBtn.innerHTML;
+    nextBtn.disabled = true;
+    nextBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+    
+    // Save conversions
+    let savedCount = 0;
+    for (const conversion of conversions) {
+        try {
+            const response = await fetch('/save_unit_conversion/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: JSON.stringify(conversion)
+            });
+            
+            const data = await response.json();
+            if (data.success) savedCount++;
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    }
+    
+    nextBtn.disabled = false;
+    nextBtn.innerHTML = originalText;
+    
+    if (savedCount === conversions.length) {
+        // All saved - retry
+        generateFinalListFromServer();
+    } else {
+        alert(`Saved ${savedCount}/${conversions.length} conversions. Please try again.`);
+    }
+}
+
+// ========== Display final shopping list (keep this!) ==========
+function displayFinalShoppingList(categorizedItems) {
+    const container = document.getElementById('finalShoppingList');
+    container.innerHTML = '';
+    
+    const header = document.createElement('h5');
+    const totalItems = Object.values(categorizedItems).reduce((sum, items) => sum + items.length, 0);
+    header.innerHTML = `<i class="fas fa-shopping-cart"></i> Items to Buy (${totalItems} items)`;
+    container.appendChild(header);
+    
+    const info = document.createElement('p');
+    info.className = 'text-muted';
+    info.innerHTML = `<strong>${recipeData.name}</strong> - ${shoppingListData.desiredServings} servings (${shoppingListData.multiplier.toFixed(1)}x original)`;
+    container.appendChild(info);
+    
+    if (Object.keys(categorizedItems).length === 0) {
+        const emptyMsg = document.createElement('p');
+        emptyMsg.textContent = '✅ You have all ingredients!';
+        emptyMsg.style.cssText = 'font-style: italic; color: #28a745; font-size: 16px; text-align: center; padding: 20px;';
+        container.appendChild(emptyMsg);
+        return;
+    }
+    
+    Object.keys(categorizedItems).sort().forEach(category => {
+        const categoryHeader = document.createElement('h6');
+        categoryHeader.style.cssText = 'color: #28a745; font-weight: 600; margin-top: 20px; margin-bottom: 10px; padding-bottom: 5px; border-bottom: 2px solid #e0e0e0;';
+        categoryHeader.innerHTML = `<i class="fas fa-tag"></i> ${category}`;
+        container.appendChild(categoryHeader);
+        
+        const list = document.createElement('ul');
+        list.style.cssText = 'list-style: none; padding-left: 0;';
+        
+        categorizedItems[category].forEach(item => {
+            const li = document.createElement('li');
+            li.style.cssText = 'padding: 10px; border-bottom: 1px solid #e0e0e0; display: flex; align-items: center; gap: 8px;';
+            li.innerHTML = `<span style="color: #28a745;">☐</span> ${item}`;
+            list.appendChild(li);
+        });
+        
+        container.appendChild(list);
+    });
 }
 
 // ========== SHARING FUNCTIONS ==========
