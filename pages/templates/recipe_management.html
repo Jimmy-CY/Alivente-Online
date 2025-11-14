@@ -1125,6 +1125,85 @@
     }
 }
 
+/* Dropdown Button Styles */
+.dropdown-btn-container {
+    position: relative;
+    display: inline-block;
+}
+
+.dropdown-btn {
+    position: relative;
+    padding-right: 30px !important;
+}
+
+.dropdown-btn i.fa-chevron-down {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 10px;
+    transition: transform 0.3s;
+}
+
+.dropdown-btn-container:hover .dropdown-btn i.fa-chevron-down {
+    transform: translateY(-50%) rotate(180deg);
+}
+
+.dropdown-menu-custom {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background: white;
+    border: 2px solid #dee2e6;
+    border-radius: 8px;
+    margin-top: 4px;
+    min-width: 200px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.3s ease;
+    z-index: 1000;
+}
+
+.dropdown-btn-container:hover .dropdown-menu-custom {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.dropdown-menu-custom a {
+    display: block;
+    padding: 12px 16px;
+    color: #2c3e50;
+    text-decoration: none;
+    transition: all 0.2s;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.dropdown-menu-custom a:last-child {
+    border-bottom: none;
+}
+
+.dropdown-menu-custom a:first-child {
+    border-radius: 6px 6px 0 0;
+}
+
+.dropdown-menu-custom a:last-child {
+    border-radius: 0 0 6px 6px;
+}
+
+.dropdown-menu-custom a:hover {
+    background: #f8f9fa;
+    padding-left: 20px;
+}
+
+.dropdown-menu-custom a i {
+    margin-right: 8px;
+    width: 16px;
+    text-align: center;
+}
+
 </style>
 
 <h2><center>ALIVENTE ONLINE - RECIPE MANAGEMENT</center></h2>
@@ -1151,24 +1230,47 @@
 
 <div class="top-button-bar">
     <div class="top-button-group">
-        <a href="{% url 'create_recipe' %}" class="btn btn-success">
-            <i class="fas fa-plus"></i> Add Recipe
-        </a>
-        <a href="{% url 'import_recipe' %}" class="btn btn-info">
-            <i class="fas fa-robot"></i> Import Recipe
-        </a>
+        <!-- Add Recipe Dropdown -->
+        <div class="dropdown-btn-container">
+            <button class="btn btn-success dropdown-btn">
+                <i class="fas fa-plus"></i> Add Recipe
+                <i class="fas fa-chevron-down"></i>
+            </button>
+            <div class="dropdown-menu-custom">
+                <a href="{% url 'create_recipe' %}">
+                    <i class="fas fa-edit"></i> Manual Entry
+                </a>
+                <a href="{% url 'import_recipe' %}">
+                    <i class="fas fa-robot"></i> AI Import
+                </a>
+            </div>
+        </div>
+        
+        <!-- Meal Plans -->
         <a href="{% url 'meal_plans' %}" class="btn btn-primary">
             <i class="fas fa-calendar-alt"></i> Meal Plans
         </a>
+        
+        <!-- What Can I Make -->
         <button type="button" class="btn btn-primary" onclick="openIngredientMatcher()">
             <i class="fas fa-search"></i> What Can I Make?
         </button>
-        <a href="{% url 'unit_conversions_management' %}" class="btn btn-info">
-            <i class="fas fa-exchange-alt"></i> Unit Conversions
-        </a>
-        <a href="{% url 'ingredient_base_units_management' %}" class="btn btn-success">
-            <i class="fas fa-balance-scale"></i> Ingredient Units
-        </a>
+        
+        <!-- Settings Dropdown -->
+        <div class="dropdown-btn-container">
+            <button class="btn btn-secondary dropdown-btn">
+                <i class="fas fa-cog"></i> Settings
+                <i class="fas fa-chevron-down"></i>
+            </button>
+            <div class="dropdown-menu-custom">
+                <a href="{% url 'unit_conversions_management' %}">
+                    <i class="fas fa-exchange-alt"></i> Unit Conversions
+                </a>
+                <a href="{% url 'ingredient_base_units_management' %}">
+                    <i class="fas fa-balance-scale"></i> Ingredient Units
+                </a>
+            </div>
+        </div>
     </div>
     <a href="{% url 'admin_apms' %}" class="btn btn-success" role="button">Back</a>
 </div>
