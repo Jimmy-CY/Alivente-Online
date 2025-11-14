@@ -1736,19 +1736,7 @@
                 </div>
                 
                 <!-- Quick Actions -->
-                <div style="margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
-                    <button type="button" class="btn btn-sm btn-outline-success" onclick="selectAllInCategory('Vegetables')">
-                        <i class="fas fa-check"></i> All Vegetables
-                    </button>
-                    <button type="button" class="btn btn-sm btn-outline-success" onclick="selectAllInCategory('Meat')">
-                        <i class="fas fa-check"></i> All Meat
-                    </button>
-                    <button type="button" class="btn btn-sm btn-outline-success" onclick="selectAllInCategory('Dairy')">
-                        <i class="fas fa-check"></i> All Dairy
-                    </button>
-                    <button type="button" class="btn btn-sm btn-outline-success" onclick="selectAllInCategory('Grains & Pasta')">
-                        <i class="fas fa-check"></i> All Grains & Pasta
-                    </button>
+                <div style="margin-bottom: 20px; display: flex; justify-content: flex-end;">
                     <button type="button" class="btn btn-sm btn-outline-danger" onclick="clearAllSelections()">
                         <i class="fas fa-times"></i> Clear All
                     </button>
@@ -1763,6 +1751,14 @@
                             <i class="fas fa-chevron-down toggle-icon" id="icon-category-{{ category.ingredient_category_id }}"></i>
                             <strong>{{ category.name }}</strong>
                             <span class="badge badge-secondary">{{ category.ingredient_set.count }}</span>
+                            <label style="margin-left: auto; margin-right: 15px; display: flex; align-items: center; gap: 6px; cursor: pointer;" onclick="event.stopPropagation();">
+                                <input type="checkbox" 
+                                       class="category-select-all" 
+                                       data-category="{{ category.name }}"
+                                       onchange="toggleCategorySelectAll('{{ category.name }}', this.checked)"
+                                       style="width: 18px; height: 18px; cursor: pointer;">
+                                <span style="font-size: 13px; font-weight: 500;">Select All</span>
+                            </label>
                         </div>
                         
                         <div class="category-ingredients collapsed" id="category-{{ category.ingredient_category_id }}">
@@ -2545,6 +2541,16 @@ function selectAllInCategory(categoryName) {
     saveSelections();
 }
 
+// Toggle select all for a category
+function toggleCategorySelectAll(categoryName, isChecked) {
+    const checkboxes = document.querySelectorAll(`.ingredient-checkbox[data-category="${categoryName}"]`);
+    checkboxes.forEach(cb => {
+        cb.checked = isChecked;
+    });
+    updateSelectedCount();
+    saveSelections();
+}
+
 // Clear all selections
 function clearAllSelections() {
     const checkboxes = document.querySelectorAll('.ingredient-checkbox');
@@ -2560,6 +2566,15 @@ function updateSelectedCount() {
     const checkboxes = document.querySelectorAll('.ingredient-checkbox:checked');
     const count = checkboxes.length;
     document.getElementById('selectedIngredientCount').textContent = `${count} ingredient${count !== 1 ? 's' : ''} selected`;
+    
+    // Update category "Select All" checkboxes
+    document.querySelectorAll('.category-select-all').forEach(categoryCheckbox => {
+        const categoryName = categoryCheckbox.dataset.category;
+        const allCheckboxes = document.querySelectorAll(`.ingredient-checkbox[data-category="${categoryName}"]`);
+        const checkedCheckboxes = document.querySelectorAll(`.ingredient-checkbox[data-category="${categoryName}"]:checked`);
+        
+        categoryCheckbox.checked = (allCheckboxes.length > 0 && allCheckboxes.length === checkedCheckboxes.length);
+    });
 }
 
 // Save selections to localStorage
