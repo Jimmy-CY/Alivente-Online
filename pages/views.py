@@ -11100,6 +11100,133 @@ Items to Buy:
             'error': str(e)
         }, status=500)
 
+@login_required
+def check_ingredient_usage(request):
+    """Check if ingredient is used in any recipes"""
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        ingredient_id = data.get('ingredient_id')
+        
+        try:
+            ingredient = Ingredient.objects.get(ingredient_id=ingredient_id)
+            
+            # Count recipes using this ingredient
+            usage_count = RecipeIngredient.objects.filter(ingredient=ingredient).count()
+            
+            # Get recipe names (limit to 5 for display)
+            recipes = RecipeIngredient.objects.filter(ingredient=ingredient).select_related('recipe')[:5]
+            recipe_names = [ri.recipe.recipe_name for ri in recipes]
+            
+            return JsonResponse({
+                'success': True,
+                'usage_count': usage_count,
+                'recipe_names': recipe_names,
+                'can_delete': usage_count == 0
+            })
+            
+        except Ingredient.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Ingredient not found'})
+    
+    return JsonResponse({'success': False, 'error': 'Invalid request'})
+
+@login_required
+def delete_ingredient(request):
+    """Delete ingredient if not used in any recipes"""
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        ingredient_id = data.get('ingredient_id')
+        
+        try:
+            ingredient = Ingredient.objects.get(ingredient_id=ingredient_id)
+            
+            # Check if ingredient is used in any recipes
+            usage_count = RecipeIngredient.objects.filter(ingredient=ingredient).count()
+            
+            if usage_count > 0:
+                return JsonResponse({
+                    'success': False,
+                    'error': f'Cannot delete - ingredient is used in {usage_count} recipe(s)'
+                })
+            
+            # Safe to delete
+            ingredient_name = ingredient.name
+            ingredient.delete()
+            
+            return JsonResponse({
+                'success': True,
+                'message': f'Successfully deleted ingredient: {ingredient_name}'
+            })
+            
+        except Ingredient.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Ingredient not found'})
+    
+    return JsonResponse({'success': False, 'error': 'Invalid request'})
+
+@login_required
+def update_ingredient_full(request):
+    """Update ingredient name, category, and shopping unit"""
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        ingredient_id = data.get('ingredient_id')
+        new_name = data.get('name', '').strip()
+        category_id = data.get('category_id')
+        unit_id = data.get('unit_id')
+        
+        try:
+            ingredient = Ingredient.objects.get(ingredient_id=ingredient_id)
+            
+            # Validate name is not empty
+            if not new_name:
+                return JsonResponse({'success': False, 'error': 'Ingredient name cannot be empty'})
+            
+            # Check for duplicate names (case-insensitive, excluding current ingredient)
+            duplicate = Ingredient.objects.filter(name__iexact=new_name).exclude(ingredient_id=ingredient_id).first()
+            if duplicate:
+                return JsonResponse({
+                    'success': False,
+                    'error': f'An ingredient named "{new_name}" already exists'
+                })
+            
+            # Validate category
+            if not category_id:
+                return JsonResponse({'success': False, 'error': 'Category must be selected'})
+            
+            try:
+                category = IngredientCategory.objects.get(ingredient_category_id=category_id)
+            except IngredientCategory.DoesNotExist:
+                return JsonResponse({'success': False, 'error': 'Invalid category'})
+            
+            # Validate unit (optional - can be None)
+            unit = None
+            if unit_id:
+                try:
+                    unit = MeasurementUnit.objects.get(measurement_unit_id=unit_id)
+                except MeasurementUnit.DoesNotExist:
+                    return JsonResponse({'success': False, 'error': 'Invalid unit'})
+            
+            # Update ingredient
+            ingredient.name = new_name
+            ingredient.category = category
+            ingredient.default_unit = unit
+            ingredient.save()
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'Ingredient updated successfully',
+                'ingredient': {
+                    'name': ingredient.name,
+                    'category_id': ingredient.category.ingredient_category_id,
+                    'category_name': ingredient.category.name,
+                    'unit_id': ingredient.default_unit.measurement_unit_id if ingredient.default_unit else None,
+                    'unit_name': ingredient.default_unit.name if ingredient.default_unit else None
+                }
+            })
+            
+        except Ingredient.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Ingredient not found'})
+    
+    return JsonResponse({'success': False, 'error': 'Invalid request'})
+
 # ============================================
 # FILE EXTRACTION FUNCTIONS
 # ============================================

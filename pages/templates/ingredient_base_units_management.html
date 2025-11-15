@@ -167,6 +167,115 @@
 .search-icon:hover {
     color: #343a40;  /* Much darker gray */
 }
+
+/* Edit Mode Styles */
+.edit-mode {
+    background: #fffbf0 !important;
+}
+
+.edit-mode td {
+    border-bottom: 1px solid #ffc107 !important;
+}
+
+.ingredient-name-display,
+.category-display,
+.unit-display-text {
+    display: inline-block;
+    min-height: 20px;
+}
+
+.ingredient-name-edit,
+.category-edit,
+.unit-edit {
+    display: none;
+    width: 100%;
+}
+
+.edit-mode .ingredient-name-display,
+.edit-mode .category-display,
+.edit-mode .unit-display-text {
+    display: none;
+}
+
+.edit-mode .ingredient-name-edit,
+.edit-mode .category-edit,
+.edit-mode .unit-edit {
+    display: block;
+}
+
+.action-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.action-btn:hover {
+    background: #f8f9fa;
+}
+
+.btn-edit {
+    color: #ffc107;
+}
+
+.btn-delete {
+    color: #dc3545;
+}
+
+.btn-save {
+    color: #28a745;
+}
+
+.btn-cancel {
+    color: #6c757d;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 5px;
+    justify-content: center;
+}
+
+.edit-actions {
+    display: none;
+}
+
+.edit-mode .view-actions {
+    display: none;
+}
+
+.edit-mode .edit-actions {
+    display: flex;
+}
+
+.category-input {
+    padding: 6px 10px;
+    border: 2px solid #dee2e6;
+    border-radius: 6px;
+    font-size: 13px;
+    width: 100%;
+}
+
+.category-input:focus {
+    border-color: #28a745;
+    outline: none;
+}
+
+.ingredient-name-input {
+    padding: 6px 10px;
+    border: 2px solid #dee2e6;
+    border-radius: 6px;
+    font-size: 14px;
+    width: 100%;
+}
+
+.ingredient-name-input:focus {
+    border-color: #28a745;
+    outline: none;
+}
 </style>
 
 <div class="ingredients-container">
@@ -238,20 +347,48 @@
             </thead>
             <tbody>
                 {% for item in ingredients_with_base %}
-                <tr id="ingredient-row-{{ item.ingredient.ingredient_id }}">
-                    <td><strong>{{ item.ingredient.name }}</strong></td>
+                <tr id="ingredient-row-{{ item.ingredient.ingredient_id }}" data-ingredient-id="{{ item.ingredient.ingredient_id }}">
+                    <!-- Ingredient Name -->
                     <td>
-                        {% if item.ingredient.category %}
-                        <span class="category-badge">{{ item.ingredient.category.name }}</span>
-                        {% else %}
-                        <span style="color: #6c757d; font-style: italic;">No category</span>
-                        {% endif %}
+                        <span class="ingredient-name-display">
+                            <strong>{{ item.ingredient.name }}</strong>
+                        </span>
+                        <input type="text" 
+                               class="ingredient-name-edit ingredient-name-input" 
+                               value="{{ item.ingredient.name }}"
+                               data-original-value="{{ item.ingredient.name }}">
                     </td>
+                    
+                    <!-- Category -->
                     <td>
-                        <select class="unit-select" 
-                                id="unit-select-{{ item.ingredient.ingredient_id }}" 
-                                data-ingredient-id="{{ item.ingredient.ingredient_id }}"
-                                data-original-value="{% if item.ingredient.default_unit %}{{ item.ingredient.default_unit.measurement_unit_id }}{% endif %}">
+                        <span class="category-display">
+                            {% if item.ingredient.category %}
+                            <span class="category-badge">{{ item.ingredient.category.name }}</span>
+                            {% else %}
+                            <span style="color: #6c757d; font-style: italic;">No category</span>
+                            {% endif %}
+                        </span>
+                        <select class="category-edit category-input" data-original-value="{% if item.ingredient.category %}{{ item.ingredient.category.ingredient_category_id }}{% endif %}">
+                            <option value="">-- Select Category --</option>
+                            {% for cat in categories %}
+                            <option value="{{ cat.ingredient_category_id }}" 
+                                    {% if item.ingredient.category and item.ingredient.category.ingredient_category_id == cat.ingredient_category_id %}selected{% endif %}>
+                                {{ cat.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </td>
+                    
+                    <!-- Shopping Unit -->
+                    <td>
+                        <span class="unit-display-text">
+                            {% if item.ingredient.default_unit %}
+                            <strong>{{ item.ingredient.default_unit.name }}</strong>
+                            {% else %}
+                            <span style="color: #6c757d; font-style: italic;">Not set</span>
+                            {% endif %}
+                        </span>
+                        <select class="unit-edit unit-select" data-original-value="{% if item.ingredient.default_unit %}{{ item.ingredient.default_unit.measurement_unit_id }}{% endif %}">
                             <option value="">-- Select Unit --</option>
                             {% for unit in all_units %}
                             <option value="{{ unit.measurement_unit_id }}" 
@@ -261,12 +398,30 @@
                             {% endfor %}
                         </select>
                     </td>
+                    
+                    <!-- Actions -->
                     <td style="text-align: center;">
-                        <button onclick="updateIngredientUnit({{ item.ingredient.ingredient_id }})" 
-                                class="btn-update"
-                                id="btn-{{ item.ingredient.ingredient_id }}">
-                            <i class="fas fa-save"></i>
-                        </button>
+                        <div class="action-buttons">
+                            <!-- View Mode Actions -->
+                            <div class="view-actions">
+                                <button class="action-btn btn-edit" onclick="enterEditMode({{ item.ingredient.ingredient_id }})" title="Edit">
+                                    <i class="fas fa-pencil-alt"></i>
+                                </button>
+                                <button class="action-btn btn-delete" onclick="deleteIngredient({{ item.ingredient.ingredient_id }})" title="Delete">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </div>
+                            
+                            <!-- Edit Mode Actions -->
+                            <div class="edit-actions">
+                                <button class="action-btn btn-save" onclick="saveIngredient({{ item.ingredient.ingredient_id }})" title="Save">
+                                    <i class="fas fa-save"></i>
+                                </button>
+                                <button class="action-btn btn-cancel" onclick="cancelEdit({{ item.ingredient.ingredient_id }})" title="Cancel">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
                     </td>
                 </tr>
                 {% endfor %}
@@ -284,77 +439,60 @@
 </div>
 
 <script>
-// Track original values
-const originalValues = {};
-
-document.addEventListener('DOMContentLoaded', function() {
-    {% for item in ingredients_with_base %}
-    (function() {
-        const ingredientId = {{ item.ingredient.ingredient_id }};
-        const unitSelect = document.getElementById(`unit-select-${ingredientId}`);
-        const btn = document.getElementById(`btn-${ingredientId}`);
-        
-        if (!unitSelect || !btn) return;
-        
-        // Store original value
-        originalValues[ingredientId] = unitSelect.value;
-        
-        // Disable button initially
-        btn.disabled = true;
-        btn.style.background = '#6c757d';
-        btn.style.cursor = 'not-allowed';
-        
-        // Add change listener
-        unitSelect.addEventListener('change', function() {
-            checkForChanges(ingredientId);
-        });
-    })();
-    {% endfor %}
-});
-
-function checkForChanges(ingredientId) {
-    const unitSelect = document.getElementById(`unit-select-${ingredientId}`);
-    const btn = document.getElementById(`btn-${ingredientId}`);
-    
-    if (!unitSelect || !btn) return;
-    
-    const currentValue = unitSelect.value;
-    const originalValue = originalValues[ingredientId];
-    
-    if (currentValue !== originalValue) {
-        // Enable button and make it green
-        btn.disabled = false;
-        btn.style.background = '#28a745';
-        btn.style.cursor = 'pointer';
-    } else {
-        // Disable button and make it grey
-        btn.disabled = true;
-        btn.style.background = '#6c757d';
-        btn.style.cursor = 'not-allowed';
-    }
+// Enter edit mode for a row
+function enterEditMode(ingredientId) {
+    const row = document.getElementById(`ingredient-row-${ingredientId}`);
+    row.classList.add('edit-mode');
 }
 
-async function updateIngredientUnit(ingredientId) {
-    const unitSelect = document.getElementById(`unit-select-${ingredientId}`);
-    const btn = document.getElementById(`btn-${ingredientId}`);
+// Cancel edit and revert changes
+function cancelEdit(ingredientId) {
+    const row = document.getElementById(`ingredient-row-${ingredientId}`);
     
-    if (!unitSelect || !btn) return;
+    // Revert all fields to original values
+    const nameInput = row.querySelector('.ingredient-name-edit');
+    const categorySelect = row.querySelector('.category-edit');
+    const unitSelect = row.querySelector('.unit-edit');
     
-    const shoppingUnitId = unitSelect.value;
+    nameInput.value = nameInput.dataset.originalValue;
+    categorySelect.value = categorySelect.dataset.originalValue;
+    unitSelect.value = unitSelect.dataset.originalValue;
     
-    if (!shoppingUnitId) {
-        alert('Please select a shopping unit');
+    // Exit edit mode
+    row.classList.remove('edit-mode');
+}
+
+// Save ingredient changes
+async function saveIngredient(ingredientId) {
+    const row = document.getElementById(`ingredient-row-${ingredientId}`);
+    
+    const nameInput = row.querySelector('.ingredient-name-edit');
+    const categorySelect = row.querySelector('.category-edit');
+    const unitSelect = row.querySelector('.unit-edit');
+    
+    const newName = nameInput.value.trim();
+    const categoryId = categorySelect.value;
+    const unitId = unitSelect.value;
+    
+    // Validate
+    if (!newName) {
+        alert('Ingredient name cannot be empty');
         return;
     }
     
-    // Disable button and show loading
-    btn.disabled = true;
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
-    btn.style.background = '#6c757d';
-    btn.style.cursor = 'not-allowed';
+    if (!categoryId) {
+        alert('Please select a category');
+        return;
+    }
+    
+    // Show loading
+    const saveBtn = row.querySelector('.btn-save');
+    const originalHTML = saveBtn.innerHTML;
+    saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    saveBtn.disabled = true;
     
     try {
-        const response = await fetch("{% url 'update_ingredient_base_unit' %}", {
+        const response = await fetch("{% url 'update_ingredient_full' %}", {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -362,34 +500,147 @@ async function updateIngredientUnit(ingredientId) {
             },
             body: JSON.stringify({
                 ingredient_id: ingredientId,
-                base_unit_id: shoppingUnitId
+                name: newName,
+                category_id: categoryId,
+                unit_id: unitId || null
             })
         });
         
         const data = await response.json();
         
         if (data.success) {
-            // Update original value
-            originalValues[ingredientId] = shoppingUnitId;
+            // Update display values
+            const nameDisplay = row.querySelector('.ingredient-name-display strong');
+            const categoryDisplay = row.querySelector('.category-display');
+            const unitDisplay = row.querySelector('.unit-display-text');
+            
+            nameDisplay.textContent = data.ingredient.name;
+            
+            if (data.ingredient.category_name) {
+                categoryDisplay.innerHTML = `<span class="category-badge">${data.ingredient.category_name}</span>`;
+            }
+            
+            if (data.ingredient.unit_name) {
+                unitDisplay.innerHTML = `<strong>${data.ingredient.unit_name}</strong>`;
+            } else {
+                unitDisplay.innerHTML = '<span style="color: #6c757d; font-style: italic;">Not set</span>';
+            }
+            
+            // Update original values
+            nameInput.dataset.originalValue = data.ingredient.name;
+            categorySelect.dataset.originalValue = data.ingredient.category_id;
+            unitSelect.dataset.originalValue = data.ingredient.unit_id || '';
+            
+            // Exit edit mode
+            row.classList.remove('edit-mode');
             
             // Show success feedback
-            btn.innerHTML = '<i class="fas fa-check"></i>';
-            btn.style.background = '#28a745';
+            saveBtn.innerHTML = '<i class="fas fa-check"></i>';
+            saveBtn.style.color = '#28a745';
             
             setTimeout(() => {
-                btn.innerHTML = '<i class="fas fa-save"></i>';
-                btn.disabled = true;
-                btn.style.background = '#6c757d';
+                saveBtn.innerHTML = originalHTML;
+                saveBtn.disabled = false;
+                saveBtn.style.color = '';
             }, 1500);
+            
         } else {
             alert('Error: ' + data.error);
-            btn.innerHTML = '<i class="fas fa-save"></i>';
-            checkForChanges(ingredientId);
+            saveBtn.innerHTML = originalHTML;
+            saveBtn.disabled = false;
         }
+        
     } catch (error) {
-        alert('Error updating ingredient');
-        btn.innerHTML = '<i class="fas fa-save"></i>';
-        checkForChanges(ingredientId);
+        console.error('Error:', error);
+        alert('Error saving ingredient');
+        saveBtn.innerHTML = originalHTML;
+        saveBtn.disabled = false;
+    }
+}
+
+// Delete ingredient
+async function deleteIngredient(ingredientId) {
+    // First check usage
+    try {
+        const checkResponse = await fetch("{% url 'check_ingredient_usage' %}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({
+                ingredient_id: ingredientId
+            })
+        });
+        
+        const checkData = await checkResponse.json();
+        
+        if (!checkData.success) {
+            alert('Error checking ingredient usage');
+            return;
+        }
+        
+        if (!checkData.can_delete) {
+            let message = `Cannot delete this ingredient.\n\nIt is currently used in ${checkData.usage_count} recipe(s):\n`;
+            checkData.recipe_names.forEach(name => {
+                message += `\n• ${name}`;
+            });
+            if (checkData.usage_count > 5) {
+                message += `\n... and ${checkData.usage_count - 5} more`;
+            }
+            alert(message);
+            return;
+        }
+        
+        // Confirm deletion
+        const row = document.getElementById(`ingredient-row-${ingredientId}`);
+        const ingredientName = row.querySelector('.ingredient-name-display strong').textContent;
+        
+        if (!confirm(`Are you sure you want to delete "${ingredientName}"?\n\nThis action cannot be undone.`)) {
+            return;
+        }
+        
+        // Proceed with deletion
+        const deleteResponse = await fetch("{% url 'delete_ingredient' %}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({
+                ingredient_id: ingredientId
+            })
+        });
+        
+        const deleteData = await deleteResponse.json();
+        
+        if (deleteData.success) {
+            // Fade out and remove row
+            row.style.transition = 'opacity 0.3s';
+            row.style.opacity = '0';
+            
+            setTimeout(() => {
+                row.remove();
+                
+                // Update count in header
+                const tbody = document.querySelector('.ingredients-table tbody');
+                const count = tbody.querySelectorAll('tr').length;
+                const header = document.querySelector('.ingredients-card h2');
+                header.innerHTML = `<i class="fas fa-list"></i> Ingredients (${count})`;
+                
+                // Show empty state if no ingredients left
+                if (count === 0) {
+                    location.reload();
+                }
+            }, 300);
+            
+        } else {
+            alert('Error: ' + deleteData.error);
+        }
+        
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Error deleting ingredient');
     }
 }
 </script>

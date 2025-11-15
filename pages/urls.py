@@ -240,5 +240,8 @@ urlpatterns = [
     # Ingredient Base Unit Management
     path('ingredient_base_units/', views.ingredient_base_units_management, name='ingredient_base_units_management'),
     path('update_ingredient_base_unit/', views.update_ingredient_base_unit, name='update_ingredient_base_unit'),
+    path('check-ingredient-usage/', views.check_ingredient_usage, name='check_ingredient_usage'),
+    path('delete-ingredient/', views.delete_ingredient, name='delete_ingredient'),
+    path('update-ingredient-full/', views.update_ingredient_full, name='update_ingredient_full'),
 
 ]
