@@ -1,0 +1,512 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Categories Management{% endblock %}
+{% block content %}
+
+<style>
+.categories-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.page-header {
+    background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+    color: white;
+    padding: 30px 40px;
+    border-radius: 12px;
+    margin-bottom: 30px;
+}
+
+.page-header h1 {
+    font-size: 32px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.action-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.categories-card {
+    background: white;
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.categories-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.categories-table thead {
+    background: #f8f9fa;
+}
+
+.categories-table th {
+    padding: 12px 15px;
+    text-align: left;
+    font-weight: 600;
+    color: #2c3e50;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.categories-table td {
+    padding: 12px 15px;
+    border-bottom: 1px solid #e9ecef;
+    vertical-align: middle;
+}
+
+.categories-table tbody tr:hover {
+    background: #f8f9fa;
+}
+
+.edit-mode {
+    background: #fffbf0 !important;
+}
+
+.edit-mode td {
+    border-bottom: 1px solid #ffc107 !important;
+}
+
+.category-name-display {
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.category-name-edit {
+    display: none;
+    width: 100%;
+    padding: 8px 12px;
+    border: 2px solid #dee2e6;
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+.category-name-edit:focus {
+    border-color: #17a2b8;
+    outline: none;
+}
+
+.edit-mode .category-name-display {
+    display: none;
+}
+
+.edit-mode .category-name-edit {
+    display: block;
+}
+
+.ingredient-count {
+    color: #6c757d;
+    font-size: 14px;
+}
+
+.action-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.action-btn:hover {
+    background: #f8f9fa;
+}
+
+.btn-edit {
+    color: #ffc107;
+}
+
+.btn-delete {
+    color: #dc3545;
+}
+
+.btn-save {
+    color: #28a745;
+}
+
+.btn-cancel {
+    color: #6c757d;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 5px;
+    justify-content: center;
+}
+
+.edit-actions {
+    display: none;
+}
+
+.edit-mode .view-actions {
+    display: none;
+}
+
+.edit-mode .edit-actions {
+    display: flex;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #6c757d;
+}
+
+.empty-state i {
+    font-size: 80px;
+    color: #dee2e6;
+    margin-bottom: 20px;
+}
+</style>
+
+<div class="categories-container">
+    
+    <!-- Action Bar -->
+    <div class="action-bar">
+        <a href="{% url 'recipe_management' %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Recipe Management
+        </a>
+        <button type="button" class="btn btn-success" data-toggle="modal" data-target="#addCategoryModal">
+            <i class="fas fa-plus"></i> Add Category
+        </button>
+    </div>
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <h1><i class="fas fa-tags"></i> Categories Management</h1>
+        <p style="font-size: 16px; margin-bottom: 0;">Manage ingredient categories</p>
+    </div>
+
+    <!-- Categories Table -->
+    <div class="categories-card">
+        <h2 style="font-size: 22px; font-weight: 600; margin-bottom: 20px; color: #2c3e50;">
+            <i class="fas fa-list"></i> Categories (<span id="categoryCount">{{ categories_with_count|length }}</span>)
+        </h2>
+        
+        {% if categories_with_count %}
+        <table class="categories-table">
+            <thead>
+                <tr>
+                    <th style="width: 60%;">Category Name</th>
+                    <th style="width: 25%;">Ingredients Using</th>
+                    <th style="width: 15%; text-align: center;">Actions</th>
+                </tr>
+            </thead>
+            <tbody id="categoriesTableBody">
+                {% for item in categories_with_count %}
+                <tr id="category-row-{{ item.category.ingredient_category_id }}" data-category-id="{{ item.category.ingredient_category_id }}">
+                    <!-- Category Name -->
+                    <td>
+                        <span class="category-name-display">{{ item.category.name }}</span>
+                        <input type="text" 
+                               class="category-name-edit" 
+                               value="{{ item.category.name }}"
+                               data-original-value="{{ item.category.name }}">
+                    </td>
+                    
+                    <!-- Ingredient Count -->
+                    <td>
+                        <span class="ingredient-count">
+                            <i class="fas fa-carrot"></i> {{ item.ingredient_count }} ingredient{{ item.ingredient_count|pluralize }}
+                        </span>
+                    </td>
+                    
+                    <!-- Actions -->
+                    <td style="text-align: center;">
+                        <div class="action-buttons">
+                            <!-- View Mode Actions -->
+                            <div class="view-actions">
+                                <button class="action-btn btn-edit" onclick="enterEditMode({{ item.category.ingredient_category_id }})" title="Edit">
+                                    <i class="fas fa-pencil-alt"></i>
+                                </button>
+                                <button class="action-btn btn-delete" onclick="deleteCategory({{ item.category.ingredient_category_id }})" title="Delete">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </div>
+                            
+                            <!-- Edit Mode Actions -->
+                            <div class="edit-actions">
+                                <button class="action-btn btn-save" onclick="saveCategory({{ item.category.ingredient_category_id }})" title="Save">
+                                    <i class="fas fa-save"></i>
+                                </button>
+                                <button class="action-btn btn-cancel" onclick="cancelEdit({{ item.category.ingredient_category_id }})" title="Cancel">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-state" id="emptyState">
+            <i class="fas fa-tags"></i>
+            <h3>No Categories Yet</h3>
+            <p>Click "Add Category" to create your first category.</p>
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+
+<!-- Add Category Modal -->
+<div class="modal fade" id="addCategoryModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header" style="background: linear-gradient(135deg, #17a2b8 0%, #138496 100%); color: white;">
+                <h5 class="modal-title">
+                    <i class="fas fa-plus"></i> Add New Category
+                </h5>
+                <button type="button" class="close" data-dismiss="modal" style="color: white;">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label style="font-weight: 600;">Category Name *</label>
+                    <input type="text" 
+                           id="newCategoryName" 
+                           class="form-control" 
+                           placeholder="Enter category name..."
+                           onkeypress="if(event.key==='Enter') addCategory()">
+                    <small class="text-muted">e.g., Vegetables, Dairy, Meat, Spices</small>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success" onclick="addCategory()">
+                    <i class="fas fa-plus"></i> Add Category
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Enter edit mode
+function enterEditMode(categoryId) {
+    const row = document.getElementById(`category-row-${categoryId}`);
+    row.classList.add('edit-mode');
+}
+
+// Cancel edit
+function cancelEdit(categoryId) {
+    const row = document.getElementById(`category-row-${categoryId}`);
+    const nameInput = row.querySelector('.category-name-edit');
+    
+    // Revert to original value
+    nameInput.value = nameInput.dataset.originalValue;
+    
+    // Exit edit mode
+    row.classList.remove('edit-mode');
+}
+
+// Save category
+async function saveCategory(categoryId) {
+    const row = document.getElementById(`category-row-${categoryId}`);
+    const nameInput = row.querySelector('.category-name-edit');
+    const newName = nameInput.value.trim();
+    
+    if (!newName) {
+        alert('Category name cannot be empty');
+        return;
+    }
+    
+    // Show loading
+    const saveBtn = row.querySelector('.btn-save');
+    const originalHTML = saveBtn.innerHTML;
+    saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    saveBtn.disabled = true;
+    
+    try {
+        const response = await fetch("{% url 'update_category' %}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({
+                category_id: categoryId,
+                name: newName
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            // Update display
+            const nameDisplay = row.querySelector('.category-name-display');
+            nameDisplay.textContent = data.category.name;
+            
+            // Update original value
+            nameInput.dataset.originalValue = data.category.name;
+            
+            // Exit edit mode
+            row.classList.remove('edit-mode');
+            
+            // Show success
+            saveBtn.innerHTML = '<i class="fas fa-check"></i>';
+            saveBtn.style.color = '#28a745';
+            
+            setTimeout(() => {
+                saveBtn.innerHTML = originalHTML;
+                saveBtn.disabled = false;
+                saveBtn.style.color = '';
+            }, 1500);
+            
+        } else {
+            alert('Error: ' + data.error);
+            saveBtn.innerHTML = originalHTML;
+            saveBtn.disabled = false;
+        }
+        
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Error saving category');
+        saveBtn.innerHTML = originalHTML;
+        saveBtn.disabled = false;
+    }
+}
+
+// Delete category
+async function deleteCategory(categoryId) {
+    // First check usage
+    try {
+        const checkResponse = await fetch("{% url 'check_category_usage' %}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({
+                category_id: categoryId
+            })
+        });
+        
+        const checkData = await checkResponse.json();
+        
+        if (!checkData.success) {
+            alert('Error checking category usage');
+            return;
+        }
+        
+        if (!checkData.can_delete) {
+            let message = `Cannot delete this category.\n\nIt is currently used by ${checkData.usage_count} ingredient(s):\n`;
+            checkData.ingredient_names.forEach(name => {
+                message += `\n• ${name}`;
+            });
+            if (checkData.usage_count > 5) {
+                message += `\n... and ${checkData.usage_count - 5} more`;
+            }
+            alert(message);
+            return;
+        }
+        
+        // Confirm deletion
+        const row = document.getElementById(`category-row-${categoryId}`);
+        const categoryName = row.querySelector('.category-name-display').textContent;
+        
+        if (!confirm(`Are you sure you want to delete "${categoryName}"?\n\nThis action cannot be undone.`)) {
+            return;
+        }
+        
+        // Proceed with deletion
+        const deleteResponse = await fetch("{% url 'delete_category' %}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({
+                category_id: categoryId
+            })
+        });
+        
+        const deleteData = await deleteResponse.json();
+        
+        if (deleteData.success) {
+            // Fade out and remove row
+            row.style.transition = 'opacity 0.3s';
+            row.style.opacity = '0';
+            
+            setTimeout(() => {
+                row.remove();
+                
+                // Update count
+                const tbody = document.getElementById('categoriesTableBody');
+                const count = tbody.querySelectorAll('tr').length;
+                document.getElementById('categoryCount').textContent = count;
+                
+                // Show empty state if no categories left
+                if (count === 0) {
+                    location.reload();
+                }
+            }, 300);
+            
+        } else {
+            alert('Error: ' + deleteData.error);
+        }
+        
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Error deleting category');
+    }
+}
+
+// Add new category
+async function addCategory() {
+    const nameInput = document.getElementById('newCategoryName');
+    const name = nameInput.value.trim();
+    
+    if (!name) {
+        alert('Please enter a category name');
+        return;
+    }
+    
+    try {
+        const response = await fetch("{% url 'add_category' %}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({
+                name: name
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            // Close modal
+            $('#addCategoryModal').modal('hide');
+            
+            // Reload page to show new category
+            location.reload();
+            
+        } else {
+            alert('Error: ' + data.error);
+        }
+        
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Error adding category');
+    }
+}
+
+// Clear modal on close
+$('#addCategoryModal').on('hidden.bs.modal', function () {
+    document.getElementById('newCategoryName').value = '';
+});
+</script>
+
+{% endblock %}

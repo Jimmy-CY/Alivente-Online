@@ -11227,6 +11227,406 @@ def update_ingredient_full(request):
     
     return JsonResponse({'success': False, 'error': 'Invalid request'})
 
+@login_required
+def categories_management(request):
+    """Manage ingredient categories"""
+    # Get all categories sorted alphabetically
+    categories = IngredientCategory.objects.all().order_by('name')
+    
+    # Get ingredient count for each category
+    categories_with_count = []
+    for category in categories:
+        ingredient_count = Ingredient.objects.filter(category=category).count()
+        categories_with_count.append({
+            'category': category,
+            'ingredient_count': ingredient_count
+        })
+    
+    context = {
+        'categories_with_count': categories_with_count
+    }
+    
+    return render(request, 'categories_management.html', context)
+
+@login_required
+def add_category(request):
+    """Add a new ingredient category"""
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        category_name = data.get('name', '').strip()
+        
+        # Validate name is not empty
+        if not category_name:
+            return JsonResponse({'success': False, 'error': 'Category name cannot be empty'})
+        
+        # Check for duplicate names (case-insensitive)
+        duplicate = IngredientCategory.objects.filter(name__iexact=category_name).first()
+        if duplicate:
+            return JsonResponse({
+                'success': False,
+                'error': f'A category named "{category_name}" already exists'
+            })
+        
+        # Create new category
+        category = IngredientCategory.objects.create(name=category_name)
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Category added successfully',
+            'category': {
+                'id': category.ingredient_category_id,
+                'name': category.name
+            }
+        })
+   
+    return JsonResponse({'success': False, 'error': 'Invalid request'})
+
+@login_required
+def update_category(request):
+    """Update category name"""
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        category_id = data.get('category_id')
+        new_name = data.get('name', '').strip()
+        
+        try:
+            category = IngredientCategory.objects.get(ingredient_category_id=category_id)
+            
+            # Validate name is not empty
+            if not new_name:
+                return JsonResponse({'success': False, 'error': 'Category name cannot be empty'})
+            
+            # Check for duplicate names (case-insensitive, excluding current category)
+            duplicate = IngredientCategory.objects.filter(name__iexact=new_name).exclude(ingredient_category_id=category_id).first()
+            if duplicate:
+                return JsonResponse({
+                    'success': False,
+                    'error': f'A category named "{new_name}" already exists'
+                })
+            
+            # Update category
+            category.name = new_name
+            category.save()
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'Category updated successfully',
+                'category': {
+                    'id': category.ingredient_category_id,
+                    'name': category.name
+                }
+            })
+            
+        except IngredientCategory.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Category not found'})
+    
+    return JsonResponse({'success': False, 'error': 'Invalid request'})
+
+@login_required
+def check_category_usage(request):
+    """Check if category is used by any ingredients"""
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        category_id = data.get('category_id')
+        
+        try:
+            category = IngredientCategory.objects.get(ingredient_category_id=category_id)
+            
+            # Count ingredients using this category
+            ingredient_count = Ingredient.objects.filter(category=category).count()
+            
+            # Get ingredient names (limit to 5 for display)
+            ingredients = Ingredient.objects.filter(category=category)[:5]
+            ingredient_names = [ing.name for ing in ingredients]
+            
+            return JsonResponse({
+                'success': True,
+                'usage_count': ingredient_count,
+                'ingredient_names': ingredient_names,
+                'can_delete': ingredient_count == 0
+            })
+            
+        except IngredientCategory.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Category not found'})
+    
+    return JsonResponse({'success': False, 'error': 'Invalid request'})
+
+@login_required
+def delete_category(request):
+    """Delete category if not used by any ingredients"""
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        category_id = data.get('category_id')
+        
+        try:
+            category = IngredientCategory.objects.get(ingredient_category_id=category_id)
+            
+            # Check if category is used by any ingredients
+            ingredient_count = Ingredient.objects.filter(category=category).count()
+            
+            if ingredient_count > 0:
+                return JsonResponse({
+                    'success': False,
+                    'error': f'Cannot delete - category is used by {ingredient_count} ingredient(s)'
+                })
+            
+            # Safe to delete
+            category_name = category.name
+            category.delete()
+            
+            return JsonResponse({
+                'success': True,
+                'message': f'Successfully deleted category: {category_name}'
+            })
+            
+        except IngredientCategory.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Category not found'})
+    
+    return JsonResponse({'success': False, 'error': 'Invalid request'})
+
+@login_required
+def measurement_units_management(request):
+    """Manage measurement units - OPTIMIZED"""
+    from django.db.models import Count, Q
+    
+    # Get all units with usage counts in a single query using annotations
+    units = MeasurementUnit.objects.annotate(
+        recipe_usage=Count('recipeingredient', distinct=True),
+        ingredient_usage=Count('ingredient', distinct=True),
+        from_conversion_usage=Count('conversions_from', distinct=True),
+        to_conversion_usage=Count('conversions_to', distinct=True)
+    ).order_by('name')
+    
+    # Process the results
+    units_with_count = []
+    for unit in units:
+        conversion_count = unit.from_conversion_usage + unit.to_conversion_usage
+        total_usage = unit.recipe_usage + unit.ingredient_usage + conversion_count
+        
+        units_with_count.append({
+            'unit': unit,
+            'recipe_count': unit.recipe_usage,
+            'ingredient_count': unit.ingredient_usage,
+            'conversion_count': conversion_count,
+            'total_usage': total_usage
+        })
+    
+    # Get unit type choices for the modal
+    unit_types = MeasurementUnit.UNIT_TYPE_CHOICES
+    
+    context = {
+        'units_with_count': units_with_count,
+        'unit_types': unit_types
+    }
+    
+    return render(request, 'measurement_units_management.html', context)
+
+@login_required
+def add_measurement_unit(request):
+    """Add a new measurement unit"""
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        unit_name = data.get('name', '').strip()
+        abbreviation = data.get('abbreviation', '').strip()
+        unit_type = data.get('unit_type', 'other')
+        
+        # Validate name is not empty
+        if not unit_name:
+            return JsonResponse({'success': False, 'error': 'Unit name cannot be empty'})
+        
+        # Check for duplicate names (case-insensitive)
+        duplicate = MeasurementUnit.objects.filter(name__iexact=unit_name).first()
+        if duplicate:
+            return JsonResponse({
+                'success': False,
+                'error': f'A unit named "{unit_name}" already exists'
+            })
+        
+        # Check for duplicate abbreviations if provided (case-insensitive)
+        if abbreviation:
+            duplicate_abbr = MeasurementUnit.objects.filter(abbreviation__iexact=abbreviation).first()
+            if duplicate_abbr:
+                return JsonResponse({
+                    'success': False,
+                    'error': f'A unit with abbreviation "{abbreviation}" already exists'
+                })
+        
+        # Create new unit
+        unit = MeasurementUnit.objects.create(
+            name=unit_name,
+            abbreviation=abbreviation if abbreviation else None,
+            unit_type=unit_type
+        )
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Measurement unit added successfully',
+            'unit': {
+                'id': unit.measurement_unit_id,
+                'name': unit.name,
+                'abbreviation': unit.abbreviation,
+                'unit_type': unit.unit_type,
+                'unit_type_display': unit.get_unit_type_display()
+            }
+        })
+    
+    return JsonResponse({'success': False, 'error': 'Invalid request'})
+
+@login_required
+def update_measurement_unit(request):
+    """Update measurement unit name, abbreviation, and type"""
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        unit_id = data.get('unit_id')
+        new_name = data.get('name', '').strip()
+        new_abbreviation = data.get('abbreviation', '').strip()
+        new_unit_type = data.get('unit_type', 'other')
+        
+        try:
+            unit = MeasurementUnit.objects.get(measurement_unit_id=unit_id)
+            
+            # Validate name is not empty
+            if not new_name:
+                return JsonResponse({'success': False, 'error': 'Unit name cannot be empty'})
+            
+            # Check for duplicate names (case-insensitive, excluding current unit)
+            duplicate = MeasurementUnit.objects.filter(name__iexact=new_name).exclude(measurement_unit_id=unit_id).first()
+            if duplicate:
+                return JsonResponse({
+                    'success': False,
+                    'error': f'A unit named "{new_name}" already exists'
+                })
+            
+            # Check for duplicate abbreviations if provided (case-insensitive, excluding current unit)
+            if new_abbreviation:
+                duplicate_abbr = MeasurementUnit.objects.filter(abbreviation__iexact=new_abbreviation).exclude(measurement_unit_id=unit_id).first()
+                if duplicate_abbr:
+                    return JsonResponse({
+                        'success': False,
+                        'error': f'A unit with abbreviation "{new_abbreviation}" already exists'
+                    })
+            
+            # Update unit
+            unit.name = new_name
+            unit.abbreviation = new_abbreviation if new_abbreviation else None
+            unit.unit_type = new_unit_type
+            unit.save()
+            
+            return JsonResponse({
+                'success': True,
+                'message': 'Measurement unit updated successfully',
+                'unit': {
+                    'id': unit.measurement_unit_id,
+                    'name': unit.name,
+                    'abbreviation': unit.abbreviation,
+                    'unit_type': unit.unit_type,
+                    'unit_type_display': unit.get_unit_type_display()
+                }
+            })
+            
+        except MeasurementUnit.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Measurement unit not found'})
+    
+    return JsonResponse({'success': False, 'error': 'Invalid request'})
+
+@login_required
+def check_unit_usage(request):
+    """Check if measurement unit is used in recipes, ingredients, or conversions"""
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        unit_id = data.get('unit_id')
+        
+        try:
+            unit = MeasurementUnit.objects.get(measurement_unit_id=unit_id)
+            
+            # Count usage in recipes
+            recipe_count = RecipeIngredient.objects.filter(unit=unit).count()
+            
+            # Count usage in ingredients (as default unit)
+            ingredient_count = Ingredient.objects.filter(default_unit=unit).count()
+            
+            # Count usage in unit conversions
+            conversion_count = UnitConversion.objects.filter(
+                Q(from_unit=unit) | Q(to_unit=unit)
+            ).count()
+            
+            total_usage = recipe_count + ingredient_count + conversion_count
+            
+            # Get some example names (limit to 5 total)
+            usage_examples = []
+            
+            if recipe_count > 0:
+                recipes = RecipeIngredient.objects.filter(unit=unit).select_related('recipe')[:3]
+                for ri in recipes:
+                    usage_examples.append(f"Recipe: {ri.recipe.recipe_name}")
+            
+            if ingredient_count > 0 and len(usage_examples) < 5:
+                ingredients = Ingredient.objects.filter(default_unit=unit)[:2]
+                for ing in ingredients:
+                    usage_examples.append(f"Ingredient: {ing.name}")
+            
+            return JsonResponse({
+                'success': True,
+                'total_usage': total_usage,
+                'recipe_count': recipe_count,
+                'ingredient_count': ingredient_count,
+                'conversion_count': conversion_count,
+                'usage_examples': usage_examples,
+                'can_delete': total_usage == 0
+            })
+            
+        except MeasurementUnit.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Measurement unit not found'})
+    
+    return JsonResponse({'success': False, 'error': 'Invalid request'})
+
+@login_required
+def delete_measurement_unit(request):
+    """Delete measurement unit if not used anywhere"""
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        unit_id = data.get('unit_id')
+        
+        try:
+            unit = MeasurementUnit.objects.get(measurement_unit_id=unit_id)
+            
+            # Check if unit is used anywhere
+            recipe_count = RecipeIngredient.objects.filter(unit=unit).count()
+            ingredient_count = Ingredient.objects.filter(default_unit=unit).count()
+            conversion_count = UnitConversion.objects.filter(
+                Q(from_unit=unit) | Q(to_unit=unit)
+            ).count()
+            
+            total_usage = recipe_count + ingredient_count + conversion_count
+            
+            if total_usage > 0:
+                usage_details = []
+                if recipe_count > 0:
+                    usage_details.append(f'{recipe_count} recipe(s)')
+                if ingredient_count > 0:
+                    usage_details.append(f'{ingredient_count} ingredient(s)')
+                if conversion_count > 0:
+                    usage_details.append(f'{conversion_count} conversion(s)')
+                
+                return JsonResponse({
+                    'success': False,
+                    'error': f'Cannot delete - unit is used in {", ".join(usage_details)}'
+                })
+            
+            # Safe to delete
+            unit_name = unit.name
+            unit.delete()
+            
+            return JsonResponse({
+                'success': True,
+                'message': f'Successfully deleted measurement unit: {unit_name}'
+            })
+            
+        except MeasurementUnit.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Measurement unit not found'})
+    
+    return JsonResponse({'success': False, 'error': 'Invalid request'})
+
 # ============================================
 # FILE EXTRACTION FUNCTIONS
 # ============================================

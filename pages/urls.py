@@ -243,5 +243,15 @@ urlpatterns = [
     path('check-ingredient-usage/', views.check_ingredient_usage, name='check_ingredient_usage'),
     path('delete-ingredient/', views.delete_ingredient, name='delete_ingredient'),
     path('update-ingredient-full/', views.update_ingredient_full, name='update_ingredient_full'),
+    path('categories-management/', views.categories_management, name='categories_management'),
+    path('add-category/', views.add_category, name='add_category'),
+    path('update-category/', views.update_category, name='update_category'),
+    path('check-category-usage/', views.check_category_usage, name='check_category_usage'),
+    path('delete-category/', views.delete_category, name='delete_category'),
+    path('measurement-units-management/', views.measurement_units_management, name='measurement_units_management'),
+    path('add-measurement-unit/', views.add_measurement_unit, name='add_measurement_unit'),
+    path('update-measurement-unit/', views.update_measurement_unit, name='update_measurement_unit'),
+    path('check-unit-usage/', views.check_unit_usage, name='check_unit_usage'),
+    path('delete-measurement-unit/', views.delete_measurement_unit, name='delete_measurement_unit'),
 
 ]

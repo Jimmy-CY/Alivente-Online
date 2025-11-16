@@ -1,0 +1,661 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Measurement Units Management{% endblock %}
+{% block content %}
+
+<style>
+.units-container {
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.page-header {
+    background: linear-gradient(135deg, #6f42c1 0%, #5a32a3 100%);
+    color: white;
+    padding: 30px 40px;
+    border-radius: 12px;
+    margin-bottom: 30px;
+}
+
+.page-header h1 {
+    font-size: 32px;
+    font-weight: bold;
+    margin-bottom: 10px;
+}
+
+.action-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.units-card {
+    background: white;
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.units-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.units-table thead {
+    background: #f8f9fa;
+}
+
+.units-table th {
+    padding: 12px 15px;
+    text-align: left;
+    font-weight: 600;
+    color: #2c3e50;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.units-table td {
+    padding: 12px 15px;
+    border-bottom: 1px solid #e9ecef;
+    vertical-align: middle;
+}
+
+.units-table tbody tr:hover {
+    background: #f8f9fa;
+}
+
+.edit-mode {
+    background: #fffbf0 !important;
+}
+
+.edit-mode td {
+    border-bottom: 1px solid #ffc107 !important;
+}
+
+.unit-name-display,
+.unit-abbr-display,
+.unit-type-display {
+    display: inline-block;
+}
+
+.unit-name-edit,
+.unit-abbr-edit,
+.unit-type-edit {
+    display: none;
+    width: 100%;
+}
+
+.edit-mode .unit-name-display,
+.edit-mode .unit-abbr-display,
+.edit-mode .unit-type-display {
+    display: none;
+}
+
+.edit-mode .unit-name-edit,
+.edit-mode .unit-abbr-edit,
+.edit-mode .unit-type-edit {
+    display: block;
+}
+
+.unit-input {
+    padding: 8px 12px;
+    border: 2px solid #dee2e6;
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+.unit-input:focus {
+    border-color: #6f42c1;
+    outline: none;
+}
+
+.unit-type-badge {
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.unit-type-volume {
+    background: #cfe2ff;
+    color: #084298;
+}
+
+.unit-type-weight {
+    background: #f8d7da;
+    color: #842029;
+}
+
+.unit-type-count {
+    background: #d1e7dd;
+    color: #0f5132;
+}
+
+.unit-type-other {
+    background: #e2e3e5;
+    color: #41464b;
+}
+
+.usage-count {
+    color: #6c757d;
+    font-size: 14px;
+}
+
+.action-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 6px 10px;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.action-btn:hover {
+    background: #f8f9fa;
+}
+
+.btn-edit {
+    color: #ffc107;
+}
+
+.btn-delete {
+    color: #dc3545;
+}
+
+.btn-save {
+    color: #28a745;
+}
+
+.btn-cancel {
+    color: #6c757d;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 5px;
+    justify-content: center;
+}
+
+.edit-actions {
+    display: none;
+}
+
+.edit-mode .view-actions {
+    display: none;
+}
+
+.edit-mode .edit-actions {
+    display: flex;
+}
+
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #6c757d;
+}
+
+.empty-state i {
+    font-size: 80px;
+    color: #dee2e6;
+    margin-bottom: 20px;
+}
+</style>
+
+<div class="units-container">
+    
+    <!-- Action Bar -->
+    <div class="action-bar">
+        <a href="{% url 'recipe_management' %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Recipe Management
+        </a>
+        <button type="button" class="btn btn-success" data-toggle="modal" data-target="#addUnitModal">
+            <i class="fas fa-plus"></i> Add Measurement Unit
+        </button>
+    </div>
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <h1><i class="fas fa-ruler"></i> Measurement Units Management</h1>
+        <p style="font-size: 16px; margin-bottom: 0;">Manage measurement units for recipes</p>
+    </div>
+
+    <!-- Units Table -->
+    <div class="units-card">
+        <h2 style="font-size: 22px; font-weight: 600; margin-bottom: 20px; color: #2c3e50;">
+            <i class="fas fa-list"></i> Measurement Units (<span id="unitCount">{{ units_with_count|length }}</span>)
+        </h2>
+        
+        {% if units_with_count %}
+        <table class="units-table">
+            <thead>
+                <tr>
+                    <th style="width: 30%;">Unit Name</th>
+                    <th style="width: 15%;">Abbreviation</th>
+                    <th style="width: 15%;">Type</th>
+                    <th style="width: 25%;">Usage</th>
+                    <th style="width: 15%; text-align: center;">Actions</th>
+                </tr>
+            </thead>
+            <tbody id="unitsTableBody">
+                {% for item in units_with_count %}
+                <tr id="unit-row-{{ item.unit.measurement_unit_id }}" data-unit-id="{{ item.unit.measurement_unit_id }}">
+                    <!-- Unit Name -->
+                    <td>
+                        <span class="unit-name-display">
+                            <strong>{{ item.unit.name }}</strong>
+                        </span>
+                        <input type="text" 
+                               class="unit-name-edit unit-input" 
+                               value="{{ item.unit.name }}"
+                               data-original-value="{{ item.unit.name }}">
+                    </td>
+                    
+                    <!-- Abbreviation -->
+                    <td>
+                        <span class="unit-abbr-display">
+                            {% if item.unit.abbreviation %}
+                            {{ item.unit.abbreviation }}
+                            {% else %}
+                            <span style="color: #6c757d; font-style: italic;">-</span>
+                            {% endif %}
+                        </span>
+                        <input type="text" 
+                               class="unit-abbr-edit unit-input" 
+                               value="{{ item.unit.abbreviation|default:'' }}"
+                               data-original-value="{{ item.unit.abbreviation|default:'' }}"
+                               placeholder="Optional">
+                    </td>
+                    
+                    <!-- Unit Type -->
+                    <td>
+                        <span class="unit-type-display">
+                            <span class="unit-type-badge unit-type-{{ item.unit.unit_type }}">
+                                {{ item.unit.get_unit_type_display }}
+                            </span>
+                        </span>
+                        <select class="unit-type-edit unit-input" data-original-value="{{ item.unit.unit_type }}">
+                            {% for value, label in unit_types %}
+                            <option value="{{ value }}" {% if item.unit.unit_type == value %}selected{% endif %}>
+                                {{ label }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </td>
+                    
+                    <!-- Usage Count -->
+                    <td>
+                        <div class="usage-count">
+                            {% if item.total_usage > 0 %}
+                            <div style="display: flex; flex-direction: column; gap: 4px;">
+                                {% if item.recipe_count > 0 %}
+                                <span><i class="fas fa-utensils"></i> {{ item.recipe_count }} recipe{{ item.recipe_count|pluralize }}</span>
+                                {% endif %}
+                                {% if item.ingredient_count > 0 %}
+                                <span><i class="fas fa-carrot"></i> {{ item.ingredient_count }} ingredient{{ item.ingredient_count|pluralize }}</span>
+                                {% endif %}
+                                {% if item.conversion_count > 0 %}
+                                <span><i class="fas fa-exchange-alt"></i> {{ item.conversion_count }} conversion{{ item.conversion_count|pluralize }}</span>
+                                {% endif %}
+                            </div>
+                            {% else %}
+                            <span style="color: #28a745;"><i class="fas fa-check"></i> Not used</span>
+                            {% endif %}
+                        </div>
+                    </td>
+                    
+                    <!-- Actions -->
+                    <td style="text-align: center;">
+                        <div class="action-buttons">
+                            <!-- View Mode Actions -->
+                            <div class="view-actions">
+                                <button class="action-btn btn-edit" onclick="enterEditMode({{ item.unit.measurement_unit_id }})" title="Edit">
+                                    <i class="fas fa-pencil-alt"></i>
+                                </button>
+                                <button class="action-btn btn-delete" onclick="deleteUnit({{ item.unit.measurement_unit_id }})" title="Delete">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </div>
+                            
+                            <!-- Edit Mode Actions -->
+                            <div class="edit-actions">
+                                <button class="action-btn btn-save" onclick="saveUnit({{ item.unit.measurement_unit_id }})" title="Save">
+                                    <i class="fas fa-save"></i>
+                                </button>
+                                <button class="action-btn btn-cancel" onclick="cancelEdit({{ item.unit.measurement_unit_id }})" title="Cancel">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="empty-state" id="emptyState">
+            <i class="fas fa-ruler"></i>
+            <h3>No Measurement Units Yet</h3>
+            <p>Click "Add Measurement Unit" to create your first unit.</p>
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+
+<!-- Add Unit Modal -->
+<div class="modal fade" id="addUnitModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header" style="background: linear-gradient(135deg, #6f42c1 0%, #5a32a3 100%); color: white;">
+                <h5 class="modal-title">
+                    <i class="fas fa-plus"></i> Add New Measurement Unit
+                </h5>
+                <button type="button" class="close" data-dismiss="modal" style="color: white;">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label style="font-weight: 600;">Unit Name *</label>
+                    <input type="text" 
+                           id="newUnitName" 
+                           class="form-control" 
+                           placeholder="e.g., gram, cup, tablespoon">
+                    <small class="text-muted">Full name of the measurement unit</small>
+                </div>
+                
+                <div class="form-group">
+                    <label style="font-weight: 600;">Abbreviation</label>
+                    <input type="text" 
+                           id="newUnitAbbr" 
+                           class="form-control" 
+                           placeholder="e.g., g, c, tbsp">
+                    <small class="text-muted">Optional short form</small>
+                </div>
+                
+                <div class="form-group">
+                    <label style="font-weight: 600;">Unit Type *</label>
+                    <select id="newUnitType" class="form-control">
+                        {% for value, label in unit_types %}
+                        <option value="{{ value }}">{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success" onclick="addUnit()">
+                    <i class="fas fa-plus"></i> Add Unit
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Enter edit mode
+function enterEditMode(unitId) {
+    const row = document.getElementById(`unit-row-${unitId}`);
+    row.classList.add('edit-mode');
+}
+
+// Cancel edit
+function cancelEdit(unitId) {
+    const row = document.getElementById(`unit-row-${unitId}`);
+    const nameInput = row.querySelector('.unit-name-edit');
+    const abbrInput = row.querySelector('.unit-abbr-edit');
+    const typeSelect = row.querySelector('.unit-type-edit');
+    
+    // Revert to original values
+    nameInput.value = nameInput.dataset.originalValue;
+    abbrInput.value = abbrInput.dataset.originalValue;
+    typeSelect.value = typeSelect.dataset.originalValue;
+    
+    // Exit edit mode
+    row.classList.remove('edit-mode');
+}
+
+// Save unit
+async function saveUnit(unitId) {
+    const row = document.getElementById(`unit-row-${unitId}`);
+    const nameInput = row.querySelector('.unit-name-edit');
+    const abbrInput = row.querySelector('.unit-abbr-edit');
+    const typeSelect = row.querySelector('.unit-type-edit');
+    
+    const newName = nameInput.value.trim();
+    const newAbbr = abbrInput.value.trim();
+    const newType = typeSelect.value;
+    
+    if (!newName) {
+        alert('Unit name cannot be empty');
+        return;
+    }
+    
+    // Show loading
+    const saveBtn = row.querySelector('.btn-save');
+    const originalHTML = saveBtn.innerHTML;
+    saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    saveBtn.disabled = true;
+    
+    try {
+        const response = await fetch("{% url 'update_measurement_unit' %}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({
+                unit_id: unitId,
+                name: newName,
+                abbreviation: newAbbr,
+                unit_type: newType
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            // Update displays
+            const nameDisplay = row.querySelector('.unit-name-display strong');
+            const abbrDisplay = row.querySelector('.unit-abbr-display');
+            const typeDisplay = row.querySelector('.unit-type-display');
+            
+            nameDisplay.textContent = data.unit.name;
+            
+            if (data.unit.abbreviation) {
+                abbrDisplay.textContent = data.unit.abbreviation;
+            } else {
+                abbrDisplay.innerHTML = '<span style="color: #6c757d; font-style: italic;">-</span>';
+            }
+            
+            typeDisplay.innerHTML = `<span class="unit-type-badge unit-type-${data.unit.unit_type}">${data.unit.unit_type_display}</span>`;
+            
+            // Update original values
+            nameInput.dataset.originalValue = data.unit.name;
+            abbrInput.dataset.originalValue = data.unit.abbreviation || '';
+            typeSelect.dataset.originalValue = data.unit.unit_type;
+            
+            // Exit edit mode
+            row.classList.remove('edit-mode');
+            
+            // Show success
+            saveBtn.innerHTML = '<i class="fas fa-check"></i>';
+            saveBtn.style.color = '#28a745';
+            
+            setTimeout(() => {
+                saveBtn.innerHTML = originalHTML;
+                saveBtn.disabled = false;
+                saveBtn.style.color = '';
+            }, 1500);
+            
+        } else {
+            alert('Error: ' + data.error);
+            saveBtn.innerHTML = originalHTML;
+            saveBtn.disabled = false;
+        }
+        
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Error saving unit');
+        saveBtn.innerHTML = originalHTML;
+        saveBtn.disabled = false;
+    }
+}
+
+// Delete unit
+async function deleteUnit(unitId) {
+    // First check usage
+    try {
+        const checkResponse = await fetch("{% url 'check_unit_usage' %}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({
+                unit_id: unitId
+            })
+        });
+        
+        const checkData = await checkResponse.json();
+        
+        if (!checkData.success) {
+            alert('Error checking unit usage');
+            return;
+        }
+        
+        if (!checkData.can_delete) {
+            let message = `Cannot delete this measurement unit.\n\nIt is currently used in:\n`;
+            if (checkData.recipe_count > 0) {
+                message += `\n• ${checkData.recipe_count} recipe(s)`;
+            }
+            if (checkData.ingredient_count > 0) {
+                message += `\n• ${checkData.ingredient_count} ingredient(s)`;
+            }
+            if (checkData.conversion_count > 0) {
+                message += `\n• ${checkData.conversion_count} conversion(s)`;
+            }
+            
+            if (checkData.usage_examples.length > 0) {
+                message += '\n\nExamples:';
+                checkData.usage_examples.forEach(example => {
+                    message += `\n• ${example}`;
+                });
+            }
+            
+            alert(message);
+            return;
+        }
+        
+        // Confirm deletion
+        const row = document.getElementById(`unit-row-${unitId}`);
+        const unitName = row.querySelector('.unit-name-display strong').textContent;
+        
+        if (!confirm(`Are you sure you want to delete "${unitName}"?\n\nThis action cannot be undone.`)) {
+            return;
+        }
+        
+        // Proceed with deletion
+        const deleteResponse = await fetch("{% url 'delete_measurement_unit' %}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({
+                unit_id: unitId
+            })
+        });
+        
+        const deleteData = await deleteResponse.json();
+        
+        if (deleteData.success) {
+            // Fade out and remove row
+            row.style.transition = 'opacity 0.3s';
+            row.style.opacity = '0';
+            
+            setTimeout(() => {
+                row.remove();
+                
+                // Update count
+                const tbody = document.getElementById('unitsTableBody');
+                const count = tbody.querySelectorAll('tr').length;
+                document.getElementById('unitCount').textContent = count;
+                
+                // Show empty state if no units left
+                if (count === 0) {
+                    location.reload();
+                }
+            }, 300);
+            
+        } else {
+            alert('Error: ' + deleteData.error);
+        }
+        
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Error deleting unit');
+    }
+}
+
+// Add new unit
+async function addUnit() {
+    const nameInput = document.getElementById('newUnitName');
+    const abbrInput = document.getElementById('newUnitAbbr');
+    const typeSelect = document.getElementById('newUnitType');
+    
+    const name = nameInput.value.trim();
+    const abbreviation = abbrInput.value.trim();
+    const unitType = typeSelect.value;
+    
+    if (!name) {
+        alert('Please enter a unit name');
+        return;
+    }
+    
+    try {
+        const response = await fetch("{% url 'add_measurement_unit' %}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify({
+                name: name,
+                abbreviation: abbreviation,
+                unit_type: unitType
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            // Close modal
+            $('#addUnitModal').modal('hide');
+            
+            // Reload page to show new unit
+            location.reload();
+            
+        } else {
+            alert('Error: ' + data.error);
+        }
+        
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Error adding unit');
+    }
+}
+
+// Clear modal on close
+$('#addUnitModal').on('hidden.bs.modal', function () {
+    document.getElementById('newUnitName').value = '';
+    document.getElementById('newUnitAbbr').value = '';
+    document.getElementById('newUnitType').value = 'other';
+});
+</script>
+
+{% endblock %}
