@@ -1475,6 +1475,11 @@
             <i class="fas fa-list"></i> List
         </button>
     </div>
+    <div style="display: flex; align-items: center; gap: 8px; color: #6c757d; font-size: 15px; font-weight: 500;">
+        <i class="fas fa-utensils"></i>
+        <span id="recipeCount">{{ recipes|length }}</span>
+        <span>recipe{{ recipes|length|pluralize }}</span>
+    </div>
 </div>
 
 <!-- Grid View -->
@@ -1937,6 +1942,8 @@ function appendGridRecipes(recipes) {
         const card = createGridRecipeCard(recipe);
         gridView.insertAdjacentHTML('beforeend', card);
     });
+    
+    updateRecipeCount(); // Add this line
 }
 
 function appendListRecipes(recipes) {
@@ -1946,6 +1953,8 @@ function appendListRecipes(recipes) {
         const item = createListRecipeItem(recipe);
         listView.insertAdjacentHTML('beforeend', item);
     });
+    
+    updateRecipeCount(); // Add this line
 }
 
 function createGridRecipeCard(recipe) {
@@ -2092,6 +2101,29 @@ function createListRecipeItem(recipe) {
             </div>
         </div>
     `;
+}
+
+// Update recipe count display
+function updateRecipeCount() {
+    const gridView = document.getElementById('recipeGridView');
+    const listView = document.getElementById('recipeListView');
+    
+    // Count visible recipe cards (not including empty state)
+    let count = 0;
+    if (currentView === 'grid') {
+        count = gridView.querySelectorAll('.recipe-card').length;
+    } else {
+        count = listView.querySelectorAll('.recipe-list-item').length;
+    }
+    
+    // Update the display
+    document.getElementById('recipeCount').textContent = count;
+    
+    // Update pluralization
+    const pluralSpan = document.querySelector('#recipeCount + span');
+    if (pluralSpan) {
+        pluralSpan.textContent = count === 1 ? 'recipe' : 'recipes';
+    }
 }
 
 // Multi-select filter dropdown functionality
