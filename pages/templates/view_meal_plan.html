@@ -315,7 +315,28 @@
 </style>
 
 <div class="meal-plan-container">
-    
+
+    {% if messages %}
+    <div class="container" style="max-width: 1200px; margin: 0 auto;">
+        {% for msg in messages %}
+        <div class="alert alert-{% if 'success' in msg.tags %}success{% elif 'error' in msg.tags %}danger{% elif 'warning' in msg.tags %}warning{% else %}info{% endif %} alert-dismissible fade show" role="alert">
+            <strong>{{ msg }}</strong>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        {% endfor %}
+    </div>
+    <script>
+        setTimeout(function() {
+            document.querySelectorAll('.alert').forEach(alert => {
+                alert.classList.remove('show');
+                setTimeout(() => alert.remove(), 150);
+            });
+        }, 3000);
+    </script>
+    {% endif %}
+   
     <!-- Action Bar -->
     <div class="action-bar">
         <a href="{% url 'meal_plans' %}" class="btn btn-secondary">
@@ -512,6 +533,23 @@
                                required>
                         <small class="form-text text-muted">
                             The plan will maintain the same duration as the original.
+                        </small>
+                    </div>
+                    <hr>
+
+                    <div class="form-group">
+                        <div class="custom-control custom-checkbox">
+                            <input type="checkbox" 
+                                   class="custom-control-input" 
+                                   id="delete_original" 
+                                   name="delete_original" 
+                                   value="yes">
+                            <label class="custom-control-label" for="delete_original">
+                                <strong>Delete original meal plan after duplicating</strong>
+                            </label>
+                        </div>
+                        <small class="form-text text-muted">
+                            <i class="fas fa-info-circle"></i> If checked, this will shift the meal plan to new dates (original will be deleted)
                         </small>
                     </div>
                 </div>

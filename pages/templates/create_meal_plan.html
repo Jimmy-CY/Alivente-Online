@@ -272,11 +272,21 @@
     
     <!-- Page Header -->
     <div class="page-header">
+        {% if edit_mode %}
+        <h1><i class="fas fa-edit"></i> Edit Meal Plan</h1>
+        <p>Update your meal plan details</p>
+        {% else %}
         <h1><i class="fas fa-calendar-plus"></i> Create Meal Plan</h1>
         <p>Plan your meals for the week</p>
+        {% endif %}
     </div>
 
-    <form method="POST" id="mealPlanForm">
+    {% if edit_mode %}
+    <form method="POST" action="{% url 'edit_meal_plan' meal_plan.meal_plan_id %}" id="mealPlanForm">
+    {% else %}
+    <form method="POST" action="{% url 'create_meal_plan' %}" id="mealPlanForm">
+    {% endif %}
+
         {% csrf_token %}
         
         <!-- Basic Information -->
@@ -338,9 +348,15 @@
             <a href="{% url 'meal_plans' %}" class="btn btn-secondary">
                 <i class="fas fa-arrow-left"></i> Cancel
             </a>
-            <button type="submit" class="btn btn-success" id="saveBtn" disabled>
-                <i class="fas fa-save"></i> Save Meal Plan
+            {% if edit_mode %}
+            <button type="submit" class="btn btn-success" id="saveBtn">
+                <i class="fas fa-save"></i> Update Meal Plan
             </button>
+            {% else %}
+            <button type="submit" class="btn btn-success" id="saveBtn" disabled>
+                <i class="fas fa-save"></i> Create Meal Plan
+            </button>
+            {% endif %}
         </div>
         
     </form>
@@ -359,6 +375,82 @@ const allAuthors = JSON.parse('{{ all_authors_json|escapejs }}');
 // Debug
 console.log('Total recipes loaded:', recipes.length);
 console.log('Sample recipe:', recipes[0]);
+
+// Check if we're in edit mode and load existing meal plan data
+const editMode = {{ edit_mode|yesno:"true,false" }};
+let mealPlanData = null;
+
+if (editMode) {
+    mealPlanData = JSON.parse('{{ meal_plan_json|escapejs }}');
+    console.log('Edit mode detected. Loading meal plan:', mealPlanData);
+    
+    // Pre-populate basic fields
+    document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('plan_name').value = mealPlanData.plan_name;
+        document.getElementById('start_date').value = mealPlanData.start_date;
+        document.getElementById('end_date').value = mealPlanData.end_date;
+        
+        // Trigger date range update to create day cards
+        updateDateRange();
+        
+        // After a short delay, populate recipes for each day
+        setTimeout(() => {
+            populateExistingRecipes();
+        }, 100);
+    });
+}
+
+function populateExistingRecipes() {
+    if (!editMode || !mealPlanData) return;
+    
+    console.log('Populating existing recipes...');
+    
+    mealPlanData.days.forEach(day => {
+        const recipeList = document.getElementById(`recipes-${day.date}`);
+        
+        if (!recipeList) {
+            console.error(`Recipe list not found for date: ${day.date}`);
+            return;
+        }
+        
+        // Remove empty state if present
+        const emptyState = recipeList.querySelector('.empty-day-state');
+        if (emptyState) {
+            emptyState.remove();
+        }
+        
+        // Add each recipe
+        day.recipes.forEach(recipe => {
+            const recipeItem = document.createElement('div');
+            recipeItem.className = 'recipe-item';
+            
+            recipeItem.innerHTML = `
+                <input type="hidden" name="recipes_${day.date}[]" value="${recipe.recipe_id}">
+                <div style="flex: 1;">
+                    <strong>${recipe.recipe_name}</strong>
+                </div>
+                
+                <div style="display: flex; align-items: center; gap: 5px;">
+                    <input type="number" 
+                           name="servings_${day.date}[]" 
+                           class="servings-input" 
+                           min="1" 
+                           value="${recipe.servings}" 
+                           required>
+                    <span style="color: #6c757d; font-size: 14px;">servings</span>
+                </div>
+                
+                <button type="button" class="btn-remove-recipe" onclick="removeRecipe(this)">
+                    <i class="fas fa-trash"></i>
+                </button>
+            `;
+            
+            recipeList.appendChild(recipeItem);
+        });
+    });
+    
+    console.log('✓ Existing recipes populated');
+}
 
 // State
 let selectedDates = [];
@@ -411,8 +503,100 @@ function updateDateRange() {
     
     console.log('✓ Valid date range - generating', daysDiff, 'days');
     
+    // In edit mode, save existing recipes before regenerating days
+    let savedRecipes = {};
+    if (editMode) {
+        savedRecipes = saveExistingRecipes();
+    }
+    
     // Generate days
     generateDays(start, end);
+    
+    // In edit mode, restore recipes for days that still exist
+    if (editMode && Object.keys(savedRecipes).length > 0) {
+        restoreRecipes(savedRecipes);
+    }
+}
+
+function saveExistingRecipes() {
+    const savedRecipes = {};
+    
+    // Loop through all existing day cards
+    document.querySelectorAll('.day-card').forEach(dayCard => {
+        const recipeList = dayCard.querySelector('.recipe-list');
+        const dateMatch = recipeList.id.match(/recipes-(\d{4}-\d{2}-\d{2})/);
+        
+        if (!dateMatch) return;
+        
+        const dateStr = dateMatch[1];
+        savedRecipes[dateStr] = [];
+        
+        // Save all recipes for this day
+        recipeList.querySelectorAll('.recipe-item').forEach(item => {
+            const recipeId = item.querySelector('input[name^="recipes_"]').value;
+            const servings = item.querySelector('input[name^="servings_"]').value;
+            const recipeName = item.querySelector('strong').textContent;
+            
+            savedRecipes[dateStr].push({
+                recipeId: recipeId,
+                servings: servings,
+                recipeName: recipeName
+            });
+        });
+    });
+    
+    console.log('Saved recipes:', savedRecipes);
+    return savedRecipes;
+}
+
+function restoreRecipes(savedRecipes) {
+    console.log('Restoring recipes...');
+    
+    Object.keys(savedRecipes).forEach(dateStr => {
+        const recipeList = document.getElementById(`recipes-${dateStr}`);
+        
+        if (!recipeList) {
+            console.log(`Date ${dateStr} no longer exists in range - recipes discarded`);
+            return;
+        }
+        
+        // Remove empty state
+        const emptyState = recipeList.querySelector('.empty-day-state');
+        if (emptyState) {
+            emptyState.remove();
+        }
+        
+        // Restore each recipe
+        savedRecipes[dateStr].forEach(recipe => {
+            const recipeItem = document.createElement('div');
+            recipeItem.className = 'recipe-item';
+            
+            recipeItem.innerHTML = `
+                <input type="hidden" name="recipes_${dateStr}[]" value="${recipe.recipeId}">
+                <div style="flex: 1;">
+                    <strong>${recipe.recipeName}</strong>
+                </div>
+                
+                <div style="display: flex; align-items: center; gap: 5px;">
+                    <input type="number" 
+                           name="servings_${dateStr}[]" 
+                           class="servings-input" 
+                           min="1" 
+                           value="${recipe.servings}" 
+                           required>
+                    <span style="color: #6c757d; font-size: 14px;">servings</span>
+                </div>
+                
+                <button type="button" class="btn-remove-recipe" onclick="removeRecipe(this)">
+                    <i class="fas fa-trash"></i>
+                </button>
+            `;
+            
+            recipeList.appendChild(recipeItem);
+        });
+        
+        console.log(`Restored ${savedRecipes[dateStr].length} recipes for ${dateStr}`);
+    });
 }
 
 function generateDays(startDate, endDate) {

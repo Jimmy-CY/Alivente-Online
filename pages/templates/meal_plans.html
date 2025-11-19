@@ -226,6 +226,27 @@
         </a>
     </div>
 
+    {% if messages %}
+    <div class="container" style="max-width: 1200px; margin: 0 auto;">
+        {% for msg in messages %}
+        <div class="alert alert-{% if 'success' in msg.tags %}success{% elif 'error' in msg.tags %}danger{% elif 'warning' in msg.tags %}warning{% else %}info{% endif %} alert-dismissible fade show" role="alert">
+            <strong>{{ msg }}</strong>
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        {% endfor %}
+    </div>
+    <script>
+        setTimeout(function() {
+            document.querySelectorAll('.alert').forEach(alert => {
+                alert.classList.remove('show');
+                setTimeout(() => alert.remove(), 150);
+            });
+        }, 3000);
+    </script>
+    {% endif %}
+
     <!-- Meal Plans List -->
     {% if meal_plans %}
         {% for plan in meal_plans %}
@@ -264,7 +285,7 @@
                         class="btn btn-duplicate"
                         data-duplicate-url="{% url 'duplicate_meal_plan' plan.meal_plan_id %}"
                         onclick="confirmDuplicate(this, '{{ plan.plan_name|escapejs }}')">
-                    <i class="fas fa-copy"></i> Copy
+                    <i class="fas fa-copy"></i> Duplicate
                 </button>
                 <button type="button" 
                         class="btn btn-delete"
