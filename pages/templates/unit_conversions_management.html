@@ -33,6 +33,7 @@
     flex-wrap: wrap;
 }
 
+/* Card-Style Conversion Table */
 .conversions-card {
     background: white;
     border-radius: 12px;
@@ -42,63 +43,133 @@
 
 .conversions-table {
     width: 100%;
-    border-collapse: collapse;
+    border-collapse: separate;
+    border-spacing: 0 10px;
 }
 
 .conversions-table thead {
-    background: #f8f9fa;
+    background: transparent;
 }
 
-.conversions-table th {
-    padding: 12px 15px;
+.conversions-table thead th {
+    padding: 12px 20px;
     text-align: left;
     font-weight: 600;
     color: #2c3e50;
     border-bottom: 2px solid #dee2e6;
+    background: transparent;
 }
 
-.conversions-table td {
-    padding: 8px 15px;
-    border-bottom: 1px solid #e9ecef;
+.conversions-table tbody tr {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+}
+
+.conversions-table tbody tr:nth-child(even) {
+    background: #f8f9fa;
 }
 
 .conversions-table tbody tr:hover {
-    background: #f8f9fa;
+    transform: translateY(-3px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+    background: #e3f2fd;
 }
 
-.conversion-formula {
-    background: #f8f9fa;
-    padding: 4px 10px;
-    border-radius: 6px;
-    font-size: 14px;
+.conversions-table tbody td {
+    padding: 18px 20px;
+    vertical-align: middle;
+    border: none;
+}
+
+.conversions-table tbody tr td:first-child {
+    border-radius: 10px 0 0 10px;
+}
+
+.conversions-table tbody tr td:last-child {
+    border-radius: 0 10px 10px 0;
+}
+
+/* Conversion Display Styles */
+.conversion-display {
+    font-size: 16px;
+    font-weight: 500;
+    color: #2c3e50;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.conversion-number {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 16px;
+    min-width: 45px;
+    box-shadow: 0 2px 6px rgba(40, 167, 69, 0.3);
+}
+
+.conversion-number:last-of-type {
+    background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+    box-shadow: 0 2px 6px rgba(0, 123, 255, 0.3);
+}
+
+.conversion-unit {
+    color: #495057;
+    font-weight: 600;
+    font-size: 15px;
+}
+
+.conversion-arrow {
+    color: #28a745;
+    font-size: 20px;
+    font-weight: 700;
+}
+
+/* Actions Buttons */
+.actions-cell {
+    white-space: nowrap;
+    text-align: center;
 }
 
 .btn-icon {
-    padding: 4px 8px;
-    border: none;
-    border-radius: 4px;
+    padding: 8px 14px;
+    border: 2px solid;
+    border-radius: 6px;
     cursor: pointer;
     transition: all 0.2s;
-    font-size: 12px;
-    margin-right: 5px;
+    font-size: 14px;
+    margin: 0 4px;
 }
 
 .btn-edit {
-    background: #17a2b8;
-    color: white;
+    background: white;
+    color: #17a2b8;
+    border-color: #17a2b8;
 }
 
 .btn-edit:hover {
-    background: #138496;
+    background: #17a2b8;
+    color: white;
+    transform: scale(1.05);
 }
 
 .btn-delete {
-    background: #dc3545;
-    color: white;
+    background: white;
+    color: #dc3545;
+    border-color: #dc3545;
 }
 
 .btn-delete:hover {
-    background: #c82333;
+    background: #dc3545;
+    color: white;
+    transform: scale(1.05);
 }
 
 .empty-state {
@@ -111,10 +182,6 @@
     font-size: 80px;
     color: #dee2e6;
     margin-bottom: 20px;
-}
-
-.actions-cell {
-    white-space: nowrap;
 }
 </style>
 
@@ -146,27 +213,26 @@
         <table class="conversions-table">
             <thead>
                 <tr>
-                    <th style="width: 18%;">From Unit</th>
-                    <th style="width: 6%; text-align: center;">→</th>
-                    <th style="width: 18%;">To Unit</th>
-                    <th style="width: 20%; text-align: center;">Conversion</th>
-                    <th style="width: 23%;">Applies To</th>
-                    <th style="width: 15%; text-align: center;">Actions</th>
+                    <th style="width: 45%;">Conversion</th>
+                    <th style="width: 35%;">Applies To</th>
+                    <th style="width: 20%; text-align: center;">Actions</th>
                 </tr>
             </thead>
             <tbody>
                 {% for conversion in conversions %}
                 <tr id="conversion-row-{{ conversion.unit_conversion_id }}">
-                    <td><strong>{{ conversion.from_unit.name }}</strong></td>
-                    <td style="text-align: center; font-size: 18px; color: #28a745;">
-                        <i class="fas fa-arrow-right"></i>
+                    <!-- Conversion Display (combines from, to, and multiplier) -->
+                    <td>
+                        <div class="conversion-display">
+                            <span class="conversion-number">1</span>
+                            <span class="conversion-unit">{{ conversion.from_unit.name }}</span>
+                            <span class="conversion-arrow">→</span>
+                            <span class="conversion-number">{{ conversion.multiplier|normalize_decimal }}</span>
+                            <span class="conversion-unit">{{ conversion.to_unit.name }}</span>
+                        </div>
                     </td>
-                    <td><strong>{{ conversion.to_unit.name }}</strong></td>
-                    <td style="text-align: center;">
-                        <span class="conversion-formula">
-                            <strong>1 : {{ conversion.multiplier|normalize_decimal }}</strong>
-                        </span>
-                    </td>
+                    
+                    <!-- Applies To -->
                     <td>
                         {% if conversion.specific_ingredient %}
                             <span style="background: #ffc107; color: #000; padding: 4px 10px; border-radius: 6px; font-size: 13px; font-weight: 500;">
@@ -178,6 +244,8 @@
                             </span>
                         {% endif %}
                     </td>
+                    
+                    <!-- Actions -->
                     <td class="actions-cell" style="text-align: center;">
                         <button onclick="openEditModal({{ conversion.unit_conversion_id }}, '{{ conversion.from_unit.name }}', '{{ conversion.to_unit.name }}', '{{ conversion.multiplier }}', {% if conversion.specific_ingredient %}{{ conversion.specific_ingredient.ingredient_id }}{% else %}null{% endif %}, '{% if conversion.specific_ingredient %}{{ conversion.specific_ingredient.name }}{% endif %}')" 
                                 class="btn-icon btn-edit" 
