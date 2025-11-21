@@ -10817,6 +10817,121 @@ def save_unit_conversion(request):
 # UNIT CONVERSION MANAGEMENT
 # ============================================
 
+def scan_for_missing_conversions():
+    """
+    Scan all recipe ingredients and find missing unit conversions.
+    Returns list of missing conversions needed.
+    """
+    from collections import defaultdict
+    
+    missing = []
+    seen = set()  # To avoid duplicates
+    
+    # Get conversion cache for fast lookups
+    conversion_cache = get_conversion_cache()
+    
+    # Get all recipe ingredients with their units
+    recipe_ingredients = RecipeIngredient.objects.select_related(
+        'ingredient',
+        'ingredient__default_unit',
+        'unit',
+        'recipe'
+    ).exclude(
+        ingredient__default_unit__isnull=True  # Skip ingredients without shopping units
+    ).exclude(
+        unit__isnull=True  # Skip ingredients without recipe units
+    )
+    
+    for ri in recipe_ingredients:
+        ingredient = ri.ingredient
+        from_unit = ri.unit
+        to_unit = ingredient.default_unit
+        
+        # Skip if same unit
+        if from_unit.measurement_unit_id == to_unit.measurement_unit_id:
+            continue
+        
+        # Create unique key to avoid duplicates
+        cache_key = f"{from_unit.measurement_unit_id}-{to_unit.measurement_unit_id}-{ingredient.ingredient_id}"
+        
+        if cache_key in seen:
+            continue
+        
+        # Check if conversion exists
+        converted_qty, multiplier = convert_quantity(
+            Decimal('1'), 
+            from_unit, 
+            to_unit, 
+            ingredient, 
+            conversion_cache
+        )
+        
+        if converted_qty is None:
+            # Missing conversion found
+            seen.add(cache_key)
+            missing.append({
+                'ingredient': ingredient.name,
+                'ingredient_id': ingredient.ingredient_id,
+                'from_unit': from_unit.name,
+                'from_unit_id': from_unit.measurement_unit_id,
+                'to_unit': to_unit.name,
+                'to_unit_id': to_unit.measurement_unit_id,
+                'recipe_example': ri.recipe.recipe_name
+            })
+    
+    return missing
+
+@login_required
+def add_conversion(request):
+    """Add a new unit conversion via AJAX"""
+    if not request.user.is_superuser:
+        return JsonResponse({'success': False, 'error': 'Permission denied'})
+    
+    if request.method == 'POST':
+        try:
+            from_unit_id = request.POST.get('from_unit')
+            to_unit_id = request.POST.get('to_unit')
+            specific_ingredient_id = request.POST.get('specific_ingredient')
+            multiplier = request.POST.get('multiplier')
+            
+            if not all([from_unit_id, to_unit_id, multiplier]):
+                return JsonResponse({'success': False, 'error': 'Missing required fields'})
+            
+            from_unit = MeasurementUnit.objects.get(measurement_unit_id=from_unit_id)
+            to_unit = MeasurementUnit.objects.get(measurement_unit_id=to_unit_id)
+            
+            # Handle specific ingredient (can be null for generic conversions)
+            specific_ingredient = None
+            if specific_ingredient_id and specific_ingredient_id != 'null':
+                specific_ingredient = Ingredient.objects.get(ingredient_id=specific_ingredient_id)
+            
+            # Check if conversion already exists
+            existing = UnitConversion.objects.filter(
+                from_unit=from_unit,
+                to_unit=to_unit,
+                specific_ingredient=specific_ingredient
+            ).first()
+            
+            if existing:
+                # Update existing
+                existing.multiplier = multiplier
+                existing.save()
+            else:
+                # Create new
+                UnitConversion.objects.create(
+                    from_unit=from_unit,
+                    to_unit=to_unit,
+                    specific_ingredient=specific_ingredient,
+                    multiplier=multiplier
+                )
+            
+            return JsonResponse({'success': True})
+            
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)})
+    
+    return JsonResponse({'success': False, 'error': 'Invalid request method'})
+
 @login_required
 def unit_conversions_management(request):
     """Manage unit conversions"""
@@ -10827,16 +10942,21 @@ def unit_conversions_management(request):
     conversions = UnitConversion.objects.all().select_related(
         'from_unit', 
         'to_unit', 
-        'specific_ingredient'  # ← NEW: Include specific_ingredient
+        'specific_ingredient'
     ).order_by('from_unit__name', 'to_unit__name')
     
     all_units = MeasurementUnit.objects.all().order_by('name')
-    all_ingredients = Ingredient.objects.all().order_by('name')  # ← NEW: Get all ingredients
+    all_ingredients = Ingredient.objects.all().order_by('name')
+    
+    # Scan for missing conversions across all recipes
+    missing_conversions = scan_for_missing_conversions()
     
     context = {
         'conversions': conversions,
         'all_units': all_units,
-        'all_ingredients': all_ingredients,  # ← NEW: Add to context
+        'all_ingredients': all_ingredients,
+        'missing_conversions': json.dumps(missing_conversions) if missing_conversions else '[]',
+        'missing_count': len(missing_conversions),
     }
     
     return render(request, 'unit_conversions_management.html', context)

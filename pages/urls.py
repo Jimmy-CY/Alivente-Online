@@ -234,6 +234,7 @@ urlpatterns = [
     path('save_unit_conversion/', views.save_unit_conversion, name='save_unit_conversion'),
     # Unit Conversion Management
     path('unit_conversions/', views.unit_conversions_management, name='unit_conversions_management'),
+    path('unit_conversions/add/', views.add_conversion, name='add_conversion'),
     path('add_unit_conversion_manual/', views.add_unit_conversion_manual, name='add_unit_conversion_manual'),
     path('edit_unit_conversion/', views.edit_unit_conversion, name='edit_unit_conversion'),
     path('delete_unit_conversion/', views.delete_unit_conversion, name='delete_unit_conversion'),

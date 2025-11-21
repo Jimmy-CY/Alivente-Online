@@ -192,9 +192,16 @@
         <a href="{% url 'recipe_management' %}" class="btn btn-secondary">
             <i class="fas fa-arrow-left"></i> Back to Recipe Management
         </a>
-        <button onclick="openAddModal()" class="btn btn-success">
-            <i class="fas fa-plus"></i> Add New Conversion
-        </button>
+        <div style="display: flex; gap: 10px;">
+            {% if missing_count > 0 %}
+            <button onclick="openMissingConversionsModal()" class="btn btn-warning">
+                <i class="fas fa-exclamation-triangle"></i> Missing Conversions ({{ missing_count }})
+            </button>
+            {% endif %}
+            <button onclick="openAddModal()" class="btn btn-success">
+                <i class="fas fa-plus"></i> Add New Conversion
+            </button>
+        </div>
     </div>
 
     <!-- Page Header -->
@@ -386,6 +393,35 @@
     </div>
 </div>
 
+<!-- Missing Conversions Modal -->
+<div class="modal fade" id="missingConversionsModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-warning text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-exclamation-triangle"></i> Missing Unit Conversions
+                </h5>
+                <button type="button" class="close text-white" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-3">The following conversions are needed for recipes in your database. Please provide the conversion rates:</p>
+                
+                <div id="missingConversionsList">
+                    <!-- Will be populated by JavaScript -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success" onclick="saveAllMissingConversions()">
+                    <i class="fas fa-save"></i> Save All Conversions
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
 // Preview conversion formula while typing
 document.addEventListener('DOMContentLoaded', function() {
@@ -551,6 +587,218 @@ async function deleteConversion(conversionId, fromUnit, toUnit) {
     } catch (error) {
         alert('Error deleting conversion');
     }
+}
+
+// Missing Conversions Functionality
+const missingConversionsData = JSON.parse('{{ missing_conversions|escapejs }}');
+
+function openMissingConversionsModal() {
+    const container = document.getElementById('missingConversionsList');
+    container.innerHTML = '';
+    
+    if (missingConversionsData.length === 0) {
+        container.innerHTML = '<p class="text-success"><i class="fas fa-check-circle"></i> No missing conversions found!</p>';
+    } else {
+        missingConversionsData.forEach((item, index) => {
+            const row = document.createElement('div');
+            row.className = 'mb-4 p-3';
+            row.style.background = '#f8f9fa';
+            row.style.borderRadius = '8px';
+            row.style.border = '1px solid #dee2e6';
+            
+            row.innerHTML = `
+                <div class="mb-2">
+                    <strong style="color: #667eea;"><i class="fas fa-carrot"></i> ${item.ingredient}</strong>
+                    <div style="font-size: 13px; color: #6c757d; margin-top: 4px;">
+                        <i class="fas fa-utensils"></i> Used in: ${item.recipe_example}
+                    </div>
+                </div>
+                
+                <div class="row align-items-end mb-2">
+                    <div class="col-md-2">
+                        <label style="font-size: 13px; font-weight: 600; margin-bottom: 5px;">From:</label>
+                        <input type="text" class="form-control" value="${item.from_unit}" readonly style="background: #e9ecef;">
+                    </div>
+                    
+                    <div class="col-md-2">
+                        <label style="font-size: 13px; font-weight: 600; margin-bottom: 5px;">To:</label>
+                        <input type="text" class="form-control" value="${item.to_unit}" readonly style="background: #e9ecef;">
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <label style="font-size: 13px; font-weight: 600; margin-bottom: 5px;">
+                            Multiplier: <span class="text-danger">*</span>
+                            <small class="text-muted" style="font-weight: normal;">(1 ${item.from_unit} = ? ${item.to_unit})</small>
+                        </label>
+                        <input type="number" 
+                               class="form-control missing-conversion-multiplier" 
+                               id="multiplier_${index}"
+                               data-index="${index}"
+                               data-from-unit-id="${item.from_unit_id}"
+                               data-to-unit-id="${item.to_unit_id}"
+                               data-ingredient-id="${item.ingredient_id}"
+                               placeholder="e.g., 0.25" 
+                               step="0.000001"
+                               required>
+                    </div>
+                    
+                    <div class="col-md-2">
+                        <button type="button" class="btn btn-sm btn-primary w-100" onclick="saveSingleMissingConversion(${index})" style="height: 38px;">
+                            <i class="fas fa-save"></i> Save
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="mt-3 pt-3" style="border-top: 1px solid #dee2e6;">
+                    <label style="font-size: 13px; font-weight: 600; margin-bottom: 10px; display: block;">
+                        <i class="fas fa-tag"></i> Apply this conversion to:
+                    </label>
+                    <div class="row g-2">
+                        <div class="col-md-6">
+                            <label class="d-flex align-items-start" style="padding: 12px 12px 12px 24px; border: 2px solid #28a745; border-radius: 8px; background: #f0fff4; cursor: pointer;">
+                                <input class="form-check-input mt-1" 
+                                       type="radio" 
+                                       name="conversion_type_${index}" 
+                                       id="generic_${index}" 
+                                       value="generic"
+                                       checked
+                                       style="cursor: pointer; margin-right: 10px; flex-shrink: 0;">
+                                <div>
+                                    <div style="font-weight: 600; color: #28a745;">
+                                        <i class="fas fa-globe"></i> Generic
+                                    </div>
+                                    <small class="text-muted">All ingredients</small>
+                                </div>
+                            </label>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="d-flex align-items-start" style="padding: 12px 12px 12px 24px; border: 2px solid #ffc107; border-radius: 8px; background: #fffbf0; cursor: pointer;">
+                                <input class="form-check-input mt-1" 
+                                       type="radio" 
+                                       name="conversion_type_${index}" 
+                                       id="specific_${index}" 
+                                       value="specific"
+                                       style="cursor: pointer; margin-right: 10px; flex-shrink: 0;">
+                                <div>
+                                    <div style="font-weight: 600; color: #856404;">
+                                        <i class="fas fa-star"></i> ${item.ingredient}
+                                    </div>
+                                    <small class="text-muted">This ingredient only</small>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            container.appendChild(row);
+        });
+    }
+    
+    const modal = new bootstrap.Modal(document.getElementById('missingConversionsModal'));
+    modal.show();
+}
+
+function saveSingleMissingConversion(index) {
+    const multiplierInput = document.getElementById(`multiplier_${index}`);
+    const multiplier = parseFloat(multiplierInput.value);
+    
+    if (!multiplier || multiplier <= 0) {
+        alert('Please enter a valid multiplier greater than 0');
+        return;
+    }
+    
+    const fromUnitId = multiplierInput.dataset.fromUnitId;
+    const toUnitId = multiplierInput.dataset.toUnitId;
+    
+    // Check if generic or specific
+    const isGeneric = document.getElementById(`generic_${index}`).checked;
+    const ingredientId = isGeneric ? null : multiplierInput.dataset.ingredientId;
+    
+    saveConversion(fromUnitId, toUnitId, ingredientId, multiplier, index);
+}
+
+function saveAllMissingConversions() {
+    const inputs = document.querySelectorAll('.missing-conversion-multiplier');
+    let hasErrors = false;
+    
+    inputs.forEach((input, index) => {
+        const multiplier = parseFloat(input.value);
+        
+        if (!multiplier || multiplier <= 0) {
+            input.style.borderColor = 'red';
+            hasErrors = true;
+        } else {
+            input.style.borderColor = '';
+        }
+    });
+    
+    if (hasErrors) {
+        alert('Please fill in all multipliers with valid values greater than 0');
+        return;
+    }
+    
+    // Save all conversions
+    let promises = [];
+    inputs.forEach((input, index) => {
+        const multiplier = parseFloat(input.value);
+        const fromUnitId = input.dataset.fromUnitId;
+        const toUnitId = input.dataset.toUnitId;
+        
+        // Check if generic or specific
+        const isGeneric = document.getElementById(`generic_${index}`).checked;
+        const ingredientId = isGeneric ? null : input.dataset.ingredientId;
+        
+        promises.push(
+            saveConversion(fromUnitId, toUnitId, ingredientId, multiplier, index, true)
+        );
+    });
+    
+    Promise.all(promises).then(() => {
+        alert('All conversions saved successfully!');
+        location.reload();
+    });
+}
+
+function saveConversion(fromUnitId, toUnitId, ingredientId, multiplier, index, batch = false) {
+    const formData = new FormData();
+    formData.append('from_unit', fromUnitId);
+    formData.append('to_unit', toUnitId);
+    formData.append('specific_ingredient', ingredientId);
+    formData.append('multiplier', multiplier);
+    
+    return fetch('{% url "add_conversion" %}', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            if (!batch) {
+                // Remove this item from the list
+                const input = document.getElementById(`multiplier_${index}`);
+                input.closest('.mb-4').remove();
+                
+                // Update count
+                missingConversionsData.splice(index, 1);
+                
+                if (missingConversionsData.length === 0) {
+                    location.reload();
+                }
+                
+                alert('Conversion saved successfully!');
+            }
+        } else {
+            alert('Error: ' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while saving the conversion');
+    });
 }
 </script>
 
