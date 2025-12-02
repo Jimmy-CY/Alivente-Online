@@ -26,150 +26,303 @@
   </script>
 {% endfor %}
 
-<body>  
-  <div style="display: flex; justify-content: flex-end">
-    <a href="{% url 'home' %}" class="btn btn-info" style="margin-right:16px" role="button">Back</a>
-  </div>
+<div style="display: flex; justify-content: flex-end">
+  <a href="{% url 'home' %}" class="btn btn-info" style="margin-right:16px" role="button">Back</a>
+</div>
 <br>
 
 {% if user.is_superuser %}
 
-<!-- Two section layout: Alivente (left) and Personal (right) -->
-<div style="display: flex; gap: 30px; max-width: 1400px; margin: 0 auto;">
+<style>
+  /* Colour Variables */
+  :root {
+    --alivente-dark: #17a2b8;
+    --alivente-light: #d1ecf1;
+    --personal-dark: #28a745;
+    --personal-light: #d4edda;
+  }
   
-  <!-- ALIVENTE Section (Left) - 2x2 Grid -->
-  <div style="flex: 2; border: 3px solid #17a2b8; border-radius: 10px; padding: 30px; background-color: #f8f9fa;">
-    <h3 style="color: #17a2b8; margin-bottom: 25px; text-align: center; font-weight: bold;">
-      <i class="fas fa-building"></i> ALIVENTE
-    </h3>
+  /* Tab Navigation */
+  .admin-tabs {
+    display: flex;
+    max-width: 900px;
+    margin: 0 auto;
+    justify-content: flex-start;
+  }
+  
+  .admin-tab {
+    flex: 0 0 auto;
+    width: 200px;
+    padding: 15px 25px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    text-align: center;
+    cursor: pointer;
+    border: 3px solid;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    position: relative;
+    margin-bottom: -3px;
+    z-index: 1;
+  }
+  
+  .admin-tab.alivente-tab {
+    border-color: var(--alivente-dark);
+    color: var(--alivente-dark);
+    background-color: white;
+    border-bottom-color: var(--alivente-dark);
+    border-right: none;
+    border-radius: 10px 10px 0 0;
+  }
+  
+  .admin-tab.alivente-tab.active {
+    background-color: var(--alivente-light);
+    color: var(--alivente-dark);
+    border-bottom-color: var(--alivente-light);
+    z-index: 10;
+  }
+  
+  /* When Personal is active, Alivente tab gets green bottom border */
+  .admin-tab.alivente-tab.personal-active {
+    border-bottom-color: var(--personal-dark);
+  }
+  
+  .admin-tab.alivente-tab:not(.active):hover {
+    background-color: #e8f4f8;
+  }
+  
+  .admin-tab.personal-tab {
+    border-color: var(--personal-dark);
+    color: var(--personal-dark);
+    background-color: white;
+    border-bottom-color: var(--personal-dark);
+    border-radius: 10px 10px 0 0;
+  }
+  
+  /* When Alivente is active, Personal tab gets blue left and bottom border */
+  .admin-tab.personal-tab.alivente-active {
+    border-left-color: var(--alivente-dark);
+    border-bottom-color: var(--alivente-dark);
+  }
+  
+  .admin-tab.personal-tab.active {
+    background-color: var(--personal-light);
+    color: var(--personal-dark);
+    border-bottom-color: var(--personal-light);
+    z-index: 10;
+  }
+  
+  .admin-tab.personal-tab:not(.active):hover {
+    background-color: #e8f5e9;
+  }
+  
+  /* Tab Content */
+  .tab-content-container {
+    max-width: 900px;
+    margin: 0 auto;
+  }
+  
+  .tab-panel {
+    display: none;
+    padding: 30px;
+    border: 3px solid;
+    border-radius: 0 10px 10px 10px;
+    animation: fadeIn 0.3s ease;
+  }
+  
+  .tab-panel.active {
+    display: block;
+  }
+  
+  .tab-panel.alivente-panel {
+    border-color: var(--alivente-dark);
+    background-color: var(--alivente-light);
+  }
+  
+  .tab-panel.personal-panel {
+    border-color: var(--personal-dark);
+    background-color: var(--personal-light);
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  /* Button Grid */
+  .admin-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+  
+  .admin-btn {
+    height: 140px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    transition: transform 0.2s, box-shadow 0.2s;
+    color: white;
+  }
+  
+  .admin-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+    color: white;
+    text-decoration: none;
+  }
+  
+  .admin-btn i {
+    font-size: 2.5rem;
+    margin-bottom: 12px;
+  }
+  
+  .admin-btn h6 {
+    margin: 0;
+    font-weight: 600;
+    text-align: center;
+  }
+  
+  .btn-alivente {
+    background-color: #17a2b8;
+    border: none;
+  }
+  
+  .btn-alivente:hover {
+    background-color: #138496;
+  }
+  
+  .btn-personal {
+    background-color: #28a745;
+    border: none;
+  }
+  
+  .btn-personal:hover {
+    background-color: #218838;
+  }
+  
+  /* Responsive */
+  @media (max-width: 768px) {
+    .admin-grid {
+      grid-template-columns: 1fr;
+    }
     
-    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
+    .admin-tab {
+      padding: 12px 15px;
+      font-size: 1rem;
+    }
+  }
+</style>
+
+<!-- Tab Navigation -->
+<div class="admin-tabs">
+  <div class="admin-tab alivente-tab active" onclick="switchTab('alivente')">
+    <i class="fas fa-building"></i>
+    <span>ALIVENTE</span>
+  </div>
+  <div class="admin-tab personal-tab alivente-active" onclick="switchTab('personal')">
+    <i class="fas fa-user"></i>
+    <span>PERSONAL</span>
+  </div>
+</div>
+
+<!-- Tab Content -->
+<div class="tab-content-container">
+  
+  <!-- Alivente Panel -->
+  <div id="alivente-panel" class="tab-panel alivente-panel active">
+    <div class="admin-grid">
       
-      <!-- Manage Lease Agreements Button -->
-      <a href="{% url 'tenant_lease_agreement' %}" class="btn btn-info" 
-         style="height: 140px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-decoration: none; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: transform 0.2s;"
-         onmouseover="this.style.transform='scale(1.05)'" 
-         onmouseout="this.style.transform='scale(1)'">
-        <i class="fas fa-file-contract fa-3x mb-3"></i>
-        <h6 style="margin: 0; font-weight: 600;">Manage Lease Agreements</h6>
+      <!-- Manage Lease Agreements -->
+      <a href="{% url 'tenant_lease_agreement' %}" class="admin-btn btn-alivente">
+        <i class="fas fa-file-contract"></i>
+        <h6>Manage Lease Agreements</h6>
       </a>
 
-      <!-- Generate Lease Agreement Button -->
-      <a href="{% url 'generate_lease_agreement' %}" class="btn btn-info" 
-         style="height: 140px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-decoration: none; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: transform 0.2s;"
-         onmouseover="this.style.transform='scale(1.05)'" 
-         onmouseout="this.style.transform='scale(1)'">
-        <i class="fas fa-plus-circle fa-3x mb-3"></i>
-        <h6 style="margin: 0; font-weight: 600;">Generate Lease Agreement</h6>
+      <!-- Generate Lease Agreement -->
+      <a href="{% url 'generate_lease_agreement' %}" class="admin-btn btn-alivente">
+        <i class="fas fa-plus-circle"></i>
+        <h6>Generate Lease Agreement</h6>
       </a>
 
-      <!-- Manage Title Deeds Button -->
-      <a href="{% url 'properties_title_deed' %}" class="btn btn-info" 
-         style="height: 140px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-decoration: none; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: transform 0.2s;"
-         onmouseover="this.style.transform='scale(1.05)'" 
-         onmouseout="this.style.transform='scale(1)'">
-        <i class="fas fa-scroll fa-3x mb-3"></i>
-        <h6 style="margin: 0; font-weight: 600;">Manage Title Deeds</h6>
+      <!-- Manage Title Deeds -->
+      <a href="{% url 'properties_title_deed' %}" class="admin-btn btn-alivente">
+        <i class="fas fa-scroll"></i>
+        <h6>Manage Title Deeds</h6>
       </a>
 
-      <!-- Generate Invoices Button -->
-      <a href="{% url 'admin_invoices' %}" class="btn btn-info" 
-         style="height: 140px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-decoration: none; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: transform 0.2s;"
-         onmouseover="this.style.transform='scale(1.05)'" 
-         onmouseout="this.style.transform='scale(1)'">
-        <i class="fas fa-file-invoice fa-3x mb-3"></i>
-        <h6 style="margin: 0; font-weight: 600;">Generate Invoices</h6>
+      <!-- Generate Invoices -->
+      <a href="{% url 'admin_invoices' %}" class="admin-btn btn-alivente">
+        <i class="fas fa-file-invoice"></i>
+        <h6>Generate Invoices</h6>
       </a>
 
     </div>
   </div>
-
-  <!-- PERSONAL Section (Right) - Space for 4 buttons in 2x2 grid -->
-  <div style="flex: 1; border: 3px solid #28a745; border-radius: 10px; padding: 30px; background-color: #f8f9fa;">
-    <h3 style="color: #28a745; margin-bottom: 25px; text-align: center; font-weight: bold;">
-      <i class="fas fa-user"></i> PERSONAL
-    </h3>
-    
-    <div style="display: grid; grid-template-columns: 1fr; gap: 20px;">
+  
+  <!-- Personal Panel -->
+  <div id="personal-panel" class="tab-panel personal-panel">
+    <div class="admin-grid">
       
-      <!-- Manage Passports Button -->
-      <a href="{% url 'passport_management' %}" class="btn btn-success" 
-         style="height: 140px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-decoration: none; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: transform 0.2s;"
-         onmouseover="this.style.transform='scale(1.05)'" 
-         onmouseout="this.style.transform='scale(1)'">
-        <i class="fas fa-passport fa-3x mb-3"></i>
-        <h6 style="margin: 0; font-weight: 600;">Manage Passports/Documents</h6>
+      <!-- Manage Passports/Documents -->
+      <a href="{% url 'passport_management' %}" class="admin-btn btn-personal">
+        <i class="fas fa-passport"></i>
+        <h6>Manage Passports/Documents</h6>
       </a>
 
-      <!-- Recipes Button -->
-      <a href="{% url 'recipe_management' %}" class="btn btn-success" 
-         style="height: 140px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-decoration: none; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: transform 0.2s;"
-         onmouseover="this.style.transform='scale(1.05)'" 
-         onmouseout="this.style.transform='scale(1)'">
-        <i class="fas fa-utensils fa-3x mb-3"></i>
-        <h6 style="margin: 0; font-weight: 600;">Recipes</h6>
+      <!-- Recipes -->
+      <a href="{% url 'recipe_management' %}" class="admin-btn btn-personal">
+        <i class="fas fa-utensils"></i>
+        <h6>Recipes</h6>
       </a>
+
+      <!-- Coming Soon 1 -->
+      <div class="admin-btn btn-personal" style="opacity: 0.5; cursor: default;">
+        <i class="fas fa-clock"></i>
+        <h6>Coming Soon</h6>
+      </div>
+
+      <!-- Coming Soon 2 -->
+      <div class="admin-btn btn-personal" style="opacity: 0.5; cursor: default;">
+        <i class="fas fa-clock"></i>
+        <h6>Coming Soon</h6>
+      </div>
 
     </div>
   </div>
-
+  
 </div>
 
 <script>
-  // Title Deed file input handler
-  const titleDeedUpload = document.getElementById('title-deed-upload');
-  if (titleDeedUpload) {
-    titleDeedUpload.addEventListener('change', function(e) {
-      var fileName = e.target.files[0].name;
-      e.target.nextElementSibling.innerText = fileName;
-    });
-  }
-
-  // Lease Agreement file input handler
-  const leaseUpload = document.getElementById('lease-upload');
-  if (leaseUpload) {
-    leaseUpload.addEventListener('change', function(e) {
-      var fileName = e.target.files[0].name;
-      e.target.nextElementSibling.innerText = fileName;
-    });
-  }
-
-  // Title Deed property selection preview
-  const propertySelect = document.getElementById('property-select');
-  if (propertySelect) {
-    propertySelect.addEventListener('change', function(e) {
-      const selected = e.target.value;
-      const preview = document.getElementById('title-deed-preview');
-      const span = document.getElementById('selected-property');
-      
-      if (selected) {
-        span.textContent = selected;
-        preview.style.display = 'block';
-      } else {
-        preview.style.display = 'none';
-      }
-    });
-  }
-
-  // Lease Agreement tenant selection preview
-  const tenantSelect = document.getElementById('tenant-select');
-  if (tenantSelect) {
-    tenantSelect.addEventListener('change', function(e) {
-      const selectedOption = e.target.options[e.target.selectedIndex];
-      const propName = selectedOption.getAttribute('data-prop-name');
-      const preview = document.getElementById('lease-preview');
-      const span = document.getElementById('selected-property-name');
-      
-      if (propName) {
-        span.textContent = propName;
-        preview.style.display = 'block';
-      } else {
-        preview.style.display = 'none';
-      }
-    });
+  function switchTab(tabName) {
+    // Remove active from all tabs and panels
+    document.querySelectorAll('.admin-tab').forEach(tab => tab.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(panel => panel.classList.remove('active'));
+    
+    const aliventeTab = document.querySelector('.alivente-tab');
+    const personalTab = document.querySelector('.personal-tab');
+    
+    // Add active to selected tab and panel
+    if (tabName === 'alivente') {
+      aliventeTab.classList.add('active');
+      aliventeTab.classList.remove('personal-active');
+      document.getElementById('alivente-panel').classList.add('active');
+      personalTab.classList.add('alivente-active');
+    } else {
+      personalTab.classList.add('active');
+      personalTab.classList.remove('alivente-active');
+      document.getElementById('personal-panel').classList.add('active');
+      aliventeTab.classList.add('personal-active');
+    }
   }
 </script>
-</body>
 
 {% else %}
   <center><img src="{% static 'images/alivente_online_logo.png' %}" alt="Alivente" width="480" height="300"></center>
