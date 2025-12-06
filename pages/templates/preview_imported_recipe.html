@@ -565,6 +565,18 @@ tr.sortable-chosen {
 .ingredient-row:hover, .instruction-row:hover {
     background: #f8f9fa;
 }
+
+/* Keyboard navigation highlight */
+.autocomplete-item.highlighted,
+.autocomplete-add-new.highlighted {
+    background: #17a2b8 !important;
+    color: white !important;
+}
+
+.autocomplete-item.highlighted i,
+.autocomplete-add-new.highlighted i {
+    color: white !important;
+}
 </style>
 
 <div class="preview-container">
@@ -872,8 +884,10 @@ tr.sortable-chosen {
                                            name="ingredient_measurement[]" 
                                            value="{{ ing.measurement }}"
                                            class="measurement-input"
+                                           autocomplete="off"
                                            onclick="showMeasurementDropdown(this)"
                                            oninput="filterMeasurementDropdown(this)"
+                                           onkeydown="handleAutocompleteKeydown(event, this, 'measurement')"
                                            onblur="hideDropdownDelayed(this, 'measurement')"
                                            required>
                                     <div class="autocomplete-dropdown measurement-dropdown"></div>
@@ -885,8 +899,10 @@ tr.sortable-chosen {
                                            name="ingredient_name[]" 
                                            value="{{ ing.ingredient }}"
                                            class="ingredient-input"
+                                           autocomplete="off"
                                            onclick="showIngredientDropdown(this)"
                                            oninput="filterIngredientDropdown(this)"
+                                           onkeydown="handleAutocompleteKeydown(event, this, 'ingredient')"
                                            onblur="hideDropdownDelayed(this, 'ingredient')"
                                            required>
                                     <div class="autocomplete-dropdown ingredient-dropdown"></div>
@@ -898,8 +914,10 @@ tr.sortable-chosen {
                                            name="ingredient_preparation[]" 
                                            value="{{ ing.preparation }}"
                                            class="preparation-input"
+                                           autocomplete="off"
                                            onclick="showPreparationDropdown(this)"
                                            oninput="filterPreparationDropdown(this)"
+                                           onkeydown="handleAutocompleteKeydown(event, this, 'preparation')"
                                            onblur="hideDropdownDelayed(this, 'preparation')">
                                     <div class="autocomplete-dropdown preparation-dropdown"></div>
                                 </div>
@@ -1062,6 +1080,109 @@ tr.sortable-chosen {
 const existingMeasurements = {{ existing_measurements|safe }}.sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
 const existingIngredients = {{ existing_ingredients|safe }}.sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
 const existingPreparations = {{ existing_preparations|safe }}.sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
+
+// ==================== KEYBOARD NAVIGATION FOR AUTOCOMPLETE ====================
+
+// Track the currently highlighted item index for each dropdown type
+let highlightedIndex = {
+    measurement: -1,
+    ingredient: -1,
+    preparation: -1
+};
+
+// Get all selectable items in a dropdown
+function getDropdownItems(dropdown) {
+    return dropdown.querySelectorAll('.autocomplete-item, .autocomplete-add-new');
+}
+
+// Highlight an item in the dropdown
+function highlightItem(dropdown, index, type) {
+    const items = getDropdownItems(dropdown);
+    
+    // Remove highlight from all items
+    items.forEach(item => item.classList.remove('highlighted'));
+    
+    // Bounds check - wrap around
+    if (index < 0) index = items.length - 1;
+    if (index >= items.length) index = 0;
+    
+    // Update tracked index
+    highlightedIndex[type] = index;
+    
+    // Add highlight to selected item
+    if (items[index]) {
+        items[index].classList.add('highlighted');
+        items[index].scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    }
+}
+
+// Select the currently highlighted item
+function selectHighlightedItem(dropdown, type) {
+    const items = getDropdownItems(dropdown);
+    const index = highlightedIndex[type];
+    
+    if (index >= 0 && index < items.length) {
+        const item = items[index];
+        const mousedownEvent = new MouseEvent('mousedown', {
+            bubbles: true,
+            cancelable: true,
+            view: window
+        });
+        item.dispatchEvent(mousedownEvent);
+        return true;
+    }
+    return false;
+}
+
+// Handle keyboard events for autocomplete inputs
+function handleAutocompleteKeydown(event, input, type) {
+    const wrapper = input.parentElement;
+    const dropdown = wrapper.querySelector(`.${type}-dropdown`);
+    
+    if (!dropdown.classList.contains('show')) {
+        return;
+    }
+    
+    const items = getDropdownItems(dropdown);
+    
+    switch (event.key) {
+        case 'ArrowDown':
+            event.preventDefault();
+            highlightItem(dropdown, highlightedIndex[type] + 1, type);
+            break;
+            
+        case 'ArrowUp':
+            event.preventDefault();
+            highlightItem(dropdown, highlightedIndex[type] - 1, type);
+            break;
+            
+        case 'Enter':
+            event.preventDefault();
+            if (highlightedIndex[type] >= 0) {
+                selectHighlightedItem(dropdown, type);
+            } else if (items.length > 0) {
+                highlightedIndex[type] = 0;
+                selectHighlightedItem(dropdown, type);
+            }
+            break;
+            
+        case 'Escape':
+            event.preventDefault();
+            hideDropdown(input, type);
+            highlightedIndex[type] = -1;
+            break;
+            
+        case 'Tab':
+            hideDropdown(input, type);
+            highlightedIndex[type] = -1;
+            break;
+    }
+}
+
+// Reset highlight when dropdown is shown or filtered
+function resetHighlight(type) {
+    highlightedIndex[type] = -1;
+}
 
 // Ingredient categories for smart categorization
 const ingredientCategories = [
@@ -1497,6 +1618,7 @@ function showMeasurementDropdown(input) {
     const wrapper = input.parentElement;
     const dropdown = wrapper.querySelector('.measurement-dropdown');
     
+    resetHighlight('measurement');
     populateMeasurementDropdown(dropdown, '', input);
     
     // Check direction before showing
@@ -1525,6 +1647,7 @@ function filterMeasurementDropdown(input) {
         input.classList.add('invalid');
     }
     
+    resetHighlight('measurement');
     populateMeasurementDropdown(dropdown, value, input);
     
     // Check direction before showing
@@ -1579,6 +1702,7 @@ function selectMeasurement(input, value) {
     input.classList.remove('invalid');
     input.classList.add('valid');
     hideDropdown(input, 'measurement');
+    resetHighlight('measurement');
 }
 
 function addNewMeasurement(input, name) {
@@ -1616,6 +1740,7 @@ function showIngredientDropdown(input) {
     const wrapper = input.parentElement;
     const dropdown = wrapper.querySelector('.ingredient-dropdown');
     
+    resetHighlight('ingredient');
     populateIngredientDropdown(dropdown, '', input);
     
     // Check direction before showing
@@ -1651,6 +1776,7 @@ function filterIngredientDropdown(input) {
         input.classList.add('invalid');
     }
     
+    resetHighlight('ingredient');
     populateIngredientDropdown(dropdown, value, input);
     
     // Check direction before showing
@@ -1712,6 +1838,7 @@ function selectIngredient(input, value) {
     input.classList.remove('invalid');
     input.classList.add('valid');
     hideDropdown(input, 'ingredient');
+    resetHighlight('ingredient');
 }
 
 // ==================== ADD NEW INGREDIENT WITH CATEGORY ====================
@@ -1722,7 +1849,6 @@ let pendingIngredientName = null;
 
 function addNewIngredient(input, name) {
     console.log('Adding ingredient:', name);
-    console.log('Available categories:', ingredientCategories);
     
     // Store context
     pendingIngredientInput = input;
@@ -1754,11 +1880,11 @@ function addNewIngredient(input, name) {
             
             categorySelect.appendChild(option);
         });
+        
+        // Suggest shopping unit based on selected category
+        suggestShoppingUnit();
     } else {
         console.error('No ingredient categories available!');
-        const option = document.createElement('option');
-        option.textContent = 'No categories available';
-        categorySelect.appendChild(option);
     }
     
     // Show modal
@@ -1870,57 +1996,13 @@ function confirmAddIngredient() {
     });
 }
 
-// Update addNewIngredient to suggest shopping unit
-function addNewIngredient(input, name) {
-    console.log('Adding ingredient:', name);
-    
-    // Store context
-    pendingIngredientInput = input;
-    pendingIngredientName = name;
-    
-    // Set ingredient name in modal
-    document.getElementById('newIngredientName').value = name;
-    
-    // Get smart suggestion
-    const suggestedCategory = smartCategorize(name);
-    console.log('Suggested category:', suggestedCategory);
-    
-    // Populate category dropdown
-    const categorySelect = document.getElementById('newIngredientCategory');
-    categorySelect.innerHTML = '';
-    
-    if (ingredientCategories && ingredientCategories.length > 0) {
-        ingredientCategories.forEach(cat => {
-            const option = document.createElement('option');
-            option.value = cat.id;
-            option.textContent = cat.name;
-            
-            // Pre-select the suggested category
-            if (cat.name === suggestedCategory) {
-                option.selected = true;
-                // Show smart suggestion badge
-                document.getElementById('smartSuggestionBadge').style.display = 'inline-block';
-            }
-            
-            categorySelect.appendChild(option);
-        });
-        
-        // Suggest shopping unit based on selected category
-        suggestShoppingUnit();
-    } else {
-        console.error('No ingredient categories available!');
-    }
-    
-    // Show modal
-    $('#addIngredientModal').modal('show');
-}
-
 // ==================== PREPARATION DROPDOWN ====================
 
 function showPreparationDropdown(input) {
     const wrapper = input.parentElement;
     const dropdown = wrapper.querySelector('.preparation-dropdown');
     
+    resetHighlight('preparation');
     populatePreparationDropdown(dropdown, '', input);
     
     // Check direction before showing
@@ -1954,6 +2036,7 @@ function filterPreparationDropdown(input) {
         input.classList.add('invalid');
     }
     
+    resetHighlight('preparation');
     populatePreparationDropdown(dropdown, value, input);
     
     // Check direction before showing
@@ -2008,6 +2091,7 @@ function selectPreparation(input, value) {
     input.classList.remove('invalid');
     input.classList.add('valid');
     hideDropdown(input, 'preparation');
+    resetHighlight('preparation');
 }
 
 function addNewPreparation(input, name) {
@@ -2072,6 +2156,7 @@ function addIngredientRow() {
                        autocomplete="off"
                        onclick="showMeasurementDropdown(this)"
                        oninput="filterMeasurementDropdown(this)"
+                       onkeydown="handleAutocompleteKeydown(event, this, 'measurement')"
                        onblur="hideDropdownDelayed(this, 'measurement')"
                        required>
                 <div class="autocomplete-dropdown measurement-dropdown"></div>
@@ -2085,6 +2170,7 @@ function addIngredientRow() {
                        autocomplete="off"
                        onclick="showIngredientDropdown(this)"
                        oninput="filterIngredientDropdown(this)"
+                       onkeydown="handleAutocompleteKeydown(event, this, 'ingredient')"
                        onblur="hideDropdownDelayed(this, 'ingredient')"
                        required>
                 <div class="autocomplete-dropdown ingredient-dropdown"></div>
@@ -2098,6 +2184,7 @@ function addIngredientRow() {
                        autocomplete="off"
                        onclick="showPreparationDropdown(this)"
                        oninput="filterPreparationDropdown(this)"
+                       onkeydown="handleAutocompleteKeydown(event, this, 'preparation')"
                        onblur="hideDropdownDelayed(this, 'preparation')">
                 <div class="autocomplete-dropdown preparation-dropdown"></div>
             </div>
@@ -2114,6 +2201,12 @@ function addIngredientRow() {
         </td>
     `;
     tbody.appendChild(newRow);
+    
+    // Focus on the quantity field of the new row
+    const quantityInput = newRow.querySelector('input[name="ingredient_quantity[]"]');
+    if (quantityInput) {
+        quantityInput.focus();
+    }
 }
 
 function removeIngredientRow(button) {
@@ -2167,6 +2260,12 @@ function addInstructionRow() {
         </td>
     `;
     tbody.appendChild(newRow);
+    
+    // Focus on the instruction textarea of the new row
+    const instructionTextarea = newRow.querySelector('textarea[name="instruction[]"]');
+    if (instructionTextarea) {
+        instructionTextarea.focus();
+    }
 }
 
 function removeInstructionRow(button) {
