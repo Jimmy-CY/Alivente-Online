@@ -11579,13 +11579,16 @@ def categories_management(request):
     # Get all categories sorted alphabetically
     categories = IngredientCategory.objects.all().order_by('name')
     
-    # Get ingredient count for each category
+    # Get ingredient count and names for each category
     categories_with_count = []
     for category in categories:
-        ingredient_count = Ingredient.objects.filter(category=category).count()
+        ingredients = Ingredient.objects.filter(category=category).order_by('name')
+        ingredient_names = list(ingredients.values_list('name', flat=True))
+        
         categories_with_count.append({
             'category': category,
-            'ingredient_count': ingredient_count
+            'ingredient_count': ingredients.count(),
+            'ingredients': ingredient_names,  # List of ingredient names for tooltip
         })
     
     context = {
@@ -11732,10 +11735,11 @@ def delete_category(request):
 
 @login_required
 def measurement_units_management(request):
-    """Manage measurement units - OPTIMIZED"""
-    from django.db.models import Count, Q
+    """Manage measurement units - with usage details for popups - OPTIMIZED"""
+    from django.db.models import Count
+    from collections import defaultdict
     
-    # Get all units with usage counts in a single query using annotations
+    # Get all units with usage counts
     units = MeasurementUnit.objects.annotate(
         recipe_usage=Count('recipeingredient', distinct=True),
         ingredient_usage=Count('ingredient', distinct=True),
@@ -11743,7 +11747,45 @@ def measurement_units_management(request):
         to_conversion_usage=Count('conversions_to', distinct=True)
     ).order_by('name')
     
-    # Process the results
+    # Pre-fetch all recipe names by unit (single query)
+    recipe_names_by_unit = defaultdict(list)
+    recipe_data = (
+        RecipeIngredient.objects
+        .select_related('recipe', 'unit')
+        .values('unit_id', 'recipe__recipe_name')
+        .distinct()
+        .order_by('recipe__recipe_name')
+    )
+    for item in recipe_data:
+        recipe_names_by_unit[item['unit_id']].append(item['recipe__recipe_name'])
+    
+    # Pre-fetch all ingredient names by unit (single query)
+    ingredient_names_by_unit = defaultdict(list)
+    ingredient_data = (
+        Ingredient.objects
+        .filter(default_unit__isnull=False)
+        .values('default_unit_id', 'name')
+        .order_by('name')
+    )
+    for item in ingredient_data:
+        ingredient_names_by_unit[item['default_unit_id']].append(item['name'])
+    
+    # Pre-fetch all conversions (two queries total)
+    conversions_by_unit = defaultdict(list)
+    
+    # Conversions FROM each unit
+    from_conversions = (
+        UnitConversion.objects
+        .select_related('from_unit', 'to_unit')
+        .all()
+    )
+    for conv in from_conversions:
+        from_abbr = conv.from_unit.abbreviation or conv.from_unit.name
+        to_abbr = conv.to_unit.abbreviation or conv.to_unit.name
+        conversions_by_unit[conv.from_unit_id].append(f"{from_abbr} → {to_abbr} (×{conv.multiplier})")
+        conversions_by_unit[conv.to_unit_id].append(f"{from_abbr} → {to_abbr} (×{conv.multiplier})")
+    
+    # Build the final list
     units_with_count = []
     for unit in units:
         conversion_count = unit.from_conversion_usage + unit.to_conversion_usage
@@ -11754,7 +11796,10 @@ def measurement_units_management(request):
             'recipe_count': unit.recipe_usage,
             'ingredient_count': unit.ingredient_usage,
             'conversion_count': conversion_count,
-            'total_usage': total_usage
+            'total_usage': total_usage,
+            'recipes': recipe_names_by_unit.get(unit.measurement_unit_id, []),
+            'ingredients': ingredient_names_by_unit.get(unit.measurement_unit_id, []),
+            'conversions': conversions_by_unit.get(unit.measurement_unit_id, []),
         })
     
     # Get unit type choices for the modal

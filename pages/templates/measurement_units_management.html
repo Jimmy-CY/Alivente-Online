@@ -203,6 +203,108 @@
     color: #dee2e6;
     margin-bottom: 20px;
 }
+
+/* ==================== USAGE POPUP STYLES ==================== */
+.usage-popup-trigger {
+    position: relative;
+    cursor: pointer;
+    display: inline-block;
+    padding: 3px 6px;
+    border-radius: 4px;
+    transition: background 0.2s;
+}
+
+.usage-popup-trigger:hover {
+    background: #e9ecef;
+}
+
+.usage-popup {
+    display: none;
+    position: absolute;
+    bottom: calc(100% + 10px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: #2c3e50;
+    color: white;
+    padding: 12px 16px;
+    border-radius: 10px;
+    min-width: 180px;
+    max-width: 280px;
+    max-height: 250px;
+    overflow-y: auto;
+    z-index: 1000;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+}
+
+.usage-popup::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 10px solid transparent;
+    border-top-color: #2c3e50;
+}
+
+.usage-popup.show {
+    display: block;
+    animation: popupFadeIn 0.2s ease;
+}
+
+@keyframes popupFadeIn {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(5px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+}
+
+.usage-popup-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.usage-popup-list li {
+    padding: 5px 0;
+    font-size: 13px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.usage-popup-list li:last-child {
+    border-bottom: none;
+}
+
+.usage-popup-list li::before {
+    content: '•';
+    color: #6f42c1;
+    font-weight: bold;
+}
+
+/* Scrollbar styling for popup */
+.usage-popup::-webkit-scrollbar {
+    width: 6px;
+}
+
+.usage-popup::-webkit-scrollbar-track {
+    background: rgba(255,255,255,0.1);
+    border-radius: 3px;
+}
+
+.usage-popup::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.3);
+    border-radius: 3px;
+}
+
+.usage-popup::-webkit-scrollbar-thumb:hover {
+    background: rgba(255,255,255,0.5);
+}
 </style>
 
 <div class="units-container">
@@ -286,19 +388,46 @@
                         </select>
                     </td>
                     
-                    <!-- Usage Count -->
+                    <!-- Usage Count with Clickable Popups -->
                     <td>
                         <div class="usage-count">
                             {% if item.total_usage > 0 %}
                             <div style="display: flex; flex-direction: column; gap: 4px;">
                                 {% if item.recipe_count > 0 %}
-                                <span><i class="fas fa-utensils"></i> {{ item.recipe_count }} recipe{{ item.recipe_count|pluralize }}</span>
+                                <span class="usage-popup-trigger" onclick="toggleUsagePopup(this, event)">
+                                    <i class="fas fa-utensils"></i> {{ item.recipe_count }} recipe{{ item.recipe_count|pluralize }}
+                                    <div class="usage-popup">
+                                        <ul class="usage-popup-list">
+                                            {% for recipe in item.recipes %}
+                                            <li>{{ recipe }}</li>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                </span>
                                 {% endif %}
                                 {% if item.ingredient_count > 0 %}
-                                <span><i class="fas fa-carrot"></i> {{ item.ingredient_count }} ingredient{{ item.ingredient_count|pluralize }}</span>
+                                <span class="usage-popup-trigger" onclick="toggleUsagePopup(this, event)">
+                                    <i class="fas fa-carrot"></i> {{ item.ingredient_count }} ingredient{{ item.ingredient_count|pluralize }}
+                                    <div class="usage-popup">
+                                        <ul class="usage-popup-list">
+                                            {% for ingredient in item.ingredients %}
+                                            <li>{{ ingredient }}</li>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                </span>
                                 {% endif %}
                                 {% if item.conversion_count > 0 %}
-                                <span><i class="fas fa-exchange-alt"></i> {{ item.conversion_count }} conversion{{ item.conversion_count|pluralize }}</span>
+                                <span class="usage-popup-trigger" onclick="toggleUsagePopup(this, event)">
+                                    <i class="fas fa-exchange-alt"></i> {{ item.conversion_count }} conversion{{ item.conversion_count|pluralize }}
+                                    <div class="usage-popup">
+                                        <ul class="usage-popup-list">
+                                            {% for conversion in item.conversions %}
+                                            <li>{{ conversion }}</li>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                </span>
                                 {% endif %}
                             </div>
                             {% else %}
@@ -397,6 +526,42 @@
 </div>
 
 <script>
+// Toggle usage popup on click
+function toggleUsagePopup(trigger, event) {
+    event.stopPropagation();
+    
+    const popup = trigger.querySelector('.usage-popup');
+    const isOpen = popup.classList.contains('show');
+    
+    // Close all other popups first
+    document.querySelectorAll('.usage-popup.show').forEach(p => {
+        p.classList.remove('show');
+    });
+    
+    // Toggle this popup
+    if (!isOpen) {
+        popup.classList.add('show');
+    }
+}
+
+// Close popup when clicking outside
+document.addEventListener('click', function(event) {
+    if (!event.target.closest('.usage-popup-trigger')) {
+        document.querySelectorAll('.usage-popup.show').forEach(popup => {
+            popup.classList.remove('show');
+        });
+    }
+});
+
+// Close popup on Escape key
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        document.querySelectorAll('.usage-popup.show').forEach(popup => {
+            popup.classList.remove('show');
+        });
+    }
+});
+
 // Enter edit mode
 function enterEditMode(unitId) {
     const row = document.getElementById(`unit-row-${unitId}`);

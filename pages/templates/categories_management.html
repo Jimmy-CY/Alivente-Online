@@ -165,6 +165,115 @@
     color: #dee2e6;
     margin-bottom: 20px;
 }
+
+/* ==================== INGREDIENT POPUP STYLES ==================== */
+.ingredient-popup-trigger {
+    position: relative;
+    cursor: pointer;
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 6px;
+    transition: background 0.2s;
+}
+
+.ingredient-popup-trigger:hover {
+    background: #e9ecef;
+}
+
+.ingredient-popup {
+    display: none;
+    position: absolute;
+    bottom: calc(100% + 10px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: #2c3e50;
+    color: white;
+    padding: 12px 16px;
+    border-radius: 10px;
+    min-width: 180px;
+    max-width: 280px;
+    max-height: 250px;
+    overflow-y: auto;
+    z-index: 1000;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+}
+
+.ingredient-popup::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 10px solid transparent;
+    border-top-color: #2c3e50;
+}
+
+.ingredient-popup.show {
+    display: block;
+    animation: popupFadeIn 0.2s ease;
+}
+
+@keyframes popupFadeIn {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(5px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+}
+
+.ingredient-popup-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.ingredient-popup-list li {
+    padding: 5px 0;
+    font-size: 13px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.ingredient-popup-list li:last-child {
+    border-bottom: none;
+}
+
+.ingredient-popup-list li::before {
+    content: '•';
+    color: #17a2b8;
+    font-weight: bold;
+}
+
+.ingredient-popup-empty {
+    font-style: italic;
+    color: #adb5bd;
+    text-align: center;
+    padding: 8px 0;
+}
+
+/* Scrollbar styling for popup */
+.ingredient-popup::-webkit-scrollbar {
+    width: 6px;
+}
+
+.ingredient-popup::-webkit-scrollbar-track {
+    background: rgba(255,255,255,0.1);
+    border-radius: 3px;
+}
+
+.ingredient-popup::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.3);
+    border-radius: 3px;
+}
+
+.ingredient-popup::-webkit-scrollbar-thumb:hover {
+    background: rgba(255,255,255,0.5);
+}
 </style>
 
 <div class="categories-container">
@@ -212,10 +321,27 @@
                                data-original-value="{{ item.category.name }}">
                     </td>
                     
-                    <!-- Ingredient Count -->
+                    <!-- Ingredient Count with Popup -->
                     <td>
-                        <span class="ingredient-count">
-                            <i class="fas fa-carrot"></i> {{ item.ingredient_count }} ingredient{{ item.ingredient_count|pluralize }}
+                        <span class="ingredient-popup-trigger" onclick="toggleIngredientPopup(this, event)">
+                            <span class="ingredient-count">
+                                <i class="fas fa-carrot"></i> {{ item.ingredient_count }} ingredient{{ item.ingredient_count|pluralize }}
+                            </span>
+                            
+                            <!-- Popup -->
+                            <div class="ingredient-popup">
+                                {% if item.ingredients %}
+                                <ul class="ingredient-popup-list">
+                                    {% for ingredient in item.ingredients %}
+                                    <li>{{ ingredient }}</li>
+                                    {% endfor %}
+                                </ul>
+                                {% else %}
+                                <div class="ingredient-popup-empty">
+                                    No ingredients
+                                </div>
+                                {% endif %}
+                            </div>
                         </span>
                     </td>
                     
@@ -292,6 +418,42 @@
 </div>
 
 <script>
+// Toggle ingredient popup on click
+function toggleIngredientPopup(trigger, event) {
+    event.stopPropagation();
+    
+    const popup = trigger.querySelector('.ingredient-popup');
+    const isOpen = popup.classList.contains('show');
+    
+    // Close all other popups first
+    document.querySelectorAll('.ingredient-popup.show').forEach(p => {
+        p.classList.remove('show');
+    });
+    
+    // Toggle this popup
+    if (!isOpen) {
+        popup.classList.add('show');
+    }
+}
+
+// Close popup when clicking outside
+document.addEventListener('click', function(event) {
+    if (!event.target.closest('.ingredient-popup-trigger')) {
+        document.querySelectorAll('.ingredient-popup.show').forEach(popup => {
+            popup.classList.remove('show');
+        });
+    }
+});
+
+// Close popup on Escape key
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        document.querySelectorAll('.ingredient-popup.show').forEach(popup => {
+            popup.classList.remove('show');
+        });
+    }
+});
+
 // Enter edit mode
 function enterEditMode(categoryId) {
     const row = document.getElementById(`category-row-${categoryId}`);
