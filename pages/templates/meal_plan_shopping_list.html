@@ -695,23 +695,22 @@
             </p>
             
             <div class="review-list" id="reviewList">
+                {% with counter=0 %}
                 {% for category, items in ingredients.items %}
                 <div class="review-category-header">{{ category }}</div>
                 {% for item in items %}
                 <div class="review-item">
                     <input type="checkbox" 
-                           id="review-{{ forloop.parentloop.counter }}-{{ forloop.counter }}"
-                           data-ingredient="{{ item.ingredient }}"
-                           data-quantity="{{ item.quantity }}"
-                           data-unit="{{ item.unit }}"
-                           data-category="{{ category }}"
+                           id="review-{{ forloop.parentloop.counter0 }}_{{ forloop.counter0 }}"
+                           data-item-id="{{ forloop.parentloop.counter0 }}_{{ forloop.counter0 }}"
                            onchange="toggleReviewItem(this)">
-                    <label for="review-{{ forloop.parentloop.counter }}-{{ forloop.counter }}">
+                    <label for="review-{{ forloop.parentloop.counter0 }}_{{ forloop.counter0 }}">
                         <strong>{{ item.quantity|floatformat:"-2" }} {{ item.unit }}</strong> {{ item.ingredient }}
                     </label>
                 </div>
                 {% endfor %}
                 {% endfor %}
+                {% endwith %}
             </div>
             
             <div class="tip-box">
@@ -799,51 +798,49 @@
     {% endif %}
     
     <script>
-    // Store all ingredients data
-    const allIngredients = {};
+    // Store all ingredients data with unique IDs
+    const allIngredients = [];
     {% for category, items in ingredients.items %}
-    allIngredients['{{ category }}'] = [
         {% for item in items %}
-        {
+        allIngredients.push({
+            id: '{{ forloop.parentloop.counter0 }}_{{ forloop.counter0 }}',
+            category: '{{ category|escapejs }}',
             ingredient: '{{ item.ingredient|escapejs }}',
             quantity: {{ item.quantity }},
             unit: '{{ item.unit|escapejs }}'
-        }{% if not forloop.last %},{% endif %}
+        });
         {% endfor %}
-    ];
     {% endfor %}
     
-    // Track excluded items
-    const excludedItems = new Set();
+    // Track excluded item IDs
+    const excludedIds = new Set();
     
     // Toggle review item
     function toggleReviewItem(checkbox) {
         const label = checkbox.nextElementSibling;
-        const key = `${checkbox.dataset.category}|${checkbox.dataset.ingredient}`;
+        const itemId = checkbox.dataset.itemId;
         
         if (checkbox.checked) {
-            excludedItems.add(key);
+            excludedIds.add(itemId);
             label.classList.add('excluded');
         } else {
-            excludedItems.delete(key);
+            excludedIds.delete(itemId);
             label.classList.remove('excluded');
         }
     }
     
     // Generate shopping list (go to step 2)
     function generateShoppingList() {
-        // Build final list excluding checked items
-        const finalList = {};
+        // Filter out excluded items
+        const includedItems = allIngredients.filter(item => !excludedIds.has(item.id));
         
-        Object.keys(allIngredients).forEach(category => {
-            const filteredItems = allIngredients[category].filter(item => {
-                const key = `${category}|${item.ingredient}`;
-                return !excludedItems.has(key);
-            });
-            
-            if (filteredItems.length > 0) {
-                finalList[category] = filteredItems;
+        // Group by category
+        const finalList = {};
+        includedItems.forEach(item => {
+            if (!finalList[item.category]) {
+                finalList[item.category] = [];
             }
+            finalList[item.category].push(item);
         });
         
         // Render final shopping list
@@ -860,7 +857,7 @@
         window.finalShoppingList = finalList;
     }
     
-    // Render final shopping list
+    // Render final shopping list (NO checkboxes)
     function renderFinalList(finalList) {
         const container = document.getElementById('finalShoppingList');
         container.innerHTML = '';
@@ -893,8 +890,7 @@
                     ${finalList[category].map(item => {
                         const qty = item.quantity % 1 === 0 ? item.quantity.toFixed(0) : item.quantity.toFixed(2).replace(/\.?0+$/, '');
                         return `
-                            <li class="ingredient-item">
-                                <input type="checkbox" class="ingredient-checkbox" onchange="toggleItem(this)">
+                            <li class="ingredient-item" style="padding-left: 20px;">
                                 <span class="ingredient-text">
                                     <span class="ingredient-quantity">${qty} ${item.unit}</span>
                                     ${item.ingredient}
@@ -916,16 +912,6 @@
         document.getElementById('step2Badge').classList.remove('active');
         document.getElementById('step1Badge').classList.remove('completed');
         document.getElementById('step1Badge').classList.add('active');
-    }
-    
-    // Toggle checked state in final list
-    function toggleItem(checkbox) {
-        const listItem = checkbox.closest('.ingredient-item');
-        if (checkbox.checked) {
-            listItem.classList.add('checked');
-        } else {
-            listItem.classList.remove('checked');
-        }
     }
 
     // Format as text for sharing
