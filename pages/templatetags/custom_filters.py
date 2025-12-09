@@ -232,3 +232,45 @@ def normalize_decimal(value):
         return str_value
     except:
         return str(value)
+
+@register.filter
+def format_unit(unit, amount):
+    """Format unit with proper singular/plural based on amount"""
+    if unit is None:
+        return ''
+    
+    try:
+        amount = float(amount) if amount else 1
+    except (ValueError, TypeError):
+        amount = 1
+    
+    # Use the model's get_display_name method if available
+    if hasattr(unit, 'get_display_name'):
+        return unit.get_display_name(amount)
+    
+    # Fallback: if it's a MeasurementUnit object without the method
+    if hasattr(unit, 'abbreviation') and hasattr(unit, 'abbreviation_plural'):
+        if amount == 1:
+            return unit.abbreviation or unit.name
+        else:
+            return unit.abbreviation_plural or unit.abbreviation or unit.name_plural or unit.name
+    
+    # Final fallback for string
+    return str(unit)
+
+
+@register.filter
+def format_amount(value):
+    """Format amount - remove unnecessary decimals"""
+    if value is None:
+        return ''
+    
+    try:
+        num = float(value)
+        # If it's a whole number, show without decimals
+        if num == int(num):
+            return str(int(num))
+        # Otherwise show up to 2 decimal places, removing trailing zeros
+        return f"{num:.2f}".rstrip('0').rstrip('.')
+    except (ValueError, TypeError):
+        return str(value)

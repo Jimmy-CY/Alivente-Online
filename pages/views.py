@@ -9663,12 +9663,12 @@ def aggregate_meal_plan_ingredients(meal_plan):
     """
     from collections import defaultdict
     from decimal import Decimal
+    import math
     
     def smart_categorize(ingredient_name):
         """Intelligently categorize ingredients based on name"""
         ingredient_lower = ingredient_name.lower()
         
-        # [Keep your existing categorization logic - not changing this]
         canned_terms = ['stock', 'broth', 'cube', 'bouillon', 'canned', 'tinned', 'tin', 'paste', 'sauce', 'puree', 'concentrate']
         for term in canned_terms:
             if term in ingredient_lower:
@@ -9712,6 +9712,49 @@ def aggregate_meal_plan_ingredients(meal_plan):
                 return 'Vegetables'
         
         return 'Other'
+    
+    def round_shopping_qty(qty, unit):
+        """
+        Round quantities intelligently based on unit type for shopping lists.
+        NEVER rounds down - always rounds UP to ensure you have enough.
+        """
+        if qty <= 0:
+            return qty
+        
+        unit_type = getattr(unit, 'unit_type', 'other')
+        
+        if unit_type == 'count':
+            # Always round UP to whole number, minimum 1
+            return max(1, math.ceil(qty))
+        
+        elif unit_type == 'weight':
+            # Round UP to sensible numbers based on magnitude
+            if qty < 10:
+                return math.ceil(qty * 2) / 2
+            elif qty < 100:
+                return math.ceil(qty / 5) * 5
+            else:
+                return math.ceil(qty / 10) * 10
+        
+        elif unit_type == 'volume':
+            # Round UP to sensible numbers based on magnitude
+            if qty < 10:
+                return math.ceil(qty * 4) / 4
+            elif qty < 100:
+                return math.ceil(qty / 5) * 5
+            else:
+                return math.ceil(qty / 10) * 10
+        
+        else:
+            # OTHER (dash, pinch, to taste): round UP
+            return max(1, math.ceil(qty))
+    
+    def get_unit_display(unit, qty):
+        """Get the proper unit display with pluralization"""
+        if qty == 1:
+            return unit.abbreviation or unit.name
+        else:
+            return unit.abbreviation_plural or unit.abbreviation or unit.name_plural or unit.name
     
     # Pre-load all unit conversions for fast lookups (prevents N+1 queries)
     conversion_cache = get_conversion_cache()
@@ -9817,6 +9860,7 @@ def aggregate_meal_plan_ingredients(meal_plan):
     for ingredient_id in sorted(aggregated.keys(), key=lambda x: aggregated[x]['ingredient_obj'].name):
         data = aggregated[ingredient_id]
         ingredient_obj = data['ingredient_obj']
+        unit = data['unit']
         
         # Determine category
         if ingredient_obj and ingredient_obj.category:
@@ -9826,10 +9870,17 @@ def aggregate_meal_plan_ingredients(meal_plan):
         
         # Only add to shopping list if we successfully converted some amount
         if data['amount'] > 0:
+            # Apply smart rounding for shopping
+            raw_qty = float(data['amount'])
+            qty = round_shopping_qty(raw_qty, unit)
+            
+            # Get proper unit display with pluralization
+            unit_display = get_unit_display(unit, qty)
+            
             entry = {
                 'ingredient': ingredient_obj.name,
-                'quantity': float(data['amount']),
-                'unit': data['unit'].name
+                'quantity': qty,
+                'unit': unit_display
             }
             
             # Add note about unconverted items
@@ -9841,7 +9892,7 @@ def aggregate_meal_plan_ingredients(meal_plan):
             categorized_ingredients[category].append(entry)
     
     return (dict(categorized_ingredients), missing_conversions, missing_shopping_units)
-
+    
 @login_required
 def meal_plans(request):
     """List all meal plans"""
@@ -10414,6 +10465,53 @@ def meal_plan_shopping_list(request, meal_plan_id):
         messages.error(request, f'Error generating shopping list: {str(e)}')
         return redirect('view_meal_plan', meal_plan_id=meal_plan_id)
 
+def round_shopping_quantity(qty, unit):
+    """
+    Round quantities intelligently based on unit type for shopping lists.
+    NEVER rounds down - always rounds UP to ensure you have enough.
+    - COUNT units: Round UP to whole numbers (min 1)
+    - WEIGHT/VOLUME: Round UP to nearest sensible number
+    - OTHER: Round UP to whole numbers
+    """
+    import math
+    
+    if qty <= 0:
+        return qty
+    
+    unit_type = getattr(unit, 'unit_type', 'other')
+    
+    if unit_type == 'count':
+        # Always round UP to whole number, minimum 1
+        return max(1, math.ceil(qty))
+    
+    elif unit_type == 'weight':
+        # Round UP to sensible numbers based on magnitude
+        if qty < 10:
+            # Small amounts: round UP to nearest 0.5
+            return math.ceil(qty * 2) / 2
+        elif qty < 100:
+            # Medium amounts: round UP to nearest 5
+            return math.ceil(qty / 5) * 5
+        else:
+            # Large amounts: round UP to nearest 10
+            return math.ceil(qty / 10) * 10
+    
+    elif unit_type == 'volume':
+        # Round UP to sensible numbers based on magnitude
+        if qty < 10:
+            # Small amounts (tsp, tbsp): round UP to nearest 0.25
+            return math.ceil(qty * 4) / 4
+        elif qty < 100:
+            # Medium amounts: round UP to nearest 5
+            return math.ceil(qty / 5) * 5
+        else:
+            # Large amounts: round UP to nearest 10
+            return math.ceil(qty / 10) * 10
+    
+    else:
+        # OTHER (dash, pinch, to taste): round UP
+        return max(1, math.ceil(qty))
+
 @login_required
 @require_POST
 def generate_recipe_shopping_list(request):
@@ -10527,22 +10625,34 @@ def generate_recipe_shopping_list(request):
         # Build categorized shopping list
         shopping_list_categorized = defaultdict(list)
         
-        for ingredient_id, data in aggregated.items():
-            ingredient_obj = data['ingredient_obj']
+        for ingredient_id, agg_data in aggregated.items():
+            ingredient_obj = agg_data['ingredient_obj']
             category = ingredient_obj.category.name if ingredient_obj.category else 'Other'
             
             # Only add if we have a converted amount
-            if data['amount'] > 0:
-                qty = float(data['amount'])
+            if agg_data['amount'] > 0:
+                unit = agg_data['unit']
+                raw_qty = float(agg_data['amount'])
+                
+                # Apply smart rounding for shopping
+                qty = round_shopping_quantity(raw_qty, unit)
+                
+                # Format quantity string
                 if qty % 1 == 0:
                     qty_str = f"{int(qty)}"
                 else:
                     qty_str = f"{qty:.2f}".rstrip('0').rstrip('.')
                 
-                item_str = f"{qty_str} {data['unit'].name} {ingredient_obj.name}"
+                # Get proper unit display with pluralization
+                if qty == 1:
+                    unit_display = unit.abbreviation or unit.name
+                else:
+                    unit_display = unit.abbreviation_plural or unit.abbreviation or unit.name_plural or unit.name
+                
+                item_str = f"{qty_str} {unit_display} {ingredient_obj.name}"
                 
                 # Add note if there are unconverted items
-                if data['unconverted_items']:
+                if agg_data['unconverted_items']:
                     item_str += f" (+ unconverted items)"
                 
                 shopping_list_categorized[category].append(item_str)

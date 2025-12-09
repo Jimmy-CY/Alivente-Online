@@ -990,10 +990,20 @@ class MeasurementUnit(models.Model):
     ]
     
     measurement_unit_id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=50, help_text='Full name (e.g., teaspoon, cup, gram)')
-    abbreviation = models.CharField(max_length=10, blank=True, null=True, help_text='Short form (e.g., tsp, cup, g)')
+    name = models.CharField(max_length=50, help_text='Singular name (e.g., teaspoon, cup, gram)')
+    name_plural = models.CharField(max_length=50, blank=True, help_text='Plural name (e.g., teaspoons, cups, grams)')
+    abbreviation = models.CharField(max_length=10, blank=True, null=True, help_text='Singular short form (e.g., tsp, cup, g)')
+    abbreviation_plural = models.CharField(max_length=10, blank=True, null=True, help_text='Plural short form (e.g., tsp, cups, g)')
     unit_type = models.CharField(max_length=20, choices=UNIT_TYPE_CHOICES, default='other')
     created_date = models.DateTimeField(auto_now_add=True)
+    
+    def get_display_name(self, amount=1):
+        """Return the appropriate unit display based on amount"""
+        # Use abbreviation if available, otherwise use name
+        if amount == 1 or amount == -1:  # -1 for "to taste" type units
+            return self.abbreviation or self.name
+        else:
+            return self.abbreviation_plural or self.abbreviation or self.name_plural or self.name
     
     def __str__(self):
         return f"{self.name} ({self.abbreviation})" if self.abbreviation else self.name
@@ -1003,7 +1013,6 @@ class MeasurementUnit(models.Model):
         verbose_name = "Measurement Unit"
         verbose_name_plural = "Measurement Units"
         ordering = ['unit_type', 'name']
-
 
 class IngredientCategory(models.Model):
     """Categories for organizing ingredients"""

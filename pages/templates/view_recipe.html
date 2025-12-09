@@ -860,7 +860,8 @@ body {
                         <div class="ingredient-data" 
                              data-id="{{ ing.recipe_ingredient_id }}"
                              data-amount="{{ ing.formatted_amount }}"
-                             data-unit="{{ ing.unit.name|default:'' }}"
+                             data-unit="{{ ing.unit.abbreviation|default:ing.unit.name|default:'' }}"
+                             data-unit-plural="{{ ing.unit.abbreviation_plural|default:ing.unit.abbreviation|default:ing.unit.name|default:'' }}"
                              data-ingredient="{{ ing.ingredient.name }}"
                              data-preparation="{{ ing.preparation.name|default:'' }}"
                              data-group="{{ group.grouper|default:'' }}"
@@ -1067,8 +1068,12 @@ let shoppingListData = {
 };
 
 // ========== UTILITY: Format ingredient from normalized data ==========
-function formatIngredientText(amount, unit, ingredient, preparation) {
-    let text = `<strong>${amount}</strong> ${unit} ${ingredient}`;
+function formatIngredientText(amount, unit, unitPlural, ingredient, preparation) {
+    // Determine which unit form to use based on amount
+    const numAmount = parseFloat(amount) || 0;
+    const displayUnit = (numAmount === 1) ? unit : (unitPlural || unit);
+    
+    let text = `<strong>${amount}</strong> ${displayUnit} ${ingredient}`;
     if (preparation) {
         text += ` <em style='color: #6c757d;'>(${preparation})</em>`;
     }
@@ -1176,6 +1181,7 @@ function loadIngredients() {
                 id: ingData.getAttribute('data-id'),
                 amount: parseFloat(ingData.getAttribute('data-amount')),
                 unit: ingData.getAttribute('data-unit'),
+                unitPlural: ingData.getAttribute('data-unit-plural'),
                 ingredient: ingData.getAttribute('data-ingredient'),
                 preparation: ingData.getAttribute('data-preparation'),
                 group: groupName || '',
@@ -1237,6 +1243,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const ingId = ingData.getAttribute('data-id');
             const amount = ingData.getAttribute('data-amount');
             const unit = ingData.getAttribute('data-unit');
+            const unitPlural = ingData.getAttribute('data-unit-plural');
             const ingredient = ingData.getAttribute('data-ingredient');
             const preparation = ingData.getAttribute('data-preparation');
 
@@ -1251,7 +1258,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const label = document.createElement('label');
             label.className = 'ingredient-text';
             label.setAttribute('for', `ing-${ingId}`);
-            label.innerHTML = formatIngredientText(amount, unit, ingredient, preparation);
+            label.innerHTML = formatIngredientText(amount, unit, unitPlural, ingredient, preparation);
 
             ingItem.appendChild(checkbox);
             ingItem.appendChild(label);
@@ -1383,10 +1390,13 @@ function calculateScaledIngredients() {
         // Apply smart categorization
         const finalCategory = smartCategorize(ing.ingredient, ing.unit, ing.category);
         
+        // Determine which unit form to use based on amount
+        const displayUnit = (scaledAmount === 1) ? ing.unit : (ing.unitPlural || ing.unit);
+        
         return {
             ...ing,
             scaledAmount: scaledAmount,
-            displayText: `${formattedAmount} ${ing.unit} ${ing.ingredient}${ing.preparation ? ` (${ing.preparation})` : ''}`,
+            displayText: `${formattedAmount} ${displayUnit} ${ing.ingredient}${ing.preparation ? ` (${ing.preparation})` : ''}`,
             category: finalCategory  // Use smart category
         };
     });
