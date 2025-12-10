@@ -204,6 +204,22 @@
     margin-bottom: 20px;
 }
 
+/* Edit field groups */
+.edit-field-group {
+    display: none;
+    margin-top: 8px;
+}
+
+.edit-mode .edit-field-group {
+    display: block;
+}
+
+.edit-field-label {
+    font-size: 11px;
+    color: #6c757d;
+    margin-bottom: 3px;
+}
+
 /* ==================== USAGE POPUP STYLES ==================== */
 .usage-popup-trigger {
     position: relative;
@@ -305,6 +321,14 @@
 .usage-popup::-webkit-scrollbar-thumb:hover {
     background: rgba(255,255,255,0.5);
 }
+
+/* Plural fields helper text */
+.plural-helper {
+    font-size: 11px;
+    color: #6c757d;
+    font-style: italic;
+    margin-top: 3px;
+}
 </style>
 
 <div class="units-container">
@@ -349,11 +373,26 @@
                     <td>
                         <span class="unit-name-display">
                             <strong>{{ item.unit.name }}</strong>
+                            {% if item.unit.name_plural %}
+                            <br><small style="color: #6c757d;">Plural: {{ item.unit.name_plural }}</small>
+                            {% endif %}
                         </span>
-                        <input type="text" 
-                               class="unit-name-edit unit-input" 
-                               value="{{ item.unit.name }}"
-                               data-original-value="{{ item.unit.name }}">
+                        <div class="unit-name-edit">
+                            <div class="edit-field-label">Singular</div>
+                            <input type="text" 
+                                   class="unit-input unit-name-singular-input" 
+                                   value="{{ item.unit.name }}"
+                                   data-original-value="{{ item.unit.name }}"
+                                   placeholder="e.g., cup">
+                            <div class="edit-field-group" style="display: block; margin-top: 8px;">
+                                <div class="edit-field-label">Plural</div>
+                                <input type="text" 
+                                       class="unit-input unit-name-plural-input" 
+                                       value="{{ item.unit.name_plural|default:'' }}"
+                                       data-original-value="{{ item.unit.name_plural|default:'' }}"
+                                       placeholder="e.g., cups">
+                            </div>
+                        </div>
                     </td>
                     
                     <!-- Abbreviation -->
@@ -361,15 +400,29 @@
                         <span class="unit-abbr-display">
                             {% if item.unit.abbreviation %}
                             {{ item.unit.abbreviation }}
+                            {% if item.unit.abbreviation_plural and item.unit.abbreviation_plural != item.unit.abbreviation %}
+                            / {{ item.unit.abbreviation_plural }}
+                            {% endif %}
                             {% else %}
                             <span style="color: #6c757d; font-style: italic;">-</span>
                             {% endif %}
                         </span>
-                        <input type="text" 
-                               class="unit-abbr-edit unit-input" 
-                               value="{{ item.unit.abbreviation|default:'' }}"
-                               data-original-value="{{ item.unit.abbreviation|default:'' }}"
-                               placeholder="Optional">
+                        <div class="unit-abbr-edit">
+                            <div class="edit-field-label">Singular</div>
+                            <input type="text" 
+                                   class="unit-input unit-abbr-singular-input" 
+                                   value="{{ item.unit.abbreviation|default:'' }}"
+                                   data-original-value="{{ item.unit.abbreviation|default:'' }}"
+                                   placeholder="e.g., c">
+                            <div class="edit-field-group" style="display: block; margin-top: 8px;">
+                                <div class="edit-field-label">Plural</div>
+                                <input type="text" 
+                                       class="unit-input unit-abbr-plural-input" 
+                                       value="{{ item.unit.abbreviation_plural|default:'' }}"
+                                       data-original-value="{{ item.unit.abbreviation_plural|default:'' }}"
+                                       placeholder="e.g., c (same if unchanged)">
+                            </div>
+                        </div>
                     </td>
                     
                     <!-- Unit Type -->
@@ -488,22 +541,60 @@
                 </button>
             </div>
             <div class="modal-body">
-                <div class="form-group">
-                    <label style="font-weight: 600;">Unit Name *</label>
-                    <input type="text" 
-                           id="newUnitName" 
-                           class="form-control" 
-                           placeholder="e.g., gram, cup, tablespoon">
-                    <small class="text-muted">Full name of the measurement unit</small>
+                <!-- Unit Name Section -->
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                    <h6 style="font-weight: 600; margin-bottom: 15px; color: #2c3e50;">
+                        <i class="fas fa-font"></i> Unit Name
+                    </h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-2">
+                                <label style="font-weight: 600; font-size: 13px;">Singular *</label>
+                                <input type="text" 
+                                       id="newUnitName" 
+                                       class="form-control" 
+                                       placeholder="e.g., cup">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-2">
+                                <label style="font-weight: 600; font-size: 13px;">Plural</label>
+                                <input type="text" 
+                                       id="newUnitNamePlural" 
+                                       class="form-control" 
+                                       placeholder="e.g., cups">
+                                <small class="text-muted">Leave blank if same as singular</small>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 
-                <div class="form-group">
-                    <label style="font-weight: 600;">Abbreviation</label>
-                    <input type="text" 
-                           id="newUnitAbbr" 
-                           class="form-control" 
-                           placeholder="e.g., g, c, tbsp">
-                    <small class="text-muted">Optional short form</small>
+                <!-- Abbreviation Section -->
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                    <h6 style="font-weight: 600; margin-bottom: 15px; color: #2c3e50;">
+                        <i class="fas fa-compress-alt"></i> Abbreviation <span style="font-weight: normal; color: #6c757d;">(Optional)</span>
+                    </h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-2">
+                                <label style="font-weight: 600; font-size: 13px;">Singular</label>
+                                <input type="text" 
+                                       id="newUnitAbbr" 
+                                       class="form-control" 
+                                       placeholder="e.g., c">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-2">
+                                <label style="font-weight: 600; font-size: 13px;">Plural</label>
+                                <input type="text" 
+                                       id="newUnitAbbrPlural" 
+                                       class="form-control" 
+                                       placeholder="e.g., c (same for metric)">
+                                <small class="text-muted">Leave blank if same as singular</small>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 
                 <div class="form-group">
@@ -513,6 +604,7 @@
                         <option value="{{ value }}">{{ label }}</option>
                         {% endfor %}
                     </select>
+                    <small class="text-muted">Determines rounding behavior in shopping lists</small>
                 </div>
             </div>
             <div class="modal-footer">
@@ -571,14 +663,12 @@ function enterEditMode(unitId) {
 // Cancel edit
 function cancelEdit(unitId) {
     const row = document.getElementById(`unit-row-${unitId}`);
-    const nameInput = row.querySelector('.unit-name-edit');
-    const abbrInput = row.querySelector('.unit-abbr-edit');
-    const typeSelect = row.querySelector('.unit-type-edit');
     
-    // Revert to original values
-    nameInput.value = nameInput.dataset.originalValue;
-    abbrInput.value = abbrInput.dataset.originalValue;
-    typeSelect.value = typeSelect.dataset.originalValue;
+    // Revert all inputs to original values
+    const inputs = row.querySelectorAll('input[data-original-value], select[data-original-value]');
+    inputs.forEach(input => {
+        input.value = input.dataset.originalValue;
+    });
     
     // Exit edit mode
     row.classList.remove('edit-mode');
@@ -587,15 +677,15 @@ function cancelEdit(unitId) {
 // Save unit
 async function saveUnit(unitId) {
     const row = document.getElementById(`unit-row-${unitId}`);
-    const nameInput = row.querySelector('.unit-name-edit');
-    const abbrInput = row.querySelector('.unit-abbr-edit');
-    const typeSelect = row.querySelector('.unit-type-edit');
     
-    const newName = nameInput.value.trim();
-    const newAbbr = abbrInput.value.trim();
-    const newType = typeSelect.value;
+    // Get all input values
+    const nameSingular = row.querySelector('.unit-name-singular-input').value.trim();
+    const namePlural = row.querySelector('.unit-name-plural-input').value.trim();
+    const abbrSingular = row.querySelector('.unit-abbr-singular-input').value.trim();
+    const abbrPlural = row.querySelector('.unit-abbr-plural-input').value.trim();
+    const unitType = row.querySelector('.unit-type-edit').value;
     
-    if (!newName) {
+    if (!nameSingular) {
         alert('Unit name cannot be empty');
         return;
     }
@@ -615,9 +705,11 @@ async function saveUnit(unitId) {
             },
             body: JSON.stringify({
                 unit_id: unitId,
-                name: newName,
-                abbreviation: newAbbr,
-                unit_type: newType
+                name: nameSingular,
+                name_plural: namePlural,
+                abbreviation: abbrSingular,
+                abbreviation_plural: abbrPlural,
+                unit_type: unitType
             })
         });
         
@@ -625,24 +717,37 @@ async function saveUnit(unitId) {
         
         if (data.success) {
             // Update displays
-            const nameDisplay = row.querySelector('.unit-name-display strong');
+            const nameDisplay = row.querySelector('.unit-name-display');
             const abbrDisplay = row.querySelector('.unit-abbr-display');
             const typeDisplay = row.querySelector('.unit-type-display');
             
-            nameDisplay.textContent = data.unit.name;
+            // Update name display
+            let nameHTML = `<strong>${data.unit.name}</strong>`;
+            if (data.unit.name_plural) {
+                nameHTML += `<br><small style="color: #6c757d;">Plural: ${data.unit.name_plural}</small>`;
+            }
+            nameDisplay.innerHTML = nameHTML;
             
+            // Update abbreviation display
             if (data.unit.abbreviation) {
-                abbrDisplay.textContent = data.unit.abbreviation;
+                let abbrHTML = data.unit.abbreviation;
+                if (data.unit.abbreviation_plural && data.unit.abbreviation_plural !== data.unit.abbreviation) {
+                    abbrHTML += ` / ${data.unit.abbreviation_plural}`;
+                }
+                abbrDisplay.innerHTML = abbrHTML;
             } else {
                 abbrDisplay.innerHTML = '<span style="color: #6c757d; font-style: italic;">-</span>';
             }
             
+            // Update type display
             typeDisplay.innerHTML = `<span class="unit-type-badge unit-type-${data.unit.unit_type}">${data.unit.unit_type_display}</span>`;
             
-            // Update original values
-            nameInput.dataset.originalValue = data.unit.name;
-            abbrInput.dataset.originalValue = data.unit.abbreviation || '';
-            typeSelect.dataset.originalValue = data.unit.unit_type;
+            // Update original values for all inputs
+            row.querySelector('.unit-name-singular-input').dataset.originalValue = data.unit.name;
+            row.querySelector('.unit-name-plural-input').dataset.originalValue = data.unit.name_plural || '';
+            row.querySelector('.unit-abbr-singular-input').dataset.originalValue = data.unit.abbreviation || '';
+            row.querySelector('.unit-abbr-plural-input').dataset.originalValue = data.unit.abbreviation_plural || '';
+            row.querySelector('.unit-type-edit').dataset.originalValue = data.unit.unit_type;
             
             // Exit edit mode
             row.classList.remove('edit-mode');
@@ -769,13 +874,11 @@ async function deleteUnit(unitId) {
 
 // Add new unit
 async function addUnit() {
-    const nameInput = document.getElementById('newUnitName');
-    const abbrInput = document.getElementById('newUnitAbbr');
-    const typeSelect = document.getElementById('newUnitType');
-    
-    const name = nameInput.value.trim();
-    const abbreviation = abbrInput.value.trim();
-    const unitType = typeSelect.value;
+    const name = document.getElementById('newUnitName').value.trim();
+    const namePlural = document.getElementById('newUnitNamePlural').value.trim();
+    const abbreviation = document.getElementById('newUnitAbbr').value.trim();
+    const abbreviationPlural = document.getElementById('newUnitAbbrPlural').value.trim();
+    const unitType = document.getElementById('newUnitType').value;
     
     if (!name) {
         alert('Please enter a unit name');
@@ -791,7 +894,9 @@ async function addUnit() {
             },
             body: JSON.stringify({
                 name: name,
+                name_plural: namePlural,
                 abbreviation: abbreviation,
+                abbreviation_plural: abbreviationPlural,
                 unit_type: unitType
             })
         });
@@ -818,7 +923,9 @@ async function addUnit() {
 // Clear modal on close
 $('#addUnitModal').on('hidden.bs.modal', function () {
     document.getElementById('newUnitName').value = '';
+    document.getElementById('newUnitNamePlural').value = '';
     document.getElementById('newUnitAbbr').value = '';
+    document.getElementById('newUnitAbbrPlural').value = '';
     document.getElementById('newUnitType').value = 'other';
 });
 </script>

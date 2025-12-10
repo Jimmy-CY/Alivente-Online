@@ -1071,6 +1071,99 @@ tr.sortable-chosen {
         </div>
     </div>
 
+    <!-- Add New Measurement Modal -->
+    <div class="modal fade" id="addMeasurementModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header" style="background: linear-gradient(135deg, #6f42c1 0%, #5a32a3 100%); color: white;">
+                    <h5 class="modal-title">
+                        <i class="fas fa-plus-circle"></i> Add New Measurement Unit
+                    </h5>
+                    <button type="button" class="close" data-dismiss="modal" style="color: white;">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <!-- Unit Name Section -->
+                    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                        <h6 style="font-weight: 600; margin-bottom: 15px; color: #2c3e50;">
+                            <i class="fas fa-font"></i> Unit Name
+                        </h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-2">
+                                    <label style="font-weight: 600; font-size: 13px;">Singular *</label>
+                                    <input type="text" 
+                                           id="newMeasurementName" 
+                                           class="form-control" 
+                                           readonly
+                                           style="background: #e9ecef; font-weight: 600;">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-2">
+                                    <label style="font-weight: 600; font-size: 13px;">Plural</label>
+                                    <input type="text" 
+                                           id="newMeasurementNamePlural" 
+                                           class="form-control" 
+                                           placeholder="e.g., cups, tablespoons">
+                                    <small class="text-muted">Leave blank if same as singular</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Abbreviation Section -->
+                    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                        <h6 style="font-weight: 600; margin-bottom: 15px; color: #2c3e50;">
+                            <i class="fas fa-compress-alt"></i> Abbreviation <span style="font-weight: normal; color: #6c757d;">(Optional)</span>
+                        </h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-2">
+                                    <label style="font-weight: 600; font-size: 13px;">Singular</label>
+                                    <input type="text" 
+                                           id="newMeasurementAbbr" 
+                                           class="form-control" 
+                                           placeholder="e.g., c, tbsp">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-2">
+                                    <label style="font-weight: 600; font-size: 13px;">Plural</label>
+                                    <input type="text" 
+                                           id="newMeasurementAbbrPlural" 
+                                           class="form-control" 
+                                           placeholder="e.g., c, tbsp (same for most)">
+                                    <small class="text-muted">Leave blank if same as singular</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Unit Type -->
+                    <div class="form-group">
+                        <label style="font-weight: 600;">Unit Type *</label>
+                        <select id="newMeasurementType" class="form-control" style="border: 2px solid #6f42c1;">
+                            <option value="volume">Volume (ml, cups, tbsp)</option>
+                            <option value="weight">Weight (g, kg, oz)</option>
+                            <option value="count" selected>Count (pieces, cans, bottles)</option>
+                            <option value="other">Other</option>
+                        </select>
+                        <small class="text-muted">
+                            <i class="fas fa-info-circle"></i> Determines rounding behavior in shopping lists
+                        </small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-success" onclick="confirmAddMeasurement()">
+                        <i class="fas fa-check"></i> Add Measurement
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
 </div>
 
@@ -1705,14 +1798,56 @@ function selectMeasurement(input, value) {
     resetHighlight('measurement');
 }
 
+// ==================== ADD NEW MEASUREMENT WITH MODAL ====================
+
+// Store context for measurement modal
+let pendingMeasurementInput = null;
+let pendingMeasurementName = null;
+
 function addNewMeasurement(input, name) {
+    // Store context
+    pendingMeasurementInput = input;
+    pendingMeasurementName = name;
+    
+    // Set measurement name in modal
+    document.getElementById('newMeasurementName').value = name;
+    
+    // Clear other fields
+    document.getElementById('newMeasurementNamePlural').value = '';
+    document.getElementById('newMeasurementAbbr').value = '';
+    document.getElementById('newMeasurementAbbrPlural').value = '';
+    document.getElementById('newMeasurementType').value = 'count';
+    
+    // Show modal
+    $('#addMeasurementModal').modal('show');
+}
+
+function confirmAddMeasurement() {
+    const name = pendingMeasurementName;
+    const namePlural = document.getElementById('newMeasurementNamePlural').value.trim();
+    const abbreviation = document.getElementById('newMeasurementAbbr').value.trim();
+    const abbreviationPlural = document.getElementById('newMeasurementAbbrPlural').value.trim();
+    const unitType = document.getElementById('newMeasurementType').value;
+    const input = pendingMeasurementInput;
+    
+    // Disable button during request
+    const confirmBtn = event.target;
+    confirmBtn.disabled = true;
+    confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding...';
+    
     fetch('{% url "add_measurement_ajax" %}', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
             'X-CSRFToken': '{{ csrf_token }}'
         },
-        body: JSON.stringify({ name: name })
+        body: JSON.stringify({ 
+            name: name,
+            name_plural: namePlural,
+            abbreviation: abbreviation,
+            abbreviation_plural: abbreviationPlural,
+            unit_type: unitType
+        })
     })
     .then(response => response.json())
     .then(data => {
@@ -1723,6 +1858,11 @@ function addNewMeasurement(input, name) {
             input.classList.remove('invalid');
             input.classList.add('valid');
             hideDropdown(input, 'measurement');
+            
+            // Hide modal
+            $('#addMeasurementModal').modal('hide');
+            
+            // Show success message
             alert(`✓ "${name}" added to measurements!`);
         } else {
             alert('Error: ' + data.message);
@@ -1731,6 +1871,15 @@ function addNewMeasurement(input, name) {
     .catch(error => {
         console.error('Error:', error);
         alert('Error adding measurement');
+    })
+    .finally(() => {
+        // Re-enable button
+        confirmBtn.disabled = false;
+        confirmBtn.innerHTML = '<i class="fas fa-check"></i> Add Measurement';
+        
+        // Clear pending context
+        pendingMeasurementInput = null;
+        pendingMeasurementName = null;
     });
 }
 

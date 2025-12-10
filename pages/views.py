@@ -9892,7 +9892,7 @@ def aggregate_meal_plan_ingredients(meal_plan):
             categorized_ingredients[category].append(entry)
     
     return (dict(categorized_ingredients), missing_conversions, missing_shopping_units)
-    
+
 @login_required
 def meal_plans(request):
     """List all meal plans"""
@@ -11928,7 +11928,9 @@ def add_measurement_unit(request):
     if request.method == 'POST':
         data = json.loads(request.body)
         unit_name = data.get('name', '').strip()
+        name_plural = data.get('name_plural', '').strip()
         abbreviation = data.get('abbreviation', '').strip()
+        abbreviation_plural = data.get('abbreviation_plural', '').strip()
         unit_type = data.get('unit_type', 'other')
         
         # Validate name is not empty
@@ -11952,10 +11954,12 @@ def add_measurement_unit(request):
                     'error': f'A unit with abbreviation "{abbreviation}" already exists'
                 })
         
-        # Create new unit
+        # Create new unit with plural fields
         unit = MeasurementUnit.objects.create(
             name=unit_name,
+            name_plural=name_plural if name_plural else None,
             abbreviation=abbreviation if abbreviation else None,
+            abbreviation_plural=abbreviation_plural if abbreviation_plural else None,
             unit_type=unit_type
         )
         
@@ -11965,7 +11969,9 @@ def add_measurement_unit(request):
             'unit': {
                 'id': unit.measurement_unit_id,
                 'name': unit.name,
+                'name_plural': unit.name_plural,
                 'abbreviation': unit.abbreviation,
+                'abbreviation_plural': unit.abbreviation_plural,
                 'unit_type': unit.unit_type,
                 'unit_type_display': unit.get_unit_type_display()
             }
@@ -11980,7 +11986,9 @@ def update_measurement_unit(request):
         data = json.loads(request.body)
         unit_id = data.get('unit_id')
         new_name = data.get('name', '').strip()
+        new_name_plural = data.get('name_plural', '').strip()
         new_abbreviation = data.get('abbreviation', '').strip()
+        new_abbreviation_plural = data.get('abbreviation_plural', '').strip()
         new_unit_type = data.get('unit_type', 'other')
         
         try:
@@ -12007,9 +12015,11 @@ def update_measurement_unit(request):
                         'error': f'A unit with abbreviation "{new_abbreviation}" already exists'
                     })
             
-            # Update unit
+            # Update unit with plural fields
             unit.name = new_name
+            unit.name_plural = new_name_plural if new_name_plural else None
             unit.abbreviation = new_abbreviation if new_abbreviation else None
+            unit.abbreviation_plural = new_abbreviation_plural if new_abbreviation_plural else None
             unit.unit_type = new_unit_type
             unit.save()
             
@@ -12019,7 +12029,9 @@ def update_measurement_unit(request):
                 'unit': {
                     'id': unit.measurement_unit_id,
                     'name': unit.name,
+                    'name_plural': unit.name_plural,
                     'abbreviation': unit.abbreviation,
+                    'abbreviation_plural': unit.abbreviation_plural,
                     'unit_type': unit.unit_type,
                     'unit_type_display': unit.get_unit_type_display()
                 }
@@ -12304,6 +12316,10 @@ def add_measurement_ajax(request):
     try:
         data = json.loads(request.body)
         name = data.get('name', '').strip()
+        name_plural = data.get('name_plural', '').strip()
+        abbreviation = data.get('abbreviation', '').strip()
+        abbreviation_plural = data.get('abbreviation_plural', '').strip()
+        unit_type = data.get('unit_type', 'other')
         
         if not name:
             return JsonResponse({'success': False, 'message': 'Name is required'})
@@ -12312,11 +12328,18 @@ def add_measurement_ajax(request):
         if MeasurementUnit.objects.filter(name__iexact=name).exists():
             return JsonResponse({'success': False, 'message': 'Measurement already exists'})
         
-        # Create new measurement
+        # Check for duplicate abbreviations if provided
+        if abbreviation:
+            if MeasurementUnit.objects.filter(abbreviation__iexact=abbreviation).exists():
+                return JsonResponse({'success': False, 'message': f'A unit with abbreviation "{abbreviation}" already exists'})
+        
+        # Create new measurement with all fields
         measurement = MeasurementUnit.objects.create(
             name=name,
-            abbreviation=name[:5] if len(name) <= 5 else name[:4] + '.',
-            unit_type='other'
+            name_plural=name_plural if name_plural else None,
+            abbreviation=abbreviation if abbreviation else None,
+            abbreviation_plural=abbreviation_plural if abbreviation_plural else None,
+            unit_type=unit_type
         )
         
         return JsonResponse({
@@ -12328,7 +12351,6 @@ def add_measurement_ajax(request):
         
     except Exception as e:
         return JsonResponse({'success': False, 'message': str(e)})
-
 
 # AJAX endpoint to add new ingredient
 @login_required
