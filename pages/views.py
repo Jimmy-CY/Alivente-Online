@@ -6917,6 +6917,76 @@ def fsr_notification(request):
     
     return redirect('fsr')
 
+@login_required
+def comments_report(request):
+    """Generate a report of all comments with filtering by time period"""
+    from datetime import timedelta
+    from django.utils import timezone
+    
+    period = request.GET.get('period', '30')
+    
+    # Get all comments with related data (optimize with select_related)
+    comments = issues_details.objects.select_related('issues', 'issues__prop').all()
+    
+    # Apply time filter
+    if period != 'all':
+        days = int(period)
+        cutoff_date = timezone.now().date() - timedelta(days=days)
+        comments = comments.filter(issues_details_date__gte=cutoff_date)
+    
+    # Order by date descending (most recent first)
+    comments = comments.order_by('-issues_details_date', '-issues_details_id')
+    
+    # Build the report data with property information
+    report_data = []
+    for comment in comments:
+        issue = comment.issues
+        if issue and issue.prop:
+            property_name = issue.prop.prop_name
+            issue_heading = issue.issues_heading
+            issue_id = issue.issues_id
+        elif issue:
+            property_name = 'Unknown'
+            issue_heading = issue.issues_heading
+            issue_id = issue.issues_id
+        else:
+            property_name = 'Unknown'
+            issue_heading = 'Unknown'
+            issue_id = None
+        
+        # Define admin users (add initials of admin users here)
+        admin_users = ['DM']  # Add other admin initials as needed
+        user_initials = comment.issues_details_user or ''
+        is_admin = user_initials.upper() in [u.upper() for u in admin_users]
+        
+        report_data.append({
+            'comment': comment.issues_details_comment,
+            'date': comment.issues_details_date,
+            'property': property_name,
+            'user': comment.issues_details_user,
+            'issue_heading': issue_heading,
+            'issue_id': issue_id,
+            'is_admin': is_admin,
+        })
+    
+    # Period display text
+    period_labels = {
+        '7': 'Last 7 Days',
+        '30': 'Last 30 Days',
+        '90': 'Last 90 Days',
+        'all': 'All Comments'
+    }
+    period_label = period_labels.get(period, 'Last 30 Days')
+    
+    context = {
+        'report_data': report_data,
+        'period': period,
+        'period_label': period_label,
+        'comment_count': len(report_data),
+    }
+    
+    return render(request, 'comments_report.html', context)
+
 ### REPORTS - DASHBOARD (FROM HOME PAGE) ###
 # Add these views to your views.py file
 @login_required

@@ -26,6 +26,60 @@
 </script>
 {% endfor %}
 
+<!-- Comments Report Modal -->
+<div class="modal fade" id="commentsReportModal" tabindex="-1" role="dialog" aria-labelledby="commentsReportModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-info text-white">
+                <h5 class="modal-title" id="commentsReportModalLabel">
+                    <i class="fas fa-comments"></i> Comments Report
+                </h5>
+                <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p class="text-muted mb-3">Select a time period to view comments:</p>
+                
+                <div class="time-period-options">
+                    <div class="form-check time-period-option" onclick="selectTimePeriod('7')">
+                        <input class="form-check-input" type="radio" name="timePeriod" id="period7" value="7">
+                        <label class="form-check-label" for="period7">
+                            <i class="fas fa-calendar-day"></i> Last 7 Days
+                        </label>
+                    </div>
+                    <div class="form-check time-period-option" onclick="selectTimePeriod('30')">
+                        <input class="form-check-input" type="radio" name="timePeriod" id="period30" value="30">
+                        <label class="form-check-label" for="period30">
+                            <i class="fas fa-calendar-week"></i> Last 30 Days
+                        </label>
+                    </div>
+                    <div class="form-check time-period-option" onclick="selectTimePeriod('90')">
+                        <input class="form-check-input" type="radio" name="timePeriod" id="period90" value="90">
+                        <label class="form-check-label" for="period90">
+                            <i class="fas fa-calendar-alt"></i> Last 90 Days
+                        </label>
+                    </div>
+                    <div class="form-check time-period-option" onclick="selectTimePeriod('all')">
+                        <input class="form-check-input" type="radio" name="timePeriod" id="periodAll" value="all">
+                        <label class="form-check-label" for="periodAll">
+                            <i class="fas fa-calendar"></i> All Comments
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+                <button type="button" class="btn btn-info" id="generateCommentsReportBtn" disabled onclick="generateCommentsReport()">
+                    <i class="fas fa-file-alt"></i> Generate Report
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Date Range Modal -->
 <div class="modal fade" id="dateRangeModal" tabindex="-1" role="dialog" aria-labelledby="dateRangeModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
@@ -192,8 +246,12 @@
 </div>
 
 <!-- Action Buttons -->
+<!-- Action Buttons -->
 <div style="display: flex; justify-content: flex-end; margin-bottom: 20px;">
     <div style="display: flex; gap: 16px;">
+        <button class="btn btn-info" data-toggle="modal" data-target="#commentsReportModal">
+            Comments Report
+        </button>
         <button class="btn btn-info" data-toggle="modal" data-target="#dateRangeModal">
             Resolved Issues Report
         </button>
@@ -292,21 +350,27 @@
 
 <!-- Issues Table -->
 <div class="table-container">
-    <table class="table table-bordered table-striped">
+    <table class="table table-bordered table-striped" id="issuesTable">
         <thead class="thead-light">
             <tr>
-                <th class="text-left" style="width: {% if request.user.is_superuser %}16%{% else %}18%{% endif %}">Property</th>
+                <th class="text-left sortable" data-sort="property" style="width: {% if request.user.is_superuser %}16%{% else %}18%{% endif %}; cursor: pointer;">
+                    Property <i class="fas fa-sort sort-icon"></i>
+                </th>
                 <th class="text-left" style="width: {% if request.user.is_superuser %}20%{% else %}22%{% endif %}">Issue</th>
                 <th class="text-left" style="width: {% if request.user.is_superuser %}26%{% else %}30%{% endif %}">Description</th>
-                <th class="text-center" style="width: 12%">Date Logged</th>
-                <th class="text-center" style="width: 8%">Status</th>
+                <th class="text-center sortable" data-sort="date" style="width: 12%; cursor: pointer;">
+                    Date Logged <i class="fas fa-sort sort-icon"></i>
+                </th>
+                <th class="text-center sortable" data-sort="status" style="width: 8%; cursor: pointer;">
+                    Status <i class="fas fa-sort sort-icon"></i>
+                </th>
                 <th class="text-center" style="width: 10%">Comments</th>
                 {% if request.user.is_superuser %}
                 <th class="text-center" style="width: 8%">Delete</th>
                 {% endif %}
             </tr>
         </thead>
-        <tbody>
+        <tbody id="issuesTableBody">
             {% if issues %}
                 {% for results in props %}
                     {% for isresults in issues %}
@@ -314,7 +378,10 @@
                             {% if not request.POST.propcountry or request.POST.propcountry == 'All' or request.POST.propcountry == results.prop_country %}
                             {% if not request.POST.propname or request.POST.propname == 'All' or request.POST.propname == results.prop_name %}
                             {% if not request.POST.issuestatus or request.POST.issuestatus == 'All' or request.POST.issuestatus == isresults.issues_status %}
-                            <tr>
+                            <tr class="issue-row" 
+                                data-property="{{ results.prop_name }}"
+                                data-date="{{ isresults.issues_date_logged|date:'Y-m-d' }}"
+                                data-status="{{ isresults.issues_status }}">
                                 <td class="text-left">{{ results.prop_name }}</td>
                                 <td class="text-left">{{ isresults.issues_heading }}</td>
                                 <td class="text-left">{{ isresults.issues_description }}</td>
@@ -977,6 +1044,89 @@
         margin-bottom: 20px;
     }
 }
+
+/* Sortable Table Headers */
+.sortable {
+    user-select: none;
+    transition: background-color 0.2s ease;
+}
+
+.sortable:hover {
+    background-color: #e9ecef;
+}
+
+.sortable .sort-icon {
+    margin-left: 6px;
+    color: #adb5bd;
+    font-size: 12px;
+    transition: color 0.2s ease;
+}
+
+.sortable:hover .sort-icon {
+    color: #6c757d;
+}
+
+.sortable.sort-asc .sort-icon,
+.sortable.sort-desc .sort-icon {
+    color: #17a2b8;
+}
+
+.sortable.sort-asc .sort-icon::before {
+    content: "\f0de"; /* fa-sort-up */
+}
+
+.sortable.sort-desc .sort-icon::before {
+    content: "\f0dd"; /* fa-sort-down */
+}
+
+/* Comments Report Modal Styles */
+.time-period-options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.time-period-option {
+    padding: 14px 16px;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin: 0;
+    display: flex;
+    align-items: center;
+}
+
+.time-period-option:hover {
+    border-color: #17a2b8;
+    background-color: #f8f9fa;
+}
+
+.time-period-option.selected {
+    border-color: #17a2b8;
+    background-color: #e6f7ff;
+}
+
+.time-period-option .form-check-input {
+    margin: 0;
+    margin-right: 12px;
+    position: relative;
+    flex-shrink: 0;
+}
+
+.time-period-option label {
+    cursor: pointer;
+    margin: 0;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+}
+
+.time-period-option label i {
+    color: #17a2b8;
+    margin-right: 10px;
+    width: 18px;
+}
 </style>
 
 <script>
@@ -985,6 +1135,14 @@ console.log('=== FSR FILTER PANEL SCRIPT LOADED ===');
 let PANEL_IS_MANUALLY_EXPANDED = false;
 let EXTERNAL_INTERFERENCE_DETECTED = false;
 let selectedReportType = null;
+
+// ==================== TABLE SORTING ====================
+// Track current sort state
+let currentSort = {
+    column: 'property',  // Default primary sort
+    direction: 'asc',
+    secondary: 'date'    // Default secondary sort
+};
 
 document.addEventListener('DOMContentLoaded', function() {
     console.log('DOM loaded - initializing FSR filter panel');
@@ -1167,6 +1325,9 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
+    // Initialize table sorting
+    initializeTableSorting();
+
     console.log('All FSR event listeners attached');
 });
 
@@ -1654,6 +1815,207 @@ setInterval(() => {
         EXTERNAL_INTERFERENCE_DETECTED = false;
     }
 }, 2000);
+
+// ==================== TABLE SORTING ====================
+
+function initializeTableSorting() {
+    console.log('📊 Initializing table sorting');
+    
+    const sortableHeaders = document.querySelectorAll('.sortable');
+    
+    sortableHeaders.forEach(header => {
+        header.addEventListener('click', function() {
+            const sortColumn = this.dataset.sort;
+            handleSort(sortColumn);
+        });
+    });
+    
+    // Apply default sort (Property ASC, then Date ASC)
+    applyDefaultSort();
+    
+    console.log('✅ Table sorting initialized');
+}
+
+function applyDefaultSort() {
+    // Default: Sort by Property (A-Z), then by Date (oldest first)
+    sortTable('property', 'asc', true);
+    updateSortIndicators('property', 'asc');
+}
+
+function handleSort(column) {
+    console.log(`🔀 Sort clicked: ${column}`);
+    
+    let newDirection = 'asc';
+    
+    // If clicking the same column, toggle direction
+    if (currentSort.column === column) {
+        newDirection = currentSort.direction === 'asc' ? 'desc' : 'asc';
+    }
+    
+    currentSort.column = column;
+    currentSort.direction = newDirection;
+    
+    sortTable(column, newDirection, false);
+    updateSortIndicators(column, newDirection);
+}
+
+function sortTable(column, direction, isDefault) {
+    const tbody = document.getElementById('issuesTableBody');
+    if (!tbody) return;
+    
+    const rows = Array.from(tbody.querySelectorAll('.issue-row'));
+    if (rows.length === 0) return;
+    
+    console.log(`📊 Sorting ${rows.length} rows by ${column} ${direction}`);
+    
+    rows.sort((a, b) => {
+        let valueA, valueB;
+        
+        switch(column) {
+            case 'property':
+                valueA = a.dataset.property || '';
+                valueB = b.dataset.property || '';
+                break;
+            case 'date':
+                // Parse date for proper sorting (format: YYYY-MM-DD)
+                valueA = a.dataset.date || '1900-01-01';
+                valueB = b.dataset.date || '1900-01-01';
+                break;
+            case 'status':
+                // Custom order: Unresolved > Issue > Resolved
+                valueA = getStatusOrder(a.dataset.status);
+                valueB = getStatusOrder(b.dataset.status);
+                break;
+            default:
+                valueA = '';
+                valueB = '';
+        }
+        
+        let comparison = 0;
+        
+        if (column === 'date') {
+            // Date comparison
+            comparison = valueA.localeCompare(valueB);
+        } else if (column === 'status') {
+            // Numeric comparison for status
+            comparison = valueA - valueB;
+        } else {
+            // String comparison (case-insensitive)
+            comparison = valueA.toLowerCase().localeCompare(valueB.toLowerCase());
+        }
+        
+        // Apply direction
+        if (direction === 'desc') {
+            comparison = -comparison;
+        }
+        
+        // Secondary sort by date if primary values are equal (and we're not sorting by date)
+        if (comparison === 0 && column !== 'date') {
+            const dateA = a.dataset.date || '1900-01-01';
+            const dateB = b.dataset.date || '1900-01-01';
+            comparison = dateA.localeCompare(dateB);
+        }
+        
+        return comparison;
+    });
+    
+    // Re-append rows in new order
+    rows.forEach(row => tbody.appendChild(row));
+    
+    console.log(`✅ Sort complete: ${column} ${direction}`);
+}
+
+function getStatusOrder(status) {
+    // When sorting ASC: Unresolved first, then Issue, then Resolved
+    // This puts urgent items at the top
+    switch(status) {
+        case 'Unresolved': return 1;
+        case 'Issue': return 2;
+        case 'Resolved': return 3;
+        default: return 4;
+    }
+}
+
+function updateSortIndicators(activeColumn, direction) {
+    const sortableHeaders = document.querySelectorAll('.sortable');
+    
+    sortableHeaders.forEach(header => {
+        const column = header.dataset.sort;
+        const icon = header.querySelector('.sort-icon');
+        
+        // Remove existing sort classes
+        header.classList.remove('sort-asc', 'sort-desc');
+        
+        if (column === activeColumn) {
+            // Add appropriate class for active column
+            header.classList.add(direction === 'asc' ? 'sort-asc' : 'sort-desc');
+        }
+    });
+}
+
+// ==================== COMMENTS REPORT ====================
+
+let selectedTimePeriod = null;
+
+function selectTimePeriod(period) {
+    console.log(`📅 Time period selected: ${period}`);
+    
+    selectedTimePeriod = period;
+    
+    // Update radio button
+    const radio = document.querySelector(`input[name="timePeriod"][value="${period}"]`);
+    if (radio) {
+        radio.checked = true;
+    }
+    
+    // Update visual selection
+    document.querySelectorAll('.time-period-option').forEach(opt => {
+        opt.classList.remove('selected');
+    });
+    
+    const selectedOption = document.querySelector(`input[value="${period}"]`).closest('.time-period-option');
+    if (selectedOption) {
+        selectedOption.classList.add('selected');
+    }
+    
+    // Enable the generate button
+    const generateBtn = document.getElementById('generateCommentsReportBtn');
+    if (generateBtn) {
+        generateBtn.disabled = false;
+    }
+}
+
+function generateCommentsReport() {
+    if (!selectedTimePeriod) {
+        alert('Please select a time period');
+        return;
+    }
+    
+    console.log(`📊 Generating comments report for: ${selectedTimePeriod}`);
+    
+    // Build URL
+    let reportUrl = "{% url 'comments_report' %}";
+    reportUrl += `?period=${selectedTimePeriod}`;
+    
+    // Close modal and navigate
+    $('#commentsReportModal').modal('hide');
+    window.location.href = reportUrl;
+}
+
+// Reset comments report modal when closed
+$('#commentsReportModal').on('hidden.bs.modal', function() {
+    selectedTimePeriod = null;
+    document.querySelectorAll('.time-period-option').forEach(opt => {
+        opt.classList.remove('selected');
+    });
+    document.querySelectorAll('input[name="timePeriod"]').forEach(radio => {
+        radio.checked = false;
+    });
+    const generateBtn = document.getElementById('generateCommentsReportBtn');
+    if (generateBtn) {
+        generateBtn.disabled = true;
+    }
+});
 
 console.log('🚀 === FSR SCRIPT COMPLETE ===');
 </script>
