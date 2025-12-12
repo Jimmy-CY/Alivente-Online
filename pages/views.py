@@ -8934,6 +8934,7 @@ def recipe_management(request):
             'recipes': recipes_data,
             'has_next': page_obj.has_next(),
             'next_page': page_obj.next_page_number() if page_obj.has_next() else None,
+            'total_count': paginator.count,
         })
     
     # Get all for filter dropdowns
@@ -8951,6 +8952,7 @@ def recipe_management(request):
     
     context = {
         'recipes': page_obj,
+        'total_recipe_count': paginator.count,
         'courses': courses,
         'categories': categories,
         'proteins': proteins,
@@ -10170,7 +10172,7 @@ def delete_meal_plan(request, meal_plan_id):
     if redirect_to == 'calendar':
         return redirect('meal_plan_calendar')
     return redirect('meal_plans')
-    
+
 @login_required
 def edit_meal_plan(request, meal_plan_id):
     """Edit an existing meal plan"""

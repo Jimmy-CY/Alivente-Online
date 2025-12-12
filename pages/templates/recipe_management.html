@@ -1477,8 +1477,12 @@
     </div>
     <div style="display: flex; align-items: center; gap: 8px; color: #6c757d; font-size: 15px; font-weight: 500;">
         <i class="fas fa-utensils"></i>
-        <span id="recipeCount">{{ recipes|length }}</span>
-        <span>recipe{{ recipes|length|pluralize }}</span>
+        {% if has_next %}
+            <span>Showing <span id="recipeCount">{{ recipes|length }}</span> of {{ total_recipe_count }} recipes</span>
+        {% else %}
+            <span id="recipeCount">{{ total_recipe_count }}</span>
+            <span>recipe{{ total_recipe_count|pluralize }}</span>
+        {% endif %}
     </div>
 </div>
 
@@ -2116,13 +2120,25 @@ function updateRecipeCount() {
         count = listView.querySelectorAll('.recipe-list-item').length;
     }
     
-    // Update the display
-    document.getElementById('recipeCount').textContent = count;
+    const totalCount = {{ total_recipe_count }};
+    const loadMoreBtn = document.getElementById('loadMoreBtn');
+    const hasMore = loadMoreBtn && loadMoreBtn.style.display !== 'none';
     
-    // Update pluralization
-    const pluralSpan = document.querySelector('#recipeCount + span');
-    if (pluralSpan) {
-        pluralSpan.textContent = count === 1 ? 'recipe' : 'recipes';
+    // Find the container and update appropriately
+    const countContainer = document.querySelector('.view-toggle-container > div:last-child');
+    if (countContainer) {
+        if (hasMore && count < totalCount) {
+            countContainer.innerHTML = `
+                <i class="fas fa-utensils"></i>
+                <span>Showing <span id="recipeCount">${count}</span> of ${totalCount} recipes</span>
+            `;
+        } else {
+            countContainer.innerHTML = `
+                <i class="fas fa-utensils"></i>
+                <span id="recipeCount">${totalCount}</span>
+                <span>recipe${totalCount === 1 ? '' : 's'}</span>
+            `;
+        }
     }
 }
 
