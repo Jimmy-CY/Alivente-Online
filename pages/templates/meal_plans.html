@@ -206,6 +206,39 @@
         justify-self: start;
     }
 }
+
+/* View Toggle Styles */
+.view-toggle {
+    display: flex;
+    background: #e9ecef;
+    border-radius: 8px;
+    padding: 4px;
+}
+
+.view-toggle .toggle-btn {
+    padding: 10px 16px;
+    border-radius: 6px;
+    color: #6c757d;
+    text-decoration: none;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.view-toggle .toggle-btn:hover {
+    color: #495057;
+    background: #dee2e6;
+}
+
+.view-toggle .toggle-btn.active {
+    background: #667eea;
+    color: white;
+}
+
+.view-toggle .toggle-btn.active:hover {
+    background: #5a6fd6;
+}
 </style>
 
 <div class="meal-plans-container">
@@ -221,9 +254,22 @@
         <a href="{% url 'create_meal_plan' %}" class="btn btn-create">
             <i class="fas fa-plus"></i> Create New Meal Plan
         </a>
-        <a href="{% url 'recipe_management' %}" class="btn btn-secondary">
-            <i class="fas fa-arrow-left"></i> Back to Recipes
-        </a>
+        
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <!-- View Toggle -->
+            <div class="view-toggle">
+                <a href="{% url 'meal_plans' %}" class="toggle-btn active" title="List View" onclick="sessionStorage.setItem('meal_plan_view_preference', 'list')">
+                    <i class="fas fa-list"></i>
+                </a>
+                <a href="{% url 'meal_plan_calendar' %}" class="toggle-btn" title="Calendar View" onclick="sessionStorage.setItem('meal_plan_view_preference', 'calendar')">
+                    <i class="fas fa-calendar-alt"></i>
+                </a>
+            </div>
+            
+            <a href="{% url 'recipe_management' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Recipes
+            </a>
+        </div>
     </div>
 
     {% if messages %}
@@ -417,6 +463,21 @@ function confirmDuplicate(button, mealPlanName) {
     
     $('#duplicateModal').modal('show');
 }
+
+// Store view preference when on list view
+sessionStorage.setItem('meal_plan_view_preference', 'list');
+
+// Check if user should be redirected to calendar (on page load)
+document.addEventListener('DOMContentLoaded', function() {
+    // Only redirect if coming from an external page (not from calendar)
+    const referrer = document.referrer;
+    const preference = sessionStorage.getItem('meal_plan_view_preference');
+    
+    // If preference is calendar and we didn't just come from calendar page
+    if (preference === 'calendar' && !referrer.includes('meal_plans')) {
+        window.location.href = '{% url "meal_plan_calendar" %}';
+    }
+});
 </script>
 
 {% endblock %}

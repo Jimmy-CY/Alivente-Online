@@ -231,6 +231,9 @@ urlpatterns = [
     path('meal_plans/<int:meal_plan_id>/delete/', views.delete_meal_plan, name='delete_meal_plan'),
     path('meal_plans/<int:meal_plan_id>/shopping_list/', views.meal_plan_shopping_list, name='meal_plan_shopping_list'),
     path('meal_plans/send_shopping_list/', views.send_meal_plan_shopping_list, name='send_meal_plan_shopping_list'),
+    path('meal_plans/calendar/', views.meal_plan_calendar, name='meal_plan_calendar'),
+    path('meal_plans/add_recipe_to_day/', views.add_recipe_to_meal_plan_day, name='add_recipe_to_meal_plan_day'),
+    path('meal_plans/remove_recipe/', views.remove_recipe_from_meal_plan, name='remove_recipe_from_meal_plan'),
     path('recipes/find-matching/', views.find_matching_recipes, name='find_matching_recipes'),
     path('save_unit_conversion/', views.save_unit_conversion, name='save_unit_conversion'),
     # Unit Conversion Management

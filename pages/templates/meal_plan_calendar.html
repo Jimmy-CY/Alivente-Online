@@ -1,0 +1,1180 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Meal Plan Calendar{% endblock %}
+{% block content %}
+
+<style>
+/* ==================== MAIN LAYOUT ==================== */
+.calendar-container {
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.calendar-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 25px 30px;
+    border-radius: 12px;
+    margin-bottom: 25px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.calendar-header h1 {
+    font-size: 28px;
+    font-weight: 600;
+    margin: 0;
+}
+
+.calendar-header-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.calendar-header-actions .btn {
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 500;
+}
+
+.calendar-layout {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 25px;
+}
+
+/* ==================== LEFT PANEL ==================== */
+.left-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* Mini Calendar */
+.mini-calendar {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.mini-calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.mini-calendar-header h3 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #2c3e50;
+    margin: 0;
+}
+
+.mini-calendar-nav {
+    display: flex;
+    gap: 8px;
+}
+
+.mini-calendar-nav button {
+    background: #f0f0f0;
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.mini-calendar-nav button:hover {
+    background: #667eea;
+    color: white;
+}
+
+.mini-calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 2px;
+}
+
+.mini-calendar-day-header {
+    text-align: center;
+    font-size: 11px;
+    font-weight: 600;
+    color: #6c757d;
+    padding: 8px 0;
+}
+
+.mini-calendar-day {
+    text-align: center;
+    padding: 8px 4px;
+    font-size: 13px;
+    border-radius: 6px;
+    position: relative;
+    transition: all 0.2s;
+}
+
+.mini-calendar-week {
+    display: contents;
+    cursor: pointer;
+}
+
+.mini-calendar-week:hover .mini-calendar-day:not(.empty) {
+    background: #e8e8e8;
+}
+
+.mini-calendar-week.selected .mini-calendar-day:not(.empty) {
+    background: #667eea;
+    color: white;
+}
+
+.mini-calendar-day.empty {
+    color: #ccc;
+}
+
+.mini-calendar-day.today {
+    font-weight: 700;
+    border: 2px solid #667eea;
+}
+
+.mini-calendar-day.has-meal::after {
+    content: '';
+    position: absolute;
+    bottom: 3px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 6px;
+    height: 6px;
+    background: #28a745;
+    border-radius: 50%;
+}
+
+.mini-calendar-day.in-meal-plan {
+    background: #667eea;
+    color: white;
+}
+
+.mini-calendar-day.in-meal-plan.has-meal::after {
+    background: white;
+}
+
+.mini-calendar-day.in-meal-plan.today {
+    border-color: white;
+}
+
+/* Meal Plans List */
+.meal-plans-panel {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    flex: 1;
+    overflow-y: auto;
+    max-height: 400px;
+}
+
+.meal-plans-panel h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #2c3e50;
+    margin: 0 0 15px 0;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #f0f0f0;
+}
+
+.meal-plan-list-item {
+    padding: 12px;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 2px solid transparent;
+}
+
+.meal-plan-list-item:hover {
+    background: #f8f9fa;
+}
+
+.meal-plan-list-item.active {
+    background: #e8f4ff;
+    border-color: #667eea;
+}
+
+.meal-plan-list-item h4 {
+    font-size: 14px;
+    font-weight: 600;
+    color: #2c3e50;
+    margin: 0 0 4px 0;
+}
+
+.meal-plan-list-item p {
+    font-size: 12px;
+    color: #6c757d;
+    margin: 0;
+}
+
+.create-plan-btn {
+    width: 100%;
+    padding: 12px;
+    background: #28a745;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: all 0.2s;
+}
+
+.create-plan-btn:hover {
+    background: #218838;
+}
+
+/* ==================== RIGHT PANEL - WEEK DETAIL ==================== */
+.week-detail-panel {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    overflow: hidden;
+}
+
+.week-detail-header {
+    background: #f8f9fa;
+    padding: 20px 25px;
+    border-bottom: 1px solid #e9ecef;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.week-detail-header h2 {
+    font-size: 20px;
+    font-weight: 600;
+    color: #2c3e50;
+    margin: 0;
+}
+
+.week-detail-header h2 i {
+    color: #667eea;
+    margin-right: 10px;
+}
+
+.week-detail-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.week-detail-actions .btn {
+    padding: 8px 16px;
+    font-size: 13px;
+    border-radius: 6px;
+}
+
+.week-detail-content {
+    padding: 20px;
+}
+
+/* No Meal Plan State */
+.no-meal-plan {
+    text-align: center;
+    padding: 60px 20px;
+}
+
+.no-meal-plan i {
+    font-size: 60px;
+    color: #dee2e6;
+    margin-bottom: 20px;
+}
+
+.no-meal-plan h3 {
+    color: #6c757d;
+    margin-bottom: 10px;
+}
+
+.no-meal-plan p {
+    color: #adb5bd;
+    margin-bottom: 25px;
+}
+
+/* Day Cards */
+.day-card {
+    background: #f8f9fa;
+    border-radius: 10px;
+    margin-bottom: 15px;
+    overflow: hidden;
+    border: 1px solid #e9ecef;
+}
+
+.day-card.today {
+    border: 2px solid #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.day-card-header {
+    background: #e9ecef;
+    padding: 12px 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.day-card.today .day-card-header {
+    background: #667eea;
+    color: white;
+}
+
+.day-card-header h4 {
+    font-size: 15px;
+    font-weight: 600;
+    margin: 0;
+}
+
+.day-card-header .today-badge {
+    background: white;
+    color: #667eea;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.day-card-body {
+    padding: 15px 18px;
+}
+
+/* Recipe Items */
+.recipe-item {
+    display: flex;
+    gap: 15px;
+    padding: 12px;
+    background: white;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    border: 1px solid #e9ecef;
+    transition: all 0.2s;
+}
+
+.recipe-item:hover {
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.recipe-item:last-child {
+    margin-bottom: 0;
+}
+
+.recipe-thumbnail {
+    width: 70px;
+    height: 70px;
+    border-radius: 8px;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.recipe-thumbnail-placeholder {
+    width: 70px;
+    height: 70px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 24px;
+    flex-shrink: 0;
+}
+
+.recipe-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.recipe-info h5 {
+    font-size: 15px;
+    font-weight: 600;
+    color: #2c3e50;
+    margin: 0 0 6px 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.recipe-meta {
+    display: flex;
+    gap: 15px;
+    font-size: 12px;
+    color: #6c757d;
+    margin-bottom: 8px;
+}
+
+.recipe-meta span {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.recipe-meta i {
+    color: #667eea;
+}
+
+.recipe-actions {
+    display: flex;
+    gap: 6px;
+}
+
+.recipe-actions .btn {
+    padding: 4px 10px;
+    font-size: 11px;
+    border-radius: 4px;
+}
+
+/* Empty Day */
+.empty-day {
+    text-align: center;
+    padding: 20px;
+    color: #adb5bd;
+}
+
+.empty-day i {
+    font-size: 24px;
+    margin-bottom: 8px;
+}
+
+.add-recipe-btn {
+    margin-top: 12px;
+    padding: 8px 20px;
+    background: #667eea;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.add-recipe-btn:hover {
+    background: #5a6fd6;
+}
+
+.add-another-btn {
+    width: 100%;
+    padding: 10px;
+    background: transparent;
+    border: 2px dashed #dee2e6;
+    border-radius: 6px;
+    color: #6c757d;
+    font-size: 13px;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: all 0.2s;
+}
+
+.add-another-btn:hover {
+    border-color: #667eea;
+    color: #667eea;
+    background: #f8f9ff;
+}
+
+/* Legend */
+.calendar-legend {
+    display: flex;
+    gap: 20px;
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #e9ecef;
+    font-size: 12px;
+    color: #6c757d;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.legend-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+.legend-dot.meal {
+    background: #28a745;
+}
+
+.legend-dot.today {
+    border: 2px solid #667eea;
+    background: white;
+}
+
+/* ==================== RESPONSIVE ==================== */
+@media (max-width: 1200px) {
+    .calendar-layout {
+        grid-template-columns: 1fr;
+    }
+    
+    .left-panel {
+        flex-direction: row;
+        flex-wrap: wrap;
+    }
+    
+    .mini-calendar {
+        flex: 1;
+        min-width: 280px;
+    }
+    
+    .meal-plans-panel {
+        flex: 1;
+        min-width: 280px;
+        max-height: 300px;
+    }
+}
+
+@media (max-width: 768px) {
+    .calendar-header {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+    }
+    
+    .left-panel {
+        flex-direction: column;
+    }
+}
+
+/* View Toggle Styles */
+.view-toggle {
+    display: flex;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    padding: 4px;
+}
+
+.view-toggle .toggle-btn {
+    padding: 10px 16px;
+    border-radius: 6px;
+    color: rgba(255, 255, 255, 0.7);
+    text-decoration: none;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.view-toggle .toggle-btn:hover {
+    color: white;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.view-toggle .toggle-btn.active {
+    background: white;
+    color: #667eea;
+}
+
+.view-toggle .toggle-btn.active:hover {
+    background: #f8f9fa;
+}
+
+/* Action Button Styles */
+.week-detail-actions .btn {
+    padding: 8px 14px;
+    font-size: 12px;
+    border-radius: 5px;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    border: none;
+    text-decoration: none;
+}
+
+.btn-view {
+    background: #007bff;
+    color: white;
+}
+
+.btn-view:hover {
+    background: #0056b3;
+    color: white;
+}
+
+.btn-edit {
+    background: #ffc107;
+    color: #000;
+}
+
+.btn-edit:hover {
+    background: #e0a800;
+    color: #000;
+}
+
+.btn-shopping {
+    background: #28a745;
+    color: white;
+}
+
+.btn-shopping:hover {
+    background: #218838;
+    color: white;
+}
+
+.btn-duplicate {
+    background: #17a2b8;
+    color: white;
+    cursor: pointer;
+}
+
+.btn-duplicate:hover {
+    background: #138496;
+    color: white;
+}
+
+.btn-delete {
+    background: #dc3545;
+    color: white;
+    cursor: pointer;
+}
+
+.btn-delete:hover {
+    background: #c82333;
+    color: white;
+}
+
+</style>
+
+<div class="calendar-container">
+    
+    <!-- Header -->
+    <div class="calendar-header">
+        <h1><i class="fas fa-calendar-alt"></i> Meal Plan Calendar</h1>
+        <div class="calendar-header-actions">
+            <a href="{% url 'create_meal_plan' %}" class="btn btn-success">
+                <i class="fas fa-plus"></i> New Meal Plan
+            </a>
+            
+            <!-- View Toggle -->
+            <div class="view-toggle">
+                <a href="{% url 'meal_plans' %}" class="toggle-btn" title="List View" onclick="sessionStorage.setItem('meal_plan_view_preference', 'list')">
+                    <i class="fas fa-list"></i>
+                </a>
+                <a href="{% url 'meal_plan_calendar' %}" class="toggle-btn active" title="Calendar View" onclick="sessionStorage.setItem('meal_plan_view_preference', 'calendar')">
+                    <i class="fas fa-calendar-alt"></i>
+                </a>
+            </div>
+            
+            <a href="{% url 'recipe_management' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back
+            </a>
+        </div>
+    </div>
+    
+    <div class="calendar-layout">
+        
+        <!-- Left Panel -->
+        <div class="left-panel">
+            
+            <!-- Mini Calendar -->
+            <div class="mini-calendar">
+                <div class="mini-calendar-header">
+                    <h3>{{ month_name }}</h3>
+                    <div class="mini-calendar-nav">
+                        <button onclick="navigateMonth({{ prev_month.year }}, {{ prev_month.month }})">
+                            <i class="fas fa-chevron-left"></i>
+                        </button>
+                        <button onclick="navigateMonth({{ next_month.year }}, {{ next_month.month }})">
+                            <i class="fas fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="mini-calendar-grid">
+                    <!-- Day headers -->
+                    <div class="mini-calendar-day-header">Mo</div>
+                    <div class="mini-calendar-day-header">Tu</div>
+                    <div class="mini-calendar-day-header">We</div>
+                    <div class="mini-calendar-day-header">Th</div>
+                    <div class="mini-calendar-day-header">Fr</div>
+                    <div class="mini-calendar-day-header">Sa</div>
+                    <div class="mini-calendar-day-header">Su</div>
+                    
+                    {% for week in calendar_weeks %}
+                    <div class="mini-calendar-week"
+                         {% if week.week_start %}onclick="selectWeek('{{ week.week_start|date:'Y-m-d' }}')"{% endif %}
+                         data-week-start="{{ week.week_start|date:'Y-m-d' }}">
+                        {% for day in week.days %}
+                        <div class="mini-calendar-day {% if not day %}empty{% endif %} {% if day.is_today %}today{% endif %} {% if day.has_meal %}has-meal{% endif %}"
+                             {% if day.date %}data-date="{{ day.date|date:'Y-m-d' }}"{% endif %}>
+                            {% if day %}{{ day.day }}{% endif %}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <div class="calendar-legend">
+                    <div class="legend-item">
+                        <div class="legend-dot meal"></div>
+                        <span>Has Meal</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-dot today"></div>
+                        <span>Today</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Meal Plans List -->
+            <div class="meal-plans-panel">
+                <h3><i class="fas fa-book"></i> Your Meal Plans</h3>
+                
+                {% if all_meal_plans %}
+                    {% for plan in all_meal_plans %}
+                    <div class="meal-plan-list-item {% if selected_meal_plan.meal_plan_id == plan.meal_plan_id %}active{% endif %}"
+                         onclick="selectMealPlan('{{ plan.start_date|date:'Y-m-d' }}', {{ plan.start_date|date:'Y' }}, {{ plan.start_date|date:'n' }})">
+                        <h4>{{ plan.plan_name }}</h4>
+                        <p>
+                            <i class="fas fa-calendar"></i> {{ plan.start_date|date:"M d" }} - {{ plan.end_date|date:"M d, Y" }}
+                            &nbsp;•&nbsp;
+                            <i class="fas fa-utensils"></i> {{ plan.total_recipes }} recipes
+                        </p>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p style="color: #adb5bd; text-align: center; padding: 20px;">
+                        No meal plans yet
+                    </p>
+                {% endif %}
+                
+                <button class="create-plan-btn" onclick="window.location.href='{% url 'create_meal_plan' %}'">
+                    <i class="fas fa-plus"></i> Create New Meal Plan
+                </button>
+            </div>
+            
+        </div>
+        
+        <!-- Right Panel - Week Detail -->
+        <div class="week-detail-panel">
+            <div class="week-detail-header">
+                <h2>
+                    <i class="fas fa-calendar-week"></i>
+                    {% if selected_meal_plan %}
+                        {{ selected_meal_plan.plan_name }}
+                    {% else %}
+                        Week of {{ selected_week_start|date:"M d" }} - {{ selected_week_end|date:"M d, Y" }}
+                    {% endif %}
+                </h2>
+                
+            {% if selected_meal_plan %}
+            <div class="week-detail-actions">
+                <a href="{% url 'view_meal_plan' selected_meal_plan.meal_plan_id %}" class="btn btn-view">
+                    <i class="fas fa-eye"></i> View
+                </a>
+                <a href="{% url 'edit_meal_plan' selected_meal_plan.meal_plan_id %}" class="btn btn-edit">
+                    <i class="fas fa-edit"></i> Edit
+                </a>
+                <a href="{% url 'meal_plan_shopping_list' selected_meal_plan.meal_plan_id %}" class="btn btn-shopping">
+                    <i class="fas fa-shopping-cart"></i> List
+                </a>
+                <button type="button" class="btn btn-duplicate"
+                        onclick="confirmDuplicate('{% url 'duplicate_meal_plan' selected_meal_plan.meal_plan_id %}', '{{ selected_meal_plan.plan_name|escapejs }}')">
+                    <i class="fas fa-copy"></i> Duplicate
+                </button>
+                <button type="button" class="btn btn-delete"
+                        onclick="confirmDelete('{% url 'delete_meal_plan' selected_meal_plan.meal_plan_id %}', '{{ selected_meal_plan.plan_name|escapejs }}')">
+                    <i class="fas fa-trash"></i> Delete
+                </button>
+            </div>
+            {% endif %}
+            </div>
+            
+            <div class="week-detail-content">
+                {% if selected_meal_plan %}
+                    <!-- Show week days with recipes -->
+                    {% for day in week_days %}
+                    <div class="day-card {% if day.is_today %}today{% endif %}">
+                        <div class="day-card-header">
+                            <h4>{{ day.day_name }}, {{ day.date|date:"M d" }}</h4>
+                            {% if day.is_today %}
+                            <span class="today-badge">TODAY</span>
+                            {% endif %}
+                        </div>
+                        <div class="day-card-body">
+                            {% if day.recipes %}
+                                {% for recipe in day.recipes %}
+                                <div class="recipe-item">
+                                    {% if recipe.image %}
+                                    <img src="{{ recipe.image }}" alt="{{ recipe.name }}" class="recipe-thumbnail">
+                                    {% else %}
+                                    <div class="recipe-thumbnail-placeholder">
+                                        <i class="fas fa-utensils"></i>
+                                    </div>
+                                    {% endif %}
+                                    <div class="recipe-info">
+                                        <h5>{{ recipe.name }}</h5>
+                                        <div class="recipe-meta">
+                                            <span><i class="fas fa-clock"></i> {{ recipe.total_time }} min</span>
+                                            <span><i class="fas fa-users"></i> {{ recipe.servings }} servings</span>
+                                            {% if recipe.difficulty %}
+                                            <span><i class="fas fa-signal"></i> {{ recipe.difficulty }}</span>
+                                            {% endif %}
+                                        </div>
+                                        <div class="recipe-actions">
+                                            <a href="{% url 'view_recipe' recipe.recipe_id %}" class="btn btn-primary btn-sm">
+                                                <i class="fas fa-eye"></i> View
+                                            </a>
+                                            <button class="btn btn-outline-danger btn-sm"
+                                                    onclick="removeRecipe({{ recipe.meal_plan_recipe_id }}, '{{ recipe.name|escapejs }}')">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                                
+                                <button class="add-another-btn" onclick="addRecipeToDay({{ day.meal_plan_day_id }}, '{{ day.date|date:'Y-m-d' }}', '{{ day.day_name }}')">
+                                    <i class="fas fa-plus"></i> Add Another Recipe
+                                </button>
+                            {% else %}
+                                <div class="empty-day">
+                                    <i class="fas fa-utensils"></i>
+                                    <p>No meal planned</p>
+                                    <button class="add-recipe-btn" onclick="addRecipeToDay({{ day.meal_plan_day_id }}, '{{ day.date|date:'Y-m-d' }}', '{{ day.day_name }}')">
+                                        <i class="fas fa-plus"></i> Add Recipe
+                                    </button>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                    
+                {% else %}
+                    <!-- No meal plan for this week -->
+                    <div class="no-meal-plan">
+                        <i class="fas fa-calendar-times"></i>
+                        <h3>No Meal Plan for This Week</h3>
+                        <p>Create a meal plan to start adding recipes to this week.</p>
+                        <a href="{% url 'create_meal_plan' %}?start_date={{ selected_week_start|date:'Y-m-d' }}" class="btn btn-success btn-lg">
+                            <i class="fas fa-plus"></i> Create Meal Plan for This Week
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+    </div>
+
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">
+                        <i class="fas fa-exclamation-triangle"></i> Confirm Delete
+                    </h5>
+                    <button type="button" class="close text-white" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to delete this meal plan?</p>
+                    <p class="mb-0"><strong id="deletePlanName"></strong></p>
+                    <p class="text-muted small mt-2">This action cannot be undone.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <form id="deleteForm" method="POST" style="display: inline;">
+                        {% csrf_token %}
+                        <input type="hidden" name="redirect_to" value="calendar">
+                        <button type="submit" class="btn btn-danger">
+                            <i class="fas fa-trash"></i> Delete Meal Plan
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Duplicate Confirmation Modal -->
+    <div class="modal fade" id="duplicateModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-info text-white">
+                    <h5 class="modal-title">
+                        <i class="fas fa-copy"></i> Duplicate Meal Plan
+                    </h5>
+                    <button type="button" class="close text-white" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <form id="duplicateForm" method="POST">
+                    {% csrf_token %}
+                    <div class="modal-body">
+                        <p>Create a copy of: <strong id="duplicatePlanName"></strong></p>
+                        
+                        <div class="form-group">
+                            <label for="new_plan_name">New Meal Plan Name: <span class="text-danger">*</span></label>
+                            <input type="text" 
+                                   class="form-control" 
+                                   id="new_plan_name" 
+                                   name="new_plan_name" 
+                                   required
+                                   maxlength="200"
+                                   placeholder="Enter name for duplicated meal plan">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="new_start_date">New Start Date: <span class="text-danger">*</span></label>
+                            <input type="date" 
+                                   class="form-control" 
+                                   id="new_start_date" 
+                                   name="new_start_date" 
+                                   required>
+                            <small class="form-text text-muted">
+                                The plan will maintain the same duration as the original.
+                            </small>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-info">
+                            <i class="fas fa-copy"></i> Duplicate Meal Plan
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- Add Recipe Modal -->
+<div class="modal fade" id="addRecipeModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-plus-circle"></i> Add Recipe to <span id="addRecipeDayName"></span>
+                </h5>
+                <button type="button" class="close text-white" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="addRecipeDayId">
+                <input type="hidden" id="addRecipeDate">
+                
+                <div class="form-group">
+                    <label><strong>Search Recipes</strong></label>
+                    <input type="text" class="form-control" id="recipeSearch" placeholder="Type to search recipes..." oninput="filterRecipes()">
+                </div>
+                
+                <div class="form-group">
+                    <label><strong>Select Recipe</strong></label>
+                    <div id="recipeList" style="max-height: 300px; overflow-y: auto; border: 1px solid #dee2e6; border-radius: 8px;">
+                        {% for recipe in all_recipes %}
+                        <div class="recipe-option" data-recipe-id="{{ recipe.recipe_id }}" data-recipe-name="{{ recipe.recipe_name|lower }}" onclick="selectRecipeOption(this)">
+                            <div style="display: flex; align-items: center; gap: 12px; padding: 10px 15px; cursor: pointer; border-bottom: 1px solid #f0f0f0;">
+                                {% if recipe.recipe_image %}
+                                <img src="{{ recipe.recipe_image.url }}" style="width: 50px; height: 50px; border-radius: 6px; object-fit: cover;">
+                                {% else %}
+                                <div style="width: 50px; height: 50px; border-radius: 6px; background: #667eea; display: flex; align-items: center; justify-content: center; color: white;">
+                                    <i class="fas fa-utensils"></i>
+                                </div>
+                                {% endif %}
+                                <div>
+                                    <strong>{{ recipe.recipe_name }}</strong>
+                                    <br>
+                                    <small class="text-muted">{{ recipe.prep_time|default:0|add:recipe.cook_time|default:0 }} min • {{ recipe.servings }} servings</small>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label><strong>Servings</strong></label>
+                    <input type="number" class="form-control" id="recipeServings" value="4" min="1" style="max-width: 100px;">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="confirmAddRecipeBtn" disabled onclick="confirmAddRecipe()">
+                    <i class="fas fa-plus"></i> Add Recipe
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+// Navigation functions
+function navigateMonth(year, month) {
+    const currentWeek = '{{ selected_week_start|date:"Y-m-d" }}';
+    window.location.href = `{% url 'meal_plan_calendar' %}?year=${year}&month=${month}&week=${currentWeek}`;
+}
+
+function selectWeek(weekStart) {
+    const year = {{ year }};
+    const month = {{ month }};
+    window.location.href = `{% url 'meal_plan_calendar' %}?year=${year}&month=${month}&week=${weekStart}`;
+}
+
+function selectMealPlan(startDate, year, month) {
+    window.location.href = `{% url 'meal_plan_calendar' %}?year=${year}&month=${month}&week=${startDate}`;
+}
+
+// Add Recipe Modal
+let selectedRecipeId = null;
+
+function addRecipeToDay(dayId, date, dayName) {
+    document.getElementById('addRecipeDayId').value = dayId;
+    document.getElementById('addRecipeDate').value = date;
+    document.getElementById('addRecipeDayName').textContent = dayName;
+    selectedRecipeId = null;
+    document.getElementById('confirmAddRecipeBtn').disabled = true;
+    
+    // Reset selection
+    document.querySelectorAll('.recipe-option').forEach(opt => {
+        opt.classList.remove('selected');
+        opt.style.background = '';
+    });
+    document.getElementById('recipeSearch').value = '';
+    filterRecipes();
+    
+    $('#addRecipeModal').modal('show');
+}
+
+function filterRecipes() {
+    const search = document.getElementById('recipeSearch').value.toLowerCase();
+    document.querySelectorAll('.recipe-option').forEach(opt => {
+        const name = opt.dataset.recipeName;
+        opt.style.display = name.includes(search) ? 'block' : 'none';
+    });
+}
+
+function selectRecipeOption(element) {
+    document.querySelectorAll('.recipe-option').forEach(opt => {
+        opt.classList.remove('selected');
+        opt.style.background = '';
+    });
+    element.classList.add('selected');
+    element.style.background = '#e8f4ff';
+    selectedRecipeId = element.dataset.recipeId;
+    document.getElementById('confirmAddRecipeBtn').disabled = false;
+}
+
+function confirmAddRecipe() {
+    const dayId = document.getElementById('addRecipeDayId').value;
+    const servings = document.getElementById('recipeServings').value;
+    
+    if (!selectedRecipeId || !dayId) {
+        alert('Please select a recipe');
+        return;
+    }
+    
+    // Submit via form or AJAX
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = '{% url "add_recipe_to_meal_plan_day" %}';
+    
+    const csrfInput = document.createElement('input');
+    csrfInput.type = 'hidden';
+    csrfInput.name = 'csrfmiddlewaretoken';
+    csrfInput.value = '{{ csrf_token }}';
+    form.appendChild(csrfInput);
+    
+    const dayInput = document.createElement('input');
+    dayInput.type = 'hidden';
+    dayInput.name = 'meal_plan_day_id';
+    dayInput.value = dayId;
+    form.appendChild(dayInput);
+    
+    const recipeInput = document.createElement('input');
+    recipeInput.type = 'hidden';
+    recipeInput.name = 'recipe_id';
+    recipeInput.value = selectedRecipeId;
+    form.appendChild(recipeInput);
+    
+    const servingsInput = document.createElement('input');
+    servingsInput.type = 'hidden';
+    servingsInput.name = 'servings';
+    servingsInput.value = servings;
+    form.appendChild(servingsInput);
+    
+    document.body.appendChild(form);
+    form.submit();
+}
+
+function removeRecipe(mealPlanRecipeId, recipeName) {
+    if (confirm(`Remove "${recipeName}" from this day?`)) {
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '{% url "remove_recipe_from_meal_plan" %}';
+        
+        const csrfInput = document.createElement('input');
+        csrfInput.type = 'hidden';
+        csrfInput.name = 'csrfmiddlewaretoken';
+        csrfInput.value = '{{ csrf_token }}';
+        form.appendChild(csrfInput);
+        
+        const idInput = document.createElement('input');
+        idInput.type = 'hidden';
+        idInput.name = 'meal_plan_recipe_id';
+        idInput.value = mealPlanRecipeId;
+        form.appendChild(idInput);
+        
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+
+// Delete meal plan confirmation
+function confirmDelete(deleteUrl, mealPlanName) {
+    document.getElementById('deleteForm').action = deleteUrl;
+    document.getElementById('deletePlanName').textContent = mealPlanName;
+    $('#deleteModal').modal('show');
+}
+
+// Duplicate meal plan
+function confirmDuplicate(duplicateUrl, mealPlanName) {
+    document.getElementById('duplicateForm').action = duplicateUrl;
+    document.getElementById('duplicatePlanName').textContent = mealPlanName;
+    
+    // Pre-populate the new name field
+    document.getElementById('new_plan_name').value = mealPlanName + ' (Copy)';
+    
+    // Set minimum date to today
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('new_start_date').setAttribute('min', today);
+    
+    $('#duplicateModal').modal('show');
+}
+
+// Store view preference when on calendar view
+sessionStorage.setItem('meal_plan_view_preference', 'calendar');
+
+// Highlight meal plan days on page load
+document.addEventListener('DOMContentLoaded', function() {
+    {% if selected_meal_plan %}
+    const planStart = new Date('{{ selected_meal_plan.start_date|date:"Y-m-d" }}');
+    const planEnd = new Date('{{ selected_meal_plan.end_date|date:"Y-m-d" }}');
+    
+    document.querySelectorAll('.mini-calendar-day[data-date]').forEach(dayEl => {
+        const dayDate = new Date(dayEl.dataset.date);
+        if (dayDate >= planStart && dayDate <= planEnd) {
+            dayEl.classList.add('in-meal-plan');
+        }
+    });
+    {% endif %}
+});
+
+</script>
+
+{% endblock %}

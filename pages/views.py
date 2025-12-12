@@ -10,7 +10,7 @@ from django.core.mail import EmailMultiAlternatives
 from django.core.paginator import Paginator
 from django.core.serializers import serialize
 from django.db import connection, transaction
-from django.db.models import Q, Prefetch, Subquery, OuterRef, Sum, F, Count
+from django.db.models import Q, Prefetch, Subquery, OuterRef, Sum, F, Count, Max
 from django.db.models.functions import Coalesce
 from django.http import HttpResponse, HttpResponseServerError, FileResponse, Http404, JsonResponse
 from django.shortcuts import render, redirect, get_object_or_404
@@ -10165,8 +10165,12 @@ def delete_meal_plan(request, meal_plan_id):
     except MealPlan.DoesNotExist:
         messages.error(request, 'Meal plan not found.')
     
+    # Check where to redirect
+    redirect_to = request.POST.get('redirect_to', 'list')
+    if redirect_to == 'calendar':
+        return redirect('meal_plan_calendar')
     return redirect('meal_plans')
-
+    
 @login_required
 def edit_meal_plan(request, meal_plan_id):
     """Edit an existing meal plan"""
@@ -10477,6 +10481,176 @@ def duplicate_meal_plan(request, meal_plan_id):
         return redirect('meal_plans')
 
 @login_required
+def meal_plan_calendar(request):
+    """Calendar view for meal plans"""
+    from datetime import timedelta
+    from calendar import monthcalendar
+    import json
+    
+    # Get requested month/year or default to current
+    today = timezone.now().date()
+    year = int(request.GET.get('year', today.year))
+    month = int(request.GET.get('month', today.month))
+    
+    # Get selected week start date (Monday)
+    selected_week_start = request.GET.get('week')
+    if selected_week_start:
+        selected_week_start = datetime.strptime(selected_week_start, '%Y-%m-%d').date()
+    else:
+        # Default to current week (find Monday)
+        selected_week_start = today - timedelta(days=today.weekday())
+    
+    selected_week_end = selected_week_start + timedelta(days=6)
+    
+    # Build calendar data for the month
+    # Get first day of month and adjust to start from Monday
+    first_of_month = date(year, month, 1)
+    
+    # Get all days we need to show (including overflow from prev/next months)
+    cal = monthcalendar(year, month)  # Returns weeks starting from Monday
+    
+    # Get all meal plans for this user
+    all_meal_plans = MealPlan.objects.filter(created_by=request.user).order_by('-start_date')
+    
+    # Get meal plans that overlap with this month (for dot indicators)
+    month_start = date(year, month, 1)
+    if month == 12:
+        month_end = date(year + 1, 1, 1) - timedelta(days=1)
+    else:
+        month_end = date(year, month + 1, 1) - timedelta(days=1)
+    
+    month_meal_plans = MealPlan.objects.filter(
+        created_by=request.user,
+        start_date__lte=month_end,
+        end_date__gte=month_start
+    )
+    
+    # Build a set of dates that have meals planned
+    dates_with_meals = set()
+    for plan in month_meal_plans:
+        days_with_recipes = MealPlanDay.objects.filter(
+            meal_plan=plan,
+            recipes__isnull=False
+        ).values_list('date', flat=True).distinct()
+        dates_with_meals.update(days_with_recipes)
+    
+    # Build calendar weeks with metadata
+    calendar_weeks = []
+    for week in cal:
+        week_data = []
+        week_dates = []
+        for day_num in week:
+            if day_num == 0:
+                week_data.append(None)
+            else:
+                day_date = date(year, month, day_num)
+                week_dates.append(day_date)
+                week_data.append({
+                    'day': day_num,
+                    'date': day_date,
+                    'has_meal': day_date in dates_with_meals,
+                    'is_today': day_date == today,
+                })
+        
+        # Calculate week start (Monday) for this row
+        if week_dates:
+            # Find the Monday of this week
+            first_valid_date = week_dates[0]
+            week_start = first_valid_date - timedelta(days=first_valid_date.weekday())
+        else:
+            week_start = None
+            
+        calendar_weeks.append({
+            'days': week_data,
+            'week_start': week_start,
+        })
+    
+    # Get the meal plan for the selected week (if any)
+    selected_meal_plan = MealPlan.objects.filter(
+        created_by=request.user,
+        start_date__lte=selected_week_end,
+        end_date__gte=selected_week_start
+    ).first()
+    
+    # Build week detail data
+    week_days = []
+    for i in range(7):
+        day_date = selected_week_start + timedelta(days=i)
+        day_data = {
+            'date': day_date,
+            'day_name': day_date.strftime('%A'),
+            'day_short': day_date.strftime('%a'),
+            'day_num': day_date.day,
+            'is_today': day_date == today,
+            'recipes': [],
+            'meal_plan_day_id': None,
+        }
+        
+        # If there's a meal plan for this week, get recipes for this day
+        if selected_meal_plan:
+            meal_plan_day = MealPlanDay.objects.filter(
+                meal_plan=selected_meal_plan,
+                date=day_date
+            ).first()
+            
+            if meal_plan_day:
+                day_data['meal_plan_day_id'] = meal_plan_day.meal_plan_day_id
+                recipes = MealPlanRecipe.objects.filter(
+                    meal_plan_day=meal_plan_day
+                ).select_related('recipe').order_by('sort_order')
+                
+                for mpr in recipes:
+                    recipe = mpr.recipe
+                    day_data['recipes'].append({
+                        'meal_plan_recipe_id': mpr.meal_plan_recipe_id,
+                        'recipe_id': recipe.recipe_id,
+                        'name': recipe.recipe_name,
+                        'image': recipe.recipe_image.url if recipe.recipe_image else None,
+                        'prep_time': recipe.prep_time,
+                        'cook_time': recipe.cook_time,
+                        'total_time': (recipe.prep_time or 0) + (recipe.cook_time or 0),
+                        'servings': mpr.servings,
+                        'difficulty': recipe.difficulty_level,
+                    })
+        
+        week_days.append(day_data)
+    
+    # Previous and next month for navigation
+    if month == 1:
+        prev_month = {'year': year - 1, 'month': 12}
+    else:
+        prev_month = {'year': year, 'month': month - 1}
+    
+    if month == 12:
+        next_month = {'year': year + 1, 'month': 1}
+    else:
+        next_month = {'year': year, 'month': month + 1}
+    
+    # Month name for display
+    month_name = date(year, month, 1).strftime('%B %Y')
+    
+    # Get all recipes for the "Add Recipe" modal
+    all_recipes = Recipe.objects.all().order_by('recipe_name')
+    
+    context = {
+        'calendar_weeks': calendar_weeks,
+        'month_name': month_name,
+        'year': year,
+        'month': month,
+        'prev_month': prev_month,
+        'next_month': next_month,
+        'today': today,
+        'selected_week_start': selected_week_start,
+        'selected_week_end': selected_week_end,
+        'selected_meal_plan': selected_meal_plan,
+        'week_days': week_days,
+        'all_meal_plans': all_meal_plans,
+        'all_recipes': all_recipes,
+    }
+    
+    return render(request, 'meal_plan_calendar.html', context)
+
+@login_required
 def meal_plan_shopping_list(request, meal_plan_id):
     """Display shopping list with unit conversion and prompt for missing conversions"""
     if not request.user.is_superuser:
@@ -10534,6 +10708,73 @@ def meal_plan_shopping_list(request, meal_plan_id):
         traceback.print_exc()
         messages.error(request, f'Error generating shopping list: {str(e)}')
         return redirect('view_meal_plan', meal_plan_id=meal_plan_id)
+
+@login_required
+@require_POST
+def add_recipe_to_meal_plan_day(request):
+    """Add a recipe to a meal plan day"""
+    meal_plan_day_id = request.POST.get('meal_plan_day_id')
+    recipe_id = request.POST.get('recipe_id')
+    servings = request.POST.get('servings', 4)
+    
+    try:
+        meal_plan_day = MealPlanDay.objects.get(meal_plan_day_id=meal_plan_day_id)
+        recipe = Recipe.objects.get(recipe_id=recipe_id)
+        
+        # Verify user owns this meal plan
+        if meal_plan_day.meal_plan.created_by != request.user:
+            messages.error(request, 'You do not have permission to modify this meal plan.')
+            return redirect('meal_plan_calendar')
+        
+        # Get max sort order for this day
+        max_order = MealPlanRecipe.objects.filter(
+            meal_plan_day=meal_plan_day
+        ).aggregate(Max('sort_order'))['sort_order__max'] or 0
+        
+        # Create the meal plan recipe
+        MealPlanRecipe.objects.create(
+            meal_plan_day=meal_plan_day,
+            recipe=recipe,
+            servings=int(servings),
+            sort_order=max_order + 1
+        )
+        
+        messages.success(request, f'Added "{recipe.recipe_name}" to {meal_plan_day.date.strftime("%A, %B %d")}')
+        
+    except (MealPlanDay.DoesNotExist, Recipe.DoesNotExist) as e:
+        messages.error(request, 'Error adding recipe. Please try again.')
+    
+    # Redirect back to calendar with current view
+    return redirect(f"{reverse('meal_plan_calendar')}?week={meal_plan_day.date.strftime('%Y-%m-%d')}")
+
+
+@login_required
+@require_POST
+def remove_recipe_from_meal_plan(request):
+    """Remove a recipe from a meal plan day"""
+    meal_plan_recipe_id = request.POST.get('meal_plan_recipe_id')
+    
+    try:
+        meal_plan_recipe = MealPlanRecipe.objects.get(meal_plan_recipe_id=meal_plan_recipe_id)
+        meal_plan_day = meal_plan_recipe.meal_plan_day
+        
+        # Verify user owns this meal plan
+        if meal_plan_day.meal_plan.created_by != request.user:
+            messages.error(request, 'You do not have permission to modify this meal plan.')
+            return redirect('meal_plan_calendar')
+        
+        recipe_name = meal_plan_recipe.recipe.recipe_name
+        week_date = meal_plan_day.date.strftime('%Y-%m-%d')
+        
+        meal_plan_recipe.delete()
+        
+        messages.success(request, f'Removed "{recipe_name}" from the meal plan')
+        
+        return redirect(f"{reverse('meal_plan_calendar')}?week={week_date}")
+        
+    except MealPlanRecipe.DoesNotExist:
+        messages.error(request, 'Recipe not found.')
+        return redirect('meal_plan_calendar')
 
 def round_shopping_quantity(qty, unit):
     """
