@@ -1983,10 +1983,10 @@ function createGridRecipeCard(recipe) {
             <div class="recipe-image-container">
                 ${imageHtml}
                 <div class="recipe-image-actions">
-                    <a href="/recipes/view/${recipe.recipe_id}/" class="recipe-image-action-btn recipe-view-btn" title="View Recipe">
+                    <a href="/view_recipe/${recipe.recipe_id}/" class="recipe-image-action-btn recipe-view-btn" title="View Recipe">
                         <i class="fas fa-eye"></i>
                     </a>
-                    <a href="/recipes/edit/${recipe.recipe_id}/" class="recipe-image-action-btn recipe-edit-btn" title="Edit Recipe">
+                    <a href="/edit_recipe/${recipe.recipe_id}/" class="recipe-image-action-btn recipe-edit-btn" title="Edit Recipe">
                         <i class="fas fa-pencil-alt"></i>
                     </a>
                     <button type="button" class="recipe-image-action-btn recipe-delete-btn" onclick="deleteRecipe(${recipe.recipe_id}, '${recipe.recipe_name}')" title="Delete Recipe">
@@ -2093,10 +2093,10 @@ function createListRecipeItem(recipe) {
                 </div>
             </div>
             <div class="recipe-list-actions">
-                <a href="/recipes/view/${recipe.recipe_id}/" class="recipe-list-action-btn recipe-view-btn" title="View Recipe">
+                <a href="/view_recipe/${recipe.recipe_id}/" class="recipe-list-action-btn recipe-view-btn" title="View Recipe">
                     <i class="fas fa-eye"></i>
                 </a>
-                <a href="/recipes/edit/${recipe.recipe_id}/" class="recipe-list-action-btn recipe-edit-btn" title="Edit Recipe">
+                <a href="/edit_recipe/${recipe.recipe_id}/" class="recipe-list-action-btn recipe-edit-btn" title="Edit Recipe">
                     <i class="fas fa-pencil-alt"></i>
                 </a>
                 <button type="button" class="recipe-list-action-btn recipe-delete-btn" onclick="deleteRecipe(${recipe.recipe_id}, '${recipe.recipe_name}')" title="Delete Recipe">
