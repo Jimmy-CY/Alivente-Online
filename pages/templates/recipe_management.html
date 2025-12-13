@@ -1794,7 +1794,7 @@
                 </div>
                 
                 <!-- Selected Count -->
-                <div style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px; text-align: center;">
+                <div id="selectionModeCountBox" style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px; text-align: center;">
                     <strong id="selectedIngredientCount">0 ingredients selected</strong>
                     <small class="text-muted d-block mt-1">
                         (Herbs, spices, oil, and water are automatically included)
@@ -2703,6 +2703,10 @@ function findMatchingRecipes() {
     // Hide categories container
     if (categoriesContainer) categoriesContainer.style.display = 'none';
 
+    // Hide the selection mode count box
+    const selectionModeCountBox = document.getElementById('selectionModeCountBox');
+    if (selectionModeCountBox) selectionModeCountBox.style.display = 'none';
+
     // Show and populate results area
     const resultsArea = document.getElementById('matchingResultsArea');
     const resultsContent = document.getElementById('matchingResultsContent');
@@ -2735,8 +2739,25 @@ function findMatchingRecipes() {
             allResults = data.all_results;
             displayedResults = 0;
             
+            // Build the clickable selected count header
+            const selectedCount = document.querySelectorAll('.ingredient-checkbox:checked').length;
+            const selectedHeader = `
+                <div onclick="backToIngredientSelection()" 
+                     style="background: #f8f9fa; border-radius: 8px; padding: 15px; margin-bottom: 20px; text-align: center; cursor: pointer; border: 2px solid #dee2e6; transition: all 0.2s;"
+                     onmouseover="this.style.borderColor='#28a745'; this.style.background='#f0fff4';"
+                     onmouseout="this.style.borderColor='#dee2e6'; this.style.background='#f8f9fa';">
+                    <strong>${selectedCount} ingredients selected</strong>
+                    <small class="text-muted d-block mt-1">
+                        (Herbs, spices, oil, and water are automatically included)
+                    </small>
+                    <small class="text-primary d-block mt-1">
+                        <i class="fas fa-edit"></i> Click to modify selections
+                    </small>
+                </div>
+            `;
+
             if (allResults.length === 0) {
-                resultsContent.innerHTML = `
+                resultsContent.innerHTML = selectedHeader + `
                     <div style="text-align: center; padding: 40px;">
                         <i class="fas fa-utensils fa-4x text-muted mb-3"></i>
                         <h5>No Matching Recipes Found</h5>
@@ -2745,7 +2766,7 @@ function findMatchingRecipes() {
                 `;
                 document.getElementById('showMoreContainer').style.display = 'none';
             } else {
-                resultsContent.innerHTML = '';
+                resultsContent.innerHTML = selectedHeader;
                 showMoreResults(); // Show first batch
             }
         } else {
@@ -2766,6 +2787,52 @@ function findMatchingRecipes() {
     });
 }
 
+// Go back to ingredient selection from results
+function backToIngredientSelection() {
+    // Show the ingredient selection elements
+    const infoBox = document.querySelector('#ingredientMatcherModal .alert.alert-info');
+    const categoriesContainer = document.getElementById('ingredientCategoriesContainer');
+    
+    // Show info box
+    if (infoBox) infoBox.style.display = 'block';
+    
+    // Show search box
+    const searchByPlaceholder = document.querySelector('#ingredientMatcherModal input[placeholder*="Search ingredients"]');
+    if (searchByPlaceholder) {
+        searchByPlaceholder.style.display = 'block';
+        const searchContainer = searchByPlaceholder.closest('.form-group, .mb-3, div');
+        if (searchContainer) searchContainer.style.display = 'block';
+    }
+    
+    // Show quick action buttons
+    const clearAllBtn = document.querySelector('#ingredientMatcherModal button[onclick="clearAllSelections()"]');
+    if (clearAllBtn) {
+        const btnContainer = clearAllBtn.closest('div');
+        if (btnContainer) btnContainer.style.display = 'flex';
+    }
+    
+    // Show categories container
+    if (categoriesContainer) categoriesContainer.style.display = 'block';
+    
+    // Show the original selection mode count box
+    const selectionModeCountBox = document.getElementById('selectionModeCountBox');
+    if (selectionModeCountBox) selectionModeCountBox.style.display = 'block';
+    
+    // Hide results area
+    document.getElementById('matchingResultsArea').style.display = 'none';
+    
+    // Update footer to show "Find Recipes" button again
+    const modalFooter = document.querySelector('#ingredientMatcherModal .modal-footer');
+    if (modalFooter) {
+        modalFooter.innerHTML = `
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-success" onclick="findMatchingRecipes()">
+                <i class="fas fa-search"></i> Find Recipes
+            </button>
+        `;
+    }
+}
+
 // Show more results (pagination)
 function showMoreResults() {
     const resultsContent = document.getElementById('matchingResultsContent');
@@ -2776,7 +2843,7 @@ function showMoreResults() {
     
     for (let i = start; i < end; i++) {
         const recipe = allResults[i];
-        resultsContent.innerHTML += createRecipeMatchCard(recipe);
+        resultsContent.insertAdjacentHTML('beforeend', createRecipeMatchCard(recipe));
     }
     
     displayedResults = end;
