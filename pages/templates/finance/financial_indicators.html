@@ -175,7 +175,7 @@
 
 .indicator-cards {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(4, 1fr);  /* Changed from 5 to 4 */
     gap: 15px;
     margin-bottom: 20px;
 }
@@ -863,6 +863,25 @@ class PropertyFinancialDashboard {
                 format: (val) => `${val.toFixed(2)}%`,
                 description: 'Property value appreciation over time. Higher values indicate better capital growth.',
                 sortable: true
+            },
+            // NEW: Occupancy Metrics
+            { 
+                key: 'occupancyRate', 
+                label: 'Occupancy Rate (%)', 
+                icon: 'fas fa-home', 
+                color: '#28a745', 
+                format: (val) => `${val.toFixed(1)}%`,
+                description: 'Percentage of time properties are occupied. Higher values indicate better performance.',
+                sortable: true
+            },
+            { 
+                key: 'avgDaysToFill', 
+                label: 'Avg Days to Fill', 
+                icon: 'fas fa-clock', 
+                color: '#fd7e14', 
+                format: (val) => val === 0 ? 'N/A' : `${val.toFixed(1)} days`,  // Show 1 decimal place
+                description: 'Weighted average days to fill vacancies across entire portfolio. Includes properties with zero vacancies.',
+                sortable: true
             }
         ];
         
@@ -1147,26 +1166,36 @@ class PropertyFinancialDashboard {
             
             // Calculate performance level and difference from portfolio average
             let performanceLevel, performanceClass, difference;
-            
-            if (indicatorKey === 'expensesToRevenue') {
-                // For expenses, lower is better
-                if (value <= portfolioAverage * 0.8) {
+
+            // For these metrics, LOWER is BETTER
+            if (indicatorKey === 'expensesToRevenue' || indicatorKey === 'avgDaysToFill') {
+                // Handle N/A values (0 days = perfect, never vacant)
+                if (indicatorKey === 'avgDaysToFill' && value === 0) {
                     performanceLevel = 'Excellent';
                     performanceClass = 'excellent';
                     excellentCount++;
+                    difference = 'Perfect';
+                } else if (value <= portfolioAverage * 0.8) {
+                    performanceLevel = 'Excellent';
+                    performanceClass = 'excellent';
+                    excellentCount++;
+                    difference = ((value - portfolioAverage) / portfolioAverage * 100).toFixed(1);
+                    difference = `${difference > 0 ? '+' : ''}${difference}%`;
                 } else if (value <= portfolioAverage) {
                     performanceLevel = 'Good';
                     performanceClass = 'good';
                     goodCount++;
+                    difference = ((value - portfolioAverage) / portfolioAverage * 100).toFixed(1);
+                    difference = `${difference > 0 ? '+' : ''}${difference}%`;
                 } else {
                     performanceLevel = 'Needs Improvement';
                     performanceClass = 'poor';
                     poorCount++;
+                    difference = ((value - portfolioAverage) / portfolioAverage * 100).toFixed(1);
+                    difference = `${difference > 0 ? '+' : ''}${difference}%`;
                 }
-                difference = ((value - portfolioAverage) / portfolioAverage * 100).toFixed(1);
-                difference = `${difference > 0 ? '+' : ''}${difference}%`;
             } else {
-                // For other indicators, higher is better
+                // For other indicators, HIGHER is BETTER
                 if (value >= portfolioAverage * 1.2) {
                     performanceLevel = 'Excellent';
                     performanceClass = 'excellent';
@@ -1353,11 +1382,16 @@ class PropertyFinancialDashboard {
         
         // Color bars based on performance relative to portfolio average
         const backgroundColors = data.map(value => {
-            if (indicator.key === 'expensesToRevenue') {
-                // For expenses, lower is better
+            // For these metrics, LOWER is BETTER
+            if (indicator.key === 'expensesToRevenue' || indicator.key === 'avgDaysToFill') {
+                // Special case: 0 is perfect (never vacant)
+                if (indicator.key === 'avgDaysToFill' && value === 0) {
+                    return '#28a745'; // Green - perfect
+                }
+                // Lower than average = green (good)
                 return value <= portfolioAverage ? '#28a745' : value <= portfolioAverage * 1.2 ? '#ffc107' : '#dc3545';
             } else {
-                // For other indicators, higher is better
+                // For other indicators, HIGHER is BETTER
                 return value >= portfolioAverage ? '#28a745' : value >= portfolioAverage * 0.8 ? '#ffc107' : '#dc3545';
             }
         });

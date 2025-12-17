@@ -74,6 +74,7 @@ from .models import (
     MealPlanDay,
     MealPlanRecipe,
     UnitConversion,
+    VacancyPeriod,
     )
 from decimal import Decimal
 from fractions import Fraction
@@ -1774,17 +1775,24 @@ def get_overdue_invoices(cursor, today):
     return overdue_invoices_list
 
 ### FINANCIAL DASHBOARD ###
+
 @login_required
 def financial_indicators_view(request):
     """
     Display the Financial Indicators Dashboard - ONLY for Active Properties
-    Using Portfolio-Wide Calculations
+    Using Portfolio-Wide Calculations with Occupancy Metrics
+    OPTIMIZED: Reduced queries with prefetch_related
     """
     if request.method == 'GET' and request.headers.get('X-Requested-With') == 'XMLHttpRequest':
         # AJAX request for property data
         try:
-            # Get ONLY active properties for all calculations and display
-            properties = props.objects.filter(prop_status='Active')
+            # OPTIMIZATION: Prefetch related data in one query
+            properties = props.objects.filter(prop_status='Active').prefetch_related(
+                Prefetch('tenant_set', queryset=tenant.objects.all()),
+                Prefetch('vacancy_periods', queryset=VacancyPeriod.objects.all()),
+                'prop_values_set'
+            )
+            
             properties_data = []
             
             # Portfolio-wide totals for all active properties
@@ -1805,7 +1813,9 @@ def financial_indicators_view(request):
                 budgeted_expense_total = calculate_property_budgeted_expenses(prop)
                 
                 # Get property values - ONLY for active properties
-                property_values = prop_values.objects.filter(prop=prop).first()
+                # Use prefetched data
+                property_values_list = list(prop.prop_values_set.all())
+                property_values = property_values_list[0] if property_values_list else None
                 purchase_price = property_values.prop_values_purchase_price if property_values else 0
                 current_value = property_values.prop_values_current_value if property_values else 0
                 
@@ -1824,6 +1834,9 @@ def financial_indicators_view(request):
                 rent_per_sqm = (revenue_total / 12 / prop.prop_floor_area) if prop.prop_floor_area and prop.prop_floor_area > 0 else 0
                 value_increase = ((current_value - purchase_price) / purchase_price * 100) if purchase_price > 0 and current_value > 0 else 0
                 
+                # Calculate occupancy metrics using prefetched data
+                occupancy_metrics = calculate_occupancy_metrics_optimized(prop)
+                
                 # Store individual property data
                 properties_data.append({
                     'id': prop.prop_id,
@@ -1834,10 +1847,17 @@ def financial_indicators_view(request):
                     'expensesToRevenue': round(float(expense_ratio), 2),
                     'rentPerSqm': round(float(rent_per_sqm), 2),
                     'valueIncrease': round(float(value_increase), 2),
+                    'occupancyRate': occupancy_metrics['occupancy_rate'],
+                    'avgDaysToFill': occupancy_metrics['avg_days_to_fill'],
+                    'isCurrentlyVacant': occupancy_metrics['is_currently_vacant'],
+                    'currentVacancyDays': occupancy_metrics['current_vacancy_days'],
                     'revenue': float(revenue_total),
                     'expenses': float(budgeted_expense_total),
                     'profit': float(revenue_total - budgeted_expense_total)
                 })
+            
+            # Calculate portfolio-wide occupancy metrics (optimized)
+            portfolio_occupancy = calculate_portfolio_occupancy_metrics_optimized(properties)
             
             # Calculate TRUE PORTFOLIO-WIDE indicators
             portfolio_indicators = {
@@ -1862,7 +1882,9 @@ def financial_indicators_view(request):
                     ((portfolio_totals['total_current_value'] - portfolio_totals['total_purchase_price']) / 
                      portfolio_totals['total_purchase_price'] * 100) 
                     if portfolio_totals['total_purchase_price'] > 0 and portfolio_totals['total_current_value'] > 0 else 0
-                ), 2)
+                ), 2),
+                'occupancyRate': portfolio_occupancy['occupancy_rate'],
+                'avgDaysToFill': portfolio_occupancy['avg_days_to_fill'],
             }
             
             return JsonResponse({
@@ -1888,6 +1910,250 @@ def financial_indicators_view(request):
         'page_title': 'Financial Indicators Dashboard - Portfolio-Wide Analysis (Active Properties)'
     }
     return render(request, 'finance/financial_indicators.html', context)
+
+
+def calculate_occupancy_metrics(property, start_date=None, end_date=None):
+    """
+    Calculate occupancy rate and average days to fill for a property
+    FIXED: Only count days within actual lease period, ignore tenant_current status
+    """
+    if not end_date:
+        end_date = timezone.now().date()
+    
+    if not start_date:
+        first_tenant = tenant.objects.filter(prop=property).order_by('tenant_lease_start_date').first()
+        if first_tenant and first_tenant.tenant_lease_start_date:
+            start_date = first_tenant.tenant_lease_start_date
+        else:
+            from datetime import timedelta
+            start_date = end_date - timedelta(days=365)
+    
+    total_days = (end_date - start_date).days
+    if total_days <= 0:
+        return {
+            'occupancy_rate': 0,
+            'avg_days_to_fill': 0,
+            'current_vacancy_days': 0,
+            'is_currently_vacant': False
+        }
+    
+    # Calculate occupied days - DATE BASED ONLY
+    occupied_days = 0
+    property_tenants = tenant.objects.filter(
+        prop=property,
+        tenant_lease_start_date__lte=end_date
+    )
+    
+    for t in property_tenants:
+        if not t.tenant_lease_start_date:
+            continue
+            
+        lease_start = max(t.tenant_lease_start_date, start_date)
+        
+        # FIXED: Only count up to lease end date
+        if t.tenant_lease_end_date:
+            lease_end = min(t.tenant_lease_end_date, end_date)
+        else:
+            lease_end = end_date
+        
+        if lease_end >= lease_start:
+            occupied_days += (lease_end - lease_start).days + 1
+    
+    occupied_days = min(occupied_days, total_days)
+    occupancy_rate = (occupied_days / total_days * 100) if total_days > 0 else 0
+    
+    # Calculate average days to fill
+    vacancies = VacancyPeriod.objects.filter(
+        prop=property,
+        status='FILLED',
+        reason='BETWEEN_TENANTS',
+        start_date__gte=start_date,
+        end_date__lte=end_date
+    )
+    
+    if vacancies.exists():
+        from django.db.models import Avg
+        avg_days = vacancies.aggregate(Avg('days_vacant'))['days_vacant__avg']
+        avg_days_to_fill = round(avg_days, 0) if avg_days else 0
+    else:
+        avg_days_to_fill = 0
+    
+    # Auto-detect if currently vacant
+    is_currently_vacant = True
+    for t in property_tenants:
+        if t.tenant_lease_start_date and t.tenant_lease_start_date <= end_date:
+            if t.tenant_lease_end_date:
+                if t.tenant_lease_end_date >= end_date:
+                    is_currently_vacant = False
+                    break
+            else:
+                is_currently_vacant = False
+                break
+    
+    # Calculate current vacancy days
+    current_vacancy_days = 0
+    if is_currently_vacant:
+        last_tenant = property_tenants.filter(
+            tenant_lease_end_date__isnull=False
+        ).order_by('-tenant_lease_end_date').first()
+        
+        if last_tenant and last_tenant.tenant_lease_end_date:
+            current_vacancy_days = (end_date - last_tenant.tenant_lease_end_date).days
+    
+    return {
+        'occupancy_rate': round(occupancy_rate, 1),
+        'avg_days_to_fill': int(avg_days_to_fill),
+        'current_vacancy_days': current_vacancy_days,
+        'is_currently_vacant': is_currently_vacant
+    }
+
+def calculate_occupancy_metrics_optimized(property, start_date=None, end_date=None):
+    """
+    Calculate occupancy metrics using PREFETCHED data
+    FIXED: Only count days within actual lease period
+    """
+    if not end_date:
+        end_date = timezone.now().date()
+    
+    property_tenants = list(property.tenant_set.all())
+    
+    if not start_date:
+        if property_tenants:
+            tenants_with_dates = [t for t in property_tenants if t.tenant_lease_start_date]
+            if tenants_with_dates:
+                first_tenant = min(tenants_with_dates, key=lambda t: t.tenant_lease_start_date)
+                start_date = first_tenant.tenant_lease_start_date
+            else:
+                from datetime import timedelta
+                start_date = end_date - timedelta(days=365)
+        else:
+            from datetime import timedelta
+            start_date = end_date - timedelta(days=365)
+    
+    total_days = (end_date - start_date).days
+    if total_days <= 0:
+        return {
+            'occupancy_rate': 0,
+            'avg_days_to_fill': 0,
+            'current_vacancy_days': 0,
+            'is_currently_vacant': False
+        }
+    
+    # Calculate occupied days - DATE BASED ONLY
+    occupied_days = 0
+    for t in property_tenants:
+        if not t.tenant_lease_start_date or t.tenant_lease_start_date > end_date:
+            continue
+            
+        lease_start = max(t.tenant_lease_start_date, start_date)
+        
+        # FIXED: Only count up to lease end date
+        if t.tenant_lease_end_date:
+            lease_end = min(t.tenant_lease_end_date, end_date)
+        else:
+            lease_end = end_date
+        
+        if lease_end >= lease_start:
+            occupied_days += (lease_end - lease_start).days + 1
+    
+    occupied_days = min(occupied_days, total_days)
+    occupancy_rate = (occupied_days / total_days * 100) if total_days > 0 else 0
+    
+    # Use prefetched vacancy data
+    vacancies = [v for v in property.vacancy_periods.all() 
+                 if v.status == 'FILLED' 
+                 and v.reason == 'BETWEEN_TENANTS'
+                 and v.start_date >= start_date
+                 and v.end_date and v.end_date <= end_date]
+    
+    if vacancies:
+        avg_days = sum(v.days_vacant for v in vacancies) / len(vacancies)
+        avg_days_to_fill = round(avg_days, 0)
+    else:
+        avg_days_to_fill = 0
+    
+    # Auto-detect if currently vacant
+    is_currently_vacant = True
+    for t in property_tenants:
+        if t.tenant_lease_start_date and t.tenant_lease_start_date <= end_date:
+            if t.tenant_lease_end_date:
+                if t.tenant_lease_end_date >= end_date:
+                    is_currently_vacant = False
+                    break
+            else:
+                is_currently_vacant = False
+                break
+    
+    # Calculate current vacancy days
+    current_vacancy_days = 0
+    if is_currently_vacant:
+        tenants_with_end_dates = [t for t in property_tenants if t.tenant_lease_end_date]
+        if tenants_with_end_dates:
+            last_tenant = max(tenants_with_end_dates, key=lambda t: t.tenant_lease_end_date)
+            current_vacancy_days = (end_date - last_tenant.tenant_lease_end_date).days
+    
+    return {
+        'occupancy_rate': round(occupancy_rate, 1),
+        'avg_days_to_fill': int(avg_days_to_fill),
+        'current_vacancy_days': current_vacancy_days,
+        'is_currently_vacant': is_currently_vacant
+    }
+
+def calculate_portfolio_occupancy_metrics_optimized(properties, start_date=None, end_date=None):
+    """
+    Calculate portfolio metrics using SIMPLE AVERAGE method
+    Each property judged on its own history
+    """
+    if not end_date:
+        end_date = timezone.now().date()
+    
+    # Calculate occupancy for each property using its OWN start date
+    property_occupancy_rates = []
+    
+    for prop in properties:
+        metrics = calculate_occupancy_metrics_optimized(prop, start_date=None, end_date=end_date)
+        property_occupancy_rates.append(metrics['occupancy_rate'])
+    
+    # Simple average
+    if property_occupancy_rates:
+        portfolio_occupancy = sum(property_occupancy_rates) / len(property_occupancy_rates)
+    else:
+        portfolio_occupancy = 0
+    
+    # For avg_days_to_fill
+    if not start_date:
+        all_tenants = []
+        for prop in properties:
+            all_tenants.extend([t for t in prop.tenant_set.all() if t.tenant_lease_start_date])
+        
+        if all_tenants:
+            first_tenant = min(all_tenants, key=lambda t: t.tenant_lease_start_date)
+            start_date = first_tenant.tenant_lease_start_date
+        else:
+            from datetime import timedelta
+            start_date = end_date - timedelta(days=365)
+    
+    # Get all vacancies
+    all_vacancies = []
+    for prop in properties:
+        vacancies = [v for v in prop.vacancy_periods.all()
+                    if v.status == 'FILLED'
+                    and v.reason == 'BETWEEN_TENANTS'
+                    and v.start_date >= start_date
+                    and v.end_date and v.end_date <= end_date]
+        all_vacancies.extend(vacancies)
+    
+    # Weighted average
+    if all_vacancies and len(list(properties)) > 0:
+        total_vacancy_days = sum(v.days_vacant for v in all_vacancies)
+        portfolio_avg_days = round(total_vacancy_days / len(list(properties)), 1)
+    else:
+        portfolio_avg_days = 0
+    
+    return {
+        'occupancy_rate': round(portfolio_occupancy, 1),
+        'avg_days_to_fill': portfolio_avg_days
+    }
 
 def calculate_property_revenue(property_obj):
     """

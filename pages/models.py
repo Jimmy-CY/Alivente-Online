@@ -943,6 +943,175 @@ def update_project_on_task_delete(sender, instance, **kwargs):
         # Log error but don't break the delete operation
         print(f"Error updating project from task delete: {e}")
 
+class VacancyPeriod(models.Model):
+    """
+    Tracks vacancy periods for properties between leases.
+    
+    Purpose:
+    - Automatically tracks when properties are vacant
+    - Links to the leases before/after the vacancy
+    - Calculates occupancy rates and time-to-fill metrics
+    - Distinguishes between different types of vacancies (tenant turnover vs renovation)
+    
+    Auto-population:
+    - Created automatically when a lease ends
+    - Closed automatically when a new lease starts
+    - Can also be manually created for renovations, etc.
+    """
+    
+    # ==================== CORE FIELDS ====================
+    
+    prop = models.ForeignKey(
+        'props',
+        on_delete=models.CASCADE,
+        related_name='vacancy_periods',
+        help_text='The property that is vacant'
+    )
+    
+    start_date = models.DateField(
+        help_text='Date the vacancy period began (usually previous lease end date)'
+    )
+    
+    end_date = models.DateField(
+        null=True,
+        blank=True,
+        help_text='Date the vacancy ended (usually next lease start date). NULL = currently vacant'
+    )
+    
+    days_vacant = models.IntegerField(
+        default=0,
+        help_text='Number of days vacant. Auto-calculated on save.'
+    )
+    
+    # ==================== STATUS TRACKING ====================
+    
+    STATUS_CHOICES = [
+        ('ACTIVE', 'Currently Vacant'),
+        ('FILLED', 'Filled'),
+        ('EXCLUDED', 'Excluded from Analysis'),
+    ]
+    
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICES,
+        default='ACTIVE',
+        help_text='Current status of this vacancy period'
+    )
+    
+    # ==================== REASON CATEGORIZATION ====================
+    
+    REASON_CHOICES = [
+        ('BETWEEN_TENANTS', 'Between Tenants'),
+        ('RENOVATION', 'Renovation/Repairs'),
+        ('SEASONAL', 'Seasonal (Not Marketing)'),
+        ('FIRST_LISTING', 'Initial Property Listing'),
+        ('OWNER_USE', 'Owner/Personal Use'),
+        ('OTHER', 'Other'),
+    ]
+    
+    reason = models.CharField(
+        max_length=50,
+        choices=REASON_CHOICES,
+        default='BETWEEN_TENANTS',
+        help_text='Why is/was this property vacant?'
+    )
+    
+    # ==================== LEASE LINKAGE ====================
+    
+    previous_lease = models.ForeignKey(
+        'tenant',  # CHANGED from 'leases' to 'tenant'
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='vacancy_after',
+        help_text='The lease that ended before this vacancy'
+    )
+    
+    next_lease = models.ForeignKey(
+        'tenant',  # CHANGED from 'leases' to 'tenant'
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='vacancy_before',
+        help_text='The lease that started after this vacancy'
+    )
+    
+    # ==================== ADDITIONAL INFO ====================
+    
+    notes = models.TextField(
+        blank=True,
+        help_text='Additional notes about this vacancy period'
+    )
+    
+    # ==================== METADATA ====================
+    
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        help_text='When this record was created'
+    )
+    
+    updated_at = models.DateTimeField(
+        auto_now=True,
+        help_text='When this record was last updated'
+    )
+    
+    # ==================== META OPTIONS ====================
+    
+    class Meta:
+        ordering = ['-start_date']
+        verbose_name = 'Vacancy Period'
+        verbose_name_plural = 'Vacancy Periods'
+        indexes = [
+            models.Index(fields=['prop', 'status']),
+            models.Index(fields=['start_date', 'end_date']),
+            models.Index(fields=['status', 'reason']),
+        ]
+    
+    # ==================== METHODS ====================
+    
+    def save(self, *args, **kwargs):
+        """
+        Auto-calculate days_vacant and update status when saving
+        """
+        if self.end_date:
+            # Vacancy has ended - calculate total days
+            self.days_vacant = (self.end_date - self.start_date).days
+            
+            # If it was ACTIVE, mark it as FILLED
+            if self.status == 'ACTIVE':
+                self.status = 'FILLED'
+        else:
+            # Still vacant - calculate days so far
+            if self.status == 'ACTIVE':
+                today = timezone.now().date()
+                self.days_vacant = (today - self.start_date).days
+        
+        super().save(*args, **kwargs)
+    
+    def __str__(self):
+        """
+        Human-readable representation
+        """
+        if self.end_date:
+            return f"{self.prop.prop_name} - Vacant {self.days_vacant} days ({self.start_date} to {self.end_date})"
+        else:
+            return f"{self.prop.prop_name} - Currently vacant for {self.days_vacant} days (since {self.start_date})"
+    
+    @property
+    def is_active(self):
+        """
+        Helper property to check if vacancy is currently active
+        """
+        return self.status == 'ACTIVE' and self.end_date is None
+    
+    @property
+    def should_count_in_metrics(self):
+        """
+        Helper property to determine if this vacancy should be counted in performance metrics
+        Only count 'BETWEEN_TENANTS' and 'FIRST_LISTING' reasons
+        """
+        return self.reason in ['BETWEEN_TENANTS', 'FIRST_LISTING']
+
 class Passport(models.Model):
     DOCUMENT_TYPE_CHOICES = [
         ('passport', 'Passport'),
