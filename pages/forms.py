@@ -21,6 +21,7 @@ class PropForm(forms.ModelForm):
             "prop_available_for_rent",
             "prop_title_deed",
             "prop_title_deed_status",
+            "prop_include_in_occupancy",  # ADD THIS LINE
             "prop_electricity",
             "prop_water",
             "prop_refuse",
