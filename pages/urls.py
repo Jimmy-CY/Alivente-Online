@@ -3,7 +3,6 @@ from django.conf.urls.static import static
 from django.urls import path
 from . import views
 from .views_setup import setup_permissions  # Add this import
-from pages.views import fix_spain_vacancy_view
 
 urlpatterns = [
     # Home
