@@ -114,6 +114,92 @@ from django.contrib import messages
 from datetime import date, timedelta
 from .models import Passport  # Adjust import based on your app structure
 
+#########################################################
+
+from django.http import HttpResponse
+from django.views.decorators.http import require_http_methods
+from pages.models import VacancyPeriod, props, tenant
+from datetime import date
+
+@require_http_methods(["GET"])
+def fix_spain_vacancy_view(request):
+    """
+    One-time fix for Spain vacancy - access via /fix-spain-vacancy/
+    Remove this view after running once
+    """
+    # Simple security - check for a secret parameter
+    if request.GET.get('secret') != 'fix-vacancy-2025':
+        return HttpResponse("Unauthorized", status=403)
+    
+    output = []
+    output.append("=" * 60)
+    output.append("Fixing Spain vacancy on PRODUCTION database...")
+    output.append("=" * 60)
+    
+    try:
+        spain = props.objects.get(prop_name='Spain - Eusebi Guell')
+        output.append(f"✓ Found property: {spain.prop_name}")
+    except props.DoesNotExist:
+        output.append("❌ Spain property not found")
+        return HttpResponse("<br>".join(output))
+    
+    try:
+        easywin = tenant.objects.get(prop=spain, tenant_name='Easywin Solutions SL')
+        output.append(f"✓ Found Easywin: ends {easywin.tenant_lease_end_date}")
+    except tenant.DoesNotExist:
+        output.append("❌ Easywin not found")
+        output.append("\nAll Spain tenants:")
+        for t in tenant.objects.filter(prop=spain):
+            output.append(f"  - {t.tenant_name}: {t.tenant_lease_start_date} to {t.tenant_lease_end_date}")
+        return HttpResponse("<br>".join(output))
+        
+    try:
+        dmytro = tenant.objects.get(prop=spain, tenant_name='Dmytro Pozniakov')
+        output.append(f"✓ Found Dmytro: starts {dmytro.tenant_lease_start_date}")
+    except tenant.DoesNotExist:
+        output.append("❌ Dmytro not found")
+        return HttpResponse("<br>".join(output))
+    
+    # Check if vacancy already exists
+    existing = VacancyPeriod.objects.filter(
+        prop=spain,
+        start_date=date(2025, 9, 1)
+    ).first()
+    
+    if existing:
+        output.append(f"\n✓ Vacancy already exists: {existing.status}")
+        if existing.status == 'ACTIVE':
+            existing.end_date = dmytro.tenant_lease_start_date
+            existing.next_lease = dmytro
+            existing.save()
+            output.append(f"✓ Closed vacancy: {existing.days_vacant} days")
+        else:
+            output.append(f"Vacancy already closed: {existing.days_vacant} days")
+    else:
+        # Create the missing vacancy
+        vacancy = VacancyPeriod.objects.create(
+            prop=spain,
+            start_date=date(2025, 9, 1),
+            end_date=date(2025, 9, 30),
+            previous_lease=easywin,
+            next_lease=dmytro,
+            status='FILLED',
+            reason='BETWEEN_TENANTS'
+        )
+        output.append(f"✓ Created vacancy: {vacancy.days_vacant} days")
+    
+    # Verify
+    output.append("\n" + "=" * 60)
+    output.append("All vacancies for Spain:")
+    for v in VacancyPeriod.objects.filter(prop=spain):
+        output.append(f"  - {v.start_date} to {v.end_date}: {v.days_vacant} days ({v.status})")
+    
+    output.append("\n✅ Done!")
+    output.append("=" * 60)
+    
+    return HttpResponse("<br>".join(output))
+
+##########################################################
 
 @login_required
 def passport_management(request):
@@ -1868,7 +1954,7 @@ def financial_indicators_view(request):
             # Calculate portfolio occupancy ONLY from included properties
             properties_for_occupancy = [p for p in properties if p.prop_include_in_occupancy]
             portfolio_occupancy = calculate_portfolio_occupancy_metrics_optimized(properties_for_occupancy)
-            
+
             # Calculate TRUE PORTFOLIO-WIDE indicators
             portfolio_indicators = {
                 'grossROI': round(float(

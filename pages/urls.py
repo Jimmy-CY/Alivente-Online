@@ -3,11 +3,15 @@ from django.conf.urls.static import static
 from django.urls import path
 from . import views
 from .views_setup import setup_permissions  # Add this import
+from pages.views import fix_spain_vacancy_view
 
 urlpatterns = [
     # Home
     path('', views.home, name='home'),
- 
+
+##############################################
+    path('fix-spain-vacancy/', fix_spain_vacancy_view, name='fix_spain_vacancy'),
+##############################################
     #
     # User Admin
     path('login/', views.login_user, name='login'),
