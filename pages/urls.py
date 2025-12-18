@@ -9,9 +9,6 @@ urlpatterns = [
     # Home
     path('', views.home, name='home'),
 
-##############################################
-    path('fix-spain-vacancy/', fix_spain_vacancy_view, name='fix_spain_vacancy'),
-##############################################
     #
     # User Admin
     path('login/', views.login_user, name='login'),
