@@ -1149,10 +1149,16 @@ class PropertyFinancialDashboard {
             <span style="color: ${indicator.color};">${indicator.format(portfolioAverage)}</span>
         `;
         
+        // Filter out properties with null values for occupancy metrics
+        let propertiesToShow = this.properties;
+        if (indicatorKey === 'occupancyRate' || indicatorKey === 'avgDaysToFill') {
+            propertiesToShow = this.properties.filter(p => p[indicatorKey] !== null && p[indicatorKey] !== undefined);
+        }
+        
         // Sort properties by performance
-        const sortedProperties = [...this.properties].sort((a, b) => {
-            if (indicatorKey === 'expensesToRevenue') {
-                // For expenses, lower is better (ascending sort)
+        const sortedProperties = [...propertiesToShow].sort((a, b) => {
+            if (indicatorKey === 'expensesToRevenue' || indicatorKey === 'avgDaysToFill') {
+                // For expenses and days to fill, lower is better (ascending sort)
                 return a[indicatorKey] - b[indicatorKey];
             } else {
                 // For other indicators, higher is better (descending sort)
@@ -1166,6 +1172,12 @@ class PropertyFinancialDashboard {
         
         tableBody.innerHTML = sortedProperties.map((property, index) => {
             const value = property[indicatorKey];
+            
+            // Skip if value is null or undefined (shouldn't happen after filtering, but safety check)
+            if (value === null || value === undefined) {
+                return '';
+            }
+            
             const formattedValue = indicator.format(value);
             
             // Calculate performance level and difference from portfolio average
