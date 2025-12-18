@@ -870,7 +870,7 @@ class PropertyFinancialDashboard {
                 label: 'Occupancy Rate (%)', 
                 icon: 'fas fa-home', 
                 color: '#28a745', 
-                format: (val) => `${val.toFixed(1)}%`,
+                format: (val) => val === null || val === undefined ? 'N/A' : `${val.toFixed(1)}%`,  // Handle null FIRST
                 description: 'Percentage of time properties are occupied. Higher values indicate better performance.',
                 sortable: true
             },
@@ -879,8 +879,12 @@ class PropertyFinancialDashboard {
                 label: 'Avg Days to Fill', 
                 icon: 'fas fa-clock', 
                 color: '#fd7e14', 
-                format: (val) => val === 0 ? 'N/A' : `${val.toFixed(1)} days`,  // Show 1 decimal place
-                description: 'Weighted average days to fill vacancies across entire portfolio. Includes properties with zero vacancies.',
+                format: (val) => {
+                    if (val === null || val === undefined) return 'N/A';
+                    if (val === 0) return '0 days';
+                    return `${val.toFixed(1)} days`;
+                },
+                description: 'Weighted average days to fill vacancies across entire portfolio. Properties with no turnover show 0 days.',
                 sortable: true
             }
         ];
@@ -1343,52 +1347,49 @@ class PropertyFinancialDashboard {
     }
     
     renderChart() {
-        // Render all indicator charts
+        // Get filtered properties based on selection
+        const filteredProperties = this.getSelectedProperties();
+        
+        // Render all indicator charts with filtered properties
         this.indicators.forEach(indicator => {
-            this.renderIndicatorChart(indicator);
+            this.renderIndicatorChart(indicator, filteredProperties);
         });
     }
     
-    renderIndicatorChart(indicator) {
-        const canvas = document.getElementById(`chart-${indicator.key}`);
-        if (!canvas) return;
+    renderIndicatorChart(indicator, filteredProperties = null) {
+        // Use filtered properties if provided, otherwise use all properties
+        const propertiesToUse = filteredProperties || this.properties;
         
-        const ctx = canvas.getContext('2d');
-        const selectedProps = this.getSelectedProperties();
-        const portfolioAverage = this.portfolioIndicators[indicator.key] || 0;
+        let data = propertiesToUse.map(p => p[indicator.key]);
+        let labels = propertiesToUse.map(p => p.name);
+        const portfolioAverage = this.portfolioIndicators[indicator.key];
         
-        // Destroy existing chart
-        if (this.charts && this.charts[indicator.key]) {
-            this.charts[indicator.key].destroy();
+        // For occupancy metrics, filter out properties with null values (excluded properties)
+        if (indicator.key === 'occupancyRate' || indicator.key === 'avgDaysToFill') {
+            const validIndices = [];
+            data.forEach((value, index) => {
+                if (value !== null && value !== undefined) {
+                    validIndices.push(index);
+                }
+            });
+            
+            // Filter both data and labels
+            data = validIndices.map(idx => data[idx]);
+            labels = validIndices.map(idx => labels[idx]);
         }
         
-        if (!this.charts) {
-            this.charts = {};
+        // If no valid data, don't render chart
+        if (data.length === 0) {
+            return;
         }
-        
-        // Sort properties by performance (best to worst)
-        const sortedProps = [...selectedProps].sort((a, b) => {
-            if (indicator.key === 'expensesToRevenue') {
-                // For expenses, lower is better (ascending sort)
-                return a[indicator.key] - b[indicator.key];
-            } else {
-                // For other indicators, higher is better (descending sort)
-                return b[indicator.key] - a[indicator.key];
-            }
-        });
-        
-        const data = sortedProps.map(prop => prop[indicator.key]);
-        const labels = sortedProps.map(prop => prop.name);
         
         // Color bars based on performance relative to portfolio average
         const backgroundColors = data.map(value => {
             // For these metrics, LOWER is BETTER
             if (indicator.key === 'expensesToRevenue' || indicator.key === 'avgDaysToFill') {
-                // Special case: 0 is perfect (never vacant)
                 if (indicator.key === 'avgDaysToFill' && value === 0) {
                     return '#28a745'; // Green - perfect
                 }
-                // Lower than average = green (good)
                 return value <= portfolioAverage ? '#28a745' : value <= portfolioAverage * 1.2 ? '#ffc107' : '#dc3545';
             } else {
                 // For other indicators, HIGHER is BETTER
@@ -1396,26 +1397,33 @@ class PropertyFinancialDashboard {
             }
         });
         
+        const ctx = document.getElementById(`chart-${indicator.key}`);
+        if (!ctx) return;
+        
+        // Destroy existing chart if it exists
+        if (this.charts[indicator.key]) {
+            this.charts[indicator.key].destroy();
+        }
+        
         this.charts[indicator.key] = new Chart(ctx, {
             type: 'bar',
             data: {
-                labels: labels,
+                labels: labels,  // Use filtered labels
                 datasets: [{
                     label: indicator.label,
-                    data: data,
+                    data: data,  // Use filtered data
                     backgroundColor: backgroundColors,
-                    borderColor: backgroundColors.map(color => color),
+                    borderColor: backgroundColors,
                     borderWidth: 1
                 }, {
                     label: 'Portfolio Average',
-                    data: new Array(data.length).fill(portfolioAverage),
+                    data: Array(labels.length).fill(portfolioAverage),
                     type: 'line',
-                    borderColor: indicator.color,
+                    borderColor: '#ff6b35',
                     borderWidth: 2,
                     borderDash: [5, 5],
                     fill: false,
-                    pointRadius: 0,
-                    pointHoverRadius: 0
+                    pointRadius: 0
                 }]
             },
             options: {
@@ -1424,24 +1432,10 @@ class PropertyFinancialDashboard {
                 plugins: {
                     legend: {
                         display: true,
-                        position: 'top',
-                        labels: {
-                            boxWidth: 12,
-                            font: {
-                                size: 11
-                            }
-                        }
+                        position: 'bottom'
                     },
-                    tooltip: {
-                        callbacks: {
-                            label: function(context) {
-                                if (context.datasetIndex === 0) {
-                                    return `${context.dataset.label}: ${indicator.format(context.parsed.y)}`;
-                                } else {
-                                    return `${context.dataset.label}: ${indicator.format(context.parsed.y)}`;
-                                }
-                            }
-                        }
+                    title: {
+                        display: false
                     }
                 },
                 scales: {
@@ -1449,19 +1443,13 @@ class PropertyFinancialDashboard {
                         beginAtZero: true,
                         ticks: {
                             callback: function(value) {
-                                return indicator.format(value);
-                            },
-                            font: {
-                                size: 10
-                            }
-                        }
-                    },
-                    x: {
-                        ticks: {
-                            maxRotation: 45,
-                            minRotation: 0,
-                            font: {
-                                size: 10
+                                if (indicator.key === 'rentPerSqm') {
+                                    return '€' + value.toFixed(2);
+                                } else if (indicator.key === 'avgDaysToFill') {
+                                    return value.toFixed(0) + ' days';
+                                } else {
+                                    return value.toFixed(1) + '%';
+                                }
                             }
                         }
                     }

@@ -1834,8 +1834,17 @@ def financial_indicators_view(request):
                 rent_per_sqm = (revenue_total / 12 / prop.prop_floor_area) if prop.prop_floor_area and prop.prop_floor_area > 0 else 0
                 value_increase = ((current_value - purchase_price) / purchase_price * 100) if purchase_price > 0 and current_value > 0 else 0
                 
-                # Calculate occupancy metrics using prefetched data
-                occupancy_metrics = calculate_occupancy_metrics_optimized(prop)
+                # Calculate occupancy metrics ONLY if property is included
+                if prop.prop_include_in_occupancy:
+                    occupancy_metrics = calculate_occupancy_metrics_optimized(prop)
+                else:
+                    # Excluded from occupancy tracking
+                    occupancy_metrics = {
+                        'occupancy_rate': None,
+                        'avg_days_to_fill': None,
+                        'is_currently_vacant': False,
+                        'current_vacancy_days': 0
+                    }
                 
                 # Store individual property data
                 properties_data.append({
@@ -1856,8 +1865,9 @@ def financial_indicators_view(request):
                     'profit': float(revenue_total - budgeted_expense_total)
                 })
             
-            # Calculate portfolio-wide occupancy metrics (optimized)
-            portfolio_occupancy = calculate_portfolio_occupancy_metrics_optimized(properties)
+            # Calculate portfolio occupancy ONLY from included properties
+            properties_for_occupancy = [p for p in properties if p.prop_include_in_occupancy]
+            portfolio_occupancy = calculate_portfolio_occupancy_metrics_optimized(properties_for_occupancy)
             
             # Calculate TRUE PORTFOLIO-WIDE indicators
             portfolio_indicators = {

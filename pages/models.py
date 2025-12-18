@@ -619,6 +619,11 @@ class props(models.Model):
     prop_property_tax = models.CharField(max_length=255, blank=True, null=True)
     prop_sewerage = models.CharField(max_length=255, blank=True, null=True)
     prop_insurance = models.CharField(max_length=255, blank=True, null=True)
+    prop_include_in_occupancy = models.BooleanField(
+        default=True,
+        verbose_name="Include in Occupancy Metrics",
+        help_text="Uncheck to exclude this property from occupancy rate and days-to-fill calculations (e.g., for seasonal rentals)"
+    )
 
     def __str__(self):
         return self.prop_name or f"Property {self.prop_id}"
