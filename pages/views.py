@@ -5355,6 +5355,39 @@ def tenant_lease_agreement(request):
     }
     return render(request, 'tenant_lease_agreement.html', context)
 
+@login_required
+def lease_timeline_view(request):
+    # Get all properties with their tenants
+    properties = props.objects.filter(prop_status='Active').prefetch_related(
+        'tenant_set'
+    ).order_by('prop_country', 'prop_name')
+    
+    # Build timeline data
+    timeline_data = []
+    
+    for prop in properties:
+        tenants = prop.tenant_set.all().order_by('tenant_lease_start_date')
+        
+        for t in tenants:
+            if t.tenant_lease_start_date:
+                timeline_data.append({
+                    'property_id': prop.prop_id,
+                    'property_name': prop.prop_name,
+                    'tenant_id': t.tenant_id,
+                    'tenant_name': t.tenant_name,
+                    'start_date': t.tenant_lease_start_date.isoformat(),
+                    'end_date': t.tenant_lease_end_date.isoformat() if t.tenant_lease_end_date else None,
+                    'is_active': t.tenant_current == 'Yes',
+                    'rent': float(t.tenant_rent) if t.tenant_rent else 0,
+                })
+    
+    context = {
+        'properties': properties,
+        'timeline_data': timeline_data,
+    }
+    
+    return render(request, 'lease_timeline.html', context)
+
 ### SUPPLIERS ###
 @login_required
 def suppliers(request):

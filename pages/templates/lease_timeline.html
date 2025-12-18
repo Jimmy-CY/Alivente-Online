@@ -1,0 +1,415 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Lease Timeline{% endblock %}
+
+{% block content %}
+<h2><center>ALIVENTE ONLINE - LEASE TIMELINE</center></h2>
+<h5><center>VISUAL LEASE CALENDAR</center></h5>
+<br/>
+
+<div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+    <div style="display: flex; gap: 10px;">
+        <button id="navLeft" class="btn btn-info btn-sm">⬅️ Previous Month</button>
+        <button id="navRight" class="btn btn-info btn-sm">Next Month ➡️</button>
+        <span style="border-left: 2px solid #dee2e6; margin: 0 10px;"></span>
+        <button id="zoomIn" class="btn btn-info btn-sm">🔍 Zoom In</button>
+        <button id="zoomOut" class="btn btn-info btn-sm">🔍 Zoom Out</button>
+        <button id="fitAll" class="btn btn-info btn-sm">📅 Fit All</button>
+    </div>
+    <div>
+        <label class="mr-2">
+            <input type="checkbox" id="showInactive" checked> Show Inactive Leases
+        </label>
+    </div>
+    <a href="{% url 'tenant' %}" class="btn btn-info">Back</a>
+</div>
+
+<!-- Legend -->
+<div class="timeline-legend">
+    <span class="legend-item">
+        <span class="legend-color" style="background: #28a745;"></span> Active Lease
+    </span>
+    <span class="legend-item">
+        <span class="legend-color" style="background: #6c757d;"></span> Past Lease
+    </span>
+    <span class="legend-item">
+        <span class="legend-color" style="background: #dc3545;"></span> Expired (Still Marked Active)
+    </span>
+</div>
+
+<!-- Timeline Container -->
+<div id="leaseTimeline" style="border: 1px solid #ddd; border-radius: 8px;"></div>
+
+<style>
+.timeline-legend {
+    background: #f8f9fa;
+    padding: 12px 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    display: flex;
+    gap: 20px;
+    align-items: center;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+}
+
+.legend-color {
+    width: 20px;
+    height: 20px;
+    border-radius: 4px;
+    display: inline-block;
+}
+
+.vis-item {
+    border-radius: 4px;
+    border: 2px solid #fff;
+}
+
+.vis-item .vis-item-content {
+    padding: 8px;
+    color: white;
+    font-weight: 500;
+}
+
+.vis-group {
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+/* Tooltip styling */
+.vis-tooltip {
+    background: #2c3e50 !important;
+    color: white !important;
+    border-radius: 8px !important;
+    padding: 12px !important;
+    font-size: 14px !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3) !important;
+}
+
+/* Fix row heights - make all rows exactly 65px */
+.vis-labelset .vis-label {
+    height: 65px !important;
+    min-height: 65px !important;
+    max-height: 65px !important;
+    line-height: 65px !important;
+    box-sizing: border-box;
+    overflow: hidden !important;
+}
+
+.vis-foreground .vis-group {
+    height: 65px !important;
+    min-height: 65px !important;
+    max-height: 65px !important;
+    overflow: hidden !important;
+}
+
+.vis-itemset .vis-background {
+    height: 65px !important;
+}
+
+/* Prevent last row from being oversized */
+.vis-panel.vis-center,
+.vis-panel.vis-left,
+.vis-panel.vis-right {
+    overflow: hidden !important;
+}
+
+/* Force EVERY row including the last one to be exactly 50px */
+.vis-panel.vis-bottom,
+.vis-panel.vis-center,
+.vis-panel.vis-top {
+    overflow: hidden !important;
+}
+
+/* Prevent extra space after last group */
+.vis-panel.vis-center > .vis-content {
+    overflow: hidden !important;
+}
+
+.vis-itemset > .vis-background,
+.vis-itemset > .vis-foreground {
+    height: auto !important;
+}
+
+/* Remove any padding/margin that might cause height issues */
+.vis-panel.vis-left .vis-content,
+.vis-panel.vis-right .vis-content {
+    padding: 0 !important;
+}
+
+/* Bold property names and vertical alignment */
+.vis-labelset .vis-label {
+    height: 65px !important;
+    min-height: 65px !important;
+    max-height: 65px !important;
+    line-height: 65px !important;
+    box-sizing: border-box;
+    overflow: hidden !important;
+    font-weight: 700 !important; /* Bold property names */
+    vertical-align: middle !important;
+    display: flex !important;
+    align-items: center !important;
+    padding-left: 10px !important;
+    background-color: #f8f9fa !important; /* Very light gray background */
+}
+
+.vis-labelset .vis-label .vis-inner {
+    font-weight: 700 !important;
+}
+
+/* Bold calendar dates at the top */
+.vis-time-axis .vis-text {
+    font-weight: 700 !important;
+}
+
+.vis-panel.vis-top {
+    background-color: #f8f9fa !important; /* Very light gray background for calendar */
+}
+
+/* Style the timeline axis labels (months/years) */
+.vis-time-axis .vis-grid.vis-major,
+.vis-time-axis .vis-grid.vis-minor {
+    border-color: #dee2e6 !important;
+}
+
+.vis-time-axis .vis-text.vis-major,
+.vis-time-axis .vis-text.vis-minor {
+    font-weight: 700 !important;
+    color: #2c3e50 !important;
+}
+</style>
+
+<!-- Include vis-timeline library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/vis-timeline/7.7.3/vis-timeline-graph2d.min.js"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/vis-timeline/7.7.3/vis-timeline-graph2d.min.css" rel="stylesheet" />
+
+<!-- JSON Data from Django (using Django's json_script filter) -->
+{{ timeline_data|json_script:"timeline-data" }}
+
+<script>
+console.log('=== LEASE TIMELINE LOADING ===');
+
+// Load timeline data from JSON script tag
+const timelineDataElement = document.getElementById('timeline-data');
+
+if (!timelineDataElement) {
+    console.error('Timeline data element not found!');
+    document.getElementById('leaseTimeline').innerHTML = `
+        <div style="display: flex; align-items: center; justify-content: center; height: 100%; flex-direction: column; color: #6c757d;">
+            <i class="fas fa-exclamation-triangle fa-4x mb-3"></i>
+            <h4>Error Loading Timeline</h4>
+            <p>Timeline data could not be loaded.</p>
+        </div>
+    `;
+} else {
+    const timelineData = JSON.parse(timelineDataElement.textContent);
+    
+    // Debug: Log the data
+    console.log('Timeline data loaded:', timelineData);
+    console.log('Number of leases:', timelineData.length);
+    
+    // If no data, show message
+    if (timelineData.length === 0) {
+        document.getElementById('leaseTimeline').innerHTML = `
+            <div style="display: flex; align-items: center; justify-content: center; height: 100%; flex-direction: column; color: #6c757d;">
+                <i class="fas fa-calendar-times fa-4x mb-3"></i>
+                <h4>No Lease Data Available</h4>
+                <p>There are no tenants with lease dates to display on the timeline.</p>
+                <p class="text-muted">Add tenants with lease start dates to see them on the timeline.</p>
+            </div>
+        `;
+    } else {
+        // Create groups (properties)
+        const groups = new vis.DataSet();
+        const seenProperties = new Set();
+        
+        timelineData.forEach(item => {
+            if (!seenProperties.has(item.property_id)) {
+                groups.add({
+                    id: item.property_id,
+                    content: item.property_name
+                });
+                seenProperties.add(item.property_id);
+            }
+        });
+        
+        console.log('Groups created:', groups.length);
+        
+        // Create items (leases)
+        const items = new vis.DataSet();
+        const today = new Date();
+        
+        timelineData.forEach(item => {
+            const startDate = new Date(item.start_date);
+            const endDate = item.end_date ? new Date(item.end_date) : new Date();
+            const isExpired = item.end_date && new Date(item.end_date) < today && item.is_active;
+            
+            // Determine color
+            let color;
+            if (isExpired) {
+                color = '#dc3545'; // Red - expired but still marked active
+            } else if (item.is_active) {
+                color = '#28a745'; // Green - active
+            } else {
+                color = '#6c757d'; // Gray - past lease
+            }
+            
+            // Create tooltip content
+            const tooltip = `
+                <strong>${item.tenant_name}</strong><br>
+                Start: ${startDate.toLocaleDateString()}<br>
+                End: ${endDate.toLocaleDateString()}<br>
+                Rent: €${item.rent.toFixed(2)}/month<br>
+                Status: ${item.is_active ? 'Active' : 'Inactive'}
+                ${isExpired ? '<br><span style="color: #ff6b6b;">⚠️ EXPIRED</span>' : ''}
+            `;
+            
+            items.add({
+                id: `lease_${item.tenant_id}`,
+                group: item.property_id,
+                content: item.tenant_name,
+                start: startDate,
+                end: endDate,
+                style: `background-color: ${color}; border-color: ${color};`,
+                title: tooltip,
+                className: item.is_active ? 'active-lease' : 'inactive-lease',
+                editable: false
+            });
+        });
+        
+        console.log('Items created:', items.length);
+        
+        // Calculate exact timeline height based on number of groups
+        const rowHeight = 65; // Height per property row
+        const timeAxisHeight = 50; // Height of the time axis at top
+        const totalHeight = (groups.length * rowHeight) + timeAxisHeight;
+        
+        console.log(`Setting timeline height: ${groups.length} properties × ${rowHeight}px + ${timeAxisHeight}px axis = ${totalHeight}px`);
+        
+        // Timeline options
+        const options = {
+            width: '100%',
+            height: `${totalHeight}px`, // Dynamic height based on number of properties
+            margin: {
+                item: 10,
+                axis: 10
+            },
+            orientation: 'top',
+            start: new Date(today.getFullYear(), today.getMonth() - 6, 1),
+            end: new Date(today.getFullYear(), today.getMonth() + 6, 1),
+            zoomMin: 1000 * 60 * 60 * 24 * 31,
+            zoomMax: 1000 * 60 * 60 * 24 * 365 * 3,
+            moveable: true,
+            zoomable: true,
+            showCurrentTime: true,
+            stack: false,
+            tooltip: {
+                followMouse: true,
+                overflowMethod: 'cap'
+            },
+            maxHeight: `${totalHeight}px`, // Lock maximum height
+            minHeight: `${totalHeight}px`  // Lock minimum height
+        };
+        
+        // Create timeline
+        const container = document.getElementById('leaseTimeline');
+        const timeline = new vis.Timeline(container, items, groups, options);
+        
+        // Force height adjustment after timeline renders
+        setTimeout(() => {
+            container.style.height = `${totalHeight}px`;
+            timeline.redraw();
+            console.log('Timeline height locked to:', totalHeight);
+        }, 100);
+        
+        console.log('Timeline initialized successfully');
+        
+        // Zoom controls
+        document.getElementById('zoomIn').addEventListener('click', () => {
+            timeline.zoomIn(0.5);
+        });
+        
+        document.getElementById('zoomOut').addEventListener('click', () => {
+            timeline.zoomOut(0.5);
+        });
+        
+        document.getElementById('fitAll').addEventListener('click', () => {
+            timeline.fit();
+        });
+        
+        // Navigation controls - move left/right by 1 month
+        document.getElementById('navLeft').addEventListener('click', () => {
+            const range = timeline.getWindow();
+            const moveAmount = 1000 * 60 * 60 * 24 * 30; // 30 days
+            
+            timeline.setWindow({
+                start: new Date(range.start.getTime() - moveAmount),
+                end: new Date(range.end.getTime() - moveAmount)
+            });
+        });
+
+        document.getElementById('navRight').addEventListener('click', () => {
+            const range = timeline.getWindow();
+            const moveAmount = 1000 * 60 * 60 * 24 * 30; // 30 days
+            
+            timeline.setWindow({
+                start: new Date(range.start.getTime() + moveAmount),
+                end: new Date(range.end.getTime() + moveAmount)
+            });
+        });
+
+        // Show/hide inactive leases
+        document.getElementById('showInactive').addEventListener('change', function() {
+            const showInactive = this.checked;
+            
+            timelineData.forEach(item => {
+                const itemId = `lease_${item.tenant_id}`;
+                const existingItem = items.get(itemId);
+                
+                if (existingItem) {
+                    if (!showInactive && !item.is_active) {
+                        items.remove(itemId);
+                    }
+                } else if (showInactive && !item.is_active) {
+                    // Re-add inactive item
+                    const startDate = new Date(item.start_date);
+                    const endDate = item.end_date ? new Date(item.end_date) : new Date();
+                    
+                    items.add({
+                        id: itemId,
+                        group: item.property_id,
+                        content: item.tenant_name,
+                        start: startDate,
+                        end: endDate,
+                        style: 'background-color: #6c757d; border-color: #6c757d;',
+                        title: `${item.tenant_name} (Inactive)`,
+                        className: 'inactive-lease',
+                        editable: false
+                    });
+                }
+            });
+        });
+        
+        // Click event - navigate to tenant edit
+        timeline.on('select', function(properties) {
+            if (properties.items.length > 0) {
+                const itemId = properties.items[0];
+                const tenantId = itemId.replace('lease_', '');
+                // Uncomment to enable navigation to tenant edit
+                // window.location.href = `/tenant/edit/${tenantId}`;
+                console.log('Selected tenant:', tenantId);
+            }
+        });
+    }
+}
+
+console.log('=== LEASE TIMELINE SCRIPT COMPLETE ===');
+</script>
+
+{% endblock %}

@@ -1183,8 +1183,29 @@ class PropertyFinancialDashboard {
             // Calculate performance level and difference from portfolio average
             let performanceLevel, performanceClass, difference;
 
+            // SPECIAL HANDLING FOR OCCUPANCY RATE
+            if (indicatorKey === 'occupancyRate') {
+                if (value === 100) {
+                    performanceLevel = 'Excellent';
+                    performanceClass = 'excellent';
+                    excellentCount++;
+                    difference = 'Perfect';
+                } else if (value >= 95) {
+                    performanceLevel = 'Good';
+                    performanceClass = 'good';
+                    goodCount++;
+                    difference = ((value - portfolioAverage) / portfolioAverage * 100).toFixed(1);
+                    difference = `${difference > 0 ? '+' : ''}${difference}%`;
+                } else {
+                    performanceLevel = 'Needs Improvement';
+                    performanceClass = 'poor';
+                    poorCount++;
+                    difference = ((value - portfolioAverage) / portfolioAverage * 100).toFixed(1);
+                    difference = `${difference > 0 ? '+' : ''}${difference}%`;
+                }
+            }
             // For these metrics, LOWER is BETTER
-            if (indicatorKey === 'expensesToRevenue' || indicatorKey === 'avgDaysToFill') {
+            else if (indicatorKey === 'expensesToRevenue' || indicatorKey === 'avgDaysToFill') {
                 // Handle N/A values (0 days = perfect, never vacant)
                 if (indicatorKey === 'avgDaysToFill' && value === 0) {
                     performanceLevel = 'Excellent';
@@ -1211,7 +1232,7 @@ class PropertyFinancialDashboard {
                     difference = `${difference > 0 ? '+' : ''}${difference}%`;
                 }
             } else {
-                // For other indicators, HIGHER is BETTER
+                // For other indicators, HIGHER is BETTER (original logic)
                 if (value >= portfolioAverage * 1.2) {
                     performanceLevel = 'Excellent';
                     performanceClass = 'excellent';
@@ -1395,6 +1416,22 @@ class PropertyFinancialDashboard {
             return;
         }
         
+        // SORT DATA FROM BEST TO WORST
+        const combined = data.map((value, index) => ({ value, label: labels[index] }));
+        
+        // Sort based on whether lower or higher is better
+        if (indicator.key === 'expensesToRevenue' || indicator.key === 'avgDaysToFill') {
+            // Lower is better - sort ascending
+            combined.sort((a, b) => a.value - b.value);
+        } else {
+            // Higher is better - sort descending
+            combined.sort((a, b) => b.value - a.value);
+        }
+        
+        // Extract sorted data and labels
+        data = combined.map(item => item.value);
+        labels = combined.map(item => item.label);
+        
         // Color bars based on performance relative to portfolio average
         const backgroundColors = data.map(value => {
             // For these metrics, LOWER is BETTER
@@ -1408,7 +1445,7 @@ class PropertyFinancialDashboard {
                 return value >= portfolioAverage ? '#28a745' : value >= portfolioAverage * 0.8 ? '#ffc107' : '#dc3545';
             }
         });
-        
+            
         const ctx = document.getElementById(`chart-${indicator.key}`);
         if (!ctx) return;
         

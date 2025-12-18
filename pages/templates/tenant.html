@@ -29,17 +29,18 @@ Tenants
 {% endfor %}
 
 <body>
-  <!-- Action Buttons -->
-  <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 20px;">
-    <a href="{% url 'open_invoices_report' %}" class="btn btn-info">Open Invoices</a>
-    <a href="{% url 'lease_renewal_report' %}" class="btn btn-info">Lease Renewals</a>
-    {% if user.is_superuser %}
-      <a href="{% url 'tenant_add' %}" class="btn btn-info">Add New</a>
-    {% else %}
-      <span class="btn btn-secondary" style="opacity:0.6; cursor:not-allowed; pointer-events:none;">Add New</span>
-    {% endif %}
-    <a href="{% url 'home' %}" class="btn btn-info">Back</a>
-  </div>
+    <!-- Action Buttons -->
+    <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 20px;">
+      <a href="{% url 'lease_timeline' %}" class="btn btn-info">📅 Lease Timeline</a>
+      <a href="{% url 'open_invoices_report' %}" class="btn btn-info">Open Invoices</a>
+      <a href="{% url 'lease_renewal_report' %}" class="btn btn-info">Lease Renewals</a>
+      {% if user.is_superuser %}
+        <a href="{% url 'tenant_add' %}" class="btn btn-info">Add New</a>
+      {% else %}
+        <span class="btn btn-secondary" style="opacity:0.6; cursor:not-allowed; pointer-events:none;">Add New</span>
+      {% endif %}
+      <a href="{% url 'home' %}" class="btn btn-info">Back</a>
+    </div>
 
   <!-- Collapsible Filter Panel -->
   <div class="filter-panel" id="filterPanel">
