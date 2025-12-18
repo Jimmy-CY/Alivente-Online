@@ -175,7 +175,7 @@
 
 .indicator-cards {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);  /* Changed from 5 to 4 */
+    grid-template-columns: repeat(4, 1fr);  /* 4 columns for 8 indicators (2 rows) */
     gap: 15px;
     margin-bottom: 20px;
 }
@@ -474,7 +474,7 @@
     position: relative;
     user-select: none;
     transition: all 0.2s ease;
-    padding: 12px 25px 12px 15px; /* Add right padding for sort icon */
+    padding: 12px 25px 12px 15px;
 }
 
 .sortable-header:hover {
@@ -510,7 +510,6 @@
     color: #17a2b8;
 }
 
-/* Ensure the sort icons use Font Awesome */
 .sort-icon.fa-sort-up::before {
     content: "\f0de";
 }
@@ -523,7 +522,6 @@
     content: "\f0dc";
 }
 
-/* Enhanced highlighted column styles */
 .highlighted-column {
     background-color: #e3f2fd !important;
     font-weight: 600;
@@ -531,7 +529,6 @@
     border-right: 3px solid #17a2b8;
 }
 
-/* Table row hover effects with highlighted columns */
 .data-table tbody tr:hover .highlighted-column {
     background-color: #bbdefb !important;
 }
@@ -804,16 +801,14 @@ class PropertyFinancialDashboard {
         this.portfolioIndicators = portfolioIndicators || {};
         this.portfolioTotals = portfolioTotals || {};
         this.selectedProperties = {};
-        this.selectedIndicator = null; // No default selection - no highlighting
-        this.charts = {}; // Store multiple charts
+        this.selectedIndicator = null;
+        this.charts = {};
         
-        // Add sorting state
         this.sortConfig = {
             column: null,
-            direction: 'asc' // 'asc' or 'desc'
+            direction: 'asc'
         };
         
-        // Initialize all properties as selected
         this.properties.forEach(prop => {
             this.selectedProperties[prop.id] = true;
         });
@@ -825,7 +820,7 @@ class PropertyFinancialDashboard {
                 icon: 'fas fa-chart-line', 
                 color: '#17a2b8', 
                 format: (val) => `${val.toFixed(2)}%`,
-                description: 'Gross Return on Investment measures the total return before expenses. Higher values indicate better performance.',
+                description: 'Total revenue as a percentage of purchase price. Higher values indicate better return on investment.',
                 sortable: true
             },
             { 
@@ -834,7 +829,7 @@ class PropertyFinancialDashboard {
                 icon: 'fas fa-bullseye', 
                 color: '#28a745', 
                 format: (val) => `${val.toFixed(2)}%`,
-                description: 'Net Return on Investment measures the return after all expenses. Higher values indicate better profitability.',
+                description: 'Revenue minus expenses as a percentage of purchase price. Shows profitability after costs.',
                 sortable: true
             },
             { 
@@ -843,7 +838,7 @@ class PropertyFinancialDashboard {
                 icon: 'fas fa-chart-pie', 
                 color: '#dc3545', 
                 format: (val) => `${val.toFixed(2)}%`,
-                description: 'Percentage of revenue consumed by expenses. Lower values indicate better efficiency.',
+                description: 'Operating expenses as a percentage of revenue. Lower values indicate better efficiency.',
                 sortable: true
             },
             { 
@@ -852,7 +847,7 @@ class PropertyFinancialDashboard {
                 icon: 'fas fa-euro-sign', 
                 color: '#ffc107', 
                 format: (val) => `€${val.toFixed(2)}`,
-                description: 'Rental income per square meter. Higher values indicate better space utilization.',
+                description: 'Average monthly rent per square meter. Useful for comparing properties of different sizes.',
                 sortable: true
             },
             { 
@@ -861,16 +856,15 @@ class PropertyFinancialDashboard {
                 icon: 'fas fa-chart-bar', 
                 color: '#6f42c1', 
                 format: (val) => `${val.toFixed(2)}%`,
-                description: 'Property value appreciation over time. Higher values indicate better capital growth.',
+                description: 'Property appreciation from purchase price to current value.',
                 sortable: true
             },
-            // NEW: Occupancy Metrics
             { 
                 key: 'occupancyRate', 
                 label: 'Occupancy Rate (%)', 
                 icon: 'fas fa-home', 
                 color: '#28a745', 
-                format: (val) => val === null || val === undefined ? 'N/A' : `${val.toFixed(1)}%`,  // Handle null FIRST
+                format: (val) => val === null || val === undefined ? 'N/A' : `${val.toFixed(1)}%`,
                 description: 'Percentage of time properties are occupied. Higher values indicate better performance.',
                 sortable: true
             },
@@ -885,6 +879,15 @@ class PropertyFinancialDashboard {
                     return `${val.toFixed(1)} days`;
                 },
                 description: 'Weighted average days to fill vacancies across entire portfolio. Properties with no turnover show 0 days.',
+                sortable: true
+            },
+            { 
+                key: 'vacancyCost', 
+                label: 'Vacancy Cost (€)', 
+                icon: 'fas fa-money-bill-wave', 
+                color: '#e74c3c', 
+                format: (val) => val === null || val === undefined ? 'N/A' : `€${val.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}`,
+                description: 'Total revenue lost due to vacant periods this year. Calculated as days vacant × (monthly rent ÷ 30). Lower values indicate better performance.',
                 sortable: true
             }
         ];
@@ -908,7 +911,6 @@ class PropertyFinancialDashboard {
                 
                 <div class="indicator-cards">
                     ${this.indicators.map(indicator => {
-                        // Use portfolio-wide indicators instead of calculated averages
                         const portfolioValue = this.portfolioIndicators[indicator.key] || 0;
                         return `
                             <div class="indicator-card ${this.selectedIndicator === indicator.key ? 'active' : ''}" 
@@ -1036,12 +1038,11 @@ class PropertyFinancialDashboard {
         `;
     }
 
-    // Add method to get sorted properties
     getSortedProperties() {
         const selectedProps = this.getSelectedProperties();
         
         if (!this.sortConfig.column) {
-            return selectedProps; // Return unsorted if no column selected
+            return selectedProps;
         }
         
         return [...selectedProps].sort((a, b) => {
@@ -1059,32 +1060,26 @@ class PropertyFinancialDashboard {
         });
     }
 
-    // Add method to get sort icon class
     getSortIconClass(column) {
         if (this.sortConfig.column !== column) {
-            return ''; // No specific sort icon
+            return '';
         }
         
         return this.sortConfig.direction === 'asc' ? 'fa-sort-up' : 'fa-sort-down';
     }
 
-    // Add method to handle column sorting
     handleColumnSort(column) {
         if (this.sortConfig.column === column) {
-            // Toggle direction if same column
             this.sortConfig.direction = this.sortConfig.direction === 'asc' ? 'desc' : 'asc';
         } else {
-            // New column, start with ascending
             this.sortConfig.column = column;
             this.sortConfig.direction = 'asc';
         }
         
-        // Re-render to update the table
         this.render();
     }
     
     attachEventListeners() {
-        // Indicator card clicks - Open modal
         document.querySelectorAll('.indicator-card').forEach(card => {
             card.addEventListener('click', () => {
                 const indicator = card.dataset.indicator;
@@ -1092,7 +1087,6 @@ class PropertyFinancialDashboard {
             });
         });
         
-        // Property checkboxes
         this.properties.forEach(property => {
             const checkbox = document.getElementById(`prop-${property.id}`);
             if (checkbox) {
@@ -1103,7 +1097,6 @@ class PropertyFinancialDashboard {
             }
         });
         
-        // Select all/none buttons
         const selectAllBtn = document.getElementById('selectAllBtn');
         const selectNoneBtn = document.getElementById('selectNoneBtn');
         
@@ -1125,7 +1118,6 @@ class PropertyFinancialDashboard {
             });
         }
 
-        // Add sortable column headers event listeners
         document.querySelectorAll('.sortable-header').forEach(header => {
             header.addEventListener('click', () => {
                 const column = header.dataset.column;
@@ -1140,7 +1132,6 @@ class PropertyFinancialDashboard {
         
         const portfolioAverage = this.portfolioIndicators[indicatorKey] || 0;
         
-        // Update modal header
         document.getElementById('modalIndicatorTitle').innerHTML = `
             <i class="${indicator.icon}"></i> ${indicator.label}
         `;
@@ -1149,41 +1140,32 @@ class PropertyFinancialDashboard {
             <span style="color: ${indicator.color};">${indicator.format(portfolioAverage)}</span>
         `;
         
-        // Filter out properties with null values for occupancy metrics
         let propertiesToShow = this.properties;
-        if (indicatorKey === 'occupancyRate' || indicatorKey === 'avgDaysToFill') {
-            propertiesToShow = this.properties.filter(p => p[indicatorKey] !== null && p[indicatorKey] !== undefined);
+        if (indicatorKey === 'occupancyRate' || indicatorKey === 'avgDaysToFill' || indicatorKey === 'vacancyCost') {propertiesToShow = this.properties.filter(p => p[indicatorKey] !== null && p[indicatorKey] !== undefined);
         }
         
-        // Sort properties by performance
         const sortedProperties = [...propertiesToShow].sort((a, b) => {
-            if (indicatorKey === 'expensesToRevenue' || indicatorKey === 'avgDaysToFill') {
-                // For expenses and days to fill, lower is better (ascending sort)
+            if (indicatorKey === 'expensesToRevenue' || indicatorKey === 'avgDaysToFill' || indicatorKey === 'vacancyCost') {
                 return a[indicatorKey] - b[indicatorKey];
             } else {
-                // For other indicators, higher is better (descending sort)
                 return b[indicatorKey] - a[indicatorKey];
             }
         });
         
-        // Populate table
         const tableBody = document.getElementById('modalPropertyTableBody');
         let excellentCount = 0, goodCount = 0, poorCount = 0;
         
         tableBody.innerHTML = sortedProperties.map((property, index) => {
             const value = property[indicatorKey];
             
-            // Skip if value is null or undefined (shouldn't happen after filtering, but safety check)
             if (value === null || value === undefined) {
                 return '';
             }
             
             const formattedValue = indicator.format(value);
             
-            // Calculate performance level and difference from portfolio average
             let performanceLevel, performanceClass, difference;
 
-            // SPECIAL HANDLING FOR OCCUPANCY RATE
             if (indicatorKey === 'occupancyRate') {
                 if (value === 100) {
                     performanceLevel = 'Excellent';
@@ -1204,10 +1186,8 @@ class PropertyFinancialDashboard {
                     difference = `${difference > 0 ? '+' : ''}${difference}%`;
                 }
             }
-            // For these metrics, LOWER is BETTER
-            else if (indicatorKey === 'expensesToRevenue' || indicatorKey === 'avgDaysToFill') {
-                // Handle N/A values (0 days = perfect, never vacant)
-                if (indicatorKey === 'avgDaysToFill' && value === 0) {
+            else if (indicatorKey === 'expensesToRevenue' || indicatorKey === 'avgDaysToFill' || indicatorKey === 'vacancyCost') {
+                if ((indicatorKey === 'avgDaysToFill' && value === 0) || (indicatorKey === 'vacancyCost' && value === 0)) {
                     performanceLevel = 'Excellent';
                     performanceClass = 'excellent';
                     excellentCount++;
@@ -1232,7 +1212,6 @@ class PropertyFinancialDashboard {
                     difference = `${difference > 0 ? '+' : ''}${difference}%`;
                 }
             } else {
-                // For other indicators, HIGHER is BETTER (original logic)
                 if (value >= portfolioAverage * 1.2) {
                     performanceLevel = 'Excellent';
                     performanceClass = 'excellent';
@@ -1263,26 +1242,21 @@ class PropertyFinancialDashboard {
             `;
         }).join('');
         
-        // Update summary counts
         document.getElementById('excellentCount').textContent = excellentCount;
         document.getElementById('goodCount').textContent = goodCount;
         document.getElementById('poorCount').textContent = poorCount;
         
-        // Set up export functionality
         const exportBtn = document.getElementById('exportModalBtn');
         exportBtn.onclick = () => this.exportModalData(indicator, sortedProperties);
         
-        // Ensure modal close handlers are properly attached
         this.attachModalCloseHandlers();
         
-        // Show modal
         $('#propertyDetailsModal').modal('show');
     }
     
     exportModalData(indicator, sortedProperties) {
         const portfolioAverage = this.portfolioIndicators[indicator.key] || 0;
         
-        // Prepare data for export
         const data = [
             ['Property Performance Report - ' + indicator.label],
             ['Generated on: ' + new Date().toLocaleDateString()],
@@ -1297,7 +1271,7 @@ class PropertyFinancialDashboard {
             
             let performanceLevel, difference;
             
-            if (indicator.key === 'expensesToRevenue') {
+            if (indicator.key === 'expensesToRevenue' || indicator.key === 'vacancyCost') {
                 if (value <= portfolioAverage * 0.8) {
                     performanceLevel = 'Excellent';
                 } else if (value <= portfolioAverage) {
@@ -1327,51 +1301,41 @@ class PropertyFinancialDashboard {
             ]);
         });
         
-        // Create workbook
         const wb = XLSX.utils.book_new();
         const ws = XLSX.utils.aoa_to_sheet(data);
         
-        // Set column widths
         ws['!cols'] = [
-            { width: 8 },  // Rank
-            { width: 40 }, // Property Name
-            { width: 15 }, // Value
-            { width: 15 }, // vs Portfolio Avg
-            { width: 20 }  // Performance Level
+            { width: 8 },
+            { width: 40 },
+            { width: 15 },
+            { width: 15 },
+            { width: 20 }
         ];
         
-        // Add worksheet to workbook
         XLSX.utils.book_append_sheet(wb, ws, 'Property Performance');
         
-        // Generate filename
         const filename = `PropertyPerformance_${indicator.key}_${new Date().toISOString().split('T')[0]}.xlsx`;
         
-        // Save file
         XLSX.writeFile(wb, filename);
     }
     
     attachModalCloseHandlers() {
-        // Handle modal close button clicks
         const modal = $('#propertyDetailsModal');
         
-        // Close button in header
         modal.find('.close').off('click').on('click', function() {
             modal.modal('hide');
         });
         
-        // Close button in footer
         modal.find('[data-dismiss="modal"]').off('click').on('click', function() {
             modal.modal('hide');
         });
         
-        // ESC key handler
         $(document).off('keydown.modal').on('keydown.modal', function(e) {
-            if (e.keyCode === 27 && modal.hasClass('show')) { // ESC key
+            if (e.keyCode === 27 && modal.hasClass('show')) {
                 modal.modal('hide');
             }
         });
         
-        // Click outside modal to close
         modal.off('click.modal').on('click.modal', function(e) {
             if (e.target === this) {
                 modal.modal('hide');
@@ -1380,10 +1344,8 @@ class PropertyFinancialDashboard {
     }
     
     renderChart() {
-        // Get filtered properties based on selection
         const filteredProperties = this.getSelectedProperties();
         
-        // Render all indicator charts with filtered properties
         this.indicators.forEach(indicator => {
             this.renderIndicatorChart(indicator, filteredProperties);
         });
@@ -1397,8 +1359,8 @@ class PropertyFinancialDashboard {
         let labels = propertiesToUse.map(p => p.name);
         const portfolioAverage = this.portfolioIndicators[indicator.key];
         
-        // For occupancy metrics, filter out properties with null values (excluded properties)
-        if (indicator.key === 'occupancyRate' || indicator.key === 'avgDaysToFill') {
+        // For occupancy metrics and vacancy cost, filter out properties with null values (excluded properties)
+        if (indicator.key === 'occupancyRate' || indicator.key === 'avgDaysToFill' || indicator.key === 'vacancyCost') {
             const validIndices = [];
             data.forEach((value, index) => {
                 if (value !== null && value !== undefined) {
@@ -1420,7 +1382,7 @@ class PropertyFinancialDashboard {
         const combined = data.map((value, index) => ({ value, label: labels[index] }));
         
         // Sort based on whether lower or higher is better
-        if (indicator.key === 'expensesToRevenue' || indicator.key === 'avgDaysToFill') {
+        if (indicator.key === 'expensesToRevenue' || indicator.key === 'avgDaysToFill' || indicator.key === 'vacancyCost') {
             // Lower is better - sort ascending
             combined.sort((a, b) => a.value - b.value);
         } else {
@@ -1435,9 +1397,9 @@ class PropertyFinancialDashboard {
         // Color bars based on performance relative to portfolio average
         const backgroundColors = data.map(value => {
             // For these metrics, LOWER is BETTER
-            if (indicator.key === 'expensesToRevenue' || indicator.key === 'avgDaysToFill') {
-                if (indicator.key === 'avgDaysToFill' && value === 0) {
-                    return '#28a745'; // Green - perfect
+            if (indicator.key === 'expensesToRevenue' || indicator.key === 'avgDaysToFill' || indicator.key === 'vacancyCost') {
+                if ((indicator.key === 'avgDaysToFill' || indicator.key === 'vacancyCost') && value === 0) {
+                    return '#28a745'; // Green - perfect (no vacancy)
                 }
                 return value <= portfolioAverage ? '#28a745' : value <= portfolioAverage * 1.2 ? '#ffc107' : '#dc3545';
             } else {
@@ -1496,6 +1458,8 @@ class PropertyFinancialDashboard {
                                     return '€' + value.toFixed(2);
                                 } else if (indicator.key === 'avgDaysToFill') {
                                     return value.toFixed(0) + ' days';
+                                } else if (indicator.key === 'vacancyCost') {
+                                    return '€' + value.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
                                 } else {
                                     return value.toFixed(1) + '%';
                                 }
@@ -1528,7 +1492,6 @@ class PropertyFinancialDashboard {
     }
 }
 
-// Load dashboard data and render
 function loadDashboard() {
     document.getElementById('loadingIndicator').style.display = 'block';
     document.getElementById('dashboardContainer').style.display = 'none';
@@ -1549,7 +1512,6 @@ function loadDashboard() {
         } else {
             document.getElementById('dashboardContainer').style.display = 'block';
             
-            // Log the properties for debugging
             console.log('Active properties loaded:', data.properties.length);
             if (data.total_active_properties) {
                 console.log('Total active properties:', data.total_active_properties);
@@ -1558,7 +1520,6 @@ function loadDashboard() {
                 console.log('Server message:', data.message);
             }
             
-            // Create dashboard instance with portfolio data
             const container = document.getElementById('dashboardContainer');
             dashboardInstance = new PropertyFinancialDashboard(
                 container, 
@@ -1576,7 +1537,6 @@ function loadDashboard() {
     });
 }
 
-// Load dashboard when page loads
 document.addEventListener('DOMContentLoaded', loadDashboard);
 </script>
 

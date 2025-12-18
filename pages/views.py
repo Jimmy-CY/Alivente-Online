@@ -1785,6 +1785,9 @@ def financial_indicators_view(request):
     if request.method == 'GET' and request.headers.get('X-Requested-With') == 'XMLHttpRequest':
         # AJAX request for property data
         try:
+            from datetime import datetime
+            current_year = datetime.now().year
+            
             # OPTIMIZATION: Prefetch related data in one query
             properties = props.objects.filter(prop_status='Active').prefetch_related(
                 Prefetch('tenant_set', queryset=tenant.objects.all()),
@@ -1803,6 +1806,10 @@ def financial_indicators_view(request):
                 'total_floor_area': 0,
                 'property_count': 0
             }
+            
+            # Calculate vacancy costs - do this BEFORE the loop
+            vacancy_costs = {}
+            total_vacancy_cost = Decimal('0.00')
             
             for prop in properties:
                 # Get revenue totals using your existing revenue model structure
@@ -1845,6 +1852,55 @@ def financial_indicators_view(request):
                         'current_vacancy_days': 0
                     }
                 
+                # CALCULATE VACANCY COSTS for this property
+                property_vacancy_cost = Decimal('0.00')
+                total_days_vacant = 0
+
+                # Only calculate vacancy cost if property is included in occupancy tracking
+                if prop.prop_include_in_occupancy:
+                    # Get all FILLED vacancy periods for this property in current year
+                    vacancies = VacancyPeriod.objects.filter(
+                        prop=prop,
+                        status='FILLED',
+                        start_date__year=current_year
+                    )
+                    
+                    for vacancy in vacancies:
+                        days = vacancy.days_vacant
+                        
+                        # Determine which rent to use for calculation
+                        rent_to_use = None
+                        
+                        # Priority 1: Use NEXT lease rent (new tenant's rent - most accurate)
+                        if vacancy.next_lease and vacancy.next_lease.tenant_rent:
+                            rent_to_use = vacancy.next_lease.tenant_rent
+                        
+                        # Priority 2: Use PREVIOUS lease rent (old tenant's rent - fallback)
+                        elif vacancy.previous_lease and vacancy.previous_lease.tenant_rent:
+                            rent_to_use = vacancy.previous_lease.tenant_rent
+                        
+                        # Calculate vacancy cost if we have a rent amount
+                        if rent_to_use:
+                            daily_rent = Decimal(str(rent_to_use)) / Decimal('30')
+                            vacancy_cost = Decimal(str(days)) * daily_rent
+                            property_vacancy_cost += vacancy_cost
+                            total_days_vacant += days
+                    
+                    # Only add to portfolio total if property is included
+                    total_vacancy_cost += property_vacancy_cost
+                    
+                    # Store vacancy cost for included properties
+                    vacancy_costs[prop.prop_id] = {
+                        'total_cost': float(property_vacancy_cost),
+                        'days_vacant': total_days_vacant
+                    }
+                else:
+                    # Excluded properties show as None (not included in calculation)
+                    vacancy_costs[prop.prop_id] = {
+                        'total_cost': None,
+                        'days_vacant': None
+                    }
+                
                 # Store individual property data
                 properties_data.append({
                     'id': prop.prop_id,
@@ -1859,6 +1915,7 @@ def financial_indicators_view(request):
                     'avgDaysToFill': occupancy_metrics['avg_days_to_fill'],
                     'isCurrentlyVacant': occupancy_metrics['is_currently_vacant'],
                     'currentVacancyDays': occupancy_metrics['current_vacancy_days'],
+                    'vacancyCost': vacancy_costs[prop.prop_id]['total_cost'],  # This line - it will be None for excluded properties
                     'revenue': float(revenue_total),
                     'expenses': float(budgeted_expense_total),
                     'profit': float(revenue_total - budgeted_expense_total)
@@ -1894,11 +1951,14 @@ def financial_indicators_view(request):
                 ), 2),
                 'occupancyRate': portfolio_occupancy['occupancy_rate'],
                 'avgDaysToFill': portfolio_occupancy['avg_days_to_fill'],
+                'vacancyCost': round(float(total_vacancy_cost), 2),  # ADD THIS
             }
             
             return JsonResponse({
                 'properties': properties_data,
                 'portfolio_indicators': portfolio_indicators,
+                'vacancy_costs': vacancy_costs,  # ADD THIS
+                'total_vacancy_cost': float(total_vacancy_cost),  # ADD THIS
                 'portfolio_totals': {
                     'total_revenue': float(portfolio_totals['total_revenue']),
                     'total_expenses': float(portfolio_totals['total_budgeted_expenses']),
@@ -1912,6 +1972,8 @@ def financial_indicators_view(request):
             })
             
         except Exception as e:
+            import traceback
+            print(traceback.format_exc())
             return JsonResponse({'error': str(e)}, status=500)
     
     # Regular page load
@@ -1919,7 +1981,6 @@ def financial_indicators_view(request):
         'page_title': 'Financial Indicators Dashboard - Portfolio-Wide Analysis (Active Properties)'
     }
     return render(request, 'finance/financial_indicators.html', context)
-
 
 def calculate_occupancy_metrics(property, start_date=None, end_date=None):
     """
