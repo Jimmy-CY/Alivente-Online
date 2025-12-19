@@ -9,6 +9,36 @@
     <h5><center>PROPERTY PERFORMANCE DASHBOARD</center></h5>
     <br/>
 
+    <!-- Time Period Selection -->
+    <div class="period-selection-panel">
+        <div class="period-header">
+            <h6 class="period-title">
+                <i class="fas fa-calendar-alt"></i> Time Period
+            </h6>
+            <p class="period-note">
+                <i class="fas fa-info-circle"></i>
+                <strong>Note:</strong> Time period selection affects <strong>Occupancy Rate</strong>, 
+                <strong>Avg Days to Fill</strong>, and <strong>Vacancy Cost</strong> metrics only. 
+                Other financial indicators (ROI, Expenses, Rent/m²) show annual data.
+            </p>
+        </div>
+        <div class="period-buttons">
+            <button class="btn-period active" data-period="past_year">
+                <i class="fas fa-calendar"></i> Past Year
+            </button>
+            <button class="btn-period" data-period="last_3_years">
+                <i class="fas fa-calendar-check"></i> Last 3 Years
+            </button>
+            <button class="btn-period" data-period="all_time">
+                <i class="fas fa-infinity"></i> All Time
+            </button>
+        </div>
+        <div class="period-display">
+            <i class="fas fa-clock"></i>
+            <span id="periodRangeDisplay">Loading period...</span>
+        </div>
+    </div>
+
     {% for msg in messages %}
         <div class="alert alert-secondary alert-dismissible fade show auto-dismiss" role="alert">
             <strong></strong> <center>{{ msg }}</center>
@@ -161,6 +191,122 @@
     padding: 24px;
     margin-bottom: 30px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* Period Selection Panel */
+.period-selection-panel {
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 30px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.period-header {
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.period-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #2c3e50;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.period-note {
+    font-size: 13px;
+    color: #6c757d;
+    margin: 10px 0 0 0;
+    padding: 10px 12px;
+    background: #fff3cd;
+    border-left: 3px solid #ffc107;
+    border-radius: 4px;
+    line-height: 1.6;
+}
+
+.period-note i {
+    color: #ffc107;
+    margin-right: 5px;
+}
+
+.period-note strong {
+    color: #856404;
+}
+
+.period-buttons {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+}
+
+.btn-period {
+    flex: 1;
+    min-width: 150px;
+    padding: 12px 20px;
+    border: 2px solid #dee2e6;
+    background: #f8f9fa;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #495057;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.btn-period:hover {
+    border-color: #17a2b8;
+    background: #e3f2fd;
+    color: #17a2b8;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.btn-period.active {
+    border-color: #17a2b8;
+    background: #17a2b8;
+    color: white;
+    box-shadow: 0 2px 4px rgba(23, 162, 184, 0.2);
+}
+
+.btn-period.active:hover {
+    background: #138496;
+    border-color: #138496;
+}
+
+.period-display {
+    background: #f8f9fa;
+    padding: 10px 15px;
+    border-radius: 6px;
+    font-size: 13px;
+    color: #6c757d;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.period-display i {
+    color: #17a2b8;
+}
+
+@media (max-width: 768px) {
+    .period-buttons {
+        flex-direction: column;
+    }
+    
+    .btn-period {
+        width: 100%;
+    }
 }
 
 .indicator-header {
@@ -967,7 +1113,11 @@ class PropertyFinancialDashboard {
                             </h6>
                             <p class="chart-subtitle">
                                 Portfolio Average: <strong style="color: ${indicator.color};">
-                                    ${indicator.format(this.portfolioIndicators[indicator.key] || 0)}
+                                    ${indicator.format(
+                                        indicator.key === 'vacancyCost' 
+                                            ? (this.portfolioIndicators['vacancyCostAverage'] || 0)
+                                            : (this.portfolioIndicators[indicator.key] || 0)
+                                    )}
                                 </strong>
                             </p>
                         </div>
@@ -1130,7 +1280,10 @@ class PropertyFinancialDashboard {
         const indicator = this.indicators.find(ind => ind.key === indicatorKey);
         if (!indicator) return;
         
-        const portfolioAverage = this.portfolioIndicators[indicatorKey] || 0;
+        // Use average for vacancy cost modal comparison, otherwise use the main value
+        const portfolioAverage = indicatorKey === 'vacancyCost' 
+            ? (this.portfolioIndicators['vacancyCostAverage'] || 0)
+            : (this.portfolioIndicators[indicatorKey] || 0);
         
         document.getElementById('modalIndicatorTitle').innerHTML = `
             <i class="${indicator.icon}"></i> ${indicator.label}
@@ -1357,7 +1510,10 @@ class PropertyFinancialDashboard {
         
         let data = propertiesToUse.map(p => p[indicator.key]);
         let labels = propertiesToUse.map(p => p.name);
-        const portfolioAverage = this.portfolioIndicators[indicator.key];
+        // Use average for vacancy cost, otherwise use the main value
+        const portfolioAverage = indicator.key === 'vacancyCost' 
+            ? this.portfolioIndicators['vacancyCostAverage']
+            : this.portfolioIndicators[indicator.key];
         
         // For occupancy metrics and vacancy cost, filter out properties with null values (excluded properties)
         if (indicator.key === 'occupancyRate' || indicator.key === 'avgDaysToFill' || indicator.key === 'vacancyCost') {
@@ -1492,12 +1648,21 @@ class PropertyFinancialDashboard {
     }
 }
 
-function loadDashboard() {
+// Global variable to store current period
+let currentPeriod = 'past_year';
+
+function loadDashboard(period = 'past_year') {
+    currentPeriod = period;
+    
     document.getElementById('loadingIndicator').style.display = 'block';
     document.getElementById('dashboardContainer').style.display = 'none';
     document.getElementById('errorContainer').style.display = 'none';
 
-    fetch(window.location.href, {
+    // Add period parameter to URL
+    const url = new URL(window.location.href);
+    url.searchParams.set('period', period);
+
+    fetch(url, {
         headers: {
             'X-Requested-With': 'XMLHttpRequest'
         }
@@ -1512,7 +1677,13 @@ function loadDashboard() {
         } else {
             document.getElementById('dashboardContainer').style.display = 'block';
             
+            // Update period display
+            updatePeriodDisplay(data.time_period, data.period_start, data.period_end);
+            
             console.log('Active properties loaded:', data.properties.length);
+            console.log('Time period:', data.time_period);
+            console.log('Period range:', data.period_start, 'to', data.period_end);
+            
             if (data.total_active_properties) {
                 console.log('Total active properties:', data.total_active_properties);
             }
@@ -1537,7 +1708,51 @@ function loadDashboard() {
     });
 }
 
-document.addEventListener('DOMContentLoaded', loadDashboard);
+function updatePeriodDisplay(timePeriod, startDate, endDate) {
+    const display = document.getElementById('periodRangeDisplay');
+    const start = new Date(startDate).toLocaleDateString('en-GB', { 
+        day: 'numeric', 
+        month: 'short', 
+        year: 'numeric' 
+    });
+    const end = new Date(endDate).toLocaleDateString('en-GB', { 
+        day: 'numeric', 
+        month: 'short', 
+        year: 'numeric' 
+    });
+    
+    let periodName = '';
+    if (timePeriod === 'past_year') {
+        periodName = 'Past Year';
+    } else if (timePeriod === 'last_3_years') {
+        periodName = 'Last 3 Years';
+    } else {
+        periodName = 'All Time';
+    }
+    
+    display.textContent = `${periodName}: ${start} - ${end}`;
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Load dashboard with default period
+    loadDashboard('past_year');
+    
+    // Add event listeners to period buttons
+    document.querySelectorAll('.btn-period').forEach(button => {
+        button.addEventListener('click', function() {
+            const period = this.dataset.period;
+            
+            // Update active state
+            document.querySelectorAll('.btn-period').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            this.classList.add('active');
+            
+            // Reload dashboard with new period
+            loadDashboard(period);
+        });
+    });
+});
 </script>
 
 {% endblock %}
