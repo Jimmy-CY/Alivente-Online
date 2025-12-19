@@ -2149,7 +2149,7 @@ def calculate_portfolio_occupancy_with_period(properties, period_start, period_e
     total_occupied_days = 0
     total_possible_days = 0
     total_days_to_fill = 0
-    total_filled_vacancies = 0
+    property_count = 0  # Count ALL properties for average
     
     for prop in properties:
         metrics = calculate_occupancy_metrics_with_period(prop, period_start, period_end)
@@ -2169,12 +2169,13 @@ def calculate_portfolio_occupancy_with_period(properties, period_start, period_e
                     total_possible_days += property_total_days
                     total_occupied_days += property_occupied_days
                     
-                    if metrics['avg_days_to_fill'] > 0:
-                        total_days_to_fill += metrics['avg_days_to_fill']
-                        total_filled_vacancies += 1
+                    # Add ALL properties' days to fill (including 0)
+                    total_days_to_fill += metrics['avg_days_to_fill']
+                    property_count += 1
     
     portfolio_occupancy = (total_occupied_days / total_possible_days * 100) if total_possible_days > 0 else 0
-    portfolio_avg_days = (total_days_to_fill / total_filled_vacancies) if total_filled_vacancies > 0 else 0
+    # Calculate average across ALL properties (not just those with vacancies)
+    portfolio_avg_days = (total_days_to_fill / property_count) if property_count > 0 else 0
     
     return {
         'occupancy_rate': round(portfolio_occupancy, 1),
