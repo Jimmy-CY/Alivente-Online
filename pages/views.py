@@ -2057,8 +2057,10 @@ def calculate_occupancy_metrics_with_period(prop, period_start, period_end):
     """
     Calculate occupancy metrics for a specific time period.
     Only counts operational days (after first tenant).
+    FIXED: Uses prefetched data and handles OPEN vacancies correctly.
     """
-    # Get property's first tenant date
+    from datetime import datetime
+    
     # Get property's first tenant date using PREFETCHED data
     first_tenant_date = get_property_first_tenant_date_optimized(prop)
     
@@ -2086,15 +2088,16 @@ def calculate_occupancy_metrics_with_period(prop, period_start, period_end):
     # Total days in effective period
     total_days = (effective_end - effective_start).days + 1
     
-    # Get vacancies that overlap with the period (exclude pre-operational vacancies)
-    vacancies = VacancyPeriod.objects.filter(
-        prop=prop,
-        start_date__gte=first_tenant_date,  # Only operational vacancies
-        start_date__lte=effective_end
-    ).filter(
-        Q(status='FILLED', end_date__gte=effective_start) |
-        Q(status='OPEN')
-    )
+    # Use PREFETCHED vacancy data
+    all_vacancies = list(prop.vacancy_periods.all())
+    
+    # Filter vacancies that overlap with the period
+    vacancies = [
+        v for v in all_vacancies
+        if (v.start_date >= first_tenant_date and  # Only operational vacancies
+            v.start_date <= effective_end and
+            (v.status == 'FILLED' or v.status == 'OPEN'))
+    ]
     
     # Calculate vacant days in period
     vacant_days_in_period = 0
@@ -2103,30 +2106,40 @@ def calculate_occupancy_metrics_with_period(prop, period_start, period_end):
     is_currently_vacant = False
     current_vacancy_days = 0
     
+    today = datetime.now().date()
+    
     for vacancy in vacancies:
         # Calculate overlap with effective period
         vacancy_start = max(vacancy.start_date, effective_start)
-        vacancy_end = min(
-            vacancy.end_date if vacancy.end_date else datetime.now().date(),
-            effective_end
-        )
         
+        # FIXED: Handle OPEN vacancies correctly
+        if vacancy.status == 'OPEN':
+            # For OPEN vacancies, use today or effective_end, whichever is earlier
+            vacancy_end = min(today, effective_end)
+        else:
+            # For FILLED vacancies, use the actual end date
+            vacancy_end = min(vacancy.end_date, effective_end)
+        
+        # Only count if vacancy actually overlaps with period
         if vacancy_start <= vacancy_end:
             days_in_period = (vacancy_end - vacancy_start).days + 1
             vacant_days_in_period += days_in_period
             
             # For avg days to fill calculation
             if vacancy.status == 'FILLED':
-                # Count full vacancy duration for filled vacancies
+                # Use the full vacancy duration
                 total_days_to_fill += vacancy.days_vacant
                 filled_vacancy_count += 1
             elif vacancy.status == 'OPEN':
                 # For current vacancy, count days so far
-                days_so_far = (datetime.now().date() - vacancy.start_date).days + 1
+                days_so_far = (today - vacancy.start_date).days + 1
                 total_days_to_fill += days_so_far
-                filled_vacancy_count += 1  # Count OPEN vacancies in average
+                filled_vacancy_count += 1
                 is_currently_vacant = True
                 current_vacancy_days = days_so_far
+    
+    # SAFETY CHECK: Vacant days cannot exceed total days
+    vacant_days_in_period = min(vacant_days_in_period, total_days)
     
     # Calculate occupancy rate
     occupied_days = total_days - vacant_days_in_period
@@ -2215,7 +2228,7 @@ def financial_indicators_view(request):
             # OPTIMIZATION: Prefetch related data in one query
             properties = props.objects.filter(prop_status='Active').prefetch_related(
                 Prefetch('tenant_set', queryset=tenant.objects.all()),
-                Prefetch('vacancy_periods', queryset=VacancyPeriod.objects.all()),
+                Prefetch('vacancy_periods', queryset=VacancyPeriod.objects.select_related('previous_lease', 'next_lease').all()),
                 'prop_values_set'
             )
             
@@ -5668,6 +5681,96 @@ def lease_timeline_view(request):
     }
     
     return render(request, 'lease_timeline.html', context)
+
+@login_required
+def duplicate_tenant_view(request, tenant_id):
+    """
+    Duplicate an existing tenant to create a renewal or new lease.
+    Copies all tenant details except ID and lease dates.
+    """
+    try:
+        # Get the original tenant
+        original_tenant = tenant.objects.get(pk=tenant_id)
+        
+        # Create a new tenant instance with copied data
+        new_tenant = tenant()
+        
+        # Copy all fields EXCEPT primary key and dates
+        new_tenant.prop = original_tenant.prop
+        new_tenant.tenant_type = original_tenant.tenant_type
+        new_tenant.tenant_name = original_tenant.tenant_name
+        new_tenant.tenant_contact_person = original_tenant.tenant_contact_person
+        new_tenant.tenant_contact_number = original_tenant.tenant_contact_number
+        new_tenant.tenant_email = original_tenant.tenant_email
+        new_tenant.tenant_deposit = original_tenant.tenant_deposit
+        new_tenant.tenant_rental_type = original_tenant.tenant_rental_type
+        new_tenant.tenant_renewal = original_tenant.tenant_renewal
+        new_tenant.tenant_renewal_period = original_tenant.tenant_renewal_period
+        new_tenant.tenant_rent = original_tenant.tenant_rent
+        new_tenant.tenant_levies = original_tenant.tenant_levies
+        new_tenant.tenant_payment_terms = original_tenant.tenant_payment_terms
+        
+        # Set lease dates to None - user will fill these in
+        new_tenant.tenant_lease_start_date = None
+        new_tenant.tenant_lease_end_date = None
+        
+        # Set as inactive initially - user will activate after setting dates
+        new_tenant.tenant_current = 'No'
+        
+        # Reset renewal status
+        new_tenant.tenant_renewal_status = 'pending'
+        
+        # Don't copy lease agreement - user may need to upload new one
+        new_tenant.tenant_lease_agreement = None
+        new_tenant.tenant_lease_agreement_status = None
+        
+        # Save the new tenant
+        new_tenant.save()
+        
+        # Redirect to edit page for the new tenant
+        messages.success(
+            request, 
+            f'Tenant duplicated successfully! Please update the lease dates and set to Active when ready.'
+        )
+        return redirect('tenant_edit', tenant_id=new_tenant.tenant_id)
+        
+    except tenant.DoesNotExist:
+        messages.error(request, 'Tenant not found.')
+        return redirect('tenant')  # ← FIXED
+    except Exception as e:
+        messages.error(request, f'Error duplicating tenant: {str(e)}')
+        return redirect('tenant')  # ← FIXED
+
+@login_required
+def delete_tenant_view(request, tenant_id):
+    """
+    Delete a tenant and automatically recalculate vacancy periods.
+    Only superusers can delete tenants.
+    """
+    if not request.user.is_superuser:
+        messages.error(request, 'You do not have permission to delete tenants.')
+        return redirect('tenant')
+    
+    try:
+        tenant_to_delete = tenant.objects.get(pk=tenant_id)
+        tenant_name = tenant_to_delete.tenant_name
+        property_name = tenant_to_delete.prop.prop_name
+        
+        # Delete the tenant (signal will handle vacancy cleanup)
+        tenant_to_delete.delete()
+        
+        messages.success(
+            request,
+            f'Tenant "{tenant_name}" from {property_name} has been deleted. Vacancy periods have been automatically recalculated.'
+        )
+        return redirect('tenant')
+        
+    except tenant.DoesNotExist:
+        messages.error(request, 'Tenant not found.')
+        return redirect('tenant')
+    except Exception as e:
+        messages.error(request, f'Error deleting tenant: {str(e)}')
+        return redirect('tenant')
 
 ### SUPPLIERS ###
 @login_required

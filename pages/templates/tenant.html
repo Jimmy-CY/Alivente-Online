@@ -135,12 +135,25 @@ Tenants
                 </td>
                 <td>
                   {% if user.is_superuser %}
-                    <button type="button" class="btn btn-light action-btn">
-                      <a href="{% url 'tenant_edit' tresults.tenant_id %}">Edit</a>
-                    </button>
+                    <div style="display: flex; gap: 5px; justify-content: center;">
+                      <!-- Edit Button -->
+                      <a href="{% url 'tenant_edit' tresults.tenant_id %}" 
+                         class="btn btn-sm btn-outline-primary icon-btn" 
+                         title="Edit Tenant">
+                        <i class="fas fa-edit"></i>
+                      </a>
+                      
+                      <!-- Delete Button -->
+                      <a href="{% url 'delete_tenant' tresults.tenant_id %}" 
+                         class="btn btn-sm btn-outline-danger icon-btn" 
+                         title="Delete Tenant"
+                         onclick="return confirm('⚠️ DELETE TENANT: {{ tresults.tenant_name }}\n\nThis will:\n✗ Permanently delete the tenant record\n✗ Remove related vacancy periods\n✓ Recalculate gaps automatically\n✓ Update dashboard metrics\n\nThis action CANNOT be undone!\n\nAre you sure?');">
+                        <i class="fas fa-trash"></i>
+                      </a>
+                    </div>
                   {% else %}
-                    <button type="button" class="btn btn-light action-btn" disabled style="opacity: 0.5;">
-                      <span style="color: #6c757d;">Edit</span>
+                    <button type="button" class="btn btn-sm btn-outline-secondary icon-btn" disabled style="opacity: 0.5;">
+                      <i class="fas fa-edit"></i>
                     </button>
                   {% endif %}
                 </td>
@@ -498,6 +511,82 @@ Tenants
         gap: 12px;
         align-items: stretch;
     }
+}
+
+/* Delete Button Styles */
+.btn-danger {
+    background-color: #dc3545;
+    color: white;
+    border: 1px solid #dc3545;
+    transition: all 0.3s ease;
+    border-radius: 6px;
+    font-weight: 500;
+}
+
+.btn-danger:hover {
+    background-color: #c82333;
+    border-color: #bd2130;
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(220, 53, 69, 0.3);
+}
+
+.btn-danger a {
+    color: white !important;
+    text-decoration: none !important;
+}
+
+.btn-danger a:hover {
+    color: white !important;
+}
+
+/* Icon Button Styles */
+.icon-btn {
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    border-width: 2px;
+}
+
+.icon-btn i {
+    font-size: 14px;
+}
+
+.btn-outline-primary.icon-btn {
+    color: #007bff;
+    border-color: #007bff;
+    background: white;
+}
+
+.btn-outline-primary.icon-btn:hover {
+    background-color: #007bff;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 2px 4px rgba(0, 123, 255, 0.3);
+}
+
+.btn-outline-danger.icon-btn {
+    color: #dc3545;
+    border-color: #dc3545;
+    background: white;
+}
+
+.btn-outline-danger.icon-btn:hover {
+    background-color: #dc3545;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 2px 4px rgba(220, 53, 69, 0.3);
+}
+
+.btn-outline-secondary.icon-btn {
+    color: #6c757d;
+    border-color: #6c757d;
+    background: white;
 }
 </style>
 

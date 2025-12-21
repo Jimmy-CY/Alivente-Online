@@ -7,7 +7,7 @@ from django.utils.text import slugify
 from django.utils import timezone
 from decimal import Decimal
 import os
-from django.db.models.signals import post_save, post_delete
+from django.db.models.signals import post_save, post_delete, pre_delete
 from django.dispatch import receiver
 
 def project_document_upload_path(instance, filename):
@@ -1079,17 +1079,17 @@ class VacancyPeriod(models.Model):
         Auto-calculate days_vacant and update status when saving
         """
         if self.end_date:
-            # Vacancy has ended - calculate total days
-            self.days_vacant = (self.end_date - self.start_date).days
+            # Vacancy has ended - calculate total days (INCLUSIVE)
+            self.days_vacant = (self.end_date - self.start_date).days + 1
             
             # If it was ACTIVE, mark it as FILLED
             if self.status == 'ACTIVE':
                 self.status = 'FILLED'
         else:
-            # Still vacant - calculate days so far
+            # Still vacant - calculate days so far (INCLUSIVE)
             if self.status == 'ACTIVE':
                 today = timezone.now().date()
-                self.days_vacant = (today - self.start_date).days
+                self.days_vacant = (today - self.start_date).days + 1
         
         super().save(*args, **kwargs)
     
@@ -1116,6 +1116,195 @@ class VacancyPeriod(models.Model):
         Only count 'BETWEEN_TENANTS' and 'FIRST_LISTING' reasons
         """
         return self.reason in ['BETWEEN_TENANTS', 'FIRST_LISTING']
+
+@receiver(post_save, sender=tenant)
+def auto_manage_vacancy_periods(sender, instance, created, **kwargs):
+    """
+    Automatically create/update vacancy periods when tenant leases are saved.
+    This runs every time a tenant is created or updated.
+    FIXED: Properly detects current vacancies considering future leases.
+    """
+    from datetime import datetime, timedelta
+    
+    # Only process if tenant has lease dates
+    if not instance.tenant_lease_start_date or not instance.tenant_lease_end_date:
+        return
+    
+    prop = instance.prop
+    
+    # Get all tenants for this property, ordered by lease start date
+    all_tenants = tenant.objects.filter(
+        prop=prop
+    ).exclude(
+        tenant_lease_start_date__isnull=True
+    ).order_by('tenant_lease_start_date')
+    
+    # Convert to list for easier processing
+    tenant_list = list(all_tenants)
+    
+    if not tenant_list:
+        return
+    
+    # Process consecutive tenants to find/update vacancy periods
+    for i in range(len(tenant_list) - 1):
+        current = tenant_list[i]
+        next_tenant = tenant_list[i + 1]
+        
+        # Check if there's a gap between leases
+        if current.tenant_lease_end_date and next_tenant.tenant_lease_start_date:
+            gap_start = current.tenant_lease_end_date + timedelta(days=1)
+            gap_end = next_tenant.tenant_lease_start_date - timedelta(days=1)
+            
+            # Only create vacancy if there's actually a gap
+            if gap_start <= gap_end:
+                days_vacant = (gap_end - gap_start).days + 1
+                
+                # Check if vacancy period already exists
+                existing = VacancyPeriod.objects.filter(
+                    prop=prop,
+                    previous_lease=current,
+                    next_lease=next_tenant
+                ).first()
+                
+                if existing:
+                    # Update existing vacancy period
+                    existing.start_date = gap_start
+                    existing.end_date = gap_end
+                    existing.days_vacant = days_vacant
+                    existing.status = 'FILLED'
+                    existing.save()
+                else:
+                    # Create new vacancy period
+                    VacancyPeriod.objects.create(
+                        prop=prop,
+                        start_date=gap_start,
+                        end_date=gap_end,
+                        days_vacant=days_vacant,
+                        status='FILLED',
+                        reason='BETWEEN_TENANTS',
+                        previous_lease=current,
+                        next_lease=next_tenant
+                    )
+            else:
+                # No gap - delete any existing vacancy period between these tenants
+                VacancyPeriod.objects.filter(
+                    prop=prop,
+                    previous_lease=current,
+                    next_lease=next_tenant
+                ).delete()
+    
+    # CLEANUP: Delete obsolete vacancies where a tenant now exists in the gap
+        # For example, if there was a vacancy T7→T30, but now T33 exists between them,
+        # delete the T7→T30 vacancy as it's no longer valid
+        for v in VacancyPeriod.objects.filter(prop=prop, status='FILLED'):
+            if v.previous_lease and v.next_lease:
+                # Check if any tenant exists between the previous and next lease
+                gap_start = v.previous_lease.tenant_lease_end_date + timedelta(days=1)
+                gap_end = v.next_lease.tenant_lease_start_date - timedelta(days=1)
+                
+                # Check if any tenant overlaps this gap
+                overlapping = tenant.objects.filter(
+                    prop=prop,
+                    tenant_lease_start_date__lte=gap_end,
+                    tenant_lease_end_date__gte=gap_start
+                ).exclude(
+                    pk=v.previous_lease.pk
+                ).exclude(
+                    pk=v.next_lease.pk
+                ).exists()
+                
+                if overlapping:
+                    # A tenant exists in this gap - the vacancy is obsolete
+                    v.delete()
+
+    # FIXED: Handle current vacancy correctly
+    # Find the tenant with the LATEST end date (not the last by start date)
+    today = datetime.now().date()
+    
+    # Get the tenant whose lease ends last
+    latest_ending_tenant = max(tenant_list, key=lambda t: t.tenant_lease_end_date if t.tenant_lease_end_date else datetime.min.date())
+    
+    # Check if this property is TRULY vacant now
+    # Property is vacant if the latest lease has ended AND there's no active lease covering today
+    is_currently_vacant = True
+    for t in tenant_list:
+        if t.tenant_lease_start_date <= today and (t.tenant_lease_end_date is None or t.tenant_lease_end_date >= today):
+            # There's a lease covering today
+            is_currently_vacant = False
+            break
+    
+    if is_currently_vacant and latest_ending_tenant.tenant_lease_end_date < today:
+        # Property is truly vacant - check if OPEN vacancy exists
+        existing_vacancy = VacancyPeriod.objects.filter(
+            prop=prop,
+            previous_lease=latest_ending_tenant,
+            next_lease__isnull=True,
+            status='OPEN'
+        ).first()
+        
+        if not existing_vacancy:
+            # Create new open vacancy
+            vacancy_start = latest_ending_tenant.tenant_lease_end_date + timedelta(days=1)
+            VacancyPeriod.objects.create(
+                prop=prop,
+                start_date=vacancy_start,
+                end_date=None,
+                status='OPEN',
+                reason='BETWEEN_TENANTS',
+                previous_lease=latest_ending_tenant,
+                next_lease=None
+            )
+    else:
+        # Property is NOT vacant - delete any OPEN vacancy periods that shouldn't exist
+        VacancyPeriod.objects.filter(
+            prop=prop,
+            status='OPEN',
+            next_lease__isnull=True
+        ).delete()
+
+@receiver(pre_delete, sender=tenant)
+def cleanup_vacancy_periods_on_delete(sender, instance, **kwargs):
+    """
+    Clean up vacancy periods when a tenant is ABOUT to be deleted.
+    This runs before Django sets foreign keys to NULL.
+    """
+    from django.db import models
+    
+    # Delete vacancy periods where this tenant is involved
+    # This should work because we're in pre_delete
+    VacancyPeriod.objects.filter(
+        models.Q(previous_lease=instance) | models.Q(next_lease=instance)
+    ).delete()
+
+
+@receiver(post_delete, sender=tenant)
+def cleanup_orphaned_vacancies_after_delete(sender, instance, **kwargs):
+    """
+    Clean up any orphaned vacancies after a tenant is deleted.
+    This catches any vacancies that slipped through if on_delete=SET_NULL ran.
+    """
+    from django.db import models
+    
+    # Clean up orphaned vacancies for this property
+    if instance.prop:
+        # Delete vacancies with NULL foreign keys (orphans)
+        VacancyPeriod.objects.filter(
+            prop=instance.prop
+        ).filter(
+            models.Q(previous_lease__isnull=True) | models.Q(next_lease__isnull=True)
+        ).exclude(
+            status='OPEN'  # Keep legitimate OPEN vacancies
+        ).delete()
+        
+        # Re-trigger signal to recalculate gaps
+        remaining_tenants = tenant.objects.filter(
+            prop=instance.prop
+        ).exclude(
+            tenant_lease_start_date__isnull=True
+        ).order_by('tenant_lease_start_date').first()
+        
+        if remaining_tenants:
+            remaining_tenants.save()
 
 class Passport(models.Model):
     DOCUMENT_TYPE_CHOICES = [

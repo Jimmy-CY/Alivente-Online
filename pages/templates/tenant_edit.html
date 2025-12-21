@@ -15,9 +15,19 @@
 {% for tresults in tenant %}
 <form action = "{% url 'tenant_edit_commit' tresults.tenant_id %}" method="post">
   {% csrf_token %}
-  <div style="display: flex ; justify-content: flex-end">
-      <button class="btn btn-info" style="margin-right:16px" type="submit">Save</button>
-      <a href="{% url 'tenant' %}" class="btn btn-info" style="margin-right:16px" role="button">Back</a>
+  
+  <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 20px;">
+      <button class="btn btn-success" type="submit">
+          <i class="fas fa-save"></i> Save
+      </button>
+      <a href="{% url 'duplicate_tenant' tresults.tenant_id %}" 
+         class="btn btn-warning"
+         onclick="return confirm('Duplicate this lease to create a renewal?\n\nThis will copy all tenant details except lease dates.\n\nYou will then need to:\n- Set new lease dates\n- Update rental/levies if changed\n- Set to Active when ready');">
+          <i class="fas fa-copy"></i> Duplicate for Renewal
+      </a>
+      <a href="{% url 'tenant' %}" class="btn btn-secondary" role="button">
+          <i class="fas fa-arrow-left"></i> Back
+      </a>
   </div>
 
   <div class="form-row">
