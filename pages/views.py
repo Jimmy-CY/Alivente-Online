@@ -2196,6 +2196,236 @@ def calculate_portfolio_occupancy_with_period(properties, period_start, period_e
     }
 
 @login_required
+def occupancy_trends_view(request):
+    """
+    Display occupancy, days to fill, and vacancy cost trends over time
+    """
+    from datetime import date
+    from django.db.models import Min
+    
+    # Get the first tenant date across all properties
+    first_tenant_date = tenant.objects.filter(
+        tenant_lease_start_date__isnull=False
+    ).aggregate(
+        first_date=Min('tenant_lease_start_date')
+    )['first_date']
+    
+    if not first_tenant_date:
+        # No tenants yet
+        return render(request, 'occupancy_trends.html', {
+            'error': 'No tenant data available yet'
+        })
+    
+    # Get current year
+    today = date.today()
+    current_year = today.year
+    first_year = first_tenant_date.year
+    
+    # Calculate all metrics for each year
+    yearly_data = []
+    
+    for year in range(first_year, current_year + 1):
+        year_metrics = calculate_year_metrics(year)
+        yearly_data.append(year_metrics)
+    
+    context = {
+        'yearly_data': yearly_data,
+        'yearly_data_json': json.dumps(yearly_data),  # Add this line
+        'current_year': current_year,
+        'first_year': first_year,
+    }
+    
+    return render(request, 'occupancy_trends.html', context)
+
+
+def calculate_year_metrics(year):
+    """
+    OPTIMIZED: Calculate ALL metrics for a specific calendar year.
+    Uses prefetch and processes in Python to minimize database queries.
+    """
+    from datetime import date
+    from django.db.models import Prefetch
+    
+    # Define year boundaries
+    year_start = date(year, 1, 1)
+    year_end = date(year, 12, 31)
+    today = date.today()
+    
+    # If current year, use today as end date
+    if year == today.year:
+        year_end = today
+        is_current_year = True
+    else:
+        is_current_year = False
+    
+    # ==================== FETCH ALL DATA AT ONCE ====================
+    
+    # Get all active, non-seasonal properties WITH their tenants prefetched
+    active_properties = props.objects.filter(
+        prop_status='Active'
+    ).prefetch_related(
+        Prefetch(
+            'tenant_set',
+            queryset=tenant.objects.filter(
+                tenant_lease_start_date__isnull=False
+            ).order_by('tenant_lease_start_date'),
+            to_attr='all_tenants'
+        )
+    )
+    
+    # Get all vacancies for this year WITH related objects prefetched
+    year_vacancies = VacancyPeriod.objects.filter(
+        status='FILLED',
+        end_date__year=year
+    ).select_related(
+        'prop',
+        'previous_lease',
+        'next_lease'
+    )
+    
+    # ==================== PROCESS IN PYTHON ====================
+    
+    total_available_days = 0
+    total_occupied_days = 0
+    property_count = 0
+    property_details = []
+    
+    for prop in active_properties:
+        # Skip seasonal properties
+        if hasattr(prop, 'exclude_from_metrics') and prop.exclude_from_metrics:
+            continue
+        
+        # Get tenants from prefetched data
+        tenants_list = prop.all_tenants
+        
+        if not tenants_list:
+            continue
+        
+        # Find first tenant (already sorted by start date)
+        first_tenant = tenants_list[0]
+        
+        # Determine operational start for this property in this year
+        operational_start = max(
+            first_tenant.tenant_lease_start_date,
+            year_start
+        )
+        
+        # Skip if property wasn't operational yet in this year
+        if operational_start > year_end:
+            continue
+        
+        # This property has data for this year
+        property_count += 1
+        
+        # Calculate available days (operational days only)
+        available_days = (year_end - operational_start).days + 1
+        total_available_days += available_days
+        
+        # Calculate occupied days for this property in this year
+        occupied_days = 0
+        
+        for t in tenants_list:
+            # Calculate overlap between tenant lease and this year period
+            lease_start = max(
+                t.tenant_lease_start_date,
+                operational_start
+            )
+            
+            lease_end = min(
+                t.tenant_lease_end_date if t.tenant_lease_end_date else year_end,
+                year_end
+            )
+            
+            # Add occupied days if there's an overlap
+            if lease_start <= lease_end:
+                days = (lease_end - lease_start).days + 1
+                occupied_days += days
+        
+        total_occupied_days += occupied_days
+        vacant_days = available_days - occupied_days
+        
+        # Calculate property occupancy
+        prop_occupancy = (occupied_days / available_days * 100) if available_days > 0 else 0
+        
+        # Store property details for modal
+        property_details.append({
+            'name': prop.prop_name,
+            'available_days': available_days,
+            'occupied_days': occupied_days,
+            'vacant_days': vacant_days,
+            'occupancy_rate': round(prop_occupancy, 1)
+        })
+    
+    # Calculate overall occupancy rate
+    if total_available_days > 0:
+        occupancy_rate = (total_occupied_days / total_available_days) * 100
+    else:
+        occupancy_rate = 0
+    
+    # ==================== PROCESS VACANCIES (Already Prefetched) ====================
+    
+    vacancy_days_list = []
+    vacancy_details = []
+    total_vacancy_cost = 0
+    
+    for v in year_vacancies:
+        # Skip seasonal properties (already checked in queryset, but double-check)
+        if hasattr(v.prop, 'exclude_from_metrics') and v.prop.exclude_from_metrics:
+            continue
+        
+        vacancy_days_list.append(v.days_vacant)
+        
+        # Calculate vacancy cost
+        monthly_rent = 0
+        if v.next_lease:
+            monthly_rent = v.next_lease.tenant_rent
+        elif v.previous_lease:
+            monthly_rent = v.previous_lease.tenant_rent
+        
+        vacancy_cost = (v.days_vacant / 30) * monthly_rent
+        total_vacancy_cost += vacancy_cost
+        
+        # Store vacancy details for modal
+        vacancy_details.append({
+            'property': v.prop.prop_name,
+            'start_date': v.start_date.strftime('%Y-%m-%d'),
+            'end_date': v.end_date.strftime('%Y-%m-%d'),
+            'days': v.days_vacant,
+            'previous_tenant': v.previous_lease.tenant_name if v.previous_lease else 'None',
+            'next_tenant': v.next_lease.tenant_name if v.next_lease else 'None',
+            'cost': round(vacancy_cost, 2)
+        })
+    
+    # Calculate average days to fill
+    if vacancy_days_list:
+        avg_days_to_fill = sum(vacancy_days_list) / len(vacancy_days_list)
+    else:
+        avg_days_to_fill = 0
+    
+    # ==================== RETURN ALL METRICS ====================
+    
+    return {
+        'year': year,
+        'is_current_year': is_current_year,
+        
+        # Summary metrics (for chart display)
+        'occupancy_rate': round(occupancy_rate, 1),
+        'avg_days_to_fill': round(avg_days_to_fill, 1),
+        'vacancy_cost': round(total_vacancy_cost, 0),
+        
+        # Occupancy details (for modal)
+        'total_available_days': total_available_days,
+        'total_occupied_days': total_occupied_days,
+        'total_vacant_days': total_available_days - total_occupied_days,
+        'property_count': property_count,
+        'property_details': sorted(property_details, key=lambda x: x['occupancy_rate'], reverse=True),
+        
+        # Vacancy details (for modal)
+        'vacancy_count': len(vacancy_days_list),
+        'vacancy_details': sorted(vacancy_details, key=lambda x: x['start_date']),
+    }
+
+@login_required
 def financial_indicators_view(request):
     """
     Display the Financial Indicators Dashboard - ONLY for Active Properties
@@ -2207,23 +2437,9 @@ def financial_indicators_view(request):
         try:
             from datetime import datetime, timedelta
             
-            # GET TIME PERIOD PARAMETER
-            time_period = request.GET.get('period', 'past_year')  # Default: past_year
+            # Financial indicators show annual data (no time period selection)
             today = datetime.now().date()
             current_year = datetime.now().year
-            
-            # Calculate period boundaries
-            if time_period == 'past_year':
-                period_start = today - timedelta(days=365)
-                period_end = today
-            elif time_period == 'last_3_years':
-                period_start = today - timedelta(days=365 * 3)
-                period_end = today
-            else:  # 'all_time'
-                # For all_time, we'll use property-specific start dates
-                # Set a very early date as default, actual calculation per property
-                period_start = datetime(2000, 1, 1).date()
-                period_end = today
             
             # OPTIMIZATION: Prefetch related data in one query
             properties = props.objects.filter(prop_status='Active').prefetch_related(
@@ -2243,10 +2459,6 @@ def financial_indicators_view(request):
                 'total_floor_area': 0,
                 'property_count': 0
             }
-            
-            # Calculate vacancy costs - do this BEFORE the loop
-            vacancy_costs = {}
-            total_vacancy_cost = Decimal('0.00')
             
             for prop in properties:
                 # Get revenue totals using your existing revenue model structure
@@ -2277,93 +2489,6 @@ def financial_indicators_view(request):
                 rent_per_sqm = (revenue_total / 12 / prop.prop_floor_area) if prop.prop_floor_area and prop.prop_floor_area > 0 else 0
                 value_increase = ((current_value - purchase_price) / purchase_price * 100) if purchase_price > 0 and current_value > 0 else 0
                 
-                # Calculate occupancy metrics ONLY if property is included
-                if prop.prop_include_in_occupancy:
-                    occupancy_metrics = calculate_occupancy_metrics_with_period(
-                        prop, period_start, period_end
-                    )
-                else:
-                    # Excluded from occupancy tracking
-                    occupancy_metrics = {
-                        'occupancy_rate': None,
-                        'avg_days_to_fill': None,
-                        'is_currently_vacant': False,
-                        'current_vacancy_days': 0
-                    }
-                
-                # CALCULATE VACANCY COSTS for this property
-                property_vacancy_cost = Decimal('0.00')
-                total_days_vacant = 0
-
-                # Only calculate vacancy cost if property is included in occupancy tracking
-                if prop.prop_include_in_occupancy:
-                    # Get property's first tenant date
-                    first_tenant_date = get_property_first_tenant_date_optimized(prop)
-                    
-                    if first_tenant_date:
-                        # Calculate effective period for this property
-                        effective_start, effective_end = calculate_effective_period(
-                            first_tenant_date, period_start, period_end
-                        )
-                        
-                        if effective_start:
-                            # Use PREFETCHED vacancy data instead of querying
-                            # Get ALL operational vacancy periods (both FILLED and OPEN)
-                            all_vacancies = list(prop.vacancy_periods.all())
-                            vacancies = [
-                                v for v in all_vacancies
-                                if (v.start_date >= first_tenant_date and  # Only operational vacancies
-                                    v.start_date <= effective_end and
-                                    (v.status == 'FILLED' or v.status == 'OPEN'))  # FILLED or OPEN
-                            ]
-
-                            for vacancy in vacancies:
-                                # Calculate overlap with effective period
-                                vacancy_start = max(vacancy.start_date, effective_start)
-                                vacancy_end = min(
-                                    vacancy.end_date if vacancy.end_date else datetime.now().date(),
-                                    effective_end
-                                )
-                                
-                                # Calculate days in effective period
-                                if vacancy_start <= vacancy_end:
-                                    days_in_period = (vacancy_end - vacancy_start).days + 1
-                                else:
-                                    continue  # Vacancy doesn't overlap with period
-                                
-                                # Determine which rent to use for calculation
-                                rent_to_use = None
-                                
-                                # Priority 1: Use NEXT lease rent (new tenant's rent - most accurate)
-                                if vacancy.next_lease and vacancy.next_lease.tenant_rent:
-                                    rent_to_use = vacancy.next_lease.tenant_rent
-                                
-                                # Priority 2: Use PREVIOUS lease rent (old tenant's rent - fallback)
-                                elif vacancy.previous_lease and vacancy.previous_lease.tenant_rent:
-                                    rent_to_use = vacancy.previous_lease.tenant_rent
-                                
-                                # Calculate vacancy cost if we have a rent amount
-                                if rent_to_use:
-                                    daily_rent = Decimal(str(rent_to_use)) / Decimal('30')
-                                    vacancy_cost = Decimal(str(days_in_period)) * daily_rent
-                                    property_vacancy_cost += vacancy_cost
-                                    total_days_vacant += days_in_period
-                    
-                    # Only add to portfolio total if property is included
-                    total_vacancy_cost += property_vacancy_cost
-                    
-                    # Store vacancy cost for included properties
-                    vacancy_costs[prop.prop_id] = {
-                        'total_cost': float(property_vacancy_cost),
-                        'days_vacant': total_days_vacant
-                    }
-                else:
-                    # Excluded properties show as None (not included in calculation)
-                    vacancy_costs[prop.prop_id] = {
-                        'total_cost': None,
-                        'days_vacant': None
-                    }
-                
                 # Store individual property data
                 properties_data.append({
                     'id': prop.prop_id,
@@ -2374,30 +2499,12 @@ def financial_indicators_view(request):
                     'expensesToRevenue': round(float(expense_ratio), 2),
                     'rentPerSqm': round(float(rent_per_sqm), 2),
                     'valueIncrease': round(float(value_increase), 2),
-                    'occupancyRate': occupancy_metrics['occupancy_rate'],
-                    'avgDaysToFill': occupancy_metrics['avg_days_to_fill'],
-                    'isCurrentlyVacant': occupancy_metrics['is_currently_vacant'],
-                    'currentVacancyDays': occupancy_metrics['current_vacancy_days'],
-                    'vacancyCost': vacancy_costs[prop.prop_id]['total_cost'],
                     'revenue': float(revenue_total),
                     'expenses': float(budgeted_expense_total),
                     'profit': float(revenue_total - budgeted_expense_total)
                 })
             
-            # Calculate portfolio occupancy ONLY from included properties
-            properties_for_occupancy = [p for p in properties if p.prop_include_in_occupancy]
-            portfolio_occupancy = calculate_portfolio_occupancy_with_period(
-                properties_for_occupancy, period_start, period_end
-            )
-            # Calculate vacancy cost average (for modal comparison)
-            # Count only properties included in occupancy tracking
-            num_properties_in_vacancy_calc = len(properties_for_occupancy)
-            vacancy_cost_average = (
-                float(total_vacancy_cost) / num_properties_in_vacancy_calc 
-                if num_properties_in_vacancy_calc > 0 else 0
-            )
-
-            # Calculate TRUE PORTFOLIO-WIDE indicators
+            # Calculate TRUE PORTFOLIO-WIDE indicators (FINANCIAL ONLY)
             portfolio_indicators = {
                 'grossROI': round(float(
                     (portfolio_totals['total_revenue'] / portfolio_totals['total_purchase_price'] * 100) 
@@ -2420,21 +2527,12 @@ def financial_indicators_view(request):
                     ((portfolio_totals['total_current_value'] - portfolio_totals['total_purchase_price']) / 
                      portfolio_totals['total_purchase_price'] * 100) 
                     if portfolio_totals['total_purchase_price'] > 0 and portfolio_totals['total_current_value'] > 0 else 0
-                ), 2),
-                'occupancyRate': portfolio_occupancy['occupancy_rate'],
-                'avgDaysToFill': portfolio_occupancy['avg_days_to_fill'],
-                'vacancyCost': round(float(total_vacancy_cost), 2),  # Total for indicator card
-                'vacancyCostAverage': round(vacancy_cost_average, 2),  # Average for modal comparison
+                ), 2)
             }
             
             return JsonResponse({
                 'properties': properties_data,
                 'portfolio_indicators': portfolio_indicators,
-                'vacancy_costs': vacancy_costs,
-                'total_vacancy_cost': float(total_vacancy_cost),
-                'time_period': time_period,  # ADD THIS
-                'period_start': period_start.strftime('%Y-%m-%d'),  # ADD THIS
-                'period_end': period_end.strftime('%Y-%m-%d'),  # ADD THIS
                 'portfolio_totals': {
                     'total_revenue': float(portfolio_totals['total_revenue']),
                     'total_expenses': float(portfolio_totals['total_budgeted_expenses']),
@@ -2444,7 +2542,7 @@ def financial_indicators_view(request):
                     'property_count': portfolio_totals['property_count']
                 },
                 'total_active_properties': len(properties_data),
-                'message': f'Showing {len(properties_data)} active properties with portfolio-wide calculations (budgeted expenses only)'
+                'message': f'Showing {len(properties_data)} active properties - Financial Indicators (annual data)'
             })
             
         except Exception as e:
@@ -2457,6 +2555,168 @@ def financial_indicators_view(request):
         'page_title': 'Financial Indicators Dashboard - Portfolio-Wide Analysis (Active Properties)'
     }
     return render(request, 'finance/financial_indicators.html', context)
+
+@login_required
+def vacancy_management_view(request):
+    """
+    Display the Vacancy Management Dashboard - Occupancy Metrics Only
+    Shows Occupancy Rate, Avg Days to Fill, and Vacancy Cost
+    ONLY for properties included in occupancy tracking
+    """
+    if request.method == 'GET' and request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        # AJAX request for property data
+        try:
+            from datetime import datetime, timedelta
+            
+            # GET TIME PERIOD PARAMETER
+            time_period = request.GET.get('period', 'past_year')  # Default: past_year
+            today = datetime.now().date()
+            current_year = datetime.now().year
+            
+            # Calculate period boundaries
+            if time_period == 'past_year':
+                period_start = today - timedelta(days=365)
+                period_end = today
+            elif time_period == 'last_3_years':
+                period_start = today - timedelta(days=365 * 3)
+                period_end = today
+            else:  # 'all_time'
+                # For all_time, we'll use property-specific start dates
+                period_start = datetime(2000, 1, 1).date()
+                period_end = today
+            
+            # OPTIMIZATION: Prefetch related data in one query
+            properties = props.objects.filter(
+                prop_status='Active',
+                prop_include_in_occupancy=True  # ONLY properties included in occupancy tracking
+            ).prefetch_related(
+                Prefetch('tenant_set', queryset=tenant.objects.all()),
+                Prefetch('vacancy_periods', queryset=VacancyPeriod.objects.select_related('previous_lease', 'next_lease').all())
+            )
+            
+            properties_data = []
+            
+            # Calculate vacancy costs
+            vacancy_costs = {}
+            total_vacancy_cost = Decimal('0.00')
+            
+            for prop in properties:
+                # Calculate occupancy metrics
+                occupancy_metrics = calculate_occupancy_metrics_with_period(
+                    prop, period_start, period_end
+                )
+                
+                # CALCULATE VACANCY COSTS for this property
+                property_vacancy_cost = Decimal('0.00')
+                total_days_vacant = 0
+                
+                # Get property's first tenant date
+                first_tenant_date = get_property_first_tenant_date_optimized(prop)
+                
+                if first_tenant_date:
+                    # Calculate effective period for this property
+                    effective_start, effective_end = calculate_effective_period(
+                        first_tenant_date, period_start, period_end
+                    )
+                    
+                    if effective_start:
+                        # Use PREFETCHED vacancy data
+                        all_vacancies = list(prop.vacancy_periods.all())
+                        vacancies = [
+                            v for v in all_vacancies
+                            if (v.start_date >= first_tenant_date and
+                                v.start_date <= effective_end and
+                                (v.status == 'FILLED' or v.status == 'OPEN'))
+                        ]
+
+                        for vacancy in vacancies:
+                            # Calculate overlap with effective period
+                            vacancy_start = max(vacancy.start_date, effective_start)
+                            vacancy_end = min(
+                                vacancy.end_date if vacancy.end_date else datetime.now().date(),
+                                effective_end
+                            )
+                            
+                            if vacancy_start <= vacancy_end:
+                                days_in_period = (vacancy_end - vacancy_start).days + 1
+                            else:
+                                continue
+                            
+                            # Determine which rent to use
+                            rent_to_use = None
+                            
+                            if vacancy.next_lease and vacancy.next_lease.tenant_rent:
+                                rent_to_use = vacancy.next_lease.tenant_rent
+                            elif vacancy.previous_lease and vacancy.previous_lease.tenant_rent:
+                                rent_to_use = vacancy.previous_lease.tenant_rent
+                            
+                            if rent_to_use:
+                                daily_rent = Decimal(str(rent_to_use)) / Decimal('30')
+                                vacancy_cost = Decimal(str(days_in_period)) * daily_rent
+                                property_vacancy_cost += vacancy_cost
+                                total_days_vacant += days_in_period
+                
+                total_vacancy_cost += property_vacancy_cost
+                
+                vacancy_costs[prop.prop_id] = {
+                    'total_cost': float(property_vacancy_cost),
+                    'days_vacant': total_days_vacant
+                }
+                
+                # Store individual property data
+                properties_data.append({
+                    'id': prop.prop_id,
+                    'name': prop.prop_name or f"Property {prop.prop_id}",
+                    'status': prop.prop_status,
+                    'occupancyRate': occupancy_metrics['occupancy_rate'],
+                    'avgDaysToFill': occupancy_metrics['avg_days_to_fill'],
+                    'isCurrentlyVacant': occupancy_metrics['is_currently_vacant'],
+                    'currentVacancyDays': occupancy_metrics['current_vacancy_days'],
+                    'vacancyCost': vacancy_costs[prop.prop_id]['total_cost']
+                })
+            
+            # Calculate portfolio occupancy
+            portfolio_occupancy = calculate_portfolio_occupancy_with_period(
+                properties, period_start, period_end
+            )
+            
+            # Calculate vacancy cost average (for modal comparison)
+            num_properties = len(properties)
+            vacancy_cost_average = (
+                float(total_vacancy_cost) / num_properties 
+                if num_properties > 0 else 0
+            )
+            
+            # Portfolio indicators - OCCUPANCY ONLY
+            portfolio_indicators = {
+                'occupancyRate': portfolio_occupancy['occupancy_rate'],
+                'avgDaysToFill': portfolio_occupancy['avg_days_to_fill'],
+                'vacancyCost': round(float(total_vacancy_cost), 2),
+                'vacancyCostAverage': round(vacancy_cost_average, 2),
+            }
+            
+            return JsonResponse({
+                'properties': properties_data,
+                'portfolio_indicators': portfolio_indicators,
+                'vacancy_costs': vacancy_costs,
+                'total_vacancy_cost': float(total_vacancy_cost),
+                'time_period': time_period,
+                'period_start': period_start.strftime('%Y-%m-%d'),
+                'period_end': period_end.strftime('%Y-%m-%d'),
+                'total_active_properties': len(properties_data),
+                'message': f'Showing {len(properties_data)} properties included in occupancy tracking'
+            })
+            
+        except Exception as e:
+            import traceback
+            print(traceback.format_exc())
+            return JsonResponse({'error': str(e)}, status=500)
+    
+    # Regular page load
+    context = {
+        'page_title': 'Vacancy Management Dashboard - Occupancy Performance'
+    }
+    return render(request, 'finance/vacancy_management.html', context)
 
 def calculate_property_revenue(property_obj):
     """

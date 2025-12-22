@@ -1,0 +1,621 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block title %}Occupancy Trends - Alivente Online{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    
+    <!-- Page Header -->
+    <div class="row mb-4">
+        <div class="col-12 d-flex justify-content-between align-items-start">
+            <div>
+                <h2 class="mb-3">
+                    <i class="fas fa-chart-line"></i> Performance Trends
+                </h2>
+                <p class="text-muted">
+                    Historical performance metrics from {{ first_year }} to {{ current_year }}
+                </p>
+            </div>
+            <div>
+                <a href="{% url 'vacancy_management' %}" class="btn btn-info">
+                    <i class="fas fa-arrow-left"></i> Back to Vacancy Management
+                </a>
+            </div>
+        </div>
+    </div>
+
+    {% if error %}
+        <!-- Error Message -->
+        <div class="alert alert-warning">
+            <i class="fas fa-exclamation-triangle"></i> {{ error }}
+        </div>
+    {% else %}
+
+        <!-- Charts Section - THREE COLUMNS -->
+        <div class="row mb-4">
+            
+            <!-- Chart 1: Occupancy Rate -->
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-header bg-light">
+                        <h6 class="mb-0">
+                            <i class="fas fa-home"></i> Occupancy Rate
+                        </h6>
+                        <small class="text-muted">Higher is better · Click for details</small>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="occupancyChart" height="250" style="cursor: pointer;"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chart 2: Avg Days to Fill -->
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-header bg-light">
+                        <h6 class="mb-0">
+                            <i class="fas fa-clock"></i> Avg Days to Fill
+                        </h6>
+                        <small class="text-muted">Lower is better · Click for details</small>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="daysChart" height="250" style="cursor: pointer;"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chart 3: Vacancy Cost -->
+            <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    <div class="card-header bg-light">
+                        <h6 class="mb-0">
+                            <i class="fas fa-euro-sign"></i> Vacancy Cost
+                        </h6>
+                        <small class="text-muted">Lower is better · Click for details</small>
+                    </div>
+                    <div class="card-body">
+                        <canvas id="costChart" height="250" style="cursor: pointer;"></canvas>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Raw Data Display Table (CLICKABLE YEARS) -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0">📊 Yearly Data Summary</h5>
+                        <small class="text-muted">Click on any year for detailed breakdown</small>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover">
+                                <thead>
+                                    <tr class="text-center">
+                                        <th>Year</th>
+                                        <th>Occupancy %</th>
+                                        <th>Avg Days to Fill</th>
+                                        <th>Vacancy Cost</th>
+                                        <th>Properties</th>
+                                        <th>Vacancies</th>
+                                        <th>Available Days</th>
+                                        <th>Occupied Days</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for year in yearly_data %}
+                                    <tr class="text-center clickable-row" onclick="showYearDetail({{ year.year }})" style="cursor: pointer;">
+                                        <td>
+                                            <strong class="text-primary">{{ year.year }}</strong>
+                                            {% if year.is_current_year %}
+                                                <span class="badge badge-info">YTD</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ year.occupancy_rate }}%</td>
+                                        <td>{{ year.avg_days_to_fill }} days</td>
+                                        <td>€{{ year.vacancy_cost|floatformat:0|intcomma }}</td>
+                                        <td>{{ year.property_count }}</td>
+                                        <td>{{ year.vacancy_count }}</td>
+                                        <td>{{ year.total_available_days|intcomma }}</td>
+                                        <td>{{ year.total_occupied_days|intcomma }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    {% endif %}
+
+</div>
+
+<!-- Year Detail Modal (95% WIDTH) -->
+<div class="modal fade" id="yearDetailModal" tabindex="-1" role="dialog" aria-labelledby="yearDetailModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl-custom" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-light">
+                <h5 class="modal-title" id="yearDetailModalLabel">
+                    <i class="fas fa-chart-line"></i> <span id="modalYearTitle">2024</span> Performance Breakdown
+                </h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="yearDetailContent">
+                <!-- Content loaded dynamically -->
+                <div class="text-center py-5">
+                    <i class="fas fa-spinner fa-spin fa-3x text-primary"></i>
+                    <p class="mt-3">Loading detailed data...</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Custom Styling -->
+<style>
+/* Wide modal - 95% of screen width */
+.modal-xl-custom {
+    max-width: 95%;
+    width: 95%;
+    margin: 1.75rem auto;
+}
+
+.modal-xl-custom .modal-body {
+    max-height: 75vh;
+    overflow-y: auto;
+}
+
+/* Clickable table rows */
+.clickable-row:hover {
+    background-color: #f8f9fa;
+}
+
+.clickable-row td {
+    transition: all 0.2s;
+}
+
+.clickable-row:hover td {
+    color: #007bff;
+}
+</style>
+
+<!-- Chart.js Library -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+
+<script>
+console.log('Starting chart initialization...');
+
+// Prepare data from Django backend
+const yearlyDataRaw = '{{ yearly_data_json|escapejs }}';
+let yearlyData;
+
+try {
+    yearlyData = JSON.parse(yearlyDataRaw);
+    console.log('Parsed data:', yearlyData);
+} catch (e) {
+    console.error('Error parsing JSON:', e);
+}
+
+// Function to show year detail modal (GLOBAL SCOPE for onclick)
+function showYearDetail(year) {
+    console.log('Showing details for year:', year);
+    
+    // Update modal title
+    document.getElementById('modalYearTitle').textContent = year;
+    
+    // Show modal
+    $('#yearDetailModal').modal('show');
+    
+    // Load content
+    const dataPoint = yearlyData.find(d => d.year === year);
+    if (dataPoint) {
+        renderYearDetail(dataPoint);
+    } else {
+        document.getElementById('yearDetailContent').innerHTML = 
+            '<div class="alert alert-warning">No data found for this year.</div>';
+    }
+}
+
+// Function to render year detail content
+function renderYearDetail(data) {
+    const ytdLabel = data.is_current_year ? ' (Year-to-Date)' : '';
+    
+    let html = `
+        <!-- Summary Section -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="alert alert-info">
+                    <strong>Period:</strong> ${data.year}${ytdLabel} · 
+                    <strong>${data.property_count}</strong> properties operational · 
+                    <strong>${data.vacancy_count}</strong> vacancy periods
+                </div>
+            </div>
+        </div>
+
+        <!-- Metrics Cards -->
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h6 class="text-muted">Occupancy Rate</h6>
+                        <h3 class="mb-0">${data.occupancy_rate}%</h3>
+                        <small class="text-muted">${data.total_occupied_days.toLocaleString()} / ${data.total_available_days.toLocaleString()} days</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h6 class="text-muted">Avg Days to Fill</h6>
+                        <h3 class="mb-0">${data.avg_days_to_fill} days</h3>
+                        <small class="text-muted">${data.vacancy_count} vacancies</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h6 class="text-muted">Vacancy Cost</h6>
+                        <h3 class="mb-0">€${data.vacancy_cost.toLocaleString()}</h3>
+                        <small class="text-muted">Lost revenue</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Property Breakdown Table -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <h6><i class="fas fa-building"></i> Property Performance Breakdown</h6>
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover">
+                        <thead>
+                            <tr class="text-center">
+                                <th>Property</th>
+                                <th>Available Days</th>
+                                <th>Occupied Days</th>
+                                <th>Vacant Days</th>
+                                <th>Occupancy Rate</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+    `;
+
+    // Add property rows
+    if (data.property_details && data.property_details.length > 0) {
+        data.property_details.forEach(prop => {
+            const badge = prop.occupancy_rate >= 95 ? 'success' : 
+                         prop.occupancy_rate >= 85 ? 'warning' : 'danger';
+            html += `
+                <tr class="text-center">
+                    <td class="text-left">${prop.name}</td>
+                    <td>${prop.available_days}</td>
+                    <td>${prop.occupied_days}</td>
+                    <td>${prop.vacant_days}</td>
+                    <td><span class="badge badge-${badge}">${prop.occupancy_rate}%</span></td>
+                </tr>
+            `;
+        });
+    } else {
+        html += '<tr><td colspan="5" class="text-center text-muted">No property data available</td></tr>';
+    }
+
+    html += `
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Vacancy Details -->
+        <div class="row">
+            <div class="col-12">
+                <h6><i class="fas fa-home"></i> Vacancy Periods (${data.vacancy_count})</h6>
+    `;
+
+    if (data.vacancy_details && data.vacancy_details.length > 0) {
+        html += '<div class="table-responsive"><table class="table table-sm table-hover"><thead><tr class="text-center"><th>Property</th><th>Start Date</th><th>End Date</th><th>Days</th><th>Previous Tenant</th><th>Next Tenant</th><th>Cost</th></tr></thead><tbody>';
+        
+        data.vacancy_details.forEach(v => {
+            html += `
+                <tr class="text-center">
+                    <td class="text-left">${v.property}</td>
+                    <td>${v.start_date}</td>
+                    <td>${v.end_date}</td>
+                    <td><strong>${v.days}</strong></td>
+                    <td>${v.previous_tenant}</td>
+                    <td>${v.next_tenant}</td>
+                    <td>€${v.cost.toLocaleString()}</td>
+                </tr>
+            `;
+        });
+        
+        html += '</tbody></table></div>';
+    } else {
+        html += '<div class="alert alert-success"><i class="fas fa-check-circle"></i> No vacancies recorded for this period!</div>';
+    }
+
+    html += `
+            </div>
+        </div>
+    `;
+
+    document.getElementById('yearDetailContent').innerHTML = html;
+}
+
+if (yearlyData && yearlyData.length > 0) {
+    // Extract data for all charts
+    const years = yearlyData.map(d => {
+        return d.is_current_year ? `${d.year} (YTD)` : d.year.toString();
+    });
+    const occupancyRates = yearlyData.map(d => d.occupancy_rate);
+    const daysToFill = yearlyData.map(d => d.avg_days_to_fill);
+    const vacancyCosts = yearlyData.map(d => d.vacancy_cost);
+
+    // Calculate averages for the red dotted lines
+    const avgOccupancy = occupancyRates.reduce((a, b) => a + b, 0) / occupancyRates.length;
+    const avgDays = daysToFill.reduce((a, b) => a + b, 0) / daysToFill.length;
+    const avgCost = vacancyCosts.reduce((a, b) => a + b, 0) / vacancyCosts.length;
+
+    console.log('Averages:', { avgOccupancy, avgDays, avgCost });
+
+    // Common chart options with click handler
+    const createClickHandler = (chart) => {
+        return (event, elements) => {
+            if (elements.length > 0) {
+                const index = elements[0].index;
+                const year = yearlyData[index].year;
+                showYearDetail(year);
+            }
+        };
+    };
+
+    const commonOptions = {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: {
+            legend: { display: false }
+        }
+    };
+
+    // ==================== CHART 1: OCCUPANCY RATE ====================
+    const occupancyCtx = document.getElementById('occupancyChart');
+    if (occupancyCtx) {
+        new Chart(occupancyCtx, {
+            type: 'line',
+            data: {
+                labels: years,
+                datasets: [
+                    {
+                        label: 'Occupancy Rate (%)',
+                        data: occupancyRates,
+                        borderColor: 'rgb(75, 192, 192)',
+                        backgroundColor: 'rgba(75, 192, 192, 0.1)',
+                        borderWidth: 3,
+                        pointRadius: 5,
+                        pointHoverRadius: 7,
+                        pointBackgroundColor: 'rgb(75, 192, 192)',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        tension: 0.3,
+                        fill: true
+                    },
+                    {
+                        label: 'Average',
+                        data: Array(years.length).fill(avgOccupancy),
+                        borderColor: 'rgb(255, 0, 0)',
+                        borderWidth: 2,
+                        borderDash: [5, 5],
+                        pointRadius: 0,
+                        fill: false
+                    }
+                ]
+            },
+            options: {
+                ...commonOptions,
+                onClick: createClickHandler(),
+                plugins: {
+                    ...commonOptions.plugins,
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                if (context.datasetIndex === 1) {
+                                    return `Average: ${avgOccupancy.toFixed(1)}%`;
+                                }
+                                const dataPoint = yearlyData[context.dataIndex];
+                                return [
+                                    `Occupancy: ${context.parsed.y.toFixed(1)}%`,
+                                    `Properties: ${dataPoint.property_count}`,
+                                    '',
+                                    '🖱️ Click for detailed breakdown'
+                                ];
+                            }
+                        },
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        padding: 10
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        title: { display: true, text: '%' },
+                        ticks: {
+                            callback: function(value) {
+                                return value + '%';
+                            }
+                        }
+                    },
+                    x: {
+                        ticks: { font: { size: 11 } }
+                    }
+                }
+            }
+        });
+    }
+
+    // ==================== CHART 2: DAYS TO FILL ====================
+    const daysCtx = document.getElementById('daysChart');
+    if (daysCtx) {
+        new Chart(daysCtx, {
+            type: 'line',
+            data: {
+                labels: years,
+                datasets: [
+                    {
+                        label: 'Avg Days to Fill',
+                        data: daysToFill,
+                        borderColor: 'rgb(255, 159, 64)',
+                        backgroundColor: 'rgba(255, 159, 64, 0.1)',
+                        borderWidth: 3,
+                        pointRadius: 5,
+                        pointHoverRadius: 7,
+                        pointBackgroundColor: 'rgb(255, 159, 64)',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        tension: 0.3,
+                        fill: true
+                    },
+                    {
+                        label: 'Average',
+                        data: Array(years.length).fill(avgDays),
+                        borderColor: 'rgb(255, 0, 0)',
+                        borderWidth: 2,
+                        borderDash: [5, 5],
+                        pointRadius: 0,
+                        fill: false
+                    }
+                ]
+            },
+            options: {
+                ...commonOptions,
+                onClick: createClickHandler(),
+                plugins: {
+                    ...commonOptions.plugins,
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                if (context.datasetIndex === 1) {
+                                    return `Average: ${avgDays.toFixed(1)} days`;
+                                }
+                                const dataPoint = yearlyData[context.dataIndex];
+                                return [
+                                    `Avg Days: ${context.parsed.y.toFixed(1)}`,
+                                    `Vacancies: ${dataPoint.vacancy_count}`,
+                                    '',
+                                    '🖱️ Click for detailed breakdown'
+                                ];
+                            }
+                        },
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        padding: 10
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: { display: true, text: 'Days' },
+                        ticks: {
+                            callback: function(value) {
+                                return value + 'd';
+                            }
+                        }
+                    },
+                    x: {
+                        ticks: { font: { size: 11 } }
+                    }
+                }
+            }
+        });
+    }
+
+    // ==================== CHART 3: VACANCY COST ====================
+    const costCtx = document.getElementById('costChart');
+    if (costCtx) {
+        new Chart(costCtx, {
+            type: 'line',
+            data: {
+                labels: years,
+                datasets: [
+                    {
+                        label: 'Vacancy Cost (€)',
+                        data: vacancyCosts,
+                        borderColor: 'rgb(255, 99, 132)',
+                        backgroundColor: 'rgba(255, 99, 132, 0.1)',
+                        borderWidth: 3,
+                        pointRadius: 5,
+                        pointHoverRadius: 7,
+                        pointBackgroundColor: 'rgb(255, 99, 132)',
+                        pointBorderColor: '#fff',
+                        pointBorderWidth: 2,
+                        tension: 0.3,
+                        fill: true
+                    },
+                    {
+                        label: 'Average',
+                        data: Array(years.length).fill(avgCost),
+                        borderColor: 'rgb(255, 0, 0)',
+                        borderWidth: 2,
+                        borderDash: [5, 5],
+                        pointRadius: 0,
+                        fill: false
+                    }
+                ]
+            },
+            options: {
+                ...commonOptions,
+                onClick: createClickHandler(),
+                plugins: {
+                    ...commonOptions.plugins,
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                if (context.datasetIndex === 1) {
+                                    return `Average: €${avgCost.toLocaleString()}`;
+                                }
+                                const dataPoint = yearlyData[context.dataIndex];
+                                return [
+                                    `Cost: €${context.parsed.y.toLocaleString()}`,
+                                    `Vacancies: ${dataPoint.vacancy_count}`,
+                                    '',
+                                    '🖱️ Click for detailed breakdown'
+                                ];
+                            }
+                        },
+                        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                        padding: 10
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: { display: true, text: '€' },
+                        ticks: {
+                            callback: function(value) {
+                                return '€' + value.toLocaleString();
+                            }
+                        }
+                    },
+                    x: {
+                        ticks: { font: { size: 11 } }
+                    }
+                }
+            }
+        });
+    }
+
+    console.log('All charts initialized successfully with click handlers and average lines');
+}
+</script>
+{% endblock %}

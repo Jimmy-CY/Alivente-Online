@@ -79,6 +79,23 @@ ALIVENTE ONLINE - FINANCE
                   <span class="font-weight-bold" style="font-size: 0.95rem">Property Valuations</span>
                 </a>
             </div>
+
+            <!-- Vacancy Management -->
+            <div class="col-md-6 mb-3">
+                <a href="{% url 'vacancy_management' %}" class="btn btn-info btn-block py-2 finance-btn d-flex flex-column justify-content-center" style="height: 100px;">
+                  <i class="fas fa-door-open fa-2x mb-2"></i>
+                  <span class="font-weight-bold" style="font-size: 0.95rem">Vacancy Management</span>
+                </a>
+            </div>
+
+            <!-- Performance Trends -->
+            <div class="col-md-6 mb-3">
+                <a href="{% url 'occupancy_trends' %}" class="btn btn-info btn-block py-2 finance-btn d-flex flex-column justify-content-center" style="height: 100px;">
+                  <i class="fas fa-chart-area fa-2x mb-2"></i>
+                  <span class="font-weight-bold" style="font-size: 0.95rem">Performance Trends</span>
+                </a>
+            </div>
+
           </div>
         </div>
       </div>
@@ -93,25 +110,23 @@ ALIVENTE ONLINE - FINANCE
     <div class="card-body">
       <div class="row">
         <!-- Revenue Types -->
-        <div class="col-md-4 mb-3">
+        <div class="col-md-6 mb-3">
             <a href="{% url 'finance_revenue_types' %}" class="btn btn-info btn-block py-2 finance-btn d-flex flex-column justify-content-center" style="height: 100px;">
               <i class="fas fa-money-bill-wave fa-2x mb-2"></i>
               <span class="font-weight-bold" style="font-size: 0.95rem">Revenue Types</span>
             </a>
         </div>
 
-<!-- Revenue Line Types -->
-        <div class="col-md-4 mb-3">
-            <a href="{% url 'finance_revenue_line_types' %}" 
-               class="btn btn-info btn-block py-2 finance-btn d-flex flex-column justify-content-center align-items-center text-center" 
-               style="height: 100px; white-space: normal;">
+        <!-- Revenue Line Types -->
+        <div class="col-md-6 mb-3">
+            <a href="{% url 'finance_revenue_line_types' %}" class="btn btn-info btn-block py-2 finance-btn d-flex flex-column justify-content-center" style="height: 100px;">
               <i class="fas fa-list-alt fa-2x mb-2"></i>
-              <span class="font-weight-bold" style="font-size: 0.95rem; word-wrap: break-word;">Revenue Line Types</span>
+              <span class="font-weight-bold" style="font-size: 0.95rem">Revenue Line Types</span>
             </a>
         </div>
 
         <!-- Revenues -->
-        <div class="col-md-4 mb-3">
+        <div class="col-md-6 mb-3">
             <a href="{% url 'finance_revenue' %}" class="btn btn-info btn-block py-2 finance-btn d-flex flex-column justify-content-center" style="height: 100px;">
               <i class="fas fa-cash-register fa-2x mb-2"></i>
               <span class="font-weight-bold" style="font-size: 0.95rem">Revenues</span>
@@ -119,7 +134,7 @@ ALIVENTE ONLINE - FINANCE
         </div>
 
         <!-- Expense Types -->
-        <div class="col-md-4 mb-3">
+        <div class="col-md-6 mb-3">
             <a href="{% url 'finance_expense_types' %}" class="btn btn-info btn-block py-2 finance-btn d-flex flex-column justify-content-center" style="height: 100px;">
               <i class="fas fa-receipt fa-2x mb-2"></i>
               <span class="font-weight-bold" style="font-size: 0.95rem">Expense Types</span>
@@ -127,17 +142,15 @@ ALIVENTE ONLINE - FINANCE
         </div>
         
         <!-- Expense Line Types -->
-        <div class="col-md-4 mb-3">
-            <a href="{% url 'finance_expense_line_types' %}" 
-               class="btn btn-info btn-block py-2 finance-btn d-flex flex-column justify-content-center align-items-center text-center" 
-               style="height: 100px; white-space: normal;">
+        <div class="col-md-6 mb-3">
+            <a href="{% url 'finance_expense_line_types' %}" class="btn btn-info btn-block py-2 finance-btn d-flex flex-column justify-content-center" style="height: 100px;">
               <i class="fas fa-tasks fa-2x mb-2"></i>
-              <span class="font-weight-bold" style="font-size: 0.95rem; word-wrap: break-word;">Expense Line Types</span>
+              <span class="font-weight-bold" style="font-size: 0.95rem">Expense Line Types</span>
             </a>
         </div>
         
         <!-- Expenses -->
-        <div class="col-md-4 mb-3">
+        <div class="col-md-6 mb-3">
             <a href="{% url 'finance_expense' %}" class="btn btn-info btn-block py-2 finance-btn d-flex flex-column justify-content-center" style="height: 100px;">
               <i class="fas fa-file-invoice-dollar fa-2x mb-2"></i>
               <span class="font-weight-bold" style="font-size: 0.95rem">Expenses</span>
@@ -147,7 +160,6 @@ ALIVENTE ONLINE - FINANCE
     </div>
   </div>
 </div>
-
 
   </div>
 </div>

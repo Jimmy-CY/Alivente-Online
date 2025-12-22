@@ -1,13 +1,42 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}ALIVENTE ONLINE - FINANCIAL INDICATORS{% endblock %}
+{% block title %}ALIVENTE ONLINE - VACANCY MANAGEMENT{% endblock %}
 
 {% block content %}
 <div class="container-fluid">
-    <h2><center>ALIVENTE ONLINE - FINANCIAL INDICATORS</center></h2>
+    <h2><center>ALIVENTE ONLINE - VACANCY MANAGEMENT</center></h2>
     <h5><center>PROPERTY PERFORMANCE DASHBOARD</center></h5>
     <br/>
+
+    <!-- Back Button -->
+    <div style="display: flex; justify-content: flex-end; margin-bottom: 20px;">
+        <a href="{% url 'finance' %}" class="btn btn-info">Back</a>
+    </div>
+
+    <!-- Time Period Selection -->
+    <div class="period-selection-panel">
+        <div class="period-header">
+            <h6 class="period-title">
+                <i class="fas fa-calendar-alt"></i> Time Period
+            </h6>
+        </div>
+        <div class="period-buttons">
+            <button class="btn-period active" data-period="past_year">
+                <i class="fas fa-calendar"></i> Past Year
+            </button>
+            <button class="btn-period" data-period="last_3_years">
+                <i class="fas fa-calendar-check"></i> Last 3 Years
+            </button>
+            <button class="btn-period" data-period="all_time">
+                <i class="fas fa-infinity"></i> All Time
+            </button>
+        </div>
+        <div class="period-display">
+            <i class="fas fa-clock"></i>
+            <span id="periodRangeDisplay">Loading period...</span>
+        </div>
+    </div>
 
     {% for msg in messages %}
         <div class="alert alert-secondary alert-dismissible fade show auto-dismiss" role="alert">
@@ -27,17 +56,12 @@
         </script>
     {% endfor %}
 
-    <!-- Action Buttons -->
-    <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 20px;">
-        <a href="{% url 'finance' %}" class="btn btn-info">Back</a>
-    </div>
-
     <!-- Loading Indicator -->
     <div id="loadingIndicator" class="text-center py-5">
         <div class="spinner-border text-info" role="status">
             <span class="sr-only">Loading...</span>
         </div>
-        <p class="mt-3">Loading financial indicators...</p>
+        <p class="mt-3">Loading vacancy metrics...</p>
     </div>
 
     <!-- Dashboard Container -->
@@ -163,6 +187,92 @@
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
+/* Period Selection Panel */
+.period-selection-panel {
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 30px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.period-header {
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.period-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #2c3e50;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.period-buttons {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+}
+
+.btn-period {
+    flex: 1;
+    min-width: 150px;
+    padding: 12px 20px;
+    border: 2px solid #dee2e6;
+    background: #f8f9fa;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #495057;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.btn-period:hover {
+    border-color: #17a2b8;
+    background: #e3f2fd;
+    color: #17a2b8;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.btn-period.active {
+    border-color: #17a2b8;
+    background: #17a2b8;
+    color: white;
+    box-shadow: 0 2px 4px rgba(23, 162, 184, 0.2);
+}
+
+.btn-period.active:hover {
+    background: #138496;
+    border-color: #138496;
+}
+
+.period-display {
+    background: #f8f9fa;
+    padding: 10px 15px;
+    border-radius: 6px;
+    font-size: 13px;
+    color: #6c757d;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.period-display i {
+    color: #17a2b8;
+}
+
 @media (max-width: 768px) {
     .period-buttons {
         flex-direction: column;
@@ -185,7 +295,7 @@
 
 .indicator-cards {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);  /* 5 columns for 5 financial indicators */
+    grid-template-columns: repeat(3, 1fr);  /* 3 columns for 3 occupancy indicators */
     gap: 15px;
     margin-bottom: 20px;
 }
@@ -549,6 +659,51 @@
     border-right: 3px solid #ffffff;
 }
 
+/* Trends Button */
+.trends-button-panel {
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 30px;
+    margin-top: 30px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.trends-button-panel h5 {
+    color: #2c3e50;
+    margin-bottom: 15px;
+}
+
+.trends-button-panel p {
+    color: #6c757d;
+    margin-bottom: 20px;
+}
+
+.btn-trends {
+    padding: 12px 30px;
+    font-size: 16px;
+    font-weight: 600;
+    background: #17a2b8;
+    color: white;
+    border: 2px solid #17a2b8;
+    border-radius: 8px;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.3s ease;
+}
+
+.btn-trends:hover {
+    background: #138496;
+    border-color: #117a8b;
+    color: white;
+    text-decoration: none;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
 /* Modal Styles */
 .modal-xl {
     max-width: 1200px;
@@ -714,7 +869,7 @@
 /* Responsive Design */
 @media (max-width: 1200px) {
     .indicator-cards {
-        grid-template-columns: repeat(3, 1fr);  /* 3 columns on medium screens */
+        grid-template-columns: repeat(3, 1fr);
         gap: 10px;
     }
     
@@ -726,7 +881,7 @@
 
 @media (max-width: 768px) {
     .indicator-cards {
-        grid-template-columns: repeat(2, 1fr);  /* 2 columns on tablets */
+        grid-template-columns: 1fr;
         gap: 10px;
     }
     
@@ -803,13 +958,15 @@
 // Global variable to store dashboard instance
 let dashboardInstance = null;
 
-// Property Financial Dashboard Component using vanilla JavaScript
-class PropertyFinancialDashboard {
-    constructor(container, properties, portfolioIndicators, portfolioTotals) {
+// Global variable to store current period
+let currentPeriod = 'past_year';
+
+// Vacancy Dashboard Component
+class VacancyDashboard {
+    constructor(container, properties, portfolioIndicators) {
         this.container = container;
         this.properties = properties;
         this.portfolioIndicators = portfolioIndicators || {};
-        this.portfolioTotals = portfolioTotals || {};
         this.selectedProperties = {};
         this.selectedIndicator = null;
         this.charts = {};
@@ -825,50 +982,36 @@ class PropertyFinancialDashboard {
         
         this.indicators = [
             { 
-                key: 'grossROI', 
-                label: 'Gross ROI (%)', 
-                icon: 'fas fa-chart-line', 
-                color: '#17a2b8', 
-                format: (val) => `${val.toFixed(2)}%`,
-                description: 'Total revenue as a percentage of purchase price. Higher values indicate better return on investment.',
-                sortable: true
-            },
-            { 
-                key: 'netROI', 
-                label: 'Net ROI (%)', 
-                icon: 'fas fa-bullseye', 
+                key: 'occupancyRate', 
+                label: 'Occupancy Rate (%)', 
+                icon: 'fas fa-home', 
                 color: '#28a745', 
-                format: (val) => `${val.toFixed(2)}%`,
-                description: 'Revenue minus expenses as a percentage of purchase price. Shows profitability after costs.',
+                format: (val) => val === null || val === undefined ? 'N/A' : `${val.toFixed(1)}%`,
+                description: 'Percentage of time properties are occupied. Higher values indicate better performance.',
                 sortable: true
             },
             { 
-                key: 'expensesToRevenue', 
-                label: 'Expenses to Revenue (%)', 
-                icon: 'fas fa-chart-pie', 
-                color: '#dc3545', 
-                format: (val) => `${val.toFixed(2)}%`,
-                description: 'Operating expenses as a percentage of revenue. Lower values indicate better efficiency.',
+                key: 'avgDaysToFill', 
+                label: 'Avg Days to Fill', 
+                icon: 'fas fa-clock', 
+                color: '#fd7e14', 
+                format: (val) => {
+                    if (val === null || val === undefined) return 'N/A';
+                    if (val === 0) return '0 days';
+                    return `${val.toFixed(1)} days`;
+                },
+                description: 'Weighted average days to fill vacancies across entire portfolio. Properties with no turnover show 0 days.',
                 sortable: true
             },
             { 
-                key: 'rentPerSqm', 
-                label: 'Rent (€/m²)', 
-                icon: 'fas fa-euro-sign', 
-                color: '#ffc107', 
-                format: (val) => `€${val.toFixed(2)}`,
-                description: 'Average monthly rent per square meter. Useful for comparing properties of different sizes.',
+                key: 'vacancyCost', 
+                label: 'Vacancy Cost (€)', 
+                icon: 'fas fa-money-bill-wave', 
+                color: '#e74c3c', 
+                format: (val) => val === null || val === undefined ? 'N/A' : `€${val.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',')}`,
+                description: 'Total revenue lost due to vacant periods. Calculated as days vacant × (monthly rent ÷ 30). Lower values indicate better performance.',
                 sortable: true
-            },
-            { 
-                key: 'valueIncrease', 
-                label: 'Value Increase (%)', 
-                icon: 'fas fa-chart-bar', 
-                color: '#6f42c1', 
-                format: (val) => `${val.toFixed(2)}%`,
-                description: 'Property appreciation from purchase price to current value.',
-                sortable: true
-            },
+            }
         ];
         
         this.render();
@@ -882,10 +1025,10 @@ class PropertyFinancialDashboard {
     
     getHTML() {
         return `
-            <!-- Consolidated Financial Indicators -->
+            <!-- Consolidated Occupancy Indicators -->
             <div class="indicator-panel">
                 <div class="indicator-header">
-                    <h5 class="mb-0">CONSOLIDATED FINANCIAL INDICATORS</h5>
+                    <h5 class="mb-0">CONSOLIDATED OCCUPANCY INDICATORS</h5>
                 </div>
                 
                 <div class="indicator-cards">
@@ -931,7 +1074,7 @@ class PropertyFinancialDashboard {
                 </div>
                 
                 <div class="selection-counter">
-                    ${this.getSelectedCount()} of ${this.properties.length} active properties selected
+                    ${this.getSelectedCount()} of ${this.properties.length} properties selected
                 </div>
             </div>
 
@@ -960,7 +1103,7 @@ class PropertyFinancialDashboard {
                                 `<canvas id="chart-${indicator.key}"></canvas>` : 
                                 `<div class="no-data-message">
                                     <div class="no-data-icon"><i class="fas fa-building"></i></div>
-                                    <p>No active properties selected</p>
+                                    <p>No properties selected</p>
                                 </div>`
                             }
                         </div>
@@ -981,7 +1124,7 @@ class PropertyFinancialDashboard {
                         <table class="data-table">
                             <thead>
                                 <tr>
-                                    <th>Active Property</th>
+                                    <th>Property</th>
                                     ${this.indicators.map(indicator => 
                                         `<th class="sortable-header ${this.sortConfig.column === indicator.key ? 'sorted-' + this.sortConfig.direction : ''}" 
                                             data-column="${indicator.key}">
@@ -1003,7 +1146,7 @@ class PropertyFinancialDashboard {
                                 
                                 <!-- Portfolio totals row -->
                                 <tr class="average-row">
-                                    <td>PORTFOLIO TOTALS</td>
+                                    <td>PORTFOLIO AVERAGE</td>
                                     ${this.indicators.map(indicator => 
                                         `<td class="${this.sortConfig.column === indicator.key ? 'highlighted-column' : ''}">${indicator.format(this.portfolioIndicators[indicator.key] || 0)}</td>`
                                     ).join('')}
@@ -1014,9 +1157,20 @@ class PropertyFinancialDashboard {
                 ` : `
                     <div class="no-data-message">
                         <div class="no-data-icon"><i class="fas fa-table"></i></div>
-                        <p>No active properties selected for detailed view.</p>
+                        <p>No properties selected for detailed view.</p>
                     </div>
                 `}
+            </div>
+
+            <!-- Historical Trends Button -->
+            <div class="trends-button-panel">
+                <h5><i class="fas fa-chart-line"></i> Want to See Multi-Year Historical Trends?</h5>
+                <p>View occupancy performance trends across multiple years with detailed breakdowns</p>
+                <a href="/occupancy-trends/" class="btn-trends">
+                    <i class="fas fa-chart-line"></i>
+                    View Historical Performance Trends
+                    <i class="fas fa-arrow-right"></i>
+                </a>
             </div>
         `;
     }
@@ -1113,7 +1267,6 @@ class PropertyFinancialDashboard {
         const indicator = this.indicators.find(ind => ind.key === indicatorKey);
         if (!indicator) return;
         
-        // Use average for vacancy cost modal comparison, otherwise use the main value
         const portfolioAverage = indicatorKey === 'vacancyCost' 
             ? (this.portfolioIndicators['vacancyCostAverage'] || 0)
             : (this.portfolioIndicators[indicatorKey] || 0);
@@ -1126,12 +1279,10 @@ class PropertyFinancialDashboard {
             <span style="color: ${indicator.color};">${indicator.format(portfolioAverage)}</span>
         `;
         
-        let propertiesToShow = this.properties;
-        if (indicatorKey === 'occupancyRate' || indicatorKey === 'avgDaysToFill' || indicatorKey === 'vacancyCost') {propertiesToShow = this.properties.filter(p => p[indicatorKey] !== null && p[indicatorKey] !== undefined);
-        }
+        let propertiesToShow = this.properties.filter(p => p[indicatorKey] !== null && p[indicatorKey] !== undefined);
         
         const sortedProperties = [...propertiesToShow].sort((a, b) => {
-            if (indicatorKey === 'expensesToRevenue' || indicatorKey === 'avgDaysToFill' || indicatorKey === 'vacancyCost') {
+            if (indicatorKey === 'avgDaysToFill' || indicatorKey === 'vacancyCost') {
                 return a[indicatorKey] - b[indicatorKey];
             } else {
                 return b[indicatorKey] - a[indicatorKey];
@@ -1172,7 +1323,7 @@ class PropertyFinancialDashboard {
                     difference = `${difference > 0 ? '+' : ''}${difference}%`;
                 }
             }
-            else if (indicatorKey === 'expensesToRevenue' || indicatorKey === 'avgDaysToFill' || indicatorKey === 'vacancyCost') {
+            else if (indicatorKey === 'avgDaysToFill' || indicatorKey === 'vacancyCost') {
                 if ((indicatorKey === 'avgDaysToFill' && value === 0) || (indicatorKey === 'vacancyCost' && value === 0)) {
                     performanceLevel = 'Excellent';
                     performanceClass = 'excellent';
@@ -1197,22 +1348,6 @@ class PropertyFinancialDashboard {
                     difference = ((value - portfolioAverage) / portfolioAverage * 100).toFixed(1);
                     difference = `${difference > 0 ? '+' : ''}${difference}%`;
                 }
-            } else {
-                if (value >= portfolioAverage * 1.2) {
-                    performanceLevel = 'Excellent';
-                    performanceClass = 'excellent';
-                    excellentCount++;
-                } else if (value >= portfolioAverage * 0.8) {
-                    performanceLevel = 'Good';
-                    performanceClass = 'good';
-                    goodCount++;
-                } else {
-                    performanceLevel = 'Needs Improvement';
-                    performanceClass = 'poor';
-                    poorCount++;
-                }
-                difference = ((value - portfolioAverage) / portfolioAverage * 100).toFixed(1);
-                difference = `${difference > 0 ? '+' : ''}${difference}%`;
             }
             
             return `
@@ -1257,7 +1392,7 @@ class PropertyFinancialDashboard {
             
             let performanceLevel, difference;
             
-            if (indicator.key === 'expensesToRevenue' || indicator.key === 'vacancyCost') {
+            if (indicator.key === 'avgDaysToFill' || indicator.key === 'vacancyCost') {
                 if (value <= portfolioAverage * 0.8) {
                     performanceLevel = 'Excellent';
                 } else if (value <= portfolioAverage) {
@@ -1300,7 +1435,7 @@ class PropertyFinancialDashboard {
         
         XLSX.utils.book_append_sheet(wb, ws, 'Property Performance');
         
-        const filename = `PropertyPerformance_${indicator.key}_${new Date().toISOString().split('T')[0]}.xlsx`;
+        const filename = `VacancyPerformance_${indicator.key}_${new Date().toISOString().split('T')[0]}.xlsx`;
         
         XLSX.writeFile(wb, filename);
     }
@@ -1338,61 +1473,47 @@ class PropertyFinancialDashboard {
     }
     
     renderIndicatorChart(indicator, filteredProperties = null) {
-        // Use filtered properties if provided, otherwise use all properties
         const propertiesToUse = filteredProperties || this.properties;
         
         let data = propertiesToUse.map(p => p[indicator.key]);
         let labels = propertiesToUse.map(p => p.name);
-        // Use average for vacancy cost, otherwise use the main value
+        
         const portfolioAverage = indicator.key === 'vacancyCost' 
             ? this.portfolioIndicators['vacancyCostAverage']
             : this.portfolioIndicators[indicator.key];
         
-        // For occupancy metrics and vacancy cost, filter out properties with null values (excluded properties)
-        if (indicator.key === 'occupancyRate' || indicator.key === 'avgDaysToFill' || indicator.key === 'vacancyCost') {
-            const validIndices = [];
-            data.forEach((value, index) => {
-                if (value !== null && value !== undefined) {
-                    validIndices.push(index);
-                }
-            });
-            
-            // Filter both data and labels
-            data = validIndices.map(idx => data[idx]);
-            labels = validIndices.map(idx => labels[idx]);
-        }
+        const validIndices = [];
+        data.forEach((value, index) => {
+            if (value !== null && value !== undefined) {
+                validIndices.push(index);
+            }
+        });
         
-        // If no valid data, don't render chart
+        data = validIndices.map(idx => data[idx]);
+        labels = validIndices.map(idx => labels[idx]);
+        
         if (data.length === 0) {
             return;
         }
         
-        // SORT DATA FROM BEST TO WORST
         const combined = data.map((value, index) => ({ value, label: labels[index] }));
         
-        // Sort based on whether lower or higher is better
-        if (indicator.key === 'expensesToRevenue' || indicator.key === 'avgDaysToFill' || indicator.key === 'vacancyCost') {
-            // Lower is better - sort ascending
+        if (indicator.key === 'avgDaysToFill' || indicator.key === 'vacancyCost') {
             combined.sort((a, b) => a.value - b.value);
         } else {
-            // Higher is better - sort descending
             combined.sort((a, b) => b.value - a.value);
         }
         
-        // Extract sorted data and labels
         data = combined.map(item => item.value);
         labels = combined.map(item => item.label);
         
-        // Color bars based on performance relative to portfolio average
         const backgroundColors = data.map(value => {
-            // For these metrics, LOWER is BETTER
-            if (indicator.key === 'expensesToRevenue' || indicator.key === 'avgDaysToFill' || indicator.key === 'vacancyCost') {
+            if (indicator.key === 'avgDaysToFill' || indicator.key === 'vacancyCost') {
                 if ((indicator.key === 'avgDaysToFill' || indicator.key === 'vacancyCost') && value === 0) {
-                    return '#28a745'; // Green - perfect (no vacancy)
+                    return '#28a745';
                 }
                 return value <= portfolioAverage ? '#28a745' : value <= portfolioAverage * 1.2 ? '#ffc107' : '#dc3545';
             } else {
-                // For other indicators, HIGHER is BETTER
                 return value >= portfolioAverage ? '#28a745' : value >= portfolioAverage * 0.8 ? '#ffc107' : '#dc3545';
             }
         });
@@ -1400,7 +1521,6 @@ class PropertyFinancialDashboard {
         const ctx = document.getElementById(`chart-${indicator.key}`);
         if (!ctx) return;
         
-        // Destroy existing chart if it exists
         if (this.charts[indicator.key]) {
             this.charts[indicator.key].destroy();
         }
@@ -1408,10 +1528,10 @@ class PropertyFinancialDashboard {
         this.charts[indicator.key] = new Chart(ctx, {
             type: 'bar',
             data: {
-                labels: labels,  // Use filtered labels
+                labels: labels,
                 datasets: [{
                     label: indicator.label,
-                    data: data,  // Use filtered data
+                    data: data,
                     backgroundColor: backgroundColors,
                     borderColor: backgroundColors,
                     borderWidth: 1
@@ -1443,9 +1563,7 @@ class PropertyFinancialDashboard {
                         beginAtZero: true,
                         ticks: {
                             callback: function(value) {
-                                if (indicator.key === 'rentPerSqm') {
-                                    return '€' + value.toFixed(2);
-                                } else if (indicator.key === 'avgDaysToFill') {
+                                if (indicator.key === 'avgDaysToFill') {
                                     return value.toFixed(0) + ' days';
                                 } else if (indicator.key === 'vacancyCost') {
                                     return '€' + value.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
@@ -1467,27 +1585,19 @@ class PropertyFinancialDashboard {
     getSelectedCount() {
         return Object.values(this.selectedProperties).filter(Boolean).length;
     }
-    
-    getCurrentIndicator() {
-        return this.indicators.find(ind => ind.key === this.selectedIndicator);
-    }
-    
-    calculateAverage(indicatorKey) {
-        const selectedProps = this.getSelectedProperties();
-        if (selectedProps.length === 0) return 0;
-        
-        const sum = selectedProps.reduce((acc, prop) => acc + prop[indicatorKey], 0);
-        return sum / selectedProps.length;
-    }
 }
 
-function loadDashboard() {
+function loadDashboard(period = 'past_year') {
+    currentPeriod = period;
     
     document.getElementById('loadingIndicator').style.display = 'block';
     document.getElementById('dashboardContainer').style.display = 'none';
     document.getElementById('errorContainer').style.display = 'none';
 
-    fetch(window.location.href, {
+    const url = new URL(window.location.href);
+    url.searchParams.set('period', period);
+
+    fetch(url, {
         headers: {
             'X-Requested-With': 'XMLHttpRequest'
         }
@@ -1502,23 +1612,17 @@ function loadDashboard() {
         } else {
             document.getElementById('dashboardContainer').style.display = 'block';
             
-            console.log('Active properties loaded:', data.properties.length);
+            updatePeriodDisplay(data.time_period, data.period_start, data.period_end);
+            
+            console.log('Properties loaded:', data.properties.length);
             console.log('Time period:', data.time_period);
             console.log('Period range:', data.period_start, 'to', data.period_end);
             
-            if (data.total_active_properties) {
-                console.log('Total active properties:', data.total_active_properties);
-            }
-            if (data.message) {
-                console.log('Server message:', data.message);
-            }
-            
             const container = document.getElementById('dashboardContainer');
-            dashboardInstance = new PropertyFinancialDashboard(
+            dashboardInstance = new VacancyDashboard(
                 container, 
                 data.properties, 
-                data.portfolio_indicators || {},
-                data.portfolio_totals || {}
+                data.portfolio_indicators || {}
             );
         }
     })
@@ -1530,9 +1634,46 @@ function loadDashboard() {
     });
 }
 
+function updatePeriodDisplay(timePeriod, startDate, endDate) {
+    const display = document.getElementById('periodRangeDisplay');
+    const start = new Date(startDate).toLocaleDateString('en-GB', { 
+        day: 'numeric', 
+        month: 'short', 
+        year: 'numeric' 
+    });
+    const end = new Date(endDate).toLocaleDateString('en-GB', { 
+        day: 'numeric', 
+        month: 'short', 
+        year: 'numeric' 
+    });
+    
+    let periodName = '';
+    if (timePeriod === 'past_year') {
+        periodName = 'Past Year';
+    } else if (timePeriod === 'last_3_years') {
+        periodName = 'Last 3 Years';
+    } else {
+        periodName = 'All Time';
+    }
+    
+    display.textContent = `${periodName}: ${start} - ${end}`;
+}
+
 document.addEventListener('DOMContentLoaded', function() {
-    // Load dashboard
-    loadDashboard();
+    loadDashboard('past_year');
+    
+    document.querySelectorAll('.btn-period').forEach(button => {
+        button.addEventListener('click', function() {
+            const period = this.dataset.period;
+            
+            document.querySelectorAll('.btn-period').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            this.classList.add('active');
+            
+            loadDashboard(period);
+        });
+    });
 });
 </script>
 

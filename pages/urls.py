@@ -53,6 +53,9 @@ urlpatterns = [
     path('property_management_dashboard/', views.property_management_dashboard, name='property_management_dashboard'),
     path('property_detail/<int:property_id>/<str:box_type>/', views.property_detail, name='property_detail'),
     path('property/<int:property_id>/profit-loss/', views.dashboard_pl, name='dashboard_pl'),    
+    # Occupancy Trends
+    path('occupancy-trends/', views.occupancy_trends_view, name='occupancy_trends'),
+    path('vacancy-management/', views.vacancy_management_view, name='vacancy_management'),
 
     #
     # Cash Flow
@@ -146,7 +149,7 @@ urlpatterns = [
     path('lease-timeline/', views.lease_timeline_view, name='lease_timeline'),
     path('tenant/duplicate/<int:tenant_id>/', views.duplicate_tenant_view, name='duplicate_tenant'),
     path('tenant/delete/<int:tenant_id>/', views.delete_tenant_view, name='delete_tenant'),
-    
+
     #
     #Properties
     path('properties/', views.properties_page, name='properties'),
