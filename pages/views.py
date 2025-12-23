@@ -2396,9 +2396,11 @@ def calculate_year_metrics(year):
             'cost': round(vacancy_cost, 2)
         })
     
-    # Calculate average days to fill
-    if vacancy_days_list:
-        avg_days_to_fill = sum(vacancy_days_list) / len(vacancy_days_list)
+    # Calculate average days to fill - SIMPLE AVERAGE across all properties
+    # This matches the methodology in vacancy_management_view
+    # Properties with no vacancies contribute 0 days to the average
+    if property_count > 0:
+        avg_days_to_fill = sum(vacancy_days_list) / property_count
     else:
         avg_days_to_fill = 0
     
