@@ -93,13 +93,17 @@ Invoices
 
   <!-- Invoices Table -->
   <div class="table-container">
-    <table class="table table-bordered table-striped text-center">
+    <table class="table table-bordered table-striped">
       <thead>
         <tr>
-          <th style="text-align: left; width: 30%">Property</th>
-          <th style="text-align: left; width: 30%">Tenant</th>
-          <th style="width: 20%">Invoice Date</th>
-          <th style="width: 20%">Mark as Paid</th>
+          <th style="text-align: left; width: 20%">Property</th>
+          <th style="text-align: center; width: 10%">Country</th>
+          <th style="text-align: left; width: 20%">Tenant</th>
+          <th style="text-align: right; width: 10%">Amount</th>
+          <th style="text-align: center; width: 12%">Invoice Date</th>
+          <th style="text-align: center; width: 12%">Due Date</th>
+          <th style="text-align: center; width: 8%">Days Overdue</th>
+          <th style="text-align: center; width: 8%">Mark as Paid</th>
         </tr>
       </thead>
       <tbody>
@@ -107,14 +111,19 @@ Invoices
           {% for tresults in tenant %}
             {% for iresults in invoices %}
               {% if iresults.tenant_id == tresults.tenant_id and tresults.prop_id == results.prop_id %}
+                {% load invoice_tags %}
+                {% calculate_due_date iresults.invoice_date tresults.tenant_payment_terms as due_date %}
+                {% calculate_days_overdue due_date as days_overdue %}
                 <tr>
                   <td style="text-align: left">{{ results.prop_name }}</td>
+                  <td style="text-align: center">{{ results.prop_country }}</td>
                   <td style="text-align: left">{{ tresults.tenant_name }}</td>
-                  <td>{{ iresults.invoice_date }}</td>
-                  <td>
-                    <button type="button" class="btn btn-light action-btn">
-                      <a href="{% url 'invoices_commit' iresults.invoice_id %}">Paid</a>
-                    </button>
+                  <td style="text-align: right; font-family: 'Courier New', monospace;">€{{ tresults.tenant_rent|floatformat:0 }}</td>
+                  <td style="text-align: center">{{ iresults.invoice_date|date:"Y-m-d" }}</td>
+                  <td style="text-align: center">{{ due_date|date:"Y-m-d" }}</td>
+                  <td style="text-align: center; {% if days_overdue > 0 %}color: #dc3545; font-weight: bold;{% endif %}">{{ days_overdue }}</td>
+                  <td style="text-align: center">
+                    <a href="{% url 'invoices_commit' iresults.invoice_id %}" class="btn btn-link">Paid</a>
                   </td>
                 </tr>
               {% endif %}
@@ -131,7 +140,7 @@ Invoices
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
 <style>
-/* Refined Filter Panel Styles */
+/* Clean Filter Panel Styles */
 .filter-panel {
     background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
     border: 1px solid #dee2e6;
@@ -139,72 +148,22 @@ Invoices
     padding: 12px 24px;
     margin-bottom: 30px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    transition: padding 0.3s ease;
 }
 
 .filter-panel.expanded {
     padding: 24px;
 }
 
-/* CSS-only visibility control - can't be overridden by JavaScript */
-.filter-panel:not(.expanded) .filter-content {
-    display: none !important;
-    visibility: hidden !important;
-    opacity: 0 !important;
-    height: 0 !important;
-    overflow: hidden !important;
-}
-
-.filter-panel.expanded .filter-content,
-.filter-panel.force-expanded .filter-content {
-    display: block !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-    height: auto !important;
-    overflow: visible !important;
-    padding-top: 20px;
-}
-
-/* Force-expanded class overrides everything */
-.filter-panel.force-expanded {
-    padding: 24px !important;
-}
-
-.filter-panel.force-expanded .filter-content {
-    display: block !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-    height: auto !important;
-    overflow: visible !important;
-    padding-top: 20px !important;
-}
-
 .filter-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 0;
-    padding-bottom: 8px;
-    border-bottom: 1px solid #dee2e6;
     cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.filter-header.expanded {
-    padding-bottom: 12px;
-    border-bottom: 2px solid #dee2e6;
-    margin-bottom: 20px;
+    padding-bottom: 0;
 }
 
 .filter-header:hover {
-    background-color: rgba(23, 162, 184, 0.05);
-    border-radius: 8px;
-    margin: -8px;
-    padding: 16px 8px;
-}
-
-.filter-header.expanded:hover {
-    padding: 20px 8px;
+    opacity: 0.8;
 }
 
 .filter-title {
@@ -231,13 +190,12 @@ Invoices
 }
 
 .filter-content {
-    overflow: visible;
-    transition: all 0.3s ease;
+    display: none;
+    padding-top: 20px;
 }
 
 .filter-content.show {
-    display: block !important;
-    padding-top: 20px;
+    display: block;
 }
 
 .filter-grid {
@@ -250,9 +208,6 @@ Invoices
 .filter-group {
     display: flex;
     flex-direction: column;
-    position: relative;
-    /* Ensure dropdowns don't get cut off */
-    overflow: visible;
 }
 
 .filter-label {
@@ -270,36 +225,19 @@ Invoices
     width: 14px;
 }
 
-.filter-input, .filter-select {
+.filter-select {
     border: 2px solid #e9ecef;
     border-radius: 8px;
     padding: 10px 14px;
     font-size: 14px;
     transition: all 0.3s ease;
     background: white;
-    position: relative;
-    z-index: 10;
 }
 
-.filter-select {
-    cursor: pointer;
-    /* Fix dropdown cutoff - ensure proper height and padding */
-    appearance: none;
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
-    background-position: right 12px center;
-    background-repeat: no-repeat;
-    background-size: 16px 12px;
-    padding-right: 40px;
-    min-height: 44px;
-    line-height: 1.4;
-}
-
-.filter-input:focus, .filter-select:focus {
+.filter-select:focus {
     border-color: #17a2b8;
     box-shadow: 0 0 0 3px rgba(23, 162, 184, 0.1);
     outline: none;
-    position: relative;
-    z-index: 20;
 }
 
 .btn-outline-secondary {
@@ -315,7 +253,6 @@ Invoices
 .btn-outline-secondary:hover {
     background: #6c757d;
     color: white;
-    transform: translateY(-1px);
 }
 
 /* Active Filters */
@@ -367,7 +304,7 @@ Invoices
     font-size: 10px;
 }
 
-/* Table Enhancements */
+/* Clean Table Styles */
 .table-container {
     background: white;
     border-radius: 8px;
@@ -375,14 +312,30 @@ Invoices
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
 
-.action-btn {
-    border-color: #dee2e6;
-    transition: all 0.2s ease;
+.table-container table {
+    margin-bottom: 0;
 }
 
-.action-btn:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+.table-container table thead th {
+    background-color: #2c3e50;
+    color: white;
+    font-weight: 600;
+    border: 1px solid #34495e;
+    padding: 12px 8px;
+}
+
+.table-container table tbody td {
+    padding: 10px 8px;
+    vertical-align: middle;
+}
+
+.table-container table tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+/* Amount column styling */
+td[style*="font-family: 'Courier New'"] {
+    font-weight: 500;
 }
 
 /* Button Styles */
@@ -404,6 +357,17 @@ Invoices
     box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 
+.btn-link {
+    color: #17a2b8;
+    font-weight: 500;
+    text-decoration: none;
+}
+
+.btn-link:hover {
+    color: #138496;
+    text-decoration: underline;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
     .filter-grid {
@@ -420,51 +384,7 @@ Invoices
 </style>
 
 <script>
-console.log('=== INVOICE FILTER PANEL SCRIPT LOADED ===');
-
-// NUCLEAR OPTION - Complete override of external interference
-let PANEL_IS_MANUALLY_EXPANDED = false;
-let EXTERNAL_INTERFERENCE_DETECTED = false;
-
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('DOM loaded - initializing invoice filter panel');
-    
-    // Check if panel was forcibly expanded before form submission
-    const wasForceExpanded = sessionStorage.getItem('FORCE_PANEL_EXPANDED') === 'true';
-    const wasClearAllProtected = sessionStorage.getItem('CLEAR_ALL_PROTECTION') === 'true';
-    const windowFlag = window.PANEL_MUST_STAY_EXPANDED;
-    const clearAllFlag = window.CLEAR_ALL_PROTECTION_ACTIVE;
-    
-    console.log(`🔍 Checking forced expansion: sessionStorage=${wasForceExpanded}, clearAll=${wasClearAllProtected}, window=${windowFlag}`);
-    
-    // Initialize as collapsed UNLESS it was force-expanded
-    const filterPanel = document.getElementById('filterPanel');
-    if (filterPanel) {
-        if (wasForceExpanded || wasClearAllProtected || windowFlag || clearAllFlag) {
-            console.log('🔓 RESTORING FORCE-EXPANDED PANEL');
-            filterPanel.classList.add('expanded', 'force-expanded');
-            filterPanel.setAttribute('data-force-expanded', 'true');
-            const toggleIcon = document.getElementById('filterToggleIcon');
-            if (toggleIcon) {
-                toggleIcon.classList.add('rotated');
-            }
-            PANEL_IS_MANUALLY_EXPANDED = true;
-            
-            // Clear the force flags
-            sessionStorage.removeItem('FORCE_PANEL_EXPANDED');
-            sessionStorage.removeItem('CLEAR_ALL_PROTECTION');
-            window.PANEL_MUST_STAY_EXPANDED = false;
-            window.CLEAR_ALL_PROTECTION_ACTIVE = false;
-        } else {
-            filterPanel.classList.remove('expanded', 'force-expanded');
-            filterPanel.removeAttribute('data-force-expanded');
-            console.log('Panel initialized as collapsed');
-        }
-    }
-    
-    // Set up continuous monitoring for external interference
-    setupInterferenceProtection();
-    
     updateActiveFilters();
     
     // Auto-submit on dropdown filter change
@@ -472,286 +392,50 @@ document.addEventListener('DOMContentLoaded', function() {
         const element = document.getElementById(id);
         if (element) {
             element.addEventListener('change', function() {
-                console.log(`🔄 Filter changed: ${id} = ${this.value}`);
-                
-                // CRITICAL: Lock panel state BEFORE form submission
-                if (PANEL_IS_MANUALLY_EXPANDED) {
-                    console.log('🔒 LOCKING PANEL STATE BEFORE FORM SUBMISSION');
-                    
-                    // Multiple approaches to prevent collapse during submission
-                    const filterPanel = document.getElementById('filterPanel');
-                    const toggleIcon = document.getElementById('filterToggleIcon');
-                    
-                    // Approach 1: Add persistent CSS class
-                    if (filterPanel) {
-                        filterPanel.classList.add('force-expanded');
-                        filterPanel.style.cssText += 'display: block !important;';
-                    }
-                    
-                    // Approach 2: Store in sessionStorage
-                    sessionStorage.setItem('FORCE_PANEL_EXPANDED', 'true');
-                    
-                    // Approach 3: Set flag in window object
-                    window.PANEL_MUST_STAY_EXPANDED = true;
-                    
-                    // Approach 4: Override any potential hide functions
-                    const originalHide = window.hideFilters;
-                    window.hideFilters = function() {
-                        console.log('🚫 BLOCKED: hideFilters() call during form submission');
-                        return false;
-                    };
-                    
-                    // Restore original function after a delay
-                    setTimeout(() => {
-                        window.hideFilters = originalHide;
-                    }, 100);
-                }
-                
-                // Submit the form
                 document.getElementById('filterForm').submit();
             });
         }
     });
     
-    // Clear all filters - ENHANCED PROTECTION
+    // Clear all filters
     const clearAllBtn = document.getElementById('clearAllBtn');
     if (clearAllBtn) {
         clearAllBtn.addEventListener('click', function() {
-            console.log('🚨🧹 CLEAR ALL CLICKED - MAXIMUM PROTECTION MODE ACTIVATED 🧹🚨');
-            
-            if (PANEL_IS_MANUALLY_EXPANDED) {
-                console.log('🔒🔒 LOCKING PANEL STATE BEFORE CLEAR ALL SUBMISSION - MAXIMUM SECURITY 🔒🔒');
-                
-                const filterPanel = document.getElementById('filterPanel');
-                
-                // MAXIMUM PROTECTION for Clear All
-                if (filterPanel) {
-                    filterPanel.classList.add('force-expanded');
-                    filterPanel.style.cssText += 'display: block !important; visibility: visible !important;';
-                    
-                    // Add extra CSS protection
-                    filterPanel.setAttribute('data-force-expanded', 'true');
-                }
-                
-                // Multiple storage methods
-                sessionStorage.setItem('FORCE_PANEL_EXPANDED', 'true');
-                sessionStorage.setItem('CLEAR_ALL_PROTECTION', 'true');
-                window.PANEL_MUST_STAY_EXPANDED = true;
-                window.CLEAR_ALL_PROTECTION_ACTIVE = true;
-                
-                // Enhanced function blocking
-                const originalHide = window.hideFilters;
-                const originalToggle = window.toggleFilters;
-                
-                window.hideFilters = function() {
-                    console.log('🚫🚫 BLOCKED: hideFilters() call during CLEAR ALL submission 🚫🚫');
-                    return false;
-                };
-                
-                // Also block toggle during clear all
-                window.toggleFilters = function() {
-                    console.log('🚫 BLOCKED: toggleFilters() call during CLEAR ALL submission');
-                    return false;
-                };
-                
-                // Enhanced restoration schedule
-                setTimeout(() => forceExpandPanel(), 50);
-                setTimeout(() => forceExpandPanel(), 100);
-                setTimeout(() => forceExpandPanel(), 200);
-                setTimeout(() => forceExpandPanel(), 500);
-                setTimeout(() => forceExpandPanel(), 1000);
-                setTimeout(() => forceExpandPanel(), 2000);
-                
-                // Restore original functions after longer delay for Clear All
-                setTimeout(() => {
-                    window.hideFilters = originalHide;
-                    window.toggleFilters = originalToggle;
-                    console.log('🔓 Clear All protection mode ended');
-                }, 200);
-                
-                // Continuous monitoring for Clear All
-                const protectionInterval = setInterval(() => {
-                    if (PANEL_IS_MANUALLY_EXPANDED) {
-                        forceExpandPanel();
-                    } else {
-                        clearInterval(protectionInterval);
-                    }
-                }, 50); // More frequent monitoring for Clear All
-                
-                // Stop monitoring after 10 seconds for Clear All
-                setTimeout(() => {
-                    clearInterval(protectionInterval);
-                    console.log('🛡️ Clear All continuous protection ended');
-                }, 10000);
-            }
-            
             document.getElementById('propertySelect').value = '';
             document.getElementById('tenantSelect').value = '';
             document.getElementById('filterForm').submit();
         });
     }
-    
-    console.log('All event listeners attached');
 });
 
-// Force expand panel function
-function forceExpandPanel() {
-    const filterPanel = document.getElementById('filterPanel');
-    const toggleIcon = document.getElementById('filterToggleIcon');
-    
-    if (filterPanel && !filterPanel.classList.contains('expanded')) {
-        console.log('🔥 FORCING PANEL TO EXPAND - OVERRIDING EXTERNAL INTERFERENCE');
-        filterPanel.classList.add('expanded');
-        if (toggleIcon) {
-            toggleIcon.classList.add('rotated');
-        }
-        EXTERNAL_INTERFERENCE_DETECTED = true;
-    }
-}
-
-// Set up continuous monitoring for external interference
-function setupInterferenceProtection() {
-    const filterPanel = document.getElementById('filterPanel');
-    if (!filterPanel) return;
-    
-    // Monitor for class changes
-    const observer = new MutationObserver(function(mutations) {
-        mutations.forEach(function(mutation) {
-            if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
-                const hasExpanded = filterPanel.classList.contains('expanded');
-                
-                if (PANEL_IS_MANUALLY_EXPANDED && !hasExpanded) {
-                    console.log('🚨 EXTERNAL INTERFERENCE DETECTED! PANEL WAS COLLAPSED BY EXTERNAL CODE');
-                    console.log('🛡️ RESTORING EXPANDED STATE');
-                    
-                    // Immediately restore
-                    filterPanel.classList.add('expanded');
-                    const toggleIcon = document.getElementById('filterToggleIcon');
-                    if (toggleIcon) {
-                        toggleIcon.classList.add('rotated');
-                    }
-                    
-                    EXTERNAL_INTERFERENCE_DETECTED = true;
-                }
-            }
-        });
-    });
-    
-    observer.observe(filterPanel, {
-        attributes: true,
-        attributeFilter: ['class']
-    });
-    
-    console.log('🛡️ Interference protection activated');
-}
-
-// Simple toggle - only changes when user clicks header
 function toggleFilters() {
-    console.log('🔄🔄 Toggle filters called - MANUAL USER ACTION 🔄🔄');
-    const filterPanel = document.getElementById('filterPanel');
+    const filterContent = document.getElementById('filterContent');
     const toggleIcon = document.getElementById('filterToggleIcon');
+    const filterPanel = document.getElementById('filterPanel');
     
-    if (!filterPanel || !toggleIcon) {
-        console.log('❌ Panel or icon not found');
-        return;
-    }
-    
-    const isExpanded = filterPanel.classList.contains('expanded') || filterPanel.classList.contains('force-expanded');
-    console.log(`📊📊 Current state: ${isExpanded ? 'expanded' : 'collapsed'} 📊📊`);
-    console.log(`🔍 Panel classes: ${filterPanel.className}`);
-    
-    if (isExpanded) {
-        // MANUAL COLLAPSE - Override all protection with extreme force
-        console.log('📉📉 MANUAL COLLAPSE - NUCLEAR OVERRIDE OF ALL PROTECTION 📉📉');
-        
-        // Clear all protection flags
-        PANEL_IS_MANUALLY_EXPANDED = false;
-        sessionStorage.removeItem('FORCE_PANEL_EXPANDED');
-        sessionStorage.removeItem('CLEAR_ALL_PROTECTION');
-        window.PANEL_MUST_STAY_EXPANDED = false;
-        window.CLEAR_ALL_PROTECTION_ACTIVE = false;
-        
-        // FORCE removal of all classes
-        filterPanel.classList.remove('expanded', 'force-expanded');
-        filterPanel.removeAttribute('data-force-expanded');
-        
-        // NUCLEAR CSS override
-        filterPanel.style.cssText = '';
-        filterPanel.style.display = '';
-        filterPanel.style.visibility = '';
-        filterPanel.style.opacity = '';
-        filterPanel.style.height = '';
-        filterPanel.style.overflow = '';
-        filterPanel.style.padding = '';
-        
-        // Force hide the content directly
-        const filterContent = document.getElementById('filterContent');
-        if (filterContent) {
-            filterContent.style.display = 'none';
-            filterContent.style.visibility = 'hidden';
-            filterContent.style.opacity = '0';
-            filterContent.style.height = '0';
-            filterContent.style.overflow = 'hidden';
-            filterContent.classList.remove('show');
-        }
-        
+    if (filterContent.classList.contains('show')) {
+        filterContent.classList.remove('show');
         toggleIcon.classList.remove('rotated');
-        
-        console.log('📉📉 Panel FORCE collapsed - ALL PROTECTION NUKED 📉📉');
-        
-        // Verify the collapse worked
-        setTimeout(() => {
-            const isStillExpanded = filterPanel.classList.contains('expanded') || filterPanel.classList.contains('force-expanded');
-            console.log(`🔍 Collapse verification: panel still expanded = ${isStillExpanded}`);
-            if (isStillExpanded) {
-                console.log('⚠️ COLLAPSE FAILED - EXTERNAL INTERFERENCE DETECTED');
-                // Try one more time with even more force
-                filterPanel.className = filterPanel.className.replace(/\b(expanded|force-expanded)\b/g, '').trim();
-                filterPanel.style.cssText = 'padding: 12px 24px !important;';
-                if (filterContent) {
-                    filterContent.style.cssText = 'display: none !important; visibility: hidden !important; opacity: 0 !important; height: 0 !important; overflow: hidden !important;';
-                }
-            }
-        }, 50);
-        
+        filterPanel.classList.remove('expanded');
     } else {
-        // MANUAL EXPANSION
-        console.log('📈📈 Panel manually expanded - PROTECTION ACTIVATED 📈📈');
-        filterPanel.classList.add('expanded');
-        filterPanel.classList.remove('force-expanded'); // Clean start
+        filterContent.classList.add('show');
         toggleIcon.classList.add('rotated');
-        PANEL_IS_MANUALLY_EXPANDED = true;
-        
-        // Ensure content is visible
-        const filterContent = document.getElementById('filterContent');
-        if (filterContent) {
-            filterContent.style.display = 'block';
-            filterContent.style.visibility = 'visible';
-            filterContent.style.opacity = '1';
-            filterContent.style.height = 'auto';
-            filterContent.style.overflow = 'visible';
-            filterContent.classList.add('show');
-        }
+        filterPanel.classList.add('expanded');
     }
 }
 
-// Simple update function - NEVER changes panel state
 function updateActiveFilters() {
-    console.log('🔄 updateActiveFilters called');
     const propertySelect = document.getElementById('propertySelect');
     const tenantSelect = document.getElementById('tenantSelect');
     const activeFiltersDiv = document.getElementById('activeFilters');
     const filterTagsDiv = document.getElementById('filterTags');
     
     if (!propertySelect || !tenantSelect || !activeFiltersDiv || !filterTagsDiv) {
-        console.log('❌ Some elements missing for updateActiveFilters');
         return;
     }
     
     const property = propertySelect.value;
     const tenant = tenantSelect.value;
-    
-    console.log(`📊 Filter values - Property: "${property}", Tenant: "${tenant}"`);
     
     filterTagsDiv.innerHTML = '';
     let hasFilters = false;
@@ -767,65 +451,19 @@ function updateActiveFilters() {
     }
     
     activeFiltersDiv.style.display = hasFilters ? 'flex' : 'none';
-    console.log(`✅ Filter tags updated, hasFilters: ${hasFilters}`);
-    
-    console.log('✅ updateActiveFilters completed - panel state UNCHANGED');
 }
 
 function clearFilter(filterType) {
-    console.log(`🧹 clearFilter called for: ${filterType}`);
-    
-    // Apply the same protection as other form submissions
-    if (PANEL_IS_MANUALLY_EXPANDED) {
-        console.log('🔒 LOCKING PANEL STATE BEFORE INDIVIDUAL FILTER CLEAR');
-        
-        const filterPanel = document.getElementById('filterPanel');
-        
-        // Apply all protection methods
-        if (filterPanel) {
-            filterPanel.classList.add('force-expanded');
-            filterPanel.style.cssText += 'display: block !important;';
-            filterPanel.setAttribute('data-force-expanded', 'true');
-        }
-        
-        // Multiple storage methods
-        sessionStorage.setItem('FORCE_PANEL_EXPANDED', 'true');
-        window.PANEL_MUST_STAY_EXPANDED = true;
-        
-        // Block hide functions temporarily
-        const originalHide = window.hideFilters;
-        window.hideFilters = function() {
-            console.log('🚫 BLOCKED: hideFilters() call during individual filter clear');
-            return false;
-        };
-        
-        setTimeout(() => {
-            window.hideFilters = originalHide;
-        }, 100);
-    }
-    
     switch(filterType) {
         case 'property':
-            const propertySelect = document.getElementById('propertySelect');
-            if (propertySelect) propertySelect.value = '';
+            document.getElementById('propertySelect').value = '';
             break;
         case 'tenant':
-            const tenantSelect = document.getElementById('tenantSelect');
-            if (tenantSelect) tenantSelect.value = '';
+            document.getElementById('tenantSelect').value = '';
             break;
     }
     document.getElementById('filterForm').submit();
 }
-
-// Show interference detection status
-setInterval(() => {
-    if (EXTERNAL_INTERFERENCE_DETECTED) {
-        console.log('🚨 External interference was detected and blocked');
-        EXTERNAL_INTERFERENCE_DETECTED = false; // Reset flag
-    }
-}, 2000);
-
-console.log('🚀 === INVOICE SCRIPT COMPLETE ===');
 </script>
 
 {% else %}
