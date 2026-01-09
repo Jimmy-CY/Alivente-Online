@@ -2,15 +2,11 @@
 {% load static %}
 {% load humanize %}
 {% load custom_filters %} 
-
 {% block title %}
 {% endblock %}
-
 {% block content %}
-
 <h2><center>ALIVENTE ONLINE - PROPERTY VALUATIONS</center></h2>
 <br/>
-
   {% for msg in messages %}
     <div class="alert alert-secondary alert-dismissible fade show auto-dismiss" role="alert">
       <strong></strong> <center>{{ msg }}</center>
@@ -31,9 +27,7 @@
   {% endfor %}
   
 <body>
-
 {% if user.is_superuser %}
-
   <div style="display: flex ; justify-content: flex-end">
     <a href="{% url 'finance_valuations_add' %}" class="btn btn-info" style="margin-right:16px" type="button">Add New</a>
     <a href="{% url 'finance' %}" class="btn btn-info" style="margin-right:16px" role="button">Back</a>
@@ -45,10 +39,14 @@
     <table class="table table-bordered table-striped text-center">
       <thead>
         <tr>
-          <th style="text-align: left; width: 50%">Property</th>
-          <th style="width: 20%">Purchase Price</th>
-          <th style="width: 20%">Current Value</th>
-          <th style="width: 10%">Details</th>
+          <th style="text-align: left; width: 25%">Property</th>
+          <th style="text-align: center; width: 8%">m²</th>
+          <th style="text-align: right; width: 13%">Purchase Price</th>
+          <th style="text-align: right; width: 11%">Price/m²</th>
+          <th style="text-align: right; width: 13%">Current Value</th>
+          <th style="text-align: right; width: 11%">Value/m²</th>
+          <th style="text-align: right; width: 11%">Gain %</th>
+          <th style="text-align: center; width: 8%">Details</th>
         </tr>
       </thead>
       <tbody>
@@ -57,8 +55,42 @@
             {% if valuation %}
               <tr>
                 <td style="text-align: left">{{ property.prop_name }}</td>
+                <td style="text-align: center">
+                  {% if property.prop_floor_area %}
+                    {{ property.prop_floor_area|floatformat:0 }}
+                  {% else %}
+                    <span style="color: #999;">—</span>
+                  {% endif %}
+                </td>
                 <td style="text-align: right">€ {{ valuation.prop_values_purchase_price|floatformat:"0"|intcomma }}</td>
+                <td style="text-align: right">
+                  {% if property.prop_floor_area and valuation.prop_values_purchase_price %}
+                    €{{ valuation.prop_values_purchase_price|divide_by:property.prop_floor_area|floatformat:0|intcomma }}
+                  {% else %}
+                    <span style="color: #999;">—</span>
+                  {% endif %}
+                </td>
                 <td style="text-align: right">€ {{ valuation.prop_values_current_value|floatformat:"0"|intcomma }}</td>
+                <td style="text-align: right">
+                  {% if property.prop_floor_area and valuation.prop_values_current_value %}
+                    €{{ valuation.prop_values_current_value|divide_by:property.prop_floor_area|floatformat:0|intcomma }}
+                  {% else %}
+                    <span style="color: #999;">—</span>
+                  {% endif %}
+                </td>
+                <td style="text-align: right">
+                  {% if valuation.prop_values_purchase_price and valuation.prop_values_current_value %}
+                    {% with gain=valuation.prop_values_current_value|subtract:valuation.prop_values_purchase_price %}
+                      {% with percentage=gain|multiply:100|divide_by:valuation.prop_values_purchase_price %}
+                        <span style="color: {% if percentage >= 0 %}#28a745{% else %}#dc3545{% endif %}; font-weight: 500;">
+                          {% if percentage >= 0 %}+{% endif %}{{ percentage|floatformat:1 }}%
+                        </span>
+                      {% endwith %}
+                    {% endwith %}
+                  {% else %}
+                    <span style="color: #999;">—</span>
+                  {% endif %}
+                </td>
                 <td>
                   <button type="button" class="btn btn-light" style="border-color:black; width: 100%">
                     <a href="{% url 'finance_valuations_edit' valuation.prop_values_id %}">Edit</a>
@@ -69,18 +101,28 @@
           {% endwith %}
         {% endfor %}
         <tr>
-          <td style="font-weight:bold" align="right">TOTAL: </td>
+          <td style="font-weight:bold" align="right" colspan="2">TOTAL: </td>
           <td style="font-weight:bold" align="right">€ {{ pur_balance|default:0|floatformat:"0"|intcomma }}</td>
+          <td></td>
           <td style="font-weight:bold" align="right">€ {{ cur_balance|default:0|floatformat:"0"|intcomma }}</td>
+          <td></td>
+          <td style="font-weight:bold" align="right">
+            {% if pur_balance and cur_balance %}
+              {% with total_gain=cur_balance|subtract:pur_balance %}
+                {% with total_percentage=total_gain|multiply:100|divide_by:pur_balance %}
+                  <span style="color: {% if total_percentage >= 0 %}#28a745{% else %}#dc3545{% endif %};">
+                    {% if total_percentage >= 0 %}+{% endif %}{{ total_percentage|floatformat:1 }}%
+                  </span>
+                {% endwith %}
+              {% endwith %}
+            {% endif %}
+          </td>
           <td></td>
         </tr>
       </tbody>
     </table>    
   </div>
 </form>
-
 {% endif %}
-
 </body>
-
 {% endblock %}

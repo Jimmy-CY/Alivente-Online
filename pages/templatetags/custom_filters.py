@@ -1,9 +1,41 @@
 # templatetags/custom_filters.py
 
 from django import template
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 
 register = template.Library()
+
+@register.filter(name='divide_by')
+def divide_by(value, arg):
+    """Divide value by arg - safe division with error handling"""
+    try:
+        value = Decimal(str(value)) if value else Decimal('0')
+        arg = Decimal(str(arg)) if arg else Decimal('1')
+        if arg == 0:
+            return None
+        return float(value / arg)
+    except (ValueError, TypeError, InvalidOperation):
+        return None
+
+@register.filter(name='multiply')
+def multiply(value, arg):
+    """Multiply value by arg"""
+    try:
+        value = Decimal(str(value)) if value else Decimal('0')
+        arg = Decimal(str(arg)) if arg else Decimal('1')
+        return float(value * arg)
+    except (ValueError, TypeError, InvalidOperation):
+        return None
+
+@register.filter(name='subtract')
+def subtract(value, arg):
+    """Subtract arg from value"""
+    try:
+        value = Decimal(str(value)) if value else Decimal('0')
+        arg = Decimal(str(arg)) if arg else Decimal('0')
+        return float(value - arg)
+    except (ValueError, TypeError, InvalidOperation):
+        return None
 
 @register.filter
 def sort_by_expense_line_type(expenses):
