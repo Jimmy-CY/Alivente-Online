@@ -153,6 +153,40 @@
     text-decoration: underline;
 }
 
+.issue-description {
+    color: #6c757d;
+    font-style: italic;
+}
+
+/* Status badge styling */
+.status-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.status-resolved {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+}
+
+.status-unresolved {
+    background-color: #fff3cd;
+    color: #856404;
+    border: 1px solid #ffeaa7;
+}
+
+.status-open {
+    background-color: #d1ecf1;
+    color: #0c5460;
+    border: 1px solid #bee5eb;
+}
+
 .no-comments {
     text-align: center;
     padding: 60px 20px;
@@ -247,6 +281,12 @@
         -webkit-print-color-adjust: exact;
         print-color-adjust: exact;
     }
+    
+    .status-badge {
+        border: 1px solid #000 !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
 }
 </style>
 
@@ -289,10 +329,11 @@
         <table class="report-table">
             <thead>
                 <tr>
-                    <th style="width: 45%">Comment</th>
-                    <th style="width: 12%">Date</th>
-                    <th style="width: 20%">Property</th>
-                    <th style="width: 13%">User</th>
+                    <th style="width: 38%">Comment</th>
+                    <th style="width: 10%">Date</th>
+                    <th style="width: 18%">Property</th>
+                    <th style="width: 12%; text-align: center;">Status</th>
+                    <th style="width: 12%">User</th>
                 </tr>
             </thead>
             <tbody>
@@ -303,11 +344,27 @@
                         {% if item.issue_id %}
                         <a href="{% url 'fsr_details' item.issue_id %}" class="issue-link">
                             <i class="fas fa-link"></i> {{ item.issue_heading }}
+                            {% if item.issue_description %}
+                                <span class="issue-description">({{ item.issue_description }})</span>
+                            {% endif %}
                         </a>
                         {% endif %}
                     </td>
                     <td class="date-cell">{{ item.date|date:"d/m/Y" }}</td>
                     <td class="property-cell">{{ item.property }}</td>
+                    <td style="text-align: center;">
+                        {% if item.issue_status %}
+                            {% if item.issue_status == "Resolved" %}
+                                <span class="status-badge status-resolved">{{ item.issue_status }}</span>
+                            {% elif item.issue_status == "Unresolved" or item.issue_status == "Open" %}
+                                <span class="status-badge status-unresolved">{{ item.issue_status }}</span>
+                            {% else %}
+                                <span class="status-badge status-open">{{ item.issue_status }}</span>
+                            {% endif %}
+                        {% else %}
+                            <span style="color: #999;">—</span>
+                        {% endif %}
+                    </td>
                     <td class="user-cell {% if item.is_admin %}admin-user{% else %}regular-user{% endif %}">
                         {{ item.user }}
                     </td>

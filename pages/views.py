@@ -7899,14 +7899,20 @@ def comments_report(request):
             property_name = issue.prop.prop_name
             issue_heading = issue.issues_heading
             issue_id = issue.issues_id
+            issue_status = issue.issues_status              # NEW
+            issue_description = issue.issues_description    # NEW
         elif issue:
             property_name = 'Unknown'
             issue_heading = issue.issues_heading
             issue_id = issue.issues_id
+            issue_status = issue.issues_status              # NEW
+            issue_description = issue.issues_description    # NEW
         else:
             property_name = 'Unknown'
             issue_heading = 'Unknown'
             issue_id = None
+            issue_status = None                             # NEW
+            issue_description = None                        # NEW
         
         # Define admin users (add initials of admin users here)
         admin_users = ['DM']  # Add other admin initials as needed
@@ -7920,6 +7926,8 @@ def comments_report(request):
             'user': comment.issues_details_user,
             'issue_heading': issue_heading,
             'issue_id': issue_id,
+            'issue_status': issue_status,                   # NEW
+            'issue_description': issue_description,         # NEW
             'is_admin': is_admin,
         })
     
