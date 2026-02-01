@@ -206,6 +206,7 @@ urlpatterns = [
     path('fsr/pdf/', views.fsr_pdf, name='fsr_pdf'),
     path('issues/delete/<int:issue_id>/', views.delete_issue, name='delete_issue'),
     path('comments-report/', views.comments_report, name='comments_report'),
+    path('delete-comment/<int:comment_id>/', views.delete_comment, name='delete_comment'),
 
     #
     # Passports

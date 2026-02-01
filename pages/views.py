@@ -7874,8 +7874,6 @@ def fsr_notification(request):
 @login_required
 def comments_report(request):
     """Generate a report of all comments with filtering by time period"""
-    from datetime import timedelta
-    from django.utils import timezone
     
     period = request.GET.get('period', '30')
     
@@ -7899,20 +7897,20 @@ def comments_report(request):
             property_name = issue.prop.prop_name
             issue_heading = issue.issues_heading
             issue_id = issue.issues_id
-            issue_status = issue.issues_status              # NEW
-            issue_description = issue.issues_description    # NEW
+            issue_status = issue.issues_status
+            issue_description = issue.issues_description
         elif issue:
             property_name = 'Unknown'
             issue_heading = issue.issues_heading
             issue_id = issue.issues_id
-            issue_status = issue.issues_status              # NEW
-            issue_description = issue.issues_description    # NEW
+            issue_status = issue.issues_status
+            issue_description = issue.issues_description
         else:
             property_name = 'Unknown'
             issue_heading = 'Unknown'
             issue_id = None
-            issue_status = None                             # NEW
-            issue_description = None                        # NEW
+            issue_status = None
+            issue_description = None
         
         # Define admin users (add initials of admin users here)
         admin_users = ['DM']  # Add other admin initials as needed
@@ -7920,14 +7918,15 @@ def comments_report(request):
         is_admin = user_initials.upper() in [u.upper() for u in admin_users]
         
         report_data.append({
+            'comment_id': comment.issues_details_id,        # ADD THIS - needed for delete
             'comment': comment.issues_details_comment,
             'date': comment.issues_details_date,
             'property': property_name,
             'user': comment.issues_details_user,
             'issue_heading': issue_heading,
             'issue_id': issue_id,
-            'issue_status': issue_status,                   # NEW
-            'issue_description': issue_description,         # NEW
+            'issue_status': issue_status,
+            'issue_description': issue_description,
             'is_admin': is_admin,
         })
     
@@ -7948,6 +7947,45 @@ def comments_report(request):
     }
     
     return render(request, 'comments_report.html', context)
+
+@login_required
+def delete_comment(request, comment_id):
+    """Delete a comment from the issues_details table (admin only)"""
+    from django.urls import reverse
+    from urllib.parse import urlencode
+    
+    # Check if user is superuser
+    if not request.user.is_superuser:
+        messages.error(request, 'You do not have permission to delete comments.')
+        return HttpResponseForbidden("You do not have permission to delete comments.")
+    
+    # Only allow POST requests for deletion
+    if request.method == 'POST':
+        try:
+            # Get the comment
+            comment = issues_details.objects.get(issues_details_id=comment_id)
+            
+            # Store info for success message
+            comment_text = comment.issues_details_comment[:50]  # First 50 chars
+            
+            # Delete the comment
+            comment.delete()
+            
+            # Success message
+            messages.success(request, f'Comment "{comment_text}..." has been successfully deleted.')
+            
+        except issues_details.DoesNotExist:
+            messages.error(request, 'Comment not found.')
+        except Exception as e:
+            messages.error(request, f'Error deleting comment: {str(e)}')
+    
+    # FIXED: Properly redirect back with period parameter
+    # Get period from the POST data or default to '30'
+    period = request.POST.get('period', request.GET.get('period', '30'))
+    
+    # Build the redirect URL with proper query string
+    url = reverse('comments_report') + '?' + urlencode({'period': period})
+    return redirect(url)
 
 ### REPORTS - DASHBOARD (FROM HOME PAGE) ###
 # Add these views to your views.py file
