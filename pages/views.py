@@ -7987,6 +7987,56 @@ def delete_comment(request, comment_id):
     url = reverse('comments_report') + '?' + urlencode({'period': period})
     return redirect(url)
 
+@login_required
+def get_issue_details(request, issue_id):
+    """
+    Fetch issue details and all comments for modal display
+    Returns JSON data
+    """
+    try:
+        # Get the issue
+        issue = issues.objects.select_related('prop').get(issues_id=issue_id)
+        
+        # Get all comments for this issue
+        comments = issues_details.objects.filter(
+            issues=issue
+        ).order_by('issues_details_date', 'issues_details_id')
+        
+        # Define admin users (same as in comments_report view)
+        admin_users = ['DM']  # Add other admin initials as needed
+        
+        # Build comments list
+        comments_list = []
+        for comment in comments:
+            user_initials = comment.issues_details_user or ''
+            is_admin = user_initials.upper() in [u.upper() for u in admin_users]
+            
+            comments_list.append({
+                'comment': comment.issues_details_comment,
+                'date': comment.issues_details_date.strftime('%d/%m/%Y'),
+                'user': comment.issues_details_user,
+                'is_admin': is_admin,
+            })
+        
+        # Build response data
+        data = {
+            'issue_id': issue.issues_id,
+            'issue_heading': issue.issues_heading,
+            'description': issue.issues_description,
+            'property': issue.prop.prop_name if issue.prop else 'Unknown',
+            'status': issue.issues_status,
+            'date_logged': issue.issues_date_logged.strftime('%d/%m/%Y') if issue.issues_date_logged else '—',
+            'resolution_date': issue.issues_resolution_date.strftime('%d/%m/%Y') if issue.issues_resolution_date else None,
+            'comments': comments_list,
+        }
+        
+        return JsonResponse(data)
+        
+    except issues.DoesNotExist:
+        return JsonResponse({'error': 'Issue not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
 ### REPORTS - DASHBOARD (FROM HOME PAGE) ###
 # Add these views to your views.py file
 @login_required

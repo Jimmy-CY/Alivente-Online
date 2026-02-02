@@ -98,24 +98,29 @@
 
 /* Comment highlighting based on user type */
 .report-table tbody tr.admin-comment {
-    background-color: #e3f2fd;  /* Light blue for admin */
+    background-color: #e3f2fd;
 }
 
 .report-table tbody tr.admin-comment:hover {
-    background-color: #bbdefb;  /* Darker blue on hover */
+    background-color: #bbdefb;
 }
 
 .report-table tbody tr.user-comment {
-    background-color: #fff3e0;  /* Light orange for non-admin */
+    background-color: #fff3e0;
 }
 
 .report-table tbody tr.user-comment:hover {
-    background-color: #ffe0b2;  /* Darker orange on hover */
+    background-color: #ffe0b2;
 }
 
 .comment-cell {
     max-width: 500px;
     line-height: 1.5;
+    cursor: pointer;
+}
+
+.comment-cell:hover {
+    color: #17a2b8;
 }
 
 .date-cell {
@@ -134,11 +139,11 @@
 }
 
 .user-cell.admin-user {
-    color: #1565c0;  /* Blue text for admin */
+    color: #1565c0;
 }
 
 .user-cell.regular-user {
-    color: #e65100;  /* Orange text for non-admin */
+    color: #e65100;
 }
 
 .issue-link {
@@ -187,30 +192,27 @@
     border: 1px solid #bee5eb;
 }
 
-/* Delete button styling */
-.btn-delete {
+/* Delete button styling - ICON ONLY */
+.btn-delete-icon {
     background-color: #dc3545;
     color: white;
     border: none;
-    padding: 6px 12px;
+    padding: 8px;
     border-radius: 4px;
-    font-size: 11px;
-    font-weight: 500;
+    font-size: 14px;
     cursor: pointer;
     transition: all 0.2s ease;
     display: inline-flex;
     align-items: center;
-    gap: 4px;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
 }
 
-.btn-delete:hover {
+.btn-delete-icon:hover {
     background-color: #c82333;
     transform: translateY(-1px);
     box-shadow: 0 2px 4px rgba(220, 53, 69, 0.3);
-}
-
-.btn-delete i {
-    font-size: 10px;
 }
 
 .no-comments {
@@ -285,8 +287,173 @@
     border: 1px solid #ffcc80;
 }
 
+/* Modal Styles */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal.show {
+    display: block;
+}
+
+.modal-dialog {
+    position: relative;
+    width: auto;
+    max-width: 900px;
+    margin: 30px auto;
+}
+
+.modal-content {
+    background-color: #fff;
+    border-radius: 12px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+}
+
+.modal-header {
+    background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+    color: white;
+    padding: 20px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h2 {
+    margin: 0;
+    font-size: 24px;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 28px;
+    cursor: pointer;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.8;
+}
+
+.modal-close:hover {
+    opacity: 1;
+}
+
+.modal-body {
+    padding: 30px;
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+.issue-details-compact {
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    margin-bottom: 30px;
+}
+
+.detail-row {
+    display: flex;
+    gap: 30px;
+    align-items: center;
+    flex-wrap: wrap;
+    padding-bottom: 15px;
+    margin-bottom: 15px;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.description-row {
+    display: flex;
+    gap: 10px;
+    align-items: baseline;
+}
+
+.detail-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.detail-label {
+    font-weight: 600;
+    color: #6c757d;
+    font-size: 13px;
+    white-space: nowrap;
+}
+
+.detail-value {
+    font-size: 15px;
+    color: #2c3e50;
+    font-weight: 500;
+}
+
+.description-row .detail-value {
+    font-weight: 400;
+    line-height: 1.5;
+}
+
+.comments-history {
+    margin-top: 30px;
+}
+
+.comments-history h3 {
+    font-size: 18px;
+    color: #2c3e50;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.comment-item {
+    padding: 15px;
+    margin-bottom: 15px;
+    border-radius: 8px;
+    border-left: 4px solid #17a2b8;
+}
+
+.comment-item.admin-comment-item {
+    background-color: #e3f2fd;
+    border-left-color: #1565c0;
+}
+
+.comment-item.user-comment-item {
+    background-color: #fff3e0;
+    border-left-color: #e65100;
+}
+
+.comment-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    font-size: 13px;
+    color: #6c757d;
+}
+
+.comment-user {
+    font-weight: 600;
+}
+
+.comment-text {
+    font-size: 15px;
+    line-height: 1.5;
+    color: #2c3e50;
+}
+
 @media print {
-    .action-buttons, .color-legend, .btn-delete {
+    .action-buttons, .color-legend, .btn-delete-icon, .modal {
         display: none !important;
     }
     
@@ -368,10 +535,10 @@
             <tbody>
                 {% for item in report_data %}
                 <tr class="{% if item.is_admin %}admin-comment{% else %}user-comment{% endif %}">
-                    <td class="comment-cell">
+                    <td class="comment-cell" onclick="showIssueDetails({{ item.issue_id }})">
                         {{ item.comment }}
                         {% if item.issue_id %}
-                        <a href="{% url 'fsr_details' item.issue_id %}" class="issue-link">
+                        <a href="javascript:void(0)" class="issue-link" onclick="event.stopPropagation(); showIssueDetails({{ item.issue_id }})">
                             <i class="fas fa-link"></i> {{ item.issue_heading }}
                             {% if item.issue_description %}
                                 <span class="issue-description">({{ item.issue_description }})</span>
@@ -402,8 +569,8 @@
                         <form method="post" action="{% url 'delete_comment' item.comment_id %}" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this comment? This action cannot be undone.');">
                             {% csrf_token %}
                             <input type="hidden" name="period" value="{{ period }}">
-                            <button type="submit" class="btn-delete">
-                                <i class="fas fa-trash"></i> Delete
+                            <button type="submit" class="btn-delete-icon" title="Delete comment">
+                                <i class="fas fa-trash"></i>
                             </button>
                         </form>
                     </td>
@@ -422,5 +589,137 @@
     </div>
     
 </div>
+
+<!-- Issue Details Modal -->
+<div id="issueModal" class="modal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Issue Details</h2>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <div class="text-center" style="padding: 40px;">
+                    <i class="fas fa-spinner fa-spin" style="font-size: 48px; color: #17a2b8;"></i>
+                    <p style="margin-top: 20px; color: #6c757d;">Loading issue details...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function showIssueDetails(issueId) {
+    if (!issueId) return;
+    
+    // Show modal with loading state
+    const modal = document.getElementById('issueModal');
+    modal.classList.add('show');
+    
+    // Fetch issue details
+    fetch(`/issue-details/${issueId}/`)
+        .then(response => response.json())
+        .then(data => {
+            displayIssueDetails(data);
+        })
+        .catch(error => {
+            console.error('Error fetching issue details:', error);
+            document.getElementById('modalBody').innerHTML = `
+                <div class="text-center" style="padding: 40px;">
+                    <i class="fas fa-exclamation-triangle" style="font-size: 48px; color: #dc3545;"></i>
+                    <p style="margin-top: 20px; color: #6c757d;">Error loading issue details</p>
+                </div>
+            `;
+        });
+}
+
+function displayIssueDetails(data) {
+    document.getElementById('modalTitle').textContent = data.issue_heading;
+    
+    let commentsHtml = '';
+    if (data.comments && data.comments.length > 0) {
+        data.comments.forEach(comment => {
+            const commentClass = comment.is_admin ? 'admin-comment-item' : 'user-comment-item';
+            commentsHtml += `
+                <div class="comment-item ${commentClass}">
+                    <div class="comment-meta">
+                        <span class="comment-user">${comment.user}</span>
+                        <span class="comment-date">${comment.date}</span>
+                    </div>
+                    <div class="comment-text">${comment.comment}</div>
+                </div>
+            `;
+        });
+    } else {
+        commentsHtml = '<p style="color: #6c757d; text-align: center;">No comments yet.</p>';
+    }
+    
+    const statusClass = data.status === 'Resolved' ? 'status-resolved' : 
+                       (data.status === 'Unresolved' || data.status === 'Open') ? 'status-unresolved' : 
+                       'status-open';
+    
+    // Only show resolution date if status is Resolved
+    const showResolutionDate = data.status === 'Resolved' && data.resolution_date;
+    const resolutionDateHtml = showResolutionDate ? `
+        <div class="detail-item">
+            <div class="detail-label">Resolution Date</div>
+            <div class="detail-value">${data.resolution_date}</div>
+        </div>
+    ` : '';
+    
+    document.getElementById('modalBody').innerHTML = `
+        <div class="issue-details-compact">
+            <div class="detail-row">
+                <div class="detail-item">
+                    <span class="detail-label">Property:</span>
+                    <span class="detail-value">${data.property}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Status:</span>
+                    <span class="status-badge ${statusClass}">${data.status}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-label">Date Logged:</span>
+                    <span class="detail-value">${data.date_logged}</span>
+                </div>
+                ${showResolutionDate ? `
+                <div class="detail-item">
+                    <span class="detail-label">Resolved:</span>
+                    <span class="detail-value">${data.resolution_date}</span>
+                </div>
+                ` : ''}
+            </div>
+            <div class="description-row">
+                <span class="detail-label">Description:</span>
+                <span class="detail-value">${data.description || '—'}</span>
+            </div>
+        </div>
+        
+        <div class="comments-history">
+            <h3><i class="fas fa-comments"></i> Comment History (${data.comments.length})</h3>
+            ${commentsHtml}
+        </div>
+    `;
+}
+
+function closeModal() {
+    document.getElementById('issueModal').classList.remove('show');
+}
+
+// Close modal when clicking outside
+window.onclick = function(event) {
+    const modal = document.getElementById('issueModal');
+    if (event.target === modal) {
+        closeModal();
+    }
+}
+
+// Close modal on ESC key
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        closeModal();
+    }
+});
+</script>
 
 {% endblock %}

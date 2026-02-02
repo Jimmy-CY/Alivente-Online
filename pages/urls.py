@@ -207,6 +207,7 @@ urlpatterns = [
     path('issues/delete/<int:issue_id>/', views.delete_issue, name='delete_issue'),
     path('comments-report/', views.comments_report, name='comments_report'),
     path('delete-comment/<int:comment_id>/', views.delete_comment, name='delete_comment'),
+    path('issue-details/<int:issue_id>/', views.get_issue_details, name='get_issue_details'),
 
     #
     # Passports
