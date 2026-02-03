@@ -7997,10 +7997,10 @@ def get_issue_details(request, issue_id):
         # Get the issue
         issue = issues.objects.select_related('prop').get(issues_id=issue_id)
         
-        # Get all comments for this issue
+        # Get all comments for this issue (most recent first)
         comments = issues_details.objects.filter(
             issues=issue
-        ).order_by('issues_details_date', 'issues_details_id')
+        ).order_by('-issues_details_date', '-issues_details_id')
         
         # Define admin users (same as in comments_report view)
         admin_users = ['DM']  # Add other admin initials as needed
