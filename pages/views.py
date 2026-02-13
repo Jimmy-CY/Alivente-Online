@@ -10021,6 +10021,114 @@ def recipe_management(request):
     
     return render(request, 'recipe_management.html', context)
 
+@login_required
+def duplicate_recipe(request, recipe_id):
+    """Duplicate a recipe with all its ingredients and related data"""
+    if not request.user.is_superuser:
+        return JsonResponse({'success': False, 'error': 'Permission denied'}, status=403)
+    
+    if request.method != 'POST':
+        return JsonResponse({'success': False, 'error': 'POST required'}, status=405)
+    
+    try:
+        from django.db import transaction
+        
+        # Get the original recipe
+        original_recipe = Recipe.objects.get(recipe_id=recipe_id)
+        
+        with transaction.atomic():
+            # Store the original recipe ID
+            original_id = original_recipe.recipe_id
+            
+            # Store many-to-many relationships before modifying
+            original_courses = list(original_recipe.courses.all())
+            original_categories = list(original_recipe.categories.all())
+            original_proteins = list(original_recipe.proteins.all())
+            
+            # Get related data
+            original_recipe_ingredients = list(RecipeIngredient.objects.filter(recipe_id=original_id))
+            original_text_ingredients = list(RecipeIngredientText.objects.filter(recipe_id=original_id))
+            original_instructions = list(RecipeInstruction.objects.filter(recipe_id=original_id))
+            
+            # Create new recipe by setting pk to None
+            original_recipe.pk = None
+            original_recipe.recipe_id = None  # Let it auto-generate
+            original_recipe.recipe_name = f"{original_recipe.recipe_name} (Copy)"
+            original_recipe.save()
+            
+            new_recipe_id = original_recipe.recipe_id
+            new_recipe_name = original_recipe.recipe_name
+            
+            # Copy many-to-many relationships
+            original_recipe.courses.set(original_courses)
+            original_recipe.categories.set(original_categories)
+            original_recipe.proteins.set(original_proteins)
+            
+            # Bulk create structured recipe ingredients
+            new_recipe_ingredients = [
+                RecipeIngredient(
+                    recipe=original_recipe,
+                    ingredient=ri.ingredient,
+                    amount=ri.amount,
+                    unit=ri.unit,
+                    preparation=ri.preparation,
+                    preparation_note=ri.preparation_note,
+                    ingredient_order=ri.ingredient_order,
+                    ingredient_group=ri.ingredient_group,
+                )
+                for ri in original_recipe_ingredients
+            ]
+            if new_recipe_ingredients:
+                RecipeIngredient.objects.bulk_create(new_recipe_ingredients)
+            
+            # Bulk create text-based ingredients
+            new_text_ingredients = [
+                RecipeIngredientText(
+                    recipe=original_recipe,
+                    ingredient_text=ti.ingredient_text,
+                    ingredient_group=ti.ingredient_group,
+                    order=ti.order,
+                )
+                for ti in original_text_ingredients
+            ]
+            if new_text_ingredients:
+                RecipeIngredientText.objects.bulk_create(new_text_ingredients)
+            
+            # Bulk create instructions
+            new_instructions = [
+                RecipeInstruction(
+                    recipe=original_recipe,
+                    step_number=inst.step_number,
+                    instruction_text=inst.instruction_text,
+                    instruction_group=inst.instruction_group,
+                    time_estimate=inst.time_estimate,
+                    step_image=inst.step_image,
+                )
+                for inst in original_instructions
+            ]
+            if new_instructions:
+                RecipeInstruction.objects.bulk_create(new_instructions)
+        
+        return JsonResponse({
+            'success': True,
+            'new_recipe_id': new_recipe_id,
+            'new_recipe_name': new_recipe_name
+        })
+        
+    except Recipe.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'error': 'Recipe not found'
+        }, status=404)
+    
+    except Exception as e:
+        import traceback
+        print(traceback.format_exc())
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=500)
+
 # ============================================
 # VIEW: View Recipe
 # ============================================

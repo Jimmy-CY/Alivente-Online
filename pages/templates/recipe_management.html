@@ -1204,6 +1204,24 @@
     text-align: center;
 }
 
+/* Duplicate button styling */
+.recipe-duplicate-btn {
+    background-color: #17a2b8;
+    color: white;
+}
+
+.recipe-duplicate-btn:hover {
+    background-color: #138496;
+}
+
+.recipe-list-action-btn.recipe-duplicate-btn {
+    background-color: #17a2b8;
+}
+
+.recipe-list-action-btn.recipe-duplicate-btn:hover {
+    background-color: #138496;
+}
+
 </style>
 
 <h2><center>ALIVENTE ONLINE - RECIPE MANAGEMENT</center></h2>
@@ -1506,6 +1524,9 @@
                 <a href="{% url 'edit_recipe' recipe.recipe_id %}" class="recipe-image-action-btn recipe-edit-btn" title="Edit Recipe">
                     <i class="fas fa-pencil-alt"></i>
                 </a>
+                <button type="button" class="recipe-image-action-btn recipe-duplicate-btn" onclick="duplicateRecipe({{ recipe.recipe_id }}, '{{ recipe.recipe_name|escapejs }}')" title="Duplicate Recipe">
+                    <i class="fas fa-copy"></i>
+                </button>
                 <button type="button" class="recipe-image-action-btn recipe-delete-btn" onclick="deleteRecipe({{ recipe.recipe_id }}, '{{ recipe.recipe_name }}')" title="Delete Recipe">
                     <i class="fas fa-trash-alt"></i>
                 </button>
@@ -1659,6 +1680,9 @@
             <a href="{% url 'edit_recipe' recipe.recipe_id %}" class="recipe-list-action-btn recipe-edit-btn" title="Edit Recipe">
                 <i class="fas fa-pencil-alt"></i>
             </a>
+            <button type="button" class="recipe-list-action-btn recipe-duplicate-btn" onclick="duplicateRecipe({{ recipe.recipe_id }}, '{{ recipe.recipe_name|escapejs }}')" title="Duplicate Recipe">
+                <i class="fas fa-copy"></i>
+            </button>
             <button type="button" class="recipe-list-action-btn recipe-delete-btn" onclick="deleteRecipe({{ recipe.recipe_id }}, '{{ recipe.recipe_name }}')" title="Delete Recipe">
                 <i class="fas fa-trash-alt"></i>
             </button>
@@ -1989,6 +2013,9 @@ function createGridRecipeCard(recipe) {
                     <a href="/recipe/${recipe.recipe_id}/edit/" class="recipe-image-action-btn recipe-edit-btn" title="Edit Recipe">
                         <i class="fas fa-pencil-alt"></i>
                     </a>
+                    <button type="button" class="recipe-image-action-btn recipe-duplicate-btn" onclick="duplicateRecipe(${recipe.recipe_id}, '${recipe.recipe_name.replace(/'/g, "\\'")}')" title="Duplicate Recipe">
+                        <i class="fas fa-copy"></i>
+                    </button>
                     <button type="button" class="recipe-image-action-btn recipe-delete-btn" onclick="deleteRecipe(${recipe.recipe_id}, '${recipe.recipe_name}')" title="Delete Recipe">
                         <i class="fas fa-trash-alt"></i>
                     </button>
@@ -2096,10 +2123,13 @@ function createListRecipeItem(recipe) {
                 <a href="/view_recipe/${recipe.recipe_id}/" class="recipe-list-action-btn recipe-view-btn" title="View Recipe">
                     <i class="fas fa-eye"></i>
                 </a>
-                <a href="/recipe/${recipe.recipe_id}/edit/" class="recipe-list-action-btn recipe-edit-btn" title="Edit Recipe">
+                <a href="/recipe/${recipe.recipe_id}/edit/" class="recipe-image-action-btn recipe-edit-btn" title="Edit Recipe">
                     <i class="fas fa-pencil-alt"></i>
                 </a>
-                <button type="button" class="recipe-list-action-btn recipe-delete-btn" onclick="deleteRecipe(${recipe.recipe_id}, '${recipe.recipe_name}')" title="Delete Recipe">
+                <button type="button" class="recipe-image-action-btn recipe-duplicate-btn" onclick="duplicateRecipe(${recipe.recipe_id}, '${recipe.recipe_name.replace(/'/g, "\\'")}')" title="Duplicate Recipe">
+                    <i class="fas fa-copy"></i>
+                </button>
+                <button type="button" class="recipe-image-action-btn recipe-delete-btn" onclick="deleteRecipe(${recipe.recipe_id}, '${recipe.recipe_name}')" title="Delete Recipe">
                     <i class="fas fa-trash-alt"></i>
                 </button>
             </div>
@@ -2954,6 +2984,42 @@ function openRecipeInModal(recipeId, recipeName) {
     // Open modal
     const modal = new bootstrap.Modal(document.getElementById('recipeViewModal'));
     modal.show();
+}
+
+// Add this function to your existing script section
+function duplicateRecipe(recipeId, recipeName) {
+    if (confirm(`Duplicate "${recipeName}"?\n\nThis will create a copy with all ingredients and instructions.`)) {
+        // Show loading indicator
+        const btn = event.target.closest('button, a');
+        const originalHTML = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        btn.style.pointerEvents = 'none';
+        
+        // Send duplicate request
+        fetch(`/recipes/duplicate/${recipeId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': getCookie('csrftoken'),
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(`Recipe duplicated successfully!\n\nNew recipe: "${data.new_recipe_name}"`);
+                window.location.href = `/recipe/${data.new_recipe_id}/edit/`;
+            } else {
+                alert('Error: ' + (data.error || 'Failed to duplicate recipe'));
+                btn.innerHTML = originalHTML;
+                btn.style.pointerEvents = 'auto';
+            }
+        })
+        .catch(error => {
+            alert('Error duplicating recipe. Please try again.');
+            btn.innerHTML = originalHTML;
+            btn.style.pointerEvents = 'auto';
+        });
+    }
 }
 
 </script>

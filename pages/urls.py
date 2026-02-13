@@ -216,6 +216,7 @@ urlpatterns = [
     #
     # Recipe Management URLs
     path('recipe_management/', views.recipe_management, name='recipe_management'),
+    path('recipes/duplicate/<int:recipe_id>/', views.duplicate_recipe, name='duplicate_recipe'),
     path('view_recipe/<int:recipe_id>/', views.view_recipe, name='view_recipe'),
     path('create_recipe/', views.create_recipe, name='create_recipe'),
     path('recipe/<int:recipe_id>/edit/', views.edit_recipe, name='edit_recipe'),
