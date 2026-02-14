@@ -577,6 +577,95 @@ tr.sortable-chosen {
 .autocomplete-add-new.highlighted i {
     color: white !important;
 }
+
+/* Spell Check Styles */
+.spell-check-loading {
+    text-align: center;
+    padding: 40px;
+}
+
+.spell-check-no-errors {
+    text-align: center;
+    padding: 40px;
+    color: #28a745;
+}
+
+.spell-check-no-errors i {
+    font-size: 48px;
+    margin-bottom: 15px;
+}
+
+.spell-error-item {
+    background: #fff3cd;
+    border-left: 4px solid #ffc107;
+    padding: 15px;
+    margin-bottom: 15px;
+    border-radius: 4px;
+}
+
+.spell-error-word {
+    font-weight: bold;
+    color: #dc3545;
+    font-size: 16px;
+}
+
+.spell-error-context {
+    background: #f8f9fa;
+    padding: 10px;
+    border-radius: 4px;
+    margin: 10px 0;
+    font-style: italic;
+    color: #495057;
+}
+
+.spell-error-context .highlight-word {
+    background: #ffc107;
+    padding: 2px 4px;
+    border-radius: 3px;
+    font-weight: bold;
+}
+
+.spell-suggestions {
+    margin-top: 10px;
+}
+
+.spell-suggestion-btn {
+    background: #17a2b8;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    margin-right: 8px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: all 0.2s;
+}
+
+.spell-suggestion-btn:hover {
+    background: #138496;
+    transform: translateY(-1px);
+}
+
+.spell-step-badge {
+    background: #667eea;
+    color: white;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    display: inline-block;
+}
+
+.spell-error-stats {
+    background: #f8f9fa;
+    border-left: 4px solid #dc3545;
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 4px;
+}
+
 </style>
 
 <div class="preview-container">
@@ -950,6 +1039,13 @@ tr.sortable-chosen {
                 <i class="fas fa-tasks"></i> Instructions
                 {% if mode == 'import' %}<span class="ai-badge"><i class="fas fa-robot"></i> AI Extracted</span>{% endif %}
             </h2>
+
+            <!-- Spell Check Button -->
+            <div style="margin-bottom: 15px;">
+                <button type="button" class="btn btn-primary" onclick="spellCheckInstructions()" style="display: inline-flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-spell-check"></i> Check Spelling
+                </button>
+            </div>
             
             <div class="ingredient-table-wrapper">
                 <table class="ingredient-table" id="instructionsTable">
@@ -1160,6 +1256,28 @@ tr.sortable-chosen {
                     <button type="button" class="btn btn-success" onclick="confirmAddMeasurement()">
                         <i class="fas fa-check"></i> Add Measurement
                     </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Spell Check Modal -->
+    <div class="modal fade" id="spellCheckModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                    <h5 class="modal-title">
+                        <i class="fas fa-spell-check"></i> Spell Check Results
+                    </h5>
+                    <button type="button" class="close" data-dismiss="modal" style="color: white;">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" id="spellCheckResults">
+                    <!-- Results will be populated here -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
                 </div>
             </div>
         </div>
@@ -2592,6 +2710,181 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+
+// Spell Check Instructions
+function spellCheckInstructions() {
+    // Collect all instructions
+    const instructionTextareas = document.querySelectorAll('textarea[name="instruction[]"]');
+    const instructions = Array.from(instructionTextareas).map(textarea => textarea.value.trim());
+    
+    if (instructions.length === 0 || instructions.every(i => !i)) {
+        alert('Please add at least one instruction before spell checking.');
+        return;
+    }
+    
+    // Show modal with loading state
+    const resultsDiv = document.getElementById('spellCheckResults');
+    resultsDiv.innerHTML = `
+        <div class="spell-check-loading">
+            <i class="fas fa-spinner fa-spin fa-3x text-primary"></i>
+            <p class="mt-3">Checking spelling...</p>
+        </div>
+    `;
+    
+    $('#spellCheckModal').modal('show');
+    
+    // Send to backend for spell checking
+    fetch('{% url "spell_check_instructions" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: JSON.stringify({
+            instructions: instructions
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            displaySpellCheckResults(data.errors, data.total_errors, instructions);
+        } else {
+            resultsDiv.innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle"></i> Error: ${data.error}
+                </div>
+            `;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        resultsDiv.innerHTML = `
+            <div class="alert alert-danger">
+                <i class="fas fa-exclamation-triangle"></i> Error checking spelling. Please try again.
+            </div>
+        `;
+    });
+}
+
+function displaySpellCheckResults(errors, totalErrors, instructions) {
+    const resultsDiv = document.getElementById('spellCheckResults');
+    
+    if (totalErrors === 0) {
+        resultsDiv.innerHTML = `
+            <div class="spell-check-no-errors">
+                <i class="fas fa-check-circle"></i>
+                <h4>No Spelling Errors Found!</h4>
+                <p>Your instructions look great.</p>
+            </div>
+        `;
+        return;
+    }
+    
+    // Group errors by step
+    const errorsByStep = {};
+    errors.forEach(error => {
+        if (!errorsByStep[error.step]) {
+            errorsByStep[error.step] = [];
+        }
+        errorsByStep[error.step].push(error);
+    });
+    
+    let html = `
+        <div class="spell-error-stats">
+            <strong><i class="fas fa-exclamation-circle"></i> Found ${totalErrors} potential spelling error${totalErrors !== 1 ? 's' : ''}</strong>
+            <p style="margin: 8px 0 0 0; color: #6c757d; font-size: 14px;">
+                Click on suggestions to replace words in your instructions.
+            </p>
+        </div>
+    `;
+    
+    Object.keys(errorsByStep).sort((a, b) => parseInt(a) - parseInt(b)).forEach(step => {
+        const stepErrors = errorsByStep[step];
+        
+        stepErrors.forEach(error => {
+            // Highlight the misspelled word in context
+            const highlightedContext = error.context.replace(
+                new RegExp(`\\b${error.word}\\b`, 'gi'),
+                `<span class="highlight-word">${error.word}</span>`
+            );
+            
+            html += `
+                <div class="spell-error-item">
+                    <div class="spell-step-badge">Step ${step}</div>
+                    <div class="spell-error-word">
+                        "${error.word}"
+                    </div>
+                    <div class="spell-error-context">
+                        ${highlightedContext}
+                    </div>
+            `;
+            
+            if (error.suggestions && error.suggestions.length > 0) {
+                html += `<div class="spell-suggestions">
+                    <strong style="font-size: 13px; color: #495057;">Suggestions:</strong><br>`;
+                
+                error.suggestions.forEach(suggestion => {
+                    html += `
+                        <button type="button" 
+                                class="spell-suggestion-btn" 
+                                onclick="replaceMisspelledWord(${step - 1}, '${error.word}', '${suggestion}')">
+                            ${suggestion}
+                        </button>
+                    `;
+                });
+                
+                html += `</div>`;
+            } else {
+                html += `<p style="color: #6c757d; font-size: 13px; margin-top: 10px;">
+                    <i class="fas fa-info-circle"></i> No suggestions available
+                </p>`;
+            }
+            
+            html += `</div>`;
+        });
+    });
+    
+    resultsDiv.innerHTML = html;
+}
+
+function replaceMisspelledWord(stepIndex, oldWord, newWord) {
+    const instructionTextareas = document.querySelectorAll('textarea[name="instruction[]"]');
+    
+    if (stepIndex >= 0 && stepIndex < instructionTextareas.length) {
+        const textarea = instructionTextareas[stepIndex];
+        
+        // Replace with case-insensitive match, preserving capitalization
+        const regex = new RegExp(`\\b${oldWord}\\b`, 'gi');
+        textarea.value = textarea.value.replace(regex, (matched) => {
+            // If the matched word starts with uppercase, capitalize the replacement
+            if (matched[0] === matched[0].toUpperCase()) {
+                return newWord.charAt(0).toUpperCase() + newWord.slice(1);
+            }
+            return newWord;
+        });
+        
+        // Auto-resize the textarea if needed
+        autoResize(textarea);
+        
+        // Highlight the textarea briefly to show the change
+        textarea.style.background = '#d4edda';
+        setTimeout(() => {
+            textarea.style.background = '';
+        }, 1000);
+        
+        // Show success message
+        const button = event.target;
+        const originalText = button.textContent;
+        button.textContent = '✓ Replaced';
+        button.style.background = '#28a745';
+        
+        setTimeout(() => {
+            button.textContent = originalText;
+            button.style.background = '';
+        }, 1500);
+    }
+}
+
 </script>
 
 {% endblock %}

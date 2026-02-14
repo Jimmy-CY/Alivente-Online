@@ -220,6 +220,7 @@ urlpatterns = [
     path('view_recipe/<int:recipe_id>/', views.view_recipe, name='view_recipe'),
     path('create_recipe/', views.create_recipe, name='create_recipe'),
     path('recipe/<int:recipe_id>/edit/', views.edit_recipe, name='edit_recipe'),
+    path('spell-check-instructions/', views.spell_check_instructions, name='spell_check_instructions'),
     path('ajax/add_recipe_course/', views.add_recipe_course, name='add_recipe_course'),
     path('ajax/add_recipe_category/', views.add_recipe_category, name='add_recipe_category'),
     path('ajax/add_recipe_ingredient/', views.add_recipe_ingredient, name='add_recipe_ingredient'),

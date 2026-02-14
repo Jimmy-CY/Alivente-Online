@@ -82,6 +82,7 @@ from calendar import monthrange
 from collections import defaultdict
 from datetime import date, datetime, timedelta
 from pages.management.commands.email_utils import get_email_recipients, format_email_recipients_for_header
+from spellchecker import SpellChecker
 from urllib.parse import urlparse, parse_qs
 from xhtml2pdf import pisa
 from email.mime.text import MIMEText
@@ -256,6 +257,72 @@ def passport_management(request):
 
 ### LEASE TEMPLATE GENERATOR ###
 import re
+
+@login_required
+@require_POST
+def spell_check_instructions(request):
+    """Spell check recipe instructions"""
+    try:
+        data = json.loads(request.body)
+        instructions = data.get('instructions', [])
+        
+        if not instructions:
+            return JsonResponse({'success': False, 'error': 'No instructions provided'})
+        
+        # Initialize spell checker
+        spell = SpellChecker()
+        
+        # Common cooking terms to ignore
+        cooking_terms = {
+            'tsp', 'tbsp', 'mins', 'hrs', 'preheat', 'saute', 'sauteed', 
+            'broil', 'simmer', 'whisk', 'preheated',
+            'mins', 'secs', 'ml', 'oz', 'fahrenheit', 'celsius'
+        }
+        spell.word_frequency.load_words(cooking_terms)
+        
+        errors = []
+        
+        for idx, instruction in enumerate(instructions):
+            if not instruction.strip():
+                continue
+                
+            # Remove common cooking abbreviations and numbers
+            text = instruction.lower()
+            
+            # Split into words, removing punctuation
+            words = re.findall(r'\b[a-z]+\b', text)
+            
+            # Find misspelled words
+            misspelled = spell.unknown(words)
+            
+            if misspelled:
+                for word in misspelled:
+                    # Get suggestions - handle None case
+                    candidates = spell.candidates(word)
+                    
+                    # Convert to list and handle None
+                    if candidates is None:
+                        suggestions = []
+                    else:
+                        suggestions = list(candidates)[:5]
+                    
+                    errors.append({
+                        'step': idx + 1,
+                        'word': word,
+                        'suggestions': suggestions,  # Will be empty list if no suggestions
+                        'context': instruction
+                    })
+        
+        return JsonResponse({
+            'success': True,
+            'errors': errors,
+            'total_errors': len(errors)
+        })
+        
+    except Exception as e:
+        import traceback
+        traceback.print_exc()  # Print full error to console for debugging
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
 def is_superuser(user):
     """Check if user is superuser"""
