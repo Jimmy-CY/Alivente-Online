@@ -4331,6 +4331,15 @@ def admin_apms(request):
     })
 
 @login_required
+def personal_page(request):
+    """Personal management page"""
+    if not request.user.is_superuser:
+        messages.error(request, 'You do not have permission to access this page.')
+        return redirect('home')
+    
+    return render(request, "personal.html")
+
+@login_required
 def lease_agreement_report(request, tenant_id):
     try:
         # Get tenant and property info

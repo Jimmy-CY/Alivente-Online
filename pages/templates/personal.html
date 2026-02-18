@@ -1,11 +1,11 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Administration{% endblock %}
+{% block title %}Personal{% endblock %}
 
 {% block content %}
 
-<h2><center>ALIVENTE ONLINE - ADMINISTRATION</center></h2>
+<h2><center>ALIVENTE ONLINE - PERSONAL</center></h2>
 <br/>
 
 {% for msg in messages %}
@@ -36,10 +36,10 @@
 <style>
   /* Colour Variables */
   :root {
-    --alivente-dark: #17a2b8;
-    --alivente-light: #d1ecf1;
     --personal-dark: #28a745;
     --personal-light: #d4edda;
+    --future-dark: #6c757d;
+    --future-light: #e9ecef;
   }
   
   /* Tab Navigation */
@@ -69,43 +69,13 @@
     z-index: 1;
   }
   
-  .admin-tab.alivente-tab {
-    border-color: var(--alivente-dark);
-    color: var(--alivente-dark);
-    background-color: white;
-    border-bottom-color: var(--alivente-dark);
-    border-right: none;
-    border-radius: 10px 10px 0 0;
-  }
-  
-  .admin-tab.alivente-tab.active {
-    background-color: var(--alivente-light);
-    color: var(--alivente-dark);
-    border-bottom-color: var(--alivente-light);
-    z-index: 10;
-  }
-  
-  /* When Personal is active, Alivente tab gets green bottom border */
-  .admin-tab.alivente-tab.personal-active {
-    border-bottom-color: var(--personal-dark);
-  }
-  
-  .admin-tab.alivente-tab:not(.active):hover {
-    background-color: #e8f4f8;
-  }
-  
   .admin-tab.personal-tab {
     border-color: var(--personal-dark);
     color: var(--personal-dark);
     background-color: white;
     border-bottom-color: var(--personal-dark);
+    border-right: none;
     border-radius: 10px 10px 0 0;
-  }
-  
-  /* When Alivente is active, Personal tab gets blue left and bottom border */
-  .admin-tab.personal-tab.alivente-active {
-    border-left-color: var(--alivente-dark);
-    border-bottom-color: var(--alivente-dark);
   }
   
   .admin-tab.personal-tab.active {
@@ -115,8 +85,27 @@
     z-index: 10;
   }
   
+  .admin-tab.personal-tab.future-active {
+    border-bottom-color: var(--future-dark);
+  }
+  
   .admin-tab.personal-tab:not(.active):hover {
     background-color: #e8f5e9;
+  }
+  
+  .admin-tab.future-tab {
+    border-color: var(--future-dark);
+    color: var(--future-dark);
+    background-color: white;
+    border-bottom-color: var(--future-dark);
+    border-radius: 10px 10px 0 0;
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+  
+  .admin-tab.future-tab.personal-active {
+    border-left-color: var(--personal-dark);
+    border-bottom-color: var(--personal-dark);
   }
   
   /* Tab Content */
@@ -137,14 +126,14 @@
     display: block;
   }
   
-  .tab-panel.alivente-panel {
-    border-color: var(--alivente-dark);
-    background-color: var(--alivente-light);
-  }
-  
   .tab-panel.personal-panel {
     border-color: var(--personal-dark);
     background-color: var(--personal-light);
+  }
+  
+  .tab-panel.future-panel {
+    border-color: var(--future-dark);
+    background-color: var(--future-light);
   }
   
   @keyframes fadeIn {
@@ -190,15 +179,6 @@
     text-align: center;
   }
   
-  .btn-alivente {
-    background-color: #17a2b8;
-    border: none;
-  }
-  
-  .btn-alivente:hover {
-    background-color: #138496;
-  }
-  
   .btn-personal {
     background-color: #28a745;
     border: none;
@@ -219,31 +199,15 @@
       font-size: 1rem;
     }
   }
-
-.admin-tab.future-tab {
-  border-color: #6c757d;
-  color: #6c757d;
-  background-color: white;
-  border-bottom-color: #6c757d;
-  border-radius: 10px 10px 0 0;
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.admin-tab.future-tab.alivente-active {
-  border-left-color: var(--alivente-dark);
-  border-bottom-color: var(--alivente-dark);
-}
-
 </style>
 
 <!-- Tab Navigation -->
 <div class="admin-tabs">
-  <div class="admin-tab alivente-tab active">
-    <i class="fas fa-building"></i>
-    <span>ALIVENTE</span>
+  <div class="admin-tab personal-tab active">
+    <i class="fas fa-user"></i>
+    <span>PERSONAL</span>
   </div>
-  <div class="admin-tab future-tab alivente-active">
+  <div class="admin-tab future-tab personal-active">
     <i class="fas fa-clock"></i>
     <span>FUTURE</span>
   </div>
@@ -252,60 +216,29 @@
 <!-- Tab Content -->
 <div class="tab-content-container">
   
-  <!-- Alivente Panel -->
-  <div id="alivente-panel" class="tab-panel alivente-panel active">
-    <div class="admin-grid">
-      
-      <!-- Manage Lease Agreements -->
-      <a href="{% url 'tenant_lease_agreement' %}" class="admin-btn btn-alivente">
-        <i class="fas fa-file-contract"></i>
-        <h6>Manage Lease Agreements</h6>
-      </a>
-
-      <!-- Generate Lease Agreement -->
-      <a href="{% url 'generate_lease_agreement' %}" class="admin-btn btn-alivente">
-        <i class="fas fa-plus-circle"></i>
-        <h6>Generate Lease Agreement</h6>
-      </a>
-
-      <!-- Manage Title Deeds -->
-      <a href="{% url 'properties_title_deed' %}" class="admin-btn btn-alivente">
-        <i class="fas fa-scroll"></i>
-        <h6>Manage Title Deeds</h6>
-      </a>
-
-      <!-- Generate Invoices -->
-      <a href="{% url 'admin_invoices' %}" class="admin-btn btn-alivente">
-        <i class="fas fa-file-invoice"></i>
-        <h6>Generate Invoices</h6>
-      </a>
-
-    </div>
-  </div>
-  
   <!-- Personal Panel -->
-  <div id="personal-panel" class="tab-panel personal-panel">
+  <div id="personal-panel" class="tab-panel personal-panel active">
     <div class="admin-grid">
       
-      <!-- Future Feature 1 -->
+      <!-- Manage Passports/Documents -->
+      <a href="{% url 'passport_management' %}" class="admin-btn btn-personal">
+        <i class="fas fa-passport"></i>
+        <h6>Manage Passports/Documents</h6>
+      </a>
+
+      <!-- Recipes -->
+      <a href="{% url 'recipe_management' %}" class="admin-btn btn-personal">
+        <i class="fas fa-utensils"></i>
+        <h6>Recipes</h6>
+      </a>
+
+      <!-- Coming Soon 1 -->
       <div class="admin-btn btn-personal" style="opacity: 0.5; cursor: default;">
         <i class="fas fa-clock"></i>
         <h6>Coming Soon</h6>
       </div>
 
-      <!-- Future Feature 2 -->
-      <div class="admin-btn btn-personal" style="opacity: 0.5; cursor: default;">
-        <i class="fas fa-clock"></i>
-        <h6>Coming Soon</h6>
-      </div>
-
-      <!-- Future Feature 3 -->
-      <div class="admin-btn btn-personal" style="opacity: 0.5; cursor: default;">
-        <i class="fas fa-clock"></i>
-        <h6>Coming Soon</h6>
-      </div>
-
-      <!-- Future Feature 4 -->
+      <!-- Coming Soon 2 -->
       <div class="admin-btn btn-personal" style="opacity: 0.5; cursor: default;">
         <i class="fas fa-clock"></i>
         <h6>Coming Soon</h6>
@@ -315,11 +248,6 @@
   </div>
   
 </div>
-
-<script>
-  // Future tab is disabled - no switching functionality needed
-  // Tab switching removed as only ALIVENTE tab is active
-</script>
 
 {% else %}
   <center><img src="{% static 'images/alivente_online_logo.png' %}" alt="Alivente" width="480" height="300"></center>

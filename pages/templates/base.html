@@ -212,20 +212,31 @@
         <ul class="navbar-nav ml-auto">
           
           {% if user.is_authenticated %}
-              <!-- Administration Direct Link -->
-              {% if user.is_superuser %}
-              <li class="nav-item">
-                  <a class="nav-link" href="{% url 'admin_apms' %}">Administration</a>
-              </li>
-              {% else %}
-              <li class="nav-item">
-                  <span class="nav-link text-muted" style="cursor: default;">Administration</span>
-              </li>
-              {% endif %}
-              
-              <li class="nav-item">
-                  <a class="nav-link" href="{% url 'logout' %}">Logout</a>
-              </li>
+            <!-- Administration Direct Link -->
+            {% if user.is_superuser %}
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'admin_apms' %}">Administration</a>
+            </li>
+            {% else %}
+            <li class="nav-item">
+                <span class="nav-link text-muted" style="cursor: default;">Administration</span>
+            </li>
+            {% endif %}
+
+            <!-- Personal Direct Link -->
+            {% if user.is_superuser %}
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'personal_page' %}">Personal</a>
+            </li>
+            {% else %}
+            <li class="nav-item">
+                <span class="nav-link text-muted" style="cursor: default;">Personal</span>
+            </li>
+            {% endif %}
+
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'logout' %}">Logout</a>
+            </li>
 
               <!-- Bell Notification Icon - Far Right -->
               <li class="nav-item">
