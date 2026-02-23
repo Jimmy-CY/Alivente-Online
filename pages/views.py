@@ -75,10 +75,14 @@ from .models import (
     MealPlanRecipe,
     UnitConversion,
     VacancyPeriod,
+    Contact,
+    CelebrationEvent,
+    EventNotification,
+
     )
 from decimal import Decimal
 from fractions import Fraction
-from calendar import monthrange
+from calendar import monthrange, monthcalendar, month_name
 from collections import defaultdict
 from datetime import date, datetime, timedelta
 from pages.management.commands.email_utils import get_email_recipients, format_email_recipients_for_header
@@ -92,6 +96,7 @@ from PIL import Image
 from docx import Document
 from io import BytesIO
 import decimal
+import calendar
 import mysql.connector
 import smtplib
 import io
@@ -14142,3 +14147,226 @@ def find_matching_recipes(request):
             'success': False,
             'error': str(e)
         }, status=400)
+
+### CELEBRATION MANAGEMENT VIEWS ###
+@login_required
+def celebration_management(request):
+    """Main celebration management page"""
+    if not request.user.is_superuser:
+        messages.error(request, 'You do not have permission to access this page.')
+        return redirect('home')
+    
+    # Handle Contact CRUD
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        
+        if action == 'add_contact':
+            name = request.POST.get('name')
+            relationship = request.POST.get('relationship')
+            email = request.POST.get('email')
+            phone = request.POST.get('phone')
+            notes = request.POST.get('notes')
+            
+            if name:
+                Contact.objects.create(
+                    name=name,
+                    relationship=relationship,
+                    email=email,
+                    phone=phone,
+                    notes=notes,
+                    created_by=request.user
+                )
+                messages.success(request, f'Contact "{name}" added successfully!')
+            else:
+                messages.error(request, 'Name is required.')
+        
+        elif action == 'edit_contact':
+            contact_id = request.POST.get('contact_id')
+            try:
+                contact = Contact.objects.get(id=contact_id, created_by=request.user)
+                contact.name = request.POST.get('name')
+                contact.relationship = request.POST.get('relationship')
+                contact.email = request.POST.get('email')
+                contact.phone = request.POST.get('phone')
+                contact.notes = request.POST.get('notes')
+                contact.save()
+                messages.success(request, f'Contact "{contact.name}" updated successfully!')
+            except Contact.DoesNotExist:
+                messages.error(request, 'Contact not found.')
+        
+        elif action == 'delete_contact':
+            contact_id = request.POST.get('contact_id')
+            try:
+                contact = Contact.objects.get(id=contact_id, created_by=request.user)
+                name = contact.name
+                contact.delete()
+                messages.success(request, f'Contact "{name}" deleted successfully!')
+            except Contact.DoesNotExist:
+                messages.error(request, 'Contact not found.')
+        
+        elif action == 'add_event':
+            contact_id = request.POST.get('contact_id')
+            try:
+                contact = Contact.objects.get(id=contact_id, created_by=request.user)
+                event_type = request.POST.get('event_type')
+                event_date_str = request.POST.get('event_date')
+                priority = request.POST.get('priority', 'normal')
+                notes = request.POST.get('event_notes')
+                
+                # Notification settings
+                notify_one_week = request.POST.get('notify_one_week') == 'on'
+                notify_one_day = request.POST.get('notify_one_day') == 'on'
+                notify_same_day = request.POST.get('notify_same_day') == 'on'
+                
+                if event_date_str:
+                    # Parse the date
+                    from datetime import datetime
+                    event_date = datetime.strptime(event_date_str, '%Y-%m-%d').date()
+                    
+                    # For namedays, set year to 1900 (placeholder year)
+                    if event_type == 'nameday':
+                        event_date = event_date.replace(year=1900)
+                    
+                    CelebrationEvent.objects.create(
+                        contact=contact,
+                        event_type=event_type,
+                        event_date=event_date,
+                        is_recurring=True,  # Always recurring for now
+                        priority=priority,
+                        notes=notes,
+                        notify_one_week=notify_one_week,
+                        notify_one_day=notify_one_day,
+                        notify_same_day=notify_same_day,
+                        created_by=request.user
+                    )
+                    messages.success(request, f'{event_type.title()} event added for {contact.name}!')
+                else:
+                    messages.error(request, 'Event date is required.')
+            except Contact.DoesNotExist:
+                messages.error(request, 'Contact not found.')
+            except ValueError:
+                messages.error(request, 'Invalid date format.')
+        
+        elif action == 'edit_event':
+            event_id = request.POST.get('event_id')
+            try:
+                event = CelebrationEvent.objects.get(id=event_id, created_by=request.user)
+                event.event_type = request.POST.get('event_type')
+                event_date_str = request.POST.get('event_date')
+                event.priority = request.POST.get('priority', 'normal')
+                event.notes = request.POST.get('event_notes')
+                event.notify_one_week = request.POST.get('notify_one_week') == 'on'
+                event.notify_one_day = request.POST.get('notify_one_day') == 'on'
+                event.notify_same_day = request.POST.get('notify_same_day') == 'on'
+                
+                # Handle date update
+                if event_date_str:
+                    from datetime import datetime
+                    event_date = datetime.strptime(event_date_str, '%Y-%m-%d').date()
+                    
+                    # For namedays, set year to 1900 (placeholder year)
+                    if event.event_type == 'nameday':
+                        event_date = event_date.replace(year=1900)
+                    
+                    event.event_date = event_date
+                
+                event.save()
+                messages.success(request, 'Event updated successfully!')
+            except CelebrationEvent.DoesNotExist:
+                messages.error(request, 'Event not found.')
+            except ValueError:
+                messages.error(request, 'Invalid date format.')
+        
+        elif action == 'delete_event':
+            event_id = request.POST.get('event_id')
+            try:
+                event = CelebrationEvent.objects.get(id=event_id, created_by=request.user)
+                event.delete()
+                messages.success(request, 'Event deleted successfully!')
+            except CelebrationEvent.DoesNotExist:
+                messages.error(request, 'Event not found.')
+        
+        return redirect('celebration_management')
+    
+    # Get all contacts with their events
+    contacts = Contact.objects.filter(created_by=request.user).prefetch_related('celebration_events')
+    
+    # Get upcoming events for dashboard
+    today = timezone.now().date()
+    all_events = []
+    
+    for contact in contacts:
+        for event in contact.celebration_events.all():
+            next_date = event.get_next_occurrence()
+            if next_date:
+                days_until = (next_date - today).days
+                if days_until <= 90:  # Show events in next 90 days
+                    all_events.append({
+                        'contact': contact,
+                        'event': event,
+                        'next_date': next_date,
+                        'days_until': days_until
+                    })
+    
+    # Sort by days until
+    all_events.sort(key=lambda x: x['days_until'])
+    
+    return render(request, 'celebration_management.html', {
+        'contacts': contacts,
+        'upcoming_events': all_events[:10],  # Top 10 upcoming
+        'relationship_choices': Contact.RELATIONSHIP_CHOICES,
+        'event_type_choices': CelebrationEvent.EVENT_TYPE_CHOICES,
+        'priority_choices': CelebrationEvent.PRIORITY_CHOICES,
+    })
+
+@login_required
+def celebration_calendar(request):
+    """Calendar view of all celebrations"""
+    if not request.user.is_superuser:
+        messages.error(request, 'You do not have permission to access this page.')
+        return redirect('home')
+    
+    # Get month and year from request, default to current
+    today = timezone.now().date()
+    month = int(request.GET.get('month', today.month))
+    year = int(request.GET.get('year', today.year))
+    
+    # Get all events for this user
+    events = CelebrationEvent.objects.filter(created_by=request.user).select_related('contact')
+    
+    # Build calendar
+    cal = monthcalendar(year, month)
+    
+    # Map events to calendar days
+    events_by_day = {}
+    for event in events:
+        next_occurrence = event.get_next_occurrence()
+        if next_occurrence and next_occurrence.month == month and next_occurrence.year == year:
+            day = next_occurrence.day
+            if day not in events_by_day:
+                events_by_day[day] = []
+            events_by_day[day].append(event)
+    
+    # Previous and next month/year
+    if month == 1:
+        prev_month, prev_year = 12, year - 1
+    else:
+        prev_month, prev_year = month - 1, year
+    
+    if month == 12:
+        next_month, next_year = 1, year + 1
+    else:
+        next_month, next_year = month + 1, year
+    
+    return render(request, 'celebration_calendar.html', {
+        'calendar': cal,
+        'month': month,
+        'year': year,
+        'month_name': month_name[month],
+        'events_by_day': events_by_day,
+        'prev_month': prev_month,
+        'prev_year': prev_year,
+        'next_month': next_month,
+        'next_year': next_year,
+        'today': today,
+    })

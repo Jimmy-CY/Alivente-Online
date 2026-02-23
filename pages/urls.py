@@ -270,4 +270,8 @@ urlpatterns = [
     path('check-unit-usage/', views.check_unit_usage, name='check_unit_usage'),
     path('delete-measurement-unit/', views.delete_measurement_unit, name='delete_measurement_unit'),
 
+    # Celebration Management
+    path('celebrations/', views.celebration_management, name='celebration_management'),
+    path('celebrations/calendar/', views.celebration_calendar, name='celebration_calendar'),
+
 ]

@@ -1,0 +1,844 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Celebration Management{% endblock %}
+
+{% block content %}
+
+<style>
+/* Celebration Management Styles */
+.celebration-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 30px;
+    border-radius: 12px;
+    margin-bottom: 30px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.celebration-header h2 {
+    margin: 0 0 10px 0;
+    font-weight: 600;
+}
+
+.celebration-header p {
+    margin: 0;
+    opacity: 0.9;
+}
+
+.view-toggle {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.view-toggle .btn {
+    flex: 1;
+}
+
+.contact-card {
+    background: white;
+    border: 2px solid #e9ecef;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+}
+
+.contact-card:hover {
+    border-color: #667eea;
+    box-shadow: 0 4px 16px rgba(102, 126, 234, 0.15);
+}
+
+.contact-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #f0f0f0;
+}
+
+.contact-info h4 {
+    margin: 0;
+    color: #2c3e50;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.contact-info .relationship-badge {
+    font-size: 12px;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-weight: 500;
+}
+
+.contact-details {
+    font-size: 14px;
+    color: #6c757d;
+    margin-top: 8px;
+}
+
+.contact-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.event-list {
+    margin-top: 15px;
+}
+
+.event-item {
+    background: #f8f9fa;
+    border-left: 4px solid;
+    padding: 12px 15px;
+    margin-bottom: 10px;
+    border-radius: 6px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.event-item.birthday {
+    border-left-color: #17a2b8;
+    background: #e7f6f8;
+}
+
+.event-item.nameday {
+    border-left-color: #6f42c1;
+    background: #f0ebf8;
+}
+
+.event-item.anniversary {
+    border-left-color: #dc3545;
+    background: #f8e7e9;
+}
+
+.event-item.custom {
+    border-left-color: #28a745;
+    background: #e7f4e9;
+}
+
+.event-info {
+    flex: 1;
+}
+
+.event-type-badge {
+    font-size: 11px;
+    padding: 3px 10px;
+    border-radius: 10px;
+    font-weight: 600;
+    display: inline-block;
+    margin-right: 8px;
+}
+
+.event-date {
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.event-countdown {
+    font-size: 12px;
+    color: #6c757d;
+    margin-top: 4px;
+}
+
+.event-countdown.urgent {
+    color: #dc3545;
+    font-weight: 600;
+}
+
+.event-actions {
+    display: flex;
+    gap: 6px;
+}
+
+.upcoming-widget {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 30px;
+}
+
+.upcoming-widget h5 {
+    margin: 0 0 15px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.upcoming-list {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.upcoming-item {
+    background: rgba(255, 255, 255, 0.1);
+    padding: 10px 15px;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.upcoming-item:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.upcoming-days {
+    background: rgba(255, 255, 255, 0.3);
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.no-contacts {
+    text-align: center;
+    padding: 60px 20px;
+    color: #6c757d;
+}
+
+.no-contacts i {
+    font-size: 64px;
+    margin-bottom: 20px;
+    opacity: 0.3;
+}
+
+.no-events {
+    text-align: center;
+    padding: 20px;
+    color: #6c757d;
+    font-style: italic;
+}
+
+/* Compact view styles */
+.contact-card.compact-view {
+    cursor: pointer;
+    transition: all 0.3s ease;
+    padding: 12px 20px;
+}
+
+.contact-card.compact-view:hover {
+    background: #f8f9fa;
+    transform: translateY(-2px);
+}
+
+.contact-card.compact-view.expanded {
+    background: white;
+    padding: 20px;
+}
+
+/* Hide details in compact view */
+.contact-card.compact-view .contact-details {
+    display: none !important;
+}
+
+.contact-card.compact-view.expanded .contact-details {
+    display: block !important;
+}
+
+/* 2-column grid for compact view */
+.contacts-container.compact-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+}
+
+/* Ensure detailed view is single column */
+.contacts-container.detailed-grid {
+    display: block;
+}
+
+/* Adjust contact header for compact view */
+.contact-card.compact-view .contact-header {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.contact-card.compact-view.expanded .contact-header {
+    margin-bottom: 15px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #f0f0f0;
+}
+
+/* Search highlight */
+#contactSearch {
+    transition: all 0.3s ease;
+}
+
+#contactSearch:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+}
+
+/* Responsive - stack on mobile */
+@media (max-width: 768px) {
+    .contacts-container.compact-grid {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+
+<div class="celebration-header">
+    <h2><i class="fas fa-birthday-cake"></i> Celebration Management</h2>
+    <p>Track birthdays, namedays, anniversaries, and special occasions</p>
+</div>
+
+{% for msg in messages %}
+<div class="alert alert-secondary alert-dismissible fade show auto-dismiss" role="alert">
+    <center>{{ msg }}</center>
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+    </button>
+</div>
+<script>
+    setTimeout(function() {
+        document.querySelectorAll('.auto-dismiss').forEach(alert => {
+            alert.classList.remove('show');
+            alert.classList.add('fade');
+            setTimeout(() => alert.remove(), 500);
+        });
+    }, 2000);
+</script>
+{% endfor %}
+
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+    <div style="display: flex; gap: 10px; flex: 1;">
+        <button class="btn btn-primary" onclick="addContact()">
+            <i class="fas fa-user-plus"></i> Add Contact
+        </button>
+        <a href="{% url 'celebration_calendar' %}" class="btn btn-info">
+            <i class="fas fa-calendar-alt"></i> Calendar View
+        </a>
+        <button class="btn btn-outline-secondary" id="viewToggleBtn" onclick="toggleView()">
+            <i class="fas fa-th-large"></i> Compact View
+        </button>
+    </div>
+    
+    <div style="display: flex; gap: 10px; align-items: center;">
+        <input type="text" 
+               id="contactSearch" 
+               class="form-control" 
+               placeholder="Search contacts..." 
+               onkeyup="searchContacts()"
+               style="width: 250px;">
+        <a href="{% url 'personal_page' %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back
+        </a>
+    </div>
+</div>
+
+<!-- Upcoming Events Widget -->
+{% if upcoming_events %}
+<div class="upcoming-widget">
+    <h5><i class="fas fa-bell"></i> Upcoming Celebrations (Next 90 Days)</h5>
+    <div class="upcoming-list">
+        {% for item in upcoming_events %}
+        <div class="upcoming-item">
+            <div>
+                <strong>{{ item.contact.name }}</strong> - {{ item.event.get_event_type_display }}
+                <br>
+                <small>{{ item.next_date|date:"F j, Y" }}</small>
+            </div>
+            <div class="upcoming-days">
+                {% if item.days_until == 0 %}
+                    Today!
+                {% elif item.days_until == 1 %}
+                    Tomorrow
+                {% else %}
+                    {{ item.days_until }} days
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<!-- Contacts List -->
+<div class="contacts-container detailed-grid">
+    {% if contacts %}
+        {% for contact in contacts %}
+        <div class="contact-card">
+            <div class="contact-header">
+                <div class="contact-info">
+                    <h4>
+                        <i class="fas fa-user-circle"></i> {{ contact.name }}
+                        <span class="badge badge-secondary relationship-badge">{{ contact.get_relationship_display }}</span>
+                    </h4>
+                    <div class="contact-details">
+                        {% if contact.email %}
+                            <i class="fas fa-envelope"></i> {{ contact.email }}
+                        {% endif %}
+                        {% if contact.phone %}
+                            &nbsp;&nbsp;<i class="fas fa-phone"></i> {{ contact.phone }}
+                        {% endif %}
+                    </div>
+                    {% if contact.notes %}
+                    <div class="contact-details" style="margin-top: 8px;">
+                        <i class="fas fa-sticky-note"></i> {{ contact.notes }}
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="contact-actions">
+                    <button class="btn btn-sm btn-success" onclick="addEvent({{ contact.id }}, '{{ contact.name }}')" title="Add Event">
+                        <i class="fas fa-calendar-plus"></i>
+                    </button>
+                    <button class="btn btn-sm btn-warning" onclick="editContact({{ contact.id }}, '{{ contact.name }}', '{{ contact.relationship }}', '{{ contact.email }}', '{{ contact.phone }}', `{{ contact.notes|escapejs }}`)" title="Edit Contact">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="btn btn-sm btn-danger" onclick="deleteContact({{ contact.id }}, '{{ contact.name }}')" title="Delete Contact">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Events for this contact -->
+            <div class="event-list">
+                {% if contact.celebration_events.all %}
+                    {% for event in contact.celebration_events.all %}
+                    <div class="event-item {{ event.event_type }}">
+                        <div class="event-info">
+                            <div>
+                                <span class="badge badge-{{ event.get_color_class }} event-type-badge">
+                                    {{ event.get_event_type_display }}
+                                </span>
+                                <span class="event-date">{{ event.event_date|date:"F j" }}</span>
+                                {% if event.get_age %}
+                                    (Turning {{ event.get_age }})
+                                {% elif event.get_years %}
+                                    ({{ event.get_years }} years)
+                                {% endif %}
+                            </div>
+                            <div class="event-countdown {% if event.days_until <= 7 %}urgent{% endif %}">
+                                {% with days=event.days_until %}
+                                    {% if days == 0 %}
+                                        🎉 Today!
+                                    {% elif days == 1 %}
+                                        📅 Tomorrow
+                                    {% elif days <= 7 %}
+                                        ⚡ {{ days }} days away
+                                    {% else %}
+                                        📆 {{ days }} days away
+                                    {% endif %}
+                                {% endwith %}
+                            </div>
+                        </div>
+                        <div class="event-actions">
+                            <button class="btn btn-sm btn-warning" onclick="editEvent({{ event.id }}, {{ contact.id }}, '{{ contact.name }}', '{{ event.event_type }}', '{{ event.event_date|date:'Y-m-d' }}', '{{ event.priority }}', `{{ event.notes|escapejs }}`, {{ event.notify_one_week|lower }}, {{ event.notify_one_day|lower }}, {{ event.notify_same_day|lower }})" title="Edit Event">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="btn btn-sm btn-danger" onclick="deleteEvent({{ event.id }}, '{{ contact.name }}', '{{ event.get_event_type_display }}')" title="Delete Event">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="no-events">
+                        <i class="fas fa-calendar-times"></i> No events yet. Click the + button to add one.
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="no-contacts">
+            <i class="fas fa-user-friends"></i>
+            <h4>No Contacts Yet</h4>
+            <p>Click "Add Contact" to start tracking celebrations!</p>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Add/Edit Contact Modal -->
+<div class="modal fade" id="contactModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="contactModalLabel">Add Contact</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <form method="post" id="contactForm">
+                <div class="modal-body">
+                    {% csrf_token %}
+                    <input type="hidden" id="contact_id" name="contact_id">
+                    <input type="hidden" id="contact_action" name="action" value="add_contact">
+                    
+                    <div class="form-group">
+                        <label>Name <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="contact_name" name="name" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Relationship <span class="text-danger">*</span></label>
+                        <select class="form-control" id="contact_relationship" name="relationship" required>
+                            {% for value, label in relationship_choices %}
+                            <option value="{{ value }}">{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" class="form-control" id="contact_email" name="email">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Phone</label>
+                        <input type="text" class="form-control" id="contact_phone" name="phone">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Notes</label>
+                        <textarea class="form-control" id="contact_notes" name="notes" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Contact</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Add/Edit Event Modal -->
+<div class="modal fade" id="eventModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="eventModalLabel">Add Event</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <form method="post" id="eventForm">
+                <div class="modal-body">
+                    {% csrf_token %}
+                    <input type="hidden" id="event_id" name="event_id">
+                    <input type="hidden" id="event_contact_id" name="contact_id">
+                    <input type="hidden" id="event_action" name="action" value="add_event">
+                    
+                    <div class="alert alert-info" id="event_contact_name"></div>
+                    
+                    <div class="form-group">
+                        <label>Event Type <span class="text-danger">*</span></label>
+                        <select class="form-control" id="event_type" name="event_type" required>
+                            {% for value, label in event_type_choices %}
+                            <option value="{{ value }}">{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label id="event_date_label">Date <span class="text-danger">*</span></label>
+                        <input type="date" class="form-control" id="event_date" name="event_date" required>
+                        <small class="form-text text-muted" id="event_date_help">Event will repeat annually on this date</small>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Priority</label>
+                        <select class="form-control" id="event_priority" name="priority">
+                            {% for value, label in priority_choices %}
+                            <option value="{{ value }}">{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Notes</label>
+                        <textarea class="form-control" id="event_notes_field" name="event_notes" rows="2"></textarea>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="form-group">
+                        <label><strong>Notification Settings</strong></label>
+                        <div class="custom-control custom-checkbox">
+                            <input type="checkbox" class="custom-control-input" id="notify_one_week" name="notify_one_week" checked>
+                            <label class="custom-control-label" for="notify_one_week">Notify 1 week before (9:00 AM)</label>
+                        </div>
+                        <div class="custom-control custom-checkbox">
+                            <input type="checkbox" class="custom-control-input" id="notify_one_day" name="notify_one_day" checked>
+                            <label class="custom-control-label" for="notify_one_day">Notify 1 day before (9:00 AM)</label>
+                        </div>
+                        <div class="custom-control custom-checkbox">
+                            <input type="checkbox" class="custom-control-input" id="notify_same_day" name="notify_same_day" checked>
+                            <label class="custom-control-label" for="notify_same_day">Notify same day (9:00 AM)</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Event</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Contact Modal -->
+<div class="modal fade" id="deleteContactModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">Confirm Delete</h5>
+                <button type="button" class="close text-white" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <form method="post" id="deleteContactForm">
+                <div class="modal-body">
+                    {% csrf_token %}
+                    <input type="hidden" id="delete_contact_id" name="contact_id">
+                    <input type="hidden" name="action" value="delete_contact">
+                    
+                    <div class="text-center">
+                        <i class="fas fa-exclamation-triangle fa-3x text-danger mb-3"></i>
+                        <h5>Delete contact "<span id="delete_contact_name"></span>"?</h5>
+                        <p class="text-muted">This will also delete all events for this contact. This action cannot be undone.</p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger">Delete Contact</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Event Modal -->
+<div class="modal fade" id="deleteEventModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">Confirm Delete</h5>
+                <button type="button" class="close text-white" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <form method="post" id="deleteEventForm">
+                <div class="modal-body">
+                    {% csrf_token %}
+                    <input type="hidden" id="delete_event_id" name="event_id">
+                    <input type="hidden" name="action" value="delete_event">
+                    
+                    <div class="text-center">
+                        <i class="fas fa-exclamation-triangle fa-3x text-danger mb-3"></i>
+                        <h5>Delete Event?</h5>
+                        <p><strong><span id="delete_event_contact"></span> - <span id="delete_event_type"></span></strong></p>
+                        <p class="text-muted">This action cannot be undone.</p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger">Delete Event</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+// View toggle
+let isCompactView = false;
+
+function toggleView() {
+    isCompactView = !isCompactView;
+    const contactCards = document.querySelectorAll('.contact-card');
+    const contactsContainer = document.querySelector('.contacts-container');
+    const toggleBtn = document.getElementById('viewToggleBtn');
+    
+    contactCards.forEach(card => {
+        const eventList = card.querySelector('.event-list');
+        const contactActions = card.querySelector('.contact-actions');
+        
+        if (isCompactView) {
+            eventList.style.display = 'none';
+            contactActions.style.display = 'none';
+            card.style.cursor = 'pointer';
+            card.classList.add('compact-view');
+            
+            // Add click handler for compact view
+            card.onclick = function(e) {
+                if (!e.target.closest('button')) {
+                    toggleCardExpand(card);
+                }
+            };
+        } else {
+            eventList.style.display = 'block';
+            contactActions.style.display = 'flex';
+            card.style.cursor = 'default';
+            card.classList.remove('compact-view', 'expanded');
+            card.onclick = null;
+        }
+    });
+    
+    // Toggle grid layout
+    if (isCompactView) {
+        contactsContainer.classList.add('compact-grid');
+        contactsContainer.classList.remove('detailed-grid');
+        toggleBtn.innerHTML = '<i class="fas fa-list"></i> Detailed View';
+        toggleBtn.classList.remove('btn-outline-secondary');
+        toggleBtn.classList.add('btn-secondary');
+    } else {
+        contactsContainer.classList.remove('compact-grid');
+        contactsContainer.classList.add('detailed-grid');
+        toggleBtn.innerHTML = '<i class="fas fa-th-large"></i> Compact View';
+        toggleBtn.classList.remove('btn-secondary');
+        toggleBtn.classList.add('btn-outline-secondary');
+    }
+}
+
+function toggleCardExpand(card) {
+    const eventList = card.querySelector('.event-list');
+    const contactActions = card.querySelector('.contact-actions');
+    
+    if (card.classList.contains('expanded')) {
+        card.classList.remove('expanded');
+        eventList.style.display = 'none';
+        contactActions.style.display = 'none';
+    } else {
+        card.classList.add('expanded');
+        eventList.style.display = 'block';
+        contactActions.style.display = 'flex';
+    }
+}
+
+// Search functionality
+function searchContacts() {
+    const searchTerm = document.getElementById('contactSearch').value.toLowerCase();
+    const contactCards = document.querySelectorAll('.contact-card');
+    
+    contactCards.forEach(card => {
+        const name = card.querySelector('.contact-info h4').textContent.toLowerCase();
+        const email = card.querySelector('.contact-details')?.textContent.toLowerCase() || '';
+        
+        if (name.includes(searchTerm) || email.includes(searchTerm)) {
+            card.style.display = 'block';
+        } else {
+            card.style.display = 'none';
+        }
+    });
+}
+
+// Update event type handler to show/hide year for namedays
+function handleEventTypeChange() {
+    const eventType = document.getElementById('event_type').value;
+    const dateInput = document.getElementById('event_date');
+    const dateLabel = document.getElementById('event_date_label');
+    const dateHelp = document.getElementById('event_date_help');
+    
+    if (eventType === 'nameday') {
+        dateLabel.innerHTML = 'Date (Month & Day) <span class="text-danger">*</span>';
+        dateHelp.textContent = 'Select any year - only month and day will be used for annual recurrence';
+        dateHelp.style.color = '#6f42c1';
+        dateHelp.style.fontWeight = '600';
+    } else if (eventType === 'birthday') {
+        dateLabel.innerHTML = 'Date <span class="text-danger">*</span>';
+        dateHelp.textContent = 'Include birth year if known, or use any year for month/day only';
+        dateHelp.style.color = '#6c757d';
+        dateHelp.style.fontWeight = 'normal';
+    } else {
+        dateLabel.innerHTML = 'Date <span class="text-danger">*</span>';
+        dateHelp.textContent = 'Event will repeat annually on this date';
+        dateHelp.style.color = '#6c757d';
+        dateHelp.style.fontWeight = 'normal';
+    }
+}
+
+// Add Contact
+function addContact() {
+    document.getElementById('contactForm').reset();
+    document.getElementById('contact_id').value = '';
+    document.getElementById('contact_action').value = 'add_contact';
+    document.getElementById('contactModalLabel').textContent = 'Add Contact';
+    $('#contactModal').modal('show');
+}
+
+// Edit Contact
+function editContact(id, name, relationship, email, phone, notes) {
+    document.getElementById('contact_id').value = id;
+    document.getElementById('contact_action').value = 'edit_contact';
+    document.getElementById('contact_name').value = name;
+    document.getElementById('contact_relationship').value = relationship;
+    document.getElementById('contact_email').value = email || '';
+    document.getElementById('contact_phone').value = phone || '';
+    document.getElementById('contact_notes').value = notes || '';
+    document.getElementById('contactModalLabel').textContent = 'Edit Contact';
+    $('#contactModal').modal('show');
+}
+
+// Delete Contact
+function deleteContact(id, name) {
+    document.getElementById('delete_contact_id').value = id;
+    document.getElementById('delete_contact_name').textContent = name;
+    $('#deleteContactModal').modal('show');
+}
+
+// Add Event
+function addEvent(contactId, contactName) {
+    document.getElementById('eventForm').reset();
+    document.getElementById('event_id').value = '';
+    document.getElementById('event_contact_id').value = contactId;
+    document.getElementById('event_action').value = 'add_event';
+    document.getElementById('event_contact_name').textContent = 'Adding event for: ' + contactName;
+    document.getElementById('eventModalLabel').textContent = 'Add Event';
+    document.getElementById('notify_one_week').checked = true;
+    document.getElementById('notify_one_day').checked = true;
+    document.getElementById('notify_same_day').checked = true;
+    
+    // Set default date format based on event type
+    handleEventTypeChange();
+    
+    $('#eventModal').modal('show');
+}
+
+// Edit Event
+function editEvent(id, contactId, contactName, eventType, eventDate, priority, notes, notifyWeek, notifyDay, notifySame) {
+    document.getElementById('event_id').value = id;
+    document.getElementById('event_contact_id').value = contactId;
+    document.getElementById('event_action').value = 'edit_event';
+    document.getElementById('event_type').value = eventType;
+    document.getElementById('event_date').value = eventDate;
+    document.getElementById('event_priority').value = priority;
+    document.getElementById('event_notes_field').value = notes || '';
+    document.getElementById('event_contact_name').textContent = 'Editing event for: ' + contactName;
+    document.getElementById('eventModalLabel').textContent = 'Edit Event';
+    document.getElementById('notify_one_week').checked = notifyWeek;
+    document.getElementById('notify_one_day').checked = notifyDay;
+    document.getElementById('notify_same_day').checked = notifySame;
+    
+    handleEventTypeChange();
+    
+    $('#eventModal').modal('show');
+}
+
+// Delete Event
+function deleteEvent(id, contactName, eventType) {
+    document.getElementById('delete_event_id').value = id;
+    document.getElementById('delete_event_contact').textContent = contactName;
+    document.getElementById('delete_event_type').textContent = eventType;
+    $('#deleteEventModal').modal('show');
+}
+
+// Event type change listener
+document.addEventListener('DOMContentLoaded', function() {
+    const eventTypeSelect = document.getElementById('event_type');
+    if (eventTypeSelect) {
+        eventTypeSelect.addEventListener('change', handleEventTypeChange);
+    }
+});
+</script>
+
+{% endblock %}

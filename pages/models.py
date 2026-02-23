@@ -1829,3 +1829,182 @@ class UnitConversion(models.Model):
     
     def __str__(self):
         return f"1 {self.from_unit.name} = {self.multiplier} {self.to_unit.name}"
+
+# Celebration/Event Management Models
+
+class Contact(models.Model):
+    """People you want to track celebrations for"""
+    RELATIONSHIP_CHOICES = [
+        ('family', 'Family'),
+        ('friend', 'Friend'),
+        ('colleague', 'Colleague'),
+        ('other', 'Other'),
+    ]
+    
+    name = models.CharField(max_length=200)
+    relationship = models.CharField(max_length=20, choices=RELATIONSHIP_CHOICES, default='other')
+    email = models.EmailField(blank=True, null=True)
+    phone = models.CharField(max_length=50, blank=True, null=True)
+    photo = models.ImageField(upload_to='contacts/', blank=True, null=True)
+    notes = models.TextField(blank=True, null=True)
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['name']
+        verbose_name = 'Contact'
+        verbose_name_plural = 'Contacts'
+    
+    def __str__(self):
+        return f"{self.name} ({self.get_relationship_display()})"
+    
+    def get_upcoming_events(self):
+        """Get all upcoming events for this contact in the next 365 days"""
+        today = timezone.now().date()
+        events = []
+        for event in self.celebration_events.all():
+            next_occurrence = event.get_next_occurrence()
+            if next_occurrence and (next_occurrence - today).days <= 365:
+                events.append({
+                    'event': event,
+                    'next_date': next_occurrence,
+                    'days_until': (next_occurrence - today).days
+                })
+        return sorted(events, key=lambda x: x['days_until'])
+
+
+class CelebrationEvent(models.Model):
+    """Events to celebrate (birthdays, namedays, anniversaries, etc.)"""
+    EVENT_TYPE_CHOICES = [
+        ('birthday', 'Birthday'),
+        ('nameday', 'Nameday'),
+        ('anniversary', 'Anniversary'),
+        ('custom', 'Custom Event'),
+    ]
+    
+    PRIORITY_CHOICES = [
+        ('high', 'High'),
+        ('normal', 'Normal'),
+        ('low', 'Low'),
+    ]
+    
+    contact = models.ForeignKey(Contact, on_delete=models.CASCADE, related_name='celebration_events')
+    event_type = models.CharField(max_length=20, choices=EVENT_TYPE_CHOICES)
+    event_date = models.DateField(help_text="The date of the event (month and day)")
+    is_recurring = models.BooleanField(default=True, help_text="If checked, event repeats annually")
+    priority = models.CharField(max_length=10, choices=PRIORITY_CHOICES, default='normal')
+    notes = models.TextField(blank=True, null=True)
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    # Notification settings
+    notify_one_week = models.BooleanField(default=True, verbose_name="Notify 1 week before")
+    notify_one_day = models.BooleanField(default=True, verbose_name="Notify 1 day before")
+    notify_same_day = models.BooleanField(default=True, verbose_name="Notify same day")
+    notify_time = models.TimeField(default='09:00:00', help_text="Time to send same-day notification")
+    
+    class Meta:
+        ordering = ['event_date']
+        verbose_name = 'Celebration Event'
+        verbose_name_plural = 'Celebration Events'
+    
+    def __str__(self):
+        return f"{self.contact.name} - {self.get_event_type_display()} on {self.event_date.strftime('%B %d')}"
+    
+    def get_next_occurrence(self):
+        """Calculate the next occurrence of this event"""
+        if not self.is_recurring:
+            # For non-recurring events, return the event date if it's in the future
+            if self.event_date >= timezone.now().date():
+                return self.event_date
+            return None
+        
+        today = timezone.now().date()
+        current_year = today.year
+        
+        # Create date for this year
+        try:
+            this_year_date = self.event_date.replace(year=current_year)
+        except ValueError:
+            # Handle Feb 29 on non-leap years
+            this_year_date = self.event_date.replace(year=current_year, day=28)
+        
+        if this_year_date >= today:
+            return this_year_date
+        else:
+            # Event already passed this year, return next year's date
+            try:
+                return self.event_date.replace(year=current_year + 1)
+            except ValueError:
+                # Handle Feb 29
+                return self.event_date.replace(year=current_year + 1, day=28)
+    
+    def days_until(self):
+        """Days until next occurrence"""
+        next_date = self.get_next_occurrence()
+        if next_date:
+            return (next_date - timezone.now().date()).days
+        return None
+    
+    def get_age(self):
+        """Calculate age for birthdays (if original year is known)"""
+        if self.event_type == 'birthday' and self.event_date.year != 1900:  # 1900 = placeholder year
+            next_occurrence = self.get_next_occurrence()
+            if next_occurrence:
+                return next_occurrence.year - self.event_date.year
+        return None
+    
+    def get_years(self):
+        """Calculate years for anniversaries"""
+        if self.event_type == 'anniversary' and self.event_date.year != 1900:
+            next_occurrence = self.get_next_occurrence()
+            if next_occurrence:
+                return next_occurrence.year - self.event_date.year
+        return None
+    
+    def get_color_class(self):
+        """Get Bootstrap color class based on event type"""
+        colors = {
+            'birthday': 'info',      # Blue
+            'nameday': 'primary',    # Purple/Blue
+            'anniversary': 'danger', # Red
+            'custom': 'success',     # Green
+        }
+        return colors.get(self.event_type, 'secondary')
+    
+    def get_icon(self):
+        """Get icon for event type"""
+        icons = {
+            'birthday': 'fa-birthday-cake',
+            'nameday': 'fa-cross',
+            'anniversary': 'fa-heart',
+            'custom': 'fa-calendar-star',
+        }
+        return icons.get(self.event_type, 'fa-calendar')
+
+
+class EventNotification(models.Model):
+    """Track which notifications have been sent"""
+    NOTIFICATION_TYPE_CHOICES = [
+        ('one_week', '1 Week Before'),
+        ('one_day', '1 Day Before'),
+        ('same_day', 'Same Day'),
+    ]
+    
+    event = models.ForeignKey(CelebrationEvent, on_delete=models.CASCADE, related_name='notifications')
+    notification_type = models.CharField(max_length=20, choices=NOTIFICATION_TYPE_CHOICES)
+    occurrence_date = models.DateField(help_text="The specific occurrence date this notification is for")
+    send_datetime = models.DateTimeField(help_text="When to send this notification")
+    sent = models.BooleanField(default=False)
+    sent_at = models.DateTimeField(blank=True, null=True)
+    
+    class Meta:
+        ordering = ['send_datetime']
+        unique_together = ['event', 'notification_type', 'occurrence_date']
+        verbose_name = 'Event Notification'
+        verbose_name_plural = 'Event Notifications'
+    
+    def __str__(self):
+        return f"{self.event} - {self.get_notification_type_display()} on {self.occurrence_date}"
