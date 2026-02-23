@@ -153,6 +153,165 @@
     border-radius: 4px;
 }
 
+/* Timeline/List View Styles */
+.timeline-container {
+    background: white;
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    display: none;
+}
+
+.timeline-container.active {
+    display: block;
+}
+
+.calendar-view-container.active {
+    display: block;
+}
+
+.calendar-view-container {
+    display: none;
+}
+
+.timeline-month {
+    margin-bottom: 30px;
+}
+
+.timeline-month-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 15px 20px;
+    border-radius: 8px;
+    margin-bottom: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.timeline-month-header h4 {
+    margin: 0;
+    font-weight: 600;
+}
+
+.timeline-event-count {
+    background: rgba(255, 255, 255, 0.3);
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 14px;
+}
+
+.timeline-events {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.timeline-event-item {
+    background: white;
+    border: 2px solid #e9ecef;
+    border-left: 4px solid;
+    border-radius: 8px;
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.3s ease;
+}
+
+.timeline-event-item:hover {
+    transform: translateX(5px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.timeline-event-item.birthday {
+    border-left-color: #17a2b8;
+    background: #f8fdff;
+}
+
+.timeline-event-item.nameday {
+    border-left-color: #6f42c1;
+    background: #faf8fc;
+}
+
+.timeline-event-item.anniversary {
+    border-left-color: #dc3545;
+    background: #fff8f9;
+}
+
+.timeline-event-item.custom {
+    border-left-color: #28a745;
+    background: #f8fcf9;
+}
+
+.timeline-event-info {
+    flex: 1;
+}
+
+.timeline-event-date {
+    font-size: 18px;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 5px;
+}
+
+.timeline-event-details {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.timeline-event-name {
+    font-size: 16px;
+    font-weight: 500;
+    color: #495057;
+}
+
+.timeline-event-badge {
+    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-weight: 600;
+}
+
+.timeline-event-meta {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.timeline-event-countdown {
+    background: #f8f9fa;
+    padding: 8px 15px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #6c757d;
+}
+
+.timeline-event-countdown.today {
+    background: #ffc107;
+    color: white;
+}
+
+.timeline-event-countdown.soon {
+    background: #dc3545;
+    color: white;
+}
+
+.no-events-timeline {
+    text-align: center;
+    padding: 60px 20px;
+    color: #6c757d;
+}
+
+.no-events-timeline i {
+    font-size: 64px;
+    margin-bottom: 20px;
+    opacity: 0.3;
+}
+
 @media (max-width: 768px) {
     .calendar-table td {
         height: 80px;
@@ -167,6 +326,17 @@
         font-size: 9px;
         padding: 2px 4px;
     }
+    
+    .timeline-event-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    
+    .timeline-event-meta {
+        width: 100%;
+        justify-content: space-between;
+    }
 }
 </style>
 
@@ -180,8 +350,8 @@
     </a>
 </div>
 
-<!-- Calendar Navigation -->
-<div class="calendar-navigation">
+<!-- Calendar Navigation (shown only in calendar view) -->
+<div class="calendar-navigation" id="calendarNavigation">
     <a href="?month={{ prev_month }}&year={{ prev_year }}" class="btn btn-outline-primary">
         <i class="fas fa-chevron-left"></i> Previous
     </a>
@@ -193,65 +363,151 @@
     </a>
 </div>
 
-<!-- Calendar Grid -->
-<div class="calendar-container">
-    <table class="calendar-table">
-        <thead>
-            <tr>
-                <th>Sunday</th>
-                <th>Monday</th>
-                <th>Tuesday</th>
-                <th>Wednesday</th>
-                <th>Thursday</th>
-                <th>Friday</th>
-                <th>Saturday</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for week in calendar %}
-            <tr>
-                {% for day in week %}
-                <td class="{% if day == 0 %}empty{% elif day == today.day and month == today.month and year == today.year %}today{% endif %}">
-                    {% if day != 0 %}
-                        <div class="day-number">{{ day }}</div>
-                        
-                        {% if day in events_by_day %}
-                        <div class="day-events">
-                            {% for event in events_by_day|dict_get:day %}
-                            <div class="event-dot {{ event.event_type }}" 
-                                 title="{{ event.contact.name }} - {{ event.get_event_type_display }}">
-                                <i class="fas {{ event.get_icon }}"></i> {{ event.contact.name }}
+<!-- Calendar Grid View -->
+<div class="calendar-view-container active" id="calendarView">
+    <div class="calendar-container">
+        <table class="calendar-table">
+            <thead>
+                <tr>
+                    <th>Sunday</th>
+                    <th>Monday</th>
+                    <th>Tuesday</th>
+                    <th>Wednesday</th>
+                    <th>Thursday</th>
+                    <th>Friday</th>
+                    <th>Saturday</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for week in calendar %}
+                <tr>
+                    {% for day in week %}
+                    <td class="{% if day == 0 %}empty{% elif day == today.day and month == today.month and year == today.year %}today{% endif %}">
+                        {% if day != 0 %}
+                            <div class="day-number">{{ day }}</div>
+                            
+                            {% if day in events_by_day %}
+                            <div class="day-events">
+                                {% for event in events_by_day|dict_get:day %}
+                                <div class="event-dot {{ event.event_type }}" 
+                                     title="{{ event.contact.name }} - {{ event.get_event_type_display }}">
+                                    <i class="fas {{ event.get_icon }}"></i> {{ event.contact.name }}
+                                </div>
+                                {% endfor %}
                             </div>
-                            {% endfor %}
-                        </div>
+                            {% endif %}
                         {% endif %}
-                    {% endif %}
-                </td>
+                    </td>
+                    {% endfor %}
+                </tr>
                 {% endfor %}
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Legend -->
+    <div class="event-legend">
+        <div class="legend-item">
+            <div class="legend-color birthday"></div>
+            <span>Birthday</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color nameday"></div>
+            <span>Nameday</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color anniversary"></div>
+            <span>Anniversary</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color custom"></div>
+            <span>Custom</span>
+        </div>
+    </div>
 </div>
 
-<!-- Legend -->
-<div class="event-legend">
-    <div class="legend-item">
-        <div class="legend-color birthday"></div>
-        <span>Birthday</span>
-    </div>
-    <div class="legend-item">
-        <div class="legend-color nameday"></div>
-        <span>Nameday</span>
-    </div>
-    <div class="legend-item">
-        <div class="legend-color anniversary"></div>
-        <span>Anniversary</span>
-    </div>
-    <div class="legend-item">
-        <div class="legend-color custom"></div>
-        <span>Custom</span>
-    </div>
+<!-- Timeline/List View -->
+<div class="timeline-container" id="timelineView">
+    {% regroup all_events by next_date.month as events_by_month %}
+    
+    {% if all_events %}
+        {% for month_group in events_by_month %}
+        <div class="timeline-month">
+            <div class="timeline-month-header">
+                <h4>
+                    <i class="fas fa-calendar"></i> 
+                    {{ month_group.list.0.next_date|date:"F Y" }}
+                </h4>
+                <span class="timeline-event-count">{{ month_group.list|length }} event{{ month_group.list|length|pluralize }}</span>
+            </div>
+            
+            <div class="timeline-events">
+                {% for event_data in month_group.list %}
+                <div class="timeline-event-item {{ event_data.event.event_type }}">
+                    <div class="timeline-event-info">
+                        <div class="timeline-event-date">
+                            {{ event_data.next_date|date:"l, F j, Y" }}
+                        </div>
+                        <div class="timeline-event-details">
+                            <span class="timeline-event-name">
+                                <i class="fas fa-user-circle"></i> {{ event_data.contact.name }}
+                            </span>
+                            <span class="badge badge-{{ event_data.event.get_color_class }} timeline-event-badge">
+                                {{ event_data.event.get_event_type_display }}
+                            </span>
+                            {% if event_data.event.get_age %}
+                                <span class="text-muted">(Turning {{ event_data.event.get_age }})</span>
+                            {% elif event_data.event.get_years %}
+                                <span class="text-muted">({{ event_data.event.get_years }} years)</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="timeline-event-meta">
+                        <div class="timeline-event-countdown {% if event_data.days_until == 0 %}today{% elif event_data.days_until <= 7 %}soon{% endif %}">
+                            {% if event_data.days_until == 0 %}
+                                🎉 Today!
+                            {% elif event_data.days_until == 1 %}
+                                📅 Tomorrow
+                            {% elif event_data.days_until <= 7 %}
+                                ⚡ {{ event_data.days_until }} days
+                            {% else %}
+                                📆 {{ event_data.days_until }} days
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="no-events-timeline">
+            <i class="fas fa-calendar-times"></i>
+            <h4>No Upcoming Events</h4>
+            <p>Add some contacts and events to see them here!</p>
+        </div>
+    {% endif %}
 </div>
+
+<script>
+// Detect which view to show from URL parameter
+document.addEventListener('DOMContentLoaded', function() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const viewParam = urlParams.get('view');
+    
+    if (viewParam === 'timeline') {
+        // Show timeline view
+        document.getElementById('calendarView').classList.remove('active');
+        document.getElementById('timelineView').classList.add('active');
+        document.getElementById('calendarNavigation').style.display = 'none';
+    } else {
+        // Show calendar view (default)
+        document.getElementById('calendarView').classList.add('active');
+        document.getElementById('timelineView').classList.remove('active');
+        document.getElementById('calendarNavigation').style.display = 'flex';
+    }
+});
+</script>
 
 {% endblock %}

@@ -14326,13 +14326,31 @@ def celebration_calendar(request):
         messages.error(request, 'You do not have permission to access this page.')
         return redirect('home')
     
-    # Get month and year from request, default to current
+    # Get today's date
     today = timezone.now().date()
-    month = int(request.GET.get('month', today.month))
-    year = int(request.GET.get('year', today.year))
     
     # Get all events for this user
     events = CelebrationEvent.objects.filter(created_by=request.user).select_related('contact')
+    
+    # Find first month with events (from today forward)
+    first_event_date = None
+    
+    for event in events:
+        next_occurrence = event.get_next_occurrence()
+        if next_occurrence and next_occurrence >= today:
+            if first_event_date is None or next_occurrence < first_event_date:
+                first_event_date = next_occurrence
+    
+    # Get month and year from request, or use first event month, or default to current
+    if 'month' in request.GET and 'year' in request.GET:
+        month = int(request.GET.get('month'))
+        year = int(request.GET.get('year'))
+    elif first_event_date:
+        month = first_event_date.month
+        year = first_event_date.year
+    else:
+        month = today.month
+        year = today.year
     
     # Build calendar
     cal = monthcalendar(year, month)
@@ -14346,6 +14364,26 @@ def celebration_calendar(request):
             if day not in events_by_day:
                 events_by_day[day] = []
             events_by_day[day].append(event)
+    
+    # Get all upcoming events for timeline view (next 365 days)
+    all_events = []
+    contacts = Contact.objects.filter(created_by=request.user).prefetch_related('celebration_events')
+    
+    for contact in contacts:
+        for event in contact.celebration_events.all():
+            next_date = event.get_next_occurrence()
+            if next_date:
+                days_until = (next_date - today).days
+                if days_until <= 365:  # Show events in next year
+                    all_events.append({
+                        'contact': contact,
+                        'event': event,
+                        'next_date': next_date,
+                        'days_until': days_until
+                    })
+    
+    # Sort by next occurrence date
+    all_events.sort(key=lambda x: x['next_date'])
     
     # Previous and next month/year
     if month == 1:
@@ -14364,9 +14402,11 @@ def celebration_calendar(request):
         'year': year,
         'month_name': month_name[month],
         'events_by_day': events_by_day,
+        'all_events': all_events,
         'prev_month': prev_month,
         'prev_year': prev_year,
         'next_month': next_month,
         'next_year': next_year,
         'today': today,
+        'default_view': request.GET.get('view', 'calendar'),
     })

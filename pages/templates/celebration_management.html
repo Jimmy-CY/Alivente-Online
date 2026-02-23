@@ -6,6 +6,25 @@
 {% block content %}
 
 <style>
+/* Dropdown hover styles */
+#viewEventsMenu a:hover,
+#viewContactsMenu a:hover {
+    background-color: #f8f9fa !important;
+}
+
+#viewEventsMenu a:first-child:hover {
+    border-radius: 6px 6px 0 0;
+}
+
+#viewEventsMenu a:last-child:hover,
+#viewContactsMenu a:last-child:hover {
+    border-radius: 0 0 6px 6px;
+}
+
+#viewContactsMenu a:first-child:hover {
+    border-radius: 6px 6px 0 0;
+}
+
 /* Celebration Management Styles */
 .celebration-header {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -313,12 +332,36 @@
         <button class="btn btn-primary" onclick="addContact()">
             <i class="fas fa-user-plus"></i> Add Contact
         </button>
-        <a href="{% url 'celebration_calendar' %}" class="btn btn-info">
-            <i class="fas fa-calendar-alt"></i> Calendar View
-        </a>
-        <button class="btn btn-outline-secondary" id="viewToggleBtn" onclick="toggleView()">
-            <i class="fas fa-th-large"></i> Compact View
-        </button>
+        
+        <!-- View Events Dropdown -->
+        <div style="position: relative; display: inline-block;">
+            <button class="btn btn-info" type="button" id="viewEventsBtn">
+                <i class="fas fa-calendar-alt"></i> View Events <i class="fas fa-caret-down"></i>
+            </button>
+            <div id="viewEventsMenu" style="display: none; position: absolute; background: white; box-shadow: 0 4px 12px rgba(0,0,0,0.2); border-radius: 6px; min-width: 200px; z-index: 1000; margin-top: 5px; left: 0; border: 1px solid #ddd;">
+                <a href="{% url 'celebration_calendar' %}" style="display: block; padding: 12px 20px; color: #333; text-decoration: none; border-bottom: 1px solid #f0f0f0; transition: background 0.2s;">
+                    <i class="fas fa-calendar" style="margin-right: 8px; color: #17a2b8;"></i> Calendar View
+                </a>
+                <a href="{% url 'celebration_calendar' %}?view=timeline" style="display: block; padding: 12px 20px; color: #333; text-decoration: none; transition: background 0.2s;">
+                    <i class="fas fa-list" style="margin-right: 8px; color: #17a2b8;"></i> Timeline View
+                </a>
+            </div>
+        </div>
+        
+        <!-- View Contacts Dropdown -->
+        <div style="position: relative; display: inline-block;">
+            <button class="btn btn-outline-secondary" type="button" id="viewContactsBtn">
+                <i class="fas fa-eye"></i> View Contacts <i class="fas fa-caret-down"></i>
+            </button>
+            <div id="viewContactsMenu" style="display: none; position: absolute; background: white; box-shadow: 0 4px 12px rgba(0,0,0,0.2); border-radius: 6px; min-width: 200px; z-index: 1000; margin-top: 5px; left: 0; border: 1px solid #ddd;">
+                <a href="#" onclick="setDetailedView(); closeDropdowns(); return false;" style="display: block; padding: 12px 20px; color: #333; text-decoration: none; border-bottom: 1px solid #f0f0f0; transition: background 0.2s;">
+                    <i class="fas fa-list" style="margin-right: 8px; color: #6c757d;"></i> Detailed View
+                </a>
+                <a href="#" onclick="setCompactView(); closeDropdowns(); return false;" style="display: block; padding: 12px 20px; color: #333; text-decoration: none; transition: background 0.2s;">
+                    <i class="fas fa-th-large" style="margin-right: 8px; color: #6c757d;"></i> Compact View
+                </a>
+            </div>
+        </div>
     </div>
     
     <div style="display: flex; gap: 10px; align-items: center;">
@@ -650,14 +693,76 @@
 </div>
 
 <script>
-// View toggle
+// Dropdown functionality
+let viewEventsMenu, viewContactsMenu;
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Get menu elements
+    viewEventsMenu = document.getElementById('viewEventsMenu');
+    viewContactsMenu = document.getElementById('viewContactsMenu');
+    
+    // View Events Dropdown
+    const viewEventsBtn = document.getElementById('viewEventsBtn');
+    if (viewEventsBtn && viewEventsMenu) {
+        viewEventsBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const isVisible = viewEventsMenu.style.display === 'block';
+            closeDropdowns();
+            viewEventsMenu.style.display = isVisible ? 'none' : 'block';
+        });
+    }
+    
+    // View Contacts Dropdown
+    const viewContactsBtn = document.getElementById('viewContactsBtn');
+    if (viewContactsBtn && viewContactsMenu) {
+        viewContactsBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const isVisible = viewContactsMenu.style.display === 'block';
+            closeDropdowns();
+            viewContactsMenu.style.display = isVisible ? 'none' : 'block';
+        });
+    }
+    
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', closeDropdowns);
+    
+    // Prevent dropdown from closing when clicking inside
+    if (viewEventsMenu) {
+        viewEventsMenu.addEventListener('click', function(e) {
+            e.stopPropagation();
+        });
+    }
+    if (viewContactsMenu) {
+        viewContactsMenu.addEventListener('click', function(e) {
+            e.stopPropagation();
+        });
+    }
+});
+
+function closeDropdowns() {
+    if (viewEventsMenu) viewEventsMenu.style.display = 'none';
+    if (viewContactsMenu) viewContactsMenu.style.display = 'none';
+}
+
+// View toggle functions
 let isCompactView = false;
+
+function setDetailedView() {
+    if (isCompactView) {
+        toggleView();
+    }
+}
+
+function setCompactView() {
+    if (!isCompactView) {
+        toggleView();
+    }
+}
 
 function toggleView() {
     isCompactView = !isCompactView;
     const contactCards = document.querySelectorAll('.contact-card');
     const contactsContainer = document.querySelector('.contacts-container');
-    const toggleBtn = document.getElementById('viewToggleBtn');
     
     contactCards.forEach(card => {
         const eventList = card.querySelector('.event-list');
@@ -688,15 +793,24 @@ function toggleView() {
     if (isCompactView) {
         contactsContainer.classList.add('compact-grid');
         contactsContainer.classList.remove('detailed-grid');
-        toggleBtn.innerHTML = '<i class="fas fa-list"></i> Detailed View';
-        toggleBtn.classList.remove('btn-outline-secondary');
-        toggleBtn.classList.add('btn-secondary');
     } else {
         contactsContainer.classList.remove('compact-grid');
         contactsContainer.classList.add('detailed-grid');
-        toggleBtn.innerHTML = '<i class="fas fa-th-large"></i> Compact View';
-        toggleBtn.classList.remove('btn-secondary');
-        toggleBtn.classList.add('btn-outline-secondary');
+    }
+}
+
+function toggleCardExpand(card) {
+    const eventList = card.querySelector('.event-list');
+    const contactActions = card.querySelector('.contact-actions');
+    
+    if (card.classList.contains('expanded')) {
+        card.classList.remove('expanded');
+        eventList.style.display = 'none';
+        contactActions.style.display = 'none';
+    } else {
+        card.classList.add('expanded');
+        eventList.style.display = 'block';
+        contactActions.style.display = 'flex';
     }
 }
 
