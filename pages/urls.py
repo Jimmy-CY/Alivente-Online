@@ -271,7 +271,9 @@ urlpatterns = [
     path('delete-measurement-unit/', views.delete_measurement_unit, name='delete_measurement_unit'),
 
     # Celebration Management
-    path('celebrations/', views.celebration_management, name='celebration_management'),
+    path('celebrations/', views.celebration_dashboard, name='celebration_dashboard'),
+    path('celebrations/contacts/', views.celebration_management, name='celebration_management'),
     path('celebrations/calendar/', views.celebration_calendar, name='celebration_calendar'),
+    path('celebrations/import/', views.import_celebrations, name='import_celebrations'),
 
 ]

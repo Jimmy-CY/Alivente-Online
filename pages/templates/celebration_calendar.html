@@ -344,9 +344,20 @@
     <h2><i class="fas fa-calendar-alt"></i> Celebration Calendar</h2>
 </div>
 
-<div style="display: flex; justify-content: flex-end; margin-bottom: 20px;">
-    <a href="{% url 'celebration_management' %}" class="btn btn-secondary">
-        <i class="fas fa-arrow-left"></i> Back to List
+<div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
+    <div style="display: flex; gap: 10px;">
+        <!-- View Toggle Button -->
+        <button class="btn btn-info" id="viewToggleBtn" onclick="toggleCalendarView()">
+            {% if default_view == 'timeline' %}
+                <i class="fas fa-calendar"></i> Calendar View
+            {% else %}
+                <i class="fas fa-list"></i> Timeline View
+            {% endif %}
+        </button>
+    </div>
+    
+    <a href="{% url 'celebration_dashboard' %}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Back to Dashboard
     </a>
 </div>
 
@@ -508,6 +519,16 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('calendarNavigation').style.display = 'flex';
     }
 });
+
+function toggleCalendarView() {
+    const currentView = '{{ default_view }}';
+    if (currentView === 'timeline') {
+        window.location.href = '{% url "celebration_calendar" %}';
+    } else {
+        window.location.href = '{% url "celebration_calendar" %}?view=timeline';
+    }
+}
+
 </script>
 
 {% endblock %}

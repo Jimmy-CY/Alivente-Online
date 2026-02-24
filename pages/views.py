@@ -14410,3 +14410,185 @@ def celebration_calendar(request):
         'today': today,
         'default_view': request.GET.get('view', 'calendar'),
     })
+
+@login_required
+@require_POST
+def import_celebrations(request):
+    """Import contacts and events from Excel file"""
+    if not request.user.is_superuser:
+        messages.error(request, 'You do not have permission to access this page.')
+        return redirect('home')
+    
+    if 'excel_file' not in request.FILES:
+        messages.error(request, 'No file uploaded.')
+        return redirect('celebration_management')
+    
+    excel_file = request.FILES['excel_file']
+    skip_duplicates = request.POST.get('skip_duplicates') == 'on'
+    
+    try:
+        import pandas as pd
+        
+        # Read Excel file
+        df = pd.read_excel(excel_file)
+        
+        # Validate columns (flexible - support both "EVENT" and "EVENT TYPE")
+        event_column = 'EVENT TYPE' if 'EVENT TYPE' in df.columns else 'EVENT'
+        required_columns = ['NAME', 'RELATIONSHIP', event_column, 'DATE']
+        if not all(col in df.columns for col in required_columns):
+            messages.error(request, f'Excel file must have columns: NAME, RELATIONSHIP, EVENT/EVENT TYPE, DATE')
+            return redirect('celebration_management')
+        
+        # Map relationship values to model choices
+        relationship_map = {
+            'family': 'family',
+            'friend': 'friend',
+            'colleague': 'colleague',
+            'other': 'other',
+        }
+        
+        # Map event types
+        event_type_map = {
+            'birthday': 'birthday',
+            'nameday': 'nameday',
+            'anniversary': 'anniversary',
+            'custom': 'custom',
+        }
+        
+        # Map priority values
+        priority_map = {
+            'high': 'high',
+            'normal': 'normal',
+            'low': 'low',
+        }
+        
+        contacts_created = 0
+        contacts_skipped = 0
+        events_created = 0
+        
+        # Group by NAME to create contacts
+        for name, group in df.groupby('NAME'):
+            name = str(name).strip()
+            
+            if not name:
+                continue
+            
+            # Check if contact exists
+            if skip_duplicates and Contact.objects.filter(created_by=request.user, name__iexact=name).exists():
+                contacts_skipped += 1
+                continue
+            
+            # Get relationship from first row
+            relationship_value = str(group.iloc[0]['RELATIONSHIP']).strip().lower()
+            relationship = relationship_map.get(relationship_value, 'other')
+            
+            # Create contact
+            contact = Contact.objects.create(
+                name=name,
+                relationship=relationship,
+                created_by=request.user
+            )
+            contacts_created += 1
+            
+            # Create events for this contact
+            for _, row in group.iterrows():
+                event_type_value = str(row[event_column]).strip().lower()
+                event_type = event_type_map.get(event_type_value, 'custom')
+                
+                # Parse date
+                event_date = pd.to_datetime(row['DATE']).date()
+                
+                # For birthdays and namedays without birth year, use placeholder year 1900
+                event_date = event_date.replace(year=1900)
+                
+                # Get priority (default to 'high' if column doesn't exist)
+                if 'PRIORITY' in df.columns:
+                    priority_value = str(row['PRIORITY']).strip().lower()
+                    priority = priority_map.get(priority_value, 'high')
+                else:
+                    priority = 'normal'
+                
+                # Parse notification settings
+                notify_one_week = False
+                notify_one_day = False
+                notify_same_day = False
+                
+                if 'Notification Settings' in df.columns:
+                    notification_settings = str(row['Notification Settings']).lower()
+                    
+                    if 'one week' in notification_settings or '1 week' in notification_settings:
+                        notify_one_week = True
+                    if 'one day' in notification_settings or '1 day' in notification_settings:
+                        notify_one_day = True
+                    if 'same day' in notification_settings:
+                        notify_same_day = True
+                    
+                    # If "all" is mentioned, enable all notifications
+                    if 'all' in notification_settings:
+                        notify_one_week = True
+                        notify_one_day = True
+                        notify_same_day = True
+                else:
+                    # Default: all notifications enabled
+                    notify_one_week = True
+                    notify_one_day = True
+                    notify_same_day = True
+                
+                # Create event
+                CelebrationEvent.objects.create(
+                    contact=contact,
+                    event_type=event_type,
+                    event_date=event_date,
+                    is_recurring=True,
+                    priority=priority,
+                    notify_one_week=notify_one_week,
+                    notify_one_day=notify_one_day,
+                    notify_same_day=notify_same_day,
+                    created_by=request.user
+                )
+                events_created += 1
+        
+        # Success message
+        msg = f'Successfully imported {contacts_created} contacts and {events_created} events.'
+        if contacts_skipped > 0:
+            msg += f' Skipped {contacts_skipped} duplicate contacts.'
+        messages.success(request, msg)
+        
+    except Exception as e:
+        messages.error(request, f'Error importing file: {str(e)}')
+    
+    return redirect('celebration_management')
+
+@login_required
+def celebration_dashboard(request):
+    """Dashboard showing upcoming celebrations"""
+    if not request.user.is_superuser:
+        messages.error(request, 'You do not have permission to access this page.')
+        return redirect('home')
+    
+    # Get all contacts with their events
+    today = timezone.now().date()
+    contacts = Contact.objects.filter(created_by=request.user).prefetch_related('celebration_events')
+    
+    # Get upcoming events for dashboard (next 30 days)
+    all_events = []
+    
+    for contact in contacts:
+        for event in contact.celebration_events.all():
+            next_date = event.get_next_occurrence()
+            if next_date:
+                days_until = (next_date - today).days
+                if days_until <= 30:  # Show events in next 30 days only
+                    all_events.append({
+                        'contact': contact,
+                        'event': event,
+                        'next_date': next_date,
+                        'days_until': days_until
+                    })
+    
+    # Sort by days until
+    all_events.sort(key=lambda x: x['days_until'])
+    
+    return render(request, 'celebration_dashboard.html', {
+        'upcoming_events': all_events,
+    })
