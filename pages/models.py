@@ -2008,3 +2008,36 @@ class EventNotification(models.Model):
     
     def __str__(self):
         return f"{self.event} - {self.get_notification_type_display()} on {self.occurrence_date}"
+
+class NotificationRecipient(models.Model):
+    """Email recipients for different notification types"""
+    NOTIFICATION_TYPES = (
+        ('celebration_reminder', 'Celebration Reminders'),
+        ('document_expiry', 'Document Expiry Alerts'),
+        ('daily_report', 'Daily Property Management Report'),
+        ('new_lease_upload', 'New Lease Upload Reminders'),
+    )
+    
+    notification_type = models.CharField(max_length=50, choices=NOTIFICATION_TYPES, unique=True)
+    email_addresses = models.TextField(help_text="Comma-separated email addresses")
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        verbose_name = "Notification Recipient"
+        verbose_name_plural = "Notification Recipients"
+        ordering = ['notification_type']
+    
+    def __str__(self):
+        return f"{self.get_notification_type_display()}"
+    
+    def get_email_list(self):
+        """Return list of email addresses"""
+        if not self.email_addresses:
+            return []
+        return [email.strip() for email in self.email_addresses.split(',') if email.strip()]
+    
+    def set_email_list(self, email_list):
+        """Set email addresses from a list"""
+        self.email_addresses = ', '.join(email_list)

@@ -276,4 +276,7 @@ urlpatterns = [
     path('celebrations/calendar/', views.celebration_calendar, name='celebration_calendar'),
     path('celebrations/import/', views.import_celebrations, name='import_celebrations'),
 
+    path('notifications/settings/', views.notification_settings, name='notification_settings'),
+    path('notifications/personal/', views.personal_notification_settings, name='personal_notification_settings'),
+    
 ]

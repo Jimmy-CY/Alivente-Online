@@ -78,6 +78,7 @@ from .models import (
     Contact,
     CelebrationEvent,
     EventNotification,
+    NotificationRecipient,
 
     )
 from decimal import Decimal
@@ -14591,4 +14592,92 @@ def celebration_dashboard(request):
     
     return render(request, 'celebration_dashboard.html', {
         'upcoming_events': all_events,
+    })
+
+@login_required
+def notification_settings(request):
+    """Manage email notification recipients for administration items"""
+    if not request.user.is_superuser:
+        messages.error(request, 'You do not have permission to access this page.')
+        return redirect('home')
+    
+    # Handle form submission
+    if request.method == 'POST':
+        notification_type = request.POST.get('notification_type')
+        email_addresses = request.POST.get('email_addresses', '')
+        
+        recipient, created = NotificationRecipient.objects.get_or_create(
+            notification_type=notification_type,
+            defaults={'created_by': request.user}
+        )
+        recipient.email_addresses = email_addresses
+        recipient.save()
+        
+        messages.success(request, f'{recipient.get_notification_type_display()} email addresses updated successfully!')
+        return redirect('notification_settings')
+    
+    # Get only administration notification types
+    admin_types = ['daily_report', 'new_lease_upload']
+    notification_settings = {}
+    
+    for type_code, type_name in NotificationRecipient.NOTIFICATION_TYPES:
+        if type_code in admin_types:
+            try:
+                recipient = NotificationRecipient.objects.get(notification_type=type_code)
+                notification_settings[type_code] = {
+                    'name': type_name,
+                    'emails': recipient.email_addresses
+                }
+            except NotificationRecipient.DoesNotExist:
+                notification_settings[type_code] = {
+                    'name': type_name,
+                    'emails': ''
+                }
+    
+    return render(request, 'notification_settings.html', {
+        'notification_settings': notification_settings,
+    })
+
+@login_required
+def personal_notification_settings(request):
+    """Manage email notification recipients for personal items"""
+    if not request.user.is_superuser:
+        messages.error(request, 'You do not have permission to access this page.')
+        return redirect('home')
+    
+    # Handle form submission
+    if request.method == 'POST':
+        notification_type = request.POST.get('notification_type')
+        email_addresses = request.POST.get('email_addresses', '')
+        
+        recipient, created = NotificationRecipient.objects.get_or_create(
+            notification_type=notification_type,
+            defaults={'created_by': request.user}
+        )
+        recipient.email_addresses = email_addresses
+        recipient.save()
+        
+        messages.success(request, f'{recipient.get_notification_type_display()} email addresses updated successfully!')
+        return redirect('personal_notification_settings')
+    
+    # Get only personal notification types
+    personal_types = ['celebration_reminder', 'document_expiry']
+    notification_settings = {}
+    
+    for type_code, type_name in NotificationRecipient.NOTIFICATION_TYPES:
+        if type_code in personal_types:
+            try:
+                recipient = NotificationRecipient.objects.get(notification_type=type_code)
+                notification_settings[type_code] = {
+                    'name': type_name,
+                    'emails': recipient.email_addresses
+                }
+            except NotificationRecipient.DoesNotExist:
+                notification_settings[type_code] = {
+                    'name': type_name,
+                    'emails': ''
+                }
+    
+    return render(request, 'personal_notification_settings.html', {
+        'notification_settings': notification_settings,
     })

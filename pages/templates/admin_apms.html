@@ -26,8 +26,11 @@
   </script>
 {% endfor %}
 
-<div style="display: flex; justify-content: flex-end">
-  <a href="{% url 'home' %}" class="btn btn-info" style="margin-right:16px" role="button">Back</a>
+<div style="display: flex; justify-content: flex-end; gap: 10px;">
+  <a href="{% url 'notification_settings' %}" class="btn btn-success" role="button">
+    <i class="fas fa-envelope"></i> Notifications
+  </a>
+  <a href="{% url 'home' %}" class="btn btn-info" role="button">Back</a>
 </div>
 <br>
 
