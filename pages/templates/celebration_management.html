@@ -430,9 +430,49 @@
                                     {% endif %}
                                 {% endwith %}
                             </div>
+                            
+                            <!-- Notification Checkboxes -->
+                            <div style="margin-top: 8px; display: flex; gap: 12px; font-size: 13px;">
+                                <label style="margin: 0; display: flex; align-items: center; cursor: pointer;">
+                                    <input type="checkbox" 
+                                           class="notify-checkbox" 
+                                           data-event-id="{{ event.id }}" 
+                                           data-person="demetri" 
+                                           {% if event.notify_demetri %}checked{% endif %}
+                                           onchange="updateNotification(this)">
+                                    <span style="margin-left: 4px;">Demetri</span>
+                                </label>
+                                <label style="margin: 0; display: flex; align-items: center; cursor: pointer;">
+                                    <input type="checkbox" 
+                                           class="notify-checkbox" 
+                                           data-event-id="{{ event.id }}" 
+                                           data-person="angy" 
+                                           {% if event.notify_angy %}checked{% endif %}
+                                           onchange="updateNotification(this)">
+                                    <span style="margin-left: 4px;">Angy</span>
+                                </label>
+                                <label style="margin: 0; display: flex; align-items: center; cursor: pointer;">
+                                    <input type="checkbox" 
+                                           class="notify-checkbox" 
+                                           data-event-id="{{ event.id }}" 
+                                           data-person="erene" 
+                                           {% if event.notify_erene %}checked{% endif %}
+                                           onchange="updateNotification(this)">
+                                    <span style="margin-left: 4px;">Erene</span>
+                                </label>
+                                <label style="margin: 0; display: flex; align-items: center; cursor: pointer;">
+                                    <input type="checkbox" 
+                                           class="notify-checkbox" 
+                                           data-event-id="{{ event.id }}" 
+                                           data-person="alexandra" 
+                                           {% if event.notify_alexandra %}checked{% endif %}
+                                           onchange="updateNotification(this)">
+                                    <span style="margin-left: 4px;">Alexandra</span>
+                                </label>
+                            </div>
                         </div>
                         <div class="event-actions">
-                            <button class="btn btn-sm btn-warning" onclick="editEvent({{ event.id }}, {{ contact.id }}, '{{ contact.name }}', '{{ event.event_type }}', '{{ event.event_date|date:'Y-m-d' }}', '{{ event.priority }}', `{{ event.notes|escapejs }}`, {{ event.notify_one_week|lower }}, {{ event.notify_one_day|lower }}, {{ event.notify_same_day|lower }})" title="Edit Event">
+                            <button class="btn btn-sm btn-warning" onclick="editEvent({{ event.id }}, {{ contact.id }}, '{{ contact.name }}', '{{ event.event_type }}', '{{ event.event_date|date:'Y-m-d' }}', '{{ event.priority }}', `{{ event.notes|escapejs }}`, {{ event.notify_one_week|lower }}, {{ event.notify_one_day|lower }}, {{ event.notify_same_day|lower }}, {{ event.notify_demetri|lower }}, {{ event.notify_angy|lower }}, {{ event.notify_erene|lower }}, {{ event.notify_alexandra|lower }})" title="Edit Event">
                                 <i class="fas fa-edit"></i>
                             </button>
                             <button class="btn btn-sm btn-danger" onclick="deleteEvent({{ event.id }}, '{{ contact.name }}', '{{ event.get_event_type_display }}')" title="Delete Event">
@@ -575,6 +615,29 @@
                         <div class="custom-control custom-checkbox">
                             <input type="checkbox" class="custom-control-input" id="notify_same_day" name="notify_same_day" checked>
                             <label class="custom-control-label" for="notify_same_day">Notify same day (9:00 AM)</label>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="form-group">
+                        <label><strong>Notify These People</strong></label>
+                        <small class="form-text text-muted mb-2">Select who should receive notifications for this event</small>
+                        <div class="custom-control custom-checkbox">
+                            <input type="checkbox" class="custom-control-input" id="notify_demetri" name="notify_demetri" checked>
+                            <label class="custom-control-label" for="notify_demetri">Demetri (demetrimanias@gmail.com)</label>
+                        </div>
+                        <div class="custom-control custom-checkbox">
+                            <input type="checkbox" class="custom-control-input" id="notify_angy" name="notify_angy" checked>
+                            <label class="custom-control-label" for="notify_angy">Angy (angmaniasbakers@gmail.com)</label>
+                        </div>
+                        <div class="custom-control custom-checkbox">
+                            <input type="checkbox" class="custom-control-input" id="notify_erene" name="notify_erene" checked>
+                            <label class="custom-control-label" for="notify_erene">Erene (erenemanias@gmail.com)</label>
+                        </div>
+                        <div class="custom-control custom-checkbox">
+                            <input type="checkbox" class="custom-control-input" id="notify_alexandra" name="notify_alexandra" checked>
+                            <label class="custom-control-label" for="notify_alexandra">Alexandra (leximanias@gmail.com)</label>
                         </div>
                     </div>
                 </div>
@@ -854,6 +917,10 @@ function addEvent(contactId, contactName) {
     document.getElementById('notify_one_week').checked = true;
     document.getElementById('notify_one_day').checked = true;
     document.getElementById('notify_same_day').checked = true;
+    document.getElementById('notify_demetri').checked = true;
+    document.getElementById('notify_angy').checked = true;
+    document.getElementById('notify_erene').checked = true;
+    document.getElementById('notify_alexandra').checked = true;
     
     // Set default date format based on event type
     handleEventTypeChange();
@@ -862,7 +929,7 @@ function addEvent(contactId, contactName) {
 }
 
 // Edit Event
-function editEvent(id, contactId, contactName, eventType, eventDate, priority, notes, notifyWeek, notifyDay, notifySame) {
+function editEvent(id, contactId, contactName, eventType, eventDate, priority, notes, notifyWeek, notifyDay, notifySame, notifyDemetri, notifyAngy, notifyErene, notifyAlexandra) {
     document.getElementById('event_id').value = id;
     document.getElementById('event_contact_id').value = contactId;
     document.getElementById('event_action').value = 'edit_event';
@@ -875,6 +942,10 @@ function editEvent(id, contactId, contactName, eventType, eventDate, priority, n
     document.getElementById('notify_one_week').checked = notifyWeek;
     document.getElementById('notify_one_day').checked = notifyDay;
     document.getElementById('notify_same_day').checked = notifySame;
+    document.getElementById('notify_demetri').checked = notifyDemetri;
+    document.getElementById('notify_angy').checked = notifyAngy;
+    document.getElementById('notify_erene').checked = notifyErene;
+    document.getElementById('notify_alexandra').checked = notifyAlexandra;
     
     handleEventTypeChange();
     
@@ -887,6 +958,54 @@ function deleteEvent(id, contactName, eventType) {
     document.getElementById('delete_event_contact').textContent = contactName;
     document.getElementById('delete_event_type').textContent = eventType;
     $('#deleteEventModal').modal('show');
+}
+
+// AJAX function to update notification preferences
+function updateNotification(checkbox) {
+    const eventId = checkbox.dataset.eventId;
+    const person = checkbox.dataset.person;
+    const isChecked = checkbox.checked;
+    
+    // Get current state of all checkboxes for this event
+    const checkboxes = document.querySelectorAll(`input[data-event-id="${eventId}"]`);
+    const data = {
+        notify_demetri: false,
+        notify_angy: false,
+        notify_erene: false,
+        notify_alexandra: false
+    };
+    
+    checkboxes.forEach(cb => {
+        const personName = cb.dataset.person;
+        data[`notify_${personName}`] = cb.checked;
+    });
+    
+    // Get CSRF token
+    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    
+    // Send AJAX request
+    fetch(`/celebrations/event/${eventId}/update-notifications/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrftoken
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            console.log('Notification preferences updated');
+        } else {
+            alert('Error updating notification preferences: ' + data.error);
+            checkbox.checked = !isChecked; // Revert checkbox
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error updating notification preferences');
+        checkbox.checked = !isChecked; // Revert checkbox
+    });
 }
 
 // Event type change listener

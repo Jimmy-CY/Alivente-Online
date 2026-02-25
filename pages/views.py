@@ -14248,6 +14248,10 @@ def celebration_management(request):
                         notify_one_week=notify_one_week,
                         notify_one_day=notify_one_day,
                         notify_same_day=notify_same_day,
+                        notify_demetri=request.POST.get('notify_demetri', 'on') == 'on',
+                        notify_angy=request.POST.get('notify_angy', 'on') == 'on',
+                        notify_erene=request.POST.get('notify_erene', 'on') == 'on',
+                        notify_alexandra=request.POST.get('notify_alexandra', 'on') == 'on',
                         created_by=request.user
                     )
                     messages.success(request, f'{event_type.title()} event added for {contact.name}!')
@@ -14269,6 +14273,10 @@ def celebration_management(request):
                 event.notify_one_week = request.POST.get('notify_one_week') == 'on'
                 event.notify_one_day = request.POST.get('notify_one_day') == 'on'
                 event.notify_same_day = request.POST.get('notify_same_day') == 'on'
+                event.notify_demetri = request.POST.get('notify_demetri', 'on') == 'on'
+                event.notify_angy = request.POST.get('notify_angy', 'on') == 'on'
+                event.notify_erene = request.POST.get('notify_erene', 'on') == 'on'
+                event.notify_alexandra = request.POST.get('notify_alexandra', 'on') == 'on'
                 
                 # Handle date update
                 if event_date_str:
@@ -14706,3 +14714,40 @@ def personal_notification_settings(request):
     return render(request, 'personal_notification_settings.html', {
         'notification_settings': notification_settings,
     })
+
+@login_required
+@require_POST
+def update_event_notifications(request, event_id):
+    """Update notification preferences for a specific event via AJAX"""
+    import json
+    
+    try:
+        event = CelebrationEvent.objects.get(id=event_id)
+        
+        # Get the JSON data from request
+        data = json.loads(request.body)
+        
+        # Update the notification preferences
+        event.notify_demetri = data.get('notify_demetri', False)
+        event.notify_angy = data.get('notify_angy', False)
+        event.notify_erene = data.get('notify_erene', False)
+        event.notify_alexandra = data.get('notify_alexandra', False)
+        
+        event.save()
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Notification preferences updated'
+        })
+    
+    except CelebrationEvent.DoesNotExist:
+        return JsonResponse({
+            'success': False,
+            'error': 'Event not found'
+        }, status=404)
+    
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=500)

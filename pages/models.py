@@ -1873,7 +1873,6 @@ class Contact(models.Model):
                 })
         return sorted(events, key=lambda x: x['days_until'])
 
-
 class CelebrationEvent(models.Model):
     """Events to celebrate (birthdays, namedays, anniversaries, etc.)"""
     EVENT_TYPE_CHOICES = [
@@ -1904,6 +1903,28 @@ class CelebrationEvent(models.Model):
     notify_one_day = models.BooleanField(default=True, verbose_name="Notify 1 day before")
     notify_same_day = models.BooleanField(default=True, verbose_name="Notify same day")
     notify_time = models.TimeField(default='09:00:00', help_text="Time to send same-day notification")
+    
+    # Individual notification preferences - who should be notified about this event
+    notify_demetri = models.BooleanField(
+        default=True,
+        verbose_name="Notify Demetri",
+        help_text="Send notification to Demetri (demetrimanias@gmail.com)"
+    )
+    notify_angy = models.BooleanField(
+        default=True,
+        verbose_name="Notify Angy",
+        help_text="Send notification to Angy (angmaniasbakers@gmail.com)"
+    )
+    notify_erene = models.BooleanField(
+        default=True,
+        verbose_name="Notify Erene",
+        help_text="Send notification to Erene (erenemanias@gmail.com)"
+    )
+    notify_alexandra = models.BooleanField(
+        default=True,
+        verbose_name="Notify Alexandra",
+        help_text="Send notification to Alexandra (leximanias@gmail.com)"
+    )
     
     class Meta:
         ordering = ['event_date']
@@ -1983,7 +2004,37 @@ class CelebrationEvent(models.Model):
             'custom': 'fa-calendar-star',
         }
         return icons.get(self.event_type, 'fa-calendar')
-
+    
+    def get_notification_emails(self):
+        """
+        Return list of email addresses who should be notified about this event.
+        Only includes people who are both checked for this event AND in the TO/CC list.
+        """
+        # Mapping of notification flags to email addresses
+        notification_mapping = {
+            'notify_demetri': 'demetrimanias@gmail.com',
+            'notify_angy': 'angmaniasbakers@gmail.com',
+            'notify_erene': 'erenemanias@gmail.com',
+            'notify_alexandra': 'leximanias@gmail.com',
+        }
+        
+        # Get the celebration notification recipients
+        from pages.management.commands.email_utils import get_email_recipients
+        try:
+            recipients = get_email_recipients('celebration_reminder')
+            all_notification_emails = recipients['all']  # TO + CC combined
+        except:
+            # Fallback if database lookup fails
+            all_notification_emails = []
+        
+        # Build list of emails for people who should be notified
+        notify_emails = []
+        for field_name, email in notification_mapping.items():
+            # Person is checked for this event AND their email is in TO/CC list
+            if getattr(self, field_name) and email in all_notification_emails:
+                notify_emails.append(email)
+        
+        return notify_emails
 
 class EventNotification(models.Model):
     """Track which notifications have been sent"""

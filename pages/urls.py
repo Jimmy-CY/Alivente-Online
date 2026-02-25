@@ -278,5 +278,6 @@ urlpatterns = [
 
     path('notifications/settings/', views.notification_settings, name='notification_settings'),
     path('notifications/personal/', views.personal_notification_settings, name='personal_notification_settings'),
-    
+    path('celebrations/event/<int:event_id>/update-notifications/', views.update_event_notifications, name='update_event_notifications'),
+        
 ]

@@ -472,7 +472,7 @@ class Command(BaseCommand):
             return []
     
     def get_todays_celebrations(self):
-        """Get celebrations occurring today"""
+        """Get celebrations occurring today - returns dict with events grouped by recipient"""
         from pages.models import Contact, CelebrationEvent
         
         today = date.today()
@@ -481,7 +481,8 @@ class Command(BaseCommand):
             # Get all contacts with their events
             contacts = Contact.objects.all().prefetch_related('celebration_events')
             
-            todays_celebrations = []
+            # Group celebrations by recipient email
+            celebrations_by_recipient = {}
             
             for contact in contacts:
                 for event in contact.celebration_events.all():
@@ -492,32 +493,40 @@ class Command(BaseCommand):
                         if event.event_type == 'birthday' and event.event_date.year != 1900:
                             age = today.year - event.event_date.year
                         
-                        todays_celebrations.append({
+                        celebration_data = {
                             'contact_name': contact.name,
                             'relationship': contact.get_relationship_display(),
                             'event_type': event.get_event_type_display(),
                             'age': age,
                             'notes': event.notes if event.notes else None
-                        })
+                        }
+                        
+                        # Get list of emails who should be notified for this specific event
+                        notify_emails = event.get_notification_emails()
+                        
+                        # Add this celebration to each recipient's list
+                        for email in notify_emails:
+                            if email not in celebrations_by_recipient:
+                                celebrations_by_recipient[email] = []
+                            celebrations_by_recipient[email].append(celebration_data)
             
-            self.stdout.write(f'Found {len(todays_celebrations)} celebration(s) today')
-            return todays_celebrations
+            self.stdout.write(f'Found celebrations for {len(celebrations_by_recipient)} recipient(s)')
+            return celebrations_by_recipient
             
         except Exception as e:
             self.stdout.write(f'❌ Error getting today\'s celebrations: {e}')
             logger.error(f'Error getting today\'s celebrations: {e}', exc_info=True)
-            return []
+            return {}
 
-    def send_celebration_notification(self, todays_celebrations):
-        """Send email notification for today's celebrations"""
+    def send_celebration_notification(self, celebrations_by_recipient):
+        """Send email notification for today's celebrations - personalized per recipient"""
         import smtplib
         from email.mime.multipart import MIMEMultipart
         from email.mime.text import MIMEText
         
         smtp_object = None
-        celebration_count = len(todays_celebrations)
         
-        if celebration_count == 0:
+        if not celebrations_by_recipient:
             self.stdout.write('No celebrations today')
             return True
         
@@ -531,7 +540,7 @@ class Command(BaseCommand):
             return suffix
         
         try:
-            self.stdout.write('=== SENDING CELEBRATION NOTIFICATION ===')
+            self.stdout.write('=== SENDING CELEBRATION NOTIFICATIONS ===')
             
             # Get email settings from environment variables
             email_host = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
@@ -541,155 +550,11 @@ class Command(BaseCommand):
             email_use_ssl = os.environ.get('EMAIL_USE_SSL', 'True').lower() == 'true'
             email_use_tls = os.environ.get('EMAIL_USE_TLS', 'False').lower() == 'true'
             
-            # Get recipients with TO/CC split
-            recipients = get_email_recipients('celebration_reminder')
-
-            # DEBUG: Show who will receive the email
-            self.stdout.write(f'📧 Celebration Email TO: {", ".join(recipients["to"])}')
-            if recipients['cc']:
-                self.stdout.write(f'📧 Celebration Email CC: {", ".join(recipients["cc"])}')
-            
             if not email_password:
                 self.stdout.write('❌ EMAIL_PASSWORD environment variable not set')
                 return False
             
-            # Create message
-            msg = MIMEMultipart('alternative')
-            msg['From'] = email_user
-            msg['To'] = format_email_recipients_for_header(recipients['to'])
-            if recipients['cc']:
-                msg['Cc'] = format_email_recipients_for_header(recipients['cc'])
-            
-            # Determine correct grammar
-            celebration_word = "Celebration" if celebration_count == 1 else "Celebrations"
-            
-            today = date.today()
-            # Format: "25th February 2026"
-            formatted_date = f"{today.day}{get_ordinal_suffix(today.day)} {today.strftime('%B %Y')}"
-            
-            msg['Subject'] = f"🎉 {celebration_word} Today - {formatted_date} ({celebration_count})"
-            
-            # Build HTML email body
-            html_body = f"""
-            <html>
-            <head>
-            <style>
-            p {{ margin: 0; padding: 0; }}
-            ul {{ margin: 0; padding: 0; padding-left: 20px; }}
-            li {{ margin: 0; padding: 0; margin-bottom: 15px; }}
-            .celebration {{ color: #667eea; font-weight: bold; }}
-            .birthday {{ color: #28a745; }}
-            .nameday {{ color: #6f42c1; }}
-            .anniversary {{ color: #17a2b8; }}
-            .custom {{ color: #fd7e14; }}
-            </style>
-            </head>
-            <body>
-                <p>Dear User,</p>
-                <br>
-                <p><b><u class="celebration">TODAY'S {celebration_word.upper()}:</u></b></p>
-                <p>{"This person has a" if celebration_count == 1 else "These people have"} special {"day" if celebration_count == 1 else "days"} today, {formatted_date}:</p>
-                <br>
-                <ul>"""
-            
-            for celebration in todays_celebrations:
-                event_type_lower = celebration['event_type'].lower()
-                
-                # Determine CSS class for color coding
-                if 'birthday' in event_type_lower:
-                    css_class = 'birthday'
-                    icon = '🎂'
-                elif 'nameday' in event_type_lower:
-                    css_class = 'nameday'
-                    icon = '🎊'
-                elif 'anniversary' in event_type_lower:
-                    css_class = 'anniversary'
-                    icon = '💐'
-                else:
-                    css_class = 'custom'
-                    icon = '🎉'
-                
-                html_body += f"""
-                <li>
-                    <span class="{css_class}"><b>{icon} {celebration['contact_name']}</b></span> - {celebration['event_type']}"""
-                
-                if celebration['age']:
-                    html_body += f" (Turning {celebration['age']})"
-                
-                html_body += f" ({celebration['relationship']})"
-                
-                if celebration['notes']:
-                    html_body += f"<br><i>Note: {celebration['notes']}</i>"
-                
-                html_body += "</li>"
-            
-            html_body += """
-                </ul>
-                <br>
-                <p><b>REMINDER:</b></p>
-                <p>Don't forget to reach out and wish them a wonderful day!</p>
-                <br>
-                <p>You can manage celebrations and notification settings at <a href="https://alivente.online">alivente.online</a> in the Personal section.</p>
-                <br>
-                <p>Best regards,<br>
-                Alivente Online System<br>
-                Celebration Reminder</p>
-            </body>
-            </html>
-            """
-            
-            # Create plain text version
-            text_body = f"""Dear User,
-
-    TODAY'S {celebration_word.upper()}:
-
-    {"This person has a" if celebration_count == 1 else "These people have"} special {"day" if celebration_count == 1 else "days"} today, {formatted_date}:
-
-    """
-            
-            for celebration in todays_celebrations:
-                event_type_lower = celebration['event_type'].lower()
-                
-                # Determine icon
-                if 'birthday' in event_type_lower:
-                    icon = '🎂'
-                elif 'nameday' in event_type_lower:
-                    icon = '🎊'
-                elif 'anniversary' in event_type_lower:
-                    icon = '💐'
-                else:
-                    icon = '🎉'
-                
-                text_body += f"\n- {icon} {celebration['contact_name']} - {celebration['event_type']}"
-                
-                if celebration['age']:
-                    text_body += f" (Turning {celebration['age']})"
-                
-                text_body += f" ({celebration['relationship']})"
-                
-                if celebration['notes']:
-                    text_body += f"\n  Note: {celebration['notes']}"
-                
-                text_body += "\n"
-            
-            text_body += """
-    REMINDER:
-    Don't forget to reach out and wish them a wonderful day!
-
-    You can manage celebrations and notification settings at alivente.online in the Personal section.
-
-    Best regards,
-    Alivente Online System
-    Celebration Reminder"""
-            
-            # Attach both HTML and plain text versions
-            part1 = MIMEText(text_body, 'plain')
-            part2 = MIMEText(html_body, 'html')
-            
-            msg.attach(part1)
-            msg.attach(part2)
-            
-            # SMTP setup
+            # SMTP setup (reuse connection for all emails)
             if email_use_ssl:
                 smtp_object = smtplib.SMTP_SSL(email_host, email_port, timeout=10)
             else:
@@ -700,12 +565,152 @@ class Command(BaseCommand):
             
             smtp_object.login(email_user, email_password)
             
-            # Send email
-            text = msg.as_string()
-            smtp_object.sendmail(email_user, recipients['all'], text)
+            today = date.today()
+            formatted_date = f"{today.day}{get_ordinal_suffix(today.day)} {today.strftime('%B %Y')}"
             
-            self.stdout.write('✅ Celebration notification email sent successfully!')
-            logger.info('Celebration notification email sent successfully')
+            # Send personalized email to each recipient
+            for recipient_email, todays_celebrations in celebrations_by_recipient.items():
+                celebration_count = len(todays_celebrations)
+                
+                self.stdout.write(f'📧 Sending {celebration_count} celebration(s) to {recipient_email}')
+                
+                # Create message
+                msg = MIMEMultipart('alternative')
+                msg['From'] = email_user
+                msg['To'] = recipient_email
+                
+                # Determine correct grammar
+                celebration_word = "Celebration" if celebration_count == 1 else "Celebrations"
+                
+                msg['Subject'] = f"🎉 {celebration_word} Today - {formatted_date} ({celebration_count})"
+                
+                # Build HTML email body
+                html_body = f"""
+                <html>
+                <head>
+                <style>
+                p {{ margin: 0; padding: 0; }}
+                ul {{ margin: 0; padding: 0; padding-left: 20px; }}
+                li {{ margin: 0; padding: 0; margin-bottom: 15px; }}
+                .celebration {{ color: #667eea; font-weight: bold; }}
+                .birthday {{ color: #28a745; }}
+                .nameday {{ color: #6f42c1; }}
+                .anniversary {{ color: #17a2b8; }}
+                .custom {{ color: #fd7e14; }}
+                </style>
+                </head>
+                <body>
+                    <p>Dear User,</p>
+                    <br>
+                    <p><b><u class="celebration">TODAY'S {celebration_word.upper()}:</u></b></p>
+                    <p>{"This person has a" if celebration_count == 1 else "These people have"} special {"day" if celebration_count == 1 else "days"} today, {formatted_date}:</p>
+                    <br>
+                    <ul>"""
+                
+                for celebration in todays_celebrations:
+                    event_type_lower = celebration['event_type'].lower()
+                    
+                    # Determine CSS class for color coding
+                    if 'birthday' in event_type_lower:
+                        css_class = 'birthday'
+                        icon = '🎂'
+                    elif 'nameday' in event_type_lower:
+                        css_class = 'nameday'
+                        icon = '🎊'
+                    elif 'anniversary' in event_type_lower:
+                        css_class = 'anniversary'
+                        icon = '💐'
+                    else:
+                        css_class = 'custom'
+                        icon = '🎉'
+                    
+                    html_body += f"""
+                    <li>
+                        <span class="{css_class}"><b>{icon} {celebration['contact_name']}</b></span> - {celebration['event_type']}"""
+                    
+                    if celebration['age']:
+                        html_body += f" (Turning {celebration['age']})"
+                    
+                    html_body += f" ({celebration['relationship']})"
+                    
+                    if celebration['notes']:
+                        html_body += f"<br><i>Note: {celebration['notes']}</i>"
+                    
+                    html_body += "</li>"
+                
+                html_body += """
+                    </ul>
+                    <br>
+                    <p><b>REMINDER:</b></p>
+                    <p>Don't forget to reach out and wish them a wonderful day!</p>
+                    <br>
+                    <p>You can manage celebrations and notification settings at <a href="https://alivente.online">alivente.online</a> in the Personal section.</p>
+                    <br>
+                    <p>Best regards,<br>
+                    Alivente Online System<br>
+                    Celebration Reminder</p>
+                </body>
+                </html>
+                """
+                
+                # Create plain text version
+                text_body = f"""Dear User,
+
+    TODAY'S {celebration_word.upper()}:
+
+    {"This person has a" if celebration_count == 1 else "These people have"} special {"day" if celebration_count == 1 else "days"} today, {formatted_date}:
+
+    """
+                
+                for celebration in todays_celebrations:
+                    event_type_lower = celebration['event_type'].lower()
+                    
+                    # Determine icon
+                    if 'birthday' in event_type_lower:
+                        icon = '🎂'
+                    elif 'nameday' in event_type_lower:
+                        icon = '🎊'
+                    elif 'anniversary' in event_type_lower:
+                        icon = '💐'
+                    else:
+                        icon = '🎉'
+                    
+                    text_body += f"\n- {icon} {celebration['contact_name']} - {celebration['event_type']}"
+                    
+                    if celebration['age']:
+                        text_body += f" (Turning {celebration['age']})"
+                    
+                    text_body += f" ({celebration['relationship']})"
+                    
+                    if celebration['notes']:
+                        text_body += f"\n  Note: {celebration['notes']}"
+                    
+                    text_body += "\n"
+                
+                text_body += """
+    REMINDER:
+    Don't forget to reach out and wish them a wonderful day!
+
+    You can manage celebrations and notification settings at alivente.online in the Personal section.
+
+    Best regards,
+    Alivente Online System
+    Celebration Reminder"""
+                
+                # Attach both HTML and plain text versions
+                part1 = MIMEText(text_body, 'plain')
+                part2 = MIMEText(html_body, 'html')
+                
+                msg.attach(part1)
+                msg.attach(part2)
+                
+                # Send email to this recipient
+                text = msg.as_string()
+                smtp_object.sendmail(email_user, [recipient_email], text)
+                
+                self.stdout.write(f'✅ Celebration email sent to {recipient_email}')
+            
+            logger.info(f'Celebration notifications sent to {len(celebrations_by_recipient)} recipient(s)')
             return True
             
         except smtplib.SMTPAuthenticationError as e:
