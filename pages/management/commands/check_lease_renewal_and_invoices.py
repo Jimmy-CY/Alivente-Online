@@ -521,6 +521,15 @@ class Command(BaseCommand):
             self.stdout.write('No celebrations today')
             return True
         
+        # Helper function for ordinal suffix
+        def get_ordinal_suffix(day):
+            """Return ordinal suffix for a day (1st, 2nd, 3rd, etc.)"""
+            if 10 <= day % 100 <= 20:
+                suffix = 'th'
+            else:
+                suffix = {1: 'st', 2: 'nd', 3: 'rd'}.get(day % 10, 'th')
+            return suffix
+        
         try:
             self.stdout.write('=== SENDING CELEBRATION NOTIFICATION ===')
             
@@ -532,7 +541,7 @@ class Command(BaseCommand):
             email_use_ssl = os.environ.get('EMAIL_USE_SSL', 'True').lower() == 'true'
             email_use_tls = os.environ.get('EMAIL_USE_TLS', 'False').lower() == 'true'
             
-            # Use the standard email recipients utility
+            # Get recipients with TO/CC split
             recipients = get_email_recipients('celebration_reminder')
 
             # DEBUG: Show who will receive the email
@@ -545,10 +554,6 @@ class Command(BaseCommand):
                 return False
             
             # Create message
-            # Get recipients with TO/CC split
-            recipients = get_email_recipients('celebration_reminder')
-
-            # Create message
             msg = MIMEMultipart('alternative')
             msg['From'] = email_user
             msg['To'] = format_email_recipients_for_header(recipients['to'])
@@ -559,7 +564,10 @@ class Command(BaseCommand):
             celebration_word = "Celebration" if celebration_count == 1 else "Celebrations"
             
             today = date.today()
-            msg['Subject'] = f"🎉 {celebration_word} Today - {today.strftime('%B %d, %Y')} ({celebration_count})"
+            # Format: "25th February 2026"
+            formatted_date = f"{today.day}{get_ordinal_suffix(today.day)} {today.strftime('%B %Y')}"
+            
+            msg['Subject'] = f"🎉 {celebration_word} Today - {formatted_date} ({celebration_count})"
             
             # Build HTML email body
             html_body = f"""
@@ -580,7 +588,7 @@ class Command(BaseCommand):
                 <p>Dear User,</p>
                 <br>
                 <p><b><u class="celebration">TODAY'S {celebration_word.upper()}:</u></b></p>
-                <p>{"This person has a" if celebration_count == 1 else "These people have"} special {"day" if celebration_count == 1 else "days"} today, {today.strftime('%A, %B %d, %Y')}:</p>
+                <p>{"This person has a" if celebration_count == 1 else "These people have"} special {"day" if celebration_count == 1 else "days"} today, {formatted_date}:</p>
                 <br>
                 <ul>"""
             
@@ -608,7 +616,7 @@ class Command(BaseCommand):
                 if celebration['age']:
                     html_body += f" (Turning {celebration['age']})"
                 
-                html_body += f"<br>Relationship: {celebration['relationship']}"
+                html_body += f" ({celebration['relationship']})"
                 
                 if celebration['notes']:
                     html_body += f"<br><i>Note: {celebration['notes']}</i>"
@@ -619,7 +627,7 @@ class Command(BaseCommand):
                 </ul>
                 <br>
                 <p><b>REMINDER:</b></p>
-                <p>Don't forget to reach out and wish {"them" if celebration_count > 1 else "them"} a wonderful day!</p>
+                <p>Don't forget to reach out and wish them a wonderful day!</p>
                 <br>
                 <p>You can manage celebrations and notification settings at <a href="https://alivente.online">alivente.online</a> in the Personal section.</p>
                 <br>
@@ -633,11 +641,11 @@ class Command(BaseCommand):
             # Create plain text version
             text_body = f"""Dear User,
 
-TODAY'S {celebration_word.upper()}:
+    TODAY'S {celebration_word.upper()}:
 
-{"This person has a" if celebration_count == 1 else "These people have"} special {"day" if celebration_count == 1 else "days"} today, {today.strftime('%A, %B %d, %Y')}:
+    {"This person has a" if celebration_count == 1 else "These people have"} special {"day" if celebration_count == 1 else "days"} today, {formatted_date}:
 
-"""
+    """
             
             for celebration in todays_celebrations:
                 event_type_lower = celebration['event_type'].lower()
@@ -652,30 +660,27 @@ TODAY'S {celebration_word.upper()}:
                 else:
                     icon = '🎉'
                 
-                text_body += f"""
-- {icon} {celebration['contact_name']} - {celebration['event_type']}"""
+                text_body += f"\n- {icon} {celebration['contact_name']} - {celebration['event_type']}"
                 
                 if celebration['age']:
                     text_body += f" (Turning {celebration['age']})"
                 
-                text_body += f"""
-  Relationship: {celebration['relationship']}"""
+                text_body += f" ({celebration['relationship']})"
                 
                 if celebration['notes']:
-                    text_body += f"""
-  Note: {celebration['notes']}"""
+                    text_body += f"\n  Note: {celebration['notes']}"
                 
                 text_body += "\n"
             
-            text_body += f"""
-REMINDER:
-Don't forget to reach out and wish {"them" if celebration_count > 1 else "them"} a wonderful day!
+            text_body += """
+    REMINDER:
+    Don't forget to reach out and wish them a wonderful day!
 
-You can manage celebrations and notification settings at alivente.online in the Personal section.
+    You can manage celebrations and notification settings at alivente.online in the Personal section.
 
-Best regards,
-Alivente Online System
-Celebration Reminder"""
+    Best regards,
+    Alivente Online System
+    Celebration Reminder"""
             
             # Attach both HTML and plain text versions
             part1 = MIMEText(text_body, 'plain')
