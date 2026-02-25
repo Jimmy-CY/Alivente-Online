@@ -7046,17 +7046,22 @@ def send_expense_approved_email(expense_date, property_name, description, amount
     Send email notification of an expense approval for a specific expense
     """
     from django.db import connection
+    from pages.management.commands.email_utils import get_email_recipients, format_email_recipients_for_header
     import logging
     
     logger = logging.getLogger(__name__)
     smtp_object = None
     
     try:
+        # Get recipients with TO/CC split
+        recipients = get_email_recipients('expense_approved')
+        
         # Create message
         msg = MIMEMultipart()
         msg['From'] = "demetrimanias@gmail.com"
-        msg['To'] = "stella.simitopoulos@alivente.com"
-        msg['Cc'] = "demetrimanias@gmail.com"
+        msg['To'] = format_email_recipients_for_header(recipients['to'])
+        if recipients['cc']:
+            msg['Cc'] = format_email_recipients_for_header(recipients['cc'])
         msg['Subject'] = f"Expense Approved - €{amount} for {property_name}"
         
         # Email body with proper formatting
@@ -7083,8 +7088,8 @@ Alivente Property Management System"""
         email_password = os.environ.get('EMAIL_PASSWORD')
         email_host = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
         email_port = int(os.environ.get('EMAIL_PORT', 465))
-        email_use_ssl = os.environ.get('EMAIL_USE_SSL', 'False').lower() == 'true'
-        email_use_tls = os.environ.get('EMAIL_USE_TLS', 'True').lower() == 'true'
+        email_use_ssl = os.environ.get('EMAIL_USE_SSL', 'True').lower() == 'true'
+        email_use_tls = os.environ.get('EMAIL_USE_TLS', 'False').lower() == 'true'
         
         if not email_password:
             logger.error('EMAIL_PASSWORD environment variable not set')
@@ -7102,10 +7107,9 @@ Alivente Property Management System"""
         email = "demetrimanias@gmail.com"
         smtp_object.login(email, email_password)
         
-        # Send email to both To and CC recipients
-        recipients = ["stella.simitopoulos@alivente.com", "demetrimanias@gmail.com"]
+        # Send email
         text = msg.as_string()
-        smtp_object.sendmail(email, recipients, text)
+        smtp_object.sendmail(email, recipients['all'], text)
         return True
         
     except smtplib.SMTPAuthenticationError as e:
@@ -7131,17 +7135,22 @@ def send_expense_paid_email(expense_date, property_name, description, amount, pa
     Send email notification of an expense payment for a specific expense
     """
     from django.db import connection
+    from pages.management.commands.email_utils import get_email_recipients, format_email_recipients_for_header
     import logging
     
     logger = logging.getLogger(__name__)
     smtp_object = None
     
     try:
+        # Get recipients with TO/CC split
+        recipients = get_email_recipients('expense_paid')
+        
         # Create message
         msg = MIMEMultipart()
         msg['From'] = "demetrimanias@gmail.com"
-        msg['To'] = "stella.simitopoulos@alivente.com"
-        msg['Cc'] = "demetrimanias@gmail.com"
+        msg['To'] = format_email_recipients_for_header(recipients['to'])
+        if recipients['cc']:
+            msg['Cc'] = format_email_recipients_for_header(recipients['cc'])
         msg['Subject'] = f"Expense Paid - €{amount} for {property_name}"
         
         # Email body with proper formatting
@@ -7168,8 +7177,8 @@ Alivente Property Management System"""
         email_password = os.environ.get('EMAIL_PASSWORD')
         email_host = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
         email_port = int(os.environ.get('EMAIL_PORT', 465))
-        email_use_ssl = os.environ.get('EMAIL_USE_SSL', 'False').lower() == 'true'
-        email_use_tls = os.environ.get('EMAIL_USE_TLS', 'True').lower() == 'true'
+        email_use_ssl = os.environ.get('EMAIL_USE_SSL', 'True').lower() == 'true'
+        email_use_tls = os.environ.get('EMAIL_USE_TLS', 'False').lower() == 'true'
         
         if not email_password:
             logger.error('EMAIL_PASSWORD environment variable not set')
@@ -7187,10 +7196,9 @@ Alivente Property Management System"""
         email = "demetrimanias@gmail.com"
         smtp_object.login(email, email_password)
         
-        # Send email to both To and CC recipients
-        recipients = ["stella.simitopoulos@alivente.com", "demetrimanias@gmail.com"]
+        # Send email
         text = msg.as_string()
-        smtp_object.sendmail(email, recipients, text)
+        smtp_object.sendmail(email, recipients['all'], text)
         return True
         
     except smtplib.SMTPAuthenticationError as e:
@@ -7216,17 +7224,22 @@ def send_expense_approval_email_with_link(expense_date, property_name, descripti
     Send email notification for expense approval with enhanced details
     """
     from django.db import connection
+    from pages.management.commands.email_utils import get_email_recipients, format_email_recipients_for_header
     import logging
     
     logger = logging.getLogger(__name__)
     smtp_object = None
     
     try:
+        # Get recipients with TO/CC split
+        recipients = get_email_recipients('expense_needs_approval')
+        
         # Create message
         msg = MIMEMultipart()
         msg['From'] = "demetrimanias@gmail.com"
-        msg['To'] = "demetrimanias@gmail.com"
-        msg['Cc'] = "stella.simitopoulos@alivente.com"
+        msg['To'] = format_email_recipients_for_header(recipients['to'])
+        if recipients['cc']:
+            msg['Cc'] = format_email_recipients_for_header(recipients['cc'])
         msg['Subject'] = f"New Expense Requires Approval - €{amount} for {property_name}"
         
         # Email body with proper formatting
@@ -7253,8 +7266,8 @@ Alivente Property Management System"""
         email_password = os.environ.get('EMAIL_PASSWORD')
         email_host = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
         email_port = int(os.environ.get('EMAIL_PORT', 465))
-        email_use_ssl = os.environ.get('EMAIL_USE_SSL', 'False').lower() == 'true'
-        email_use_tls = os.environ.get('EMAIL_USE_TLS', 'True').lower() == 'true'
+        email_use_ssl = os.environ.get('EMAIL_USE_SSL', 'True').lower() == 'true'
+        email_use_tls = os.environ.get('EMAIL_USE_TLS', 'False').lower() == 'true'
         
         if not email_password:
             logger.error('EMAIL_PASSWORD environment variable not set')
@@ -7272,10 +7285,9 @@ Alivente Property Management System"""
         email = "demetrimanias@gmail.com"
         smtp_object.login(email, email_password)
         
-        # Send email to both To and CC recipients
-        recipients = ["demetrimanias@gmail.com", "stella.simitopoulos@alivente.com"]
+        # Send email
         text = msg.as_string()
-        smtp_object.sendmail(email, recipients, text)
+        smtp_object.sendmail(email, recipients['all'], text)
         return True
         
     except smtplib.SMTPAuthenticationError as e:
@@ -7771,6 +7783,7 @@ def get_fsr_context_data(request):
 def fsr_notification(request):
     from django.db import connection
     from django.db.utils import OperationalError, InterfaceError
+    from pages.management.commands.email_utils import get_email_recipients, format_email_recipients_for_header
     import time
     import logging
     
@@ -7851,22 +7864,20 @@ def fsr_notification(request):
             html_content = render_to_string("fsr_email.html", context, request=request)
             text_content = strip_tags(html_content)
             
-            # Determine recipients based on user permissions
+            # Get recipients from database based on who is submitting
             if request.user.is_superuser:
-                # Supervisor: Send to Stella
-                to_email = "stella.simitopoulos@alivente.com"
+                # Supervisor submitting - send to Stella
+                recipients = get_email_recipients('friday_status_report_supervisor')
             else:
-                # Non-supervisor: Send to Demetri
-                to_email = "demetrimanias@gmail.com"
-            
-            # Always CC angmaniasbakers
-            cc_email = "angmaniasbakers@gmail.com"
+                # Staff submitting - send to Demetri
+                recipients = get_email_recipients('friday_status_report_staff')
             
             # Prepare email with report type in subject
             msg = MIMEMultipart("alternative")
             msg['From'] = "demetrimanias@gmail.com"
-            msg['To'] = to_email
-            msg['Cc'] = cc_email
+            msg['To'] = format_email_recipients_for_header(recipients['to'])
+            if recipients['cc']:
+                msg['Cc'] = format_email_recipients_for_header(recipients['cc'])
             
             # Include report type in subject
             if is_summarized_report:
@@ -7882,8 +7893,8 @@ def fsr_notification(request):
             email_password = os.environ.get('EMAIL_PASSWORD')
             email_host = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
             email_port = int(os.environ.get('EMAIL_PORT', 465))
-            email_use_ssl = os.environ.get('EMAIL_USE_SSL', 'False').lower() == 'true'
-            email_use_tls = os.environ.get('EMAIL_USE_TLS', 'True').lower() == 'true'
+            email_use_ssl = os.environ.get('EMAIL_USE_SSL', 'True').lower() == 'true'
+            email_use_tls = os.environ.get('EMAIL_USE_TLS', 'False').lower() == 'true'
             
             if not email_password:
                 logger.error('❌ EMAIL_PASSWORD environment variable not set')
@@ -7904,9 +7915,8 @@ def fsr_notification(request):
             email = "demetrimanias@gmail.com"
             smtp_object.login(email, email_password)
             
-            # Send email to both To and CC recipients
-            recipients = [to_email, cc_email]
-            smtp_object.sendmail(email, recipients, msg.as_string())
+            # Send email to all recipients
+            smtp_object.sendmail(email, recipients['all'], msg.as_string())
             
             success_message = f"Friday Status Report ({report_type_text}) sent successfully!"
             messages.success(request, success_message)
@@ -14604,20 +14614,31 @@ def notification_settings(request):
     # Handle form submission
     if request.method == 'POST':
         notification_type = request.POST.get('notification_type')
-        email_addresses = request.POST.get('email_addresses', '')
+        to_addresses = request.POST.get('to_addresses', '')
+        cc_addresses = request.POST.get('cc_addresses', '')
         
         recipient, created = NotificationRecipient.objects.get_or_create(
             notification_type=notification_type,
             defaults={'created_by': request.user}
         )
-        recipient.email_addresses = email_addresses
+        recipient.to_addresses = to_addresses
+        recipient.cc_addresses = cc_addresses
         recipient.save()
         
         messages.success(request, f'{recipient.get_notification_type_display()} email addresses updated successfully!')
         return redirect('notification_settings')
     
     # Get only administration notification types
-    admin_types = ['daily_report', 'new_lease_upload']
+    admin_types = [
+        'daily_report', 
+        'new_lease_upload',
+        'expense_needs_approval',
+        'expense_approved',
+        'expense_paid',
+        'friday_status_report_supervisor', 
+        'friday_status_report_staff'
+    ]
+    
     notification_settings = {}
     
     for type_code, type_name in NotificationRecipient.NOTIFICATION_TYPES:
@@ -14626,12 +14647,14 @@ def notification_settings(request):
                 recipient = NotificationRecipient.objects.get(notification_type=type_code)
                 notification_settings[type_code] = {
                     'name': type_name,
-                    'emails': recipient.email_addresses
+                    'to_emails': recipient.to_addresses,
+                    'cc_emails': recipient.cc_addresses
                 }
             except NotificationRecipient.DoesNotExist:
                 notification_settings[type_code] = {
                     'name': type_name,
-                    'emails': ''
+                    'to_emails': '',
+                    'cc_emails': ''
                 }
     
     return render(request, 'notification_settings.html', {
@@ -14641,20 +14664,19 @@ def notification_settings(request):
 @login_required
 def personal_notification_settings(request):
     """Manage email notification recipients for personal items"""
-    if not request.user.is_superuser:
-        messages.error(request, 'You do not have permission to access this page.')
-        return redirect('home')
     
     # Handle form submission
     if request.method == 'POST':
         notification_type = request.POST.get('notification_type')
-        email_addresses = request.POST.get('email_addresses', '')
+        to_addresses = request.POST.get('to_addresses', '')
+        cc_addresses = request.POST.get('cc_addresses', '')
         
         recipient, created = NotificationRecipient.objects.get_or_create(
             notification_type=notification_type,
             defaults={'created_by': request.user}
         )
-        recipient.email_addresses = email_addresses
+        recipient.to_addresses = to_addresses
+        recipient.cc_addresses = cc_addresses
         recipient.save()
         
         messages.success(request, f'{recipient.get_notification_type_display()} email addresses updated successfully!')
@@ -14662,6 +14684,7 @@ def personal_notification_settings(request):
     
     # Get only personal notification types
     personal_types = ['celebration_reminder', 'document_expiry']
+    
     notification_settings = {}
     
     for type_code, type_name in NotificationRecipient.NOTIFICATION_TYPES:
@@ -14670,12 +14693,14 @@ def personal_notification_settings(request):
                 recipient = NotificationRecipient.objects.get(notification_type=type_code)
                 notification_settings[type_code] = {
                     'name': type_name,
-                    'emails': recipient.email_addresses
+                    'to_emails': recipient.to_addresses,
+                    'cc_emails': recipient.cc_addresses
                 }
             except NotificationRecipient.DoesNotExist:
                 notification_settings[type_code] = {
                     'name': type_name,
-                    'emails': ''
+                    'to_emails': '',
+                    'cc_emails': ''
                 }
     
     return render(request, 'personal_notification_settings.html', {

@@ -1,91 +1,58 @@
 import os
 
-def get_email_recipients(email_type='general'):
+def get_email_recipients(notification_type):
     """
-    Get email recipients based on email type
-    Priority: 1) Database, 2) Environment Variables, 3) Hardcoded defaults
-    
-    Args:
-        email_type (str): Type of email - options:
-            - 'daily_report': Daily property management reports
-            - 'invoice_paid': Invoice payment notifications  
-            - 'expense_added': New expense notifications
-            - 'expense_approved': Expense approval notifications
-            - 'expense_paid': Expense payment notifications
-            - 'fsr': Financial Status Reports
-            - 'passport_expiry': Passport/ID expiry notifications
-            - 'document_expiry': Document expiry alerts (same as passport_expiry)
-            - 'celebration_reminder': Celebration reminder notifications
-            - 'new_lease_upload': New lease upload reminders
-            - 'general': Default fallback
-    
-    Returns:
-        list: List of email addresses
+    Get email recipients for a notification type with TO/CC distinction.
+    Returns a dict with 'to', 'cc', and 'all' lists.
+    Priority: Database > Environment Variables > Defaults
     """
+    from pages.models import NotificationRecipient
     
-    # Map email types to database notification types
-    db_type_map = {
-        'daily_report': 'daily_report',
-        'passport_expiry': 'document_expiry',
-        'document_expiry': 'document_expiry',
-        'celebration_reminder': 'celebration_reminder',
-        'new_lease_upload': 'new_lease_upload',
-    }
+    # Try database first
+    try:
+        recipient = NotificationRecipient.objects.get(notification_type=notification_type)
+        return {
+            'to': recipient.get_to_list(),
+            'cc': recipient.get_cc_list(),
+            'all': recipient.get_all_recipients()
+        }
+    except NotificationRecipient.DoesNotExist:
+        pass
     
-    # Try to get from database first
-    db_notification_type = db_type_map.get(email_type)
-    if db_notification_type:
-        try:
-            from pages.models import NotificationRecipient
-            recipient_obj = NotificationRecipient.objects.get(notification_type=db_notification_type)
-            email_list = recipient_obj.get_email_list()
-            if email_list:  # Only use if not empty
-                return email_list
-        except:
-            pass  # Fall through to environment variables
-    
-    # Fall back to environment variables
-    email_var_map = {
-        'daily_report': 'EMAIL_TO_DAILY_REPORT',
-        'invoice_paid': 'EMAIL_TO_INVOICE_PAID',
-        'expense_added': 'EMAIL_TO_EXPENSE_ADDED',
-        'expense_approved': 'EMAIL_TO_EXPENSE_APPROVED', 
-        'expense_paid': 'EMAIL_TO_EXPENSE_PAID',
-        'fsr': 'EMAIL_TO_FSR',
-        'passport_expiry': 'EMAIL_TO_PASSPORT_EXPIRY',
-        'document_expiry': 'EMAIL_TO_PASSPORT_EXPIRY',  # Same as passport
+    # Map notification types to environment variable names
+    env_var_map = {
         'celebration_reminder': 'EMAIL_TO_CELEBRATION',
-        'new_lease_upload': 'EMAIL_TO_DAILY_REPORT',  # Use same as daily report
-        'general': 'EMAIL_TO'
+        'passport_expiry': 'EMAIL_TO_PASSPORT_EXPIRY',
+        'document_expiry': 'EMAIL_TO_PASSPORT_EXPIRY',
+        'daily_report': 'EMAIL_TO_DAILY_REPORT',
+        'new_lease_upload': 'EMAIL_TO_DAILY_REPORT',
     }
     
-    # Get the environment variable name for this email type
-    env_var = email_var_map.get(email_type, 'EMAIL_TO')
+    # Try environment variables
+    env_var = env_var_map.get(notification_type)
+    if env_var:
+        env_value = os.environ.get(env_var)
+        if env_value:
+            emails = [e.strip() for e in env_value.split(',') if e.strip()]
+            return {'to': emails, 'cc': [], 'all': emails}
     
-    # Get the email addresses from environment variable
-    email_to_raw = os.environ.get(env_var)
-    
-    if email_to_raw:
-        # Split by comma and strip whitespace
-        email_list = [email.strip() for email in email_to_raw.split(',') if email.strip()]
-        if email_list:
-            return email_list
-    
-    # Final fallback to hardcoded defaults
+    # Default recipients with TO/CC distinction
     default_recipients = {
-        'daily_report': ['demetrimanias@gmail.com', 'angmaniasbakers@gmail.com'],
-        'passport_expiry': ['demetrimanias@gmail.com', 'angmaniasbakers@gmail.com'],
-        'document_expiry': ['demetrimanias@gmail.com', 'angmaniasbakers@gmail.com'],
-        'new_lease_upload': ['demetrimanias@gmail.com'],
-        'celebration_reminder': ['demetrimanias@gmail.com', 'angmaniasbakers@gmail.com'],
-        'invoice_paid': ['demetrimanias@gmail.com', 'angmaniasbakers@gmail.com'],
-        'expense_added': ['demetrimanias@gmail.com'],
-        'expense_approved': ['demetrimanias@gmail.com', 'angmaniasbakers@gmail.com'],
-        'expense_paid': ['demetrimanias@gmail.com', 'angmaniasbakers@gmail.com'],
-        'fsr': ['demetrimanias@gmail.com', 'angmaniasbakers@gmail.com'],
+        'daily_report': {'to': ['demetrimanias@gmail.com', 'angmaniasbakers@gmail.com'], 'cc': []},
+        'passport_expiry': {'to': ['demetrimanias@gmail.com', 'angmaniasbakers@gmail.com'], 'cc': []},
+        'document_expiry': {'to': ['demetrimanias@gmail.com', 'angmaniasbakers@gmail.com'], 'cc': []},
+        'celebration_reminder': {'to': ['demetrimanias@gmail.com', 'angmaniasbakers@gmail.com'], 'cc': []},
+        'new_lease_upload': {'to': ['demetrimanias@gmail.com'], 'cc': []},
+        'expense_needs_approval': {'to': ['demetrimanias@gmail.com'], 'cc': ['stella.simitopoulos@alivente.com']},
+        'expense_approved': {'to': ['stella.simitopoulos@alivente.com'], 'cc': ['demetrimanias@gmail.com']},
+        'expense_paid': {'to': ['stella.simitopoulos@alivente.com'], 'cc': ['demetrimanias@gmail.com']},
+        'friday_status_report_supervisor': {'to': ['stella.simitopoulos@alivente.com'], 'cc': ['angmaniasbakers@gmail.com']},
+        'friday_status_report_staff': {'to': ['demetrimanias@gmail.com'], 'cc': ['angmaniasbakers@gmail.com']},
     }
     
-    return default_recipients.get(email_type, ['demetrimanias@gmail.com'])
+    defaults = default_recipients.get(notification_type, {'to': ['demetrimanias@gmail.com'], 'cc': []})
+    defaults['all'] = defaults['to'] + defaults['cc']
+    return defaults
 
 def format_email_recipients_for_header(email_list):
     """

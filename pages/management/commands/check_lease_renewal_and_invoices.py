@@ -533,16 +533,27 @@ class Command(BaseCommand):
             email_use_tls = os.environ.get('EMAIL_USE_TLS', 'False').lower() == 'true'
             
             # Use the standard email recipients utility
-            email_to_list = get_email_recipients('celebration_reminder')
+            recipients = get_email_recipients('celebration_reminder')
+
+            # DEBUG: Show who will receive the email
+            self.stdout.write(f'📧 Celebration Email TO: {", ".join(recipients["to"])}')
+            if recipients['cc']:
+                self.stdout.write(f'📧 Celebration Email CC: {", ".join(recipients["cc"])}')
             
             if not email_password:
                 self.stdout.write('❌ EMAIL_PASSWORD environment variable not set')
                 return False
             
             # Create message
+            # Get recipients with TO/CC split
+            recipients = get_email_recipients('celebration_reminder')
+
+            # Create message
             msg = MIMEMultipart('alternative')
             msg['From'] = email_user
-            msg['To'] = format_email_recipients_for_header(email_to_list)
+            msg['To'] = format_email_recipients_for_header(recipients['to'])
+            if recipients['cc']:
+                msg['Cc'] = format_email_recipients_for_header(recipients['cc'])
             
             # Determine correct grammar
             celebration_word = "Celebration" if celebration_count == 1 else "Celebrations"
@@ -686,7 +697,7 @@ Celebration Reminder"""
             
             # Send email
             text = msg.as_string()
-            smtp_object.sendmail(email_user, email_to_list, text)
+            smtp_object.sendmail(email_user, recipients['all'], text)
             
             self.stdout.write('✅ Celebration notification email sent successfully!')
             logger.info('Celebration notification email sent successfully')
@@ -739,16 +750,27 @@ Celebration Reminder"""
             email_use_tls = os.environ.get('EMAIL_USE_TLS', 'False').lower() == 'true'
             
             # Use the standard email recipients utility
-            email_to_list = get_email_recipients('new_lease_upload')
+            recipients = get_email_recipients('new_lease_upload')
+
+            # DEBUG: Show who will receive the email
+            self.stdout.write(f'📧 New Lease Upload Email TO: {", ".join(recipients["to"])}')
+            if recipients['cc']:
+                self.stdout.write(f'📧 New Lease Upload Email CC: {", ".join(recipients["cc"])}')
             
             if not email_password:
                 self.stdout.write('❌ EMAIL_PASSWORD environment variable not set')
                 return False
             
             # Create message
+            # Get recipients with TO/CC split
+            recipients = get_email_recipients('new_lease_upload')
+
+            # Create message
             msg = MIMEMultipart('alternative')
             msg['From'] = email_user
-            msg['To'] = format_email_recipients_for_header(email_to_list)
+            msg['To'] = format_email_recipients_for_header(recipients['to'])
+            if recipients['cc']:
+                msg['Cc'] = format_email_recipients_for_header(recipients['cc'])
             
             # Determine correct grammar
             lease_word = "Lease" if lease_count == 1 else "Leases"
@@ -860,7 +882,7 @@ Automated Lease Management"""
             
             # Send email
             text = msg.as_string()
-            smtp_object.sendmail(email_user, email_to_list, text)
+            smtp_object.sendmail(email_user, recipients['all'], text)
             
             self.stdout.write('✅ New lease upload reminder email sent successfully!')
             logger.info('New lease upload reminder email sent successfully')
@@ -921,16 +943,27 @@ Automated Lease Management"""
             email_use_tls = os.environ.get('EMAIL_USE_TLS', 'False').lower() == 'true'
             
             # Use the standard email recipients utility
-            email_to_list = get_email_recipients('passport_expiry')
+            recipients = get_email_recipients('passport_expiry')
+
+            # DEBUG: Show who will receive the email
+            self.stdout.write(f'📧 Passport Expiry Email TO: {", ".join(recipients["to"])}')
+            if recipients['cc']:
+                self.stdout.write(f'📧 Passport Expiry Email CC: {", ".join(recipients["cc"])}')
             
             if not email_password:
                 self.stdout.write('❌ EMAIL_PASSWORD environment variable not set')
                 return False
             
             # Create message
+            # Get recipients with TO/CC split
+            recipients = get_email_recipients('passport_expiry')
+
+            # Create message
             msg = MIMEMultipart('alternative')
             msg['From'] = email_user
-            msg['To'] = format_email_recipients_for_header(email_to_list)
+            msg['To'] = format_email_recipients_for_header(recipients['to'])
+            if recipients['cc']:
+                msg['Cc'] = format_email_recipients_for_header(recipients['cc'])
             msg['Subject'] = f"Alert - Documents Expiring Within 6 Months ({passport_count})"
             
             # Build HTML email body
@@ -1055,7 +1088,7 @@ Automated Passport/ID Monitoring"""
             
             # Send email
             text = msg.as_string()
-            smtp_object.sendmail(email_user, email_to_list, text)
+            smtp_object.sendmail(email_user, recipients['all'], text)
             
             self.stdout.write('✅ Passport expiry notification email sent successfully!')
             logger.info('Passport expiry notification email sent successfully')
@@ -1106,7 +1139,12 @@ Automated Passport/ID Monitoring"""
             email_password = os.environ.get('EMAIL_PASSWORD')
             email_use_ssl = os.environ.get('EMAIL_USE_SSL', 'True').lower() == 'true'
             email_use_tls = os.environ.get('EMAIL_USE_TLS', 'False').lower() == 'true'
-            email_to_list = get_email_recipients('daily_report')
+            recipients = get_email_recipients('daily_report')
+
+            # DEBUG: Show who will receive the email
+            self.stdout.write(f'📧 Daily Report Email TO: {", ".join(recipients["to"])}')
+            if recipients['cc']:
+                self.stdout.write(f'📧 Daily Report Email CC: {", ".join(recipients["cc"])}')
             
             if not email_password:
                 self.stdout.write('❌ EMAIL_PASSWORD environment variable not set')
@@ -1115,7 +1153,9 @@ Automated Passport/ID Monitoring"""
             # Create message
             msg = MIMEMultipart('alternative')
             msg['From'] = email_user
-            msg['To'] = format_email_recipients_for_header(email_to_list)
+            msg['To'] = format_email_recipients_for_header(recipients['to'])
+            if recipients['cc']:
+                msg['Cc'] = format_email_recipients_for_header(recipients['cc'])
             msg['Subject'] = "Alert - Invoices, Leases and Vacant Properties"
             
             # Build HTML email body with formatting
@@ -1383,7 +1423,7 @@ Automated Report"""
             
             # Send email
             text = msg.as_string()
-            smtp_object.sendmail(email_user, email_to_list, text)
+            smtp_object.sendmail(email_user, recipients['all'], text)
             
             self.stdout.write('✅ Property management notification email sent successfully!')
             logger.info('Property management notification email sent successfully')
