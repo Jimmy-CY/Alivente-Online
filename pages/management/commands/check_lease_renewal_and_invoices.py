@@ -600,10 +600,10 @@ class Command(BaseCommand):
                 </style>
                 </head>
                 <body>
-                    <p>Dear User,</p>
+                    <p>Hey, Hey !!!</p>
                     <br>
                     <p><b><u class="celebration">TODAY'S {celebration_word.upper()}:</u></b></p>
-                    <p>{"This person has a" if celebration_count == 1 else "These people have"} special {"day" if celebration_count == 1 else "days"} today, {formatted_date}:</p>
+                    <p>{"The person below has a" if celebration_count == 1 else "The people below have a"} special day today, {formatted_date}:</p>
                     <br>
                     <ul>"""
                 
@@ -643,22 +643,16 @@ class Command(BaseCommand):
                     <br>
                     <p><b>REMINDER:</b></p>
                     <p>Don't forget to reach out and wish them a wonderful day!</p>
-                    <br>
-                    <p>You can manage celebrations and notification settings at <a href="https://alivente.online">alivente.online</a> in the Personal section.</p>
-                    <br>
-                    <p>Best regards,<br>
-                    Alivente Online System<br>
-                    Celebration Reminder</p>
                 </body>
                 </html>
                 """
                 
                 # Create plain text version
-                text_body = f"""Dear User,
+                text_body = f"""Hey, Hey !!!
 
     TODAY'S {celebration_word.upper()}:
 
-    {"This person has a" if celebration_count == 1 else "These people have"} special {"day" if celebration_count == 1 else "days"} today, {formatted_date}:
+    {"The person below has a" if celebration_count == 1 else "The people below have a"} special day today, {formatted_date}:
 
     """
                 
@@ -689,13 +683,7 @@ class Command(BaseCommand):
                 
                 text_body += """
     REMINDER:
-    Don't forget to reach out and wish them a wonderful day!
-
-    You can manage celebrations and notification settings at alivente.online in the Personal section.
-
-    Best regards,
-    Alivente Online System
-    Celebration Reminder"""
+    Don't forget to reach out and wish them a wonderful day!"""
                 
                 # Attach both HTML and plain text versions
                 part1 = MIMEText(text_body, 'plain')
