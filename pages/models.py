@@ -2071,6 +2071,7 @@ class NotificationRecipient(models.Model):
         ('expense_paid', 'Expense Paid'),
         ('friday_status_report_supervisor', 'Friday Status Report (Submitted by Supervisor)'),
         ('friday_status_report_staff', 'Friday Status Report (Submitted by Staff)'),
+        ('invoice_paid', 'Invoice Marked as Paid'),
     )
     notification_type = models.CharField(max_length=50, choices=NOTIFICATION_TYPES, unique=True)
     to_addresses = models.TextField(help_text="Comma-separated TO email addresses (primary recipients)")
