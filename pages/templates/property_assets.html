@@ -1,0 +1,532 @@
+{% extends 'base.html' %}
+{% load static %}
+ 
+{% block title %}Assets - {{ property.prop_name }}{% endblock %}
+ 
+{% block content %}
+ 
+<h2><center>PROPERTY ASSETS - {{ property.prop_name|upper }}</center></h2>
+<br/>
+ 
+{% for msg in messages %}
+  <div class="alert alert-secondary alert-dismissible fade show auto-dismiss" role="alert">
+    <strong></strong> <center>{{ msg }}</center>
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <script>
+    setTimeout(function() {
+      document.querySelectorAll('.auto-dismiss').forEach(alert => {
+        alert.classList.remove('show');
+        alert.classList.add('fade');
+        setTimeout(() => alert.remove(), 500);
+      });
+    }, 2000);
+  </script>
+{% endfor %}
+ 
+{% if user.is_authenticated %}
+ 
+<!-- Action Buttons -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <button type="button" class="btn btn-info" data-toggle="modal" data-target="#addAssetModal">
+        <i class="fas fa-plus"></i> Add Asset
+    </button>
+    <button type="button" class="btn btn-info" onclick="history.back()">
+        <i class="fas fa-arrow-left"></i> Back
+    </button>
+</div>
+ 
+<!-- Assets Summary Card -->
+<div class="card mb-4">
+    <div class="card-body">
+        <h5 class="card-title">Asset Summary</h5>
+        <p class="card-text">
+            <strong>Total Assets:</strong> {{ total_assets }}<br>
+            <strong>Property:</strong> {{ property.prop_name }} ({{ property.prop_country }})<br>
+            <strong>Address:</strong> {{ property.prop_address1 }}{% if property.prop_address2 %}, {{ property.prop_address2 }}{% endif %}
+        </p>
+    </div>
+</div>
+ 
+<!-- Assets by Category -->
+{% if assets_by_category %}
+    {% for category_name, asset_list in assets_by_category.items %}
+    <div class="category-section mb-4">
+        <h4 class="category-header">
+            <i class="fas fa-tag"></i> {{ category_name }}
+            <span class="badge badge-secondary">{{ asset_list|length }}</span>
+        </h4>
+ 
+        <div class="table-responsive">
+            <table class="table table-bordered table-striped asset-table">
+                <thead>
+                    <tr>
+                        <th style="width: 22%">Asset Name</th>
+                        <th style="width: 16%">Subcategory</th>
+                        <th style="width: 14%">Location/Room</th>
+                        <th style="width: 14%">Purchase Date</th>
+                        <th style="width: 16%">Supplier</th>
+                        <th style="width: 18%; text-align: center;">Warranty Expiry</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for asset in asset_list %}
+                    <tr onclick="window.location='{% url 'asset_detail' asset.id %}';" style="cursor: pointer;">
+                        <td>
+                            <strong>{{ asset.name }}</strong>
+                            {% if asset.brand_manufacturer %}
+                                <br><small class="text-muted">{{ asset.brand_manufacturer }}</small>
+                            {% endif %}
+                        </td>
+                        <td>{{ asset.subcategory.name }}</td>
+                        <td>{{ asset.location_room }}</td>
+                        <td>{{ asset.purchase_date|date:"Y-m-d" }}</td>
+                        <td>{{ asset.supplier.name }}</td>
+                        <td class="text-center">
+                            {% if asset.warranty_expiry_date %}
+                                {% if asset.is_warranty_active %}
+                                    <span style="color: #28a745; font-weight: bold;">✓ Active</span><br>
+                                    <small>{{ asset.warranty_expiry_date|date:"Y-m-d" }}</small>
+                                {% else %}
+                                    <span style="color: #dc3545; font-weight: bold;">✗ Expired</span><br>
+                                    <small>{{ asset.warranty_expiry_date|date:"Y-m-d" }}</small>
+                                {% endif %}
+                            {% else %}
+                                <span class="text-muted">N/A</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endfor %}
+{% else %}
+    <div class="alert alert-info">
+        <h5><i class="fas fa-info-circle"></i> No Assets Found</h5>
+        <p>This property doesn't have any assets yet. Click "Add Asset" to get started!</p>
+    </div>
+{% endif %}
+ 
+<!-- Add Asset Modal -->
+<div class="modal fade" id="addAssetModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <form method="post" action="{% url 'add_asset' property.prop_id %}" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title">Add New Asset</h5>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <!-- Category -->
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Category <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <select name="category" id="category" class="form-control" required onchange="loadSubcategories()">
+                                        <option value="">Select Category</option>
+                                        {% for cat in categories %}
+                                            <option value="{{ cat.id }}">{{ cat.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <div class="input-group-append">
+                                        <button type="button" class="btn btn-outline-success" onclick="toggleInline('newCategoryRow')" title="Add new category">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <!-- Inline new category -->
+                                <div id="newCategoryRow" style="display:none; margin-top:6px;">
+                                    <div class="input-group">
+                                        <input type="text" id="newCategoryName" class="form-control form-control-sm" placeholder="New category name...">
+                                        <div class="input-group-append">
+                                            <button type="button" class="btn btn-success btn-sm" onclick="saveCategory()">Save</button>
+                                            <button type="button" class="btn btn-secondary btn-sm" onclick="toggleInline('newCategoryRow')">Cancel</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+ 
+                        <!-- Subcategory -->
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Subcategory <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <select name="subcategory" id="subcategory" class="form-control" required>
+                                        <option value="">Select Category First</option>
+                                    </select>
+                                    <div class="input-group-append">
+                                        <button type="button" class="btn btn-outline-success" onclick="toggleInline('newSubcategoryRow')" title="Add new subcategory">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <!-- Inline new subcategory -->
+                                <div id="newSubcategoryRow" style="display:none; margin-top:6px;">
+                                    <div class="input-group">
+                                        <input type="text" id="newSubcategoryName" class="form-control form-control-sm" placeholder="New subcategory name...">
+                                        <div class="input-group-append">
+                                            <button type="button" class="btn btn-success btn-sm" onclick="saveSubcategory()">Save</button>
+                                            <button type="button" class="btn btn-secondary btn-sm" onclick="toggleInline('newSubcategoryRow')">Cancel</button>
+                                        </div>
+                                    </div>
+                                    <small class="text-muted">Will be added under the selected category</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+ 
+                    <div class="row">
+                        <!-- Asset Name -->
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Asset Name <span class="text-danger">*</span></label>
+                                <input type="text" name="name" class="form-control" required>
+                            </div>
+                        </div>
+ 
+                        <!-- Location/Room -->
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Location/Room <span class="text-danger">*</span></label>
+                                <input type="text" name="location_room" class="form-control" required placeholder="e.g., Kitchen, Living Room">
+                            </div>
+                        </div>
+                    </div>
+ 
+                    <div class="row">
+                        <!-- Purchase Date -->
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Purchase Date <span class="text-danger">*</span></label>
+                                <input type="date" name="purchase_date" id="modal_purchase_date" class="form-control" required>
+                            </div>
+                        </div>
+ 
+                        <!-- Supplier -->
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Supplier <span class="text-danger">*</span></label>
+                                <div class="input-group">
+                                    <select name="supplier" id="supplier" class="form-control" required>
+                                        <option value="">Select Supplier</option>
+                                        {% for sup in suppliers %}
+                                            <option value="{{ sup.id }}">{{ sup.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <div class="input-group-append">
+                                        <button type="button" class="btn btn-outline-success" onclick="toggleInline('newSupplierRow')" title="Add new supplier">
+                                            <i class="fas fa-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <!-- Inline new supplier -->
+                                <div id="newSupplierRow" style="display:none; margin-top:6px;">
+                                    <div class="input-group">
+                                        <input type="text" id="newSupplierName" class="form-control form-control-sm" placeholder="New supplier name...">
+                                        <div class="input-group-append">
+                                            <button type="button" class="btn btn-success btn-sm" onclick="saveSupplier()">Save</button>
+                                            <button type="button" class="btn btn-secondary btn-sm" onclick="toggleInline('newSupplierRow')">Cancel</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+ 
+                    <div class="row">
+                        <!-- Purchase Price -->
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Purchase Price (€)</label>
+                                <input type="number" name="purchase_price" class="form-control" step="0.01" placeholder="Optional">
+                            </div>
+                        </div>
+ 
+                        <!-- Brand/Manufacturer -->
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Brand/Manufacturer</label>
+                                <input type="text" name="brand_manufacturer" class="form-control" placeholder="Optional">
+                            </div>
+                        </div>
+                    </div>
+ 
+                    <!-- Warranty Section -->
+                    <hr>
+                    <h6>Warranty Information</h6>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Warranty Duration (months)</label>
+                                <input type="number" name="warranty_duration_months" id="modal_warranty_months" class="form-control" placeholder="e.g., 24">
+                                <small class="form-text text-muted">System will calculate expiry date automatically</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>OR Warranty Expiry Date</label>
+                                <input type="date" name="warranty_expiry_date" id="modal_warranty_expiry" class="form-control">
+                                <small class="form-text text-muted">Manually enter expiry date</small>
+                            </div>
+                        </div>
+                    </div>
+ 
+                    <!-- Purchase Invoice Upload -->
+                    <div class="form-group">
+                        <label>Purchase Invoice/Receipt</label>
+                        <input type="file" name="purchase_invoice" class="form-control-file" accept=".pdf,.jpg,.jpeg,.png">
+                    </div>
+ 
+                    <!-- Notes -->
+                    <div class="form-group">
+                        <label>Notes</label>
+                        <textarea name="notes" class="form-control" rows="3" placeholder="Additional notes..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success">Add Asset</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+ 
+<!-- Delete Confirmation Form (Hidden) -->
+<form id="deleteForm" method="post" style="display: none;">
+    {% csrf_token %}
+</form>
+ 
+<style>
+.category-section {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+ 
+.category-header {
+    color: #2c3e50;
+    border-bottom: 2px solid #17a2b8;
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+}
+ 
+.table thead th {
+    background-color: #2c3e50;
+    color: white;
+    font-weight: 600;
+    border: 1px solid #34495e;
+}
+ 
+.badge {
+    font-size: 0.85em;
+}
+ 
+/* Clickable row hover effect */
+.asset-table tbody tr:hover {
+    background-color: #e9ecef;
+    transition: background-color 0.2s ease;
+}
+</style>
+ 
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+ 
+<script>
+// Sort a select dropdown alphabetically, keeping the placeholder option in place
+function sortSelect(selectEl) {
+    const placeholder = selectEl.options[0];
+    const options = Array.from(selectEl.options).slice(1);
+    options.sort((a, b) => a.text.localeCompare(b.text));
+    selectEl.innerHTML = '';
+    selectEl.appendChild(placeholder);
+    options.forEach(opt => selectEl.appendChild(opt));
+}
+
+// Toggle inline add rows
+function toggleInline(id) {
+    const el = document.getElementById(id);
+    el.style.display = el.style.display === 'none' ? 'block' : 'none';
+}
+ 
+// Load subcategories when category changes
+function loadSubcategories() {
+    const categoryId = document.getElementById('category').value;
+    const subcategorySelect = document.getElementById('subcategory');
+
+    if (!categoryId) {
+        subcategorySelect.innerHTML = '<option value="">Select Category First</option>';
+        return;
+    }
+
+    fetch(`/ajax/category/${categoryId}/subcategories/`)
+        .then(response => response.json())
+        .then(data => {
+            subcategorySelect.innerHTML = '<option value="">Select Subcategory</option>';
+            data.subcategories.forEach(sub => {
+                const option = document.createElement('option');
+                option.value = sub.id;
+                option.textContent = sub.name;
+                subcategorySelect.appendChild(option);
+            });
+            sortSelect(subcategorySelect); // ← ADD THIS LINE
+        })
+        .catch(error => console.error('Error loading subcategories:', error));
+}
+ 
+// Save new Category
+function saveCategory() {
+    const name = document.getElementById('newCategoryName').value.trim();
+    if (!name) { alert('Please enter a category name.'); return; }
+
+    const formData = new FormData();
+    formData.append('name', name);
+    formData.append('csrfmiddlewaretoken', getCsrfToken());
+
+    fetch('/ajax/category/add/', {
+        method: 'POST',
+        body: formData
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            const select = document.getElementById('category');
+            const option = new Option(data.category.name, data.category.id, true, true);
+            select.appendChild(option);
+            select.value = data.category.id;
+            document.getElementById('newCategoryName').value = '';
+            sortSelect(select);           
+            toggleInline('newCategoryRow');
+            loadSubcategories();
+        } else {
+            alert(data.error || 'Error saving category.');
+        }
+    })
+    .catch(() => alert('Error saving category.'));
+}
+
+// Save new Subcategory
+function saveSubcategory() {
+    const name = document.getElementById('newSubcategoryName').value.trim();
+    const categoryId = document.getElementById('category').value;
+
+    if (!name) { alert('Please enter a subcategory name.'); return; }
+    if (!categoryId) { alert('Please select a category first.'); return; }
+
+    const formData = new FormData();
+    formData.append('name', name);
+    formData.append('category_id', categoryId);
+    formData.append('csrfmiddlewaretoken', getCsrfToken());
+
+    fetch('/ajax/subcategory/add/', {
+        method: 'POST',
+        body: formData
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            const select = document.getElementById('subcategory');
+            const option = new Option(data.subcategory.name, data.subcategory.id, true, true);
+            select.appendChild(option);
+            select.value = data.subcategory.id;
+            document.getElementById('newSubcategoryName').value = '';
+            sortSelect(select);
+            toggleInline('newSubcategoryRow');
+        } else {
+            alert(data.error || 'Error saving subcategory.');
+        }
+    })
+    .catch(() => alert('Error saving subcategory.'));
+}
+
+// Save new Supplier
+function saveSupplier() {
+    const name = document.getElementById('newSupplierName').value.trim();
+    if (!name) { alert('Please enter a supplier name.'); return; }
+
+    const formData = new FormData();
+    formData.append('name', name);
+    formData.append('csrfmiddlewaretoken', getCsrfToken());
+
+    fetch('/ajax/supplier/add/', {
+        method: 'POST',
+        body: formData
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            const select = document.getElementById('supplier');
+            const option = new Option(data.supplier.name, data.supplier.id, true, true);
+            select.appendChild(option);
+            select.value = data.supplier.id;
+            document.getElementById('newSupplierName').value = '';
+            sortSelect(select);
+            toggleInline('newSupplierRow');
+        } else {
+            alert(data.error || 'Error saving supplier.');
+        }
+    })
+    .catch(() => alert('Error saving supplier.'));
+}
+ 
+// Auto-calculate warranty expiry date from purchase date + months (modal)
+document.addEventListener('DOMContentLoaded', function () {
+    const modalMonths = document.getElementById('modal_warranty_months');
+    const modalPurchaseDate = document.getElementById('modal_purchase_date');
+    const modalExpiry = document.getElementById('modal_warranty_expiry');
+ 
+    function calcModalExpiry() {
+        const purchaseDate = modalPurchaseDate.value;
+        const months = parseInt(modalMonths.value);
+        if (purchaseDate && months) {
+            const expiry = new Date(purchaseDate);
+            expiry.setMonth(expiry.getMonth() + months);
+            modalExpiry.value = expiry.toISOString().split('T')[0];
+        }
+    }
+ 
+    if (modalMonths) modalMonths.addEventListener('input', calcModalExpiry);
+    if (modalPurchaseDate) modalPurchaseDate.addEventListener('change', calcModalExpiry);
+});
+ 
+// Get CSRF token from cookie
+function getCsrfToken() {
+    const name = 'csrftoken';
+    const cookies = document.cookie.split(';');
+    for (let c of cookies) {
+        c = c.trim();
+        if (c.startsWith(name + '=')) return decodeURIComponent(c.slice(name.length + 1));
+    }
+    return '';
+}
+ 
+// Confirm delete
+function confirmDelete(assetId, assetName) {
+    if (confirm(`Are you sure you want to delete "${assetName}"?\n\nThis will also delete all maintenance records for this asset.`)) {
+        const form = document.getElementById('deleteForm');
+        form.action = `/assets/${assetId}/delete/`;
+        form.submit();
+    }
+}
+</script>
+ 
+{% else %}
+  <div class="alert alert-warning text-center" role="alert">
+    <h4 class="alert-heading">Access Restricted</h4>
+    <p>You do not have permission to view assets. Please contact an administrator.</p>
+    <hr>
+    <a href="{% url 'home' %}" class="btn btn-info">Back to Home</a>
+  </div>
+{% endif %}
+ 
+{% endblock %}

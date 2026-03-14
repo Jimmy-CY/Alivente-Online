@@ -9,6 +9,7 @@ from decimal import Decimal
 import os
 from django.db.models.signals import post_save, post_delete, pre_delete
 from django.dispatch import receiver
+from dateutil.relativedelta import relativedelta
 
 def project_document_upload_path(instance, filename):
     """Generate upload path for project documents"""
@@ -2098,3 +2099,214 @@ class NotificationRecipient(models.Model):
     
     def __str__(self):
         return f"{self.get_notification_type_display()}"
+
+# ============================================================================
+# ASSET MANAGEMENT MODELS
+# ============================================================================
+
+def asset_invoice_upload_path(instance, filename):
+    """Generate upload path for asset purchase invoices"""
+    ext = filename.split('.')[-1]
+    prop_name_slug = slugify(instance.property.prop_name or 'property')
+    asset_name_slug = slugify(instance.name or 'asset')
+    date_str = instance.purchase_date.strftime('%Y%m%d')
+    new_filename = f"{prop_name_slug}-{asset_name_slug}-{date_str}.{ext}"
+    return os.path.join('asset_invoices', new_filename)
+
+
+class AssetCategory(models.Model):
+    """Main category for assets (e.g., Appliances, Furniture)"""
+    name = models.CharField(max_length=100, unique=True)
+    icon = models.CharField(
+        max_length=50, 
+        blank=True, 
+        null=True, 
+        help_text="FontAwesome icon class (e.g., 'fa-snowflake')"
+    )
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        ordering = ['name']
+        verbose_name_plural = 'Asset Categories'
+        db_table = 'asset_categories'
+    
+    def __str__(self):
+        return self.name
+
+
+class AssetSubcategory(models.Model):
+    """Subcategory for assets (e.g., Air Conditioner, Washing Machine)"""
+    category = models.ForeignKey(
+        AssetCategory, 
+        on_delete=models.CASCADE, 
+        related_name='subcategories'
+    )
+    name = models.CharField(max_length=100)
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        ordering = ['category__name', 'name']
+        verbose_name_plural = 'Asset Subcategories'
+        unique_together = ['category', 'name']
+        db_table = 'asset_subcategories'
+    
+    def __str__(self):
+        return f"{self.category.name} - {self.name}"
+
+
+class AssetSupplier(models.Model):
+    """Supplier/vendor for assets"""
+    name = models.CharField(max_length=200, unique=True)
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        ordering = ['name']
+        verbose_name = 'Asset Supplier'
+        verbose_name_plural = 'Asset Suppliers'
+        db_table = 'asset_suppliers'
+    
+    def __str__(self):
+        return self.name
+
+
+class PropertyAsset(models.Model):
+    """Individual asset within a property"""
+    # Core relationships
+    property = models.ForeignKey('props', on_delete=models.CASCADE, related_name='assets')
+    category = models.ForeignKey(AssetCategory, on_delete=models.PROTECT)
+    subcategory = models.ForeignKey(AssetSubcategory, on_delete=models.PROTECT)
+    
+    # Basic info
+    name = models.CharField(max_length=200, help_text="Asset name/description")
+    location_room = models.CharField(max_length=100, help_text="Room/location within property")
+    
+    # Purchase info
+    purchase_date = models.DateField()
+    supplier = models.ForeignKey(AssetSupplier, on_delete=models.PROTECT)
+    purchase_price = models.DecimalField(
+        max_digits=10, 
+        decimal_places=2, 
+        null=True, 
+        blank=True
+    )
+    purchase_invoice = models.FileField(
+        upload_to=asset_invoice_upload_path, 
+        null=True, 
+        blank=True
+    )
+    
+    # Optional details
+    brand_manufacturer = models.CharField(
+        max_length=100, 
+        blank=True, 
+        null=True, 
+        verbose_name="Brand/Manufacturer"
+    )
+    
+    # Warranty tracking - Option C: Both methods available
+    warranty_duration_months = models.IntegerField(
+        null=True, 
+        blank=True, 
+        help_text="Warranty duration in months (will auto-calculate expiry date)"
+    )
+    warranty_expiry_date = models.DateField(
+        null=True, 
+        blank=True, 
+        help_text="Warranty expiry date (calculated automatically or entered manually)"
+    )
+    
+    # Notes
+    notes = models.TextField(blank=True, null=True)
+    
+    # Metadata
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['property', 'category', 'subcategory', 'name']
+        verbose_name = 'Property Asset'
+        verbose_name_plural = 'Property Assets'
+        db_table = 'property_assets'
+    
+    def __str__(self):
+        return f"{self.property.prop_name} - {self.name}"
+    
+    def save(self, *args, **kwargs):
+        """Auto-calculate warranty expiry if duration provided and expiry not manually set"""
+        if self.warranty_duration_months and not self.warranty_expiry_date:
+            self.warranty_expiry_date = self.purchase_date + relativedelta(
+                months=self.warranty_duration_months
+            )
+        super().save(*args, **kwargs)
+    
+    def is_warranty_active(self):
+        """Check if warranty is still active"""
+        if self.warranty_expiry_date:
+            from datetime import date
+            return date.today() <= self.warranty_expiry_date
+        return False
+    
+    def warranty_days_remaining(self):
+        """Calculate days remaining on warranty"""
+        if self.warranty_expiry_date:
+            from datetime import date
+            delta = self.warranty_expiry_date - date.today()
+            return delta.days if delta.days > 0 else 0
+        return 0
+    
+    def get_total_maintenance_cost(self):
+        """Calculate total maintenance/repair costs for this asset"""
+        return self.maintenance_records.aggregate(
+            total=models.Sum('cost')
+        )['total'] or Decimal('0.00')
+
+
+class AssetMaintenance(models.Model):
+    """Maintenance/repair log for assets"""
+    MAINTENANCE_TYPES = [
+        ('routine', 'Routine Maintenance'),
+        ('repair', 'Repair'),
+        ('inspection', 'Inspection'),
+        ('replacement', 'Part Replacement'),
+        ('other', 'Other'),
+    ]
+    
+    asset = models.ForeignKey(
+        PropertyAsset, 
+        on_delete=models.CASCADE, 
+        related_name='maintenance_records'
+    )
+    date = models.DateField()
+    maintenance_type = models.CharField(max_length=20, choices=MAINTENANCE_TYPES)
+    description = models.TextField()
+    cost = models.DecimalField(
+        max_digits=10, 
+        decimal_places=2, 
+        null=True, 
+        blank=True, 
+        help_text="Optional cost"
+    )
+    service_provider = models.CharField(
+        max_length=200, 
+        blank=True, 
+        null=True, 
+        help_text="Technician/company name (optional)"
+    )
+    
+    # Metadata
+    created_by = models.ForeignKey(User, on_delete=models.CASCADE)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        ordering = ['-date']
+        verbose_name = 'Asset Maintenance Record'
+        verbose_name_plural = 'Asset Maintenance Records'
+        db_table = 'asset_maintenance'
+    
+    def __str__(self):
+        return f"{self.asset.name} - {self.get_maintenance_type_display()} on {self.date}"

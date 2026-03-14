@@ -279,5 +279,22 @@ urlpatterns = [
     path('notifications/settings/', views.notification_settings, name='notification_settings'),
     path('notifications/personal/', views.personal_notification_settings, name='personal_notification_settings'),
     path('celebrations/event/<int:event_id>/update-notifications/', views.update_event_notifications, name='update_event_notifications'),
-        
+
+    # Asset Management URLs
+    path('properties/<int:prop_id>/assets/', views.property_assets, name='property_assets'),
+    path('properties/<int:prop_id>/assets/add/', views.add_asset, name='add_asset'),
+    path('assets/<int:asset_id>/', views.asset_detail, name='asset_detail'),
+    path('assets/<int:asset_id>/edit/', views.edit_asset, name='edit_asset'),
+    path('assets/<int:asset_id>/delete/', views.delete_asset, name='delete_asset'),
+
+    # Maintenance URLs
+    path('assets/<int:asset_id>/maintenance/add/', views.add_maintenance, name='add_maintenance'),
+    path('maintenance/<int:maintenance_id>/delete/', views.delete_maintenance, name='delete_maintenance'),
+
+    # AJAX URLs
+    path('ajax/category/<int:category_id>/subcategories/', views.get_subcategories, name='get_subcategories'),
+    path('ajax/category/add/', views.add_category_ajax, name='add_category_ajax'),
+    path('ajax/subcategory/add/', views.add_subcategory_ajax, name='add_subcategory_ajax'),
+    path('ajax/supplier/add/', views.add_supplier_ajax, name='add_supplier_ajax'),
+
 ]

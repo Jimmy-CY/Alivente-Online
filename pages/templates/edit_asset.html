@@ -1,0 +1,244 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Edit Asset - {{ asset.name }}{% endblock %}
+
+{% block content %}
+
+<h2><center>EDIT ASSET</center></h2>
+<br/>
+
+{% for msg in messages %}
+  <div class="alert alert-secondary alert-dismissible fade show auto-dismiss" role="alert">
+    <strong></strong> <center>{{ msg }}</center>
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <script>
+    setTimeout(function() {
+      document.querySelectorAll('.auto-dismiss').forEach(alert => {
+        alert.classList.remove('show');
+        alert.classList.add('fade');
+        setTimeout(() => alert.remove(), 500);
+      });
+    }, 2000);
+  </script>
+{% endfor %}
+
+<!-- Action Buttons -->
+<div style="display: flex; justify-content: flex-end; margin-bottom: 20px;">
+    <a href="{% url 'asset_detail' asset.id %}" class="btn btn-info">Back</a>
+</div>
+
+<!-- Edit Asset Form -->
+<div class="card">
+    <div class="card-header bg-warning text-white">
+        <h4 class="mb-0"><i class="fas fa-edit"></i> Edit: {{ asset.name }}</h4>
+    </div>
+    <div class="card-body">
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <div class="row">
+                <!-- Category -->
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Category <span class="text-danger">*</span></label>
+                        <select name="category" id="category" class="form-control" required onchange="loadSubcategories()">
+                            <option value="">Select Category</option>
+                            {% for cat in categories %}
+                                <option value="{{ cat.id }}" {% if cat.id == asset.category.id %}selected{% endif %}>
+                                    {{ cat.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                
+                <!-- Subcategory -->
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Subcategory <span class="text-danger">*</span></label>
+                        <select name="subcategory" id="subcategory" class="form-control" required>
+                            <option value="">Select Category First</option>
+                            {% for sub in subcategories %}
+                                <option value="{{ sub.id }}" {% if sub.id == asset.subcategory.id %}selected{% endif %}>
+                                    {{ sub.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <!-- Asset Name -->
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Asset Name <span class="text-danger">*</span></label>
+                        <input type="text" name="name" class="form-control" required value="{{ asset.name }}">
+                    </div>
+                </div>
+                
+                <!-- Location/Room -->
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Location/Room <span class="text-danger">*</span></label>
+                        <input type="text" name="location_room" class="form-control" required value="{{ asset.location_room }}" placeholder="e.g., Kitchen, Living Room">
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <!-- Purchase Date -->
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Purchase Date <span class="text-danger">*</span></label>
+                        <input type="date" name="purchase_date" class="form-control" required value="{{ asset.purchase_date|date:'Y-m-d' }}">
+                    </div>
+                </div>
+                
+                <!-- Supplier -->
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Supplier <span class="text-danger">*</span></label>
+                        <select name="supplier" class="form-control" required>
+                            <option value="">Select Supplier</option>
+                            {% for sup in suppliers %}
+                                <option value="{{ sup.id }}" {% if sup.id == asset.supplier.id %}selected{% endif %}>
+                                    {{ sup.name }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row">
+                <!-- Purchase Price (Optional) -->
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Purchase Price (€)</label>
+                        <input type="number" name="purchase_price" class="form-control" step="0.01" placeholder="Optional" value="{% if asset.purchase_price %}{{ asset.purchase_price }}{% endif %}">
+                    </div>
+                </div>
+                
+                <!-- Brand/Manufacturer (Optional) -->
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Brand/Manufacturer</label>
+                        <input type="text" name="brand_manufacturer" class="form-control" placeholder="Optional" value="{{ asset.brand_manufacturer }}">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Warranty Section -->
+            <hr>
+            <h5>Warranty Information</h5>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>Warranty Duration (months)</label>
+                        <input type="number" name="warranty_duration_months" class="form-control" placeholder="e.g., 24" value="{% if asset.warranty_duration_months %}{{ asset.warranty_duration_months }}{% endif %}">
+                        <small class="form-text text-muted">System will calculate expiry date automatically</small>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="form-group">
+                        <label>OR Warranty Expiry Date</label>
+                        <input type="date" name="warranty_expiry_date" class="form-control" value="{% if asset.warranty_expiry_date %}{{ asset.warranty_expiry_date|date:'Y-m-d' }}{% endif %}">
+                        <small class="form-text text-muted">Manually enter expiry date</small>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Purchase Invoice Upload -->
+            <div class="form-group">
+                <label>Purchase Invoice/Receipt</label>
+                {% if asset.purchase_invoice %}
+                    <div class="alert alert-info">
+                        Current file: <a href="{{ asset.purchase_invoice.url }}" target="_blank">{{ asset.purchase_invoice.name }}</a>
+                    </div>
+                {% endif %}
+                <input type="file" name="purchase_invoice" class="form-control-file" accept=".pdf,.jpg,.jpeg,.png">
+                <small class="form-text text-muted">Upload a new file to replace the existing one</small>
+            </div>
+            
+            <!-- Notes -->
+            <div class="form-group">
+                <label>Notes</label>
+                <textarea name="notes" class="form-control" rows="4" placeholder="Additional notes...">{{ asset.notes }}</textarea>
+            </div>
+            
+            <hr>
+            <div class="text-right">
+                <a href="{% url 'asset_detail' asset.id %}" class="btn btn-secondary">
+                    <i class="fas fa-times"></i> Cancel
+                </a>
+                <button type="submit" class="btn btn-success">
+                    <i class="fas fa-save"></i> Save Changes
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+<script>
+// Load subcategories when category changes
+function loadSubcategories() {
+    const categoryId = document.getElementById('category').value;
+    const subcategorySelect = document.getElementById('subcategory');
+    const currentSubcategoryId = {{ asset.subcategory.id }};
+    
+    if (!categoryId) {
+        subcategorySelect.innerHTML = '<option value="">Select Category First</option>';
+        return;
+    }
+    
+    // AJAX call to get subcategories
+    fetch(`/ajax/category/${categoryId}/subcategories/`)
+        .then(response => response.json())
+        .then(data => {
+            subcategorySelect.innerHTML = '<option value="">Select Subcategory</option>';
+            data.subcategories.forEach(sub => {
+                const option = document.createElement('option');
+                option.value = sub.id;
+                option.textContent = sub.name;
+                // Keep current subcategory selected if it's in the list
+                if (sub.id === currentSubcategoryId) {
+                    option.selected = true;
+                }
+                subcategorySelect.appendChild(option);
+            });
+        })
+        .catch(error => {
+            console.error('Error loading subcategories:', error);
+            alert('Error loading subcategories');
+        });
+}
+
+// Auto-calculate warranty expiry date when duration changes
+function calculateWarrantyExpiry() {
+    const purchaseDate = document.querySelector('input[name="purchase_date"]').value;
+    const months = parseInt(document.querySelector('input[name="warranty_duration_months"]').value);
+    
+    if (purchaseDate && months) {
+        const expiry = new Date(purchaseDate);
+        expiry.setMonth(expiry.getMonth() + months);
+        
+        // Format as YYYY-MM-DD for the date input
+        const formatted = expiry.toISOString().split('T')[0];
+        document.querySelector('input[name="warranty_expiry_date"]').value = formatted;
+    }
+}
+
+// Attach listeners
+document.querySelector('input[name="warranty_duration_months"]').addEventListener('input', calculateWarrantyExpiry);
+document.querySelector('input[name="purchase_date"]').addEventListener('change', calculateWarrantyExpiry);
+</script>
+
+{% endblock %}

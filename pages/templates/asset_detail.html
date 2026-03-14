@@ -1,0 +1,301 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ asset.name }} - Asset Details{% endblock %}
+
+{% block content %}
+
+<h2><center>ASSET DETAILS</center></h2>
+<br/>
+
+{% for msg in messages %}
+  <div class="alert alert-secondary alert-dismissible fade show auto-dismiss" role="alert">
+    <strong></strong> <center>{{ msg }}</center>
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <script>
+    setTimeout(function() {
+      document.querySelectorAll('.auto-dismiss').forEach(alert => {
+        alert.classList.remove('show');
+        alert.classList.add('fade');
+        setTimeout(() => alert.remove(), 500);
+      });
+    }, 2000);
+  </script>
+{% endfor %}
+
+<!-- Action Buttons -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <a href="{% url 'edit_asset' asset.id %}" class="btn btn-warning">
+            <i class="fas fa-edit"></i> Edit Asset
+        </a>
+        <form method="post" action="{% url 'delete_asset' asset.id %}" style="display: inline; margin-left: 5px;" onsubmit="return confirm('Are you sure you want to delete this asset and all its maintenance records?');">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">
+                <i class="fas fa-trash"></i> Delete Asset
+            </button>
+        </form>
+    </div>
+    <button type="button" class="btn btn-info" onclick="history.back()">
+        <i class="fas fa-arrow-left"></i> Back
+    </button>
+</div>
+
+<!-- Asset Information Card -->
+<div class="card mb-4">
+    <div class="card-header bg-primary text-white">
+        <h4 class="mb-0"><i class="fas fa-box"></i> {{ asset.name }}</h4>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <table class="table table-borderless">
+                    <tr>
+                        <th style="width: 40%">Property:</th>
+                        <td>{{ asset.property.prop_name }}</td>
+                    </tr>
+                    <tr>
+                        <th>Category:</th>
+                        <td>{{ asset.category.name }} → {{ asset.subcategory.name }}</td>
+                    </tr>
+                    <tr>
+                        <th>Location/Room:</th>
+                        <td>{{ asset.location_room }}</td>
+                    </tr>
+                    <tr>
+                        <th>Brand:</th>
+                        <td>{{ asset.brand_manufacturer|default:"N/A" }}</td>
+                    </tr>
+                </table>
+            </div>
+            <div class="col-md-6">
+                <table class="table table-borderless">
+                    <tr>
+                        <th style="width: 40%">Purchase Date:</th>
+                        <td>{{ asset.purchase_date|date:"F d, Y" }}</td>
+                    </tr>
+                    <tr>
+                        <th>Supplier:</th>
+                        <td>{{ asset.supplier.name }}</td>
+                    </tr>
+                    <tr>
+                        <th>Purchase Price:</th>
+                        <td>{% if asset.purchase_price %}€{{ asset.purchase_price }}{% else %}N/A{% endif %}</td>
+                    </tr>
+                    <tr>
+                        <th>Invoice:</th>
+                        <td>
+                            {% if asset.purchase_invoice %}
+                                <a href="{{ asset.purchase_invoice.url }}" target="_blank" class="btn btn-sm btn-info">
+                                    <i class="fas fa-file-pdf"></i> View Invoice
+                                </a>
+                            {% else %}
+                                N/A
+                            {% endif %}
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        
+        {% if asset.notes %}
+        <div class="row mt-3">
+            <div class="col-md-12">
+                <h6><strong>Notes:</strong></h6>
+                <p class="text-muted">{{ asset.notes }}</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Warranty Information Card -->
+<div class="card mb-4">
+    <div class="card-header {% if asset.is_warranty_active %}bg-success{% else %}bg-secondary{% endif %} text-white">
+        <h5 class="mb-0">
+            <i class="fas fa-shield-alt"></i> Warranty Information
+            {% if asset.is_warranty_active %}
+                <span class="badge badge-light text-success">ACTIVE</span>
+            {% else %}
+                <span class="badge badge-light text-danger">EXPIRED / N/A</span>
+            {% endif %}
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-4">
+                <strong>Duration:</strong><br>
+                {% if asset.warranty_duration_months %}
+                    {{ asset.warranty_duration_months }} months
+                {% else %}
+                    N/A
+                {% endif %}
+            </div>
+            <div class="col-md-4">
+                <strong>Expiry Date:</strong><br>
+                {% if asset.warranty_expiry_date %}
+                    {{ asset.warranty_expiry_date|date:"F d, Y" }}
+                {% else %}
+                    N/A
+                {% endif %}
+            </div>
+            <div class="col-md-4">
+                <strong>Days Remaining:</strong><br>
+                {% if asset.is_warranty_active %}
+                    <span class="text-success">{{ asset.warranty_days_remaining }} days</span>
+                {% else %}
+                    <span class="text-muted">—</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Maintenance History Card -->
+<div class="card mb-4">
+    <div class="card-header bg-info text-white">
+        <h5 class="mb-0">
+            <i class="fas fa-wrench"></i> Maintenance History
+            <button type="button" class="btn btn-sm btn-light float-right" data-toggle="modal" data-target="#addMaintenanceModal">
+                <i class="fas fa-plus"></i> Add Record
+            </button>
+        </h5>
+    </div>
+    <div class="card-body">
+        {% if maintenance_records %}
+            <div class="alert alert-secondary">
+                <strong>Total Maintenance Cost:</strong> €{{ total_maintenance_cost|default:"0.00" }}
+            </div>
+            
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped">
+                    <thead>
+                        <tr>
+                            <th style="width: 12%">Date</th>
+                            <th style="width: 15%">Type</th>
+                            <th style="width: 38%">Description</th>
+                            <th style="width: 15%">Service Provider</th>
+                            <th style="width: 12%">Cost (€)</th>
+                            <th style="width: 8%; text-align: center;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for record in maintenance_records %}
+                        <tr>
+                            <td>{{ record.date|date:"Y-m-d" }}</td>
+                            <td>
+                                <span class="badge badge-{% if record.maintenance_type == 'routine' %}info{% elif record.maintenance_type == 'repair' %}warning{% elif record.maintenance_type == 'inspection' %}primary{% else %}secondary{% endif %}">
+                                    {{ record.get_maintenance_type_display }}
+                                </span>
+                            </td>
+                            <td>{{ record.description }}</td>
+                            <td>{{ record.service_provider|default:"—" }}</td>
+                            <td style="text-align: right; font-family: 'Courier New', monospace;">
+                                {% if record.cost %}€{{ record.cost }}{% else %}—{% endif %}
+                            </td>
+                            <td style="text-align: center;">
+                                <button type="button" class="btn btn-sm btn-danger" onclick="confirmDeleteMaintenance({{ record.id }})">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i> No maintenance records yet. Click "Add Record" to log maintenance or repairs.
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Add Maintenance Modal -->
+<div class="modal fade" id="addMaintenanceModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <form method="post" action="{% url 'add_maintenance' asset.id %}">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h5 class="modal-title">Add Maintenance Record</h5>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>Date <span class="text-danger">*</span></label>
+                        <input type="date" name="date" class="form-control" required value="{{ today|date:'Y-m-d' }}">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Type <span class="text-danger">*</span></label>
+                        <select name="maintenance_type" class="form-control" required>
+                            <option value="routine">Routine Maintenance</option>
+                            <option value="repair">Repair</option>
+                            <option value="inspection">Inspection</option>
+                            <option value="replacement">Part Replacement</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Description <span class="text-danger">*</span></label>
+                        <textarea name="description" class="form-control" rows="3" required placeholder="Describe what was done..."></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Service Provider</label>
+                        <input type="text" name="service_provider" class="form-control" placeholder="Technician or company name (optional)">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Cost (€)</label>
+                        <input type="number" name="cost" class="form-control" step="0.01" placeholder="Optional">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success">Add Record</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Asset Form (Hidden) -->
+<form id="deleteAssetForm" method="post" action="{% url 'delete_asset' asset.id %}" style="display: none;">
+    {% csrf_token %}
+</form>
+
+<!-- Delete Maintenance Form (Hidden) -->
+<form id="deleteMaintenanceForm" method="post" style="display: none;">
+    {% csrf_token %}
+</form>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+<script>
+// Confirm delete asset
+function confirmDelete() {
+    if (confirm('Are you sure you want to delete "{{ asset.name }}"?\n\nThis will also delete all maintenance records for this asset.\n\nThis action cannot be undone.')) {
+        document.getElementById('deleteAssetForm').submit();
+    }
+}
+
+// Confirm delete maintenance record
+function confirmDeleteMaintenance(maintenanceId) {
+    if (confirm('Are you sure you want to delete this maintenance record?')) {
+        const form = document.getElementById('deleteMaintenanceForm');
+        form.action = `/maintenance/${maintenanceId}/delete/`;
+        form.submit();
+    }
+}
+</script>
+
+{% endblock %}

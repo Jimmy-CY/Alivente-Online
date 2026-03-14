@@ -79,6 +79,11 @@ from .models import (
     CelebrationEvent,
     EventNotification,
     NotificationRecipient,
+    PropertyAsset,
+    AssetCategory,
+    AssetSubcategory,
+    AssetSupplier,
+    AssetMaintenance,
 
     )
 from decimal import Decimal
@@ -4774,6 +4779,45 @@ def property_detail(request, property_id, box_type):
         # Calculate total actual expenses amount
         total_actual_expense_amount = sum(exp.act_expense_amount for exp in property_actual_expenses)
     
+    # Asset Summary logic - process when box_type is 'property-report'
+    if box_type == 'property-report':
+        from django.db.models import Count, Sum
+        
+        # Get asset summary for this property
+        assets = PropertyAsset.objects.filter(property=property_obj).select_related(
+            'category', 'subcategory', 'supplier'
+        ).prefetch_related('maintenance_records')
+        
+        # Asset statistics
+        total_assets = assets.count()
+        assets_by_category = assets.values('category__name').annotate(
+            count=Count('id')
+        ).order_by('category__name')
+        
+        # Warranty stats
+        active_warranties = sum(1 for asset in assets if asset.is_warranty_active())
+        expired_warranties = total_assets - active_warranties
+        
+        # Total purchase value and maintenance costs
+        total_purchase_value = assets.aggregate(
+            total=Sum('purchase_price')
+        )['total'] or Decimal('0.00')
+        
+        total_maintenance_cost = AssetMaintenance.objects.filter(
+            asset__property=property_obj
+        ).aggregate(
+            total=Sum('cost')
+        )['total'] or Decimal('0.00')
+    else:
+        # Initialize as None for other box types
+        assets = None
+        total_assets = 0
+        assets_by_category = []
+        active_warranties = 0
+        expired_warranties = 0
+        total_purchase_value = Decimal('0.00')
+        total_maintenance_cost = Decimal('0.00')
+    
     # Map box types to display names
     box_type_display_map = {
         'title-deed': 'Title Deed',
@@ -4809,6 +4853,13 @@ def property_detail(request, property_id, box_type):
         'actual_expense_years': actual_expense_years,
         'selected_actual_year': selected_actual_year,
         'total_actual_expense_amount': locals().get('total_actual_expense_amount', 0),
+        'assets': assets,
+        'total_assets': total_assets,
+        'assets_by_category': assets_by_category,
+        'active_warranties': active_warranties,
+        'expired_warranties': expired_warranties,
+        'total_purchase_value': total_purchase_value,
+        'total_maintenance_cost': total_maintenance_cost,
         'box_type': box_type,
         'box_type_display': box_type_display_map.get(box_type, box_type.title()),
         'today': timezone.now().date(),
@@ -9109,20 +9160,54 @@ def prop_rep(request):
 
 @login_required
 def property_report(request, prop_id):
-	today = date.today()
-	property = get_object_or_404(props.objects.only(
-    	'prop_id', 'prop_name', 'prop_address1', 'prop_address2', 'prop_suburb', 
-		'prop_city', 'prop_province', 'prop_country', 'prop_pcode',
-		'prop_floor_area', 'prop_year_built', 'prop_status',
-		'prop_available_for_rent', 'prop_title_deed',
-		'prop_title_deed_status', 'prop_electricity', 'prop_water',
-		'prop_refuse', 'prop_property_tax', 'prop_sewerage', 'prop_insurance'
-	), pk=prop_id)
-	context = {
-		'today': today,
-		'property': property,
-	}
-	return render(request, 'property_report.html', context)
+    today = date.today()
+    property = get_object_or_404(props.objects.only(
+        'prop_id', 'prop_name', 'prop_address1', 'prop_address2', 'prop_suburb', 
+        'prop_city', 'prop_province', 'prop_country', 'prop_pcode',
+        'prop_floor_area', 'prop_year_built', 'prop_status',
+        'prop_available_for_rent', 'prop_title_deed',
+        'prop_title_deed_status', 'prop_electricity', 'prop_water',
+        'prop_refuse', 'prop_property_tax', 'prop_sewerage', 'prop_insurance'
+    ), pk=prop_id)
+    
+    # Get asset summary for this property
+    assets = PropertyAsset.objects.filter(property=property).select_related(
+        'category', 'subcategory', 'supplier'
+    ).prefetch_related('maintenance_records')
+    
+    # Asset statistics
+    total_assets = assets.count()
+    assets_by_category = assets.values('category__name').annotate(
+        count=Count('id')
+    ).order_by('category__name')
+    
+    # Warranty stats
+    active_warranties = sum(1 for asset in assets if asset.is_warranty_active())
+    expired_warranties = total_assets - active_warranties
+    
+    # Total purchase value and maintenance costs
+    total_purchase_value = assets.aggregate(
+        total=Sum('purchase_price')
+    )['total'] or Decimal('0.00')
+    
+    total_maintenance_cost = AssetMaintenance.objects.filter(
+        asset__property=property
+    ).aggregate(
+        total=Sum('cost')
+    )['total'] or Decimal('0.00')
+    
+    context = {
+        'today': today,
+        'property': property,
+        'assets': assets,
+        'total_assets': total_assets,
+        'assets_by_category': assets_by_category,
+        'active_warranties': active_warranties,
+        'expired_warranties': expired_warranties,
+        'total_purchase_value': total_purchase_value,
+        'total_maintenance_cost': total_maintenance_cost,
+    }
+    return render(request, 'property_report.html', context)
 
 @login_required
 def title_deed_report(request, prop_id):
@@ -14804,3 +14889,389 @@ def update_event_notifications(request, event_id):
             'success': False,
             'error': str(e)
         }, status=500)
+
+# ============================================================================
+# ASSET MANAGEMENT VIEWS
+# ============================================================================
+
+# ==================== ASSET LIST VIEW ====================
+
+@login_required
+def property_assets(request, prop_id):
+    """
+    Display all assets for a specific property
+    Grouped by category
+    """
+    property_obj = get_object_or_404(props, prop_id=prop_id)
+    
+    # Get all assets for this property, prefetch related data
+    assets = PropertyAsset.objects.filter(
+        property=property_obj
+    ).select_related(
+        'category', 'subcategory', 'supplier'
+    ).prefetch_related(
+        'maintenance_records'
+    ).order_by('category__name', 'subcategory__name', 'name')
+    
+    # Group assets by category
+    assets_by_category = {}
+    for asset in assets:
+        category_name = asset.category.name
+        if category_name not in assets_by_category:
+            assets_by_category[category_name] = []
+        assets_by_category[category_name].append(asset)
+    
+    # Get all categories for the add form
+    categories = AssetCategory.objects.all().order_by('name')
+    suppliers = AssetSupplier.objects.all().order_by('name')
+    
+    context = {
+        'property': property_obj,
+        'assets_by_category': assets_by_category,
+        'total_assets': assets.count(),
+        'categories': categories,
+        'suppliers': suppliers,
+    }
+    
+    return render(request, 'property_assets.html', context)
+
+@login_required
+@require_POST
+def add_asset(request, prop_id):
+    """Add a new asset to a property"""
+    property_obj = get_object_or_404(props, prop_id=prop_id)
+    
+    try:
+        # Get form data
+        category_id = request.POST.get('category')
+        subcategory_id = request.POST.get('subcategory')
+        supplier_id = request.POST.get('supplier')
+        
+        # Get objects
+        category = get_object_or_404(AssetCategory, pk=category_id)
+        subcategory = get_object_or_404(AssetSubcategory, pk=subcategory_id)
+        supplier = get_object_or_404(AssetSupplier, pk=supplier_id)
+        
+        # Parse date fields (convert string to date object)
+        from datetime import datetime
+        purchase_date_str = request.POST.get('purchase_date')
+        purchase_date = datetime.strptime(purchase_date_str, '%Y-%m-%d').date()
+        
+        # Create the asset
+        asset = PropertyAsset(
+            property=property_obj,
+            category=category,
+            subcategory=subcategory,
+            supplier=supplier,
+            name=request.POST.get('name'),
+            location_room=request.POST.get('location_room'),
+            purchase_date=purchase_date,  # Use parsed date object
+            brand_manufacturer=request.POST.get('brand_manufacturer', ''),
+            notes=request.POST.get('notes', ''),
+            created_by=request.user
+        )
+        
+        # Optional fields
+        if request.POST.get('purchase_price'):
+            asset.purchase_price = Decimal(request.POST.get('purchase_price'))
+        
+        if request.FILES.get('purchase_invoice'):
+            asset.purchase_invoice = request.FILES['purchase_invoice']
+        
+        # Warranty handling - Option C: duration OR expiry date
+        warranty_duration = request.POST.get('warranty_duration_months')
+        warranty_expiry = request.POST.get('warranty_expiry_date')
+        
+        if warranty_duration:
+            asset.warranty_duration_months = int(warranty_duration)
+        
+        if warranty_expiry:
+            # Parse warranty expiry date string to date object
+            asset.warranty_expiry_date = datetime.strptime(warranty_expiry, '%Y-%m-%d').date()
+        
+        asset.save()
+        
+        messages.success(request, f'Asset "{asset.name}" added successfully!')
+        
+    except Exception as e:
+        messages.error(request, f'Error adding asset: {str(e)}')
+    
+    return redirect('property_assets', prop_id=prop_id)
+
+# ==================== EDIT ASSET ====================
+
+@login_required
+def edit_asset(request, asset_id):
+    """Edit an existing asset"""
+    asset = get_object_or_404(PropertyAsset, pk=asset_id)
+    
+    if request.method == 'POST':
+        try:
+            # Update basic fields
+            asset.category = get_object_or_404(AssetCategory, pk=request.POST.get('category'))
+            asset.subcategory = get_object_or_404(AssetSubcategory, pk=request.POST.get('subcategory'))
+            asset.supplier = get_object_or_404(AssetSupplier, pk=request.POST.get('supplier'))
+            asset.name = request.POST.get('name')
+            asset.location_room = request.POST.get('location_room')
+            asset.purchase_date = request.POST.get('purchase_date')
+            asset.brand_manufacturer = request.POST.get('brand_manufacturer', '')
+            asset.notes = request.POST.get('notes', '')
+            
+            # Optional fields
+            if request.POST.get('purchase_price'):
+                asset.purchase_price = Decimal(request.POST.get('purchase_price'))
+            else:
+                asset.purchase_price = None
+            
+            if request.FILES.get('purchase_invoice'):
+                asset.purchase_invoice = request.FILES['purchase_invoice']
+            
+            # Warranty handling
+            warranty_duration = request.POST.get('warranty_duration_months')
+            warranty_expiry = request.POST.get('warranty_expiry_date')
+            
+            if warranty_duration:
+                asset.warranty_duration_months = int(warranty_duration)
+            else:
+                asset.warranty_duration_months = None
+            
+            if warranty_expiry:
+                asset.warranty_expiry_date = warranty_expiry
+            else:
+                asset.warranty_expiry_date = None
+            
+            asset.save()
+            
+            messages.success(request, f'Asset "{asset.name}" updated successfully!')
+            return redirect('asset_detail', asset_id=asset.id)
+            
+        except Exception as e:
+            messages.error(request, f'Error updating asset: {str(e)}')
+    
+    # GET request - show edit form
+    categories = AssetCategory.objects.all().order_by('name')
+    subcategories = AssetSubcategory.objects.filter(category=asset.category).order_by('name')
+    suppliers = AssetSupplier.objects.all().order_by('name')
+    
+    context = {
+        'asset': asset,
+        'categories': categories,
+        'subcategories': subcategories,
+        'suppliers': suppliers,
+    }
+    
+    return render(request, 'edit_asset.html', context)
+
+
+# ==================== DELETE ASSET ====================
+
+@login_required
+@require_POST
+def delete_asset(request, asset_id):
+    """Delete an asset"""
+    asset = get_object_or_404(PropertyAsset, pk=asset_id)
+    property_id = asset.property.prop_id
+    asset_name = asset.name
+    
+    try:
+        asset.delete()
+        messages.success(request, f'Asset "{asset_name}" deleted successfully!')
+    except Exception as e:
+        messages.error(request, f'Error deleting asset: {str(e)}')
+    
+    return redirect('property_assets', prop_id=property_id)
+
+
+# ==================== ASSET DETAIL VIEW ====================
+
+@login_required
+def asset_detail(request, asset_id):
+    """
+    Display detailed information about an asset
+    Including maintenance history
+    """
+    asset = get_object_or_404(
+        PropertyAsset.objects.select_related(
+            'property', 'category', 'subcategory', 'supplier'
+        ).prefetch_related('maintenance_records'),
+        pk=asset_id
+    )
+    
+    # Get maintenance records
+    maintenance_records = asset.maintenance_records.all().order_by('-date')
+    
+    # Calculate total maintenance cost
+    total_maintenance_cost = asset.get_total_maintenance_cost()
+    
+    context = {
+        'asset': asset,
+        'maintenance_records': maintenance_records,
+        'total_maintenance_cost': total_maintenance_cost,
+    }
+    
+    return render(request, 'asset_detail.html', context)
+
+
+# ==================== AJAX: GET SUBCATEGORIES ====================
+
+@login_required
+def get_subcategories(request, category_id):
+    """
+    AJAX endpoint to get subcategories for a category
+    Returns JSON
+    """
+    subcategories = AssetSubcategory.objects.filter(
+        category_id=category_id
+    ).order_by('name').values('id', 'name')
+    
+    return JsonResponse({
+        'subcategories': list(subcategories)
+    })
+
+
+# ==================== AJAX: ADD NEW CATEGORY ====================
+
+@login_required
+@require_POST
+def add_category_ajax(request):
+    """AJAX endpoint to add a new category"""
+    try:
+        category_name = request.POST.get('name')
+        
+        if not category_name:
+            return JsonResponse({'success': False, 'error': 'Category name is required'})
+        
+        # Check if category already exists
+        if AssetCategory.objects.filter(name=category_name).exists():
+            return JsonResponse({'success': False, 'error': 'Category already exists'})
+        
+        category = AssetCategory.objects.create(
+            name=category_name,
+            created_by=request.user
+        )
+        
+        return JsonResponse({
+            'success': True,
+            'category': {
+                'id': category.id,
+                'name': category.name
+            }
+        })
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})
+
+
+# ==================== AJAX: ADD NEW SUBCATEGORY ====================
+
+@login_required
+@require_POST
+def add_subcategory_ajax(request):
+    """AJAX endpoint to add a new subcategory"""
+    try:
+        category_id = request.POST.get('category_id')
+        subcategory_name = request.POST.get('name')
+        
+        if not category_id or not subcategory_name:
+            return JsonResponse({'success': False, 'error': 'Category and subcategory name are required'})
+        
+        category = get_object_or_404(AssetCategory, pk=category_id)
+        
+        # Check if subcategory already exists for this category
+        if AssetSubcategory.objects.filter(category=category, name=subcategory_name).exists():
+            return JsonResponse({'success': False, 'error': 'Subcategory already exists for this category'})
+        
+        subcategory = AssetSubcategory.objects.create(
+            category=category,
+            name=subcategory_name,
+            created_by=request.user
+        )
+        
+        return JsonResponse({
+            'success': True,
+            'subcategory': {
+                'id': subcategory.id,
+                'name': subcategory.name
+            }
+        })
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})
+
+
+# ==================== AJAX: ADD NEW SUPPLIER ====================
+
+@login_required
+@require_POST
+def add_supplier_ajax(request):
+    """AJAX endpoint to add a new supplier"""
+    try:
+        supplier_name = request.POST.get('name')
+        
+        if not supplier_name:
+            return JsonResponse({'success': False, 'error': 'Supplier name is required'})
+        
+        # Check if supplier already exists
+        if AssetSupplier.objects.filter(name=supplier_name).exists():
+            return JsonResponse({'success': False, 'error': 'Supplier already exists'})
+        
+        supplier = AssetSupplier.objects.create(
+            name=supplier_name,
+            created_by=request.user
+        )
+        
+        return JsonResponse({
+            'success': True,
+            'supplier': {
+                'id': supplier.id,
+                'name': supplier.name
+            }
+        })
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)})
+
+
+# ==================== MAINTENANCE RECORD VIEWS ====================
+
+@login_required
+@require_POST
+def add_maintenance(request, asset_id):
+    """Add a maintenance record for an asset"""
+    asset = get_object_or_404(PropertyAsset, pk=asset_id)
+    
+    try:
+        maintenance = AssetMaintenance(
+            asset=asset,
+            date=request.POST.get('date'),
+            maintenance_type=request.POST.get('maintenance_type'),
+            description=request.POST.get('description'),
+            service_provider=request.POST.get('service_provider', ''),
+            created_by=request.user
+        )
+        
+        # Optional cost
+        if request.POST.get('cost'):
+            maintenance.cost = Decimal(request.POST.get('cost'))
+        
+        maintenance.save()
+        
+        messages.success(request, 'Maintenance record added successfully!')
+        
+    except Exception as e:
+        messages.error(request, f'Error adding maintenance record: {str(e)}')
+    
+    return redirect('asset_detail', asset_id=asset_id)
+
+
+@login_required
+@require_POST
+def delete_maintenance(request, maintenance_id):
+    """Delete a maintenance record"""
+    maintenance = get_object_or_404(AssetMaintenance, pk=maintenance_id)
+    asset_id = maintenance.asset.id
+    
+    try:
+        maintenance.delete()
+        messages.success(request, 'Maintenance record deleted successfully!')
+    except Exception as e:
+        messages.error(request, f'Error deleting maintenance record: {str(e)}')
+    
+    return redirect('asset_detail', asset_id=asset_id)
