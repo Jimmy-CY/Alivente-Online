@@ -941,7 +941,7 @@ Automated Lease Management"""
             email_use_tls = os.environ.get('EMAIL_USE_TLS', 'False').lower() == 'true'
             
             # Use the standard email recipients utility
-            recipients = get_email_recipients('passport_expiry')
+            recipients = get_email_recipients('document_expiry')
 
             # DEBUG: Show who will receive the email
             self.stdout.write(f'📧 Passport Expiry Email TO: {", ".join(recipients["to"])}')
@@ -954,7 +954,7 @@ Automated Lease Management"""
             
             # Create message
             # Get recipients with TO/CC split
-            recipients = get_email_recipients('passport_expiry')
+            recipients = get_email_recipients('document_expiry')
 
             # Create message
             msg = MIMEMultipart('alternative')

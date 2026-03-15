@@ -39,8 +39,8 @@ def get_email_recipients(notification_type):
     # Default recipients with TO/CC distinction
     default_recipients = {
         'daily_report': {'to': ['demetrimanias@gmail.com', 'angmaniasbakers@gmail.com'], 'cc': []},
-        'passport_expiry': {'to': ['demetrimanias@gmail.com', 'angmaniasbakers@gmail.com'], 'cc': []},
-        'document_expiry': {'to': ['demetrimanias@gmail.com', 'angmaniasbakers@gmail.com'], 'cc': []},
+        'document_expiry': {'to': ['demetrimanias@gmail.com', 'angmaniasbakers@gmail.com', 'erenemanias@gmail.com', 'leximanias@gmail.com'], 'cc': []},
+        'passport_expiry': {'to': ['demetrimanias@gmail.com', 'angmaniasbakers@gmail.com', 'erenemanias@gmail.com', 'leximanias@gmail.com'], 'cc': []},
         'celebration_reminder': {'to': ['demetrimanias@gmail.com', 'angmaniasbakers@gmail.com'], 'cc': []},
         'new_lease_upload': {'to': ['demetrimanias@gmail.com'], 'cc': []},
         'expense_needs_approval': {'to': ['demetrimanias@gmail.com'], 'cc': ['stella.simitopoulos@alivente.com']},
