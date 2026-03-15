@@ -2268,11 +2268,12 @@ class PropertyAsset(models.Model):
 class AssetMaintenance(models.Model):
     """Maintenance/repair log for assets"""
     MAINTENANCE_TYPES = [
-        ('routine', 'Routine Maintenance'),
-        ('repair', 'Repair'),
+        ('cleaning', 'Cleaning'),
         ('inspection', 'Inspection'),
-        ('replacement', 'Part Replacement'),
-        ('other', 'Other'),
+        ('part_replacement', 'Part Replacement'),
+        ('repair', 'Repair'),
+        ('scheduled', 'Scheduled Maintenance'),
+        ('service', 'Service'),
     ]
     
     asset = models.ForeignKey(

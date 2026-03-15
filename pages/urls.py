@@ -290,6 +290,7 @@ urlpatterns = [
     # Maintenance URLs
     path('assets/<int:asset_id>/maintenance/add/', views.add_maintenance, name='add_maintenance'),
     path('maintenance/<int:maintenance_id>/delete/', views.delete_maintenance, name='delete_maintenance'),
+    path('maintenance/<int:maintenance_id>/edit/', views.edit_maintenance, name='edit_maintenance'),
 
     # AJAX URLs
     path('ajax/category/<int:category_id>/subcategories/', views.get_subcategories, name='get_subcategories'),

@@ -15275,3 +15275,23 @@ def delete_maintenance(request, maintenance_id):
         messages.error(request, f'Error deleting maintenance record: {str(e)}')
     
     return redirect('asset_detail', asset_id=asset_id)
+
+@login_required
+def edit_maintenance(request, maintenance_id):
+    """Edit a maintenance record"""
+    maintenance = get_object_or_404(AssetMaintenance, pk=maintenance_id)
+    asset_id = maintenance.asset.id
+
+    if request.method == 'POST':
+        try:
+            maintenance.date = request.POST.get('date')
+            maintenance.maintenance_type = request.POST.get('maintenance_type')
+            maintenance.description = request.POST.get('description')
+            maintenance.service_provider = request.POST.get('service_provider', '')
+            maintenance.cost = Decimal(request.POST.get('cost')) if request.POST.get('cost') else None
+            maintenance.save()
+            messages.success(request, 'Maintenance record updated successfully!')
+        except Exception as e:
+            messages.error(request, f'Error updating maintenance record: {str(e)}')
+
+    return redirect('asset_detail', asset_id=asset_id)
