@@ -33,9 +33,15 @@
     <button type="button" class="btn btn-info" data-toggle="modal" data-target="#addAssetModal">
         <i class="fas fa-plus"></i> Add Asset
     </button>
-    <button type="button" class="btn btn-info" onclick="history.back()">
-        <i class="fas fa-arrow-left"></i> Back
-    </button>
+    {% if request.GET.next == 'edit' %}
+        <a href="{% url 'properties_edit' property.prop_id %}" class="btn btn-info">
+            <i class="fas fa-arrow-left"></i> Back
+        </a>
+    {% else %}
+        <a href="{% url 'properties' %}" class="btn btn-info">
+            <i class="fas fa-arrow-left"></i> Back
+        </a>
+    {% endif %}
 </div>
  
 <!-- Assets Summary Card -->
@@ -73,7 +79,7 @@
                 </thead>
                 <tbody>
                     {% for asset in asset_list %}
-                    <tr onclick="window.location='{% url 'asset_detail' asset.id %}';" style="cursor: pointer;">
+                    <tr onclick="window.location='{% url 'asset_detail' asset.id %}?next={{ request.GET.next }}';" style="cursor: pointer;">
                         <td>
                             <strong>{{ asset.name }}</strong>
                             {% if asset.brand_manufacturer %}
@@ -206,17 +212,17 @@
                         <!-- Purchase Date -->
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label>Purchase Date <span class="text-danger">*</span></label>
-                                <input type="date" name="purchase_date" id="modal_purchase_date" class="form-control" required>
+                                <label>Purchase Date</label>
+                                <input type="date" name="purchase_date" id="modal_purchase_date" class="form-control">
                             </div>
                         </div>
  
                         <!-- Supplier -->
                         <div class="col-md-6">
                             <div class="form-group">
-                                <label>Supplier <span class="text-danger">*</span></label>
+                                <label>Supplier</label>
                                 <div class="input-group">
-                                    <select name="supplier" id="supplier" class="form-control" required>
+                                    <select name="supplier" id="supplier" class="form-control">
                                         <option value="">Select Supplier</option>
                                         {% for sup in suppliers %}
                                             <option value="{{ sup.id }}">{{ sup.name }}</option>
@@ -343,6 +349,17 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
  
 <script>
+// Validate Add Asset form before submission
+document.querySelector('#addAssetModal form').addEventListener('submit', function(e) {
+    const warrantyMonths = parseInt(document.getElementById('modal_warranty_months').value) || 0;
+    const purchaseDate = document.getElementById('modal_purchase_date').value;
+
+    if (warrantyMonths > 0 && !purchaseDate) {
+        e.preventDefault();
+        alert('Purchase Date is required when Warranty Duration is entered.');
+    }
+});
+    
 // Sort a select dropdown alphabetically, keeping the placeholder option in place
 function sortSelect(selectEl) {
     const placeholder = selectEl.options[0];

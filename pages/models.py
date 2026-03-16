@@ -2105,14 +2105,25 @@ class NotificationRecipient(models.Model):
 # ============================================================================
 
 def asset_invoice_upload_path(instance, filename):
-    """Generate upload path for asset purchase invoices"""
     ext = filename.split('.')[-1]
     prop_name_slug = slugify(instance.property.prop_name or 'property')
     asset_name_slug = slugify(instance.name or 'asset')
-    date_str = instance.purchase_date.strftime('%Y%m%d')
+    date_str = instance.purchase_date.strftime('%Y%m%d') if instance.purchase_date else timezone.now().strftime('%Y%m%d')
     new_filename = f"{prop_name_slug}-{asset_name_slug}-{date_str}.{ext}"
     return os.path.join('asset_invoices', new_filename)
 
+def maintenance_invoice_upload_path(instance, filename):
+    ext = filename.split('.')[-1]
+    asset_name_slug = slugify(instance.asset.name or 'asset')
+    if instance.date:
+        if hasattr(instance.date, 'strftime'):
+            date_str = instance.date.strftime('%Y%m%d')
+        else:
+            date_str = str(instance.date).replace('-', '')
+    else:
+        date_str = timezone.now().strftime('%Y%m%d')
+    new_filename = f"{asset_name_slug}-maintenance-{date_str}.{ext}"
+    return os.path.join('maintenance_invoices', new_filename)
 
 class AssetCategory(models.Model):
     """Main category for assets (e.g., Appliances, Furniture)"""
@@ -2184,8 +2195,8 @@ class PropertyAsset(models.Model):
     location_room = models.CharField(max_length=100, help_text="Room/location within property")
     
     # Purchase info
-    purchase_date = models.DateField()
-    supplier = models.ForeignKey(AssetSupplier, on_delete=models.PROTECT)
+    purchase_date = models.DateField(null=True, blank=True)
+    supplier = models.ForeignKey(AssetSupplier, on_delete=models.PROTECT, null=True, blank=True)
     purchase_price = models.DecimalField(
         max_digits=10, 
         decimal_places=2, 
@@ -2237,7 +2248,7 @@ class PropertyAsset(models.Model):
     
     def save(self, *args, **kwargs):
         """Auto-calculate warranty expiry if duration provided and expiry not manually set"""
-        if self.warranty_duration_months and not self.warranty_expiry_date:
+        if self.warranty_duration_months and self.purchase_date and not self.warranty_expiry_date:
             self.warranty_expiry_date = self.purchase_date + relativedelta(
                 months=self.warranty_duration_months
             )
@@ -2296,6 +2307,12 @@ class AssetMaintenance(models.Model):
         blank=True, 
         null=True, 
         help_text="Technician/company name (optional)"
+    )
+    invoice = models.FileField(
+        upload_to=maintenance_invoice_upload_path,
+        null=True,
+        blank=True,
+        help_text="Optional maintenance invoice or receipt"
     )
     
     # Metadata

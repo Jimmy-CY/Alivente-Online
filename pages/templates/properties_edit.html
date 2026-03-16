@@ -16,7 +16,7 @@
 <form action="{% url 'properties_edit_commit' results.prop_id %}" method="post" onsubmit="return validatePropertyName()">
   {% csrf_token %}
   <div style="display: flex ; justify-content: flex-end">
-      <a href="{% url 'property_assets' results.prop_id %}" class="btn btn-info" style="margin-right:16px" role="button">
+      <a href="{% url 'property_assets' results.prop_id %}?next=edit" class="btn btn-info" style="margin-right:16px" role="button">
           <i class="fas fa-box"></i> Assets
       </a>
       <button class="btn btn-info" style="margin-right:16px" type="submit">Save</button>

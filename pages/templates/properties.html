@@ -116,12 +116,13 @@ Properties
     <table class="table table-bordered table-striped text-center">
       <thead>
         <tr>
-          <th style="text-align: left; width: 37%">Property</th>
-          <th style="width: 23%">Country</th>
-          <th style="width: 10%">Status</th>
-          <th style="width: 10%">Details</th>
-          <th style="width: 10%">Report</th>
-          <th style="width: 10%">Title Deed</th>
+            <th style="text-align: left; width: 32%">Property</th>
+            <th style="width: 14%">Country</th>
+            <th style="width: 10%">Status</th>
+            <th style="width: 8%">Details</th>
+            <th style="width: 8%">Report</th>
+            <th style="width: 10%">Title Deed</th>
+            <th style="width: 8%">Assets</th>
         </tr>
       </thead>
       <tbody>
@@ -165,6 +166,15 @@ Properties
                   <span style="color: #6c757d;">View</span>
                 </button>
               {% endif %}
+            </td>
+            <td>
+                {% if results.assets.count > 0 %}
+                    <button type="button" class="btn btn-light action-btn">
+                        <a href="{% url 'property_assets' results.prop_id %}">View</a>
+                    </button>
+                {% else %}
+                    <span class="text-muted">None</span>
+                {% endif %}
             </td>
           </tr>
         {% endfor %}

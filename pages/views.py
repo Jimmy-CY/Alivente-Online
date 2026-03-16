@@ -14940,24 +14940,30 @@ def property_assets(request, prop_id):
 def add_asset(request, prop_id):
     """Add a new asset to a property"""
     property_obj = get_object_or_404(props, prop_id=prop_id)
-    
+
     try:
-        # Get form data
+        from datetime import datetime
+
         category_id = request.POST.get('category')
         subcategory_id = request.POST.get('subcategory')
         supplier_id = request.POST.get('supplier')
-        
-        # Get objects
+
         category = get_object_or_404(AssetCategory, pk=category_id)
         subcategory = get_object_or_404(AssetSubcategory, pk=subcategory_id)
-        supplier = get_object_or_404(AssetSupplier, pk=supplier_id)
-        
-        # Parse date fields (convert string to date object)
-        from datetime import datetime
+
+        # Supplier is optional
+        supplier = get_object_or_404(AssetSupplier, pk=supplier_id) if supplier_id else None
+
+        # Purchase date is optional
         purchase_date_str = request.POST.get('purchase_date')
-        purchase_date = datetime.strptime(purchase_date_str, '%Y-%m-%d').date()
-        
-        # Create the asset
+        purchase_date = datetime.strptime(purchase_date_str, '%Y-%m-%d').date() if purchase_date_str else None
+
+        # Validate: purchase date required if warranty duration entered
+        warranty_duration = request.POST.get('warranty_duration_months')
+        if warranty_duration and int(warranty_duration) > 0 and not purchase_date:
+            messages.error(request, 'Purchase Date is required when Warranty Duration is entered.')
+            return redirect('property_assets', prop_id=prop_id)
+
         asset = PropertyAsset(
             property=property_obj,
             category=category,
@@ -14965,37 +14971,31 @@ def add_asset(request, prop_id):
             supplier=supplier,
             name=request.POST.get('name'),
             location_room=request.POST.get('location_room'),
-            purchase_date=purchase_date,  # Use parsed date object
+            purchase_date=purchase_date,
             brand_manufacturer=request.POST.get('brand_manufacturer', ''),
             notes=request.POST.get('notes', ''),
             created_by=request.user
         )
-        
-        # Optional fields
+
         if request.POST.get('purchase_price'):
             asset.purchase_price = Decimal(request.POST.get('purchase_price'))
-        
+
         if request.FILES.get('purchase_invoice'):
             asset.purchase_invoice = request.FILES['purchase_invoice']
-        
-        # Warranty handling - Option C: duration OR expiry date
-        warranty_duration = request.POST.get('warranty_duration_months')
-        warranty_expiry = request.POST.get('warranty_expiry_date')
-        
+
         if warranty_duration:
             asset.warranty_duration_months = int(warranty_duration)
-        
+
+        warranty_expiry = request.POST.get('warranty_expiry_date')
         if warranty_expiry:
-            # Parse warranty expiry date string to date object
             asset.warranty_expiry_date = datetime.strptime(warranty_expiry, '%Y-%m-%d').date()
-        
+
         asset.save()
-        
         messages.success(request, f'Asset "{asset.name}" added successfully!')
-        
+
     except Exception as e:
         messages.error(request, f'Error adding asset: {str(e)}')
-    
+
     return redirect('property_assets', prop_id=prop_id)
 
 # ==================== EDIT ASSET ====================
@@ -15004,62 +15004,60 @@ def add_asset(request, prop_id):
 def edit_asset(request, asset_id):
     """Edit an existing asset"""
     asset = get_object_or_404(PropertyAsset, pk=asset_id)
-    
+
     if request.method == 'POST':
         try:
-            # Update basic fields
+            from datetime import datetime
+
+            # Supplier is optional
+            supplier_id = request.POST.get('supplier')
+            asset.supplier = get_object_or_404(AssetSupplier, pk=supplier_id) if supplier_id else None
+
+            # Purchase date is optional
+            purchase_date_str = request.POST.get('purchase_date')
+            asset.purchase_date = datetime.strptime(purchase_date_str, '%Y-%m-%d').date() if purchase_date_str else None
+
+            # Validate: purchase date required if warranty duration entered
+            warranty_duration = request.POST.get('warranty_duration_months')
+            if warranty_duration and int(warranty_duration) > 0 and not asset.purchase_date:
+                messages.error(request, 'Purchase Date is required when Warranty Duration is entered.')
+                return redirect('edit_asset', asset_id=asset_id)
+
             asset.category = get_object_or_404(AssetCategory, pk=request.POST.get('category'))
             asset.subcategory = get_object_or_404(AssetSubcategory, pk=request.POST.get('subcategory'))
-            asset.supplier = get_object_or_404(AssetSupplier, pk=request.POST.get('supplier'))
             asset.name = request.POST.get('name')
             asset.location_room = request.POST.get('location_room')
-            asset.purchase_date = request.POST.get('purchase_date')
             asset.brand_manufacturer = request.POST.get('brand_manufacturer', '')
             asset.notes = request.POST.get('notes', '')
-            
-            # Optional fields
-            if request.POST.get('purchase_price'):
-                asset.purchase_price = Decimal(request.POST.get('purchase_price'))
-            else:
-                asset.purchase_price = None
-            
+
+            asset.purchase_price = Decimal(request.POST.get('purchase_price')) if request.POST.get('purchase_price') else None
+
             if request.FILES.get('purchase_invoice'):
                 asset.purchase_invoice = request.FILES['purchase_invoice']
-            
-            # Warranty handling
-            warranty_duration = request.POST.get('warranty_duration_months')
+
+            asset.warranty_duration_months = int(warranty_duration) if warranty_duration else None
+
             warranty_expiry = request.POST.get('warranty_expiry_date')
-            
-            if warranty_duration:
-                asset.warranty_duration_months = int(warranty_duration)
-            else:
-                asset.warranty_duration_months = None
-            
-            if warranty_expiry:
-                asset.warranty_expiry_date = warranty_expiry
-            else:
-                asset.warranty_expiry_date = None
-            
+            asset.warranty_expiry_date = warranty_expiry if warranty_expiry else None
+
             asset.save()
-            
             messages.success(request, f'Asset "{asset.name}" updated successfully!')
             return redirect('asset_detail', asset_id=asset.id)
-            
+
         except Exception as e:
             messages.error(request, f'Error updating asset: {str(e)}')
-    
-    # GET request - show edit form
+
     categories = AssetCategory.objects.all().order_by('name')
     subcategories = AssetSubcategory.objects.filter(category=asset.category).order_by('name')
     suppliers = AssetSupplier.objects.all().order_by('name')
-    
+
     context = {
         'asset': asset,
         'categories': categories,
         'subcategories': subcategories,
         'suppliers': suppliers,
     }
-    
+
     return render(request, 'edit_asset.html', context)
 
 
@@ -15236,7 +15234,7 @@ def add_supplier_ajax(request):
 def add_maintenance(request, asset_id):
     """Add a maintenance record for an asset"""
     asset = get_object_or_404(PropertyAsset, pk=asset_id)
-    
+
     try:
         maintenance = AssetMaintenance(
             asset=asset,
@@ -15246,20 +15244,20 @@ def add_maintenance(request, asset_id):
             service_provider=request.POST.get('service_provider', ''),
             created_by=request.user
         )
-        
-        # Optional cost
+
         if request.POST.get('cost'):
             maintenance.cost = Decimal(request.POST.get('cost'))
-        
+
+        if request.FILES.get('invoice'):
+            maintenance.invoice = request.FILES['invoice']
+
         maintenance.save()
-        
         messages.success(request, 'Maintenance record added successfully!')
-        
+
     except Exception as e:
         messages.error(request, f'Error adding maintenance record: {str(e)}')
-    
-    return redirect('asset_detail', asset_id=asset_id)
 
+    return redirect('asset_detail', asset_id=asset_id)
 
 @login_required
 @require_POST
@@ -15289,6 +15287,10 @@ def edit_maintenance(request, maintenance_id):
             maintenance.description = request.POST.get('description')
             maintenance.service_provider = request.POST.get('service_provider', '')
             maintenance.cost = Decimal(request.POST.get('cost')) if request.POST.get('cost') else None
+
+            if request.FILES.get('invoice'):
+                maintenance.invoice = request.FILES['invoice']
+
             maintenance.save()
             messages.success(request, 'Maintenance record updated successfully!')
         except Exception as e:

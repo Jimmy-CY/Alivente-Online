@@ -39,9 +39,9 @@
             </button>
         </form>
     </div>
-    <button type="button" class="btn btn-info" onclick="history.back()">
+    <a href="{% url 'property_assets' asset.property.prop_id %}?next={{ request.GET.next }}" class="btn btn-info">
         <i class="fas fa-arrow-left"></i> Back
-    </button>
+    </a>
 </div>
 
 <!-- Asset Information Card -->
@@ -59,7 +59,7 @@
                     </tr>
                     <tr>
                         <th>Category:</th>
-                        <td>{{ asset.category.name }} → {{ asset.subcategory.name }}</td>
+                        <td>{{ asset.category.name }} &rarr; {{ asset.subcategory.name }}</td>
                     </tr>
                     <tr>
                         <th>Location/Room:</th>
@@ -79,19 +79,19 @@
                     </tr>
                     <tr>
                         <th>Supplier:</th>
-                        <td>{{ asset.supplier.name }}</td>
+                        <td>{% if asset.supplier %}{{ asset.supplier.name }}{% else %}N/A{% endif %}</td>
                     </tr>
                     <tr>
                         <th>Purchase Price:</th>
-                        <td>{% if asset.purchase_price %}€{{ asset.purchase_price }}{% else %}N/A{% endif %}</td>
+                        <td>{% if asset.purchase_price %}&euro;{{ asset.purchase_price }}{% else %}N/A{% endif %}</td>
                     </tr>
                     <tr>
                         <th>Invoice:</th>
                         <td>
                             {% if asset.purchase_invoice %}
-                                <a href="{{ asset.purchase_invoice.url }}" target="_blank" class="btn btn-sm btn-info">
+                                <button type="button" class="btn btn-sm btn-info" onclick="viewInvoice('{{ asset.purchase_invoice.url }}', '{{ asset.purchase_invoice.name }}')">
                                     <i class="fas fa-file-pdf"></i> View Invoice
-                                </a>
+                                </button>
                             {% else %}
                                 N/A
                             {% endif %}
@@ -147,7 +147,7 @@
                 {% if asset.is_warranty_active %}
                     <span class="text-success">{{ asset.warranty_days_remaining }} days</span>
                 {% else %}
-                    <span class="text-muted">—</span>
+                    <span class="text-muted">&mdash;</span>
                 {% endif %}
             </div>
         </div>
@@ -167,7 +167,7 @@
     <div class="card-body">
         {% if maintenance_records %}
             <div class="alert alert-secondary">
-                <strong>Total Maintenance Cost:</strong> €{{ total_maintenance_cost|default:"0.00" }}
+                <strong>Total Maintenance Cost:</strong> &euro;{{ total_maintenance_cost|default:"0.00" }}
             </div>
 
             <div class="table-responsive">
@@ -175,11 +175,12 @@
                     <thead>
                         <tr>
                             <th style="width: 12%">Date</th>
-                            <th style="width: 15%">Type</th>
-                            <th style="width: 35%">Description</th>
-                            <th style="width: 15%">Service Provider</th>
-                            <th style="width: 10%">Cost (€)</th>
-                            <th style="width: 13%; text-align: center;">Action</th>
+                            <th style="width: 13%">Type</th>
+                            <th style="width: 30%">Description</th>
+                            <th style="width: 13%">Service Provider</th>
+                            <th style="width: 9%">Cost (&euro;)</th>
+                            <th style="width: 8%; text-align: center;">Invoice</th>
+                            <th style="width: 15%; text-align: center;">Action</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -192,9 +193,18 @@
                                 </span>
                             </td>
                             <td>{{ record.description }}</td>
-                            <td>{{ record.service_provider|default:"—" }}</td>
+                            <td>{{ record.service_provider|default:"&mdash;" }}</td>
                             <td style="text-align: right; font-family: 'Courier New', monospace;">
-                                {% if record.cost %}€{{ record.cost }}{% else %}—{% endif %}
+                                {% if record.cost %}&euro;{{ record.cost }}{% else %}&mdash;{% endif %}
+                            </td>
+                            <td style="text-align: center;">
+                                {% if record.invoice %}
+                                    <button type="button" class="btn btn-sm btn-info" onclick="viewInvoice('{{ record.invoice.url }}', '{{ record.invoice.name }}')">
+                                        <i class="fas fa-file-invoice"></i>
+                                    </button>
+                                {% else %}
+                                    <span class="text-muted">&mdash;</span>
+                                {% endif %}
                             </td>
                             <td style="text-align: center;">
                                 <button type="button" class="btn btn-sm btn-warning"
@@ -229,7 +239,7 @@
 <div class="modal fade" id="addMaintenanceModal" tabindex="-1" role="dialog">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
-            <form method="post" action="{% url 'add_maintenance' asset.id %}">
+            <form method="post" action="{% url 'add_maintenance' asset.id %}" enctype="multipart/form-data">
                 {% csrf_token %}
                 <div class="modal-header">
                     <h5 class="modal-title">Add Maintenance Record</h5>
@@ -266,8 +276,14 @@
                     </div>
 
                     <div class="form-group">
-                        <label>Cost (€)</label>
+                        <label>Cost (&euro;)</label>
                         <input type="number" name="cost" class="form-control" step="0.01" placeholder="Optional">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Invoice/Receipt</label>
+                        <input type="file" name="invoice" class="form-control-file" accept=".pdf,.jpg,.jpeg,.png">
+                        <small class="form-text text-muted">Optional - upload invoice or receipt</small>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -283,7 +299,7 @@
 <div class="modal fade" id="editMaintenanceModal" tabindex="-1" role="dialog">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
-            <form method="post" id="editMaintenanceForm">
+            <form method="post" id="editMaintenanceForm" enctype="multipart/form-data">
                 {% csrf_token %}
                 <div class="modal-header">
                     <h5 class="modal-title">Edit Maintenance Record</h5>
@@ -320,8 +336,14 @@
                     </div>
 
                     <div class="form-group">
-                        <label>Cost (€)</label>
+                        <label>Cost (&euro;)</label>
                         <input type="number" name="cost" id="edit_cost" class="form-control" step="0.01" placeholder="Optional">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Invoice/Receipt</label>
+                        <input type="file" name="invoice" id="edit_invoice" class="form-control-file" accept=".pdf,.jpg,.jpeg,.png">
+                        <small class="form-text text-muted">Upload a new file to replace the existing one</small>
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -329,6 +351,28 @@
                     <button type="submit" class="btn btn-success">Save Changes</button>
                 </div>
             </form>
+        </div>
+    </div>
+</div>
+
+<!-- Invoice Viewer Modal -->
+<div class="modal fade" id="invoiceViewerModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Invoice / Receipt</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="invoiceViewerContent">
+            </div>
+            <div class="modal-footer">
+                <a id="invoiceDownloadLink" href="#" class="btn btn-info" target="_blank">
+                    <i class="fas fa-download"></i> Download
+                </a>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
         </div>
     </div>
 </div>
@@ -347,6 +391,36 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
 <script>
+// View invoice in modal
+function viewInvoice(url, filename) {
+    const content = document.getElementById('invoiceViewerContent');
+    const downloadLink = document.getElementById('invoiceDownloadLink');
+    const ext = filename.split('.').pop().toLowerCase();
+
+    downloadLink.href = url;
+
+    if (ext === 'pdf') {
+        content.innerHTML = `
+            <iframe src="${url}#toolbar=0&navpanes=0&scrollbar=1"
+                    width="100%" height="500px" style="border: none;">
+            </iframe>
+            <p class="text-center mt-2">
+                <small>If the PDF does not display, <a href="${url}" target="_blank">click here to open it in a new tab</a></small>
+            </p>`;
+    } else if (['jpg', 'jpeg', 'png'].includes(ext)) {
+        content.innerHTML = `<img src="${url}" alt="Invoice" class="img-fluid mx-auto d-block" style="max-height: 70vh;">`;
+    } else {
+        content.innerHTML = `
+            <div class="text-center">
+                <i class="fas fa-file fa-5x text-muted mb-3"></i>
+                <p>This file type cannot be previewed.</p>
+                <a href="${url}" target="_blank" class="btn btn-info">Open File</a>
+            </div>`;
+    }
+
+    $('#invoiceViewerModal').modal('show');
+}
+
 // Confirm delete asset
 function confirmDelete() {
     if (confirm('Are you sure you want to delete "{{ asset.name }}"?\n\nThis will also delete all maintenance records for this asset.\n\nThis action cannot be undone.')) {
@@ -370,6 +444,7 @@ function openEditMaintenance(id, date, type, description, serviceProvider, cost)
     document.getElementById('edit_description').value = description;
     document.getElementById('edit_service_provider').value = serviceProvider;
     document.getElementById('edit_cost').value = cost;
+    document.getElementById('edit_invoice').value = '';
     document.getElementById('editMaintenanceForm').action = `/maintenance/${id}/edit/`;
     $('#editMaintenanceModal').modal('show');
 }

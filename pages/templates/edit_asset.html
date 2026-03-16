@@ -94,19 +94,19 @@
                 <!-- Purchase Date -->
                 <div class="col-md-6">
                     <div class="form-group">
-                        <label>Purchase Date <span class="text-danger">*</span></label>
-                        <input type="date" name="purchase_date" class="form-control" required value="{{ asset.purchase_date|date:'Y-m-d' }}">
+                        <label>Purchase Date</label>
+                        <input type="date" name="purchase_date" class="form-control" value="{% if asset.purchase_date %}{{ asset.purchase_date|date:'Y-m-d' }}{% endif %}">
                     </div>
                 </div>
                 
                 <!-- Supplier -->
                 <div class="col-md-6">
                     <div class="form-group">
-                        <label>Supplier <span class="text-danger">*</span></label>
-                        <select name="supplier" class="form-control" required>
-                            <option value="">Select Supplier</option>
+                        <label>Supplier</label>
+                        <select name="supplier" class="form-control">
+                            <option value="">-- No Supplier --</option>
                             {% for sup in suppliers %}
-                                <option value="{{ sup.id }}" {% if sup.id == asset.supplier.id %}selected{% endif %}>
+                                <option value="{{ sup.id }}" {% if asset.supplier and sup.id == asset.supplier.id %}selected{% endif %}>
                                     {{ sup.name }}
                                 </option>
                             {% endfor %}
@@ -188,6 +188,17 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
 <script>
+// Validate Edit Asset form before submission
+document.querySelector('form').addEventListener('submit', function(e) {
+    const warrantyMonths = parseInt(document.querySelector('input[name="warranty_duration_months"]').value) || 0;
+    const purchaseDate = document.querySelector('input[name="purchase_date"]').value;
+
+    if (warrantyMonths > 0 && !purchaseDate) {
+        e.preventDefault();
+        alert('Purchase Date is required when Warranty Duration is entered.');
+    }
+});
+    
 // Load subcategories when category changes
 function loadSubcategories() {
     const categoryId = document.getElementById('category').value;
