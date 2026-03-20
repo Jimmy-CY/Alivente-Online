@@ -8752,7 +8752,7 @@ def finance_pl_act(request):
         try:
             selected_year = int(selected_year)
             # Ensure only 2024 or 2025 is selectable
-            if selected_year not in [2024, 2025]:
+            if selected_year not in [2024, 2025, 2026]:
                 selected_year = 'budget'
         except (ValueError, TypeError):
             selected_year = 'budget'
@@ -9108,7 +9108,7 @@ def finance_pl_act(request):
         'actual_expense_prop_totals': actual_expense_prop_totals,
         'selected_year': selected_year,
         'selected_properties': selected_properties,
-        'available_years': [2025, 2024],
+        'available_years': [2026, 2025, 2024],
     })
 
 @login_required
