@@ -1097,6 +1097,61 @@ tr.sortable-chosen {
             </button>
         </div>
 
+        <!-- Document Attachment Section -->
+                <div class="preview-section">
+                    <h2 class="section-title">
+                        <i class="fas fa-paperclip"></i> Document Attachment
+                    </h2>
+
+                    {% if mode == 'edit' and recipe.recipe_document %}
+                    <!-- Existing document in edit mode -->
+                    <div class="alert alert-info" style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <i class="fas fa-file"></i> <strong>Current Document:</strong>
+                            <a href="{{ recipe.recipe_document.url }}" target="_blank" class="ml-2">
+                                {{ recipe.recipe_document.name }}
+                            </a>
+                        </div>
+                        <button type="button" class="btn btn-sm btn-info ml-3" onclick="viewRecipeDocument('{{ recipe.recipe_document.url }}', '{{ recipe.recipe_document.name }}')">
+                            <i class="fas fa-eye"></i> View
+                        </button>
+                    </div>
+
+                    <!-- Document Actions for existing document -->
+                    <div class="mb-3">
+                        <label><strong>Document Action:</strong></label><br>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="doc_action_choice" id="docReplace" value="replace" checked onchange="toggleDocAction()">
+                            <label class="form-check-label" for="docReplace">Replace existing document</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="doc_action_choice" id="docMerge" value="merge" onchange="toggleDocAction()">
+                            <label class="form-check-label" for="docMerge">Add to existing (merge PDFs)</label>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <div class="form-group" id="docUploadSection">
+                        <label><i class="fas fa-upload"></i> 
+                            {% if mode == 'edit' and recipe.recipe_document %}Upload New Document{% else %}Attach Document (Optional){% endif %}
+                        </label>
+                        <input type="file" name="recipe_document" class="form-control-file" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.xlsx,.xls">
+                        <small class="form-text text-muted">PDF, Word, Excel, JPG or PNG. Max 5MB.</small>
+                    </div>
+
+                    {% if mode == 'edit' and recipe.recipe_document %}
+                    <!-- Hidden field to pass merge/replace action -->
+                    <input type="hidden" name="doc_action" id="doc_action_hidden" value="replace">
+
+                    <!-- Delete document option -->
+                    <div class="mt-3">
+                        <button type="button" class="btn btn-sm btn-danger" onclick="confirmDeleteRecipeDocument({{ recipe.recipe_id }})">
+                            <i class="fas fa-trash"></i> Delete Current Document
+                        </button>
+                    </div>
+                    {% endif %}
+                </div>
+
         <!-- Action Buttons -->
         <div style="display: flex; justify-content: center; gap: 16px; margin-top: 30px; margin-bottom: 50px;">
             <button type="submit" class="btn btn-success btn-lg">
@@ -1277,6 +1332,27 @@ tr.sortable-chosen {
                     <!-- Results will be populated here -->
                 </div>
                 <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recipe Document Viewer Modal -->
+    <div class="modal fade" id="recipeDocViewerModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-paperclip"></i> Recipe Document</h5>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span>&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" id="recipeDocViewerContent"></div>
+                <div class="modal-footer">
+                    <a id="recipeDocDownloadLink" href="#" class="btn btn-info" target="_blank">
+                        <i class="fas fa-download"></i> Download
+                    </a>
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
                 </div>
             </div>
@@ -2882,6 +2958,70 @@ function replaceMisspelledWord(stepIndex, oldWord, newWord) {
             button.textContent = originalText;
             button.style.background = '';
         }, 1500);
+    }
+}
+
+// ==================== RECIPE DOCUMENT FUNCTIONS ====================
+
+function toggleDocAction() {
+    const choice = document.querySelector('input[name="doc_action_choice"]:checked').value;
+    document.getElementById('doc_action_hidden').value = choice === 'merge' ? 'add_to_existing' : 'replace';
+}
+
+function viewRecipeDocument(url, filename) {
+    const ext = filename.split('.').pop().toLowerCase();
+    let content = '';
+
+    if (['jpg', 'jpeg', 'png'].includes(ext)) {
+        content = `<img src="${url}" class="img-fluid mx-auto d-block" style="max-height: 70vh;">`;
+    } else if (ext === 'pdf') {
+        content = `
+            <iframe src="${url}#toolbar=0&navpanes=0&scrollbar=1"
+                    width="100%" height="500px" style="border: none;"></iframe>
+            <p class="text-center mt-2">
+                <small>If the PDF doesn't display, <a href="${url}" target="_blank">click here to open it in a new tab</a></small>
+            </p>`;
+    } else {
+        content = `
+            <div class="text-center">
+                <i class="fas fa-file fa-5x text-muted mb-3"></i>
+                <p>This file type cannot be previewed.</p>
+                <a href="${url}" target="_blank" class="btn btn-info">Open File</a>
+            </div>`;
+    }
+
+    document.getElementById('recipeDocViewerContent').innerHTML = content;
+    document.getElementById('recipeDocDownloadLink').href = url;
+    $('#recipeDocViewerModal').modal('show');
+}
+
+function confirmDeleteRecipeDocument(recipeId) {
+    if (confirm('Are you sure you want to delete the attached document? This cannot be undone.')) {
+        fetch('{% url "recipe_manage_document" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: `recipe_id=${recipeId}&action=delete_document`
+        })
+        .then(response => {
+            if (response.ok || response.redirected) {
+                // Hide the current document section without leaving the page
+                document.querySelector('.alert.alert-info').style.display = 'none';
+                document.querySelector('[name="doc_action_choice"]').closest('div').previousElementSibling.style.display = 'none';
+                document.getElementById('doc_action_hidden').remove();
+                document.querySelector('.btn-danger[onclick*="confirmDeleteRecipeDocument"]').closest('div').style.display = 'none';
+                
+                // Update the section label
+                document.querySelector('#docUploadSection label').innerHTML = '<i class="fas fa-upload"></i> Attach Document (Optional)';
+                
+                alert('Document deleted successfully.');
+            } else {
+                alert('Error deleting document.');
+            }
+        })
+        .catch(() => alert('Error deleting document.'));
     }
 }
 

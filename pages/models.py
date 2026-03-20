@@ -1463,6 +1463,14 @@ def recipe_image_upload_path(instance, filename):
     new_filename = f"recipe-{recipe_name_slug}-{date_str}.{ext}"
     return os.path.join('recipe_images', new_filename)
 
+def recipe_document_upload_path(instance, filename):
+    """Generate upload path for recipe documents"""
+    ext = filename.split('.')[-1]
+    recipe_name_slug = slugify(instance.recipe_name or 'recipe')
+    date_str = timezone.now().strftime('%Y%m%d')
+    new_filename = f"recipe-{recipe_name_slug}-{date_str}.{ext}"
+    return os.path.join('recipe_docs', new_filename)
+
 class Recipe(models.Model):
     """Main recipe table"""
     DIFFICULTY_CHOICES = [
@@ -1493,6 +1501,13 @@ class Recipe(models.Model):
     # Additional fields
     difficulty_level = models.CharField(max_length=20, choices=DIFFICULTY_CHOICES, blank=True, null=True)
     recipe_image = models.ImageField(upload_to=recipe_image_upload_path, blank=True, null=True)
+    recipe_document = models.FileField(
+        upload_to=recipe_document_upload_path,
+        null=True,
+        blank=True,
+        verbose_name="Recipe Document",
+        help_text="Optional document attachment (PDF, Word, etc.)"
+    )
     
     # AI Import fields (NEW)
     is_ai_imported = models.BooleanField(default=False, help_text='Flag to indicate if recipe was imported via AI')

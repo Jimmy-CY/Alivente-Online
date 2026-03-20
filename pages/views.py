@@ -10251,6 +10251,95 @@ def recipe_management(request):
     return render(request, 'recipe_management.html', context)
 
 @login_required
+def recipe_manage_document(request):
+    """Handle document upload, replacement, merging and deletion for recipes"""
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        document_action = request.POST.get('document_action')
+        recipe_id = request.POST.get('recipe_id')
+
+        if not recipe_id:
+            messages.error(request, 'No recipe selected')
+            return redirect('recipe_management')
+
+        try:
+            recipe = get_object_or_404(Recipe, pk=recipe_id)
+
+            if action == 'delete_document':
+                if recipe.recipe_document:
+                    if recipe.recipe_document.storage.exists(recipe.recipe_document.name):
+                        recipe.recipe_document.delete(save=False)
+                    recipe.recipe_document = None
+                    recipe.save()
+                    messages.success(request, f'Document deleted successfully for "{recipe.recipe_name}"!')
+                else:
+                    messages.warning(request, 'No document found to delete.')
+
+            elif action == 'upload':
+                if 'recipe_document' in request.FILES:
+                    uploaded_file = request.FILES['recipe_document']
+
+                    # Validate file size (5MB limit)
+                    if uploaded_file.size > 5 * 1024 * 1024:
+                        messages.error(request, 'File size exceeds 5MB limit.')
+                        return redirect('recipe_management')
+
+                    # Validate file type
+                    allowed_extensions = ['.pdf', '.jpg', '.jpeg', '.png', '.xlsx', '.xls', '.doc', '.docx']
+                    file_extension = os.path.splitext(uploaded_file.name)[1].lower()
+
+                    if file_extension not in allowed_extensions:
+                        messages.error(request, 'Invalid file type. Please upload PDF, JPG, PNG, Excel, or Word files only.')
+                        return redirect('recipe_management')
+
+                    if document_action == 'add_to_existing' and recipe.recipe_document:
+                        # Merge — existing must be PDF
+                        if not is_pdf(recipe.recipe_document):
+                            messages.error(request, 'Cannot merge: Existing document is not a PDF. Please use Replace instead.')
+                            return redirect('recipe_management')
+
+                        try:
+                            pdf_content, pdf_filename = convert_to_pdf(uploaded_file)
+                            merged_pdf = merge_pdfs(recipe.recipe_document, pdf_content)
+
+                            original_name = os.path.splitext(os.path.basename(recipe.recipe_document.name))[0]
+                            new_filename = f"{original_name}_merged.pdf"
+
+                            if recipe.recipe_document.storage.exists(recipe.recipe_document.name):
+                                recipe.recipe_document.delete(save=False)
+
+                            recipe.recipe_document.save(new_filename, merged_pdf, save=True)
+                            messages.success(request, f'Documents merged successfully for "{recipe.recipe_name}"!')
+                        except ValueError as e:
+                            messages.error(request, f'Error: {str(e)}')
+                        except Exception as e:
+                            messages.error(request, f'Error merging documents: {str(e)}')
+
+                    else:
+                        # Replace or new upload
+                        if recipe.recipe_document:
+                            if recipe.recipe_document.storage.exists(recipe.recipe_document.name):
+                                recipe.recipe_document.delete(save=False)
+
+                        try:
+                            pdf_content, pdf_filename = convert_to_pdf(uploaded_file)
+                            recipe.recipe_document.save(pdf_filename, pdf_content, save=True)
+
+                            if file_extension != '.pdf':
+                                messages.success(request, f'Document uploaded and converted to PDF for "{recipe.recipe_name}"!')
+                            else:
+                                messages.success(request, f'Document uploaded successfully for "{recipe.recipe_name}"!')
+                        except Exception as e:
+                            messages.error(request, f'Error processing document: {str(e)}')
+                else:
+                    messages.error(request, 'Please select a file to upload.')
+
+        except Exception as e:
+            messages.error(request, f'Error processing request: {str(e)}')
+
+    return redirect('recipe_management')
+
+@login_required
 def duplicate_recipe(request, recipe_id):
     """Duplicate a recipe with all its ingredients and related data"""
     if not request.user.is_superuser:
@@ -10422,6 +10511,15 @@ def create_recipe(request):
             
             recipe.created_by = request.user.username
             recipe.save()
+
+            # Handle document upload
+            if request.FILES.get('recipe_document'):
+                uploaded_file = request.FILES['recipe_document']
+                try:
+                    pdf_content, pdf_filename = convert_to_pdf(uploaded_file)
+                    recipe.recipe_document.save(pdf_filename, pdf_content, save=True)
+                except Exception as e:
+                    messages.warning(request, f'Recipe saved but document upload failed: {str(e)}')
             
             # Many-to-many
             course_ids = request.POST.getlist('course[]')
@@ -10591,6 +10689,34 @@ def edit_recipe(request, recipe_id):
             
             # Save recipe
             recipe.save()
+
+            # Handle document upload/merge/replace
+            if request.FILES.get('recipe_document'):
+                uploaded_file = request.FILES['recipe_document']
+                doc_action = request.POST.get('doc_action', 'replace')
+                try:
+                    if doc_action == 'add_to_existing' and recipe.recipe_document:
+                        if not is_pdf(recipe.recipe_document):
+                            messages.warning(request, 'Cannot merge: existing document is not a PDF. Replaced instead.')
+                            if recipe.recipe_document.storage.exists(recipe.recipe_document.name):
+                                recipe.recipe_document.delete(save=False)
+                            pdf_content, pdf_filename = convert_to_pdf(uploaded_file)
+                            recipe.recipe_document.save(pdf_filename, pdf_content, save=True)
+                        else:
+                            pdf_content, pdf_filename = convert_to_pdf(uploaded_file)
+                            merged_pdf = merge_pdfs(recipe.recipe_document, pdf_content)
+                            original_name = os.path.splitext(os.path.basename(recipe.recipe_document.name))[0]
+                            if recipe.recipe_document.storage.exists(recipe.recipe_document.name):
+                                recipe.recipe_document.delete(save=False)
+                            recipe.recipe_document.save(f"{original_name}_merged.pdf", merged_pdf, save=True)
+                    else:
+                        if recipe.recipe_document:
+                            if recipe.recipe_document.storage.exists(recipe.recipe_document.name):
+                                recipe.recipe_document.delete(save=False)
+                        pdf_content, pdf_filename = convert_to_pdf(uploaded_file)
+                        recipe.recipe_document.save(pdf_filename, pdf_content, save=True)
+                except Exception as e:
+                    messages.warning(request, f'Recipe saved but document upload failed: {str(e)}')
             
             # Update many-to-many
             if course_ids:
