@@ -1423,13 +1423,13 @@
 
 .book-recipe-card-image {
     width: 100%;
-    height: 80px;
+    height: 60px;
     object-fit: cover;
 }
 
 .book-recipe-card-placeholder {
     width: 100%;
-    height: 80px;
+    height: 60px;
     background: linear-gradient(135deg, #5c3a2a 0%, #8a6545 100%);
     display: flex;
     align-items: center;
@@ -1439,7 +1439,7 @@
 }
 
 .book-recipe-card-body {
-    padding: 7px 8px;
+    padding: 4px 6px;
     flex: 1;
 }
 
@@ -3525,7 +3525,7 @@ function duplicateRecipe(recipeId, recipeName) {
 // ==================== BOOK VIEW ====================
 
 const BOOK_RECIPES = {{ all_recipes_for_book|safe }};
-const RECIPES_PER_SPREAD = 12; // 6 per page × 2 pages
+const RECIPES_PER_SPREAD = 18; // 9 per page × 2 pages
 let bookCurrentSpread = 0; // which spread we're on (0 = first)
 let bookMode = 'grid'; // 'grid' or 'detail'
 let bookDetailRecipeId = null;
@@ -3559,8 +3559,8 @@ function bookNavigate(direction) {
 function renderBookSpread() {
     const totalSpreads = Math.ceil(BOOK_RECIPES.length / RECIPES_PER_SPREAD);
     const start = bookCurrentSpread * RECIPES_PER_SPREAD;
-    const leftRecipes = BOOK_RECIPES.slice(start, start + 6);
-    const rightRecipes = BOOK_RECIPES.slice(start + 6, start + 12);
+    const leftRecipes = BOOK_RECIPES.slice(start, start + 9);
+    const rightRecipes = BOOK_RECIPES.slice(start + 9, start + 18);
 
     // Chapter title
     const firstRecipe = BOOK_RECIPES[start];
