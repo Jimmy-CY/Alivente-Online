@@ -3658,14 +3658,34 @@ function initBookView() {
 }
 
 function bookNavigate(direction) {
-    // If in detail mode, navigate to next/previous recipe
-    if (bookMode === 'detail') {
-        const currentIndex = BOOK_RECIPES.findIndex(r => r.recipe_id === bookDetailRecipeId);
-        const newIndex = currentIndex + direction;
-        if (newIndex < 0 || newIndex >= BOOK_RECIPES.length) return;
-        openBookDetail(BOOK_RECIPES[newIndex].recipe_id);
-        return;
-    }
+    // If in detail mode, navigate to next/previous recipe with flip animation
+        if (bookMode === 'detail') {
+            const currentIndex = BOOK_RECIPES.findIndex(r => r.recipe_id === bookDetailRecipeId);
+            const newIndex = currentIndex + direction;
+            if (newIndex < 0 || newIndex >= BOOK_RECIPES.length) return;
+
+            // Disable buttons during animation
+            document.getElementById('bookPrevBtn').disabled = true;
+            document.getElementById('bookNextBtn').disabled = true;
+
+            // Create flip overlay
+            const book = document.getElementById('recipeBook');
+            const overlay = document.createElement('div');
+            overlay.className = `book-flip-overlay ${direction > 0 ? 'flip-forward' : 'flip-back'}`;
+            book.appendChild(overlay);
+
+            // Halfway through, swap content
+            setTimeout(() => {
+                openBookDetail(BOOK_RECIPES[newIndex].recipe_id);
+            }, 300);
+
+            // Remove overlay after animation
+            setTimeout(() => {
+                if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+            }, 620);
+
+            return;
+        }
 
     const totalSpreads = Math.ceil(BOOK_RECIPES.length / RECIPES_PER_SPREAD);
     const newSpread = bookCurrentSpread + direction;
