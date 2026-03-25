@@ -3658,6 +3658,15 @@ function initBookView() {
 }
 
 function bookNavigate(direction) {
+    // If in detail mode, navigate to next/previous recipe
+    if (bookMode === 'detail') {
+        const currentIndex = BOOK_RECIPES.findIndex(r => r.recipe_id === bookDetailRecipeId);
+        const newIndex = currentIndex + direction;
+        if (newIndex < 0 || newIndex >= BOOK_RECIPES.length) return;
+        openBookDetail(BOOK_RECIPES[newIndex].recipe_id);
+        return;
+    }
+
     const totalSpreads = Math.ceil(BOOK_RECIPES.length / RECIPES_PER_SPREAD);
     const newSpread = bookCurrentSpread + direction;
     if (newSpread < 0 || newSpread >= totalSpreads) return;
@@ -3856,10 +3865,18 @@ function renderBookDetail(data, recipeId) {
     document.getElementById('bookChapterLeft').textContent = data.recipe_name;
     document.getElementById('bookChapterRight').textContent = 'Instructions';
 
-    // Hide nav buttons in detail mode
-    document.getElementById('bookPrevBtn').style.display = 'none';
-    document.getElementById('bookNextBtn').style.display = 'none';
-    document.getElementById('bookPageIndicator').textContent = '';
+    // Show nav buttons in detail mode for recipe-to-recipe navigation
+        const currentIndex = BOOK_RECIPES.findIndex(r => r.recipe_id === recipeId);
+        const prevBtn = document.getElementById('bookPrevBtn');
+        const nextBtn = document.getElementById('bookNextBtn');
+
+        prevBtn.style.display = '';
+        nextBtn.style.display = '';
+        prevBtn.disabled = currentIndex <= 0;
+        nextBtn.disabled = currentIndex >= BOOK_RECIPES.length - 1;
+
+        document.getElementById('bookPageIndicator').textContent =
+            `Recipe ${currentIndex + 1} of ${BOOK_RECIPES.length}`;
 }
 
 function closeBookDetail() {
