@@ -111,6 +111,7 @@ import re
 import uuid
 import logging
 import json
+import json as json_module
 import tempfile
 import base64
 import anthropic
@@ -10100,6 +10101,48 @@ def send_shopping_list(request):
         }, status=500)
 
 @login_required
+def recipe_book_detail(request, recipe_id):
+    """Returns recipe detail JSON for the book view"""
+    recipe = get_object_or_404(Recipe, recipe_id=recipe_id)
+    ingredients = recipe.recipe_ingredients.select_related(
+        'ingredient', 'unit', 'preparation'
+    ).order_by('ingredient_group', 'ingredient_order')
+    instructions = recipe.instructions.all().order_by('step_number')
+
+    data = {
+        'recipe_name': recipe.recipe_name,
+        'prep_time': recipe.prep_time,
+        'cook_time': recipe.cook_time,
+        'servings': recipe.servings,
+        'difficulty_level': recipe.difficulty_level,
+        'author': recipe.author,
+        'is_vegetarian': recipe.is_vegetarian,
+        'recipe_image': recipe.recipe_image.url if recipe.recipe_image else None,
+        'courses': [c.name for c in recipe.courses.all()],
+        'categories': [c.name for c in recipe.categories.all()],
+        'proteins': [p.name for p in recipe.proteins.all()],
+        'ingredients': [
+            {
+                'amount': str(ing.get_amount_display()),
+                'unit': ing.unit.abbreviation if ing.unit and ing.unit.abbreviation else (ing.unit.name if ing.unit else ''),
+                'ingredient': ing.ingredient.name,
+                'preparation': ing.preparation.name if ing.preparation else '',
+                'group': ing.ingredient_group or ''
+            }
+            for ing in ingredients
+        ],
+        'instructions': [
+            {
+                'step_number': inst.step_number,
+                'instruction_text': inst.instruction_text,
+                'group': inst.instruction_group or ''
+            }
+            for inst in instructions
+        ]
+    }
+    return JsonResponse(data)
+
+@login_required
 def recipe_management(request):
     """Recipe management page with multi-select filtering, A-Z filter, and pagination"""
     if not request.user.is_superuser:
@@ -10158,11 +10201,9 @@ def recipe_management(request):
     recipes = recipes.distinct().order_by('recipe_name')
     
     # Calculate available letters BEFORE applying letter filter
-    # This allows users to switch between letters without deselecting first
     all_letters = list(string.ascii_uppercase)
     available_letters = set()
     
-    # Get first letter of each recipe name (without letter filter applied)
     for recipe in recipes:
         if recipe.recipe_name:
             first_letter = recipe.recipe_name[0].upper()
@@ -10177,8 +10218,7 @@ def recipe_management(request):
             'available': letter in available_letters
         })
     
-    # NOW apply letter filter (after calculating available letters)
-    # This allows users to see all available letters and click them to switch
+    # NOW apply letter filter
     if selected_letter:
         recipes = recipes.filter(recipe_name__istartswith=selected_letter)
     
@@ -10191,7 +10231,6 @@ def recipe_management(request):
     page_obj = paginator.get_page(page)
     
     if is_ajax:
-        # Return JSON for AJAX requests
         recipes_data = []
         for recipe in page_obj:
             recipes_data.append({
@@ -10221,7 +10260,6 @@ def recipe_management(request):
     categories = RecipeCategory.objects.all().order_by('name')
     proteins = CustomProtein.objects.all().order_by('name')
     
-    # Get distinct authors from Recipe.AUTHOR_CHOICES
     authors = [
         {'value': 'General', 'name': 'General'},
         {'value': 'Demetri & Angy', 'name': 'Demetri & Angy'},
@@ -10229,6 +10267,25 @@ def recipe_management(request):
         {'value': 'Alexandra', 'name': 'Alexandra'},
     ]
     
+    # Serialize all recipes for book view
+    import json as json_module
+    all_recipes_for_book = []
+    for r in Recipe.objects.all().prefetch_related('courses', 'categories', 'proteins').order_by('recipe_name'):
+        all_recipes_for_book.append({
+            'recipe_id': r.recipe_id,
+            'recipe_name': r.recipe_name,
+            'recipe_image': r.recipe_image.url if r.recipe_image else None,
+            'prep_time': r.prep_time,
+            'cook_time': r.cook_time,
+            'servings': r.servings,
+            'difficulty_level': r.difficulty_level,
+            'is_vegetarian': r.is_vegetarian,
+            'author': r.author,
+            'courses': [c.name for c in r.courses.all()],
+            'categories': [c.name for c in r.categories.all()],
+            'proteins': [p.name for p in r.proteins.all()],
+        })
+
     context = {
         'recipes': page_obj,
         'total_recipe_count': paginator.count,
@@ -10245,7 +10302,8 @@ def recipe_management(request):
         'letter_data': letter_data,
         'has_next': page_obj.has_next(),
         'next_page': page_obj.next_page_number() if page_obj.has_next() else None,
-        'ingredient_categories': IngredientCategory.objects.prefetch_related('ingredient_set').all().order_by('name'),  # ← ADD THIS LINE
+        'ingredient_categories': IngredientCategory.objects.prefetch_related('ingredient_set').all().order_by('name'),
+        'all_recipes_for_book': json_module.dumps(all_recipes_for_book),
     }
     
     return render(request, 'recipe_management.html', context)
