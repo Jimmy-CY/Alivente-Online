@@ -1239,6 +1239,8 @@
     max-width: 1100px;
     min-height: 650px;
     filter: drop-shadow(0 20px 40px rgba(0,0,0,0.4));
+    perspective: 1200px;
+    transform-style: preserve-3d;
 }
 
 /* Spine */
@@ -1374,25 +1376,56 @@
 .book-nav-prev { left: -22px; }
 .book-nav-next { right: -22px; }
 
-/* Page turn animation */
-@keyframes pageFlipForward {
-    0%   { transform: rotateY(0deg); }
-    50%  { transform: rotateY(-90deg); z-index: 50; }
-    100% { transform: rotateY(0deg); }
+/* Realistic page flip overlay */
+.book-flip-overlay {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 50%;
+    z-index: 100;
+    transform-origin: left center;
+    transform-style: preserve-3d;
+    pointer-events: none;
 }
 
-@keyframes pageFlipBack {
-    0%   { transform: rotateY(0deg); }
-    50%  { transform: rotateY(90deg); z-index: 50; }
-    100% { transform: rotateY(0deg); }
+.book-flip-overlay.flip-forward {
+    right: 0;
+    transform-origin: left center;
+    background: linear-gradient(to right, rgba(0,0,0,0.15), #fdf3e3, #f5e6cc);
+    background-image:
+        repeating-linear-gradient(
+            transparent,
+            transparent 31px,
+            rgba(180,160,120,0.12) 31px,
+            rgba(180,160,120,0.12) 32px
+        );
+    animation: flipForward 0.6s ease-in-out forwards;
 }
 
-.book-page.flipping-forward {
-    animation: pageFlipForward 0.4s ease-in-out;
+.book-flip-overlay.flip-back {
+    left: 0;
+    transform-origin: right center;
+    background: linear-gradient(to left, rgba(0,0,0,0.15), #fdf3e3, #f5e6cc);
+    background-image:
+        repeating-linear-gradient(
+            transparent,
+            transparent 31px,
+            rgba(180,160,120,0.12) 31px,
+            rgba(180,160,120,0.12) 32px
+        );
+    animation: flipBack 0.6s ease-in-out forwards;
 }
 
-.book-page.flipping-back {
-    animation: pageFlipBack 0.4s ease-in-out;
+@keyframes flipForward {
+    0%   { transform: rotateY(0deg); box-shadow: -4px 0 12px rgba(0,0,0,0.2); }
+    40%  { box-shadow: -20px 0 40px rgba(0,0,0,0.35); }
+    100% { transform: rotateY(-180deg); box-shadow: none; }
+}
+
+@keyframes flipBack {
+    0%   { transform: rotateY(0deg); box-shadow: 4px 0 12px rgba(0,0,0,0.2); }
+    40%  { box-shadow: 20px 0 40px rgba(0,0,0,0.35); }
+    100% { transform: rotateY(180deg); box-shadow: none; }
 }
 
 /* ── Grid on left/right pages ── */
@@ -3539,21 +3572,30 @@ function bookNavigate(direction) {
     const newSpread = bookCurrentSpread + direction;
     if (newSpread < 0 || newSpread >= totalSpreads) return;
 
-    // Animate
-    const leftPage = document.getElementById('bookPageLeft');
-    const rightPage = document.getElementById('bookPageRight');
-    const animClass = direction > 0 ? 'flipping-forward' : 'flipping-back';
+    // Disable buttons during animation
+    document.getElementById('bookPrevBtn').disabled = true;
+    document.getElementById('bookNextBtn').disabled = true;
 
-    leftPage.classList.add(animClass);
-    rightPage.classList.add(animClass);
+    // Create flip overlay
+    const book = document.getElementById('recipeBook');
+    const overlay = document.createElement('div');
+    overlay.className = `book-flip-overlay ${direction > 0 ? 'flip-forward' : 'flip-back'}`;
+    book.appendChild(overlay);
 
+    // Halfway through animation, swap content
     setTimeout(() => {
-        leftPage.classList.remove(animClass);
-        rightPage.classList.remove(animClass);
         bookCurrentSpread = newSpread;
         bookMode = 'grid';
         renderBookSpread();
-    }, 400);
+    }, 300);
+
+    // Remove overlay and re-enable buttons after animation
+    setTimeout(() => {
+        if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+        const totalSpreadsNow = Math.ceil(BOOK_RECIPES.length / RECIPES_PER_SPREAD);
+        document.getElementById('bookPrevBtn').disabled = bookCurrentSpread === 0;
+        document.getElementById('bookNextBtn').disabled = bookCurrentSpread >= totalSpreadsNow - 1;
+    }, 620);
 }
 
 function renderBookSpread() {

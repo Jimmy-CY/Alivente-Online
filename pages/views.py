@@ -10267,10 +10267,10 @@ def recipe_management(request):
         {'value': 'Alexandra', 'name': 'Alexandra'},
     ]
     
-    # Serialize all recipes for book view
+    # Serialize filtered recipes for book view (use already-filtered queryset)
     import json as json_module
     all_recipes_for_book = []
-    for r in Recipe.objects.all().prefetch_related('courses', 'categories', 'proteins').order_by('recipe_name'):
+    for r in recipes:  # ← uses the already-filtered queryset
         all_recipes_for_book.append({
             'recipe_id': r.recipe_id,
             'recipe_name': r.recipe_name,
