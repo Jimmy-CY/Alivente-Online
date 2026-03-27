@@ -10555,6 +10555,12 @@ def create_recipe(request):
             # Basic info
             recipe = Recipe()
             recipe.recipe_name = request.POST.get('recipe_name')
+
+            # Check for duplicate name
+            if Recipe.objects.filter(recipe_name__iexact=recipe.recipe_name).exists():
+                messages.error(request, f'A recipe named "{recipe.recipe_name}" already exists. Please choose a different name.')
+                return redirect('create_recipe')
+
             recipe.recipe_description = request.POST.get('recipe_description', '')
             recipe.author = request.POST.get('author', 'General')
             recipe.prep_time = request.POST.get('prep_time') or None
@@ -10602,7 +10608,6 @@ def create_recipe(request):
             
             for i in range(len(ingredient_names)):
                 if ingredient_names[i].strip():
-                    # Get or create related objects
                     ingredient = get_or_create_ingredient(ingredient_names[i])
                     unit = get_or_create_unit(ingredient_measurements[i])
                     
@@ -10610,15 +10615,13 @@ def create_recipe(request):
                     if i < len(ingredient_preparations) and ingredient_preparations[i].strip():
                         prep = get_or_create_preparation(ingredient_preparations[i])
                     
-                    # Convert quantity (handles fractions!)
                     quantity_str = ingredient_quantities[i]
 
-                    # Create normalized record
                     RecipeIngredient.objects.create(
                         recipe=recipe,
                         ingredient=ingredient,
                         unit=unit,
-                        amount=convert_to_decimal(quantity_str),  # ← CHANGED
+                        amount=convert_to_decimal(quantity_str),
                         preparation=prep,
                         ingredient_group=ingredient_groups[i] if i < len(ingredient_groups) else '',
                         ingredient_order=i
@@ -10660,16 +10663,13 @@ def create_recipe(request):
         'instructions': [],
     }
     
-    # Get lookups
     existing_measurements = list(MeasurementUnit.objects.values_list('name', flat=True))
     existing_ingredients_list = list(Ingredient.objects.values_list('name', flat=True))
     existing_preparations = list(PreparationMethod.objects.values_list('name', flat=True))
     courses = RecipeCourse.objects.all().order_by('name')
     categories = RecipeCategory.objects.all().order_by('name')
     proteins = CustomProtein.objects.all().order_by('name')
-    ingredient_categories = IngredientCategory.objects.all().order_by('name')  # ← ADD THIS
-    
-    # Load all units for the modal
+    ingredient_categories = IngredientCategory.objects.all().order_by('name')
     all_units = MeasurementUnit.objects.all().order_by('name')
 
     context = {
@@ -10683,7 +10683,7 @@ def create_recipe(request):
         'categories': categories,
         'proteins': proteins,
         'ingredient_categories': ingredient_categories,
-        'all_units': all_units,  # ← ADD THIS
+        'all_units': all_units,
     }
     
     return render(request, 'preview_imported_recipe.html', context)
@@ -10700,7 +10700,6 @@ def edit_recipe(request, recipe_id):
         messages.error(request, 'You do not have permission to access this page.')
         return redirect('home')
     
-    # OPTIMIZED: Prefetch all related data upfront
     recipe = get_object_or_404(
         Recipe.objects.prefetch_related(
             'courses', 
@@ -10718,6 +10717,12 @@ def edit_recipe(request, recipe_id):
         try:
             # Basic information
             recipe.recipe_name = request.POST.get('recipe_name')
+
+            # Check for duplicate name (exclude current recipe)
+            if Recipe.objects.filter(recipe_name__iexact=recipe.recipe_name).exclude(recipe_id=recipe_id).exists():
+                messages.error(request, f'A recipe named "{recipe.recipe_name}" already exists. Please choose a different name.')
+                return redirect('edit_recipe', recipe_id=recipe_id)
+
             recipe.recipe_description = request.POST.get('recipe_description', '')
             recipe.author = request.POST.get('author', 'General')
             recipe.prep_time = request.POST.get('prep_time') or None
@@ -10787,22 +10792,18 @@ def edit_recipe(request, recipe_id):
                 recipe.proteins.set(protein_ids)
             
             # ========== OPTIMIZED INGREDIENTS SECTION ==========
-            # Delete old ingredients
             recipe.recipe_ingredients.all().delete()
             
-            # Get form data
             ingredient_quantities = request.POST.getlist('ingredient_quantity[]')
             ingredient_measurements = request.POST.getlist('ingredient_measurement[]')
             ingredient_names = request.POST.getlist('ingredient_name[]')
             ingredient_preparations = request.POST.getlist('ingredient_preparation[]')
             ingredient_groups = request.POST.getlist('ingredient_group[]')
             
-            # OPTIMIZATION: Bulk fetch all existing ingredients, units, and preparations
             ingredient_name_set = {name.strip() for name in ingredient_names if name.strip()}
             measurement_name_set = {meas.strip() for meas in ingredient_measurements if meas.strip()}
             preparation_name_set = {prep.strip() for prep in ingredient_preparations if prep.strip()}
             
-            # Fetch existing records in bulk
             existing_ingredients = {
                 ing.name: ing 
                 for ing in Ingredient.objects.filter(name__in=ingredient_name_set)
@@ -10816,14 +10817,12 @@ def edit_recipe(request, recipe_id):
                 for prep in PreparationMethod.objects.filter(name__in=preparation_name_set)
             }
             
-            # Create new ingredients/units/preparations in bulk
             new_ingredients = []
             for name in ingredient_name_set:
                 if name not in existing_ingredients:
                     new_ingredients.append(Ingredient(name=name))
             if new_ingredients:
                 Ingredient.objects.bulk_create(new_ingredients)
-                # Re-fetch to get IDs
                 existing_ingredients = {
                     ing.name: ing 
                     for ing in Ingredient.objects.filter(name__in=ingredient_name_set)
@@ -10835,7 +10834,6 @@ def edit_recipe(request, recipe_id):
                     new_units.append(MeasurementUnit(name=name))
             if new_units:
                 MeasurementUnit.objects.bulk_create(new_units)
-                # Re-fetch to get IDs
                 existing_units = {
                     unit.name: unit 
                     for unit in MeasurementUnit.objects.filter(name__in=measurement_name_set)
@@ -10847,13 +10845,11 @@ def edit_recipe(request, recipe_id):
                     new_preparations.append(PreparationMethod(name=name))
             if new_preparations:
                 PreparationMethod.objects.bulk_create(new_preparations)
-                # Re-fetch to get IDs
                 existing_preparations = {
                     prep.name: prep 
                     for prep in PreparationMethod.objects.filter(name__in=preparation_name_set)
                 }
             
-            # Build RecipeIngredient objects
             recipe_ingredients = []
             for i in range(len(ingredient_names)):
                 if ingredient_names[i].strip():
@@ -10876,7 +10872,6 @@ def edit_recipe(request, recipe_id):
                         ingredient_order=i
                     ))
             
-            # Bulk create all recipe ingredients
             if recipe_ingredients:
                 RecipeIngredient.objects.bulk_create(recipe_ingredients)
             
@@ -10886,7 +10881,6 @@ def edit_recipe(request, recipe_id):
             instructions = request.POST.getlist('instruction[]')
             instruction_groups = request.POST.getlist('instruction_group[]')
             
-            # Build instruction objects
             instruction_objects = []
             for idx, instruction_text in enumerate(instructions):
                 if instruction_text.strip():
@@ -10898,7 +10892,6 @@ def edit_recipe(request, recipe_id):
                         instruction_group=group
                     ))
             
-            # Bulk create all instructions
             if instruction_objects:
                 RecipeInstruction.objects.bulk_create(instruction_objects)
             
@@ -10910,7 +10903,6 @@ def edit_recipe(request, recipe_id):
             return redirect('recipe_management')
     
     # ========== GET request - prepare data for editing ==========
-    # OPTIMIZED: Use select_related to fetch related objects in one query
     existing_ingredients = []
     
     for ing in recipe.recipe_ingredients.select_related(
@@ -10947,21 +10939,18 @@ def edit_recipe(request, recipe_id):
         'instructions': existing_instructions,
     }
     
-    # Get lookups
     existing_measurements = list(MeasurementUnit.objects.values_list('name', flat=True))
     existing_ingredients_list = list(Ingredient.objects.values_list('name', flat=True))
     existing_preparations = list(PreparationMethod.objects.values_list('name', flat=True))
     courses = RecipeCourse.objects.all().order_by('name')
     categories = RecipeCategory.objects.all().order_by('name')
     proteins = CustomProtein.objects.all().order_by('name')
-    ingredient_categories = IngredientCategory.objects.all().order_by('name')  # ← ADD THIS
+    ingredient_categories = IngredientCategory.objects.all().order_by('name')
     
-    # OPTIMIZED: Use values_list to get IDs without additional queries
     selected_course_ids = list(recipe.courses.values_list('recipe_course_id', flat=True))
     selected_category_ids = list(recipe.categories.values_list('recipe_category_id', flat=True))
     selected_protein_ids = list(recipe.proteins.values_list('custom_protein_id', flat=True))
 
-    # Load all units for the modal
     all_units = MeasurementUnit.objects.all().order_by('name')
 
     context = {
@@ -10976,7 +10965,7 @@ def edit_recipe(request, recipe_id):
         'categories': categories,
         'proteins': proteins,
         'ingredient_categories': ingredient_categories,
-        'all_units': all_units,  # ← ADD THIS
+        'all_units': all_units,
         'selected_courses': json.dumps(selected_course_ids),
         'selected_categories': json.dumps(selected_category_ids),
         'selected_proteins': json.dumps(selected_protein_ids),
@@ -11046,6 +11035,20 @@ def add_recipe_category(request):
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)})
 
+@login_required
+def recipe_check_name(request):
+    """AJAX endpoint to check if a recipe name already exists"""
+    name = request.GET.get('name', '').strip()
+    exclude = request.GET.get('exclude', '').strip()
+
+    if not name:
+        return JsonResponse({'exists': False})
+
+    qs = Recipe.objects.filter(recipe_name__iexact=name)
+    if exclude:
+        qs = qs.exclude(recipe_name__iexact=exclude)
+
+    return JsonResponse({'exists': qs.exists()})
 
 @login_required
 @require_POST

@@ -720,7 +720,11 @@ tr.sortable-chosen {
             
             <div class="form-group">
                 <label for="recipe_name"><strong>Recipe Name</strong> <span class="text-danger">*</span></label>
-                <input type="text" class="form-control" id="recipe_name" name="recipe_name" value="{{ extracted_data.recipe_name }}" required>
+                <input type="text" class="form-control" id="recipe_name" name="recipe_name" value="{{ extracted_data.recipe_name }}" required
+                       oninput="checkRecipeNameDuplicate(this)">
+                <small id="recipe_name_feedback" style="display:none; color: #dc3545; font-weight: 500; margin-top: 4px;">
+                    <i class="fas fa-exclamation-circle"></i> A recipe with this name already exists.
+                </small>
             </div>
 
             <div class="form-group">
@@ -1362,6 +1366,46 @@ tr.sortable-chosen {
 </div>
 
 <script>
+
+// ==================== RECIPE NAME DUPLICATE CHECK ====================
+let recipeNameCheckTimer = null;
+const originalRecipeName = '{{ extracted_data.recipe_name|escapejs }}';
+
+function checkRecipeNameDuplicate(input) {
+    const value = input.value.trim();
+    const feedback = document.getElementById('recipe_name_feedback');
+
+    // Clear previous timer
+    clearTimeout(recipeNameCheckTimer);
+
+    // Clear feedback if empty or unchanged from original (edit mode)
+    if (!value || value.toLowerCase() === originalRecipeName.toLowerCase()) {
+        input.classList.remove('is-invalid', 'is-valid');
+        feedback.style.display = 'none';
+        return;
+    }
+
+    // Debounce — wait 500ms after user stops typing
+    recipeNameCheckTimer = setTimeout(() => {
+        fetch(`/recipe/check-name/?name=${encodeURIComponent(value)}&exclude={{ extracted_data.recipe_name|urlencode }}`)
+            .then(r => r.json())
+            .then(data => {
+                if (data.exists) {
+                    input.classList.add('is-invalid');
+                    input.classList.remove('is-valid');
+                    feedback.style.display = 'block';
+                } else {
+                    input.classList.remove('is-invalid');
+                    input.classList.add('is-valid');
+                    feedback.style.display = 'none';
+                }
+            })
+            .catch(() => {
+                // Silent fail — backend check will catch it
+            });
+    }, 500);
+}
+
 // ========== DATA CONSTANTS ==========
 // Store existing data from database (sorted alphabetically)
 const existingMeasurements = {{ existing_measurements|safe }}.sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
@@ -2637,6 +2681,15 @@ function updateInstructionStepNumbers() {
 
 // Custom form validation for multi-select dropdowns
 document.querySelector('form').addEventListener('submit', function(e) {
+    // Check recipe name is not empty
+    const recipeName = document.getElementById('recipe_name').value.trim();
+    if (!recipeName) {
+        e.preventDefault();
+        alert('⚠️ Please enter a recipe name.');
+        document.getElementById('recipe_name').scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return false;
+    }
+
     // Check if at least one course is selected
     const selectedCourses = document.querySelectorAll('input[name="course[]"]:checked');
     if (selectedCourses.length === 0) {

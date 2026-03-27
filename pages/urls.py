@@ -235,6 +235,7 @@ urlpatterns = [
     path('recipe/generate_shopping_list/', views.generate_recipe_shopping_list, name='generate_recipe_shopping_list'),
     path('recipe/manage-document/', views.recipe_manage_document, name='recipe_manage_document'),
     path('recipe/book-detail/<int:recipe_id>/', views.recipe_book_detail, name='recipe_book_detail'),
+    path('recipe/check-name/', views.recipe_check_name, name='recipe_check_name'),
     # Meal Planning URLs
     path('meal_plans/', views.meal_plans, name='meal_plans'),
     path('meal_plans/create/', views.create_meal_plan, name='create_meal_plan'),
