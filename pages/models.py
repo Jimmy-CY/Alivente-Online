@@ -1454,13 +1454,13 @@ class RecipeCategory(models.Model):
         verbose_name_plural = "Recipe Categories"
         ordering = ['name']
 
-
 def recipe_image_upload_path(instance, filename):
     """Generate upload path for recipe images"""
     ext = filename.split('.')[-1]
     recipe_name_slug = slugify(instance.recipe_name or 'recipe')
-    date_str = timezone.now().strftime('%Y%m%d')
-    new_filename = f"recipe-{recipe_name_slug}-{date_str}.{ext}"
+    recipe_id = instance.recipe_id or 'new'
+    timestamp = timezone.now().strftime('%Y%m%d%H%M%S')
+    new_filename = f"recipe-{recipe_id}-{recipe_name_slug}-{timestamp}.{ext}"
     return os.path.join('recipe_images', new_filename)
 
 def recipe_document_upload_path(instance, filename):
