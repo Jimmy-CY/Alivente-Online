@@ -1767,6 +1767,119 @@
     align-self: center;
 }
 
+/* Book layout selector */
+.book-layout-selector {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    margin-bottom: 12px;
+    font-family: Georgia, serif;
+}
+
+.book-layout-label {
+    font-size: 13px;
+    color: #8a7055;
+    letter-spacing: 0.5px;
+}
+
+.book-layout-buttons {
+    display: flex;
+    gap: 8px;
+}
+
+.book-layout-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 8px 12px;
+    border: 2px solid rgba(180,150,100,0.3);
+    border-radius: 6px;
+    background: white;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: #8a7055;
+    font-family: Georgia, serif;
+    font-size: 11px;
+}
+
+.book-layout-btn:hover {
+    border-color: #5c3a2a;
+    background: #fdf8f0;
+}
+
+.book-layout-btn.active {
+    border-color: #5c3a2a;
+    background: #5c3a2a;
+    color: white;
+}
+
+.layout-icon {
+    display: grid;
+    gap: 2px;
+    width: 24px;
+    height: 24px;
+}
+
+.layout-icon div {
+    background: currentColor;
+    border-radius: 1px;
+    opacity: 0.7;
+}
+
+.layout-icon-3 {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr 1fr 1fr;
+}
+
+.layout-icon-6 {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 1fr 1fr 1fr;
+}
+
+.layout-icon-9 {
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: 1fr 1fr 1fr;
+}
+
+/* Layout-specific card styles */
+.book-recipe-grid.layout-3 {
+    grid-template-columns: 1fr;
+}
+
+.book-recipe-grid.layout-3 .book-recipe-card-image,
+.book-recipe-grid.layout-3 .book-recipe-card-placeholder {
+    height: 120px;
+}
+
+.book-recipe-grid.layout-3 .book-recipe-card-body {
+    padding: 10px 12px;
+}
+
+.book-recipe-grid.layout-3 .book-recipe-card-title {
+    font-size: 14px;
+    margin-bottom: 6px;
+}
+
+.book-recipe-grid.layout-3 .book-recipe-card-meta {
+    font-size: 11px;
+    gap: 8px;
+}
+
+.book-recipe-grid.layout-6 {
+    grid-template-columns: 1fr 1fr;
+}
+
+.book-recipe-grid.layout-6 .book-recipe-card-image,
+.book-recipe-grid.layout-6 .book-recipe-card-placeholder {
+    height: 75px;
+}
+
+.book-recipe-grid.layout-9 {
+    grid-template-columns: 1fr 1fr 1fr;
+}
+
 </style>
 
 <h2><center>ALIVENTE ONLINE - RECIPE MANAGEMENT</center></h2>
@@ -2246,7 +2359,34 @@
 </div>
 
 <!-- Book View -->
+<!-- Book View -->
 <div id="recipeBookView" style="display: none;">
+    <div class="book-layout-selector">
+        <span class="book-layout-label"><i class="fas fa-th"></i> Recipes per page:</span>
+        <div class="book-layout-buttons">
+            <button class="book-layout-btn" onclick="setBookLayout(3)" id="bookLayout3" title="3 per page — large cards">
+                <div class="layout-icon layout-icon-3">
+                    <div></div><div></div><div></div>
+                </div>
+                <span>3</span>
+            </button>
+            <button class="book-layout-btn" onclick="setBookLayout(6)" id="bookLayout6" title="6 per page">
+                <div class="layout-icon layout-icon-6">
+                    <div></div><div></div><div></div>
+                    <div></div><div></div><div></div>
+                </div>
+                <span>6</span>
+            </button>
+            <button class="book-layout-btn active" onclick="setBookLayout(9)" id="bookLayout9" title="9 per page">
+                <div class="layout-icon layout-icon-9">
+                    <div></div><div></div><div></div>
+                    <div></div><div></div><div></div>
+                    <div></div><div></div><div></div>
+                </div>
+                <span>9</span>
+            </button>
+        </div>
+    </div>
     <div class="recipe-book-container">
         <div class="recipe-book" id="recipeBook">
             <button class="book-nav-btn book-nav-prev" id="bookPrevBtn" onclick="bookNavigate(-1)" disabled>
@@ -3648,104 +3788,120 @@ function duplicateRecipe(recipeId, recipeName) {
 // ==================== BOOK VIEW ====================
 
 const BOOK_RECIPES = {{ all_recipes_for_book|safe }};
-const RECIPES_PER_SPREAD = 18; // 9 per page × 2 pages
-let bookCurrentSpread = 0; // which spread we're on (0 = first)
-let bookMode = 'grid'; // 'grid' or 'detail'
+let bookCurrentSpread = 0;
+let bookMode = 'grid';
 let bookDetailRecipeId = null;
+let bookRecipesPerPage = parseInt(localStorage.getItem('bookRecipesPerPage')) || 9;
+
+function getRecipesPerSpread() {
+    return bookRecipesPerPage * 2;
+}
+
+function getLayoutClass() {
+    return `layout-${bookRecipesPerPage}`;
+}
+
+function setBookLayout(perPage) {
+    bookRecipesPerPage = perPage;
+    localStorage.setItem('bookRecipesPerPage', perPage);
+    [3, 6, 9].forEach(n => {
+        const btn = document.getElementById(`bookLayout${n}`);
+        if (btn) btn.classList.toggle('active', n === perPage);
+    });
+    // Reset to first spread when changing layout
+    bookCurrentSpread = 0;
+    renderBookSpread();
+}
 
 function initBookView() {
+    // Restore saved layout
+    bookRecipesPerPage = parseInt(localStorage.getItem('bookRecipesPerPage')) || 9;
+    [3, 6, 9].forEach(n => {
+        const btn = document.getElementById(`bookLayout${n}`);
+        if (btn) btn.classList.toggle('active', n === bookRecipesPerPage);
+    });
     renderBookSpread();
 }
 
 function bookNavigate(direction) {
     // If in detail mode, navigate to next/previous recipe with flip animation
-        if (bookMode === 'detail') {
-            const currentIndex = BOOK_RECIPES.findIndex(r => r.recipe_id === bookDetailRecipeId);
-            const newIndex = currentIndex + direction;
-            if (newIndex < 0 || newIndex >= BOOK_RECIPES.length) return;
+    if (bookMode === 'detail') {
+        const currentIndex = BOOK_RECIPES.findIndex(r => r.recipe_id === bookDetailRecipeId);
+        const newIndex = currentIndex + direction;
+        if (newIndex < 0 || newIndex >= BOOK_RECIPES.length) return;
 
-            // Disable buttons during animation
-            document.getElementById('bookPrevBtn').disabled = true;
-            document.getElementById('bookNextBtn').disabled = true;
+        document.getElementById('bookPrevBtn').disabled = true;
+        document.getElementById('bookNextBtn').disabled = true;
 
-            // Create flip overlay
-            const book = document.getElementById('recipeBook');
-            const overlay = document.createElement('div');
-            overlay.className = `book-flip-overlay ${direction > 0 ? 'flip-forward' : 'flip-back'}`;
-            book.appendChild(overlay);
+        const book = document.getElementById('recipeBook');
+        const overlay = document.createElement('div');
+        overlay.className = `book-flip-overlay ${direction > 0 ? 'flip-forward' : 'flip-back'}`;
+        book.appendChild(overlay);
 
-            // Halfway through, swap content
-            setTimeout(() => {
-                openBookDetail(BOOK_RECIPES[newIndex].recipe_id);
-            }, 300);
+        setTimeout(() => {
+            openBookDetail(BOOK_RECIPES[newIndex].recipe_id);
+        }, 300);
 
-            // Remove overlay after animation
-            setTimeout(() => {
-                if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
-            }, 620);
+        setTimeout(() => {
+            if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
+        }, 620);
 
-            return;
-        }
+        return;
+    }
 
-    const totalSpreads = Math.ceil(BOOK_RECIPES.length / RECIPES_PER_SPREAD);
+    const perSpread = getRecipesPerSpread();
+    const totalSpreads = Math.ceil(BOOK_RECIPES.length / perSpread);
     const newSpread = bookCurrentSpread + direction;
     if (newSpread < 0 || newSpread >= totalSpreads) return;
 
-    // Disable buttons during animation
     document.getElementById('bookPrevBtn').disabled = true;
     document.getElementById('bookNextBtn').disabled = true;
 
-    // Create flip overlay
     const book = document.getElementById('recipeBook');
     const overlay = document.createElement('div');
     overlay.className = `book-flip-overlay ${direction > 0 ? 'flip-forward' : 'flip-back'}`;
     book.appendChild(overlay);
 
-    // Halfway through animation, swap content
     setTimeout(() => {
         bookCurrentSpread = newSpread;
         bookMode = 'grid';
         renderBookSpread();
     }, 300);
 
-    // Remove overlay and re-enable buttons after animation
     setTimeout(() => {
         if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
-        const totalSpreadsNow = Math.ceil(BOOK_RECIPES.length / RECIPES_PER_SPREAD);
+        const totalSpreadsNow = Math.ceil(BOOK_RECIPES.length / getRecipesPerSpread());
         document.getElementById('bookPrevBtn').disabled = bookCurrentSpread === 0;
         document.getElementById('bookNextBtn').disabled = bookCurrentSpread >= totalSpreadsNow - 1;
     }, 620);
 }
 
 function renderBookSpread() {
-    const totalSpreads = Math.ceil(BOOK_RECIPES.length / RECIPES_PER_SPREAD);
-    const start = bookCurrentSpread * RECIPES_PER_SPREAD;
-    const leftRecipes = BOOK_RECIPES.slice(start, start + 9);
-    const rightRecipes = BOOK_RECIPES.slice(start + 9, start + 18);
+    const perPage = bookRecipesPerPage;
+    const perSpread = perPage * 2;
+    const totalSpreads = Math.ceil(BOOK_RECIPES.length / perSpread);
+    const start = bookCurrentSpread * perSpread;
+    const leftRecipes = BOOK_RECIPES.slice(start, start + perPage);
+    const rightRecipes = BOOK_RECIPES.slice(start + perPage, start + perSpread);
 
-    // Chapter title
     const firstRecipe = BOOK_RECIPES[start];
-    const lastRecipe = BOOK_RECIPES[Math.min(start + RECIPES_PER_SPREAD - 1, BOOK_RECIPES.length - 1)];
+    const lastRecipe = BOOK_RECIPES[Math.min(start + perSpread - 1, BOOK_RECIPES.length - 1)];
     const chapterTitle = firstRecipe ? `${firstRecipe.recipe_name[0]} — ${lastRecipe.recipe_name[0]}` : 'Recipe Collection';
 
     document.getElementById('bookChapterLeft').textContent = 'Recipe Collection';
     document.getElementById('bookChapterRight').textContent = chapterTitle;
 
-    // Page numbers
     const leftPageNum = bookCurrentSpread * 2 + 1;
     const rightPageNum = bookCurrentSpread * 2 + 2;
     document.getElementById('bookPageNumLeft').textContent = `— ${leftPageNum} —`;
     document.getElementById('bookPageNumRight').textContent = `— ${rightPageNum} —`;
 
-    // Render recipe cards
     document.getElementById('bookPageLeftContent').innerHTML = renderBookRecipeGrid(leftRecipes);
     document.getElementById('bookPageRightContent').innerHTML = renderBookRecipeGrid(rightRecipes);
 
-    // Navigation buttons
     document.getElementById('bookPrevBtn').disabled = bookCurrentSpread === 0;
     document.getElementById('bookNextBtn').disabled = bookCurrentSpread >= totalSpreads - 1;
 
-    // Page indicator
     document.getElementById('bookPageIndicator').textContent =
         `Page ${leftPageNum}–${rightPageNum} of ${totalSpreads * 2}  ·  ${BOOK_RECIPES.length} recipes`;
 }
@@ -3753,7 +3909,7 @@ function renderBookSpread() {
 function renderBookRecipeGrid(recipes) {
     if (!recipes.length) return '<div style="text-align:center; padding: 40px; color: #8a7055; font-family: Georgia, serif; font-style: italic;">— End of Collection —</div>';
 
-    let html = '<div class="book-recipe-grid">';
+    let html = `<div class="book-recipe-grid ${getLayoutClass()}">`;
     recipes.forEach(recipe => {
         const imageHtml = recipe.recipe_image
             ? `<img src="${recipe.recipe_image}" class="book-recipe-card-image" alt="${recipe.recipe_name}">`
@@ -3788,7 +3944,6 @@ function openBookDetail(recipeId) {
     bookMode = 'detail';
     bookDetailRecipeId = recipeId;
 
-    // Show loading
     document.getElementById('bookPageLeftContent').innerHTML = `
         <div style="text-align:center; padding: 60px 20px; color: #8a7055; font-family: Georgia, serif;">
             <i class="fas fa-spinner fa-spin fa-2x"></i>
@@ -3810,15 +3965,12 @@ function openBookDetail(recipeId) {
 }
 
 function renderBookDetail(data, recipeId) {
-    // Back button
     const backBtn = `<button class="book-back-btn" onclick="closeBookDetail()"><i class="fas fa-arrow-left"></i> Back to recipes</button>`;
 
-    // Image
     const imageHtml = data.recipe_image
         ? `<img src="${data.recipe_image}" class="book-detail-image" alt="${data.recipe_name}">`
         : '';
 
-    // Tags
     let tagsHtml = '<div class="book-detail-tags">';
     data.courses.forEach(c => tagsHtml += `<span class="book-detail-tag course">${c}</span>`);
     data.categories.forEach(c => tagsHtml += `<span class="book-detail-tag category">${c}</span>`);
@@ -3830,7 +3982,6 @@ function renderBookDetail(data, recipeId) {
     if (data.author) tagsHtml += `<span class="book-detail-tag author">${data.author}</span>`;
     tagsHtml += '</div>';
 
-    // Meta
     const meta = [
         data.prep_time ? `<span class="book-detail-meta-item"><i class="fas fa-clock"></i> ${data.prep_time}m prep</span>` : '',
         data.cook_time ? `<span class="book-detail-meta-item"><i class="fas fa-fire"></i> ${data.cook_time}m cook</span>` : '',
@@ -3838,7 +3989,6 @@ function renderBookDetail(data, recipeId) {
         data.difficulty_level ? `<span class="book-detail-meta-item"><i class="fas fa-signal"></i> ${data.difficulty_level}</span>` : '',
     ].filter(Boolean).join('');
 
-    // LEFT PAGE — title, image, meta, ingredients
     let ingredientsHtml = `<div class="book-detail-section-title"><i class="fas fa-list-ul"></i> Ingredients</div>`;
     let currentGroup = '';
     data.ingredients.forEach(ing => {
@@ -3856,15 +4006,14 @@ function renderBookDetail(data, recipeId) {
     });
 
     document.getElementById('bookPageLeftContent').innerHTML = `
-            ${backBtn}
-            <div class="book-detail-title">${data.recipe_name}</div>
-            ${imageHtml}
-            <div class="book-detail-meta">${meta}</div>
-            ${tagsHtml}
-            ${ingredientsHtml}
-        `;
+        ${backBtn}
+        <div class="book-detail-title">${data.recipe_name}</div>
+        ${imageHtml}
+        <div class="book-detail-meta">${meta}</div>
+        ${tagsHtml}
+        ${ingredientsHtml}
+    `;
 
-    // RIGHT PAGE — instructions
     let instructionsHtml = `<div class="book-detail-section-title"><i class="fas fa-tasks"></i> Instructions</div>`;
     let currentInstructionGroup = '';
     data.instructions.forEach(inst => {
@@ -3880,23 +4029,18 @@ function renderBookDetail(data, recipeId) {
     });
 
     document.getElementById('bookPageRightContent').innerHTML = instructionsHtml;
-
-    // Update chapter headers
     document.getElementById('bookChapterLeft').textContent = data.recipe_name;
     document.getElementById('bookChapterRight').textContent = 'Instructions';
 
-    // Show nav buttons in detail mode for recipe-to-recipe navigation
-        const currentIndex = BOOK_RECIPES.findIndex(r => r.recipe_id === recipeId);
-        const prevBtn = document.getElementById('bookPrevBtn');
-        const nextBtn = document.getElementById('bookNextBtn');
-
-        prevBtn.style.display = '';
-        nextBtn.style.display = '';
-        prevBtn.disabled = currentIndex <= 0;
-        nextBtn.disabled = currentIndex >= BOOK_RECIPES.length - 1;
-
-        document.getElementById('bookPageIndicator').textContent =
-            `Recipe ${currentIndex + 1} of ${BOOK_RECIPES.length}`;
+    const currentIndex = BOOK_RECIPES.findIndex(r => r.recipe_id === recipeId);
+    const prevBtn = document.getElementById('bookPrevBtn');
+    const nextBtn = document.getElementById('bookNextBtn');
+    prevBtn.style.display = '';
+    nextBtn.style.display = '';
+    prevBtn.disabled = currentIndex <= 0;
+    nextBtn.disabled = currentIndex >= BOOK_RECIPES.length - 1;
+    document.getElementById('bookPageIndicator').textContent =
+        `Recipe ${currentIndex + 1} of ${BOOK_RECIPES.length}`;
 }
 
 function closeBookDetail() {
@@ -3917,8 +4061,8 @@ switchView = function(view) {
     const listBtn = document.getElementById('listViewBtn');
     const bookBtn = document.getElementById('bookViewBtn');
     const loadMore = document.getElementById('loadMoreBtn');
+    const countContainer = document.querySelector('.view-toggle-container > div:last-child');
 
-    // Hide all
     gridView.style.display = 'none';
     listView.style.display = 'none';
     bookView.style.display = 'none';
@@ -3933,12 +4077,15 @@ switchView = function(view) {
     if (view === 'grid') {
         gridView.style.display = 'grid';
         gridBtn.classList.add('active');
+        if (countContainer) countContainer.style.display = 'flex';
     } else if (view === 'list') {
         listView.style.display = 'block';
         listBtn.classList.add('active');
+        if (countContainer) countContainer.style.display = 'flex';
     } else if (view === 'book') {
         bookView.style.display = 'block';
         if (bookBtn) bookBtn.classList.add('active');
+        if (countContainer) countContainer.style.display = 'none';
         if (loadMore) {
             const lmc = loadMore.closest('.load-more-container');
             if (lmc) lmc.style.display = 'none';
