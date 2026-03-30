@@ -3802,14 +3802,20 @@ function getLayoutClass() {
 }
 
 function setBookLayout(perPage) {
+    // Find the index of the first recipe currently visible
+    const firstVisibleIndex = bookCurrentSpread * (bookRecipesPerPage * 2);
+
+    // Update layout
     bookRecipesPerPage = perPage;
     localStorage.setItem('bookRecipesPerPage', perPage);
     [3, 6, 9].forEach(n => {
         const btn = document.getElementById(`bookLayout${n}`);
         if (btn) btn.classList.toggle('active', n === perPage);
     });
-    // Reset to first spread when changing layout
-    bookCurrentSpread = 0;
+
+    // Calculate which spread the first visible recipe falls on in the new layout
+    bookCurrentSpread = Math.floor(firstVisibleIndex / (perPage * 2));
+
     renderBookSpread();
 }
 
