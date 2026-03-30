@@ -1880,6 +1880,39 @@
     grid-template-columns: 1fr 1fr 1fr;
 }
 
+/* Inline book layout buttons inside right page header */
+.book-layout-btn-inline {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 3px 7px;
+    border: 1px solid rgba(180,150,100,0.4);
+    border-radius: 4px;
+    background: transparent;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: #8a7055;
+    font-family: Georgia, serif;
+    font-size: 9px;
+}
+
+.book-layout-btn-inline:hover {
+    border-color: #5c3a2a;
+    background: rgba(92,58,42,0.06);
+}
+
+.book-layout-btn-inline.active {
+    border-color: #5c3a2a;
+    background: #5c3a2a;
+    color: white;
+}
+
+.book-layout-btn-inline .layout-icon {
+    width: 14px;
+    height: 14px;
+}
+
 </style>
 
 <h2><center>ALIVENTE ONLINE - RECIPE MANAGEMENT</center></h2>
@@ -2359,34 +2392,7 @@
 </div>
 
 <!-- Book View -->
-<!-- Book View -->
 <div id="recipeBookView" style="display: none;">
-    <div class="book-layout-selector">
-        <span class="book-layout-label"><i class="fas fa-th"></i> Recipes per page:</span>
-        <div class="book-layout-buttons">
-            <button class="book-layout-btn" onclick="setBookLayout(3)" id="bookLayout3" title="3 per page — large cards">
-                <div class="layout-icon layout-icon-3">
-                    <div></div><div></div><div></div>
-                </div>
-                <span>3</span>
-            </button>
-            <button class="book-layout-btn" onclick="setBookLayout(6)" id="bookLayout6" title="6 per page">
-                <div class="layout-icon layout-icon-6">
-                    <div></div><div></div><div></div>
-                    <div></div><div></div><div></div>
-                </div>
-                <span>6</span>
-            </button>
-            <button class="book-layout-btn active" onclick="setBookLayout(9)" id="bookLayout9" title="9 per page">
-                <div class="layout-icon layout-icon-9">
-                    <div></div><div></div><div></div>
-                    <div></div><div></div><div></div>
-                    <div></div><div></div><div></div>
-                </div>
-                <span>9</span>
-            </button>
-        </div>
-    </div>
     <div class="recipe-book-container">
         <div class="recipe-book" id="recipeBook">
             <button class="book-nav-btn book-nav-prev" id="bookPrevBtn" onclick="bookNavigate(-1)" disabled>
@@ -2444,7 +2450,22 @@
                     <div class="punch-hole"></div>
                 </div>
                 <div class="book-page-content">
-                    <div class="book-chapter-title" id="bookChapterRight">Recipe Collection</div>
+                    <div class="book-chapter-title" id="bookChapterRight">
+                        <div id="bookLayoutSelectorInline" style="display:flex; justify-content:center; align-items:center; gap:6px;">
+                            <button class="book-layout-btn-inline" onclick="setBookLayout(3)" id="bookLayout3" title="3 per page">
+                                <div class="layout-icon layout-icon-3"><div></div><div></div><div></div></div>
+                                <span>3</span>
+                            </button>
+                            <button class="book-layout-btn-inline" onclick="setBookLayout(6)" id="bookLayout6" title="6 per page">
+                                <div class="layout-icon layout-icon-6"><div></div><div></div><div></div><div></div><div></div><div></div></div>
+                                <span>6</span>
+                            </button>
+                            <button class="book-layout-btn-inline active" onclick="setBookLayout(9)" id="bookLayout9" title="9 per page">
+                                <div class="layout-icon layout-icon-9"><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div><div></div></div>
+                                <span>9</span>
+                            </button>
+                        </div>
+                    </div>
                     <div class="book-page-scrollable" id="bookPageRightContent">
                         <!-- populated by JS -->
                     </div>
@@ -3895,7 +3916,17 @@ function renderBookSpread() {
     const chapterTitle = firstRecipe ? `${firstRecipe.recipe_name[0]} — ${lastRecipe.recipe_name[0]}` : 'Recipe Collection';
 
     document.getElementById('bookChapterLeft').textContent = 'Recipe Collection';
-    document.getElementById('bookChapterRight').textContent = chapterTitle;
+    document.getElementById('bookChapterLeft').textContent = 'Recipe Collection';
+
+    // Preserve the inline layout selector, only update the chapter text around it
+    const rightHeader = document.getElementById('bookChapterRight');
+    const selector = document.getElementById('bookLayoutSelectorInline');
+    if (selector) {
+        // Re-show selector in case we're coming back from detail view
+        selector.style.display = 'flex';
+    } else {
+        rightHeader.textContent = chapterTitle;
+    }
 
     const leftPageNum = bookCurrentSpread * 2 + 1;
     const rightPageNum = bookCurrentSpread * 2 + 2;
@@ -3957,7 +3988,9 @@ function openBookDetail(recipeId) {
         </div>`;
     document.getElementById('bookPageRightContent').innerHTML = '';
     document.getElementById('bookChapterLeft').textContent = 'Recipe';
-    document.getElementById('bookChapterRight').textContent = 'Instructions';
+    // Hide selector but don't destroy it with textContent
+    const sel = document.getElementById('bookLayoutSelectorInline');
+    if (sel) sel.style.display = 'none';
     document.getElementById('bookPageNumLeft').textContent = '';
     document.getElementById('bookPageNumRight').textContent = '';
 
@@ -3972,11 +4005,9 @@ function openBookDetail(recipeId) {
 
 function renderBookDetail(data, recipeId) {
     const backBtn = `<button class="book-back-btn" onclick="closeBookDetail()"><i class="fas fa-arrow-left"></i> Back to recipes</button>`;
-
     const imageHtml = data.recipe_image
         ? `<img src="${data.recipe_image}" class="book-detail-image" alt="${data.recipe_name}">`
         : '';
-
     let tagsHtml = '<div class="book-detail-tags">';
     data.courses.forEach(c => tagsHtml += `<span class="book-detail-tag course">${c}</span>`);
     data.categories.forEach(c => tagsHtml += `<span class="book-detail-tag category">${c}</span>`);
@@ -3987,14 +4018,12 @@ function renderBookDetail(data, recipeId) {
     }
     if (data.author) tagsHtml += `<span class="book-detail-tag author">${data.author}</span>`;
     tagsHtml += '</div>';
-
     const meta = [
         data.prep_time ? `<span class="book-detail-meta-item"><i class="fas fa-clock"></i> ${data.prep_time}m prep</span>` : '',
         data.cook_time ? `<span class="book-detail-meta-item"><i class="fas fa-fire"></i> ${data.cook_time}m cook</span>` : '',
         data.servings ? `<span class="book-detail-meta-item"><i class="fas fa-users"></i> ${data.servings} servings</span>` : '',
         data.difficulty_level ? `<span class="book-detail-meta-item"><i class="fas fa-signal"></i> ${data.difficulty_level}</span>` : '',
     ].filter(Boolean).join('');
-
     let ingredientsHtml = `<div class="book-detail-section-title"><i class="fas fa-list-ul"></i> Ingredients</div>`;
     let currentGroup = '';
     data.ingredients.forEach(ing => {
@@ -4010,7 +4039,6 @@ function renderBookDetail(data, recipeId) {
                 <span>${ing.ingredient}${prepStr}</span>
             </div>`;
     });
-
     document.getElementById('bookPageLeftContent').innerHTML = `
         ${backBtn}
         <div class="book-detail-title">${data.recipe_name}</div>
@@ -4019,7 +4047,6 @@ function renderBookDetail(data, recipeId) {
         ${tagsHtml}
         ${ingredientsHtml}
     `;
-
     let instructionsHtml = `<div class="book-detail-section-title"><i class="fas fa-tasks"></i> Instructions</div>`;
     let currentInstructionGroup = '';
     data.instructions.forEach(inst => {
@@ -4033,10 +4060,12 @@ function renderBookDetail(data, recipeId) {
                 <div class="book-step-text">${inst.instruction_text}</div>
             </div>`;
     });
-
     document.getElementById('bookPageRightContent').innerHTML = instructionsHtml;
     document.getElementById('bookChapterLeft').textContent = data.recipe_name;
-    document.getElementById('bookChapterRight').textContent = 'Instructions';
+
+    // Hide layout selector without destroying it — don't use textContent on bookChapterRight
+    const sel = document.getElementById('bookLayoutSelectorInline');
+    if (sel) sel.style.display = 'none';
 
     const currentIndex = BOOK_RECIPES.findIndex(r => r.recipe_id === recipeId);
     const prevBtn = document.getElementById('bookPrevBtn');
@@ -4054,6 +4083,8 @@ function closeBookDetail() {
     bookDetailRecipeId = null;
     document.getElementById('bookPrevBtn').style.display = '';
     document.getElementById('bookNextBtn').style.display = '';
+    const sel = document.getElementById('bookLayoutSelectorInline');
+    if (sel) sel.style.display = 'flex';
     renderBookSpread();
 }
 
