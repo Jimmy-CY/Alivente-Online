@@ -4058,11 +4058,11 @@ function renderBookDetail(data, recipeId) {
         const unitStr = ing.unit ? ` ${ing.unit}` : '';
         const prepStr = ing.preparation ? ` <em style="color:#8a7055">(${ing.preparation})</em>` : '';
         const weightStr = ing.weight_equivalent ? ` <em style="color:#8a7055; font-size:0.85em;">(${ing.weight_equivalent})</em>` : '';
-                ingredientsHtml += `
-                    <div class="book-ingredient-item">
-                        <span class="book-ingredient-amount">${decimalToFraction(parseFloat(ing.amount))}${unitStr}</span>
-                        <span>${ing.ingredient}${weightStr}${prepStr}</span>
-                    </div>`;
+        ingredientsHtml += `
+            <div class="book-ingredient-item">
+                <span class="book-ingredient-amount">${decimalToFraction(ing.amount_raw || parseFloat(ing.amount))}${unitStr}</span>
+                <span>${ing.ingredient}${weightStr}${prepStr}</span>
+            </div>`;
     });
     document.getElementById('bookPageLeftContent').innerHTML = `
         ${backBtn}

@@ -10178,6 +10178,7 @@ def recipe_book_detail(request, recipe_id):
         'ingredients': [
             {
                 'amount': str(ing.get_amount_display()),
+                'amount_raw': float(ing.amount) if ing.amount else 0,
                 'unit': ing.unit.abbreviation if ing.unit and ing.unit.abbreviation else (ing.unit.name if ing.unit else ''),
                 'ingredient': ing.ingredient.name,
                 'preparation': ing.preparation.name if ing.preparation else '',
