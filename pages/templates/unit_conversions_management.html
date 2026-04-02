@@ -183,6 +183,89 @@
     color: #dee2e6;
     margin-bottom: 20px;
 }
+
+/* Filter Bar */
+.filter-bar {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.filter-search {
+    flex: 1;
+    min-width: 200px;
+    padding: 10px 14px;
+    border: 2px solid #dee2e6;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: border-color 0.2s;
+}
+
+.filter-search:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+.filter-select {
+    padding: 10px 14px;
+    border: 2px solid #dee2e6;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    background: white;
+    transition: border-color 0.2s;
+    min-width: 160px;
+}
+
+.filter-select:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+.scope-toggle {
+    display: flex;
+    border: 2px solid #dee2e6;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.scope-btn {
+    padding: 9px 16px;
+    border: none;
+    background: white;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    color: #6c757d;
+    border-right: 1px solid #dee2e6;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.scope-btn:last-child {
+    border-right: none;
+}
+
+.scope-btn.active {
+    background: #667eea;
+    color: white;
+}
+
+.scope-btn:hover:not(.active) {
+    background: #f8f9fa;
+}
+
+.filter-results-count {
+    font-size: 13px;
+    color: #6c757d;
+    white-space: nowrap;
+}
+
+.no-results-row {
+    display: none;
+}
 </style>
 
 <div class="conversions-container">
@@ -215,6 +298,34 @@
         <h2 style="font-size: 22px; font-weight: 600; margin-bottom: 20px; color: #2c3e50;">
             <i class="fas fa-list"></i> All Conversions ({{ conversions.count }})
         </h2>
+
+        <!-- Filter Bar -->
+        <div class="filter-bar">
+            <input type="text"
+                   id="conversionSearch"
+                   class="filter-search"
+                   placeholder="🔍 Search by ingredient or unit..."
+                   oninput="applyFilters()">
+
+            <select id="fromUnitFilter" class="filter-select" onchange="applyFilters()">
+                <option value="">All From-Units</option>
+                {% for unit in all_units %}
+                <option value="{{ unit.name|lower }}">{{ unit.name }}</option>
+                {% endfor %}
+            </select>
+
+            <div class="scope-toggle">
+                <button class="scope-btn active" onclick="setScopeFilter('all', this)">All</button>
+                <button class="scope-btn" onclick="setScopeFilter('specific', this)">⭐ Specific</button>
+                <button class="scope-btn" onclick="setScopeFilter('generic', this)">🌐 Generic</button>
+            </div>
+
+            <span class="filter-results-count" id="filterResultsCount"></span>
+
+            <button class="btn btn-sm btn-outline-secondary" onclick="clearFilters()">
+                <i class="fas fa-times"></i> Clear
+            </button>
+        </div>
         
         {% if conversions %}
         <table class="conversions-table">
@@ -225,10 +336,15 @@
                     <th style="width: 20%; text-align: center;">Actions</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody id="conversionsTableBody">
                 {% for conversion in conversions %}
-                <tr id="conversion-row-{{ conversion.unit_conversion_id }}">
-                    <!-- Conversion Display (combines from, to, and multiplier) -->
+                <tr id="conversion-row-{{ conversion.unit_conversion_id }}"
+                    data-from-unit="{{ conversion.from_unit.name|lower }}"
+                    data-to-unit="{{ conversion.to_unit.name|lower }}"
+                    data-ingredient="{{ conversion.specific_ingredient.name|lower|default:'' }}"
+                    data-generic="{% if conversion.specific_ingredient %}false{% else %}true{% endif %}">
+
+                    <!-- Conversion Display -->
                     <td>
                         <div class="conversion-display">
                             <span class="conversion-number">1</span>
@@ -267,6 +383,15 @@
                     </td>
                 </tr>
                 {% endfor %}
+
+                <!-- No results row -->
+                <tr id="noResultsRow" class="no-results-row">
+                    <td colspan="3" style="text-align: center; padding: 40px; color: #6c757d;">
+                        <i class="fas fa-search fa-2x mb-3" style="display: block; color: #dee2e6;"></i>
+                        No conversions match your filters.
+                        <br><a href="#" onclick="clearFilters(); return false;" style="color: #667eea;">Clear filters</a>
+                    </td>
+                </tr>
             </tbody>
         </table>
         {% else %}
@@ -423,6 +548,76 @@
 </div>
 
 <script>
+// ==================== FILTER FUNCTIONALITY ====================
+let currentScope = 'all';
+
+function setScopeFilter(scope, btn) {
+    currentScope = scope;
+    document.querySelectorAll('.scope-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    applyFilters();
+}
+
+function applyFilters() {
+    const searchTerm = document.getElementById('conversionSearch').value.toLowerCase().trim();
+    const fromUnitFilter = document.getElementById('fromUnitFilter').value.toLowerCase();
+    const rows = document.querySelectorAll('#conversionsTableBody tr:not(#noResultsRow)');
+    let visibleCount = 0;
+
+    rows.forEach(row => {
+        const fromUnit = row.getAttribute('data-from-unit') || '';
+        const toUnit = row.getAttribute('data-to-unit') || '';
+        const ingredient = row.getAttribute('data-ingredient') || '';
+        const isGeneric = row.getAttribute('data-generic') === 'true';
+
+        // Search match — checks from-unit, to-unit, and ingredient name
+        const searchMatch = !searchTerm ||
+            fromUnit.includes(searchTerm) ||
+            toUnit.includes(searchTerm) ||
+            ingredient.includes(searchTerm);
+
+        // From-unit match
+        const unitMatch = !fromUnitFilter || fromUnit === fromUnitFilter;
+
+        // Scope match
+        const scopeMatch = currentScope === 'all' ||
+            (currentScope === 'generic' && isGeneric) ||
+            (currentScope === 'specific' && !isGeneric);
+
+        if (searchMatch && unitMatch && scopeMatch) {
+            row.style.display = '';
+            visibleCount++;
+        } else {
+            row.style.display = 'none';
+        }
+    });
+
+    // Show/hide no-results row
+    const noResultsRow = document.getElementById('noResultsRow');
+    if (noResultsRow) {
+        noResultsRow.style.display = visibleCount === 0 ? 'table-row' : 'none';
+    }
+
+    // Update count
+    const total = {{ conversions.count }};
+    const countEl = document.getElementById('filterResultsCount');
+    if (searchTerm || fromUnitFilter || currentScope !== 'all') {
+        countEl.textContent = `Showing ${visibleCount} of ${total}`;
+    } else {
+        countEl.textContent = '';
+    }
+}
+
+function clearFilters() {
+    document.getElementById('conversionSearch').value = '';
+    document.getElementById('fromUnitFilter').value = '';
+    currentScope = 'all';
+    document.querySelectorAll('.scope-btn').forEach(b => b.classList.remove('active'));
+    document.querySelector('.scope-btn').classList.add('active');
+    applyFilters();
+}
+// ==================== END FILTER FUNCTIONALITY ====================
+
 // Preview conversion formula while typing
 document.addEventListener('DOMContentLoaded', function() {
     const fromSelect = document.getElementById('addFromUnit');
@@ -463,7 +658,7 @@ function openAddModal() {
 async function saveNewConversion() {
     const fromUnitId = document.getElementById('addFromUnit').value;
     const toUnitId = document.getElementById('addToUnit').value;
-    const specificIngredientId = document.getElementById('addSpecificIngredient').value;  // ← NEW
+    const specificIngredientId = document.getElementById('addSpecificIngredient').value;
     const multiplier = document.getElementById('addMultiplier').value;
     const status = document.getElementById('addStatus');
     
@@ -487,7 +682,7 @@ async function saveNewConversion() {
             body: JSON.stringify({
                 from_unit_id: fromUnitId,
                 to_unit_id: toUnitId,
-                specific_ingredient_id: specificIngredientId || null,  // ← NEW: Send null if empty
+                specific_ingredient_id: specificIngredientId || null,
                 multiplier: multiplier
             })
         });
@@ -711,7 +906,6 @@ function saveSingleMissingConversion(index) {
     const fromUnitId = multiplierInput.dataset.fromUnitId;
     const toUnitId = multiplierInput.dataset.toUnitId;
     
-    // Check if generic or specific
     const isGeneric = document.getElementById(`generic_${index}`).checked;
     const ingredientId = isGeneric ? null : multiplierInput.dataset.ingredientId;
     
@@ -724,7 +918,6 @@ function saveAllMissingConversions() {
     
     inputs.forEach((input, index) => {
         const multiplier = parseFloat(input.value);
-        
         if (!multiplier || multiplier <= 0) {
             input.style.borderColor = 'red';
             hasErrors = true;
@@ -738,20 +931,14 @@ function saveAllMissingConversions() {
         return;
     }
     
-    // Save all conversions
     let promises = [];
     inputs.forEach((input, index) => {
         const multiplier = parseFloat(input.value);
         const fromUnitId = input.dataset.fromUnitId;
         const toUnitId = input.dataset.toUnitId;
-        
-        // Check if generic or specific
         const isGeneric = document.getElementById(`generic_${index}`).checked;
         const ingredientId = isGeneric ? null : input.dataset.ingredientId;
-        
-        promises.push(
-            saveConversion(fromUnitId, toUnitId, ingredientId, multiplier, index, true)
-        );
+        promises.push(saveConversion(fromUnitId, toUnitId, ingredientId, multiplier, index, true));
     });
     
     Promise.all(promises).then(() => {
@@ -778,17 +965,12 @@ function saveConversion(fromUnitId, toUnitId, ingredientId, multiplier, index, b
     .then(data => {
         if (data.success) {
             if (!batch) {
-                // Remove this item from the list
                 const input = document.getElementById(`multiplier_${index}`);
                 input.closest('.mb-4').remove();
-                
-                // Update count
                 missingConversionsData.splice(index, 1);
-                
                 if (missingConversionsData.length === 0) {
                     location.reload();
                 }
-                
                 alert('Conversion saved successfully!');
             }
         } else {
