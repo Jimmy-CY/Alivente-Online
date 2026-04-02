@@ -10155,6 +10155,10 @@ def recipe_book_detail(request, recipe_id):
             if weight_amount <= 0:
                 return None
             weight_unit = conversion.to_unit.abbreviation or conversion.to_unit.name
+            # If result is kg but less than 1, convert to grams
+            if weight_unit == 'kg' and weight_amount < 1:
+                weight_amount = round(weight_amount * 1000)
+                weight_unit = 'g'
             return f"{weight_amount}{weight_unit}"
         except Exception:
             return None
@@ -10589,6 +10593,10 @@ def view_recipe(request, recipe_id):
                             weight_amount = int(weight_amount)
                         if weight_amount > 0:
                             weight_unit = conversion.to_unit.abbreviation or conversion.to_unit.name
+                            # If result is kg but less than 1, convert to grams
+                            if weight_unit == 'kg' and weight_amount < 1:
+                                weight_amount = round(weight_amount * 1000)
+                                weight_unit = 'g'
                             ing.weight_equivalent = f"{weight_amount}{weight_unit}"
             except Exception:
                 pass
@@ -10603,7 +10611,6 @@ def view_recipe(request, recipe_id):
     }
     
     return render(request, 'view_recipe.html', context)
-
 
 # ============================================
 # VIEW: Create Recipe
