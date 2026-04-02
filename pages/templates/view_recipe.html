@@ -980,15 +980,16 @@ body {
                     {% for group in ingredient_groups %}
                     <div class="ingredient-group-data" data-group-name="{{ group.grouper|default:'' }}">
                         {% for ing in group.list %}
-                        <div class="ingredient-data" 
-                             data-id="{{ ing.recipe_ingredient_id }}"
-                             data-amount="{{ ing.formatted_amount }}"
-                             data-unit="{{ ing.unit.abbreviation|default:ing.unit.name|default:'' }}"
-                             data-unit-plural="{{ ing.unit.abbreviation_plural|default:ing.unit.abbreviation|default:ing.unit.name|default:'' }}"
-                             data-ingredient="{{ ing.ingredient.name }}"
-                             data-preparation="{{ ing.preparation.name|default:'' }}"
-                             data-group="{{ group.grouper|default:'' }}"
-                             data-category="{{ ing.ingredient.category.name|default:'Other' }}">
+                    <div class="ingredient-data" 
+                         data-id="{{ ing.recipe_ingredient_id }}"
+                         data-amount="{{ ing.formatted_amount }}"
+                         data-unit="{{ ing.unit.abbreviation|default:ing.unit.name|default:'' }}"
+                         data-unit-plural="{{ ing.unit.abbreviation_plural|default:ing.unit.abbreviation|default:ing.unit.name|default:'' }}"
+                         data-ingredient="{{ ing.ingredient.name }}"
+                         data-preparation="{{ ing.preparation.name|default:'' }}"
+                         data-group="{{ group.grouper|default:'' }}"
+                         data-category="{{ ing.ingredient.category.name|default:'Other' }}"
+                         data-weight-equivalent="{{ ing.weight_equivalent|default:'' }}">
                         </div>
                         {% endfor %}
                     </div>
@@ -1212,12 +1213,15 @@ let shoppingListData = {
 };
 
 // ========== UTILITY: Format ingredient from normalized data ==========
-function formatIngredientText(amount, unit, unitPlural, ingredient, preparation) {
+function formatIngredientText(amount, unit, unitPlural, ingredient, preparation, weightEquivalent) {
     const numAmount = parseFloat(amount) || 0;
     const displayUnit = (numAmount === 1) ? unit : (unitPlural || unit);
     const displayAmount = decimalToFraction(numAmount);
     
     let text = `<strong>${displayAmount}</strong> ${displayUnit} ${ingredient}`;
+    if (weightEquivalent) {
+        text += ` <em style='color: #6c757d; font-size: 0.9em;'>(${weightEquivalent})</em>`;
+    }
     if (preparation) {
         text += ` <em style='color: #6c757d;'>(${preparation})</em>`;
     }
@@ -1402,7 +1406,8 @@ document.addEventListener('DOMContentLoaded', function() {
             const label = document.createElement('label');
             label.className = 'ingredient-text';
             label.setAttribute('for', `ing-${ingId}`);
-            label.innerHTML = formatIngredientText(amount, unit, unitPlural, ingredient, preparation);
+            const weightEquivalent = ingData.getAttribute('data-weight-equivalent') || '';
+            label.innerHTML = formatIngredientText(amount, unit, unitPlural, ingredient, preparation, weightEquivalent);
 
             ingItem.appendChild(checkbox);
             ingItem.appendChild(label);
@@ -1529,7 +1534,7 @@ function previousStep() {
 function calculateScaledIngredients() {
     shoppingListData.scaledIngredients = recipeData.ingredients.map(ing => {
         const scaledAmount = ing.amount * shoppingListData.multiplier;
-        const formattedAmount = scaledAmount % 1 === 0 ? scaledAmount.toFixed(0) : scaledAmount.toFixed(2).replace(/\.?0+$/, '');
+        const formattedAmount = decimalToFraction(scaledAmount);
         
         // Apply smart categorization
         const finalCategory = smartCategorize(ing.ingredient, ing.unit, ing.category);
@@ -1956,7 +1961,11 @@ function displayFinalShoppingList(categorizedItems) {
         categorizedItems[category].forEach(item => {
             const li = document.createElement('li');
             li.style.cssText = 'padding: 10px; border-bottom: 1px solid #e0e0e0; display: flex; align-items: center; gap: 8px;';
-            li.innerHTML = `<span style="color: #28a745;">☐</span> ${item}`;
+            // Convert leading decimal number to fraction
+            const convertedItem = item.replace(/^(\d+\.?\d*)/, (match) => {
+                return decimalToFraction(parseFloat(match));
+            });
+            li.innerHTML = `<span style="color: #28a745;">☐</span> ${convertedItem}`;
             list.appendChild(li);
         });
         

@@ -3840,6 +3840,30 @@ function setBookLayout(perPage) {
     renderBookSpread();
 }
 
+// ========== DECIMAL TO FRACTION CONVERTER ==========
+function decimalToFraction(decimal) {
+    if (decimal === null || decimal === undefined || isNaN(decimal)) return decimal;
+    const wholePart = Math.floor(decimal);
+    const fracPart = Math.round((decimal - wholePart) * 1000) / 1000;
+    const fractionMap = {
+        0.125: '⅛', 0.25: '¼', 0.333: '⅓', 0.334: '⅓',
+        0.375: '⅜', 0.5: '½', 0.625: '⅝', 0.667: '⅔',
+        0.666: '⅔', 0.75: '¾', 0.875: '⅞',
+    };
+    let fractionStr = null;
+    const tolerance = 0.01;
+    for (const [key, value] of Object.entries(fractionMap)) {
+        if (Math.abs(fracPart - parseFloat(key)) < tolerance) {
+            fractionStr = value;
+            break;
+        }
+    }
+    if (fracPart === 0 || !fractionStr) {
+        return wholePart === 0 ? String(decimal) : String(wholePart);
+    }
+    return wholePart === 0 ? fractionStr : `${wholePart}${fractionStr}`;
+}
+
 function initBookView() {
     // Restore saved layout
     bookRecipesPerPage = parseInt(localStorage.getItem('bookRecipesPerPage')) || 9;
@@ -4033,11 +4057,12 @@ function renderBookDetail(data, recipeId) {
         }
         const unitStr = ing.unit ? ` ${ing.unit}` : '';
         const prepStr = ing.preparation ? ` <em style="color:#8a7055">(${ing.preparation})</em>` : '';
-        ingredientsHtml += `
-            <div class="book-ingredient-item">
-                <span class="book-ingredient-amount">${ing.amount}${unitStr}</span>
-                <span>${ing.ingredient}${prepStr}</span>
-            </div>`;
+        const weightStr = ing.weight_equivalent ? ` <em style="color:#8a7055; font-size:0.85em;">(${ing.weight_equivalent})</em>` : '';
+                ingredientsHtml += `
+                    <div class="book-ingredient-item">
+                        <span class="book-ingredient-amount">${decimalToFraction(parseFloat(ing.amount))}${unitStr}</span>
+                        <span>${ing.ingredient}${weightStr}${prepStr}</span>
+                    </div>`;
     });
     document.getElementById('bookPageLeftContent').innerHTML = `
         ${backBtn}
