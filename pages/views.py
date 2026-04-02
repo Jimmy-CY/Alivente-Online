@@ -9952,6 +9952,34 @@ def format_quantity(quantity_str):
     except:
         return str(quantity_str)
 
+WEIGHT_UNIT_PRIORITY = ['g', 'kg', 'oz', 'lb']
+
+def get_preferred_weight_conversion(from_unit, ingredient=None):
+    """Try each weight unit in priority order, ingredient-specific first then generic."""
+    for abbr in WEIGHT_UNIT_PRIORITY:
+        # Ingredient-specific first
+        if ingredient:
+            conversion = UnitConversion.objects.filter(
+                from_unit=from_unit,
+                to_unit__abbreviation=abbr,
+                to_unit__unit_type='weight',
+                specific_ingredient=ingredient
+            ).select_related('to_unit').first()
+            if conversion:
+                return conversion
+
+        # Generic fallback
+        conversion = UnitConversion.objects.filter(
+            from_unit=from_unit,
+            to_unit__abbreviation=abbr,
+            to_unit__unit_type='weight',
+            specific_ingredient__isnull=True
+        ).select_related('to_unit').first()
+        if conversion:
+            return conversion
+
+    return None
+
 def get_or_create_ingredient(name):
     """Get or create an ingredient by name (case-insensitive)"""
     name = name.strip()
@@ -10109,42 +10137,25 @@ def recipe_book_detail(request, recipe_id):
     instructions = recipe.instructions.all().order_by('step_number')
 
     def get_weight_equivalent(ing):
-        """Return (weight_amount, weight_unit_abbr) or None"""
+        """Return weight equivalent string or None"""
         if not ing.unit:
             return None
-        # Skip if already weight-based
         if ing.unit.unit_type == 'weight':
             return None
         try:
             amount = float(ing.amount) if ing.amount else 0
             if amount <= 0:
                 return None
-
-            # Try ingredient-specific conversion first
-            conversion = UnitConversion.objects.filter(
-                from_unit=ing.unit,
-                to_unit__unit_type='weight',
-                specific_ingredient=ing.ingredient
-            ).select_related('to_unit').first()
-
-            # Fall back to generic conversion
-            if not conversion:
-                conversion = UnitConversion.objects.filter(
-                    from_unit=ing.unit,
-                    to_unit__unit_type='weight',
-                    specific_ingredient__isnull=True
-                ).select_related('to_unit').first()
-
+            conversion = get_preferred_weight_conversion(ing.unit, ing.ingredient)
             if not conversion:
                 return None
-
             weight_amount = round(amount * float(conversion.multiplier), 1)
-            # Remove trailing .0
             if weight_amount == int(weight_amount):
                 weight_amount = int(weight_amount)
+            if weight_amount <= 0:
+                return None
             weight_unit = conversion.to_unit.abbreviation or conversion.to_unit.name
             return f"{weight_amount}{weight_unit}"
-
         except Exception:
             return None
 
@@ -10181,6 +10192,7 @@ def recipe_book_detail(request, recipe_id):
         ]
     }
     return JsonResponse(data)
+
 @login_required
 def recipe_management(request):
     """Recipe management page with multi-select filtering, A-Z filter, and pagination"""
@@ -10566,32 +10578,18 @@ def view_recipe(request, recipe_id):
     for ing in ingredients:
         ing.formatted_amount = format_quantity(ing.amount)
         ing.weight_equivalent = None
-
         if ing.unit and ing.unit.unit_type != 'weight':
             try:
                 amount = float(ing.amount) if ing.amount else 0
                 if amount > 0:
-                    # Ingredient-specific conversion first
-                    conversion = UnitConversion.objects.filter(
-                        from_unit=ing.unit,
-                        to_unit__unit_type='weight',
-                        specific_ingredient=ing.ingredient
-                    ).select_related('to_unit').first()
-
-                    # Fall back to generic
-                    if not conversion:
-                        conversion = UnitConversion.objects.filter(
-                            from_unit=ing.unit,
-                            to_unit__unit_type='weight',
-                            specific_ingredient__isnull=True
-                        ).select_related('to_unit').first()
-
+                    conversion = get_preferred_weight_conversion(ing.unit, ing.ingredient)
                     if conversion:
                         weight_amount = round(amount * float(conversion.multiplier), 1)
                         if weight_amount == int(weight_amount):
                             weight_amount = int(weight_amount)
-                        weight_unit = conversion.to_unit.abbreviation or conversion.to_unit.name
-                        ing.weight_equivalent = f"{weight_amount}{weight_unit}"
+                        if weight_amount > 0:
+                            weight_unit = conversion.to_unit.abbreviation or conversion.to_unit.name
+                            ing.weight_equivalent = f"{weight_amount}{weight_unit}"
             except Exception:
                 pass
 
