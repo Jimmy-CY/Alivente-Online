@@ -1213,11 +1213,11 @@ let shoppingListData = {
 
 // ========== UTILITY: Format ingredient from normalized data ==========
 function formatIngredientText(amount, unit, unitPlural, ingredient, preparation) {
-    // Determine which unit form to use based on amount
     const numAmount = parseFloat(amount) || 0;
     const displayUnit = (numAmount === 1) ? unit : (unitPlural || unit);
+    const displayAmount = decimalToFraction(numAmount);
     
-    let text = `<strong>${amount}</strong> ${displayUnit} ${ingredient}`;
+    let text = `<strong>${displayAmount}</strong> ${displayUnit} ${ingredient}`;
     if (preparation) {
         text += ` <em style='color: #6c757d;'>(${preparation})</em>`;
     }
@@ -2079,6 +2079,50 @@ function viewRecipeDoc(url, filename) {
     }
 
     $('#recipeDocModal').modal('show');
+}
+
+// ========== DECIMAL TO FRACTION CONVERTER ==========
+function decimalToFraction(decimal) {
+    if (decimal === null || decimal === undefined || isNaN(decimal)) return decimal;
+
+    const wholePart = Math.floor(decimal);
+    const fracPart = Math.round((decimal - wholePart) * 1000) / 1000;
+
+    // Map of decimal fractions to Unicode fraction characters
+    const fractionMap = {
+        0.125: '⅛',
+        0.25:  '¼',
+        0.333: '⅓',
+        0.334: '⅓',
+        0.375: '⅜',
+        0.5:   '½',
+        0.625: '⅝',
+        0.667: '⅔',
+        0.666: '⅔',
+        0.75:  '¾',
+        0.875: '⅞',
+    };
+
+    // Find closest match within tolerance
+    let fractionStr = null;
+    const tolerance = 0.01;
+    for (const [key, value] of Object.entries(fractionMap)) {
+        if (Math.abs(fracPart - parseFloat(key)) < tolerance) {
+            fractionStr = value;
+            break;
+        }
+    }
+
+    if (fracPart === 0 || !fractionStr) {
+        // No fractional part or no match — return whole number
+        return wholePart === 0 ? decimal.toString() : wholePart.toString();
+    }
+
+    if (wholePart === 0) {
+        return fractionStr;
+    }
+
+    return `${wholePart}${fractionStr}`;
 }
 
 </script>
