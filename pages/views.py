@@ -84,6 +84,7 @@ from .models import (
     AssetSubcategory,
     AssetSupplier,
     AssetMaintenance,
+    CookingCalculation,
 
     )
 from decimal import Decimal
@@ -10968,7 +10969,37 @@ def edit_recipe(request, recipe_id):
             
             if instruction_objects:
                 RecipeInstruction.objects.bulk_create(instruction_objects)
-            
+
+            # ========== COOKING CALCULATION ==========
+            calc_enabled = request.POST.get('calc_enabled') == '1'
+            if calc_enabled:
+                serving_time = request.POST.get('calc_serving_time')
+                fire_lighting = request.POST.get('calc_fire_lighting')
+                resting = request.POST.get('calc_resting')
+                cutting_sauce = request.POST.get('calc_cutting_sauce')
+                meat_weight = request.POST.get('calc_meat_weight')
+                rate1 = request.POST.get('calc_rate1')
+                rate1_threshold = request.POST.get('calc_rate1_threshold') or None
+                rate2 = request.POST.get('calc_rate2') or None
+
+                if all([serving_time, fire_lighting, resting, cutting_sauce, meat_weight, rate1]):
+                    CookingCalculation.objects.update_or_create(
+                        recipe=recipe,
+                        defaults={
+                            'serving_time': serving_time,
+                            'fire_lighting_duration': int(fire_lighting),
+                            'resting_duration': int(resting),
+                            'cutting_sauce_duration': int(cutting_sauce),
+                            'meat_weight': int(meat_weight),
+                            'rate1_minutes_per_500g': rate1,
+                            'rate1_threshold_grams': int(rate1_threshold) if rate1_threshold else None,
+                            'rate2_minutes_per_500g': rate2 if rate2 else None,
+                        }
+                    )
+            else:
+                # Remove calculation if section was disabled
+                CookingCalculation.objects.filter(recipe=recipe).delete()
+
             messages.success(request, f'Recipe "{recipe.recipe_name}" has been updated successfully!')
             return redirect('recipe_management')
             
@@ -11027,6 +11058,9 @@ def edit_recipe(request, recipe_id):
 
     all_units = MeasurementUnit.objects.all().order_by('name')
 
+    # Get existing cooking calculation if any
+    cooking_calc = getattr(recipe, 'cooking_calculation', None)
+
     context = {
         'mode': 'edit',
         'temp_recipe_id': recipe_id,
@@ -11043,6 +11077,7 @@ def edit_recipe(request, recipe_id):
         'selected_courses': json.dumps(selected_course_ids),
         'selected_categories': json.dumps(selected_category_ids),
         'selected_proteins': json.dumps(selected_protein_ids),
+        'cooking_calculation': cooking_calc,
     }
 
     return render(request, 'preview_imported_recipe.html', context)

@@ -666,6 +666,117 @@ tr.sortable-chosen {
     border-radius: 4px;
 }
 
+/* Cooking Calculator Section */
+.cooking-calc-section {
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    margin-bottom: 30px;
+}
+
+.cooking-calc-toggle {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.cooking-calc-toggle .section-title {
+    margin: 0;
+    border: none;
+    padding: 0;
+    color: #2c3e50;
+}
+
+.cooking-calc-toggle .toggle-chevron {
+    margin-left: auto;
+    transition: transform 0.3s;
+    color: #6c757d;
+    font-size: 18px;
+}
+
+.cooking-calc-toggle.open .toggle-chevron {
+    transform: rotate(180deg);
+}
+
+.cooking-calc-body {
+    display: none;
+    margin-top: 24px;
+    padding-top: 24px;
+    border-top: 2px solid #f0f0f0;
+}
+
+.cooking-calc-body.show {
+    display: block;
+}
+
+.calc-schedule-preview {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 10px;
+    padding: 20px 24px;
+    margin-top: 20px;
+    display: none;
+}
+
+.calc-schedule-preview.show {
+    display: block;
+}
+
+.calc-schedule-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #2c3e50;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.calc-schedule-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(0,0,0,0.07);
+    font-size: 15px;
+}
+
+.calc-schedule-row:last-child {
+    border-bottom: none;
+    font-weight: 700;
+    font-size: 16px;
+    padding-top: 14px;
+    color: #28a745;
+}
+
+.calc-schedule-row .label {
+    color: #495057;
+}
+
+.calc-schedule-row .time {
+    font-weight: 600;
+    color: #2c3e50;
+    font-size: 16px;
+    letter-spacing: 1px;
+}
+
+.calc-cooking-info {
+    background: #fff3cd;
+    border-left: 4px solid #ffc107;
+    padding: 10px 14px;
+    border-radius: 4px;
+    margin-bottom: 16px;
+    font-size: 14px;
+    color: #856404;
+    display: none;
+}
+
+.calc-cooking-info.show {
+    display: block;
+}
+
 </style>
 
 <div class="preview-container">
@@ -1155,6 +1266,136 @@ tr.sortable-chosen {
                     </div>
                     {% endif %}
                 </div>
+
+        <!-- Cooking Calculator Section -->
+            <div class="cooking-calc-section">
+                <div class="cooking-calc-toggle" onclick="toggleCookingCalc(this)" id="cookingCalcToggle">
+                    <h2 class="section-title">
+                        🔥 Cooking Calculator
+                        <span style="font-size: 13px; font-weight: 400; color: #6c757d; margin-left: 10px;">(Optional — for braai/BBQ/roast recipes)</span>
+                    </h2>
+                    <i class="fas fa-chevron-down toggle-chevron"></i>
+                </div>
+
+                <input type="hidden" name="calc_enabled" id="calc_enabled" value="0">
+
+                <div class="cooking-calc-body {% if cooking_calculation %}show{% endif %}" id="cookingCalcBody">
+
+                    {% if cooking_calculation %}
+                    <script>document.getElementById('calc_enabled').value = '1';</script>
+                    {% endif %}
+
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label><i class="fas fa-clock"></i> <strong>Serving Time</strong></label>
+                                    <input type="time" class="form-control" id="calc_serving_time" name="calc_serving_time"
+                                        value="{% if cooking_calculation %}{{ cooking_calculation.serving_time|time:'H:i' }}{% endif %}"
+                                        oninput="updateCalcPreview()">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label><i class="fas fa-fire"></i> <strong>Fire Lighting Time</strong> (mins)</label>
+                                <input type="number" class="form-control" id="calc_fire_lighting" name="calc_fire_lighting"
+                                       min="0" placeholder="e.g. 45"
+                                       value="{{ cooking_calculation.fire_lighting_duration|default:'' }}"
+                                       oninput="updateCalcPreview()">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label><i class="fas fa-hourglass-half"></i> <strong>Resting Time</strong> (mins)</label>
+                                <input type="number" class="form-control" id="calc_resting" name="calc_resting"
+                                       min="0" placeholder="e.g. 20"
+                                       value="{{ cooking_calculation.resting_duration|default:'' }}"
+                                       oninput="updateCalcPreview()">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label><i class="fas fa-cut"></i> <strong>Cutting & Sauce</strong> (mins)</label>
+                                <input type="number" class="form-control" id="calc_cutting_sauce" name="calc_cutting_sauce"
+                                       min="0" placeholder="e.g. 30"
+                                       value="{{ cooking_calculation.cutting_sauce_duration|default:'' }}"
+                                       oninput="updateCalcPreview()">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label><i class="fas fa-weight"></i> <strong>Meat Weight</strong> (grams)</label>
+                                <input type="number" class="form-control" id="calc_meat_weight" name="calc_meat_weight"
+                                       min="1" placeholder="e.g. 4300"
+                                       value="{{ cooking_calculation.meat_weight|default:'' }}"
+                                       oninput="updateCalcPreview()">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label><i class="fas fa-tachometer-alt"></i> <strong>Rate 1</strong> (mins per 500g)</label>
+                                <input type="number" class="form-control" id="calc_rate1" name="calc_rate1"
+                                       min="1" step="0.5" placeholder="e.g. 18"
+                                       value="{{ cooking_calculation.rate1_minutes_per_500g|default:'' }}"
+                                       oninput="updateCalcPreview()">
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label><i class="fas fa-ruler"></i> <strong>Rate 1 Threshold</strong> (grams)</label>
+                                <input type="number" class="form-control" id="calc_rate1_threshold" name="calc_rate1_threshold"
+                                       min="0" placeholder="e.g. 3000 (blank = single rate)"
+                                       value="{{ cooking_calculation.rate1_threshold_grams|default:'' }}"
+                                       oninput="updateCalcPreview()">
+                                <small class="text-muted">Leave blank for single rate</small>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="form-group">
+                                <label><i class="fas fa-tachometer-alt"></i> <strong>Rate 2</strong> (mins per 500g)</label>
+                                <input type="number" class="form-control" id="calc_rate2" name="calc_rate2"
+                                       min="1" step="0.5" placeholder="e.g. 13 (blank = single rate)"
+                                       value="{{ cooking_calculation.rate2_minutes_per_500g|default:'' }}"
+                                       oninput="updateCalcPreview()">
+                                <small class="text-muted">Leave blank for single rate</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Live Preview -->
+                    <div class="calc-cooking-info" id="calcCookingInfo"></div>
+
+                    <div class="calc-schedule-preview" id="calcSchedulePreview">
+                        <div class="calc-schedule-title">
+                            <i class="fas fa-calendar-alt" style="color: #f5576c;"></i>
+                            Cooking Schedule
+                        </div>
+                        <div class="calc-schedule-row">
+                            <span class="label">🔥 Light Fire</span>
+                            <span class="time" id="sched_light_fire">—</span>
+                        </div>
+                        <div class="calc-schedule-row">
+                            <span class="label">🥩 Start Cooking</span>
+                            <span class="time" id="sched_start_cooking">—</span>
+                        </div>
+                        <div class="calc-schedule-row">
+                            <span class="label">✅ Finish Cooking / Start Resting</span>
+                            <span class="time" id="sched_finish_cooking">—</span>
+                        </div>
+                        <div class="calc-schedule-row">
+                            <span class="label">🔪 Start Cutting & Making Sauce</span>
+                            <span class="time" id="sched_start_cutting">—</span>
+                        </div>
+                        <div class="calc-schedule-row">
+                            <span class="label">🍽️ Serving Time</span>
+                            <span class="time" id="sched_serving">—</span>
+                        </div>
+                    </div>
+
+                </div>
+        </div>
 
         <!-- Action Buttons -->
         <div style="display: flex; justify-content: center; gap: 16px; margin-top: 30px; margin-bottom: 50px;">
@@ -3077,6 +3318,106 @@ function confirmDeleteRecipeDocument(recipeId) {
         .catch(() => alert('Error deleting document.'));
     }
 }
+
+// ==================== COOKING CALCULATOR ====================
+
+function toggleCookingCalc(toggleEl) {
+    const body = document.getElementById('cookingCalcBody');
+    const enabledInput = document.getElementById('calc_enabled');
+    const isOpen = body.classList.contains('show');
+
+    if (isOpen) {
+        body.classList.remove('show');
+        toggleEl.classList.remove('open');
+        enabledInput.value = '0';
+    } else {
+        body.classList.add('show');
+        toggleEl.classList.add('open');
+        enabledInput.value = '1';
+        updateCalcPreview();
+    }
+}
+
+function calcCookingMinutes(weight, rate1, threshold, rate2) {
+    if (!threshold || !rate2) {
+        return (weight / 500) * rate1;
+    }
+    if (weight <= threshold) {
+        return (weight / 500) * rate1;
+    }
+    return (threshold / 500) * rate1 + ((weight - threshold) / 500) * rate2;
+}
+
+function addMinutesToTime(timeStr, minutesToSubtract) {
+    const [hours, mins] = timeStr.split(':').map(Number);
+    const totalMins = hours * 60 + mins - minutesToSubtract;
+    const h = Math.floor(((totalMins % 1440) + 1440) % 1440 / 60);
+    const m = ((totalMins % 1440) + 1440) % 1440 % 60;
+    return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+}
+
+function updateCalcPreview() {
+    const servingTime = document.getElementById('calc_serving_time').value;
+    const fireLighting = parseInt(document.getElementById('calc_fire_lighting').value) || 0;
+    const resting = parseInt(document.getElementById('calc_resting').value) || 0;
+    const cuttingSauce = parseInt(document.getElementById('calc_cutting_sauce').value) || 0;
+    const meatWeight = parseInt(document.getElementById('calc_meat_weight').value) || 0;
+    const rate1 = parseFloat(document.getElementById('calc_rate1').value) || 0;
+    const threshold = parseInt(document.getElementById('calc_rate1_threshold').value) || 0;
+    const rate2 = parseFloat(document.getElementById('calc_rate2').value) || 0;
+
+    const infoBox = document.getElementById('calcCookingInfo');
+    const preview = document.getElementById('calcSchedulePreview');
+
+    // Need at minimum serving time, meat weight, rate1 to show preview
+    if (!servingTime || !meatWeight || !rate1) {
+        preview.classList.remove('show');
+        infoBox.classList.remove('show');
+        return;
+    }
+
+    const cookingMins = calcCookingMinutes(
+        meatWeight, rate1,
+        threshold || null,
+        rate2 || null
+    );
+    const cookingRounded = Math.round(cookingMins);
+
+    // Show cooking time info
+    const hours = Math.floor(cookingRounded / 60);
+    const mins = cookingRounded % 60;
+    const cookingDisplay = hours > 0
+        ? `${hours}h ${mins}m`
+        : `${mins} minutes`;
+
+    infoBox.innerHTML = `<i class="fas fa-info-circle"></i> Calculated cooking time: <strong>${cookingDisplay}</strong> for ${meatWeight.toLocaleString()}g of meat`;
+    infoBox.classList.add('show');
+
+    // Calculate schedule working backwards
+    const startCutting = addMinutesToTime(servingTime, cuttingSauce);
+    const finishCooking = addMinutesToTime(startCutting, resting);
+    const startCooking = addMinutesToTime(finishCooking, cookingRounded);
+    const lightFire = addMinutesToTime(startCooking, fireLighting);
+
+    document.getElementById('sched_light_fire').textContent = lightFire;
+    document.getElementById('sched_start_cooking').textContent = startCooking;
+    document.getElementById('sched_finish_cooking').textContent = finishCooking;
+    document.getElementById('sched_start_cutting').textContent = startCutting;
+    document.getElementById('sched_serving').textContent = servingTime;
+
+    preview.classList.add('show');
+}
+
+// Init cooking calc toggle state on page load
+document.addEventListener('DOMContentLoaded', function() {
+    {% if cooking_calculation %}
+    const toggle = document.getElementById('cookingCalcToggle');
+    toggle.classList.add('open');
+    updateCalcPreview();
+    {% endif %}
+});
+
+// ==================== END COOKING CALCULATOR ====================
 
 </script>
 

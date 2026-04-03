@@ -1794,6 +1794,93 @@ class MealPlanDay(models.Model):
         """Get formatted date for display"""
         return self.date.strftime('%B %d, %Y')
 
+class CookingCalculation(models.Model):
+    """Optional cooking time calculator for braai/BBQ/roast recipes"""
+    recipe = models.OneToOneField(
+        Recipe,
+        on_delete=models.CASCADE,
+        related_name='cooking_calculation'
+    )
+    serving_time = models.TimeField(
+        help_text='Default serving time (e.g. 20:00)'
+    )
+    fire_lighting_duration = models.PositiveIntegerField(
+        help_text='Fire lighting time in minutes'
+    )
+    resting_duration = models.PositiveIntegerField(
+        help_text='Resting time in minutes'
+    )
+    cutting_sauce_duration = models.PositiveIntegerField(
+        help_text='Cutting and sauce making time in minutes'
+    )
+    meat_weight = models.PositiveIntegerField(
+        help_text='Default meat weight in grams'
+    )
+    rate1_minutes_per_500g = models.DecimalField(
+        max_digits=5, decimal_places=1,
+        help_text='Cooking rate for first portion (mins per 500g)'
+    )
+    rate1_threshold_grams = models.PositiveIntegerField(
+        null=True, blank=True,
+        help_text='Weight at which rate switches to rate2 (e.g. 3000). Leave blank if single rate.'
+    )
+    rate2_minutes_per_500g = models.DecimalField(
+        max_digits=5, decimal_places=1,
+        null=True, blank=True,
+        help_text='Cooking rate for weight above threshold (mins per 500g). Leave blank if single rate.'
+    )
+
+    class Meta:
+        db_table = 'cooking_calculations'
+
+    def calculate_cooking_minutes(self, weight_grams=None):
+        """Calculate total cooking time in minutes for given weight"""
+        weight = weight_grams or self.meat_weight
+        rate1 = float(self.rate1_minutes_per_500g)
+
+        if not self.rate1_threshold_grams or not self.rate2_minutes_per_500g:
+            # Single rate
+            return (weight / 500) * rate1
+
+        threshold = self.rate1_threshold_grams
+        rate2 = float(self.rate2_minutes_per_500g)
+
+        if weight <= threshold:
+            return (weight / 500) * rate1
+        else:
+            return (threshold / 500) * rate1 + ((weight - threshold) / 500) * rate2
+
+    def calculate_schedule(self, serving_time=None, weight_grams=None):
+        """Return full schedule as dict, working backwards from serving time"""
+        from datetime import datetime, timedelta
+
+        base_time = serving_time or self.serving_time
+        # Convert time to datetime for arithmetic
+        base_dt = datetime.combine(datetime.today(), base_time)
+
+        cooking_minutes = self.calculate_cooking_minutes(weight_grams)
+        total_cooking = timedelta(minutes=cooking_minutes)
+        fire_lighting = timedelta(minutes=self.fire_lighting_duration)
+        resting = timedelta(minutes=self.resting_duration)
+        cutting_sauce = timedelta(minutes=self.cutting_sauce_duration)
+
+        serving_dt = base_dt
+        start_cutting_dt = serving_dt - cutting_sauce
+        finish_cooking_dt = start_cutting_dt - resting
+        start_cooking_dt = finish_cooking_dt - total_cooking
+        light_fire_dt = start_cooking_dt - fire_lighting
+
+        return {
+            'cooking_minutes': round(cooking_minutes),
+            'light_fire': light_fire_dt.strftime('%H:%M'),
+            'start_cooking': start_cooking_dt.strftime('%H:%M'),
+            'finish_cooking': finish_cooking_dt.strftime('%H:%M'),
+            'start_cutting': start_cutting_dt.strftime('%H:%M'),
+            'serving_time': serving_dt.strftime('%H:%M'),
+        }
+
+    def __str__(self):
+        return f"Cooking calculation for {self.recipe.recipe_name}"
 
 class MealPlanRecipe(models.Model):
     """Recipe assignment to a specific day in a meal plan"""
