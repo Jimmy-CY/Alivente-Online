@@ -13014,7 +13014,7 @@ def unit_conversions_management(request):
         'from_unit', 
         'to_unit', 
         'specific_ingredient'
-    ).order_by('from_unit__name', 'to_unit__name')
+    ).order_by('from_unit__name', 'specific_ingredient__name', 'to_unit__name')
     
     all_units = MeasurementUnit.objects.all().order_by('name')
     all_ingredients = Ingredient.objects.all().order_by('name')
