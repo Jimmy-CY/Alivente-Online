@@ -848,6 +848,11 @@ body {
                 <i class="fas fa-paperclip"></i> View Document
             </button>
             {% endif %}
+            {% if cooking_calculation %}
+            <button type="button" class="btn btn-danger" onclick="openCookingCalcModal()">
+                🔥 Calculate Cooking Times
+            </button>
+            {% endif %}
         </div>
         <button onclick="window.history.back()" class="btn btn-success">
             <i class="fas fa-arrow-left"></i> Back
@@ -1040,6 +1045,116 @@ body {
     </div>
 
 </div>
+
+<!-- Cooking Calculator Modal -->
+{% if cooking_calculation %}
+<div class="modal fade" id="cookingCalcModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header" style="background: linear-gradient(135deg, #f5576c 0%, #f093fb 100%); color: white;">
+                <h5 class="modal-title">
+                    🔥 Cooking Calculator — {{ recipe.recipe_name }}
+                </h5>
+                <button type="button" class="close" data-dismiss="modal" style="color: white;">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+
+                <!-- Inputs -->
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="font-weight-bold">🍽️ Serving Time</label>
+                        <input type="time" class="form-control" id="modal_serving_time"
+                               value="{{ cooking_calculation.serving_time|time:'H:i' }}"
+                               oninput="updateModalSchedule()">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="font-weight-bold">⚖️ Meat Weight (grams)</label>
+                        <input type="number" class="form-control" id="modal_meat_weight"
+                               value="{{ cooking_calculation.meat_weight }}"
+                               min="1" oninput="updateModalSchedule()">
+                    </div>
+                </div>
+
+                <!-- Saved defaults info -->
+                <div class="alert alert-light" style="border-left: 4px solid #f5576c; font-size: 13px; color: #6c757d;">
+                    <i class="fas fa-info-circle"></i>
+                    Fire lighting: <strong>{{ cooking_calculation.fire_lighting_duration }} mins</strong> &nbsp;|&nbsp;
+                    Resting: <strong>{{ cooking_calculation.resting_duration }} mins</strong> &nbsp;|&nbsp;
+                    Cutting & Sauce: <strong>{{ cooking_calculation.cutting_sauce_duration }} mins</strong> &nbsp;|&nbsp;
+                    Rate 1: <strong>{{ cooking_calculation.rate1_minutes_per_500g }} mins/500g</strong>
+                    {% if cooking_calculation.rate1_threshold_grams %}
+                    &nbsp;|&nbsp; Threshold: <strong>{{ cooking_calculation.rate1_threshold_grams }}g</strong>
+                    &nbsp;|&nbsp; Rate 2: <strong>{{ cooking_calculation.rate2_minutes_per_500g }} mins/500g</strong>
+                    {% endif %}
+                </div>
+
+                <!-- Cooking time info -->
+                <div id="modal_cooking_info" style="display:none; background: #fff3cd; border-left: 4px solid #ffc107; padding: 10px 14px; border-radius: 4px; margin-bottom: 16px; font-size: 14px; color: #856404;">
+                </div>
+
+                <!-- Schedule table -->
+                <div id="modal_schedule" style="display:none; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border-radius: 10px; padding: 20px 24px;">
+                    <div style="font-size: 15px; font-weight: 700; color: #2c3e50; margin-bottom: 14px;">
+                        <i class="fas fa-calendar-alt" style="color: #f5576c;"></i> Cooking Schedule
+                    </div>
+                    <table style="width: 100%; border-collapse: collapse;">
+                        <tr style="border-bottom: 1px solid rgba(0,0,0,0.07);">
+                            <td style="padding: 10px 0; color: #495057; font-size: 15px;">🔥 Light Fire</td>
+                            <td style="text-align: right; font-weight: 600; font-size: 16px; letter-spacing: 1px;" id="ms_light_fire">—</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid rgba(0,0,0,0.07);">
+                            <td style="padding: 10px 0; color: #495057; font-size: 15px;">🥩 Start Cooking</td>
+                            <td style="text-align: right; font-weight: 600; font-size: 16px; letter-spacing: 1px;" id="ms_start_cooking">—</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid rgba(0,0,0,0.07);">
+                            <td style="padding: 10px 0; color: #495057; font-size: 15px;">✅ Finish Cooking / Start Resting</td>
+                            <td style="text-align: right; font-weight: 600; font-size: 16px; letter-spacing: 1px;" id="ms_finish_cooking">—</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid rgba(0,0,0,0.07);">
+                            <td style="padding: 10px 0; color: #495057; font-size: 15px;">🔪 Start Cutting & Making Sauce</td>
+                            <td style="text-align: right; font-weight: 600; font-size: 16px; letter-spacing: 1px;" id="ms_start_cutting">—</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 14px 0 10px 0; font-weight: 700; font-size: 16px; color: #28a745;">🍽️ Serving Time</td>
+                            <td style="text-align: right; font-weight: 700; font-size: 16px; color: #28a745; letter-spacing: 1px;" id="ms_serving">—</td>
+                        </tr>
+                    </table>
+                </div>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="printCookingSchedule()">
+                    <i class="fas fa-print"></i> Print Schedule
+                </button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Hidden print area for cooking schedule -->
+<div id="cookingSchedulePrintArea" style="display:none;">
+    <h2 style="margin-bottom: 4px;">🔥 Cooking Schedule</h2>
+    <h3 style="color: #28a745; margin-bottom: 16px;" id="print_recipe_name">{{ recipe.recipe_name }}</h3>
+    <table style="width: 100%; border-collapse: collapse; font-size: 14pt;">
+        <tr><td style="padding: 10px; border-bottom: 1px solid #dee2e6;">Serving Time</td><td style="text-align:right; font-weight:600;" id="print_serving_time_top">—</td></tr>
+        <tr><td style="padding: 10px; border-bottom: 1px solid #dee2e6;">Fire Lighting Duration</td><td style="text-align:right; font-weight:600;">{{ cooking_calculation.fire_lighting_duration }} mins</td></tr>
+        <tr><td style="padding: 10px; border-bottom: 1px solid #dee2e6;">Resting Duration</td><td style="text-align:right; font-weight:600;">{{ cooking_calculation.resting_duration }} mins</td></tr>
+        <tr><td style="padding: 10px; border-bottom: 1px solid #dee2e6;">Cutting Time & Making Sauce</td><td style="text-align:right; font-weight:600;">{{ cooking_calculation.cutting_sauce_duration }} mins</td></tr>
+        <tr><td colspan="2" style="padding: 10px;">&nbsp;</td></tr>
+        <tr><td style="padding: 10px; border-bottom: 1px solid #dee2e6;" id="print_meat_label">Meat Weight</td><td style="text-align:right; font-weight:600;" id="print_meat_weight">—</td></tr>
+        <tr><td style="padding: 10px; border-bottom: 1px solid #dee2e6;" id="print_cooking_time_label">Cooking Time</td><td style="text-align:right; font-weight:600;" id="print_cooking_time">—</td></tr>
+        <tr><td colspan="2" style="padding: 10px;">&nbsp;</td></tr>
+        <tr style="background: #f8f9fa;"><td style="padding: 10px; border-bottom: 1px solid #dee2e6;">🔥 Light Fire</td><td style="text-align:right; font-weight:600;" id="print_light_fire">—</td></tr>
+        <tr style="background: #f8f9fa;"><td style="padding: 10px; border-bottom: 1px solid #dee2e6;">🥩 Start Cooking on Braai</td><td style="text-align:right; font-weight:600;" id="print_start_cooking">—</td></tr>
+        <tr style="background: #f8f9fa;"><td style="padding: 10px; border-bottom: 1px solid #dee2e6;">✅ Finish Cooking / Start Resting</td><td style="text-align:right; font-weight:600;" id="print_finish_cooking">—</td></tr>
+        <tr style="background: #f8f9fa;"><td style="padding: 10px; border-bottom: 1px solid #dee2e6;">🔪 Start Cutting & Making Sauce</td><td style="text-align:right; font-weight:600;" id="print_start_cutting">—</td></tr>
+        <tr style="background: #f8f9fa;"><td style="padding: 10px; font-weight:700; color: #28a745;">🍽️ Serving Time</td><td style="text-align:right; font-weight:700; color: #28a745;" id="print_serving">—</td></tr>
+    </table>
+</div>
+{% endif %}
 
 <!-- Shopping List Modal -->
 <div class="modal fade" id="shoppingListModal" tabindex="-1" role="dialog" aria-labelledby="shoppingListModalLabel" aria-hidden="true">
@@ -2133,6 +2248,101 @@ function decimalToFraction(decimal) {
 
     return `${wholePart}${fractionStr}`;
 }
+
+// ========== COOKING CALCULATOR MODAL ==========
+{% if cooking_calculation %}
+const cookingCalcData = {
+    fireLighting: {{ cooking_calculation.fire_lighting_duration }},
+    resting: {{ cooking_calculation.resting_duration }},
+    cuttingSauce: {{ cooking_calculation.cutting_sauce_duration }},
+    rate1: {{ cooking_calculation.rate1_minutes_per_500g }},
+    threshold: {{ cooking_calculation.rate1_threshold_grams|default:'null' }},
+    rate2: {{ cooking_calculation.rate2_minutes_per_500g|default:'null' }},
+};
+
+function openCookingCalcModal() {
+    $('#cookingCalcModal').modal('show');
+    updateModalSchedule();
+}
+
+function calcModalCookingMinutes(weight) {
+    const rate1 = cookingCalcData.rate1;
+    const threshold = cookingCalcData.threshold;
+    const rate2 = cookingCalcData.rate2;
+
+    if (!threshold || !rate2) {
+        return (weight / 500) * rate1;
+    }
+    if (weight <= threshold) {
+        return (weight / 500) * rate1;
+    }
+    return (threshold / 500) * rate1 + ((weight - threshold) / 500) * rate2;
+}
+
+function subtractMinutes(timeStr, minutes) {
+    const [h, m] = timeStr.split(':').map(Number);
+    const total = h * 60 + m - minutes;
+    const hh = Math.floor(((total % 1440) + 1440) % 1440 / 60);
+    const mm = ((total % 1440) + 1440) % 1440 % 60;
+    return `${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`;
+}
+
+function updateModalSchedule() {
+    const servingTime = document.getElementById('modal_serving_time').value;
+    const meatWeight = parseInt(document.getElementById('modal_meat_weight').value) || 0;
+
+    const infoEl = document.getElementById('modal_cooking_info');
+    const scheduleEl = document.getElementById('modal_schedule');
+
+    if (!servingTime || !meatWeight) {
+        infoEl.style.display = 'none';
+        scheduleEl.style.display = 'none';
+        return;
+    }
+
+    const cookingMins = Math.round(calcModalCookingMinutes(meatWeight));
+    const hours = Math.floor(cookingMins / 60);
+    const mins = cookingMins % 60;
+    const cookingDisplay = hours > 0 ? `${hours}h ${mins}m` : `${mins} minutes`;
+
+    infoEl.innerHTML = `<i class="fas fa-info-circle"></i> Calculated cooking time: <strong>${cookingDisplay}</strong> for ${meatWeight.toLocaleString()}g of meat`;
+    infoEl.style.display = 'block';
+
+    const startCutting = subtractMinutes(servingTime, cookingCalcData.cuttingSauce);
+    const finishCooking = subtractMinutes(startCutting, cookingCalcData.resting);
+    const startCooking = subtractMinutes(finishCooking, cookingMins);
+    const lightFire = subtractMinutes(startCooking, cookingCalcData.fireLighting);
+
+    document.getElementById('ms_light_fire').textContent = lightFire;
+    document.getElementById('ms_start_cooking').textContent = startCooking;
+    document.getElementById('ms_finish_cooking').textContent = finishCooking;
+    document.getElementById('ms_start_cutting').textContent = startCutting;
+    document.getElementById('ms_serving').textContent = servingTime;
+
+    scheduleEl.style.display = 'block';
+
+    // Sync print area
+    document.getElementById('print_serving_time_top').textContent = servingTime;
+    document.getElementById('print_meat_weight').textContent = `${meatWeight.toLocaleString()}g`;
+    document.getElementById('print_cooking_time').textContent = cookingDisplay;
+    document.getElementById('print_light_fire').textContent = lightFire;
+    document.getElementById('print_start_cooking').textContent = startCooking;
+    document.getElementById('print_finish_cooking').textContent = finishCooking;
+    document.getElementById('print_start_cutting').textContent = startCutting;
+    document.getElementById('print_serving').textContent = servingTime;
+}
+
+function printCookingSchedule() {
+    const printArea = document.getElementById('cookingSchedulePrintArea');
+    const originalBody = document.body.innerHTML;
+    document.body.innerHTML = printArea.innerHTML;
+    window.print();
+    document.body.innerHTML = originalBody;
+    // Reinitialize Bootstrap modals after restoring body
+    location.reload();
+}
+{% endif %}
+// ========== END COOKING CALCULATOR MODAL ==========
 
 </script>
 

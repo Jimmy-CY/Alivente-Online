@@ -10605,11 +10605,15 @@ def view_recipe(request, recipe_id):
 
     # Get instructions
     instructions = RecipeInstruction.objects.filter(recipe=recipe).order_by('step_number')
-    
+
+    # Get cooking calculation if exists
+    cooking_calc = getattr(recipe, 'cooking_calculation', None)
+
     context = {
         'recipe': recipe,
         'ingredients': ingredients,
         'instructions': instructions,
+        'cooking_calculation': cooking_calc,
     }
     
     return render(request, 'view_recipe.html', context)
