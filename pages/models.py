@@ -1796,16 +1796,28 @@ class MealPlanDay(models.Model):
 
 class CookingCalculation(models.Model):
     """Optional cooking time calculator for braai/BBQ/roast recipes"""
+
+    COOKING_METHOD_CHOICES = [
+        ('braai', 'Braai / BBQ'),
+        ('oven', 'Oven'),
+    ]
+
     recipe = models.OneToOneField(
         Recipe,
         on_delete=models.CASCADE,
         related_name='cooking_calculation'
     )
+    cooking_method = models.CharField(
+        max_length=10,
+        choices=COOKING_METHOD_CHOICES,
+        default='braai',
+        help_text='Braai/BBQ or Oven'
+    )
     serving_time = models.TimeField(
         help_text='Default serving time (e.g. 20:00)'
     )
     fire_lighting_duration = models.PositiveIntegerField(
-        help_text='Fire lighting time in minutes'
+        help_text='Fire lighting / oven pre-heating time in minutes'
     )
     resting_duration = models.PositiveIntegerField(
         help_text='Resting time in minutes'
@@ -1829,6 +1841,10 @@ class CookingCalculation(models.Model):
         null=True, blank=True,
         help_text='Cooking rate for weight above threshold (mins per 500g). Leave blank if single rate.'
     )
+    additional_cooking_minutes = models.PositiveIntegerField(
+        null=True, blank=True,
+        help_text='Fixed extra cooking time in minutes added regardless of weight (e.g. searing time)'
+    )
 
     class Meta:
         db_table = 'cooking_calculations'
@@ -1840,22 +1856,24 @@ class CookingCalculation(models.Model):
 
         if not self.rate1_threshold_grams or not self.rate2_minutes_per_500g:
             # Single rate
-            return (weight / 500) * rate1
-
-        threshold = self.rate1_threshold_grams
-        rate2 = float(self.rate2_minutes_per_500g)
-
-        if weight <= threshold:
-            return (weight / 500) * rate1
+            weight_based = (weight / 500) * rate1
         else:
-            return (threshold / 500) * rate1 + ((weight - threshold) / 500) * rate2
+            threshold = self.rate1_threshold_grams
+            rate2 = float(self.rate2_minutes_per_500g)
+            if weight <= threshold:
+                weight_based = (weight / 500) * rate1
+            else:
+                weight_based = (threshold / 500) * rate1 + ((weight - threshold) / 500) * rate2
+
+        # Add fixed additional cooking time if set
+        additional = self.additional_cooking_minutes or 0
+        return weight_based + additional
 
     def calculate_schedule(self, serving_time=None, weight_grams=None):
         """Return full schedule as dict, working backwards from serving time"""
         from datetime import datetime, timedelta
 
         base_time = serving_time or self.serving_time
-        # Convert time to datetime for arithmetic
         base_dt = datetime.combine(datetime.today(), base_time)
 
         cooking_minutes = self.calculate_cooking_minutes(weight_grams)

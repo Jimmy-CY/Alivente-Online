@@ -1080,7 +1080,7 @@ body {
                 <!-- Saved defaults info -->
                 <div class="alert alert-light" style="border-left: 4px solid #f5576c; font-size: 13px; color: #6c757d;">
                     <i class="fas fa-info-circle"></i>
-                    Fire lighting: <strong>{{ cooking_calculation.fire_lighting_duration }} mins</strong> &nbsp;|&nbsp;
+                    <span id="modal_fire_label">🔥 Fire Lighting Time (mins)</span>: <strong>{{ cooking_calculation.fire_lighting_duration }} mins</strong> &nbsp;|&nbsp;
                     Resting: <strong>{{ cooking_calculation.resting_duration }} mins</strong> &nbsp;|&nbsp;
                     Cutting & Sauce: <strong>{{ cooking_calculation.cutting_sauce_duration }} mins</strong> &nbsp;|&nbsp;
                     Rate 1: <strong>{{ cooking_calculation.rate1_minutes_per_500g }} mins/500g</strong>
@@ -1101,7 +1101,7 @@ body {
                     </div>
                     <table style="width: 100%; border-collapse: collapse;">
                         <tr style="border-bottom: 1px solid rgba(0,0,0,0.07);">
-                            <td style="padding: 10px 0; color: #495057; font-size: 15px;">🔥 Light Fire</td>
+                            <td style="padding: 10px 0; color: #495057; font-size: 15px;" id="ms_label_fire">🔥 Light Fire</td>
                             <td style="text-align: right; font-weight: 600; font-size: 16px; letter-spacing: 1px;" id="ms_light_fire">—</td>
                         </tr>
                         <tr style="border-bottom: 1px solid rgba(0,0,0,0.07);">
@@ -1140,14 +1140,17 @@ body {
     <h3 style="color: #28a745; margin-bottom: 16px;" id="print_recipe_name">{{ recipe.recipe_name }}</h3>
     <table style="width: 100%; border-collapse: collapse; font-size: 14pt;">
         <tr><td style="padding: 10px; border-bottom: 1px solid #dee2e6;">Serving Time</td><td style="text-align:right; font-weight:600;" id="print_serving_time_top">—</td></tr>
-        <tr><td style="padding: 10px; border-bottom: 1px solid #dee2e6;">Fire Lighting Duration</td><td style="text-align:right; font-weight:600;">{{ cooking_calculation.fire_lighting_duration }} mins</td></tr>
+        <tr><td style="padding: 10px; border-bottom: 1px solid #dee2e6;" id="print_fire_label">Fire Lighting Duration</td><td style="text-align:right; font-weight:600;">{{ cooking_calculation.fire_lighting_duration }} mins</td></tr>
         <tr><td style="padding: 10px; border-bottom: 1px solid #dee2e6;">Resting Duration</td><td style="text-align:right; font-weight:600;">{{ cooking_calculation.resting_duration }} mins</td></tr>
         <tr><td style="padding: 10px; border-bottom: 1px solid #dee2e6;">Cutting Time & Making Sauce</td><td style="text-align:right; font-weight:600;">{{ cooking_calculation.cutting_sauce_duration }} mins</td></tr>
         <tr><td colspan="2" style="padding: 10px;">&nbsp;</td></tr>
         <tr><td style="padding: 10px; border-bottom: 1px solid #dee2e6;" id="print_meat_label">Meat Weight</td><td style="text-align:right; font-weight:600;" id="print_meat_weight">—</td></tr>
         <tr><td style="padding: 10px; border-bottom: 1px solid #dee2e6;" id="print_cooking_time_label">Cooking Time</td><td style="text-align:right; font-weight:600;" id="print_cooking_time">—</td></tr>
+        {% if cooking_calculation.additional_cooking_minutes %}
+        <tr><td style="padding: 10px; border-bottom: 1px solid #dee2e6;">Additional Time</td><td style="text-align:right; font-weight:600;">{{ cooking_calculation.additional_cooking_minutes }} mins</td></tr>
+        {% endif %}
         <tr><td colspan="2" style="padding: 10px;">&nbsp;</td></tr>
-        <tr style="background: #f8f9fa;"><td style="padding: 10px; border-bottom: 1px solid #dee2e6;">🔥 Light Fire</td><td style="text-align:right; font-weight:600;" id="print_light_fire">—</td></tr>
+        <tr style="background: #f8f9fa;"><td style="padding: 10px; border-bottom: 1px solid #dee2e6;" id="print_light_fire_label">🔥 Light Fire</td><td style="text-align:right; font-weight:600;" id="print_light_fire">—</td></tr>
         <tr style="background: #f8f9fa;"><td style="padding: 10px; border-bottom: 1px solid #dee2e6;">🥩 Start Cooking on Braai</td><td style="text-align:right; font-weight:600;" id="print_start_cooking">—</td></tr>
         <tr style="background: #f8f9fa;"><td style="padding: 10px; border-bottom: 1px solid #dee2e6;">✅ Finish Cooking / Start Resting</td><td style="text-align:right; font-weight:600;" id="print_finish_cooking">—</td></tr>
         <tr style="background: #f8f9fa;"><td style="padding: 10px; border-bottom: 1px solid #dee2e6;">🔪 Start Cutting & Making Sauce</td><td style="text-align:right; font-weight:600;" id="print_start_cutting">—</td></tr>
@@ -2258,9 +2261,17 @@ const cookingCalcData = {
     rate1: {{ cooking_calculation.rate1_minutes_per_500g }},
     threshold: {{ cooking_calculation.rate1_threshold_grams|default:'null' }},
     rate2: {{ cooking_calculation.rate2_minutes_per_500g|default:'null' }},
+    additionalMins: {{ cooking_calculation.additional_cooking_minutes|default:0 }},
+    cookingMethod: '{{ cooking_calculation.cooking_method }}',
 };
 
 function openCookingCalcModal() {
+    // Set dynamic labels based on cooking method
+    const isOven = cookingCalcData.cookingMethod === 'oven';
+    document.getElementById('modal_fire_label').textContent = isOven ? '🫕 Preheat Time (mins)' : '🔥 Fire Lighting Time (mins)';
+    document.getElementById('ms_label_fire').textContent = isOven ? '🫕 Pre-Heat Oven' : '🔥 Light Fire';
+    document.getElementById('print_fire_label').textContent = isOven ? 'Oven Pre-Heating Duration' : 'Fire Lighting Duration';
+    document.getElementById('print_light_fire_label').textContent = isOven ? '🫕 Pre-Heat Oven' : '🔥 Light Fire';
     $('#cookingCalcModal').modal('show');
     updateModalSchedule();
 }
@@ -2300,12 +2311,13 @@ function updateModalSchedule() {
         return;
     }
 
-    const cookingMins = Math.round(calcModalCookingMinutes(meatWeight));
+    const cookingMins = Math.round(calcModalCookingMinutes(meatWeight) + cookingCalcData.additionalMins);
     const hours = Math.floor(cookingMins / 60);
     const mins = cookingMins % 60;
     const cookingDisplay = hours > 0 ? `${hours}h ${mins}m` : `${mins} minutes`;
 
-    infoEl.innerHTML = `<i class="fas fa-info-circle"></i> Calculated cooking time: <strong>${cookingDisplay}</strong> for ${meatWeight.toLocaleString()}g of meat`;
+    const additionalStr = cookingCalcData.additionalMins > 0 ? ` (includes ${cookingCalcData.additionalMins} min additional time)` : '';
+    infoEl.innerHTML = `<i class="fas fa-info-circle"></i> Calculated cooking time: <strong>${cookingDisplay}</strong> for ${meatWeight.toLocaleString()}g of meat${additionalStr}`;
     infoEl.style.display = 'block';
 
     const startCutting = subtractMinutes(servingTime, cookingCalcData.cuttingSauce);

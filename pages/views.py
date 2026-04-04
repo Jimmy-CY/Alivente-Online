@@ -10985,12 +10985,15 @@ def edit_recipe(request, recipe_id):
                 rate1 = request.POST.get('calc_rate1')
                 rate1_threshold = request.POST.get('calc_rate1_threshold') or None
                 rate2 = request.POST.get('calc_rate2') or None
+                cooking_method = request.POST.get('calc_cooking_method', 'braai')
+                additional_mins = request.POST.get('calc_additional_minutes') or None
 
                 if all([serving_time, fire_lighting, resting, cutting_sauce, meat_weight, rate1]):
                     CookingCalculation.objects.update_or_create(
                         recipe=recipe,
                         defaults={
                             'serving_time': serving_time,
+                            'cooking_method': cooking_method,
                             'fire_lighting_duration': int(fire_lighting),
                             'resting_duration': int(resting),
                             'cutting_sauce_duration': int(cutting_sauce),
@@ -10998,6 +11001,7 @@ def edit_recipe(request, recipe_id):
                             'rate1_minutes_per_500g': rate1,
                             'rate1_threshold_grams': int(rate1_threshold) if rate1_threshold else None,
                             'rate2_minutes_per_500g': rate2 if rate2 else None,
+                            'additional_cooking_minutes': int(additional_mins) if additional_mins else None,
                         }
                     )
             else:

@@ -1267,7 +1267,7 @@ tr.sortable-chosen {
                     {% endif %}
                 </div>
 
-        <!-- Cooking Calculator Section -->
+            <!-- Cooking Calculator Section -->
             <div class="cooking-calc-section">
                 <div class="cooking-calc-toggle" onclick="toggleCookingCalc(this)" id="cookingCalcToggle">
                     <h2 class="section-title">
@@ -1285,6 +1285,25 @@ tr.sortable-chosen {
                     <script>document.getElementById('calc_enabled').value = '1';</script>
                     {% endif %}
 
+                    <!-- Cooking Method -->
+                    <div class="form-group mb-4">
+                        <label><strong>🔥 Cooking Method</strong></label>
+                        <div style="display: flex; gap: 16px; margin-top: 8px;">
+                            <label style="display: flex; align-items: center; gap: 8px; padding: 10px 20px; border: 2px solid #dee2e6; border-radius: 8px; cursor: pointer; flex: 1;" id="method-braai-label">
+                                <input type="radio" name="calc_cooking_method" id="calc_method_braai" value="braai"
+                                       {% if not cooking_calculation or cooking_calculation.cooking_method == 'braai' %}checked{% endif %}
+                                       onchange="updateCookingMethodLabel()">
+                                <span style="font-weight: 600;">🔥 Braai / BBQ</span>
+                            </label>
+                            <label style="display: flex; align-items: center; gap: 8px; padding: 10px 20px; border: 2px solid #dee2e6; border-radius: 8px; cursor: pointer; flex: 1;" id="method-oven-label">
+                                <input type="radio" name="calc_cooking_method" id="calc_method_oven" value="oven"
+                                       {% if cooking_calculation.cooking_method == 'oven' %}checked{% endif %}
+                                       onchange="updateCookingMethodLabel()">
+                                <span style="font-weight: 600;">🫕 Oven</span>
+                            </label>
+                        </div>
+                    </div>
+
                     <div class="row">
                         <div class="col-md-3">
                             <div class="form-group">
@@ -1296,7 +1315,7 @@ tr.sortable-chosen {
                         </div>
                         <div class="col-md-3">
                             <div class="form-group">
-                                <label><i class="fas fa-fire"></i> <strong>Fire Lighting Time</strong> (mins)</label>
+                                <label id="calc_fire_label"><i class="fas fa-fire"></i> <strong>Fire Lighting Time</strong> (mins)</label>
                                 <input type="number" class="form-control" id="calc_fire_lighting" name="calc_fire_lighting"
                                        min="0" placeholder="e.g. 45"
                                        value="{{ cooking_calculation.fire_lighting_duration|default:'' }}"
@@ -1364,6 +1383,20 @@ tr.sortable-chosen {
                         </div>
                     </div>
 
+                    <!-- Additional Cooking Time -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label><i class="fas fa-plus-circle"></i> <strong>Additional Cooking Time</strong> (mins)</label>
+                                <input type="number" class="form-control" id="calc_additional_minutes" name="calc_additional_minutes"
+                                       min="0" placeholder="e.g. 20 (optional)"
+                                       value="{{ cooking_calculation.additional_cooking_minutes|default:'' }}"
+                                       oninput="updateCalcPreview()">
+                                <small class="text-muted">Fixed time added to cooking regardless of weight (e.g. searing, browning)</small>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Live Preview -->
                     <div class="calc-cooking-info" id="calcCookingInfo"></div>
 
@@ -1373,7 +1406,7 @@ tr.sortable-chosen {
                             Cooking Schedule
                         </div>
                         <div class="calc-schedule-row">
-                            <span class="label">🔥 Light Fire</span>
+                            <span class="label" id="sched_label_fire">🔥 Light Fire</span>
                             <span class="time" id="sched_light_fire">—</span>
                         </div>
                         <div class="calc-schedule-row">
@@ -3365,11 +3398,11 @@ function updateCalcPreview() {
     const rate1 = parseFloat(document.getElementById('calc_rate1').value) || 0;
     const threshold = parseInt(document.getElementById('calc_rate1_threshold').value) || 0;
     const rate2 = parseFloat(document.getElementById('calc_rate2').value) || 0;
+    const additionalMins = parseInt(document.getElementById('calc_additional_minutes').value) || 0;
 
     const infoBox = document.getElementById('calcCookingInfo');
     const preview = document.getElementById('calcSchedulePreview');
 
-    // Need at minimum serving time, meat weight, rate1 to show preview
     if (!servingTime || !meatWeight || !rate1) {
         preview.classList.remove('show');
         infoBox.classList.remove('show');
@@ -3380,20 +3413,17 @@ function updateCalcPreview() {
         meatWeight, rate1,
         threshold || null,
         rate2 || null
-    );
+    ) + additionalMins;
     const cookingRounded = Math.round(cookingMins);
 
-    // Show cooking time info
     const hours = Math.floor(cookingRounded / 60);
     const mins = cookingRounded % 60;
-    const cookingDisplay = hours > 0
-        ? `${hours}h ${mins}m`
-        : `${mins} minutes`;
+    const cookingDisplay = hours > 0 ? `${hours}h ${mins}m` : `${mins} minutes`;
+    const additionalStr = additionalMins > 0 ? ` (includes ${additionalMins} min additional time)` : '';
 
-    infoBox.innerHTML = `<i class="fas fa-info-circle"></i> Calculated cooking time: <strong>${cookingDisplay}</strong> for ${meatWeight.toLocaleString()}g of meat`;
+    infoBox.innerHTML = `<i class="fas fa-info-circle"></i> Calculated cooking time: <strong>${cookingDisplay}</strong> for ${meatWeight.toLocaleString()}g of meat${additionalStr}`;
     infoBox.classList.add('show');
 
-    // Calculate schedule working backwards
     const startCutting = addMinutesToTime(servingTime, cuttingSauce);
     const finishCooking = addMinutesToTime(startCutting, resting);
     const startCooking = addMinutesToTime(finishCooking, cookingRounded);
@@ -3408,11 +3438,32 @@ function updateCalcPreview() {
     preview.classList.add('show');
 }
 
+function updateCookingMethodLabel() {
+    const isOven = document.getElementById('calc_method_oven').checked;
+    const fireLabel = document.getElementById('calc_fire_label');
+    const schedFireLabel = document.getElementById('sched_label_fire');
+    const braaiLabel = document.getElementById('method-braai-label');
+    const ovenLabel = document.getElementById('method-oven-label');
+
+    if (isOven) {
+        fireLabel.innerHTML = '<i class="fas fa-temperature-high"></i> <strong>Oven Heating Time</strong> (mins)';
+        schedFireLabel.textContent = '🫕 Pre-Heat Oven';
+        braaiLabel.style.borderColor = '#dee2e6';
+        ovenLabel.style.borderColor = '#17a2b8';
+    } else {
+        fireLabel.innerHTML = '<i class="fas fa-fire"></i> <strong>Fire Lighting Time</strong> (mins)';
+        schedFireLabel.textContent = '🔥 Light Fire';
+        braaiLabel.style.borderColor = '#17a2b8';
+        ovenLabel.style.borderColor = '#dee2e6';
+    }
+}
+
 // Init cooking calc toggle state on page load
 document.addEventListener('DOMContentLoaded', function() {
     {% if cooking_calculation %}
     const toggle = document.getElementById('cookingCalcToggle');
     toggle.classList.add('open');
+    updateCookingMethodLabel();
     updateCalcPreview();
     {% endif %}
 });
