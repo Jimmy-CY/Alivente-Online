@@ -10842,21 +10842,31 @@ def edit_recipe(request, recipe_id):
                             messages.warning(request, 'Cannot merge: existing document is not a PDF. Replaced instead.')
                             if recipe.recipe_document.storage.exists(recipe.recipe_document.name):
                                 recipe.recipe_document.delete(save=False)
+                            recipe.recipe_document = None
+                            recipe.save()
                             pdf_content, pdf_filename = convert_to_pdf(uploaded_file)
-                            recipe.recipe_document.save(pdf_filename, pdf_content, save=True)
+                            name_part = os.path.splitext(pdf_filename)[0]
+                            unique_filename = f"{name_part}_{uuid.uuid4().hex[:8]}.pdf"
+                            recipe.recipe_document.save(unique_filename, pdf_content, save=True)
                         else:
                             pdf_content, pdf_filename = convert_to_pdf(uploaded_file)
                             merged_pdf = merge_pdfs(recipe.recipe_document, pdf_content)
                             original_name = os.path.splitext(os.path.basename(recipe.recipe_document.name))[0]
                             if recipe.recipe_document.storage.exists(recipe.recipe_document.name):
                                 recipe.recipe_document.delete(save=False)
-                            recipe.recipe_document.save(f"{original_name}_merged.pdf", merged_pdf, save=True)
+                            recipe.recipe_document = None
+                            recipe.save()
+                            recipe.recipe_document.save(f"{original_name}_merged_{uuid.uuid4().hex[:8]}.pdf", merged_pdf, save=True)
                     else:
                         if recipe.recipe_document:
                             if recipe.recipe_document.storage.exists(recipe.recipe_document.name):
                                 recipe.recipe_document.delete(save=False)
+                            recipe.recipe_document = None
+                            recipe.save()
                         pdf_content, pdf_filename = convert_to_pdf(uploaded_file)
-                        recipe.recipe_document.save(pdf_filename, pdf_content, save=True)
+                        name_part = os.path.splitext(pdf_filename)[0]
+                        unique_filename = f"{name_part}_{uuid.uuid4().hex[:8]}.pdf"
+                        recipe.recipe_document.save(unique_filename, pdf_content, save=True)
                 except Exception as e:
                     messages.warning(request, f'Recipe saved but document upload failed: {str(e)}')
             
