@@ -10383,9 +10383,8 @@ def recipe_manage_document(request):
             if action == 'delete_document':
                 if recipe.recipe_document:
                     if recipe.recipe_document.storage.exists(recipe.recipe_document.name):
-                        recipe.recipe_document.delete(save=False)
-                    recipe.recipe_document = None
-                    recipe.save()
+                        recipe.recipe_document.storage.delete(recipe.recipe_document.name)
+                    Recipe.objects.filter(pk=recipe_id).update(recipe_document='')
                     messages.success(request, f'Document deleted successfully for "{recipe.recipe_name}"!')
                 else:
                     messages.warning(request, 'No document found to delete.')
@@ -10418,10 +10417,12 @@ def recipe_manage_document(request):
                             merged_pdf = merge_pdfs(recipe.recipe_document, pdf_content)
 
                             original_name = os.path.splitext(os.path.basename(recipe.recipe_document.name))[0]
-                            new_filename = f"{original_name}_merged.pdf"
+                            new_filename = f"{original_name}_merged_{uuid.uuid4().hex[:8]}.pdf"
 
                             if recipe.recipe_document.storage.exists(recipe.recipe_document.name):
-                                recipe.recipe_document.delete(save=False)
+                                recipe.recipe_document.storage.delete(recipe.recipe_document.name)
+                            Recipe.objects.filter(pk=recipe_id).update(recipe_document='')
+                            recipe = Recipe.objects.get(pk=recipe_id)
 
                             recipe.recipe_document.save(new_filename, merged_pdf, save=True)
                             messages.success(request, f'Documents merged successfully for "{recipe.recipe_name}"!')
@@ -10434,11 +10435,15 @@ def recipe_manage_document(request):
                         # Replace or new upload
                         if recipe.recipe_document:
                             if recipe.recipe_document.storage.exists(recipe.recipe_document.name):
-                                recipe.recipe_document.delete(save=False)
+                                recipe.recipe_document.storage.delete(recipe.recipe_document.name)
+                            Recipe.objects.filter(pk=recipe_id).update(recipe_document='')
+                            recipe = Recipe.objects.get(pk=recipe_id)
 
                         try:
                             pdf_content, pdf_filename = convert_to_pdf(uploaded_file)
-                            recipe.recipe_document.save(pdf_filename, pdf_content, save=True)
+                            name_part = os.path.splitext(pdf_filename)[0]
+                            unique_filename = f"{name_part}_{uuid.uuid4().hex[:8]}.pdf"
+                            recipe.recipe_document.save(unique_filename, pdf_content, save=True)
 
                             if file_extension != '.pdf':
                                 messages.success(request, f'Document uploaded and converted to PDF for "{recipe.recipe_name}"!')
@@ -10836,37 +10841,42 @@ def edit_recipe(request, recipe_id):
             if request.FILES.get('recipe_document'):
                 uploaded_file = request.FILES['recipe_document']
                 doc_action = request.POST.get('doc_action', 'replace')
+
+                # Re-fetch recipe from DB to avoid stale FileField state
+                recipe_fresh = Recipe.objects.get(pk=recipe.pk)
+
                 try:
-                    if doc_action == 'add_to_existing' and recipe.recipe_document:
-                        if not is_pdf(recipe.recipe_document):
+                    if doc_action == 'add_to_existing' and recipe_fresh.recipe_document:
+                        if not is_pdf(recipe_fresh.recipe_document):
                             messages.warning(request, 'Cannot merge: existing document is not a PDF. Replaced instead.')
-                            if recipe.recipe_document.storage.exists(recipe.recipe_document.name):
-                                recipe.recipe_document.delete(save=False)
-                            recipe.recipe_document = None
-                            recipe.save()
+                            if recipe_fresh.recipe_document.storage.exists(recipe_fresh.recipe_document.name):
+                                recipe_fresh.recipe_document.storage.delete(recipe_fresh.recipe_document.name)
+                            Recipe.objects.filter(pk=recipe.pk).update(recipe_document='')
+                            recipe_fresh = Recipe.objects.get(pk=recipe.pk)
                             pdf_content, pdf_filename = convert_to_pdf(uploaded_file)
                             name_part = os.path.splitext(pdf_filename)[0]
                             unique_filename = f"{name_part}_{uuid.uuid4().hex[:8]}.pdf"
-                            recipe.recipe_document.save(unique_filename, pdf_content, save=True)
+                            recipe_fresh.recipe_document.save(unique_filename, pdf_content, save=True)
                         else:
                             pdf_content, pdf_filename = convert_to_pdf(uploaded_file)
-                            merged_pdf = merge_pdfs(recipe.recipe_document, pdf_content)
-                            original_name = os.path.splitext(os.path.basename(recipe.recipe_document.name))[0]
-                            if recipe.recipe_document.storage.exists(recipe.recipe_document.name):
-                                recipe.recipe_document.delete(save=False)
-                            recipe.recipe_document = None
-                            recipe.save()
-                            recipe.recipe_document.save(f"{original_name}_merged_{uuid.uuid4().hex[:8]}.pdf", merged_pdf, save=True)
+                            merged_pdf = merge_pdfs(recipe_fresh.recipe_document, pdf_content)
+                            original_name = os.path.splitext(os.path.basename(recipe_fresh.recipe_document.name))[0]
+                            if recipe_fresh.recipe_document.storage.exists(recipe_fresh.recipe_document.name):
+                                recipe_fresh.recipe_document.storage.delete(recipe_fresh.recipe_document.name)
+                            Recipe.objects.filter(pk=recipe.pk).update(recipe_document='')
+                            recipe_fresh = Recipe.objects.get(pk=recipe.pk)
+                            recipe_fresh.recipe_document.save(f"{original_name}_merged_{uuid.uuid4().hex[:8]}.pdf", merged_pdf, save=True)
                     else:
-                        if recipe.recipe_document:
-                            if recipe.recipe_document.storage.exists(recipe.recipe_document.name):
-                                recipe.recipe_document.delete(save=False)
-                            recipe.recipe_document = None
-                            recipe.save()
+                        # Replace (or new upload with no existing doc)
+                        if recipe_fresh.recipe_document:
+                            if recipe_fresh.recipe_document.storage.exists(recipe_fresh.recipe_document.name):
+                                recipe_fresh.recipe_document.storage.delete(recipe_fresh.recipe_document.name)
+                            Recipe.objects.filter(pk=recipe.pk).update(recipe_document='')
+                            recipe_fresh = Recipe.objects.get(pk=recipe.pk)
                         pdf_content, pdf_filename = convert_to_pdf(uploaded_file)
                         name_part = os.path.splitext(pdf_filename)[0]
                         unique_filename = f"{name_part}_{uuid.uuid4().hex[:8]}.pdf"
-                        recipe.recipe_document.save(unique_filename, pdf_content, save=True)
+                        recipe_fresh.recipe_document.save(unique_filename, pdf_content, save=True)
                 except Exception as e:
                     messages.warning(request, f'Recipe saved but document upload failed: {str(e)}')
             
@@ -11015,7 +11025,6 @@ def edit_recipe(request, recipe_id):
                         }
                     )
             else:
-                # Remove calculation if section was disabled
                 CookingCalculation.objects.filter(recipe=recipe).delete()
 
             messages.success(request, f'Recipe "{recipe.recipe_name}" has been updated successfully!')
@@ -11076,7 +11085,6 @@ def edit_recipe(request, recipe_id):
 
     all_units = MeasurementUnit.objects.all().order_by('name')
 
-    # Get existing cooking calculation if any
     cooking_calc = getattr(recipe, 'cooking_calculation', None)
 
     context = {
@@ -11099,7 +11107,6 @@ def edit_recipe(request, recipe_id):
     }
 
     return render(request, 'preview_imported_recipe.html', context)
-
 @login_required
 @require_POST
 def add_recipe_course(request):
