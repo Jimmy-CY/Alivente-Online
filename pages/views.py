@@ -98,7 +98,7 @@ from urllib.parse import urlparse, parse_qs
 from xhtml2pdf import pisa
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-from .utils import merge_pdfs, is_pdf, convert_to_pdf
+from .utils import merge_pdfs, merge_pdfs_from_bytes, is_pdf, convert_to_pdf
 from PIL import Image
 from docx import Document
 from io import BytesIO
@@ -10847,10 +10847,16 @@ def edit_recipe(request, recipe_id):
 
                 try:
                     if doc_action == 'add_to_existing' and recipe_fresh.recipe_document:
-                        if not is_pdf(recipe_fresh.recipe_document):
+                        # Read existing file fully into memory and close handle BEFORE any delete
+                        existing_file_name = recipe_fresh.recipe_document.name
+                        with recipe_fresh.recipe_document.open('rb') as f:
+                            existing_bytes = f.read()
+                        # File handle is now closed — safe to delete on Windows
+
+                        if existing_bytes[:4] != b'%PDF':
                             messages.warning(request, 'Cannot merge: existing document is not a PDF. Replaced instead.')
-                            if recipe_fresh.recipe_document.storage.exists(recipe_fresh.recipe_document.name):
-                                recipe_fresh.recipe_document.storage.delete(recipe_fresh.recipe_document.name)
+                            if recipe_fresh.recipe_document.storage.exists(existing_file_name):
+                                recipe_fresh.recipe_document.storage.delete(existing_file_name)
                             Recipe.objects.filter(pk=recipe.pk).update(recipe_document='')
                             recipe_fresh = Recipe.objects.get(pk=recipe.pk)
                             pdf_content, pdf_filename = convert_to_pdf(uploaded_file)
@@ -10859,24 +10865,32 @@ def edit_recipe(request, recipe_id):
                             recipe_fresh.recipe_document.save(unique_filename, pdf_content, save=True)
                         else:
                             pdf_content, pdf_filename = convert_to_pdf(uploaded_file)
-                            merged_pdf = merge_pdfs(recipe_fresh.recipe_document, pdf_content)
-                            original_name = os.path.splitext(os.path.basename(recipe_fresh.recipe_document.name))[0]
-                            if recipe_fresh.recipe_document.storage.exists(recipe_fresh.recipe_document.name):
-                                recipe_fresh.recipe_document.storage.delete(recipe_fresh.recipe_document.name)
+                            merged_pdf = merge_pdfs_from_bytes(existing_bytes, pdf_content)
+                            original_name = os.path.splitext(os.path.basename(existing_file_name))[0]
+                            if recipe_fresh.recipe_document.storage.exists(existing_file_name):
+                                recipe_fresh.recipe_document.storage.delete(existing_file_name)
                             Recipe.objects.filter(pk=recipe.pk).update(recipe_document='')
                             recipe_fresh = Recipe.objects.get(pk=recipe.pk)
                             recipe_fresh.recipe_document.save(f"{original_name}_merged_{uuid.uuid4().hex[:8]}.pdf", merged_pdf, save=True)
                     else:
-                        # Replace (or new upload with no existing doc)
+                        # Replace or new upload
                         if recipe_fresh.recipe_document:
-                            if recipe_fresh.recipe_document.storage.exists(recipe_fresh.recipe_document.name):
-                                recipe_fresh.recipe_document.storage.delete(recipe_fresh.recipe_document.name)
+                            existing_file_name = recipe_fresh.recipe_document.name
+                            # Open and close immediately to release any lingering handle
+                            try:
+                                with recipe_fresh.recipe_document.open('rb') as f:
+                                    pass
+                            except Exception:
+                                pass
+                            if recipe_fresh.recipe_document.storage.exists(existing_file_name):
+                                recipe_fresh.recipe_document.storage.delete(existing_file_name)
                             Recipe.objects.filter(pk=recipe.pk).update(recipe_document='')
                             recipe_fresh = Recipe.objects.get(pk=recipe.pk)
                         pdf_content, pdf_filename = convert_to_pdf(uploaded_file)
                         name_part = os.path.splitext(pdf_filename)[0]
                         unique_filename = f"{name_part}_{uuid.uuid4().hex[:8]}.pdf"
                         recipe_fresh.recipe_document.save(unique_filename, pdf_content, save=True)
+
                 except Exception as e:
                     messages.warning(request, f'Recipe saved but document upload failed: {str(e)}')
             
@@ -11107,6 +11121,7 @@ def edit_recipe(request, recipe_id):
     }
 
     return render(request, 'preview_imported_recipe.html', context)
+
 @login_required
 @require_POST
 def add_recipe_course(request):

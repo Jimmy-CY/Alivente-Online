@@ -263,7 +263,7 @@ def convert_to_pdf(uploaded_file):
         uploaded_file: Django UploadedFile object
     
     Returns:
-        ContentFile object containing the PDF
+        Tuple of (ContentFile, filename)
     
     Raises:
         ValueError: If file type is not supported
@@ -323,12 +323,10 @@ def merge_pdfs(existing_file, new_file):
         pdf_writer.add_page(page)
     
     # Handle different types of new_file
-    # If new_file is BytesIO or ContentFile, it's already in memory
     if isinstance(new_file, (io.BytesIO, ContentFile)):
         new_file.seek(0)
         new_pdf = PdfReader(new_file)
     else:
-        # It's an uploaded file or FileField
         new_pdf = PdfReader(new_file)
     
     for page in new_pdf.pages:
@@ -339,5 +337,40 @@ def merge_pdfs(existing_file, new_file):
     pdf_writer.write(output)
     output.seek(0)
     
-    # Return as ContentFile
+    return ContentFile(output.read())
+
+
+def merge_pdfs_from_bytes(existing_bytes, new_pdf_content):
+    """
+    Merge two PDFs where the existing file is supplied as raw bytes.
+    Used in edit_recipe to avoid Windows file lock (WinError 32) — the existing
+    file is read into memory and closed before deletion, then merged from bytes.
+
+    Args:
+        existing_bytes: Raw bytes of the existing PDF (already read from disk)
+        new_pdf_content: ContentFile or BytesIO of the new PDF (output of convert_to_pdf)
+
+    Returns:
+        ContentFile object containing the merged PDF
+    """
+    pdf_writer = PdfWriter()
+
+    # Read existing PDF from bytes — no file handle needed
+    reader1 = PdfReader(io.BytesIO(existing_bytes))
+    for page in reader1.pages:
+        pdf_writer.add_page(page)
+
+    # Read new PDF
+    if hasattr(new_pdf_content, 'read'):
+        new_pdf_content.seek(0)
+        new_bytes = new_pdf_content.read()
+    else:
+        new_bytes = bytes(new_pdf_content)
+    reader2 = PdfReader(io.BytesIO(new_bytes))
+    for page in reader2.pages:
+        pdf_writer.add_page(page)
+
+    output = io.BytesIO()
+    pdf_writer.write(output)
+    output.seek(0)
     return ContentFile(output.read())
