@@ -11356,6 +11356,8 @@ def import_recipe(request):
             temp_id = str(uuid.uuid4())
             request.session[f'temp_recipe_{temp_id}'] = extracted_data
             request.session[f'temp_recipe_{temp_id}_file'] = file_name
+            request.session.modified = True
+            request.session.save()  # Force session to write to DB before redirect
             
             messages.success(request, 'Recipe extracted successfully! Please review and edit as needed.')
             return redirect('preview_imported_recipe', temp_id=temp_id)
