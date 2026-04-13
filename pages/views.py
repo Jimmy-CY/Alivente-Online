@@ -10223,6 +10223,7 @@ def recipe_management(request):
     
     # Get filter parameters
     search_query = request.GET.get('search', '')
+    search_type = request.GET.get('search_type', 'name')
     selected_courses = request.GET.getlist('course')
     selected_categories = request.GET.getlist('category')
     selected_proteins = request.GET.getlist('protein')
@@ -10231,7 +10232,12 @@ def recipe_management(request):
     
     # Apply filters
     if search_query:
-        recipes = recipes.filter(recipe_name__icontains=search_query)
+        if search_type == 'ingredient':
+            recipes = recipes.filter(
+                recipe_ingredients__ingredient__name__icontains=search_query
+            )
+        else:
+            recipes = recipes.filter(recipe_name__icontains=search_query)
     
     if selected_courses:
         recipes = recipes.filter(courses__recipe_course_id__in=selected_courses)
@@ -10351,6 +10357,7 @@ def recipe_management(request):
         'proteins': proteins,
         'authors': authors,
         'search_query': search_query,
+        'search_type': search_type,        
         'selected_courses': selected_courses,
         'selected_categories': selected_categories,
         'selected_proteins': selected_proteins,
@@ -10578,14 +10585,48 @@ def view_recipe(request, recipe_id):
         messages.error(request, 'You do not have permission to access this page.')
         return redirect('home')
     
-    recipe = get_object_or_404(Recipe, recipe_id=recipe_id)
+    # Prefetch all related objects in one go to avoid N+1 queries
+    recipe = get_object_or_404(
+        Recipe.objects.prefetch_related(
+            'courses',
+            'categories',
+            'proteins',
+        ).select_related(),
+        recipe_id=recipe_id
+    )
     
-    # Get ingredients - ONLY from normalized table
+    # Get ingredients with all related data in a single query
     ingredients = RecipeIngredient.objects.filter(recipe=recipe).select_related(
-        'ingredient', 'ingredient__category', 'unit', 'preparation'
+        'ingredient',
+        'ingredient__category',
+        'unit',
+        'preparation',
     ).order_by('ingredient_group', 'ingredient_order')
 
-    # Format amounts and compute weight equivalents
+    # Pre-fetch all unit conversions needed for weight equivalents in bulk
+    # to avoid one DB hit per ingredient inside the loop
+    units_needed = set()
+    for ing in ingredients:
+        if ing.unit and ing.unit.unit_type != 'weight' and ing.amount:
+            units_needed.add(ing.unit_id)
+
+    # Bulk fetch all relevant conversions once
+    conversions_qs = UnitConversion.objects.filter(
+        from_unit_id__in=units_needed
+    ).select_related('from_unit', 'to_unit', 'specific_ingredient').order_by('specific_ingredient', 'from_unit')
+
+    # Build a lookup dict: (from_unit_id, specific_ingredient_id) -> conversion
+    #                   and (from_unit_id, None) -> conversion as fallback
+    conversion_map = {}
+    for conv in conversions_qs:
+        key_specific = (conv.from_unit_id, conv.specific_ingredient_id)
+        key_generic  = (conv.from_unit_id, None)
+        if key_specific not in conversion_map:
+            conversion_map[key_specific] = conv
+        if conv.specific_ingredient_id is None and key_generic not in conversion_map:
+            conversion_map[key_generic] = conv
+
+    # Format amounts and compute weight equivalents from the in-memory map
     for ing in ingredients:
         ing.formatted_amount = format_quantity(ing.amount)
         ing.weight_equivalent = None
@@ -10593,14 +10634,17 @@ def view_recipe(request, recipe_id):
             try:
                 amount = float(ing.amount) if ing.amount else 0
                 if amount > 0:
-                    conversion = get_preferred_weight_conversion(ing.unit, ing.ingredient)
+                    # Look up specific ingredient first, then generic fallback
+                    conversion = (
+                        conversion_map.get((ing.unit_id, ing.ingredient_id)) or
+                        conversion_map.get((ing.unit_id, None))
+                    )
                     if conversion:
                         weight_amount = round(amount * float(conversion.multiplier), 1)
                         if weight_amount == int(weight_amount):
                             weight_amount = int(weight_amount)
                         if weight_amount > 0:
                             weight_unit = conversion.to_unit.abbreviation or conversion.to_unit.name
-                            # If result is kg but less than 1, convert to grams
                             if weight_unit == 'kg' and weight_amount < 1:
                                 weight_amount = round(weight_amount * 1000)
                                 weight_unit = 'g'
@@ -10612,7 +10656,10 @@ def view_recipe(request, recipe_id):
     instructions = RecipeInstruction.objects.filter(recipe=recipe).order_by('step_number')
 
     # Get cooking calculation if exists
-    cooking_calc = getattr(recipe, 'cooking_calculation', None)
+    try:
+        cooking_calc = recipe.cooking_calculation
+    except Exception:
+        cooking_calc = None
 
     context = {
         'recipe': recipe,

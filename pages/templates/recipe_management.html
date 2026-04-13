@@ -2015,10 +2015,27 @@
                         <i class="fas fa-search"></i> Search Recipe
                     </label>
                     <div class="recipe-search-input-group">
-                        <input type="text" name="search" class="recipe-search-input" id="searchInput" placeholder="Search by name..." value="{{ search_query }}">
+                        <input type="text" name="search" class="recipe-search-input" id="searchInput"
+                               placeholder="{% if search_type == 'ingredient' %}Search by ingredient...{% else %}Search by name...{% endif %}"
+                               value="{{ search_query }}">
                         <button type="submit" class="recipe-search-btn">
                             <i class="fas fa-search"></i>
                         </button>
+                    </div>
+                    <!-- Search type toggle — below the field -->
+                    <div style="display: flex; gap: 16px; margin-top: 6px;">
+                        <label style="display: flex; align-items: center; gap: 5px; font-size: 13px; cursor: pointer; margin: 0;">
+                            <input type="radio" name="search_type" value="name" id="searchByName"
+                                   {% if search_type != 'ingredient' %}checked{% endif %}
+                                   onchange="updateSearchPlaceholder()">
+                            Name
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 5px; font-size: 13px; cursor: pointer; margin: 0;">
+                            <input type="radio" name="search_type" value="ingredient" id="searchByIngredient"
+                                   {% if search_type == 'ingredient' %}checked{% endif %}
+                                   onchange="updateSearchPlaceholder()">
+                            Ingredient
+                        </label>
                     </div>
                 </div>
 
@@ -2655,6 +2672,12 @@
 {% endif %}
 
 <script>
+function updateSearchPlaceholder() {
+    const searchInput = document.getElementById('searchInput');
+    const byIngredient = document.getElementById('searchByIngredient').checked;
+    searchInput.placeholder = byIngredient ? 'Search by ingredient...' : 'Search by name...';
+}
+
 // View toggle functionality
 let currentView = localStorage.getItem('recipeView') || 'grid'; // Load saved preference or default to grid
 
@@ -3157,9 +3180,10 @@ function updateRecipeActiveFilters() {
     let hasFilters = false;
     
     if (search) {
+        const searchTypeLabel = document.getElementById('searchByIngredient').checked ? 'Ingredient' : 'Name';
         filterTagsDiv.innerHTML += `
             <span class="recipe-filter-tag">
-                Search: ${search} 
+                ${searchTypeLabel}: ${search}
                 <button class="recipe-remove-tag" onclick="clearRecipeFilterGroup('search')" type="button">×</button>
             </span>`;
         hasFilters = true;
