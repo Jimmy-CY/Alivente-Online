@@ -11345,15 +11345,7 @@ def import_recipe(request):
                 return redirect('import_recipe')
             
             # Use Claude AI to extract
-            print("=== EXTRACTED TEXT ===")
-            print(repr(text_content))
-            print("======================")
-
             extracted_data = extract_recipe_with_ai(text_content, file_ext)
-
-            print("=== EXTRACTED DATA ===")
-            print(extracted_data)
-            print("======================")
 
             if not extracted_data:
                 messages.error(request, 'Could not extract recipe data. Please try a different file.')

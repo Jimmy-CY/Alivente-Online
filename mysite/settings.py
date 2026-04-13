@@ -28,7 +28,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = "django-insecure-3plz%&tdip9d0vwc6io8y2yk$a9km2-891cbl==n#v1u&3%gy8"
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
 ALLOWED_HOSTS = ['alivente-online-production.up.railway.app', 'alivente.online', 'localhost', '127.0.0.1']
 
@@ -310,20 +310,19 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # (These are optional but recommended for production)
 
 # Security settings for production
-if not DEBUG:
-    # Enable these for production
+if os.environ.get('RAILWAY_ENVIRONMENT_NAME') == 'production' or os.environ.get('RAILWAY_PROJECT_ID'):
     SECURE_SSL_REDIRECT = True
-    SECURE_HSTS_SECONDS = 31536000  # 1 year
+    SECURE_HSTS_SECONDS = 31536000
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
     SECURE_CONTENT_TYPE_NOSNIFF = True
     SECURE_BROWSER_XSS_FILTER = True
-    
-    # Session security
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
     SESSION_COOKIE_HTTPONLY = True
     CSRF_COOKIE_HTTPONLY = True
+    SESSION_COOKIE_SAMESITE = 'Lax'
+    SESSION_COOKIE_AGE = 3600
 
 # Anthropic API Key (from environment variable)
 ANTHROPIC_API_KEY = os.getenv('ANTHROPIC_API_KEY')
