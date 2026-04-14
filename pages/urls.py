@@ -1,9 +1,9 @@
 from django.conf import settings
 from django.conf.urls.static import static
-from django.urls import path, re_path
+from django.urls import path
 from . import views
 from .views_setup import setup_permissions
-from django.views.static import serve
+
 
 urlpatterns = [
     # Home
@@ -301,7 +301,5 @@ urlpatterns = [
     path('ajax/category/add/', views.add_category_ajax, name='add_category_ajax'),
     path('ajax/subcategory/add/', views.add_subcategory_ajax, name='add_subcategory_ajax'),
     path('ajax/supplier/add/', views.add_supplier_ajax, name='add_supplier_ajax'),
-
-    path('debug-media/', views.debug_media, name='debug_media'),
 
 ]

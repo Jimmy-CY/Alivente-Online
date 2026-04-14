@@ -15694,19 +15694,3 @@ def edit_maintenance(request, maintenance_id):
             messages.error(request, f'Error updating maintenance record: {str(e)}')
 
     return redirect('asset_detail', asset_id=asset_id)
-
-def debug_media(request):
-    import os
-    from django.http import JsonResponse
-    from pages.models import Recipe
-    
-    # Get all recipe image paths from database
-    db_images = Recipe.objects.exclude(
-        recipe_image=''
-    ).exclude(
-        recipe_image=None
-    ).values_list('recipe_image', flat=True)
-    
-    return JsonResponse({
-        'db_image_paths': sorted(list(db_images))
-    })
