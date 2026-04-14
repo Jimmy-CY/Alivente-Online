@@ -371,6 +371,8 @@ const allCourses = JSON.parse('{{ all_courses_json|escapejs }}');
 const allCategories = JSON.parse('{{ all_categories_json|escapejs }}');
 const allProteins = JSON.parse('{{ all_proteins_json|escapejs }}');
 const allAuthors = JSON.parse('{{ all_authors_json|escapejs }}');
+const userFavouriteIds = new Set(JSON.parse('{{ user_favourite_ids_json|escapejs }}'));
+let showFavouritesOnly = false;
 
 // Debug
 console.log('Total recipes loaded:', recipes.length);
@@ -736,7 +738,16 @@ const RECIPES_PER_LOAD = 12;
 function openRecipeSelector(dateStr, dayName) {
     currentMealPlanDate = dateStr;
     document.getElementById('selectedDayName').textContent = dayName;
-    
+
+    // Reset favourites toggle on each open
+    showFavouritesOnly = false;
+    const favBtn = document.getElementById('favouritesToggleBtn');
+    if (favBtn) {
+        favBtn.style.background = 'white';
+        favBtn.style.borderColor = '#dee2e6';
+        favBtn.style.color = '#6c757d';
+    }
+
     allRecipesForSelector = [...recipes];
     filteredRecipes = [...recipes];
     
@@ -853,8 +864,12 @@ function createRecipeSelectorCard(recipe) {
         });
     }
     
+    const isFav = userFavouriteIds.has(recipe.recipe_id);
     card.innerHTML = `
-        ${imageHtml}
+        <div style="position:relative;">
+            ${imageHtml}
+            ${isFav ? '<span style="position:absolute;top:6px;left:6px;background:rgba(255,255,255,0.9);border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:12px;color:#e74c3c;"><i class="fas fa-heart"></i></span>' : ''}
+        </div>
         <div class="recipe-selector-card-body">
             <div class="recipe-selector-card-title">${recipe.recipe_name}</div>
             <div class="recipe-selector-card-meta">
@@ -918,9 +933,10 @@ function searchRecipesInSelector() {
         const matchesCategory = !categoryFilter || recipe.categories.includes(categoryFilter);
         const matchesProtein = !proteinFilter || 
             (proteinFilter === 'vegetarian' ? recipe.is_vegetarian : recipe.proteins.includes(proteinFilter));
-        const matchesAuthor = !authorFilter || recipe.author === authorFilter;  // ← ADD THIS
+        const matchesAuthor = !authorFilter || recipe.author === authorFilter;
+        const matchesFavourite = !showFavouritesOnly || userFavouriteIds.has(recipe.recipe_id);
         
-        return matchesSearch && matchesCourse && matchesCategory && matchesProtein && matchesAuthor;  // ← UPDATE THIS
+        return matchesSearch && matchesCourse && matchesCategory && matchesProtein && matchesAuthor && matchesFavourite;
     });
     
     displayedRecipesInSelector = 0;
@@ -943,13 +959,37 @@ function filterRecipesInSelector() {
     searchRecipesInSelector();
 }
 
+function toggleFavouritesFilter() {
+    showFavouritesOnly = !showFavouritesOnly;
+    const btn = document.getElementById('favouritesToggleBtn');
+    if (showFavouritesOnly) {
+        btn.style.background = '#e74c3c';
+        btn.style.borderColor = '#e74c3c';
+        btn.style.color = 'white';
+    } else {
+        btn.style.background = 'white';
+        btn.style.borderColor = '#dee2e6';
+        btn.style.color = '#6c757d';
+    }
+    searchRecipesInSelector();
+}
+
 function clearRecipeFilters() {
     document.getElementById('recipeSelectorSearch').value = '';
     document.getElementById('recipeSelectorCourse').value = '';
     document.getElementById('recipeSelectorCategory').value = '';
     document.getElementById('recipeSelectorProtein').value = '';
-    document.getElementById('recipeSelectorAuthor').value = '';  // ← ADD THIS
-    
+    document.getElementById('recipeSelectorAuthor').value = '';
+
+    // Reset favourites toggle
+    showFavouritesOnly = false;
+    const btn = document.getElementById('favouritesToggleBtn');
+    if (btn) {
+        btn.style.background = 'white';
+        btn.style.borderColor = '#dee2e6';
+        btn.style.color = '#6c757d';
+    }
+
     filteredRecipes = [...allRecipesForSelector];
     displayedRecipesInSelector = 0;
     displayRecipesInSelector();
@@ -977,13 +1017,19 @@ function loadMoreRecipesInSelector() {
                 <!-- Search & Clear Filters (Top Row) -->
                 <div class="mb-3">
                     <div class="row g-2">
-                        <div class="col-md-9">
+                        <div class="col-md-6">
                             <div class="input-group">
                                 <input type="text" id="recipeSelectorSearch" class="form-control" placeholder="🔎 Search recipes by name...">
                                 <button class="btn btn-primary" onclick="searchRecipesInSelector()">
                                     <i class="fas fa-search"></i>
                                 </button>
                             </div>
+                        </div>
+                        <div class="col-md-3">
+                            <button class="btn w-100" id="favouritesToggleBtn" onclick="toggleFavouritesFilter()"
+                                    style="border: 2px solid #dee2e6; background: white; color: #6c757d;">
+                                <i class="fas fa-heart"></i> Favourites
+                            </button>
                         </div>
                         <div class="col-md-3">
                             <button class="btn btn-outline-danger w-100" onclick="clearRecipeFilters()">

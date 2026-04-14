@@ -11777,24 +11777,19 @@ def create_meal_plan(request):
         return redirect('home')
     
     if request.method == 'POST':
-        # ... existing POST code stays the same ...
         try:
-            # Get basic info
             plan_name = request.POST.get('plan_name')
             start_date_str = request.POST.get('start_date')
             end_date_str = request.POST.get('end_date')
             
-            # Parse dates
             start_date = datetime.strptime(start_date_str, '%Y-%m-%d').date()
             end_date = datetime.strptime(end_date_str, '%Y-%m-%d').date()
             
-            # Validate date range
             days_diff = (end_date - start_date).days + 1
             if days_diff < 1 or days_diff > 7:
                 messages.error(request, 'Meal plan must be between 1 and 7 days.')
                 return redirect('create_meal_plan')
             
-            # Create meal plan
             meal_plan = MealPlan.objects.create(
                 plan_name=plan_name,
                 start_date=start_date,
@@ -11802,23 +11797,19 @@ def create_meal_plan(request):
                 created_by=request.user
             )
             
-            # Create days and assign recipes
             current_date = start_date
             while current_date <= end_date:
-                # Create day
                 meal_day = MealPlanDay.objects.create(
                     meal_plan=meal_plan,
                     date=current_date
                 )
                 
-                # Get recipes for this day using date string (YYYY-MM-DD format)
                 date_key = current_date.strftime('%Y-%m-%d')
                 recipe_ids = request.POST.getlist(f'recipes_{date_key}[]')
                 servings_list = request.POST.getlist(f'servings_{date_key}[]')
                 
-                # Add recipes to this day
                 for idx, recipe_id in enumerate(recipe_ids):
-                    if recipe_id:  # Skip empty values
+                    if recipe_id:
                         recipe = Recipe.objects.get(recipe_id=recipe_id)
                         servings = int(servings_list[idx]) if idx < len(servings_list) else recipe.servings
                         
@@ -11843,14 +11834,12 @@ def create_meal_plan(request):
     
     # GET request - show form
     recipes_qs = Recipe.objects.prefetch_related(
-        'courses', 
-        'categories', 
-        'proteins'
+        'courses', 'categories', 'proteins'
     ).all().order_by('recipe_name')
     
     recipes = []
     for recipe in recipes_qs:
-        recipe_data = {
+        recipes.append({
             'recipe_id': recipe.recipe_id,
             'recipe_name': recipe.recipe_name,
             'servings': recipe.servings,
@@ -11863,15 +11852,12 @@ def create_meal_plan(request):
             'courses': [course.name for course in recipe.courses.all()],
             'categories': [cat.name for cat in recipe.categories.all()],
             'proteins': [protein.name for protein in recipe.proteins.all()]
-        }
-        recipes.append(recipe_data)
+        })
     
-    # Get all filter options
     all_courses = list(RecipeCourse.objects.all().order_by('name').values('recipe_course_id', 'name'))
     all_categories = list(RecipeCategory.objects.all().order_by('name').values('recipe_category_id', 'name'))
     all_proteins = list(CustomProtein.objects.all().order_by('name').values('custom_protein_id', 'name'))
     
-    # Add authors
     all_authors = [
         {'value': 'General', 'name': 'General'},
         {'value': 'Demetri & Angy', 'name': 'Demetri & Angy'},
@@ -11879,16 +11865,21 @@ def create_meal_plan(request):
         {'value': 'Alexandra', 'name': 'Alexandra'},
     ]
 
-    # Suggest a default date range (today + 6 days)
     today = datetime.now().date()
     default_end = today + timedelta(days=6)
+
+    user_favourite_ids = list(
+        RecipeFavourite.objects.filter(user=request.user).values_list('recipe_id', flat=True)
+    )
     
     context = {
-        'recipes_json': json.dumps(recipes),  # ← Serialize to JSON
+        'edit_mode': False,
+        'recipes_json': json.dumps(recipes),
         'all_courses_json': json.dumps(all_courses),
         'all_categories_json': json.dumps(all_categories),
         'all_proteins_json': json.dumps(all_proteins),
         'all_authors_json': json.dumps(all_authors),
+        'user_favourite_ids_json': json.dumps(user_favourite_ids),
         'today': today,
         'default_start_date': today.strftime('%Y-%m-%d'),
         'default_end_date': default_end.strftime('%Y-%m-%d'),
@@ -11921,10 +11912,15 @@ def view_meal_plan(request, meal_plan_id):
     
     # Days are already prefetched and ordered
     days = meal_plan.days.all()
+
+    user_favourites = set(
+        RecipeFavourite.objects.filter(user=request.user).values_list('recipe_id', flat=True)
+    )
     
     context = {
         'meal_plan': meal_plan,
         'days': days,
+        'user_favourites': user_favourites,
     }
     
     return render(request, 'view_meal_plan.html', context)
@@ -11966,7 +11962,6 @@ def edit_meal_plan(request, meal_plan_id):
         messages.error(request, 'You do not have permission to access this page.')
         return redirect('home')
     
-    # Get meal plan with all related data
     meal_plan = get_object_or_404(
         MealPlan.objects.prefetch_related(
             Prefetch(
@@ -11986,7 +11981,6 @@ def edit_meal_plan(request, meal_plan_id):
         try:
             from django.db import transaction
             
-            # Get updated basic info
             new_plan_name = request.POST.get('plan_name', '').strip()
             new_start_date_str = request.POST.get('start_date')
             new_end_date_str = request.POST.get('end_date')
@@ -11995,43 +11989,34 @@ def edit_meal_plan(request, meal_plan_id):
                 messages.error(request, 'Plan name is required.')
                 return redirect('edit_meal_plan', meal_plan_id=meal_plan_id)
             
-            # Parse new dates
             new_start_date = datetime.strptime(new_start_date_str, '%Y-%m-%d').date()
             new_end_date = datetime.strptime(new_end_date_str, '%Y-%m-%d').date()
             
-            # Validate date range
             days_diff = (new_end_date - new_start_date).days + 1
             if days_diff < 1 or days_diff > 7:
                 messages.error(request, 'Meal plan must be between 1 and 7 days.')
                 return redirect('edit_meal_plan', meal_plan_id=meal_plan_id)
             
-            # Use transaction to ensure data consistency
             with transaction.atomic():
-                # Update meal plan basic info
                 meal_plan.plan_name = new_plan_name
                 meal_plan.start_date = new_start_date
                 meal_plan.end_date = new_end_date
                 meal_plan.save()
                 
-                # Get current days
                 existing_days = {day.date: day for day in meal_plan.days.all()}
                 
-                # Generate list of dates in new range
                 new_dates = []
                 current_date = new_start_date
                 while current_date <= new_end_date:
                     new_dates.append(current_date)
                     current_date += timedelta(days=1)
                 
-                # Delete days that are no longer in range
                 dates_to_keep = set(new_dates)
                 for date, day in existing_days.items():
                     if date not in dates_to_keep:
                         day.delete()
                 
-                # Process each day in the new range
                 for date in new_dates:
-                    # Get or create day
                     if date in existing_days:
                         meal_day = existing_days[date]
                     else:
@@ -12040,20 +12025,15 @@ def edit_meal_plan(request, meal_plan_id):
                             date=date
                         )
                     
-                    # Get recipes for this day from form
                     date_key = date.strftime('%Y-%m-%d')
                     recipe_ids = request.POST.getlist(f'recipes_{date_key}[]')
                     servings_list = request.POST.getlist(f'servings_{date_key}[]')
                     
-                    # Get existing recipes for this day
                     existing_recipes = {mr.recipe.recipe_id: mr for mr in meal_day.recipes.all()}
-                    
-                    # Track which recipes we're keeping
                     recipes_to_keep = set()
                     
-                    # Process submitted recipes
                     for idx, recipe_id in enumerate(recipe_ids):
-                        if recipe_id:  # Skip empty values
+                        if recipe_id:
                             recipe_id = int(recipe_id)
                             recipes_to_keep.add(recipe_id)
                             
@@ -12061,13 +12041,11 @@ def edit_meal_plan(request, meal_plan_id):
                             servings = int(servings_list[idx]) if idx < len(servings_list) else recipe.servings
                             
                             if recipe_id in existing_recipes:
-                                # Update existing recipe
                                 meal_recipe = existing_recipes[recipe_id]
                                 meal_recipe.servings = servings
                                 meal_recipe.sort_order = idx
                                 meal_recipe.save()
                             else:
-                                # Add new recipe
                                 MealPlanRecipe.objects.create(
                                     meal_plan_day=meal_day,
                                     recipe=recipe,
@@ -12075,7 +12053,6 @@ def edit_meal_plan(request, meal_plan_id):
                                     sort_order=idx
                                 )
                     
-                    # Delete recipes that were removed
                     for recipe_id, meal_recipe in existing_recipes.items():
                         if recipe_id not in recipes_to_keep:
                             meal_recipe.delete()
@@ -12091,8 +12068,6 @@ def edit_meal_plan(request, meal_plan_id):
             return redirect('edit_meal_plan', meal_plan_id=meal_plan_id)
     
     # GET request - prepare data for editing
-    
-    # Serialize meal plan data for JavaScript
     meal_plan_data = {
         'meal_plan_id': meal_plan.meal_plan_id,
         'plan_name': meal_plan.plan_name,
@@ -12101,7 +12076,6 @@ def edit_meal_plan(request, meal_plan_id):
         'days': []
     }
     
-    # Add each day with its recipes
     for day in meal_plan.days.all():
         day_data = {
             'date': day.date.strftime('%Y-%m-%d'),
@@ -12128,16 +12102,13 @@ def edit_meal_plan(request, meal_plan_id):
         
         meal_plan_data['days'].append(day_data)
     
-    # Get all available recipes for the selector
     recipes_qs = Recipe.objects.prefetch_related(
-        'courses', 
-        'categories', 
-        'proteins'
+        'courses', 'categories', 'proteins'
     ).all().order_by('recipe_name')
     
     recipes = []
     for recipe in recipes_qs:
-        recipe_data = {
+        recipes.append({
             'recipe_id': recipe.recipe_id,
             'recipe_name': recipe.recipe_name,
             'servings': recipe.servings,
@@ -12150,21 +12121,22 @@ def edit_meal_plan(request, meal_plan_id):
             'courses': [course.name for course in recipe.courses.all()],
             'categories': [cat.name for cat in recipe.categories.all()],
             'proteins': [protein.name for protein in recipe.proteins.all()]
-        }
-        recipes.append(recipe_data)
+        })
     
-    # Get all filter options
     all_courses = list(RecipeCourse.objects.all().order_by('name').values('recipe_course_id', 'name'))
     all_categories = list(RecipeCategory.objects.all().order_by('name').values('recipe_category_id', 'name'))
     all_proteins = list(CustomProtein.objects.all().order_by('name').values('custom_protein_id', 'name'))
     
-    # Add authors
     all_authors = [
         {'value': 'General', 'name': 'General'},
         {'value': 'Demetri & Angy', 'name': 'Demetri & Angy'},
         {'value': 'Erene', 'name': 'Erene'},
         {'value': 'Alexandra', 'name': 'Alexandra'},
     ]
+
+    user_favourite_ids = list(
+        RecipeFavourite.objects.filter(user=request.user).values_list('recipe_id', flat=True)
+    )
     
     context = {
         'edit_mode': True,
@@ -12175,6 +12147,7 @@ def edit_meal_plan(request, meal_plan_id):
         'all_categories_json': json.dumps(all_categories),
         'all_proteins_json': json.dumps(all_proteins),
         'all_authors_json': json.dumps(all_authors),
+        'user_favourite_ids_json': json.dumps(user_favourite_ids),
     }
     
     return render(request, 'create_meal_plan.html', context)

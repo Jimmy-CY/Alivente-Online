@@ -407,7 +407,12 @@
             {% if day.recipes.all %}
                 {% for meal_recipe in day.recipes.all %}
                 <a href="{% url 'view_recipe' meal_recipe.recipe.recipe_id %}" 
-                   class="recipe-card">
+                   class="recipe-card" style="position:relative;">
+                    {% if meal_recipe.recipe.recipe_id in user_favourites %}
+                    <span style="position:absolute;top:6px;left:6px;background:rgba(255,255,255,0.9);border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;color:#e74c3c;z-index:1;">
+                        <i class="fas fa-heart"></i>
+                    </span>
+                    {% endif %}
                     {% if meal_recipe.recipe.recipe_image %}
                     <img src="{{ meal_recipe.recipe.recipe_image.url }}" 
                          alt="{{ meal_recipe.recipe.recipe_name }}" 
