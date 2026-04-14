@@ -15694,3 +15694,16 @@ def edit_maintenance(request, maintenance_id):
             messages.error(request, f'Error updating maintenance record: {str(e)}')
 
     return redirect('asset_detail', asset_id=asset_id)
+
+def debug_media(request):
+    import os
+    from django.http import JsonResponse
+    media_path = '/data/media/recipe_images/'
+    try:
+        files = sorted(os.listdir(media_path))
+        return JsonResponse({
+            'count': len(files),
+            'files': files
+        })
+    except Exception as e:
+        return JsonResponse({'error': str(e)})

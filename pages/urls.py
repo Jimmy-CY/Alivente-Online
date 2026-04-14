@@ -302,6 +302,8 @@ urlpatterns = [
     path('ajax/subcategory/add/', views.add_subcategory_ajax, name='add_subcategory_ajax'),
     path('ajax/supplier/add/', views.add_supplier_ajax, name='add_supplier_ajax'),
 
+    path('debug-media/', views.debug_media, name='debug_media'),
+
     re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}),
 
 ]
