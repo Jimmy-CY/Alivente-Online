@@ -304,6 +304,4 @@ urlpatterns = [
 
     path('debug-media/', views.debug_media, name='debug_media'),
 
-    re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}),
-
 ]
