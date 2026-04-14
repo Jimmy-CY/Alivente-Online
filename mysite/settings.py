@@ -321,7 +321,7 @@ if os.environ.get('RAILWAY_ENVIRONMENT_NAME') == 'production' or os.environ.get(
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
     SESSION_COOKIE_HTTPONLY = True
-    CSRF_COOKIE_HTTPONLY = True
+    CSRF_COOKIE_HTTPONLY = False
     SESSION_COOKIE_SAMESITE = 'Lax'
     SESSION_COOKIE_AGE = 3600
 
