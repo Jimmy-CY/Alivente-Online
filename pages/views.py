@@ -85,6 +85,7 @@ from .models import (
     AssetSupplier,
     AssetMaintenance,
     CookingCalculation,
+    RecipeFavourite,    
 
     )
 from decimal import Decimal
@@ -10224,6 +10225,13 @@ def recipe_management(request):
     # Get filter parameters
     search_query = request.GET.get('search', '')
     search_type = request.GET.get('search_type', 'name')
+    show_favourites = request.GET.get('favourites') == '1'
+
+    # Get current user's favourites as a set of recipe IDs for fast lookup
+    user_favourites = set(
+        RecipeFavourite.objects.filter(user=request.user).values_list('recipe_id', flat=True)
+    )
+
     selected_courses = request.GET.getlist('course')
     selected_categories = request.GET.getlist('category')
     selected_proteins = request.GET.getlist('protein')
@@ -10260,6 +10268,9 @@ def recipe_management(request):
     
     if selected_authors:
         recipes = recipes.filter(author__in=selected_authors)
+
+    if show_favourites:
+        recipes = recipes.filter(favourited_by__user=request.user)
     
     recipes = recipes.distinct().order_by('recipe_name')
     
@@ -10309,6 +10320,7 @@ def recipe_management(request):
                 'courses': [{'name': c.name} for c in recipe.courses.all()],
                 'categories': [{'name': c.name} for c in recipe.categories.all()],
                 'proteins': [{'name': p.name} for p in recipe.proteins.all()],
+                'is_favourite': recipe.recipe_id in user_favourites,
             })
         
         return JsonResponse({
@@ -10333,7 +10345,7 @@ def recipe_management(request):
     # Serialize filtered recipes for book view (use already-filtered queryset)
     import json as json_module
     all_recipes_for_book = []
-    for r in recipes:  # ← uses the already-filtered queryset
+    for r in recipes:
         all_recipes_for_book.append({
             'recipe_id': r.recipe_id,
             'recipe_name': r.recipe_name,
@@ -10352,12 +10364,14 @@ def recipe_management(request):
     context = {
         'recipes': page_obj,
         'total_recipe_count': paginator.count,
+        'show_favourites': show_favourites,
+        'user_favourites': user_favourites,
         'courses': courses,
         'categories': categories,
         'proteins': proteins,
         'authors': authors,
         'search_query': search_query,
-        'search_type': search_type,        
+        'search_type': search_type,
         'selected_courses': selected_courses,
         'selected_categories': selected_categories,
         'selected_proteins': selected_proteins,
@@ -14126,6 +14140,30 @@ def update_measurement_unit(request):
             return JsonResponse({'success': False, 'error': 'Measurement unit not found'})
     
     return JsonResponse({'success': False, 'error': 'Invalid request'})
+
+@login_required
+def toggle_recipe_favourite(request, recipe_id):
+    """Toggle a recipe as favourite for the current user"""
+    if request.method == 'POST':
+        recipe = get_object_or_404(Recipe, recipe_id=recipe_id)
+        favourite, created = RecipeFavourite.objects.get_or_create(
+            user=request.user,
+            recipe=recipe
+        )
+        if not created:
+            # Already a favourite — remove it
+            favourite.delete()
+            is_favourite = False
+        else:
+            is_favourite = True
+
+        return JsonResponse({
+            'success': True,
+            'is_favourite': is_favourite,
+            'recipe_id': recipe_id
+        })
+    
+    return JsonResponse({'success': False}, status=400)
 
 @login_required
 def check_unit_usage(request):

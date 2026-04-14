@@ -1913,6 +1913,62 @@
     height: 14px;
 }
 
+/* Favourite Heart Button */
+.recipe-favourite-btn {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255, 255, 255, 0.9);
+    color: #ccc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 16px;
+    transition: all 0.2s;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    z-index: 5;
+}
+
+.recipe-favourite-btn:hover {
+    transform: scale(1.15);
+    color: #e74c3c;
+}
+
+.recipe-favourite-btn.is-favourite {
+    color: #e74c3c;
+    background: rgba(255, 255, 255, 0.95);
+}
+
+.recipe-list-favourite-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: none;
+    background: white;
+    color: #ccc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.15);
+}
+
+.recipe-list-favourite-btn:hover {
+    transform: scale(1.15);
+    color: #e74c3c;
+}
+
+.recipe-list-favourite-btn.is-favourite {
+    color: #e74c3c;
+}
+
 </style>
 
 <h2><center>ALIVENTE ONLINE - RECIPE MANAGEMENT</center></h2>
@@ -1964,6 +2020,12 @@
         <button type="button" class="btn btn-primary" onclick="openIngredientMatcher()">
             <i class="fas fa-search"></i> What Can I Make?
         </button>
+
+        <!-- Favourites Filter -->
+        <a href="{% if show_favourites %}{% url 'recipe_management' %}{% else %}?favourites=1{% endif %}" 
+           class="btn {% if show_favourites %}btn-danger{% else %}btn-outline-danger{% endif %}">
+            <i class="fas fa-heart"></i> Favourites
+        </a>
         
         <!-- Settings Dropdown -->
         <div class="dropdown-btn-container">
@@ -2227,6 +2289,14 @@
                 <i class="fas fa-utensils"></i>
             </div>
             {% endif %}
+
+            <!-- Favourite Button -->
+            <button type="button" 
+                    class="recipe-favourite-btn {% if recipe.recipe_id in user_favourites %}is-favourite{% endif %}"
+                    onclick="toggleFavourite({{ recipe.recipe_id }}, this)"
+                    title="{% if recipe.recipe_id in user_favourites %}Remove from Favourites{% else %}Add to Favourites{% endif %}">
+                <i class="fas fa-heart"></i>
+            </button>
             
             <div class="recipe-image-actions">
                 <a href="{% url 'view_recipe' recipe.recipe_id %}" class="recipe-image-action-btn recipe-view-btn" title="View Recipe">
@@ -2385,6 +2455,12 @@
         </div>
         
         <div class="recipe-list-actions">
+            <button type="button" 
+                    class="recipe-list-action-btn recipe-list-favourite-btn {% if recipe.recipe_id in user_favourites %}is-favourite{% endif %}"
+                    onclick="toggleFavourite({{ recipe.recipe_id }}, this)"
+                    title="{% if recipe.recipe_id in user_favourites %}Remove from Favourites{% else %}Add to Favourites{% endif %}">
+                <i class="fas fa-heart"></i>
+            </button>
             <a href="{% url 'view_recipe' recipe.recipe_id %}" class="recipe-list-action-btn recipe-view-btn" title="View Recipe">
                 <i class="fas fa-eye"></i>
             </a>
@@ -2809,11 +2885,17 @@ function createGridRecipeCard(recipe) {
     const difficultyBadge = recipe.difficulty_level ? `<span class="badge badge-secondary"><i class="fas fa-signal"></i> ${recipe.difficulty_level}</span>` : '';
     const authorBadge = recipe.author ? `<span class="badge badge-dark"><i class="fas fa-user-edit"></i> ${recipe.author}</span>` : '';
     
-    return `
-        <div class="recipe-card">
-            <div class="recipe-image-container">
-                ${imageHtml}
-                <div class="recipe-image-actions">
+        return `
+            <div class="recipe-card">
+                <div class="recipe-image-container">
+                    ${imageHtml}
+                    <button type="button" 
+                            class="recipe-favourite-btn ${recipe.is_favourite ? 'is-favourite' : ''}"
+                            onclick="toggleFavourite(${recipe.recipe_id}, this)"
+                            title="${recipe.is_favourite ? 'Remove from Favourites' : 'Add to Favourites'}">
+                        <i class="fas fa-heart"></i>
+                    </button>
+                    <div class="recipe-image-actions">
                     <a href="/view_recipe/${recipe.recipe_id}/" class="recipe-image-action-btn recipe-view-btn" title="View Recipe">
                         <i class="fas fa-eye"></i>
                     </a>
@@ -2927,6 +3009,12 @@ function createListRecipeItem(recipe) {
                 </div>
             </div>
             <div class="recipe-list-actions">
+                <button type="button" 
+                        class="recipe-list-action-btn recipe-list-favourite-btn ${recipe.is_favourite ? 'is-favourite' : ''}"
+                        onclick="toggleFavourite(${recipe.recipe_id}, this)"
+                        title="${recipe.is_favourite ? 'Remove from Favourites' : 'Add to Favourites'}">
+                    <i class="fas fa-heart"></i>
+                </button>
                 <a href="/view_recipe/${recipe.recipe_id}/" class="recipe-list-action-btn recipe-view-btn" title="View Recipe">
                     <i class="fas fa-eye"></i>
                 </a>
@@ -3829,6 +3917,39 @@ function duplicateRecipe(recipeId, recipeName) {
         });
     }
 }
+
+// ==================== FAVOURITES ====================
+
+function toggleFavourite(recipeId, btn) {
+    fetch(`/recipe/${recipeId}/favourite/`, {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': getCookie('csrftoken'),
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            if (data.is_favourite) {
+                btn.classList.add('is-favourite');
+                btn.title = 'Remove from Favourites';
+            } else {
+                btn.classList.remove('is-favourite');
+                btn.title = 'Add to Favourites';
+                // If currently filtering by favourites, remove the card
+                const urlParams = new URLSearchParams(window.location.search);
+                if (urlParams.get('favourites') === '1') {
+                    const card = btn.closest('.recipe-card, .recipe-list-item');
+                    if (card) card.remove();
+                }
+            }
+        }
+    })
+    .catch(error => console.error('Error toggling favourite:', error));
+}
+
+// ==================== END FAVOURITES ====================
 
 // ==================== BOOK VIEW ====================
 

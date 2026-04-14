@@ -1951,6 +1951,26 @@ class UnitConversion(models.Model):
     def __str__(self):
         return f"1 {self.from_unit.name} = {self.multiplier} {self.to_unit.name}"
 
+class RecipeFavourite(models.Model):
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='recipe_favourites'
+    )
+    recipe = models.ForeignKey(
+        Recipe,
+        on_delete=models.CASCADE,
+        related_name='favourited_by'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('user', 'recipe')  # Prevents duplicate favourites
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.user.username} - {self.recipe.recipe_name}"
+
 # Celebration/Event Management Models
 
 class Contact(models.Model):
