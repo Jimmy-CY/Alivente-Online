@@ -15698,12 +15698,15 @@ def edit_maintenance(request, maintenance_id):
 def debug_media(request):
     import os
     from django.http import JsonResponse
-    media_path = '/data/media/recipe_images/'
-    try:
-        files = sorted(os.listdir(media_path))
-        return JsonResponse({
-            'count': len(files),
-            'files': files
-        })
-    except Exception as e:
-        return JsonResponse({'error': str(e)})
+    from pages.models import Recipe
+    
+    # Get all recipe image paths from database
+    db_images = Recipe.objects.exclude(
+        recipe_image=''
+    ).exclude(
+        recipe_image=None
+    ).values_list('recipe_image', flat=True)
+    
+    return JsonResponse({
+        'db_image_paths': sorted(list(db_images))
+    })
