@@ -14313,85 +14313,97 @@ Example: "1 teaspoon minced fresh garlic" should be:
   {"quantity": "1", "measurement": "teaspoon", "ingredient": "fresh garlic", "preparation": "minced"}
 
 Return ONLY valid JSON with these fields. If a field is not found, use null for numbers or empty string/array for text."""
-    
-    try:
-        if file_type in ['jpg', 'jpeg', 'png']:
-            # Use vision API for images
-            message = client.messages.create(
-                model="claude-sonnet-4-20250514",
-                max_tokens=4096,
-                messages=[
-                    {
-                        "role": "user",
-                        "content": [
-                            {
-                                "type": "image",
-                                "source": {
-                                    "type": "base64",
-                                    "media_type": f"image/{file_type}",
-                                    "data": content,
+
+    import time
+
+    for attempt in range(3):
+        try:
+            if file_type in ['jpg', 'jpeg', 'png']:
+                message = client.messages.create(
+                    model="claude-sonnet-4-20250514",
+                    max_tokens=4096,
+                    messages=[
+                        {
+                            "role": "user",
+                            "content": [
+                                {
+                                    "type": "image",
+                                    "source": {
+                                        "type": "base64",
+                                        "media_type": f"image/{file_type}",
+                                        "data": content,
+                                    },
                                 },
-                            },
-                            {
-                                "type": "text",
-                                "text": "Extract the recipe information from this image and return it in the JSON format specified."
-                            }
-                        ],
-                    }
-                ],
-                system=system_prompt
-            )
-        else:
-            # Use text API for PDF/Word
-            message = client.messages.create(
-                model="claude-sonnet-4-20250514",
-                max_tokens=4096,
-                messages=[
-                    {
-                        "role": "user",
-                        "content": f"Extract the recipe information from this text and return it in the JSON format specified:\n\n{content}"
-                    }
-                ],
-                system=system_prompt
-            )
-        
-        # Parse the response
-        response_text = message.content[0].text
-        
-        # Extract JSON from response (Claude might wrap it in markdown)
-        if "```json" in response_text:
-            json_start = response_text.find("```json") + 7
-            json_end = response_text.find("```", json_start)
-            response_text = response_text[json_start:json_end].strip()
-        elif "```" in response_text:
-            json_start = response_text.find("```") + 3
-            json_end = response_text.find("```", json_start)
-            response_text = response_text[json_start:json_end].strip()
-        
-        recipe_data = json.loads(response_text)
-        
-        # Validate and set defaults
-        recipe_data.setdefault('recipe_name', 'Imported Recipe')
-        recipe_data.setdefault('description', '')
-        recipe_data.setdefault('prep_time', None)
-        recipe_data.setdefault('cook_time', None)
-        recipe_data.setdefault('total_time', None)
-        recipe_data.setdefault('servings', 4)
-        recipe_data.setdefault('ingredients', [])
-        recipe_data.setdefault('instructions', [])
-        
-        # Ensure ingredients have all required fields
-        for ing in recipe_data['ingredients']:
-            ing.setdefault('quantity', '')
-            ing.setdefault('measurement', '')
-            ing.setdefault('ingredient', '')
-            ing.setdefault('preparation', '')
-        
-        return recipe_data
-        
-    except Exception as e:
-        print(f"AI Extraction Error: {str(e)}")
-        return None
+                                {
+                                    "type": "text",
+                                    "text": "Extract the recipe information from this image and return it in the JSON format specified."
+                                }
+                            ],
+                        }
+                    ],
+                    system=system_prompt
+                )
+            else:
+                message = client.messages.create(
+                    model="claude-sonnet-4-20250514",
+                    max_tokens=4096,
+                    messages=[
+                        {
+                            "role": "user",
+                            "content": f"Extract the recipe information from this text and return it in the JSON format specified:\n\n{content}"
+                        }
+                    ],
+                    system=system_prompt
+                )
+
+            # Parse the response
+            response_text = message.content[0].text
+
+            # Extract JSON from response (Claude might wrap it in markdown)
+            if "```json" in response_text:
+                json_start = response_text.find("```json") + 7
+                json_end = response_text.find("```", json_start)
+                response_text = response_text[json_start:json_end].strip()
+            elif "```" in response_text:
+                json_start = response_text.find("```") + 3
+                json_end = response_text.find("```", json_start)
+                response_text = response_text[json_start:json_end].strip()
+
+            recipe_data = json.loads(response_text)
+
+            # Validate and set defaults
+            recipe_data.setdefault('recipe_name', 'Imported Recipe')
+            recipe_data.setdefault('description', '')
+            recipe_data.setdefault('prep_time', None)
+            recipe_data.setdefault('cook_time', None)
+            recipe_data.setdefault('total_time', None)
+            recipe_data.setdefault('servings', 4)
+            recipe_data.setdefault('ingredients', [])
+            recipe_data.setdefault('instructions', [])
+
+            # Ensure ingredients have all required fields
+            for ing in recipe_data['ingredients']:
+                ing.setdefault('quantity', '')
+                ing.setdefault('measurement', '')
+                ing.setdefault('ingredient', '')
+                ing.setdefault('preparation', '')
+
+            return recipe_data
+
+        except json.JSONDecodeError as e:
+            print(f"AI JSON Parse Error: {str(e)}")
+            print(f"Raw response was: {response_text}")
+            return None
+        except Exception as e:
+            import traceback
+            print(f"AI Extraction Error (attempt {attempt + 1}): {str(e)}")
+            if attempt < 2:
+                wait_time = (attempt + 1) * 3  # 3s, then 6s
+                print(f"Retrying in {wait_time} seconds...")
+                time.sleep(wait_time)
+            else:
+                print(traceback.format_exc())
+                return None
 
 # AJAX endpoint to add new measurement
 @login_required
