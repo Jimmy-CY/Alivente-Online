@@ -31,6 +31,9 @@ Properties
 <body>
   <!-- Action Buttons -->
   <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 20px;">
+    <button type="button" class="btn btn-light btn-sm" data-toggle="modal" data-target="#propertiesHelpModal" title="Help" style="border:1px solid #dee2e6;">
+      <i class="fas fa-question-circle" style="color:#17a2b8;"></i> Help
+    </button>
     <a href="{% url 'properties_map_view' %}" class="btn btn-info">
         🗺️ Map View
     </a>
@@ -205,13 +208,293 @@ Properties
     </div>
 </div>
 
+<!-- ==================== PROPERTIES HELP MODAL ==================== -->
+<div class="modal fade" id="propertiesHelpModal" tabindex="-1" role="dialog" aria-labelledby="propertiesHelpModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable" role="document">
+    <div class="modal-content">
+
+      <div class="modal-header" style="background: linear-gradient(135deg, #17a2b8 0%, #138496 100%); color: white;">
+        <div>
+          <h5 class="modal-title" id="propertiesHelpModalLabel" style="font-weight:700; font-size:20px;">
+            <i class="fas fa-home"></i> Properties — User Guide
+          </h5>
+          <small style="opacity:0.85;">Everything you need to know about managing your properties</small>
+        </div>
+        <button type="button" class="close" data-dismiss="modal" style="color:white; opacity:1;">
+          <span>&times;</span>
+        </button>
+      </div>
+
+      <div class="modal-body" style="padding:0;">
+        <ul class="nav nav-tabs" id="helpTabs" style="padding: 0 20px; background:#f8f9fa; border-bottom: 2px solid #dee2e6;">
+          <li class="nav-item">
+            <a class="nav-link active" id="overview-tab" data-toggle="tab" href="#help-overview" style="font-weight:600; font-size:13px;">
+              <i class="fas fa-info-circle"></i> Overview
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" id="list-tab" data-toggle="tab" href="#help-list" style="font-weight:600; font-size:13px;">
+              <i class="fas fa-list"></i> Property List
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" id="addEdit-tab" data-toggle="tab" href="#help-addEdit" style="font-weight:600; font-size:13px;">
+              <i class="fas fa-edit"></i> Add / Edit
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" id="assets-tab" data-toggle="tab" href="#help-assets" style="font-weight:600; font-size:13px;">
+              <i class="fas fa-briefcase"></i> Assets
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" id="tips-tab" data-toggle="tab" href="#help-tips" style="font-weight:600; font-size:13px;">
+              <i class="fas fa-lightbulb"></i> Tips
+            </a>
+          </li>
+        </ul>
+
+        <div class="tab-content" style="padding: 24px;">
+
+          <!-- OVERVIEW TAB -->
+          <div class="tab-pane fade show active" id="help-overview">
+            <div style="display:flex; align-items:flex-start; gap:16px; margin-bottom:24px;">
+              <div style="width:50px; height:50px; border-radius:12px; background:#17a2b8; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                <i class="fas fa-home" style="color:white; font-size:22px;"></i>
+              </div>
+              <div>
+                <h5 style="font-weight:700; color:#2c3e50; margin-bottom:6px;">What is the Properties Module?</h5>
+                <p style="color:#6c757d; font-size:14px; line-height:1.7;">
+                  The Properties module is the central hub of Alivente Online. It allows you to manage your entire property portfolio — from recording property details and locations to tracking assets, title deeds, utility accounts, and generating property reports.
+                </p>
+              </div>
+            </div>
+
+            <h6 style="font-weight:700; color:#2c3e50; margin-bottom:14px; border-bottom:2px solid #17a2b8; padding-bottom:6px;">
+              <i class="fas fa-star" style="color:#17a2b8;"></i> Key Features
+            </h6>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:24px;">
+              <div style="background:#f0fdff; border:1px solid #b2ebf2; border-radius:8px; padding:14px;">
+                <div style="font-weight:600; color:#17a2b8; margin-bottom:4px;"><i class="fas fa-list"></i> Property List</div>
+                <div style="font-size:13px; color:#6c757d;">View all your properties at a glance with their country, status, and quick-access action buttons.</div>
+              </div>
+              <div style="background:#f0fdff; border:1px solid #b2ebf2; border-radius:8px; padding:14px;">
+                <div style="font-weight:600; color:#17a2b8; margin-bottom:4px;"><i class="fas fa-map-marked-alt"></i> Map View</div>
+                <div style="font-size:13px; color:#6c757d;">See all your properties plotted on an interactive map. Instantly visualise your portfolio's geographic spread.</div>
+              </div>
+              <div style="background:#f0fdff; border:1px solid #b2ebf2; border-radius:8px; padding:14px;">
+                <div style="font-weight:600; color:#17a2b8; margin-bottom:4px;"><i class="fas fa-file-alt"></i> Property Reports</div>
+                <div style="font-size:13px; color:#6c757d;">Generate a detailed report for any property including address, specifications, utility accounts, insurance, and a full asset summary.</div>
+              </div>
+              <div style="background:#f0fdff; border:1px solid #b2ebf2; border-radius:8px; padding:14px;">
+                <div style="font-weight:600; color:#17a2b8; margin-bottom:4px;"><i class="fas fa-scroll"></i> Title Deeds</div>
+                <div style="font-size:13px; color:#6c757d;">Upload and store PDF title deeds for each property. View and download them at any time directly from the property list.</div>
+              </div>
+              <div style="background:#f0fdff; border:1px solid #b2ebf2; border-radius:8px; padding:14px;">
+                <div style="font-weight:600; color:#17a2b8; margin-bottom:4px;"><i class="fas fa-briefcase"></i> Asset Tracking</div>
+                <div style="font-size:13px; color:#6c757d;">Record and manage all physical assets (appliances, electronics, furniture) within each property, including warranty tracking.</div>
+              </div>
+              <div style="background:#f0fdff; border:1px solid #b2ebf2; border-radius:8px; padding:14px;">
+                <div style="font-weight:600; color:#17a2b8; margin-bottom:4px;"><i class="fas fa-filter"></i> Filtering</div>
+                <div style="font-size:13px; color:#6c757d;">Filter properties by country, status, and other criteria to quickly find what you need.</div>
+              </div>
+            </div>
+
+            <div style="background:#fff3cd; border:1px solid #ffc107; border-radius:8px; padding:14px; font-size:13px;">
+              <i class="fas fa-exclamation-triangle" style="color:#856404;"></i>
+              <strong style="color:#856404;"> Important:</strong>
+              <span style="color:#856404;"> Properties marked as <strong>Active</strong> and <strong>Available for Rent</strong> are included in vacancy calculations across the system. Make sure your property statuses are kept up to date.</span>
+            </div>
+          </div>
+
+          <!-- PROPERTY LIST TAB -->
+          <div class="tab-pane fade" id="help-list">
+            <h6 style="font-weight:700; color:#2c3e50; margin-bottom:16px; border-bottom:2px solid #17a2b8; padding-bottom:6px;">
+              <i class="fas fa-list" style="color:#17a2b8;"></i> Understanding the Property List
+            </h6>
+            <p style="font-size:14px; color:#6c757d; margin-bottom:20px;">
+              Each row represents one property. The columns are:
+            </p>
+            <table style="width:100%; font-size:13px; border-collapse:collapse; margin-bottom:24px;">
+              <thead>
+                <tr style="background:#343a40; color:white;">
+                  <th style="padding:10px 14px;">Column</th>
+                  <th style="padding:10px 14px;">Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr style="background:#f8f9fa;">
+                  <td style="padding:10px 14px; font-weight:600; color:#2c3e50; border-bottom:1px solid #dee2e6;">Property</td>
+                  <td style="padding:10px 14px; color:#6c757d; border-bottom:1px solid #dee2e6;">The property name as entered in the system.</td>
+                </tr>
+                <tr>
+                  <td style="padding:10px 14px; font-weight:600; color:#2c3e50; border-bottom:1px solid #dee2e6;">Country</td>
+                  <td style="padding:10px 14px; color:#6c757d; border-bottom:1px solid #dee2e6;">The country where the property is located.</td>
+                </tr>
+                <tr style="background:#f8f9fa;">
+                  <td style="padding:10px 14px; font-weight:600; color:#2c3e50; border-bottom:1px solid #dee2e6;">Status</td>
+                  <td style="padding:10px 14px; color:#6c757d; border-bottom:1px solid #dee2e6;">
+                    <span style="background:#d4edda; color:#155724; padding:2px 8px; border-radius:10px; font-size:11px; font-weight:600;">Active</span> — Included in all calculations.<br>
+                    <span style="background:#f8d7da; color:#721c24; padding:2px 8px; border-radius:10px; font-size:11px; font-weight:600; margin-top:4px; display:inline-block;">Inactive</span> — Excluded from vacancy and occupancy calculations.
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:10px 14px; font-weight:600; color:#2c3e50; border-bottom:1px solid #dee2e6;">Details</td>
+                  <td style="padding:10px 14px; color:#6c757d; border-bottom:1px solid #dee2e6;">Opens the Edit Property form.</td>
+                </tr>
+                <tr style="background:#f8f9fa;">
+                  <td style="padding:10px 14px; font-weight:600; color:#2c3e50; border-bottom:1px solid #dee2e6;">Report</td>
+                  <td style="padding:10px 14px; color:#6c757d; border-bottom:1px solid #dee2e6;">Generates a full Property Details Report including address, specifications, utility accounts, and asset summary.</td>
+                </tr>
+                <tr>
+                  <td style="padding:10px 14px; font-weight:600; color:#2c3e50; border-bottom:1px solid #dee2e6;">Title Deed</td>
+                  <td style="padding:10px 14px; color:#6c757d; border-bottom:1px solid #dee2e6;">Opens the stored title deed PDF. Shows "Unavailable" if none has been uploaded.</td>
+                </tr>
+                <tr style="background:#f8f9fa;">
+                  <td style="padding:10px 14px; font-weight:600; color:#2c3e50;">Assets</td>
+                  <td style="padding:10px 14px; color:#6c757d;">Opens the Asset Manager for this property. Shows "None" if no assets recorded.</td>
+                </tr>
+              </tbody>
+            </table>
+
+            <h6 style="font-weight:700; color:#2c3e50; margin-bottom:12px;"><i class="fas fa-filter" style="color:#17a2b8;"></i> Using Filters</h6>
+            <p style="font-size:14px; color:#6c757d; margin-bottom:12px;">
+              Click the <strong>Property Filters</strong> bar to expand filter options. Filter by property name, country, and status. Use <strong>Clear All</strong> to reset all filters.
+            </p>
+            <h6 style="font-weight:700; color:#2c3e50; margin-bottom:12px;"><i class="fas fa-map" style="color:#17a2b8;"></i> Map View</h6>
+            <p style="font-size:14px; color:#6c757d;">
+              Click <strong>Map View</strong> to see all properties as pins on an interactive map. Use <strong>Center Map</strong> to reset the view to show all properties.
+            </p>
+          </div>
+
+          <!-- ADD / EDIT TAB -->
+          <div class="tab-pane fade" id="help-addEdit">
+            <h6 style="font-weight:700; color:#2c3e50; margin-bottom:16px; border-bottom:2px solid #17a2b8; padding-bottom:6px;">
+              <i class="fas fa-edit" style="color:#17a2b8;"></i> Adding and Editing Properties
+            </h6>
+            <p style="font-size:14px; color:#6c757d; margin-bottom:20px;">
+              Click <strong>Add New</strong> to create a property, or <strong>Edit</strong> on any row to update it. Both forms contain the same fields.
+            </p>
+            {% for step in "123456" %}{% endfor %}
+            <div style="display:flex; flex-direction:column; gap:14px;">
+              <div style="background:#f8f9fa; border-radius:8px; padding:14px; border-left:4px solid #17a2b8;">
+                <div style="font-weight:700; color:#2c3e50; margin-bottom:4px;"><span style="background:#17a2b8; color:white; border-radius:50%; padding:1px 7px; margin-right:8px; font-size:11px;">1</span> Property Name</div>
+                <div style="font-size:13px; color:#6c757d;">Give it a clear descriptive name (e.g. "Ionion - Villa 24"). This appears throughout the system.</div>
+              </div>
+              <div style="background:#f8f9fa; border-radius:8px; padding:14px; border-left:4px solid #17a2b8;">
+                <div style="font-weight:700; color:#2c3e50; margin-bottom:4px;"><span style="background:#17a2b8; color:white; border-radius:50%; padding:1px 7px; margin-right:8px; font-size:11px;">2</span> Address</div>
+                <div style="font-size:13px; color:#6c757d;">Fill in the full address — Address 1, Address 2, Suburb, City, Province, Country, Post Code. A complete address ensures accurate map placement and correct reports.</div>
+              </div>
+              <div style="background:#f8f9fa; border-radius:8px; padding:14px; border-left:4px solid #17a2b8;">
+                <div style="font-weight:700; color:#2c3e50; margin-bottom:4px;"><span style="background:#17a2b8; color:white; border-radius:50%; padding:1px 7px; margin-right:8px; font-size:11px;">3</span> Map Location</div>
+                <div style="font-size:13px; color:#6c757d;">Click directly on the map to drop a pin, or use <strong>Find Address on Map</strong> to auto-locate. Use <strong>Clear Location</strong> to remove a saved pin.</div>
+              </div>
+              <div style="background:#f8f9fa; border-radius:8px; padding:14px; border-left:4px solid #17a2b8;">
+                <div style="font-weight:700; color:#2c3e50; margin-bottom:4px;"><span style="background:#17a2b8; color:white; border-radius:50%; padding:1px 7px; margin-right:8px; font-size:11px;">4</span> Specifications</div>
+                <div style="font-size:13px; color:#6c757d;">Enter Floor Area (m²), Year Built, and whether to Include in Occupancy Calculations. Setting this to "Yes" means this property counts in vacancy metrics on the Dashboard and Notifications.</div>
+              </div>
+              <div style="background:#f8f9fa; border-radius:8px; padding:14px; border-left:4px solid #17a2b8;">
+                <div style="font-weight:700; color:#2c3e50; margin-bottom:4px;"><span style="background:#17a2b8; color:white; border-radius:50%; padding:1px 7px; margin-right:8px; font-size:11px;">5</span> Status & Availability</div>
+                <div style="font-size:13px; color:#6c757d;"><strong>Status</strong> — Active or Inactive. <strong>Available for Rent</strong> — Properties set to Active + Available for Rent with no tenant will appear as vacant in Notifications. <strong>Title Deed Available</strong> — Indicates whether a deed exists.</div>
+              </div>
+              <div style="background:#f8f9fa; border-radius:8px; padding:14px; border-left:4px solid #17a2b8;">
+                <div style="font-weight:700; color:#2c3e50; margin-bottom:4px;"><span style="background:#17a2b8; color:white; border-radius:50%; padding:1px 7px; margin-right:8px; font-size:11px;">6</span> Utility Accounts</div>
+                <div style="font-size:13px; color:#6c757d;">Record account numbers for Electricity, Water, Refuse, Property Tax, Sewerage, and Insurance. These appear on the Property Report and serve as a central reference for all service accounts.</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ASSETS TAB -->
+          <div class="tab-pane fade" id="help-assets">
+            <h6 style="font-weight:700; color:#2c3e50; margin-bottom:16px; border-bottom:2px solid #17a2b8; padding-bottom:6px;">
+              <i class="fas fa-briefcase" style="color:#17a2b8;"></i> Managing Property Assets
+            </h6>
+            <p style="font-size:14px; color:#6c757d; margin-bottom:16px;">
+              Each property can have unlimited assets — appliances, electronics, furniture, and more. Assets are grouped by category.
+            </p>
+            <h6 style="font-weight:600; color:#2c3e50; margin-bottom:10px;">Accessing Assets</h6>
+            <p style="font-size:13px; color:#6c757d; margin-bottom:16px;">
+              Click <strong>View</strong> in the Assets column. If no assets exist, click <strong>Edit</strong> on the property and use the <strong>Assets</strong> button in the top-right corner.
+            </p>
+            <h6 style="font-weight:600; color:#2c3e50; margin-bottom:10px;">Information Recorded per Asset</h6>
+            <div style="background:#f8f9fa; border-radius:8px; padding:16px; margin-bottom:16px;">
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; font-size:13px;">
+                <div><i class="fas fa-tag" style="color:#17a2b8; width:18px;"></i> <strong>Asset Name</strong></div>
+                <div><i class="fas fa-trademark" style="color:#17a2b8; width:18px;"></i> <strong>Brand</strong></div>
+                <div><i class="fas fa-th-large" style="color:#17a2b8; width:18px;"></i> <strong>Category</strong> — Appliances, Electronics, Furniture</div>
+                <div><i class="fas fa-list-ul" style="color:#17a2b8; width:18px;"></i> <strong>Subcategory</strong> — e.g. Air Conditioner, TV</div>
+                <div><i class="fas fa-door-open" style="color:#17a2b8; width:18px;"></i> <strong>Location/Room</strong> — e.g. Lounge, Kitchen</div>
+                <div><i class="fas fa-calendar" style="color:#17a2b8; width:18px;"></i> <strong>Purchase Date</strong></div>
+                <div><i class="fas fa-truck" style="color:#17a2b8; width:18px;"></i> <strong>Supplier</strong></div>
+                <div><i class="fas fa-shield-alt" style="color:#17a2b8; width:18px;"></i> <strong>Warranty Expiry Date</strong></div>
+              </div>
+            </div>
+            <h6 style="font-weight:600; color:#2c3e50; margin-bottom:10px;">Warranty Status</h6>
+            <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px;">
+              <div style="background:#d4edda; border:1px solid #c3e6cb; border-radius:6px; padding:6px 12px; font-size:13px; color:#155724; font-weight:600;"><i class="fas fa-check"></i> Active</div>
+              <div style="background:#f8d7da; border:1px solid #f5c6cb; border-radius:6px; padding:6px 12px; font-size:13px; color:#721c24; font-weight:600;"><i class="fas fa-times"></i> Expired</div>
+              <div style="background:#e2e3e5; border:1px solid #d6d8db; border-radius:6px; padding:6px 12px; font-size:13px; color:#383d41; font-weight:600;">N/A — Not recorded</div>
+            </div>
+            <div style="background:#d1ecf1; border:1px solid #bee5eb; border-radius:8px; padding:14px; font-size:13px; color:#0c5460;">
+              <i class="fas fa-info-circle"></i> <strong>Property Report:</strong> Includes an Asset Summary showing total assets, active/expired warranties, total purchase value, and maintenance cost.
+            </div>
+          </div>
+
+          <!-- TIPS TAB -->
+          <div class="tab-pane fade" id="help-tips">
+            <h6 style="font-weight:700; color:#2c3e50; margin-bottom:16px; border-bottom:2px solid #17a2b8; padding-bottom:6px;">
+              <i class="fas fa-lightbulb" style="color:#17a2b8;"></i> Tips and Best Practices
+            </h6>
+            <div style="display:flex; flex-direction:column; gap:14px;">
+              <div style="display:flex; gap:14px; align-items:flex-start;">
+                <div style="width:36px; height:36px; border-radius:50%; background:#17a2b8; display:flex; align-items:center; justify-content:center; flex-shrink:0;"><i class="fas fa-map-marker-alt" style="color:white; font-size:14px;"></i></div>
+                <div><div style="font-weight:600; color:#2c3e50; font-size:14px; margin-bottom:4px;">Always set the map location</div><div style="font-size:13px; color:#6c757d;">Use "Find Address on Map" after entering the address for best accuracy. This ensures the property shows correctly in Map View.</div></div>
+              </div>
+              <div style="display:flex; gap:14px; align-items:flex-start;">
+                <div style="width:36px; height:36px; border-radius:50%; background:#17a2b8; display:flex; align-items:center; justify-content:center; flex-shrink:0;"><i class="fas fa-toggle-on" style="color:white; font-size:14px;"></i></div>
+                <div><div style="font-weight:600; color:#2c3e50; font-size:14px; margin-bottom:4px;">Keep status up to date</div><div style="font-size:13px; color:#6c757d;">Active + Available for Rent properties with no tenant appear as vacant in Notifications. Update statuses promptly to keep your data accurate.</div></div>
+              </div>
+              <div style="display:flex; gap:14px; align-items:flex-start;">
+                <div style="width:36px; height:36px; border-radius:50%; background:#17a2b8; display:flex; align-items:center; justify-content:center; flex-shrink:0;"><i class="fas fa-scroll" style="color:white; font-size:14px;"></i></div>
+                <div><div style="font-weight:600; color:#2c3e50; font-size:14px; margin-bottom:4px;">Upload title deeds early</div><div style="font-size:13px; color:#6c757d;">Upload title deed PDFs as soon as they're available. This creates a secure, centralised location for all your legal property documents.</div></div>
+              </div>
+              <div style="display:flex; gap:14px; align-items:flex-start;">
+                <div style="width:36px; height:36px; border-radius:50%; background:#17a2b8; display:flex; align-items:center; justify-content:center; flex-shrink:0;"><i class="fas fa-briefcase" style="color:white; font-size:14px;"></i></div>
+                <div><div style="font-weight:600; color:#2c3e50; font-size:14px; margin-bottom:4px;">Record assets with warranty dates</div><div style="font-size:13px; color:#6c757d;">Always enter warranty expiry dates. This lets you track which items still have coverage and which need attention.</div></div>
+              </div>
+              <div style="display:flex; gap:14px; align-items:flex-start;">
+                <div style="width:36px; height:36px; border-radius:50%; background:#17a2b8; display:flex; align-items:center; justify-content:center; flex-shrink:0;"><i class="fas fa-bolt" style="color:white; font-size:14px;"></i></div>
+                <div><div style="font-weight:600; color:#2c3e50; font-size:14px; margin-bottom:4px;">Fill in utility account details</div><div style="font-size:13px; color:#6c757d;">Enter account numbers for electricity, water, refuse, and other services. Easy reference without searching through paperwork.</div></div>
+              </div>
+              <div style="display:flex; gap:14px; align-items:flex-start;">
+                <div style="width:36px; height:36px; border-radius:50%; background:#17a2b8; display:flex; align-items:center; justify-content:center; flex-shrink:0;"><i class="fas fa-file-alt" style="color:white; font-size:14px;"></i></div>
+                <div><div style="font-weight:600; color:#2c3e50; font-size:14px; margin-bottom:4px;">Use the Property Report regularly</div><div style="font-size:13px; color:#6c757d;">The Property Details Report is a comprehensive one-page summary. Print or share it when meeting lawyers, accountants, or tenants.</div></div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="modal-footer" style="background:#f8f9fa; border-top:1px solid #dee2e6;">
+        <small class="text-muted" style="flex:1;">Alivente Online — Properties User Guide</small>
+        <button type="button" class="btn btn-info btn-sm" data-dismiss="modal">
+          <i class="fas fa-times"></i> Close
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
+<!-- ==================== END PROPERTIES HELP MODAL ==================== -->
+
 </body>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
 <style>
-/* Refined Filter Panel Styles */
 .filter-panel {
     background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
     border: 1px solid #dee2e6;
@@ -221,385 +504,72 @@ Properties
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
     transition: padding 0.3s ease;
 }
-
-.filter-panel.expanded {
-    padding: 24px;
-}
-
-/* CSS-only visibility control - can't be overridden by JavaScript */
-.filter-panel:not(.expanded) .filter-content {
-    display: none !important;
-    visibility: hidden !important;
-    opacity: 0 !important;
-    height: 0 !important;
-    overflow: hidden !important;
-}
-
-.filter-panel.expanded .filter-content,
-.filter-panel.force-expanded .filter-content {
-    display: block !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-    height: auto !important;
-    overflow: visible !important;
-    padding-top: 20px;
-}
-
-/* Force-expanded class overrides everything */
-.filter-panel.force-expanded {
-    padding: 24px !important;
-}
-
-.filter-panel.force-expanded .filter-content {
-    display: block !important;
-    visibility: visible !important;
-    opacity: 1 !important;
-    height: auto !important;
-    overflow: visible !important;
-    padding-top: 20px !important;
-}
-
-.filter-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 0;
-    padding-bottom: 8px;
-    border-bottom: 1px solid #dee2e6;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.filter-header.expanded {
-    padding-bottom: 12px;
-    border-bottom: 2px solid #dee2e6;
-    margin-bottom: 20px;
-}
-
-.filter-header:hover {
-    background-color: rgba(23, 162, 184, 0.05);
-    border-radius: 8px;
-    margin: -8px;
-    padding: 16px 8px;
-}
-
-.filter-header.expanded:hover {
-    padding: 20px 8px;
-}
-
-.filter-title {
-    margin: 0;
-    color: #2c3e50;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    user-select: none;
-}
-
-.filter-title i {
-    color: #17a2b8;
-}
-
-.filter-toggle-icon {
-    transition: transform 0.3s ease;
-    margin-left: 8px;
-}
-
-.filter-toggle-icon.rotated {
-    transform: rotate(180deg);
-}
-
-.filter-content {
-    overflow: visible;
-    transition: all 0.3s ease;
-}
-
-.filter-content.show {
-    display: block !important;
-    padding-top: 20px;
-}
-
-.filter-grid {
-    display: grid;
-    grid-template-columns: 2fr 1fr 1fr;
-    gap: 20px;
-    align-items: end;
-}
-
-.filter-group {
-    display: flex;
-    flex-direction: column;
-    position: relative;
-    /* Ensure dropdowns don't get cut off */
-    overflow: visible;
-}
-
-.filter-label {
-    font-weight: 500;
-    color: #495057;
-    margin-bottom: 6px;
-    font-size: 14px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-
-.filter-label i {
-    color: #6c757d;
-    width: 14px;
-}
-
-.filter-input, .filter-select {
-    border: 2px solid #e9ecef;
-    border-radius: 8px;
-    padding: 10px 14px;
-    font-size: 14px;
-    transition: all 0.3s ease;
-    background: white;
-    position: relative;
-    z-index: 10;
-}
-
-.filter-select {
-    cursor: pointer;
-    /* Fix dropdown cutoff - ensure proper height and padding */
-    appearance: none;
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
-    background-position: right 12px center;
-    background-repeat: no-repeat;
-    background-size: 16px 12px;
-    padding-right: 40px;
-    min-height: 44px;
-    line-height: 1.4;
-}
-
-.filter-input:focus, .filter-select:focus {
-    border-color: #17a2b8;
-    box-shadow: 0 0 0 3px rgba(23, 162, 184, 0.1);
-    outline: none;
-    position: relative;
-    z-index: 20;
-}
-
-/* Search Input Group */
-.search-input-group {
-    position: relative;
-    display: flex;
-    align-items: stretch;
-}
-
-.search-input {
-    border: 2px solid #e9ecef;
-    border-radius: 8px 0 0 8px;
-    border-right: none;
-    padding: 10px 14px;
-    font-size: 14px;
-    transition: all 0.3s ease;
-    background: white;
-    flex: 1;
-}
-
-.search-input:focus {
-    border-color: #17a2b8;
-    box-shadow: 0 0 0 3px rgba(23, 162, 184, 0.1);
-    outline: none;
-    z-index: 20;
-}
-
-.search-btn {
-    background: #17a2b8;
-    border: 2px solid #17a2b8;
-    border-left: none;
-    border-radius: 0 8px 8px 0;
-    color: white;
-    padding: 10px 16px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.search-btn:hover {
-    background: #138496;
-    border-color: #138496;
-}
-
-.search-btn:active {
-    transform: scale(0.98);
-}
-
-.btn-outline-secondary {
-    border: 2px solid #6c757d;
-    color: #6c757d;
-    background: transparent;
-    border-radius: 6px;
-    font-size: 13px;
-    padding: 6px 12px;
-    transition: all 0.3s ease;
-}
-
-.btn-outline-secondary:hover {
-    background: #6c757d;
-    color: white;
-    transform: translateY(-1px);
-}
-
-/* Active Filters */
-.active-filters {
-    margin-top: 16px;
-    padding-top: 16px;
-    border-top: 1px solid #dee2e6;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    flex-wrap: wrap;
-}
-
-.active-filters-label {
-    font-weight: 500;
-    color: #495057;
-    font-size: 14px;
-}
-
-.filter-tags {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-}
-
-.filter-tag {
-    background: #17a2b8;
-    color: white;
-    padding: 4px 12px;
-    border-radius: 16px;
-    font-size: 12px;
-    font-weight: 500;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-
-.filter-tag .remove-tag {
-    background: rgba(255, 255, 255, 0.3);
-    border: none;
-    color: white;
-    border-radius: 50%;
-    width: 16px;
-    height: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    font-size: 10px;
-}
-
-/* Table Enhancements */
-.table-container {
-    background: white;
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-}
-
-.status-badge {
-    padding: 4px 12px;
-    border-radius: 12px;
-    font-size: 12px;
-    font-weight: 500;
-}
-
-.status-active {
-    background: #d4edda;
-    color: #155724;
-}
-
-.status-inactive {
-    background: #f8d7da;
-    color: #721c24;
-}
-
-.action-btn {
-    border-color: #dee2e6;
-    transition: all 0.2s ease;
-}
-
-.action-btn:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-/* Button Styles */
-.btn-info {
-    background-color: #17a2b8;
-    color: white;
-    border: 1px solid #17a2b8;
-    transition: all 0.3s ease;
-    border-radius: 6px;
-    font-weight: 500;
-}
-
-.btn-info:hover {
-    background-color: #138496;
-    border-color: #117a8b;
-    color: white;
-    text-decoration: none;
-    transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-}
-
-/* Responsive Design */
+.filter-panel.expanded { padding: 24px; }
+.filter-panel:not(.expanded) .filter-content { display: none !important; visibility: hidden !important; opacity: 0 !important; height: 0 !important; overflow: hidden !important; }
+.filter-panel.expanded .filter-content, .filter-panel.force-expanded .filter-content { display: block !important; visibility: visible !important; opacity: 1 !important; height: auto !important; overflow: visible !important; padding-top: 20px; }
+.filter-panel.force-expanded { padding: 24px !important; }
+.filter-panel.force-expanded .filter-content { display: block !important; visibility: visible !important; opacity: 1 !important; height: auto !important; overflow: visible !important; padding-top: 20px !important; }
+.filter-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0; padding-bottom: 8px; border-bottom: 1px solid #dee2e6; cursor: pointer; transition: all 0.3s ease; }
+.filter-header.expanded { padding-bottom: 12px; border-bottom: 2px solid #dee2e6; margin-bottom: 20px; }
+.filter-header:hover { background-color: rgba(23, 162, 184, 0.05); border-radius: 8px; margin: -8px; padding: 16px 8px; }
+.filter-header.expanded:hover { padding: 20px 8px; }
+.filter-title { margin: 0; color: #2c3e50; font-weight: 600; display: flex; align-items: center; gap: 8px; user-select: none; }
+.filter-title i { color: #17a2b8; }
+.filter-toggle-icon { transition: transform 0.3s ease; margin-left: 8px; }
+.filter-toggle-icon.rotated { transform: rotate(180deg); }
+.filter-content { overflow: visible; transition: all 0.3s ease; }
+.filter-content.show { display: block !important; padding-top: 20px; }
+.filter-grid { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 20px; align-items: end; }
+.filter-group { display: flex; flex-direction: column; position: relative; overflow: visible; }
+.filter-label { font-weight: 500; color: #495057; margin-bottom: 6px; font-size: 14px; display: flex; align-items: center; gap: 6px; }
+.filter-label i { color: #6c757d; width: 14px; }
+.filter-input, .filter-select { border: 2px solid #e9ecef; border-radius: 8px; padding: 10px 14px; font-size: 14px; transition: all 0.3s ease; background: white; position: relative; z-index: 10; }
+.filter-select { cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e"); background-position: right 12px center; background-repeat: no-repeat; background-size: 16px 12px; padding-right: 40px; min-height: 44px; line-height: 1.4; }
+.filter-input:focus, .filter-select:focus { border-color: #17a2b8; box-shadow: 0 0 0 3px rgba(23, 162, 184, 0.1); outline: none; position: relative; z-index: 20; }
+.search-input-group { position: relative; display: flex; align-items: stretch; }
+.search-input { border: 2px solid #e9ecef; border-radius: 8px 0 0 8px; border-right: none; padding: 10px 14px; font-size: 14px; transition: all 0.3s ease; background: white; flex: 1; }
+.search-input:focus { border-color: #17a2b8; box-shadow: 0 0 0 3px rgba(23, 162, 184, 0.1); outline: none; z-index: 20; }
+.search-btn { background: #17a2b8; border: 2px solid #17a2b8; border-left: none; border-radius: 0 8px 8px 0; color: white; padding: 10px 16px; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; }
+.search-btn:hover { background: #138496; border-color: #138496; }
+.btn-outline-secondary { border: 2px solid #6c757d; color: #6c757d; background: transparent; border-radius: 6px; font-size: 13px; padding: 6px 12px; transition: all 0.3s ease; }
+.btn-outline-secondary:hover { background: #6c757d; color: white; transform: translateY(-1px); }
+.active-filters { margin-top: 16px; padding-top: 16px; border-top: 1px solid #dee2e6; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.active-filters-label { font-weight: 500; color: #495057; font-size: 14px; }
+.filter-tags { display: flex; gap: 8px; flex-wrap: wrap; }
+.filter-tag { background: #17a2b8; color: white; padding: 4px 12px; border-radius: 16px; font-size: 12px; font-weight: 500; display: flex; align-items: center; gap: 6px; }
+.filter-tag .remove-tag { background: rgba(255, 255, 255, 0.3); border: none; color: white; border-radius: 50%; width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 10px; }
+.table-container { background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06); }
+.status-badge { padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 500; }
+.status-active { background: #d4edda; color: #155724; }
+.status-inactive { background: #f8d7da; color: #721c24; }
+.action-btn { border-color: #dee2e6; transition: all 0.2s ease; }
+.action-btn:hover { transform: translateY(-1px); box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); }
+.btn-info { background-color: #17a2b8; color: white; border: 1px solid #17a2b8; transition: all 0.3s ease; border-radius: 6px; font-weight: 500; }
+.btn-info:hover { background-color: #138496; border-color: #117a8b; color: white; text-decoration: none; transform: translateY(-1px); box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
 @media (max-width: 768px) {
-    .filter-grid {
-        grid-template-columns: 1fr;
-        gap: 16px;
-    }
-    
-    .filter-header {
-        flex-direction: column;
-        gap: 12px;
-        align-items: stretch;
-    }
-    
-    .search-input-group {
-        width: 100%;
-    }
+    .filter-grid { grid-template-columns: 1fr; gap: 16px; }
+    .filter-header { flex-direction: column; gap: 12px; align-items: stretch; }
+    .search-input-group { width: 100%; }
 }
 </style>
 
 <script>
-console.log('=== FILTER PANEL SCRIPT LOADED ===');
-
-// NUCLEAR OPTION - Complete override of external interference
 let PANEL_IS_MANUALLY_EXPANDED = false;
 let EXTERNAL_INTERFERENCE_DETECTED = false;
 
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('DOM loaded - initializing filter panel');
-    
-    // Check if panel was forcibly expanded before form submission
     const wasForceExpanded = sessionStorage.getItem('FORCE_PANEL_EXPANDED') === 'true';
     const wasClearAllProtected = sessionStorage.getItem('CLEAR_ALL_PROTECTION') === 'true';
     const windowFlag = window.PANEL_MUST_STAY_EXPANDED;
     const clearAllFlag = window.CLEAR_ALL_PROTECTION_ACTIVE;
-    
-    console.log(`🔍 Checking forced expansion: sessionStorage=${wasForceExpanded}, clearAll=${wasClearAllProtected}, window=${windowFlag}`);
-    
-    // Initialize as collapsed UNLESS it was force-expanded
     const filterPanel = document.getElementById('filterPanel');
     if (filterPanel) {
         if (wasForceExpanded || wasClearAllProtected || windowFlag || clearAllFlag) {
-            console.log('🔓 RESTORING FORCE-EXPANDED PANEL');
             filterPanel.classList.add('expanded', 'force-expanded');
             filterPanel.setAttribute('data-force-expanded', 'true');
             const toggleIcon = document.getElementById('filterToggleIcon');
-            if (toggleIcon) {
-                toggleIcon.classList.add('rotated');
-            }
+            if (toggleIcon) toggleIcon.classList.add('rotated');
             PANEL_IS_MANUALLY_EXPANDED = true;
-            
-            // Clear the force flags
             sessionStorage.removeItem('FORCE_PANEL_EXPANDED');
             sessionStorage.removeItem('CLEAR_ALL_PROTECTION');
             window.PANEL_MUST_STAY_EXPANDED = false;
@@ -607,512 +577,189 @@ document.addEventListener('DOMContentLoaded', function() {
         } else {
             filterPanel.classList.remove('expanded', 'force-expanded');
             filterPanel.removeAttribute('data-force-expanded');
-            console.log('Panel initialized as collapsed');
         }
     }
-    
-    // Set up continuous monitoring for external interference
     setupInterferenceProtection();
-    
     updateActiveFilters();
-    
-    // Auto-submit on dropdown filter change
     ['countrySelect', 'statusSelect'].forEach(id => {
         const element = document.getElementById(id);
         if (element) {
             element.addEventListener('change', function() {
-                console.log(`🔄 Filter changed: ${id} = ${this.value}`);
-                
-                // CRITICAL: Lock panel state BEFORE form submission
                 if (PANEL_IS_MANUALLY_EXPANDED) {
-                    console.log('🔒 LOCKING PANEL STATE BEFORE FORM SUBMISSION');
-                    
-                    // Multiple approaches to prevent collapse during submission
-                    const filterPanel = document.getElementById('filterPanel');
-                    const toggleIcon = document.getElementById('filterToggleIcon');
-                    
-                    // Approach 1: Add persistent CSS class
-                    if (filterPanel) {
-                        filterPanel.classList.add('force-expanded');
-                        filterPanel.style.cssText += 'display: block !important;';
-                    }
-                    
-                    // Approach 2: Store in sessionStorage
+                    const fp = document.getElementById('filterPanel');
+                    if (fp) { fp.classList.add('force-expanded'); fp.style.cssText += 'display: block !important;'; }
                     sessionStorage.setItem('FORCE_PANEL_EXPANDED', 'true');
-                    
-                    // Approach 3: Set flag in window object
                     window.PANEL_MUST_STAY_EXPANDED = true;
-                    
-                    // Approach 4: Override any potential hide functions
-                    const originalHide = window.hideFilters;
-                    window.hideFilters = function() {
-                        console.log('🚫 BLOCKED: hideFilters() call during form submission');
-                        return false;
-                    };
-                    
-                    // Restore original function after a delay
-                    setTimeout(() => {
-                        window.hideFilters = originalHide;
-                    }, 100);
                 }
-                
-                // Submit the form
                 document.getElementById('filterForm').submit();
             });
         }
     });
-    
-    // Search button functionality
     const searchBtn = document.getElementById('searchBtn');
     if (searchBtn) {
         searchBtn.addEventListener('click', function() {
-            console.log('🔍 Search button clicked');
-            
-            // Apply the same protection as dropdowns
             if (PANEL_IS_MANUALLY_EXPANDED) {
-                console.log('🔒 LOCKING PANEL STATE BEFORE SEARCH SUBMISSION');
-                
-                const filterPanel = document.getElementById('filterPanel');
-                
-                // Apply all protection methods
-                if (filterPanel) {
-                    filterPanel.classList.add('force-expanded');
-                    filterPanel.style.cssText += 'display: block !important;';
-                }
-                
+                const fp = document.getElementById('filterPanel');
+                if (fp) { fp.classList.add('force-expanded'); fp.style.cssText += 'display: block !important;'; }
                 sessionStorage.setItem('FORCE_PANEL_EXPANDED', 'true');
                 window.PANEL_MUST_STAY_EXPANDED = true;
-                
-                // Block hide functions temporarily
-                const originalHide = window.hideFilters;
-                window.hideFilters = function() {
-                    console.log('🚫 BLOCKED: hideFilters() call during search submission');
-                    return false;
-                };
-                
-                setTimeout(() => {
-                    window.hideFilters = originalHide;
-                }, 100);
             }
-            
             document.getElementById('filterForm').submit();
         });
     }
-    
-    // Enter key in search input
     const searchInput = document.getElementById('searchInput');
     if (searchInput) {
         searchInput.addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 e.preventDefault();
-                console.log('⌨️ Search enter key pressed');
-                
-                // Apply the same protection as dropdowns
                 if (PANEL_IS_MANUALLY_EXPANDED) {
-                    console.log('🔒 LOCKING PANEL STATE BEFORE SEARCH ENTER SUBMISSION');
-                    
-                    const filterPanel = document.getElementById('filterPanel');
-                    
-                    // Apply all protection methods
-                    if (filterPanel) {
-                        filterPanel.classList.add('force-expanded');
-                        filterPanel.style.cssText += 'display: block !important;';
-                    }
-                    
+                    const fp = document.getElementById('filterPanel');
+                    if (fp) { fp.classList.add('force-expanded'); fp.style.cssText += 'display: block !important;'; }
                     sessionStorage.setItem('FORCE_PANEL_EXPANDED', 'true');
                     window.PANEL_MUST_STAY_EXPANDED = true;
-                    
-                    // Block hide functions temporarily
-                    const originalHide = window.hideFilters;
-                    window.hideFilters = function() {
-                        console.log('🚫 BLOCKED: hideFilters() call during search enter submission');
-                        return false;
-                    };
-                    
-                    setTimeout(() => {
-                        window.hideFilters = originalHide;
-                    }, 100);
                 }
-                
                 document.getElementById('filterForm').submit();
             }
         });
     }
-    
-    // Clear all filters - ENHANCED PROTECTION
     const clearAllBtn = document.getElementById('clearAllBtn');
     if (clearAllBtn) {
         clearAllBtn.addEventListener('click', function() {
-            console.log('🚨🧹 CLEAR ALL CLICKED - MAXIMUM PROTECTION MODE ACTIVATED 🧹🚨');
-            
             if (PANEL_IS_MANUALLY_EXPANDED) {
-                console.log('🔒🔒 LOCKING PANEL STATE BEFORE CLEAR ALL SUBMISSION - MAXIMUM SECURITY 🔒🔒');
-                
-                const filterPanel = document.getElementById('filterPanel');
-                
-                // MAXIMUM PROTECTION for Clear All
-                if (filterPanel) {
-                    filterPanel.classList.add('force-expanded');
-                    filterPanel.style.cssText += 'display: block !important; visibility: visible !important;';
-                    
-                    // Add extra CSS protection
-                    filterPanel.setAttribute('data-force-expanded', 'true');
-                }
-                
-                // Multiple storage methods
+                const fp = document.getElementById('filterPanel');
+                if (fp) { fp.classList.add('force-expanded'); fp.style.cssText += 'display: block !important; visibility: visible !important;'; fp.setAttribute('data-force-expanded', 'true'); }
                 sessionStorage.setItem('FORCE_PANEL_EXPANDED', 'true');
                 sessionStorage.setItem('CLEAR_ALL_PROTECTION', 'true');
                 window.PANEL_MUST_STAY_EXPANDED = true;
                 window.CLEAR_ALL_PROTECTION_ACTIVE = true;
-                
-                // Enhanced function blocking
-                const originalHide = window.hideFilters;
-                const originalToggle = window.toggleFilters;
-                
-                window.hideFilters = function() {
-                    console.log('🚫🚫 BLOCKED: hideFilters() call during CLEAR ALL submission 🚫🚫');
-                    return false;
-                };
-                
-                // Also block toggle during clear all
-                window.toggleFilters = function() {
-                    console.log('🚫 BLOCKED: toggleFilters() call during CLEAR ALL submission');
-                    return false;
-                };
-                
-                // Enhanced restoration schedule
-                setTimeout(() => forceExpandPanel(), 50);
-                setTimeout(() => forceExpandPanel(), 100);
-                setTimeout(() => forceExpandPanel(), 200);
-                setTimeout(() => forceExpandPanel(), 500);
-                setTimeout(() => forceExpandPanel(), 1000);
-                setTimeout(() => forceExpandPanel(), 2000);
-                
-                // Restore original functions after longer delay for Clear All
-                setTimeout(() => {
-                    window.hideFilters = originalHide;
-                    window.toggleFilters = originalToggle;
-                    console.log('🔓 Clear All protection mode ended');
-                }, 200);
-                
-                // Continuous monitoring for Clear All
-                const protectionInterval = setInterval(() => {
-                    if (PANEL_IS_MANUALLY_EXPANDED) {
-                        forceExpandPanel();
-                    } else {
-                        clearInterval(protectionInterval);
-                    }
-                }, 50); // More frequent monitoring for Clear All
-                
-                // Stop monitoring after 10 seconds for Clear All
-                setTimeout(() => {
-                    clearInterval(protectionInterval);
-                    console.log('🛡️ Clear All continuous protection ended');
-                }, 10000);
             }
-            
             document.getElementById('searchInput').value = '';
             document.getElementById('countrySelect').value = '';
             document.getElementById('statusSelect').value = '';
             document.getElementById('filterForm').submit();
         });
     }
-    
-    console.log('All event listeners attached');
 });
 
-// Force expand panel function
 function forceExpandPanel() {
     const filterPanel = document.getElementById('filterPanel');
     const toggleIcon = document.getElementById('filterToggleIcon');
-    
     if (filterPanel && !filterPanel.classList.contains('expanded')) {
-        console.log('🔥 FORCING PANEL TO EXPAND - OVERRIDING EXTERNAL INTERFERENCE');
         filterPanel.classList.add('expanded');
-        if (toggleIcon) {
-            toggleIcon.classList.add('rotated');
-        }
+        if (toggleIcon) toggleIcon.classList.add('rotated');
         EXTERNAL_INTERFERENCE_DETECTED = true;
     }
 }
 
-// Set up continuous monitoring for external interference
 function setupInterferenceProtection() {
     const filterPanel = document.getElementById('filterPanel');
     if (!filterPanel) return;
-    
-    // Monitor for class changes
     const observer = new MutationObserver(function(mutations) {
         mutations.forEach(function(mutation) {
             if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
                 const hasExpanded = filterPanel.classList.contains('expanded');
-                
                 if (PANEL_IS_MANUALLY_EXPANDED && !hasExpanded) {
-                    console.log('🚨 EXTERNAL INTERFERENCE DETECTED! PANEL WAS COLLAPSED BY EXTERNAL CODE');
-                    console.log('🛡️ RESTORING EXPANDED STATE');
-                    
-                    // Immediately restore
                     filterPanel.classList.add('expanded');
                     const toggleIcon = document.getElementById('filterToggleIcon');
-                    if (toggleIcon) {
-                        toggleIcon.classList.add('rotated');
-                    }
-                    
+                    if (toggleIcon) toggleIcon.classList.add('rotated');
                     EXTERNAL_INTERFERENCE_DETECTED = true;
                 }
             }
         });
     });
-    
-    observer.observe(filterPanel, {
-        attributes: true,
-        attributeFilter: ['class']
-    });
-    
-    console.log('🛡️ Interference protection activated');
+    observer.observe(filterPanel, { attributes: true, attributeFilter: ['class'] });
 }
 
-// Simple toggle - only changes when user clicks header
 function toggleFilters() {
-    console.log('🔄🔄 Toggle filters called - MANUAL USER ACTION 🔄🔄');
     const filterPanel = document.getElementById('filterPanel');
     const toggleIcon = document.getElementById('filterToggleIcon');
-    
-    if (!filterPanel || !toggleIcon) {
-        console.log('❌ Panel or icon not found');
-        return;
-    }
-    
+    if (!filterPanel || !toggleIcon) return;
     const isExpanded = filterPanel.classList.contains('expanded') || filterPanel.classList.contains('force-expanded');
-    console.log(`📊📊 Current state: ${isExpanded ? 'expanded' : 'collapsed'} 📊📊`);
-    console.log(`🔍 Panel classes: ${filterPanel.className}`);
-    
     if (isExpanded) {
-        // MANUAL COLLAPSE - Override all protection with extreme force
-        console.log('📉📉 MANUAL COLLAPSE - NUCLEAR OVERRIDE OF ALL PROTECTION 📉📉');
-        
-        // Clear all protection flags
         PANEL_IS_MANUALLY_EXPANDED = false;
         sessionStorage.removeItem('FORCE_PANEL_EXPANDED');
         sessionStorage.removeItem('CLEAR_ALL_PROTECTION');
         window.PANEL_MUST_STAY_EXPANDED = false;
         window.CLEAR_ALL_PROTECTION_ACTIVE = false;
-        
-        // FORCE removal of all classes
         filterPanel.classList.remove('expanded', 'force-expanded');
         filterPanel.removeAttribute('data-force-expanded');
-        
-        // NUCLEAR CSS override
         filterPanel.style.cssText = '';
-        filterPanel.style.display = '';
-        filterPanel.style.visibility = '';
-        filterPanel.style.opacity = '';
-        filterPanel.style.height = '';
-        filterPanel.style.overflow = '';
-        filterPanel.style.padding = '';
-        
-        // Force hide the content directly
         const filterContent = document.getElementById('filterContent');
         if (filterContent) {
             filterContent.style.display = 'none';
             filterContent.style.visibility = 'hidden';
-            filterContent.style.opacity = '0';
-            filterContent.style.height = '0';
-            filterContent.style.overflow = 'hidden';
             filterContent.classList.remove('show');
         }
-        
         toggleIcon.classList.remove('rotated');
-        
-        console.log('📉📉 Panel FORCE collapsed - ALL PROTECTION NUKED 📉📉');
-        
-        // Verify the collapse worked
-        setTimeout(() => {
-            const isStillExpanded = filterPanel.classList.contains('expanded') || filterPanel.classList.contains('force-expanded');
-            console.log(`🔍 Collapse verification: panel still expanded = ${isStillExpanded}`);
-            if (isStillExpanded) {
-                console.log('⚠️ COLLAPSE FAILED - EXTERNAL INTERFERENCE DETECTED');
-                // Try one more time with even more force
-                filterPanel.className = filterPanel.className.replace(/\b(expanded|force-expanded)\b/g, '').trim();
-                filterPanel.style.cssText = 'padding: 12px 24px !important;';
-                if (filterContent) {
-                    filterContent.style.cssText = 'display: none !important; visibility: hidden !important; opacity: 0 !important; height: 0 !important; overflow: hidden !important;';
-                }
-            }
-        }, 50);
-        
     } else {
-        // MANUAL EXPANSION
-        console.log('📈📈 Panel manually expanded - PROTECTION ACTIVATED 📈📈');
         filterPanel.classList.add('expanded');
-        filterPanel.classList.remove('force-expanded'); // Clean start
+        filterPanel.classList.remove('force-expanded');
         toggleIcon.classList.add('rotated');
         PANEL_IS_MANUALLY_EXPANDED = true;
-        
-        // Ensure content is visible
         const filterContent = document.getElementById('filterContent');
         if (filterContent) {
             filterContent.style.display = 'block';
             filterContent.style.visibility = 'visible';
-            filterContent.style.opacity = '1';
-            filterContent.style.height = 'auto';
-            filterContent.style.overflow = 'visible';
             filterContent.classList.add('show');
         }
     }
 }
 
-// Simple update function - NEVER changes panel state
 function updateActiveFilters() {
-    console.log('🔄 updateActiveFilters called');
     const searchInput = document.getElementById('searchInput');
     const countrySelect = document.getElementById('countrySelect');
     const statusSelect = document.getElementById('statusSelect');
     const activeFiltersDiv = document.getElementById('activeFilters');
     const filterTagsDiv = document.getElementById('filterTags');
-    
-    if (!searchInput || !countrySelect || !statusSelect || !activeFiltersDiv || !filterTagsDiv) {
-        console.log('❌ Some elements missing for updateActiveFilters');
-        return;
-    }
-    
+    if (!searchInput || !countrySelect || !statusSelect || !activeFiltersDiv || !filterTagsDiv) return;
     const search = searchInput.value;
     const country = countrySelect.value;
     const status = statusSelect.value;
-    
-    console.log(`📊 Filter values - Search: "${search}", Country: "${country}", Status: "${status}"`);
-    
     filterTagsDiv.innerHTML = '';
     let hasFilters = false;
-    
-    if (search) {
-        filterTagsDiv.innerHTML += `<span class="filter-tag">Search: "${search}" <button class="remove-tag" onclick="clearFilter('search')">×</button></span>`;
-        hasFilters = true;
-    }
-    
-    if (country) {
-        filterTagsDiv.innerHTML += `<span class="filter-tag">Country: ${country} <button class="remove-tag" onclick="clearFilter('country')">×</button></span>`;
-        hasFilters = true;
-    }
-    
-    if (status) {
-        filterTagsDiv.innerHTML += `<span class="filter-tag">Status: ${status} <button class="remove-tag" onclick="clearFilter('status')">×</button></span>`;
-        hasFilters = true;
-    }
-    
+    if (search) { filterTagsDiv.innerHTML += `<span class="filter-tag">Search: "${search}" <button class="remove-tag" onclick="clearFilter('search')">×</button></span>`; hasFilters = true; }
+    if (country) { filterTagsDiv.innerHTML += `<span class="filter-tag">Country: ${country} <button class="remove-tag" onclick="clearFilter('country')">×</button></span>`; hasFilters = true; }
+    if (status) { filterTagsDiv.innerHTML += `<span class="filter-tag">Status: ${status} <button class="remove-tag" onclick="clearFilter('status')">×</button></span>`; hasFilters = true; }
     activeFiltersDiv.style.display = hasFilters ? 'flex' : 'none';
-    console.log(`✅ Filter tags updated, hasFilters: ${hasFilters}`);
-    
-    console.log('✅ updateActiveFilters completed - panel state UNCHANGED');
 }
 
 function clearFilter(filterType) {
-    console.log(`🧹 clearFilter called for: ${filterType}`);
-    
-    // Apply the same protection as other form submissions
     if (PANEL_IS_MANUALLY_EXPANDED) {
-        console.log('🔒 LOCKING PANEL STATE BEFORE INDIVIDUAL FILTER CLEAR');
-        
-        const filterPanel = document.getElementById('filterPanel');
-        
-        // Apply all protection methods
-        if (filterPanel) {
-            filterPanel.classList.add('force-expanded');
-            filterPanel.style.cssText += 'display: block !important;';
-            filterPanel.setAttribute('data-force-expanded', 'true');
-        }
-        
-        // Multiple storage methods
+        const fp = document.getElementById('filterPanel');
+        if (fp) { fp.classList.add('force-expanded'); fp.style.cssText += 'display: block !important;'; fp.setAttribute('data-force-expanded', 'true'); }
         sessionStorage.setItem('FORCE_PANEL_EXPANDED', 'true');
         window.PANEL_MUST_STAY_EXPANDED = true;
-        
-        // Block hide functions temporarily
-        const originalHide = window.hideFilters;
-        window.hideFilters = function() {
-            console.log('🚫 BLOCKED: hideFilters() call during individual filter clear');
-            return false;
-        };
-        
-        setTimeout(() => {
-            window.hideFilters = originalHide;
-        }, 100);
     }
-    
     switch(filterType) {
-        case 'search':
-            const searchInput = document.getElementById('searchInput');
-            if (searchInput) searchInput.value = '';
-            break;
-        case 'country':
-            const countrySelect = document.getElementById('countrySelect');
-            if (countrySelect) countrySelect.value = '';
-            break;
-        case 'status':
-            const statusSelect = document.getElementById('statusSelect');
-            if (statusSelect) statusSelect.value = '';
-            break;
+        case 'search': document.getElementById('searchInput').value = ''; break;
+        case 'country': document.getElementById('countrySelect').value = ''; break;
+        case 'status': document.getElementById('statusSelect').value = ''; break;
     }
     document.getElementById('filterForm').submit();
 }
 
-// Show interference detection status
-setInterval(() => {
-    if (EXTERNAL_INTERFERENCE_DETECTED) {
-        console.log('🚨 External interference was detected and blocked');
-        EXTERNAL_INTERFERENCE_DETECTED = false; // Reset flag
-    }
-}, 2000);
-
-// Title Deed Viewer Function - Updated to hide PDF sidebar
 function viewTitleDeed(documentUrl, documentName, propertyName) {
     const documentViewer = document.getElementById('titleDeedContent');
     const downloadLink = document.getElementById('downloadDeed');
     const modalTitle = document.getElementById('titleDeedModalLabel');
-    
-    if (!documentViewer || !downloadLink || !modalTitle) {
-        console.error('Modal elements not found');
-        return;
-    }
-    
+    if (!documentViewer || !downloadLink || !modalTitle) return;
     modalTitle.textContent = `Title Deed (${propertyName})`;
     downloadLink.href = documentUrl;
     downloadLink.download = documentName;
     documentViewer.innerHTML = '';
-    
     const extension = documentName.split('.').pop().toLowerCase();
-    
     if (extension === 'pdf') {
-        // Use iframe with PDF parameters to hide sidebar and toolbar
         documentViewer.innerHTML = `
-            <iframe src="${documentUrl}#toolbar=0&navpanes=0&scrollbar=1&page=1&view=FitH" 
-                    type="application/pdf" 
-                    width="100%" 
-                    height="500px"
-                    style="border: none;">
-            </iframe>
-            <p class="text-center mt-2">
-                <small>If the PDF doesn't display, <a href="${documentUrl}" target="_blank">click here to open it in a new tab</a></small>
-            </p>
+            <iframe src="${documentUrl}#toolbar=0&navpanes=0&scrollbar=1&page=1&view=FitH" type="application/pdf" width="100%" height="500px" style="border: none;"></iframe>
+            <p class="text-center mt-2"><small>If the PDF doesn't display, <a href="${documentUrl}" target="_blank">click here to open it in a new tab</a></small></p>
         `;
     } else if (['jpg', 'jpeg', 'png'].includes(extension)) {
-        documentViewer.innerHTML = `
-            <img src="${documentUrl}" alt="Title Deed" class="img-fluid mx-auto d-block" style="max-height: 70vh;">
-        `;
+        documentViewer.innerHTML = `<img src="${documentUrl}" alt="Title Deed" class="img-fluid mx-auto d-block" style="max-height: 70vh;">`;
     } else {
-        documentViewer.innerHTML = `
-            <div class="text-center">
-                <i class="fas fa-file fa-5x text-muted mb-3"></i>
-                <p>This file type cannot be previewed.</p>
-                <p>File: <strong>${documentName}</strong></p>
-                <p>Please download the file to view it.</p>
-            </div>
-        `;
+        documentViewer.innerHTML = `<div class="text-center"><i class="fas fa-file fa-5x text-muted mb-3"></i><p>This file type cannot be previewed.</p><p>File: <strong>${documentName}</strong></p><p>Please download the file to view it.</p></div>`;
     }
-    
     $('#titleDeedModal').modal('show');
 }
-
-console.log('🚀 === SCRIPT COMPLETE ===');
 </script>
 
 {% endblock %}
