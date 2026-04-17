@@ -148,3 +148,16 @@ def get_expenses_waiting_payment_count(cursor):
         AND act_expense_paid = 'No'
     """)
     return cursor.fetchone()[0]
+
+def user_preferences(request):
+    """Make user menu preference available in all templates"""
+    if request.user.is_authenticated:
+        try:
+            from pages.models import UserProfile
+            profile = request.user.profile
+            return {
+                'menu_preference': profile.menu_preference or 'top',
+            }
+        except Exception:
+            return {'menu_preference': 'top'}
+    return {'menu_preference': 'top'}
