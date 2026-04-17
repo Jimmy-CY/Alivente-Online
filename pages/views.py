@@ -3,6 +3,7 @@ from django.contrib.auth import authenticate, login, logout, update_session_auth
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm, PasswordChangeForm
+from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.core.files.base import ContentFile
 from django.core.files.storage import FileSystemStorage, default_storage
@@ -85,7 +86,8 @@ from .models import (
     AssetSupplier,
     AssetMaintenance,
     CookingCalculation,
-    RecipeFavourite,    
+    RecipeFavourite,
+    UserProfile,  
 
     )
 from decimal import Decimal
@@ -4329,10 +4331,47 @@ def render_to_pdf(template_src, context_dict):
 
 ### HOME ###
 def home(request):
-	results = props.objects.all().order_by('prop_country','prop_name')
-	tresults = tenant.objects.filter(tenant_current="Yes")
-	sresults = supplier.objects.all().order_by('supplier_country','supplier_contact_person')
-	return render (request, "home.html", {"props":results, "tenant":tresults, "supplier":sresults})
+    results = props.objects.all().order_by('prop_country', 'prop_name')
+    tresults = tenant.objects.filter(tenant_current="Yes")
+    sresults = supplier.objects.all().order_by('supplier_country', 'supplier_contact_person')
+
+    # Build permission flags for the template
+    perms = {}
+    if request.user.is_authenticated:
+        if request.user.is_superuser:
+            # Superusers have access to everything
+            perms = {
+                'properties': True,
+                'tenants': True,
+                'suppliers': True,
+                'issues': True,
+                'dashboard': True,
+                'invoices': True,
+                'expenses': True,
+                'petty_cash': True,
+                'financials': True,
+                'projects': True,
+            }
+        else:
+            perms = {
+                'properties': request.user.has_perm('auth.can_access_properties'),
+                'tenants': request.user.has_perm('auth.can_access_tenants'),
+                'suppliers': request.user.has_perm('auth.can_access_suppliers'),
+                'issues': request.user.has_perm('auth.can_access_issues'),
+                'dashboard': request.user.has_perm('auth.can_access_dashboard'),
+                'invoices': request.user.has_perm('auth.can_access_invoices'),
+                'expenses': request.user.has_perm('auth.can_access_expenses'),
+                'petty_cash': request.user.has_perm('auth.can_access_petty_cash'),
+                'financials': request.user.has_perm('auth.can_access_financials'),
+                'projects': request.user.has_perm('auth.can_access_projects'),
+            }
+
+    return render(request, "home.html", {
+        "props": results,
+        "tenant": tresults,
+        "supplier": sresults,
+        "perms_map": perms,
+    })
 
 ### ADMIN ###
 @login_required
@@ -4352,6 +4391,285 @@ def personal_page(request):
         return redirect('home')
     
     return render(request, "personal.html")
+
+@login_required
+def user_administration(request):
+    """User administration screen - list all users"""
+    if not request.user.is_superuser:
+        messages.error(request, 'You do not have permission to access this page.')
+        return redirect('home')
+
+    if request.method == 'POST':
+        action = request.POST.get('action')
+        
+        if action == 'toggle_active':
+            user_id = request.POST.get('user_id')
+            new_status = request.POST.get('new_status') == '1'
+            try:
+                target_user = User.objects.get(id=user_id)
+                # Prevent disabling yourself
+                if target_user == request.user:
+                    messages.error(request, 'You cannot disable your own account.')
+                else:
+                    target_user.is_active = new_status
+                    target_user.save()
+                    status_text = 'enabled' if new_status else 'disabled'
+                    messages.success(request, f'User "{target_user.username}" has been {status_text}.')
+            except User.DoesNotExist:
+                messages.error(request, 'User not found.')
+        
+        return redirect('user_administration')
+
+    # GET request
+    users = User.objects.select_related('profile').order_by('username')
+    
+    # Ensure every user has a profile
+    for user in users:
+        if not hasattr(user, 'profile'):
+            UserProfile.objects.get_or_create(user=user)
+    
+    users = User.objects.select_related('profile').order_by('username')
+    
+    context = {
+        'users': users,
+    }
+    
+    return render(request, 'user_administration.html', context)
+
+@login_required
+def user_add(request):
+    """Add a new user"""
+    if not request.user.is_superuser:
+        messages.error(request, 'You do not have permission to access this page.')
+        return redirect('home')
+    
+    if request.method == 'POST':
+        first_name = request.POST.get('first_name', '').strip()
+        last_name = request.POST.get('last_name', '').strip()
+        username = request.POST.get('username', '').strip()
+        email = request.POST.get('email', '').strip()
+        password1 = request.POST.get('password1', '')
+        password2 = request.POST.get('password2', '')
+        role = request.POST.get('role', 'user')
+        is_active = request.POST.get('is_active') == '1'
+
+        # Validation
+        errors = []
+        if not username:
+            errors.append('Username is required.')
+        if User.objects.filter(username=username).exists():
+            errors.append('Username already exists.')
+        if not password1:
+            errors.append('Password is required.')
+        if password1 != password2:
+            errors.append('Passwords do not match.')
+        if len(password1) < 8:
+            errors.append('Password must be at least 8 characters.')
+        if email and User.objects.filter(email=email).exists():
+            errors.append('A user with this email already exists.')
+
+        if errors:
+            for error in errors:
+                messages.error(request, error)
+            return render(request, 'user_add.html', {
+                'form_data': request.POST
+            })
+
+        # Create the user
+        new_user = User.objects.create_user(
+            username=username,
+            email=email,
+            password=password1,
+            first_name=first_name,
+            last_name=last_name,
+        )
+        new_user.is_active = is_active
+        if role == 'superuser':
+            new_user.is_superuser = True
+            new_user.is_staff = True
+        elif role == 'staff':
+            new_user.is_staff = True
+        new_user.save()
+
+        # Ensure profile exists
+        UserProfile.objects.get_or_create(user=new_user)
+
+        messages.success(request, f'User "{username}" created successfully!')
+        return redirect('user_administration')
+
+    return render(request, 'user_add.html', {'form_data': {}})
+
+@login_required
+def user_edit(request, user_id):
+    """Edit an existing user"""
+    if not request.user.is_superuser:
+        messages.error(request, 'You do not have permission to access this page.')
+        return redirect('home')
+    
+    target_user = get_object_or_404(User, id=user_id)
+    profile, _ = UserProfile.objects.get_or_create(user=target_user)
+
+    if request.method == 'POST':
+        first_name = request.POST.get('first_name', '').strip()
+        last_name = request.POST.get('last_name', '').strip()
+        email = request.POST.get('email', '').strip()
+        role = request.POST.get('role', 'user')
+        is_active = request.POST.get('is_active') == '1'
+        new_password = request.POST.get('password1', '').strip()
+        confirm_password = request.POST.get('password2', '').strip()
+
+        errors = []
+        if email and User.objects.filter(email=email).exclude(id=user_id).exists():
+            errors.append('A user with this email already exists.')
+        if new_password and new_password != confirm_password:
+            errors.append('Passwords do not match.')
+        if new_password and len(new_password) < 8:
+            errors.append('Password must be at least 8 characters.')
+
+        if errors:
+            for error in errors:
+                messages.error(request, error)
+            return render(request, 'user_edit.html', {
+                'target_user': target_user,
+                'profile': profile,
+            })
+
+        # Update user
+        target_user.first_name = first_name
+        target_user.last_name = last_name
+        target_user.email = email
+        target_user.is_active = is_active
+
+        # Prevent removing your own superuser status
+        if target_user != request.user:
+            if role == 'superuser':
+                target_user.is_superuser = True
+                target_user.is_staff = True
+            elif role == 'staff':
+                target_user.is_superuser = False
+                target_user.is_staff = True
+            else:
+                target_user.is_superuser = False
+                target_user.is_staff = False
+
+        if new_password:
+            target_user.set_password(new_password)
+
+        target_user.save()
+        messages.success(request, f'User "{target_user.username}" updated successfully!')
+        return redirect('user_administration')
+
+    return render(request, 'user_edit.html', {
+        'target_user': target_user,
+        'profile': profile,
+    })
+
+
+@login_required
+def user_permissions(request, user_id):
+    """Manage module permissions for a user"""
+    if not request.user.is_superuser:
+        messages.error(request, 'You do not have permission to access this page.')
+        return redirect('home')
+
+    target_user = get_object_or_404(User, id=user_id)
+
+    # Define all available module permissions
+    all_permissions = [
+        {'codename': 'can_access_properties',  'label': 'Properties',       'icon': 'fa-building'},
+        {'codename': 'can_access_tenants',      'label': 'Tenants',          'icon': 'fa-users'},
+        {'codename': 'can_access_suppliers',    'label': 'Suppliers',        'icon': 'fa-truck'},
+        {'codename': 'can_access_expenses',     'label': 'Expenses',         'icon': 'fa-receipt'},
+        {'codename': 'can_access_petty_cash',   'label': 'Petty Cash',       'icon': 'fa-coins'},
+        {'codename': 'can_access_financials',   'label': 'Financials',       'icon': 'fa-chart-line'},
+        {'codename': 'can_access_invoices',     'label': 'Invoices',         'icon': 'fa-file-invoice'},
+        {'codename': 'can_access_projects',     'label': 'Projects',         'icon': 'fa-project-diagram'},
+        {'codename': 'can_access_issues',       'label': 'Issues',           'icon': 'fa-exclamation-circle'},
+        {'codename': 'can_access_dashboard',    'label': 'Dashboard',        'icon': 'fa-tachometer-alt'},
+        {'codename': 'can_access_administration','label': 'Administration',  'icon': 'fa-cogs'},
+        {'codename': 'can_access_personal',     'label': 'Personal',         'icon': 'fa-user-circle'},
+    ]
+
+    from django.contrib.auth.models import Permission
+    from django.contrib.contenttypes.models import ContentType
+
+    # Ensure all permissions exist in the database
+    content_type = ContentType.objects.get_for_model(User)
+    for perm in all_permissions:
+        Permission.objects.get_or_create(
+            codename=perm['codename'],
+            content_type=content_type,
+            defaults={'name': f"Can access {perm['label']}"}
+        )
+
+    if request.method == 'POST':
+        # Get submitted permissions
+        submitted = request.POST.getlist('permissions')
+
+        # Update permissions for this user
+        for perm in all_permissions:
+            permission = Permission.objects.get(
+                codename=perm['codename'],
+                content_type=content_type
+            )
+            if perm['codename'] in submitted:
+                target_user.user_permissions.add(permission)
+            else:
+                target_user.user_permissions.remove(permission)
+
+        messages.success(request, f'Permissions updated for "{target_user.username}".')
+        return redirect('user_administration')
+
+    # GET — build list with current status
+    content_type = ContentType.objects.get_for_model(User)
+    user_perm_codenames = set(
+        target_user.user_permissions.filter(
+            content_type=content_type
+        ).values_list('codename', flat=True)
+    )
+
+    for perm in all_permissions:
+        perm['granted'] = perm['codename'] in user_perm_codenames
+
+    context = {
+        'target_user': target_user,
+        'all_permissions': all_permissions,
+    }
+
+    return render(request, 'user_permissions.html', context)
+
+@login_required
+def user_delete(request, user_id):
+    """Permanently delete a disabled user"""
+    if not request.user.is_superuser:
+        messages.error(request, 'You do not have permission to access this page.')
+        return redirect('home')
+
+    target_user = get_object_or_404(User, id=user_id)
+
+    # Safety checks
+    if target_user == request.user:
+        messages.error(request, 'You cannot delete your own account.')
+        return redirect('user_administration')
+
+    if target_user.is_active:
+        messages.error(request, 'You must disable a user before deleting them.')
+        return redirect('user_administration')
+
+    # Check we're not deleting the last superuser
+    if target_user.is_superuser:
+        superuser_count = User.objects.filter(is_superuser=True, is_active=True).count()
+        if superuser_count <= 1:
+            messages.error(request, 'Cannot delete the last superuser account.')
+            return redirect('user_administration')
+
+    if request.method == 'POST':
+        username = target_user.username
+        target_user.delete()
+        messages.success(request, f'User "{username}" has been permanently deleted.')
+        return redirect('user_administration')
+
+    return redirect('user_administration')
 
 @login_required
 def lease_agreement_report(request, tenant_id):

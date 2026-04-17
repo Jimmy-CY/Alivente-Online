@@ -160,25 +160,47 @@
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
           <span class="navbar-toggler-icon"></span>
         </button>
+
+      <!-- Left side nav -->
       <div class="collapse navbar-collapse" id="navbarSupportedContent">
         <ul class="navbar-nav mr-auto">
           {% if user.is_authenticated %}
+
             <!-- Property Operations Dropdown -->
             <li class="nav-item dropdown">
               <a class="nav-link dropdown-toggle" href="#" id="propertyDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                 Property Operations
               </a>
               <div class="dropdown-menu" aria-labelledby="propertyDropdown">
-                <a class="dropdown-item" href="{% url 'properties' %}">Properties</a>
-                <a class="dropdown-item" href="{% url 'tenant' %}">Tenants</a>
-                <a class="dropdown-item" href="{% url 'suppliers' %}">Suppliers</a>
-                <a class="dropdown-item" href="{% url 'fsr' %}">Issues</a>
+                {% if user.is_superuser or perms.auth.can_access_properties %}
+                  <a class="dropdown-item" href="{% url 'properties' %}">Properties</a>
+                {% else %}
+                  <span class="dropdown-item disabled">Properties</span>
+                {% endif %}
+                {% if user.is_superuser or perms.auth.can_access_tenants %}
+                  <a class="dropdown-item" href="{% url 'tenant' %}">Tenants</a>
+                {% else %}
+                  <span class="dropdown-item disabled">Tenants</span>
+                {% endif %}
+                {% if user.is_superuser or perms.auth.can_access_suppliers %}
+                  <a class="dropdown-item" href="{% url 'suppliers' %}">Suppliers</a>
+                {% else %}
+                  <span class="dropdown-item disabled">Suppliers</span>
+                {% endif %}
+                {% if user.is_superuser or perms.auth.can_access_issues %}
+                  <a class="dropdown-item" href="{% url 'fsr' %}">Issues</a>
+                {% else %}
+                  <span class="dropdown-item disabled">Issues</span>
+                {% endif %}
                 <div class="dropdown-divider"></div>
-                {% if user.is_superuser %}
+                {% if user.is_superuser or perms.auth.can_access_projects %}
                   <a class="dropdown-item" href="{% url 'projects' %}">Projects</a>
-                  <a class="dropdown-item" href="{% url 'property_management_dashboard' %}">Dashboard</a>
                 {% else %}
                   <span class="dropdown-item disabled">Projects</span>
+                {% endif %}
+                {% if user.is_superuser or perms.auth.can_access_dashboard %}
+                  <a class="dropdown-item" href="{% url 'property_management_dashboard' %}">Dashboard</a>
+                {% else %}
                   <span class="dropdown-item disabled">Dashboard</span>
                 {% endif %}
               </div>
@@ -190,30 +212,42 @@
                 Financial Management
               </a>
               <div class="dropdown-menu" aria-labelledby="financialDropdown">
-                {% if user.is_superuser %}
+                {% if user.is_superuser or perms.auth.can_access_invoices %}
                   <a class="dropdown-item" href="{% url 'invoices' %}">Invoices</a>
                 {% else %}
                   <span class="dropdown-item disabled">Invoices</span>
                 {% endif %}
-                <a class="dropdown-item" href="{% url 'act_expense_all' %}?from=home">Expenses</a>
-                <a class="dropdown-item" href="{% url 'petty_cash' %}">Petty Cash</a>
+                {% if user.is_superuser or perms.auth.can_access_expenses %}
+                  <a class="dropdown-item" href="{% url 'act_expense_all' %}?from=home">Expenses</a>
+                {% else %}
+                  <span class="dropdown-item disabled">Expenses</span>
+                {% endif %}
+                {% if user.is_superuser or perms.auth.can_access_petty_cash %}
+                  <a class="dropdown-item" href="{% url 'petty_cash' %}">Petty Cash</a>
+                {% else %}
+                  <span class="dropdown-item disabled">Petty Cash</span>
+                {% endif %}
                 <div class="dropdown-divider"></div>
-                {% if user.is_superuser %}
+                {% if user.is_superuser or perms.auth.can_access_financials %}
                   <a class="dropdown-item" href="{% url 'finance' %}">Financials</a>
                 {% else %}
                   <span class="dropdown-item disabled">Financials</span>
                 {% endif %}
               </div>
             </li>
+
           {% endif %}
         </ul>
       </div>
+
+      <!-- Right side nav -->
       <div class="collapse navbar-collapse" id="navbarSupportedContent">
         <ul class="navbar-nav ml-auto">
           
           {% if user.is_authenticated %}
-            <!-- Administration Direct Link -->
-            {% if user.is_superuser %}
+
+            <!-- Administration -->
+            {% if user.is_superuser or perms.auth.can_access_administration %}
             <li class="nav-item">
                 <a class="nav-link" href="{% url 'admin_apms' %}">Administration</a>
             </li>
@@ -223,8 +257,8 @@
             </li>
             {% endif %}
 
-            <!-- Personal Direct Link -->
-            {% if user.is_superuser %}
+            <!-- Personal -->
+            {% if user.is_superuser or perms.auth.can_access_personal %}
             <li class="nav-item">
                 <a class="nav-link" href="{% url 'personal_page' %}">Personal</a>
             </li>
@@ -234,24 +268,26 @@
             </li>
             {% endif %}
 
+            <!-- Logout -->
             <li class="nav-item">
                 <a class="nav-link" href="{% url 'logout' %}">Logout</a>
             </li>
 
-              <!-- Bell Notification Icon - Far Right -->
-              <li class="nav-item">
-                <a class="nav-link notification-bell-link" href="{% url 'notifications_dashboard' %}">
-                  <span class="notification-bell-container">
-                    <i class="fas fa-bell notification-bell-icon"></i>
-                    {% if notification_count > 0 %}
-                      <span class="notification-badge has-notifications{% if notification_count > 9 %} large-count{% endif %}" 
-                            data-count="{{ notification_count }}">
-                        {% if notification_count > 99 %}99+{% else %}{{ notification_count }}{% endif %}
-                      </span>
-                    {% endif %}
-                  </span>
-                </a>
-              </li>
+            <!-- Bell Notification Icon -->
+            <li class="nav-item">
+              <a class="nav-link notification-bell-link" href="{% url 'notifications_dashboard' %}">
+                <span class="notification-bell-container">
+                  <i class="fas fa-bell notification-bell-icon"></i>
+                  {% if notification_count > 0 %}
+                    <span class="notification-badge has-notifications{% if notification_count > 9 %} large-count{% endif %}" 
+                          data-count="{{ notification_count }}">
+                      {% if notification_count > 99 %}99+{% else %}{{ notification_count }}{% endif %}
+                    </span>
+                  {% endif %}
+                </span>
+              </a>
+            </li>
+
           {% else %}
               <li class="nav-item">
                   <a class="nav-link" href="{% url 'login' %}">Login</a>
@@ -276,9 +312,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.1.3/dist/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
     
     <script>
-    // Enable hover dropdowns while maintaining click functionality for mobile
     $(document).ready(function() {
-        // Show dropdown on hover
         $('.dropdown').hover(
             function() {
                 $(this).addClass('show');
@@ -290,12 +324,10 @@
             }
         );
         
-        // Prevent dropdown from closing when clicking inside it
         $('.dropdown-menu').click(function(e) {
             e.stopPropagation();
         });
         
-        // Close dropdown when clicking outside
         $(document).click(function(e) {
             if (!$(e.target).closest('.dropdown').length) {
                 $('.dropdown').removeClass('show');
@@ -303,9 +335,7 @@
             }
         });
         
-        // Handle mobile touch devices - maintain click functionality
         $('.dropdown-toggle').click(function(e) {
-            // Only prevent default on touch devices or when dropdown is not visible
             if ('ontouchstart' in window || !$(this).parent().hasClass('show')) {
                 e.preventDefault();
                 $('.dropdown').not($(this).parent()).removeClass('show').find('.dropdown-menu').removeClass('show');

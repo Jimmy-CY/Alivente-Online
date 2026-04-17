@@ -41,8 +41,8 @@
   :root {
     --alivente-dark: #17a2b8;
     --alivente-light: #d1ecf1;
-    --personal-dark: #28a745;
-    --personal-light: #d4edda;
+    --future-dark: #6c757d;
+    --future-light: #e9ecef;
   }
   
   /* Tab Navigation */
@@ -87,39 +87,39 @@
     border-bottom-color: var(--alivente-light);
     z-index: 10;
   }
-  
-  /* When Personal is active, Alivente tab gets green bottom border */
-  .admin-tab.alivente-tab.personal-active {
-    border-bottom-color: var(--personal-dark);
+
+  .admin-tab.alivente-tab.future-active {
+    border-bottom-color: var(--future-dark);
   }
   
   .admin-tab.alivente-tab:not(.active):hover {
     background-color: #e8f4f8;
   }
   
-  .admin-tab.personal-tab {
-    border-color: var(--personal-dark);
-    color: var(--personal-dark);
+  .admin-tab.future-tab {
+    border-color: var(--future-dark);
+    color: var(--future-dark);
     background-color: white;
-    border-bottom-color: var(--personal-dark);
+    border-bottom-color: var(--future-dark);
     border-radius: 10px 10px 0 0;
+    cursor: pointer;
+    opacity: 1;
   }
-  
-  /* When Alivente is active, Personal tab gets blue left and bottom border */
-  .admin-tab.personal-tab.alivente-active {
+
+  .admin-tab.future-tab.alivente-active {
     border-left-color: var(--alivente-dark);
     border-bottom-color: var(--alivente-dark);
   }
-  
-  .admin-tab.personal-tab.active {
-    background-color: var(--personal-light);
-    color: var(--personal-dark);
-    border-bottom-color: var(--personal-light);
+
+  .admin-tab.future-tab.active {
+    background-color: var(--future-light);
+    color: var(--future-dark);
+    border-bottom-color: var(--future-light);
     z-index: 10;
   }
-  
-  .admin-tab.personal-tab:not(.active):hover {
-    background-color: #e8f5e9;
+
+  .admin-tab.future-tab:not(.active):hover {
+    background-color: #f1f3f5;
   }
   
   /* Tab Content */
@@ -145,9 +145,9 @@
     background-color: var(--alivente-light);
   }
   
-  .tab-panel.personal-panel {
-    border-color: var(--personal-dark);
-    background-color: var(--personal-light);
+  .tab-panel.future-panel {
+    border-color: var(--future-dark);
+    background-color: var(--future-light);
   }
   
   @keyframes fadeIn {
@@ -201,14 +201,21 @@
   .btn-alivente:hover {
     background-color: #138496;
   }
-  
-  .btn-personal {
-    background-color: #28a745;
+
+  .btn-future {
+    background-color: #6c757d;
     border: none;
   }
-  
-  .btn-personal:hover {
-    background-color: #218838;
+
+  .btn-future:hover {
+    background-color: #5a6268;
+  }
+
+  .btn-future-disabled {
+    background-color: #adb5bd;
+    border: none;
+    opacity: 0.6;
+    cursor: default;
   }
   
   /* Responsive */
@@ -222,33 +229,17 @@
       font-size: 1rem;
     }
   }
-
-.admin-tab.future-tab {
-  border-color: #6c757d;
-  color: #6c757d;
-  background-color: white;
-  border-bottom-color: #6c757d;
-  border-radius: 10px 10px 0 0;
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.admin-tab.future-tab.alivente-active {
-  border-left-color: var(--alivente-dark);
-  border-bottom-color: var(--alivente-dark);
-}
-
 </style>
 
 <!-- Tab Navigation -->
 <div class="admin-tabs">
-  <div class="admin-tab alivente-tab active">
+  <div class="admin-tab alivente-tab active" id="tab-alivente" onclick="switchTab('alivente')">
     <i class="fas fa-building"></i>
-    <span>ALIVENTE</span>
+    <span>FUNCTIONAL</span>
   </div>
-  <div class="admin-tab future-tab alivente-active">
-    <i class="fas fa-clock"></i>
-    <span>FUTURE</span>
+  <div class="admin-tab future-tab alivente-active" id="tab-future" onclick="switchTab('future')">
+    <i class="fas fa-cogs"></i>
+    <span>SYSTEM</span>
   </div>
 </div>
 
@@ -256,7 +247,7 @@
 <div class="tab-content-container">
   
   <!-- Alivente Panel -->
-  <div id="alivente-panel" class="tab-panel alivente-panel active">
+  <div id="panel-alivente" class="tab-panel alivente-panel active">
     <div class="admin-grid">
       
       <!-- Manage Lease Agreements -->
@@ -286,30 +277,31 @@
     </div>
   </div>
   
-  <!-- Personal Panel -->
-  <div id="personal-panel" class="tab-panel personal-panel">
+  <!-- Future Panel -->
+  <div id="panel-future" class="tab-panel future-panel">
     <div class="admin-grid">
-      
-      <!-- Future Feature 1 -->
-      <div class="admin-btn btn-personal" style="opacity: 0.5; cursor: default;">
+
+      <!-- User Administration -->
+      <a href="{% url 'user_administration' %}" class="admin-btn btn-future">
+        <i class="fas fa-users-cog"></i>
+        <h6>User Administration</h6>
+      </a>
+
+      <!-- Menu Preference -->
+      <div class="admin-btn btn-future-disabled">
+        <i class="fas fa-columns"></i>
+        <h6>Menu Preference</h6>
+        <small style="font-size:10px; margin-top:6px; opacity:0.8;">Coming Soon</small>
+      </div>
+
+      <!-- Placeholder 3 -->
+      <div class="admin-btn btn-future-disabled">
         <i class="fas fa-clock"></i>
         <h6>Coming Soon</h6>
       </div>
 
-      <!-- Future Feature 2 -->
-      <div class="admin-btn btn-personal" style="opacity: 0.5; cursor: default;">
-        <i class="fas fa-clock"></i>
-        <h6>Coming Soon</h6>
-      </div>
-
-      <!-- Future Feature 3 -->
-      <div class="admin-btn btn-personal" style="opacity: 0.5; cursor: default;">
-        <i class="fas fa-clock"></i>
-        <h6>Coming Soon</h6>
-      </div>
-
-      <!-- Future Feature 4 -->
-      <div class="admin-btn btn-personal" style="opacity: 0.5; cursor: default;">
+      <!-- Placeholder 4 -->
+      <div class="admin-btn btn-future-disabled">
         <i class="fas fa-clock"></i>
         <h6>Coming Soon</h6>
       </div>
@@ -320,8 +312,25 @@
 </div>
 
 <script>
-  // Future tab is disabled - no switching functionality needed
-  // Tab switching removed as only ALIVENTE tab is active
+function switchTab(tab) {
+    // Update tab buttons
+    document.getElementById('tab-alivente').classList.remove('active', 'future-active');
+    document.getElementById('tab-future').classList.remove('active', 'alivente-active');
+
+    // Update panels
+    document.getElementById('panel-alivente').classList.remove('active');
+    document.getElementById('panel-future').classList.remove('active');
+
+    if (tab === 'alivente') {
+        document.getElementById('tab-alivente').classList.add('active');
+        document.getElementById('tab-future').classList.add('alivente-active');
+        document.getElementById('panel-alivente').classList.add('active');
+    } else {
+        document.getElementById('tab-future').classList.add('active');
+        document.getElementById('tab-alivente').classList.add('future-active');
+        document.getElementById('panel-future').classList.add('active');
+    }
+}
 </script>
 
 {% else %}

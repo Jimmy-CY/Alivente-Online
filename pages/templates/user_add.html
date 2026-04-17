@@ -1,0 +1,350 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Add User{% endblock %}
+{% block content %}
+
+<style>
+.user-form-container {
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+.page-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px 25px;
+    border-radius: 10px;
+    margin-bottom: 25px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.page-header h1 {
+    font-size: 22px;
+    font-weight: bold;
+    margin: 0;
+}
+
+.form-card {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    padding: 30px;
+    margin-bottom: 20px;
+}
+
+.form-card h2 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #667eea;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.form-row-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.form-group label {
+    font-weight: 600;
+    font-size: 13px;
+    color: #495057;
+    margin-bottom: 6px;
+    display: block;
+}
+
+.form-group label span.required {
+    color: #dc3545;
+    margin-left: 2px;
+}
+
+.form-control {
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 14px;
+    transition: border-color 0.2s;
+}
+
+.form-control:focus {
+    border-color: #667eea;
+    box-shadow: none;
+}
+
+.role-selector {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 10px;
+}
+
+.role-option {
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    padding: 14px 10px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.role-option:hover {
+    border-color: #667eea;
+}
+
+.role-option input[type="radio"] {
+    display: none;
+}
+
+.role-option.selected {
+    border-color: #667eea;
+    background: #f0f2ff;
+}
+
+.role-option i {
+    font-size: 22px;
+    margin-bottom: 6px;
+    display: block;
+}
+
+.role-option .role-name {
+    font-weight: 600;
+    font-size: 13px;
+    color: #2c3e50;
+}
+
+.role-option .role-desc {
+    font-size: 11px;
+    color: #6c757d;
+    margin-top: 3px;
+}
+
+.toggle-switch {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.toggle-switch input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+}
+
+.password-strength {
+    height: 4px;
+    border-radius: 2px;
+    margin-top: 6px;
+    transition: all 0.3s;
+    background: #e9ecef;
+}
+
+.strength-weak { background: #dc3545; width: 33%; }
+.strength-medium { background: #ffc107; width: 66%; }
+.strength-strong { background: #28a745; width: 100%; }
+
+.strength-text {
+    font-size: 11px;
+    margin-top: 3px;
+}
+</style>
+
+<div class="user-form-container">
+
+    {% for msg in messages %}
+    <div class="alert alert-{% if 'success' in msg.tags %}success{% elif 'error' in msg.tags %}danger{% else %}info{% endif %} alert-dismissible fade show">
+        {{ msg }}
+        <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
+    </div>
+    {% endfor %}
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <h1><i class="fas fa-user-plus"></i> Add New User</h1>
+        <a href="{% url 'user_administration' %}" class="btn btn-light btn-sm">
+            <i class="fas fa-arrow-left"></i> Back
+        </a>
+    </div>
+
+    <form method="POST" action="{% url 'user_add' %}">
+        {% csrf_token %}
+
+        <!-- Personal Information -->
+        <div class="form-card">
+            <h2><i class="fas fa-user" style="color:#667eea;"></i> Personal Information</h2>
+            <div class="form-row-2">
+                <div class="form-group">
+                    <label>First Name</label>
+                    <input type="text" name="first_name" class="form-control"
+                           value="{{ form_data.first_name|default:'' }}"
+                           placeholder="Enter first name">
+                </div>
+                <div class="form-group">
+                    <label>Last Name</label>
+                    <input type="text" name="last_name" class="form-control"
+                           value="{{ form_data.last_name|default:'' }}"
+                           placeholder="Enter last name">
+                </div>
+            </div>
+            <div class="form-row-2">
+                <div class="form-group">
+                    <label>Username <span class="required">*</span></label>
+                    <input type="text" name="username" class="form-control"
+                           value="{{ form_data.username|default:'' }}"
+                           placeholder="Enter username" required>
+                </div>
+                <div class="form-group">
+                    <label>Email Address</label>
+                    <input type="email" name="email" class="form-control"
+                           value="{{ form_data.email|default:'' }}"
+                           placeholder="Enter email address">
+                </div>
+            </div>
+        </div>
+
+        <!-- Password -->
+        <div class="form-card">
+            <h2><i class="fas fa-lock" style="color:#667eea;"></i> Password</h2>
+            <div class="form-row-2">
+                <div class="form-group">
+                    <label>Password <span class="required">*</span></label>
+                    <input type="password" name="password1" id="password1" class="form-control"
+                           placeholder="Enter password" required onkeyup="checkPasswordStrength()">
+                    <div class="password-strength" id="passwordStrength"></div>
+                    <div class="strength-text" id="strengthText"></div>
+                </div>
+                <div class="form-group">
+                    <label>Confirm Password <span class="required">*</span></label>
+                    <input type="password" name="password2" id="password2" class="form-control"
+                           placeholder="Confirm password" required onkeyup="checkPasswordMatch()">
+                    <div class="strength-text" id="matchText"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Role & Status -->
+        <div class="form-card">
+            <h2><i class="fas fa-shield-alt" style="color:#667eea;"></i> Role & Status</h2>
+
+            <div class="form-group mb-4">
+                <label>Role <span class="required">*</span></label>
+                <div class="role-selector">
+                    <label class="role-option {% if form_data.role == 'user' or not form_data.role %}selected{% endif %}"
+                           onclick="selectRole(this, 'user')">
+                        <input type="radio" name="role" value="user"
+                               {% if form_data.role == 'user' or not form_data.role %}checked{% endif %}>
+                        <i class="fas fa-user" style="color:#6c757d;"></i>
+                        <div class="role-name">User</div>
+                        <div class="role-desc">Standard access</div>
+                    </label>
+                    <label class="role-option {% if form_data.role == 'staff' %}selected{% endif %}"
+                           onclick="selectRole(this, 'staff')">
+                        <input type="radio" name="role" value="staff"
+                               {% if form_data.role == 'staff' %}checked{% endif %}>
+                        <i class="fas fa-user-tie" style="color:#17a2b8;"></i>
+                        <div class="role-name">Staff</div>
+                        <div class="role-desc">Staff access</div>
+                    </label>
+                    <label class="role-option {% if form_data.role == 'superuser' %}selected{% endif %}"
+                           onclick="selectRole(this, 'superuser')">
+                        <input type="radio" name="role" value="superuser"
+                               {% if form_data.role == 'superuser' %}checked{% endif %}>
+                        <i class="fas fa-crown" style="color:#667eea;"></i>
+                        <div class="role-name">Superuser</div>
+                        <div class="role-desc">Full access</div>
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Account Status</label>
+                <div class="toggle-switch">
+                    <input type="checkbox" name="is_active" value="1" id="isActive"
+                           {% if form_data.is_active == '1' or not form_data %}checked{% endif %}>
+                    <label for="isActive" style="margin:0; font-weight:normal; cursor:pointer;">
+                        Active (user can log in)
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div style="display:flex; justify-content:space-between; margin-bottom:30px;">
+            <a href="{% url 'user_administration' %}" class="btn btn-secondary">
+                <i class="fas fa-times"></i> Cancel
+            </a>
+            <button type="submit" class="btn btn-success">
+                <i class="fas fa-user-plus"></i> Create User
+            </button>
+        </div>
+
+    </form>
+</div>
+
+<script>
+function selectRole(element, role) {
+    document.querySelectorAll('.role-option').forEach(el => el.classList.remove('selected'));
+    element.classList.add('selected');
+    element.querySelector('input[type="radio"]').checked = true;
+}
+
+function checkPasswordStrength() {
+    const password = document.getElementById('password1').value;
+    const strengthBar = document.getElementById('passwordStrength');
+    const strengthText = document.getElementById('strengthText');
+
+    if (password.length === 0) {
+        strengthBar.className = 'password-strength';
+        strengthText.textContent = '';
+        return;
+    }
+
+    let strength = 0;
+    if (password.length >= 8) strength++;
+    if (/[A-Z]/.test(password)) strength++;
+    if (/[0-9]/.test(password)) strength++;
+    if (/[^A-Za-z0-9]/.test(password)) strength++;
+
+    if (strength <= 1) {
+        strengthBar.className = 'password-strength strength-weak';
+        strengthText.textContent = 'Weak password';
+        strengthText.style.color = '#dc3545';
+    } else if (strength <= 2) {
+        strengthBar.className = 'password-strength strength-medium';
+        strengthText.textContent = 'Medium password';
+        strengthText.style.color = '#ffc107';
+    } else {
+        strengthBar.className = 'password-strength strength-strong';
+        strengthText.textContent = 'Strong password';
+        strengthText.style.color = '#28a745';
+    }
+
+    checkPasswordMatch();
+}
+
+function checkPasswordMatch() {
+    const p1 = document.getElementById('password1').value;
+    const p2 = document.getElementById('password2').value;
+    const matchText = document.getElementById('matchText');
+
+    if (p2.length === 0) {
+        matchText.textContent = '';
+        return;
+    }
+
+    if (p1 === p2) {
+        matchText.textContent = '✓ Passwords match';
+        matchText.style.color = '#28a745';
+    } else {
+        matchText.textContent = '✗ Passwords do not match';
+        matchText.style.color = '#dc3545';
+    }
+}
+</script>
+
+{% endblock %}

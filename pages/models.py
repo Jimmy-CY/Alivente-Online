@@ -2468,3 +2468,57 @@ class AssetMaintenance(models.Model):
     
     def __str__(self):
         return f"{self.asset.name} - {self.get_maintenance_type_display()} on {self.date}"
+
+# ============================================================================
+# USER PROFILE MODEL
+# ============================================================================
+
+class UserProfile(models.Model):
+    MENU_PREFERENCE_CHOICES = [
+        ('top', 'Top Menu'),
+        ('sidebar', 'Side Menu'),
+    ]
+
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        related_name='profile'
+    )
+    menu_preference = models.CharField(
+        max_length=10,
+        choices=MENU_PREFERENCE_CHOICES,
+        default='top'
+    )
+    is_active = models.BooleanField(
+        default=True,
+        help_text='Uncheck to disable this user from logging in'
+    )
+    profile_photo = models.ImageField(
+        upload_to='profile_photos/',
+        blank=True,
+        null=True
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'user_profiles'
+        verbose_name = 'User Profile'
+        verbose_name_plural = 'User Profiles'
+
+    def __str__(self):
+        return f"{self.user.username} - Profile"
+
+
+@receiver(post_save, sender=User)
+def create_user_profile(sender, instance, created, **kwargs):
+    """Automatically create a UserProfile when a new User is created"""
+    if created:
+        UserProfile.objects.get_or_create(user=instance)
+
+
+@receiver(post_save, sender=User)
+def save_user_profile(sender, instance, **kwargs):
+    """Automatically save the UserProfile when the User is saved"""
+    if hasattr(instance, 'profile'):
+        instance.profile.save()

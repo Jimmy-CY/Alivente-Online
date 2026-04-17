@@ -1,0 +1,330 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Permissions - {{ target_user.username }}{% endblock %}
+{% block content %}
+
+<style>
+.permissions-container {
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+.page-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px 25px;
+    border-radius: 10px;
+    margin-bottom: 25px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.page-header h1 {
+    font-size: 22px;
+    font-weight: bold;
+    margin: 0;
+}
+
+.form-card {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    padding: 30px;
+    margin-bottom: 20px;
+}
+
+.form-card h2 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #667eea;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.user-meta-box {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 14px 18px;
+    font-size: 13px;
+    color: #6c757d;
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+}
+
+.user-meta-box span {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.superuser-notice {
+    background: #e8f4fd;
+    border: 1px solid #17a2b8;
+    border-radius: 8px;
+    padding: 14px 18px;
+    font-size: 13px;
+    color: #0c5460;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.permission-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.permission-item {
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.permission-item:hover {
+    border-color: #667eea;
+    background: #f8f9ff;
+}
+
+.permission-item.granted {
+    border-color: #28a745;
+    background: #f0fff4;
+}
+
+.permission-item input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.permission-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: #f8f9fa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    color: #667eea;
+    flex-shrink: 0;
+    transition: all 0.2s;
+}
+
+.permission-item.granted .permission-icon {
+    background: #28a745;
+    color: white;
+}
+
+.permission-label {
+    font-weight: 600;
+    font-size: 14px;
+    color: #2c3e50;
+}
+
+.permission-status {
+    font-size: 11px;
+    margin-top: 2px;
+}
+
+.permission-status.granted {
+    color: #28a745;
+}
+
+.permission-status.denied {
+    color: #6c757d;
+}
+
+.select-all-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    padding: 10px 14px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    font-size: 13px;
+}
+
+.select-all-bar button {
+    font-size: 12px;
+    padding: 4px 12px;
+}
+</style>
+
+<div class="permissions-container">
+
+    {% for msg in messages %}
+    <div class="alert alert-{% if 'success' in msg.tags %}success{% elif 'error' in msg.tags %}danger{% else %}info{% endif %} alert-dismissible fade show">
+        {{ msg }}
+        <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
+    </div>
+    {% endfor %}
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <h1><i class="fas fa-key"></i> Permissions — {{ target_user.username }}</h1>
+        <a href="{% url 'user_administration' %}" class="btn btn-light btn-sm">
+            <i class="fas fa-arrow-left"></i> Back
+        </a>
+    </div>
+
+    <!-- User Meta -->
+    <div class="user-meta-box">
+        <span><i class="fas fa-user"></i> {{ target_user.get_full_name|default:target_user.username }}</span>
+        <span><i class="fas fa-envelope"></i> {{ target_user.email|default:"No email" }}</span>
+        <span>
+            <i class="fas fa-shield-alt"></i>
+            {% if target_user.is_superuser %}Superuser{% elif target_user.is_staff %}Staff{% else %}User{% endif %}
+        </span>
+        <span>
+            <i class="fas fa-circle" style="font-size:8px; color:{% if target_user.is_active %}#28a745{% else %}#dc3545{% endif %};"></i>
+            {% if target_user.is_active %}Active{% else %}Disabled{% endif %}
+        </span>
+    </div>
+
+    {% if target_user.is_superuser %}
+    <div class="superuser-notice">
+        <i class="fas fa-info-circle fa-lg"></i>
+        <div>
+            <strong>Superuser Account</strong><br>
+            Superusers have full access to all modules automatically. Individual permission settings below are ignored for superusers.
+        </div>
+    </div>
+    {% endif %}
+
+    <form method="POST" action="{% url 'user_permissions' target_user.id %}">
+        {% csrf_token %}
+
+        <div class="form-card">
+            <h2><i class="fas fa-lock" style="color:#667eea;"></i> Module Access</h2>
+
+            <!-- Select All / None Bar -->
+            <div class="select-all-bar">
+                <span style="color:#6c757d;">
+                    <strong id="grantedCount">0</strong> of {{ all_permissions|length }} modules granted
+                </span>
+                <div style="display:flex; gap:8px;">
+                    <button type="button" class="btn btn-sm btn-outline-success" onclick="selectAll()">
+                        <i class="fas fa-check-double"></i> Grant All
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="selectNone()">
+                        <i class="fas fa-times"></i> Revoke All
+                    </button>
+                </div>
+            </div>
+
+            <!-- Permission Grid -->
+            <div class="permission-grid">
+                {% for perm in all_permissions %}
+                <label class="permission-item {% if perm.granted %}granted{% endif %}"
+                       id="perm-item-{{ forloop.counter }}"
+                       onclick="togglePermission({{ forloop.counter }})">
+                    <input type="checkbox"
+                           name="permissions"
+                           value="{{ perm.codename }}"
+                           id="perm-{{ forloop.counter }}"
+                           {% if perm.granted %}checked{% endif %}
+                           onclick="event.stopPropagation();"
+                           onchange="updatePermissionUI({{ forloop.counter }})">
+                    <div class="permission-icon" id="perm-icon-{{ forloop.counter }}">
+                        <i class="fas {{ perm.icon }}"></i>
+                    </div>
+                    <div>
+                        <div class="permission-label">{{ perm.label }}</div>
+                        <div class="permission-status {% if perm.granted %}granted{% else %}denied{% endif %}"
+                             id="perm-status-{{ forloop.counter }}">
+                            {% if perm.granted %}✓ Access granted{% else %}✗ No access{% endif %}
+                        </div>
+                    </div>
+                </label>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div style="display:flex; justify-content:space-between; margin-bottom:30px;">
+            <a href="{% url 'user_administration' %}" class="btn btn-secondary">
+                <i class="fas fa-times"></i> Cancel
+            </a>
+            <button type="submit" class="btn btn-success">
+                <i class="fas fa-save"></i> Save Permissions
+            </button>
+        </div>
+
+    </form>
+</div>
+
+<script>
+// Update granted count on load
+document.addEventListener('DOMContentLoaded', function() {
+    updateGrantedCount();
+});
+
+function togglePermission(index) {
+    const checkbox = document.getElementById(`perm-${index}`);
+    checkbox.checked = !checkbox.checked;
+    updatePermissionUI(index);
+}
+
+function updatePermissionUI(index) {
+    const checkbox = document.getElementById(`perm-${index}`);
+    const item = document.getElementById(`perm-item-${index}`);
+    const icon = document.getElementById(`perm-icon-${index}`);
+    const status = document.getElementById(`perm-status-${index}`);
+
+    if (checkbox.checked) {
+        item.classList.add('granted');
+        icon.style.background = '#28a745';
+        icon.style.color = 'white';
+        status.textContent = '✓ Access granted';
+        status.className = 'permission-status granted';
+    } else {
+        item.classList.remove('granted');
+        icon.style.background = '#f8f9fa';
+        icon.style.color = '#667eea';
+        status.textContent = '✗ No access';
+        status.className = 'permission-status denied';
+    }
+
+    updateGrantedCount();
+}
+
+function updateGrantedCount() {
+    const total = document.querySelectorAll('input[name="permissions"]').length;
+    const checked = document.querySelectorAll('input[name="permissions"]:checked').length;
+    document.getElementById('grantedCount').textContent = checked;
+}
+
+function selectAll() {
+    const checkboxes = document.querySelectorAll('input[name="permissions"]');
+    checkboxes.forEach((cb, index) => {
+        cb.checked = true;
+        updatePermissionUI(index + 1);
+    });
+}
+
+function selectNone() {
+    const checkboxes = document.querySelectorAll('input[name="permissions"]');
+    checkboxes.forEach((cb, index) => {
+        cb.checked = false;
+        updatePermissionUI(index + 1);
+    });
+}
+</script>
+
+{% endblock %}

@@ -1,0 +1,376 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}User Administration{% endblock %}
+{% block content %}
+
+<style>
+.user-admin-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.page-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px 25px;
+    border-radius: 10px;
+    margin-bottom: 25px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.page-header h1 {
+    font-size: 24px;
+    font-weight: bold;
+    margin: 0;
+}
+
+.user-table {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    overflow: hidden;
+}
+
+.user-table table {
+    width: 100%;
+    margin: 0;
+}
+
+.user-table thead th {
+    background: #f8f9fa;
+    padding: 14px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #495057;
+    border-bottom: 2px solid #dee2e6;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.user-table tbody td {
+    padding: 14px 16px;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 14px;
+    vertical-align: middle;
+}
+
+.user-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.user-table tbody tr:hover {
+    background: #f8f9fa;
+}
+
+.user-avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+    font-size: 15px;
+    flex-shrink: 0;
+}
+
+.user-avatar img {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.user-name {
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.user-email {
+    font-size: 12px;
+    color: #6c757d;
+}
+
+.badge-superuser {
+    background: #667eea;
+    color: white;
+    padding: 3px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.badge-staff {
+    background: #17a2b8;
+    color: white;
+    padding: 3px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.badge-user {
+    background: #6c757d;
+    color: white;
+    padding: 3px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.status-active {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    color: #28a745;
+    font-weight: 600;
+    font-size: 13px;
+}
+
+.status-inactive {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    color: #dc3545;
+    font-weight: 600;
+    font-size: 13px;
+}
+
+.action-btn {
+    width: 30px;
+    height: 30px;
+    border-radius: 6px;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.2s;
+    text-decoration: none;
+}
+
+.action-btn:hover {
+    transform: scale(1.1);
+}
+
+.btn-edit { background: #ffc107; color: white; }
+.btn-permissions { background: #17a2b8; color: white; }
+.btn-disable { background: #dc3545; color: white; }
+.btn-enable { background: #28a745; color: white; }
+</style>
+
+<div class="user-admin-container">
+
+    {% for msg in messages %}
+    <div class="alert alert-{% if 'success' in msg.tags %}success{% elif 'error' in msg.tags %}danger{% else %}info{% endif %} alert-dismissible fade show" role="alert">
+        {{ msg }}
+        <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
+    </div>
+    {% endfor %}
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <h1><i class="fas fa-users-cog"></i> User Administration</h1>
+        <div style="display:flex; gap:10px; align-items:center;">
+            <a href="{% url 'user_add' %}" class="btn btn-success btn-sm">
+                <i class="fas fa-user-plus"></i> Add User
+            </a>
+            <a href="{% url 'admin_apms' %}" class="btn btn-light btn-sm">
+                <i class="fas fa-arrow-left"></i> Back
+            </a>
+        </div>
+    </div>
+
+    <!-- User Table -->
+    <div class="user-table">
+        <table>
+            <thead>
+                <tr>
+                    <th>User</th>
+                    <th>Role</th>
+                    <th>Status</th>
+                    <th>Last Login</th>
+                    <th>Date Joined</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr>
+                    <td>
+                        <div class="user-info">
+                            <div class="user-avatar">
+                                {% if user.profile.profile_photo %}
+                                    <img src="{{ user.profile.profile_photo.url }}" alt="{{ user.username }}">
+                                {% else %}
+                                    {{ user.username|first|upper }}
+                                {% endif %}
+                            </div>
+                            <div>
+                                <div class="user-name">{{ user.get_full_name|default:user.username }}</div>
+                                <div class="user-email">{{ user.email|default:"No email" }}</div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        {% if user.is_superuser %}
+                            <span class="badge-superuser"><i class="fas fa-crown"></i> Superuser</span>
+                        {% elif user.is_staff %}
+                            <span class="badge-staff"><i class="fas fa-user-tie"></i> Staff</span>
+                        {% else %}
+                            <span class="badge-user"><i class="fas fa-user"></i> User</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if user.is_active %}
+                            <span class="status-active"><i class="fas fa-circle" style="font-size:8px;"></i> Active</span>
+                        {% else %}
+                            <span class="status-inactive"><i class="fas fa-circle" style="font-size:8px;"></i> Disabled</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if user.last_login %}
+                            {{ user.last_login|date:"d M Y H:i" }}
+                        {% else %}
+                            <span class="text-muted">Never</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ user.date_joined|date:"d M Y" }}</td>
+                    <td>
+                        <div style="display:flex; gap:6px;">
+                            <a href="{% url 'user_edit' user.id %}" class="action-btn btn-edit" title="Edit User">
+                                <i class="fas fa-pencil-alt"></i>
+                            </a>
+                            <a href="{% url 'user_permissions' user.id %}" class="action-btn btn-permissions" title="Manage Permissions">
+                                <i class="fas fa-key"></i>
+                            </a>
+                            {% if user.is_active %}
+                            <button type="button" class="action-btn btn-disable" title="Disable User"
+                                    onclick="confirmToggle({{ user.id }}, '{{ user.username }}', false)">
+                                <i class="fas fa-ban"></i>
+                            </button>
+                            {% else %}
+                            <button type="button" class="action-btn btn-enable" title="Enable User"
+                                    onclick="confirmToggle({{ user.id }}, '{{ user.username }}', true)">
+                                <i class="fas fa-check"></i>
+                            </button>
+                            <button type="button" class="action-btn btn-disable" title="Delete User"
+                                    onclick="confirmDelete({{ user.id }}, '{{ user.username }}')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+<!-- Toggle User Modal -->
+<div class="modal fade" id="toggleModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header" id="toggleModalHeader">
+                <h5 class="modal-title" id="toggleModalTitle">Confirm Action</h5>
+                <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+            </div>
+            <div class="modal-body">
+                <p id="toggleModalMessage"></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <form id="toggleForm" method="POST">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="toggle_active">
+                    <input type="hidden" name="user_id" id="toggleUserId">
+                    <input type="hidden" name="new_status" id="toggleNewStatus">
+                    <button type="submit" class="btn" id="toggleSubmitBtn">Confirm</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete User Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-exclamation-triangle"></i> Permanently Delete User
+                </h5>
+                <button type="button" class="close text-white" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <strong>This action cannot be undone!</strong>
+                </div>
+                <p>You are about to permanently delete user <strong id="deleteUsername"></strong>.</p>
+                <p class="text-muted">All data associated with this user will be permanently removed, including meal plans, favourites, and any other records.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <form id="deleteForm" method="POST">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash"></i> Permanently Delete
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function confirmToggle(userId, username, enable) {
+    document.getElementById('toggleUserId').value = userId;
+    document.getElementById('toggleNewStatus').value = enable ? '1' : '0';
+    
+    const header = document.getElementById('toggleModalHeader');
+    const title = document.getElementById('toggleModalTitle');
+    const message = document.getElementById('toggleModalMessage');
+    const submitBtn = document.getElementById('toggleSubmitBtn');
+    
+    if (enable) {
+        header.className = 'modal-header bg-success text-white';
+        title.textContent = 'Enable User';
+        message.textContent = `Are you sure you want to enable "${username}"? They will be able to log in again.`;
+        submitBtn.className = 'btn btn-success';
+        submitBtn.textContent = 'Enable';
+    } else {
+        header.className = 'modal-header bg-danger text-white';
+        title.textContent = 'Disable User';
+        message.textContent = `Are you sure you want to disable "${username}"? They will no longer be able to log in.`;
+        submitBtn.className = 'btn btn-danger';
+        submitBtn.textContent = 'Disable';
+    }
+    
+    document.getElementById('toggleForm').action = "{% url 'user_administration' %}";
+    $('#toggleModal').modal('show');
+}
+
+function confirmDelete(userId, username) {
+    document.getElementById('deleteUsername').textContent = username;
+    document.getElementById('deleteForm').action = `/user-administration/${userId}/delete/`;
+    $('#deleteModal').modal('show');
+}
+</script>
+
+{% endblock %}

@@ -27,7 +27,11 @@ urlpatterns = [
     path('lease/<str:filename>/view/', views.serve_lease, name='serve_lease'),
     path('upload_lease_agreement/', views.upload_lease_agreement, name='upload_lease_agreement'),
     path('setup-permissions/', setup_permissions, name='setup_permissions'),  # Now properly imported
-
+    path('user-administration/', views.user_administration, name='user_administration'),
+    path('user-administration/add/', views.user_add, name='user_add'),
+    path('user-administration/<int:user_id>/edit/', views.user_edit, name='user_edit'),
+    path('user-administration/<int:user_id>/permissions/', views.user_permissions, name='user_permissions'),
+    path('user-administration/<int:user_id>/delete/', views.user_delete, name='user_delete'),
     #
     #Reports - Dashboard
     path('title_deeds/', views.title_deeds, name='title_deeds'),
