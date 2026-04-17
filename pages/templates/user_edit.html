@@ -294,24 +294,15 @@
 
             <div class="form-group mb-4">
                 <label>Role <span class="required">*</span></label>
-                <div class="role-selector">
-                    <label class="role-option {% if not target_user.is_staff and not target_user.is_superuser %}selected{% endif %}"
+                <div class="role-selector" style="grid-template-columns: 1fr 1fr;">
+                    <label class="role-option {% if not target_user.is_superuser %}selected{% endif %}"
                            onclick="selectRole(this, 'user')">
                         <input type="radio" name="role" value="user"
-                               {% if not target_user.is_staff and not target_user.is_superuser %}checked{% endif %}
+                               {% if not target_user.is_superuser %}checked{% endif %}
                                {% if target_user == request.user %}disabled{% endif %}>
                         <i class="fas fa-user" style="color:#6c757d;"></i>
                         <div class="role-name">User</div>
                         <div class="role-desc">Standard access</div>
-                    </label>
-                    <label class="role-option {% if target_user.is_staff and not target_user.is_superuser %}selected{% endif %}"
-                           onclick="selectRole(this, 'staff')">
-                        <input type="radio" name="role" value="staff"
-                               {% if target_user.is_staff and not target_user.is_superuser %}checked{% endif %}
-                               {% if target_user == request.user %}disabled{% endif %}>
-                        <i class="fas fa-user-tie" style="color:#17a2b8;"></i>
-                        <div class="role-name">Staff</div>
-                        <div class="role-desc">Staff access</div>
                     </label>
                     <label class="role-option {% if target_user.is_superuser %}selected{% endif %}"
                            onclick="selectRole(this, 'superuser')">

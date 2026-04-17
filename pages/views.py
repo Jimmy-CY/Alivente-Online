@@ -4487,8 +4487,6 @@ def user_add(request):
         if role == 'superuser':
             new_user.is_superuser = True
             new_user.is_staff = True
-        elif role == 'staff':
-            new_user.is_staff = True
         new_user.save()
 
         # Ensure profile exists
@@ -4544,9 +4542,6 @@ def user_edit(request, user_id):
         if target_user != request.user:
             if role == 'superuser':
                 target_user.is_superuser = True
-                target_user.is_staff = True
-            elif role == 'staff':
-                target_user.is_superuser = False
                 target_user.is_staff = True
             else:
                 target_user.is_superuser = False

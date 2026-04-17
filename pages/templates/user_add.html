@@ -233,7 +233,7 @@
 
             <div class="form-group mb-4">
                 <label>Role <span class="required">*</span></label>
-                <div class="role-selector">
+                <div class="role-selector" style="grid-template-columns: 1fr 1fr;">
                     <label class="role-option {% if form_data.role == 'user' or not form_data.role %}selected{% endif %}"
                            onclick="selectRole(this, 'user')">
                         <input type="radio" name="role" value="user"
@@ -241,14 +241,6 @@
                         <i class="fas fa-user" style="color:#6c757d;"></i>
                         <div class="role-name">User</div>
                         <div class="role-desc">Standard access</div>
-                    </label>
-                    <label class="role-option {% if form_data.role == 'staff' %}selected{% endif %}"
-                           onclick="selectRole(this, 'staff')">
-                        <input type="radio" name="role" value="staff"
-                               {% if form_data.role == 'staff' %}checked{% endif %}>
-                        <i class="fas fa-user-tie" style="color:#17a2b8;"></i>
-                        <div class="role-name">Staff</div>
-                        <div class="role-desc">Staff access</div>
                     </label>
                     <label class="role-option {% if form_data.role == 'superuser' %}selected{% endif %}"
                            onclick="selectRole(this, 'superuser')">

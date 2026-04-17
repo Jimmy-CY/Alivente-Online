@@ -218,6 +218,7 @@
                 <span style="color:#6c757d;">
                     <strong id="grantedCount">0</strong> of {{ all_permissions|length }} modules granted
                 </span>
+                {% if not target_user.is_superuser %}
                 <div style="display:flex; gap:8px;">
                     <button type="button" class="btn btn-sm btn-outline-success" onclick="selectAll()">
                         <i class="fas fa-check-double"></i> Grant All
@@ -226,29 +227,36 @@
                         <i class="fas fa-times"></i> Revoke All
                     </button>
                 </div>
+                {% else %}
+                <span style="font-size:12px; color:#28a745;">
+                    <i class="fas fa-crown"></i> Superuser has full access to all modules
+                </span>
+                {% endif %}
             </div>
 
             <!-- Permission Grid -->
             <div class="permission-grid">
                 {% for perm in all_permissions %}
-                <label class="permission-item {% if perm.granted %}granted{% endif %}"
+                <label class="permission-item {% if perm.granted or target_user.is_superuser %}granted{% endif %}"
                        id="perm-item-{{ forloop.counter }}"
-                       onclick="togglePermission({{ forloop.counter }})">
+                       {% if not target_user.is_superuser %}onclick="togglePermission({{ forloop.counter }})"{% endif %}>
                     <input type="checkbox"
                            name="permissions"
                            value="{{ perm.codename }}"
                            id="perm-{{ forloop.counter }}"
-                           {% if perm.granted %}checked{% endif %}
+                           {% if perm.granted or target_user.is_superuser %}checked{% endif %}
+                           {% if target_user.is_superuser %}disabled{% endif %}
                            onclick="event.stopPropagation();"
                            onchange="updatePermissionUI({{ forloop.counter }})">
-                    <div class="permission-icon" id="perm-icon-{{ forloop.counter }}">
+                    <div class="permission-icon" id="perm-icon-{{ forloop.counter }}"
+                         style="{% if perm.granted or target_user.is_superuser %}background:#28a745;color:white;{% endif %}">
                         <i class="fas {{ perm.icon }}"></i>
                     </div>
                     <div>
                         <div class="permission-label">{{ perm.label }}</div>
-                        <div class="permission-status {% if perm.granted %}granted{% else %}denied{% endif %}"
+                        <div class="permission-status {% if perm.granted or target_user.is_superuser %}granted{% else %}denied{% endif %}"
                              id="perm-status-{{ forloop.counter }}">
-                            {% if perm.granted %}✓ Access granted{% else %}✗ No access{% endif %}
+                            {% if perm.granted or target_user.is_superuser %}✓ Access granted{% else %}✗ No access{% endif %}
                         </div>
                     </div>
                 </label>
