@@ -31,141 +31,120 @@ Home
     <img src="{% static 'images/alivente_online_logo.png' %}" alt="Alivente" class="img-fluid">
   </div>
 {% else %}
-  <!-- Show module buttons when logged in -->
-  <div class="container mt-4 border rounded p-3 p-md-4" style="max-width: 1400px; border-color: #dee2e6 !important;">
-    <div class="row justify-content-center">
+  <!-- Show only permitted module buttons -->
+  <div class="container mt-4 border rounded p-3 p-md-4" style="max-width: 1200px; border-color: #dee2e6 !important;">
+    <div class="modules-grid" id="modulesGrid">
 
-      <!-- Properties -->
-      <div class="col-6 col-md-2-4 mb-3">
-        {% if perms_map.properties %}
-        <a href="{% url 'properties' %}" class="btn btn-info btn-block py-2 py-md-3 home-module-btn">
-        {% else %}
-        <a href="#" class="btn btn-secondary btn-block py-2 py-md-3 home-module-btn no-access" onclick="return false;">
-        {% endif %}
+      {% if perms_map.properties %}
+      <div class="module-tile">
+        <a href="{% url 'properties' %}" class="home-module-btn btn-info">
           <i class="fas fa-home fa-lg mb-2"></i>
           <h5>Properties</h5>
         </a>
       </div>
+      {% endif %}
 
-      <!-- Tenants -->
-      <div class="col-6 col-md-2-4 mb-3">
-        {% if perms_map.tenants %}
-        <a href="{% url 'tenant' %}" class="btn btn-info btn-block py-2 py-md-3 home-module-btn">
-        {% else %}
-        <a href="#" class="btn btn-secondary btn-block py-2 py-md-3 home-module-btn no-access" onclick="return false;">
-        {% endif %}
+      {% if perms_map.tenants %}
+      <div class="module-tile">
+        <a href="{% url 'tenant' %}" class="home-module-btn btn-info">
           <i class="fas fa-users fa-lg mb-2"></i>
           <h5>Tenants</h5>
         </a>
       </div>
+      {% endif %}
 
-      <!-- Suppliers -->
-      <div class="col-6 col-md-2-4 mb-3">
-        {% if perms_map.suppliers %}
-        <a href="{% url 'suppliers' %}" class="btn btn-info btn-block py-2 py-md-3 home-module-btn">
-        {% else %}
-        <a href="#" class="btn btn-secondary btn-block py-2 py-md-3 home-module-btn no-access" onclick="return false;">
-        {% endif %}
+      {% if perms_map.suppliers %}
+      <div class="module-tile">
+        <a href="{% url 'suppliers' %}" class="home-module-btn btn-info">
           <i class="fas fa-hammer fa-lg mb-2"></i>
           <h5>Suppliers</h5>
         </a>
       </div>
+      {% endif %}
 
-      <!-- Issues -->
-      <div class="col-6 col-md-2-4 mb-3">
-        {% if perms_map.issues %}
-        <a href="{% url 'fsr' %}" class="btn btn-info btn-block py-2 py-md-3 home-module-btn">
-        {% else %}
-        <a href="#" class="btn btn-secondary btn-block py-2 py-md-3 home-module-btn no-access" onclick="return false;">
-        {% endif %}
+      {% if perms_map.issues %}
+      <div class="module-tile">
+        <a href="{% url 'fsr' %}" class="home-module-btn btn-info">
           <i class="fas fa-exclamation-circle fa-lg mb-2"></i>
           <h5>Issues</h5>
         </a>
       </div>
+      {% endif %}
 
-      <!-- Dashboard -->
-      <div class="col-6 col-md-2-4 mb-3">
-        {% if perms_map.dashboard %}
-        <a href="{% url 'property_management_dashboard' %}" class="btn btn-info btn-block py-2 py-md-3 home-module-btn">
-        {% else %}
-        <a href="#" class="btn btn-secondary btn-block py-2 py-md-3 home-module-btn no-access" onclick="return false;">
-        {% endif %}
+      {% if perms_map.dashboard %}
+      <div class="module-tile">
+        <a href="{% url 'property_management_dashboard' %}" class="home-module-btn btn-info">
           <i class="fas fa-tachometer-alt fa-lg mb-2"></i>
           <h5>Dashboard</h5>
         </a>
       </div>
+      {% endif %}
 
-      <!-- Invoices -->
-      <div class="col-6 col-md-2-4 mb-3">
-        {% if perms_map.invoices %}
-        <a href="{% url 'invoices' %}" class="btn btn-info btn-block py-2 py-md-3 home-module-btn">
-        {% else %}
-        <a href="#" class="btn btn-secondary btn-block py-2 py-md-3 home-module-btn no-access" onclick="return false;">
-        {% endif %}
+      {% if perms_map.invoices %}
+      <div class="module-tile">
+        <a href="{% url 'invoices' %}" class="home-module-btn btn-info">
           <i class="fas fa-file-invoice fa-lg mb-2"></i>
           <h5>Invoices</h5>
         </a>
       </div>
+      {% endif %}
 
-      <!-- Expenses -->
-      <div class="col-6 col-md-2-4 mb-3">
-        {% if perms_map.expenses %}
-        <a href="{% url 'act_expense_all' %}?from=home" class="btn btn-info btn-block py-2 py-md-3 home-module-btn">
-        {% else %}
-        <a href="#" class="btn btn-secondary btn-block py-2 py-md-3 home-module-btn no-access" onclick="return false;">
-        {% endif %}
+      {% if perms_map.expenses %}
+      <div class="module-tile">
+        <a href="{% url 'act_expense_all' %}?from=home" class="home-module-btn btn-info">
           <i class="fas fa-coins fa-lg mb-2"></i>
           <h5>Expenses</h5>
         </a>
       </div>
+      {% endif %}
 
-      <!-- Petty Cash -->
-      <div class="col-6 col-md-2-4 mb-3">
-        {% if perms_map.petty_cash %}
-        <a href="{% url 'petty_cash' %}" class="btn btn-info btn-block py-2 py-md-3 home-module-btn">
-        {% else %}
-        <a href="#" class="btn btn-secondary btn-block py-2 py-md-3 home-module-btn no-access" onclick="return false;">
-        {% endif %}
+      {% if perms_map.petty_cash %}
+      <div class="module-tile">
+        <a href="{% url 'petty_cash' %}" class="home-module-btn btn-info">
           <i class="fas fa-money-bill-wave fa-lg mb-2"></i>
           <h5>Petty Cash</h5>
         </a>
       </div>
+      {% endif %}
 
-      <!-- Financials -->
-      <div class="col-6 col-md-2-4 mb-3">
-        {% if perms_map.financials %}
-        <a href="{% url 'finance' %}" class="btn btn-info btn-block py-2 py-md-3 home-module-btn">
-        {% else %}
-        <a href="#" class="btn btn-secondary btn-block py-2 py-md-3 home-module-btn no-access" onclick="return false;">
-        {% endif %}
+      {% if perms_map.financials %}
+      <div class="module-tile">
+        <a href="{% url 'finance' %}" class="home-module-btn btn-info">
           <i class="fas fa-chart-line fa-lg mb-2"></i>
           <h5>Financials</h5>
         </a>
       </div>
+      {% endif %}
 
-      <!-- Projects -->
-      <div class="col-6 col-md-2-4 mb-3">
-        {% if perms_map.projects %}
-        <a href="{% url 'projects' %}" class="btn btn-info btn-block py-2 py-md-3 home-module-btn">
-        {% else %}
-        <a href="#" class="btn btn-secondary btn-block py-2 py-md-3 home-module-btn no-access" onclick="return false;">
-        {% endif %}
+      {% if perms_map.projects %}
+      <div class="module-tile">
+        <a href="{% url 'projects' %}" class="home-module-btn btn-info">
           <i class="fas fa-tasks fa-lg mb-2"></i>
           <h5>Projects</h5>
         </a>
       </div>
+      {% endif %}
 
     </div>
   </div>
 
   <style>
-    .col-md-2-4 {
-      flex: 0 0 20%;
-      max-width: 20%;
+    .modules-grid {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 12px;
+      padding: 10px;
+    }
+
+    .module-tile {
+      width: 180px;
+      flex: 0 0 180px;
     }
 
     .home-module-btn {
-      height: 100px;
+      height: 90px;
+      width: 180px;
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -173,54 +152,58 @@ Home
       transition: all 0.3s ease;
       border-radius: 6px;
       color: white;
-      width: 100%;
+      text-decoration: none;
     }
 
-    .home-module-btn:hover:not(.no-access) {
+    .home-module-btn.btn-info {
+      background-color: #17a2b8;
+      border: none;
+    }
+
+    .home-module-btn:hover {
       transform: translateY(-3px);
-      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 5px 15px rgba(0,0,0,0.15);
       text-decoration: none;
       color: white;
-    }
-
-    .home-module-btn.no-access {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-
-    .home-module-btn.no-access:hover {
-      color: white;
-      text-decoration: none;
-      transform: none;
-      box-shadow: none;
+      background-color: #138496;
     }
 
     .home-module-btn h5 {
       margin-bottom: 0;
       font-weight: 500;
-      font-size: 0.9rem;
+      font-size: 0.85rem;
     }
 
-    @media (max-width: 1200px) {
-      .col-md-2-4 { flex: 0 0 25%; max-width: 25%; }
-    }
-
-    @media (max-width: 991px) {
-      .col-md-2-4 { flex: 0 0 33.333333%; max-width: 33.333333%; }
+    .home-module-btn i {
+      font-size: 1.5rem;
+      margin-bottom: 6px;
     }
 
     @media (max-width: 767px) {
-      .home-module-btn { height: 80px; padding: 8px !important; }
-      .home-module-btn h5 { font-size: 0.8rem; }
-      .home-module-btn i { font-size: 1.2rem !important; margin-bottom: 6px !important; }
-    }
-
-    @media (max-width: 575px) {
-      .col-md-2-4 { flex: 0 0 50%; max-width: 50%; }
-      .home-module-btn { height: 70px; }
+      .module-tile { width: 140px; flex: 0 0 140px; }
+      .home-module-btn { width: 140px; height: 75px; }
       .home-module-btn h5 { font-size: 0.75rem; }
+      .home-module-btn i { font-size: 1.2rem; }
     }
   </style>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const grid = document.getElementById('modulesGrid');
+      const tiles = grid.querySelectorAll('.module-tile');
+      const count = tiles.length;
+      if (count === 0) return;
+
+      // Calculate columns for max 2 rows
+      const cols = Math.ceil(count / 2);
+      const tileWidth = 180;
+      const gap = 12;
+      const totalWidth = (cols * tileWidth) + ((cols - 1) * gap) + 20;
+      grid.style.maxWidth = totalWidth + 'px';
+      grid.style.margin = '0 auto';
+    });
+  </script>
+
 {% endif %}
 
 {% endblock %}
