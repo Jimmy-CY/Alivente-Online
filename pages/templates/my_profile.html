@@ -1,0 +1,362 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}My Profile{% endblock %}
+{% block content %}
+
+<style>
+.profile-container {
+    max-width: 650px;
+    margin: 0 auto;
+}
+
+.page-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px 25px;
+    border-radius: 10px;
+    margin-bottom: 25px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.page-header h1 {
+    font-size: 22px;
+    font-weight: bold;
+    margin: 0;
+}
+
+.form-card {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    padding: 30px;
+    margin-bottom: 20px;
+}
+
+.form-card h2 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #667eea;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.form-row-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.form-group label {
+    font-weight: 600;
+    font-size: 13px;
+    color: #495057;
+    margin-bottom: 6px;
+    display: block;
+}
+
+.form-control {
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 14px;
+    transition: border-color 0.2s;
+    width: 100%;
+}
+
+.form-control:focus {
+    border-color: #667eea;
+    box-shadow: none;
+    outline: none;
+}
+
+/* Profile Photo */
+.photo-section {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.photo-preview {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #667eea;
+}
+
+.photo-placeholder {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 28px;
+    font-weight: 600;
+    border: 3px solid #667eea;
+    flex-shrink: 0;
+}
+
+.photo-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.photo-actions label {
+    margin: 0;
+}
+
+/* Menu Preference Toggle */
+.menu-preference-selector {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.menu-option {
+    border: 2px solid #e9ecef;
+    border-radius: 10px;
+    padding: 16px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+}
+
+.menu-option:hover {
+    border-color: #667eea;
+    background: #f8f9ff;
+}
+
+.menu-option.selected {
+    border-color: #667eea;
+    background: #f0f2ff;
+}
+
+.menu-option input[type="radio"] {
+    display: none;
+}
+
+.menu-option-icon {
+    font-size: 28px;
+    color: #667eea;
+    margin-bottom: 8px;
+}
+
+.menu-option-name {
+    font-weight: 600;
+    font-size: 14px;
+    color: #2c3e50;
+}
+
+.menu-option-desc {
+    font-size: 11px;
+    color: #6c757d;
+    margin-top: 3px;
+}
+
+.menu-option.selected .menu-option-icon {
+    color: #667eea;
+}
+
+.coming-soon-badge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: #ffc107;
+    color: #856404;
+    font-size: 9px;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 8px;
+    text-transform: uppercase;
+}
+
+.user-meta-box {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 13px;
+    color: #6c757d;
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+}
+
+.user-meta-box span {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+</style>
+
+<div class="profile-container">
+
+    {% for msg in messages %}
+    <div class="alert alert-{% if 'success' in msg.tags %}success{% elif 'error' in msg.tags %}danger{% else %}info{% endif %} alert-dismissible fade show">
+        {{ msg }}
+        <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
+    </div>
+    {% endfor %}
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <h1><i class="fas fa-user-circle"></i> My Profile</h1>
+        <a href="{% url 'home' %}" class="btn btn-light btn-sm">
+            <i class="fas fa-arrow-left"></i> Back
+        </a>
+    </div>
+
+    <!-- User Meta -->
+    <div class="user-meta-box">
+        <span><i class="fas fa-user"></i> {{ request.user.username }}</span>
+        <span>
+            <i class="fas fa-shield-alt"></i>
+            {% if request.user.is_superuser %}Superuser{% else %}User{% endif %}
+        </span>
+        <span><i class="fas fa-calendar-plus"></i> Joined {{ request.user.date_joined|date:"d M Y" }}</span>
+    </div>
+
+    <form method="POST" action="{% url 'my_profile' %}" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <!-- Profile Photo -->
+        <div class="form-card">
+            <h2><i class="fas fa-camera" style="color:#667eea;"></i> Profile Photo</h2>
+            <div class="photo-section">
+                {% if profile.profile_photo %}
+                    <img src="{{ profile.profile_photo.url }}" alt="Profile Photo" class="photo-preview" id="photoPreview">
+                {% else %}
+                    <div class="photo-placeholder" id="photoPlaceholder">
+                        {{ request.user.username|first|upper }}
+                    </div>
+                    <img src="" alt="Profile Photo" class="photo-preview" id="photoPreview" style="display:none;">
+                {% endif %}
+
+                <div class="photo-actions">
+                    <label class="btn btn-sm btn-outline-primary" style="cursor:pointer;">
+                        <i class="fas fa-upload"></i> Upload Photo
+                        <input type="file" name="profile_photo" id="profilePhotoInput"
+                               accept="image/*" style="display:none;"
+                               onchange="previewPhoto(this)">
+                    </label>
+                    {% if profile.profile_photo %}
+                    <div class="form-check" style="margin-top:4px;">
+                        <input type="checkbox" class="form-check-input" name="remove_photo"
+                               value="1" id="removePhoto">
+                        <label class="form-check-label" for="removePhoto" style="font-size:12px; color:#dc3545;">
+                            Remove current photo
+                        </label>
+                    </div>
+                    {% endif %}
+                    <small class="text-muted" style="font-size:11px;">JPG, PNG or GIF. Max 2MB.</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Personal Information -->
+        <div class="form-card">
+            <h2><i class="fas fa-user" style="color:#667eea;"></i> Personal Information</h2>
+            <div class="form-row-2">
+                <div class="form-group">
+                    <label>First Name</label>
+                    <input type="text" name="first_name" class="form-control"
+                           value="{{ request.user.first_name }}"
+                           placeholder="Enter first name">
+                </div>
+                <div class="form-group">
+                    <label>Last Name</label>
+                    <input type="text" name="last_name" class="form-control"
+                           value="{{ request.user.last_name }}"
+                           placeholder="Enter last name">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Email Address</label>
+                <input type="email" name="email" class="form-control"
+                       value="{{ request.user.email }}"
+                       placeholder="Enter email address">
+            </div>
+            <div class="form-group">
+                <label>Username</label>
+                <input type="text" class="form-control"
+                       value="{{ request.user.username }}" disabled
+                       style="background:#f8f9fa; color:#6c757d;">
+                <small class="text-muted">Username cannot be changed.</small>
+            </div>
+        </div>
+
+        <!-- Menu Preference -->
+        <div class="form-card">
+            <h2><i class="fas fa-columns" style="color:#667eea;"></i> Menu Preference</h2>
+            <p class="text-muted" style="font-size:13px; margin-bottom:16px;">
+                Choose how you want the navigation to appear.
+            </p>
+            <div class="menu-preference-selector">
+                <label class="menu-option {% if profile.menu_preference == 'top' or not profile.menu_preference %}selected{% endif %}"
+                       onclick="selectMenu(this, 'top')">
+                    <input type="radio" name="menu_preference" value="top"
+                           {% if profile.menu_preference == 'top' or not profile.menu_preference %}checked{% endif %}>
+                    <div class="menu-option-icon"><i class="fas fa-grip-horizontal"></i></div>
+                    <div class="menu-option-name">Top Menu</div>
+                    <div class="menu-option-desc">Navigation bar at the top</div>
+                </label>
+                <label class="menu-option {% if profile.menu_preference == 'sidebar' %}selected{% endif %}"
+                       onclick="selectMenu(this, 'sidebar')">
+                    <input type="radio" name="menu_preference" value="sidebar"
+                           {% if profile.menu_preference == 'sidebar' %}checked{% endif %}>
+                    <span class="coming-soon-badge">Coming Soon</span>
+                    <div class="menu-option-icon"><i class="fas fa-bars"></i></div>
+                    <div class="menu-option-name">Sidebar</div>
+                    <div class="menu-option-desc">Collapsible left-hand menu</div>
+                </label>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div style="display:flex; justify-content:space-between; margin-bottom:30px;">
+            <a href="{% url 'home' %}" class="btn btn-secondary">
+                <i class="fas fa-times"></i> Cancel
+            </a>
+            <button type="submit" class="btn btn-success">
+                <i class="fas fa-save"></i> Save Profile
+            </button>
+        </div>
+
+    </form>
+</div>
+
+<script>
+function selectMenu(element, value) {
+    document.querySelectorAll('.menu-option').forEach(el => el.classList.remove('selected'));
+    element.classList.add('selected');
+    element.querySelector('input[type="radio"]').checked = true;
+}
+
+function previewPhoto(input) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const preview = document.getElementById('photoPreview');
+            const placeholder = document.getElementById('photoPlaceholder');
+            preview.src = e.target.result;
+            preview.style.display = 'block';
+            if (placeholder) placeholder.style.display = 'none';
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+</script>
+
+{% endblock %}

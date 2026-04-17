@@ -230,6 +230,32 @@
                 <a class="nav-link" href="{% url 'logout' %}">Logout</a>
             </li>
 
+            <!-- My Profile Avatar -->
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'my_profile' %}" title="My Profile"
+                   style="padding: 4px 12px;">
+                    {% if request.user.profile.profile_photo %}
+                        <img src="{{ request.user.profile.profile_photo.url }}"
+                             alt="Profile"
+                             style="width:36px; height:36px; border-radius:50%; object-fit:cover; border:2px solid rgba(255,255,255,0.6);">
+                    {% else %}
+                        <div style="width:36px; height:36px; border-radius:50%;
+                                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                                    display:inline-flex; align-items:center; justify-content:center;
+                                    color:white; font-weight:600; font-size:13px;
+                                    border:2px solid rgba(255,255,255,0.6);">
+                            {% if request.user.first_name and request.user.last_name %}
+                                {{ request.user.first_name|first|upper }}{{ request.user.last_name|first|upper }}
+                            {% elif request.user.first_name %}
+                                {{ request.user.first_name|first|upper }}
+                            {% else %}
+                                {{ request.user.username|first|upper }}
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                </a>
+            </li>
+
             <!-- Bell Notification Icon -->
             <li class="nav-item">
               <a class="nav-link notification-bell-link" href="{% url 'notifications_dashboard' %}">

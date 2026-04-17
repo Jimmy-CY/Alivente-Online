@@ -4667,6 +4667,50 @@ def user_delete(request, user_id):
     return redirect('user_administration')
 
 @login_required
+def my_profile(request):
+    """My Profile page - user can update their own details"""
+    profile, _ = UserProfile.objects.get_or_create(user=request.user)
+
+    if request.method == 'POST':
+        first_name = request.POST.get('first_name', '').strip()
+        last_name = request.POST.get('last_name', '').strip()
+        email = request.POST.get('email', '').strip()
+        menu_preference = request.POST.get('menu_preference', 'top')
+
+        # Check email not taken by another user
+        if email and User.objects.filter(email=email).exclude(id=request.user.id).exists():
+            messages.error(request, 'That email address is already in use.')
+            return redirect('my_profile')
+
+        # Update user
+        request.user.first_name = first_name
+        request.user.last_name = last_name
+        request.user.email = email
+        request.user.save()
+
+        # Update profile
+        profile.menu_preference = menu_preference
+
+        # Handle profile photo upload
+        if 'profile_photo' in request.FILES:
+            profile.profile_photo = request.FILES['profile_photo']
+
+        # Handle photo removal
+        if request.POST.get('remove_photo') == '1':
+            if profile.profile_photo:
+                profile.profile_photo.delete()
+                profile.profile_photo = None
+
+        profile.save()
+        messages.success(request, 'Your profile has been updated successfully!')
+        return redirect('my_profile')
+
+    context = {
+        'profile': profile,
+    }
+    return render(request, 'my_profile.html', context)
+
+@login_required
 def lease_agreement_report(request, tenant_id):
     try:
         # Get tenant and property info
