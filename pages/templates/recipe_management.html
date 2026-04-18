@@ -2010,23 +2010,23 @@
                 </a>
             </div>
         </div>
-        
+
         <!-- Meal Plans -->
         <a href="{% url 'meal_plans' %}" class="btn btn-primary">
             <i class="fas fa-calendar-alt"></i> Meal Plans
         </a>
-        
+
         <!-- What Can I Make -->
         <button type="button" class="btn btn-primary" onclick="openIngredientMatcher()">
             <i class="fas fa-search"></i> What Can I Make?
         </button>
 
         <!-- Favourites Filter -->
-        <a href="{% if show_favourites %}{% url 'recipe_management' %}{% else %}?favourites=1{% endif %}" 
+        <a href="{% if show_favourites %}{% url 'recipe_management' %}{% else %}?favourites=1{% endif %}"
            class="btn {% if show_favourites %}btn-danger{% else %}btn-outline-danger{% endif %}">
             <i class="fas fa-heart"></i> Favourites
         </a>
-        
+
         <!-- Settings Dropdown -->
         <div class="dropdown-btn-container">
             <button class="btn btn-secondary dropdown-btn">
@@ -2049,7 +2049,13 @@
             </div>
         </div>
     </div>
-    <a href="{% url 'personal_page' %}" class="btn btn-success" role="button">Back</a>
+
+    <div style="display:flex; gap:10px;">
+        <button type="button" class="btn btn-light" data-toggle="modal" data-target="#recipeHelpModal" style="border:1px solid #dee2e6;">
+            <i class="fas fa-question-circle" style="color:#28a745;"></i> Help
+        </button>
+        <a href="{% url 'personal_page' %}" class="btn btn-success" role="button">Back</a>
+    </div>
 </div>
 <br/>
 
@@ -2746,6 +2752,379 @@
 </div>
 
 {% endif %}
+
+<!-- ==================== RECIPE HELP MODAL ==================== -->
+<div class="modal fade" id="recipeHelpModal" tabindex="-1" role="dialog" aria-labelledby="recipeHelpModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable" role="document">
+    <div class="modal-content">
+
+      <div class="modal-header" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white;">
+        <div>
+          <h5 class="modal-title" id="recipeHelpModalLabel" style="font-weight:700; font-size:20px;">
+            <i class="fas fa-utensils"></i> Recipe Management — User Guide
+          </h5>
+          <small style="opacity:0.85;">Your complete recipe collection, meal planner, and cooking companion</small>
+        </div>
+        <button type="button" class="close" data-dismiss="modal" style="color:white; opacity:1;"><span>&times;</span></button>
+      </div>
+
+      <div class="modal-body" style="padding:0;">
+        <ul class="nav nav-tabs" style="padding: 0 10px; background:#f8f9fa; border-bottom: 2px solid #dee2e6; flex-wrap:nowrap; overflow-x:auto;">
+          <li class="nav-item"><a class="nav-link active" data-toggle="tab" href="#rec-overview" style="font-weight:600; font-size:12px; white-space:nowrap;"><i class="fas fa-info-circle"></i> Overview</a></li>
+          <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#rec-browse" style="font-weight:600; font-size:12px; white-space:nowrap;"><i class="fas fa-th-large"></i> Browsing</a></li>
+          <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#rec-detail" style="font-weight:600; font-size:12px; white-space:nowrap;"><i class="fas fa-eye"></i> Recipe Detail</a></li>
+          <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#rec-edit" style="font-weight:600; font-size:12px; white-space:nowrap;"><i class="fas fa-edit"></i> Add / Edit</a></li>
+          <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#rec-matcher" style="font-weight:600; font-size:12px; white-space:nowrap;"><i class="fas fa-search"></i> What Can I Make?</a></li>
+          <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#rec-mealplans" style="font-weight:600; font-size:12px; white-space:nowrap;"><i class="fas fa-calendar-alt"></i> Meal Plans</a></li>
+          <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#rec-settings" style="font-weight:600; font-size:12px; white-space:nowrap;"><i class="fas fa-cog"></i> Settings</a></li>
+          <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#rec-tips" style="font-weight:600; font-size:12px; white-space:nowrap;"><i class="fas fa-lightbulb"></i> Tips</a></li>
+        </ul>
+
+        <div class="tab-content" style="padding: 22px;">
+
+          <!-- ===== OVERVIEW ===== -->
+          <div class="tab-pane fade show active" id="rec-overview">
+            <div style="display:flex; align-items:flex-start; gap:16px; margin-bottom:24px;">
+              <div style="width:50px; height:50px; border-radius:12px; background:linear-gradient(135deg,#28a745,#20c997); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                <i class="fas fa-utensils" style="color:white; font-size:22px;"></i>
+              </div>
+              <div>
+                <h5 style="font-weight:700; color:#2c3e50; margin-bottom:6px;">What is Recipe Management?</h5>
+                <p style="color:#6c757d; font-size:14px; line-height:1.7;">Recipe Management is your complete digital cookbook. Store, browse, and cook from your entire recipe collection. Plan your weekly meals, generate shopping lists, and use smart tools like the ingredient matcher and cooking calculator.</p>
+              </div>
+            </div>
+            <h6 style="font-weight:700; color:#2c3e50; margin-bottom:14px; border-bottom:2px solid #28a745; padding-bottom:6px;"><i class="fas fa-star" style="color:#28a745;"></i> Key Features</h6>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:20px;">
+              <div style="background:#f0fff4; border:1px solid #b2dfdb; border-radius:8px; padding:12px;"><div style="font-weight:600; color:#28a745; margin-bottom:3px;"><i class="fas fa-th-large"></i> 3 View Modes</div><div style="font-size:12px; color:#6c757d;">Browse in Grid, List, or Book (ring-binder) view.</div></div>
+              <div style="background:#f0fff4; border:1px solid #b2dfdb; border-radius:8px; padding:12px;"><div style="font-weight:600; color:#28a745; margin-bottom:3px;"><i class="fas fa-filter"></i> Smart Filters</div><div style="font-size:12px; color:#6c757d;">Filter by course, category, protein, author, or search by name or ingredient.</div></div>
+              <div style="background:#f0fff4; border:1px solid #b2dfdb; border-radius:8px; padding:12px;"><div style="font-weight:600; color:#28a745; margin-bottom:3px;"><i class="fas fa-shopping-cart"></i> Shopping Lists</div><div style="font-size:12px; color:#6c757d;">Per-recipe or whole meal-plan shopping lists with pantry deduction.</div></div>
+              <div style="background:#f0fff4; border:1px solid #b2dfdb; border-radius:8px; padding:12px;"><div style="font-weight:600; color:#28a745; margin-bottom:3px;"><i class="fas fa-fire"></i> Cooking Calculator</div><div style="font-size:12px; color:#6c757d;">Enter serving time and meat weight — get a full cooking schedule.</div></div>
+              <div style="background:#f0fff4; border:1px solid #b2dfdb; border-radius:8px; padding:12px;"><div style="font-weight:600; color:#28a745; margin-bottom:3px;"><i class="fas fa-search"></i> What Can I Make?</div><div style="font-size:12px; color:#6c757d;">Select ingredients you have and find recipes with % match scores.</div></div>
+              <div style="background:#f0fff4; border:1px solid #b2dfdb; border-radius:8px; padding:12px;"><div style="font-weight:600; color:#28a745; margin-bottom:3px;"><i class="fas fa-calendar-alt"></i> Meal Plans</div><div style="font-size:12px; color:#6c757d;">Plan up to 7 days of meals and generate a weekly shopping list.</div></div>
+              <div style="background:#f0fff4; border:1px solid #b2dfdb; border-radius:8px; padding:12px;"><div style="font-weight:600; color:#28a745; margin-bottom:3px;"><i class="fas fa-robot"></i> AI Import</div><div style="font-size:12px; color:#6c757d;">Paste any recipe and let AI parse it into a structured format automatically.</div></div>
+              <div style="background:#f0fff4; border:1px solid #b2dfdb; border-radius:8px; padding:12px;"><div style="font-weight:600; color:#28a745; margin-bottom:3px;"><i class="fas fa-heart"></i> Favourites</div><div style="font-size:12px; color:#6c757d;">Mark recipes as favourites and filter to view only your favourite collection.</div></div>
+            </div>
+          </div>
+
+          <!-- ===== BROWSING ===== -->
+          <div class="tab-pane fade" id="rec-browse">
+            <h6 style="font-weight:700; color:#2c3e50; margin-bottom:16px; border-bottom:2px solid #28a745; padding-bottom:6px;"><i class="fas fa-th-large" style="color:#28a745;"></i> Browsing Your Recipe Collection</h6>
+
+            <h6 style="font-weight:600; color:#2c3e50; margin-bottom:10px;">View Modes</h6>
+            <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-bottom:20px;">
+              <div style="background:#f8f9fa; border-radius:8px; padding:12px; border-top:3px solid #28a745; text-align:center;">
+                <i class="fas fa-th-large" style="color:#28a745; font-size:20px; margin-bottom:6px; display:block;"></i>
+                <div style="font-weight:600; color:#2c3e50; font-size:13px; margin-bottom:4px;">Grid</div>
+                <div style="font-size:11px; color:#6c757d;">Photo cards with time, servings, difficulty and tags. Hover to reveal actions.</div>
+              </div>
+              <div style="background:#f8f9fa; border-radius:8px; padding:12px; border-top:3px solid #17a2b8; text-align:center;">
+                <i class="fas fa-list" style="color:#17a2b8; font-size:20px; margin-bottom:6px; display:block;"></i>
+                <div style="font-weight:600; color:#2c3e50; font-size:13px; margin-bottom:4px;">List</div>
+                <div style="font-size:11px; color:#6c757d;">Compact rows with thumbnail, name, tags, time and difficulty.</div>
+              </div>
+              <div style="background:#f8f9fa; border-radius:8px; padding:12px; border-top:3px solid #8d6e63; text-align:center;">
+                <i class="fas fa-book-open" style="color:#8d6e63; font-size:20px; margin-bottom:6px; display:block;"></i>
+                <div style="font-weight:600; color:#2c3e50; font-size:13px; margin-bottom:4px;">Book</div>
+                <div style="font-size:11px; color:#6c757d;">Ring-binder style. 3, 6 or 9 per page. Click a recipe for full detail.</div>
+              </div>
+            </div>
+
+            <h6 style="font-weight:600; color:#2c3e50; margin-bottom:10px;">Filters</h6>
+            <p style="font-size:13px; color:#6c757d; margin-bottom:10px;">Click <strong>Recipe Filters</strong> to expand. All dropdowns support multi-select — pick several courses, categories or proteins at once. Active filters are shown as removable tags.</p>
+            <div style="background:#f8f9fa; border-radius:8px; padding:12px; font-size:12px; color:#6c757d; margin-bottom:16px; display:grid; grid-template-columns:1fr 1fr; gap:6px;">
+              <div><i class="fas fa-search" style="color:#28a745; width:14px;"></i> Search by recipe name or ingredient</div>
+              <div><i class="fas fa-utensils" style="color:#28a745; width:14px;"></i> Courses — Starter, Main, Side, Dessert…</div>
+              <div><i class="fas fa-tag" style="color:#28a745; width:14px;"></i> Categories — Greek, Italian, Grilled…</div>
+              <div><i class="fas fa-drumstick-bite" style="color:#28a745; width:14px;"></i> Proteins — Chicken, Lamb, Vegetarian…</div>
+              <div><i class="fas fa-user-edit" style="color:#28a745; width:14px;"></i> Author — who created the recipe</div>
+              <div><i class="fas fa-heart" style="color:#dc3545; width:14px;"></i> Favourites button — show only favourites</div>
+            </div>
+
+            <h6 style="font-weight:600; color:#2c3e50; margin-bottom:8px;">A–Z Letter Filter</h6>
+            <p style="font-size:13px; color:#6c757d; margin-bottom:16px;">Click any green letter to show only recipes starting with that letter. Grey letters have no recipes. Click the active letter again to clear it.</p>
+
+            <h6 style="font-weight:600; color:#2c3e50; margin-bottom:8px;">Card / Row Actions</h6>
+            <div style="display:flex; gap:6px; flex-wrap:wrap;">
+              <span style="background:#f8f9fa; border-radius:6px; padding:6px 10px; font-size:12px; color:#6c757d;"><span style="background:#28a745; color:white; padding:1px 6px; border-radius:3px; margin-right:4px;"><i class="fas fa-eye"></i></span>View</span>
+              <span style="background:#f8f9fa; border-radius:6px; padding:6px 10px; font-size:12px; color:#6c757d;"><span style="background:#ffc107; color:white; padding:1px 6px; border-radius:3px; margin-right:4px;"><i class="fas fa-edit"></i></span>Edit</span>
+              <span style="background:#f8f9fa; border-radius:6px; padding:6px 10px; font-size:12px; color:#6c757d;"><span style="background:#17a2b8; color:white; padding:1px 6px; border-radius:3px; margin-right:4px;"><i class="fas fa-copy"></i></span>Duplicate</span>
+              <span style="background:#f8f9fa; border-radius:6px; padding:6px 10px; font-size:12px; color:#6c757d;"><span style="background:#dc3545; color:white; padding:1px 6px; border-radius:3px; margin-right:4px;"><i class="fas fa-trash"></i></span>Delete</span>
+              <span style="background:#f8f9fa; border-radius:6px; padding:6px 10px; font-size:12px; color:#6c757d;"><i class="fas fa-heart" style="color:#e74c3c; margin-right:4px;"></i>Toggle favourite</span>
+            </div>
+          </div>
+
+          <!-- ===== RECIPE DETAIL ===== -->
+          <div class="tab-pane fade" id="rec-detail">
+            <h6 style="font-weight:700; color:#2c3e50; margin-bottom:16px; border-bottom:2px solid #28a745; padding-bottom:6px;"><i class="fas fa-eye" style="color:#28a745;"></i> Viewing a Recipe</h6>
+            <p style="font-size:13px; color:#6c757d; margin-bottom:16px;">The recipe header shows prep time, cook time, total time, servings, difficulty, course/category/protein tags and the author. Ingredients are displayed in two columns with weight equivalents shown in grey. Instructions are numbered and grouped by stage.</p>
+
+            <div style="display:flex; flex-direction:column; gap:12px; margin-bottom:4px;">
+
+              <div style="background:#f8f9fa; border-radius:8px; padding:14px; border-left:4px solid #28a745;">
+                <div style="font-weight:600; color:#2c3e50; margin-bottom:6px;"><i class="fas fa-shopping-cart" style="color:#28a745;"></i> Shopping List — 3 Steps</div>
+                <div style="font-size:13px; color:#6c757d; line-height:1.8;">
+                  <strong>Step 1 — Servings:</strong> Set how many servings you need. All ingredient quantities scale automatically.<br>
+                  <strong>Step 2 — Pantry review:</strong> Tick any ingredients you already have at home — they are excluded from the list.<br>
+                  <strong>Step 3 — Your list:</strong> Final shopping list grouped by category. Share via <strong>Print</strong>, <strong>Copy</strong>, <strong>Email</strong>, or <strong>WhatsApp</strong>.
+                </div>
+              </div>
+
+              <div style="background:#f8f9fa; border-radius:8px; padding:14px; border-left:4px solid #fd7e14;">
+                <div style="font-weight:600; color:#2c3e50; margin-bottom:6px;"><i class="fas fa-fire" style="color:#fd7e14;"></i> Calculate Cooking Times</div>
+                <div style="font-size:13px; color:#6c757d; line-height:1.7;">
+                  For braai/BBQ and oven recipes. Enter your <strong>desired serving time</strong> and <strong>meat weight (grams)</strong>. The calculator works backwards to produce a full schedule:
+                  <div style="margin-top:8px; display:flex; flex-direction:column; gap:3px;">
+                    <div><i class="fas fa-fire" style="color:#fd7e14; width:18px;"></i> <strong>Light Fire</strong> — when to start the fire</div>
+                    <div><i class="fas fa-play-circle" style="color:#28a745; width:18px;"></i> <strong>Start Cooking</strong> — when to put the meat on</div>
+                    <div><i class="fas fa-check-circle" style="color:#28a745; width:18px;"></i> <strong>Finish Cooking / Start Resting</strong></div>
+                    <div><i class="fas fa-cut" style="color:#6c757d; width:18px;"></i> <strong>Start Cutting &amp; Making Sauce</strong></div>
+                    <div><i class="fas fa-concierge-bell" style="color:#6f42c1; width:18px;"></i> <strong>Serving Time</strong> — your target time</div>
+                  </div>
+                  The schedule can also be accessed directly from the Recipe View page as a pop-up calculator using the serving time and meat weight you enter. Click <strong>Print Schedule</strong> to keep a copy.
+                </div>
+              </div>
+
+              <div style="background:#f8f9fa; border-radius:8px; padding:14px; border-left:4px solid #17a2b8;">
+                <div style="font-weight:600; color:#2c3e50; margin-bottom:6px;"><i class="fas fa-file-pdf" style="color:#17a2b8;"></i> View Document</div>
+                <div style="font-size:13px; color:#6c757d;">Opens the attached PDF document (if one has been uploaded for this recipe) in the browser.</div>
+              </div>
+
+              <div style="background:#f8f9fa; border-radius:8px; padding:14px; border-left:4px solid #6c757d;">
+                <div style="font-weight:600; color:#2c3e50; margin-bottom:6px;"><i class="fas fa-print" style="color:#6c757d;"></i> Print Recipe</div>
+                <div style="font-size:13px; color:#6c757d;">Sends the recipe to your printer in a clean, formatted layout.</div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- ===== ADD / EDIT ===== -->
+          <div class="tab-pane fade" id="rec-edit">
+            <h6 style="font-weight:700; color:#2c3e50; margin-bottom:16px; border-bottom:2px solid #28a745; padding-bottom:6px;"><i class="fas fa-edit" style="color:#28a745;"></i> Adding and Editing Recipes</h6>
+
+            <p style="font-size:13px; color:#6c757d; margin-bottom:14px;">Click <strong>Add Recipe → Manual Entry</strong> to create a recipe from scratch, or <strong>Add Recipe → AI Import</strong> to paste any recipe text and let AI structure it for you. Click the yellow Edit button on any recipe to update it.</p>
+
+            <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:16px;">
+
+              <div style="background:#f8f9fa; border-radius:8px; padding:12px; border-left:4px solid #28a745;">
+                <div style="font-weight:700; color:#2c3e50; margin-bottom:4px; font-size:13px;"><span style="background:#28a745; color:white; border-radius:50%; padding:1px 6px; margin-right:6px; font-size:11px;">1</span> Basic Information</div>
+                <div style="font-size:12px; color:#6c757d;">Recipe name, description, author, and photo (JPG/PNG/WebP, max 5MB, recommended 800×600px).</div>
+              </div>
+
+              <div style="background:#f8f9fa; border-radius:8px; padding:12px; border-left:4px solid #28a745;">
+                <div style="font-weight:700; color:#2c3e50; margin-bottom:4px; font-size:13px;"><span style="background:#28a745; color:white; border-radius:50%; padding:1px 6px; margin-right:6px; font-size:11px;">2</span> Time &amp; Servings</div>
+                <div style="font-size:12px; color:#6c757d;">Prep time, cook time (total is calculated automatically), and number of servings.</div>
+              </div>
+
+              <div style="background:#f8f9fa; border-radius:8px; padding:12px; border-left:4px solid #28a745;">
+                <div style="font-weight:700; color:#2c3e50; margin-bottom:4px; font-size:13px;"><span style="background:#28a745; color:white; border-radius:50%; padding:1px 6px; margin-right:6px; font-size:11px;">3</span> Classification</div>
+                <div style="font-size:12px; color:#6c757d;">Assign one or more Courses and Categories (multi-select with chips). Set difficulty level. You can add new courses or categories on the fly.</div>
+              </div>
+
+              <div style="background:#f8f9fa; border-radius:8px; padding:12px; border-left:4px solid #28a745;">
+                <div style="font-weight:700; color:#2c3e50; margin-bottom:4px; font-size:13px;"><span style="background:#28a745; color:white; border-radius:50%; padding:1px 6px; margin-right:6px; font-size:11px;">4</span> Dietary Information</div>
+                <div style="font-size:12px; color:#6c757d;">Tick "Vegetarian" or select one or more proteins. You can add new proteins on the fly.</div>
+              </div>
+
+              <div style="background:#f8f9fa; border-radius:8px; padding:12px; border-left:4px solid #28a745;">
+                <div style="font-weight:700; color:#2c3e50; margin-bottom:4px; font-size:13px;"><span style="background:#28a745; color:white; border-radius:50%; padding:1px 6px; margin-right:6px; font-size:11px;">5</span> Ingredients</div>
+                <div style="font-size:12px; color:#6c757d;">Enter quantity, measurement unit, ingredient name, preparation note, and group (e.g. "Herb Mix"). Ingredient fields are colour-coded: <strong style="color:#28a745;">green</strong> = valid existing ingredient, <strong style="color:#dc3545;">red</strong> = new item that will be added. Rows can be reordered by dragging.</div>
+              </div>
+
+              <div style="background:#f8f9fa; border-radius:8px; padding:12px; border-left:4px solid #28a745;">
+                <div style="font-weight:700; color:#2c3e50; margin-bottom:4px; font-size:13px;"><span style="background:#28a745; color:white; border-radius:50%; padding:1px 6px; margin-right:6px; font-size:11px;">6</span> Instructions</div>
+                <div style="font-size:12px; color:#6c757d;">Numbered steps with optional group headings (e.g. "Ordering", "Pre-Preparation", "Cooking"). Steps can be reordered by dragging. Use <strong>Check Spelling</strong> to run a spell-check on all instruction text.</div>
+              </div>
+
+              <div style="background:#f8f9fa; border-radius:8px; padding:12px; border-left:4px solid #28a745;">
+                <div style="font-weight:700; color:#2c3e50; margin-bottom:4px; font-size:13px;"><span style="background:#28a745; color:white; border-radius:50%; padding:1px 6px; margin-right:6px; font-size:11px;">7</span> Document Attachment</div>
+                <div style="font-size:12px; color:#6c757d;">Upload a PDF, Word, Excel, JPG or PNG (max 5MB). If a document already exists, choose to <strong>Replace</strong> it or <strong>Add to existing</strong> (merges PDFs). You can also delete the current document.</div>
+              </div>
+
+              <div style="background:#f8f9fa; border-radius:8px; padding:12px; border-left:4px solid #fd7e14;">
+                <div style="font-weight:700; color:#2c3e50; margin-bottom:4px; font-size:13px;"><span style="background:#fd7e14; color:white; border-radius:50%; padding:1px 6px; margin-right:6px; font-size:11px;">8</span> Cooking Calculator (optional)</div>
+                <div style="font-size:12px; color:#6c757d;">For braai/BBQ or oven recipes. Select cooking method and enter: Serving Time, Fire Lighting Time, Meat Weight, Resting Time, Cutting &amp; Sauce time, Rate 1 and Rate 2 (mins per 500g). The live cooking schedule updates as you type and is saved with the recipe.</div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- ===== WHAT CAN I MAKE ===== -->
+          <div class="tab-pane fade" id="rec-matcher">
+            <h6 style="font-weight:700; color:#2c3e50; margin-bottom:16px; border-bottom:2px solid #28a745; padding-bottom:6px;"><i class="fas fa-search" style="color:#28a745;"></i> What Can I Make?</h6>
+
+            <div style="display:flex; align-items:flex-start; gap:14px; margin-bottom:20px;">
+              <div style="width:44px; height:44px; border-radius:50%; background:#28a745; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                <i class="fas fa-search" style="color:white; font-size:18px;"></i>
+              </div>
+              <p style="font-size:14px; color:#6c757d; line-height:1.7; margin:0;">Click <strong>What Can I Make?</strong> from the main toolbar. Select the ingredients you currently have at home and the system finds all recipes you can make — ranked by how well your ingredients match each recipe.</p>
+            </div>
+
+            <div style="display:flex; flex-direction:column; gap:12px; margin-bottom:20px;">
+              <div style="background:#f8f9fa; border-radius:8px; padding:12px; border-left:4px solid #28a745; font-size:13px; color:#6c757d;">
+                <strong style="color:#2c3e50;">Selecting ingredients:</strong> Ingredients are grouped by category (Baking, Dairy, Vegetables, Meat, etc.). Click a category header to expand it. Tick individual ingredients or use <strong>Select All</strong> to tick the whole category. Use the search box to find a specific ingredient quickly.
+              </div>
+              <div style="background:#f8f9fa; border-radius:8px; padding:12px; border-left:4px solid #17a2b8; font-size:13px; color:#6c757d;">
+                <strong style="color:#2c3e50;">Automatic inclusions:</strong> Herbs, spices, oil, and water are automatically included in every search — you don't need to tick them.
+              </div>
+              <div style="background:#f8f9fa; border-radius:8px; padding:12px; border-left:4px solid #28a745; font-size:13px; color:#6c757d;">
+                <strong style="color:#2c3e50;">Results:</strong> Each matching recipe shows a <strong>% match score</strong>, how many ingredients you have vs the total, and a list of missing ingredients. Missing proteins are highlighted in red. Click any result to open the full recipe.
+              </div>
+              <div style="background:#f8f9fa; border-radius:8px; padding:12px; border-left:4px solid #ffc107; font-size:13px; color:#6c757d;">
+                <strong style="color:#2c3e50;">Modifying selections:</strong> After results are shown, click <strong>"Click to modify selections"</strong> at the top to go back and adjust your ingredient choices without starting over.
+              </div>
+            </div>
+
+            <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px;">
+              <div style="background:#f0fff4; border:1px solid #28a745; border-radius:8px; padding:12px; text-align:center;">
+                <div style="font-size:18px; font-weight:700; color:#28a745;">100%</div>
+                <div style="font-size:11px; color:#28a745; font-weight:600;">Perfect Match</div>
+                <div style="font-size:11px; color:#6c757d; margin-top:4px;">You have everything needed</div>
+              </div>
+              <div style="background:#fffbf0; border:1px solid #ffc107; border-radius:8px; padding:12px; text-align:center;">
+                <div style="font-size:18px; font-weight:700; color:#e6a817;">80–99%</div>
+                <div style="font-size:11px; color:#e6a817; font-weight:600;">Good Match</div>
+                <div style="font-size:11px; color:#6c757d; margin-top:4px;">Only 1–2 ingredients missing</div>
+              </div>
+              <div style="background:#f0f9ff; border:1px solid #17a2b8; border-radius:8px; padding:12px; text-align:center;">
+                <div style="font-size:18px; font-weight:700; color:#17a2b8;">&lt;80%</div>
+                <div style="font-size:11px; color:#17a2b8; font-weight:600;">Partial Match</div>
+                <div style="font-size:11px; color:#6c757d; margin-top:4px;">Several ingredients missing</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ===== MEAL PLANS ===== -->
+          <div class="tab-pane fade" id="rec-mealplans">
+            <h6 style="font-weight:700; color:#2c3e50; margin-bottom:16px; border-bottom:2px solid #28a745; padding-bottom:6px;"><i class="fas fa-calendar-alt" style="color:#28a745;"></i> Meal Plans</h6>
+
+            <p style="font-size:13px; color:#6c757d; margin-bottom:16px;">Click <strong>Meal Plans</strong> from the toolbar to manage your weekly meal schedules. View as a list or a calendar. Each plan has a name, a date range of 1–7 days, and recipes assigned to each day.</p>
+
+            <div style="display:flex; flex-direction:column; gap:12px; margin-bottom:20px;">
+
+              <div style="background:#f8f9fa; border-radius:8px; padding:12px; border-left:4px solid #28a745; font-size:13px; color:#6c757d;">
+                <strong style="color:#2c3e50;"><i class="fas fa-plus-circle" style="color:#28a745;"></i> Creating a Meal Plan:</strong> Give it a name and set a start and end date (1–7 days). Then assign recipes to each day and set the number of servings per recipe.
+              </div>
+
+              <div style="background:#f8f9fa; border-radius:8px; padding:12px; border-left:4px solid #17a2b8; font-size:13px; color:#6c757d;">
+                <strong style="color:#2c3e50;"><i class="fas fa-calendar" style="color:#17a2b8;"></i> Calendar View:</strong> A mini calendar shows dots on days that have meals planned. Click a day to view and manage that day's recipes. Add or remove recipes directly from the calendar view.
+              </div>
+
+              <div style="background:#f8f9fa; border-radius:8px; padding:12px; border-left:4px solid #28a745; font-size:13px; color:#6c757d;">
+                <strong style="color:#2c3e50;"><i class="fas fa-shopping-cart" style="color:#28a745;"></i> Meal Plan Shopping List:</strong> Click the green <strong>List</strong> button on any meal plan. The system consolidates all ingredients from every recipe across all days into one master shopping list — quantities are totalled across recipes. Tick off what you already have in your pantry and only the remaining items appear on the final list. Share via Print, Copy, Email or WhatsApp.
+              </div>
+
+              <div style="background:#f8f9fa; border-radius:8px; padding:12px; border-left:4px solid #ffc107; font-size:13px; color:#6c757d;">
+                <strong style="color:#2c3e50;"><i class="fas fa-copy" style="color:#e6a817;"></i> Duplicate a Meal Plan:</strong> Creates a copy with a new name and new start date. The plan keeps the same duration and all the same recipes. Optionally tick <strong>Delete original after duplicating</strong> to effectively shift a plan to new dates.
+              </div>
+
+            </div>
+
+            <div style="background:#d4edda; border:1px solid #c3e6cb; border-radius:8px; padding:12px; font-size:13px; color:#155724;">
+              <i class="fas fa-lightbulb"></i> <strong>Tip:</strong> Use the Meal Plan Shopping List before your weekly grocery shop — it automatically combines all ingredient quantities across all recipes for the week into one consolidated list.
+            </div>
+          </div>
+
+          <!-- ===== SETTINGS ===== -->
+          <div class="tab-pane fade" id="rec-settings">
+            <h6 style="font-weight:700; color:#2c3e50; margin-bottom:16px; border-bottom:2px solid #28a745; padding-bottom:6px;"><i class="fas fa-cog" style="color:#28a745;"></i> Settings</h6>
+
+            <p style="font-size:13px; color:#6c757d; margin-bottom:16px;">The <strong>Settings</strong> dropdown contains four management pages that control how the system handles ingredients, units and conversions — all of which affect shopping list aggregation.</p>
+
+            <div style="display:flex; flex-direction:column; gap:14px;">
+
+              <div style="background:#f8f9fa; border-radius:8px; padding:14px; border-left:4px solid #6f42c1;">
+                <div style="font-weight:700; color:#2c3e50; margin-bottom:6px; font-size:13px;"><i class="fas fa-exchange-alt" style="color:#6f42c1;"></i> Unit Conversions</div>
+                <div style="font-size:12px; color:#6c757d; line-height:1.7;">
+                  Defines how units convert to each other for shopping list consolidation. For example, <em>1 bag → 4 kg</em> or <em>1 cup → 240 ml</em>.<br><br>
+                  <strong>Generic</strong> conversions apply to all ingredients (e.g. 1 cup = 240ml for any liquid).<br>
+                  <strong>Specific</strong> conversions apply to one ingredient only (e.g. 1 cup Flour = 125g).<br><br>
+                  The <strong>Missing Conversions</strong> button highlights combinations that exist in your recipes but have no conversion defined yet.
+                </div>
+              </div>
+
+              <div style="background:#f8f9fa; border-radius:8px; padding:14px; border-left:4px solid #17a2b8;">
+                <div style="font-weight:700; color:#2c3e50; margin-bottom:6px; font-size:13px;"><i class="fas fa-tags" style="color:#17a2b8;"></i> Categories</div>
+                <div style="font-size:12px; color:#6c757d; line-height:1.7;">
+                  Manages ingredient categories (Baking, Dairy, Vegetables, Meat, etc.). Categories are used to group ingredients in the <strong>What Can I Make?</strong> selector and on shopping lists. Each category shows how many ingredients use it. You can add, rename, or delete categories.
+                </div>
+              </div>
+
+              <div style="background:#f8f9fa; border-radius:8px; padding:14px; border-left:4px solid #6c757d;">
+                <div style="font-weight:700; color:#2c3e50; margin-bottom:6px; font-size:13px;"><i class="fas fa-ruler" style="color:#6c757d;"></i> Units (Measurement Units)</div>
+                <div style="font-size:12px; color:#6c757d; line-height:1.7;">
+                  Manages all measurement units available in the recipe editor (cup, tablespoon, gram, kilogram, etc.). Each unit has a singular and plural form, an optional abbreviation, and a type: <strong>Weight</strong>, <strong>Volume</strong>, <strong>Count</strong>, or <strong>Other</strong>. The type determines rounding behaviour in shopping lists.
+                </div>
+              </div>
+
+              <div style="background:#f8f9fa; border-radius:8px; padding:14px; border-left:4px solid #28a745;">
+                <div style="font-weight:700; color:#2c3e50; margin-bottom:6px; font-size:13px;"><i class="fas fa-balance-scale" style="color:#28a745;"></i> Ingredients (Shopping Units)</div>
+                <div style="font-size:12px; color:#6c757d; line-height:1.7;">
+                  Sets the preferred shopping unit for specific ingredients. When a shopping list is generated, ingredients with a defined shopping unit are displayed in that unit (e.g. Butter always shown in grams, Garlic always in cloves). This ensures shopping lists are presented in the most practical unit for each ingredient.
+                </div>
+              </div>
+
+            </div>
+
+            <div style="background:#fff3cd; border:1px solid #ffc107; border-radius:8px; padding:12px; font-size:12px; color:#856404; margin-top:16px;">
+              <i class="fas fa-exclamation-triangle"></i> <strong>Note:</strong> These settings affect how shopping lists are calculated and how units are aggregated. If your shopping list shows unexpected quantities, check Unit Conversions for missing or incorrect conversion rules.
+            </div>
+          </div>
+
+          <!-- ===== TIPS ===== -->
+          <div class="tab-pane fade" id="rec-tips">
+            <h6 style="font-weight:700; color:#2c3e50; margin-bottom:16px; border-bottom:2px solid #28a745; padding-bottom:6px;"><i class="fas fa-lightbulb" style="color:#28a745;"></i> Tips and Best Practices</h6>
+            <div style="display:flex; flex-direction:column; gap:14px;">
+
+              <div style="display:flex; gap:14px; align-items:flex-start;">
+                <div style="width:36px; height:36px; border-radius:50%; background:#28a745; display:flex; align-items:center; justify-content:center; flex-shrink:0;"><i class="fas fa-robot" style="color:white; font-size:14px;"></i></div>
+                <div><div style="font-weight:600; color:#2c3e50; font-size:14px; margin-bottom:4px;">Use AI Import to add recipes fast</div><div style="font-size:13px; color:#6c757d;">Find a recipe online, copy the text, and paste it into AI Import. The system structures it automatically — just review and save. Much faster than manual entry.</div></div>
+              </div>
+
+              <div style="display:flex; gap:14px; align-items:flex-start;">
+                <div style="width:36px; height:36px; border-radius:50%; background:#28a745; display:flex; align-items:center; justify-content:center; flex-shrink:0;"><i class="fas fa-layer-group" style="color:white; font-size:14px;"></i></div>
+                <div><div style="font-weight:600; color:#2c3e50; font-size:14px; margin-bottom:4px;">Use ingredient and instruction groups</div><div style="font-size:13px; color:#6c757d;">Group related ingredients (e.g. "Herb Mix", "For the Sauce") and group instruction steps (e.g. "Pre-Preparation", "Cooking") to make complex recipes easy to follow.</div></div>
+              </div>
+
+              <div style="display:flex; gap:14px; align-items:flex-start;">
+                <div style="width:36px; height:36px; border-radius:50%; background:#28a745; display:flex; align-items:center; justify-content:center; flex-shrink:0;"><i class="fas fa-fire" style="color:white; font-size:14px;"></i></div>
+                <div><div style="font-weight:600; color:#2c3e50; font-size:14px; margin-bottom:4px;">Set up the Cooking Calculator for braai recipes</div><div style="font-size:13px; color:#6c757d;">For any braai, BBQ or oven roast recipe, fill in the cooking calculator fields when editing. Then on the day, just enter the meat weight and target serving time to get the full schedule.</div></div>
+              </div>
+
+              <div style="display:flex; gap:14px; align-items:flex-start;">
+                <div style="width:36px; height:36px; border-radius:50%; background:#28a745; display:flex; align-items:center; justify-content:center; flex-shrink:0;"><i class="fas fa-shopping-cart" style="color:white; font-size:14px;"></i></div>
+                <div><div style="font-weight:600; color:#2c3e50; font-size:14px; margin-bottom:4px;">Use Meal Plans for your weekly shop</div><div style="font-size:13px; color:#6c757d;">Build a 7-day meal plan, then generate the shopping list. Tick off what's in your pantry and the list automatically contains only what you need to buy — nothing more.</div></div>
+              </div>
+
+              <div style="display:flex; gap:14px; align-items:flex-start;">
+                <div style="width:36px; height:36px; border-radius:50%; background:#28a745; display:flex; align-items:center; justify-content:center; flex-shrink:0;"><i class="fas fa-exchange-alt" style="color:white; font-size:14px;"></i></div>
+                <div><div style="font-weight:600; color:#2c3e50; font-size:14px; margin-bottom:4px;">Keep Unit Conversions up to date</div><div style="font-size:13px; color:#6c757d;">Check Settings → Unit Conversions → Missing Conversions regularly. Any undefined conversions prevent shopping list quantities from being properly aggregated across recipes.</div></div>
+              </div>
+
+              <div style="display:flex; gap:14px; align-items:flex-start;">
+                <div style="width:36px; height:36px; border-radius:50%; background:#28a745; display:flex; align-items:center; justify-content:center; flex-shrink:0;"><i class="fas fa-copy" style="color:white; font-size:14px;"></i></div>
+                <div><div style="font-weight:600; color:#2c3e50; font-size:14px; margin-bottom:4px;">Duplicate recipes to create variations</div><div style="font-size:13px; color:#6c757d;">Use the Duplicate button to copy a recipe, then tweak the copy. Great for creating vegetarian versions, different portion sizes, or regional variations without losing the original.</div></div>
+              </div>
+
+              <div style="display:flex; gap:14px; align-items:flex-start;">
+                <div style="width:36px; height:36px; border-radius:50%; background:#28a745; display:flex; align-items:center; justify-content:center; flex-shrink:0;"><i class="fas fa-book-open" style="color:white; font-size:14px;"></i></div>
+                <div><div style="font-weight:600; color:#2c3e50; font-size:14px; margin-bottom:4px;">Use Book View in the kitchen</div><div style="font-size:13px; color:#6c757d;">Switch to Book View for a clean, print-style reading experience. Navigate between recipes with the arrows and read ingredients and instructions side by side — ideal when cooking.</div></div>
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="modal-footer" style="background:#f8f9fa; border-top:1px solid #dee2e6;">
+        <small class="text-muted" style="flex:1;">Alivente Online — Recipe Management User Guide</small>
+        <button type="button" class="btn btn-success btn-sm" data-dismiss="modal"><i class="fas fa-times"></i> Close</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+<!-- ==================== END RECIPE HELP MODAL ==================== -->
 
 <script>
 function updateSearchPlaceholder() {

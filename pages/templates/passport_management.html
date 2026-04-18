@@ -1,11 +1,10 @@
 {% extends 'base.html' %}
 {% load static %}
 {% load humanize %}
-{% block title %}Passport/ID Management{% endblock %}
+{% block title %}Passport/Document Management{% endblock %}
 {% block content %}
 
 <style>
-/* Passport Filter Panel Styles */
 .passport-filter-panel {
     background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
     border: 1px solid #dee2e6;
@@ -14,7 +13,6 @@
     margin-bottom: 30px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
-
 .passport-filter-header {
     display: flex;
     justify-content: space-between;
@@ -24,7 +22,6 @@
     border-bottom: 2px solid #dee2e6;
     cursor: pointer;
 }
-
 .passport-filter-title {
     margin: 0;
     color: #2c3e50;
@@ -34,144 +31,25 @@
     gap: 8px;
     font-size: 18px;
 }
-
-.passport-filter-title i.fas {
-    color: #17a2b8;
-    font-size: 16px;
-}
-
-.passport-filter-toggle-icon {
-    transition: transform 0.3s ease;
-    margin-left: 8px;
-    font-size: 14px;
-}
-
-.passport-filter-content {
-    display: none;
-}
-
-.passport-filter-content.expanded {
-    display: block;
-}
-
-.passport-filter-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 20px;
-    align-items: end;
-    margin-bottom: 20px;
-}
-
-.passport-filter-group {
-    display: flex;
-    flex-direction: column;
-}
-
-.passport-filter-label {
-    font-weight: 500;
-    color: #495057;
-    margin-bottom: 6px;
-    font-size: 14px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-
-.passport-search-input-group {
-    display: flex;
-}
-
-.passport-search-input {
-    border: 2px solid #e9ecef;
-    border-radius: 8px 0 0 8px;
-    border-right: none;
-    padding: 10px 14px;
-    font-size: 14px;
-    background: white;
-    flex: 1;
-    height: 44px;
-}
-
-.passport-search-btn {
-    background: #17a2b8;
-    border: 2px solid #17a2b8;
-    border-left: none;
-    border-radius: 0 8px 8px 0;
-    color: white;
-    padding: 10px 16px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 44px;
-}
-
-.passport-filter-select {
-    border: 2px solid #e9ecef;
-    border-radius: 8px;
-    padding: 10px 14px;
-    font-size: 14px;
-    background: white;
-    width: 100%;
-    height: 44px;
-    cursor: pointer;
-    appearance: none;
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
-    background-position: right 12px center;
-    background-repeat: no-repeat;
-    background-size: 16px 12px;
-    padding-right: 40px;
-}
-
-.passport-active-filters {
-    margin-top: 16px;
-    padding-top: 16px;
-    border-top: 1px solid #dee2e6;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    flex-wrap: wrap;
-}
-
-.passport-filter-tags {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-}
-
-.passport-filter-tag {
-    background: #17a2b8;
-    color: white;
-    padding: 4px 12px;
-    border-radius: 16px;
-    font-size: 12px;
-    font-weight: 500;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-}
-
-.passport-remove-tag {
-    background: rgba(255, 255, 255, 0.3);
-    border: none;
-    color: white;
-    border-radius: 50%;
-    width: 16px;
-    height: 16px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    font-size: 10px;
-    line-height: 1;
-}
-
-.passport-remove-tag:hover {
-    background: rgba(255, 255, 255, 0.5);
-}
+.passport-filter-title i.fas { color: #17a2b8; font-size: 16px; }
+.passport-filter-toggle-icon { transition: transform 0.3s ease; margin-left: 8px; font-size: 14px; }
+.passport-filter-content { display: none; }
+.passport-filter-content.expanded { display: block; }
+.passport-filter-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; align-items: end; margin-bottom: 20px; }
+.passport-filter-group { display: flex; flex-direction: column; }
+.passport-filter-label { font-weight: 500; color: #495057; margin-bottom: 6px; font-size: 14px; display: flex; align-items: center; gap: 6px; }
+.passport-search-input-group { display: flex; }
+.passport-search-input { border: 2px solid #e9ecef; border-radius: 8px 0 0 8px; border-right: none; padding: 10px 14px; font-size: 14px; background: white; flex: 1; height: 44px; }
+.passport-search-btn { background: #17a2b8; border: 2px solid #17a2b8; border-left: none; border-radius: 0 8px 8px 0; color: white; padding: 10px 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; height: 44px; }
+.passport-filter-select { border: 2px solid #e9ecef; border-radius: 8px; padding: 10px 14px; font-size: 14px; background: white; width: 100%; height: 44px; cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e"); background-position: right 12px center; background-repeat: no-repeat; background-size: 16px 12px; padding-right: 40px; }
+.passport-active-filters { margin-top: 16px; padding-top: 16px; border-top: 1px solid #dee2e6; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.passport-filter-tags { display: flex; gap: 8px; flex-wrap: wrap; }
+.passport-filter-tag { background: #17a2b8; color: white; padding: 4px 12px; border-radius: 16px; font-size: 12px; font-weight: 500; display: flex; align-items: center; gap: 6px; }
+.passport-remove-tag { background: rgba(255,255,255,0.3); border: none; color: white; border-radius: 50%; width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 10px; line-height: 1; }
+.passport-remove-tag:hover { background: rgba(255,255,255,0.5); }
 </style>
 
-<h2><center>ALIVENTE ONLINE - PASSPORT/ID MANAGEMENT</center></h2>
+<h2><center>ALIVENTE ONLINE - PASSPORT/DOCUMENT MANAGEMENT</center></h2>
 <h4><center>UPLOAD / VIEW / DELETE</center></h4>
 <br/>
 
@@ -193,8 +71,11 @@
 </script>
 {% endfor %}
 
-<div style="display: flex ; justify-content: flex-end">
-    <a href="{% url 'personal_page' %}" class="btn btn-info" style="margin-right:16px" role="button">Back</a>
+<div style="display: flex; justify-content: flex-end; gap: 10px;">
+    <button type="button" class="btn btn-light btn-sm" data-toggle="modal" data-target="#documentHelpModal" title="Help" style="border:1px solid #dee2e6;">
+      <i class="fas fa-question-circle" style="color:#17a2b8;"></i> Help
+    </button>
+    <a href="{% url 'personal_page' %}" class="btn btn-info" role="button">Back</a>
 </div>
 <br/>
 
@@ -211,16 +92,11 @@
             <i class="fas fa-times-circle"></i> Clear All
         </button>
     </div>
-    
     <div class="passport-filter-content" id="passportFilterContent">
         <form action="{% url 'passport_management' %}" method="GET" id="passportFilterForm">
-            
             <div class="passport-filter-grid">
-                <!-- Holder Name Filter -->
                 <div class="passport-filter-group">
-                    <label class="passport-filter-label">
-                        <i class="fas fa-user"></i> Holder
-                    </label>
+                    <label class="passport-filter-label"><i class="fas fa-user"></i> Holder</label>
                     <select name="holder" class="form-control passport-filter-select" id="holderSelect">
                         <option value="">All Holders</option>
                         <option value="Demetri Manias" {% if selected_holder == 'Demetri Manias' %}selected{% endif %}>Demetri Manias</option>
@@ -229,12 +105,8 @@
                         <option value="Alexandra Manias" {% if selected_holder == 'Alexandra Manias' %}selected{% endif %}>Alexandra Manias</option>
                     </select>
                 </div>
-
-                <!-- Document Type Filter -->
                 <div class="passport-filter-group">
-                    <label class="passport-filter-label">
-                        <i class="fas fa-passport"></i> Type
-                    </label>
+                    <label class="passport-filter-label"><i class="fas fa-passport"></i> Type</label>
                     <select name="doc_type" class="form-control passport-filter-select" id="docTypeSelect">
                         <option value="">All Types</option>
                         <option value="passport" {% if selected_doc_type == 'passport' %}selected{% endif %}>Passport</option>
@@ -244,12 +116,8 @@
                         <option value="arc" {% if selected_doc_type == 'arc' %}selected{% endif %}>ARC</option>
                     </select>
                 </div>
-
-                <!-- Country Filter -->
                 <div class="passport-filter-group">
-                    <label class="passport-filter-label">
-                        <i class="fas fa-globe"></i> Country
-                    </label>
+                    <label class="passport-filter-label"><i class="fas fa-globe"></i> Country</label>
                     <select name="country" class="form-control passport-filter-select" id="countrySelect">
                         <option value="">All Countries</option>
                         <option value="Cyprus" {% if selected_country == 'Cyprus' %}selected{% endif %}>Cyprus</option>
@@ -258,12 +126,8 @@
                         <option value="Zimbabwe" {% if selected_country == 'Zimbabwe' %}selected{% endif %}>Zimbabwe</option>
                     </select>
                 </div>
-
-                <!-- Status Filter -->
                 <div class="passport-filter-group">
-                    <label class="passport-filter-label">
-                        <i class="fas fa-check-circle"></i> Status
-                    </label>
+                    <label class="passport-filter-label"><i class="fas fa-check-circle"></i> Status</label>
                     <select name="status" class="form-control passport-filter-select" id="statusSelect">
                         <option value="">All Statuses</option>
                         <option value="active" {% if selected_status == 'active' %}selected{% endif %}>Active</option>
@@ -272,8 +136,6 @@
                     </select>
                 </div>
             </div>
-
-            <!-- Active Filters Display -->
             <div class="passport-active-filters" id="passportActiveFilters" style="display: none;">
                 <span>Active filters:</span>
                 <div class="passport-filter-tags" id="passportFilterTags"></div>
@@ -287,27 +149,13 @@
 <table class="table table-bordered table-striped text-center" id="passportTable">
 <thead>
     <tr>
-        <th style="text-align: left; width: 16%; cursor: pointer;" onclick="sortTable(0)">
-            Passport/ID Holder Name <i class="fas fa-sort"></i>
-        </th>
-        <th style="text-align: center; width: 12%; cursor: pointer;" onclick="sortTable(1)">
-            Document Type <i class="fas fa-sort"></i>
-        </th>
-        <th style="text-align: center; width: 12%; cursor: pointer;" onclick="sortTable(2)">
-            Document Number <i class="fas fa-sort"></i>
-        </th>
-        <th style="text-align: center; width: 12%; cursor: pointer;" onclick="sortTable(3)">
-            Country of Issue <i class="fas fa-sort"></i>
-        </th>
-        <th style="text-align: center; width: 11%; cursor: pointer; white-space: nowrap;" onclick="sortTable(4)">
-            Date of Issue <i class="fas fa-sort"></i>
-        </th>
-        <th style="text-align: center; width: 11%; cursor: pointer; white-space: nowrap;" onclick="sortTable(5)">
-            Expiry Date <i class="fas fa-sort"></i>
-        </th>
-        <th style="text-align: center; width: 12%; cursor: pointer;" onclick="sortTable(6)">
-            Status <i class="fas fa-sort"></i>
-        </th>
+        <th style="text-align: left; width: 16%; cursor: pointer;" onclick="sortTable(0)">Passport/ID Holder Name <i class="fas fa-sort"></i></th>
+        <th style="text-align: center; width: 12%; cursor: pointer;" onclick="sortTable(1)">Document Type <i class="fas fa-sort"></i></th>
+        <th style="text-align: center; width: 12%; cursor: pointer;" onclick="sortTable(2)">Document Number <i class="fas fa-sort"></i></th>
+        <th style="text-align: center; width: 12%; cursor: pointer;" onclick="sortTable(3)">Country of Issue <i class="fas fa-sort"></i></th>
+        <th style="text-align: center; width: 11%; cursor: pointer; white-space: nowrap;" onclick="sortTable(4)">Date of Issue <i class="fas fa-sort"></i></th>
+        <th style="text-align: center; width: 11%; cursor: pointer; white-space: nowrap;" onclick="sortTable(5)">Expiry Date <i class="fas fa-sort"></i></th>
+        <th style="text-align: center; width: 12%; cursor: pointer;" onclick="sortTable(6)">Status <i class="fas fa-sort"></i></th>
         <th style="text-align: center; width: 14%">Actions</th>
     </tr>
 </thead>
@@ -316,18 +164,12 @@
     <tr>
         <td style="text-align: left">{{ passport.holder_name }}</td>
         <td style="text-align: center">
-            {% if passport.document_type == 'passport' %}
-                <span class="badge badge-primary">Passport</span>
-            {% elif passport.document_type == 'id' %}
-                <span class="badge badge-info">ID</span>
-            {% elif passport.document_type == 'drivers_license' %}
-                <span class="badge badge-secondary">Driver's License</span>
-            {% elif passport.document_type == 'visa' %}
-                <span class="badge badge-warning">Visa</span>
-            {% elif passport.document_type == 'arc' %}
-                <span class="badge badge-dark">ARC</span>
-            {% else %}
-                <span class="badge badge-secondary">{{ passport.get_document_type_display }}</span>
+            {% if passport.document_type == 'passport' %}<span class="badge badge-primary">Passport</span>
+            {% elif passport.document_type == 'id' %}<span class="badge badge-info">ID</span>
+            {% elif passport.document_type == 'drivers_license' %}<span class="badge badge-secondary">Driver's License</span>
+            {% elif passport.document_type == 'visa' %}<span class="badge badge-warning">Visa</span>
+            {% elif passport.document_type == 'arc' %}<span class="badge badge-dark">ARC</span>
+            {% else %}<span class="badge badge-secondary">{{ passport.get_document_type_display }}</span>
             {% endif %}
         </td>
         <td style="text-align: center">{{ passport.document_number|default:"-" }}</td>
@@ -338,13 +180,10 @@
                 {% now "Y-m-d" as today_date %}
                 {% with expiry_str=passport.expiry_date|date:"Y-m-d" %}
                     {% if expiry_str < today_date %}
-                        <!-- Already expired -->
                         <span style="color: red; font-weight: bold;">{{ expiry_str }}</span>
                     {% elif passport.expiring_soon %}
-                        <!-- Expiring within 6 months -->
                         <span style="color: red; font-weight: bold;">{{ expiry_str }}</span>
                     {% else %}
-                        <!-- More than 6 months away -->
                         {{ expiry_str }}
                     {% endif %}
                 {% endwith %}
@@ -353,67 +192,48 @@
             {% endif %}
         </td>
         <td style="text-align: center">
-            {% if passport.status == 'active' %}
-                <span class="badge badge-success">Active</span>
-            {% elif passport.status == 'renewal' %}
-                <span class="badge badge-warning">Applied for Renewal</span>
-            {% elif passport.status == 'inactive' %}
-                <span class="badge badge-secondary">Inactive</span>
-            {% else %}
-                <span class="badge badge-secondary">-</span>
+            {% if passport.status == 'active' %}<span class="badge badge-success">Active</span>
+            {% elif passport.status == 'renewal' %}<span class="badge badge-warning">Applied for Renewal</span>
+            {% elif passport.status == 'inactive' %}<span class="badge badge-secondary">Inactive</span>
+            {% else %}<span class="badge badge-secondary">-</span>
             {% endif %}
         </td>
         <td style="text-align: center">
             {% if passport.document_file %}
-                <!-- View, Edit, and Delete Buttons -->
-                <button type="button" class="btn btn-sm btn-success" onclick="viewDocument('{{ passport.document_file.url }}', '{{ passport.document_file.name }}', '{{ passport.holder_name }}')" title="View Document">
-                    <i class="fas fa-eye"></i>
-                </button>
-                <button type="button" class="btn btn-sm btn-warning" onclick="editDocument({{ passport.id }}, '{{ passport.holder_name }}', '{{ passport.document_type }}', '{{ passport.document_number }}', '{{ passport.country_of_issue }}', '{{ passport.date_of_issue|date:'Y-m-d' }}', '{{ passport.expiry_date|date:'Y-m-d' }}', '{{ passport.status }}')" title="Edit">
-                    <i class="fas fa-edit"></i>
-                </button>
-                <button type="button" class="btn btn-sm btn-danger" onclick="deleteDocument({{ passport.id }}, '{{ passport.holder_name }}')" title="Delete">
-                    <i class="fas fa-trash"></i>
-                </button>
+                <button type="button" class="btn btn-sm btn-success" onclick="viewDocument('{{ passport.document_file.url }}', '{{ passport.document_file.name }}', '{{ passport.holder_name }}')" title="View Document"><i class="fas fa-eye"></i></button>
+                <button type="button" class="btn btn-sm btn-warning" onclick="editDocument({{ passport.id }}, '{{ passport.holder_name }}', '{{ passport.document_type }}', '{{ passport.document_number }}', '{{ passport.country_of_issue }}', '{{ passport.date_of_issue|date:'Y-m-d' }}', '{{ passport.expiry_date|date:'Y-m-d' }}', '{{ passport.status }}')" title="Edit"><i class="fas fa-edit"></i></button>
+                <button type="button" class="btn btn-sm btn-danger" onclick="deleteDocument({{ passport.id }}, '{{ passport.holder_name }}')" title="Delete"><i class="fas fa-trash"></i></button>
             {% else %}
-                <!-- Upload and Edit Buttons -->
-                <button type="button" class="btn btn-sm btn-outline-primary" onclick="uploadDocument({{ passport.id }})" title="Upload Document">
-                    <i class="fas fa-upload"></i>
-                </button>
-                <button type="button" class="btn btn-sm btn-warning" onclick="editDocument({{ passport.id }}, '{{ passport.holder_name }}', '{{ passport.document_type }}', '{{ passport.document_number }}', '{{ passport.country_of_issue }}', '{{ passport.date_of_issue|date:'Y-m-d' }}', '{{ passport.expiry_date|date:'Y-m-d' }}', '{{ passport.status }}')" title="Edit">
-                    <i class="fas fa-edit"></i>
-                </button>
+                <button type="button" class="btn btn-sm btn-outline-primary" onclick="uploadDocument({{ passport.id }})" title="Upload Document"><i class="fas fa-upload"></i></button>
+                <button type="button" class="btn btn-sm btn-warning" onclick="editDocument({{ passport.id }}, '{{ passport.holder_name }}', '{{ passport.document_type }}', '{{ passport.document_number }}', '{{ passport.country_of_issue }}', '{{ passport.date_of_issue|date:'Y-m-d' }}', '{{ passport.expiry_date|date:'Y-m-d' }}', '{{ passport.status }}')" title="Edit"><i class="fas fa-edit"></i></button>
             {% endif %}
         </td>
     </tr>
     {% endfor %}
 </tbody>
-</table>    
+</table>
 </div>
 
-<!-- Add New Passport/ID Button -->
+<!-- Add New Button -->
 <div style="display: flex; justify-content: flex-start; margin-bottom: 20px;">
     <button type="button" class="btn btn-info" onclick="addNewDocument()">
         <i class="fas fa-plus"></i> Add New Passport/ID
     </button>
 </div>
 
-<!-- Add/Edit Document Modal -->
-<div class="modal fade" id="addEditModal" tabindex="-1" role="dialog" aria-labelledby="addEditModalLabel" aria-hidden="true">
+<!-- Add/Edit Modal -->
+<div class="modal fade" id="addEditModal" tabindex="-1" role="dialog" aria-hidden="true">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="addEditModalLabel">Add Passport/ID</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="$('#addEditModal').modal('hide');">
-          <span aria-hidden="true">&times;</span>
-        </button>
+        <button type="button" class="close" data-dismiss="modal" onclick="$('#addEditModal').modal('hide');"><span>&times;</span></button>
       </div>
       <form method="post" enctype="multipart/form-data" id="addEditForm">
         <div class="modal-body">
           {% csrf_token %}
           <input type="hidden" id="passport_id" name="passport_id">
           <input type="hidden" id="form_action" name="action" value="add">
-          
           <div class="form-group">
             <label for="holder_name">Passport/ID Holder Name: <span class="text-danger">*</span></label>
             <select class="form-control" id="holder_name" name="holder_name" required>
@@ -424,7 +244,6 @@
               <option value="Alexandra Manias">Alexandra Manias</option>
             </select>
           </div>
-
           <div class="form-group">
             <label for="document_type">Document Type: <span class="text-danger">*</span></label>
             <select class="form-control" id="document_type" name="document_type" required>
@@ -436,12 +255,10 @@
               <option value="arc">Alien Registration Card</option>
             </select>
           </div>
-
           <div class="form-group">
             <label for="document_number">Document Number: <span class="text-danger">*</span></label>
             <input type="text" class="form-control" id="document_number" name="document_number" required>
           </div>
-
           <div class="form-group">
             <label for="country_of_issue">Country of Issue: <span class="text-danger">*</span></label>
             <select class="form-control" id="country_of_issue" name="country_of_issue" required>
@@ -452,17 +269,14 @@
               <option value="Zimbabwe">Zimbabwe</option>
             </select>
           </div>
-
           <div class="form-group">
             <label for="date_of_issue">Date of Issue:</label>
             <input type="date" class="form-control" id="date_of_issue" name="date_of_issue">
           </div>
-
           <div class="form-group">
             <label for="expiry_date">Expiry Date:</label>
             <input type="date" class="form-control" id="expiry_date" name="expiry_date">
           </div>
-
           <div class="form-group">
             <label for="status">Status: <span class="text-danger">*</span></label>
             <select class="form-control" id="status" name="status" required>
@@ -472,7 +286,6 @@
               <option value="inactive">Inactive</option>
             </select>
           </div>
-
           <div class="form-group" id="file_upload_group">
             <label for="document_file">Upload Document (PDF, JPG, PNG): <span class="text-danger">*</span></label>
             <input type="file" class="form-control-file" id="document_file" name="document_file" accept=".pdf,.jpg,.jpeg,.png">
@@ -481,31 +294,26 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="$('#addEditModal').modal('hide');">Cancel</button>
-          <button type="submit" class="btn btn-info" id="submitBtn">
-            <i class="fas fa-save"></i> <span id="submitBtnText">Save</span>
-          </button>
+          <button type="submit" class="btn btn-info" id="submitBtn"><i class="fas fa-save"></i> <span id="submitBtnText">Save</span></button>
         </div>
       </form>
     </div>
   </div>
 </div>
 
-<!-- Upload Document Modal -->
-<div class="modal fade" id="uploadModal" tabindex="-1" role="dialog" aria-labelledby="uploadModalLabel" aria-hidden="true">
+<!-- Upload Modal -->
+<div class="modal fade" id="uploadModal" tabindex="-1" role="dialog" aria-hidden="true">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="uploadModalLabel">Upload Passport/ID Document</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="$('#uploadModal').modal('hide');">
-          <span aria-hidden="true">&times;</span>
-        </button>
+        <h5 class="modal-title">Upload Passport/ID Document</h5>
+        <button type="button" class="close" data-dismiss="modal" onclick="$('#uploadModal').modal('hide');"><span>&times;</span></button>
       </div>
       <form method="post" enctype="multipart/form-data" id="uploadForm">
         <div class="modal-body">
           {% csrf_token %}
           <input type="hidden" id="upload_passport_id" name="passport_id">
           <input type="hidden" name="action" value="upload">
-          
           <div class="form-group">
             <label for="upload_document_file">Select Document (PDF, JPG, PNG):</label>
             <input type="file" class="form-control-file" id="upload_document_file" name="document_file" accept=".pdf,.jpg,.jpeg,.png" required>
@@ -514,31 +322,26 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="$('#uploadModal').modal('hide');">Cancel</button>
-          <button type="submit" class="btn btn-info">
-            <i class="fas fa-upload"></i> Upload Document
-          </button>
+          <button type="submit" class="btn btn-info"><i class="fas fa-upload"></i> Upload Document</button>
         </div>
       </form>
     </div>
   </div>
 </div>
 
-<!-- Delete Confirmation Modal -->
-<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+<!-- Delete Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-hidden="true">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header bg-danger text-white">
-        <h5 class="modal-title" id="deleteModalLabel">Confirm Delete</h5>
-        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close" onclick="$('#deleteModal').modal('hide');">
-          <span aria-hidden="true">&times;</span>
-        </button>
+        <h5 class="modal-title">Confirm Delete</h5>
+        <button type="button" class="close text-white" data-dismiss="modal" onclick="$('#deleteModal').modal('hide');"><span>&times;</span></button>
       </div>
       <form method="post" id="deleteForm">
         <div class="modal-body">
           {% csrf_token %}
           <input type="hidden" id="delete_passport_id" name="passport_id">
           <input type="hidden" name="action" value="delete">
-          
           <div class="text-center">
             <i class="fas fa-exclamation-triangle fa-3x text-danger mb-3"></i>
             <h5>Are you sure you want to delete this passport/ID document?</h5>
@@ -548,29 +351,23 @@
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="$('#deleteModal').modal('hide');">Cancel</button>
-          <button type="submit" class="btn btn-danger">
-            <i class="fas fa-trash"></i> Delete Document
-          </button>
+          <button type="submit" class="btn btn-danger"><i class="fas fa-trash"></i> Delete Document</button>
         </div>
       </form>
     </div>
   </div>
 </div>
 
-<!-- View Document Modal -->
-<div class="modal fade" id="viewModal" tabindex="-1" role="dialog" aria-labelledby="viewModalLabel" aria-hidden="true">
+<!-- View Modal -->
+<div class="modal fade" id="viewModal" tabindex="-1" role="dialog" aria-hidden="true">
   <div class="modal-dialog modal-lg" role="document">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="viewModalLabel">View Passport/ID Document</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="$('#viewModal').modal('hide');">
-          <span aria-hidden="true">&times;</span>
-        </button>
+        <button type="button" class="close" data-dismiss="modal" onclick="$('#viewModal').modal('hide');"><span>&times;</span></button>
       </div>
       <div class="modal-body">
-        <div id="documentViewer">
-          <!-- Document content will be loaded here -->
-        </div>
+        <div id="documentViewer"></div>
       </div>
       <div class="modal-footer">
         <a id="downloadLink" href="#" target="_blank" class="btn btn-info">Download</a>
@@ -580,31 +377,159 @@
   </div>
 </div>
 
+<!-- ==================== DOCUMENT MANAGEMENT HELP MODAL ==================== -->
+<div class="modal fade" id="documentHelpModal" tabindex="-1" role="dialog" aria-labelledby="documentHelpModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable" role="document">
+    <div class="modal-content">
+      <div class="modal-header" style="background: linear-gradient(135deg, #17a2b8 0%, #138496 100%); color: white;">
+        <div>
+          <h5 class="modal-title" id="documentHelpModalLabel" style="font-weight:700; font-size:20px;">
+            <i class="fas fa-id-card"></i> Passport / ID Management — User Guide
+          </h5>
+          <small style="opacity:0.85;">Manage, track and get notified about all your identity documents</small>
+        </div>
+        <button type="button" class="close" data-dismiss="modal" style="color:white; opacity:1;"><span>&times;</span></button>
+      </div>
+      <div class="modal-body" style="padding:0;">
+        <ul class="nav nav-tabs" style="padding: 0 20px; background:#f8f9fa; border-bottom: 2px solid #dee2e6;">
+          <li class="nav-item"><a class="nav-link active" data-toggle="tab" href="#doc-overview" style="font-weight:600; font-size:13px;"><i class="fas fa-info-circle"></i> Overview</a></li>
+          <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#doc-list" style="font-weight:600; font-size:13px;"><i class="fas fa-list"></i> Document List</a></li>
+          <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#doc-addEdit" style="font-weight:600; font-size:13px;"><i class="fas fa-plus-circle"></i> Add / Edit</a></li>
+          <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#doc-notifications" style="font-weight:600; font-size:13px;"><i class="fas fa-bell"></i> Notifications</a></li>
+          <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#doc-tips" style="font-weight:600; font-size:13px;"><i class="fas fa-lightbulb"></i> Tips</a></li>
+        </ul>
+        <div class="tab-content" style="padding: 24px;">
+
+          <!-- OVERVIEW -->
+          <div class="tab-pane fade show active" id="doc-overview">
+            <div style="display:flex; align-items:flex-start; gap:16px; margin-bottom:24px;">
+              <div style="width:50px; height:50px; border-radius:12px; background:#17a2b8; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+                <i class="fas fa-id-card" style="color:white; font-size:22px;"></i>
+              </div>
+              <div>
+                <h5 style="font-weight:700; color:#2c3e50; margin-bottom:6px;">What is Passport / ID Management?</h5>
+                <p style="color:#6c757d; font-size:14px; line-height:1.7;">The Passport / ID Management module is your centralised store for all identity and travel documents belonging to family members or associates. You can upload, view, edit, and delete documents, and the system automatically monitors expiry dates and sends you timely notifications.</p>
+              </div>
+            </div>
+            <h6 style="font-weight:700; color:#2c3e50; margin-bottom:14px; border-bottom:2px solid #17a2b8; padding-bottom:6px;"><i class="fas fa-star" style="color:#17a2b8;"></i> Key Features</h6>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:24px;">
+              <div style="background:#f0fdff; border:1px solid #b2ebf2; border-radius:8px; padding:14px;"><div style="font-weight:600; color:#17a2b8; margin-bottom:4px;"><i class="fas fa-passport"></i> Multiple Document Types</div><div style="font-size:13px; color:#6c757d;">Store Passports, ID Cards, Driver's Licences, ARC cards, and more — all in one place.</div></div>
+              <div style="background:#f0fdff; border:1px solid #b2ebf2; border-radius:8px; padding:14px;"><div style="font-weight:600; color:#17a2b8; margin-bottom:4px;"><i class="fas fa-eye"></i> View Documents</div><div style="font-size:13px; color:#6c757d;">View uploaded document scans or PDFs directly in the browser without downloading.</div></div>
+              <div style="background:#f0fdff; border:1px solid #b2ebf2; border-radius:8px; padding:14px;"><div style="font-weight:600; color:#17a2b8; margin-bottom:4px;"><i class="fas fa-exclamation-circle" style="color:#dc3545;"></i> Expiry Alerts</div><div style="font-size:13px; color:#6c757d;">Expiry dates shown in red when a document is expiring within 6 months or has already expired.</div></div>
+              <div style="background:#f0fdff; border:1px solid #b2ebf2; border-radius:8px; padding:14px;"><div style="font-weight:600; color:#17a2b8; margin-bottom:4px;"><i class="fas fa-bell"></i> Email Notifications</div><div style="font-size:13px; color:#6c757d;">Automatic email alerts on the 1st and 15th of every month for documents expiring soon or already expired.</div></div>
+              <div style="background:#f0fdff; border:1px solid #b2ebf2; border-radius:8px; padding:14px;"><div style="font-weight:600; color:#17a2b8; margin-bottom:4px;"><i class="fas fa-filter"></i> Filtering</div><div style="font-size:13px; color:#6c757d;">Filter by holder name, document type, country of issue, and status to quickly find any document.</div></div>
+              <div style="background:#f0fdff; border:1px solid #b2ebf2; border-radius:8px; padding:14px;"><div style="font-weight:600; color:#17a2b8; margin-bottom:4px;"><i class="fas fa-users"></i> Multiple Holders</div><div style="font-size:13px; color:#6c757d;">Manage documents for multiple family members or associates — all in a single, searchable list.</div></div>
+            </div>
+            <div style="background:#fff3cd; border:1px solid #ffc107; border-radius:8px; padding:14px; font-size:13px;">
+              <i class="fas fa-exclamation-triangle" style="color:#856404;"></i>
+              <strong style="color:#856404;"> Important:</strong>
+              <span style="color:#856404;"> Expiry dates shown in <strong style="color:#dc3545;">red</strong> indicate the document has already expired or will expire within 6 months. These are included in the automated email sent on the 1st and 15th of every month.</span>
+            </div>
+          </div>
+
+          <!-- DOCUMENT LIST -->
+          <div class="tab-pane fade" id="doc-list">
+            <h6 style="font-weight:700; color:#2c3e50; margin-bottom:16px; border-bottom:2px solid #17a2b8; padding-bottom:6px;"><i class="fas fa-list" style="color:#17a2b8;"></i> Understanding the Document List</h6>
+            <p style="font-size:14px; color:#6c757d; margin-bottom:20px;">Each row represents one document. All holders and their documents are shown together in a single list.</p>
+            <table style="width:100%; font-size:13px; border-collapse:collapse; margin-bottom:24px;">
+              <thead><tr style="background:#343a40; color:white;"><th style="padding:10px 14px;">Column</th><th style="padding:10px 14px;">Description</th></tr></thead>
+              <tbody>
+                <tr style="background:#f8f9fa;"><td style="padding:10px 14px; font-weight:600; color:#2c3e50; border-bottom:1px solid #dee2e6;">Holder Name</td><td style="padding:10px 14px; color:#6c757d; border-bottom:1px solid #dee2e6;">The person this document belongs to.</td></tr>
+                <tr><td style="padding:10px 14px; font-weight:600; color:#2c3e50; border-bottom:1px solid #dee2e6;">Document Type</td><td style="padding:10px 14px; color:#6c757d; border-bottom:1px solid #dee2e6;">Colour-coded badge: <span style="background:#007bff; color:white; padding:2px 8px; border-radius:4px; font-size:11px;">Passport</span> <span style="background:#17a2b8; color:white; padding:2px 8px; border-radius:4px; font-size:11px;">ID</span> <span style="background:#6c757d; color:white; padding:2px 8px; border-radius:4px; font-size:11px;">Driver's License</span> <span style="background:#343a40; color:white; padding:2px 8px; border-radius:4px; font-size:11px;">ARC</span></td></tr>
+                <tr style="background:#f8f9fa;"><td style="padding:10px 14px; font-weight:600; color:#2c3e50; border-bottom:1px solid #dee2e6;">Document Number</td><td style="padding:10px 14px; color:#6c757d; border-bottom:1px solid #dee2e6;">The unique number printed on the document.</td></tr>
+                <tr><td style="padding:10px 14px; font-weight:600; color:#2c3e50; border-bottom:1px solid #dee2e6;">Country of Issue</td><td style="padding:10px 14px; color:#6c757d; border-bottom:1px solid #dee2e6;">The country that issued the document.</td></tr>
+                <tr style="background:#f8f9fa;"><td style="padding:10px 14px; font-weight:600; color:#2c3e50; border-bottom:1px solid #dee2e6;">Date of Issue</td><td style="padding:10px 14px; color:#6c757d; border-bottom:1px solid #dee2e6;">The date the document was issued.</td></tr>
+                <tr><td style="padding:10px 14px; font-weight:600; color:#2c3e50; border-bottom:1px solid #dee2e6;">Expiry Date</td><td style="padding:10px 14px; color:#6c757d; border-bottom:1px solid #dee2e6;"><span style="color:#dc3545; font-weight:600;">Shown in red</span> if expired or expiring within 6 months. Shows <strong>-</strong> if no expiry applies.</td></tr>
+                <tr style="background:#f8f9fa;"><td style="padding:10px 14px; font-weight:600; color:#2c3e50; border-bottom:1px solid #dee2e6;">Status</td><td style="padding:10px 14px; color:#6c757d; border-bottom:1px solid #dee2e6;"><span style="background:#28a745; color:white; padding:2px 8px; border-radius:4px; font-size:11px;">Active</span> <span style="background:#ffc107; color:white; padding:2px 8px; border-radius:4px; font-size:11px;">Applied for Renewal</span> <span style="background:#6c757d; color:white; padding:2px 8px; border-radius:4px; font-size:11px;">Inactive</span></td></tr>
+                <tr><td style="padding:10px 14px; font-weight:600; color:#2c3e50;">Actions</td><td style="padding:10px 14px; color:#6c757d;"><span style="background:#28a745; color:white; padding:3px 8px; border-radius:4px; font-size:12px;"><i class="fas fa-eye"></i></span> <strong>View</strong> — Opens the document scan/PDF.<br><span style="background:#ffc107; color:white; padding:3px 8px; border-radius:4px; font-size:12px; display:inline-block; margin-top:4px;"><i class="fas fa-edit"></i></span> <strong>Edit</strong> — Update document details.<br><span style="background:#dc3545; color:white; padding:3px 8px; border-radius:4px; font-size:12px; display:inline-block; margin-top:4px;"><i class="fas fa-trash"></i></span> <strong>Delete</strong> — Permanently removes the record.</td></tr>
+              </tbody>
+            </table>
+            <h6 style="font-weight:700; color:#2c3e50; margin-bottom:12px;"><i class="fas fa-sort" style="color:#17a2b8;"></i> Sorting</h6>
+            <p style="font-size:14px; color:#6c757d; margin-bottom:16px;">Click any column header to sort the list by that column. Click again to reverse the sort order.</p>
+            <h6 style="font-weight:700; color:#2c3e50; margin-bottom:12px;"><i class="fas fa-filter" style="color:#17a2b8;"></i> Using Filters</h6>
+            <p style="font-size:14px; color:#6c757d;">Click <strong>Document Filters</strong> to expand the filter bar. Filter by Holder, Type, Country, and Status. Use <strong>Clear All</strong> to reset.</p>
+          </div>
+
+          <!-- ADD / EDIT -->
+          <div class="tab-pane fade" id="doc-addEdit">
+            <h6 style="font-weight:700; color:#2c3e50; margin-bottom:16px; border-bottom:2px solid #17a2b8; padding-bottom:6px;"><i class="fas fa-plus-circle" style="color:#17a2b8;"></i> Adding and Editing Documents</h6>
+            <p style="font-size:14px; color:#6c757d; margin-bottom:20px;">Click <strong>+ Add New Passport/ID</strong> at the bottom of the list to add a document, or click the <strong>Edit</strong> button on any row to update it.</p>
+            <div style="display:flex; flex-direction:column; gap:14px;">
+              <div style="background:#f8f9fa; border-radius:8px; padding:14px; border-left:4px solid #17a2b8;"><div style="font-weight:700; color:#2c3e50; margin-bottom:4px;"><span style="background:#17a2b8; color:white; border-radius:50%; padding:1px 7px; margin-right:8px; font-size:11px;">1</span> Holder Name</div><div style="font-size:13px; color:#6c757d;">Select the person this document belongs to. Multiple documents can be added per person.</div></div>
+              <div style="background:#f8f9fa; border-radius:8px; padding:14px; border-left:4px solid #17a2b8;"><div style="font-weight:700; color:#2c3e50; margin-bottom:4px;"><span style="background:#17a2b8; color:white; border-radius:50%; padding:1px 7px; margin-right:8px; font-size:11px;">2</span> Document Type</div><div style="font-size:13px; color:#6c757d;">Select Passport, ID, Driver's License, Visa, or ARC. This determines the badge colour in the list.</div></div>
+              <div style="background:#f8f9fa; border-radius:8px; padding:14px; border-left:4px solid #17a2b8;"><div style="font-weight:700; color:#2c3e50; margin-bottom:4px;"><span style="background:#17a2b8; color:white; border-radius:50%; padding:1px 7px; margin-right:8px; font-size:11px;">3</span> Document Number</div><div style="font-size:13px; color:#6c757d;">Enter the unique number exactly as it appears on the document.</div></div>
+              <div style="background:#f8f9fa; border-radius:8px; padding:14px; border-left:4px solid #17a2b8;"><div style="font-weight:700; color:#2c3e50; margin-bottom:4px;"><span style="background:#17a2b8; color:white; border-radius:50%; padding:1px 7px; margin-right:8px; font-size:11px;">4</span> Country of Issue</div><div style="font-size:13px; color:#6c757d;">Select the country that issued the document.</div></div>
+              <div style="background:#f8f9fa; border-radius:8px; padding:14px; border-left:4px solid #17a2b8;"><div style="font-weight:700; color:#2c3e50; margin-bottom:4px;"><span style="background:#17a2b8; color:white; border-radius:50%; padding:1px 7px; margin-right:8px; font-size:11px;">5</span> Date of Issue &amp; Expiry Date</div><div style="font-size:13px; color:#6c757d;">Enter both dates. The Expiry Date drives the notification system. Leave blank if the document doesn't expire — it will show as <strong>-</strong>.</div></div>
+              <div style="background:#f8f9fa; border-radius:8px; padding:14px; border-left:4px solid #17a2b8;"><div style="font-weight:700; color:#2c3e50; margin-bottom:4px;"><span style="background:#17a2b8; color:white; border-radius:50%; padding:1px 7px; margin-right:8px; font-size:11px;">6</span> Upload Document Scan</div><div style="font-size:13px; color:#6c757d;">Upload a scan or photo (PDF, JPG, or PNG, max 10MB). This can be viewed via the green View button at any time.</div></div>
+            </div>
+            <div style="background:#d1ecf1; border:1px solid #bee5eb; border-radius:8px; padding:14px; font-size:13px; color:#0c5460; margin-top:20px;">
+              <i class="fas fa-info-circle"></i> <strong>Deleting:</strong> The red Delete button permanently removes both the record and the uploaded file. This cannot be undone.
+            </div>
+          </div>
+
+          <!-- NOTIFICATIONS -->
+          <div class="tab-pane fade" id="doc-notifications">
+            <h6 style="font-weight:700; color:#2c3e50; margin-bottom:16px; border-bottom:2px solid #17a2b8; padding-bottom:6px;"><i class="fas fa-bell" style="color:#17a2b8;"></i> Expiry Notifications</h6>
+            <div style="display:flex; align-items:flex-start; gap:14px; margin-bottom:24px;">
+              <div style="width:44px; height:44px; border-radius:50%; background:#17a2b8; display:flex; align-items:center; justify-content:center; flex-shrink:0;"><i class="fas fa-envelope" style="color:white; font-size:18px;"></i></div>
+              <p style="font-size:14px; color:#6c757d; line-height:1.7; margin:0;">Alivente Online automatically monitors all document expiry dates and sends an email on the <strong>1st</strong> and <strong>15th of every month</strong> listing all documents that have <strong>already expired</strong> or will <strong>expire within the next 6 months</strong>.</p>
+            </div>
+            <h6 style="font-weight:600; color:#2c3e50; margin-bottom:12px;">What triggers a notification?</h6>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:24px;">
+              <div style="background:#f8d7da; border:1px solid #f5c6cb; border-radius:8px; padding:14px; text-align:center;"><i class="fas fa-times-circle" style="color:#dc3545; font-size:24px; margin-bottom:8px; display:block;"></i><div style="font-weight:600; color:#721c24;">Already Expired</div><div style="font-size:12px; color:#721c24; margin-top:4px;">Expiry date has passed</div></div>
+              <div style="background:#fff3cd; border:1px solid #ffc107; border-radius:8px; padding:14px; text-align:center;"><i class="fas fa-exclamation-triangle" style="color:#856404; font-size:24px; margin-bottom:8px; display:block;"></i><div style="font-weight:600; color:#856404;">Expiring Within 6 Months</div><div style="font-size:12px; color:#856404; margin-top:4px;">Less than 6 months until expiry</div></div>
+            </div>
+            <h6 style="font-weight:600; color:#2c3e50; margin-bottom:12px;">Notification schedule</h6>
+            <div style="background:#f8f9fa; border-radius:8px; padding:16px; font-size:13px; color:#6c757d; margin-bottom:16px;">
+              <div style="display:flex; align-items:center; gap:12px; margin-bottom:10px;"><div style="background:#17a2b8; color:white; border-radius:6px; padding:4px 12px; font-weight:700; font-size:13px; flex-shrink:0;">1st</div><div>Email sent on the <strong>1st of every month</strong> — covers all expired and expiring documents.</div></div>
+              <div style="display:flex; align-items:center; gap:12px;"><div style="background:#17a2b8; color:white; border-radius:6px; padding:4px 10px; font-weight:700; font-size:13px; flex-shrink:0;">15th</div><div>Email sent on the <strong>15th of every month</strong> — a mid-month check covering the same criteria.</div></div>
+            </div>
+            <div style="background:#d4edda; border:1px solid #c3e6cb; border-radius:8px; padding:14px; font-size:13px; color:#155724;">
+              <i class="fas fa-check-circle"></i> <strong>No action required:</strong> Notifications are fully automatic. Keep your records up to date and the system handles the rest.
+            </div>
+          </div>
+
+          <!-- TIPS -->
+          <div class="tab-pane fade" id="doc-tips">
+            <h6 style="font-weight:700; color:#2c3e50; margin-bottom:16px; border-bottom:2px solid #17a2b8; padding-bottom:6px;"><i class="fas fa-lightbulb" style="color:#17a2b8;"></i> Tips and Best Practices</h6>
+            <div style="display:flex; flex-direction:column; gap:14px;">
+              <div style="display:flex; gap:14px; align-items:flex-start;"><div style="width:36px; height:36px; border-radius:50%; background:#17a2b8; display:flex; align-items:center; justify-content:center; flex-shrink:0;"><i class="fas fa-upload" style="color:white; font-size:14px;"></i></div><div><div style="font-weight:600; color:#2c3e50; font-size:14px; margin-bottom:4px;">Always upload a scan</div><div style="font-size:13px; color:#6c757d;">A digital copy means you can access documents from anywhere — no need to carry originals for routine reference.</div></div></div>
+              <div style="display:flex; gap:14px; align-items:flex-start;"><div style="width:36px; height:36px; border-radius:50%; background:#17a2b8; display:flex; align-items:center; justify-content:center; flex-shrink:0;"><i class="fas fa-calendar-alt" style="color:white; font-size:14px;"></i></div><div><div style="font-weight:600; color:#2c3e50; font-size:14px; margin-bottom:4px;">Always enter the expiry date</div><div style="font-size:13px; color:#6c757d;">Without an expiry date the notification system cannot alert you. Always enter it, even for long-validity documents.</div></div></div>
+              <div style="display:flex; gap:14px; align-items:flex-start;"><div style="width:36px; height:36px; border-radius:50%; background:#17a2b8; display:flex; align-items:center; justify-content:center; flex-shrink:0;"><i class="fas fa-sync-alt" style="color:white; font-size:14px;"></i></div><div><div style="font-weight:600; color:#2c3e50; font-size:14px; margin-bottom:4px;">Update when documents are renewed</div><div style="font-size:13px; color:#6c757d;">Add the new document record with the new number and expiry date. Consider marking the old one as Inactive rather than deleting to keep a history.</div></div></div>
+              <div style="display:flex; gap:14px; align-items:flex-start;"><div style="width:36px; height:36px; border-radius:50%; background:#17a2b8; display:flex; align-items:center; justify-content:center; flex-shrink:0;"><i class="fas fa-eye" style="color:white; font-size:14px;"></i></div><div><div style="font-weight:600; color:#2c3e50; font-size:14px; margin-bottom:4px;">Check red dates before travel</div><div style="font-size:13px; color:#6c757d;">Make it a habit to scan the list before any international travel. Red expiry dates are an immediate visual signal that action is needed.</div></div></div>
+              <div style="display:flex; gap:14px; align-items:flex-start;"><div style="width:36px; height:36px; border-radius:50%; background:#17a2b8; display:flex; align-items:center; justify-content:center; flex-shrink:0;"><i class="fas fa-filter" style="color:white; font-size:14px;"></i></div><div><div style="font-weight:600; color:#2c3e50; font-size:14px; margin-bottom:4px;">Use filters for multiple holders</div><div style="font-size:13px; color:#6c757d;">Filter by Holder to view one person's documents at a time. Filter by Type to see all passports or all driver's licences across everyone.</div></div></div>
+              <div style="display:flex; gap:14px; align-items:flex-start;"><div style="width:36px; height:36px; border-radius:50%; background:#17a2b8; display:flex; align-items:center; justify-content:center; flex-shrink:0;"><i class="fas fa-trash-alt" style="color:white; font-size:14px;"></i></div><div><div style="font-weight:600; color:#2c3e50; font-size:14px; margin-bottom:4px;">Be careful with Delete</div><div style="font-size:13px; color:#6c757d;">Deleting removes the record and the uploaded file permanently. For old documents, consider setting status to Inactive instead.</div></div></div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+      <div class="modal-footer" style="background:#f8f9fa; border-top:1px solid #dee2e6;">
+        <small class="text-muted" style="flex:1;">Alivente Online — Passport / ID Management User Guide</small>
+        <button type="button" class="btn btn-info btn-sm" data-dismiss="modal"><i class="fas fa-times"></i> Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- ==================== END HELP MODAL ==================== -->
+
 {% endif %}
 
 <script>
-// Passport Filter System JavaScript
+var sortDirections = {};
+
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('Passport filter system initializing...');
-    
-    // Always start collapsed on page load
     const filterContent = document.getElementById('passportFilterContent');
     const toggleIcon = document.getElementById('passportFilterToggleIcon');
-    
     if (filterContent && toggleIcon) {
         filterContent.classList.remove('expanded');
         toggleIcon.style.transform = 'rotate(0deg)';
-        console.log('Passport panel set to collapsed state');
     }
-    
-    // Auto-submit form when filters change
     const filterElements = ['holderSelect', 'docTypeSelect', 'countrySelect', 'statusSelect'];
-    
     filterElements.forEach(id => {
         const element = document.getElementById(id);
         if (element) {
             element.addEventListener('change', function() {
-                console.log(`Passport filter changed: ${id} = ${this.value}`);
                 sessionStorage.setItem('passportUserInteracted', 'true');
                 sessionStorage.setItem('passportJustUsedDropdown', 'true');
                 expandPassportFilterPanel();
@@ -612,65 +537,37 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
     });
-    
-    // Update active filters display
     updatePassportActiveFilters();
-    
-    // Auto-expand logic
     const userHasInteracted = sessionStorage.getItem('passportUserInteracted') === 'true';
     const hasActiveFilters = checkForPassportActiveFilters();
     const justClearedFilters = sessionStorage.getItem('passportJustClearedFilters') === 'true';
     const justUsedDropdown = sessionStorage.getItem('passportJustUsedDropdown') === 'true';
-    
     if ((userHasInteracted && hasActiveFilters) || justClearedFilters || justUsedDropdown) {
-        setTimeout(() => {
-            expandPassportFilterPanel();
-        }, 100);
+        setTimeout(() => { expandPassportFilterPanel(); }, 100);
     }
-    
-    // Clear temporary flags
-    if (justClearedFilters) {
-        setTimeout(() => {
-            sessionStorage.removeItem('passportJustClearedFilters');
-        }, 200);
-    }
-    
-    if (justUsedDropdown) {
-        setTimeout(() => {
-            sessionStorage.removeItem('passportJustUsedDropdown');
-        }, 200);
-    }
-    
-    console.log('Passport filter system ready');
+    if (justClearedFilters) setTimeout(() => { sessionStorage.removeItem('passportJustClearedFilters'); }, 200);
+    if (justUsedDropdown) setTimeout(() => { sessionStorage.removeItem('passportJustUsedDropdown'); }, 200);
 });
 
 function checkForPassportActiveFilters() {
-    const holderSelect = document.getElementById('holderSelect');
-    const docTypeSelect = document.getElementById('docTypeSelect');
-    const countrySelect = document.getElementById('countrySelect');
-    const statusSelect = document.getElementById('statusSelect');
-    
-    return (holderSelect && holderSelect.value) ||
-           (docTypeSelect && docTypeSelect.value) ||
-           (countrySelect && countrySelect.value) ||
-           (statusSelect && statusSelect.value);
+    return (document.getElementById('holderSelect') && document.getElementById('holderSelect').value) ||
+           (document.getElementById('docTypeSelect') && document.getElementById('docTypeSelect').value) ||
+           (document.getElementById('countrySelect') && document.getElementById('countrySelect').value) ||
+           (document.getElementById('statusSelect') && document.getElementById('statusSelect').value);
 }
 
 function expandPassportFilterPanel() {
     const filterContent = document.getElementById('passportFilterContent');
     const toggleIcon = document.getElementById('passportFilterToggleIcon');
-    
     if (filterContent && toggleIcon) {
         filterContent.classList.add('expanded');
         toggleIcon.style.transform = 'rotate(180deg)';
-        console.log('Passport panel expanded due to user interaction');
     }
 }
 
 function togglePassportFilterPanel() {
     const filterContent = document.getElementById('passportFilterContent');
     const toggleIcon = document.getElementById('passportFilterToggleIcon');
-    
     if (filterContent.classList.contains('expanded')) {
         filterContent.classList.remove('expanded');
         toggleIcon.style.transform = 'rotate(0deg)';
@@ -684,16 +581,13 @@ function togglePassportFilterPanel() {
 
 function clearAllPassportFilters(event) {
     event.stopPropagation();
-    
     sessionStorage.setItem('passportUserInteracted', 'true');
     sessionStorage.setItem('passportJustClearedFilters', 'true');
     expandPassportFilterPanel();
-    
     document.getElementById('holderSelect').value = '';
     document.getElementById('docTypeSelect').value = '';
     document.getElementById('countrySelect').value = '';
     document.getElementById('statusSelect').value = '';
-    
     document.getElementById('passportFilterForm').submit();
 }
 
@@ -701,22 +595,12 @@ function clearPassportFilter(filterType) {
     sessionStorage.setItem('passportUserInteracted', 'true');
     sessionStorage.setItem('passportJustClearedFilters', 'true');
     expandPassportFilterPanel();
-    
     switch(filterType) {
-        case 'holder':
-            document.getElementById('holderSelect').value = '';
-            break;
-        case 'doc_type':
-            document.getElementById('docTypeSelect').value = '';
-            break;
-        case 'country':
-            document.getElementById('countrySelect').value = '';
-            break;
-        case 'status':
-            document.getElementById('statusSelect').value = '';
-            break;
+        case 'holder': document.getElementById('holderSelect').value = ''; break;
+        case 'doc_type': document.getElementById('docTypeSelect').value = ''; break;
+        case 'country': document.getElementById('countrySelect').value = ''; break;
+        case 'status': document.getElementById('statusSelect').value = ''; break;
     }
-    
     document.getElementById('passportFilterForm').submit();
 }
 
@@ -727,63 +611,17 @@ function updatePassportActiveFilters() {
     const statusSelect = document.getElementById('statusSelect');
     const activeFiltersDiv = document.getElementById('passportActiveFilters');
     const filterTagsDiv = document.getElementById('passportFilterTags');
-    
     if (!filterTagsDiv) return;
-    
-    const holder = holderSelect.value;
-    const docType = docTypeSelect.value;
-    const country = countrySelect.value;
-    const status = statusSelect.value;
-    
     filterTagsDiv.innerHTML = '';
     let hasFilters = false;
-    
-    if (holder) {
-        filterTagsDiv.innerHTML += `
-            <span class="passport-filter-tag">
-                Holder: ${holder} 
-                <button class="passport-remove-tag" onclick="clearPassportFilter('holder')" type="button">×</button>
-            </span>`;
-        hasFilters = true;
-    }
-    
-    if (docType) {
-        const docTypeText = docTypeSelect.options[docTypeSelect.selectedIndex].text;
-        filterTagsDiv.innerHTML += `
-            <span class="passport-filter-tag">
-                Type: ${docTypeText} 
-                <button class="passport-remove-tag" onclick="clearPassportFilter('doc_type')" type="button">×</button>
-            </span>`;
-        hasFilters = true;
-    }
-    
-    if (country) {
-        filterTagsDiv.innerHTML += `
-            <span class="passport-filter-tag">
-                Country: ${country} 
-                <button class="passport-remove-tag" onclick="clearPassportFilter('country')" type="button">×</button>
-            </span>`;
-        hasFilters = true;
-    }
-    
-    if (status) {
-        const statusText = statusSelect.options[statusSelect.selectedIndex].text;
-        filterTagsDiv.innerHTML += `
-            <span class="passport-filter-tag">
-                Status: ${statusText} 
-                <button class="passport-remove-tag" onclick="clearPassportFilter('status')" type="button">×</button>
-            </span>`;
-        hasFilters = true;
-    }
-    
+    if (holderSelect.value) { filterTagsDiv.innerHTML += `<span class="passport-filter-tag">Holder: ${holderSelect.value} <button class="passport-remove-tag" onclick="clearPassportFilter('holder')" type="button">×</button></span>`; hasFilters = true; }
+    if (docTypeSelect.value) { filterTagsDiv.innerHTML += `<span class="passport-filter-tag">Type: ${docTypeSelect.options[docTypeSelect.selectedIndex].text} <button class="passport-remove-tag" onclick="clearPassportFilter('doc_type')" type="button">×</button></span>`; hasFilters = true; }
+    if (countrySelect.value) { filterTagsDiv.innerHTML += `<span class="passport-filter-tag">Country: ${countrySelect.value} <button class="passport-remove-tag" onclick="clearPassportFilter('country')" type="button">×</button></span>`; hasFilters = true; }
+    if (statusSelect.value) { filterTagsDiv.innerHTML += `<span class="passport-filter-tag">Status: ${statusSelect.options[statusSelect.selectedIndex].text} <button class="passport-remove-tag" onclick="clearPassportFilter('status')" type="button">×</button></span>`; hasFilters = true; }
     activeFiltersDiv.style.display = hasFilters ? 'flex' : 'none';
 }
 
-// Initialize sort directions object in global scope
-var sortDirections = {};
-
 function addNewDocument() {
-    // Reset form
     document.getElementById('addEditForm').reset();
     document.getElementById('passport_id').value = '';
     document.getElementById('form_action').value = 'add';
@@ -791,12 +629,10 @@ function addNewDocument() {
     document.getElementById('submitBtnText').textContent = 'Save';
     document.getElementById('document_file').required = true;
     document.getElementById('file_upload_group').style.display = 'block';
-    
     $('#addEditModal').modal('show');
 }
 
 function editDocument(passportId, holderName, docType, docNumber, country, issueDate, expiryDate, status) {
-    // Populate form with existing data
     document.getElementById('passport_id').value = passportId;
     document.getElementById('form_action').value = 'edit';
     document.getElementById('holder_name').value = holderName;
@@ -806,12 +642,9 @@ function editDocument(passportId, holderName, docType, docNumber, country, issue
     document.getElementById('date_of_issue').value = issueDate;
     document.getElementById('expiry_date').value = expiryDate;
     document.getElementById('status').value = status;
-    
-    // Update modal title and button
     document.getElementById('addEditModalLabel').textContent = 'Edit Passport/ID Information';
     document.getElementById('submitBtnText').textContent = 'Update';
     document.getElementById('document_file').required = false;
-    
     $('#addEditModal').modal('show');
 }
 
@@ -830,154 +663,70 @@ function viewDocument(documentUrl, documentName, holderName) {
     const documentViewer = document.getElementById('documentViewer');
     const downloadLink = document.getElementById('downloadLink');
     const viewModalLabel = document.getElementById('viewModalLabel');
-
-    // Update modal title
     viewModalLabel.textContent = `Passport/ID Document (${holderName})`;
-
-    // Set download link
     downloadLink.href = documentUrl;
     downloadLink.download = documentName;
-
-    // Clear previous content
     documentViewer.innerHTML = '';
-
-    // Get file extension
     const extension = documentName.split('.').pop().toLowerCase();
-
     if (extension === 'pdf') {
-        documentViewer.innerHTML = `
-            <embed src="${documentUrl}#toolbar=0&navpanes=0&scrollbar=0" type="application/pdf" width="100%" height="500px">
-            <p class="text-center mt-2">
-                <small>If the PDF doesn't display, <a href="${documentUrl}" target="_blank">click here to open it in a new tab</a></small>
-            </p>
-        `;
+        documentViewer.innerHTML = `<embed src="${documentUrl}#toolbar=0&navpanes=0&scrollbar=0" type="application/pdf" width="100%" height="500px"><p class="text-center mt-2"><small>If the PDF doesn't display, <a href="${documentUrl}" target="_blank">click here to open it in a new tab</a></small></p>`;
     } else if (['jpg', 'jpeg', 'png'].includes(extension)) {
-        documentViewer.innerHTML = `
-            <img src="${documentUrl}" alt="Passport/ID Document" class="img-fluid" style="max-width: 100%; height: auto;">
-        `;
+        documentViewer.innerHTML = `<img src="${documentUrl}" alt="Passport/ID Document" class="img-fluid" style="max-width: 100%; height: auto;">`;
     } else {
-        documentViewer.innerHTML = `
-            <div class="text-center">
-                <i class="fas fa-passport fa-5x text-muted mb-3"></i>
-                <p>This file type cannot be previewed in the browser.</p>
-                <p>File: <strong>${documentName}</strong></p>
-                <p>Click the Download button below to view the file.</p>
-            </div>
-        `;
+        documentViewer.innerHTML = `<div class="text-center"><i class="fas fa-passport fa-5x text-muted mb-3"></i><p>This file type cannot be previewed.</p><p>File: <strong>${documentName}</strong></p><p>Click Download to view the file.</p></div>`;
     }
-
     $('#viewModal').modal('show');
 }
 
-// Auto-hide modals on form submission success
 $(document).ready(function() {
-    // Hide modals after successful form submission
     $('#addEditForm, #uploadForm, #deleteForm').on('submit', function() {
-        setTimeout(function() {
-            $('.modal').modal('hide');
-        }, 100);
+        setTimeout(function() { $('.modal').modal('hide'); }, 100);
     });
 });
 
-// Table sorting functionality
 function sortTable(columnIndex) {
     const table = document.getElementById("passportTable");
-    
-    if (!table) {
-        console.error('Table not found!');
-        return;
-    }
-    
+    if (!table) return;
     const tbody = table.getElementsByTagName("tbody")[0];
-    
-    if (!tbody) {
-        console.error('Tbody not found!');
-        return;
-    }
-    
+    if (!tbody) return;
     const rows = Array.from(tbody.getElementsByTagName("tr"));
-    
-    if (rows.length === 0) {
-        console.error('No rows found!');
-        return;
-    }
-    
-    // Initialize sort direction for this column if not exists
-    if (sortDirections[columnIndex] === undefined) {
-        sortDirections[columnIndex] = 'asc';
-    }
-    
-    // Toggle sort direction
+    if (rows.length === 0) return;
+    if (sortDirections[columnIndex] === undefined) sortDirections[columnIndex] = 'asc';
     const isAscending = sortDirections[columnIndex] === 'asc';
     sortDirections[columnIndex] = isAscending ? 'desc' : 'asc';
-    
-    // Sort rows
     rows.sort((rowA, rowB) => {
         const cellA = rowA.cells[columnIndex];
         const cellB = rowB.cells[columnIndex];
-        
-        if (!cellA || !cellB) {
-            return 0;
-        }
-        
-        // Get text content, handling badges and special elements
+        if (!cellA || !cellB) return 0;
         let valueA = cellA.textContent.trim();
         let valueB = cellB.textContent.trim();
-        
-        // Special handling for date columns (columns 4 and 5)
         if (columnIndex === 4 || columnIndex === 5) {
-            // Convert date strings to comparable format
             valueA = valueA === '-' ? '0000-00-00' : valueA;
             valueB = valueB === '-' ? '0000-00-00' : valueB;
         }
-        
-        // Handle empty values
         if (valueA === '-') valueA = '';
         if (valueB === '-') valueB = '';
-        
-        // Compare values
         let comparison = 0;
-        if (valueA < valueB) {
-            comparison = -1;
-        } else if (valueA > valueB) {
-            comparison = 1;
-        }
-        
+        if (valueA < valueB) comparison = -1;
+        else if (valueA > valueB) comparison = 1;
         return isAscending ? comparison : -comparison;
     });
-    
-    // Clear tbody
-    while (tbody.firstChild) {
-        tbody.removeChild(tbody.firstChild);
-    }
-    
-    // Re-append sorted rows
+    while (tbody.firstChild) tbody.removeChild(tbody.firstChild);
     rows.forEach(row => tbody.appendChild(row));
-    
-    // Update sort icons
     updateSortIcons(columnIndex, isAscending);
 }
 
 function updateSortIcons(activeColumn, isAscending) {
-    // Get all header cells
     const headers = document.querySelectorAll('#passportTable thead th');
-    
-    // Reset all icons to default sort icon
     headers.forEach((header, index) => {
-        if (index < 7) { // Only first 7 columns are sortable
+        if (index < 7) {
             const icon = header.querySelector('i');
-            if (icon) {
-                icon.className = 'fas fa-sort';
-            }
+            if (icon) icon.className = 'fas fa-sort';
         }
     });
-    
-    // Update active column icon
     const activeHeader = headers[activeColumn];
     const activeIcon = activeHeader.querySelector('i');
-    if (activeIcon) {
-        activeIcon.className = isAscending ? 'fas fa-sort-up' : 'fas fa-sort-down';
-    }
+    if (activeIcon) activeIcon.className = isAscending ? 'fas fa-sort-up' : 'fas fa-sort-down';
 }
 </script>
 

@@ -14274,18 +14274,11 @@ def delete_category(request):
 
 @login_required
 def measurement_units_management(request):
-    """Manage measurement units - with usage details for popups - OPTIMIZED"""
-    from django.db.models import Count
     from collections import defaultdict
-    
-    # Get all units with usage counts
-    units = MeasurementUnit.objects.annotate(
-        recipe_usage=Count('recipeingredient', distinct=True),
-        ingredient_usage=Count('ingredient', distinct=True),
-        from_conversion_usage=Count('conversions_from', distinct=True),
-        to_conversion_usage=Count('conversions_to', distinct=True)
-    ).order_by('name')
-    
+
+    # Simple query - no annotations
+    units = MeasurementUnit.objects.all().order_by('name')
+
     # Pre-fetch all recipe names by unit (single query)
     recipe_names_by_unit = defaultdict(list)
     recipe_data = (
@@ -14297,7 +14290,7 @@ def measurement_units_management(request):
     )
     for item in recipe_data:
         recipe_names_by_unit[item['unit_id']].append(item['recipe__recipe_name'])
-    
+
     # Pre-fetch all ingredient names by unit (single query)
     ingredient_names_by_unit = defaultdict(list)
     ingredient_data = (
@@ -14308,11 +14301,9 @@ def measurement_units_management(request):
     )
     for item in ingredient_data:
         ingredient_names_by_unit[item['default_unit_id']].append(item['name'])
-    
-    # Pre-fetch all conversions (two queries total)
+
+    # Pre-fetch all conversions (single query)
     conversions_by_unit = defaultdict(list)
-    
-    # Conversions FROM each unit
     from_conversions = (
         UnitConversion.objects
         .select_related('from_unit', 'to_unit')
@@ -14321,34 +14312,33 @@ def measurement_units_management(request):
     for conv in from_conversions:
         from_abbr = conv.from_unit.abbreviation or conv.from_unit.name
         to_abbr = conv.to_unit.abbreviation or conv.to_unit.name
-        conversions_by_unit[conv.from_unit_id].append(f"{from_abbr} → {to_abbr} (×{conv.multiplier})")
-        conversions_by_unit[conv.to_unit_id].append(f"{from_abbr} → {to_abbr} (×{conv.multiplier})")
-    
-    # Build the final list
+        label = f"{from_abbr} → {to_abbr} (×{conv.multiplier})"
+        conversions_by_unit[conv.from_unit_id].append(label)
+        conversions_by_unit[conv.to_unit_id].append(label)
+
+    # Build the final list - derive all counts from already-fetched data
     units_with_count = []
     for unit in units:
-        conversion_count = unit.from_conversion_usage + unit.to_conversion_usage
-        total_usage = unit.recipe_usage + unit.ingredient_usage + conversion_count
-        
+        recipes     = recipe_names_by_unit.get(unit.measurement_unit_id, [])
+        ingredients = ingredient_names_by_unit.get(unit.measurement_unit_id, [])
+        conversions = conversions_by_unit.get(unit.measurement_unit_id, [])
+
         units_with_count.append({
-            'unit': unit,
-            'recipe_count': unit.recipe_usage,
-            'ingredient_count': unit.ingredient_usage,
-            'conversion_count': conversion_count,
-            'total_usage': total_usage,
-            'recipes': recipe_names_by_unit.get(unit.measurement_unit_id, []),
-            'ingredients': ingredient_names_by_unit.get(unit.measurement_unit_id, []),
-            'conversions': conversions_by_unit.get(unit.measurement_unit_id, []),
+            'unit':             unit,
+            'recipe_count':     len(recipes),
+            'ingredient_count': len(ingredients),
+            'conversion_count': len(conversions),
+            'total_usage':      len(recipes) + len(ingredients) + len(conversions),
+            'recipes':          recipes,
+            'ingredients':      ingredients,
+            'conversions':      conversions,
         })
-    
-    # Get unit type choices for the modal
-    unit_types = MeasurementUnit.UNIT_TYPE_CHOICES
-    
+
     context = {
         'units_with_count': units_with_count,
-        'unit_types': unit_types
+        'unit_types':        MeasurementUnit.UNIT_TYPE_CHOICES,
     }
-    
+
     return render(request, 'measurement_units_management.html', context)
 
 @login_required
