@@ -436,6 +436,8 @@
             display: flex;
             align-items: center;
             gap: 8px;
+            cursor: pointer;
+            font-family: inherit;
         }
 
         .btn-back {
@@ -455,6 +457,284 @@
         .btn-back i {
             font-size: 16px;
         }
+
+        /* ==================== HELP MODAL STYLES ==================== */
+        .help-modal {
+            display: none;
+            position: fixed;
+            z-index: 1500;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+        }
+
+        .help-modal.show {
+            display: block;
+        }
+
+        .help-modal-content {
+            background: rgba(255, 255, 255, 0.97);
+            backdrop-filter: blur(25px);
+            margin: 3% auto;
+            padding: 0;
+            border-radius: 25px;
+            width: 92%;
+            max-width: 880px;
+            max-height: 90vh;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            animation: modalSlideIn 0.4s cubic-bezier(0.23, 1, 0.320, 1);
+        }
+
+        .help-modal-header {
+            background: linear-gradient(135deg, rgba(23, 162, 184, 0.95), rgba(19, 132, 150, 0.95));
+            color: white;
+            padding: 22px 28px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-shrink: 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .help-modal-header-text h3 {
+            margin: 0;
+            font-size: 20px;
+            font-weight: 700;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        .help-modal-header-text small {
+            display: block;
+            font-size: 12px;
+            opacity: 0.9;
+            margin-top: 3px;
+            font-weight: normal;
+        }
+
+        .help-close-modal {
+            color: white;
+            font-size: 26px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            flex-shrink: 0;
+            line-height: 1;
+        }
+
+        .help-close-modal:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.1);
+        }
+
+        .help-tabs {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 2px solid #17a2b8;
+            padding: 0 12px;
+            flex-shrink: 0;
+            overflow-x: auto;
+        }
+
+        .help-tab {
+            background: transparent;
+            border: none;
+            padding: 12px 16px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            color: #495057;
+            border-bottom: 3px solid transparent;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-family: inherit;
+        }
+
+        .help-tab:hover {
+            background: rgba(23, 162, 184, 0.05);
+            color: #17a2b8;
+        }
+
+        .help-tab.active {
+            color: #17a2b8;
+            border-bottom-color: #17a2b8;
+            font-weight: 600;
+        }
+
+        .help-tab i {
+            font-size: 12px;
+        }
+
+        .help-tab-body {
+            padding: 22px 25px;
+            overflow-y: auto;
+            flex: 1;
+            background: white;
+            color: #2c3e50;
+            line-height: 1.5;
+        }
+
+        .help-tab-pane {
+            display: none;
+        }
+
+        .help-tab-pane.active {
+            display: block;
+        }
+
+        .help-tab-pane h4 {
+            color: #17a2b8;
+            font-weight: 700;
+            margin: 0 0 12px 0;
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .help-tab-pane h4:not(:first-child) {
+            margin-top: 18px;
+        }
+
+        .help-tab-pane p {
+            margin: 0 0 10px 0;
+            font-size: 13px;
+        }
+
+        .help-tab-pane ul, .help-tab-pane ol {
+            margin: 0 0 10px 22px;
+            font-size: 13px;
+        }
+
+        .help-tab-pane li {
+            margin-bottom: 5px;
+        }
+
+        .help-tab-pane code {
+            background: #f1f3f5;
+            color: #17a2b8;
+            padding: 1px 5px;
+            border-radius: 3px;
+            font-size: 12px;
+        }
+
+        .help-info-card {
+            background: #fff;
+            border: 1px solid #dee2e6;
+            border-left: 4px solid #17a2b8;
+            border-radius: 6px;
+            padding: 10px 14px;
+            margin-bottom: 8px;
+        }
+
+        .help-info-card h5 {
+            margin: 0 0 4px 0;
+            color: #17a2b8;
+            font-size: 13px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .help-info-card p {
+            margin: 0;
+            font-size: 12px;
+            color: #495057;
+        }
+
+        .help-info-card.no-click {
+            border-left-color: #ffc107;
+        }
+        .help-info-card.no-click h5 {
+            color: #856404;
+        }
+
+        .help-alert {
+            padding: 11px 14px;
+            border-radius: 6px;
+            margin-top: 12px;
+            margin-bottom: 8px;
+            font-size: 12px;
+            border-left: 4px solid;
+            line-height: 1.5;
+        }
+
+        .help-alert-info {
+            background: #d1ecf1;
+            border-left-color: #17a2b8;
+            color: #0c5460;
+        }
+
+        .help-alert-warning {
+            background: #fff3cd;
+            border-left-color: #ffc107;
+            color: #856404;
+        }
+
+        .help-modal-footer {
+            background: #f8f9fa;
+            padding: 12px 22px;
+            border-top: 1px solid #dee2e6;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+        }
+
+        .help-modal-footer small {
+            color: #6c757d;
+            font-size: 12px;
+        }
+
+        .help-modal-close-btn {
+            background: linear-gradient(135deg, #17a2b8, #138496);
+            color: white;
+            border: none;
+            padding: 7px 14px;
+            border-radius: 6px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-family: inherit;
+        }
+
+        .help-modal-close-btn:hover {
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+            transform: translateY(-1px);
+        }
+
+        @media (max-width: 600px) {
+            .help-modal-content {
+                margin: 2% auto;
+                width: 96%;
+                max-height: 96vh;
+            }
+            .help-tab {
+                padding: 10px 12px;
+                font-size: 12px;
+            }
+        }
+        /* ==================== END HELP MODAL STYLES ==================== */
 
         /* Responsive Design for Immersive Experience */
         @media (max-width: 1024px) {
@@ -553,6 +833,10 @@
             <i class="fas fa-arrow-left"></i>
             Back
         </a>
+        <button type="button" class="btn btn-back" id="helpButton">
+            <i class="fas fa-question-circle"></i>
+            Help
+        </button>
     </div>
 
     <!-- Dashboard Container -->
@@ -683,6 +967,191 @@
 
     <!-- Notification -->
     <div class="notification" id="notification"></div>
+
+    <!-- ==================== HELP MODAL ==================== -->
+    <div class="help-modal" id="helpModal">
+        <div class="help-modal-content">
+            <div class="help-modal-header">
+                <div class="help-modal-header-text">
+                    <h3><i class="fas fa-compass"></i> Property Dashboard &mdash; User Guide</h3>
+                    <small>An immersive, visual hub for exploring everything about a property</small>
+                </div>
+                <span class="help-close-modal" id="helpCloseModal">&times;</span>
+            </div>
+
+            <div class="help-tabs">
+                <button class="help-tab active" data-tab="overview"><i class="fas fa-info-circle"></i> Overview</button>
+                <button class="help-tab" data-tab="getstarted"><i class="fas fa-play-circle"></i> Getting Started</button>
+                <button class="help-tab" data-tab="modules"><i class="fas fa-th-large"></i> Main Modules</button>
+                <button class="help-tab" data-tab="submodules"><i class="fas fa-sitemap"></i> Sub-modules</button>
+                <button class="help-tab" data-tab="tips"><i class="fas fa-lightbulb"></i> Tips</button>
+            </div>
+
+            <div class="help-tab-body">
+
+                <!-- OVERVIEW -->
+                <div class="help-tab-pane active" id="tab-overview">
+                    <h4><i class="fas fa-compass"></i> What is the Dashboard?</h4>
+                    <p>The Property Dashboard is a <strong>visual, interactive hub</strong> for exploring everything about a single property. Instead of menus and tables, you get a glassmorphic radial interface: a centre property selector surrounded by 8 main modules, several of which expand into sub-modules.</p>
+                    <p>Pick a property in the centre, then click whichever angle of the property you want to explore &mdash; legal documents, financial performance, tenants, expenses, issues, valuation, and so on.</p>
+
+                    <h4><i class="fas fa-th"></i> What's on screen</h4>
+                    <ul>
+                        <li><strong>Centre hub</strong> &mdash; the property selector. Starts as <em>"Select Property"</em>; once you've picked one, it shows the property name.</li>
+                        <li><strong>8 main module cards</strong> arranged in a circle around the hub.</li>
+                        <li><strong>5 sub-module cards</strong> branching off the Tenant and Expenses cards.</li>
+                        <li><strong>Connection lines</strong> linking the hub to modules and modules to sub-modules &mdash; they brighten when a property is selected.</li>
+                    </ul>
+
+                    <div class="help-alert help-alert-info">
+                        <i class="fas fa-mouse-pointer"></i> <strong>Cards are dim until you select a property.</strong> That's intentional &mdash; nothing to click on until the system knows <em>which</em> property you want to look at.
+                    </div>
+                </div>
+
+                <!-- GETTING STARTED -->
+                <div class="help-tab-pane" id="tab-getstarted">
+                    <h4><i class="fas fa-play-circle"></i> Three steps to use the Dashboard</h4>
+
+                    <div class="help-info-card">
+                        <h5>1. Click the centre "Select Property" hub</h5>
+                        <p>A modal opens listing all your properties.</p>
+                    </div>
+
+                    <div class="help-info-card">
+                        <h5>2. Pick a property from the list</h5>
+                        <p>The modal closes, the centre hub shows your property name, and every card around it lights up &mdash; the dashboard is now "armed" for that property.</p>
+                    </div>
+
+                    <div class="help-info-card">
+                        <h5>3. Click any module card</h5>
+                        <p>You're navigated to the relevant detail view for the selected property &mdash; e.g. its title deed, its tenants, its open invoices, its profit &amp; loss summary.</p>
+                    </div>
+
+                    <h4><i class="fas fa-redo"></i> Switching property</h4>
+                    <p>Click the centre hub at any time to swap to a different property. All cards reflect the new selection immediately.</p>
+
+                    <h4><i class="fas fa-link"></i> Deep linking</h4>
+                    <p>You can pre-select a property by adding <code>?property=ID</code> to the dashboard URL. Useful when linking from other parts of the system.</p>
+
+                    <h4><i class="fas fa-keyboard"></i> Keyboard</h4>
+                    <p><code>Esc</code> closes the property picker (or this Help modal).</p>
+                </div>
+
+                <!-- MAIN MODULES -->
+                <div class="help-tab-pane" id="tab-modules">
+                    <h4><i class="fas fa-th-large"></i> The eight main module cards</h4>
+                    <p>Each card opens a detail view scoped to the selected property:</p>
+
+                    <div class="help-info-card">
+                        <h5><i class="fas fa-file-contract"></i> Title Deed</h5>
+                        <p><strong>View-only.</strong> Displays the uploaded title deed PDF for the property in an inline viewer. To upload, replace or delete the deed itself, use the <strong>Properties</strong> module.</p>
+                    </div>
+
+                    <div class="help-info-card">
+                        <h5><i class="fas fa-chart-line"></i> Property Report</h5>
+                        <p>A multi-section snapshot of the property: <strong>Property Address</strong>, <strong>Specifications</strong> (square meters, year built), <strong>Utility Accounts</strong>, <strong>Insurance &amp; Status</strong>, plus an <strong>Asset Summary</strong> covering asset statistics, financial summary (purchase value, maintenance cost), assets grouped by category, and a full <strong>Asset Details</strong> table with warranty expiry dates.</p>
+                    </div>
+
+                    <div class="help-info-card">
+                        <h5><i class="fas fa-users"></i> Tenant</h5>
+                        <p>The current tenant for the property: <strong>Type</strong> (Individual or Company), <strong>Contact Information</strong>, <strong>Lease Period</strong> (start/end dates), <strong>Financial Information</strong> (deposit, monthly rent, levies, payment terms), and <strong>Lease Details</strong> (rental type, renewal clause, notice period, renewal status, active flag). Branches into <strong>Lease</strong>, <strong>Invoices</strong> and <strong>Lease Renewals</strong> sub-modules.</p>
+                    </div>
+
+                    <div class="help-info-card">
+                        <h5><i class="fas fa-exclamation-triangle"></i> Issues</h5>
+                        <p>Maintenance, repairs and any open issues raised against this property. When there are none, displays a green <em>"Excellent! No issues have been reported"</em> empty state.</p>
+                    </div>
+
+                    <div class="help-info-card">
+                        <h5><i class="fas fa-home"></i> Valuation</h5>
+                        <p>Compares the original <strong>Purchase Price</strong> against the <strong>Current Value</strong>, with the gain or loss shown in &euro; and as a percentage, accompanied by a green/red trend arrow.</p>
+                    </div>
+
+                    <div class="help-info-card">
+                        <h5><i class="fas fa-dollar-sign"></i> Revenues</h5>
+                        <p>A breakdown of the property's revenue lines &mdash; typically <strong>Rental</strong> and <strong>Levies</strong> &mdash; each with its <em>Revenue Type</em> (Monthly, Yearly) and <em>Amount</em>. Pulled from the tenant's lease data.</p>
+                    </div>
+
+                    <div class="help-info-card no-click">
+                        <h5><i class="fas fa-calculator"></i> Expenses <small style="font-weight:normal;">(parent only &mdash; not directly clickable)</small></h5>
+                        <p>The Expenses card itself is intentionally <strong>not clickable</strong>. You'll get a notification asking you to pick either <strong>Actual</strong> or <strong>Budgeted</strong> instead. Those are the two sub-module cards branching off it.</p>
+                    </div>
+
+                    <div class="help-info-card">
+                        <h5><i class="fas fa-chart-pie"></i> Profit &amp; Loss</h5>
+                        <p>A full 12-month <strong>P&amp;L statement</strong> for the property: <strong>Revenue</strong> rows (Levies, Rental), <strong>Expenses</strong> rows (Communal Fees, Company Tax, Insurance, Prop Tax, Property Manager, etc.) and a <strong>Net Profit</strong> row &mdash; broken down month by month with additional <em>Total</em> and <em>Monthly</em> average columns. A <strong>Budget</strong> toggle in the top-right switches between Actual and Budget views. Below the table, a <strong>Financial Indicators</strong> panel surfaces headline KPIs: Gross ROI, Net ROI, Expenses to Revenue, Rent &euro;/m&sup2;, and % Value Increase.</p>
+                    </div>
+                </div>
+
+                <!-- SUB-MODULES -->
+                <div class="help-tab-pane" id="tab-submodules">
+                    <h4><i class="fas fa-sitemap"></i> Sub-module cards</h4>
+                    <p>Five smaller cards branch off two of the main modules:</p>
+
+                    <h4 style="color:#138496;"><i class="fas fa-users"></i> Branching from Tenant</h4>
+
+                    <div class="help-info-card">
+                        <h5><i class="fas fa-file-contract"></i> Lease</h5>
+                        <p><strong>View-only.</strong> Inline PDF display of the current lease agreement document. Page title shows the property and tenant in parentheses for context.</p>
+                    </div>
+
+                    <div class="help-info-card">
+                        <h5><i class="fas fa-file-invoice-dollar"></i> Invoices</h5>
+                        <p>Open invoices for this property's current tenant. The header shows the <strong>Total Amount Due</strong> in red. Each row lists Invoice Date, Due Date, <strong>Days Overdue</strong>, Amount, and a red <em>Overdue</em> badge in the Status column. Scoped to this property only &mdash; for the system-wide list, use the main Invoices module.</p>
+                    </div>
+
+                    <div class="help-info-card">
+                        <h5><i class="fas fa-sync-alt"></i> Lease Renewals</h5>
+                        <p>The renewal state of the current lease. While the lease is still active, displays a green confirmation: <em>"Current lease is active. No renewal action required at this time."</em> together with the tenant name and lease end date. As expiry approaches, the screen prompts for renewal action.</p>
+                    </div>
+
+                    <h4 style="color:#138496;"><i class="fas fa-calculator"></i> Branching from Expenses</h4>
+
+                    <div class="help-info-card">
+                        <h5><i class="fas fa-receipt"></i> Actual</h5>
+                        <p>A table of expenses actually incurred for this property, with columns for Date, Description, Amount, and a green <strong>invoice icon</strong> that opens the scanned receipt PDF in a popup viewer. A <strong>Year filter</strong> sits in the top-right; the bottom row sums to <em>Total Actual Expenses for [year]</em>.</p>
+                    </div>
+
+                    <div class="help-info-card">
+                        <h5><i class="fas fa-clipboard-list"></i> Budgeted</h5>
+                        <p>The planned expense schedule for this property. Each row lists an <strong>Expense Line Type</strong> (Communal Fees, Company Tax, Insurance, Property Manager, Refuse, etc.), an <strong>Expense Type</strong> indicating <em>when</em> the cost falls (a specific month like <em>June</em> for one-off payments, or <em>Monthly</em> for recurring), and the budgeted <strong>Amount</strong>. This is the baseline that <em>Actual</em> is compared against.</p>
+                    </div>
+
+                    <div class="help-alert help-alert-info">
+                        <i class="fas fa-info-circle"></i> <strong>Why split Expenses into Actual and Budgeted?</strong> Comparing the two is the heart of expense control. Looking at one without the other only tells half the story.
+                    </div>
+                </div>
+
+                <!-- TIPS -->
+                <div class="help-tab-pane" id="tab-tips">
+                    <h4><i class="fas fa-lightbulb"></i> Best Practices</h4>
+                    <ul>
+                        <li><strong>Always pick a property first</strong> &mdash; everything else is locked until you do. The dim cards are a deliberate hint.</li>
+                        <li><strong>Use this as your starting point per property</strong> &mdash; if you're investigating one specific property end-to-end, the Dashboard is faster than navigating module-by-module from the top menu.</li>
+                        <li><strong>Don't try to click the Expenses parent card</strong> &mdash; it's deliberately a "container" only. Click <em>Actual</em> or <em>Budgeted</em> instead.</li>
+                        <li><strong>Compare Actual vs Budgeted</strong> &mdash; click both in turn to spot variances. Big swings either way are worth investigating.</li>
+                        <li><strong>Switch properties without leaving the page</strong> &mdash; click the centre hub again any time. Faster than going Back and re-entering.</li>
+                        <li><strong>Use deep links</strong> &mdash; bookmark <code>?property=ID</code> URLs for properties you check often.</li>
+                        <li><strong>Profit &amp; Loss is the executive view</strong> &mdash; the full 12-month grid plus the Financial Indicators row gives you a property's complete financial picture in one screen. If you only have time for one card per property, it's this one.</li>
+                        <li><strong>Use the Budget toggle on Profit &amp; Loss</strong> &mdash; flip between Actual and Budget views to see where the property is over- or under-performing against the plan.</li>
+                    </ul>
+
+                    <div class="help-alert help-alert-warning">
+                        <i class="fas fa-exclamation-triangle"></i> <strong>Cards still dim after picking a property?</strong> Try clicking the centre hub and re-selecting. If the issue persists, refresh the page.
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="help-modal-footer">
+                <small>Alivente Online &mdash; Property Dashboard User Guide</small>
+                <button type="button" class="help-modal-close-btn" id="helpModalCloseBtn">
+                    <i class="fas fa-times"></i> Close
+                </button>
+            </div>
+        </div>
+    </div>
+    <!-- ==================== END HELP MODAL ==================== -->
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
@@ -1049,6 +1518,54 @@
         // Initialize the dashboard when the page loads
         document.addEventListener('DOMContentLoaded', () => {
             new ModernPropertyDashboard();
+
+            // ============== HELP MODAL CONTROLLER ==============
+            const helpModal = document.getElementById('helpModal');
+            const helpButton = document.getElementById('helpButton');
+            const helpCloseModal = document.getElementById('helpCloseModal');
+            const helpModalCloseBtn = document.getElementById('helpModalCloseBtn');
+            const helpTabs = document.querySelectorAll('.help-tab');
+            const helpTabPanes = document.querySelectorAll('.help-tab-pane');
+
+            function openHelpModal() {
+                helpModal.classList.add('show');
+                document.body.style.overflow = 'hidden';
+            }
+
+            function closeHelpModal() {
+                helpModal.classList.remove('show');
+                document.body.style.overflow = 'auto';
+            }
+
+            if (helpButton) helpButton.addEventListener('click', openHelpModal);
+            if (helpCloseModal) helpCloseModal.addEventListener('click', closeHelpModal);
+            if (helpModalCloseBtn) helpModalCloseBtn.addEventListener('click', closeHelpModal);
+
+            if (helpModal) {
+                helpModal.addEventListener('click', function(e) {
+                    if (e.target === helpModal) {
+                        closeHelpModal();
+                    }
+                });
+            }
+
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && helpModal && helpModal.classList.contains('show')) {
+                    closeHelpModal();
+                }
+            });
+
+            helpTabs.forEach(function(tab) {
+                tab.addEventListener('click', function() {
+                    const targetTab = this.getAttribute('data-tab');
+                    helpTabs.forEach(function(t) { t.classList.remove('active'); });
+                    helpTabPanes.forEach(function(p) { p.classList.remove('active'); });
+                    this.classList.add('active');
+                    const targetPane = document.getElementById('tab-' + targetTab);
+                    if (targetPane) targetPane.classList.add('active');
+                });
+            });
+            // ============== END HELP MODAL CONTROLLER ==============
         });
 
         console.log('🚀 === IMMERSIVE GLASSMORPHISM DASHBOARD COMPLETE ===');

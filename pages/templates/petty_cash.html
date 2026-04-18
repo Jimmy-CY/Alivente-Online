@@ -25,6 +25,9 @@
   {% endfor %}
   
   <div style="display: flex ; justify-content: flex-end">
+      <button type="button" class="btn btn-info" data-toggle="modal" data-target="#pettyCashHelpModal" style="margin-right:16px">
+        <i class="fas fa-question-circle"></i> Help
+      </button>
       <a href="{% url 'petty_cash_add' %}" class="btn btn-info" style="margin-right:16px" type="button">Add New</a>
     <a href="{% url 'home' %}" class="btn btn-info" style="margin-right:16px" role="button">Back</a>
   </div>
@@ -48,4 +51,174 @@
 </table>    
 </div>
 </body>
+
+<!-- ==================== PETTY CASH HELP MODAL ==================== -->
+<div class="modal fade" id="pettyCashHelpModal" tabindex="-1" role="dialog" aria-labelledby="pettyCashHelpModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable" role="document">
+    <div class="modal-content">
+
+      <!-- Header -->
+      <div class="modal-header" style="background: linear-gradient(135deg, #17a2b8 0%, #138496 100%); color: white;">
+        <div>
+          <h5 class="modal-title" id="pettyCashHelpModalLabel" style="font-weight:700; font-size:20px;">
+            <i class="fas fa-coins"></i> Petty Cash &mdash; User Guide
+          </h5>
+          <small style="opacity:0.85;">A simple cash ledger for small property-related income and expenses</small>
+        </div>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="color:white; opacity:0.9; font-size:28px; text-shadow:none;">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+
+      <!-- Tabs -->
+      <ul class="nav nav-tabs" role="tablist" style="background:#f8f9fa; padding:0 15px; border-bottom:2px solid #17a2b8;">
+        <li class="nav-item"><a class="nav-link active" data-toggle="tab" href="#pcOverview" role="tab"><i class="fas fa-info-circle"></i> Overview</a></li>
+        <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#pcTable" role="tab"><i class="fas fa-table"></i> Reading the Table</a></li>
+        <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#pcAdd" role="tab"><i class="fas fa-plus-circle"></i> Adding a Transaction</a></li>
+        <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#pcTips" role="tab"><i class="fas fa-lightbulb"></i> Tips</a></li>
+      </ul>
+
+      <!-- Body -->
+      <div class="modal-body" style="padding:25px; background:white;">
+        <div class="tab-content">
+
+          <!-- OVERVIEW -->
+          <div class="tab-pane fade show active" id="pcOverview" role="tabpanel">
+            <h6 style="color:#17a2b8; font-weight:700;"><i class="fas fa-coins"></i> What is Petty Cash?</h6>
+            <p>Petty Cash is a simple <strong>running ledger</strong> of small cash transactions related to property management. It tracks every euro that goes in and out of your physical petty cash float &mdash; with a live closing balance at the bottom of the table.</p>
+
+            <p>Typical things you'd record here:</p>
+            <ul>
+              <li><strong>Income</strong> &mdash; opening balance, top-ups (cash added to the float by Alivente), reimbursements paid in cash</li>
+              <li><strong>Expenses</strong> &mdash; small property-related purchases paid in cash: cleaning supplies, small repairs, tips, parking, minor materials, postage, etc.</li>
+            </ul>
+
+            <div class="alert alert-info" style="border-left:4px solid #17a2b8;">
+              <i class="fas fa-info-circle"></i> <strong>Why use this?</strong> Larger expenses go through the <strong>Expenses</strong> module with proper approval workflows and invoices attached. Petty Cash is for the small day-to-day stuff that wouldn't justify the overhead &mdash; the kind of thing you'd otherwise scribble on a receipt and forget about.
+            </div>
+
+            <div class="alert alert-success" style="border-left:4px solid #28a745;">
+              <i class="fas fa-balance-scale"></i> <strong>The closing balance should match your physical cash:</strong> If you reconcile properly, the green/red number at the bottom of the table is exactly what you should be holding in the petty cash tin or envelope at any moment.
+            </div>
+          </div>
+
+          <!-- READING THE TABLE -->
+          <div class="tab-pane fade" id="pcTable" role="tabpanel">
+            <h6 style="color:#17a2b8; font-weight:700;"><i class="fas fa-table"></i> The four columns</h6>
+
+            <div class="card mb-2" style="border-left:4px solid #17a2b8;">
+              <div class="card-body" style="padding:12px 15px;">
+                <h6 style="margin:0 0 5px 0;"><strong>Date</strong></h6>
+                <p class="mb-0" style="font-size:13px;">When the transaction happened (not necessarily when it was entered into the system).</p>
+              </div>
+            </div>
+
+            <div class="card mb-2" style="border-left:4px solid #17a2b8;">
+              <div class="card-body" style="padding:12px 15px;">
+                <h6 style="margin:0 0 5px 0;"><strong>Description</strong></h6>
+                <p class="mb-0" style="font-size:13px;">Free-text description of the transaction. Best practice is to <strong>prefix with the property name</strong> when applicable &mdash; for example <em>"Apolloneon &mdash; Demetri: Carrying washing machine upstairs"</em> or <em>"Lykavitto: Princess cleaned storeroom"</em>. Non-property entries (Opening Balance, Alivente Top-Up) skip the prefix.</p>
+              </div>
+            </div>
+
+            <div class="card mb-2" style="border-left:4px solid #17a2b8;">
+              <div class="card-body" style="padding:12px 15px;">
+                <h6 style="margin:0 0 5px 0;"><strong>Amount</strong></h6>
+                <p class="mb-1" style="font-size:13px;">The value of the transaction. <strong>Color-coded</strong>:</p>
+                <ul class="mb-0" style="font-size:13px;">
+                  <li><span style="color:green; font-weight:bold;">Green</span> &mdash; Income (cash coming in, positive number)</li>
+                  <li><span style="color:red; font-weight:bold;">Red, prefixed with &minus;</span> &mdash; Expense (cash going out)</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="card mb-3" style="border-left:4px solid #17a2b8;">
+              <div class="card-body" style="padding:12px 15px;">
+                <h6 style="margin:0 0 5px 0;"><strong>Income / Expense</strong></h6>
+                <p class="mb-0" style="font-size:13px;">A clear text label of which type the row is &mdash; redundant with the colour but improves scannability and works for users with colour-vision difficulty.</p>
+              </div>
+            </div>
+
+            <h6 style="color:#17a2b8; font-weight:700; margin-top:20px;"><i class="fas fa-balance-scale"></i> CLOSING BALANCE row</h6>
+            <p>The bottom row of the table is always the <strong>cumulative running balance</strong> &mdash; every income added, every expense subtracted, from the very first row to the last.</p>
+            <ul>
+              <li><strong>Green</strong> closing balance = positive cash on hand (the normal state)</li>
+              <li><strong>Red</strong> closing balance = negative balance (something's wrong &mdash; either a missed top-up or a data-entry mistake)</li>
+            </ul>
+          </div>
+
+          <!-- ADDING A TRANSACTION -->
+          <div class="tab-pane fade" id="pcAdd" role="tabpanel">
+            <h6 style="color:#17a2b8; font-weight:700;"><i class="fas fa-plus-circle"></i> Adding a new transaction</h6>
+            <p>Click <strong>Add New</strong> (top-right) to open the Add Transaction form. It's a single row of four fields:</p>
+
+            <div class="card mb-2" style="border-left:4px solid #17a2b8;">
+              <div class="card-body" style="padding:12px 15px;">
+                <h6 style="margin:0 0 5px 0;"><strong>Date</strong></h6>
+                <p class="mb-0" style="font-size:13px;">Date picker (dd/mm/yyyy). Pick the date the transaction <em>actually happened</em>, not today &mdash; especially important when entering older receipts late.</p>
+              </div>
+            </div>
+
+            <div class="card mb-2" style="border-left:4px solid #17a2b8;">
+              <div class="card-body" style="padding:12px 15px;">
+                <h6 style="margin:0 0 5px 0;"><strong>Transaction Description</strong></h6>
+                <p class="mb-0" style="font-size:13px;">Free text. Use the <strong>"Property: detail"</strong> convention so future-you can scan the ledger and instantly see which property each cost relates to.</p>
+              </div>
+            </div>
+
+            <div class="card mb-2" style="border-left:4px solid #17a2b8;">
+              <div class="card-body" style="padding:12px 15px;">
+                <h6 style="margin:0 0 5px 0;"><strong>Amount</strong></h6>
+                <p class="mb-0" style="font-size:13px;">Enter the amount as a <strong>positive number</strong>. Don't add a minus sign &mdash; the Income / Expense dropdown handles whether the amount is added or subtracted from the balance.</p>
+              </div>
+            </div>
+
+            <div class="card mb-3" style="border-left:4px solid #17a2b8;">
+              <div class="card-body" style="padding:12px 15px;">
+                <h6 style="margin:0 0 5px 0;"><strong>Income / Expense</strong></h6>
+                <p class="mb-0" style="font-size:13px;">Dropdown &mdash; pick <strong>Income</strong> for cash coming in (top-ups, opening balance) or <strong>Expense</strong> for cash going out. This determines the colour and sign in the table.</p>
+              </div>
+            </div>
+
+            <p>Click <strong>Save</strong> to commit the transaction. <strong>Back</strong> returns to the ledger without saving.</p>
+
+            <div class="alert alert-warning" style="border-left:4px solid #ffc107;">
+              <i class="fas fa-exclamation-triangle"></i> <strong>Common mistake:</strong> Don't enter <code>-30.00</code> in the Amount field with Expense selected &mdash; the system will subtract the negative, effectively adding 30 to your balance. Always enter <code>30.00</code> as Amount and let the Expense type handle the minus.
+            </div>
+          </div>
+
+          <!-- TIPS -->
+          <div class="tab-pane fade" id="pcTips" role="tabpanel">
+            <h6 style="color:#17a2b8; font-weight:700;"><i class="fas fa-lightbulb"></i> Best Practices</h6>
+            <ul>
+              <li><strong>Reconcile regularly</strong> &mdash; physically count the cash in the petty cash tin and compare to the closing balance on screen. They should match. If they don't, find the missing transaction.</li>
+              <li><strong>Use the "Property: detail" description format</strong> &mdash; e.g. <code>Lykavitto: Bought rubbish bags @ Green Tree</code>. Makes audit and review trivial. Skip the prefix for non-property entries (Opening Balance, top-ups).</li>
+              <li><strong>Be consistent with naming</strong> &mdash; pick one form for top-ups (e.g. "Alivente Top-Up") and stick with it. Inconsistent variants like "Alivente: Top Up", "Alivente Top-Up", "Alivente top up" make the ledger harder to read at a glance.</li>
+              <li><strong>Always positive amounts</strong> &mdash; enter <code>30</code>, not <code>-30</code>. The Income / Expense type does the work.</li>
+              <li><strong>Enter as soon as possible</strong> &mdash; the longer between the cash event and the entry, the more likely you'll forget what it was for. Phone-photo of the receipt + same-day entry is the gold standard.</li>
+              <li><strong>Keep the physical receipts</strong> &mdash; the digital ledger is your record but receipts are the backup. File them by month in case you ever need to evidence a transaction.</li>
+              <li><strong>Top up before you run out</strong> &mdash; if the closing balance is getting low, request an Alivente Top-Up before you're stuck unable to pay for something small.</li>
+              <li><strong>Larger spend &rarr; Expenses module</strong> &mdash; if a transaction is big enough to warrant approval, an invoice or a paper trail beyond a receipt, record it in the Expenses module instead of here.</li>
+            </ul>
+
+            <div class="alert alert-warning" style="border-left:4px solid #ffc107;">
+              <i class="fas fa-exclamation-triangle"></i> <strong>Closing balance gone red?</strong> Either a top-up was missed or an expense was entered twice. Scan recent rows for duplicates first, then check whether a recent top-up made it in.
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="modal-footer" style="background:#f8f9fa; border-top:1px solid #dee2e6;">
+        <small class="text-muted" style="flex:1;">Alivente Online &mdash; Petty Cash User Guide</small>
+        <button type="button" class="btn btn-sm" data-dismiss="modal" style="background:linear-gradient(135deg,#17a2b8,#138496); color:white; border:none;">
+          <i class="fas fa-times"></i> Close
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
+<!-- ==================== END PETTY CASH HELP MODAL ==================== -->
+
 {% endblock %}

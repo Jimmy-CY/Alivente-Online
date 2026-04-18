@@ -12,6 +12,11 @@
     border-radius: 12px;
     margin-bottom: 30px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
 }
 
 .settings-header h2 {
@@ -22,6 +27,23 @@
 .settings-header p {
     margin: 0;
     opacity: 0.9;
+}
+
+.settings-header .help-btn {
+    background: white;
+    color: #28a745;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    transition: all 0.2s ease;
+}
+
+.settings-header .help-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    color: #1e7e34;
 }
 
 .notification-card {
@@ -69,8 +91,13 @@
 </style>
 
 <div class="settings-header">
-    <h2><i class="fas fa-envelope"></i> Personal Notification Settings</h2>
-    <p>Manage email recipients for celebrations and document expiry notifications</p>
+    <div>
+        <h2><i class="fas fa-envelope"></i> Personal Notification Settings</h2>
+        <p>Manage email recipients for celebrations and document expiry notifications</p>
+    </div>
+    <button type="button" class="help-btn" data-toggle="modal" data-target="#personalNotifHelpModal" title="Help">
+        <i class="fas fa-question-circle"></i> Help
+    </button>
 </div>
 
 {% for msg in messages %}
@@ -170,5 +197,159 @@
         <i class="fas fa-arrow-left"></i> Back to Personal
     </a>
 </div>
+
+<!-- ==================== PERSONAL NOTIFICATION SETTINGS HELP MODAL ==================== -->
+<div class="modal fade" id="personalNotifHelpModal" tabindex="-1" role="dialog" aria-labelledby="personalNotifHelpModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable" role="document">
+    <div class="modal-content">
+
+      <!-- Header -->
+      <div class="modal-header" style="background: linear-gradient(135deg, #28a745 0%, #1e7e34 100%); color: white;">
+        <div>
+          <h5 class="modal-title" id="personalNotifHelpModalLabel" style="font-weight:700; font-size:20px;">
+            <i class="fas fa-envelope"></i> Personal Notification Settings &mdash; User Guide
+          </h5>
+          <small style="opacity:0.85;">Manage who receives celebration reminders and document expiry alerts</small>
+        </div>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="color:white; opacity:0.9; font-size:28px;">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+
+      <!-- Tabs -->
+      <ul class="nav nav-tabs" role="tablist" style="background:#f8f9fa; padding:0 15px; border-bottom:2px solid #28a745;">
+        <li class="nav-item"><a class="nav-link active" data-toggle="tab" href="#pnOverview" role="tab"><i class="fas fa-info-circle"></i> Overview</a></li>
+        <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#pnHowItWorks" role="tab"><i class="fas fa-cogs"></i> How It Works</a></li>
+        <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#pnTypes" role="tab"><i class="fas fa-bell"></i> Notification Types</a></li>
+        <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#pnTips" role="tab"><i class="fas fa-lightbulb"></i> Tips</a></li>
+      </ul>
+
+      <!-- Body -->
+      <div class="modal-body" style="padding:25px; background:white;">
+        <div class="tab-content">
+
+          <!-- OVERVIEW -->
+          <div class="tab-pane fade show active" id="pnOverview" role="tabpanel">
+            <h6 style="color:#28a745; font-weight:700;"><i class="fas fa-envelope-open-text"></i> What is this page?</h6>
+            <p>Personal Notification Settings is the central place where you decide <strong>who in your family</strong> should receive personal email notifications from the system.</p>
+
+            <p>There are <strong>two types</strong> of personal notifications you can configure here:</p>
+            <ul>
+              <li><strong style="color:#28a745;">Celebration Reminders</strong> &mdash; Daily emails that remind you about upcoming birthdays, namedays and anniversaries.</li>
+              <li><strong style="color:#28a745;">Document Expiry Alerts</strong> &mdash; Twice-monthly emails that warn you about passports and IDs that are about to expire.</li>
+            </ul>
+
+            <div class="alert alert-info" style="border-left:4px solid #17a2b8;">
+              <i class="fas fa-info-circle"></i> <strong>Why is this important?</strong><br>
+              Without email addresses configured here, no one will receive these notifications &mdash; even if a celebration or document expiry date matches today.
+            </div>
+
+            <div class="alert alert-success" style="border-left:4px solid #28a745;">
+              <i class="fas fa-link"></i> <strong>Looking for business / property notifications?</strong> Things like Daily Property Reports, Lease Reminders, Invoice and Expense alerts, and the Friday Status Report are configured separately under <strong>Administration &rarr; Notification Settings</strong>.
+            </div>
+          </div>
+
+          <!-- HOW IT WORKS -->
+          <div class="tab-pane fade" id="pnHowItWorks" role="tabpanel">
+            <h6 style="color:#28a745; font-weight:700;"><i class="fas fa-cogs"></i> Understanding TO and CC</h6>
+            <p>Each notification type has two recipient fields, just like a normal email:</p>
+
+            <div class="card mb-3" style="border-left:4px solid #28a745;">
+              <div class="card-body">
+                <h6 style="color:#28a745;"><strong>TO: Primary Recipients</strong></h6>
+                <p class="mb-1">The main people who should receive &mdash; and act on &mdash; the notification.</p>
+                <p class="mb-0"><small class="text-muted">Example: <code>demetri@gmail.com, angy@gmail.com, erene@gmail.com</code></small></p>
+              </div>
+            </div>
+
+            <div class="card mb-3" style="border-left:4px solid #6c757d;">
+              <div class="card-body">
+                <h6 style="color:#6c757d;"><strong>CC: Carbon Copy Recipients (optional)</strong></h6>
+                <p class="mb-1">Additional people who should be kept informed but don't necessarily need to take action. Leave blank if not needed.</p>
+                <p class="mb-0"><small class="text-muted">Example: <code>angmaniasbakery@gmail.com</code></small></p>
+              </div>
+            </div>
+
+            <h6 style="color:#28a745; font-weight:700; margin-top:20px;"><i class="fas fa-keyboard"></i> Email Format</h6>
+            <ul>
+              <li>Enter <strong>one or many</strong> email addresses per field.</li>
+              <li>Separate multiple addresses with a <strong>comma</strong> &mdash; for example <code>email1@example.com, email2@example.com</code>.</li>
+              <li>Spaces after commas are fine and will be ignored.</li>
+            </ul>
+
+            <h6 style="color:#28a745; font-weight:700; margin-top:20px;"><i class="fas fa-save"></i> Saving Changes</h6>
+            <p>Each section (Celebration Reminders, Document Expiry Alerts) has its <strong>own Save button</strong>. After editing a section you must click Save in <em>that</em> section &mdash; changes in one section are independent of the other and are not saved together.</p>
+          </div>
+
+          <!-- NOTIFICATION TYPES -->
+          <div class="tab-pane fade" id="pnTypes" role="tabpanel">
+
+            <div class="card mb-3" style="border:1px solid #dee2e6;">
+              <div class="card-header" style="background:#28a745; color:white;">
+                <h6 style="margin:0;"><i class="fas fa-birthday-cake"></i> Celebration Reminders</h6>
+              </div>
+              <div class="card-body">
+                <p><strong>What it does:</strong> Sends email reminders for birthdays, namedays and anniversaries.</p>
+                <p><strong>When it sends:</strong> Every morning at 9:00 AM, but <strong>only on days where there is a matching event</strong> (1 week before, 1 day before, or same-day &mdash; based on each event's settings in the Celebrations module).</p>
+                <p><strong>Who is reminded:</strong> The recipients you list here, but only if the family member is also <strong>ticked on that specific event</strong> in the Celebrations module.</p>
+                <p class="mb-0"><strong>TO field hint:</strong> <em>Family members who should be reminded</em></p>
+              </div>
+            </div>
+
+            <div class="card mb-3" style="border:1px solid #dee2e6;">
+              <div class="card-header" style="background:#28a745; color:white;">
+                <h6 style="margin:0;"><i class="fas fa-id-card"></i> Document Expiry Alerts</h6>
+              </div>
+              <div class="card-body">
+                <p><strong>What it does:</strong> Warns you about passports and IDs that are about to expire (or have already expired).</p>
+                <p><strong>When it sends:</strong> Twice a month &mdash; on the <strong>1st and 15th</strong>.</p>
+                <p><strong>What's included:</strong> Any passport or ID expiring <strong>within the next 6 months</strong>, plus any that have already expired.</p>
+                <p class="mb-0"><strong>TO field hint:</strong> <em>Family members who manage documents</em></p>
+              </div>
+            </div>
+
+            <div class="alert alert-success" style="border-left:4px solid #28a745;">
+              <i class="fas fa-link"></i> <strong>Related modules:</strong> Celebrations, Passports / Documents.
+            </div>
+          </div>
+
+          <!-- TIPS -->
+          <div class="tab-pane fade" id="pnTips" role="tabpanel">
+            <h6 style="color:#28a745; font-weight:700;"><i class="fas fa-lightbulb"></i> Best Practices</h6>
+            <ul>
+              <li><strong>Add multiple recipients</strong> &mdash; if one person is on holiday, others will still see the notification.</li>
+              <li><strong>Use CC for awareness</strong> &mdash; keep someone in the loop without making them responsible for action.</li>
+              <li><strong>Save each section separately</strong> &mdash; don't forget to click the Save button in the section you've edited.</li>
+              <li><strong>Test with your own email first</strong> &mdash; before adding others, save with just your address to confirm you receive the next scheduled notification.</li>
+              <li><strong>Keep it tidy</strong> &mdash; remove old or obsolete email addresses to avoid noise.</li>
+              <li><strong>Pair with the Celebrations module</strong> &mdash; adding an email here doesn't automatically tick that person on every event. You must also tick "Notify These People" on each celebration for them to be included.</li>
+            </ul>
+
+            <div class="alert alert-warning" style="border-left:4px solid #ffc107;">
+              <i class="fas fa-exclamation-triangle"></i> <strong>Not receiving a celebration notification?</strong> Check three things:
+              <ol class="mb-0 mt-2">
+                <li>Is the email address registered <strong>here</strong> (in Notification Settings)?</li>
+                <li>Is the person <strong>ticked</strong> on the specific event in Celebrations?</li>
+                <li>Is the timing (1 week / 1 day / same day) <strong>enabled</strong> on that event?</li>
+              </ol>
+              All three conditions must be true for the email to be sent.
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="modal-footer" style="background:#f8f9fa; border-top:1px solid #dee2e6;">
+        <small class="text-muted" style="flex:1;">Alivente Online &mdash; Personal Notification Settings User Guide</small>
+        <button type="button" class="btn btn-sm" data-dismiss="modal" style="background:linear-gradient(135deg,#28a745,#1e7e34); color:white; border:none;">
+          <i class="fas fa-times"></i> Close
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
+<!-- ==================== END PERSONAL NOTIFICATION SETTINGS HELP MODAL ==================== -->
 
 {% endblock %}

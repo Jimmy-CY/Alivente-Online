@@ -183,6 +183,9 @@
     <div class="page-header">
         <h1><i class="fas fa-users-cog"></i> User Administration</h1>
         <div style="display:flex; gap:10px; align-items:center;">
+            <button type="button" class="btn btn-light btn-sm" data-toggle="modal" data-target="#userAdminHelpModal">
+                <i class="fas fa-question-circle"></i> Help
+            </button>
             <a href="{% url 'user_add' %}" class="btn btn-success btn-sm">
                 <i class="fas fa-user-plus"></i> Add User
             </a>
@@ -213,6 +216,8 @@
                             <div class="user-avatar">
                                 {% if user.profile.profile_photo %}
                                     <img src="{{ user.profile.profile_photo.url }}" alt="{{ user.username }}">
+                                {% elif user.first_name and user.last_name %}
+                                    {{ user.first_name|first|upper }}{{ user.last_name|first|upper }}
                                 {% else %}
                                     {{ user.username|first|upper }}
                                 {% endif %}
@@ -337,6 +342,226 @@
         </div>
     </div>
 </div>
+
+<!-- ==================== USER ADMINISTRATION HELP MODAL ==================== -->
+<div class="modal fade" id="userAdminHelpModal" tabindex="-1" role="dialog" aria-labelledby="userAdminHelpModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable" role="document">
+    <div class="modal-content">
+
+      <!-- Header -->
+      <div class="modal-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+        <div>
+          <h5 class="modal-title" id="userAdminHelpModalLabel" style="font-weight:700; font-size:20px;">
+            <i class="fas fa-users-cog"></i> User Administration &mdash; User Guide
+          </h5>
+          <small style="opacity:0.85;">Manage system users, roles, permissions and account status</small>
+        </div>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="color:white; opacity:0.9; font-size:28px; text-shadow:none;">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+
+      <!-- Tabs -->
+      <ul class="nav nav-tabs" role="tablist" style="background:#f8f9fa; padding:0 15px; border-bottom:2px solid #667eea;">
+        <li class="nav-item"><a class="nav-link active" data-toggle="tab" href="#uaOverview" role="tab"><i class="fas fa-info-circle"></i> Overview</a></li>
+        <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#uaTable" role="tab"><i class="fas fa-table"></i> The User Table</a></li>
+        <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#uaRoles" role="tab"><i class="fas fa-id-badge"></i> Roles</a></li>
+        <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#uaActions" role="tab"><i class="fas fa-tools"></i> Actions</a></li>
+        <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#uaTips" role="tab"><i class="fas fa-lightbulb"></i> Tips</a></li>
+      </ul>
+
+      <!-- Body -->
+      <div class="modal-body" style="padding:25px; background:white;">
+        <div class="tab-content">
+
+          <!-- OVERVIEW -->
+          <div class="tab-pane fade show active" id="uaOverview" role="tabpanel">
+            <h6 style="color:#667eea; font-weight:700;"><i class="fas fa-users-cog"></i> What is User Administration?</h6>
+            <p>User Administration is the central place to manage <strong>everyone who can log into Alivente Online</strong>. From this single screen you can:</p>
+            <ul>
+              <li><strong>Add</strong> new users</li>
+              <li><strong>Edit</strong> existing user details (name, email, role, password)</li>
+              <li><strong>Manage permissions</strong> &mdash; grant or revoke access to individual modules</li>
+              <li><strong>Disable</strong> users so they can no longer log in (without losing their data)</li>
+              <li><strong>Re-enable</strong> previously disabled users</li>
+              <li><strong>Delete</strong> users permanently (only available once disabled)</li>
+            </ul>
+
+            <h6 style="color:#667eea; font-weight:700; margin-top:20px;"><i class="fas fa-route"></i> How to get here</h6>
+            <p>Administration <i class="fas fa-arrow-right"></i> System tab <i class="fas fa-arrow-right"></i> User Administration card.</p>
+
+            <div class="alert alert-warning" style="border-left:4px solid #ffc107;">
+              <i class="fas fa-shield-alt"></i> <strong>Superuser only:</strong> User Administration sits inside the Administration page, which is itself Superuser-only. Regular users cannot reach this screen.
+            </div>
+          </div>
+
+          <!-- USER TABLE -->
+          <div class="tab-pane fade" id="uaTable" role="tabpanel">
+            <h6 style="color:#667eea; font-weight:700;"><i class="fas fa-table"></i> The user table</h6>
+            <p>Every registered user appears as one row, with six columns:</p>
+
+            <div class="card mb-2" style="border-left:4px solid #667eea;">
+              <div class="card-body" style="padding:12px 15px;">
+                <h6 style="margin:0 0 5px 0;"><strong>User</strong></h6>
+                <p class="mb-0" style="font-size:13px;">A circular avatar (uploaded photo if available, otherwise the user's initials, or as a final fallback the first letter of the username), the user's full name, and their email address. "No email" is shown if none was set.</p>
+              </div>
+            </div>
+
+            <div class="card mb-2" style="border-left:4px solid #667eea;">
+              <div class="card-body" style="padding:12px 15px;">
+                <h6 style="margin:0 0 5px 0;"><strong>Role</strong></h6>
+                <p class="mb-0" style="font-size:13px;">A coloured badge: <span class="badge-superuser" style="display:inline-block;"><i class="fas fa-crown"></i> Superuser</span> or <span class="badge-user" style="display:inline-block;"><i class="fas fa-user"></i> User</span>. See the Roles tab for what each one means.</p>
+              </div>
+            </div>
+
+            <div class="card mb-2" style="border-left:4px solid #667eea;">
+              <div class="card-body" style="padding:12px 15px;">
+                <h6 style="margin:0 0 5px 0;"><strong>Status</strong></h6>
+                <p class="mb-0" style="font-size:13px;"><span style="color:#28a745;"><i class="fas fa-circle" style="font-size:8px;"></i> <strong>Active</strong></span> &mdash; can log in. <span style="color:#dc3545;"><i class="fas fa-circle" style="font-size:8px;"></i> <strong>Disabled</strong></span> &mdash; account exists but login is blocked.</p>
+              </div>
+            </div>
+
+            <div class="card mb-2" style="border-left:4px solid #667eea;">
+              <div class="card-body" style="padding:12px 15px;">
+                <h6 style="margin:0 0 5px 0;"><strong>Last Login</strong></h6>
+                <p class="mb-0" style="font-size:13px;">Date and time of the user's most recent login. Shows <em>Never</em> in grey if they've never signed in.</p>
+              </div>
+            </div>
+
+            <div class="card mb-2" style="border-left:4px solid #667eea;">
+              <div class="card-body" style="padding:12px 15px;">
+                <h6 style="margin:0 0 5px 0;"><strong>Date Joined</strong></h6>
+                <p class="mb-0" style="font-size:13px;">When the user account was originally created.</p>
+              </div>
+            </div>
+
+            <div class="card mb-3" style="border-left:4px solid #667eea;">
+              <div class="card-body" style="padding:12px 15px;">
+                <h6 style="margin:0 0 5px 0;"><strong>Actions</strong></h6>
+                <p class="mb-0" style="font-size:13px;">A row of small coloured buttons. The button set changes depending on whether the user is Active or Disabled &mdash; see the Actions tab.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- ROLES -->
+          <div class="tab-pane fade" id="uaRoles" role="tabpanel">
+            <h6 style="color:#667eea; font-weight:700;"><i class="fas fa-id-badge"></i> The two roles</h6>
+            <p>Every user has one role, shown as a coloured badge in the User table.</p>
+
+            <div class="card mb-3" style="border-left:4px solid #667eea;">
+              <div class="card-body">
+                <h6><span class="badge-superuser"><i class="fas fa-crown"></i> Superuser</span></h6>
+                <p class="mb-0">Full administrative access. Superusers <strong>automatically</strong> have access to every module &mdash; the Permissions screen for a Superuser is informational only and any module checkboxes are ignored. Use sparingly &mdash; this role can do everything, including managing other users.</p>
+              </div>
+            </div>
+
+            <div class="card mb-3" style="border-left:4px solid #6c757d;">
+              <div class="card-body">
+                <h6><span class="badge-user"><i class="fas fa-user"></i> User</span></h6>
+                <p class="mb-0">Standard access &mdash; the default role for new accounts. Module access is fully controlled by the Permissions screen.</p>
+              </div>
+            </div>
+
+            <div class="alert alert-info" style="border-left:4px solid #667eea;">
+              <i class="fas fa-info-circle"></i> <strong>Choosing a role:</strong> Default everyone to <strong>User</strong> and grant only the modules they need via Permissions. Reserve <strong>Superuser</strong> for the small number of people who genuinely need to administer the whole system.
+            </div>
+          </div>
+
+          <!-- ACTIONS -->
+          <div class="tab-pane fade" id="uaActions" role="tabpanel">
+            <h6 style="color:#667eea; font-weight:700;"><i class="fas fa-tools"></i> Available actions</h6>
+            <p>One header action and a set of per-user row actions.</p>
+
+            <div class="card mb-3" style="border-left:4px solid #28a745;">
+              <div class="card-body">
+                <h6 style="color:#28a745;"><i class="fas fa-user-plus"></i> <strong>Add User</strong> <small class="text-muted">(top-right)</small></h6>
+                <p class="mb-1">Opens the <em>Add New User</em> form, which collects:</p>
+                <ul class="mb-0">
+                  <li><strong>Personal Information</strong> &mdash; First Name, Last Name, Username (required), Email Address</li>
+                  <li><strong>Password</strong> &mdash; Password and Confirm Password (must match)</li>
+                  <li><strong>Role &amp; Status</strong> &mdash; pick <strong>User</strong> or <strong>Superuser</strong>, and tick <em>Active</em> so they can log in immediately</li>
+                </ul>
+              </div>
+            </div>
+
+            <h6 style="color:#667eea; font-weight:700; margin-top:25px;">Per-user row actions</h6>
+
+            <div class="card mb-2" style="border-left:4px solid #ffc107;">
+              <div class="card-body" style="padding:12px 15px;">
+                <h6 style="margin:0 0 5px 0; color:#856404;"><i class="fas fa-pencil-alt"></i> <strong>Edit</strong> <small class="text-muted">(yellow)</small></h6>
+                <p class="mb-0" style="font-size:13px;">Update the user's name, email, role or password. Always available regardless of status.</p>
+              </div>
+            </div>
+
+            <div class="card mb-2" style="border-left:4px solid #17a2b8;">
+              <div class="card-body" style="padding:12px 15px;">
+                <h6 style="margin:0 0 5px 0; color:#17a2b8;"><i class="fas fa-key"></i> <strong>Permissions</strong> <small class="text-muted">(teal)</small></h6>
+                <p class="mb-1" style="font-size:13px;">Opens the Permissions screen, where you tick which of the 12 modules the user can access (Properties, Tenants, Suppliers, Expenses, Petty Cash, Financials, Invoices, Projects, Issues, Dashboard, Administration, Personal).</p>
+                <p class="mb-0" style="font-size:13px;"><strong>Superusers automatically get all 12</strong> &mdash; the checkboxes are read-only for Superuser accounts.</p>
+              </div>
+            </div>
+
+            <div class="card mb-2" style="border-left:4px solid #dc3545;">
+              <div class="card-body" style="padding:12px 15px;">
+                <h6 style="margin:0 0 5px 0; color:#dc3545;"><i class="fas fa-ban"></i> <strong>Disable</strong> <small class="text-muted">(red, only for Active users)</small></h6>
+                <p class="mb-0" style="font-size:13px;">Blocks the user from logging in. Their account and data remain intact &mdash; nothing is lost. A confirmation popup asks you to confirm before applying.</p>
+              </div>
+            </div>
+
+            <div class="card mb-2" style="border-left:4px solid #28a745;">
+              <div class="card-body" style="padding:12px 15px;">
+                <h6 style="margin:0 0 5px 0; color:#28a745;"><i class="fas fa-check"></i> <strong>Enable</strong> <small class="text-muted">(green, only for Disabled users)</small></h6>
+                <p class="mb-0" style="font-size:13px;">Restores login access for a previously disabled user. Replaces the Disable button on disabled rows.</p>
+              </div>
+            </div>
+
+            <div class="card mb-2" style="border-left:4px solid #dc3545;">
+              <div class="card-body" style="padding:12px 15px;">
+                <h6 style="margin:0 0 5px 0; color:#dc3545;"><i class="fas fa-trash"></i> <strong>Delete</strong> <small class="text-muted">(red, only for Disabled users)</small></h6>
+                <p class="mb-1" style="font-size:13px;"><strong>Permanently removes the user and all their associated data</strong> &mdash; meal plans, favourites and any other records. Cannot be undone.</p>
+                <p class="mb-0" style="font-size:13px;">Only available for users who are already disabled. The two-step requirement (Disable first, then Delete) is intentional &mdash; it forces a deliberate pause before destructive action.</p>
+              </div>
+            </div>
+
+            <div class="alert alert-info" style="border-left:4px solid #667eea;">
+              <i class="fas fa-info-circle"></i> <strong>Action button visibility:</strong> Active users show <em>Edit, Permissions, Disable</em>. Disabled users show <em>Edit, Permissions, Enable, Delete</em>.
+            </div>
+          </div>
+
+          <!-- TIPS -->
+          <div class="tab-pane fade" id="uaTips" role="tabpanel">
+            <h6 style="color:#667eea; font-weight:700;"><i class="fas fa-lightbulb"></i> Best Practices</h6>
+            <ul>
+              <li><strong>Disable rather than delete</strong> &mdash; if someone leaves the team, disable their account. You can always re-enable later if they come back. Delete only when you're certain you'll never need their historical activity.</li>
+              <li><strong>Default new users to "User"</strong> &mdash; grant least privilege. Add only the modules they need via Permissions. Promote to Superuser only when justified.</li>
+              <li><strong>Be sparing with Superuser</strong> &mdash; this role bypasses the Permissions screen entirely. The fewer Superusers, the safer your system.</li>
+              <li><strong>Watch for "Never" Last Login</strong> &mdash; an account that has never logged in is either a failed setup, a forgotten invitation, or a placeholder. Confirm it's intentional or chase the person to log in.</li>
+              <li><strong>Email is important</strong> &mdash; it's where notifications go. Always set a real email when creating a user. "No email" accounts won't receive any system alerts.</li>
+              <li><strong>Don't bother editing Superuser permissions</strong> &mdash; they're ignored. The Permissions screen for Superusers is read-only.</li>
+              <li><strong>Use the avatar as a quick visual cue</strong> &mdash; users with profile photos appear immediately recognisable. Encourage your team to upload one in My Profile.</li>
+              <li><strong>Test permission changes by logging in as that user</strong> &mdash; the cleanest way to confirm someone has the access you intended is to actually try it.</li>
+            </ul>
+
+            <div class="alert alert-warning" style="border-left:4px solid #ffc107;">
+              <i class="fas fa-exclamation-triangle"></i> <strong>Don't disable yourself!</strong> If you disable your own account you'll be locked out at next login. There's no built-in protection against this &mdash; double-check the username before clicking Disable on yourself.
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="modal-footer" style="background:#f8f9fa; border-top:1px solid #dee2e6;">
+        <small class="text-muted" style="flex:1;">Alivente Online &mdash; User Administration User Guide</small>
+        <button type="button" class="btn btn-sm" data-dismiss="modal" style="background:linear-gradient(135deg,#667eea,#764ba2); color:white; border:none;">
+          <i class="fas fa-times"></i> Close
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
+<!-- ==================== END USER ADMINISTRATION HELP MODAL ==================== -->
 
 <script>
 function confirmToggle(userId, username, enable) {

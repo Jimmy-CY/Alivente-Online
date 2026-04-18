@@ -12,6 +12,11 @@
     border-radius: 12px;
     margin-bottom: 30px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
 }
 
 .settings-header h2 {
@@ -22,6 +27,23 @@
 .settings-header p {
     margin: 0;
     opacity: 0.9;
+}
+
+.settings-header .help-btn {
+    background: white;
+    color: #17a2b8;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    transition: all 0.2s ease;
+}
+
+.settings-header .help-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    color: #138496;
 }
 
 .notification-card {
@@ -69,8 +91,13 @@
 </style>
 
 <div class="settings-header">
-    <h2><i class="fas fa-envelope"></i> Administration Notification Settings</h2>
-    <p>Manage email recipients for property management and operational notifications</p>
+    <div>
+        <h2><i class="fas fa-envelope"></i> Administration Notification Settings</h2>
+        <p>Manage email recipients for property management and operational notifications</p>
+    </div>
+    <button type="button" class="help-btn" data-toggle="modal" data-target="#adminNotifHelpModal" title="Help">
+        <i class="fas fa-question-circle"></i> Help
+    </button>
 </div>
 
 {% for msg in messages %}
@@ -392,5 +419,262 @@
         <i class="fas fa-arrow-left"></i> Back to Administration
     </a>
 </div>
+
+<!-- ==================== ADMINISTRATION NOTIFICATION SETTINGS HELP MODAL ==================== -->
+<div class="modal fade" id="adminNotifHelpModal" tabindex="-1" role="dialog" aria-labelledby="adminNotifHelpModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable" role="document">
+    <div class="modal-content">
+
+      <!-- Header -->
+      <div class="modal-header" style="background: linear-gradient(135deg, #17a2b8 0%, #138496 100%); color: white;">
+        <div>
+          <h5 class="modal-title" id="adminNotifHelpModalLabel" style="font-weight:700; font-size:20px;">
+            <i class="fas fa-envelope"></i> Administration Notification Settings &mdash; User Guide
+          </h5>
+          <small style="opacity:0.85;">Manage email recipients for property management and operational notifications</small>
+        </div>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="color:white; opacity:0.9; font-size:28px;">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+
+      <!-- Tabs -->
+      <ul class="nav nav-tabs" role="tablist" style="background:#f8f9fa; padding:0 15px; border-bottom:2px solid #17a2b8;">
+        <li class="nav-item"><a class="nav-link active" data-toggle="tab" href="#anOverview" role="tab"><i class="fas fa-info-circle"></i> Overview</a></li>
+        <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#anHowItWorks" role="tab"><i class="fas fa-cogs"></i> How It Works</a></li>
+        <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#anTypes" role="tab"><i class="fas fa-bell"></i> Notification Types</a></li>
+        <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#anWorkflows" role="tab"><i class="fas fa-project-diagram"></i> Workflows</a></li>
+        <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#anTips" role="tab"><i class="fas fa-lightbulb"></i> Tips</a></li>
+      </ul>
+
+      <!-- Body -->
+      <div class="modal-body" style="padding:25px; background:white;">
+        <div class="tab-content">
+
+          <!-- OVERVIEW -->
+          <div class="tab-pane fade show active" id="anOverview" role="tabpanel">
+            <h6 style="color:#17a2b8; font-weight:700;"><i class="fas fa-envelope-open-text"></i> What is this page?</h6>
+            <p>Administration Notification Settings is the central place where you decide <strong>who in the organisation</strong> receives operational email notifications &mdash; covering property management, leases, invoices, expenses and the weekly status report.</p>
+
+            <p>There are <strong>eight notification types</strong> you can configure on this page:</p>
+            <ol>
+              <li>Daily Property Management Report</li>
+              <li>New Lease Upload Reminders</li>
+              <li>Invoice Marked as Paid</li>
+              <li>Expense Needs Approval</li>
+              <li>Expense Approved</li>
+              <li>Expense Paid</li>
+              <li>Friday Status Report (Submitted by Supervisor)</li>
+              <li>Friday Status Report (Submitted by Staff)</li>
+            </ol>
+
+            <div class="alert alert-info" style="border-left:4px solid #17a2b8;">
+              <i class="fas fa-info-circle"></i> <strong>Why is this important?</strong><br>
+              Each notification represents a real business event &mdash; an invoice paid, an expense awaiting approval, a lease about to be uploaded. Configuring the right recipients for each one ensures the right person sees the right alert at the right time.
+            </div>
+
+            <div class="alert alert-success" style="border-left:4px solid #28a745;">
+              <i class="fas fa-link"></i> <strong>Looking for personal notifications?</strong> Birthday and anniversary reminders, plus passport / ID expiry alerts, are configured separately under <strong>Personal &rarr; Notification Settings</strong>.
+            </div>
+          </div>
+
+          <!-- HOW IT WORKS -->
+          <div class="tab-pane fade" id="anHowItWorks" role="tabpanel">
+            <h6 style="color:#17a2b8; font-weight:700;"><i class="fas fa-cogs"></i> Understanding TO and CC</h6>
+            <p>Each of the eight notification types has the same two recipient fields, just like a normal email:</p>
+
+            <div class="card mb-3" style="border-left:4px solid #17a2b8;">
+              <div class="card-body">
+                <h6 style="color:#17a2b8;"><strong>TO: Primary Recipients</strong></h6>
+                <p class="mb-1">The main person (or people) responsible for acting on the notification.</p>
+                <p class="mb-0"><small class="text-muted">Example: <code>stella.simitopoulos@alivente.com</code></small></p>
+              </div>
+            </div>
+
+            <div class="card mb-3" style="border-left:4px solid #6c757d;">
+              <div class="card-body">
+                <h6 style="color:#6c757d;"><strong>CC: Carbon Copy Recipients (optional)</strong></h6>
+                <p class="mb-1">Additional people who should be kept informed for visibility but don't need to take action. Leave blank if not needed.</p>
+                <p class="mb-0"><small class="text-muted">Example: <code>angmaniasbakery@gmail.com</code></small></p>
+              </div>
+            </div>
+
+            <h6 style="color:#17a2b8; font-weight:700; margin-top:20px;"><i class="fas fa-keyboard"></i> Email Format</h6>
+            <ul>
+              <li>Enter <strong>one or many</strong> email addresses per field.</li>
+              <li>Separate multiple addresses with a <strong>comma</strong> &mdash; for example <code>email1@example.com, email2@example.com</code>.</li>
+              <li>Spaces after commas are fine and will be ignored.</li>
+            </ul>
+
+            <h6 style="color:#17a2b8; font-weight:700; margin-top:20px;"><i class="fas fa-save"></i> Saving Changes</h6>
+            <p>Each notification section has its <strong>own Save button</strong>. After editing a section you must click Save in <em>that</em> section &mdash; the eight sections are saved independently of each other.</p>
+
+            <div class="alert alert-warning" style="border-left:4px solid #ffc107;">
+              <i class="fas fa-exclamation-triangle"></i> <strong>Tip:</strong> If you edit several sections, click Save in each one before navigating away. Unsaved changes will be lost.
+            </div>
+          </div>
+
+          <!-- NOTIFICATION TYPES -->
+          <div class="tab-pane fade" id="anTypes" role="tabpanel">
+
+            <div class="card mb-3" style="border:1px solid #dee2e6;">
+              <div class="card-header" style="background:#17a2b8; color:white;">
+                <h6 style="margin:0;"><i class="fas fa-chart-line"></i> 1. Daily Property Management Report</h6>
+              </div>
+              <div class="card-body">
+                <p><strong>What it does:</strong> Automated daily report covering vacant properties, expiring leases and overdue invoices.</p>
+                <p><strong>When it sends:</strong> Once a day, automatically.</p>
+                <p class="mb-0"><strong>Typical recipient:</strong> Property managers and supervisors who need to take daily operational action.</p>
+              </div>
+            </div>
+
+            <div class="card mb-3" style="border:1px solid #dee2e6;">
+              <div class="card-header" style="background:#17a2b8; color:white;">
+                <h6 style="margin:0;"><i class="fas fa-file-contract"></i> 2. New Lease Upload Reminders</h6>
+              </div>
+              <div class="card-body">
+                <p><strong>What it does:</strong> Urgent notifications when a new lease agreement needs to be uploaded into the system.</p>
+                <p class="mb-0"><strong>Typical recipient:</strong> The person responsible for uploading and managing lease documents.</p>
+              </div>
+            </div>
+
+            <div class="card mb-3" style="border:1px solid #dee2e6;">
+              <div class="card-header" style="background:#17a2b8; color:white;">
+                <h6 style="margin:0;"><i class="fas fa-receipt"></i> 3. Invoice Marked as Paid</h6>
+              </div>
+              <div class="card-body">
+                <p><strong>What it does:</strong> Triggered when an invoice is marked as paid in the system.</p>
+                <p class="mb-0"><strong>Typical recipient:</strong> The person who tracks invoice payments and reconciles accounts.</p>
+              </div>
+            </div>
+
+            <div class="card mb-3" style="border:1px solid #dee2e6;">
+              <div class="card-header" style="background:#17a2b8; color:white;">
+                <h6 style="margin:0;"><i class="fas fa-clipboard-check"></i> 4. Expense Needs Approval</h6>
+              </div>
+              <div class="card-body">
+                <p><strong>What it does:</strong> Triggered when a non-supervisor user creates an expense that requires approval.</p>
+                <p class="mb-0"><strong>Typical recipient:</strong> The person who approves expenses (usually a supervisor).</p>
+              </div>
+            </div>
+
+            <div class="card mb-3" style="border:1px solid #dee2e6;">
+              <div class="card-header" style="background:#17a2b8; color:white;">
+                <h6 style="margin:0;"><i class="fas fa-check-circle"></i> 5. Expense Approved</h6>
+              </div>
+              <div class="card-body">
+                <p><strong>What it does:</strong> Triggered when an expense has been approved and is now pending payment.</p>
+                <p class="mb-0"><strong>Typical recipient:</strong> The person who processes payments &mdash; this is their cue to pay.</p>
+              </div>
+            </div>
+
+            <div class="card mb-3" style="border:1px solid #dee2e6;">
+              <div class="card-header" style="background:#17a2b8; color:white;">
+                <h6 style="margin:0;"><i class="fas fa-money-check-alt"></i> 6. Expense Paid</h6>
+              </div>
+              <div class="card-body">
+                <p><strong>What it does:</strong> Triggered when an expense has been marked as paid in the system.</p>
+                <p class="mb-0"><strong>Typical recipient:</strong> The person who tracks completed expenses for record-keeping.</p>
+              </div>
+            </div>
+
+            <div class="card mb-3" style="border:1px solid #dee2e6;">
+              <div class="card-header" style="background:#17a2b8; color:white;">
+                <h6 style="margin:0;"><i class="fas fa-flag-checkered"></i> 7. Friday Status Report (Submitted by Supervisor)</h6>
+              </div>
+              <div class="card-body">
+                <p><strong>What it does:</strong> Triggered when a supervisor submits the Friday Status Report.</p>
+                <p class="mb-0"><strong>Typical recipient:</strong> The main recipient of the supervisor's weekly report (usually senior management or ownership).</p>
+              </div>
+            </div>
+
+            <div class="card mb-3" style="border:1px solid #dee2e6;">
+              <div class="card-header" style="background:#17a2b8; color:white;">
+                <h6 style="margin:0;"><i class="fas fa-flag-checkered"></i> 8. Friday Status Report (Submitted by Staff)</h6>
+              </div>
+              <div class="card-body">
+                <p><strong>What it does:</strong> Triggered when a non-supervisor staff member submits the Friday Status Report.</p>
+                <p class="mb-0"><strong>Typical recipient:</strong> The supervisor (so they can review the staff report before passing it up the chain).</p>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- WORKFLOWS -->
+          <div class="tab-pane fade" id="anWorkflows" role="tabpanel">
+            <h6 style="color:#17a2b8; font-weight:700;"><i class="fas fa-project-diagram"></i> How notifications support business processes</h6>
+            <p>Several notifications work together as a chain &mdash; configuring them correctly turns the system into an end-to-end alerting pipeline.</p>
+
+            <div class="card mb-3" style="border-left:4px solid #17a2b8;">
+              <div class="card-body">
+                <h6 style="color:#17a2b8;"><i class="fas fa-arrow-right"></i> Expense Approval Chain</h6>
+                <ol class="mb-0">
+                  <li><strong>Staff member creates an expense</strong> &rarr; <em>Expense Needs Approval</em> notifies the approver.</li>
+                  <li><strong>Approver approves it</strong> &rarr; <em>Expense Approved</em> notifies the payer.</li>
+                  <li><strong>Payer pays it</strong> &rarr; <em>Expense Paid</em> notifies the tracker for record-keeping.</li>
+                </ol>
+              </div>
+            </div>
+
+            <div class="card mb-3" style="border-left:4px solid #17a2b8;">
+              <div class="card-body">
+                <h6 style="color:#17a2b8;"><i class="fas fa-arrow-right"></i> Friday Status Report Chain</h6>
+                <ol class="mb-0">
+                  <li><strong>Staff submit their reports</strong> &rarr; <em>Friday Status Report (Staff)</em> notifies the supervisor for review.</li>
+                  <li><strong>Supervisor submits the consolidated report</strong> &rarr; <em>Friday Status Report (Supervisor)</em> notifies senior management.</li>
+                </ol>
+              </div>
+            </div>
+
+            <div class="card mb-3" style="border-left:4px solid #17a2b8;">
+              <div class="card-body">
+                <h6 style="color:#17a2b8;"><i class="fas fa-arrow-right"></i> Daily Operational Awareness</h6>
+                <p class="mb-0">The <em>Daily Property Management Report</em> and <em>New Lease Upload Reminders</em> work as proactive nudges &mdash; the system tells managers what needs doing rather than waiting for them to log in and check.</p>
+              </div>
+            </div>
+
+            <div class="alert alert-info" style="border-left:4px solid #17a2b8;">
+              <i class="fas fa-lightbulb"></i> <strong>Design tip:</strong> Set <strong>different people</strong> in TO at each step of a chain. If the same person appears in TO at every step they'll get email fatigue and start ignoring alerts. Use CC for visibility, TO for action.
+            </div>
+          </div>
+
+          <!-- TIPS -->
+          <div class="tab-pane fade" id="anTips" role="tabpanel">
+            <h6 style="color:#17a2b8; font-weight:700;"><i class="fas fa-lightbulb"></i> Best Practices</h6>
+            <ul>
+              <li><strong>Match the recipient to the role</strong> &mdash; the person in TO should be the one who actually does something with the notification, not a generic inbox.</li>
+              <li><strong>Always have a backup</strong> &mdash; add a second TO recipient (or CC) so cover is in place when the primary person is out.</li>
+              <li><strong>Use CC for visibility</strong> &mdash; senior managers often want to know what's happening without being on the hook to act.</li>
+              <li><strong>Save each section separately</strong> &mdash; each of the eight notifications has its own Save button.</li>
+              <li><strong>Avoid email fatigue</strong> &mdash; don't put the same person in TO across all eight notifications, or they'll start ignoring everything.</li>
+              <li><strong>Test changes</strong> &mdash; after editing a section, trigger the relevant action (e.g. mark a test invoice as paid) to confirm the notification reaches the right inbox.</li>
+              <li><strong>Review periodically</strong> &mdash; staff change roles, leave, or take on new responsibilities. Review these settings every few months.</li>
+            </ul>
+
+            <div class="alert alert-warning" style="border-left:4px solid #ffc107;">
+              <i class="fas fa-exclamation-triangle"></i> <strong>Not receiving an expected notification?</strong> Check three things:
+              <ol class="mb-0 mt-2">
+                <li>Is the email address registered <strong>here</strong> in the relevant section?</li>
+                <li>Did you click <strong>Save</strong> on that specific section after editing?</li>
+                <li>Is the email being filtered into spam? Whitelist the sending address.</li>
+              </ol>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="modal-footer" style="background:#f8f9fa; border-top:1px solid #dee2e6;">
+        <small class="text-muted" style="flex:1;">Alivente Online &mdash; Administration Notification Settings User Guide</small>
+        <button type="button" class="btn btn-sm" data-dismiss="modal" style="background:linear-gradient(135deg,#17a2b8,#138496); color:white; border:none;">
+          <i class="fas fa-times"></i> Close
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
+<!-- ==================== END ADMINISTRATION NOTIFICATION SETTINGS HELP MODAL ==================== -->
 
 {% endblock %}
