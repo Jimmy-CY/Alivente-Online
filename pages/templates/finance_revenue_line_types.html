@@ -2,15 +2,11 @@
 {% load static %}
 {% load humanize %}
 {% load custom_filters %} 
-
 {% block title %}
 {% endblock %}
-
 {% block content %}
-
 <h2><center>ALIVENTE ONLINE - REVENUE LINE TYPES</center></h2>
 <br/>
-
   {% for msg in messages %}
     <div class="alert alert-secondary alert-dismissible fade show auto-dismiss" role="alert">
       <strong></strong> <center>{{ msg }}</center>
@@ -31,10 +27,12 @@
   {% endfor %}
   
 {% if user.is_superuser %}
-
 <body>
   
   <div style="display: flex ; justify-content: flex-end">
+    <button type="button" class="btn btn-info" style="margin-right:16px" data-toggle="modal" data-target="#revenueLineTypesHelpModal">
+      <i class="fas fa-question-circle"></i> Help
+    </button>
     <a href="{% url 'finance_revenue_line_types_add' %}" class="btn btn-info" style="margin-right:16px" type="button">Add New</a>
     <a href="{% url 'finance' %}" class="btn btn-info" style="margin-right:16px" role="button">Back</a>
   </div>
@@ -66,8 +64,161 @@
     </table>    
   </div>
 </form>
+
+<!-- ==================== REVENUE LINE TYPES HELP MODAL ==================== -->
+<div class="modal fade" id="revenueLineTypesHelpModal" tabindex="-1" role="dialog" aria-labelledby="revenueLineTypesHelpModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable" role="document">
+    <div class="modal-content">
+
+      <!-- Header -->
+      <div class="modal-header" style="background: linear-gradient(135deg, #17a2b8 0%, #138496 100%); color: white;">
+        <div>
+          <h5 class="modal-title" id="revenueLineTypesHelpModalLabel" style="font-weight:700; font-size:20px;">
+            <i class="fas fa-tags"></i> Revenue Line Types &mdash; User Guide
+          </h5>
+          <small style="opacity:0.85;">Define the categories of income that appear as rows in the Profit &amp; Loss Statement</small>
+        </div>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="color:white; opacity:0.9; font-size:28px;">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+
+      <!-- Tabs -->
+      <div class="modal-body" style="padding:0;">
+        <ul class="nav nav-tabs" id="revenueLineTypesHelpTabs" role="tablist" style="border-bottom:2px solid #17a2b8; padding:0 20px; background:#f8f9fa;">
+          <li class="nav-item">
+            <a class="nav-link active" id="rlt-overview-tab" data-toggle="tab" href="#rlt-overview" role="tab" style="color:#17a2b8; font-weight:600;">
+              <i class="fas fa-info-circle"></i> Overview
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" id="rlt-table-tab" data-toggle="tab" href="#rlt-table" role="tab" style="color:#495057; font-weight:600;">
+              <i class="fas fa-table"></i> The Table
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" id="rlt-addedit-tab" data-toggle="tab" href="#rlt-addedit" role="tab" style="color:#495057; font-weight:600;">
+              <i class="fas fa-plus-circle"></i> Add / Edit
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" id="rlt-tips-tab" data-toggle="tab" href="#rlt-tips" role="tab" style="color:#495057; font-weight:600;">
+              <i class="fas fa-lightbulb"></i> Tips
+            </a>
+          </li>
+        </ul>
+
+        <div class="tab-content" id="revenueLineTypesHelpTabsContent" style="padding:25px 30px; max-height:60vh; overflow-y:auto;">
+
+          <!-- ============ OVERVIEW TAB ============ -->
+          <div class="tab-pane fade show active" id="rlt-overview" role="tabpanel">
+            <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-info-circle"></i> What are Revenue Line Types?</h5>
+            <p>A <strong>Revenue Line Type</strong> defines the <strong>category</strong> of an income stream &mdash; the label that will appear as a row in the <strong>Revenue section of the Profit &amp; Loss Statement</strong>.</p>
+
+            <p>Where Revenue <em>Types</em> describe <em>when</em> income is collected (the months pattern), Revenue <em>Line Types</em> describe <em>what</em> the income actually is. They're the answer to: <em>"What kind of income is this?"</em></p>
+
+            <div class="alert" style="background:#e7f5f8; border-left:4px solid #17a2b8;">
+              <strong><i class="fas fa-bookmark"></i> Two examples already in your system:</strong>
+              <ul class="mb-0 mt-2">
+                <li><strong>Rental</strong> &mdash; <em>"Rental Income"</em> (the rent paid by tenants)</li>
+                <li><strong>Levies</strong> &mdash; <em>"Levies"</em> (building/community levies recovered from tenants)</li>
+              </ul>
+              <p class="mb-0 mt-2"><small>These are the two rows you'll currently see in the Revenue section of the P&amp;L for any property.</small></p>
+            </div>
+
+            <h6 style="margin-top:20px; color:#2c3e50; font-weight:700;"><i class="fas fa-sitemap"></i> Where this fits in the bigger picture</h6>
+            <p>Revenue Line Types are the <strong>second piece</strong> of the three-part Revenue configuration:</p>
+            <ol>
+              <li><strong>Revenue Types</strong> &mdash; <em>when</em> income is collected (the months pattern)</li>
+              <li><strong>Revenue Line Types</strong> <em>(this page)</em> &mdash; <em>what</em> the income is called on the P&amp;L</li>
+              <li><strong>Revenues</strong> &mdash; the actual records: a property + a Line Type + a Type + an amount</li>
+            </ol>
+            <p>Every Revenue record on every property must be tagged with a Line Type. The P&amp;L then groups all matching records together to produce a single Revenue row labelled with that Line Type's name.</p>
+
+            <div class="alert alert-light" style="border-left:4px solid #6c757d;">
+              <i class="fas fa-user-shield"></i> <strong>Permissions:</strong> This page is restricted to <strong>Superusers</strong>. Standard users won't see Configuration in the Financials menu.
+            </div>
+          </div>
+
+          <!-- ============ THE TABLE TAB ============ -->
+          <div class="tab-pane fade" id="rlt-table" role="tabpanel">
+            <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-table"></i> Reading the Table</h5>
+            <p>The table is intentionally simple &mdash; each row is one Line Type with three columns:</p>
+
+            <ul>
+              <li><strong>Revenue Line Type</strong> &mdash; the short name. This is what shows up as the row label in the P&amp;L (e.g. <em>Rental</em>, <em>Levies</em>).</li>
+              <li><strong>Revenue Line Type Description</strong> &mdash; a longer, human-readable description. Currently this is for your own reference; the P&amp;L uses the short name only.</li>
+              <li><strong>Details</strong> &mdash; an <strong>Edit</strong> button to modify the Line Type.</li>
+            </ul>
+
+            <div class="alert alert-info" style="border-left:4px solid #17a2b8;">
+              <i class="fas fa-eye"></i> <strong>What you see here = what shows up in the P&amp;L.</strong> If your table has rows for <em>Rental</em> and <em>Levies</em>, your P&amp;L Revenue section will have a row for each. Add a third Line Type (e.g. <em>Parking</em>), and as soon as a Revenue record is tagged with it, a third row will appear in the P&amp;L.
+            </div>
+          </div>
+
+          <!-- ============ ADD / EDIT TAB ============ -->
+          <div class="tab-pane fade" id="rlt-addedit" role="tabpanel">
+            <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-plus-circle"></i> Adding a Revenue Line Type</h5>
+            <p>Click <strong>Add New</strong> in the top-right to open the Add Line Type form. There are just two fields:</p>
+
+            <ol>
+              <li><strong>Revenue Line Type Name</strong> &mdash; the short label. <strong>This is what appears in the P&amp;L</strong>, so keep it short and clear (e.g. <em>Rental</em>, <em>Levies</em>, <em>Parking</em>, <em>Storage</em>).</li>
+              <li><strong>Revenue Line Type Description</strong> &mdash; a longer explanation for your own records (e.g. <em>"Monthly rent paid by tenants"</em>).</li>
+            </ol>
+
+            <p>Click <strong>Save</strong> in the top-right. The new Line Type appears in the list and is immediately available to assign to Revenue records.</p>
+
+            <h5 style="margin-top:25px; color:#17a2b8; font-weight:700;"><i class="fas fa-edit"></i> Editing an existing Revenue Line Type</h5>
+            <p>Click the <strong>Edit</strong> button on the relevant row. The form is identical to the Add form, with both fields pre-filled. Update either field and click <strong>Save</strong>.</p>
+
+            <div class="alert alert-warning" style="border-left:4px solid #ffc107;">
+              <i class="fas fa-exclamation-triangle"></i> <strong>Renaming has a downstream effect.</strong> If you change the <strong>Name</strong> of a Line Type that's already in use, the row in the Profit &amp; Loss Statement will <strong>immediately</strong> show the new name &mdash; including for all historical periods. The underlying numbers don't change, only the label. This is usually fine (e.g. tidying up a typo), but be aware that older P&amp;L screenshots will no longer match the live page.
+            </div>
+
+            <div class="alert alert-danger" style="border-left:4px solid #dc3545;">
+              <i class="fas fa-radiation"></i> <strong>Don't repurpose a Line Type.</strong> If you want a new income category, <strong>create a new Line Type</strong>. Don't rename <em>Rental</em> to <em>Parking</em> &mdash; every existing Revenue record tagged as <em>Rental</em> will suddenly be reclassified as <em>Parking</em> in the P&amp;L.
+            </div>
+          </div>
+
+          <!-- ============ TIPS TAB ============ -->
+          <div class="tab-pane fade" id="rlt-tips" role="tabpanel">
+            <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-lightbulb"></i> Practical Tips</h5>
+
+            <ul style="line-height:1.8;">
+              <li><strong>Keep names short.</strong> The Name appears in P&amp;L tables where space is tight &mdash; one or two words is ideal (<em>Rental</em>, <em>Levies</em>, <em>Parking</em>). Save the longer wording for the Description field.</li>
+
+              <li><strong>Use the Description field generously.</strong> It's free-form and only visible here, so use it to capture the full meaning &mdash; especially for Line Types where the short name might be ambiguous later.</li>
+
+              <li><strong>Think about how you want the P&amp;L to read.</strong> Each Line Type becomes a row in the Revenue section. If you want <em>Rental</em> and <em>Parking</em> as separate rows in the P&amp;L, create them as separate Line Types. If you want them combined into a single <em>Rental</em> row, just use one Line Type and tag both kinds of revenue with it.</li>
+
+              <li><strong>Don't over-categorise.</strong> Two or three Line Types is enough for most portfolios. Adding too many produces a fragmented P&amp;L where every row is small, making the bigger picture harder to read.</li>
+
+              <li><strong>Be consistent across properties.</strong> If one property's monthly rent is tagged <em>Rental</em> and another's is tagged <em>Rent Income</em>, they'll appear as two different rows in the consolidated P&amp;L. Pick one name and stick with it.</li>
+
+              <li><strong>Plan for new income streams.</strong> If you start charging tenants for parking, storage, or utilities separately, add a Line Type before adding the first Revenue record &mdash; that way the P&amp;L category is ready when the income starts flowing in.</li>
+            </ul>
+
+            <div class="alert alert-info" style="border-left:4px solid #17a2b8; margin-top:20px;">
+              <i class="fas fa-arrow-right"></i> <strong>Next step:</strong> With Revenue Types and Revenue Line Types set up, head to <strong>Revenues</strong> to record the actual amounts on each property &mdash; combining a Property + Line Type + Type + Amount into a single record.
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="modal-footer" style="background:#f8f9fa; border-top:1px solid #dee2e6;">
+        <small class="text-muted" style="flex:1;">Alivente Online &mdash; Revenue Line Types User Guide</small>
+        <button type="button" class="btn btn-sm" data-dismiss="modal" style="background:linear-gradient(135deg,#17a2b8,#138496); color:white; border:none;">
+          <i class="fas fa-times"></i> Close
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
+<!-- ==================== END REVENUE LINE TYPES HELP MODAL ==================== -->
+
 </body>
-
 {% endif %}
-
 {% endblock %}

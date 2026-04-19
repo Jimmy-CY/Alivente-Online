@@ -35,6 +35,9 @@
 {% if user.is_superuser %}
 
   <div style="display: flex ; justify-content: flex-end">
+    <button type="button" class="btn btn-info" style="margin-right:16px" data-toggle="modal" data-target="#revenueTypesHelpModal">
+      <i class="fas fa-question-circle"></i> Help
+    </button>
     <a href="{% url 'finance_revenue_types_add' %}" class="btn btn-info" style="margin-right:16px" type="button">Add New</a>
     <a href="{% url 'finance' %}" class="btn btn-info" style="margin-right:16px" role="button">Back</a>
   </div>
@@ -88,6 +91,174 @@
     </table>    
   </div>
 </form>
+
+<!-- ==================== REVENUE TYPES HELP MODAL ==================== -->
+<div class="modal fade" id="revenueTypesHelpModal" tabindex="-1" role="dialog" aria-labelledby="revenueTypesHelpModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable" role="document">
+    <div class="modal-content">
+
+      <!-- Header -->
+      <div class="modal-header" style="background: linear-gradient(135deg, #17a2b8 0%, #138496 100%); color: white;">
+        <div>
+          <h5 class="modal-title" id="revenueTypesHelpModalLabel" style="font-weight:700; font-size:20px;">
+            <i class="fas fa-calendar-alt"></i> Revenue Types &mdash; User Guide
+          </h5>
+          <small style="opacity:0.85;">Define when in the year revenue is collected (the seasonality pattern)</small>
+        </div>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="color:white; opacity:0.9; font-size:28px;">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+
+      <!-- Tabs -->
+      <div class="modal-body" style="padding:0;">
+        <ul class="nav nav-tabs" id="revenueTypesHelpTabs" role="tablist" style="border-bottom:2px solid #17a2b8; padding:0 20px; background:#f8f9fa;">
+          <li class="nav-item">
+            <a class="nav-link active" id="rt-overview-tab" data-toggle="tab" href="#rt-overview" role="tab" style="color:#17a2b8; font-weight:600;">
+              <i class="fas fa-info-circle"></i> Overview
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" id="rt-table-tab" data-toggle="tab" href="#rt-table" role="tab" style="color:#495057; font-weight:600;">
+              <i class="fas fa-table"></i> The Table
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" id="rt-addedit-tab" data-toggle="tab" href="#rt-addedit" role="tab" style="color:#495057; font-weight:600;">
+              <i class="fas fa-plus-circle"></i> Add / Edit
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" id="rt-tips-tab" data-toggle="tab" href="#rt-tips" role="tab" style="color:#495057; font-weight:600;">
+              <i class="fas fa-lightbulb"></i> Tips
+            </a>
+          </li>
+        </ul>
+
+        <div class="tab-content" id="revenueTypesHelpTabsContent" style="padding:25px 30px; max-height:60vh; overflow-y:auto;">
+
+          <!-- ============ OVERVIEW TAB ============ -->
+          <div class="tab-pane fade show active" id="rt-overview" role="tabpanel">
+            <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-info-circle"></i> What are Revenue Types?</h5>
+            <p>A <strong>Revenue Type</strong> defines the <strong>seasonality pattern</strong> of an income stream &mdash; in other words, <em>which months of the year that income is actually collected</em>.</p>
+
+            <p>Each Revenue Type is essentially a 12-month template made up of Yes/No flags. When you later create a <strong>Revenue</strong> record on a property and assign it a Revenue Type, the system uses this template to know when to count that income across the calendar year.</p>
+
+            <div class="alert" style="background:#e7f5f8; border-left:4px solid #17a2b8;">
+              <strong><i class="fas fa-bookmark"></i> Two examples already in your system:</strong>
+              <ul class="mb-0 mt-2">
+                <li><strong>Monthly</strong> &mdash; all 12 months marked <span style="background:#90EE90; padding:1px 6px; border-radius:3px;">Yes</span>. Use this for standard year-round rentals or any income collected every month.</li>
+                <li><strong>Summer</strong> &mdash; May to October marked <span style="background:#90EE90; padding:1px 6px; border-radius:3px;">Yes</span>, the rest <span style="background:#FFCCCB; padding:1px 6px; border-radius:3px;">No</span>. Use this for seasonal lets, holiday rentals, or anything only earning in the summer months.</li>
+              </ul>
+            </div>
+
+            <h6 style="margin-top:20px; color:#2c3e50; font-weight:700;"><i class="fas fa-sitemap"></i> Where this fits in the bigger picture</h6>
+            <p>Revenue Types are one of <strong>three Configuration pieces</strong> on the Revenue side that work together:</p>
+            <ol>
+              <li><strong>Revenue Types</strong> <em>(this page)</em> &mdash; <em>when</em> income is collected (the months pattern)</li>
+              <li><strong>Revenue Line Types</strong> &mdash; <em>what</em> the income is called on the P&amp;L (e.g. "Rental", "Levies")</li>
+              <li><strong>Revenues</strong> &mdash; the actual records: a property + a Line Type + a Type + an amount</li>
+            </ol>
+            <p>Together these feed into the <strong>Profit &amp; Loss Statement</strong>, where each month's revenue is calculated by applying the Type's pattern to the Revenue amounts on each property.</p>
+
+            <div class="alert alert-light" style="border-left:4px solid #6c757d;">
+              <i class="fas fa-user-shield"></i> <strong>Permissions:</strong> This page is restricted to <strong>Superusers</strong>. Standard users won't see Configuration in the Financials menu.
+            </div>
+          </div>
+
+          <!-- ============ THE TABLE TAB ============ -->
+          <div class="tab-pane fade" id="rt-table" role="tabpanel">
+            <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-table"></i> Reading the Table</h5>
+            <p>Each row is a Revenue Type you've defined. The 12 month columns show, at a glance, which months that Type collects income.</p>
+
+            <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;">Column-by-column</h6>
+            <ul>
+              <li><strong>Revenue Type</strong> &mdash; the name you gave it (e.g. <em>Monthly</em>, <em>Summer</em>).</li>
+              <li><strong>Jan &ndash; Dec</strong> &mdash; one column per month, showing either <strong>Yes</strong> or <strong>No</strong>.</li>
+              <li><strong>Details</strong> &mdash; an <strong>Edit</strong> button to modify that Revenue Type.</li>
+            </ul>
+
+            <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;">The colour coding</h6>
+            <p>The cells are colour-coded to make seasonality patterns easy to spot at a glance:</p>
+            <ul>
+              <li><span style="background:#90EE90; padding:2px 10px; border-radius:3px; font-weight:600;">Green &mdash; Yes</span> &nbsp; income <em>is</em> collected this month</li>
+              <li><span style="background:#FFCCCB; padding:2px 10px; border-radius:3px; font-weight:600;">Red &mdash; No</span> &nbsp; income is <em>not</em> collected this month</li>
+            </ul>
+
+            <div class="alert alert-info" style="border-left:4px solid #17a2b8;">
+              <i class="fas fa-eye"></i> <strong>At a glance:</strong> A row that's all green is a year-round income pattern. A row with a clear green block flanked by red shows a seasonal pattern &mdash; like the <em>Summer</em> row, where you can immediately see income runs from May through October.
+            </div>
+          </div>
+
+          <!-- ============ ADD / EDIT TAB ============ -->
+          <div class="tab-pane fade" id="rt-addedit" role="tabpanel">
+            <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-plus-circle"></i> Adding a Revenue Type</h5>
+            <p>Click <strong>Add New</strong> in the top-right to open the Add Revenue Type form. You'll see two things to fill in:</p>
+
+            <ol>
+              <li><strong>Revenue Type Name</strong> &mdash; a short, descriptive name (e.g. <em>Monthly</em>, <em>Summer</em>, <em>Winter</em>, <em>Quarterly</em>).</li>
+              <li><strong>The 12-month checkbox grid</strong> &mdash; one checkbox per month.</li>
+            </ol>
+
+            <div class="alert alert-warning" style="border-left:4px solid #ffc107;">
+              <i class="fas fa-exclamation-triangle"></i> <strong>How the checkboxes map to Yes / No:</strong>
+              <ul class="mb-0 mt-2">
+                <li><strong>Checked</strong> &nbsp;=&nbsp; income <strong>IS</strong> collected that month &nbsp;&rarr;&nbsp; saved as <span style="background:#90EE90; padding:1px 6px; border-radius:3px;">Yes</span></li>
+                <li><strong>Unchecked</strong> &nbsp;=&nbsp; income is <strong>NOT</strong> collected that month &nbsp;&rarr;&nbsp; saved as <span style="background:#FFCCCB; padding:1px 6px; border-radius:3px;">No</span></li>
+              </ul>
+              <p class="mb-0 mt-2"><small>The Add form doesn't show "Yes/No" labels &mdash; just the checkboxes. The conversion happens automatically when you save.</small></p>
+            </div>
+
+            <p>When you're done, click <strong>Save</strong> in the top-right. The Type appears in the list and is immediately available to assign to Revenue records.</p>
+
+            <h5 style="margin-top:25px; color:#17a2b8; font-weight:700;"><i class="fas fa-edit"></i> Editing an existing Revenue Type</h5>
+            <p>Click the <strong>Edit</strong> button on the relevant row. The form is identical to the Add form &mdash; the Name field is pre-filled, and the checkboxes reflect the current Yes/No pattern. Make your changes and click <strong>Save</strong>.</p>
+
+            <div class="alert alert-danger" style="border-left:4px solid #dc3545;">
+              <i class="fas fa-radiation"></i> <strong>Editing has a downstream effect.</strong> If a Revenue Type is already in use by Revenue records on properties, changing its month pattern will <strong>retroactively change</strong> how those records appear in the Profit &amp; Loss Statement. For example, switching <em>Summer</em> from May&ndash;Oct to Apr&ndash;Sep will shift every revenue record using <em>Summer</em> by one month in the P&amp;L. If you need a different pattern, consider creating a <em>new</em> Revenue Type rather than editing an existing one.
+            </div>
+          </div>
+
+          <!-- ============ TIPS TAB ============ -->
+          <div class="tab-pane fade" id="rt-tips" role="tabpanel">
+            <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-lightbulb"></i> Practical Tips</h5>
+
+            <ul style="line-height:1.8;">
+              <li><strong>Name them by pattern, not by property.</strong> A Revenue Type is reused across many properties &mdash; <em>Monthly</em>, <em>Summer</em>, <em>Quarterly</em> all describe patterns. Avoid names like <em>"Apolloneon Rental"</em>; that belongs on the Revenue record itself, not the Type.</li>
+
+              <li><strong>Start simple.</strong> Most portfolios only need two or three Types: <em>Monthly</em> covers nearly everything; add <em>Summer</em> (or <em>Winter</em>) for seasonal lets. Don't create a Type until you have a property that actually needs it.</li>
+
+              <li><strong>Keep <em>Monthly</em> as your default.</strong> It's the most common pattern, and having it always available means you rarely have to think about Type selection when adding routine revenue.</li>
+
+              <li><strong>Plan around your local seasons.</strong> "Summer" means different months in different countries &mdash; for Cyprus and Greece holiday lets, May to October is typical. Set the pattern based on when income actually arrives, not on calendar quarters.</li>
+
+              <li><strong>Don't edit Types in active use &mdash; clone them instead.</strong> Editing changes the P&amp;L for every Revenue record using that Type, retroactively. Safer pattern: create a new Type with the new shape (e.g. <em>Summer 2026</em>), then move the affected Revenue records to it one at a time.</li>
+
+              <li><strong>Use the colour bands to sanity-check.</strong> After saving, glance at the row in the table. If <em>Summer</em> shows green in December, something's wrong &mdash; the visual makes mistakes easy to spot.</li>
+
+              <li><strong>The Type doesn't store amounts &mdash; only the months.</strong> The actual € figure lives on the Revenue record. Two properties can both use <em>Monthly</em> with completely different rents.</li>
+            </ul>
+
+            <div class="alert alert-info" style="border-left:4px solid #17a2b8; margin-top:20px;">
+              <i class="fas fa-arrow-right"></i> <strong>Next step:</strong> Once your Revenue Types are set up, head to <strong>Revenue Line Types</strong> to define <em>what</em> the income is called (e.g. <em>Rental</em>, <em>Levies</em>), and then <strong>Revenues</strong> to record the actual amounts on each property.
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="modal-footer" style="background:#f8f9fa; border-top:1px solid #dee2e6;">
+        <small class="text-muted" style="flex:1;">Alivente Online &mdash; Revenue Types User Guide</small>
+        <button type="button" class="btn btn-sm" data-dismiss="modal" style="background:linear-gradient(135deg,#17a2b8,#138496); color:white; border:none;">
+          <i class="fas fa-times"></i> Close
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
+<!-- ==================== END REVENUE TYPES HELP MODAL ==================== -->
 
 {% endif %}
 

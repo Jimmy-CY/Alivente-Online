@@ -90,7 +90,8 @@
                    id="prop_{{ prop.prop_id }}" 
                    value="{{ prop.prop_id }}"
                    data-current-value="{{ prop.current_value|default:0 }}"
-                   {% if prop.prop_id == existing_expense.prop_id %}checked disabled{% endif %}>
+                   {% if prop.prop_id in linked_property_ids %}checked{% endif %}
+                   {% if prop.prop_id == existing_expense.prop_id %}disabled{% endif %}>
             <label class="form-check-label" for="prop_{{ prop.prop_id }}" style="margin-left: 0.0rem;">
               {{ prop.prop_name }} (€{{ prop.current_value|default:0|intcomma }})
             </label>
@@ -103,7 +104,7 @@
       </div>
     </div>
 
-    <!-- Add this modal at the bottom of your finance_expense_add.html, just before the closing </div> -->
+    <!-- Pro-Rata Preview Modal -->
     <div class="modal fade" id="prorataPreviewModal" tabindex="-1" role="dialog" aria-labelledby="prorataPreviewModalLabel" aria-hidden="true">
       <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
@@ -161,7 +162,8 @@ $(document).ready(function() {
     const countryFilter = $('#country-filter');
     let mainPropertyCheckbox = null;
 
-    // Initialize main property checkbox
+    // Wipe-and-reset version: used when user CHANGES the Line Type or Property dropdown.
+    // Unchecks all property checkboxes and re-checks only the anchor.
     function initializeMainProperty() {
         const selectedPropId = propSelect.val();
         if (selectedPropId) {
@@ -176,6 +178,17 @@ $(document).ready(function() {
                     disabled: true
                 });
             }
+        }
+    }
+
+    // Preserve-existing version: used on initial page load only.
+    // Sets up the mainPropertyCheckbox reference WITHOUT wiping the
+    // template-rendered pre-ticked checkboxes for previously-linked properties.
+    function bindMainPropertyOnLoad() {
+        const selectedPropId = propSelect.val();
+        if (selectedPropId) {
+            mainPropertyCheckbox = $(`.property-checkbox[value="${selectedPropId}"]`);
+            // Anchor's checked + disabled is already set by the template on initial render
         }
     }
 
@@ -227,7 +240,7 @@ $(document).ready(function() {
             propertyCheckboxContainer.show();
             expenseAmountInput.val(prAmount).prop('readonly', true).css('background-color', '#e9ecef');
             saveButton.prop('disabled', true);
-            initializeMainProperty();
+            initializeMainProperty();  // user changed line type → wipe and reset
             // Reset filter
             countryFilter.val('').prop('selectedIndex', 0);
         } else {
@@ -371,7 +384,7 @@ $(document).ready(function() {
     // Initialize main property when the main select changes
     propSelect.on('change', function() {
         if (propertyCheckboxContainer.is(':visible')) {
-            initializeMainProperty();
+            initializeMainProperty();  // user changed anchor → wipe and reset
             countryFilter.val('').prop('selectedIndex', 0);
         }
     });
@@ -403,9 +416,8 @@ $(document).ready(function() {
         return true;
     });
 
-    // Initialize form based on existing expense
+    // Initialize form based on existing expense (PAGE LOAD only — preserves pre-ticked checkboxes)
     function initializeForm() {
-        // Check if this is a pro-rata expense
         const selectedElt = $('#expense_line_types option:selected');
         const isProrata = selectedElt.data('prorata') === 'Yes';
         const prAmount = selectedElt.data('prAmount');
@@ -414,7 +426,9 @@ $(document).ready(function() {
             propertyCheckboxContainer.show();
             expenseAmountInput.val(prAmount).prop('readonly', true).css('background-color', '#e9ecef');
             saveButton.prop('disabled', true);
-            initializeMainProperty();
+            
+            // Use bindMainPropertyOnLoad (preserves pre-ticks) instead of initializeMainProperty (wipes them)
+            bindMainPropertyOnLoad();
         }
     }
 
@@ -448,7 +462,6 @@ $(document).ready(function() {
 #country-filter {
     margin-bottom: 10px;
 }
-/* Add these styles to your existing style section */
 .modal-title {
     font-weight: bold;
 }
@@ -465,7 +478,6 @@ $(document).ready(function() {
     border-top: none;
     padding-top: 0;
 }
-</style>
 </style>
 
 {% endblock %}

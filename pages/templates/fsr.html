@@ -245,10 +245,333 @@
     </div>
 </div>
 
+<!-- ==================== ISSUES HELP MODAL ==================== -->
+<div class="modal fade" id="issuesHelpModal" tabindex="-1" role="dialog" aria-labelledby="issuesHelpModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable" role="document">
+    <div class="modal-content">
+
+      <!-- Header -->
+      <div class="modal-header" style="background: linear-gradient(135deg, #17a2b8 0%, #138496 100%); color: white;">
+        <div>
+          <h5 class="modal-title" id="issuesHelpModalLabel" style="font-weight:700; font-size:20px;">
+            <i class="fas fa-exclamation-triangle"></i> Issues &mdash; User Guide
+          </h5>
+          <small style="opacity:0.85;">Log, track, comment on and report property issues</small>
+        </div>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="color:white; opacity:0.9; font-size:28px; text-shadow:none;">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+
+      <!-- Tabs -->
+      <ul class="nav nav-tabs" role="tablist" style="background:#f8f9fa; padding:0 15px; border-bottom:2px solid #17a2b8;">
+        <li class="nav-item"><a class="nav-link active" data-toggle="tab" href="#issOverview" role="tab"><i class="fas fa-info-circle"></i> Overview</a></li>
+        <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#issTable" role="tab"><i class="fas fa-table"></i> The Table</a></li>
+        <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#issFilters" role="tab"><i class="fas fa-filter"></i> Filters &amp; Sorting</a></li>
+        <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#issComments" role="tab"><i class="fas fa-comments"></i> Comments</a></li>
+        <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#issAddDelete" role="tab"><i class="fas fa-plus-circle"></i> Add &amp; Delete</a></li>
+        <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#issReports" role="tab"><i class="fas fa-chart-bar"></i> Reports</a></li>
+        <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#issTips" role="tab"><i class="fas fa-lightbulb"></i> Tips</a></li>
+      </ul>
+
+      <!-- Body -->
+      <div class="modal-body" style="padding:25px; background:white;">
+        <div class="tab-content">
+
+          <!-- OVERVIEW -->
+          <div class="tab-pane fade show active" id="issOverview" role="tabpanel">
+            <h6 style="color:#17a2b8; font-weight:700;"><i class="fas fa-exclamation-triangle"></i> What is the Issues page?</h6>
+            <p>Issues is the <strong>central log of everything that needs attention across the portfolio</strong> &mdash; maintenance requests, tenant complaints, repairs, meetings, and anything else worth tracking. Every issue has a running <strong>Comments</strong> thread for updates, a <strong>Status</strong> that moves through a lifecycle, and a <strong>Date Logged</strong> for reporting.</p>
+
+            <h6 style="color:#17a2b8; font-weight:700; margin-top:20px;"><i class="fas fa-list"></i> What you can do here</h6>
+            <ul>
+              <li><strong>Browse</strong> every open and historical issue across every property</li>
+              <li><strong>Filter and search</strong> by text, country, property or status</li>
+              <li><strong>Sort</strong> by Property, Date Logged or Status (click the column headers)</li>
+              <li><strong>Add</strong> a new issue</li>
+              <li><strong>Open Comments</strong> on any issue to read the discussion thread, post updates, and change status</li>
+              <li><strong>Delete</strong> an issue permanently (Superuser only)</li>
+              <li><strong>Generate three reports</strong>: Comments Report, Resolved Issues Report, Friday Status Report</li>
+            </ul>
+
+            <h6 style="color:#17a2b8; font-weight:700; margin-top:20px;"><i class="fas fa-circle"></i> Status lifecycle</h6>
+            <p>Three statuses with a clear lifecycle:</p>
+            <ul>
+              <li><span style="background:#fff3cd; color:#856404; padding:2px 10px; border-radius:10px; font-size:11px; font-weight:500;">Unresolved</span> &mdash; the <strong>default state</strong> when an issue is first logged. Stays here while the team is actively working on it.</li>
+              <li><span style="background:#d4edda; color:#155724; padding:2px 10px; border-radius:10px; font-size:11px; font-weight:500;">Resolved</span> &mdash; the issue has been fixed. Kept in the list for history and reporting.</li>
+              <li><span style="background:#f8d7da; color:#721c24; padding:2px 10px; border-radius:10px; font-size:11px; font-weight:500;">Issue</span> &mdash; a <strong>stuck / parked state</strong>. Used when the team hasn't been able to resolve something in an acceptable timeframe and no clear solution exists. Flags the item for escalation or senior review &mdash; it's not just "open for longer", it's "we need a different approach".</li>
+            </ul>
+          </div>
+
+          <!-- TABLE -->
+          <div class="tab-pane fade" id="issTable" role="tabpanel">
+            <h6 style="color:#17a2b8; font-weight:700;"><i class="fas fa-table"></i> The columns</h6>
+            <p>One row per issue. Columns shown left-to-right:</p>
+
+            <div class="card mb-2" style="border-left:4px solid #17a2b8;">
+              <div class="card-body" style="padding:12px 15px;">
+                <h6 style="margin:0 0 5px 0;"><strong>Property</strong> <small class="text-muted">(sortable)</small></h6>
+                <p class="mb-0" style="font-size:13px;">The property the issue relates to. Click the column header to sort alphabetically A&rarr;Z or Z&rarr;A.</p>
+              </div>
+            </div>
+
+            <div class="card mb-2" style="border-left:4px solid #17a2b8;">
+              <div class="card-body" style="padding:12px 15px;">
+                <h6 style="margin:0 0 5px 0;"><strong>Issue</strong></h6>
+                <p class="mb-0" style="font-size:13px;">The short heading &mdash; e.g. "Water Leak", "Repair of elevator", "Parking Bay". Keep these concise; full detail belongs in Description and Comments.</p>
+              </div>
+            </div>
+
+            <div class="card mb-2" style="border-left:4px solid #17a2b8;">
+              <div class="card-body" style="padding:12px 15px;">
+                <h6 style="margin:0 0 5px 0;"><strong>Description</strong></h6>
+                <p class="mb-0" style="font-size:13px;">The longer explanation. Think of it as the "statement of the problem" when the issue was first raised &mdash; it doesn't update as the story evolves; that's what Comments are for.</p>
+              </div>
+            </div>
+
+            <div class="card mb-2" style="border-left:4px solid #17a2b8;">
+              <div class="card-body" style="padding:12px 15px;">
+                <h6 style="margin:0 0 5px 0;"><strong>Date Logged</strong> <small class="text-muted">(sortable)</small></h6>
+                <p class="mb-0" style="font-size:13px;">When the issue was first raised (dd/mm/yyyy). Click to sort oldest-first or newest-first.</p>
+              </div>
+            </div>
+
+            <div class="card mb-2" style="border-left:4px solid #17a2b8;">
+              <div class="card-body" style="padding:12px 15px;">
+                <h6 style="margin:0 0 5px 0;"><strong>Status</strong> <small class="text-muted">(sortable)</small></h6>
+                <p class="mb-0" style="font-size:13px;">Coloured badge (Issue / Unresolved / Resolved). Sort is <strong>urgency-ordered</strong> &mdash; Unresolved first, then Issue, then Resolved &mdash; so the most pressing items rise to the top.</p>
+              </div>
+            </div>
+
+            <div class="card mb-2" style="border-left:4px solid #17a2b8;">
+              <div class="card-body" style="padding:12px 15px;">
+                <h6 style="margin:0 0 5px 0;"><strong>Comments</strong></h6>
+                <p class="mb-0" style="font-size:13px;">A <em>Comments</em> button that opens the comment thread for this issue (see the Comments tab).</p>
+              </div>
+            </div>
+
+            <div class="card mb-3" style="border-left:4px solid #17a2b8;">
+              <div class="card-body" style="padding:12px 15px;">
+                <h6 style="margin:0 0 5px 0;"><strong>Delete</strong> <small class="text-muted">(Superuser only)</small></h6>
+                <p class="mb-0" style="font-size:13px;">A red bin icon. Only visible to Superusers. Opens a confirmation popup with full issue details before deleting.</p>
+              </div>
+            </div>
+
+            <div class="alert alert-info" style="border-left:4px solid #17a2b8;">
+              <i class="fas fa-info-circle"></i> <strong>Default sort:</strong> Property (A&rarr;Z), with <strong>Status</strong> as the tiebreaker (Unresolved first, Resolved next, Issue/stuck items last). Click any sortable header to change.
+            </div>
+          </div>
+
+          <!-- FILTERS & SORTING -->
+          <div class="tab-pane fade" id="issFilters" role="tabpanel">
+            <h6 style="color:#17a2b8; font-weight:700;"><i class="fas fa-filter"></i> Four filters</h6>
+            <p>Click the <strong>Issue Filters</strong> panel header to expand. All auto-submit on change.</p>
+
+            <div class="card mb-2" style="border-left:4px solid #17a2b8;">
+              <div class="card-body" style="padding:12px 15px;">
+                <h6 style="margin:0 0 5px 0;"><i class="fas fa-search"></i> <strong>Search</strong></h6>
+                <p class="mb-0" style="font-size:13px;">Full-text search across the <em>Issue heading</em> and <em>Description</em> fields. Type your query and either press <strong>Enter</strong> or click the teal search icon button.</p>
+              </div>
+            </div>
+
+            <div class="card mb-2" style="border-left:4px solid #17a2b8;">
+              <div class="card-body" style="padding:12px 15px;">
+                <h6 style="margin:0 0 5px 0;"><i class="fas fa-globe"></i> <strong>Country</strong></h6>
+                <p class="mb-0" style="font-size:13px;">Cyprus, Greece or Spain &mdash; matches on the property's country.</p>
+              </div>
+            </div>
+
+            <div class="card mb-2" style="border-left:4px solid #17a2b8;">
+              <div class="card-body" style="padding:12px 15px;">
+                <h6 style="margin:0 0 5px 0;"><i class="fas fa-building"></i> <strong>Property</strong></h6>
+                <p class="mb-0" style="font-size:13px;">Narrow to a single property.</p>
+              </div>
+            </div>
+
+            <div class="card mb-3" style="border-left:4px solid #17a2b8;">
+              <div class="card-body" style="padding:12px 15px;">
+                <h6 style="margin:0 0 5px 0;"><i class="fas fa-info-circle"></i> <strong>Status</strong></h6>
+                <p class="mb-0" style="font-size:13px;">Resolved, Unresolved or Issue. Default shows all.</p>
+              </div>
+            </div>
+
+            <h6 style="color:#17a2b8; font-weight:700; margin-top:15px;"><i class="fas fa-tags"></i> Active tags &amp; Clear All</h6>
+            <p>Applied filters appear as <strong>removable tags</strong> below the dropdowns. Click &times; on any tag to drop that single filter. <strong>Clear All</strong> (top-right of the panel) resets everything.</p>
+
+            <h6 style="color:#17a2b8; font-weight:700; margin-top:15px;"><i class="fas fa-sort"></i> Column sorting</h6>
+            <p>Three columns are sortable: <strong>Property</strong>, <strong>Date Logged</strong>, <strong>Status</strong>. Click the header once for ascending, again for descending. Arrow icons show the current sort direction. Status sort is <em>lifecycle-ordered</em> (Unresolved &rarr; Resolved &rarr; Issue), not alphabetical &mdash; active work first, completed work next, stuck items last.</p>
+
+            <div class="alert alert-info" style="border-left:4px solid #17a2b8;">
+              <i class="fas fa-lightbulb"></i> <strong>Common workflow:</strong> Set Status = <em>Unresolved</em>, then sort by Date Logged (oldest first). That's your "stale issues to chase" list &mdash; what should already have been resolved by now.
+            </div>
+          </div>
+
+          <!-- COMMENTS -->
+          <div class="tab-pane fade" id="issComments" role="tabpanel">
+            <h6 style="color:#17a2b8; font-weight:700;"><i class="fas fa-comments"></i> The Comments page</h6>
+            <p>Clicking the <strong>Comments</strong> button on any row opens a dedicated page for that issue, showing:</p>
+            <ul>
+              <li>The issue heading, description in brackets, date logged, property and status at the top</li>
+              <li>A <strong>text box</strong> to enter a new comment, a <strong>Save Comment</strong> button, and a <strong>Change Status</strong> dropdown (Resolved / Unresolved / Issue) to update status in the same step</li>
+              <li>A reverse-chronological <strong>thread</strong> of every comment, colour-coded by author type</li>
+            </ul>
+
+            <h6 style="color:#17a2b8; font-weight:700; margin-top:20px;"><i class="fas fa-palette"></i> Comment colour coding</h6>
+            <p>Comments in the thread alternate colour based on who wrote them &mdash; a subtle background tint makes the back-and-forth easy to follow. Each comment is <strong>automatically prefixed</strong> with the date and the author's initials (e.g. <code>(DM)</code>, <code>(SS)</code>) based on who's logged in &mdash; you never type these yourself. Just write the comment content; the system handles attribution.</p>
+
+            <h6 style="color:#17a2b8; font-weight:700; margin-top:20px;"><i class="fas fa-history"></i> Why it's a thread, not an "update" field</h6>
+            <p>Every comment is preserved permanently. The issue description doesn't change; the thread grows. This gives you a full audit trail of <em>what was tried, what happened, what was decided</em> &mdash; invaluable when reviewing old issues or handing work to a new staff member.</p>
+
+            <div class="alert alert-warning" style="border-left:4px solid #ffc107;">
+              <i class="fas fa-exclamation-triangle"></i> <strong>Change Status + Comment in one go:</strong> when you mark an issue Resolved, always add a closing comment explaining what happened. Don't just flip the status silently &mdash; the audit trail suffers.
+            </div>
+          </div>
+
+          <!-- ADD & DELETE -->
+          <div class="tab-pane fade" id="issAddDelete" role="tabpanel">
+            <h6 style="color:#17a2b8; font-weight:700;"><i class="fas fa-plus-circle"></i> Adding a new issue</h6>
+            <p>Click <strong>Add New</strong> (top-right) to open the Add Issue form. Five fields:</p>
+
+            <div class="card mb-2" style="border-left:4px solid #17a2b8;">
+              <div class="card-body" style="padding:12px 15px;">
+                <h6 style="margin:0 0 5px 0;"><strong>Property Name</strong></h6>
+                <p class="mb-0" style="font-size:13px;">Dropdown of all properties. Pick the one this issue relates to.</p>
+              </div>
+            </div>
+
+            <div class="card mb-2" style="border-left:4px solid #17a2b8;">
+              <div class="card-body" style="padding:12px 15px;">
+                <h6 style="margin:0 0 5px 0;"><strong>Date Logged</strong> <small class="text-muted">(auto-filled)</small></h6>
+                <p class="mb-0" style="font-size:13px;">Defaults to today's date. Read-only in most cases.</p>
+              </div>
+            </div>
+
+            <div class="card mb-2" style="border-left:4px solid #17a2b8;">
+              <div class="card-body" style="padding:12px 15px;">
+                <h6 style="margin:0 0 5px 0;"><strong>Issue Status</strong> <small class="text-muted">(auto-filled)</small></h6>
+                <p class="mb-0" style="font-size:13px;">New issues default to <em>Unresolved</em>. Can be changed later via the Comments page.</p>
+              </div>
+            </div>
+
+            <div class="card mb-2" style="border-left:4px solid #17a2b8;">
+              <div class="card-body" style="padding:12px 15px;">
+                <h6 style="margin:0 0 5px 0;"><strong>Issue Heading</strong></h6>
+                <p class="mb-0" style="font-size:13px;">Short, specific title &mdash; "Water Leak", "Fridge does not work", "Repair of elevator". This is what appears in every list and report.</p>
+              </div>
+            </div>
+
+            <div class="card mb-3" style="border-left:4px solid #17a2b8;">
+              <div class="card-body" style="padding:12px 15px;">
+                <h6 style="margin:0 0 5px 0;"><strong>Issue Description</strong></h6>
+                <p class="mb-0" style="font-size:13px;">A longer description &mdash; the full context at the time of logging. Think of it as "everything I know about this problem right now". Subsequent developments go in Comments.</p>
+              </div>
+            </div>
+
+            <p><strong>Save</strong> commits the new issue; <strong>Back</strong> cancels without saving.</p>
+
+            <h6 style="color:#17a2b8; font-weight:700; margin-top:20px;"><i class="fas fa-trash"></i> Deleting an issue (Superuser only)</h6>
+            <p>Click the red bin icon in the Delete column. A confirmation popup opens showing:</p>
+            <ul>
+              <li>Property, Status, Date Logged, Issue ID</li>
+              <li>Issue Heading and Description</li>
+              <li>A prominent warning that the action is permanent</li>
+            </ul>
+            <p>Click <strong>Delete Permanently</strong> to confirm, or <strong>Cancel</strong> to back out.</p>
+
+            <div class="alert alert-warning" style="border-left:4px solid #ffc107;">
+              <i class="fas fa-exclamation-triangle"></i> <strong>Delete removes all comments too.</strong> The entire thread goes with the issue. Prefer leaving old Resolved issues in place &mdash; they're historically useful and don't clutter anything if you filter to Unresolved.
+            </div>
+          </div>
+
+          <!-- REPORTS -->
+          <div class="tab-pane fade" id="issReports" role="tabpanel">
+            <h6 style="color:#17a2b8; font-weight:700;"><i class="fas fa-chart-bar"></i> Three reports, each with its own purpose</h6>
+            <p>Three teal buttons at the top-right open three different reports. Each first shows an options modal to narrow the output.</p>
+
+            <div class="card mb-3" style="border-left:4px solid #17a2b8;">
+              <div class="card-body">
+                <h6 style="color:#17a2b8;"><i class="fas fa-comments"></i> <strong>Comments Report</strong></h6>
+                <p class="mb-1">Shows every <em>comment</em> (not issue) posted in a chosen time window. Time period options:</p>
+                <ul class="mb-2" style="font-size:13px;">
+                  <li>Last 7 Days</li>
+                  <li>Last 30 Days</li>
+                  <li>Last 90 Days</li>
+                  <li>All Comments</li>
+                </ul>
+                <p class="mb-0" style="font-size:13px;">Output: one row per comment with Comment text, the parent issue link and description, Date, Property, Status, User (author initials) and a Delete bin. Author rows are colour-coded &mdash; <span style="background:#e6f7ff; padding:1px 6px; border-radius:3px;">Admin Comments</span> and <span style="background:#fff3cd; padding:1px 6px; border-radius:3px;">User Comments</span> (legend at the top). Has a green <strong>Print Report</strong> button.</p>
+              </div>
+            </div>
+
+            <div class="card mb-3" style="border-left:4px solid #17a2b8;">
+              <div class="card-body">
+                <h6 style="color:#17a2b8;"><i class="fas fa-calendar-check"></i> <strong>Resolved Issues Report</strong></h6>
+                <p class="mb-1">Shows every issue that was <strong>Resolved</strong> within a <strong>From / To date range</strong> you pick (defaults to the last 30 days).</p>
+                <p class="mb-0" style="font-size:13px;">Output: grouped by Property, with each resolved issue showing heading, description, and &mdash; uniquely to this report &mdash; a <strong style="color:#dc3545;">Resolution: N days</strong> metric showing how long the issue took to close. Below each issue, every comment in the thread is listed with date and author prefix.</p>
+              </div>
+            </div>
+
+            <div class="card mb-3" style="border-left:4px solid #17a2b8;">
+              <div class="card-body">
+                <h6 style="color:#17a2b8;"><i class="fas fa-file-alt"></i> <strong>Friday Status Report</strong></h6>
+                <p class="mb-1">The weekly update report, sent to stakeholders every Friday. Two flavours:</p>
+                <ul class="mb-2" style="font-size:13px;">
+                  <li><strong>Detailed Report</strong> &mdash; every comment on every issue. Comprehensive but long.</li>
+                  <li><strong>Summarized Report</strong> &mdash; only the most recent N comments per issue (pick 1, 2, 3, 4, 5 or 10). Good for busy recipients who want the headline without the full history.</li>
+                </ul>
+                <p class="mb-0" style="font-size:13px;">Output: grouped by <strong>Status</strong> (Resolved &rarr; Unresolved &rarr; Issue), then by Property (country, then name). Each issue shows heading, description, resolution days (if resolved), the selected comments, and a <strong>"View all comments"</strong> link when the thread was truncated. <strong>Resolved items are filtered to only those resolved within the last 7 days OR with a comment added in the last 7 days</strong> &mdash; this keeps the report focused on recent activity rather than cluttering it with every historical closure. Unresolved and Issue items are always shown regardless of age. Has a teal <strong>Submit FSR</strong> button in the header to commit the report.</p>
+              </div>
+            </div>
+
+            <div class="alert alert-info" style="border-left:4px solid #17a2b8;">
+              <i class="fas fa-info-circle"></i> <strong>Which report when?</strong> Comments Report = "what did we talk about recently". Resolved Issues Report = "what did we close in this period + how fast". Friday Status Report = the weekly snapshot you send to stakeholders.
+            </div>
+          </div>
+
+          <!-- TIPS -->
+          <div class="tab-pane fade" id="issTips" role="tabpanel">
+            <h6 style="color:#17a2b8; font-weight:700;"><i class="fas fa-lightbulb"></i> Best Practices</h6>
+            <ul>
+              <li><strong>Keep Issue Headings short and specific</strong> &mdash; "Water Leak" is better than "There's a problem with water". They appear in every report and list; scannability matters.</li>
+              <li><strong>Put context in Description, updates in Comments</strong> &mdash; Description is the initial statement of the problem and shouldn't change. Comments are where the story evolves.</li>
+              <li><strong>Always add a closing comment when marking Resolved</strong> &mdash; explain what fixed it. Six months from now someone will thank you.</li>
+              <li><strong>Just write the comment &mdash; prefix is automatic</strong> &mdash; date and author initials like <code>(DM)</code>, <code>(SS)</code> get inserted by the system. Focus on clarity of content, not formatting.</li>
+              <li><strong>Sort by Status (urgency) + Date Logged (oldest)</strong> &mdash; Unresolved issues that have been open for weeks are the ones to chase first.</li>
+              <li><strong>Use "Issue" status sparingly</strong> &mdash; it's for genuine escalations, not just items that have been open a while. Flipping something to "Issue" is a signal that the current approach isn't working and attention is needed. Most things that stay in Unresolved for a long time are simply slow, not stuck.</li>
+              <li><strong>Use Search liberally</strong> &mdash; when a tenant mentions "the thing with the balcony", search "balcony" across all properties to find the right thread fast.</li>
+              <li><strong>Comments Report weekly, Friday Status Report weekly</strong> &mdash; different audiences. Internal team wants the comments firehose; stakeholders want the Friday snapshot.</li>
+              <li><strong>Summarized FSR with 2&ndash;3 comments</strong> is the sweet spot for most recipients &mdash; enough context to understand, not so much they won't read it.</li>
+              <li><strong>Resolution days red in the Resolved Issues Report</strong> is a self-audit &mdash; anything over 30 days is worth asking "why did this take so long?". Feeds process improvement.</li>
+              <li><strong>Don't delete Resolved issues</strong> &mdash; the history is valuable and doesn't clutter the default view (filter to Unresolved if you want the current worklist).</li>
+            </ul>
+
+            <div class="alert alert-warning" style="border-left:4px solid #ffc107;">
+              <i class="fas fa-exclamation-triangle"></i> <strong>Delete is permanent and takes every comment with it.</strong> Reserve it for true mistakes (duplicate issue, wrong property, test data). Don't use it to "clean up" old stuff &mdash; that's what filters are for.
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="modal-footer" style="background:#f8f9fa; border-top:1px solid #dee2e6;">
+        <small class="text-muted" style="flex:1;">Alivente Online &mdash; Issues User Guide</small>
+        <button type="button" class="btn btn-sm" data-dismiss="modal" style="background:linear-gradient(135deg,#17a2b8,#138496); color:white; border:none;">
+          <i class="fas fa-times"></i> Close
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
+<!-- ==================== END ISSUES HELP MODAL ==================== -->
+
 <!-- Action Buttons -->
 <!-- Action Buttons -->
 <div style="display: flex; justify-content: flex-end; margin-bottom: 20px;">
     <div style="display: flex; gap: 16px;">
+        <button class="btn btn-info" data-toggle="modal" data-target="#issuesHelpModal">
+            <i class="fas fa-question-circle"></i> Help
+        </button>
         <button class="btn btn-info" data-toggle="modal" data-target="#commentsReportModal">
             Comments Report
         </button>
@@ -1837,7 +2160,7 @@ function initializeTableSorting() {
 }
 
 function applyDefaultSort() {
-    // Default: Sort by Property (A-Z), then by Date (oldest first)
+    // Default: Sort by Property (A-Z), then by Status (Unresolved first, Issue last)
     sortTable('property', 'asc', true);
     updateSortIndicators('property', 'asc');
 }
@@ -1909,11 +2232,20 @@ function sortTable(column, direction, isDefault) {
             comparison = -comparison;
         }
         
-        // Secondary sort by date if primary values are equal (and we're not sorting by date)
-        if (comparison === 0 && column !== 'date') {
-            const dateA = a.dataset.date || '1900-01-01';
-            const dateB = b.dataset.date || '1900-01-01';
-            comparison = dateA.localeCompare(dateB);
+        // Secondary sort when primary values are equal
+        if (comparison === 0) {
+            if (column === 'property') {
+                // Property primary -> Status secondary (Unresolved first)
+                const statusA = getStatusOrder(a.dataset.status);
+                const statusB = getStatusOrder(b.dataset.status);
+                comparison = statusA - statusB;
+            } else if (column === 'status') {
+                // Status primary -> Date secondary (oldest first)
+                const dateA = a.dataset.date || '1900-01-01';
+                const dateB = b.dataset.date || '1900-01-01';
+                comparison = dateA.localeCompare(dateB);
+            }
+            // When column === 'date', no further tiebreaker needed
         }
         
         return comparison;
@@ -1926,12 +2258,12 @@ function sortTable(column, direction, isDefault) {
 }
 
 function getStatusOrder(status) {
-    // When sorting ASC: Unresolved first, then Issue, then Resolved
-    // This puts urgent items at the top
+    // When sorting ASC: Unresolved first, then Resolved, then Issue (stuck items last)
+    // This reflects the lifecycle: active work first, completed work next, parked items last
     switch(status) {
         case 'Unresolved': return 1;
-        case 'Issue': return 2;
-        case 'Resolved': return 3;
+        case 'Resolved': return 2;
+        case 'Issue': return 3;
         default: return 4;
     }
 }

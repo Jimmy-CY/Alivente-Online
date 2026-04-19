@@ -5777,7 +5777,7 @@ def finance_expense_edit(request, expense_id):
     except expense.DoesNotExist:
         messages.error(request, "Expense not found")
         return redirect('finance_expense')
-
+    
     # Get properties with their values (using select_related if it's a ForeignKey)
     props_data = props.objects.all().order_by('prop_country', 'prop_name')
     # Annotate each property with its current value (0 if none exists)
@@ -5794,11 +5794,22 @@ def finance_expense_edit(request, expense_id):
     expense_types_list = expense_types.objects.all()
     expense_line_types_list = expense_line_types.objects.all().order_by('expense_line_types_name')
     
+    # NEW: Find all properties currently in this pro-rata distribution
+    # i.e. all Expense records sharing the same Line Type + Expense Type combo.
+    # For non-pro-rata expenses, this list will simply contain the single anchor property.
+    linked_property_ids = list(
+        expense.objects.filter(
+            expense_line_types_id=existing_expense.expense_line_types_id,
+            expense_types_id=existing_expense.expense_types_id
+        ).values_list('prop_id', flat=True)
+    )
+    
     return render(request, "finance_expense_edit.html", {
         "props_data": props_data,
         "expense_types": expense_types_list,
         "expense_line_types": expense_line_types_list,
         "existing_expense": existing_expense,
+        "linked_property_ids": linked_property_ids,  # NEW
     })
 
 @login_required
@@ -5993,7 +6004,17 @@ def finance_expense_line_types_commit(request):
 @login_required
 def finance_expense_line_types_edit(request, expense_line_types_id):
     exp_line_types = expense_line_types.objects.filter(pk=expense_line_types_id)
-    return render(request, "finance_expense_line_types_edit.html", {"eltresults":exp_line_types})
+    
+    # NEW: Count how many Expense records currently use this Line Type.
+    # Used by the template to decide whether to show the Pro-Rata change warning.
+    linked_expense_count = expense.objects.filter(
+        expense_line_types_id=expense_line_types_id
+    ).count()
+    
+    return render(request, "finance_expense_line_types_edit.html", {
+        "eltresults": exp_line_types,
+        "linked_expense_count": linked_expense_count,  # NEW
+    })
 
 @login_required
 def finance_expense_line_types_edit_commit(request, expense_line_types_id):

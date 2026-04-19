@@ -31,6 +31,9 @@ Tenants
 <body>
     <!-- Action Buttons -->
     <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 20px;">
+      <button type="button" class="btn btn-info" data-toggle="modal" data-target="#tenantsHelpModal">
+        <i class="fas fa-question-circle"></i> Help
+      </button>
       <a href="{% url 'lease_timeline' %}" class="btn btn-info">📅 Lease Timeline</a>
       <a href="{% url 'open_invoices_report' %}" class="btn btn-info">Open Invoices</a>
       <a href="{% url 'lease_renewal_report' %}" class="btn btn-info">Lease Renewals</a>
@@ -202,6 +205,278 @@ Tenants
         </div>
     </div>
 </div>
+
+<!-- ==================== TENANTS HELP MODAL ==================== -->
+<div class="modal fade" id="tenantsHelpModal" tabindex="-1" role="dialog" aria-labelledby="tenantsHelpModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable" role="document">
+    <div class="modal-content">
+
+      <!-- Header -->
+      <div class="modal-header" style="background: linear-gradient(135deg, #17a2b8 0%, #138496 100%); color: white;">
+        <div>
+          <h5 class="modal-title" id="tenantsHelpModalLabel" style="font-weight:700; font-size:20px;">
+            <i class="fas fa-users"></i> Tenants &mdash; User Guide
+          </h5>
+          <small style="opacity:0.85;">Manage tenants, their lease details and related reports</small>
+        </div>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="color:white; opacity:0.9; font-size:28px; text-shadow:none;">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+
+      <!-- Tabs -->
+      <ul class="nav nav-tabs" role="tablist" style="background:#f8f9fa; padding:0 15px; border-bottom:2px solid #17a2b8;">
+        <li class="nav-item"><a class="nav-link active" data-toggle="tab" href="#tenOverview" role="tab"><i class="fas fa-info-circle"></i> Overview</a></li>
+        <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#tenTable" role="tab"><i class="fas fa-table"></i> The Table</a></li>
+        <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#tenFilters" role="tab"><i class="fas fa-filter"></i> Filters</a></li>
+        <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#tenAddEdit" role="tab"><i class="fas fa-user-edit"></i> Add / Edit</a></li>
+        <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#tenReports" role="tab"><i class="fas fa-chart-bar"></i> Reports</a></li>
+        <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#tenTips" role="tab"><i class="fas fa-lightbulb"></i> Tips</a></li>
+      </ul>
+
+      <!-- Body -->
+      <div class="modal-body" style="padding:25px; background:white;">
+        <div class="tab-content">
+
+          <!-- OVERVIEW -->
+          <div class="tab-pane fade show active" id="tenOverview" role="tabpanel">
+            <h6 style="color:#17a2b8; font-weight:700;"><i class="fas fa-users"></i> What is the Tenants page?</h6>
+            <p>The Tenants page is the central register of <strong>every tenant who has ever occupied a property in the portfolio</strong> &mdash; current and past. Each row links a tenant to a property and shows whether that tenancy is currently active.</p>
+
+            <p>From this single screen you can:</p>
+            <ul>
+              <li><strong>See</strong> every tenant-property pairing at a glance, filtered however you like</li>
+              <li><strong>Add</strong> a new tenant (superuser only)</li>
+              <li><strong>Edit</strong> any tenant's details &mdash; including the powerful <em>Duplicate for Renewal</em> shortcut</li>
+              <li><strong>Delete</strong> a tenant (superuser only, with a strong confirmation prompt)</li>
+              <li><strong>View</strong> a full Tenant Details Report as a print-friendly summary</li>
+              <li><strong>View</strong> the scanned lease agreement PDF inline in a popup</li>
+              <li><strong>Jump</strong> to three related reports: Lease Timeline, Open Invoices, Lease Renewals</li>
+            </ul>
+
+            <div class="alert alert-warning" style="border-left:4px solid #ffc107;">
+              <i class="fas fa-shield-alt"></i> <strong>Superuser-only actions:</strong> Add, Edit and Delete are all restricted to Superusers. Regular Users can still view tenants, reports and agreements.
+            </div>
+          </div>
+
+          <!-- TABLE -->
+          <div class="tab-pane fade" id="tenTable" role="tabpanel">
+            <h6 style="color:#17a2b8; font-weight:700;"><i class="fas fa-table"></i> The six columns</h6>
+
+            <div class="card mb-2" style="border-left:4px solid #17a2b8;">
+              <div class="card-body" style="padding:12px 15px;">
+                <h6 style="margin:0 0 5px 0;"><strong>Tenant</strong></h6>
+                <p class="mb-0" style="font-size:13px;">The tenant's name. For Individual tenants this may be a joint name (e.g. <em>"Chrystalla Katelari and Antigoni Andreou"</em>); for Company tenants it's the registered company name.</p>
+              </div>
+            </div>
+
+            <div class="card mb-2" style="border-left:4px solid #17a2b8;">
+              <div class="card-body" style="padding:12px 15px;">
+                <h6 style="margin:0 0 5px 0;"><strong>Property</strong></h6>
+                <p class="mb-0" style="font-size:13px;">The property the tenant is linked to. One tenant record ties to one property &mdash; if a tenant has occupied multiple properties over time, they appear as multiple rows.</p>
+              </div>
+            </div>
+
+            <div class="card mb-2" style="border-left:4px solid #17a2b8;">
+              <div class="card-body" style="padding:12px 15px;">
+                <h6 style="margin:0 0 5px 0;"><strong>Active</strong></h6>
+                <p class="mb-0" style="font-size:13px;"><span style="background:#d4edda; color:#155724; padding:2px 10px; border-radius:10px; font-size:11px; font-weight:500;">Active</span> = this is the current tenant in the property. <span style="background:#f8d7da; color:#721c24; padding:2px 10px; border-radius:10px; font-size:11px; font-weight:500;">Inactive</span> = a previous tenant whose lease has ended.</p>
+              </div>
+            </div>
+
+            <div class="card mb-2" style="border-left:4px solid #17a2b8;">
+              <div class="card-body" style="padding:12px 15px;">
+                <h6 style="margin:0 0 5px 0;"><strong>Details</strong></h6>
+                <p class="mb-0" style="font-size:13px;">For Superusers: two icon buttons &mdash; <i class="fas fa-edit" style="color:#007bff;"></i> blue pencil to <strong>Edit</strong>, and <i class="fas fa-trash" style="color:#dc3545;"></i> red bin to <strong>Delete</strong>. Regular users see a disabled greyed-out icon.</p>
+              </div>
+            </div>
+
+            <div class="card mb-2" style="border-left:4px solid #17a2b8;">
+              <div class="card-body" style="padding:12px 15px;">
+                <h6 style="margin:0 0 5px 0;"><strong>Report</strong></h6>
+                <p class="mb-0" style="font-size:13px;">A <em>View</em> button that opens the <strong>Tenant Details Report</strong> &mdash; a clean, print-friendly summary of the tenant, contact info, lease period, financial terms and lease details.</p>
+              </div>
+            </div>
+
+            <div class="card mb-3" style="border-left:4px solid #17a2b8;">
+              <div class="card-body" style="padding:12px 15px;">
+                <h6 style="margin:0 0 5px 0;"><strong>Agreement</strong></h6>
+                <p class="mb-0" style="font-size:13px;">A <em>View</em> button that opens the scanned lease agreement PDF in a popup viewer (with a Download option). If no agreement has been uploaded, shows <em>"Unavailable"</em> in grey.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- FILTERS -->
+          <div class="tab-pane fade" id="tenFilters" role="tabpanel">
+            <h6 style="color:#17a2b8; font-weight:700;"><i class="fas fa-filter"></i> Three filters, working together</h6>
+            <p>Click the <strong>Tenant Filters</strong> panel header to expand the filter row. Three dropdowns, all auto-submit on change:</p>
+
+            <div class="card mb-2" style="border-left:4px solid #17a2b8;">
+              <div class="card-body" style="padding:12px 15px;">
+                <h6 style="margin:0 0 5px 0;"><i class="fas fa-building"></i> <strong>Property</strong></h6>
+                <p class="mb-0" style="font-size:13px;">Narrow the list to tenants of a single property. Only properties marked <em>Available for Rent</em> appear in the dropdown.</p>
+              </div>
+            </div>
+
+            <div class="card mb-2" style="border-left:4px solid #17a2b8;">
+              <div class="card-body" style="padding:12px 15px;">
+                <h6 style="margin:0 0 5px 0;"><i class="fas fa-user"></i> <strong>Tenant</strong></h6>
+                <p class="mb-0" style="font-size:13px;">Jump straight to one named tenant &mdash; useful when you need to check their details or lease.</p>
+              </div>
+            </div>
+
+            <div class="card mb-3" style="border-left:4px solid #17a2b8;">
+              <div class="card-body" style="padding:12px 15px;">
+                <h6 style="margin:0 0 5px 0;"><i class="fas fa-info-circle"></i> <strong>Status</strong></h6>
+                <p class="mb-0" style="font-size:13px;">Show only <em>Active</em> tenants (current occupants) or only <em>Inactive</em> (historical tenants). Default shows all.</p>
+              </div>
+            </div>
+
+            <h6 style="color:#17a2b8; font-weight:700; margin-top:15px;"><i class="fas fa-tags"></i> Active filter tags &amp; Clear All</h6>
+            <p>Applied filters show as <strong>removable tags</strong> under the filters. Click the &times; on any tag to remove just that filter. The <strong>Clear All</strong> button (top-right of the panel) resets everything.</p>
+
+            <div class="alert alert-info" style="border-left:4px solid #17a2b8;">
+              <i class="fas fa-lightbulb"></i> <strong>Common workflow:</strong> Filter by Status = <em>Active</em> to see only currently occupied properties. Flip to <em>Inactive</em> to see tenancy history.
+            </div>
+          </div>
+
+          <!-- ADD / EDIT -->
+          <div class="tab-pane fade" id="tenAddEdit" role="tabpanel">
+            <h6 style="color:#17a2b8; font-weight:700;"><i class="fas fa-user-plus"></i> Adding a new tenant</h6>
+            <p>Click <strong>Add New</strong> (top-right) to open the <em>Add Tenant</em> form. The edit form covers the same fields, grouped into logical sections:</p>
+
+            <div class="card mb-2" style="border-left:4px solid #17a2b8;">
+              <div class="card-body" style="padding:12px 15px;">
+                <h6 style="margin:0 0 5px 0;"><strong>Tenant Type &amp; Name</strong></h6>
+                <p class="mb-0" style="font-size:13px;"><strong>Type</strong> &mdash; Individual or Company. <strong>Tenant</strong> &mdash; the tenant's display name (for individuals, can be a joint name).</p>
+              </div>
+            </div>
+
+            <div class="card mb-2" style="border-left:4px solid #17a2b8;">
+              <div class="card-body" style="padding:12px 15px;">
+                <h6 style="margin:0 0 5px 0;"><strong>Contact Details</strong></h6>
+                <p class="mb-0" style="font-size:13px;"><strong>Contact Person</strong>, <strong>Contact Number</strong> (can list multiple, comma or " and " separated) and <strong>Email Address</strong> (same &mdash; multiple addresses accepted for joint tenants).</p>
+              </div>
+            </div>
+
+            <div class="card mb-2" style="border-left:4px solid #17a2b8;">
+              <div class="card-body" style="padding:12px 15px;">
+                <h6 style="margin:0 0 5px 0;"><strong>Lease Period</strong></h6>
+                <p class="mb-0" style="font-size:13px;"><strong>Lease Start Date</strong> and <strong>Lease End Date</strong> &mdash; date pickers defining the contracted tenancy window.</p>
+              </div>
+            </div>
+
+            <div class="card mb-2" style="border-left:4px solid #17a2b8;">
+              <div class="card-body" style="padding:12px 15px;">
+                <h6 style="margin:0 0 5px 0;"><strong>Financials</strong></h6>
+                <p class="mb-0" style="font-size:13px;"><strong>Rental Type</strong> (Monthly / Yearly), <strong>Deposit</strong>, <strong>Rental</strong> (rent amount), <strong>Levies</strong> (communal charges) and <strong>Rental Payment Terms</strong> (days &mdash; enter <code>0</code> for <em>Immediate</em>).</p>
+              </div>
+            </div>
+
+            <div class="card mb-2" style="border-left:4px solid #17a2b8;">
+              <div class="card-body" style="padding:12px 15px;">
+                <h6 style="margin:0 0 5px 0;"><strong>Renewal Details</strong></h6>
+                <p class="mb-0" style="font-size:13px;"><strong>Renewal Option</strong> (Yes/No), <strong>Renewal Period</strong> (notice in days) and <strong>Renewal Status</strong> (Pending, Accepted, Declined).</p>
+              </div>
+            </div>
+
+            <div class="card mb-3" style="border-left:4px solid #17a2b8;">
+              <div class="card-body" style="padding:12px 15px;">
+                <h6 style="margin:0 0 5px 0;"><strong>Status &amp; Property Link</strong></h6>
+                <p class="mb-0" style="font-size:13px;"><strong>Tenant Status</strong> (Active/Inactive) and <strong>Property</strong> &mdash; pick which property this tenant occupies.</p>
+              </div>
+            </div>
+
+            <h6 style="color:#17a2b8; font-weight:700; margin-top:15px;"><i class="fas fa-copy"></i> Duplicate for Renewal (yellow button, edit form)</h6>
+            <p>When editing an existing tenant, a <strong>Duplicate for Renewal</strong> button creates a new tenant record pre-populated from the existing one &mdash; perfect for creating the next lease period when a tenant renews. Saves retyping contact details, property link and financial terms.</p>
+
+            <div class="alert alert-warning" style="border-left:4px solid #ffc107;">
+              <i class="fas fa-trash"></i> <strong>Delete is destructive:</strong> A strong confirmation popup warns you that deleting will remove the tenant record and related vacancy periods. Prefer marking inactive over deleting &mdash; you'll usually want the history.
+            </div>
+          </div>
+
+          <!-- REPORTS -->
+          <div class="tab-pane fade" id="tenReports" role="tabpanel">
+            <h6 style="color:#17a2b8; font-weight:700;"><i class="fas fa-chart-bar"></i> Four reports and views</h6>
+            <p>The top-right buttons and per-row buttons open five different views. All are read-only.</p>
+
+            <div class="card mb-3" style="border-left:4px solid #17a2b8;">
+              <div class="card-body">
+                <h6 style="color:#17a2b8;"><i class="fas fa-eye"></i> <strong>Tenant Details Report</strong> <small class="text-muted">(per-row "View")</small></h6>
+                <p class="mb-0">A clean print-friendly summary of one tenant: Type, Contact Information, Lease Period, Financial Information (Deposit, Monthly Rent, Levies, Payment Terms), and Lease Details (Rental Type, Renewal Clause, Notice Period, Renewal Status, Active flag). Dated with today's date in the header.</p>
+              </div>
+            </div>
+
+            <div class="card mb-3" style="border-left:4px solid #17a2b8;">
+              <div class="card-body">
+                <h6 style="color:#17a2b8;"><i class="fas fa-file-pdf"></i> <strong>Agreement viewer</strong> <small class="text-muted">(per-row "View")</small></h6>
+                <p class="mb-0">Opens the scanned lease agreement PDF inline in a popup modal, with the tenant's name in the title bar. Includes a <strong>Download</strong> button and a fallback link to open the PDF in a new tab if the inline viewer fails. Non-PDF files (JPG, PNG) display as images; other types show a "cannot preview &mdash; please download" placeholder.</p>
+              </div>
+            </div>
+
+            <div class="card mb-3" style="border-left:4px solid #17a2b8;">
+              <div class="card-body">
+                <h6 style="color:#17a2b8;"><i class="fas fa-calendar-alt"></i> <strong>Lease Timeline</strong> <small class="text-muted">(top-right button)</small></h6>
+                <p class="mb-1">A <strong>visual Gantt-style calendar</strong> showing every lease across every property as horizontal coloured bars over a timeline.</p>
+                <ul class="mb-0" style="font-size:13px;">
+                  <li><span style="color:#28a745;">&#9632;</span> <strong>Green</strong> &mdash; Active Lease</li>
+                  <li><span style="color:#6c757d;">&#9632;</span> <strong>Grey</strong> &mdash; Past Lease</li>
+                  <li><span style="color:#dc3545;">&#9632;</span> <strong>Red</strong> &mdash; Expired (Still Marked Active) &mdash; a data-quality alert</li>
+                </ul>
+                <p class="mb-0" style="font-size:13px; margin-top:8px;">A red "today" line runs vertically through the calendar. Controls: Previous/Next Month, Zoom In/Out, Fit All, and a <em>Show Inactive Leases</em> toggle.</p>
+              </div>
+            </div>
+
+            <div class="card mb-3" style="border-left:4px solid #17a2b8;">
+              <div class="card-body">
+                <h6 style="color:#17a2b8;"><i class="fas fa-file-invoice"></i> <strong>Open Invoices (Debtors Age Analysis)</strong> <small class="text-muted">(top-right button)</small></h6>
+                <p class="mb-0">An ageing-bucket report of everyone who still owes you money, broken into <strong>Current (0&ndash;30 days)</strong>, <strong>Past Due 31&ndash;60 days</strong>, <strong>61&ndash;90 days</strong>, and <strong>91+ days</strong>. Per-tenant totals in the leftmost column, grand totals across the bottom. Link on each amount drills into the detail.</p>
+              </div>
+            </div>
+
+            <div class="card mb-3" style="border-left:4px solid #17a2b8;">
+              <div class="card-body">
+                <h6 style="color:#17a2b8;"><i class="fas fa-sync-alt"></i> <strong>Lease Renewals Report</strong> <small class="text-muted">(top-right button)</small></h6>
+                <p class="mb-0">Portfolio-wide list of upcoming lease expirations requiring renewal action, and any currently vacant properties. When nothing needs attention, shows a clean empty state: <em>"No lease renewals or vacant properties to report at this time."</em></p>
+              </div>
+            </div>
+          </div>
+
+          <!-- TIPS -->
+          <div class="tab-pane fade" id="tenTips" role="tabpanel">
+            <h6 style="color:#17a2b8; font-weight:700;"><i class="fas fa-lightbulb"></i> Best Practices</h6>
+            <ul>
+              <li><strong>Use <em>Duplicate for Renewal</em> when a lease renews</strong> &mdash; don't retype contact details or rental amounts. Duplicate from the existing tenant, update the new dates and any price changes, and save.</li>
+              <li><strong>Don't delete past tenants</strong> &mdash; set them to <em>Inactive</em> instead. You'll want the history for audit, financial records, and Lease Timeline visibility. Deletion removes vacancy-gap calculations too.</li>
+              <li><strong>Red bars on the Lease Timeline are data problems</strong> &mdash; they mean a tenant is still marked Active even though their lease has expired. Chase these down: either renew the lease or flip the tenant to Inactive.</li>
+              <li><strong>Pair Status = Active with the Lease Timeline</strong> &mdash; filter to Active tenants here for the textual list, then open the Lease Timeline for the visual spatial view. They reinforce each other.</li>
+              <li><strong>Chase Open Invoices by age bucket</strong> &mdash; the 91+ days column is your urgency queue. Start there each week.</li>
+              <li><strong>Always upload the scanned lease agreement</strong> &mdash; the Agreement column says <em>Unavailable</em> otherwise. Without it, staff can't verify terms without hunting for the paper copy.</li>
+              <li><strong>Confirm the Property link before saving</strong> &mdash; assigning a tenant to the wrong property will distort every downstream report (invoices, P&amp;L, Lease Timeline).</li>
+              <li><strong>Use joint names for multi-occupant leases</strong> &mdash; the system accepts <em>"Name A and Name B"</em> throughout (tenant name, contact, email). Keeps notifications going to both leaseholders.</li>
+              <li><strong>Renewal Status = Pending is a to-do flag</strong> &mdash; means you haven't yet heard back or decided. Flip to Accepted or Declined once you know, so the Lease Renewals report stays clean.</li>
+            </ul>
+
+            <div class="alert alert-warning" style="border-left:4px solid #ffc107;">
+              <i class="fas fa-exclamation-triangle"></i> <strong>Deleting a tenant is irreversible:</strong> vacancy periods get removed, gap calculations recalculate, and dashboard metrics update. If in doubt, mark Inactive. The Disable-equivalent for tenants.
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="modal-footer" style="background:#f8f9fa; border-top:1px solid #dee2e6;">
+        <small class="text-muted" style="flex:1;">Alivente Online &mdash; Tenants User Guide</small>
+        <button type="button" class="btn btn-sm" data-dismiss="modal" style="background:linear-gradient(135deg,#17a2b8,#138496); color:white; border:none;">
+          <i class="fas fa-times"></i> Close
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
+<!-- ==================== END TENANTS HELP MODAL ==================== -->
 
 </body>
 

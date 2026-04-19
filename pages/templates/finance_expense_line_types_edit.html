@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% load static %}
+{% load static humanize %}
 
 {% block title %}
 {% endblock %}
@@ -13,7 +13,10 @@
 {% if user.is_superuser %}
 
 {% for exp in eltresults %}
-<form action="{% url 'finance_expense_line_types_edit_commit' exp.expense_line_types_id %}" method="post">
+<form action="{% url 'finance_expense_line_types_edit_commit' exp.expense_line_types_id %}" method="post"
+      data-original-prorata="{{ exp.expense_line_types_prorata }}"
+      data-original-pr-amount="{{ exp.expense_line_types_pr_amount|default:'0' }}"
+      data-linked-expense-count="{{ linked_expense_count|default:0 }}">
   {% csrf_token %}
   <div style="display: flex ; justify-content: flex-end">
     <button class="btn btn-info" style="margin-right:16px" type="submit">Save</button>
@@ -53,24 +56,146 @@
 </form>
 {% endfor %}
 
+<!-- ==================== PRO-RATA AMOUNT CHANGE WARNING MODAL ==================== -->
+<div class="modal fade" id="prorataChangeWarningModal" tabindex="-1" role="dialog" aria-labelledby="prorataChangeWarningModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+
+      <!-- Header -->
+      <div class="modal-header" style="background: linear-gradient(135deg, #ffc107 0%, #d39e00 100%); color: #212529;">
+        <h5 class="modal-title" id="prorataChangeWarningModalLabel" style="font-weight:700;">
+          <i class="fas fa-exclamation-triangle"></i> Pro-Rata Amount Changed &mdash; Action Required
+        </h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="font-size:28px;">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+
+      <!-- Body -->
+      <div class="modal-body" style="padding:25px 30px;">
+        <p>You've changed the Pro-Rata Amount from <strong>&euro;<span id="warning-old-amount">0</span></strong> to <strong>&euro;<span id="warning-new-amount">0</span></strong>.</p>
+
+        <div class="alert alert-warning" style="border-left:4px solid #ffc107;">
+          <i class="fas fa-info-circle"></i> <strong>This change will <em>not</em> auto-update existing Expense records.</strong>
+          <p class="mb-0 mt-2">There <span id="warning-linked-count">0</span> Expense record(s) currently using this Line Type. They will keep their old amounts until you trigger a recalculation.</p>
+        </div>
+
+        <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-tools"></i> How to push the new amount through</h6>
+        <ol>
+          <li>Click <strong>Save Anyway</strong> below to commit this Line Type change</li>
+          <li>Go to the <strong>Expenses</strong> page</li>
+          <li>Open <strong>any one</strong> Expense record using this Line Type</li>
+          <li>Click <strong>Calculate Pro-Rata Amounts</strong>, then <strong>Confirm &amp; Update</strong></li>
+        </ol>
+        <p class="mb-0">That single recalculation cascades the new amount across <strong>all</strong> linked Expense records &mdash; you don't need to visit each property individually.</p>
+      </div>
+
+      <!-- Footer -->
+      <div class="modal-footer" style="background:#f8f9fa; border-top:1px solid #dee2e6;">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal" id="warning-cancel-btn">
+          <i class="fas fa-times"></i> Cancel
+        </button>
+        <button type="button" class="btn btn-warning" id="warning-save-anyway-btn" style="font-weight:600;">
+          <i class="fas fa-save"></i> Save Anyway
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
+<!-- ==================== END PRO-RATA AMOUNT CHANGE WARNING MODAL ==================== -->
+
 {% endif %}
 
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
-// Handle multiple forms
 document.addEventListener('DOMContentLoaded', function() {
-    // Name validation
+    
+    // Reference to the form being submitted (set when warning fires)
+    let pendingFormSubmit = null;
+    
+    // ---- Existing handlers (preserved) ----
+    
+    // Name validation + Pro-Rata change warning interception
     document.querySelectorAll('form').forEach(form => {
         form.addEventListener('submit', function(e) {
+            // 1. Name validation (existing)
             const nameInput = this.querySelector('[name="expense_line_types_name"]');
             if (nameInput.value.trim() === '') {
                 e.preventDefault();
                 alert('Please enter a name');
                 nameInput.focus();
+                return;
+            }
+            
+            // 2. NEW: Pro-Rata Amount change warning
+            // Skip the check if the user has already confirmed via the warning modal
+            if (this.dataset.userConfirmed === 'true') {
+                return; // Let the form submit normally
+            }
+            
+            const originalProrata = this.dataset.originalProrata;
+            const originalAmount = parseFloat(this.dataset.originalPrAmount) || 0;
+            const linkedCount = parseInt(this.dataset.linkedExpenseCount) || 0;
+            
+            const prorataSelect = this.querySelector('[name="expense_line_types_prorata"]');
+            const prAmountInput = this.querySelector('[name="expense_line_types_pr_amount"]');
+            
+            const currentProrata = prorataSelect.value;
+            const currentAmount = parseFloat(prAmountInput.value) || 0;
+            
+            // Trigger conditions: was Pro-Rata, still Pro-Rata, amount changed, AND linked expenses exist
+            const wasAndStillProrata = (originalProrata === 'Yes' && currentProrata === 'Yes');
+            const amountChanged = (originalAmount !== currentAmount);
+            const hasLinkedExpenses = (linkedCount > 0);
+            
+            if (wasAndStillProrata && amountChanged && hasLinkedExpenses) {
+                e.preventDefault();
+                
+                // Populate the warning modal
+                document.getElementById('warning-old-amount').textContent = 
+                    originalAmount.toLocaleString('en-US', {maximumFractionDigits: 2, minimumFractionDigits: 0});
+                document.getElementById('warning-new-amount').textContent = 
+                    currentAmount.toLocaleString('en-US', {maximumFractionDigits: 2, minimumFractionDigits: 0});
+                
+                const countEl = document.getElementById('warning-linked-count');
+                countEl.textContent = linkedCount;
+                // Subject-verb agreement: "1 record" vs "5 records"
+                const isAreEl = countEl.parentElement;
+                isAreEl.innerHTML = isAreEl.innerHTML.replace(
+                    /There (is|are) <span id="warning-linked-count">\d+<\/span> Expense record\(s\)/,
+                    `There ${linkedCount === 1 ? 'is' : 'are'} <span id="warning-linked-count">${linkedCount}</span> Expense record${linkedCount === 1 ? '' : 's'}`
+                );
+                
+                // Remember which form to submit if user clicks "Save Anyway"
+                pendingFormSubmit = this;
+                
+                // Show the modal (using jQuery for BS4 compatibility)
+                $('#prorataChangeWarningModal').modal('show');
             }
         });
     });
 
-    // Pro-rata amount handling for each form
+    // ---- "Save Anyway" button handler ----
+    document.getElementById('warning-save-anyway-btn').addEventListener('click', function() {
+        if (pendingFormSubmit) {
+            // Mark form as user-confirmed and resubmit
+            pendingFormSubmit.dataset.userConfirmed = 'true';
+            $('#prorataChangeWarningModal').modal('hide');
+            // Small delay to let the modal close cleanly before submit
+            setTimeout(function() {
+                pendingFormSubmit.submit();
+                pendingFormSubmit = null;
+            }, 200);
+        }
+    });
+
+    // ---- Cancel button — clears the pending submission ----
+    document.getElementById('warning-cancel-btn').addEventListener('click', function() {
+        pendingFormSubmit = null;
+    });
+
+    // ---- Existing Pro-Rata Yes/No toggle (preserved) ----
     document.querySelectorAll('[name="expense_line_types_prorata"]').forEach(select => {
         const formGroup = select.closest('.form-row');
         const prAmountInput = formGroup.querySelector('[name="expense_line_types_pr_amount"]');
@@ -96,6 +221,5 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
-
 
 {% endblock %}

@@ -112,7 +112,7 @@
 <div class="d-flex justify-content-end mb-2">
     <!-- Year Selector Button Group -->
     <div class="dropdown" style="margin-right: 16px;">
-        <button class="btn btn-info dropdown-toggle" type="button" id="yearDropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        <button class="btn btn-info dropdown-toggle" type="button" id="yearDropdown" aria-haspopup="true" aria-expanded="false">
             {% if selected_year == 'budget' %}
                 Budget
             {% else %}
@@ -1163,6 +1163,13 @@ body {
     font-weight: bold;
 }
 
+/* Override base.html's hover-only dropdown rule so click-dropdowns work here */
+.dropdown.show > .dropdown-menu {
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: translateY(0) !important;
+}
+
 .roi-section {
     display: flex;
     flex-wrap: wrap;
@@ -1386,6 +1393,22 @@ $(document).ready(function() {
         
         updateSelectionCounter();
     }
+
+    // Manual year-dropdown handler — bypasses BS4/BS5 conflict
+    $('#yearDropdown').on('click', function(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        $(this).parent('.dropdown').toggleClass('show');
+        $(this).siblings('.dropdown-menu').toggleClass('show');
+    });
+    
+    // Close the dropdown when clicking outside it
+    $(document).on('click', function(e) {
+        if (!$(e.target).closest('#yearDropdown, .dropdown-menu').length) {
+            $('#yearDropdown').parent('.dropdown').removeClass('show');
+            $('#yearDropdown').siblings('.dropdown-menu').removeClass('show');
+        }
+    });    
     
     function debounce(func, wait) {
         let timeout;
