@@ -245,9 +245,15 @@
               <i class="fas fa-radiation"></i> <strong>Don't repurpose a Line Type.</strong> If you want a different category, <strong>create a new Line Type</strong>. Don't rename <em>Electricity</em> to <em>Water</em> &mdash; every existing Expense record tagged as <em>Electricity</em> will instantly be reclassified as <em>Water</em> in the P&amp;L.
             </div>
 
-            <div class="alert alert-warning" style="border-left:4px solid #ffc107;">
-              <i class="fas fa-info-circle"></i> <strong>Changing the Pro-Rata Amount triggers a warning &mdash; here's why.</strong> Saving a new Pro-Rata Amount (e.g. €2,810 &rarr; €3,000) updates the Line Type itself but does <strong>not</strong> immediately rewrite the Expense records already in the system &mdash; those keep their old amounts until you trigger a recalculation. To protect against this being missed, the system pops up a confirmation modal whenever you change the Pro-Rata Amount on a Line Type with linked Expense records, reminding you of the next step before letting you save.
-              <p class="mb-0 mt-2">To push the new amount through after saving: open <strong>any one</strong> Expense record using this Line Type, click <strong>Calculate Pro-Rata Amounts</strong>, then <strong>Confirm &amp; Update</strong>. That single action cascades the new distribution across <em>every</em> property linked to this Line Type &mdash; you don't need to visit each property individually. See the <em>Pro-Rata Explained</em> tab.</p>
+            <div class="alert alert-success" style="border-left:4px solid #28a745;">
+              <i class="fas fa-magic"></i> <strong>Changing the Pro-Rata Amount triggers a live preview and cascade.</strong> When you change the Pro-Rata Amount on a Line Type that has linked Expense records (e.g. €2,810 &rarr; €3,000) and click Save, the system intercepts with a <strong>preview modal</strong> showing exactly what will happen:
+              <ul class="mb-0 mt-2">
+                <li>Every linked Expense record is listed with its <strong>Old Amount / New Amount / Δ</strong></li>
+                <li>Red Δ values indicate properties that will pay more; green Δ values indicate properties that will pay less</li>
+                <li>Clicking <strong>Save &amp; Recalculate All</strong> saves the Line Type <em>and</em> updates every linked Expense record in one atomic operation</li>
+                <li>Clicking <strong>Cancel</strong> aborts &mdash; nothing is saved</li>
+              </ul>
+              <p class="mb-0 mt-2">No more manual trips to the Expenses page &mdash; the cascade happens in a single click.</p>
             </div>
           </div>
 
@@ -313,7 +319,7 @@
 
             <h6 style="margin-top:20px; color:#2c3e50; font-weight:700;"><i class="fas fa-exclamation"></i> Things to be careful with</h6>
             <ul>
-              <li><strong>Changing the Pro-Rata Amount on the Line Type doesn't auto-redistribute.</strong> If you bump €2,810 to €3,000 on the Line Type page, existing Expense records keep their old amounts. The system <strong>warns you on save</strong> with a confirmation modal explaining the next step &mdash; so the change can't slip past unnoticed. To push the new total through, open <strong>any one</strong> Expense record using this Line Type, click <strong>Calculate Pro-Rata Amounts</strong>, then <strong>Confirm &amp; Update</strong> &mdash; the cascade updates every linked record in one go.</li>
+              <li><strong>Changing the Pro-Rata Amount on the Line Type cascades automatically &mdash; with a preview.</strong> If you bump €2,810 to €3,000 on the Line Type page, clicking Save opens a <strong>preview modal</strong> showing the full before/after per-property breakdown. Confirming with <em>Save &amp; Recalculate All</em> commits both the new Line Type amount <strong>and</strong> the redistributed Expense records in one atomic operation &mdash; no separate trip to the Expenses page needed.</li>
               <li><strong>Adding a new property to the portfolio doesn't auto-include it.</strong> Existing Pro-Rata Expense records won't pick up the new property. Open the Expense record on any one of the existing properties, tick the new one in the panel, and re-calculate.</li>
               <li><strong>Deleting a Pro-Rata Line Type cascades hard.</strong> Every Expense record on every property using this Line Type is deleted. The Confirm Delete modal lists all of them &mdash; read carefully.</li>
             </ul>
@@ -352,7 +358,7 @@
 
               <li><strong>Re-run Calculate when adding/removing properties.</strong> The distribution doesn't auto-update when the property pool changes. After acquiring or selling a property, open any one of the Pro-Rata Expense records, adjust the property panel, and re-calculate.</li>
 
-              <li><strong>Re-run Calculate after changing the Line Type's Pro-Rata Amount.</strong> Saving a new amount on the Line Type doesn't auto-update existing Expense records &mdash; but the system pops up a warning modal to remind you. After saving, open any one of the linked Expense records, click Calculate &amp; Confirm, and the cascade refreshes all the linked records in one shot &mdash; no need to visit each property.</li>
+              <li><strong>Pro-Rata Amount changes cascade automatically.</strong> When you change the Pro-Rata Amount on a Line Type with linked Expense records, the system shows a preview modal with the full per-property impact (old/new/Δ). Confirming with <em>Save &amp; Recalculate All</em> saves the Line Type <strong>and</strong> pushes the new distribution through every linked Expense record in one operation.</li>
             </ul>
 
             <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;">Working with Delete</h6>

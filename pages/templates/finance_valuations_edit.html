@@ -1,10 +1,9 @@
 {% extends 'base.html' %}
 {% load static %}
 {% load humanize %}
-
 {% block title %}Edit Property Valuation{% endblock %}
-
 {% block content %}
+
 <h2><center>ALIVENTE ONLINE - PROPERTY VALUATIONS</center></h2>
 <h4><center>EDIT EXISTING VALUATION</center></h4>
 <br/>
@@ -16,7 +15,12 @@
     <a href="{% url 'finance_valuations' %}" class="btn btn-info" style="margin-right:16px" role="button">Back</a>
 </div>
 
-<form method="POST" action="{% url 'finance_valuations_edit_commit' vresults.prop_values_id %}" id="valuationForm">
+<form method="POST" action="{% url 'finance_valuations_edit_commit' vresults.prop_values_id %}"
+      id="valuationForm"
+      data-prop-values-id="{{ vresults.prop_values_id }}"
+      data-original-current-value="{{ vresults.prop_values_current_value|floatformat:'0' }}"
+      data-preview-url="{% url 'preview_valuation_change' vresults.prop_values_id %}"
+      data-recalc-url="{% url 'finance_valuations_edit_and_recalc_commit' vresults.prop_values_id %}">
     {% csrf_token %}
     
     <div class="form-row align-items-center">
@@ -62,6 +66,110 @@
     </div>
 </form>
 
+<!-- ==================== CURRENT VALUE CHANGE PREVIEW MODAL ==================== -->
+<div class="modal fade" id="valuationChangePreviewModal" tabindex="-1" role="dialog"
+     aria-labelledby="valuationChangePreviewModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document" style="max-width: 1000px;">
+    <div class="modal-content">
+
+      <!-- Header -->
+      <div class="modal-header" style="background: linear-gradient(135deg, #17a2b8 0%, #138496 100%); color: white;">
+        <div>
+          <h5 class="modal-title" id="valuationChangePreviewModalLabel" style="font-weight:700;">
+            <i class="fas fa-balance-scale"></i> Current Value Change &mdash; Preview
+          </h5>
+          <small style="opacity:0.85;">This property is in one or more Pro-Rata Expense distributions &mdash; review before confirming</small>
+        </div>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"
+                style="color:white; opacity:0.9; font-size:28px;">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+
+      <!-- Body -->
+      <div class="modal-body" style="padding: 0;">
+
+        <!-- Loading state -->
+        <div id="val-preview-loading" style="padding: 40px; text-align: center;">
+          <div class="spinner-border text-info" role="status" style="width: 3rem; height: 3rem;">
+            <span class="sr-only">Loading&hellip;</span>
+          </div>
+          <p class="mt-3 text-muted">Calculating impact across all affected distributions&hellip;</p>
+        </div>
+
+        <!-- Error state -->
+        <div id="val-preview-error" style="display: none; padding: 25px 30px;">
+          <div class="alert alert-danger mb-0">
+            <i class="fas fa-exclamation-circle"></i>
+            <strong>Could not compute preview:</strong>
+            <span id="val-preview-error-message"></span>
+          </div>
+        </div>
+
+        <!-- Preview content -->
+        <div id="val-preview-content" style="display: none;">
+
+          <!-- Summary header -->
+          <div style="padding: 20px 30px; background: #f8f9fa; border-bottom: 1px solid #dee2e6;">
+            <div class="row">
+              <div class="col-md-6">
+                <strong>Property:</strong> <span id="val-preview-prop-name"></span>
+              </div>
+              <div class="col-md-6 text-md-right">
+                <strong>Current Value:</strong>
+                &euro;<span id="val-preview-old-cv"></span>
+                &nbsp;&rarr;&nbsp;
+                <strong style="color:#17a2b8;">&euro;<span id="val-preview-new-cv"></span></strong>
+              </div>
+            </div>
+            <div class="row mt-2">
+              <div class="col-md-12">
+                <small class="text-muted">
+                  <i class="fas fa-info-circle"></i>
+                  This property participates in
+                  <strong><span id="val-preview-lt-count">0</span></strong> Pro-Rata distribution(s),
+                  which together span
+                  <strong><span id="val-preview-exp-count">0</span></strong> Expense record(s).
+                  Click each distribution below to expand.
+                </small>
+              </div>
+            </div>
+          </div>
+
+          <!-- Scrollable collapsible line-type groups -->
+          <div id="val-preview-groups" style="max-height: 55vh; overflow-y: auto; padding: 15px 30px;">
+            <!-- Populated by JS -->
+          </div>
+
+          <!-- Note about historical P&L -->
+          <div style="padding: 15px 30px 20px 30px; border-top: 1px solid #dee2e6;">
+            <div class="alert alert-light mb-0" style="border-left:4px solid #6c757d; font-size:0.875rem;">
+              <i class="fas fa-info-circle"></i>
+              <strong>Note:</strong> Expense records aren't dated &mdash; they describe an ongoing
+              pattern. Saving will update historical P&amp;L periods too. This is normal for
+              budgeted expenses.
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Footer -->
+      <div class="modal-footer" style="background:#f8f9fa; border-top:1px solid #dee2e6;">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal" id="val-preview-cancel-btn">
+          <i class="fas fa-times"></i> Cancel
+        </button>
+        <button type="button" class="btn btn-primary" id="val-preview-confirm-btn"
+                style="background:linear-gradient(135deg,#17a2b8,#138496); border:none; font-weight:600;" disabled>
+          <i class="fas fa-check"></i> Save &amp; Recalculate All
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
+<!-- ==================== END PREVIEW MODAL ==================== -->
+
 {% endif %}
 
 <style>
@@ -71,6 +179,329 @@
     .form-row {
         margin-top: 20px;
     }
+    
+    /* Collapsible group styling for the preview modal */
+    .val-lt-group {
+        border: 1px solid #dee2e6;
+        border-radius: 6px;
+        margin-bottom: 12px;
+        overflow: hidden;
+    }
+    .val-lt-header {
+        padding: 10px 15px;
+        background: #e7f5f8;
+        cursor: pointer;
+        user-select: none;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        transition: background 0.15s;
+    }
+    .val-lt-header:hover {
+        background: #d4ecf2;
+    }
+    .val-lt-chevron {
+        color: #17a2b8;
+        transition: transform 0.2s;
+        font-size: 12px;
+    }
+    .val-lt-group.expanded .val-lt-chevron {
+        transform: rotate(90deg);
+    }
+    .val-lt-title {
+        flex: 1;
+        font-weight: 700;
+        color: #2c3e50;
+    }
+    .val-lt-meta {
+        font-size: 0.85rem;
+        color: #6c757d;
+    }
+    .val-lt-body {
+        display: none;
+        padding: 0;
+    }
+    .val-lt-group.expanded .val-lt-body {
+        display: block;
+    }
+    .val-lt-body table {
+        margin-bottom: 0;
+        font-size: 0.875rem;
+    }
+    .val-lt-body thead {
+        background: #f8f9fa;
+    }
+    .val-lt-body thead th {
+        font-weight: 600;
+        border-top: none;
+        font-size: 0.8rem;
+    }
+    /* Highlight the edited property's row within each group */
+    .val-lt-body tr.edited-row {
+        background: #fff3cd !important;
+    }
+    .val-lt-body tr.edited-row td {
+        font-weight: 600;
+    }
+    .val-lt-body tfoot tr {
+        background: #f8f9fa;
+        font-weight: 700;
+    }
 </style>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    
+    let lastPreviewData = null;
+    
+    function formatMoney(value, decimals = 2) {
+        return value.toLocaleString('en-US', {
+            minimumFractionDigits: decimals,
+            maximumFractionDigits: decimals,
+        });
+    }
+    
+    function formatDelta(delta) {
+        if (delta > 0.005) {
+            return `<span style="color:#dc3545;">+&euro;${formatMoney(delta)}</span>`;
+        } else if (delta < -0.005) {
+            return `<span style="color:#28a745;">&minus;&euro;${formatMoney(Math.abs(delta))}</span>`;
+        }
+        return `<span style="color:#6c757d;">&euro;0.00</span>`;
+    }
+    
+    function escapeHtml(s) {
+        const div = document.createElement('div');
+        div.textContent = s;
+        return div.innerHTML;
+    }
+    
+    // ---- Intercept form submit ----
+    const form = document.getElementById('valuationForm');
+    form.addEventListener('submit', function(e) {
+        // Skip if user already confirmed via preview modal
+        if (this.dataset.userConfirmed === 'true') {
+            return; // Let the form submit normally
+        }
+        
+        const originalCv = parseFloat(this.dataset.originalCurrentValue) || 0;
+        const currentCvInput = document.getElementById('current_value');
+        const newCv = parseFloat(currentCvInput.value) || 0;
+        
+        const cvChanged = (originalCv !== newCv);
+        
+        if (!cvChanged) {
+            // CV unchanged → normal save (maybe they only changed Purchase Price)
+            return;
+        }
+        
+        // CV changed → we need to check whether this property is in any
+        // Pro-Rata distributions. The AJAX endpoint tells us: if the response
+        // has affected_line_types_count == 0, we skip the modal and submit normally.
+        e.preventDefault();
+        showPreviewModal(this, newCv);
+    });
+    
+    // ---- Show preview modal + fetch data ----
+    function showPreviewModal(form, newCv) {
+        const previewUrl = form.dataset.previewUrl;
+        
+        // Reset modal state
+        document.getElementById('val-preview-loading').style.display = 'block';
+        document.getElementById('val-preview-content').style.display = 'none';
+        document.getElementById('val-preview-error').style.display = 'none';
+        document.getElementById('val-preview-confirm-btn').disabled = true;
+        lastPreviewData = null;
+        
+        $('#valuationChangePreviewModal').modal('show');
+        
+        fetch(`${previewUrl}?new_current_value=${encodeURIComponent(newCv)}`, {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Content-Type': 'application/json',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('val-preview-loading').style.display = 'none';
+            
+            if (!data.success) {
+                document.getElementById('val-preview-error').style.display = 'block';
+                document.getElementById('val-preview-error-message').textContent =
+                    data.error || 'Unknown error';
+                return;
+            }
+            
+            // If the property is in zero Pro-Rata distributions, close the modal
+            // and just let the form submit normally.
+            if (data.affected_line_types_count === 0) {
+                $('#valuationChangePreviewModal').modal('hide');
+                form.dataset.userConfirmed = 'true';
+                setTimeout(function() { form.submit(); }, 150);
+                return;
+            }
+            
+            // Store for later
+            lastPreviewData = data;
+            lastPreviewData.form = form;
+            
+            // Header summary
+            document.getElementById('val-preview-prop-name').textContent = data.prop_name;
+            document.getElementById('val-preview-old-cv').textContent =
+                formatMoney(data.old_current_value, 0);
+            document.getElementById('val-preview-new-cv').textContent =
+                formatMoney(data.new_current_value, 0);
+            document.getElementById('val-preview-lt-count').textContent =
+                data.affected_line_types_count;
+            document.getElementById('val-preview-exp-count').textContent =
+                data.affected_expense_count;
+            
+            // Render each Line Type as a collapsible group
+            const groupsContainer = document.getElementById('val-preview-groups');
+            groupsContainer.innerHTML = '';
+            
+            data.line_types.forEach((lt, idx) => {
+                const group = document.createElement('div');
+                group.className = 'val-lt-group' + (idx === 0 ? ' expanded' : '');
+                
+                // Compute group-level totals
+                let totalOldAmt = 0;
+                let totalNewAmt = 0;
+                lt.properties.forEach(p => {
+                    totalOldAmt += p.old_amount;
+                    totalNewAmt += p.new_amount;
+                });
+                const groupDelta = totalNewAmt - totalOldAmt;
+                
+                // Header
+                const header = document.createElement('div');
+                header.className = 'val-lt-header';
+                header.innerHTML = `
+                    <i class="fas fa-chevron-right val-lt-chevron"></i>
+                    <div class="val-lt-title">${escapeHtml(lt.line_type_name)}</div>
+                    <div class="val-lt-meta">
+                        Total: <strong>&euro;${formatMoney(lt.pr_amount, 0)}</strong>
+                        &nbsp;&middot;&nbsp;
+                        ${lt.property_count} properties
+                    </div>
+                `;
+                header.addEventListener('click', function() {
+                    group.classList.toggle('expanded');
+                });
+                group.appendChild(header);
+                
+                // Body — scrollable table
+                const body = document.createElement('div');
+                body.className = 'val-lt-body';
+                
+                const table = document.createElement('table');
+                table.className = 'table table-sm table-bordered mb-0';
+                
+                table.innerHTML = `
+                    <thead>
+                        <tr>
+                            <th style="min-width: 160px;">Property</th>
+                            <th class="text-right">CV (old)</th>
+                            <th class="text-right">CV (new)</th>
+                            <th class="text-right">Share %</th>
+                            <th class="text-right">Old Amount</th>
+                            <th class="text-right">New Amount</th>
+                            <th class="text-right">&Delta;</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                    <tfoot>
+                        <tr>
+                            <td>Total</td>
+                            <td class="text-right">&euro;${formatMoney(lt.total_current_value_old, 0)}</td>
+                            <td class="text-right">&euro;${formatMoney(lt.total_current_value_new, 0)}</td>
+                            <td class="text-right">100.00%</td>
+                            <td class="text-right">&euro;${formatMoney(totalOldAmt, 2)}</td>
+                            <td class="text-right">&euro;${formatMoney(totalNewAmt, 2)}</td>
+                            <td class="text-right">${formatDelta(groupDelta)}</td>
+                        </tr>
+                    </tfoot>
+                `;
+                
+                const tbody = table.querySelector('tbody');
+                lt.properties.forEach(p => {
+                    const row = document.createElement('tr');
+                    if (p.is_edited_property) {
+                        row.className = 'edited-row';
+                    }
+                    // CV column: highlight when it actually changed
+                    const cvNewDisplay = (p.current_value_old !== p.current_value_new)
+                        ? `<strong style="color:#17a2b8;">&euro;${formatMoney(p.current_value_new, 0)}</strong>`
+                        : `&euro;${formatMoney(p.current_value_new, 0)}`;
+                    
+                    row.innerHTML = `
+                        <td>${escapeHtml(p.prop_name)}${p.is_edited_property ? ' <span class="badge badge-warning" style="background:#ffc107; color:#212529;">edited</span>' : ''}</td>
+                        <td class="text-right">&euro;${formatMoney(p.current_value_old, 0)}</td>
+                        <td class="text-right">${cvNewDisplay}</td>
+                        <td class="text-right">${p.share_percentage_new.toFixed(2)}%</td>
+                        <td class="text-right">&euro;${formatMoney(p.old_amount, 2)}</td>
+                        <td class="text-right"><strong>&euro;${formatMoney(p.new_amount, 2)}</strong></td>
+                        <td class="text-right">${formatDelta(p.delta)}</td>
+                    `;
+                    tbody.appendChild(row);
+                });
+                
+                body.appendChild(table);
+                group.appendChild(body);
+                groupsContainer.appendChild(group);
+            });
+            
+            document.getElementById('val-preview-content').style.display = 'block';
+            document.getElementById('val-preview-confirm-btn').disabled = false;
+        })
+        .catch(err => {
+            document.getElementById('val-preview-loading').style.display = 'none';
+            document.getElementById('val-preview-error').style.display = 'block';
+            document.getElementById('val-preview-error-message').textContent =
+                'Network error — ' + err.message;
+        });
+    }
+    
+    // ---- Confirm button — repoint form + submit ----
+    document.getElementById('val-preview-confirm-btn').addEventListener('click', function() {
+        if (!lastPreviewData || !lastPreviewData.form) return;
+        
+        const form = lastPreviewData.form;
+        form.dataset.userConfirmed = 'true';
+        form.action = form.dataset.recalcUrl;
+        
+        // Add the hidden payload field
+        let hidden = form.querySelector('input[name="valuation_preview_data"]');
+        if (!hidden) {
+            hidden = document.createElement('input');
+            hidden.type = 'hidden';
+            hidden.name = 'valuation_preview_data';
+            form.appendChild(hidden);
+        }
+        
+        // Strip the non-serialisable form reference
+        const payload = {
+            prop_id: lastPreviewData.prop_id,
+            prop_name: lastPreviewData.prop_name,
+            old_current_value: lastPreviewData.old_current_value,
+            new_current_value: lastPreviewData.new_current_value,
+            affected_line_types_count: lastPreviewData.affected_line_types_count,
+            affected_expense_count: lastPreviewData.affected_expense_count,
+            line_types: lastPreviewData.line_types,
+        };
+        hidden.value = JSON.stringify(payload);
+        
+        $('#valuationChangePreviewModal').modal('hide');
+        setTimeout(function() { form.submit(); }, 200);
+    });
+    
+    // ---- Cancel button ----
+    document.getElementById('val-preview-cancel-btn').addEventListener('click', function() {
+        lastPreviewData = null;
+    });
+});
+</script>
 
 {% endblock %}

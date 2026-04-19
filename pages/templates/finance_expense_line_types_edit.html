@@ -14,9 +14,13 @@
 
 {% for exp in eltresults %}
 <form action="{% url 'finance_expense_line_types_edit_commit' exp.expense_line_types_id %}" method="post"
+      id="line-type-form"
+      data-line-type-id="{{ exp.expense_line_types_id }}"
       data-original-prorata="{{ exp.expense_line_types_prorata }}"
       data-original-pr-amount="{{ exp.expense_line_types_pr_amount|default:'0' }}"
-      data-linked-expense-count="{{ linked_expense_count|default:0 }}">
+      data-linked-expense-count="{{ linked_expense_count|default:0 }}"
+      data-recalc-url="{% url 'finance_expense_line_types_edit_and_recalc_commit' exp.expense_line_types_id %}"
+      data-preview-url="{% url 'preview_prorata_amount_change' exp.expense_line_types_id %}">
   {% csrf_token %}
   <div style="display: flex ; justify-content: flex-end">
     <button class="btn btn-info" style="margin-right:16px" type="submit">Save</button>
@@ -56,67 +60,159 @@
 </form>
 {% endfor %}
 
-<!-- ==================== PRO-RATA AMOUNT CHANGE WARNING MODAL ==================== -->
-<div class="modal fade" id="prorataChangeWarningModal" tabindex="-1" role="dialog" aria-labelledby="prorataChangeWarningModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg" role="document">
+<!-- ==================== PRO-RATA CHANGE PREVIEW MODAL ==================== -->
+<div class="modal fade" id="prorataChangePreviewModal" tabindex="-1" role="dialog"
+     aria-labelledby="prorataChangePreviewModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document" style="max-width: 1000px;">
     <div class="modal-content">
 
       <!-- Header -->
-      <div class="modal-header" style="background: linear-gradient(135deg, #ffc107 0%, #d39e00 100%); color: #212529;">
-        <h5 class="modal-title" id="prorataChangeWarningModalLabel" style="font-weight:700;">
-          <i class="fas fa-exclamation-triangle"></i> Pro-Rata Amount Changed &mdash; Action Required
-        </h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="font-size:28px;">
+      <div class="modal-header" style="background: linear-gradient(135deg, #17a2b8 0%, #138496 100%); color: white;">
+        <div>
+          <h5 class="modal-title" id="prorataChangePreviewModalLabel" style="font-weight:700;">
+            <i class="fas fa-balance-scale"></i> Pro-Rata Amount Change &mdash; Preview
+          </h5>
+          <small style="opacity:0.85;">Review the distribution before confirming</small>
+        </div>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"
+                style="color:white; opacity:0.9; font-size:28px;">
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
 
       <!-- Body -->
-      <div class="modal-body" style="padding:25px 30px;">
-        <p>You've changed the Pro-Rata Amount from <strong>&euro;<span id="warning-old-amount">0</span></strong> to <strong>&euro;<span id="warning-new-amount">0</span></strong>.</p>
+      <div class="modal-body" style="padding: 0;">
 
-        <div class="alert alert-warning" style="border-left:4px solid #ffc107;">
-          <i class="fas fa-info-circle"></i> <strong>This change will <em>not</em> auto-update existing Expense records.</strong>
-          <p class="mb-0 mt-2">There <span id="warning-linked-count">0</span> Expense record(s) currently using this Line Type. They will keep their old amounts until you trigger a recalculation.</p>
+        <!-- Loading state -->
+        <div id="preview-loading" style="padding: 40px; text-align: center;">
+          <div class="spinner-border text-info" role="status" style="width: 3rem; height: 3rem;">
+            <span class="sr-only">Loading&hellip;</span>
+          </div>
+          <p class="mt-3 text-muted">Calculating new distribution&hellip;</p>
         </div>
 
-        <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-tools"></i> How to push the new amount through</h6>
-        <ol>
-          <li>Click <strong>Save Anyway</strong> below to commit this Line Type change</li>
-          <li>Go to the <strong>Expenses</strong> page</li>
-          <li>Open <strong>any one</strong> Expense record using this Line Type</li>
-          <li>Click <strong>Calculate Pro-Rata Amounts</strong>, then <strong>Confirm &amp; Update</strong></li>
-        </ol>
-        <p class="mb-0">That single recalculation cascades the new amount across <strong>all</strong> linked Expense records &mdash; you don't need to visit each property individually.</p>
+        <!-- Error state -->
+        <div id="preview-error" style="display: none; padding: 25px 30px;">
+          <div class="alert alert-danger mb-0">
+            <i class="fas fa-exclamation-circle"></i>
+            <strong>Could not compute preview:</strong>
+            <span id="preview-error-message"></span>
+          </div>
+        </div>
+
+        <!-- Preview content -->
+        <div id="preview-content" style="display: none;">
+
+          <!-- Summary header -->
+          <div style="padding: 20px 30px; background: #f8f9fa; border-bottom: 1px solid #dee2e6;">
+            <div class="row">
+              <div class="col-md-6">
+                <strong>Line Type:</strong> <span id="preview-line-type-name"></span>
+              </div>
+              <div class="col-md-6 text-md-right">
+                <strong>Pro-Rata Amount:</strong>
+                &euro;<span id="preview-old-amount"></span>
+                &nbsp;&rarr;&nbsp;
+                <strong style="color:#17a2b8;">&euro;<span id="preview-new-amount"></span></strong>
+              </div>
+            </div>
+            <div class="row mt-2">
+              <div class="col-md-12">
+                <small class="text-muted">
+                  <i class="fas fa-info-circle"></i>
+                  <span id="preview-affected-count">0</span> Expense record(s) will be recalculated.
+                  Distribution is proportional to each property's Current Value.
+                </small>
+              </div>
+            </div>
+          </div>
+
+          <!-- Scrollable table -->
+          <div style="max-height: 50vh; overflow-y: auto; padding: 0 30px;">
+            <table class="table table-bordered table-striped table-sm mt-3" style="font-size:0.9rem;">
+              <thead style="background:#e7f5f8; position: sticky; top: 0; z-index: 10;">
+                <tr>
+                  <th style="min-width: 160px;">Property</th>
+                  <th class="text-right">Current Value</th>
+                  <th class="text-right">Share %</th>
+                  <th class="text-right">Old Amount</th>
+                  <th class="text-right">New Amount</th>
+                  <th class="text-right">&Delta;</th>
+                </tr>
+              </thead>
+              <tbody id="preview-property-rows">
+                <!-- Populated by JS -->
+              </tbody>
+              <tfoot>
+                <tr style="background:#f8f9fa; font-weight:700;">
+                  <td>Total</td>
+                  <td class="text-right" id="preview-total-cv">&euro;0</td>
+                  <td class="text-right">100.00%</td>
+                  <td class="text-right" id="preview-total-old">&euro;0</td>
+                  <td class="text-right" id="preview-total-new">&euro;0</td>
+                  <td class="text-right" id="preview-total-delta">&euro;0</td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+
+          <!-- Note about historical P&L -->
+          <div style="padding: 15px 30px 20px 30px;">
+            <div class="alert alert-light mb-0" style="border-left:4px solid #6c757d; font-size:0.875rem;">
+              <i class="fas fa-info-circle"></i>
+              <strong>Note:</strong> Expense records aren't dated &mdash; they describe an ongoing
+              pattern. Saving will update historical P&amp;L periods too. This is normal for
+              budgeted expenses.
+            </div>
+          </div>
+        </div>
+
       </div>
 
       <!-- Footer -->
       <div class="modal-footer" style="background:#f8f9fa; border-top:1px solid #dee2e6;">
-        <button type="button" class="btn btn-secondary" data-dismiss="modal" id="warning-cancel-btn">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal" id="preview-cancel-btn">
           <i class="fas fa-times"></i> Cancel
         </button>
-        <button type="button" class="btn btn-warning" id="warning-save-anyway-btn" style="font-weight:600;">
-          <i class="fas fa-save"></i> Save Anyway
+        <button type="button" class="btn btn-primary" id="preview-confirm-btn"
+                style="background:linear-gradient(135deg,#17a2b8,#138496); border:none; font-weight:600;" disabled>
+          <i class="fas fa-check"></i> Save &amp; Recalculate All
         </button>
       </div>
 
     </div>
   </div>
 </div>
-<!-- ==================== END PRO-RATA AMOUNT CHANGE WARNING MODAL ==================== -->
+<!-- ==================== END PRO-RATA CHANGE PREVIEW MODAL ==================== -->
 
 {% endif %}
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+
+    // Track the last preview result so we can POST it with the form
+    let lastPreviewData = null;
     
-    // Reference to the form being submitted (set when warning fires)
-    let pendingFormSubmit = null;
+    // Format a number as 1,234 or 1,234.56 with thousand separators
+    function formatMoney(value, decimals = 2) {
+        return value.toLocaleString('en-US', {
+            minimumFractionDigits: decimals,
+            maximumFractionDigits: decimals,
+        });
+    }
     
-    // ---- Existing handlers (preserved) ----
+    // Format a delta with + or − prefix and colour-code (red for increase, green for decrease)
+    function formatDelta(delta) {
+        if (delta > 0.005) {
+            return `<span style="color:#dc3545;">+&euro;${formatMoney(delta)}</span>`;
+        } else if (delta < -0.005) {
+            return `<span style="color:#28a745;">&minus;&euro;${formatMoney(Math.abs(delta))}</span>`;
+        }
+        return `<span style="color:#6c757d;">&euro;0.00</span>`;
+    }
     
-    // Name validation + Pro-Rata change warning interception
+    // ---- Intercept form submit ----
     document.querySelectorAll('form').forEach(form => {
         form.addEventListener('submit', function(e) {
             // 1. Name validation (existing)
@@ -128,12 +224,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
             
-            // 2. NEW: Pro-Rata Amount change warning
-            // Skip the check if the user has already confirmed via the warning modal
+            // 2. Skip if user already confirmed via the preview modal
             if (this.dataset.userConfirmed === 'true') {
                 return; // Let the form submit normally
             }
             
+            // 3. Check trigger conditions
             const originalProrata = this.dataset.originalProrata;
             const originalAmount = parseFloat(this.dataset.originalPrAmount) || 0;
             const linkedCount = parseInt(this.dataset.linkedExpenseCount) || 0;
@@ -144,55 +240,152 @@ document.addEventListener('DOMContentLoaded', function() {
             const currentProrata = prorataSelect.value;
             const currentAmount = parseFloat(prAmountInput.value) || 0;
             
-            // Trigger conditions: was Pro-Rata, still Pro-Rata, amount changed, AND linked expenses exist
             const wasAndStillProrata = (originalProrata === 'Yes' && currentProrata === 'Yes');
             const amountChanged = (originalAmount !== currentAmount);
             const hasLinkedExpenses = (linkedCount > 0);
             
             if (wasAndStillProrata && amountChanged && hasLinkedExpenses) {
                 e.preventDefault();
-                
-                // Populate the warning modal
-                document.getElementById('warning-old-amount').textContent = 
-                    originalAmount.toLocaleString('en-US', {maximumFractionDigits: 2, minimumFractionDigits: 0});
-                document.getElementById('warning-new-amount').textContent = 
-                    currentAmount.toLocaleString('en-US', {maximumFractionDigits: 2, minimumFractionDigits: 0});
-                
-                const countEl = document.getElementById('warning-linked-count');
-                countEl.textContent = linkedCount;
-                // Subject-verb agreement: "1 record" vs "5 records"
-                const isAreEl = countEl.parentElement;
-                isAreEl.innerHTML = isAreEl.innerHTML.replace(
-                    /There (is|are) <span id="warning-linked-count">\d+<\/span> Expense record\(s\)/,
-                    `There ${linkedCount === 1 ? 'is' : 'are'} <span id="warning-linked-count">${linkedCount}</span> Expense record${linkedCount === 1 ? '' : 's'}`
-                );
-                
-                // Remember which form to submit if user clicks "Save Anyway"
-                pendingFormSubmit = this;
-                
-                // Show the modal (using jQuery for BS4 compatibility)
-                $('#prorataChangeWarningModal').modal('show');
+                showPreviewModal(this, currentAmount);
             }
+            // Otherwise: normal form submit — no modal interception
         });
     });
-
-    // ---- "Save Anyway" button handler ----
-    document.getElementById('warning-save-anyway-btn').addEventListener('click', function() {
-        if (pendingFormSubmit) {
-            // Mark form as user-confirmed and resubmit
-            pendingFormSubmit.dataset.userConfirmed = 'true';
-            $('#prorataChangeWarningModal').modal('hide');
-            // Small delay to let the modal close cleanly before submit
-            setTimeout(function() {
-                pendingFormSubmit.submit();
-                pendingFormSubmit = null;
-            }, 200);
+    
+    // ---- Show the preview modal + fetch the preview data ----
+    function showPreviewModal(form, newAmount) {
+        const previewUrl = form.dataset.previewUrl;
+        
+        // Reset modal state
+        document.getElementById('preview-loading').style.display = 'block';
+        document.getElementById('preview-content').style.display = 'none';
+        document.getElementById('preview-error').style.display = 'none';
+        document.getElementById('preview-confirm-btn').disabled = true;
+        lastPreviewData = null;
+        
+        // Open the modal immediately (shows the loading state)
+        $('#prorataChangePreviewModal').modal('show');
+        
+        // Fetch the preview data
+        fetch(`${previewUrl}?new_pr_amount=${encodeURIComponent(newAmount)}`, {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Content-Type': 'application/json',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('preview-loading').style.display = 'none';
+            
+            if (!data.success) {
+                document.getElementById('preview-error').style.display = 'block';
+                document.getElementById('preview-error-message').textContent =
+                    data.error || 'Unknown error';
+                return;
+            }
+            
+            // Remember the preview data — will be posted with the form
+            lastPreviewData = data;
+            lastPreviewData.form = form;
+            
+            // Populate the modal
+            document.getElementById('preview-line-type-name').textContent = data.line_type_name;
+            document.getElementById('preview-old-amount').textContent = formatMoney(data.old_pr_amount, 2);
+            document.getElementById('preview-new-amount').textContent = formatMoney(data.new_pr_amount, 2);
+            document.getElementById('preview-affected-count').textContent = data.affected_count;
+            
+            // Populate the property rows
+            const tbody = document.getElementById('preview-property-rows');
+            tbody.innerHTML = '';
+            
+            let totalCv = 0;
+            let totalOld = 0;
+            let totalNew = 0;
+            
+            data.properties.forEach(p => {
+                totalCv += p.current_value;
+                totalOld += p.old_amount;
+                totalNew += p.new_amount;
+                
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${escapeHtml(p.prop_name)}</td>
+                    <td class="text-right">&euro;${formatMoney(p.current_value, 0)}</td>
+                    <td class="text-right">${p.share_percentage.toFixed(2)}%</td>
+                    <td class="text-right">&euro;${formatMoney(p.old_amount, 2)}</td>
+                    <td class="text-right"><strong>&euro;${formatMoney(p.new_amount, 2)}</strong></td>
+                    <td class="text-right">${formatDelta(p.delta)}</td>
+                `;
+                tbody.appendChild(row);
+            });
+            
+            // Populate totals footer
+            document.getElementById('preview-total-cv').innerHTML = `&euro;${formatMoney(totalCv, 0)}`;
+            document.getElementById('preview-total-old').innerHTML = `&euro;${formatMoney(totalOld, 2)}`;
+            document.getElementById('preview-total-new').innerHTML = `&euro;${formatMoney(totalNew, 2)}`;
+            document.getElementById('preview-total-delta').innerHTML = formatDelta(totalNew - totalOld);
+            
+            document.getElementById('preview-content').style.display = 'block';
+            document.getElementById('preview-confirm-btn').disabled = false;
+        })
+        .catch(err => {
+            document.getElementById('preview-loading').style.display = 'none';
+            document.getElementById('preview-error').style.display = 'block';
+            document.getElementById('preview-error-message').textContent =
+                'Network error — ' + err.message;
+        });
+    }
+    
+    // Simple HTML escape for property names
+    function escapeHtml(s) {
+        const div = document.createElement('div');
+        div.textContent = s;
+        return div.innerHTML;
+    }
+    
+    // ---- Confirm button — repoint form to recalc endpoint and submit ----
+    document.getElementById('preview-confirm-btn').addEventListener('click', function() {
+        if (!lastPreviewData || !lastPreviewData.form) return;
+        
+        const form = lastPreviewData.form;
+        
+        // Mark as confirmed so the next submit doesn't re-trigger the modal
+        form.dataset.userConfirmed = 'true';
+        
+        // Swap the form's action to the combined recalc endpoint
+        form.action = form.dataset.recalcUrl;
+        
+        // Add a hidden field carrying the preview payload
+        let hidden = form.querySelector('input[name="prorata_preview_data"]');
+        if (!hidden) {
+            hidden = document.createElement('input');
+            hidden.type = 'hidden';
+            hidden.name = 'prorata_preview_data';
+            form.appendChild(hidden);
         }
+        // Strip the non-serialisable form reference before stringifying
+        const payload = {
+            line_type_name: lastPreviewData.line_type_name,
+            old_pr_amount: lastPreviewData.old_pr_amount,
+            new_pr_amount: lastPreviewData.new_pr_amount,
+            total_current_value: lastPreviewData.total_current_value,
+            affected_count: lastPreviewData.affected_count,
+            properties: lastPreviewData.properties,
+        };
+        hidden.value = JSON.stringify(payload);
+        
+        $('#prorataChangePreviewModal').modal('hide');
+        
+        // Small delay so the modal closes cleanly before submit
+        setTimeout(function() {
+            form.submit();
+        }, 200);
     });
-
-    // ---- Cancel button — clears the pending submission ----
-    document.getElementById('warning-cancel-btn').addEventListener('click', function() {
-        pendingFormSubmit = null;
+    
+    // ---- Cancel button — clear preview state ----
+    document.getElementById('preview-cancel-btn').addEventListener('click', function() {
+        lastPreviewData = null;
     });
 
     // ---- Existing Pro-Rata Yes/No toggle (preserved) ----

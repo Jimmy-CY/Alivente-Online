@@ -140,7 +140,19 @@ urlpatterns = [
     path('budget-expense-details/', views.budget_expense_details_view, name='budget_expense_details_view'),
     path('total-expense-details/', views.total_expense_details_view, name='total_expense_details_view'),
     path('financial-indicators/', views.financial_indicators_view, name='financial_indicators'),
-
+    path('finance/expense-line-types/preview-prorata-change/<int:expense_line_types_id>/',
+         views.preview_prorata_amount_change,
+         name='preview_prorata_amount_change'),
+    path('finance/expense-line-types/edit-and-recalc/<int:expense_line_types_id>/',
+         views.finance_expense_line_types_edit_and_recalc_commit,
+         name='finance_expense_line_types_edit_and_recalc_commit'),
+    path('finance/valuations/preview-change/<int:prop_values_id>/',
+         views.preview_valuation_change,
+         name='preview_valuation_change'),
+    path('finance/valuations/edit-and-recalc/<int:prop_values_id>/',
+         views.finance_valuations_edit_and_recalc_commit,
+         name='finance_valuations_edit_and_recalc_commit'),
+    
     #
     # Lease Agreement Generation
     path('generate-lease-agreement/', views.generate_lease_agreement_view, name='generate_lease_agreement'),

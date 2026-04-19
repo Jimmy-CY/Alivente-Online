@@ -6155,6 +6155,202 @@ def delete_expense_line_type(request, expense_line_type_id):
         }, status=500)
 
 @login_required
+def preview_prorata_amount_change(request, expense_line_types_id):
+    """Compute the before/after pro-rata distribution for a preview modal."""
+    if not request.user.is_superuser:
+        return JsonResponse({'success': False, 'error': 'Unauthorized'}, status=403)
+    
+    try:
+        new_pr_amount = float(request.GET.get('new_pr_amount', 0))
+    except (ValueError, TypeError):
+        return JsonResponse({'success': False, 'error': 'Invalid new_pr_amount'}, status=400)
+    
+    try:
+        # Get the Line Type
+        line_type = expense_line_types.objects.get(
+            expense_line_types_id=expense_line_types_id
+        )
+        old_pr_amount = float(line_type.expense_line_types_pr_amount or 0)
+        
+        # Get all linked Expense records, with their property & current value
+        linked_expenses = expense.objects.filter(
+            expense_line_types_id=expense_line_types_id
+        ).select_related('prop')
+        
+        # Build a list of affected properties with their Current Values
+        # Using the same subquery pattern you use elsewhere for prop_values
+        affected = []
+        for exp in linked_expenses:
+            try:
+                pv = prop_values.objects.filter(prop_id=exp.prop_id).first()
+                current_value = float(pv.prop_values_current_value) if pv else 0
+            except Exception:
+                current_value = 0
+            
+            affected.append({
+                'prop_id': exp.prop_id,
+                'prop_name': exp.prop.prop_name if exp.prop else 'Unknown',
+                'current_value': current_value,
+                'old_amount': float(exp.expense_amount or 0),
+            })
+        
+        if not affected:
+            return JsonResponse({
+                'success': True,
+                'line_type_name': line_type.expense_line_types_name,
+                'old_pr_amount': old_pr_amount,
+                'new_pr_amount': new_pr_amount,
+                'total_current_value': 0,
+                'affected_count': 0,
+                'properties': [],
+            })
+        
+        # Compute the new distribution using the same formula as the Expense edit JS
+        total_current_value = sum(p['current_value'] for p in affected)
+        
+        # Guard against divide-by-zero (shouldn't happen in practice, but safe)
+        if total_current_value <= 0:
+            return JsonResponse({
+                'success': False,
+                'error': 'Total current value of linked properties is zero. Cannot recalculate.'
+            }, status=400)
+        
+        for p in affected:
+            p['share_percentage'] = round(
+                (p['current_value'] / total_current_value) * 100, 2
+            )
+            p['new_amount'] = round(
+                (new_pr_amount * p['current_value']) / total_current_value, 2
+            )
+            p['delta'] = round(p['new_amount'] - p['old_amount'], 2)
+        
+        # Sort alphabetically by property name for the preview
+        affected.sort(key=lambda p: p['prop_name'].lower())
+        
+        return JsonResponse({
+            'success': True,
+            'line_type_name': line_type.expense_line_types_name,
+            'old_pr_amount': old_pr_amount,
+            'new_pr_amount': new_pr_amount,
+            'total_current_value': total_current_value,
+            'affected_count': len(affected),
+            'properties': affected,
+        })
+    
+    except expense_line_types.DoesNotExist:
+        return JsonResponse(
+            {'success': False, 'error': 'Expense Line Type not found'},
+            status=404
+        )
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+@login_required
+def finance_expense_line_types_edit_and_recalc_commit(request, expense_line_types_id):
+    """Save the Line Type AND cascade new amounts to all linked Expenses."""
+    if not request.user.is_superuser:
+        messages.error(request, "Unauthorized")
+        return redirect('finance_expense_line_types')
+    
+    if request.method != "POST":
+        return redirect('finance_expense_line_types')
+    
+    try:
+        line_type = expense_line_types.objects.get(
+            expense_line_types_id=expense_line_types_id
+        )
+    except expense_line_types.DoesNotExist:
+        messages.error(request, "Expense Line Type not found")
+        return redirect('finance_expense_line_types')
+    
+    # Duplicate name check (same logic as the existing edit_commit)
+    new_name = request.POST.get('expense_line_types_name', '').strip()
+    if expense_line_types.objects.filter(
+        expense_line_types_name__iexact=new_name
+    ).exclude(pk=expense_line_types_id).exists():
+        messages.error(request, "No duplicate Expense Line Types Allowed")
+        return redirect('finance_expense_line_types_edit',
+                        expense_line_types_id=expense_line_types_id)
+    
+    # Parse the preview data — this is the source of truth for per-property amounts
+    preview_raw = request.POST.get('prorata_preview_data', '')
+    try:
+        preview_data = json.loads(preview_raw) if preview_raw else None
+    except json.JSONDecodeError:
+        messages.error(request, "Invalid preview data")
+        return redirect('finance_expense_line_types_edit',
+                        expense_line_types_id=expense_line_types_id)
+    
+    if not preview_data or 'properties' not in preview_data:
+        messages.error(request, "No preview data supplied — cannot recalculate")
+        return redirect('finance_expense_line_types_edit',
+                        expense_line_types_id=expense_line_types_id)
+    
+    try:
+        with transaction.atomic():
+            # 1. Save the Line Type itself
+            line_type.expense_line_types_name = new_name
+            line_type.expense_line_types_description = request.POST.get(
+                'expense_line_types_description', ''
+            )
+            line_type.expense_line_types_prorata = request.POST.get(
+                'expense_line_types_prorata', 'No'
+            )
+            line_type.expense_line_types_pr_amount = float(
+                request.POST.get('expense_line_types_pr_amount', 0) or 0
+            )
+            line_type.save()
+            
+            # 2. Update every linked Expense record with the new calculated amount
+            months = ['jan', 'feb', 'mar', 'apr', 'may', 'jun',
+                      'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
+            
+            for prop_data in preview_data['properties']:
+                prop_id = prop_data['prop_id']
+                new_amount = prop_data['new_amount']
+                
+                # Find all Expense records for this property + line type
+                # (there may be multiple if the Line Type is paired with different
+                # Expense Types — e.g. properties on Jan and Jul Communal Fees)
+                linked = expense.objects.filter(
+                    expense_line_types_id=expense_line_types_id,
+                    prop_id=prop_id
+                )
+                
+                for exp in linked:
+                    # Get the expense type so we know which months to write to
+                    try:
+                        exp_type = expense_types.objects.get(
+                            expense_types_id=exp.expense_types_id
+                        )
+                    except expense_types.DoesNotExist:
+                        continue
+                    
+                    # Update the base amount
+                    exp.expense_amount = new_amount
+                    
+                    # Update the monthly fields based on the Expense Type's pattern
+                    for month in months:
+                        if getattr(exp_type, f'expense_types_{month}') == "Yes":
+                            setattr(exp, f'expense_{month}', new_amount)
+                        else:
+                            setattr(exp, f'expense_{month}', None)
+                    
+                    exp.save()
+        
+        messages.success(
+            request,
+            f"Line Type saved and {preview_data.get('affected_count', 0)} "
+            f"Expense record(s) recalculated successfully."
+        )
+        return redirect('finance_expense_line_types')
+    
+    except Exception as e:
+        messages.error(request, f"Error during recalculation: {str(e)}")
+        return redirect('finance_expense_line_types_edit',
+                        expense_line_types_id=expense_line_types_id)
+
+@login_required
 def finance_valuations(request):
     props_list = props.objects.all().order_by('prop_country', 'prop_name')
     valuations = prop_values.objects.all()
@@ -6255,6 +6451,260 @@ def finance_valuations_edit_commit(request, prop_values_id):
     
     # If GET or invalid form, show the valuations page
     return redirect('finance_valuations')
+
+@login_required
+def preview_valuation_change(request, prop_values_id):
+    """Compute the full Pro-Rata impact of a Current Value change."""
+    if not request.user.is_superuser:
+        return JsonResponse({'success': False, 'error': 'Unauthorized'}, status=403)
+    
+    try:
+        new_cv = float(request.GET.get('new_current_value', 0))
+    except (ValueError, TypeError):
+        return JsonResponse({'success': False, 'error': 'Invalid new_current_value'}, status=400)
+    
+    try:
+        pv = prop_values.objects.get(prop_values_id=prop_values_id)
+    except prop_values.DoesNotExist:
+        return JsonResponse(
+            {'success': False, 'error': 'Property Value record not found'}, status=404
+        )
+    
+    try:
+        prop_obj = props.objects.get(prop_id=pv.prop_id)
+        prop_name = prop_obj.prop_name
+    except props.DoesNotExist:
+        prop_name = 'Unknown'
+    
+    old_cv = float(pv.prop_values_current_value or 0)
+    
+    # Find every Expense record this property is part of that uses a Pro-Rata Line Type
+    affected_expenses = expense.objects.filter(
+        prop_id=pv.prop_id,
+        expense_line_types__expense_line_types_prorata='Yes'
+    ).select_related('expense_line_types')
+    
+    # Group by Line Type — one property might be in the same Line Type with
+    # multiple Expense Types (e.g. Communal Fees 1 in January vs July). The
+    # pro-rata share is the same regardless of which Expense Type, so we group
+    # by Line Type and compute once per Line Type.
+    line_type_ids = set(e.expense_line_types_id for e in affected_expenses)
+    
+    if not line_type_ids:
+        # Property is in no Pro-Rata distributions — nothing to preview
+        return JsonResponse({
+            'success': True,
+            'prop_id': pv.prop_id,
+            'prop_name': prop_name,
+            'old_current_value': old_cv,
+            'new_current_value': new_cv,
+            'affected_line_types_count': 0,
+            'affected_expense_count': 0,
+            'line_types': [],
+        })
+    
+    line_types_payload = []
+    total_affected_expense_records = 0
+    
+    for lt_id in line_type_ids:
+        try:
+            lt = expense_line_types.objects.get(expense_line_types_id=lt_id)
+        except expense_line_types.DoesNotExist:
+            continue
+        
+        pr_amount = float(lt.expense_line_types_pr_amount or 0)
+        
+        # All Expense records in this Line Type (across all properties)
+        lt_expenses = expense.objects.filter(
+            expense_line_types_id=lt_id
+        ).select_related('prop')
+        
+        # Count unique properties in this distribution
+        # (one property might have multiple expense records — e.g. Jan + Jul —
+        # but for pro-rata calc we care about unique properties)
+        unique_prop_ids = set(e.prop_id for e in lt_expenses)
+        total_affected_expense_records += lt_expenses.count()
+        
+        # Build per-property breakdown
+        prop_rows = []
+        total_cv_old = 0
+        total_cv_new = 0
+        
+        for pid in unique_prop_ids:
+            try:
+                pv_row = prop_values.objects.filter(prop_id=pid).first()
+                cv_old = float(pv_row.prop_values_current_value) if pv_row else 0
+            except Exception:
+                cv_old = 0
+            
+            try:
+                p_obj = props.objects.get(prop_id=pid)
+                p_name = p_obj.prop_name
+            except props.DoesNotExist:
+                p_name = 'Unknown'
+            
+            # The only CV that changes is the edited property's
+            cv_new = new_cv if pid == pv.prop_id else cv_old
+            
+            # Current "old" amount on the Expense record for this property + Line Type
+            # If multiple records exist (e.g. Jan + Jul), they all have the same amount
+            # in a pro-rata distribution, so take the first
+            existing = next((e for e in lt_expenses if e.prop_id == pid), None)
+            old_amount = float(existing.expense_amount) if existing else 0
+            
+            total_cv_old += cv_old
+            total_cv_new += cv_new
+            
+            prop_rows.append({
+                'prop_id': pid,
+                'prop_name': p_name,
+                'current_value_old': cv_old,
+                'current_value_new': cv_new,
+                'old_amount': old_amount,
+                'is_edited_property': (pid == pv.prop_id),
+            })
+        
+        # Guard against divide-by-zero
+        if total_cv_new <= 0:
+            return JsonResponse({
+                'success': False,
+                'error': (
+                    f"Total Current Value in '{lt.expense_line_types_name}' distribution "
+                    f"would be zero after this change. Cannot recalculate."
+                )
+            }, status=400)
+        
+        # Compute new share + amount for each property
+        for r in prop_rows:
+            r['share_percentage_old'] = round(
+                (r['current_value_old'] / total_cv_old * 100) if total_cv_old > 0 else 0, 2
+            )
+            r['share_percentage_new'] = round(
+                (r['current_value_new'] / total_cv_new) * 100, 2
+            )
+            r['new_amount'] = round(
+                (pr_amount * r['current_value_new']) / total_cv_new, 2
+            )
+            r['delta'] = round(r['new_amount'] - r['old_amount'], 2)
+        
+        # Sort: edited property first (so it's visually anchored), then alphabetically
+        prop_rows.sort(key=lambda r: (not r['is_edited_property'], r['prop_name'].lower()))
+        
+        line_types_payload.append({
+            'line_type_id': lt_id,
+            'line_type_name': lt.expense_line_types_name,
+            'pr_amount': pr_amount,
+            'total_current_value_old': total_cv_old,
+            'total_current_value_new': total_cv_new,
+            'property_count': len(prop_rows),
+            'properties': prop_rows,
+        })
+    
+    # Sort line types alphabetically for a stable, predictable display
+    line_types_payload.sort(key=lambda lt: lt['line_type_name'].lower())
+    
+    return JsonResponse({
+        'success': True,
+        'prop_id': pv.prop_id,
+        'prop_name': prop_name,
+        'old_current_value': old_cv,
+        'new_current_value': new_cv,
+        'affected_line_types_count': len(line_types_payload),
+        'affected_expense_count': total_affected_expense_records,
+        'line_types': line_types_payload,
+    })
+
+@login_required
+def finance_valuations_edit_and_recalc_commit(request, prop_values_id):
+    """Save the valuation AND cascade new amounts to all linked Pro-Rata Expenses."""
+    if not request.user.is_superuser:
+        messages.error(request, "Unauthorized")
+        return redirect('finance_valuations')
+    
+    if request.method != "POST":
+        return redirect('finance_valuations')
+    
+    try:
+        pv = prop_values.objects.get(prop_values_id=prop_values_id)
+    except prop_values.DoesNotExist:
+        messages.error(request, "Property Value record not found")
+        return redirect('finance_valuations')
+    
+    # Parse the preview data — this is the source of truth for per-property amounts
+    preview_raw = request.POST.get('valuation_preview_data', '')
+    try:
+        preview_data = json.loads(preview_raw) if preview_raw else None
+    except json.JSONDecodeError:
+        messages.error(request, "Invalid preview data")
+        return redirect('finance_valuations_edit', prop_values_id=prop_values_id)
+    
+    if not preview_data or 'line_types' not in preview_data:
+        messages.error(request, "No preview data supplied — cannot recalculate")
+        return redirect('finance_valuations_edit', prop_values_id=prop_values_id)
+    
+    try:
+        with transaction.atomic():
+            # 1. Save the valuation itself using the same ValuesForm the original
+            # commit uses — preserves any validation / cleaning logic
+            form = ValuesForm(request.POST, instance=pv)
+            if not form.is_valid():
+                messages.error(request, f"Form errors: {form.errors}")
+                return redirect('finance_valuations_edit',
+                                prop_values_id=prop_values_id)
+            form.save()
+            
+            # 2. For every affected Line Type, walk through the per-property
+            # new_amount payload and update each linked Expense record.
+            months = ['jan', 'feb', 'mar', 'apr', 'may', 'jun',
+                      'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
+            
+            for lt_payload in preview_data['line_types']:
+                lt_id = lt_payload['line_type_id']
+                
+                for prop_data in lt_payload['properties']:
+                    prop_id = prop_data['prop_id']
+                    new_amount = prop_data['new_amount']
+                    
+                    # Find all Expense records for this property + line type
+                    # (might be multiple if paired with different Expense Types,
+                    # e.g. Communal Fees 1 in Jan + Jul)
+                    linked = expense.objects.filter(
+                        expense_line_types_id=lt_id,
+                        prop_id=prop_id
+                    )
+                    
+                    for exp in linked:
+                        try:
+                            exp_type = expense_types.objects.get(
+                                expense_types_id=exp.expense_types_id
+                            )
+                        except expense_types.DoesNotExist:
+                            continue
+                        
+                        # Update the base amount
+                        exp.expense_amount = new_amount
+                        
+                        # Update the monthly fields based on the Expense Type's pattern
+                        for month in months:
+                            if getattr(exp_type, f'expense_types_{month}') == "Yes":
+                                setattr(exp, f'expense_{month}', new_amount)
+                            else:
+                                setattr(exp, f'expense_{month}', None)
+                        
+                        exp.save()
+        
+        lt_count = preview_data.get('affected_line_types_count', 0)
+        exp_count = preview_data.get('affected_expense_count', 0)
+        messages.success(
+            request,
+            f"Valuation saved. {exp_count} Expense record(s) across "
+            f"{lt_count} Pro-Rata distribution(s) recalculated successfully."
+        )
+        return redirect('finance_valuations')
+    
+    except Exception as e:
+        messages.error(request, f"Error during recalculation: {str(e)}")
+        return redirect('finance_valuations_edit', prop_values_id=prop_values_id)
 
 ### TENANTS ###
 @login_required
