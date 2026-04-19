@@ -29,11 +29,291 @@ ALIVENTE ONLINE - FINANCE
     </script>
   {% endfor %}
   
-  <div style="display: flex; justify-content: flex-end">
-    <a href="{% url 'home' %}" class="btn btn-info" style="margin-right:16px" role="button">Back</a>
+  <div style="display: flex; justify-content: flex-end; gap: 10px">
+    <button type="button" class="btn btn-info" data-toggle="modal" data-target="#financeHelpModal">
+      <i class="fas fa-question-circle"></i> Help
+    </button>
+    <a href="{% url 'home' %}" class="btn btn-info" role="button">Back</a>
   </div>
 
 <br/>
+
+<!-- ==================== FINANCE LANDING PAGE HELP MODAL ==================== -->
+<div class="modal fade" id="financeHelpModal" tabindex="-1" role="dialog" aria-labelledby="financeHelpModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable" role="document">
+    <div class="modal-content">
+
+      <!-- Header -->
+      <div class="modal-header" style="background: linear-gradient(135deg, #17a2b8 0%, #138496 100%); color: white;">
+        <div>
+          <h5 class="modal-title" id="financeHelpModalLabel" style="font-weight:700; font-size:20px;">
+            <i class="fas fa-chart-pie"></i> Financials &mdash; User Guide &amp; Navigator
+          </h5>
+          <small style="opacity:0.85;">Your gateway to every financial report and configuration in Alivente Online</small>
+        </div>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="color:white; opacity:0.9; font-size:28px;">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+
+      <!-- Tabs -->
+      <div class="modal-body" style="padding:0;">
+        <ul class="nav nav-tabs" id="financeHelpTabs" role="tablist" style="border-bottom:2px solid #17a2b8; padding:0 20px; background:#f8f9fa;">
+          <li class="nav-item">
+            <a class="nav-link active" id="fl-overview-tab" data-toggle="tab" href="#fl-overview" role="tab" style="color:#17a2b8; font-weight:600;">
+              <i class="fas fa-info-circle"></i> Overview
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" id="fl-reports-tab" data-toggle="tab" href="#fl-reports" role="tab" style="color:#495057; font-weight:600;">
+              <i class="fas fa-chart-bar"></i> Reports
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" id="fl-config-tab" data-toggle="tab" href="#fl-config" role="tab" style="color:#495057; font-weight:600;">
+              <i class="fas fa-cog"></i> Configuration
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" id="fl-getting-started-tab" data-toggle="tab" href="#fl-getting-started" role="tab" style="color:#495057; font-weight:600;">
+              <i class="fas fa-play-circle"></i> Getting Started
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" id="fl-tips-tab" data-toggle="tab" href="#fl-tips" role="tab" style="color:#495057; font-weight:600;">
+              <i class="fas fa-lightbulb"></i> Tips
+            </a>
+          </li>
+        </ul>
+
+        <div class="tab-content" id="financeHelpTabsContent" style="padding:25px 30px; max-height:60vh; overflow-y:auto;">
+
+          <!-- ============ OVERVIEW TAB ============ -->
+          <div class="tab-pane fade show active" id="fl-overview" role="tabpanel">
+            <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-info-circle"></i> Welcome to Financials</h5>
+            <p>The Financials section is the <strong>heart of Alivente Online's analytical capability</strong>. Every euro in or out of your property portfolio &mdash; budgeted, actual, paid, overdue, appreciated, depreciated &mdash; eventually shows up somewhere on one of these twelve submodules.</p>
+
+            <p>The landing page splits cleanly into two halves:</p>
+
+            <div class="alert" style="background:#e7f5f8; border-left:4px solid #17a2b8;">
+              <strong><i class="fas fa-chart-bar"></i> Reports &mdash; 6 modules</strong>
+              <p class="mb-0 mt-2">Visual summaries, drill-downs, and analytics. This is where you <em>view</em> how the portfolio is performing: the P&amp;L, cash flow forecast, ROI indicators, valuations, vacancy stats, and historical trends. Most of what you'll do on a routine basis happens here.</p>
+            </div>
+
+            <div class="alert" style="background:#f8f9fa; border-left:4px solid #6c757d;">
+              <strong><i class="fas fa-cog"></i> Configuration &mdash; 6 modules</strong>
+              <p class="mb-0 mt-2">The underlying data that <em>feeds</em> the reports: the types of revenue and expenses you track, how they're categorised, and the individual records themselves. Set this up once when you first use the system; update it periodically as things change.</p>
+            </div>
+
+            <h6 style="margin-top:20px; color:#2c3e50; font-weight:700;"><i class="fas fa-sitemap"></i> How the two halves connect</h6>
+            <p>Reports are built from Configuration. Every number on the P&amp;L traces back to a Revenue or Expense record you've captured in Configuration. The relationship is:</p>
+            <ul>
+              <li><strong>Configuration &rarr; Records</strong> &mdash; you input Revenue and Expense records against each property</li>
+              <li><strong>Records &rarr; Reports</strong> &mdash; the reports aggregate, analyse, and visualise those records</li>
+              <li><strong>Reports &rarr; Decisions</strong> &mdash; the reports help you decide what to change in Configuration</li>
+            </ul>
+
+            <h6 style="margin-top:20px; color:#2c3e50; font-weight:700;"><i class="fas fa-book"></i> Every submodule has its own Help button</h6>
+            <p>This page is a navigator. The Reports and Configuration tabs give you a quick overview of each submodule, but for the detailed help &mdash; how to read the P&amp;L, how Pro-Rata works, how the Performance Modal ranks properties &mdash; click into each submodule and open its own Help button.</p>
+
+            <div class="alert alert-light" style="border-left:4px solid #6c757d; margin-top:18px;">
+              <i class="fas fa-user-shield"></i> <strong>Permissions:</strong> Most Financials modules are restricted to <strong>Superusers</strong>.
+            </div>
+          </div>
+
+          <!-- ============ REPORTS TAB ============ -->
+          <div class="tab-pane fade" id="fl-reports" role="tabpanel">
+            <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-chart-bar"></i> The Six Reports</h5>
+            <p>Reports are your analytical views &mdash; where the data tells its story. Each has its own Help button with a full deep-dive.</p>
+
+            <div class="alert" style="background:#e7f5f8; border-left:4px solid #17a2b8; margin-top:15px;">
+              <strong><i class="fas fa-chart-line"></i> Profit &amp; Loss Statement</strong>
+              <p class="mb-0 mt-2">The <strong>central financial report</strong>. 12-column grid (Jan-Dec + Total + Monthly average) showing Revenue, Expenses, and Net Profit across the portfolio. Switch between Budget mode and any historical year. Drill into any figure to see per-property breakdowns. In Year mode, includes an <em>Actual Expenses</em> row showing approved and paid expenses. Five Financial Indicator KPIs at the bottom.</p>
+            </div>
+
+            <div class="alert" style="background:#e7f5f8; border-left:4px solid #17a2b8;">
+              <strong><i class="fas fa-chart-bar"></i> Forecasted Cash Outflows</strong>
+              <p class="mb-0 mt-2">12-month forward-looking view of expected expenses (budgeted). Bar chart with a click-through to per-month breakdowns. Useful for spotting "big bill months" (e.g. the annual company tax in June) and planning cash reserves.</p>
+            </div>
+
+            <div class="alert" style="background:#e7f5f8; border-left:4px solid #17a2b8;">
+              <strong><i class="fas fa-tachometer-alt"></i> Financial Indicators</strong>
+              <p class="mb-0 mt-2">The <strong>per-property benchmarking dashboard</strong>. Same five KPIs as the P&amp;L (Gross ROI, Net ROI, Expenses to Revenue, Rent/m², Value Increase), but calculated for every property individually and compared against the portfolio average. Mini bar charts, sortable table, drill-down modal with performance tiers and Excel export.</p>
+            </div>
+
+            <div class="alert" style="background:#e7f5f8; border-left:4px solid #17a2b8;">
+              <strong><i class="fas fa-home"></i> Property Valuations</strong>
+              <p class="mb-0 mt-2">Records the Purchase Price and Current Value for each property &mdash; the foundation for ROI and Value Increase calculations. Editing a Current Value triggers a <em>cascade preview</em> showing how Pro-Rata expense distributions will shift across the affected Expense records.</p>
+            </div>
+
+            <div class="alert" style="background:#e7f5f8; border-left:4px solid #17a2b8;">
+              <strong><i class="fas fa-door-open"></i> Vacancy Management</strong>
+              <p class="mb-0 mt-2">Occupancy-focused sibling of Financial Indicators. Three KPIs &mdash; Occupancy Rate, Avg Days to Fill, Vacancy Cost &mdash; for every property that's flagged for occupancy tracking. Time Period selector (Past Year / Last 3 Years / All Time). Click a KPI card to drill into a ranked property list.</p>
+            </div>
+
+            <div class="alert" style="background:#e7f5f8; border-left:4px solid #17a2b8;">
+              <strong><i class="fas fa-chart-area"></i> Performance Trends</strong>
+              <p class="mb-0 mt-2">Multi-year drill-down from Vacancy Management. Three line charts showing how Occupancy Rate, Avg Days to Fill, and Vacancy Cost have evolved year by year. Click any year to see a full breakdown including the individual vacancy periods with previous and next tenants.</p>
+            </div>
+          </div>
+
+          <!-- ============ CONFIGURATION TAB ============ -->
+          <div class="tab-pane fade" id="fl-config" role="tabpanel">
+            <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-cog"></i> The Six Configuration Modules</h5>
+            <p>These are the building blocks that feed every report. Three revenue-related, three expense-related &mdash; each pair follows the same pattern: <strong>Types &rarr; Line Types &rarr; Records</strong>.</p>
+
+            <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-money-bill-wave" style="color:#17a2b8;"></i> Revenue side</h6>
+
+            <div class="alert" style="background:#f8f9fa; border-left:4px solid #6c757d; margin-top:12px;">
+              <strong>Revenue Types</strong>
+              <p class="mb-0 mt-2">Templates for <em>when</em> revenue occurs during the year. Each Type defines a 12-month Yes/No pattern (e.g. "Monthly", "Summer Months", "Q1 Only"). Reused across multiple revenue records so you don't re-specify the pattern every time.</p>
+            </div>
+
+            <div class="alert" style="background:#f8f9fa; border-left:4px solid #6c757d;">
+              <strong>Revenue Line Types</strong>
+              <p class="mb-0 mt-2">The category labels for revenue (Rental, Levies, etc.) &mdash; these are what appear as row labels on the P&amp;L.</p>
+            </div>
+
+            <div class="alert" style="background:#f8f9fa; border-left:4px solid #6c757d;">
+              <strong>Revenues</strong>
+              <p class="mb-0 mt-2">The actual revenue records. Each one combines a property, a Line Type, a Type, and an amount &mdash; which together tell the system "this property generates &euro;X in Rental, paid Monthly". Feeds the Revenue section of the P&amp;L.</p>
+            </div>
+
+            <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-file-invoice-dollar" style="color:#17a2b8;"></i> Expense side</h6>
+
+            <div class="alert" style="background:#f8f9fa; border-left:4px solid #6c757d; margin-top:12px;">
+              <strong>Expense Types</strong>
+              <p class="mb-0 mt-2">Same as Revenue Types but for expenses. Yes/No month patterns for when expenses hit (e.g. "Monthly" for communal fees, "June Only" for annual company tax).</p>
+            </div>
+
+            <div class="alert" style="background:#f8f9fa; border-left:4px solid #6c757d;">
+              <strong>Expense Line Types</strong>
+              <p class="mb-0 mt-2">The category labels for expenses. Two flavours: <strong>standard</strong> (normal categories like Cleaning Costs, Electricity) and <strong>Pro-Rata</strong> (shared costs like bookkeeping, where the total is distributed across properties based on their Current Values). Changing a Pro-Rata amount triggers an automatic cascade preview.</p>
+            </div>
+
+            <div class="alert" style="background:#f8f9fa; border-left:4px solid #6c757d;">
+              <strong>Expenses</strong>
+              <p class="mb-0 mt-2">The budgeted expense records. Each combines a property, a Line Type, a Type, and an amount. For Pro-Rata Line Types, the amount is auto-distributed; for standard Line Types, you enter it per property. Feeds the Expenses section of the P&amp;L.</p>
+            </div>
+
+            <div class="alert alert-warning" style="border-left:4px solid #ffc107; margin-top:18px;">
+              <i class="fas fa-exclamation-triangle"></i> <strong>Note: "Expenses" here is budgeted, not actuals.</strong> Actual one-off expenses (repairs, unplanned bills, etc.) are captured via the separate <strong>Expenses</strong> module on the sidebar &mdash; not this Configuration &rarr; Expenses page. Only approved and paid actuals flow into the P&amp;L's "Actual Expenses" row.
+            </div>
+          </div>
+
+          <!-- ============ GETTING STARTED TAB ============ -->
+          <div class="tab-pane fade" id="fl-getting-started" role="tabpanel">
+            <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-play-circle"></i> Getting Started &mdash; the typical workflow</h5>
+            <p>If you're setting up Financials for the first time, or onboarding someone new, here's the order of operations:</p>
+
+            <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;">Phase 1 &mdash; Set up the categories (first-time only)</h6>
+            <ol style="line-height:1.8;">
+              <li><strong>Revenue Types</strong> &mdash; create your month patterns (Monthly, Summer, Q1, etc.)</li>
+              <li><strong>Revenue Line Types</strong> &mdash; create your revenue categories (Rental, Levies, etc.)</li>
+              <li><strong>Expense Types</strong> &mdash; create month patterns for expenses</li>
+              <li><strong>Expense Line Types</strong> &mdash; create your expense categories, and decide which are Pro-Rata</li>
+            </ol>
+
+            <div class="alert alert-info" style="border-left:4px solid #17a2b8;">
+              <i class="fas fa-lightbulb"></i> <strong>Tip:</strong> Types and Line Types are system-wide; you set them up once and reuse them across every property.
+            </div>
+
+            <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;">Phase 2 &mdash; Set up Property Valuations</h6>
+            <p>Go to <strong>Property Valuations</strong> and record the <em>Purchase Price</em> and <em>Current Value</em> for every property. This is the foundation for ROI and Value Increase calculations, and it also determines how Pro-Rata expenses are distributed.</p>
+
+            <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;">Phase 3 &mdash; Capture your data</h6>
+            <ol style="line-height:1.8;">
+              <li><strong>Revenues</strong> &mdash; for every property, record the expected Rental (and any other income) by combining a Line Type + Type + Amount</li>
+              <li><strong>Expenses</strong> &mdash; same process: record each budgeted expense per property. For Pro-Rata items, just set the total amount on the Line Type and the system distributes automatically.</li>
+            </ol>
+
+            <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;">Phase 4 &mdash; Review the Reports</h6>
+            <p>With Configuration complete, the reports become meaningful:</p>
+            <ul>
+              <li><strong>Profit &amp; Loss Statement</strong> &mdash; the overall picture: does the portfolio make money?</li>
+              <li><strong>Forecasted Cash Outflows</strong> &mdash; when are the big-bill months coming up?</li>
+              <li><strong>Financial Indicators</strong> &mdash; per-property benchmarking: which properties are outperforming/underperforming?</li>
+              <li><strong>Vacancy Management</strong> &mdash; for rental properties, how well are they staying let?</li>
+              <li><strong>Performance Trends</strong> &mdash; how has occupancy changed over the years?</li>
+            </ul>
+
+            <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;">Phase 5 &mdash; Ongoing maintenance</h6>
+            <p>Most of the setup is one-time. Routine updates are minimal:</p>
+            <ul>
+              <li><strong>Monthly</strong> &mdash; approve and pay incoming expenses (via the sidebar Expenses module)</li>
+              <li><strong>When rents change</strong> &mdash; update the Revenue record for that property</li>
+              <li><strong>When expense contracts change</strong> &mdash; update the Expense record for that property</li>
+              <li><strong>Annually</strong> &mdash; update Current Values in Property Valuations (triggers Pro-Rata recalculation automatically)</li>
+            </ul>
+
+            <div class="alert alert-info" style="border-left:4px solid #17a2b8; margin-top:18px;">
+              <i class="fas fa-arrow-right"></i> <strong>Every submodule has a dedicated Help button.</strong> If you get stuck at any step, open the page's own help modal for detailed, context-specific guidance.
+            </div>
+          </div>
+
+          <!-- ============ TIPS TAB ============ -->
+          <div class="tab-pane fade" id="fl-tips" role="tabpanel">
+            <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-lightbulb"></i> Practical Tips</h5>
+
+            <h6 style="margin-top:10px; color:#2c3e50; font-weight:700;">Navigating efficiently</h6>
+            <ul style="line-height:1.8;">
+              <li><strong>Use this landing page as your financial command centre.</strong> When you come to the system to "check the numbers", this is where you start. Every substantive financial question has a home on this page.</li>
+
+              <li><strong>Most routine work is in Reports.</strong> Configuration is for setup and change-management &mdash; if you're just reviewing performance, you'll rarely need to visit the Configuration cards.</li>
+
+              <li><strong>When Reports show something wrong, Configuration is where you fix it.</strong> An incorrect P&amp;L number? Check the relevant Revenue or Expense record. A wrong Pro-Rata distribution? Check the Expense Line Type or Property Valuation.</li>
+            </ul>
+
+            <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;">Which report for which question</h6>
+            <ul style="line-height:1.8;">
+              <li><strong>"How did the portfolio do this year?"</strong> &rarr; Profit &amp; Loss Statement (year mode)</li>
+              <li><strong>"What does the budget say for next year?"</strong> &rarr; Profit &amp; Loss Statement (budget mode)</li>
+              <li><strong>"Which property is performing best/worst?"</strong> &rarr; Financial Indicators</li>
+              <li><strong>"When is my next big-bill month?"</strong> &rarr; Forecasted Cash Outflows</li>
+              <li><strong>"How quickly did we re-let Property X?"</strong> &rarr; Vacancy Management (current view) or Performance Trends (history)</li>
+              <li><strong>"What's my portfolio's capital appreciation?"</strong> &rarr; Property Valuations (raw data) or Financial Indicators (as a KPI)</li>
+            </ul>
+
+            <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;">Keeping data fresh</h6>
+            <ul style="line-height:1.8;">
+              <li><strong>Update Current Values at least annually.</strong> Stale values undercut the accuracy of both Value Increase and Pro-Rata distributions. Set a calendar reminder for the first week of each year.</li>
+
+              <li><strong>When you add a new property, cascade through.</strong> New property &rarr; add to Properties module &rarr; record Purchase Price and Current Value in Property Valuations &rarr; add Revenue records &rarr; add Expense records. Then check the P&amp;L to confirm it's showing up correctly.</li>
+
+              <li><strong>Don't forget the Include in Occupancy flag.</strong> On the Properties module, each property has an opt-in flag for occupancy tracking. Only flagged properties appear on Vacancy Management and Performance Trends &mdash; so if a new rental property is missing from those pages, check the flag.</li>
+
+              <li><strong>Use the cascade previews confidently.</strong> When you edit a Pro-Rata amount or a Current Value, the preview modal shows exactly what will change <em>before</em> you commit. Review the preview, then save.</li>
+            </ul>
+
+            <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;">Cross-module awareness</h6>
+            <ul style="line-height:1.8;">
+              <li><strong>The sidebar <em>Expenses</em> module is different from the Configuration &rarr; Expenses card.</strong> The sidebar one is for <em>actual</em> expenses (repairs, one-off bills, purchases); the Configuration one is for <em>budgeted</em> recurring expenses. Both feed the P&amp;L but through different rows.</li>
+
+              <li><strong>Approval and payment workflows matter.</strong> Only <em>approved and paid</em> actual expenses appear on the P&amp;L's Actual Expenses row. If a number looks low, check the Expenses module for items stuck in approval or payment queues.</li>
+
+              <li><strong>Invoices are separate.</strong> The Invoices module on the sidebar handles rental invoices to tenants &mdash; not expense invoices. Don't confuse the two.</li>
+            </ul>
+
+            <div class="alert alert-info" style="border-left:4px solid #17a2b8; margin-top:20px;">
+              <i class="fas fa-arrow-right"></i> <strong>Financials is your single source of truth for portfolio performance.</strong> Keep the Configuration clean and current, and the Reports will give you a reliable picture of how your investments are doing. Every other Alivente feature ultimately supports the story told here.
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="modal-footer" style="background:#f8f9fa; border-top:1px solid #dee2e6;">
+        <small class="text-muted" style="flex:1;">Alivente Online &mdash; Financials User Guide &amp; Navigator</small>
+        <button type="button" class="btn btn-sm" data-dismiss="modal" style="background:linear-gradient(135deg,#17a2b8,#138496); color:white; border:none;">
+          <i class="fas fa-times"></i> Close
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
+<!-- ==================== END FINANCE LANDING PAGE HELP MODAL ==================== -->
 
 {% if user.is_superuser %}
 
