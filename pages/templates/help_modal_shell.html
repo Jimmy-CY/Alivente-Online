@@ -1,0 +1,82 @@
+{% comment %}
+  ============================================================
+  ALIVENTE ONLINE — HELP MODAL SHELL TEMPLATE
+  ============================================================
+  Rendered by pages/services/help_renderer.py via the
+  render_help_modal template tag.
+  DO NOT include this file directly. Use the template tag.
+  Expected context:
+    module.slug         — unique identifier (e.g. "finance_revenue_types")
+    module.name         — display name (e.g. "Revenue Types")
+    module.icon         — FontAwesome class (e.g. "fa-tag")
+    module.subtitle     — short subtitle shown in header
+    module.tabs         — list of tabs, each with:
+                            .slug    (e.g. "rt-overview")
+                            .name    (e.g. "Overview")
+                            .icon    (FontAwesome class)
+                            .content_html  (safe HTML string)
+  ============================================================
+{% endcomment %}
+
+{% if found %}
+
+<div class="modal fade" id="{{ module.slug }}HelpModal" tabindex="-1" role="dialog" aria-labelledby="{{ module.slug }}HelpModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable" role="document">
+    <div class="modal-content">
+
+      <!-- Header -->
+      <div class="modal-header" style="background: linear-gradient(135deg, #17a2b8 0%, #138496 100%); color: white;">
+        <div>
+          <h5 class="modal-title" id="{{ module.slug }}HelpModalLabel" style="font-weight:700; font-size:20px;">
+            <i class="fas {{ module.icon }}"></i> {{ module.name }} &mdash; User Guide
+          </h5>
+          {% if module.subtitle %}
+            <small style="opacity:0.85;">{{ module.subtitle|safe }}</small>
+          {% endif %}
+        </div>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="color:white; opacity:0.9; font-size:28px;">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+
+      <!-- Tabs -->
+      <div class="modal-body" style="padding:0;">
+        <ul class="nav nav-tabs" id="{{ module.slug }}HelpTabs" role="tablist" style="border-bottom:2px solid #17a2b8; padding:0 20px; background:#f8f9fa;">
+          {% for tab in module.tabs %}
+            <li class="nav-item">
+              <a class="nav-link {% if forloop.first %}active{% endif %}"
+                 id="{{ module.slug }}__{{ tab.slug }}-tab"
+                 data-toggle="tab"
+                 href="#{{ module.slug }}__{{ tab.slug }}"
+                 role="tab"
+                 style="color:{% if forloop.first %}#17a2b8{% else %}#495057{% endif %}; font-weight:600;">
+                <i class="fas {{ tab.icon }}"></i> {{ tab.name }}
+              </a>
+            </li>
+          {% endfor %}
+        </ul>
+
+        <div class="tab-content" id="{{ module.slug }}HelpTabsContent" style="padding:25px 30px; max-height:60vh; overflow-y:auto;">
+          {% for tab in module.tabs %}
+            <div class="tab-pane fade {% if forloop.first %}show active{% endif %}" id="{{ module.slug }}__{{ tab.slug }}" role="tabpanel">
+              {{ tab.content_html|safe }}
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="modal-footer" style="background:#f8f9fa; border-top:1px solid #dee2e6;">
+        <small class="text-muted" style="flex:1;">Alivente Online &mdash; {{ module.name }} User Guide</small>
+        <button type="button" class="btn btn-sm" data-dismiss="modal" style="background:linear-gradient(135deg,#17a2b8,#138496); color:white; border:none;">
+          <i class="fas fa-times"></i> Close
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+{% else %}
+<!-- Help content not found for slug: {{ requested_slug }} -->
+{% endif %}

@@ -1,7 +1,8 @@
 {% extends 'base.html' %}
 {% load static %}
 {% load humanize %}
-{% load custom_filters %} 
+{% load custom_filters %}
+{% load help_modal_tags %}
 
 {% block title %}
 {% endblock %}
@@ -35,7 +36,7 @@
 <body>
   
   <div style="display: flex ; justify-content: flex-end">
-    <button type="button" class="btn btn-info" style="margin-right:16px" data-toggle="modal" data-target="#expenseTypesHelpModal">
+    <button type="button" class="btn btn-info" style="margin-right:16px" data-toggle="modal" data-target="#finance_expense_typesHelpModal">
       <i class="fas fa-question-circle"></i> Help
     </button>
     <a href="{% url 'finance_expense_types_add' %}" class="btn btn-info" style="margin-right:16px" type="button">Add New</a>
@@ -92,200 +93,7 @@
   </div>
 </form>
 
-<!-- ==================== EXPENSE TYPES HELP MODAL ==================== -->
-<div class="modal fade" id="expenseTypesHelpModal" tabindex="-1" role="dialog" aria-labelledby="expenseTypesHelpModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg modal-dialog-scrollable" role="document">
-    <div class="modal-content">
-
-      <!-- Header -->
-      <div class="modal-header" style="background: linear-gradient(135deg, #17a2b8 0%, #138496 100%); color: white;">
-        <div>
-          <h5 class="modal-title" id="expenseTypesHelpModalLabel" style="font-weight:700; font-size:20px;">
-            <i class="fas fa-calendar-alt"></i> Expense Types &mdash; User Guide
-          </h5>
-          <small style="opacity:0.85;">Define when in the year an expense is paid (the timing pattern)</small>
-        </div>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="color:white; opacity:0.9; font-size:28px;">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-
-      <!-- Tabs -->
-      <div class="modal-body" style="padding:0;">
-        <ul class="nav nav-tabs" id="expenseTypesHelpTabs" role="tablist" style="border-bottom:2px solid #17a2b8; padding:0 20px; background:#f8f9fa;">
-          <li class="nav-item">
-            <a class="nav-link active" id="et-overview-tab" data-toggle="tab" href="#et-overview" role="tab" style="color:#17a2b8; font-weight:600;">
-              <i class="fas fa-info-circle"></i> Overview
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" id="et-table-tab" data-toggle="tab" href="#et-table" role="tab" style="color:#495057; font-weight:600;">
-              <i class="fas fa-table"></i> The Table
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" id="et-addedit-tab" data-toggle="tab" href="#et-addedit" role="tab" style="color:#495057; font-weight:600;">
-              <i class="fas fa-plus-circle"></i> Add / Edit
-            </a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" id="et-tips-tab" data-toggle="tab" href="#et-tips" role="tab" style="color:#495057; font-weight:600;">
-              <i class="fas fa-lightbulb"></i> Tips
-            </a>
-          </li>
-        </ul>
-
-        <div class="tab-content" id="expenseTypesHelpTabsContent" style="padding:25px 30px; max-height:60vh; overflow-y:auto;">
-
-          <!-- ============ OVERVIEW TAB ============ -->
-          <div class="tab-pane fade show active" id="et-overview" role="tabpanel">
-            <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-info-circle"></i> What are Expense Types?</h5>
-            <p>An <strong>Expense Type</strong> defines the <strong>timing pattern</strong> of an expense &mdash; <em>which months of the year that expense is actually paid</em>.</p>
-
-            <p>Each Expense Type is a 12-month template made up of Yes/No flags. When you later create an <strong>Expense</strong> record on a property and assign it an Expense Type, the system uses this template to know when to count that expense across the calendar year.</p>
-
-            <p>Compared with Revenue Types, the Expense side has <strong>more variety</strong> &mdash; because real-world expenses come in many shapes: monthly bills, quarterly utility charges, semi-annual taxes, and one-off annual payments that hit in a specific month.</p>
-
-            <h6 style="margin-top:20px; color:#2c3e50; font-weight:700;"><i class="fas fa-shapes"></i> Three families of pattern</h6>
-
-            <div class="alert" style="background:#e7f5f8; border-left:4px solid #17a2b8;">
-              <strong>1. Recurring &mdash; multiple months a year</strong>
-              <ul class="mb-2 mt-2">
-                <li><strong>Monthly</strong> &mdash; all 12 months. For Property Manager fees, recurring service charges.</li>
-                <li><strong>Quarterly</strong> &mdash; Jan, Apr, Jul, Oct. For utilities billed every 3 months.</li>
-                <li><strong>Six Monthly</strong> &mdash; Jan + Jul. For semi-annual obligations.</li>
-                <li><strong>Summer Monthly</strong>, <strong>Summer Bi-Monthly</strong> &mdash; for seasonal recurring costs (cleaning, garden maintenance, etc.).</li>
-              </ul>
-
-              <strong>2. One-off &mdash; a specific month, once a year</strong>
-              <ul class="mb-2 mt-2">
-                <li><strong>January, February, March, &hellip; December</strong> &mdash; one Type per month, with that single month flagged Yes. Use these for annual bills that hit at a fixed time of year.</li>
-                <li>Example: <em>Company Tax</em> paid every June &rarr; assign the <strong>June</strong> Expense Type.</li>
-                <li>Example: <em>Insurance</em> renewing every September &rarr; assign the <strong>September</strong> Expense Type.</li>
-              </ul>
-
-              <strong>3. Property-specific custom patterns</strong>
-              <ul class="mb-0 mt-2">
-                <li>Build whatever pattern you need &mdash; e.g. a property charging communal fees in March + September only would need a Type with just those two months flagged Yes.</li>
-              </ul>
-            </div>
-
-            <h6 style="margin-top:20px; color:#2c3e50; font-weight:700;"><i class="fas fa-sitemap"></i> Where this fits in the bigger picture</h6>
-            <p>Expense Types are one of <strong>three Configuration pieces</strong> on the Expense side that work together (mirror of the Revenue side):</p>
-            <ol>
-              <li><strong>Expense Types</strong> <em>(this page)</em> &mdash; <em>when</em> the expense is paid (the months pattern)</li>
-              <li><strong>Expense Line Types</strong> &mdash; <em>what</em> the expense is called on the P&amp;L (e.g. <em>Property Manager</em>, <em>Insurance (Cyprus)</em>)</li>
-              <li><strong>Expenses</strong> &mdash; the actual records: a property + a Line Type + a Type + an amount</li>
-            </ol>
-            <p>Together they feed into the <strong>Profit &amp; Loss Statement</strong>, where each month's expenses are calculated by applying each Type's pattern to its Expense amounts.</p>
-
-            <div class="alert alert-light" style="border-left:4px solid #6c757d;">
-              <i class="fas fa-user-shield"></i> <strong>Permissions:</strong> This page is restricted to <strong>Superusers</strong>.
-            </div>
-          </div>
-
-          <!-- ============ THE TABLE TAB ============ -->
-          <div class="tab-pane fade" id="et-table" role="tabpanel">
-            <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-table"></i> Reading the Table</h5>
-            <p>Each row is an Expense Type you've defined. The 12 month columns show, at a glance, when that Type triggers an expense.</p>
-
-            <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;">Column-by-column</h6>
-            <ul>
-              <li><strong>Expense Type</strong> &mdash; the name you gave it (e.g. <em>Monthly</em>, <em>Quarterly</em>, <em>June</em>).</li>
-              <li><strong>Jan &ndash; Dec</strong> &mdash; one column per month, showing either <strong>Yes</strong> or <strong>No</strong>.</li>
-              <li><strong>Details</strong> &mdash; an <strong>Edit</strong> button to modify that Type.</li>
-            </ul>
-
-            <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;">The colour coding</h6>
-            <ul>
-              <li><span style="background:#90EE90; padding:2px 10px; border-radius:3px; font-weight:600;">Green &mdash; Yes</span> &nbsp; expense <em>is</em> paid this month</li>
-              <li><span style="background:#FFCCCB; padding:2px 10px; border-radius:3px; font-weight:600;">Red &mdash; No</span> &nbsp; expense is <em>not</em> paid this month</li>
-            </ul>
-
-            <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;">Spotting patterns at a glance</h6>
-            <ul>
-              <li><strong>All green</strong> &rarr; recurring monthly (e.g. <em>Monthly</em>)</li>
-              <li><strong>Evenly spaced green cells</strong> &rarr; recurring quarterly or six-monthly (e.g. <em>Quarterly</em>, <em>Six Monthly</em>)</li>
-              <li><strong>One single green cell</strong> &rarr; an annual one-off in that month (e.g. <em>June</em>, <em>September</em>)</li>
-              <li><strong>Green block surrounded by red</strong> &rarr; a seasonal recurring pattern (e.g. <em>Summer Monthly</em>)</li>
-            </ul>
-
-            <div class="alert alert-info" style="border-left:4px solid #17a2b8;">
-              <i class="fas fa-eye"></i> <strong>Use the visual to sanity-check Types in use.</strong> If the <em>June</em> Type accidentally has July flagged Yes too, it stops being a clean "annual June payment" pattern &mdash; the colour grid makes mistakes like that immediately obvious.
-            </div>
-          </div>
-
-          <!-- ============ ADD / EDIT TAB ============ -->
-          <div class="tab-pane fade" id="et-addedit" role="tabpanel">
-            <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-plus-circle"></i> Adding an Expense Type</h5>
-            <p>Click <strong>Add New</strong> in the top-right to open the Add Expense Type form. Two things to fill in:</p>
-
-            <ol>
-              <li><strong>Expense Type Name</strong> &mdash; a short, descriptive name (e.g. <em>Quarterly</em>, <em>June</em>, <em>Summer Monthly</em>).</li>
-              <li><strong>The 12-month checkbox grid</strong> &mdash; one checkbox per month.</li>
-            </ol>
-
-            <div class="alert alert-warning" style="border-left:4px solid #ffc107;">
-              <i class="fas fa-exclamation-triangle"></i> <strong>How the checkboxes map to Yes / No:</strong>
-              <ul class="mb-0 mt-2">
-                <li><strong>Checked</strong> &nbsp;=&nbsp; expense <strong>IS</strong> paid that month &nbsp;&rarr;&nbsp; saved as <span style="background:#90EE90; padding:1px 6px; border-radius:3px;">Yes</span></li>
-                <li><strong>Unchecked</strong> &nbsp;=&nbsp; expense is <strong>NOT</strong> paid that month &nbsp;&rarr;&nbsp; saved as <span style="background:#FFCCCB; padding:1px 6px; border-radius:3px;">No</span></li>
-              </ul>
-              <p class="mb-0 mt-2"><small>The Add form doesn't show "Yes/No" labels &mdash; just the checkboxes. The conversion happens automatically when you save.</small></p>
-            </div>
-
-            <p>When you're done, click <strong>Save</strong> in the top-right. The Type appears in the list and is immediately available to assign to Expense records.</p>
-
-            <h5 style="margin-top:25px; color:#17a2b8; font-weight:700;"><i class="fas fa-edit"></i> Editing an existing Expense Type</h5>
-            <p>Click the <strong>Edit</strong> button on the relevant row. The form is identical to the Add form &mdash; the Name field is pre-filled, and the checkboxes reflect the current Yes/No pattern. Make your changes and click <strong>Save</strong>.</p>
-
-            <div class="alert alert-danger" style="border-left:4px solid #dc3545;">
-              <i class="fas fa-radiation"></i> <strong>Editing has a downstream effect.</strong> If an Expense Type is already in use by Expense records on properties, changing its month pattern will <strong>retroactively change</strong> how those records appear in the Profit &amp; Loss Statement. For example, switching <em>Quarterly</em> from Jan/Apr/Jul/Oct to Feb/May/Aug/Nov will shift every Expense record using <em>Quarterly</em> by one month in the P&amp;L. If you need a different pattern, consider creating a <em>new</em> Expense Type rather than editing an existing one.
-            </div>
-          </div>
-
-          <!-- ============ TIPS TAB ============ -->
-          <div class="tab-pane fade" id="et-tips" role="tabpanel">
-            <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-lightbulb"></i> Practical Tips</h5>
-
-            <ul style="line-height:1.8;">
-              <li><strong>Pre-build the 12 single-month Types.</strong> Most portfolios will eventually need <em>January, February, &hellip; December</em> &mdash; one Type per month for annual bills. Building all 12 once means you'll always have the right one ready when you create an Expense.</li>
-
-              <li><strong>Name single-month Types after the month itself.</strong> Calling them <em>June</em>, <em>September</em>, etc. makes them self-documenting. The user creating an Expense record sees the Type name and immediately knows the bill hits in that month.</li>
-
-              <li><strong>Don't bake the property name into a Type.</strong> A Type is reused across many properties. <em>Quarterly</em> works for any property paying quarterly; avoid names like <em>"Eleftheroupoleos Schedule"</em>.</li>
-
-              <li><strong>Match the Type to the bill, not to your accounting cycle.</strong> If utilities arrive on a Mar/Jun/Sep/Dec rotation, build a Type with exactly those months flagged. The P&amp;L should reflect when money actually goes out, not how you'd prefer to spread it.</li>
-
-              <li><strong>For annual bills, single-month Types beat &ldquo;Annual&rdquo;.</strong> A generic <em>Annual</em> Type (with one month flagged) becomes ambiguous &mdash; <em>which</em> month? Twelve named single-month Types remove the ambiguity entirely.</li>
-
-              <li><strong>Don't edit Types in active use &mdash; clone them instead.</strong> Editing changes the P&amp;L for every Expense record using that Type, retroactively. Safer pattern: create a new Type with the new shape, then move the affected Expense records to it one at a time.</li>
-
-              <li><strong>The Type doesn't store amounts &mdash; only the months.</strong> The actual € figure lives on the Expense record. Two properties can both use <em>Monthly</em> for Property Manager with different fees.</li>
-
-              <li><strong>Use the colour bands to sanity-check after saving.</strong> A glance at the row tells you whether the pattern is what you intended &mdash; misclicked checkboxes show up immediately.</li>
-            </ul>
-
-            <div class="alert alert-info" style="border-left:4px solid #17a2b8; margin-top:20px;">
-              <i class="fas fa-arrow-right"></i> <strong>Next step:</strong> With Expense Types in place, head to <strong>Expense Line Types</strong> to define <em>what</em> each expense is called on the P&amp;L (e.g. <em>Property Manager</em>, <em>Insurance</em>) &mdash; including the option to mark certain Line Types as <strong>Pro-Rata</strong>, which lets a single bill be split automatically across multiple properties.
-            </div>
-          </div>
-
-        </div>
-      </div>
-
-      <!-- Footer -->
-      <div class="modal-footer" style="background:#f8f9fa; border-top:1px solid #dee2e6;">
-        <small class="text-muted" style="flex:1;">Alivente Online &mdash; Expense Types User Guide</small>
-        <button type="button" class="btn btn-sm" data-dismiss="modal" style="background:linear-gradient(135deg,#17a2b8,#138496); color:white; border:none;">
-          <i class="fas fa-times"></i> Close
-        </button>
-      </div>
-
-    </div>
-  </div>
-</div>
-<!-- ==================== END EXPENSE TYPES HELP MODAL ==================== -->
+{% render_help_modal "finance_expense_types" %}
 
 </body>
 

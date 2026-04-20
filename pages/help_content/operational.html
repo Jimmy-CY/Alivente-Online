@@ -1,0 +1,671 @@
+<!-- Operational modules help content -->
+
+
+<!-- ======= SUPPLIERS ======= -->
+<section data-module-slug="suppliers"
+         data-module-name="Suppliers"
+         data-module-icon="fa-truck"
+         data-module-category="Operational"
+         data-module-subtitle="Manage contractors, service providers and trade contacts for your properties">
+
+  <article data-tab-slug="supOverview"
+           data-tab-name="Overview"
+           data-tab-icon="fa-info-circle">
+    <h6 style="color:#17a2b8; font-weight:700;"><i class="fas fa-truck"></i> What is the Suppliers module?</h6>
+    <p>The Suppliers module is your central directory of <strong>contractors, service providers and trade contacts</strong> who work on your properties. Whenever you need to call a plumber, an electrician, an air-conditioning technician or your local property manager &mdash; this is the place to find their details.</p>
+
+    <p><strong>Typical suppliers you might track:</strong></p>
+    <ul>
+      <li><strong>Handymen</strong> &mdash; general repairs and maintenance</li>
+      <li><strong>Plumbers</strong> &mdash; water, leaks and bathroom work</li>
+      <li><strong>Electricians</strong> &mdash; wiring, fittings, electrical issues</li>
+      <li><strong>Air-conditioning technicians</strong> &mdash; servicing and repairs</li>
+      <li><strong>Pool maintenance</strong> &mdash; cleaning and chemical balancing</li>
+      <li><strong>Fumigators</strong> &mdash; pest control</li>
+      <li><strong>Property managers</strong> &mdash; on-the-ground representatives</li>
+      <li><strong>Builders / construction firms</strong> &mdash; larger structural work</li>
+    </ul>
+
+    <div class="alert alert-info" style="border-left:4px solid #17a2b8;">
+      <i class="fas fa-info-circle"></i> <strong>Why keep this list?</strong><br>
+      Having vetted, ready-to-call suppliers per country and per trade saves time when something breaks. No hunting through old emails or text messages.
+    </div>
+  </article>
+
+  <article data-tab-slug="supManaging"
+           data-tab-name="Managing Suppliers"
+           data-tab-icon="fa-edit">
+
+    <div class="card mb-3" style="border-left:4px solid #17a2b8;">
+      <div class="card-body">
+        <h6 style="color:#17a2b8;"><i class="fas fa-plus-circle"></i> <strong>Add New Supplier</strong></h6>
+        <p>Click the <strong>Add New</strong> button (top-right) to add a supplier. You'll be asked for the following:</p>
+        <ul class="mb-0">
+          <li><strong>Contact Person</strong> &mdash; the individual you actually call (e.g. "Costa (Agia Thekla)")</li>
+          <li><strong>Contact Number</strong> &mdash; phone number, ideally with country code</li>
+          <li><strong>Email Address</strong> &mdash; optional, leave blank if none</li>
+          <li><strong>Company Name</strong> &mdash; if they trade under one (otherwise leave as None)</li>
+          <li><strong>Role / Service</strong> &mdash; what they do (Plumber, Electrician, Property Manager, etc.)</li>
+          <li><strong>Country</strong> &mdash; Cyprus, Greece or Spain</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card mb-3" style="border-left:4px solid #17a2b8;">
+      <div class="card-body">
+        <h6 style="color:#17a2b8;"><i class="fas fa-edit"></i> <strong>Edit an Existing Supplier</strong></h6>
+        <p class="mb-0">In the supplier table, click <strong>Edit</strong> in the <em>Details</em> column for the supplier you want to update. The same form opens with the existing details pre-filled. Make your changes and click <strong>Save</strong>.</p>
+      </div>
+    </div>
+
+    <div class="card mb-3" style="border-left:4px solid #dc3545;">
+      <div class="card-body">
+        <h6 style="color:#dc3545;"><i class="fas fa-trash"></i> <strong>Delete a Supplier</strong> <small style="color:#6c757d;">(superuser only)</small></h6>
+        <p>The red trash icon in the <em>Delete</em> column appears only for superusers. Clicking it opens a confirmation popup showing the supplier's details (Contact Person, Company, Role, ID).</p>
+        <div class="alert alert-warning mb-0" style="border-left:4px solid #ffc107;">
+          <i class="fas fa-exclamation-triangle"></i> <strong>Permanent action:</strong> Deleting a supplier cannot be undone. All associated data is removed. If you're not sure, edit the entry instead.
+        </div>
+      </div>
+    </div>
+
+  </article>
+
+  <article data-tab-slug="supFiltering"
+           data-tab-name="Filtering &amp; Searching"
+           data-tab-icon="fa-filter">
+    <h6 style="color:#17a2b8; font-weight:700;"><i class="fas fa-filter"></i> Using the Filter Panel</h6>
+    <p>The <strong>Supplier Filters</strong> panel sits above the table. Click the panel header to expand or collapse it. Two filters are available:</p>
+
+    <div class="card mb-3" style="border-left:4px solid #17a2b8;">
+      <div class="card-body">
+        <h6 style="color:#17a2b8;"><i class="fas fa-search"></i> <strong>Search Contact Person</strong></h6>
+        <p class="mb-1">Type a name (or part of one) and press <strong>Enter</strong> or click the search button.</p>
+        <p class="mb-0"><small class="text-muted">Example: typing <code>Vasilis</code> will match both "Vasilis" and "Vasilis Aggelatos".</small></p>
+      </div>
+    </div>
+
+    <div class="card mb-3" style="border-left:4px solid #17a2b8;">
+      <div class="card-body">
+        <h6 style="color:#17a2b8;"><i class="fas fa-globe"></i> <strong>Country</strong></h6>
+        <p class="mb-0">Filter by country (Cyprus, Greece or Spain). Selecting a country auto-submits the form. Choose <em>All Countries</em> to remove this filter.</p>
+      </div>
+    </div>
+
+    <h6 style="color:#17a2b8; font-weight:700; margin-top:20px;"><i class="fas fa-tags"></i> Active Filter Tags</h6>
+    <p>When filters are applied, they appear as <strong>removable tags</strong> below the filter form. Click the small &times; on any tag to remove that single filter.</p>
+
+    <h6 style="color:#17a2b8; font-weight:700; margin-top:20px;"><i class="fas fa-eraser"></i> Clear All</h6>
+    <p>The <strong>Clear All</strong> button (top-right of the filter panel) resets every filter back to its default and reloads the full supplier list.</p>
+
+    <div class="alert alert-info" style="border-left:4px solid #17a2b8;">
+      <i class="fas fa-lightbulb"></i> <strong>Combine filters:</strong> The two filters work together. For example, search <code>Property Manager</code> in country <code>Cyprus</code> to narrow the list to property managers in Cyprus only.
+    </div>
+  </article>
+
+  <article data-tab-slug="supActions"
+           data-tab-name="Actions"
+           data-tab-icon="fa-tools">
+    <h6 style="color:#17a2b8; font-weight:700;"><i class="fas fa-tools"></i> What each row button does</h6>
+
+    <div class="card mb-3" style="border-left:4px solid #17a2b8;">
+      <div class="card-body">
+        <h6 style="color:#17a2b8;"><i class="fas fa-edit"></i> <strong>Details &mdash; Edit</strong></h6>
+        <p class="mb-0">Opens the supplier's record in edit mode. Use this to update phone numbers, change role, switch country or correct typos.</p>
+      </div>
+    </div>
+
+    <div class="card mb-3" style="border-left:4px solid #17a2b8;">
+      <div class="card-body">
+        <h6 style="color:#17a2b8;"><i class="fas fa-file-alt"></i> <strong>Report &mdash; View</strong></h6>
+        <p>Opens a clean, printable <strong>Supplier Details Report</strong> showing the supplier's full profile in three sections:</p>
+        <ul class="mb-0">
+          <li><strong>Contact Information</strong> &mdash; phone and email</li>
+          <li><strong>Company Details</strong> &mdash; company name and role</li>
+          <li><strong>Location</strong> &mdash; country</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card mb-3" style="border-left:4px solid #dc3545;">
+      <div class="card-body">
+        <h6 style="color:#dc3545;"><i class="fas fa-trash"></i> <strong>Delete</strong> <small style="color:#6c757d;">(superuser only)</small></h6>
+        <p class="mb-0">Opens the delete-confirmation popup. The supplier is only removed once you click <strong>Delete Permanently</strong> in the popup &mdash; clicking the trash icon alone does nothing destructive.</p>
+      </div>
+    </div>
+  </article>
+
+  <article data-tab-slug="supTips"
+           data-tab-name="Tips"
+           data-tab-icon="fa-lightbulb">
+    <h6 style="color:#17a2b8; font-weight:700;"><i class="fas fa-lightbulb"></i> Best Practices</h6>
+    <ul>
+      <li><strong>Use a recognisable contact name</strong> &mdash; if you know two people called "Costa," disambiguate them in the contact field (e.g. <code>Costa (Agia Thekla)</code>) so you can tell them apart at a glance.</li>
+      <li><strong>Always include the contact number</strong> &mdash; an email-only supplier is hard to reach in a hurry. Include the country code where possible.</li>
+      <li><strong>Be consistent with the Role / Service</strong> &mdash; pick a short label and stick with it (Plumber, not "Pluming Guy" or "Mr. Fix-It"). Consistent labels make filtering far more useful.</li>
+      <li><strong>Set the Country accurately</strong> &mdash; suppliers don't usually travel between countries, so country becomes your most useful filter when an issue arises.</li>
+      <li><strong>Edit, don't delete, when a supplier becomes inactive</strong> &mdash; consider keeping them with a note in the role (e.g. "Plumber &mdash; retired") instead of deleting, so historic records still make sense.</li>
+      <li><strong>Use the Report view to share details</strong> &mdash; the printable report is handy when you need to forward supplier info to a tenant or property manager.</li>
+      <li><strong>Cross-link with Issues</strong> &mdash; once a supplier is in this directory, they can be assigned to property issues so the right tradesperson is notified for the right job.</li>
+    </ul>
+
+    <div class="alert alert-warning" style="border-left:4px solid #ffc107;">
+      <i class="fas fa-exclamation-triangle"></i> <strong>Can't see the Delete column?</strong> The Delete option only appears for users with <strong>superuser</strong> privileges. If you need to delete a supplier and don't see the column, ask an administrator.
+    </div>
+  </article>
+
+</section>
+<!-- ======= END SUPPLIERS ======= -->
+
+
+<!-- ======= INVOICES ======= -->
+<section data-module-slug="invoices"
+         data-module-name="Open Invoices"
+         data-module-icon="fa-file-invoice"
+         data-module-category="Operational"
+         data-module-subtitle="View, filter and settle outstanding tenant invoices">
+
+  <article data-tab-slug="invOverview"
+           data-tab-name="Overview"
+           data-tab-icon="fa-info-circle">
+    <h6 style="color:#17a2b8; font-weight:700;"><i class="fas fa-file-invoice"></i> What is the Invoices page?</h6>
+    <p>This page shows every <strong>open (unpaid) invoice</strong> in the system &mdash; one row per outstanding invoice, with the tenant, the amount owed, and how many days overdue it is.</p>
+    <p>Once you mark an invoice as paid, it <strong>disappears from this list</strong>. So the page acts as a live worklist of money still to be collected.</p>
+
+    <h6 style="color:#17a2b8; font-weight:700; margin-top:20px;"><i class="fas fa-cogs"></i> How invoices get here</h6>
+    <ul>
+      <li><strong>Automatically</strong> &mdash; the system generates a fresh invoice for every active tenant on the <strong>1st of each month</strong>.</li>
+      <li><strong>Manually</strong> &mdash; a Superuser can click <strong>Generate Invoices</strong> in Administration to create any missing invoices on the fly (for example, if the 1st-of-month run was missed, or a tenant was added mid-month).</li>
+    </ul>
+
+    <div class="alert alert-info" style="border-left:4px solid #17a2b8;">
+      <i class="fas fa-link"></i> <strong>Related screens:</strong> the <strong>Notifications Dashboard</strong> shows the count of overdue invoices at a glance, and <strong>Administration &rarr; Notification Settings</strong> controls who is emailed when an invoice is marked paid.
+    </div>
+
+    <div class="alert alert-warning" style="border-left:4px solid #ffc107;">
+      <i class="fas fa-shield-alt"></i> <strong>Superuser only:</strong> Regular users see an Access Restricted message on this page.
+    </div>
+  </article>
+
+  <article data-tab-slug="invTable"
+           data-tab-name="The Invoice Table"
+           data-tab-icon="fa-table">
+    <h6 style="color:#17a2b8; font-weight:700;"><i class="fas fa-table"></i> The eight columns</h6>
+    <p>Each row is one open invoice. Columns left to right:</p>
+
+    <div class="card mb-2" style="border-left:4px solid #17a2b8;">
+      <div class="card-body" style="padding:12px 15px;">
+        <h6 style="margin:0 0 5px 0;"><strong>Property</strong></h6>
+        <p class="mb-0" style="font-size:13px;">The property this invoice is for.</p>
+      </div>
+    </div>
+
+    <div class="card mb-2" style="border-left:4px solid #17a2b8;">
+      <div class="card-body" style="padding:12px 15px;">
+        <h6 style="margin:0 0 5px 0;"><strong>Country</strong></h6>
+        <p class="mb-0" style="font-size:13px;">Country where the property is located (Cyprus, Greece, Spain, etc.).</p>
+      </div>
+    </div>
+
+    <div class="card mb-2" style="border-left:4px solid #17a2b8;">
+      <div class="card-body" style="padding:12px 15px;">
+        <h6 style="margin:0 0 5px 0;"><strong>Tenant</strong></h6>
+        <p class="mb-0" style="font-size:13px;">The tenant who owes the rent.</p>
+      </div>
+    </div>
+
+    <div class="card mb-2" style="border-left:4px solid #17a2b8;">
+      <div class="card-body" style="padding:12px 15px;">
+        <h6 style="margin:0 0 5px 0;"><strong>Amount</strong></h6>
+        <p class="mb-0" style="font-size:13px;">Monthly rent, displayed in &euro; with no decimals (right-aligned, monospace for easy column scanning).</p>
+      </div>
+    </div>
+
+    <div class="card mb-2" style="border-left:4px solid #17a2b8;">
+      <div class="card-body" style="padding:12px 15px;">
+        <h6 style="margin:0 0 5px 0;"><strong>Invoice Date</strong></h6>
+        <p class="mb-0" style="font-size:13px;">When the invoice was generated. For automatic invoices this is normally the 1st of the month.</p>
+      </div>
+    </div>
+
+    <div class="card mb-2" style="border-left:4px solid #17a2b8;">
+      <div class="card-body" style="padding:12px 15px;">
+        <h6 style="margin:0 0 5px 0;"><strong>Due Date</strong></h6>
+        <p class="mb-0" style="font-size:13px;">When payment is due. Calculated from the invoice date plus the tenant's <em>payment terms</em> (which are set on the tenant's record).</p>
+      </div>
+    </div>
+
+    <div class="card mb-2" style="border-left:4px solid #dc3545;">
+      <div class="card-body" style="padding:12px 15px;">
+        <h6 style="margin:0 0 5px 0; color:#dc3545;"><strong>Days Overdue</strong></h6>
+        <p class="mb-0" style="font-size:13px;">How many days past the due date this invoice is. <strong>Shown in red bold</strong> when greater than zero &mdash; a clear visual cue that the invoice needs chasing.</p>
+      </div>
+    </div>
+
+    <div class="card mb-3" style="border-left:4px solid #17a2b8;">
+      <div class="card-body" style="padding:12px 15px;">
+        <h6 style="margin:0 0 5px 0;"><strong>Mark as Paid</strong></h6>
+        <p class="mb-0" style="font-size:13px;">A "<strong>Paid</strong>" link &mdash; click it once payment has been received to settle the invoice. See the <em>Mark as Paid</em> tab for what happens next.</p>
+      </div>
+    </div>
+  </article>
+
+  <article data-tab-slug="invFilters"
+           data-tab-name="Filtering"
+           data-tab-icon="fa-filter">
+    <h6 style="color:#17a2b8; font-weight:700;"><i class="fas fa-filter"></i> Filtering the list</h6>
+    <p>The <strong>Invoice Filters</strong> panel sits above the table. Click the panel header to expand or collapse it. Two filters are available:</p>
+
+    <div class="card mb-3" style="border-left:4px solid #17a2b8;">
+      <div class="card-body">
+        <h6 style="color:#17a2b8;"><i class="fas fa-building"></i> <strong>Property</strong></h6>
+        <p class="mb-0">Narrow the list to invoices for a single property. Auto-submits on change &mdash; you don't need to click anything else.</p>
+      </div>
+    </div>
+
+    <div class="card mb-3" style="border-left:4px solid #17a2b8;">
+      <div class="card-body">
+        <h6 style="color:#17a2b8;"><i class="fas fa-user"></i> <strong>Tenant</strong></h6>
+        <p class="mb-0">Narrow the list to invoices for a single tenant. Useful when chasing one specific person/company across multiple properties (where applicable). Also auto-submits.</p>
+      </div>
+    </div>
+
+    <h6 style="color:#17a2b8; font-weight:700; margin-top:20px;"><i class="fas fa-tags"></i> Active filter tags</h6>
+    <p>When filters are applied, they appear as <strong>removable tags</strong> below the dropdowns. Click the &times; on any tag to remove that single filter and reload the list.</p>
+
+    <h6 style="color:#17a2b8; font-weight:700; margin-top:20px;"><i class="fas fa-eraser"></i> Clear All</h6>
+    <p>The <strong>Clear All</strong> button (top-right of the filter panel) resets both filters and reloads the full list of open invoices.</p>
+
+    <div class="alert alert-info" style="border-left:4px solid #17a2b8;">
+      <i class="fas fa-lightbulb"></i> <strong>Combine filters:</strong> Property and Tenant filters work together. Picking both shows only invoices that match both conditions.
+    </div>
+  </article>
+
+  <article data-tab-slug="invMarkPaid"
+           data-tab-name="Mark as Paid"
+           data-tab-icon="fa-check-circle">
+    <h6 style="color:#17a2b8; font-weight:700;"><i class="fas fa-check-circle"></i> Marking an invoice as paid</h6>
+    <p>When you've confirmed that the tenant has paid, click the <strong>Paid</strong> link in the right-hand column. Three things happen:</p>
+
+    <div class="card mb-3" style="border-left:4px solid #17a2b8;">
+      <div class="card-body">
+        <h6 style="color:#17a2b8;"><strong>1. The invoice is closed in the system</strong></h6>
+        <p class="mb-0">The invoice's status flips to <em>Paid</em> and it is recorded as settled in the financial records.</p>
+      </div>
+    </div>
+
+    <div class="card mb-3" style="border-left:4px solid #17a2b8;">
+      <div class="card-body">
+        <h6 style="color:#17a2b8;"><strong>2. The row disappears from this list</strong></h6>
+        <p class="mb-0">This page only shows <em>open</em> invoices, so a paid invoice is removed from view immediately.</p>
+      </div>
+    </div>
+
+    <div class="card mb-3" style="border-left:4px solid #17a2b8;">
+      <div class="card-body">
+        <h6 style="color:#17a2b8;"><strong>3. A notification email is sent</strong></h6>
+        <p class="mb-0">An <em>Invoice Marked as Paid</em> email is sent to whoever is configured in <strong>Administration &rarr; Notification Settings</strong> for that notification type. This typically goes to the person who tracks invoice payments and reconciles accounts.</p>
+      </div>
+    </div>
+
+    <div class="alert alert-warning" style="border-left:4px solid #ffc107;">
+      <i class="fas fa-exclamation-triangle"></i> <strong>Confirm payment first:</strong> Only click Paid <em>after</em> you've actually verified the money has landed in the bank. There's no easy "Unpaid" reversal from this page.
+    </div>
+  </article>
+
+  <article data-tab-slug="invTips"
+           data-tab-name="Tips"
+           data-tab-icon="fa-lightbulb">
+    <h6 style="color:#17a2b8; font-weight:700;"><i class="fas fa-lightbulb"></i> Best Practices</h6>
+    <ul>
+      <li><strong>Make this a weekly check</strong> &mdash; open the page once a week. Anything in red is a phone call or email to make.</li>
+      <li><strong>Red Days Overdue is the only thing that matters at a glance</strong> &mdash; sort your attention by that. Recent invoices (0 days overdue) are not a concern yet.</li>
+      <li><strong>Pair this with the Notifications Dashboard</strong> &mdash; the Dashboard shows the overdue invoice count without you having to open this page. Use the Dashboard for awareness, this page for action.</li>
+      <li><strong>Always verify payment before clicking Paid</strong> &mdash; check your bank statement, then mark. Marking a row as Paid removes it &mdash; reversing it is much harder than waiting until you're certain.</li>
+      <li><strong>Use filters when chasing</strong> &mdash; if you're calling one tenant, filter by them so you can see all their open invoices in one go.</li>
+      <li><strong>Empty list is a good thing</strong> &mdash; when this page is empty, every tenant is fully paid up. That's the goal.</li>
+      <li><strong>Configure the "Invoice Marked as Paid" notification</strong> &mdash; in Administration &rarr; Notification Settings, set TO and CC recipients so the right people are kept in the loop when payments come in.</li>
+      <li><strong>If the 1st-of-month auto-run didn't fire</strong> &mdash; head to Administration &rarr; Generate Invoices and click it. Safe to click any time; it only creates invoices that don't already exist.</li>
+    </ul>
+
+    <div class="alert alert-warning" style="border-left:4px solid #ffc107;">
+      <i class="fas fa-exclamation-triangle"></i> <strong>Expecting an invoice that isn't appearing?</strong> Check (1) the tenant has an active lease covering this period, (2) the 1st-of-month auto-run fired (or click <em>Generate Invoices</em> in Administration), and (3) the tenant's monthly rent is set on their record.
+    </div>
+  </article>
+
+</section>
+<!-- ======= END INVOICES ======= -->
+
+
+<!-- ======= PETTY CASH ======= -->
+<section data-module-slug="petty_cash"
+         data-module-name="Petty Cash"
+         data-module-icon="fa-coins"
+         data-module-category="Operational"
+         data-module-subtitle="A simple cash ledger for small property-related income and expenses">
+
+  <article data-tab-slug="pcOverview"
+           data-tab-name="Overview"
+           data-tab-icon="fa-info-circle">
+    <h6 style="color:#17a2b8; font-weight:700;"><i class="fas fa-coins"></i> What is Petty Cash?</h6>
+    <p>Petty Cash is a simple <strong>running ledger</strong> of small cash transactions related to property management. It tracks every euro that goes in and out of your physical petty cash float &mdash; with a live closing balance at the bottom of the table.</p>
+
+    <p>Typical things you'd record here:</p>
+    <ul>
+      <li><strong>Income</strong> &mdash; opening balance, top-ups (cash added to the float by Alivente), reimbursements paid in cash</li>
+      <li><strong>Expenses</strong> &mdash; small property-related purchases paid in cash: cleaning supplies, small repairs, tips, parking, minor materials, postage, etc.</li>
+    </ul>
+
+    <div class="alert alert-info" style="border-left:4px solid #17a2b8;">
+      <i class="fas fa-info-circle"></i> <strong>Why use this?</strong> Larger expenses go through the <strong>Expenses</strong> module with proper approval workflows and invoices attached. Petty Cash is for the small day-to-day stuff that wouldn't justify the overhead &mdash; the kind of thing you'd otherwise scribble on a receipt and forget about.
+    </div>
+
+    <div class="alert alert-success" style="border-left:4px solid #28a745;">
+      <i class="fas fa-balance-scale"></i> <strong>The closing balance should match your physical cash:</strong> If you reconcile properly, the green/red number at the bottom of the table is exactly what you should be holding in the petty cash tin or envelope at any moment.
+    </div>
+  </article>
+
+  <article data-tab-slug="pcTable"
+           data-tab-name="Reading the Table"
+           data-tab-icon="fa-table">
+    <h6 style="color:#17a2b8; font-weight:700;"><i class="fas fa-table"></i> The four columns</h6>
+
+    <div class="card mb-2" style="border-left:4px solid #17a2b8;">
+      <div class="card-body" style="padding:12px 15px;">
+        <h6 style="margin:0 0 5px 0;"><strong>Date</strong></h6>
+        <p class="mb-0" style="font-size:13px;">When the transaction happened (not necessarily when it was entered into the system).</p>
+      </div>
+    </div>
+
+    <div class="card mb-2" style="border-left:4px solid #17a2b8;">
+      <div class="card-body" style="padding:12px 15px;">
+        <h6 style="margin:0 0 5px 0;"><strong>Description</strong></h6>
+        <p class="mb-0" style="font-size:13px;">Free-text description of the transaction. Best practice is to <strong>prefix with the property name</strong> when applicable &mdash; for example <em>"Apolloneon &mdash; Demetri: Carrying washing machine upstairs"</em> or <em>"Lykavitto: Princess cleaned storeroom"</em>. Non-property entries (Opening Balance, Alivente Top-Up) skip the prefix.</p>
+      </div>
+    </div>
+
+    <div class="card mb-2" style="border-left:4px solid #17a2b8;">
+      <div class="card-body" style="padding:12px 15px;">
+        <h6 style="margin:0 0 5px 0;"><strong>Amount</strong></h6>
+        <p class="mb-1" style="font-size:13px;">The value of the transaction. <strong>Color-coded</strong>:</p>
+        <ul class="mb-0" style="font-size:13px;">
+          <li><span style="color:green; font-weight:bold;">Green</span> &mdash; Income (cash coming in, positive number)</li>
+          <li><span style="color:red; font-weight:bold;">Red, prefixed with &minus;</span> &mdash; Expense (cash going out)</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card mb-3" style="border-left:4px solid #17a2b8;">
+      <div class="card-body" style="padding:12px 15px;">
+        <h6 style="margin:0 0 5px 0;"><strong>Income / Expense</strong></h6>
+        <p class="mb-0" style="font-size:13px;">A clear text label of which type the row is &mdash; redundant with the colour but improves scannability and works for users with colour-vision difficulty.</p>
+      </div>
+    </div>
+
+    <h6 style="color:#17a2b8; font-weight:700; margin-top:20px;"><i class="fas fa-balance-scale"></i> CLOSING BALANCE row</h6>
+    <p>The bottom row of the table is always the <strong>cumulative running balance</strong> &mdash; every income added, every expense subtracted, from the very first row to the last.</p>
+    <ul>
+      <li><strong>Green</strong> closing balance = positive cash on hand (the normal state)</li>
+      <li><strong>Red</strong> closing balance = negative balance (something's wrong &mdash; either a missed top-up or a data-entry mistake)</li>
+    </ul>
+  </article>
+
+  <article data-tab-slug="pcAdd"
+           data-tab-name="Adding a Transaction"
+           data-tab-icon="fa-plus-circle">
+    <h6 style="color:#17a2b8; font-weight:700;"><i class="fas fa-plus-circle"></i> Adding a new transaction</h6>
+    <p>Click <strong>Add New</strong> (top-right) to open the Add Transaction form. It's a single row of four fields:</p>
+
+    <div class="card mb-2" style="border-left:4px solid #17a2b8;">
+      <div class="card-body" style="padding:12px 15px;">
+        <h6 style="margin:0 0 5px 0;"><strong>Date</strong></h6>
+        <p class="mb-0" style="font-size:13px;">Date picker (dd/mm/yyyy). Pick the date the transaction <em>actually happened</em>, not today &mdash; especially important when entering older receipts late.</p>
+      </div>
+    </div>
+
+    <div class="card mb-2" style="border-left:4px solid #17a2b8;">
+      <div class="card-body" style="padding:12px 15px;">
+        <h6 style="margin:0 0 5px 0;"><strong>Transaction Description</strong></h6>
+        <p class="mb-0" style="font-size:13px;">Free text. Use the <strong>"Property: detail"</strong> convention so future-you can scan the ledger and instantly see which property each cost relates to.</p>
+      </div>
+    </div>
+
+    <div class="card mb-2" style="border-left:4px solid #17a2b8;">
+      <div class="card-body" style="padding:12px 15px;">
+        <h6 style="margin:0 0 5px 0;"><strong>Amount</strong></h6>
+        <p class="mb-0" style="font-size:13px;">Enter the amount as a <strong>positive number</strong>. Don't add a minus sign &mdash; the Income / Expense dropdown handles whether the amount is added or subtracted from the balance.</p>
+      </div>
+    </div>
+
+    <div class="card mb-3" style="border-left:4px solid #17a2b8;">
+      <div class="card-body" style="padding:12px 15px;">
+        <h6 style="margin:0 0 5px 0;"><strong>Income / Expense</strong></h6>
+        <p class="mb-0" style="font-size:13px;">Dropdown &mdash; pick <strong>Income</strong> for cash coming in (top-ups, opening balance) or <strong>Expense</strong> for cash going out. This determines the colour and sign in the table.</p>
+      </div>
+    </div>
+
+    <p>Click <strong>Save</strong> to commit the transaction. <strong>Back</strong> returns to the ledger without saving.</p>
+
+    <div class="alert alert-warning" style="border-left:4px solid #ffc107;">
+      <i class="fas fa-exclamation-triangle"></i> <strong>Common mistake:</strong> Don't enter <code>-30.00</code> in the Amount field with Expense selected &mdash; the system will subtract the negative, effectively adding 30 to your balance. Always enter <code>30.00</code> as Amount and let the Expense type handle the minus.
+    </div>
+  </article>
+
+  <article data-tab-slug="pcTips"
+           data-tab-name="Tips"
+           data-tab-icon="fa-lightbulb">
+    <h6 style="color:#17a2b8; font-weight:700;"><i class="fas fa-lightbulb"></i> Best Practices</h6>
+    <ul>
+      <li><strong>Reconcile regularly</strong> &mdash; physically count the cash in the petty cash tin and compare to the closing balance on screen. They should match. If they don't, find the missing transaction.</li>
+      <li><strong>Use the "Property: detail" description format</strong> &mdash; e.g. <code>Lykavitto: Bought rubbish bags @ Green Tree</code>. Makes audit and review trivial. Skip the prefix for non-property entries (Opening Balance, top-ups).</li>
+      <li><strong>Be consistent with naming</strong> &mdash; pick one form for top-ups (e.g. "Alivente Top-Up") and stick with it. Inconsistent variants like "Alivente: Top Up", "Alivente Top-Up", "Alivente top up" make the ledger harder to read at a glance.</li>
+      <li><strong>Always positive amounts</strong> &mdash; enter <code>30</code>, not <code>-30</code>. The Income / Expense type does the work.</li>
+      <li><strong>Enter as soon as possible</strong> &mdash; the longer between the cash event and the entry, the more likely you'll forget what it was for. Phone-photo of the receipt + same-day entry is the gold standard.</li>
+      <li><strong>Keep the physical receipts</strong> &mdash; the digital ledger is your record but receipts are the backup. File them by month in case you ever need to evidence a transaction.</li>
+      <li><strong>Top up before you run out</strong> &mdash; if the closing balance is getting low, request an Alivente Top-Up before you're stuck unable to pay for something small.</li>
+      <li><strong>Larger spend &rarr; Expenses module</strong> &mdash; if a transaction is big enough to warrant approval, an invoice or a paper trail beyond a receipt, record it in the Expenses module instead of here.</li>
+    </ul>
+
+    <div class="alert alert-warning" style="border-left:4px solid #ffc107;">
+      <i class="fas fa-exclamation-triangle"></i> <strong>Closing balance gone red?</strong> Either a top-up was missed or an expense was entered twice. Scan recent rows for duplicates first, then check whether a recent top-up made it in.
+    </div>
+  </article>
+
+</section>
+<!-- ======= END PETTY CASH ======= -->
+
+
+<!-- ======= DASHBOARD ======= -->
+<section data-module-slug="dashboard"
+         data-module-name="Property Dashboard"
+         data-module-icon="fa-compass"
+         data-module-category="Operational"
+         data-module-subtitle="A visual hub for exploring everything about a property">
+
+  <article data-tab-slug="db-overview"
+           data-tab-name="Overview"
+           data-tab-icon="fa-info-circle">
+    <h6 style="color:#17a2b8; font-weight:700;"><i class="fas fa-compass"></i> What is the Dashboard?</h6>
+    <p>The Property Dashboard is a <strong>visual, property-centred hub</strong>. Pick one property from your portfolio and every relevant view of it &mdash; legal documents, financial performance, tenant, expenses, issues, valuation &mdash; is one click away.</p>
+    <p>Use it as the <strong>starting point when you want to investigate a single property end-to-end</strong>, rather than jumping in and out of module-by-module screens from the main menu.</p>
+
+    <h6 style="color:#17a2b8; font-weight:700; margin-top:20px;"><i class="fas fa-th"></i> What's on screen</h6>
+    <p>The dashboard is organised into <strong>three sections</strong>, each grouping the cards that naturally belong together:</p>
+    <ul>
+      <li><strong>Property</strong> &mdash; physical and legal aspects (Property Report, Title Deed, Valuation, Issues)</li>
+      <li><strong>Tenant</strong> &mdash; who lives there and lease status (Tenant Report, Lease, Invoices, Lease Renewals)</li>
+      <li><strong>Financials</strong> &mdash; money flows and performance (Revenues, Actual Expenses, Budgeted Expenses, Profit &amp; Loss)</li>
+    </ul>
+
+    <div class="alert alert-info" style="border-left:4px solid #17a2b8;">
+      <i class="fas fa-mouse-pointer"></i> <strong>Cards are dim until you pick a property.</strong> That's deliberate &mdash; there's nothing meaningful to show until the dashboard knows which property you want to look at.
+    </div>
+  </article>
+
+  <article data-tab-slug="db-getstarted"
+           data-tab-name="Getting Started"
+           data-tab-icon="fa-play-circle">
+    <h6 style="color:#17a2b8; font-weight:700;"><i class="fas fa-play-circle"></i> Three steps to use the Dashboard</h6>
+
+    <div class="card mb-2" style="border-left:4px solid #17a2b8;">
+      <div class="card-body" style="padding:12px 15px;">
+        <h6 style="margin:0 0 5px 0;"><strong>1. Click the property selector</strong></h6>
+        <p class="mb-0" style="font-size:13px;">A modal opens listing every property in your portfolio.</p>
+      </div>
+    </div>
+
+    <div class="card mb-2" style="border-left:4px solid #17a2b8;">
+      <div class="card-body" style="padding:12px 15px;">
+        <h6 style="margin:0 0 5px 0;"><strong>2. Pick a property from the list</strong></h6>
+        <p class="mb-0" style="font-size:13px;">The modal closes, the selector turns darker teal and shows your property name, and every card lights up &mdash; the dashboard is now armed for that property.</p>
+      </div>
+    </div>
+
+    <div class="card mb-2" style="border-left:4px solid #17a2b8;">
+      <div class="card-body" style="padding:12px 15px;">
+        <h6 style="margin:0 0 5px 0;"><strong>3. Click any module card</strong></h6>
+        <p class="mb-0" style="font-size:13px;">You're navigated to the relevant view for the selected property.</p>
+      </div>
+    </div>
+
+    <h6 style="color:#17a2b8; font-weight:700; margin-top:20px;"><i class="fas fa-redo"></i> Switching property</h6>
+    <p>Click the property selector again at any time to swap to a different property. All cards reflect the new selection immediately &mdash; no need to navigate away.</p>
+
+    <h6 style="color:#17a2b8; font-weight:700; margin-top:15px;"><i class="fas fa-link"></i> Deep linking</h6>
+    <p>You can pre-select a property by adding <code>?property=ID</code> to the dashboard URL. Useful when linking from other parts of the system.</p>
+
+    <h6 style="color:#17a2b8; font-weight:700; margin-top:15px;"><i class="fas fa-keyboard"></i> Keyboard</h6>
+    <p><code>Esc</code> closes the property picker modal.</p>
+  </article>
+
+  <article data-tab-slug="db-property"
+           data-tab-name="Property Section"
+           data-tab-icon="fa-home">
+    <h6 style="color:#17a2b8; font-weight:700;"><i class="fas fa-home"></i> The Property section</h6>
+    <p>The four physical and legal aspects of the property:</p>
+
+    <div class="card mb-2" style="border-left:4px solid #17a2b8;">
+      <div class="card-body" style="padding:12px 15px;">
+        <h6 style="margin:0 0 5px 0;"><i class="fas fa-chart-line"></i> <strong>Property Report</strong></h6>
+        <p class="mb-0" style="font-size:13px;">A multi-section snapshot: Property Address, Specifications (m&sup2;, year built), Utility Accounts, Insurance &amp; Status, and an Asset Summary with statistics, financial summary, assets grouped by category, and a full Asset Details table with warranty expiry dates.</p>
+      </div>
+    </div>
+
+    <div class="card mb-2" style="border-left:4px solid #17a2b8;">
+      <div class="card-body" style="padding:12px 15px;">
+        <h6 style="margin:0 0 5px 0;"><i class="fas fa-file-contract"></i> <strong>Title Deed</strong></h6>
+        <p class="mb-0" style="font-size:13px;"><strong>View-only.</strong> Displays the uploaded title deed PDF inline. To upload, replace or delete the deed itself, use the <strong>Properties</strong> module.</p>
+      </div>
+    </div>
+
+    <div class="card mb-2" style="border-left:4px solid #17a2b8;">
+      <div class="card-body" style="padding:12px 15px;">
+        <h6 style="margin:0 0 5px 0;"><i class="fas fa-home"></i> <strong>Valuation</strong></h6>
+        <p class="mb-0" style="font-size:13px;">Compares Purchase Price against Current Value, with the gain/loss in &euro; and as a percentage, plus a green/red trend arrow.</p>
+      </div>
+    </div>
+
+    <div class="card mb-2" style="border-left:4px solid #17a2b8;">
+      <div class="card-body" style="padding:12px 15px;">
+        <h6 style="margin:0 0 5px 0;"><i class="fas fa-exclamation-triangle"></i> <strong>Issues</strong></h6>
+        <p class="mb-0" style="font-size:13px;">Maintenance, repairs and any open issues for this property. When there are none, shows a green "Excellent! No issues have been reported" empty state.</p>
+      </div>
+    </div>
+  </article>
+
+  <article data-tab-slug="db-tenant"
+           data-tab-name="Tenant Section"
+           data-tab-icon="fa-users">
+    <h6 style="color:#17a2b8; font-weight:700;"><i class="fas fa-users"></i> The Tenant section</h6>
+    <p>Everything about who's currently renting the property and the state of their lease:</p>
+
+    <div class="card mb-2" style="border-left:4px solid #17a2b8;">
+      <div class="card-body" style="padding:12px 15px;">
+        <h6 style="margin:0 0 5px 0;"><i class="fas fa-users"></i> <strong>Tenant Report</strong></h6>
+        <p class="mb-0" style="font-size:13px;">The current tenant: Type (Individual or Company), Contact Information, Lease Period (start/end dates), Financial Information (deposit, monthly rent, levies, payment terms), and Lease Details (rental type, renewal clause, notice period, renewal status, active flag).</p>
+      </div>
+    </div>
+
+    <div class="card mb-2" style="border-left:4px solid #17a2b8;">
+      <div class="card-body" style="padding:12px 15px;">
+        <h6 style="margin:0 0 5px 0;"><i class="fas fa-file-contract"></i> <strong>Lease</strong></h6>
+        <p class="mb-0" style="font-size:13px;"><strong>View-only.</strong> Inline PDF display of the current lease agreement. Page title shows the property and tenant in parentheses for context.</p>
+      </div>
+    </div>
+
+    <div class="card mb-2" style="border-left:4px solid #17a2b8;">
+      <div class="card-body" style="padding:12px 15px;">
+        <h6 style="margin:0 0 5px 0;"><i class="fas fa-file-invoice-dollar"></i> <strong>Invoices</strong></h6>
+        <p class="mb-0" style="font-size:13px;">Open invoices for this property's current tenant. Header shows the Total Amount Due in red. Each row lists Invoice Date, Due Date, Days Overdue, Amount, and a red <em>Overdue</em> badge. Scoped to this property only &mdash; for the system-wide list, use the main Invoices module.</p>
+      </div>
+    </div>
+
+    <div class="card mb-2" style="border-left:4px solid #17a2b8;">
+      <div class="card-body" style="padding:12px 15px;">
+        <h6 style="margin:0 0 5px 0;"><i class="fas fa-sync-alt"></i> <strong>Lease Renewals</strong></h6>
+        <p class="mb-0" style="font-size:13px;">The renewal state of the current lease. While active, shows a green "Current lease is active. No renewal action required at this time." together with the tenant name and end date. As expiry approaches, the screen prompts for renewal action.</p>
+      </div>
+    </div>
+  </article>
+
+  <article data-tab-slug="db-financials"
+           data-tab-name="Financials Section"
+           data-tab-icon="fa-coins">
+    <h6 style="color:#17a2b8; font-weight:700;"><i class="fas fa-coins"></i> The Financials section</h6>
+    <p>Money in, money out, and the resulting performance:</p>
+
+    <div class="card mb-2" style="border-left:4px solid #17a2b8;">
+      <div class="card-body" style="padding:12px 15px;">
+        <h6 style="margin:0 0 5px 0;"><i class="fas fa-dollar-sign"></i> <strong>Revenues</strong></h6>
+        <p class="mb-0" style="font-size:13px;">Breakdown of the property's revenue lines &mdash; typically Rental and Levies &mdash; with Revenue Type (Monthly, Yearly) and Amount. Pulled from the tenant's lease data.</p>
+      </div>
+    </div>
+
+    <div class="card mb-2" style="border-left:4px solid #17a2b8;">
+      <div class="card-body" style="padding:12px 15px;">
+        <h6 style="margin:0 0 5px 0;"><i class="fas fa-receipt"></i> <strong>Actual Expenses</strong></h6>
+        <p class="mb-0" style="font-size:13px;">A table of expenses actually incurred, with Date, Description, Amount, and a green invoice icon that opens the scanned receipt PDF. A Year filter sits in the top-right; the bottom row sums to <em>Total Actual Expenses for [year]</em>.</p>
+      </div>
+    </div>
+
+    <div class="card mb-2" style="border-left:4px solid #17a2b8;">
+      <div class="card-body" style="padding:12px 15px;">
+        <h6 style="margin:0 0 5px 0;"><i class="fas fa-clipboard-list"></i> <strong>Budgeted Expenses</strong></h6>
+        <p class="mb-0" style="font-size:13px;">The planned expense schedule. Each row: an <strong>Expense Line Type</strong> (Communal Fees, Company Tax, Insurance, Property Manager, etc.), an <strong>Expense Type</strong> indicating when (a specific month like <em>June</em>, or <em>Monthly</em>), and the budgeted Amount. This is the baseline that <em>Actual</em> is compared against.</p>
+      </div>
+    </div>
+
+    <div class="card mb-2" style="border-left:4px solid #17a2b8;">
+      <div class="card-body" style="padding:12px 15px;">
+        <h6 style="margin:0 0 5px 0;"><i class="fas fa-chart-pie"></i> <strong>Profit &amp; Loss</strong></h6>
+        <p class="mb-0" style="font-size:13px;">A full 12-month P&amp;L statement: Revenue rows, Expenses rows, Net Profit &mdash; monthly breakdown plus Total and Monthly-average columns. A <strong>Budget</strong> toggle switches between Actual and Budget views. Below the table, a <strong>Financial Indicators</strong> panel surfaces Gross ROI, Net ROI, Expenses to Revenue, Rent &euro;/m&sup2; and % Value Increase.</p>
+      </div>
+    </div>
+
+    <div class="alert alert-info" style="border-left:4px solid #17a2b8;">
+      <i class="fas fa-info-circle"></i> <strong>Why split Expenses into Actual and Budgeted?</strong> Comparing the two is the heart of expense control. Looking at either alone only tells half the story.
+    </div>
+  </article>
+
+  <article data-tab-slug="db-tips"
+           data-tab-name="Tips"
+           data-tab-icon="fa-lightbulb">
+    <h6 style="color:#17a2b8; font-weight:700;"><i class="fas fa-lightbulb"></i> Best Practices</h6>
+    <ul>
+      <li><strong>Always pick a property first</strong> &mdash; everything else is locked until you do. The dim cards are a deliberate hint.</li>
+      <li><strong>Use this as your starting point per property</strong> &mdash; if you're investigating one specific property end-to-end, the Dashboard is faster than going module-by-module from the sidebar.</li>
+      <li><strong>Compare Actual vs Budgeted Expenses</strong> &mdash; click both in turn to spot variances. Big swings either way are worth investigating.</li>
+      <li><strong>Switch properties without leaving the page</strong> &mdash; click the selector at the top. Faster than going Back and re-entering.</li>
+      <li><strong>Use deep links</strong> &mdash; bookmark <code>?property=ID</code> URLs for properties you check often.</li>
+      <li><strong>Profit &amp; Loss is the executive view</strong> &mdash; the full 12-month grid plus the Financial Indicators row gives a property's complete financial picture in one screen. If you only have time for one card per property, it's this one.</li>
+      <li><strong>Use the Budget toggle on Profit &amp; Loss</strong> &mdash; flip between Actual and Budget to see over- and under-performance against the plan.</li>
+    </ul>
+
+    <div class="alert alert-warning" style="border-left:4px solid #ffc107;">
+      <i class="fas fa-exclamation-triangle"></i> <strong>Cards still dim after picking a property?</strong> Try re-opening the picker and selecting again. If the issue persists, refresh the page.
+    </div>
+  </article>
+
+</section>
+<!-- ======= END DASHBOARD ======= -->
+
+

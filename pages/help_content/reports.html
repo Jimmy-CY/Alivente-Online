@@ -1,0 +1,1399 @@
+<!-- ======= PROPERTY VALUATIONS ======= -->
+<section data-module-slug="finance_valuations"
+         data-module-name="Property Valuations"
+         data-module-icon="fa-chart-line"
+         data-module-category="Reports"
+         data-module-subtitle="Track each property's purchase price and current market value &mdash; the numbers that drive Pro-Rata expense distribution">
+
+  <article data-tab-slug="val-overview"
+           data-tab-name="Overview"
+           data-tab-icon="fa-info-circle">
+    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-info-circle"></i> What is the Valuations page?</h5>
+    <p>The Valuations page is the <strong>single source of truth</strong> for what each property was bought for and what it's worth today. One row per property, tracked on two axes:</p>
+
+    <div class="alert" style="background:#e7f5f8; border-left:4px solid #17a2b8;">
+      <ul class="mb-0">
+        <li><strong>Purchase Price</strong> &mdash; the amount originally paid. This is a <em>historical anchor</em> &mdash; it rarely changes after the initial capture.</li>
+        <li><strong>Current Value</strong> &mdash; today's estimated market value. This should be kept up to date as valuations evolve (typically reviewed annually or when you get a fresh professional appraisal).</li>
+      </ul>
+    </div>
+
+    <h6 style="margin-top:20px; color:#2c3e50; font-weight:700;"><i class="fas fa-columns"></i> The 8 columns at a glance</h6>
+    <ul>
+      <li><strong>Property</strong> &mdash; name of the property</li>
+      <li><strong>m&sup2;</strong> &mdash; floor area (from the Properties module, <em>not</em> entered here)</li>
+      <li><strong>Purchase Price</strong> &mdash; what you paid</li>
+      <li><strong>Price/m&sup2;</strong> &mdash; calculated: Purchase Price &divide; m&sup2;</li>
+      <li><strong>Current Value</strong> &mdash; today's market estimate</li>
+      <li><strong>Value/m&sup2;</strong> &mdash; calculated: Current Value &divide; m&sup2;</li>
+      <li><strong>Gain %</strong> &mdash; calculated: (Current &minus; Purchase) &divide; Purchase &times; 100</li>
+      <li><strong>Details</strong> &mdash; Edit button</li>
+    </ul>
+
+    <p>A <strong>TOTAL row</strong> at the bottom aggregates the numerical columns across the whole portfolio, giving a single-glance view of total invested capital vs. current portfolio value.</p>
+
+    <div class="alert alert-warning" style="border-left:4px solid #ffc107; margin-top:18px;">
+      <i class="fas fa-balance-scale"></i> <strong>Important &mdash; Current Value drives Pro-Rata expense distribution.</strong>
+      When a property's Current Value changes, <em>every Pro-Rata Expense</em> that property is part of (e.g. <em>Financials (Cyprus)</em>, <em>Insurance (Cyprus)</em>, etc.) gets automatically recalculated. A property with a higher Current Value bears a larger share of each shared bill; a lower value means a smaller share. This is why keeping valuations up to date matters beyond mere reporting &mdash; it directly affects your P&amp;L.
+      <p class="mb-0 mt-2">The system handles this cascade with a <strong>preview modal</strong> whenever a Current Value is edited &mdash; see the <em>Add / Edit</em> tab for the full walk-through.</p>
+    </div>
+
+    <h6 style="margin-top:20px; color:#2c3e50; font-weight:700;"><i class="fas fa-flask"></i> A worked example</h6>
+    <p>From your live portfolio &mdash; 13 properties, with a total purchase outlay of <strong>&euro;4,041,000</strong> and a current estimated value of <strong>&euro;6,065,000</strong>. The portfolio has gained <strong>+50.1%</strong> since acquisition. Individual stories vary: <em>Ionion - Villa H4</em> leads with <strong>+112.6%</strong> appreciation (&euro;1,035k &rarr; &euro;2,200k) while <em>Spain - Eusebi Guell</em> is still close to break-even at <strong>+10.5%</strong>. The Price/m&sup2; and Value/m&sup2; columns let you cross-compare properties of different sizes on a normalised basis.</p>
+
+    <div class="alert alert-light" style="border-left:4px solid #6c757d;">
+      <i class="fas fa-user-shield"></i> <strong>Permissions:</strong> This page is restricted to <strong>Superusers</strong>.
+    </div>
+  </article>
+
+  <article data-tab-slug="val-table"
+           data-tab-name="The Table"
+           data-tab-icon="fa-table">
+    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-table"></i> Reading the Table</h5>
+    <p>Each row represents one property. Some columns come straight from a stored value, others are <strong>computed on the fly</strong> from other fields. Here's the breakdown.</p>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-database"></i> Stored fields</h6>
+    <ul>
+      <li><strong>Property</strong> &mdash; the property name, from the Properties module.</li>
+      <li><strong>m&sup2;</strong> &mdash; the floor area, sourced from the Property record's <code>prop_floor_area</code> field. If it's not set on the Property, you'll see a grey dash (<span style="color:#999;">&mdash;</span>) here and the Price/m&sup2; and Value/m&sup2; columns for that row will also show dashes. Fix by going to <strong>Properties</strong> in the sidebar and editing the property.</li>
+      <li><strong>Purchase Price</strong> &mdash; from this page's edit form.</li>
+      <li><strong>Current Value</strong> &mdash; from this page's edit form.</li>
+    </ul>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-calculator"></i> Calculated fields</h6>
+    <ul>
+      <li><strong>Price/m&sup2;</strong> = Purchase Price &divide; m&sup2; &mdash; what you paid per square metre. Useful for benchmarking historical acquisition value.</li>
+      <li><strong>Value/m&sup2;</strong> = Current Value &divide; m&sup2; &mdash; today's market rate per square metre. Useful for cross-property benchmarking and sanity-checking whether a valuation feels right.</li>
+      <li><strong>Gain %</strong> = (Current &minus; Purchase) &divide; Purchase &times; 100 &mdash; percentage change in property value since acquisition. Shown as <strong>+X.X%</strong> for gains and <strong>&minus;X.X%</strong> for losses.</li>
+    </ul>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-palette"></i> Colour conventions</h6>
+    <ul>
+      <li><strong style="color:#28a745;">Green</strong> &mdash; positive gain (Current Value higher than Purchase Price)</li>
+      <li><strong style="color:#dc3545;">Red</strong> &mdash; negative gain / loss (Current Value lower than Purchase Price)</li>
+      <li><span style="color:#999;">Grey dash (&mdash;)</span> &mdash; calculation not possible because a required input is missing (usually m&sup2; from the Property record, or one of the two values).</li>
+    </ul>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-sigma"></i> The TOTAL row</h6>
+    <p>Aggregates across the portfolio:</p>
+    <ul>
+      <li><strong>Purchase Price TOTAL</strong> = sum of all Purchase Prices</li>
+      <li><strong>Current Value TOTAL</strong> = sum of all Current Values</li>
+      <li><strong>Gain % TOTAL</strong> = (Current TOTAL &minus; Purchase TOTAL) &divide; Purchase TOTAL &times; 100 &mdash; your <em>portfolio-level</em> performance indicator</li>
+    </ul>
+    <p>Note that the portfolio Gain % is <em>not</em> an average of the individual Gain percentages &mdash; it's weighted by value. A &euro;2M property that gained 50% contributes more to the portfolio number than a &euro;200k property that gained 100%.</p>
+
+    <div class="alert alert-info" style="border-left:4px solid #17a2b8;">
+      <i class="fas fa-eye-slash"></i> <strong>Properties without a valuation don't appear.</strong> A property only shows up once you've captured at least Purchase Price and Current Value via <strong>Add New</strong>. If a property from your portfolio is missing here, it's never been valued.
+    </div>
+  </article>
+
+  <article data-tab-slug="val-edit"
+           data-tab-name="Add / Edit"
+           data-tab-icon="fa-edit">
+    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-plus-circle"></i> Adding a Valuation</h5>
+    <p>Click <strong>Add New</strong> in the top-right. The form has three fields:</p>
+    <ol>
+      <li><strong>Property</strong> &mdash; dropdown of properties from the Properties module. Pick the one you're valuing. A property can only have <strong>one</strong> valuation record &mdash; if this property is already in the list, use Edit instead.</li>
+      <li><strong>Purchase Price</strong> &mdash; the amount originally paid, in euros.</li>
+      <li><strong>Current Value</strong> &mdash; today's estimated market value, in euros.</li>
+    </ol>
+    <p>Click <strong>Save</strong>. The property now appears in the listing.</p>
+
+    <div class="alert alert-info" style="border-left:4px solid #17a2b8;">
+      <i class="fas fa-info-circle"></i> <strong>m&sup2; comes from the Property record.</strong> This form doesn't ask for floor area because it's already stored on the Property itself. The m&sup2; (and therefore Price/m&sup2; and Value/m&sup2;) will populate automatically in the listing if the Property has <code>prop_floor_area</code> set.
+    </div>
+
+    <h5 style="margin-top:25px; color:#17a2b8; font-weight:700;"><i class="fas fa-edit"></i> Editing a Valuation</h5>
+    <p>Click the <strong>Edit</strong> button on any row. The form opens with three fields:</p>
+    <ul>
+      <li><strong>Property</strong> &mdash; locked (can't be changed on edit &mdash; a valuation belongs to one property for its entire life)</li>
+      <li><strong>Purchase Price</strong> &mdash; editable but rarely changed (it's historical)</li>
+      <li><strong>Current Value</strong> &mdash; the field you'll usually be updating</li>
+    </ul>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-cogs"></i> What happens when you change Purchase Price only</h6>
+    <p>A simple save. Purchase Price is historical and doesn't drive any downstream calculations &mdash; it's purely for reporting. Changing it updates the Price/m&sup2; and Gain % on the listing; nothing else is affected.</p>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-balance-scale"></i> What happens when you change Current Value</h6>
+    <p>This is the important one. Current Value drives Pro-Rata expense distribution &mdash; so changing it has downstream effects that the system handles automatically.</p>
+
+    <p><strong>When you change the Current Value and click Save, one of two things happens:</strong></p>
+
+    <div class="alert alert-light" style="border-left:4px solid #6c757d;">
+      <strong>Case 1 &mdash; This property is in <em>zero</em> Pro-Rata distributions:</strong>
+      <p class="mb-0 mt-2">The valuation saves directly with no modal. Nothing else is affected. This is typical for properties whose expenses are all standard (electricity, property manager, communal fees) rather than shared-bill pro-rata ones.</p>
+    </div>
+
+    <div class="alert alert-success" style="border-left:4px solid #28a745;">
+      <strong>Case 2 &mdash; This property is in one or more Pro-Rata distributions:</strong>
+      <p class="mt-2">A <strong>preview modal</strong> opens showing every Pro-Rata distribution the property touches. Each distribution is a <strong>collapsible group</strong> (click the header to expand) listing every property in that distribution with:</p>
+      <ul class="mb-0">
+        <li><strong>CV (old)</strong> and <strong>CV (new)</strong> &mdash; the edited property's new Current Value is shown in teal; all other properties keep their CV unchanged</li>
+        <li><strong>Share %</strong> &mdash; each property's new proportional slice of the distribution</li>
+        <li><strong>Old Amount</strong> and <strong>New Amount</strong> &mdash; the per-month expense values before and after</li>
+        <li><strong>&Delta; (delta)</strong> &mdash; the change per property, colour-coded: <strong style="color:#dc3545;">red</strong> if paying more, <strong style="color:#28a745;">green</strong> if paying less</li>
+      </ul>
+      <p class="mt-2 mb-0">The edited property's row is <strong>highlighted yellow</strong> with an <em>edited</em> badge so it's always easy to find.</p>
+    </div>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-hand-pointer"></i> The buttons on the preview modal</h6>
+    <ul>
+      <li><strong>Cancel</strong> &mdash; closes the modal without making any changes. You stay on the Edit form and can adjust or abandon.</li>
+      <li><strong>Save &amp; Recalculate All</strong> &mdash; commits the new Current Value <em>and</em> updates every affected Pro-Rata Expense record in one atomic operation. A success message confirms how many records were updated.</li>
+    </ul>
+
+    <div class="alert alert-warning" style="border-left:4px solid #ffc107; margin-top:18px;">
+      <i class="fas fa-history"></i> <strong>A note on historical P&amp;L figures.</strong> Expense records aren't dated &mdash; they describe an ongoing pattern. Changing Current Value today will shift historical P&amp;L numbers too. This is normal for <strong>budgeted expenses</strong> (which is what the Pro-Rata system captures). If you've exported a P&amp;L report externally in the past, that export remains accurate as a point-in-time snapshot, but the live system will now reflect the updated distribution.
+    </div>
+
+    <div class="alert alert-info" style="border-left:4px solid #17a2b8; margin-top:10px;">
+      <i class="fas fa-info-circle"></i> <strong>A small rounding note.</strong> The modal's column totals may occasionally show a cent or two drift (e.g. &euro;3,000.01 instead of &euro;3,000.00) because each property's new amount is rounded to two decimal places individually. This is cosmetic and reflects the actual amounts that get written to the database.
+    </div>
+  </article>
+
+  <article data-tab-slug="val-tips"
+           data-tab-name="Tips"
+           data-tab-icon="fa-lightbulb">
+    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-lightbulb"></i> Practical Tips</h5>
+
+    <h6 style="margin-top:10px; color:#2c3e50; font-weight:700;">Keeping valuations current</h6>
+    <ul style="line-height:1.8;">
+      <li><strong>Review Current Values at least annually.</strong> A stale Current Value means a stale Pro-Rata distribution &mdash; and therefore a slightly wrong P&amp;L. Set a reminder for a January review of every property valuation based on recent market data or professional appraisals.</li>
+
+      <li><strong>Update Current Value after any major valuation event.</strong> New professional appraisal, significant renovation, comparable sale in the area, or market shift &mdash; all are valid reasons to update. The preview modal makes the downstream effect transparent so you can update with confidence.</li>
+
+      <li><strong>Purchase Price is historical &mdash; treat it as read-only in practice.</strong> The Purchase Price is what you actually paid, including any transaction costs captured at the time. Don't revise it retroactively &mdash; it's meant to be an immutable reference point. If it's wrong from initial capture, fix it once; otherwise, leave it.</li>
+    </ul>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;">Using the calculated columns</h6>
+    <ul style="line-height:1.8;">
+      <li><strong>Benchmark via Price/m&sup2; and Value/m&sup2;.</strong> These columns normalise across property sizes. A &euro;200,000 flat of 77m&sup2; is actually more expensive per square metre than a &euro;450,000 villa of 186m&sup2; &mdash; something the absolute values hide but the /m&sup2; columns make instantly visible.</li>
+
+      <li><strong>Watch for sudden Gain % spikes.</strong> A property that jumps from +25% to +80% between reviews deserves a sanity check &mdash; either your valuation source moved dramatically, or there's a data entry error. The sudden change is what to watch for.</li>
+
+      <li><strong>Use the TOTAL row as a portfolio-level health indicator.</strong> The overall Gain % is the single number that tells you whether your property investment portfolio has appreciated. A +50% portfolio-level gain over N years can be compared against other investment classes as a rough return benchmark.</li>
+    </ul>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;">Missing data &mdash; fixing the dashes</h6>
+    <ul style="line-height:1.8;">
+      <li><strong>A dash in m&sup2; means the Property record needs updating.</strong> Go to <strong>Properties</strong> in the sidebar, open the property, and set <em>Floor Area</em>. When you come back here, the dash becomes a number and both /m&sup2; columns populate automatically.</li>
+
+      <li><strong>A dash in Price/m&sup2; or Value/m&sup2; always traces back to missing m&sup2; or missing values.</strong> Cross-check the row &mdash; if both Purchase Price and Current Value have numbers but the /m&sup2; columns show dashes, it's the m&sup2; that's missing, not the money.</li>
+
+      <li><strong>A missing property from the listing altogether means no valuation has ever been captured.</strong> Click <strong>Add New</strong> and enter Purchase Price + Current Value to get it onto the listing.</li>
+    </ul>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;">The Pro-Rata connection</h6>
+    <ul style="line-height:1.8;">
+      <li><strong>Properties without a Current Value can't be part of Pro-Rata distributions.</strong> Pro-Rata split is proportional to Current Value &mdash; a property without one has no basis for a share. Make sure every property intended for Pro-Rata has a valuation here first.</li>
+
+      <li><strong>The cascade is transparent but not silent.</strong> Every time you edit a Current Value on a Pro-Rata property, the preview modal shows you exactly what's changing across which distributions, per property, with colour-coded deltas. Cancel freely during review.</li>
+
+      <li><strong>For the reverse scenario &mdash; changing a bill amount &mdash; use the Line Type page instead.</strong> If the total amount of a shared bill has changed (say an audit fee went from &euro;3,000 to &euro;3,500), don't touch Current Values &mdash; edit the <strong>Pro-Rata Amount</strong> on the Line Type via Configuration &rarr; Expense Line Types. That triggers its own preview-and-cascade flow, designed for that specific case.</li>
+    </ul>
+
+    <div class="alert alert-info" style="border-left:4px solid #17a2b8; margin-top:20px;">
+      <i class="fas fa-arrow-right"></i> <strong>Valuations keep everything else honest.</strong> This page feels like a simple report, but it's the <em>foundation</em> of your Pro-Rata expense system. Accurate, current valuations mean accurate expense distribution, which means an accurate P&amp;L. It's worth the annual maintenance effort.
+    </div>
+  </article>
+
+</section>
+<!-- ======= END PROPERTY VALUATIONS ======= -->
+
+
+<!-- ======= PROFIT & LOSS STATEMENT ======= -->
+<section data-module-slug="finance_pl_act"
+         data-module-name="Profit &amp; Loss Statement"
+         data-module-icon="fa-chart-pie"
+         data-module-category="Reports"
+         data-module-subtitle="The central financial report &mdash; Revenue, Expenses, Profit, and ROI across the portfolio, by month and year">
+
+  <article data-tab-slug="pl-overview"
+           data-tab-name="Overview"
+           data-tab-icon="fa-info-circle">
+    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-info-circle"></i> What is the Profit &amp; Loss Statement?</h5>
+    <p>The P&amp;L is the <strong>central financial report</strong> of Alivente Online &mdash; it pulls together every revenue stream and expense line across the portfolio to answer the core questions: <em>How much money came in? How much went out? How much is left?</em></p>
+
+    <p>Everything you've set up in Configuration feeds into this one page:</p>
+    <ul>
+      <li><strong>Revenue Types + Line Types + Records</strong> &rarr; the Revenue section</li>
+      <li><strong>Expense Types + Line Types + Records</strong> (including Pro-Rata distributions) &rarr; the Expenses section</li>
+      <li><strong>Property Valuations</strong> &rarr; the Financial Indicators at the bottom (Gross ROI, Net ROI, % Value Increase)</li>
+      <li><strong>Actual Expenses</strong> from the sidebar <em>Expenses</em> module &rarr; the Actual Expenses row (year mode only)</li>
+    </ul>
+
+    <h6 style="margin-top:20px; color:#2c3e50; font-weight:700;"><i class="fas fa-bookmark"></i> Budget mode vs Year mode</h6>
+    <p>The year dropdown in the top-right lets you switch between two distinct viewing modes:</p>
+
+    <div class="alert" style="background:#e7f5f8; border-left:4px solid #17a2b8;">
+      <strong><i class="fas fa-calendar-alt"></i> Budget mode</strong> (selected by default)
+      <p class="mb-0 mt-2">Shows <strong>only the budgeted numbers</strong> from your Configuration &mdash; the predictable, recurring pattern you've set up. This is the "what we <em>expect</em> to happen" view. Good for planning and for comparing "what we expected" to what actually happened.</p>
+    </div>
+
+    <div class="alert" style="background:#fff3cd; border-left:4px solid #ffc107;">
+      <strong><i class="fas fa-calendar-check"></i> Year mode</strong> (e.g. 2024, 2025, 2026)
+      <p class="mb-0 mt-2">Shows the <strong>budget plus actuals</strong> for that specific year. An extra <em>Actual Expenses</em> row appears above the Line Type rows, and the Total Expenses / Net Profit include both. This is the "what <em>actually</em> happened" view &mdash; budget as the baseline, plus real-world unexpected expenses on top.</p>
+    </div>
+
+    <h6 style="margin-top:20px; color:#2c3e50; font-weight:700;"><i class="fas fa-columns"></i> The 14 columns</h6>
+    <p>Twelve <strong>month columns</strong> (Jan-Dec), a <strong>Total column</strong> summing the year, and a <strong>Monthly column</strong> showing the year-average (Total &divide; 12). The Monthly column is particularly useful for comparing line items on a normalised basis &mdash; a &euro;7,000 annual Company Tax and a &euro;6,000 annual Property Manager bill both average to similar monthly figures despite being paid very differently.</p>
+
+    <div class="alert alert-light" style="border-left:4px solid #6c757d; margin-top:18px;">
+      <i class="fas fa-user-shield"></i> <strong>Permissions:</strong> This page is restricted to <strong>Superusers</strong>.
+    </div>
+  </article>
+
+  <article data-tab-slug="pl-filters"
+           data-tab-name="Filters"
+           data-tab-icon="fa-filter">
+    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-filter"></i> Filtering the P&amp;L</h5>
+    <p>Two filter controls sit at the top of the page and let you slice the data in different ways.</p>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-calendar"></i> The Year dropdown</h6>
+    <p>The year selector is the teal button in the top-right (labelled <em>Budget</em> or <em>2026</em> or similar). Click it to open the dropdown showing:</p>
+    <ul>
+      <li><strong>Budget</strong> &mdash; the default view, no actuals mixed in</li>
+      <li><strong>Available years</strong> &mdash; every year for which Revenue or Actual Expense records exist</li>
+    </ul>
+
+    <p>Selecting a year reloads the report in Year mode for that year. The selection persists across property filter changes, so you can switch year once and then narrow down by property.</p>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-building"></i> The Property Selection panel</h6>
+    <p>Below the year dropdown, the Property Selection panel shows every property in the portfolio as a checkbox. All properties are selected by default. As soon as you tick or un-tick a property, the entire report reloads with only the selected properties' data.</p>
+
+    <p>Two shortcuts:</p>
+    <ul>
+      <li><strong>Select All</strong> &mdash; ticks every property</li>
+      <li><strong>Select None</strong> &mdash; un-ticks every property (the report will show zeros until you re-select at least one)</li>
+    </ul>
+
+    <p>The counter below the grid shows e.g. <em>"10 of 10 properties selected"</em> so you always know what scope you're looking at.</p>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-sync-alt"></i> How the KPIs recalculate</h6>
+    <p>When you change the property selection, <em>all five Financial Indicators</em> at the bottom recalculate on the reduced scope. This is especially useful for comparing one country's portfolio against another, or for isolating a single property's ROI.</p>
+
+    <div class="alert alert-info" style="border-left:4px solid #17a2b8;">
+      <i class="fas fa-lightbulb"></i> <strong>A practical workflow:</strong> Select "Budget" + all properties to see the overall plan, then tick a single property to see its individual Gross ROI and Net ROI. Then tick just Greece properties to see the country-level picture, and so on. The full report reshapes in real time.
+    </div>
+  </article>
+
+  <article data-tab-slug="pl-grid"
+           data-tab-name="The Grid"
+           data-tab-icon="fa-table">
+    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-table"></i> Reading the Grid</h5>
+    <p>The grid is organised into <strong>four vertical sections</strong>, top to bottom:</p>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-arrow-circle-up"></i> 1. REVENUE section</h6>
+    <p>A teal header bar labels the section, then one row per Revenue Line Type that has activity in the selected period. You'll typically see:</p>
+    <ul>
+      <li><strong>Rental</strong> &mdash; core rental income, typically varies by season (summer months higher)</li>
+      <li><strong>Levies</strong> &mdash; other monthly recurring income</li>
+      <li>Any other Line Types you've configured</li>
+    </ul>
+    <p>The section closes with a bold <strong>TOTAL REVENUE</strong> row summing across all Line Types.</p>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-arrow-circle-down"></i> 2. EXPENSES section</h6>
+    <p>Another teal header bar, then:</p>
+
+    <p><strong>In Year mode only:</strong> an <strong>Actual Expenses</strong> row appears at the top. This captures approved + paid one-off expenses from the sidebar Expenses module (unplanned repairs, ad-hoc bills, etc.) &mdash; see the <em>Drilling In</em> tab for the full explanation of how this is computed.</p>
+
+    <p><strong>Then:</strong> one row per budgeted Expense Line Type with activity &mdash; sorted alphabetically (Agent Commission, Cleaning Costs, Communal Fees 1, Communal Fees 2, Company Tax, Electricity, &hellip; Water).</p>
+
+    <p>The section closes with a bold <strong>TOTAL EXPENSES</strong> row that is:</p>
+    <ul>
+      <li>In Budget mode: sum of all budgeted Line Types</li>
+      <li>In Year mode: <strong>sum of budgeted Line Types + Actual Expenses</strong></li>
+    </ul>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-coins"></i> 3. PROFIT section</h6>
+    <p>Teal header bar, then a single bold <strong>NET PROFIT</strong> row calculated as:</p>
+    <div class="alert" style="background:#f8f9fa; border-left:4px solid #17a2b8;">
+      <strong>Net Profit = Total Revenue &minus; Total Expenses</strong>
+      <p class="mb-0 mt-2">So in Year mode, Net Profit naturally subtracts the Actual Expenses too, giving a true picture of what's left after both budgeted and real-world spending.</p>
+    </div>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-tachometer-alt"></i> 4. CONSOLIDATED FINANCIAL INDICATORS</h6>
+    <p>Five KPI tiles below the grid &mdash; see the <em>Indicators</em> tab for the full explanation of each.</p>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-sigma"></i> Total and Monthly columns</h6>
+    <ul>
+      <li><strong>Total column</strong> &mdash; sums Jan through Dec for each row. This is the year figure.</li>
+      <li><strong>Monthly column</strong> &mdash; Total &divide; 12. The average per-month figure. Useful for comparing lines with different payment patterns (e.g. a monthly &euro;500 Property Manager fee vs a single &euro;7,000 annual Company Tax &mdash; both "weigh" similarly per month, even though they hit very differently).</li>
+    </ul>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-eye-slash"></i> Rows you won't see</h6>
+    <p>Line Types with <strong>no activity</strong> in the selected period are hidden automatically &mdash; this keeps the grid readable when you're viewing a filtered scope. If a Line Type you expected is missing, it means neither budgeted records nor actuals contributed any amount to this scope.</p>
+  </article>
+
+  <article data-tab-slug="pl-drilling"
+           data-tab-name="Drilling In"
+           data-tab-icon="fa-search-plus">
+    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-search-plus"></i> Drilling into any Number</h5>
+    <p><strong>Every blue number on the grid is clickable.</strong> Clicking opens a detail modal specific to the type of number you clicked.</p>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-arrow-circle-up" style="color:#17a2b8;"></i> Revenue Details modal</h6>
+    <p>Click any blue number in the <strong>Revenue section</strong>. The modal shows:</p>
+    <ul>
+      <li>The Line Type and month in the header</li>
+      <li>A table with two columns: <strong>Property</strong> and <strong>Amount (&euro;)</strong></li>
+      <li>One row per property that contributed to this Line Type in this month</li>
+    </ul>
+    <p>Useful for answering <em>"which property generated this revenue?"</em> at a glance.</p>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-arrow-circle-down" style="color:#17a2b8;"></i> Budget Expense Details modal</h6>
+    <p>Click any blue number in a <strong>budgeted Expense Line Type row</strong>. Structure mirrors the Revenue modal:</p>
+    <ul>
+      <li>The Line Type and month in the header</li>
+      <li>A table: <strong>Property</strong> and <strong>Amount (&euro;)</strong></li>
+      <li>One row per property contributing to this Line Type in this month</li>
+    </ul>
+    <p>For <strong>Pro-Rata</strong> Line Types (like <em>Financials (Cyprus)</em>), you'll see each property with its distributed share &mdash; matching the distribution you set up in Configuration.</p>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-receipt" style="color:#17a2b8;"></i> Actual Expense Details modal</h6>
+    <p>Click any blue number in the <strong>Actual Expenses row</strong> (year mode only). The modal shows a fuller table:</p>
+    <ul>
+      <li><strong>Date</strong> &mdash; the actual date the expense was incurred</li>
+      <li><strong>Property</strong> &mdash; plus a <span style="color:#28a745;"><i class="fas fa-file-alt"></i></span> green invoice icon if an invoice is attached</li>
+      <li><strong>Description</strong> &mdash; free-text description of what the expense was for</li>
+      <li><strong>Amount</strong> &mdash; the amount paid</li>
+    </ul>
+
+    <div class="alert alert-warning" style="border-left:4px solid #ffc107;">
+      <i class="fas fa-filter"></i> <strong>Important &mdash; only Approved AND Paid actual expenses show here.</strong>
+      <p class="mb-0 mt-2">The Actual Expenses row and this detail modal include <strong>only actual expenses that have been both approved and marked paid</strong>. Draft expenses, pending-approval expenses, and approved-but-not-yet-paid expenses are <em>not</em> counted &mdash; they'll only appear once their full approval and payment workflow is complete.</p>
+      <p class="mb-0 mt-2">If an expense you expect to see is missing from the P&amp;L, the most likely explanation is that it's still somewhere in the approval/payment pipeline. Check its status on the sidebar <em>Expenses</em> module.</p>
+    </div>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-file-alt" style="color:#28a745;"></i> The Invoice Viewer</h6>
+    <p>Clicking the <span style="color:#28a745;"><i class="fas fa-file-alt"></i></span> green invoice icon next to a property name opens a <strong>nested modal</strong> (stacked on top of the Actual Expense Details) showing the attached invoice:</p>
+    <ul>
+      <li><strong>PDF files</strong> &mdash; embedded inline; fallback link provided if the browser can't render it</li>
+      <li><strong>Image files</strong> (JPG/PNG) &mdash; displayed inline as an image</li>
+      <li><strong>Other formats</strong> &mdash; can't be previewed; use the Download button</li>
+    </ul>
+    <p>A <strong>Download</strong> button in the footer lets you save the file locally. Closing the Invoice Viewer returns you to the Actual Expense Details modal exactly where you were (scroll position preserved).</p>
+  </article>
+
+  <article data-tab-slug="pl-kpis"
+           data-tab-name="Indicators"
+           data-tab-icon="fa-tachometer-alt">
+    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-tachometer-alt"></i> The Five Financial Indicators</h5>
+    <p>Below the grid, five KPI tiles summarise the financial health of the selected scope (whatever properties are ticked in the Property Selection panel). They all <strong>recalculate instantly</strong> when you change the selection.</p>
+
+    <div class="alert" style="background:#e7f5f8; border-left:4px solid #17a2b8;">
+      <i class="fas fa-info-circle"></i> All calculations use the <strong>total revenue, total expenses, and Purchase Price</strong> for the selected scope &mdash; with Purchase Price drawn from the Property Valuations page.
+    </div>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;">1. Gross ROI</h6>
+    <p><strong>Formula:</strong> Total Revenue &divide; Total Purchase Price &times; 100</p>
+    <p><strong>What it tells you:</strong> How much revenue your property investment generates relative to what you paid for it &mdash; before any expenses. A portfolio-wide Gross ROI of 5% means you're generating 5% of your total purchase outlay in gross rental income per year. Useful as a <em>top-line efficiency</em> measure.</p>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;">2. Net ROI</h6>
+    <p><strong>Formula:</strong> (Total Revenue &minus; Total Expenses) &divide; Total Purchase Price &times; 100</p>
+    <p><strong>What it tells you:</strong> Your <em>real</em> return on investment &mdash; the one that matters. Net ROI tells you what percentage of your purchase price you're actually keeping after all costs. In Year mode, Total Expenses includes Actual Expenses, making this the most honest measure.</p>
+    <p>A Net ROI above 3-4% for a residential portfolio is typically healthy; above 6% is strong. Compare against alternative investments (bonds, equities) as a rough benchmark.</p>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;">3. Expenses to Revenue</h6>
+    <p><strong>Formula:</strong> Total Expenses &divide; Total Revenue &times; 100</p>
+    <p><strong>What it tells you:</strong> What percentage of every revenue euro gets consumed by expenses. A ratio of 30% means 30 cents of every euro earned goes to expenses and 70 cents remains as gross operating margin. Lower is better. Watch for the ratio <em>creeping up year-over-year</em> &mdash; that's a signal costs are growing faster than revenue.</p>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;">4. Rent (&euro;/m<sup>2</sup>)</h6>
+    <p><strong>Formula:</strong> (Total Revenue &divide; 12) &divide; Total Floor Area (m&sup2;)</p>
+    <p><strong>What it tells you:</strong> Average monthly revenue per square metre across the selected scope. Useful for benchmarking against local rental market rates, and for comparing one country's portfolio against another on a normalised basis.</p>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;">5. % Value Increase</h6>
+    <p><strong>Formula:</strong> (Total Current Value &minus; Total Purchase Price) &divide; Total Purchase Price &times; 100</p>
+    <p><strong>What it tells you:</strong> Capital appreciation of the selected scope since purchase. This is the <em>asset growth</em> component of your return, complementing the income-based Gross ROI and Net ROI. A portfolio with modest Net ROI but strong % Value Increase is appreciating in capital terms even if current yields look lean.</p>
+
+    <div class="alert alert-info" style="border-left:4px solid #17a2b8; margin-top:18px;">
+      <i class="fas fa-balance-scale"></i> <strong>Reading the indicators together:</strong> Net ROI + % Value Increase together give you your <em>total return</em> picture &mdash; income plus capital growth. A property with 4% Net ROI and 15% % Value Increase has effectively returned 19% over the relevant period.
+    </div>
+  </article>
+
+  <article data-tab-slug="pl-tips"
+           data-tab-name="Tips"
+           data-tab-icon="fa-lightbulb">
+    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-lightbulb"></i> Practical Tips</h5>
+
+    <h6 style="margin-top:10px; color:#2c3e50; font-weight:700;">Getting insight from the report</h6>
+    <ul style="line-height:1.8;">
+      <li><strong>Start with the Budget view to see "what should happen", then switch to the year to see "what did happen".</strong> The difference between the two is where the story is &mdash; extra Actual Expenses that weren't budgeted, gaps in revenue, etc.</li>
+
+      <li><strong>Use the Monthly column to compare rows on equal footing.</strong> A &euro;7,000 Company Tax paid once a year and a &euro;6,000 Property Manager fee paid monthly both have monthly averages of ~&euro;500-&euro;580 &mdash; comparable in scale even though they hit the grid very differently.</li>
+
+      <li><strong>Watch for seasonal patterns in Revenue.</strong> Looking at the Rental row across the 12 months shows the seasonality of your portfolio &mdash; summer months typically higher, winter lower. A property with <em>less</em> seasonality than others might be worth investigating as a stability asset.</li>
+
+      <li><strong>Filter to a single property for a focused story.</strong> Selecting one property in the Property Selection panel gives you that property's individual P&amp;L, Net ROI, and value increase. Great for property-level analysis or answering <em>"is this specific investment performing?"</em></li>
+
+      <li><strong>Use country-level filtering to compare jurisdictions.</strong> Select just the Cyprus properties, then just the Greek properties, and compare Net ROI side-by-side. Differences can reveal tax burden, rental yield, or cost structure differences between markets.</li>
+    </ul>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;">Reconciling budget vs actuals</h6>
+    <ul style="line-height:1.8;">
+      <li><strong>Actual Expenses only include approved AND paid items.</strong> If a number looks lower than expected, it's very likely some expenses are still in Draft or Pending Approval status on the Expenses module. Check them there.</li>
+
+      <li><strong>The budgeted Line Type rows never include actuals.</strong> Each budgeted Line Type row is <em>pure plan</em>, unchanged across Budget and Year modes. Only the dedicated Actual Expenses row and the TOTAL EXPENSES row reflect the actuals addition.</li>
+
+      <li><strong>If Net Profit looks very different from Budget Net Profit for the same year, it's the actuals doing it.</strong> Click into the Actual Expenses row for each month to see what's been paid &mdash; one big unplanned expense can shift the whole year's story.</li>
+    </ul>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;">Fixing numbers that look wrong</h6>
+    <ul style="line-height:1.8;">
+      <li><strong>Revenue too low?</strong> Check Configuration &rarr; Revenues: is every property's Rental captured? Is the correct Revenue Type applied (so the amount is counted in the right months)?</li>
+
+      <li><strong>Budgeted Expense too low?</strong> Configuration &rarr; Expenses: same check &mdash; property coverage, correct Expense Type for the timing, correct amount.</li>
+
+      <li><strong>Pro-Rata distribution looks off?</strong> Drill into the Budget Expense Details modal for that Line Type &mdash; the per-property amounts should reflect Current Value proportions. If they don't, the Pro-Rata Amount or some Current Value is stale. Edit them via Configuration &rarr; Expense Line Types or via Property Valuations &mdash; both trigger the automatic cascade.</li>
+
+      <li><strong>Financial Indicators showing "N/A"?</strong> Usually means Purchase Price or floor area is missing on one or more properties. Check <em>Property Valuations</em> for Purchase Price; check the <em>Properties</em> module for floor area (m&sup2;).</li>
+    </ul>
+
+    <div class="alert alert-info" style="border-left:4px solid #17a2b8; margin-top:20px;">
+      <i class="fas fa-arrow-right"></i> <strong>This is your financial dashboard.</strong> The P&amp;L is where everything else you've set up &mdash; Configuration, Valuations, even the sidebar Expenses &mdash; finally converges into a single story. Keep the upstream data tidy, and this page is reliable.
+    </div>
+  </article>
+
+</section>
+<!-- ======= END PROFIT & LOSS STATEMENT ======= -->
+
+
+<!-- ======= FORECASTED CASH OUTFLOWS ======= -->
+<section data-module-slug="cashflow_forecast"
+         data-module-name="Forecasted Cash Outflows"
+         data-module-icon="fa-chart-line"
+         data-module-category="Reports"
+         data-module-subtitle="A rolling 12-month view of predictable, budgeted expense outflows &mdash; see spikes coming before they hit">
+
+  <article data-tab-slug="fc-overview"
+           data-tab-name="Overview"
+           data-tab-icon="fa-info-circle">
+    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-info-circle"></i> What is this report?</h5>
+    <p>The Forecasted Cash Outflows dashboard shows the <strong>predictable, budgeted expenses</strong> coming up over the next 12 months across your entire portfolio. Its purpose is <strong>cash planning</strong> &mdash; seeing where the big months are, so you can make sure the bank account is ready for them.</p>
+
+    <div class="alert alert-warning" style="border-left:4px solid #ffc107;">
+      <i class="fas fa-exclamation-triangle"></i> <strong>Important &mdash; this is a budget forecast, not a record of actual expenses.</strong>
+      <p class="mb-0 mt-2">Every amount shown here comes from the <strong>Expense records you've configured in Financials &rarr; Configuration &rarr; Expenses</strong>. These are the recurring, yearly-repeatable, predictable expenses (Property Manager fees, Communal Fees, annual audit, Company Tax, etc.) &mdash; the ones you already know about in advance. There are no approvals, no invoice statuses, and no unexpected one-off expenses. For those use the <strong>Expenses</strong> module in the main sidebar instead.</p>
+    </div>
+
+    <h6 style="margin-top:20px; color:#2c3e50; font-weight:700;"><i class="fas fa-clock"></i> The rolling 12-month horizon</h6>
+    <p>The forecast always starts with <strong>today's current month</strong> and projects 12 months forward. Next month it rolls automatically &mdash; what was "month 2" becomes "month 1" and a new month is added at the end. You never need to change the dates yourself.</p>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-layer-group"></i> Three views of the same data</h6>
+    <p>The dashboard presents the same underlying data in three complementary ways:</p>
+    <ol>
+      <li><strong>Three summary cards</strong> at the top &mdash; time-bucketed totals (Current Month / Next 3 Months / Remaining Months)</li>
+      <li><strong>Bar chart</strong> below &mdash; month-by-month breakdown across the full 12-month horizon</li>
+      <li><strong>Drill-down modal</strong> &mdash; click any bar to see which Expense Line Types drive that month, then click any Line Type to see the property-level breakdown</li>
+    </ol>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-sitemap"></i> Where the data comes from</h6>
+    <p>For each <strong>Expense record</strong> in Configuration, the system:</p>
+    <ol>
+      <li>Checks its <strong>Expense Type</strong> to see which months are flagged (e.g. <em>Monthly</em> = all 12 months, <em>June</em> = just June, <em>Quarterly</em> = Jan/Apr/Jul/Oct)</li>
+      <li>For each flagged month within the rolling 12-month horizon, records the Expense Amount as "due" in that month</li>
+      <li>Aggregates across <em>all</em> properties and <em>all</em> Line Types to produce the monthly totals</li>
+    </ol>
+    <p>A change to any Expense record &mdash; or any Pro-Rata distribution &mdash; flows through to this report automatically, with no cache to refresh.</p>
+
+    <div class="alert alert-light" style="border-left:4px solid #6c757d; margin-top:18px;">
+      <i class="fas fa-user-shield"></i> <strong>Permissions:</strong> This page is restricted to <strong>Superusers</strong>.
+    </div>
+  </article>
+
+  <article data-tab-slug="fc-dashboard"
+           data-tab-name="The Dashboard"
+           data-tab-icon="fa-th-large">
+    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-th-large"></i> Reading the Dashboard</h5>
+
+    <h6 style="margin-top:10px; color:#2c3e50; font-weight:700;"><i class="fas fa-square" style="color:#dc3545;"></i> The three summary cards</h6>
+    <ul>
+      <li><strong style="color:#dc3545;">Current Month (red)</strong> &mdash; total budgeted outflow for the month you're currently in (the "imminent" bucket). This is what you need to cover <em>right now</em>.</li>
+      <li><strong style="color:#fd7e14;">Next 3 Months (orange)</strong> &mdash; total for months 2 through 4 (31 to ~90 days ahead). Near-term cash planning.</li>
+      <li><strong style="color:#28a745;">Remaining Months (green)</strong> &mdash; total for months 5 through 12 (over 90 days out). The horizon for longer-term reserve planning.</li>
+    </ul>
+
+    <div class="alert alert-info" style="border-left:4px solid #17a2b8;">
+      <i class="fas fa-info-circle"></i> <strong>The colour palette signals urgency, not risk.</strong> Red doesn't mean "bad" &mdash; it means "<em>imminent</em>, happening now." Orange means "<em>coming slowly</em>." Green means "<em>there's still time</em>."
+    </div>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-chart-bar"></i> The 12-month bar chart</h6>
+    <p>Each bar represents one month's total budgeted outflow. Bars are coloured using the same red/orange/green convention as the summary cards, so scanning left-to-right you can see urgency fading:</p>
+    <ul>
+      <li>Leftmost bar (red) &mdash; current month</li>
+      <li>Next three bars (orange) &mdash; the 31-90 day zone</li>
+      <li>Remaining eight bars (green) &mdash; more distant, over 90 days away</li>
+    </ul>
+
+    <p>Each bar is labelled with the month/year (e.g. <em>Apr 2026</em>) and the total amount (e.g. <em>&euro;2,176.14</em>).</p>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-ruler-vertical"></i> The gridlines and scale</h6>
+    <p>The Y-axis auto-scales to fit your data. Gridlines appear at round intervals (&euro;1,000 increments for typical portfolios, smaller increments for smaller totals). Gridline labels like <em>&euro;5,000</em> or <em>&euro;10,000</em> appear on the left-hand side for reference.</p>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-mouse-pointer"></i> Interactions</h6>
+    <ul>
+      <li><strong>Hover a bar</strong> &mdash; it slightly scales up to confirm it's clickable</li>
+      <li><strong>Click a bar</strong> &mdash; opens the Monthly Expense Breakdown modal for that specific month</li>
+      <li>See the next tab (<em>Drilling In</em>) for what happens once you click</li>
+    </ul>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-eye"></i> Spotting the patterns</h6>
+    <p>One of the main uses of this report is <strong>spotting irregular months</strong>. Most months will look similar (monthly recurring expenses like Property Manager fees, utilities, and Communal Fees dominate), but certain months stack on top of that a concentration of <strong>annual bills</strong> &mdash; audit fees, property taxes, insurance premiums. Those months stick out visually as taller bars.</p>
+    <p>Seeing a &euro;12k month among a run of &euro;2k months is a visual warning: <strong>make sure the cash reserve can cover it</strong>.</p>
+  </article>
+
+  <article data-tab-slug="fc-drilling"
+           data-tab-name="Drilling In"
+           data-tab-icon="fa-search-plus">
+    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-search-plus"></i> Drilling into the detail</h5>
+    <p>The dashboard is designed as a two-level drill-down &mdash; from <strong>month</strong> to <strong>expense line type</strong> to <strong>property</strong>.</p>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-step-forward"></i> Step 1 &mdash; Click a bar</h6>
+    <p>Clicking any bar opens the <strong>Monthly Expense Breakdown</strong> modal. It shows:</p>
+    <ul>
+      <li><strong>Total Month</strong> &mdash; the sum across all Line Types for that month (e.g. <em>Total Month: &euro;12,313.34</em>)</li>
+      <li>A <strong>table</strong> with two columns: <em>Expense Line Type</em> and <em>Total Amount</em>, sorted alphabetically</li>
+      <li>Each row is clickable and shows a chevron <i class="fas fa-chevron-right" style="color:#6c757d;"></i> on the right to signal that</li>
+    </ul>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-step-forward"></i> Step 2 &mdash; Click a Line Type row</h6>
+    <p>Clicking a Line Type row (e.g. <em>Financials (Cyprus) &mdash; &euro;2,810.00</em>) drills <em>into</em> that Line Type and shows the <strong>property-level breakdown</strong>:</p>
+    <ul>
+      <li>A summary card showing the Total Amount and Line Type name</li>
+      <li>One card per property contributing to this Line Type in this month, with:
+        <ul>
+          <li>The property name</li>
+          <li>The euro amount for this property</li>
+          <li>The percentage of the Line Type's total this property contributes (e.g. <em>10.44%</em>)</li>
+        </ul>
+      </li>
+    </ul>
+    <p>For a <strong>Pro-Rata</strong> Line Type, you'll see multiple properties (the distribution). For a <strong>standard</strong> Line Type, usually just one property per bill.</p>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-arrow-left"></i> Step 3 &mdash; Going back</h6>
+    <p>From the property-level view, a <strong>Back to Monthly View</strong> button appears in the modal footer. Clicking it returns you to the Line Type list for the same month. You can drill in and out freely without closing the modal.</p>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-flask"></i> A worked example</h6>
+    <p>Take the <strong>June</strong> bar on the chart, which is typically much higher than the months around it. Clicking it might show:</p>
+    <ul>
+      <li><em>Financials (Cyprus)</em> &mdash; &euro;2,810 (annual audit, due in June)</li>
+      <li><em>Prop Tax (Greece)</em> &mdash; &euro;714.34 (annual Greek property taxes)</li>
+      <li><em>Company Tax</em> &mdash; &euro;6,999.99 (annual corporate tax)</li>
+      <li>plus the usual recurring monthly items (Property Manager, Cleaning, etc.)</li>
+    </ul>
+    <p>Drilling into <em>Financials (Cyprus)</em> would then show the split across all 10 Cyprus properties, e.g. <em>Eleftheroupoleos: &euro;293.38 / 10.44%</em>, <em>Ionion - Villa 24: &euro;412.56 / 14.68%</em>, etc. &mdash; the same Pro-Rata distribution you set up in Configuration.</p>
+    <p>This makes June visually distinct on the chart, and the drill-down explains <strong>why</strong> it's distinct.</p>
+  </article>
+
+  <article data-tab-slug="fc-tips"
+           data-tab-name="Tips"
+           data-tab-icon="fa-lightbulb">
+    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-lightbulb"></i> Practical Tips</h5>
+
+    <h6 style="margin-top:10px; color:#2c3e50; font-weight:700;">Using the dashboard for cash planning</h6>
+    <ul style="line-height:1.8;">
+      <li><strong>Scan the chart at the start of each month.</strong> The current-month bar tells you what to cover in the next 30 days; the orange bars tell you what's coming in the 60 days after that. Build your cash reserve around the biggest of the visible bars.</li>
+
+      <li><strong>Identify the "annual bills" months.</strong> Most portfolios have 1-3 months a year where annual bills stack up (audit fees, property taxes, insurance renewals). The chart makes them visually obvious &mdash; they're the bars that are 3-5&times; taller than their neighbours. Make sure you're aware of which months those are for your portfolio.</li>
+
+      <li><strong>Drill into unusual bars.</strong> If a month looks unexpectedly high or low, click the bar and check the Line Type list. Often you'll spot a one-off annual bill you'd forgotten about, or a missing bill that should be scheduled but isn't.</li>
+
+      <li><strong>Use the property drill-down to verify Pro-Rata distributions look right.</strong> Click into a Pro-Rata Line Type for any month and confirm the per-property percentages match what you'd expect (they should reflect each property's relative Current Value).</li>
+    </ul>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;">Fixing numbers that don't match reality</h6>
+    <ul style="line-height:1.8;">
+      <li><strong>If a forecast month is too low,</strong> an Expense record is probably missing. Go to <strong>Configuration &rarr; Expenses</strong>, find the property that should have the missing record, and add it.</li>
+
+      <li><strong>If a forecast month is too high,</strong> look for a double-counted Expense or a wrong Expense Type. E.g. an expense paid quarterly but set to <em>Monthly</em> in Configuration will triple-count. Drill into the Line Type to spot the culprit.</li>
+
+      <li><strong>If a Pro-Rata Line Type's total doesn't match the bill,</strong> check the Line Type's <em>Pro-Rata Amount</em> field. If it's stale, edit it &mdash; the Line Type page will walk you through the cascade so every property's expense gets updated automatically.</li>
+
+      <li><strong>If a property's share looks wrong,</strong> check its <em>Current Value</em> on the Property Valuations page. A stale Current Value skews the pro-rata split. Updating it will trigger the Valuations cascade modal to update every affected distribution.</li>
+    </ul>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;">General awareness</h6>
+    <ul style="line-height:1.8;">
+      <li><strong>This report reflects Configuration instantly.</strong> Any change to an Expense record, Expense Line Type, or Property Valuation that affects Pro-Rata is visible here immediately on next page load &mdash; no refresh or rebuild needed.</li>
+
+      <li><strong>One-off expenses won't show here.</strong> Unexpected repairs, emergency maintenance, and ad-hoc supplier invoices are handled by the <strong>Expenses</strong> module in the sidebar &mdash; separate from this forecast. Don't expect them to appear.</li>
+
+      <li><strong>The forecast is your portfolio's "expected pulse".</strong> Over time you'll know intuitively what a normal month looks like (e.g. &euro;2,000) and which months are spikes (e.g. &euro;12,000). When a month looks <em>wrong</em> &mdash; neither normal nor an expected spike &mdash; that's a strong signal to investigate before the month arrives.</li>
+    </ul>
+
+    <div class="alert alert-info" style="border-left:4px solid #17a2b8; margin-top:20px;">
+      <i class="fas fa-arrow-right"></i> <strong>This dashboard is your 12-month cash radar.</strong> Keep Configuration tidy and this report becomes a reliable early-warning system for when big bills are coming &mdash; so they never arrive as a surprise.
+    </div>
+  </article>
+
+</section>
+<!-- ======= END FORECASTED CASH OUTFLOWS ======= -->
+
+
+<!-- ======= FINANCIAL INDICATORS ======= -->
+<section data-module-slug="financial_indicators"
+         data-module-name="Financial Indicators"
+         data-module-icon="fa-tachometer-alt"
+         data-module-category="Reports"
+         data-module-subtitle="Per-property benchmarking dashboard &mdash; compare every property against the portfolio average across five key KPIs">
+
+  <article data-tab-slug="fi-overview"
+           data-tab-name="Overview"
+           data-tab-icon="fa-info-circle">
+    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-info-circle"></i> What is this report?</h5>
+    <p>The Financial Indicators dashboard is the <strong>benchmarking counterpart</strong> to the Profit &amp; Loss Statement. Where the P&amp;L tells you <em>"how is the portfolio doing?"</em>, this report tells you <em>"how is each property doing compared to the rest of the portfolio?"</em></p>
+
+    <p>It uses the same five KPIs as the P&amp;L's Consolidated Financial Indicators block, but here they're calculated <strong>for every property individually</strong> and displayed side-by-side so you can see outliers, identify strong performers, and spot properties that need attention.</p>
+
+    <h6 style="margin-top:20px; color:#2c3e50; font-weight:700;"><i class="fas fa-layer-group"></i> Four layers of visualisation</h6>
+    <p>The dashboard presents the same data in four increasingly-detailed views:</p>
+
+    <div class="alert" style="background:#e7f5f8; border-left:4px solid #17a2b8;">
+      <ol class="mb-0">
+        <li><strong>Consolidated Indicators cards</strong> &mdash; the portfolio-level totals, clickable for drill-down</li>
+        <li><strong>Property Selection panel</strong> &mdash; checkboxes to filter which properties are included</li>
+        <li><strong>Five mini bar charts</strong> &mdash; one per KPI, visually sorted best-to-worst with colour-coded performance</li>
+        <li><strong>Detailed Property Data table</strong> &mdash; every property with every KPI value, with sortable columns and a pinned Portfolio Totals row</li>
+      </ol>
+    </div>
+
+    <h6 style="margin-top:20px; color:#2c3e50; font-weight:700;"><i class="fas fa-compass"></i> When to use this report vs the P&amp;L</h6>
+    <ul>
+      <li>Use the <strong>P&amp;L</strong> when you want to see <em>numbers</em> &mdash; how much came in, how much went out, the month-by-month pattern</li>
+      <li>Use <strong>Financial Indicators</strong> when you want to see <em>performance</em> &mdash; how each property compares, which ones are outperforming or underperforming, where to focus attention</li>
+    </ul>
+    <p>The two are complementary. The P&amp;L gives you the quantitative picture; Financial Indicators gives you the comparative picture.</p>
+
+    <div class="alert alert-light" style="border-left:4px solid #6c757d; margin-top:18px;">
+      <i class="fas fa-user-shield"></i> <strong>Permissions:</strong> This page is restricted to <strong>Superusers</strong>.
+    </div>
+  </article>
+
+  <article data-tab-slug="fi-indicators"
+           data-tab-name="Indicators Explained"
+           data-tab-icon="fa-book">
+    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-book"></i> The Five Indicators</h5>
+    <p>Each indicator measures a different dimension of property performance. All calculations are based on <strong>the selected year's data</strong> divided by <strong>purchase price</strong> (or another stable baseline).</p>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-chart-line" style="color:#17a2b8;"></i> 1. Gross ROI (%)</h6>
+    <p><strong>Formula:</strong> Property Revenue &divide; Property Purchase Price &times; 100</p>
+    <p><strong>What it tells you:</strong> How much revenue this property generates relative to what you paid for it, before expenses. A property generating &euro;10,000/year in rent on a &euro;200,000 purchase price has a Gross ROI of 5%. Useful for top-line efficiency and cross-property comparison.</p>
+    <p><strong>Higher is better.</strong></p>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-bullseye" style="color:#28a745;"></i> 2. Net ROI (%)</h6>
+    <p><strong>Formula:</strong> (Revenue &minus; Expenses) &divide; Property Purchase Price &times; 100</p>
+    <p><strong>What it tells you:</strong> The <em>real</em> return &mdash; what's left as profit after all expenses, as a percentage of what you paid. This is the single most important number on the page. A property with high Gross ROI but much lower Net ROI has an expenses problem.</p>
+    <p><strong>Higher is better.</strong></p>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-chart-pie" style="color:#dc3545;"></i> 3. Expenses to Revenue (%)</h6>
+    <p><strong>Formula:</strong> Expenses &divide; Revenue &times; 100</p>
+    <p><strong>What it tells you:</strong> What percentage of each property's revenue gets consumed by expenses. A value of 30% means 30 cents of every euro earned go to costs. <strong>Lower is better.</strong> A property with Expenses-to-Revenue much higher than the portfolio average is a candidate for cost review &mdash; either its expenses are high or its revenue is low, and the drill-down helps you identify which.</p>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-euro-sign" style="color:#ffc107;"></i> 4. Rent (&euro;/m<sup>2</sup>)</h6>
+    <p><strong>Formula:</strong> (Property Revenue &divide; 12) &divide; Property Floor Area (m&sup2;)</p>
+    <p><strong>What it tells you:</strong> Average monthly rent per square metre &mdash; the key normaliser. A 70m&sup2; property getting &euro;700/month is doing the same &euro;/m&sup2; as a 200m&sup2; property getting &euro;2,000/month. Useful for spotting underpriced properties (compared to market rates in the same area) and for understanding whether a high-absolute-revenue property is actually performing well for its size.</p>
+    <p><strong>Higher is better.</strong></p>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-chart-bar" style="color:#6f42c1;"></i> 5. Value Increase (%)</h6>
+    <p><strong>Formula:</strong> (Current Value &minus; Purchase Price) &divide; Purchase Price &times; 100</p>
+    <p><strong>What it tells you:</strong> Capital appreciation &mdash; how much the property has grown in value since purchase. Drawn from the Property Valuations page. A property with low income ROI but strong capital appreciation might still be a great investment; one with both low income and low appreciation is the one to worry about.</p>
+    <p><strong>Higher is better.</strong></p>
+
+    <h6 style="margin-top:22px; color:#2c3e50; font-weight:700;"><i class="fas fa-traffic-light"></i> How the performance tiers work</h6>
+    <p>For each indicator, every property is classified into one of three tiers <strong>relative to the portfolio average</strong>:</p>
+
+    <div class="alert" style="background:#d4edda; border-left:4px solid #28a745;">
+      <strong style="color:#155724;"><i class="fas fa-check-circle"></i> Excellent</strong>
+      <p class="mb-0 mt-2">
+        <strong>Higher-is-better metrics</strong> (Gross ROI, Net ROI, Rent/m&sup2;, Value Increase): value is <strong>120% or more</strong> of the portfolio average.<br>
+        <strong>Lower-is-better metrics</strong> (Expenses to Revenue): value is <strong>80% or less</strong> of the portfolio average.
+      </p>
+    </div>
+
+    <div class="alert" style="background:#fff3cd; border-left:4px solid #ffc107;">
+      <strong style="color:#856404;"><i class="fas fa-minus-circle"></i> Good</strong>
+      <p class="mb-0 mt-2">
+        <strong>Higher-is-better:</strong> value is between 80% and 120% of portfolio average &mdash; roughly in line with the rest of the portfolio.<br>
+        <strong>Lower-is-better:</strong> value is between 80% and 100% of portfolio average.
+      </p>
+    </div>
+
+    <div class="alert" style="background:#f8d7da; border-left:4px solid #dc3545;">
+      <strong style="color:#721c24;"><i class="fas fa-exclamation-circle"></i> Needs Improvement</strong>
+      <p class="mb-0 mt-2">
+        <strong>Higher-is-better:</strong> value is <strong>less than 80%</strong> of portfolio average.<br>
+        <strong>Lower-is-better:</strong> value is <strong>more than 100%</strong> of portfolio average.
+      </p>
+    </div>
+
+    <div class="alert alert-info" style="border-left:4px solid #17a2b8; margin-top:18px;">
+      <i class="fas fa-info-circle"></i> <strong>Tiers are relative, not absolute.</strong> A property marked "Needs Improvement" isn't necessarily unprofitable &mdash; it just means it's trailing <em>your own portfolio's average</em>. If your whole portfolio has a 7% Gross ROI, a property with 5% is "Needs Improvement" here even though 5% is perfectly respectable in absolute terms. The tiers are there to help you <em>rank</em> within your portfolio, not to judge absolute performance.
+    </div>
+  </article>
+
+  <article data-tab-slug="fi-dashboard"
+           data-tab-name="The Dashboard"
+           data-tab-icon="fa-th-large">
+    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-th-large"></i> Reading the Dashboard</h5>
+    <p>The dashboard flows top-to-bottom in a natural reading order: portfolio summary &rarr; property filter &rarr; visual charts &rarr; detailed table.</p>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-tachometer-alt"></i> Consolidated Indicators cards</h6>
+    <p>The top strip shows the <strong>five portfolio-level KPIs</strong> as clickable cards. Each card shows the KPI's icon, label, and overall portfolio value (e.g. Gross ROI: 5.37%). The figures are the same numbers shown in the P&amp;L's Consolidated Financial Indicators block.</p>
+    <p><strong>Hover a card</strong> &mdash; it lifts slightly and shows "Click for details" as a tooltip. <strong>Click a card</strong> &mdash; it opens the Property Performance Details modal, explained fully in the next tab.</p>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-building"></i> Property Selection panel</h6>
+    <p>Identical to the Profit &amp; Loss property selector. Every property in the portfolio as a checkbox, with Select All / Select None shortcuts. Ticking or un-ticking reloads the entire dashboard live.</p>
+    <p>The counter shows e.g. <em>"10 of 10 active properties selected."</em> All downstream calculations &mdash; the bar charts, the detailed table, the Portfolio Totals row, and the indicator drill-downs &mdash; recompute on the reduced scope.</p>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-chart-bar"></i> The five mini bar charts</h6>
+    <p>One chart per indicator, displayed in a responsive grid. Each chart has:</p>
+    <ul>
+      <li><strong>Chart title</strong> with icon and KPI label</li>
+      <li><strong>Portfolio Average</strong> shown in the header in the indicator's accent colour</li>
+      <li><strong>Bars sorted best-to-worst</strong> from left to right &mdash; no need to scan for extremes, they're always visually anchored at the edges</li>
+      <li><strong>Colour-coded bars:</strong>
+        <ul>
+          <li><span style="color:#28a745;"><strong>Green</strong></span> &mdash; Excellent tier</li>
+          <li><span style="color:#ffc107;"><strong>Yellow</strong></span> &mdash; Good tier</li>
+          <li><span style="color:#dc3545;"><strong>Red</strong></span> &mdash; Needs Improvement tier</li>
+        </ul>
+      </li>
+      <li><strong>Orange dashed line</strong> horizontally across the chart &mdash; the Portfolio Average benchmark</li>
+      <li><strong>Rotated property labels</strong> on the X-axis (so they fit at any chart width)</li>
+    </ul>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-table"></i> Detailed Property Data table</h6>
+    <p>The table at the bottom shows every selected property as a row, with a column for each KPI. Features:</p>
+    <ul>
+      <li><strong>Sortable columns</strong> &mdash; click any column header to sort by that KPI. Click again to reverse the order. The active column is highlighted teal and the header shows a directional arrow icon.</li>
+      <li><strong>Striped rows</strong> &mdash; alternating shading for readability</li>
+      <li><strong>Portfolio Totals row</strong> &mdash; pinned at the bottom in teal, showing portfolio-level values for comparison</li>
+      <li><strong>Hover highlights</strong> &mdash; the row under your cursor is highlighted</li>
+    </ul>
+
+    <div class="alert alert-info" style="border-left:4px solid #17a2b8;">
+      <i class="fas fa-lightbulb"></i> <strong>The table's sort and the charts' sort are independent.</strong> The mini charts always auto-sort best-to-worst. The table starts unsorted and only sorts when you click a column. This means you can have the table sorted by one KPI while the charts show their own natural ordering.
+    </div>
+  </article>
+
+  <article data-tab-slug="fi-performance"
+           data-tab-name="Performance Modal"
+           data-tab-icon="fa-trophy">
+    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-trophy"></i> The Property Performance Modal</h5>
+    <p>Clicking any of the five Consolidated Indicator cards at the top of the dashboard opens the <strong>Property Performance Details</strong> modal &mdash; the detailed drill-down for that one indicator.</p>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-layer-group"></i> What the modal shows</h6>
+    <ul>
+      <li><strong>Header block</strong> &mdash; KPI name, formula explanation, and Portfolio Average for this indicator</li>
+      <li><strong>Performance legend</strong> &mdash; the three colour-coded tiers explained inline</li>
+      <li><strong>Ranked property table</strong> with five columns:
+        <ul>
+          <li><strong>#</strong> &mdash; rank position</li>
+          <li><strong>Property Name</strong></li>
+          <li><strong>Performance</strong> &mdash; the KPI value for this property</li>
+          <li><strong>vs Portfolio Avg</strong> &mdash; percentage difference from the portfolio average (e.g. +55.7% or &minus;23.5%)</li>
+          <li><strong>Performance Level</strong> &mdash; a coloured badge: <span class="badge badge-success" style="background:#28a745; color:white;">EXCELLENT</span> / <span class="badge badge-warning" style="background:#ffc107; color:#212529;">GOOD</span> / <span class="badge badge-danger" style="background:#dc3545; color:white;">NEEDS IMPROVEMENT</span></li>
+        </ul>
+      </li>
+      <li><strong>Summary cards</strong> at the bottom &mdash; count of properties in each performance tier</li>
+    </ul>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-sort"></i> How the ranking works</h6>
+    <p>The table is <strong>automatically sorted best-to-worst</strong> &mdash; but "best" depends on the metric:</p>
+
+    <div class="alert alert-success" style="border-left:4px solid #28a745;">
+      <strong>Higher-is-better metrics</strong> (Gross ROI, Net ROI, Rent/m&sup2;, Value Increase): properties with the highest values are ranked first.
+    </div>
+
+    <div class="alert alert-warning" style="border-left:4px solid #ffc107;">
+      <strong>Lower-is-better metrics</strong> (Expenses to Revenue): properties with the lowest values are ranked first. This is because a lower expense ratio is better performance.
+    </div>
+
+    <p>So the property at rank #1 is always your "best performer" for this KPI, and the property at the bottom is always the one that most needs attention. No need to mentally reverse the ordering for different metrics.</p>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-palette"></i> Row colour shading</h6>
+    <p>Each row is subtly tinted based on its performance tier:</p>
+    <ul>
+      <li>Light green background &mdash; Excellent</li>
+      <li>Light yellow background &mdash; Good</li>
+      <li>Light red background &mdash; Needs Improvement</li>
+    </ul>
+    <p>This makes it easy to visually cluster properties by performance band and spot where the tier boundaries fall in your portfolio.</p>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-file-excel"></i> Export to Excel</h6>
+    <p>The <strong>Export to Excel</strong> button in the modal footer downloads the ranked list as a properly-formatted <em>.xlsx</em> file. The export includes:</p>
+    <ul>
+      <li>A header line with the indicator name</li>
+      <li>Generation date</li>
+      <li>Portfolio Average</li>
+      <li>The full ranked table: Rank / Property Name / Value / vs Portfolio Avg / Performance Level</li>
+    </ul>
+    <p>The filename is automatic and descriptive, e.g. <code>PropertyPerformance_grossROI_2026-04-19.xlsx</code>. Useful for sharing with accountants, pulling into other reports, or archiving.</p>
+  </article>
+
+  <article data-tab-slug="fi-tips"
+           data-tab-name="Tips"
+           data-tab-icon="fa-lightbulb">
+    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-lightbulb"></i> Practical Tips</h5>
+
+    <h6 style="margin-top:10px; color:#2c3e50; font-weight:700;">Using the dashboard for portfolio analysis</h6>
+    <ul style="line-height:1.8;">
+      <li><strong>Start with Net ROI as the primary signal.</strong> Of the five indicators, Net ROI is the most meaningful. The property at the top of that ranking is earning you the most relative to what you paid; the one at the bottom is earning the least. Everything else is context for <em>why</em>.</li>
+
+      <li><strong>Cross-reference Net ROI with Expenses to Revenue.</strong> A property with low Net ROI <em>and</em> high Expenses to Revenue has a cost problem. A property with low Net ROI but normal Expenses to Revenue has a revenue problem. The combination tells you which lever to pull.</li>
+
+      <li><strong>Rent (&euro;/m&sup2;) reveals pricing issues.</strong> If a property has a healthy Gross ROI but a below-average Rent/m&sup2;, it's technically performing well but probably underpriced for its size &mdash; review the rental agreement.</li>
+
+      <li><strong>Value Increase is the "long game" indicator.</strong> A property with low short-term ROI but strong Value Increase is still a solid investment &mdash; the return is coming from appreciation, not income. Don't judge a property on income ROI alone.</li>
+
+      <li><strong>Click the indicator cards for a focused view.</strong> Rather than scanning the bar charts and the detailed table together, click into the Performance Modal for one KPI at a time. The ranked list + tier breakdown gives a clearer picture than the dashboard overview.</li>
+    </ul>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;">Working with the performance tiers</h6>
+    <ul style="line-height:1.8;">
+      <li><strong>Tiers are relative, not absolute.</strong> A property can be "Excellent" in a portfolio of under-performers, or "Needs Improvement" in a portfolio of exceptional performers. The tiers help you rank within your own portfolio, not benchmark against the market. Use with this context in mind.</li>
+
+      <li><strong>Healthy portfolios have mostly Good, some Excellent, and few or no Needs-Improvement.</strong> If most properties are in the Needs Improvement tier for the same KPI, the portfolio itself might have a systematic issue, not individual properties.</li>
+
+      <li><strong>Tier classifications can flip as you change the property filter.</strong> Removing strong performers from the selection shifts the portfolio average down &mdash; so the remaining properties may move up a tier. This is by design and can reveal interesting dynamics (e.g. "if I excluded my top 3 properties, everyone else would look a lot more average").</li>
+
+      <li><strong>Use the Summary cards to assess portfolio shape.</strong> The count of Excellent / Good / Needs Improvement properties at the bottom of the modal gives you a quick health check for each KPI. Lots of Excellent = uneven performance (a few carrying the rest). Lots of Good = a balanced portfolio.</li>
+    </ul>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;">Actionable workflows</h6>
+    <ul style="line-height:1.8;">
+      <li><strong>Monthly review:</strong> open the Net ROI modal. Check the top and bottom 2-3 properties. Ask: has anything changed from last month? Any property moved up or down the ranking? Investigate significant movements.</li>
+
+      <li><strong>Annual planning:</strong> export all five indicators to Excel and pull them into your own planning workbook. Look for trends year-over-year.</li>
+
+      <li><strong>Country comparison:</strong> use the Property Selection panel to filter down to just one country's properties at a time. Compare Net ROI and Expenses to Revenue across jurisdictions &mdash; differences often reveal tax structure or cost-base variations between markets.</li>
+
+      <li><strong>Property-by-property investigation:</strong> select just one property, and you'll see that one property's values alongside the Portfolio Totals row. Useful for a focused deep-dive into a specific property's numbers.</li>
+    </ul>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;">Connecting back to the source</h6>
+    <ul style="line-height:1.8;">
+      <li><strong>If a Net ROI looks wrong, go to the P&amp;L.</strong> Filter the P&amp;L to that one property and drill into the expense and revenue details. The P&amp;L tells you <em>why</em>.</li>
+
+      <li><strong>If a Value Increase looks wrong, go to Property Valuations.</strong> The indicator is driven by Purchase Price and Current Value &mdash; a stale Current Value distorts the number. Updating it also cascades through to the Pro-Rata distribution via the preview modal (see the Property Valuations help modal).</li>
+
+      <li><strong>If a Rent/m&sup2; looks wrong, check the Property record.</strong> Floor area (m&sup2;) is stored on the Property, not here. A missing floor area means no Rent/m&sup2; can be calculated. Fix via the Properties module.</li>
+    </ul>
+
+    <div class="alert alert-info" style="border-left:4px solid #17a2b8; margin-top:20px;">
+      <i class="fas fa-arrow-right"></i> <strong>This dashboard answers the question "which property should I focus on?"</strong> The P&amp;L answers "how did we do?"; the Financial Indicators answers "and which properties need my attention to do better next year?" Together, they give you both the number and the signal.
+    </div>
+  </article>
+
+</section>
+<!-- ======= END FINANCIAL INDICATORS ======= -->
+
+
+<!-- ======= VACANCY MANAGEMENT ======= -->
+<section data-module-slug="vacancy_management"
+         data-module-name="Vacancy Management"
+         data-module-icon="fa-door-open"
+         data-module-category="Reports"
+         data-module-subtitle="How efficiently your properties stay occupied, how quickly they re-let, and the revenue cost of empty periods">
+
+  <article data-tab-slug="vm-overview"
+           data-tab-name="Overview"
+           data-tab-icon="fa-info-circle">
+    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-info-circle"></i> What is this report?</h5>
+    <p>The Vacancy Management dashboard tracks <strong>how well your properties stay rented</strong> over time. Where the Financial Indicators dashboard shows you income performance, this one shows you the <em>occupancy</em> side of the story &mdash; which complements rather than duplicates income analysis.</p>
+
+    <p>Three occupancy KPIs are calculated for each property and benchmarked against the portfolio average:</p>
+    <ul>
+      <li><strong>Occupancy Rate</strong> &mdash; the percentage of time a property has a paying tenant</li>
+      <li><strong>Avg Days to Fill</strong> &mdash; how long it takes to re-let a property between tenants</li>
+      <li><strong>Vacancy Cost</strong> &mdash; the revenue lost during empty periods</li>
+    </ul>
+
+    <h6 style="margin-top:20px; color:#2c3e50; font-weight:700;"><i class="fas fa-filter"></i> Opt-in &mdash; only "rental" properties appear</h6>
+    <div class="alert alert-warning" style="border-left:4px solid #ffc107;">
+      <i class="fas fa-exclamation-triangle"></i> <strong>Not every property in your portfolio is shown on this page.</strong>
+      <p class="mb-0 mt-2">Only properties with the <strong>"Include in Occupancy"</strong> flag ticked appear here. This is set per-property on the <em>Properties</em> module. The point of the flag is to exclude properties where traditional occupancy benchmarks don't apply:</p>
+      <ul class="mb-0 mt-2">
+        <li><strong>Owner-occupied properties</strong> &mdash; where you or your family live; no rental = no vacancy metric</li>
+        <li><strong>Short-term / summer-let properties</strong> &mdash; where the let pattern is seasonal and comparing "% of the year occupied" against traditional long-term rentals would be misleading</li>
+        <li><strong>Properties not yet rented or no longer rented</strong> &mdash; properties between investment phases</li>
+      </ul>
+      <p class="mb-0 mt-2">If you have 10 properties in the portfolio but only 9 appear on this page, it means 1 is flagged as excluded from occupancy tracking. Toggle the flag on the Properties module if you want it included.</p>
+    </div>
+
+    <h6 style="margin-top:20px; color:#2c3e50; font-weight:700;"><i class="fas fa-layer-group"></i> Four layers of visualisation</h6>
+    <p>Like the Financial Indicators page, the dashboard flows top-to-bottom in a natural reading order:</p>
+    <ol>
+      <li><strong>Time Period selector</strong> &mdash; scope the analysis to the past year, past 3 years, or all time</li>
+      <li><strong>Consolidated Occupancy Indicators cards</strong> &mdash; clickable for drill-down</li>
+      <li><strong>Property Selection panel</strong> &mdash; filter which of the tracked properties are included</li>
+      <li><strong>Three mini bar charts</strong> &mdash; one per KPI, sorted best-to-worst</li>
+      <li><strong>Detailed Property Data table</strong> &mdash; sortable columns with Portfolio Average row pinned</li>
+      <li><strong>Historical Performance Trends button</strong> &mdash; jump to multi-year occupancy charts</li>
+    </ol>
+
+    <h6 style="margin-top:20px; color:#2c3e50; font-weight:700;"><i class="fas fa-compass"></i> When to use this report</h6>
+    <ul>
+      <li><strong>After a tenant moves out</strong> &mdash; monitor how quickly that property re-lets and whether the vacancy is dragging</li>
+      <li><strong>Annual review</strong> &mdash; which properties had the best and worst occupancy this year? Are they the same ones that had issues last year?</li>
+      <li><strong>Deciding whether to change letting agent or pricing</strong> &mdash; a property with chronically low occupancy often signals a pricing or marketing problem</li>
+      <li><strong>Pre-purchase diligence</strong> &mdash; historical occupancy patterns help identify properties that have been consistently easy or difficult to keep let</li>
+    </ul>
+
+    <div class="alert alert-light" style="border-left:4px solid #6c757d; margin-top:18px;">
+      <i class="fas fa-user-shield"></i> <strong>Permissions:</strong> This page is restricted to <strong>Superusers</strong>.
+    </div>
+  </article>
+
+  <article data-tab-slug="vm-indicators"
+           data-tab-name="Indicators Explained"
+           data-tab-icon="fa-book">
+    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-book"></i> The Three Occupancy Indicators</h5>
+    <p>Each indicator captures a different dimension of occupancy performance. Read all three together for a complete picture.</p>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-home" style="color:#28a745;"></i> 1. Occupancy Rate (%)</h6>
+    <p><strong>Formula:</strong> (Days Occupied &divide; Total Days in Period) &times; 100</p>
+    <p><strong>What it tells you:</strong> What percentage of the selected time period a property had a paying tenant. A property occupied for 330 out of 365 days in the past year has a 90.4% Occupancy Rate.</p>
+    <p><strong>Higher is better.</strong> The industry benchmark for healthy long-term residential rentals is usually 95% or above.</p>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-clock" style="color:#fd7e14;"></i> 2. Avg Days to Fill</h6>
+    <p><strong>Formula:</strong> Average number of days between one tenant moving out and the next tenant moving in, across all turnover events in the period.</p>
+    <p><strong>What it tells you:</strong> How quickly a property re-lets when it becomes vacant. A property with an Avg Days to Fill of 15 days is turning around quickly; one with 60+ days is taking a long time (and costing you revenue).</p>
+    <p><strong>Lower is better.</strong></p>
+
+    <div class="alert alert-info" style="border-left:4px solid #17a2b8;">
+      <i class="fas fa-info-circle"></i> <strong>Why some properties show "0 days".</strong> A zero value doesn't mean a property filled instantly &mdash; it means there were <strong>no vacancy gaps to measure</strong> in the selected period. This can happen for three reasons:
+      <ul class="mb-0 mt-2">
+        <li>The tenant <strong>renewed their lease</strong> &mdash; no gap, no measurement needed</li>
+        <li><strong>Back-to-back tenants</strong> &mdash; the new tenant moved in the same day the previous one moved out (or the next day)</li>
+        <li><strong>No turnover at all in the period</strong> &mdash; the same tenant has been there the whole time</li>
+      </ul>
+      <p class="mb-0 mt-2">In all three cases, 0 days is a <em>good</em> thing &mdash; shown as Excellent in the Performance Modal.</p>
+    </div>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-money-bill-wave" style="color:#e74c3c;"></i> 3. Vacancy Cost (&euro;)</h6>
+    <p><strong>Formula:</strong> For each vacant day: Days Vacant &times; (Monthly Rent &divide; 30)</p>
+    <p><strong>What it tells you:</strong> The actual revenue you <em>didn't</em> earn because of vacant periods. If a property rents for &euro;900/month and sits vacant for 30 days, the Vacancy Cost is ~&euro;900. If the same property sat vacant for 120 days, it would be ~&euro;3,600 in lost revenue.</p>
+
+    <p><strong>Which rent is used for the calculation?</strong> The system is intelligent about this:</p>
+    <ul>
+      <li>If a <strong>new tenant has already been signed</strong> (but hasn't moved in yet), the <em>next</em> lease's rent is used &mdash; that's the rent you'll be collecting soon</li>
+      <li>If the property is <strong>still actively vacant</strong>, the <em>previous</em> lease's rent is used &mdash; that's the best estimate of what it would be earning if still let</li>
+    </ul>
+
+    <p><strong>Lower is better.</strong> This is the single most meaningful indicator because it translates vacancy into real money lost.</p>
+
+    <h6 style="margin-top:22px; color:#2c3e50; font-weight:700;"><i class="fas fa-traffic-light"></i> Performance tier thresholds</h6>
+
+    <div class="alert" style="background:#d4edda; border-left:4px solid #28a745;">
+      <strong style="color:#155724;"><i class="fas fa-check-circle"></i> Excellent</strong>
+      <p class="mb-0 mt-2">
+        <strong>Occupancy Rate:</strong> value is <strong>100%</strong> &mdash; "Perfect" (the property has been occupied for the entire period).<br>
+        <strong>Avg Days to Fill / Vacancy Cost:</strong> value is <strong>zero</strong> (Perfect) or <strong>80% or less</strong> of the portfolio average.
+      </p>
+    </div>
+
+    <div class="alert" style="background:#fff3cd; border-left:4px solid #ffc107;">
+      <strong style="color:#856404;"><i class="fas fa-minus-circle"></i> Good</strong>
+      <p class="mb-0 mt-2">
+        <strong>Occupancy Rate:</strong> 95% to 99.9% &mdash; strong but not perfect.<br>
+        <strong>Avg Days to Fill / Vacancy Cost:</strong> 80% to 100% of the portfolio average.
+      </p>
+    </div>
+
+    <div class="alert" style="background:#f8d7da; border-left:4px solid #dc3545;">
+      <strong style="color:#721c24;"><i class="fas fa-exclamation-circle"></i> Needs Improvement</strong>
+      <p class="mb-0 mt-2">
+        <strong>Occupancy Rate:</strong> below 95%.<br>
+        <strong>Avg Days to Fill / Vacancy Cost:</strong> more than 100% of the portfolio average.
+      </p>
+    </div>
+
+    <div class="alert alert-warning" style="border-left:4px solid #ffc107; margin-top:18px;">
+      <i class="fas fa-exclamation-triangle"></i> <strong>Occupancy Rate uses absolute thresholds, not relative.</strong> Unlike the Financial Indicators page, where tiers are 80%/120% of portfolio average, Occupancy Rate has fixed absolute cutoffs: <strong>100% = Excellent, 95-99.9% = Good, &lt;95% = Needs Improvement</strong>. The reason: 95% is a well-established industry benchmark for healthy residential rentals, so measuring against the portfolio's own average could mask a problem (if the whole portfolio is under-occupied, you'd want every property flagged &mdash; not just the worst ones).
+    </div>
+  </article>
+
+  <article data-tab-slug="vm-dashboard"
+           data-tab-name="The Dashboard"
+           data-tab-icon="fa-th-large">
+    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-th-large"></i> Reading the Dashboard</h5>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-calendar-alt"></i> Time Period selector</h6>
+    <p>Three buttons at the top scope the entire analysis to a different time window:</p>
+    <ul>
+      <li><strong>Past Year</strong> &mdash; the last 365 days from today. Best for routine monitoring and year-to-date review.</li>
+      <li><strong>Last 3 Years</strong> &mdash; the last ~1,095 days. Useful for spotting longer-term patterns (a property that looks fine this year may have been problematic last year).</li>
+      <li><strong>All Time</strong> &mdash; from the property's first recorded tenancy through to today. This gives you the lifetime occupancy picture, useful for identifying properties that have been consistently troublesome.</li>
+    </ul>
+    <p>The display strip underneath shows the actual date range for the selected period (e.g. <em>"Past Year: 19 Apr 2025 - 19 Apr 2026"</em>) so you always know exactly what you're looking at.</p>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-tachometer-alt"></i> Consolidated Occupancy Indicators cards</h6>
+    <p>Three clickable cards show the <strong>portfolio-level figure</strong> for each indicator &mdash; Occupancy Rate, Avg Days to Fill, Vacancy Cost &mdash; calculated across all properties included in occupancy tracking. Hover for the "Click for details" hint; click to open the Performance Modal for that indicator.</p>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-building"></i> Property Selection panel</h6>
+    <p>Only the properties with the <em>Include in Occupancy</em> flag appear here. Use the checkboxes to filter down further (for example, to focus on just Cyprus properties, or just a single troublesome property). Select All / Select None shortcuts work as usual.</p>
+    <p>Everything downstream &mdash; the mini charts, the detailed table, the Portfolio Average row, and the drill-down modals &mdash; recalculates on the reduced scope.</p>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-chart-bar"></i> The three mini bar charts</h6>
+    <p>One chart per indicator, displayed in a responsive grid. Each chart has:</p>
+    <ul>
+      <li><strong>Portfolio Average</strong> shown in the header in the indicator's accent colour</li>
+      <li><strong>Bars sorted best-to-worst</strong> from left to right</li>
+      <li><strong>Colour-coded bars:</strong> Green (Excellent tier), Yellow (Good tier), Red (Needs Improvement tier)</li>
+      <li><strong>Orange dashed line</strong> showing the Portfolio Average benchmark</li>
+    </ul>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-table"></i> Detailed Property Data table</h6>
+    <p>Every selected property as a row, each KPI as a column. Features:</p>
+    <ul>
+      <li><strong>Sortable columns</strong> &mdash; click any header to sort by that KPI. The active column is highlighted teal with a directional arrow.</li>
+      <li><strong>Portfolio Average row</strong> &mdash; pinned at the bottom in teal, showing the consolidated figure</li>
+      <li><strong>Clear units</strong> &mdash; percentages for Occupancy Rate, "days" for Avg Days to Fill, "&euro;" for Vacancy Cost</li>
+    </ul>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-chart-line"></i> Historical Trends button</h6>
+    <p>At the bottom of the page, a prominent CTA links to the <strong>Occupancy Trends</strong> report &mdash; a separate page that shows multi-year occupancy performance charts, letting you see <em>how</em> each KPI has changed over time. Use it when you need to move beyond a single time snapshot and see the direction of travel.</p>
+  </article>
+
+  <article data-tab-slug="vm-performance"
+           data-tab-name="Performance Modal"
+           data-tab-icon="fa-trophy">
+    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-trophy"></i> The Property Performance Modal</h5>
+    <p>Clicking any of the three Consolidated Occupancy Indicator cards opens the <strong>Property Performance Details</strong> modal &mdash; the detailed drill-down for that one indicator. The structure matches the Financial Indicators page's modal for consistency.</p>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-layer-group"></i> What the modal shows</h6>
+    <ul>
+      <li><strong>Header block</strong> &mdash; KPI name, definition, and Portfolio Average for the selected time period</li>
+      <li><strong>Performance legend</strong> &mdash; the three colour-coded tiers explained inline</li>
+      <li><strong>Ranked property table</strong> with five columns:
+        <ul>
+          <li><strong>#</strong> &mdash; rank position (best first)</li>
+          <li><strong>Property Name</strong></li>
+          <li><strong>Performance</strong> &mdash; the KPI value for this property</li>
+          <li><strong>vs Portfolio Avg</strong> &mdash; percentage difference, or "Perfect" for zero-vacancy / 100%-occupancy properties</li>
+          <li><strong>Performance Level</strong> &mdash; a coloured badge: <span class="badge badge-success" style="background:#28a745; color:white;">EXCELLENT</span> / <span class="badge badge-warning" style="background:#ffc107; color:#212529;">GOOD</span> / <span class="badge badge-danger" style="background:#dc3545; color:white;">NEEDS IMPROVEMENT</span></li>
+        </ul>
+      </li>
+      <li><strong>Summary cards</strong> at the bottom &mdash; count of properties in each performance tier</li>
+    </ul>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-sort"></i> How the ranking works</h6>
+
+    <div class="alert alert-success" style="border-left:4px solid #28a745;">
+      <strong>Occupancy Rate</strong> is ranked <strong>highest first</strong>. 100%-occupied properties appear at the top, marked "Perfect".
+    </div>
+
+    <div class="alert alert-warning" style="border-left:4px solid #ffc107;">
+      <strong>Avg Days to Fill</strong> and <strong>Vacancy Cost</strong> are ranked <strong>lowest first</strong>. Properties at zero (no vacancy events) appear at the top, also marked "Perfect". The properties with the worst vacancy problems drop to the bottom.
+    </div>
+
+    <p>In all three cases, the property at rank #1 is always your "best performer" for this KPI, and the property at the bottom is the one that most needs attention.</p>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-palette"></i> Row colour shading</h6>
+    <p>Each row is subtly tinted based on its performance tier &mdash; light green for Excellent, light yellow for Good, light red for Needs Improvement. This makes it easy to see where the tier boundaries fall across the portfolio.</p>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-file-excel"></i> Export to Excel</h6>
+    <p>The <strong>Export to Excel</strong> button downloads the ranked list as a properly-formatted .xlsx file with filename e.g. <code>VacancyPerformance_occupancyRate_2026-04-19.xlsx</code>. Includes the indicator name, generation date, Portfolio Average, and the full ranked table.</p>
+  </article>
+
+  <article data-tab-slug="vm-tips"
+           data-tab-name="Tips"
+           data-tab-icon="fa-lightbulb">
+    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-lightbulb"></i> Practical Tips</h5>
+
+    <h6 style="margin-top:10px; color:#2c3e50; font-weight:700;">Using the time period correctly</h6>
+    <ul style="line-height:1.8;">
+      <li><strong>Start with Past Year for routine monitoring.</strong> It's the most immediately relevant window &mdash; what's been happening lately? A problem property in the past year is something you can act on now.</li>
+
+      <li><strong>Use Last 3 Years to spot chronic issues.</strong> A property that's been in the Needs Improvement tier for three consecutive years has a structural problem, not a recent stroke of bad luck. Time to review the pricing, condition, location, or letting agent.</li>
+
+      <li><strong>Use All Time for investment analysis.</strong> When considering whether to sell or hold a property, lifetime occupancy patterns are a better signal than the last 12 months. A property that's been 95%+ occupied for 5+ years is a strong asset; one that's been in the low 80s is worth examining.</li>
+    </ul>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;">Reading the three KPIs together</h6>
+    <ul style="line-height:1.8;">
+      <li><strong>Vacancy Cost is the one that matters most.</strong> It translates occupancy directly into euros. A property with 85% Occupancy Rate might sound fine, but if the Vacancy Cost is &euro;2,400, that's real money you didn't earn. Focus your attention wherever Vacancy Cost is highest.</li>
+
+      <li><strong>Cross-reference Occupancy Rate with Avg Days to Fill.</strong> A property can have low occupancy for two very different reasons: <em>(a)</em> long individual vacancy gaps (slow to re-let), or <em>(b)</em> many short vacancy gaps (high tenant turnover). These need different solutions &mdash; (a) is a marketing / pricing problem, (b) is often a property-quality or management problem.</li>
+
+      <li><strong>A high Vacancy Cost with low Avg Days to Fill is unusual.</strong> It would mean the property re-lets quickly but still has lots of vacancy &mdash; which usually indicates high turnover. Investigate why tenants aren't staying.</li>
+
+      <li><strong>Zero values ("0 days", &euro;0 cost) are the goal.</strong> They mean either back-to-back tenancy or a renewed lease &mdash; no gap at all. Celebrate the properties that consistently show zeros.</li>
+    </ul>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;">Managing the opt-in flag</h6>
+    <ul style="line-height:1.8;">
+      <li><strong>Flag a property for occupancy tracking only if "% of the year occupied" is a meaningful measure for it.</strong> Long-term residential rentals: yes. Short-term holiday lets, owner-occupied homes, vacant land: no.</li>
+
+      <li><strong>If a property's use changes, update the flag.</strong> A property that was a summer let last year and is now a long-term rental should be flagged on to start appearing on this page. Conversely, a rental that becomes a holiday let should be flagged off.</li>
+
+      <li><strong>Where to toggle it:</strong> on the Properties module, edit the property and look for the "Include in Occupancy" checkbox.</li>
+    </ul>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;">Diagnosing Needs-Improvement properties</h6>
+    <ul style="line-height:1.8;">
+      <li><strong>Vacancy Cost high and Avg Days to Fill high &rarr; slow-to-let problem.</strong> Likely pricing, marketing, or agent issues. Consider: is the rent above comparable market rates? Are the listing photos good? Is your letting agent proactive?</li>
+
+      <li><strong>Occupancy Rate low but Avg Days to Fill low &rarr; high-churn problem.</strong> Tenants are leaving quickly. Why? Property condition? Rent inflation? Neighbourhood issues? Lease terms that don't attract stable tenants?</li>
+
+      <li><strong>Occupancy Rate low and Vacancy Cost modest &rarr; low-rent property with chronic gaps.</strong> The revenue impact is limited by the low rent, but the property still isn't working. Consider whether it makes sense to keep it in the portfolio.</li>
+    </ul>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;">Acting on what you see</h6>
+    <ul style="line-height:1.8;">
+      <li><strong>The View Historical Performance Trends button</strong> at the bottom of the page jumps to multi-year trend charts. Use it when a property looks problematic on this page and you want to see whether it's a recent regression or a long-term pattern.</li>
+
+      <li><strong>Cross-reference with the Financial Indicators page.</strong> A property can have perfect occupancy but still have a poor Net ROI if expenses are eating into income. Use both dashboards together for the full picture.</li>
+
+      <li><strong>Export Excel for stakeholder reviews.</strong> The Excel export from the Performance Modal is useful for periodic property portfolio reviews with accountants, investment partners, or co-owners.</li>
+    </ul>
+
+    <div class="alert alert-info" style="border-left:4px solid #17a2b8; margin-top:20px;">
+      <i class="fas fa-arrow-right"></i> <strong>This dashboard is about lost opportunity.</strong> Every day a property is vacant is a day you're not earning. The goal isn't just to spot underperformers &mdash; it's to translate the numbers into specific actions: adjust pricing, switch letting agent, address property condition, renew earlier, or consider repositioning the asset.
+    </div>
+  </article>
+
+</section>
+<!-- ======= END VACANCY MANAGEMENT ======= -->
+
+
+<!-- ======= PERFORMANCE TRENDS (OCCUPANCY) ======= -->
+<section data-module-slug="occupancy_trends"
+         data-module-name="Performance Trends"
+         data-module-icon="fa-chart-line"
+         data-module-category="Reports"
+         data-module-subtitle="Multi-year history of your occupancy KPIs &mdash; spot trends, investigate years, and understand how your portfolio has evolved over time">
+
+  <article data-tab-slug="pt-overview"
+           data-tab-name="Overview"
+           data-tab-icon="fa-info-circle">
+    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-info-circle"></i> What is this report?</h5>
+    <p>The Performance Trends page is the <strong>multi-year drill-down</strong> from Vacancy Management. Where Vacancy Management shows you a <em>snapshot</em> for a selected time period, this page shows you the same three occupancy KPIs plotted <strong>across every year</strong> your portfolio has been active &mdash; from the very first tenancy through to today.</p>
+
+    <p>The Back button takes you back to Vacancy Management, not to the main Financials page &mdash; reinforcing that this page is a deeper view of the Vacancy Management data, not an independent report.</p>
+
+    <h6 style="margin-top:20px; color:#2c3e50; font-weight:700;"><i class="fas fa-ruler"></i> Date range</h6>
+    <p>The range shown is automatic &mdash; the page starts at the year of your <strong>first tenancy</strong> in any property, and runs through to the <strong>current year</strong>. You don't configure this; it's driven entirely by the data.</p>
+
+    <p>In the subtitle at the top (e.g. <em>"Historical performance metrics from 2023 to 2026"</em>), the starting year is the year of your very first lease start date, and the ending year is always the current year.</p>
+
+    <h6 style="margin-top:20px; color:#2c3e50; font-weight:700;"><i class="fas fa-filter"></i> Inherits the opt-in rule from Vacancy Management</h6>
+    <p>Like Vacancy Management, only properties flagged with <strong>"Include in Occupancy"</strong> feed into these trends. Owner-occupied, short-term, and excluded properties don't appear.</p>
+
+    <h6 style="margin-top:20px; color:#2c3e50; font-weight:700;"><i class="fas fa-globe"></i> No property filter &mdash; this is portfolio-level only</h6>
+    <div class="alert alert-info" style="border-left:4px solid #17a2b8;">
+      <i class="fas fa-info-circle"></i> <strong>Unlike Vacancy Management, there's no Property Selection panel here.</strong> The three KPIs are always calculated across your entire tracked portfolio. If you want to see how a specific property compares to the portfolio over time, the year-detail drill-down modal shows per-property breakdowns for any year you click into.
+    </div>
+
+    <h6 style="margin-top:20px; color:#2c3e50; font-weight:700;"><i class="fas fa-calendar-day"></i> The YTD badge</h6>
+    <p>The current year row in the table (and the last point on each chart) is labelled <strong>YTD</strong> &mdash; "Year to Date". This is important because:</p>
+    <ul>
+      <li>The current year isn't complete yet &mdash; you're comparing a partial year against fully-completed prior years</li>
+      <li>If the YTD number looks better than prior years, it might just be because the bad months haven't arrived yet. Or it might be genuine improvement &mdash; you'll only know for sure at year-end.</li>
+      <li>Trends ending at the YTD point should be read with this caveat in mind</li>
+    </ul>
+
+    <h6 style="margin-top:20px; color:#2c3e50; font-weight:700;"><i class="fas fa-compass"></i> When to use this report</h6>
+    <ul>
+      <li><strong>Annual portfolio review</strong> &mdash; has occupancy been trending up, down, or flat? Are we better or worse than three years ago?</li>
+      <li><strong>After a bad year</strong> &mdash; was 2025's spike in vacancies a one-off or part of a trend?</li>
+      <li><strong>When presenting to investors or partners</strong> &mdash; multi-year performance is more compelling than a single snapshot</li>
+      <li><strong>Investment decisions</strong> &mdash; consistently poor vacancy years are a red flag when deciding whether to hold or sell</li>
+    </ul>
+
+    <div class="alert alert-light" style="border-left:4px solid #6c757d; margin-top:18px;">
+      <i class="fas fa-user-shield"></i> <strong>Permissions:</strong> This page is restricted to <strong>Superusers</strong>.
+    </div>
+  </article>
+
+  <article data-tab-slug="pt-charts"
+           data-tab-name="The Charts"
+           data-tab-icon="fa-chart-area">
+    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-chart-area"></i> Reading the Three Line Charts</h5>
+    <p>The top of the page shows three line charts, one per KPI, each covering the full year range. They all share the same layout:</p>
+
+    <ul>
+      <li><strong>X-axis:</strong> years (oldest on the left, current year on the right, labelled YTD)</li>
+      <li><strong>Y-axis:</strong> the KPI value &mdash; percent, days, or euros</li>
+      <li><strong>Main line with markers:</strong> the KPI value for each year</li>
+      <li><strong>Red dashed line:</strong> the average across <em>all the years shown</em> &mdash; the benchmark for comparing individual years</li>
+    </ul>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-home" style="color:teal;"></i> Chart 1 &mdash; Occupancy Rate</h6>
+    <p>Teal line with a filled area below. <strong>Higher is better.</strong> Years where the line is above the red dashed average are better-than-average years. Years below are worse-than-average years.</p>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-clock" style="color:#fd7e14;"></i> Chart 2 &mdash; Avg Days to Fill</h6>
+    <p>Orange line with a filled area. <strong>Lower is better.</strong> Interpretation is reversed: years <em>below</em> the red dashed average are your good years (fast to re-let); years <em>above</em> are problem years (slow to re-let).</p>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-euro-sign" style="color:#e74c3c;"></i> Chart 3 &mdash; Vacancy Cost</h6>
+    <p>Pink line with a filled area. <strong>Lower is better.</strong> Same reversed interpretation as Days to Fill: below the average = good, above = bad. Spikes are years when vacancy cost you a lot of revenue.</p>
+
+    <h6 style="margin-top:22px; color:#2c3e50; font-weight:700;"><i class="fas fa-mouse-pointer"></i> Interacting with the charts</h6>
+    <ul>
+      <li><strong>Hover a point</strong> &mdash; a tooltip shows the KPI value and a context figure (property count for Occupancy, vacancy count for the other two). Also prompts "Click for detailed breakdown".</li>
+      <li><strong>Click a point</strong> &mdash; opens the Year Detail modal for that year, same as clicking the year in the table below</li>
+      <li><strong>Hover the red line</strong> &mdash; shows the all-years average value</li>
+    </ul>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-chart-line"></i> How to read trends</h6>
+    <div class="alert" style="background:#d4edda; border-left:4px solid #28a745;">
+      <strong style="color:#155724;"><i class="fas fa-arrow-up"></i> Upward trend on Occupancy Rate, downward trend on Days to Fill &amp; Cost</strong>
+      <p class="mb-0 mt-2">The portfolio is improving. Whatever you've been doing (pricing, agent selection, property condition) is working. Keep going.</p>
+    </div>
+    <div class="alert" style="background:#f8d7da; border-left:4px solid #dc3545;">
+      <strong style="color:#721c24;"><i class="fas fa-arrow-down"></i> Downward trend on Occupancy, upward trend on Days to Fill &amp; Cost</strong>
+      <p class="mb-0 mt-2">The portfolio is deteriorating. Investigate. Is it one problem property dragging the average, or a systemic issue? Click into recent years to diagnose.</p>
+    </div>
+    <div class="alert" style="background:#e7f5f8; border-left:4px solid #17a2b8;">
+      <strong style="color:#0c5460;"><i class="fas fa-minus"></i> Flat trend near or above/below the average</strong>
+      <p class="mb-0 mt-2">Stable performance. This is actually a good outcome &mdash; consistent, predictable occupancy.</p>
+    </div>
+    <div class="alert" style="background:#fff3cd; border-left:4px solid #ffc107;">
+      <strong style="color:#856404;"><i class="fas fa-exclamation"></i> Single-year spike or dip</strong>
+      <p class="mb-0 mt-2">One anomalous year surrounded by normal years. Click into that year to understand what happened &mdash; was it a specific property or event, or a broader problem that self-corrected?</p>
+    </div>
+  </article>
+
+  <article data-tab-slug="pt-table"
+           data-tab-name="The Yearly Table"
+           data-tab-icon="fa-table">
+    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-table"></i> The Yearly Data Summary table</h5>
+    <p>Below the charts, the same data appears in a row-by-row format with <strong>additional raw data not shown on the charts</strong>. Every row is clickable and opens that year's detail modal.</p>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;">The 8 columns</h6>
+    <ul>
+      <li><strong>Year</strong> &mdash; the calendar year. Current year carries a blue <em>YTD</em> badge.</li>
+      <li><strong>Occupancy %</strong> &mdash; same value shown in the Occupancy Rate chart, to one decimal place</li>
+      <li><strong>Avg Days to Fill</strong> &mdash; same value shown in the Days to Fill chart</li>
+      <li><strong>Vacancy Cost</strong> &mdash; same value shown in the Vacancy Cost chart, in euros with thousands separators</li>
+      <li><strong>Properties</strong> &mdash; how many properties were tracked that year. This changes over time as properties are added to or removed from occupancy tracking</li>
+      <li><strong>Vacancies</strong> &mdash; the count of vacancy <em>events</em> (not vacant days) that started or ended in the year</li>
+      <li><strong>Available Days</strong> &mdash; the total days the tracked properties <em>could</em> have been rented in the year (roughly: property count &times; days in year, adjusted for partial-year properties)</li>
+      <li><strong>Occupied Days</strong> &mdash; the total days the tracked properties <em>were</em> actually rented</li>
+    </ul>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-calculator"></i> The raw data lets you verify the KPIs</h6>
+    <p>The Occupancy % column is literally <code>Occupied Days &divide; Available Days &times; 100</code>. So if you see 99.0% with 1,375 available days and 1,361 occupied days, you can verify: 1,361 &divide; 1,375 = 98.98%, which rounds to 99.0%. The raw numbers are shown for transparency.</p>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-mouse-pointer"></i> Click any row for detail</h6>
+    <p>Clicking anywhere on a year's row opens the Year Detail modal &mdash; the same behaviour as clicking a point on a chart. Hovering a row shows a subtle highlight so you know it's clickable.</p>
+
+    <div class="alert alert-info" style="border-left:4px solid #17a2b8; margin-top:18px;">
+      <i class="fas fa-lightbulb"></i> <strong>The table and the charts show the same KPI values in different formats.</strong> The charts are best for spotting trends at a glance; the table is best for looking up exact numbers or investigating the underlying data (property count, vacancy count, raw days).
+    </div>
+  </article>
+
+  <article data-tab-slug="pt-detail"
+           data-tab-name="Year Detail Modal"
+           data-tab-icon="fa-search-plus">
+    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-search-plus"></i> The Year Detail Modal</h5>
+    <p>Click any year (in the table or on any chart) and a large modal opens with the full breakdown for that year. This is where you investigate <em>why</em> a year looked the way it did.</p>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-info-circle"></i> Period summary</h6>
+    <p>Blue info bar at the top showing: the year (with "Year-to-Date" suffix for the current year), number of properties operational that year, and the number of vacancy periods.</p>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-id-card"></i> Three metric cards</h6>
+    <p>The same three KPIs shown in the trend charts, but now with <strong>additional context</strong> below each big number:</p>
+    <ul>
+      <li><strong>Occupancy Rate</strong> &mdash; shows "X / Y days" beneath the percentage, making the underlying math visible (e.g. "184 / 184 days" means 184 occupied out of 184 available)</li>
+      <li><strong>Avg Days to Fill</strong> &mdash; shows the vacancy count, so "1.8 days over 3 vacancies" tells a different story than "1.8 days over 20 vacancies"</li>
+      <li><strong>Vacancy Cost</strong> &mdash; labelled "Lost revenue" to reinforce what the number really represents</li>
+    </ul>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-building"></i> Property Performance Breakdown table</h6>
+    <p>One row per property tracked that year, showing:</p>
+    <ul>
+      <li><strong>Property name</strong></li>
+      <li><strong>Available Days</strong> &mdash; days this property could have been rented in the year</li>
+      <li><strong>Occupied Days</strong> &mdash; days it was actually rented</li>
+      <li><strong>Vacant Days</strong> &mdash; the difference (Available &minus; Occupied)</li>
+      <li><strong>Occupancy Rate</strong> &mdash; shown as a colour-coded badge</li>
+    </ul>
+
+    <div class="alert alert-warning" style="border-left:4px solid #ffc107;">
+      <i class="fas fa-info-circle"></i> <strong>The badge thresholds on this modal differ slightly from the Vacancy Management Performance Modal.</strong>
+      <p class="mb-0 mt-2">On this page:</p>
+      <ul class="mb-0 mt-2">
+        <li><strong>Green</strong> &mdash; Occupancy &ge; 95%</li>
+        <li><strong>Yellow</strong> &mdash; Occupancy between 85% and 94%</li>
+        <li><strong>Red</strong> &mdash; Occupancy below 85%</li>
+      </ul>
+      <p class="mb-0 mt-2">These are wider tolerance bands for reviewing historical full-year data, where seasonal fluctuations naturally produce a broader spread.</p>
+    </div>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-home"></i> Vacancy Periods table</h6>
+    <p>Below the property breakdown, the individual vacancy events that occurred during the year:</p>
+    <ul>
+      <li><strong>Property</strong> &mdash; which property the vacancy happened on</li>
+      <li><strong>Start Date</strong> &mdash; when the property became vacant</li>
+      <li><strong>End Date</strong> &mdash; when a new tenant moved in (or the end of the period if still vacant)</li>
+      <li><strong>Days</strong> &mdash; the length of the vacancy</li>
+      <li><strong>Previous Tenant</strong> &mdash; the tenant who moved out</li>
+      <li><strong>Next Tenant</strong> &mdash; the tenant who moved in (if filled)</li>
+      <li><strong>Cost</strong> &mdash; the revenue lost during this specific gap, calculated from the rent of the next lease (if signed) or the previous lease (if still vacant)</li>
+    </ul>
+
+    <p>If the year had no vacancies at all, this section shows a green banner: <em>"No vacancies recorded for this period!"</em> &mdash; a perfect year.</p>
+
+    <div class="alert alert-info" style="border-left:4px solid #17a2b8;">
+      <i class="fas fa-lightbulb"></i> <strong>The Vacancy Periods table is the most actionable information on this page.</strong> It lets you pinpoint <em>exactly when</em> a property was vacant, <em>for how long</em>, between <em>which tenants</em>, and at <em>what cost</em>. When investigating a bad year, this is where you go.
+    </div>
+  </article>
+
+  <article data-tab-slug="pt-tips"
+           data-tab-name="Tips"
+           data-tab-icon="fa-lightbulb">
+    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-lightbulb"></i> Practical Tips</h5>
+
+    <h6 style="margin-top:10px; color:#2c3e50; font-weight:700;">Reading trends properly</h6>
+    <ul style="line-height:1.8;">
+      <li><strong>Trends matter more than single years.</strong> A single bad year might just be variance; a three-year deterioration is a pattern worth investigating. Don't panic after one bad year; don't celebrate after one good one.</li>
+
+      <li><strong>YTD fairness &mdash; don't compare apples to oranges.</strong> The current year's number is a partial-year figure. Comparing "2026 YTD Vacancy Cost = &euro;0" against "2025 full-year Vacancy Cost = &euro;11,162" isn't meaningful in April 2026 &mdash; you haven't had time to accumulate vacancies yet.</li>
+
+      <li><strong>The red dashed line is your benchmark.</strong> Years above the average on Occupancy are wins; years above the average on Days-to-Fill or Cost are problems. Memorise this &mdash; the interpretation reverses depending on the metric.</li>
+
+      <li><strong>Look for regime changes.</strong> Did something change in a specific year? A new letting agent, a major renovation, a market downturn? The charts help you spot when things turned, and the Year Detail modal helps you diagnose why.</li>
+    </ul>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;">Investigating a specific year</h6>
+    <ul style="line-height:1.8;">
+      <li><strong>Start with the metric cards.</strong> Before anything else, check the three metric cards to get the headline numbers. If "1.8 days over 3 vacancies" vs "1.8 days over 20 vacancies" &mdash; the second year is clearly worse even though the average is the same.</li>
+
+      <li><strong>Property Performance Breakdown shows you the culprits.</strong> If one year had 90% portfolio occupancy but one property dragged it down to 61%, you'll see it immediately on the breakdown. That's where to focus.</li>
+
+      <li><strong>Vacancy Periods reveals the individual events.</strong> A long single gap (e.g. 180 days) is a very different problem from ten short gaps (e.g. 18 days each). Long gaps = slow re-letting; short gaps = high churn. Different solutions.</li>
+
+      <li><strong>Previous/Next Tenant columns can reveal patterns.</strong> Is the same tenant leaving repeatedly (implies short leases, maybe corporate tenants)? Is there always a gap before the <em>same</em> returning tenant (implies seasonal arrangement)? The names tell a story the numbers don't.</li>
+    </ul>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;">Using the page for decisions</h6>
+    <ul style="line-height:1.8;">
+      <li><strong>Investor reports.</strong> A screenshot of the three trend charts is often the clearest way to communicate portfolio health to co-owners, family members, or financial advisors.</li>
+
+      <li><strong>Property sale/hold decisions.</strong> A property that appears in multiple Year Detail modals as the main culprit &mdash; across different years &mdash; is a chronic problem, not a recent issue. That's the one you might consider selling.</li>
+
+      <li><strong>Agent evaluation.</strong> If Days to Fill is trending up while nothing else has changed, the letting agent might be slowing down. If Days to Fill dropped dramatically in a specific year, that's worth understanding &mdash; did you change agent, or change something about pricing/presentation?</li>
+
+      <li><strong>Plan improvements.</strong> The years with the highest Vacancy Cost on this page are the ones you don't want to repeat. What was different in your best years? Can you replicate those conditions?</li>
+    </ul>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;">Connecting back</h6>
+    <ul style="line-height:1.8;">
+      <li><strong>The Back button returns to Vacancy Management.</strong> Use it when you've understood the trends and want to drill into a specific property's current-state metrics.</li>
+
+      <li><strong>Vacancy Management for current state, Performance Trends for history.</strong> The two pages complement each other &mdash; Vacancy Management answers "how are we doing now?"; Performance Trends answers "how have we been doing over time?" Use both for a complete view.</li>
+
+      <li><strong>The property count can reveal portfolio growth.</strong> If 2023 shows 1 property and 2026 shows 9 properties, that's the rate at which you've been adding properties to occupancy tracking. Growth itself can distort averages &mdash; a new addition with an opening-year vacancy can drag the whole portfolio's numbers down.</li>
+    </ul>
+
+    <div class="alert alert-info" style="border-left:4px solid #17a2b8; margin-top:20px;">
+      <i class="fas fa-arrow-right"></i> <strong>This page is about pattern recognition.</strong> Individual year metrics are on Vacancy Management; the <em>story</em> those numbers tell &mdash; the improvement, the decline, the turning points, the chronic problems &mdash; lives here.
+    </div>
+  </article>
+
+</section>
+<!-- ======= END PERFORMANCE TRENDS (OCCUPANCY) ======= -->
+
+

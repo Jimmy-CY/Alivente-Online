@@ -1,0 +1,1116 @@
+<!--
+  ============================================================
+  ALIVENTE ONLINE — HELP CONTENT: CONFIGURATION MODULES
+  ============================================================
+  This file contains help content for the Financials >
+  Configuration modules. Parsed by pages/services/help_renderer.py.
+
+  Each <section data-module-slug="..."> becomes one help modal.
+  Each <article data-tab-slug="..."> becomes one tab in that modal.
+
+  DO NOT edit the wrapping <section>/<article> structure without
+  understanding how help_renderer.py parses it.
+
+  Content inside <article> tags can be any valid HTML.
+  Content is extracted verbatim from the original inline modals
+  to guarantee no user-facing change during migration.
+  ============================================================
+-->
+
+
+<!-- ======= REVENUE TYPES ======= -->
+<section data-module-slug="finance_revenue_types"
+         data-module-name="Revenue Types"
+         data-module-icon="fa-calendar-alt"
+         data-module-category="Configuration"
+         data-module-subtitle="Define when in the year revenue is collected (the seasonality pattern)">
+
+  <article data-tab-slug="rt-overview"
+           data-tab-name="Overview"
+           data-tab-icon="fa-info-circle">
+    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-info-circle"></i> What are Revenue Types?</h5>
+    <p>A <strong>Revenue Type</strong> defines the <strong>seasonality pattern</strong> of an income stream &mdash; in other words, <em>which months of the year that income is actually collected</em>.</p>
+
+    <p>Each Revenue Type is essentially a 12-month template made up of Yes/No flags. When you later create a <strong>Revenue</strong> record on a property and assign it a Revenue Type, the system uses this template to know when to count that income across the calendar year.</p>
+
+    <div class="alert" style="background:#e7f5f8; border-left:4px solid #17a2b8;">
+      <strong><i class="fas fa-bookmark"></i> Two examples already in your system:</strong>
+      <ul class="mb-0 mt-2">
+        <li><strong>Monthly</strong> &mdash; all 12 months marked <span style="background:#90EE90; padding:1px 6px; border-radius:3px;">Yes</span>. Use this for standard year-round rentals or any income collected every month.</li>
+        <li><strong>Summer</strong> &mdash; May to October marked <span style="background:#90EE90; padding:1px 6px; border-radius:3px;">Yes</span>, the rest <span style="background:#FFCCCB; padding:1px 6px; border-radius:3px;">No</span>. Use this for seasonal lets, holiday rentals, or anything only earning in the summer months.</li>
+      </ul>
+    </div>
+
+    <h6 style="margin-top:20px; color:#2c3e50; font-weight:700;"><i class="fas fa-sitemap"></i> Where this fits in the bigger picture</h6>
+    <p>Revenue Types are one of <strong>three Configuration pieces</strong> on the Revenue side that work together:</p>
+    <ol>
+      <li><strong>Revenue Types</strong> <em>(this page)</em> &mdash; <em>when</em> income is collected (the months pattern)</li>
+      <li><strong>Revenue Line Types</strong> &mdash; <em>what</em> the income is called on the P&amp;L (e.g. "Rental", "Levies")</li>
+      <li><strong>Revenues</strong> &mdash; the actual records: a property + a Line Type + a Type + an amount</li>
+    </ol>
+    <p>Together these feed into the <strong>Profit &amp; Loss Statement</strong>, where each month's revenue is calculated by applying the Type's pattern to the Revenue amounts on each property.</p>
+
+    <div class="alert alert-light" style="border-left:4px solid #6c757d;">
+      <i class="fas fa-user-shield"></i> <strong>Permissions:</strong> This page is restricted to <strong>Superusers</strong>. Standard users won't see Configuration in the Financials menu.
+    </div>
+  </article>
+
+  <article data-tab-slug="rt-table"
+           data-tab-name="The Table"
+           data-tab-icon="fa-table">
+    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-table"></i> Reading the Table</h5>
+    <p>Each row is a Revenue Type you've defined. The 12 month columns show, at a glance, which months that Type collects income.</p>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;">Column-by-column</h6>
+    <ul>
+      <li><strong>Revenue Type</strong> &mdash; the name you gave it (e.g. <em>Monthly</em>, <em>Summer</em>).</li>
+      <li><strong>Jan &ndash; Dec</strong> &mdash; one column per month, showing either <strong>Yes</strong> or <strong>No</strong>.</li>
+      <li><strong>Details</strong> &mdash; an <strong>Edit</strong> button to modify that Revenue Type.</li>
+    </ul>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;">The colour coding</h6>
+    <p>The cells are colour-coded to make seasonality patterns easy to spot at a glance:</p>
+    <ul>
+      <li><span style="background:#90EE90; padding:2px 10px; border-radius:3px; font-weight:600;">Green &mdash; Yes</span> &nbsp; income <em>is</em> collected this month</li>
+      <li><span style="background:#FFCCCB; padding:2px 10px; border-radius:3px; font-weight:600;">Red &mdash; No</span> &nbsp; income is <em>not</em> collected this month</li>
+    </ul>
+
+    <div class="alert alert-info" style="border-left:4px solid #17a2b8;">
+      <i class="fas fa-eye"></i> <strong>At a glance:</strong> A row that's all green is a year-round income pattern. A row with a clear green block flanked by red shows a seasonal pattern &mdash; like the <em>Summer</em> row, where you can immediately see income runs from May through October.
+    </div>
+  </article>
+
+  <article data-tab-slug="rt-addedit"
+           data-tab-name="Add / Edit"
+           data-tab-icon="fa-plus-circle">
+    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-plus-circle"></i> Adding a Revenue Type</h5>
+    <p>Click <strong>Add New</strong> in the top-right to open the Add Revenue Type form. You'll see two things to fill in:</p>
+
+    <ol>
+      <li><strong>Revenue Type Name</strong> &mdash; a short, descriptive name (e.g. <em>Monthly</em>, <em>Summer</em>, <em>Winter</em>, <em>Quarterly</em>).</li>
+      <li><strong>The 12-month checkbox grid</strong> &mdash; one checkbox per month.</li>
+    </ol>
+
+    <div class="alert alert-warning" style="border-left:4px solid #ffc107;">
+      <i class="fas fa-exclamation-triangle"></i> <strong>How the checkboxes map to Yes / No:</strong>
+      <ul class="mb-0 mt-2">
+        <li><strong>Checked</strong> &nbsp;=&nbsp; income <strong>IS</strong> collected that month &nbsp;&rarr;&nbsp; saved as <span style="background:#90EE90; padding:1px 6px; border-radius:3px;">Yes</span></li>
+        <li><strong>Unchecked</strong> &nbsp;=&nbsp; income is <strong>NOT</strong> collected that month &nbsp;&rarr;&nbsp; saved as <span style="background:#FFCCCB; padding:1px 6px; border-radius:3px;">No</span></li>
+      </ul>
+      <p class="mb-0 mt-2"><small>The Add form doesn't show "Yes/No" labels &mdash; just the checkboxes. The conversion happens automatically when you save.</small></p>
+    </div>
+
+    <p>When you're done, click <strong>Save</strong> in the top-right. The Type appears in the list and is immediately available to assign to Revenue records.</p>
+
+    <h5 style="margin-top:25px; color:#17a2b8; font-weight:700;"><i class="fas fa-edit"></i> Editing an existing Revenue Type</h5>
+    <p>Click the <strong>Edit</strong> button on the relevant row. The form is identical to the Add form &mdash; the Name field is pre-filled, and the checkboxes reflect the current Yes/No pattern. Make your changes and click <strong>Save</strong>.</p>
+
+    <div class="alert alert-danger" style="border-left:4px solid #dc3545;">
+      <i class="fas fa-radiation"></i> <strong>Editing has a downstream effect.</strong> If a Revenue Type is already in use by Revenue records on properties, changing its month pattern will <strong>retroactively change</strong> how those records appear in the Profit &amp; Loss Statement. For example, switching <em>Summer</em> from May&ndash;Oct to Apr&ndash;Sep will shift every revenue record using <em>Summer</em> by one month in the P&amp;L. If you need a different pattern, consider creating a <em>new</em> Revenue Type rather than editing an existing one.
+    </div>
+  </article>
+
+  <article data-tab-slug="rt-tips"
+           data-tab-name="Tips"
+           data-tab-icon="fa-lightbulb">
+    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-lightbulb"></i> Practical Tips</h5>
+
+    <ul style="line-height:1.8;">
+      <li><strong>Name them by pattern, not by property.</strong> A Revenue Type is reused across many properties &mdash; <em>Monthly</em>, <em>Summer</em>, <em>Quarterly</em> all describe patterns. Avoid names like <em>"Apolloneon Rental"</em>; that belongs on the Revenue record itself, not the Type.</li>
+
+      <li><strong>Start simple.</strong> Most portfolios only need two or three Types: <em>Monthly</em> covers nearly everything; add <em>Summer</em> (or <em>Winter</em>) for seasonal lets. Don't create a Type until you have a property that actually needs it.</li>
+
+      <li><strong>Keep <em>Monthly</em> as your default.</strong> It's the most common pattern, and having it always available means you rarely have to think about Type selection when adding routine revenue.</li>
+
+      <li><strong>Plan around your local seasons.</strong> "Summer" means different months in different countries &mdash; for Cyprus and Greece holiday lets, May to October is typical. Set the pattern based on when income actually arrives, not on calendar quarters.</li>
+
+      <li><strong>Don't edit Types in active use &mdash; clone them instead.</strong> Editing changes the P&amp;L for every Revenue record using that Type, retroactively. Safer pattern: create a new Type with the new shape (e.g. <em>Summer 2026</em>), then move the affected Revenue records to it one at a time.</li>
+
+      <li><strong>Use the colour bands to sanity-check.</strong> After saving, glance at the row in the table. If <em>Summer</em> shows green in December, something's wrong &mdash; the visual makes mistakes easy to spot.</li>
+
+      <li><strong>The Type doesn't store amounts &mdash; only the months.</strong> The actual &euro; figure lives on the Revenue record. Two properties can both use <em>Monthly</em> with completely different rents.</li>
+    </ul>
+
+    <div class="alert alert-info" style="border-left:4px solid #17a2b8; margin-top:20px;">
+      <i class="fas fa-arrow-right"></i> <strong>Next step:</strong> Once your Revenue Types are set up, head to <strong>Revenue Line Types</strong> to define <em>what</em> the income is called (e.g. <em>Rental</em>, <em>Levies</em>), and then <strong>Revenues</strong> to record the actual amounts on each property.
+    </div>
+  </article>
+
+</section>
+<!-- ======= END REVENUE TYPES ======= -->
+
+
+<!-- ======= REVENUE LINE TYPES ======= -->
+<section data-module-slug="finance_revenue_line_types"
+         data-module-name="Revenue Line Types"
+         data-module-icon="fa-tags"
+         data-module-category="Configuration"
+         data-module-subtitle="Define the categories of income that appear as rows in the Profit &amp; Loss Statement">
+
+  <article data-tab-slug="rlt-overview"
+           data-tab-name="Overview"
+           data-tab-icon="fa-info-circle">
+    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-info-circle"></i> What are Revenue Line Types?</h5>
+    <p>A <strong>Revenue Line Type</strong> defines the <strong>category</strong> of an income stream &mdash; the label that will appear as a row in the <strong>Revenue section of the Profit &amp; Loss Statement</strong>.</p>
+
+    <p>Where Revenue <em>Types</em> describe <em>when</em> income is collected (the months pattern), Revenue <em>Line Types</em> describe <em>what</em> the income actually is. They're the answer to: <em>"What kind of income is this?"</em></p>
+
+    <div class="alert" style="background:#e7f5f8; border-left:4px solid #17a2b8;">
+      <strong><i class="fas fa-bookmark"></i> Two examples already in your system:</strong>
+      <ul class="mb-0 mt-2">
+        <li><strong>Rental</strong> &mdash; <em>"Rental Income"</em> (the rent paid by tenants)</li>
+        <li><strong>Levies</strong> &mdash; <em>"Levies"</em> (building/community levies recovered from tenants)</li>
+      </ul>
+      <p class="mb-0 mt-2"><small>These are the two rows you'll currently see in the Revenue section of the P&amp;L for any property.</small></p>
+    </div>
+
+    <h6 style="margin-top:20px; color:#2c3e50; font-weight:700;"><i class="fas fa-sitemap"></i> Where this fits in the bigger picture</h6>
+    <p>Revenue Line Types are the <strong>second piece</strong> of the three-part Revenue configuration:</p>
+    <ol>
+      <li><strong>Revenue Types</strong> &mdash; <em>when</em> income is collected (the months pattern)</li>
+      <li><strong>Revenue Line Types</strong> <em>(this page)</em> &mdash; <em>what</em> the income is called on the P&amp;L</li>
+      <li><strong>Revenues</strong> &mdash; the actual records: a property + a Line Type + a Type + an amount</li>
+    </ol>
+    <p>Every Revenue record on every property must be tagged with a Line Type. The P&amp;L then groups all matching records together to produce a single Revenue row labelled with that Line Type's name.</p>
+
+    <div class="alert alert-light" style="border-left:4px solid #6c757d;">
+      <i class="fas fa-user-shield"></i> <strong>Permissions:</strong> This page is restricted to <strong>Superusers</strong>. Standard users won't see Configuration in the Financials menu.
+    </div>
+  </article>
+
+  <article data-tab-slug="rlt-table"
+           data-tab-name="The Table"
+           data-tab-icon="fa-table">
+    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-table"></i> Reading the Table</h5>
+    <p>The table is intentionally simple &mdash; each row is one Line Type with three columns:</p>
+
+    <ul>
+      <li><strong>Revenue Line Type</strong> &mdash; the short name. This is what shows up as the row label in the P&amp;L (e.g. <em>Rental</em>, <em>Levies</em>).</li>
+      <li><strong>Revenue Line Type Description</strong> &mdash; a longer, human-readable description. Currently this is for your own reference; the P&amp;L uses the short name only.</li>
+      <li><strong>Details</strong> &mdash; an <strong>Edit</strong> button to modify the Line Type.</li>
+    </ul>
+
+    <div class="alert alert-info" style="border-left:4px solid #17a2b8;">
+      <i class="fas fa-eye"></i> <strong>What you see here = what shows up in the P&amp;L.</strong> If your table has rows for <em>Rental</em> and <em>Levies</em>, your P&amp;L Revenue section will have a row for each. Add a third Line Type (e.g. <em>Parking</em>), and as soon as a Revenue record is tagged with it, a third row will appear in the P&amp;L.
+    </div>
+  </article>
+
+  <article data-tab-slug="rlt-addedit"
+           data-tab-name="Add / Edit"
+           data-tab-icon="fa-plus-circle">
+    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-plus-circle"></i> Adding a Revenue Line Type</h5>
+    <p>Click <strong>Add New</strong> in the top-right to open the Add Line Type form. There are just two fields:</p>
+
+    <ol>
+      <li><strong>Revenue Line Type Name</strong> &mdash; the short label. <strong>This is what appears in the P&amp;L</strong>, so keep it short and clear (e.g. <em>Rental</em>, <em>Levies</em>, <em>Parking</em>, <em>Storage</em>).</li>
+      <li><strong>Revenue Line Type Description</strong> &mdash; a longer explanation for your own records (e.g. <em>"Monthly rent paid by tenants"</em>).</li>
+    </ol>
+
+    <p>Click <strong>Save</strong> in the top-right. The new Line Type appears in the list and is immediately available to assign to Revenue records.</p>
+
+    <h5 style="margin-top:25px; color:#17a2b8; font-weight:700;"><i class="fas fa-edit"></i> Editing an existing Revenue Line Type</h5>
+    <p>Click the <strong>Edit</strong> button on the relevant row. The form is identical to the Add form, with both fields pre-filled. Update either field and click <strong>Save</strong>.</p>
+
+    <div class="alert alert-warning" style="border-left:4px solid #ffc107;">
+      <i class="fas fa-exclamation-triangle"></i> <strong>Renaming has a downstream effect.</strong> If you change the <strong>Name</strong> of a Line Type that's already in use, the row in the Profit &amp; Loss Statement will <strong>immediately</strong> show the new name &mdash; including for all historical periods. The underlying numbers don't change, only the label. This is usually fine (e.g. tidying up a typo), but be aware that older P&amp;L screenshots will no longer match the live page.
+    </div>
+
+    <div class="alert alert-danger" style="border-left:4px solid #dc3545;">
+      <i class="fas fa-radiation"></i> <strong>Don't repurpose a Line Type.</strong> If you want a new income category, <strong>create a new Line Type</strong>. Don't rename <em>Rental</em> to <em>Parking</em> &mdash; every existing Revenue record tagged as <em>Rental</em> will suddenly be reclassified as <em>Parking</em> in the P&amp;L.
+    </div>
+  </article>
+
+  <article data-tab-slug="rlt-tips"
+           data-tab-name="Tips"
+           data-tab-icon="fa-lightbulb">
+    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-lightbulb"></i> Practical Tips</h5>
+
+    <ul style="line-height:1.8;">
+      <li><strong>Keep names short.</strong> The Name appears in P&amp;L tables where space is tight &mdash; one or two words is ideal (<em>Rental</em>, <em>Levies</em>, <em>Parking</em>). Save the longer wording for the Description field.</li>
+
+      <li><strong>Use the Description field generously.</strong> It's free-form and only visible here, so use it to capture the full meaning &mdash; especially for Line Types where the short name might be ambiguous later.</li>
+
+      <li><strong>Think about how you want the P&amp;L to read.</strong> Each Line Type becomes a row in the Revenue section. If you want <em>Rental</em> and <em>Parking</em> as separate rows in the P&amp;L, create them as separate Line Types. If you want them combined into a single <em>Rental</em> row, just use one Line Type and tag both kinds of revenue with it.</li>
+
+      <li><strong>Don't over-categorise.</strong> Two or three Line Types is enough for most portfolios. Adding too many produces a fragmented P&amp;L where every row is small, making the bigger picture harder to read.</li>
+
+      <li><strong>Be consistent across properties.</strong> If one property's monthly rent is tagged <em>Rental</em> and another's is tagged <em>Rent Income</em>, they'll appear as two different rows in the consolidated P&amp;L. Pick one name and stick with it.</li>
+
+      <li><strong>Plan for new income streams.</strong> If you start charging tenants for parking, storage, or utilities separately, add a Line Type before adding the first Revenue record &mdash; that way the P&amp;L category is ready when the income starts flowing in.</li>
+    </ul>
+
+    <div class="alert alert-info" style="border-left:4px solid #17a2b8; margin-top:20px;">
+      <i class="fas fa-arrow-right"></i> <strong>Next step:</strong> With Revenue Types and Revenue Line Types set up, head to <strong>Revenues</strong> to record the actual amounts on each property &mdash; combining a Property + Line Type + Type + Amount into a single record.
+    </div>
+  </article>
+
+</section>
+<!-- ======= END REVENUE LINE TYPES ======= -->
+
+
+<!-- ======= REVENUES ======= -->
+<section data-module-slug="finance_revenue"
+         data-module-name="Revenues"
+         data-module-icon="fa-coins"
+         data-module-category="Configuration"
+         data-module-subtitle="Record the actual income streams for each property &mdash; the data that drives the Profit &amp; Loss Statement">
+
+  <article data-tab-slug="rev-overview"
+           data-tab-name="Overview"
+           data-tab-icon="fa-info-circle">
+    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-info-circle"></i> What is a Revenue record?</h5>
+    <p>A <strong>Revenue record</strong> is a single income stream for a single property. It's where everything from Configuration finally <strong>comes together</strong> to describe a real-world income source &mdash; for example, <em>"Apolloneon-Demetri earns &euro;800 in monthly rent"</em>.</p>
+
+    <p>Each Revenue record is built from <strong>four pieces</strong>:</p>
+
+    <div class="alert" style="background:#e7f5f8; border-left:4px solid #17a2b8;">
+      <ol class="mb-0">
+        <li><strong>Property</strong> &mdash; which property generates this income</li>
+        <li><strong>Revenue Line Type</strong> &mdash; <em>what</em> the income is (e.g. <em>Rental</em>, <em>Levies</em>) &nbsp;&rarr;&nbsp; becomes the row label in the P&amp;L</li>
+        <li><strong>Revenue Type</strong> &mdash; <em>when</em> it's collected (e.g. <em>Monthly</em>, <em>Summer</em>) &nbsp;&rarr;&nbsp; controls which months the amount is counted</li>
+        <li><strong>Revenue Amount</strong> &mdash; how much (in euros) is collected per active month</li>
+      </ol>
+    </div>
+
+    <h6 style="margin-top:20px; color:#2c3e50; font-weight:700;"><i class="fas fa-bookmark"></i> A worked example</h6>
+    <p>Looking at the table now &mdash; <em>Apolloneon-Demetri</em> has <strong>two</strong> Revenue records:</p>
+    <ul>
+      <li><strong>Rental / Monthly / &euro;800</strong> &nbsp;&rarr;&nbsp; &euro;800 of rental income every month, all year.</li>
+      <li><strong>Levies / Monthly / &euro;30</strong> &nbsp;&rarr;&nbsp; &euro;30 of levy income every month, all year.</li>
+    </ul>
+    <p>Together these give the property an annual income of <strong>(&euro;800 &times; 12) + (&euro;30 &times; 12) = &euro;9,960</strong>, made up of &euro;9,600 Rental + &euro;360 Levies.</p>
+
+    <h6 style="margin-top:20px; color:#2c3e50; font-weight:700;"><i class="fas fa-sitemap"></i> Where this fits</h6>
+    <p>This is the <strong>final piece</strong> of the three-part Revenue configuration:</p>
+    <ol>
+      <li><strong>Revenue Types</strong> &mdash; <em>when</em> income is collected (the months pattern)</li>
+      <li><strong>Revenue Line Types</strong> &mdash; <em>what</em> the income is called on the P&amp;L</li>
+      <li><strong>Revenues</strong> <em>(this page)</em> &mdash; the actual records on each property</li>
+    </ol>
+    <p>If you haven't set up Types and Line Types yet, do those <strong>first</strong> &mdash; the dropdowns on the Add Revenue form are populated from them.</p>
+
+    <div class="alert alert-light" style="border-left:4px solid #6c757d;">
+      <i class="fas fa-user-shield"></i> <strong>Permissions:</strong> This page is restricted to <strong>Superusers</strong>.
+    </div>
+  </article>
+
+  <article data-tab-slug="rev-table"
+           data-tab-name="The Table"
+           data-tab-icon="fa-table">
+    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-table"></i> Reading the Table</h5>
+    <p>Records are <strong>grouped by property</strong> and presented as a list of collapsible rows &mdash; one row per property, with the records hidden inside until you expand the row.</p>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;">Property header rows</h6>
+    <p>Each property appears as a single bold row with three things:</p>
+    <ul>
+      <li><i class="fas fa-chevron-right" style="color:#6c757d;"></i> &nbsp;A <strong>chevron arrow</strong> on the left &mdash; right-pointing when collapsed, down-pointing when expanded.</li>
+      <li>The <strong>property name</strong>.</li>
+      <li>A teal <span class="badge badge-info" style="background:#17a2b8;">2</span> <strong>count badge</strong> showing how many Revenue records that property has.</li>
+    </ul>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;">Expanding and collapsing</h6>
+    <ul>
+      <li><strong>Click a property header</strong> to expand it. The chevron rotates down and the records appear below.</li>
+      <li><strong>Click the same header again</strong> to collapse it.</li>
+      <li><strong>Click a different property's header</strong> and the previously-open one auto-collapses &mdash; only one property can be open at a time. This keeps the page tidy when you have many properties.</li>
+    </ul>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;">Inside each property</h6>
+    <p>One row per Revenue record, with five columns:</p>
+    <ul>
+      <li><strong>Property</strong> &mdash; the property name (repeated for clarity).</li>
+      <li><strong>Revenue Line Type</strong> &mdash; the category (e.g. <em>Rental</em>, <em>Levies</em>).</li>
+      <li><strong>Revenue Type</strong> &mdash; the months pattern (e.g. <em>Monthly</em>, <em>Summer</em>).</li>
+      <li><strong>Revenue Amount</strong> &mdash; the euro amount per active month, formatted with thousand separators (e.g. <em>&euro; 800</em>, <em>&euro; 1,250</em>).</li>
+      <li><strong>Details</strong> &mdash; an <strong>Edit</strong> button to modify that record.</li>
+    </ul>
+
+    <div class="alert alert-info" style="border-left:4px solid #17a2b8;">
+      <i class="fas fa-eye-slash"></i> <strong>Properties without revenue records don't appear here.</strong> If a property is missing from the list, it has no Revenue records yet &mdash; click <strong>Add New</strong> to create one for it.
+    </div>
+  </article>
+
+  <article data-tab-slug="rev-addedit"
+           data-tab-name="Add / Edit"
+           data-tab-icon="fa-plus-circle">
+    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-plus-circle"></i> Adding a Revenue record</h5>
+    <p>Click <strong>Add New</strong> in the top-right to open the Add Revenue form. You'll see four fields in a row:</p>
+
+    <ol>
+      <li><strong>Property</strong> &mdash; dropdown of all your active properties. Pick the one this income belongs to.</li>
+      <li><strong>Revenue Line Type</strong> &mdash; dropdown populated from the Revenue Line Types page (e.g. <em>Rental</em>, <em>Levies</em>).</li>
+      <li><strong>Revenue Type</strong> &mdash; dropdown populated from the Revenue Types page (e.g. <em>Monthly</em>, <em>Summer</em>).</li>
+      <li><strong>Revenue Amount</strong> &mdash; the euro amount collected per active month (a numeric value, no currency symbol needed).</li>
+    </ol>
+
+    <p>Click <strong>Save</strong> in the top-right and the new record appears in the property's group on the listing page.</p>
+
+    <div class="alert alert-info" style="border-left:4px solid #17a2b8;">
+      <i class="fas fa-calculator"></i> <strong>The amount is per active month, not per year.</strong> If a property earns &euro;800 in monthly rent, enter <strong>800</strong> &mdash; not 9,600. The system multiplies by the months your chosen Type marks as active. So &euro;800 paired with <em>Monthly</em> = &euro;9,600/year, but &euro;800 paired with <em>Summer</em> (May&ndash;Oct) = &euro;4,800/year.
+    </div>
+
+    <h6 style="margin-top:20px; color:#2c3e50; font-weight:700;"><i class="fas fa-list-ul"></i> One record per income stream</h6>
+    <p>If a property has multiple income streams &mdash; rent, levies, parking, storage &mdash; create a <strong>separate Revenue record for each</strong>. This keeps the P&amp;L breakdown by Line Type meaningful and makes it easy to track each income stream independently.</p>
+
+    <h5 style="margin-top:25px; color:#17a2b8; font-weight:700;"><i class="fas fa-edit"></i> Editing an existing Revenue record</h5>
+    <p>Expand the property's row, then click the <strong>Edit</strong> button on the relevant record. The form is identical to the Add form, with all four fields pre-filled. Update what you need and click <strong>Save</strong>.</p>
+
+    <div class="alert alert-warning" style="border-left:4px solid #ffc107;">
+      <i class="fas fa-exclamation-triangle"></i> <strong>Edits affect the P&amp;L immediately &mdash; including history.</strong> Revenue records aren't dated &mdash; they describe an ongoing pattern. Changing the amount from &euro;800 to &euro;900 instantly recalculates the P&amp;L for <strong>every month, every year</strong>, including past periods. If you need to capture a rent increase mid-year while preserving history, the cleanest approach is to delete-and-recreate, or simply note the change date externally.
+    </div>
+  </article>
+
+  <article data-tab-slug="rev-pl"
+           data-tab-name="How It Builds the P&amp;L"
+           data-tab-icon="fa-chart-line">
+    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-chart-line"></i> How Revenue records build the Profit &amp; Loss Statement</h5>
+    <p>The P&amp;L doesn't store revenue numbers &mdash; it <em>calculates</em> them every time you open it, by walking through your Revenue records and applying a simple three-step formula.</p>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;">The formula</h6>
+    <div class="alert" style="background:#f8f9fa; border-left:4px solid #17a2b8;">
+      <ol class="mb-0">
+        <li>For each Revenue record &rarr; look up its <strong>Revenue Type</strong> to see which months are <em>active</em>.</li>
+        <li>For each active month &rarr; the record contributes its <strong>amount</strong> to that month.</li>
+        <li>For each month &rarr; group all contributions by <strong>Revenue Line Type</strong> &rarr; that's the row in the P&amp;L Revenue section.</li>
+      </ol>
+    </div>
+
+    <h6 style="margin-top:20px; color:#2c3e50; font-weight:700;"><i class="fas fa-flask"></i> A worked example with two properties</h6>
+    <p>Suppose you have:</p>
+    <ul>
+      <li><strong>Property A</strong>: Rental / Monthly / &euro;800 &nbsp;&nbsp;+&nbsp;&nbsp; Levies / Monthly / &euro;30</li>
+      <li><strong>Property B</strong>: Rental / Summer / &euro;1,000</li>
+    </ul>
+    <p>Step through the months:</p>
+    <ul>
+      <li><strong>January</strong> &mdash; Property A pays &euro;800 rental + &euro;30 levies. Property B pays &euro;0 (Summer doesn't include January).</li>
+      <li><strong>June</strong> &mdash; Property A pays &euro;800 + &euro;30. Property B pays &euro;1,000.</li>
+      <li><strong>December</strong> &mdash; Property A pays &euro;800 + &euro;30. Property B pays &euro;0.</li>
+    </ul>
+    <p>Now group by Line Type for each month and you get:</p>
+    <ul>
+      <li><strong>Rental row</strong>: &euro;800 (Jan), &euro;800 (Feb), &hellip;, &euro;1,800 (May&ndash;Oct), &hellip;, &euro;800 (Dec) &nbsp;&rarr;&nbsp; total <strong>&euro;15,600/year</strong></li>
+      <li><strong>Levies row</strong>: &euro;30 every month &nbsp;&rarr;&nbsp; total <strong>&euro;360/year</strong></li>
+    </ul>
+
+    <div class="alert alert-info" style="border-left:4px solid #17a2b8;">
+      <i class="fas fa-link"></i> <strong>The P&amp;L is fully derived.</strong> Every revenue figure on the P&amp;L can be traced back to a specific Revenue record on this page. If a number on the P&amp;L looks wrong, the answer is always somewhere here &mdash; either an incorrect amount, the wrong Type assigned, or a missing record.
+    </div>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-search"></i> Drilling down from the P&amp;L</h6>
+    <p>On the P&amp;L Statement, every blue revenue number is clickable. Clicking it opens a breakdown showing exactly which properties contributed to that figure &mdash; making it easy to trace any value back to the underlying records.</p>
+  </article>
+
+  <article data-tab-slug="rev-tips"
+           data-tab-name="Tips"
+           data-tab-icon="fa-lightbulb">
+    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-lightbulb"></i> Practical Tips</h5>
+
+    <ul style="line-height:1.8;">
+      <li><strong>Set up Configuration first.</strong> Revenue Types and Revenue Line Types must exist before you can create a Revenue record &mdash; the dropdowns won't have anything to pick. If you're starting from scratch, create at least <em>Monthly</em> (Type) and <em>Rental</em> (Line Type) before coming here.</li>
+
+      <li><strong>One record per income stream per property.</strong> If a property earns rent <em>and</em> levies, create two records, not one combined one. The P&amp;L groups by Line Type, so combined records lose the breakdown.</li>
+
+      <li><strong>Enter the per-month amount, not the annual.</strong> The most common new-user mistake is entering &euro;9,600 (the yearly figure) for a &euro;800/month rental. The Type handles the multiplication &mdash; just enter <strong>800</strong>.</li>
+
+      <li><strong>Match the Type to reality.</strong> If a property is rented year-round, use <em>Monthly</em>. If it's a holiday let active May&ndash;Oct, use <em>Summer</em>. The wrong Type produces a P&amp;L that doesn't match what's actually happening.</li>
+
+      <li><strong>Use the Edit button for changes, not delete-then-recreate.</strong> Editing preserves the record's identity and is the right tool for amount adjustments, Type changes, or fixing typos. Delete-and-recreate is only needed if you want to break P&amp;L history for that record.</li>
+
+      <li><strong>Be aware that edits change history.</strong> Revenue records describe an <em>ongoing</em> pattern, not a dated transaction. Changing the amount today instantly rewrites the P&amp;L for past months too. If you need a true dated change (e.g. rent increased on 1 July), keep external notes &mdash; the system shows the current state only.</li>
+
+      <li><strong>Check the count badge.</strong> The teal number next to each property name tells you how many Revenue records it has. A property showing <span class="badge badge-info" style="background:#17a2b8;">1</span> when you'd expect <span class="badge badge-info" style="background:#17a2b8;">2</span> (rent + levies) is a quick visual flag that something's missing.</li>
+
+      <li><strong>Properties with no records don't show.</strong> If a property is missing from the list entirely, it has zero Revenue records &mdash; meaning it currently contributes &euro;0 to the P&amp;L. This is usually a bug to fix, not a feature.</li>
+
+      <li><strong>If a P&amp;L number looks wrong, start here.</strong> Every revenue figure on the P&amp;L is calculated from the records on this page. There are no other inputs &mdash; so if something looks off, expand the relevant property and check the records.</li>
+    </ul>
+
+    <div class="alert alert-info" style="border-left:4px solid #17a2b8; margin-top:20px;">
+      <i class="fas fa-arrow-right"></i> <strong>Next step:</strong> With Revenues set up, your P&amp;L will show the income side of the picture. To complete it, head to the Expense side &mdash; <strong>Expense Types</strong>, <strong>Expense Line Types</strong>, and <strong>Expenses</strong> &mdash; which work the same way.
+    </div>
+  </article>
+
+</section>
+<!-- ======= END REVENUES ======= -->
+
+
+<!-- ======= EXPENSE TYPES ======= -->
+<section data-module-slug="finance_expense_types"
+         data-module-name="Expense Types"
+         data-module-icon="fa-calendar-alt"
+         data-module-category="Configuration"
+         data-module-subtitle="Define when in the year an expense is paid (the timing pattern)">
+
+  <article data-tab-slug="et-overview"
+           data-tab-name="Overview"
+           data-tab-icon="fa-info-circle">
+    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-info-circle"></i> What are Expense Types?</h5>
+    <p>An <strong>Expense Type</strong> defines the <strong>timing pattern</strong> of an expense &mdash; <em>which months of the year that expense is actually paid</em>.</p>
+
+    <p>Each Expense Type is a 12-month template made up of Yes/No flags. When you later create an <strong>Expense</strong> record on a property and assign it an Expense Type, the system uses this template to know when to count that expense across the calendar year.</p>
+
+    <p>Compared with Revenue Types, the Expense side has <strong>more variety</strong> &mdash; because real-world expenses come in many shapes: monthly bills, quarterly utility charges, semi-annual taxes, and one-off annual payments that hit in a specific month.</p>
+
+    <h6 style="margin-top:20px; color:#2c3e50; font-weight:700;"><i class="fas fa-shapes"></i> Three families of pattern</h6>
+
+    <div class="alert" style="background:#e7f5f8; border-left:4px solid #17a2b8;">
+      <strong>1. Recurring &mdash; multiple months a year</strong>
+      <ul class="mb-2 mt-2">
+        <li><strong>Monthly</strong> &mdash; all 12 months. For Property Manager fees, recurring service charges.</li>
+        <li><strong>Quarterly</strong> &mdash; Jan, Apr, Jul, Oct. For utilities billed every 3 months.</li>
+        <li><strong>Six Monthly</strong> &mdash; Jan + Jul. For semi-annual obligations.</li>
+        <li><strong>Summer Monthly</strong>, <strong>Summer Bi-Monthly</strong> &mdash; for seasonal recurring costs (cleaning, garden maintenance, etc.).</li>
+      </ul>
+
+      <strong>2. One-off &mdash; a specific month, once a year</strong>
+      <ul class="mb-2 mt-2">
+        <li><strong>January, February, March, &hellip; December</strong> &mdash; one Type per month, with that single month flagged Yes. Use these for annual bills that hit at a fixed time of year.</li>
+        <li>Example: <em>Company Tax</em> paid every June &rarr; assign the <strong>June</strong> Expense Type.</li>
+        <li>Example: <em>Insurance</em> renewing every September &rarr; assign the <strong>September</strong> Expense Type.</li>
+      </ul>
+
+      <strong>3. Property-specific custom patterns</strong>
+      <ul class="mb-0 mt-2">
+        <li>Build whatever pattern you need &mdash; e.g. a property charging communal fees in March + September only would need a Type with just those two months flagged Yes.</li>
+      </ul>
+    </div>
+
+    <h6 style="margin-top:20px; color:#2c3e50; font-weight:700;"><i class="fas fa-sitemap"></i> Where this fits in the bigger picture</h6>
+    <p>Expense Types are one of <strong>three Configuration pieces</strong> on the Expense side that work together (mirror of the Revenue side):</p>
+    <ol>
+      <li><strong>Expense Types</strong> <em>(this page)</em> &mdash; <em>when</em> the expense is paid (the months pattern)</li>
+      <li><strong>Expense Line Types</strong> &mdash; <em>what</em> the expense is called on the P&amp;L (e.g. <em>Property Manager</em>, <em>Insurance (Cyprus)</em>)</li>
+      <li><strong>Expenses</strong> &mdash; the actual records: a property + a Line Type + a Type + an amount</li>
+    </ol>
+    <p>Together they feed into the <strong>Profit &amp; Loss Statement</strong>, where each month's expenses are calculated by applying each Type's pattern to its Expense amounts.</p>
+
+    <div class="alert alert-light" style="border-left:4px solid #6c757d;">
+      <i class="fas fa-user-shield"></i> <strong>Permissions:</strong> This page is restricted to <strong>Superusers</strong>.
+    </div>
+  </article>
+
+  <article data-tab-slug="et-table"
+           data-tab-name="The Table"
+           data-tab-icon="fa-table">
+    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-table"></i> Reading the Table</h5>
+    <p>Each row is an Expense Type you've defined. The 12 month columns show, at a glance, when that Type triggers an expense.</p>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;">Column-by-column</h6>
+    <ul>
+      <li><strong>Expense Type</strong> &mdash; the name you gave it (e.g. <em>Monthly</em>, <em>Quarterly</em>, <em>June</em>).</li>
+      <li><strong>Jan &ndash; Dec</strong> &mdash; one column per month, showing either <strong>Yes</strong> or <strong>No</strong>.</li>
+      <li><strong>Details</strong> &mdash; an <strong>Edit</strong> button to modify that Type.</li>
+    </ul>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;">The colour coding</h6>
+    <ul>
+      <li><span style="background:#90EE90; padding:2px 10px; border-radius:3px; font-weight:600;">Green &mdash; Yes</span> &nbsp; expense <em>is</em> paid this month</li>
+      <li><span style="background:#FFCCCB; padding:2px 10px; border-radius:3px; font-weight:600;">Red &mdash; No</span> &nbsp; expense is <em>not</em> paid this month</li>
+    </ul>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;">Spotting patterns at a glance</h6>
+    <ul>
+      <li><strong>All green</strong> &rarr; recurring monthly (e.g. <em>Monthly</em>)</li>
+      <li><strong>Evenly spaced green cells</strong> &rarr; recurring quarterly or six-monthly (e.g. <em>Quarterly</em>, <em>Six Monthly</em>)</li>
+      <li><strong>One single green cell</strong> &rarr; an annual one-off in that month (e.g. <em>June</em>, <em>September</em>)</li>
+      <li><strong>Green block surrounded by red</strong> &rarr; a seasonal recurring pattern (e.g. <em>Summer Monthly</em>)</li>
+    </ul>
+
+    <div class="alert alert-info" style="border-left:4px solid #17a2b8;">
+      <i class="fas fa-eye"></i> <strong>Use the visual to sanity-check Types in use.</strong> If the <em>June</em> Type accidentally has July flagged Yes too, it stops being a clean "annual June payment" pattern &mdash; the colour grid makes mistakes like that immediately obvious.
+    </div>
+  </article>
+
+  <article data-tab-slug="et-addedit"
+           data-tab-name="Add / Edit"
+           data-tab-icon="fa-plus-circle">
+    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-plus-circle"></i> Adding an Expense Type</h5>
+    <p>Click <strong>Add New</strong> in the top-right to open the Add Expense Type form. Two things to fill in:</p>
+
+    <ol>
+      <li><strong>Expense Type Name</strong> &mdash; a short, descriptive name (e.g. <em>Quarterly</em>, <em>June</em>, <em>Summer Monthly</em>).</li>
+      <li><strong>The 12-month checkbox grid</strong> &mdash; one checkbox per month.</li>
+    </ol>
+
+    <div class="alert alert-warning" style="border-left:4px solid #ffc107;">
+      <i class="fas fa-exclamation-triangle"></i> <strong>How the checkboxes map to Yes / No:</strong>
+      <ul class="mb-0 mt-2">
+        <li><strong>Checked</strong> &nbsp;=&nbsp; expense <strong>IS</strong> paid that month &nbsp;&rarr;&nbsp; saved as <span style="background:#90EE90; padding:1px 6px; border-radius:3px;">Yes</span></li>
+        <li><strong>Unchecked</strong> &nbsp;=&nbsp; expense is <strong>NOT</strong> paid that month &nbsp;&rarr;&nbsp; saved as <span style="background:#FFCCCB; padding:1px 6px; border-radius:3px;">No</span></li>
+      </ul>
+      <p class="mb-0 mt-2"><small>The Add form doesn't show "Yes/No" labels &mdash; just the checkboxes. The conversion happens automatically when you save.</small></p>
+    </div>
+
+    <p>When you're done, click <strong>Save</strong> in the top-right. The Type appears in the list and is immediately available to assign to Expense records.</p>
+
+    <h5 style="margin-top:25px; color:#17a2b8; font-weight:700;"><i class="fas fa-edit"></i> Editing an existing Expense Type</h5>
+    <p>Click the <strong>Edit</strong> button on the relevant row. The form is identical to the Add form &mdash; the Name field is pre-filled, and the checkboxes reflect the current Yes/No pattern. Make your changes and click <strong>Save</strong>.</p>
+
+    <div class="alert alert-danger" style="border-left:4px solid #dc3545;">
+      <i class="fas fa-radiation"></i> <strong>Editing has a downstream effect.</strong> If an Expense Type is already in use by Expense records on properties, changing its month pattern will <strong>retroactively change</strong> how those records appear in the Profit &amp; Loss Statement. For example, switching <em>Quarterly</em> from Jan/Apr/Jul/Oct to Feb/May/Aug/Nov will shift every Expense record using <em>Quarterly</em> by one month in the P&amp;L. If you need a different pattern, consider creating a <em>new</em> Expense Type rather than editing an existing one.
+    </div>
+  </article>
+
+  <article data-tab-slug="et-tips"
+           data-tab-name="Tips"
+           data-tab-icon="fa-lightbulb">
+    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-lightbulb"></i> Practical Tips</h5>
+
+    <ul style="line-height:1.8;">
+      <li><strong>Pre-build the 12 single-month Types.</strong> Most portfolios will eventually need <em>January, February, &hellip; December</em> &mdash; one Type per month for annual bills. Building all 12 once means you'll always have the right one ready when you create an Expense.</li>
+
+      <li><strong>Name single-month Types after the month itself.</strong> Calling them <em>June</em>, <em>September</em>, etc. makes them self-documenting. The user creating an Expense record sees the Type name and immediately knows the bill hits in that month.</li>
+
+      <li><strong>Don't bake the property name into a Type.</strong> A Type is reused across many properties. <em>Quarterly</em> works for any property paying quarterly; avoid names like <em>"Eleftheroupoleos Schedule"</em>.</li>
+
+      <li><strong>Match the Type to the bill, not to your accounting cycle.</strong> If utilities arrive on a Mar/Jun/Sep/Dec rotation, build a Type with exactly those months flagged. The P&amp;L should reflect when money actually goes out, not how you'd prefer to spread it.</li>
+
+      <li><strong>For annual bills, single-month Types beat &ldquo;Annual&rdquo;.</strong> A generic <em>Annual</em> Type (with one month flagged) becomes ambiguous &mdash; <em>which</em> month? Twelve named single-month Types remove the ambiguity entirely.</li>
+
+      <li><strong>Don't edit Types in active use &mdash; clone them instead.</strong> Editing changes the P&amp;L for every Expense record using that Type, retroactively. Safer pattern: create a new Type with the new shape, then move the affected Expense records to it one at a time.</li>
+
+      <li><strong>The Type doesn't store amounts &mdash; only the months.</strong> The actual &euro; figure lives on the Expense record. Two properties can both use <em>Monthly</em> for Property Manager with different fees.</li>
+
+      <li><strong>Use the colour bands to sanity-check after saving.</strong> A glance at the row tells you whether the pattern is what you intended &mdash; misclicked checkboxes show up immediately.</li>
+    </ul>
+
+    <div class="alert alert-info" style="border-left:4px solid #17a2b8; margin-top:20px;">
+      <i class="fas fa-arrow-right"></i> <strong>Next step:</strong> With Expense Types in place, head to <strong>Expense Line Types</strong> to define <em>what</em> each expense is called on the P&amp;L (e.g. <em>Property Manager</em>, <em>Insurance</em>) &mdash; including the option to mark certain Line Types as <strong>Pro-Rata</strong>, which lets a single bill be split automatically across multiple properties.
+    </div>
+  </article>
+
+</section>
+<!-- ======= END EXPENSE TYPES ======= -->
+
+
+<!-- ======= EXPENSE LINE TYPES ======= -->
+<section data-module-slug="finance_expense_line_types"
+         data-module-name="Expense Line Types"
+         data-module-icon="fa-tags"
+         data-module-category="Configuration"
+         data-module-subtitle="Define the categories of expense that appear as rows in the Profit &amp; Loss Statement">
+
+  <article data-tab-slug="elt-overview"
+           data-tab-name="Overview"
+           data-tab-icon="fa-info-circle">
+    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-info-circle"></i> What are Expense Line Types?</h5>
+    <p>An <strong>Expense Line Type</strong> defines the <strong>category</strong> of an expense &mdash; the label that will appear as a row in the <strong>Expenses section of the Profit &amp; Loss Statement</strong>.</p>
+
+    <p>Where Expense <em>Types</em> describe <em>when</em> an expense is paid (the months pattern), Expense <em>Line Types</em> describe <em>what</em> the expense actually is. They're the answer to: <em>"What category of expense is this?"</em></p>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-bookmark"></i> Examples already in your system</h6>
+    <p>Your Line Types fall into a few clear groupings:</p>
+    <ul>
+      <li><strong>Standard recurring expenses</strong> &mdash; <em>Property Manager</em>, <em>Cleaning Costs</em>, <em>Garden Maint.</em>, <em>Electricity</em>, <em>Refuse</em>, <em>Sewerage</em></li>
+      <li><strong>Country-specific tax/professional fees</strong> &mdash; <em>Financials (Cyprus)</em>, <em>Financials (Greece)</em>, <em>Financials (Spain)</em>, <em>Insurance (Cyprus)</em>, <em>Prop Tax (Cyprus)</em></li>
+      <li><strong>Multi-instance recurring</strong> &mdash; <em>Communal Fees 1</em>, <em>Communal Fees 2</em> (one Line Type per payment instance &mdash; see Tips for why)</li>
+      <li><strong>Pro-Rata expenses</strong> &mdash; covered in their own tab</li>
+    </ul>
+
+    <h6 style="margin-top:20px; color:#2c3e50; font-weight:700;"><i class="fas fa-sitemap"></i> Where this fits</h6>
+    <ol>
+      <li><strong>Expense Types</strong> &mdash; <em>when</em> the expense is paid</li>
+      <li><strong>Expense Line Types</strong> <em>(this page)</em> &mdash; <em>what</em> the expense is called on the P&amp;L</li>
+      <li><strong>Expenses</strong> &mdash; the actual records: a property + a Line Type + a Type + an amount</li>
+    </ol>
+
+    <h6 style="margin-top:20px; color:#2c3e50; font-weight:700;"><i class="fas fa-star"></i> What's different from Revenue Line Types</h6>
+    <p>Two important differences worth noting up front:</p>
+    <ul>
+      <li><strong>You can <em>delete</em> an Expense Line Type</strong> (Revenue Line Types are Edit-only). The Delete button does a smart cascade check &mdash; see <em>The Table</em> tab.</li>
+      <li><strong>An Expense Line Type can be marked <em>Pro-Rata</em></strong> &mdash; meaning a single bill covering multiple properties is automatically split across them. See the <em>Pro-Rata Explained</em> tab for the full picture.</li>
+    </ul>
+
+    <div class="alert alert-light" style="border-left:4px solid #6c757d;">
+      <i class="fas fa-user-shield"></i> <strong>Permissions:</strong> This page is restricted to <strong>Superusers</strong>.
+    </div>
+  </article>
+
+  <article data-tab-slug="elt-table"
+           data-tab-name="The Table"
+           data-tab-icon="fa-table">
+    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-table"></i> Reading the Table</h5>
+    <p>Each row is one Expense Line Type, with three columns:</p>
+    <ul>
+      <li><strong>Expense Line Type</strong> &mdash; the short name. This is what appears as the row label in the P&amp;L.</li>
+      <li><strong>Expense Line Type Description</strong> &mdash; a longer, human-readable explanation. Currently for your reference only; the P&amp;L uses the short name.</li>
+      <li><strong>Actions</strong> &mdash; an <strong>Edit</strong> button (light/grey) and a <strong>Delete</strong> button (red).</li>
+    </ul>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-edit"></i> The Edit button</h6>
+    <p>Opens the same form as Add New, with the four fields pre-filled (Name, Description, Pro-Rata Yes/No, Pro-Rata Amount). Make changes and click Save.</p>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-trash"></i> The Delete button &mdash; the cascade check</h6>
+    <p>Clicking Delete doesn't immediately remove anything. Instead it opens a <strong>Confirm Delete</strong> modal that first scans the database for any Expense records using this Line Type:</p>
+    <ul>
+      <li><strong>If nothing is using it</strong> &rarr; you see a simple "Are you sure?" prompt. Click Delete to confirm.</li>
+      <li><strong>If Expense records exist</strong> &rarr; you see the full list of every record that will also be deleted, with each entry showing: Expense ID, the property it belongs to, the Type assigned, the base amount, the total monthly amount, and a month-by-month breakdown.</li>
+    </ul>
+
+    <div class="alert alert-danger" style="border-left:4px solid #dc3545;">
+      <i class="fas fa-radiation"></i> <strong>Cascade delete is permanent.</strong> Confirming the delete removes the Line Type <strong>and every linked Expense record</strong> across all properties. The deleted records cannot be recovered &mdash; you'd have to re-create each one manually. <strong>Read the linked-expenses list carefully</strong> before clicking Delete the second time.
+    </div>
+
+    <div class="alert alert-info" style="border-left:4px solid #17a2b8;">
+      <i class="fas fa-eye"></i> <strong>The detail view is your safety net.</strong> If you see records you weren't expecting (e.g. a Pro-Rata Line Type with 10 linked expenses you'd forgotten about), the modal lets you abort before any damage is done. Always glance through the list first.
+    </div>
+  </article>
+
+  <article data-tab-slug="elt-addedit"
+           data-tab-name="Add / Edit"
+           data-tab-icon="fa-plus-circle">
+    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-plus-circle"></i> Adding an Expense Line Type</h5>
+    <p>Click <strong>Add New</strong> in the top-right. The form has <strong>four fields</strong>:</p>
+
+    <ol>
+      <li><strong>Expense Line Type Name</strong> &mdash; the short label that will appear in the P&amp;L (e.g. <em>Property Manager</em>, <em>Insurance (Cyprus)</em>).</li>
+      <li><strong>Expense Line Type Description</strong> &mdash; the longer explanation for your records (e.g. <em>"Monthly property management fee"</em>).</li>
+      <li><strong>Pro-Rata (Yes/No)</strong> &mdash; defaults to "Select an option". Choose <strong>Yes</strong> only if this Line Type represents a single bill that should be split across multiple properties.</li>
+      <li><strong>Pro-Rata Amount</strong> &mdash; only used when Pro-Rata is set to <strong>Yes</strong>. Enter the <strong>total annual amount</strong> of the bill (e.g. <strong>2810</strong> for an annual &euro;2,810 audit fee). Leave at 0 if Pro-Rata = No.</li>
+    </ol>
+
+    <p>Click <strong>Save</strong>. The new Line Type appears in the list and is immediately available to assign to Expense records.</p>
+
+    <h6 style="margin-top:20px; color:#2c3e50; font-weight:700;"><i class="fas fa-question"></i> When should I set Pro-Rata = Yes?</h6>
+    <p>Set Pro-Rata to <strong>Yes</strong> when:</p>
+    <ul>
+      <li>You receive <strong>one invoice</strong> that covers multiple properties (e.g. an audit firm bills you &euro;2,810 for the whole Cyprus portfolio).</li>
+      <li>You want the cost split <strong>fairly</strong> across those properties (proportional to each property's Current Value), not arbitrarily.</li>
+      <li>Each property should end up with its <strong>own Expense record</strong> showing its share, but you only want to enter the bill <em>once</em>.</li>
+    </ul>
+
+    <p>Set Pro-Rata to <strong>No</strong> when each property's expense is captured individually &mdash; for example, each property has its own electricity bill at its own amount.</p>
+
+    <h5 style="margin-top:25px; color:#17a2b8; font-weight:700;"><i class="fas fa-edit"></i> Editing an existing Line Type</h5>
+    <p>Click the <strong>Edit</strong> button on the relevant row. The form is identical, with all four fields pre-filled. Update what you need and click <strong>Save</strong>.</p>
+
+    <div class="alert alert-warning" style="border-left:4px solid #ffc107;">
+      <i class="fas fa-exclamation-triangle"></i> <strong>Renaming changes the P&amp;L label immediately</strong> &mdash; including for all historical periods. The numbers don't change, only the label. Older P&amp;L screenshots will no longer match the live page.
+    </div>
+
+    <div class="alert alert-danger" style="border-left:4px solid #dc3545;">
+      <i class="fas fa-radiation"></i> <strong>Don't repurpose a Line Type.</strong> If you want a different category, <strong>create a new Line Type</strong>. Don't rename <em>Electricity</em> to <em>Water</em> &mdash; every existing Expense record tagged as <em>Electricity</em> will instantly be reclassified as <em>Water</em> in the P&amp;L.
+    </div>
+
+    <div class="alert alert-success" style="border-left:4px solid #28a745;">
+      <i class="fas fa-magic"></i> <strong>Changing the Pro-Rata Amount triggers a live preview and cascade.</strong> When you change the Pro-Rata Amount on a Line Type that has linked Expense records (e.g. &euro;2,810 &rarr; &euro;3,000) and click Save, the system intercepts with a <strong>preview modal</strong> showing exactly what will happen:
+      <ul class="mb-0 mt-2">
+        <li>Every linked Expense record is listed with its <strong>Old Amount / New Amount / &Delta;</strong></li>
+        <li>Red &Delta; values indicate properties that will pay more; green &Delta; values indicate properties that will pay less</li>
+        <li>Clicking <strong>Save &amp; Recalculate All</strong> saves the Line Type <em>and</em> updates every linked Expense record in one atomic operation</li>
+        <li>Clicking <strong>Cancel</strong> aborts &mdash; nothing is saved</li>
+      </ul>
+      <p class="mb-0 mt-2">No more manual trips to the Expenses page &mdash; the cascade happens in a single click.</p>
+    </div>
+  </article>
+
+  <article data-tab-slug="elt-prorata"
+           data-tab-name="Pro-Rata Explained"
+           data-tab-icon="fa-balance-scale">
+    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-balance-scale"></i> What is a Pro-Rata Expense?</h5>
+    <p>A <strong>Pro-Rata Expense</strong> is a single bill that legitimately covers <strong>multiple properties</strong>, and that should be <strong>fairly split</strong> across them rather than dumped on one.</p>
+
+    <p>Classic examples:</p>
+    <ul>
+      <li><strong>Audit fees</strong> &mdash; the auditor charges &euro;2,810 to audit your whole Cyprus portfolio. That's not "Eleftheroupoleos's expense" &mdash; it should be shared across all the audited properties.</li>
+      <li><strong>Annual company fees</strong> &mdash; a single fee that supports the whole legal entity owning multiple properties.</li>
+      <li><strong>Country-wide insurance</strong> &mdash; a master policy covering all properties in one country.</li>
+      <li><strong>Professional services</strong> &mdash; legal, tax preparation, consulting that benefits the portfolio rather than any one property.</li>
+    </ul>
+
+    <h6 style="margin-top:20px; color:#2c3e50; font-weight:700;"><i class="fas fa-cogs"></i> How Pro-Rata works in two stages</h6>
+
+    <div class="alert" style="background:#e7f5f8; border-left:4px solid #17a2b8;">
+      <strong>Stage 1 &mdash; Setup (here, on the Line Type)</strong>
+      <ul class="mb-0 mt-2">
+        <li>Set <strong>Pro-Rata = Yes</strong></li>
+        <li>Enter the <strong>total annual bill</strong> in <strong>Pro-Rata Amount</strong> (e.g. &euro;2,810)</li>
+        <li>Save</li>
+      </ul>
+    </div>
+
+    <div class="alert" style="background:#e7f5f8; border-left:4px solid #17a2b8;">
+      <strong>Stage 2 &mdash; Capture (on the Expenses page)</strong>
+      <ul class="mb-0 mt-2">
+        <li>Create an Expense record for any one of the affected properties</li>
+        <li>Pick the Pro-Rata Line Type &mdash; the Expense Amount is auto-filled with the total (&euro;2,810) and locked</li>
+        <li>A <strong>property selection panel</strong> appears, with the current property auto-checked and locked-in</li>
+        <li>Tick the other properties this bill covers (or use the <strong>Country quick-filter</strong> to tick them all in one click)</li>
+        <li>Click <strong>Calculate Pro-Rata Amounts</strong> &mdash; a <strong>Pro-Rata Expense Preview</strong> modal opens showing the proposed split: each selected property with its <strong>Current Value</strong>, percentage <strong>Share</strong>, and calculated <strong>Amount</strong></li>
+        <li>Review the preview &mdash; if the split looks right, click <strong>Confirm &amp; Update</strong>; if not, click <strong>Cancel</strong> and adjust your property selection</li>
+        <li>On confirmation, the system <strong>creates new Expense records</strong> on the other properties (or <strong>updates existing ones</strong>) with each property's calculated share</li>
+      </ul>
+    </div>
+
+    <h6 style="margin-top:20px; color:#2c3e50; font-weight:700;"><i class="fas fa-flask"></i> A worked example</h6>
+    <p>Audit fee: <strong>&euro;2,810</strong> total. Three Cyprus properties selected, with their <strong>Current Values</strong>:</p>
+    <ul>
+      <li>Property A &mdash; Current Value &euro;200,000</li>
+      <li>Property B &mdash; Current Value &euro;800,000</li>
+      <li>Property C &mdash; Current Value &euro;320,000</li>
+    </ul>
+    <p>Total combined value = &euro;1,320,000. The split:</p>
+    <ul>
+      <li>Property A: 200,000 &divide; 1,320,000 &times; &euro;2,810 = <strong>&euro;426</strong></li>
+      <li>Property B: 800,000 &divide; 1,320,000 &times; &euro;2,810 = <strong>&euro;1,703</strong></li>
+      <li>Property C: 320,000 &divide; 1,320,000 &times; &euro;2,810 = <strong>&euro;681</strong></li>
+    </ul>
+    <p>The system creates/updates three Expense records, one per property, with these amounts. The P&amp;L for <em>Financials (Cyprus)</em> then shows the correct share against each property.</p>
+
+    <h6 style="margin-top:20px; color:#2c3e50; font-weight:700;"><i class="fas fa-sliders-h"></i> Things to know about the distribution</h6>
+    <ul>
+      <li><strong>Current Value drives the split</strong> &mdash; higher-valued properties bear a bigger share, lower-valued properties less. Each property's Current Value is set on the Property record (under <em>Properties &rarr; Edit</em>) and is shown next to each checkbox in the property selection panel.</li>
+      <li><strong>The current property is always included</strong> &mdash; you can't un-tick the property you're capturing the expense for, since you're creating its record.</li>
+      <li><strong>The Country filter is a tickbox shortcut</strong> &mdash; selecting "Cyprus" auto-ticks all Cyprus properties. You can still un-tick individual ones afterwards if a property shouldn't be included.</li>
+      <li><strong>Existing Expense records are updated, not duplicated</strong> &mdash; if Property B already had a <em>Financials (Cyprus)</em> Expense from a previous round, its amount is overwritten by the new calculation, not added on top.</li>
+    </ul>
+
+    <h6 style="margin-top:20px; color:#2c3e50; font-weight:700;"><i class="fas fa-exclamation"></i> Things to be careful with</h6>
+    <ul>
+      <li><strong>Changing the Pro-Rata Amount on the Line Type cascades automatically &mdash; with a preview.</strong> If you bump &euro;2,810 to &euro;3,000 on the Line Type page, clicking Save opens a <strong>preview modal</strong> showing the full before/after per-property breakdown. Confirming with <em>Save &amp; Recalculate All</em> commits both the new Line Type amount <strong>and</strong> the redistributed Expense records in one atomic operation &mdash; no separate trip to the Expenses page needed.</li>
+      <li><strong>Adding a new property to the portfolio doesn't auto-include it.</strong> Existing Pro-Rata Expense records won't pick up the new property. Open the Expense record on any one of the existing properties, tick the new one in the panel, and re-calculate.</li>
+      <li><strong>Deleting a Pro-Rata Line Type cascades hard.</strong> Every Expense record on every property using this Line Type is deleted. The Confirm Delete modal lists all of them &mdash; read carefully.</li>
+    </ul>
+  </article>
+
+  <article data-tab-slug="elt-tips"
+           data-tab-name="Tips"
+           data-tab-icon="fa-lightbulb">
+    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-lightbulb"></i> Practical Tips</h5>
+
+    <h6 style="margin-top:10px; color:#2c3e50; font-weight:700;">Naming &amp; structure</h6>
+    <ul style="line-height:1.8;">
+      <li><strong>Keep Names short.</strong> The Name appears in P&amp;L tables where space is tight &mdash; one or two words is ideal. Use the Description for the longer wording.</li>
+
+      <li><strong>Suffix country into the Name when needed.</strong> If you have audit fees in multiple jurisdictions, name them <em>Financials (Cyprus)</em>, <em>Financials (Greece)</em>, <em>Financials (Spain)</em> &mdash; not just <em>Financials</em> three times. Each becomes its own row in the P&amp;L, which is exactly what you want for country-by-country tax reporting.</li>
+
+      <li><strong>Be consistent.</strong> If one property's electricity is tagged <em>Electricity</em> and another's is tagged <em>Power</em>, they'll appear as two different rows in the P&amp;L. Pick one name and stick with it.</li>
+
+      <li><strong>Don't over-categorise.</strong> Too many Line Types fragments the P&amp;L into a long list of tiny rows. Combine related minor expenses (e.g. don't split <em>Bin Bags</em> from <em>Cleaning Products</em> &mdash; both are <em>Cleaning Costs</em>).</li>
+    </ul>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;">The "Communal Fees 1, 2, 3..." pattern</h6>
+    <p>You'll notice some Line Types are numbered (<em>Communal Fees 1</em>, <em>Communal Fees 2</em>). This is a deliberate workaround for a real limitation:</p>
+    <div class="alert" style="background:#e7f5f8; border-left:4px solid #17a2b8;">
+      <p class="mb-2"><strong>The problem:</strong> A single Expense record stores <strong>one amount</strong>. So you can't say "&euro;340 in January and &euro;270 in July" with a single record &mdash; the two payments have different amounts.</p>
+      <p class="mb-2"><strong>The solution:</strong> Split the conceptual <em>Communal Fees</em> into numbered Line Types &mdash; one per payment instance. Pair each with a single-month Expense Type:</p>
+      <ul class="mb-0">
+        <li><em>Communal Fees 1</em> + <em>January</em> Expense Type + &euro;340</li>
+        <li><em>Communal Fees 2</em> + <em>July</em> Expense Type + &euro;270</li>
+      </ul>
+      <p class="mb-0 mt-2">Properties with different schedules (annual, semi-annual, quarterly) coexist nicely because each one only uses the subset of numbered Line Types it needs.</p>
+    </div>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;">Working with Pro-Rata</h6>
+    <ul style="line-height:1.8;">
+      <li><strong>Only mark Line Types as Pro-Rata when there's truly one bill.</strong> If each property has its own Insurance bill (different amounts, paid separately), don't use Pro-Rata &mdash; just create individual Expense records. Pro-Rata is for the "one invoice, many properties" scenario.</li>
+
+      <li><strong>Re-run Calculate when adding/removing properties.</strong> The distribution doesn't auto-update when the property pool changes. After acquiring or selling a property, open any one of the Pro-Rata Expense records, adjust the property panel, and re-calculate.</li>
+
+      <li><strong>Pro-Rata Amount changes cascade automatically.</strong> When you change the Pro-Rata Amount on a Line Type with linked Expense records, the system shows a preview modal with the full per-property impact (old/new/&Delta;). Confirming with <em>Save &amp; Recalculate All</em> saves the Line Type <strong>and</strong> pushes the new distribution through every linked Expense record in one operation.</li>
+    </ul>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;">Working with Delete</h6>
+    <ul style="line-height:1.8;">
+      <li><strong>Always read the cascade list.</strong> The Confirm Delete modal shows every linked Expense that will be destroyed. For Pro-Rata Line Types this can be 10+ records across multiple properties &mdash; well worth a slow review.</li>
+
+      <li><strong>Don't delete to "fix a typo".</strong> Use Edit to rename. Delete is for retiring a Line Type entirely &mdash; e.g. an expense category you no longer have at all.</li>
+    </ul>
+
+    <div class="alert alert-warning" style="border-left:4px solid #ffc107; margin-top:20px;">
+      <i class="fas fa-info-circle"></i> <strong>Note:</strong> This page configures <strong>Budgeted</strong> expense categories &mdash; the recurring/expected expenses that build the P&amp;L Budget side. For <strong>actual one-off expenses with invoices and approval workflow</strong> (one-time repairs, ad-hoc maintenance, etc.), use the <strong>Expenses</strong> module in the main sidebar instead.
+    </div>
+
+    <div class="alert alert-info" style="border-left:4px solid #17a2b8; margin-top:10px;">
+      <i class="fas fa-arrow-right"></i> <strong>Next step:</strong> With Expense Types and Line Types set up, head to <strong>Expenses</strong> to record the actual amounts on each property &mdash; including the Pro-Rata distribution flow described above.
+    </div>
+  </article>
+
+</section>
+<!-- ======= END EXPENSE LINE TYPES ======= -->
+
+
+<!-- ======= EXPENSES ======= -->
+<section data-module-slug="finance_expense"
+         data-module-name="Expenses"
+         data-module-icon="fa-receipt"
+         data-module-category="Configuration"
+         data-module-subtitle="Record the budgeted expense streams for each property &mdash; including pro-rata bills shared across multiple properties">
+
+  <article data-tab-slug="exp-overview"
+           data-tab-name="Overview"
+           data-tab-icon="fa-info-circle">
+    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-info-circle"></i> What is an Expense record?</h5>
+    <p>An <strong>Expense record</strong> is a single budgeted expense for a single property. It's where everything from Configuration finally <strong>comes together</strong> to describe a real-world cost &mdash; for example, <em>"Eleftheroupoleos pays &euro;245 in communal fees every January"</em>.</p>
+
+    <p>Each Expense record is built from <strong>four pieces</strong>:</p>
+
+    <div class="alert" style="background:#e7f5f8; border-left:4px solid #17a2b8;">
+      <ol class="mb-0">
+        <li><strong>Property</strong> &mdash; which property this expense belongs to</li>
+        <li><strong>Expense Line Type</strong> &mdash; <em>what</em> the expense is (e.g. <em>Property Manager</em>, <em>Communal Fees 1</em>) &nbsp;&rarr;&nbsp; becomes the row label in the P&amp;L</li>
+        <li><strong>Expense Type</strong> &mdash; <em>when</em> it's paid (e.g. <em>Monthly</em>, <em>June</em>, <em>Quarterly</em>) &nbsp;&rarr;&nbsp; controls which months the amount is counted</li>
+        <li><strong>Expense Amount</strong> &mdash; how much (in euros) is paid per active month</li>
+      </ol>
+    </div>
+
+    <h6 style="margin-top:20px; color:#2c3e50; font-weight:700;"><i class="fas fa-bookmark"></i> Two flavours of Expense record</h6>
+    <p>Most Expenses are <strong>standard</strong> &mdash; one record per property, captured manually. But some are <strong>Pro-Rata</strong> &mdash; one bill split automatically across multiple properties.</p>
+    <ul>
+      <li><strong>Standard Expense</strong> &mdash; e.g. each property pays its own electricity bill at its own amount. Use the Add / Edit (Standard) tab.</li>
+      <li><strong>Pro-Rata Expense</strong> &mdash; e.g. &euro;3,000 audit fee covers the whole Cyprus portfolio and gets split proportionally across all Cyprus properties. Use the Pro-Rata Capture Flow tab.</li>
+    </ul>
+    <p>Which flow you get is determined by the <strong>Expense Line Type</strong> you pick &mdash; if it has Pro-Rata = Yes, the property selection panel appears automatically.</p>
+
+    <h6 style="margin-top:20px; color:#2c3e50; font-weight:700;"><i class="fas fa-flask"></i> A worked example</h6>
+    <p>Looking at the table now &mdash; <em>Eleftheroupoleos</em> has <strong>8</strong> Expense records, including:</p>
+    <ul>
+      <li><strong>Property Manager / Monthly / &euro;52</strong> &nbsp;&rarr;&nbsp; &euro;52 every month, all year</li>
+      <li><strong>Communal Fees 1 / January / &euro;245</strong> &nbsp;&rarr;&nbsp; &euro;245 once per year, in January</li>
+      <li><strong>Communal Fees 2 / July / &euro;210</strong> &nbsp;&rarr;&nbsp; &euro;210 once per year, in July</li>
+      <li><strong>Financials (Cyprus) / June / &euro;293</strong> &nbsp;&rarr;&nbsp; this property's pro-rata share of the annual Cyprus audit fee, paid in June</li>
+    </ul>
+
+    <h6 style="margin-top:20px; color:#2c3e50; font-weight:700;"><i class="fas fa-sitemap"></i> Where this fits</h6>
+    <p>This is the <strong>final piece</strong> of the three-part Expense configuration:</p>
+    <ol>
+      <li><strong>Expense Types</strong> &mdash; <em>when</em> the expense is paid (the months pattern)</li>
+      <li><strong>Expense Line Types</strong> &mdash; <em>what</em> the expense is called on the P&amp;L (and whether it's Pro-Rata)</li>
+      <li><strong>Expenses</strong> <em>(this page)</em> &mdash; the actual records on each property</li>
+    </ol>
+    <p>If you haven't set up Types and Line Types yet, do those <strong>first</strong> &mdash; the dropdowns on the Add Expense form are populated from them.</p>
+
+    <div class="alert alert-light" style="border-left:4px solid #6c757d;">
+      <i class="fas fa-user-shield"></i> <strong>Permissions:</strong> This page is restricted to <strong>Superusers</strong>.
+    </div>
+  </article>
+
+  <article data-tab-slug="exp-table"
+           data-tab-name="The Table"
+           data-tab-icon="fa-table">
+    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-table"></i> Reading the Table</h5>
+    <p>Records are <strong>grouped by property</strong> in collapsible rows &mdash; one row per property, with the records hidden inside until you expand. The layout mirrors the Revenues page exactly.</p>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;">Property header rows</h6>
+    <ul>
+      <li><i class="fas fa-chevron-right" style="color:#6c757d;"></i> &nbsp;A <strong>chevron arrow</strong> on the left &mdash; right-pointing when collapsed, down-pointing when expanded.</li>
+      <li>The <strong>property name</strong>.</li>
+      <li>A teal <span class="badge badge-info" style="background:#17a2b8;">8</span> <strong>count badge</strong> showing how many Expense records that property has.</li>
+    </ul>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;">Expanding and collapsing</h6>
+    <ul>
+      <li><strong>Click a property header</strong> to expand it. The chevron rotates down and the records appear below.</li>
+      <li><strong>Click the same header again</strong> to collapse it.</li>
+      <li><strong>Click a different property's header</strong> and the previously-open one auto-collapses &mdash; only one property can be open at a time.</li>
+    </ul>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;">Inside each property</h6>
+    <p>Records are sorted <strong>alphabetically by Expense Line Type</strong>, with five columns:</p>
+    <ul>
+      <li><strong>Property</strong> &mdash; the property name (repeated for clarity).</li>
+      <li><strong>Expense Line Type</strong> &mdash; the category (e.g. <em>Communal Fees 1</em>, <em>Property Manager</em>).</li>
+      <li><strong>Expense Type</strong> &mdash; the months pattern (e.g. <em>Monthly</em>, <em>January</em>, <em>Quarterly</em>).</li>
+      <li><strong>Expense Amount</strong> &mdash; the euro amount per active month, formatted with thousand separators (e.g. <em>&euro; 245</em>, <em>&euro; 1,250</em>).</li>
+      <li><strong>Details</strong> &mdash; an <strong>Edit</strong> button to modify that record.</li>
+    </ul>
+
+    <div class="alert alert-info" style="border-left:4px solid #17a2b8;">
+      <i class="fas fa-eye-slash"></i> <strong>Properties with no Expense records don't appear here.</strong> If a property is missing from the list, it currently contributes &euro;0 to the Expenses side of the P&amp;L &mdash; click <strong>Add New</strong> to start populating it.
+    </div>
+  </article>
+
+  <article data-tab-slug="exp-standard"
+           data-tab-name="Add / Edit (Standard)"
+           data-tab-icon="fa-plus-circle">
+    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-plus-circle"></i> Adding a Standard Expense</h5>
+    <p>"Standard" means a normal property-specific expense, where each property has its own bill at its own amount &mdash; e.g. each property pays its own electricity charge.</p>
+
+    <p>Click <strong>Add New</strong> in the top-right to open the Add Expense form. Four fields in a row:</p>
+
+    <ol>
+      <li><strong>Property</strong> &mdash; dropdown of all properties. Pick the one this expense belongs to.</li>
+      <li><strong>Expense Line Type</strong> &mdash; dropdown populated from Expense Line Types (e.g. <em>Property Manager</em>, <em>Electricity</em>, <em>Cleaning Costs</em>). <strong>Pick a non-Pro-Rata Line Type</strong> for the standard flow.</li>
+      <li><strong>Expense Type</strong> &mdash; dropdown populated from Expense Types (e.g. <em>Monthly</em>, <em>Quarterly</em>, <em>June</em>).</li>
+      <li><strong>Expense Amount</strong> &mdash; the euro amount paid per active month.</li>
+    </ol>
+
+    <p>Click <strong>Save</strong> in the top-right and the new record appears in the property's group on the listing page.</p>
+
+    <div class="alert alert-info" style="border-left:4px solid #17a2b8;">
+      <i class="fas fa-calculator"></i> <strong>The amount is per active month, not per year.</strong> If a property pays &euro;52 in monthly Property Manager fees, enter <strong>52</strong> &mdash; not 624. The system multiplies by the months your chosen Type marks as active. So &euro;52 paired with <em>Monthly</em> = &euro;624/year, but &euro;245 paired with <em>January</em> = &euro;245/year (one payment).
+    </div>
+
+    <h6 style="margin-top:20px; color:#2c3e50; font-weight:700;"><i class="fas fa-question"></i> What if I pick a Pro-Rata Line Type by accident?</h6>
+    <p>If you select a Line Type with Pro-Rata = Yes, the form changes &mdash; the Expense Amount becomes auto-filled and locked, and a <strong>property selection panel</strong> appears below. That's the Pro-Rata flow; switch to the next tab for the full walk-through, or just change the Line Type back to a non-Pro-Rata one.</p>
+
+    <h5 style="margin-top:25px; color:#17a2b8; font-weight:700;"><i class="fas fa-edit"></i> Editing a Standard Expense</h5>
+    <p>Expand the property's row, then click the <strong>Edit</strong> button on the relevant record. The form is identical to the Add form, with all four fields pre-filled. Update what you need and click <strong>Save</strong>.</p>
+
+    <div class="alert alert-warning" style="border-left:4px solid #ffc107;">
+      <i class="fas fa-exclamation-triangle"></i> <strong>Edits affect the P&amp;L immediately &mdash; including history.</strong> Expense records aren't dated &mdash; they describe an ongoing pattern. Changing the amount from &euro;52 to &euro;60 instantly recalculates the P&amp;L for <strong>every month, every year</strong>, including past periods.
+    </div>
+
+    <div class="alert alert-info" style="border-left:4px solid #17a2b8;">
+      <i class="fas fa-sync-alt"></i> <strong>Changing the Expense Type clears unused months.</strong> If you switch from <em>Monthly</em> to <em>January</em>, the system wipes the amounts from Feb&ndash;Dec and only retains January. This keeps the data clean but is irreversible without a manual re-edit.
+    </div>
+  </article>
+
+  <article data-tab-slug="exp-prorata"
+           data-tab-name="Pro-Rata Capture Flow"
+           data-tab-icon="fa-balance-scale">
+    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-balance-scale"></i> The Pro-Rata Capture Flow</h5>
+    <p>When you pick an <strong>Expense Line Type that has Pro-Rata = Yes</strong>, the form switches into a different mode designed to split <strong>one bill across multiple properties</strong>. Here's the full step-by-step flow.</p>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-step-forward"></i> Step 1 &mdash; Open the Add or Edit form</h6>
+    <p>From the listing page, click <strong>Add New</strong> to capture a new pro-rata bill, or click <strong>Edit</strong> on an existing pro-rata record to revise the distribution.</p>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-step-forward"></i> Step 2 &mdash; Select the four standard fields</h6>
+    <ul>
+      <li><strong>Property</strong> &mdash; the property you're capturing the expense for. This will be the "anchor" property in the distribution and cannot be removed from it.</li>
+      <li><strong>Expense Line Type</strong> &mdash; pick a Pro-Rata Line Type (e.g. <em>Financials (Cyprus)</em>). As soon as you pick it, the form changes.</li>
+      <li><strong>Expense Type</strong> &mdash; the months pattern for when the bill is paid (e.g. <em>June</em> for an annual audit invoice in June).</li>
+      <li><strong>Expense Amount</strong> &mdash; auto-filled with the Pro-Rata Amount from the Line Type and <strong>locked / greyed out</strong>. You cannot override this here &mdash; if the bill amount has changed, edit the Line Type's Pro-Rata Amount first, then come back.</li>
+    </ul>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-step-forward"></i> Step 3 &mdash; The property selection panel appears</h6>
+    <p>A new section titled <strong>Select Properties for Pro-Rata Distribution</strong> appears below the four fields, with:</p>
+    <ul>
+      <li>A <strong>Country quick-filter dropdown</strong> (<em>"Select Based on Country"</em>) &mdash; choosing a country auto-ticks every property in that country in one action.</li>
+      <li>A <strong>scrollable list of every property</strong>, each with a checkbox and the property's <strong>Current Value</strong> shown in parentheses (e.g. <em>Apolloneon - Demetri (&euro;200,000)</em>).</li>
+      <li>The <strong>anchor property is auto-checked and locked</strong> &mdash; you can't un-tick it because you're capturing the expense for it.</li>
+    </ul>
+
+    <p>Tick every property the bill should cover. You can:</p>
+    <ul>
+      <li>Use the <strong>Country filter</strong> as a shortcut to tick all (e.g.) Cyprus properties at once</li>
+      <li>Then individually <strong>un-tick</strong> any that shouldn't be included</li>
+      <li>Manually <strong>tick individual properties</strong> from other countries if the bill spans them</li>
+    </ul>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-step-forward"></i> Step 4 &mdash; Calculate Pro-Rata Amounts</h6>
+    <p>Once your selection is made, click the <strong>Calculate Pro-Rata Amounts</strong> button (sits next to the property panel). This opens the <strong>Pro-Rata Expense Preview</strong> modal showing exactly what will happen if you save.</p>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-step-forward"></i> Step 5 &mdash; Review the Preview modal</h6>
+    <p>The Preview displays:</p>
+    <ul>
+      <li><strong>Total Pro-Rata Amount</strong> at the top (e.g. &euro;3,000)</li>
+      <li><strong>Selected Properties count</strong> (e.g. 10)</li>
+      <li>A per-property table with four columns: <strong>Property</strong> &mdash; <strong>Current Value</strong> &mdash; <strong>Share %</strong> &mdash; <strong>Amount</strong></li>
+      <li><strong>Cancel</strong> &mdash; closes the modal without making any changes; you stay on the form so you can adjust selections</li>
+      <li><strong>Confirm &amp; Update</strong> &mdash; commits the distribution</li>
+    </ul>
+
+    <p>The percentages always sum to 100%. The amounts always sum to the Total. Use this preview to sanity-check that the split feels right before committing.</p>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-step-forward"></i> Step 6 &mdash; Confirm &amp; Update</h6>
+    <p>Clicking <strong>Confirm &amp; Update</strong> commits the changes:</p>
+    <ul>
+      <li>For properties <strong>without</strong> an existing Expense for this Line Type &rarr; a <strong>new record is created</strong></li>
+      <li>For properties <strong>with</strong> an existing Expense for this Line Type &rarr; the <strong>existing record is updated</strong> with the new amount</li>
+      <li>For properties that <strong>were previously included but are now un-ticked</strong> (Edit mode only) &rarr; their Expense records are <strong>removed</strong> as part of the recalculation</li>
+    </ul>
+    <p>You're then redirected back to the Expenses listing page with a success message.</p>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-flask"></i> A worked example</h6>
+    <p>From your live system &mdash; the <em>Financials (Cyprus)</em> annual audit fee of <strong>&euro;3,000</strong>, distributed across 10 selected properties:</p>
+
+    <table class="table table-sm table-bordered" style="font-size:0.85rem;">
+      <thead style="background:#f8f9fa;">
+        <tr>
+          <th>Property</th>
+          <th class="text-right">Current Value</th>
+          <th class="text-right">Share</th>
+          <th class="text-right">Amount</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Apolloneon - Demetri</td><td class="text-right">&euro;200,000</td><td class="text-right">6.53%</td><td class="text-right">&euro;195.76</td></tr>
+        <tr><td>Eleftheroupoleos</td><td class="text-right">&euro;320,000</td><td class="text-right">10.44%</td><td class="text-right">&euro;313.21</td></tr>
+        <tr><td>Foti Pitta</td><td class="text-right">&euro;200,000</td><td class="text-right">6.53%</td><td class="text-right">&euro;195.76</td></tr>
+        <tr><td>Ionion - Villa 24</td><td class="text-right">&euro;450,000</td><td class="text-right">14.68%</td><td class="text-right">&euro;440.46</td></tr>
+        <tr><td>Palikaridi</td><td class="text-right">&euro;200,000</td><td class="text-right">6.53%</td><td class="text-right">&euro;195.76</td></tr>
+        <tr><td>Pindarou</td><td class="text-right">&euro;425,000</td><td class="text-right">13.87%</td><td class="text-right">&euro;415.99</td></tr>
+        <tr><td>Athens - First Floor</td><td class="text-right">&euro;250,000</td><td class="text-right">8.16%</td><td class="text-right">&euro;244.70</td></tr>
+        <tr><td>Athens - Second Floor</td><td class="text-right">&euro;300,000</td><td class="text-right">9.79%</td><td class="text-right">&euro;293.64</td></tr>
+        <tr><td>Athens - Third Floor</td><td class="text-right">&euro;300,000</td><td class="text-right">9.79%</td><td class="text-right">&euro;293.64</td></tr>
+        <tr><td>Spain - Eusebi Guell</td><td class="text-right">&euro;420,000</td><td class="text-right">13.70%</td><td class="text-right">&euro;411.09</td></tr>
+        <tr style="background:#f8f9fa; font-weight:bold;"><td>Total</td><td class="text-right">&mdash;</td><td class="text-right">100.00%</td><td class="text-right">&euro;3,000.00</td></tr>
+      </tbody>
+    </table>
+
+    <p>Notice that <em>Ionion - Villa 24</em> &mdash; the highest-valued property at &euro;450,000 &mdash; bears the largest share (14.68% / &euro;440.46), while the four properties valued at &euro;200,000 each carry the smallest equal shares (6.53% / &euro;195.76). This is the proportional fairness that Pro-Rata is designed to enforce.</p>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-exclamation-triangle"></i> What's different in Edit mode</h6>
+    <p>When you click <strong>Edit</strong> on an existing pro-rata Expense record:</p>
+    <ul>
+      <li><strong>The form opens with all previously-included properties pre-ticked</strong> &mdash; not just the anchor. So if a bill currently spans 10 properties, all 10 checkboxes are already checked when Edit opens. You only touch the ones you want to change.</li>
+      <li>The anchor property (the one you opened Edit on) is locked-in as before</li>
+      <li>You can <strong>add</strong> new properties to the distribution by ticking them, or <strong>remove</strong> existing ones by un-ticking them</li>
+      <li>You can change the <strong>Property</strong>, <strong>Expense Type</strong>, or <strong>Line Type</strong> dropdowns at the top &mdash; but bear in mind that changing the Line Type can take you out of pro-rata mode entirely</li>
+      <li>On <strong>Confirm &amp; Update</strong>, the system <strong>deletes all original pro-rata records</strong> for this Line Type+Type combination and <strong>recreates them</strong> based on the new selection. This is how it cleanly handles additions, removals, and amount changes in one operation.</li>
+    </ul>
+
+    <div class="alert alert-info" style="border-left:4px solid #17a2b8;">
+      <i class="fas fa-magic"></i> <strong>This is how the cascade works.</strong> One Calculate &amp; Confirm cycle on any one Expense record refreshes the entire Line Type's distribution across all linked properties. You don't need to visit each property individually.
+    </div>
+  </article>
+
+  <article data-tab-slug="exp-tips"
+           data-tab-name="Tips"
+           data-tab-icon="fa-lightbulb">
+    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-lightbulb"></i> Practical Tips</h5>
+
+    <h6 style="margin-top:10px; color:#2c3e50; font-weight:700;">Setup &amp; entry</h6>
+    <ul style="line-height:1.8;">
+      <li><strong>Set up Configuration first.</strong> Expense Types and Expense Line Types must exist before you can create an Expense record. If you're starting from scratch, build out the 12 single-month Types (<em>January</em>, <em>February</em>, &hellip;), the recurring Types (<em>Monthly</em>, <em>Quarterly</em>), and your Line Types before coming here.</li>
+
+      <li><strong>One record per (Line Type + Type) combo per property.</strong> If a property has Property Manager fees of &euro;52/month and &euro;245 of Communal Fees in January, those are two separate records &mdash; one for each combination of Line Type and Type. Don't try to merge them.</li>
+
+      <li><strong>Enter the per-month amount, not the annual.</strong> &euro;52 monthly Property Manager fees go in as <strong>52</strong>. &euro;245 annual Communal Fees in January go in as <strong>245</strong>. The Type handles the multiplication based on which months are flagged.</li>
+
+      <li><strong>Match the Type carefully.</strong> The wrong Type produces a P&amp;L that doesn't match reality. If utilities are billed Mar/Jun/Sep/Dec, use a Type with exactly those four months flagged &mdash; not <em>Quarterly</em> (which is Jan/Apr/Jul/Oct).</li>
+    </ul>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;">Working with Pro-Rata</h6>
+    <ul style="line-height:1.8;">
+      <li><strong>The Line Type decides the flow.</strong> Pro-Rata isn't a checkbox on the Expense record &mdash; it's a property of the Line Type. Pick a Pro-Rata Line Type and the property panel appears automatically.</li>
+
+      <li><strong>Always review the Preview before clicking Confirm &amp; Update.</strong> The Preview modal is your last chance to catch a wrong selection before the cascade runs. Check the property list, check the share percentages, check the totals.</li>
+
+      <li><strong>Use the Country filter as a starting point, not an end point.</strong> Click <em>Cyprus</em> to tick all Cyprus properties at once, then un-tick any that shouldn't be included (e.g. a Cyprus property that's in renovation and not yet generating expenses).</li>
+
+      <li><strong>To update an existing pro-rata distribution, edit any one of the linked records.</strong> Open Eleftheroupoleos's <em>Financials (Cyprus)</em> record &mdash; any change you make and confirm cascades to all 10 (or however many) properties using that Line Type. You don't need to edit each property's record individually.</li>
+
+      <li><strong>Pro-Rata Amount changes are handled on the Line Type page &mdash; with a live preview.</strong> If the total bill has shifted (e.g. &euro;3,000 &rarr; &euro;3,500), edit the Pro-Rata Amount on the Line Type and click Save. A preview modal opens showing every linked Expense record's old/new/&Delta; per property. Confirming with <em>Save &amp; Recalculate All</em> saves the Line Type <strong>and</strong> cascades the new distribution to every linked record in one atomic operation. No separate Calculate-Confirm trip is needed anymore.</li>
+
+      <li><strong>Current Value changes on the Property Valuations page also cascade automatically.</strong> When you edit a property's Current Value on the Valuations report, the system checks if that property is in any Pro-Rata distributions. If so, a preview modal opens showing every affected distribution (collapsible, one per Line Type) with the per-property ripple effect. Confirming commits the valuation change <strong>and</strong> recalculates every Pro-Rata Expense touching that property in one operation.</li>
+
+      <li><strong>When a new property joins the portfolio, add it to existing pro-rata distributions.</strong> The new property won't auto-appear in existing pro-rata records. Open any one of the existing pro-rata Expense records, tick the new property in the panel, and re-calculate.</li>
+    </ul>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;">General awareness</h6>
+    <ul style="line-height:1.8;">
+      <li><strong>Expense records aren't dated.</strong> They describe an <em>ongoing</em> pattern, not a transaction on a specific date. Changing the amount today rewrites the P&amp;L for past months too.</li>
+
+      <li><strong>Check the count badge as a sanity flag.</strong> If a property normally has 8 records and now shows <span class="badge badge-info" style="background:#17a2b8;">7</span>, something's been deleted. Open it and verify nothing important is missing.</li>
+
+      <li><strong>Properties with no records don't appear in the listing.</strong> A missing property = &euro;0 contribution to the Expenses side of the P&amp;L. Usually a bug to fix, not a feature.</li>
+
+      <li><strong>If a P&amp;L expense figure looks wrong, start here.</strong> Every budgeted expense on the P&amp;L is calculated from the records on this page. Expand the relevant property and check.</li>
+    </ul>
+
+    <div class="alert alert-warning" style="border-left:4px solid #ffc107; margin-top:20px;">
+      <i class="fas fa-info-circle"></i> <strong>Note:</strong> This page captures <strong>budgeted/recurring</strong> expenses that build the P&amp;L Budget side &mdash; predictable costs you know about in advance. For <strong>actual one-off expenses with invoices and approval workflow</strong> (one-time repairs, ad-hoc maintenance, unexpected bills), use the <strong>Expenses</strong> module in the main sidebar instead.
+    </div>
+
+    <div class="alert alert-info" style="border-left:4px solid #17a2b8; margin-top:10px;">
+      <i class="fas fa-arrow-right"></i> <strong>Configuration complete.</strong> With Expenses set up alongside Revenues, your Profit &amp; Loss Statement now has both sides &mdash; income and expense &mdash; and is ready to provide a complete picture for any selected year or budget view.
+    </div>
+  </article>
+
+</section>
+<!-- ======= END EXPENSES ======= -->
+
+

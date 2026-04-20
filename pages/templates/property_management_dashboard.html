@@ -1,1574 +1,474 @@
+{% extends 'base.html' %}
 {% load static %}
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Property Dashboard - Immersive Experience</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        /* Reset and Base Styles */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        html, body {
-            height: 100%;
-            overflow: hidden;
-        }
-
-        body {
-            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #17a2b8 0%, #138496 50%, #0c5460 100%);
-            position: relative;
-        }
-
-        /* Animated background elements */
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: 
-                radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.1) 1px, transparent 1px),
-                radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.1) 1px, transparent 1px),
-                radial-gradient(circle at 40% 70%, rgba(255, 255, 255, 0.05) 2px, transparent 2px);
-            background-size: 100px 100px, 150px 150px, 200px 200px;
-            animation: backgroundFloat 20s ease-in-out infinite;
-            z-index: -1;
-            pointer-events: none;
-        }
-
-        @keyframes backgroundFloat {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-20px); }
-        }
-
-        /* Dashboard Wrapper - Full Immersive Experience */
-        .dashboard-wrapper {
-            width: 100vw;
-            height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-            position: relative;
-        }
-
-        /* Dashboard Container */
-        .dashboard-container {
-            position: relative;
-            width: 100%;
-            max-width: 1200px;
-            height: 100%;
-            max-height: 800px;
-            aspect-ratio: 3/2;
-            border-radius: 30px;
-            backdrop-filter: blur(20px);
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 
-                0 25px 50px rgba(0, 0, 0, 0.15),
-                inset 0 1px 0 rgba(255, 255, 255, 0.3);
-            overflow: hidden;
-        }
-
-        /* Center Hub */
-        .center-hub {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: clamp(180px, 18vw, 240px);
-            height: clamp(180px, 18vw, 240px);
-            background: rgba(255, 255, 255, 0.25);
-            backdrop-filter: blur(25px);
-            border-radius: 50%;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            box-shadow: 
-                0 25px 50px rgba(0, 0, 0, 0.1),
-                inset 0 1px 0 rgba(255, 255, 255, 0.4),
-                0 0 50px rgba(255, 255, 255, 0.1);
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            cursor: pointer;
-            transition: all 0.4s cubic-bezier(0.23, 1, 0.320, 1);
-            z-index: 100;
-        }
-
-        .center-hub:hover {
-            transform: translate(-50%, -50%) scale(1.05);
-            background: rgba(255, 255, 255, 0.3);
-            box-shadow: 
-                0 35px 70px rgba(0, 0, 0, 0.15),
-                inset 0 1px 0 rgba(255, 255, 255, 0.5),
-                0 0 80px rgba(255, 255, 255, 0.2);
-        }
-
-        .center-hub.property-selected {
-            border: 3px solid rgba(255, 255, 255, 0.6);
-            background: rgba(255, 255, 255, 0.3);
-            box-shadow: 
-                0 25px 50px rgba(0, 0, 0, 0.1),
-                inset 0 1px 0 rgba(255, 255, 255, 0.4),
-                0 0 50px rgba(255, 255, 255, 0.3);
-        }
-
-        .center-hub h2 {
-            color: white;
-            margin: 0;
-            font-size: clamp(16px, 1.8vw, 22px);
-            text-align: center;
-            font-weight: 600;
-            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-            padding: 0 15px;
-            letter-spacing: 0.5px;
-        }
-
-        /* Main Module Cards */
-        .module-card {
-            position: absolute;
-            padding: clamp(12px, 1.2vw, 18px) clamp(15px, 1.5vw, 22px);
-            background: rgba(255, 255, 255, 0.2);
-            backdrop-filter: blur(20px);
-            border-radius: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            box-shadow: 
-                0 15px 35px rgba(0, 0, 0, 0.1),
-                inset 0 1px 0 rgba(255, 255, 255, 0.4);
-            cursor: pointer;
-            transition: all 0.4s cubic-bezier(0.23, 1, 0.320, 1);
-            min-width: clamp(100px, 10vw, 140px);
-            max-width: clamp(120px, 12vw, 160px);
-            text-align: center;
-            font-weight: 600;
-            color: white;
-            font-size: clamp(11px, 1.1vw, 14px);
-            z-index: 50;
-            opacity: 0.7;
-            pointer-events: none;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .module-card i {
-            display: block;
-            margin-bottom: 8px;
-            font-size: clamp(18px, 1.8vw, 24px);
-            color: white;
-            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-        }
-
-        .module-card .card-text {
-            text-shadow: 0 1px 6px rgba(0, 0, 0, 0.4);
-            letter-spacing: 0.3px;
-        }
-
-        .module-card.enabled {
-            opacity: 1;
-            pointer-events: auto;
-        }
-
-        .module-card.enabled:hover {
-            transform: translateY(-8px) scale(1.05);
-            background: rgba(255, 255, 255, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.5);
-            box-shadow: 
-                0 25px 50px rgba(0, 0, 0, 0.15),
-                inset 0 1px 0 rgba(255, 255, 255, 0.5),
-                0 0 30px rgba(255, 255, 255, 0.2);
-        }
-
-        .module-card.clicked {
-            background: rgba(255, 255, 255, 0.4);
-            transform: scale(1.1);
-            box-shadow: 
-                0 30px 60px rgba(0, 0, 0, 0.2),
-                inset 0 1px 0 rgba(255, 255, 255, 0.6),
-                0 0 40px rgba(255, 255, 255, 0.3);
-        }
-
-        /* Sub-module Cards */
-        .sub-module-card {
-            position: absolute;
-            padding: clamp(10px, 1vw, 15px) clamp(12px, 1.2vw, 18px);
-            background: rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(15px);
-            border-radius: 15px;
-            border: 1px solid rgba(255, 255, 255, 0.25);
-            box-shadow: 
-                0 12px 25px rgba(0, 0, 0, 0.08),
-                inset 0 1px 0 rgba(255, 255, 255, 0.3);
-            cursor: pointer;
-            transition: all 0.4s cubic-bezier(0.23, 1, 0.320, 1);
-            min-width: clamp(85px, 8.5vw, 120px);
-            max-width: clamp(105px, 10.5vw, 140px);
-            text-align: center;
-            font-weight: 600;
-            color: white;
-            font-size: clamp(10px, 1vw, 13px);
-            z-index: 50;
-            opacity: 0.7;
-            pointer-events: none;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .sub-module-card i {
-            display: block;
-            margin-bottom: 6px;
-            font-size: clamp(14px, 1.4vw, 18px);
-            color: white;
-            text-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-        }
-
-        .sub-module-card .card-text {
-            text-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
-            letter-spacing: 0.2px;
-        }
-
-        .sub-module-card.enabled {
-            opacity: 1;
-            pointer-events: auto;
-        }
-
-        .sub-module-card.enabled:hover {
-            transform: translateY(-6px) scale(1.05);
-            background: rgba(255, 255, 255, 0.25);
-            border: 1px solid rgba(255, 255, 255, 0.4);
-            box-shadow: 
-                0 20px 40px rgba(0, 0, 0, 0.12),
-                inset 0 1px 0 rgba(255, 255, 255, 0.4),
-                0 0 25px rgba(255, 255, 255, 0.15);
-        }
-
-        .sub-module-card.clicked {
-            background: rgba(255, 255, 255, 0.35);
-            transform: scale(1.08);
-            box-shadow: 
-                0 25px 45px rgba(0, 0, 0, 0.15),
-                inset 0 1px 0 rgba(255, 255, 255, 0.5),
-                0 0 35px rgba(255, 255, 255, 0.25);
-        }
-
-        /* Property Modal */
-        .property-modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.4);
-            backdrop-filter: blur(10px);
-        }
-
-        .property-modal-content {
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(25px);
-            margin: 5% auto;
-            padding: 0;
-            border-radius: 25px;
-            width: 90%;
-            max-width: 500px;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            box-shadow: 
-                0 25px 50px rgba(0, 0, 0, 0.2),
-                inset 0 1px 0 rgba(255, 255, 255, 0.5);
-            animation: modalSlideIn 0.4s cubic-bezier(0.23, 1, 0.320, 1);
-        }
-
-        @keyframes modalSlideIn {
-            from {
-                opacity: 0;
-                transform: translateY(-50px) scale(0.9);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0) scale(1);
-            }
-        }
-
-        .property-modal-header {
-            background: linear-gradient(135deg, rgba(23, 162, 184, 0.9), rgba(19, 132, 150, 0.9));
-            backdrop-filter: blur(20px);
-            color: white;
-            padding: 25px 30px;
-            border-radius: 25px 25px 0 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .property-modal-header h3 {
-            margin: 0;
-            font-size: 22px;
-            font-weight: 600;
-            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-        }
-
-        .close-modal {
-            color: white;
-            font-size: 28px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            width: 35px;
-            height: 35px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-        }
-
-        .close-modal:hover {
-            background: rgba(255, 255, 255, 0.2);
-            transform: scale(1.1);
-        }
-
-        .property-list {
-            max-height: 400px;
-            overflow-y: auto;
-            padding: 15px 0;
-        }
-
-        .property-item {
-            padding: 18px 30px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            background: rgba(255, 255, 255, 0.5);
-            backdrop-filter: blur(10px);
-        }
-
-        .property-item:last-child {
-            border-bottom: none;
-            border-radius: 0 0 25px 25px;
-        }
-
-        .property-item:hover {
-            background: rgba(255, 255, 255, 0.7);
-            transform: translateX(10px);
-            border-left: 4px solid rgba(23, 162, 184, 0.8);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-        }
-
-        .property-name {
-            font-size: 16px;
-            font-weight: 500;
-            color: #333;
-        }
-
-        /* Notification */
-        .notification {
-            position: fixed;
-            top: 30px;
-            right: 30px;
-            padding: 18px 30px;
-            background: rgba(76, 175, 80, 0.9);
-            backdrop-filter: blur(15px);
-            color: white;
-            border-radius: 15px;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            box-shadow: 
-                0 15px 35px rgba(0, 0, 0, 0.1),
-                inset 0 1px 0 rgba(255, 255, 255, 0.3);
-            transform: translateX(400px);
-            transition: transform 0.4s cubic-bezier(0.23, 1, 0.320, 1), opacity 0.4s ease;
-            z-index: 1000;
-            font-weight: 600;
-            opacity: 0;
-            visibility: hidden;
-        }
-
-        .notification.show {
-            transform: translateX(0);
-            opacity: 1;
-            visibility: visible;
-        }
-
-        .notification.error {
-            background: rgba(23, 162, 184, 0.9);
-        }
-
-        .notification.info {
-            background: rgba(23, 162, 184, 0.9);
-        }
-
-        /* Action Buttons - Top Left Corner */
-        .action-buttons {
-            position: fixed;
-            top: 30px;
-            left: 30px;
-            display: flex;
-            gap: 15px;
-            z-index: 1000;
-        }
-
-        .btn {
-            padding: 12px 24px;
-            border: none;
-            border-radius: 25px;
-            font-weight: 600;
-            text-decoration: none;
-            transition: all 0.3s ease;
-            backdrop-filter: blur(15px);
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            cursor: pointer;
-            font-family: inherit;
-        }
-
-        .btn-back {
-            background: rgba(255, 255, 255, 0.15);
-            color: white;
-            font-size: 14px;
-        }
-
-        .btn-back:hover {
-            background: rgba(255, 255, 255, 0.25);
-            transform: translateY(-2px);
-            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.15);
-            color: white;
-            text-decoration: none;
-        }
-
-        .btn-back i {
-            font-size: 16px;
-        }
-
-        /* ==================== HELP MODAL STYLES ==================== */
-        .help-modal {
-            display: none;
-            position: fixed;
-            z-index: 1500;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(10px);
-        }
-
-        .help-modal.show {
-            display: block;
-        }
-
-        .help-modal-content {
-            background: rgba(255, 255, 255, 0.97);
-            backdrop-filter: blur(25px);
-            margin: 3% auto;
-            padding: 0;
-            border-radius: 25px;
-            width: 92%;
-            max-width: 880px;
-            max-height: 90vh;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2);
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            animation: modalSlideIn 0.4s cubic-bezier(0.23, 1, 0.320, 1);
-        }
-
-        .help-modal-header {
-            background: linear-gradient(135deg, rgba(23, 162, 184, 0.95), rgba(19, 132, 150, 0.95));
-            color: white;
-            padding: 22px 28px;
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            flex-shrink: 0;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .help-modal-header-text h3 {
-            margin: 0;
-            font-size: 20px;
-            font-weight: 700;
-            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-        }
-
-        .help-modal-header-text small {
-            display: block;
-            font-size: 12px;
-            opacity: 0.9;
-            margin-top: 3px;
-            font-weight: normal;
-        }
-
-        .help-close-modal {
-            color: white;
-            font-size: 26px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            width: 32px;
-            height: 32px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.1);
-            flex-shrink: 0;
-            line-height: 1;
-        }
-
-        .help-close-modal:hover {
-            background: rgba(255, 255, 255, 0.2);
-            transform: scale(1.1);
-        }
-
-        .help-tabs {
-            display: flex;
-            background: #f8f9fa;
-            border-bottom: 2px solid #17a2b8;
-            padding: 0 12px;
-            flex-shrink: 0;
-            overflow-x: auto;
-        }
-
-        .help-tab {
-            background: transparent;
-            border: none;
-            padding: 12px 16px;
-            cursor: pointer;
-            font-size: 13px;
-            font-weight: 500;
-            color: #495057;
-            border-bottom: 3px solid transparent;
-            transition: all 0.2s ease;
-            white-space: nowrap;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-family: inherit;
-        }
-
-        .help-tab:hover {
-            background: rgba(23, 162, 184, 0.05);
-            color: #17a2b8;
-        }
-
-        .help-tab.active {
-            color: #17a2b8;
-            border-bottom-color: #17a2b8;
-            font-weight: 600;
-        }
-
-        .help-tab i {
-            font-size: 12px;
-        }
-
-        .help-tab-body {
-            padding: 22px 25px;
-            overflow-y: auto;
-            flex: 1;
-            background: white;
-            color: #2c3e50;
-            line-height: 1.5;
-        }
-
-        .help-tab-pane {
-            display: none;
-        }
-
-        .help-tab-pane.active {
-            display: block;
-        }
-
-        .help-tab-pane h4 {
-            color: #17a2b8;
-            font-weight: 700;
-            margin: 0 0 12px 0;
-            font-size: 15px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .help-tab-pane h4:not(:first-child) {
-            margin-top: 18px;
-        }
-
-        .help-tab-pane p {
-            margin: 0 0 10px 0;
-            font-size: 13px;
-        }
-
-        .help-tab-pane ul, .help-tab-pane ol {
-            margin: 0 0 10px 22px;
-            font-size: 13px;
-        }
-
-        .help-tab-pane li {
-            margin-bottom: 5px;
-        }
-
-        .help-tab-pane code {
-            background: #f1f3f5;
-            color: #17a2b8;
-            padding: 1px 5px;
-            border-radius: 3px;
-            font-size: 12px;
-        }
-
-        .help-info-card {
-            background: #fff;
-            border: 1px solid #dee2e6;
-            border-left: 4px solid #17a2b8;
-            border-radius: 6px;
-            padding: 10px 14px;
-            margin-bottom: 8px;
-        }
-
-        .help-info-card h5 {
-            margin: 0 0 4px 0;
-            color: #17a2b8;
-            font-size: 13px;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .help-info-card p {
-            margin: 0;
-            font-size: 12px;
-            color: #495057;
-        }
-
-        .help-info-card.no-click {
-            border-left-color: #ffc107;
-        }
-        .help-info-card.no-click h5 {
-            color: #856404;
-        }
-
-        .help-alert {
-            padding: 11px 14px;
-            border-radius: 6px;
-            margin-top: 12px;
-            margin-bottom: 8px;
-            font-size: 12px;
-            border-left: 4px solid;
-            line-height: 1.5;
-        }
-
-        .help-alert-info {
-            background: #d1ecf1;
-            border-left-color: #17a2b8;
-            color: #0c5460;
-        }
-
-        .help-alert-warning {
-            background: #fff3cd;
-            border-left-color: #ffc107;
-            color: #856404;
-        }
-
-        .help-modal-footer {
-            background: #f8f9fa;
-            padding: 12px 22px;
-            border-top: 1px solid #dee2e6;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-shrink: 0;
-        }
-
-        .help-modal-footer small {
-            color: #6c757d;
-            font-size: 12px;
-        }
-
-        .help-modal-close-btn {
-            background: linear-gradient(135deg, #17a2b8, #138496);
-            color: white;
-            border: none;
-            padding: 7px 14px;
-            border-radius: 6px;
-            font-size: 13px;
-            font-weight: 500;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-family: inherit;
-        }
-
-        .help-modal-close-btn:hover {
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-            transform: translateY(-1px);
-        }
-
-        @media (max-width: 600px) {
-            .help-modal-content {
-                margin: 2% auto;
-                width: 96%;
-                max-height: 96vh;
-            }
-            .help-tab {
-                padding: 10px 12px;
-                font-size: 12px;
-            }
-        }
-        /* ==================== END HELP MODAL STYLES ==================== */
-
-        /* Responsive Design for Immersive Experience */
-        @media (max-width: 1024px) {
-            .dashboard-wrapper {
-                padding: 15px;
-            }
-            
-            .dashboard-container {
-                max-height: 90vh;
-            }
-            
-            .action-buttons {
-                top: 20px;
-                left: 20px;
-            }
-        }
-
-        @media (max-width: 768px) {
-            .dashboard-wrapper {
-                padding: 10px;
-            }
-            
-            .dashboard-container {
-                aspect-ratio: 1;
-                max-height: 85vh;
-            }
-            
-            .center-hub {
-                width: clamp(140px, 20vw, 180px);
-                height: clamp(140px, 20vw, 180px);
-            }
-            
-            .action-buttons {
-                top: 15px;
-                left: 15px;
-            }
-            
-            .btn-back {
-                padding: 10px 20px;
-                font-size: 13px;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .dashboard-wrapper {
-                padding: 10px;
-            }
-            
-            .dashboard-container {
-                max-height: 80vh;
-                border-radius: 20px;
-            }
-            
-            .module-card {
-                padding: 10px 12px;
-                border-radius: 15px;
-            }
-            
-            .sub-module-card {
-                padding: 8px 10px;
-                border-radius: 12px;
-            }
-            
-            .action-buttons {
-                top: 10px;
-                left: 10px;
-            }
-            
-            .btn-back {
-                padding: 8px 16px;
-                font-size: 12px;
-            }
-        }
-
-        /* Loading animation */
-        .loading {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(255, 255, 255, 0.3);
-            border-top: 3px solid white;
-            border-radius: 50%;
-            animation: spin 1s linear infinite;
-        }
-
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-    </style>
-</head>
-<body>
-    <!-- Action Buttons - Elegant Back Button in Top Left -->
-    <div class="action-buttons">
-        <a href="{% url 'home' %}" class="btn btn-back">
-            <i class="fas fa-arrow-left"></i>
-            Back
-        </a>
-        <button type="button" class="btn btn-back" id="helpButton">
-            <i class="fas fa-question-circle"></i>
-            Help
-        </button>
+{% load help_modal_tags %}
+
+{% block title %}ALIVENTE ONLINE - PROPERTY DASHBOARD{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+
+  <h2><center>ALIVENTE ONLINE - PROPERTY DASHBOARD</center></h2>
+  <h5><center>VISUAL HUB FOR PROPERTY EXPLORATION</center></h5>
+  <br/>
+
+  {% for msg in messages %}
+    <div class="alert alert-secondary alert-dismissible fade show auto-dismiss" role="alert">
+      <strong></strong> <center>{{ msg }}</center>
+      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+  {% endfor %}
+
+  <!-- Action Buttons -->
+  <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 20px;">
+    <button type="button" class="btn btn-info" data-toggle="modal" data-target="#dashboardHelpModal">
+      <i class="fas fa-question-circle"></i> Help
+    </button>
+    <a href="{% url 'home' %}" class="btn btn-info">Back</a>
+  </div>
+
+  <!-- Property Selector Card -->
+  <div class="property-selector-card" id="propertySelectorCard">
+    <div class="selector-inner">
+      <div class="selector-label">
+        <i class="fas fa-building"></i> Current Property
+      </div>
+      <div class="selector-value" id="propertyDisplayText">Click to select a property</div>
+      <div class="selector-hint">
+        <i class="fas fa-mouse-pointer"></i> Click to choose
+      </div>
+    </div>
+  </div>
+
+  <!-- Dashboard Container (dims the grids when no property is selected) -->
+  <div class="dashboard-grids" id="dashboardGrids">
+
+    <!-- Property Section -->
+    <div class="dashboard-section">
+      <h5 class="section-title"><i class="fas fa-home"></i> Property</h5>
+      <div class="dashboard-grid">
+
+        <div class="dash-card" data-box-type="property-report">
+          <div class="dash-card-icon"><i class="fas fa-chart-line"></i></div>
+          <div class="dash-card-label">Property Report</div>
+        </div>
+
+        <div class="dash-card" data-box-type="title-deed">
+          <div class="dash-card-icon"><i class="fas fa-file-contract"></i></div>
+          <div class="dash-card-label">Title Deed</div>
+        </div>
+
+        <div class="dash-card" data-box-type="valuation">
+          <div class="dash-card-icon"><i class="fas fa-home"></i></div>
+          <div class="dash-card-label">Valuation</div>
+        </div>
+
+        <div class="dash-card" data-box-type="issues">
+          <div class="dash-card-icon"><i class="fas fa-exclamation-triangle"></i></div>
+          <div class="dash-card-label">Issues</div>
+        </div>
+
+      </div>
     </div>
 
-    <!-- Dashboard Container -->
-    <div class="dashboard-wrapper">
-        <div class="dashboard-container">
-            <div class="center-hub" id="centerHub">
-                <h2 id="propertyDisplayText">Select Property</h2>
-            </div>
+    <!-- Tenant Section -->
+    <div class="dashboard-section">
+      <h5 class="section-title"><i class="fas fa-users"></i> Tenant</h5>
+      <div class="dashboard-grid">
 
-            <!-- Property Selection Modal -->
-            <div class="property-modal" id="propertyModal">
-                <div class="property-modal-content">
-                    <div class="property-modal-header">
-                        <h3>Select a Property</h3>
-                        <span class="close-modal" id="closeModal">&times;</span>
-                    </div>
-                    <div class="property-list">
-                        {% for property in properties %}
-                            <div class="property-item" data-property-id="{{ property.prop_id }}" data-property-name="{{ property.prop_name }}">
-                                <span class="property-name">{{ property.prop_name }}</span>
-                            </div>
-                        {% endfor %}
-                    </div>
-                </div>
-            </div>
+        <div class="dash-card" data-box-type="tenant">
+          <div class="dash-card-icon"><i class="fas fa-users"></i></div>
+          <div class="dash-card-label">Tenant Report</div>
+        </div>
 
-            <!-- SVG Connection Lines -->
-            <svg class="connection-svg" id="connectionSvg" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5;">
-                <defs>
-                    <linearGradient id="lineGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                        <stop offset="0%" style="stop-color:rgba(255,255,255,0.8); stop-opacity:1" />
-                        <stop offset="50%" style="stop-color:rgba(255,255,255,0.5); stop-opacity:1" />
-                        <stop offset="100%" style="stop-color:rgba(255,255,255,0.1); stop-opacity:1" />
-                    </linearGradient>
-                    <linearGradient id="lineGradientSelected" x1="0%" y1="0%" x2="100%" y2="0%">
-                        <stop offset="0%" style="stop-color:rgba(255,255,255,1); stop-opacity:1" />
-                        <stop offset="50%" style="stop-color:rgba(255,255,255,0.7); stop-opacity:1" />
-                        <stop offset="100%" style="stop-color:rgba(255,255,255,0.2); stop-opacity:1" />
-                    </linearGradient>
-                </defs>
-                
-                <!-- Main connection lines -->
-                <line id="svg-line-deed" stroke="url(#lineGradient)" stroke-width="2" opacity="0.7" />
-                <line id="svg-line-report" stroke="url(#lineGradient)" stroke-width="2" opacity="0.7" />
-                <line id="svg-line-tenant" stroke="url(#lineGradient)" stroke-width="2" opacity="0.7" />
-                <line id="svg-line-expenses" stroke="url(#lineGradient)" stroke-width="2" opacity="0.7" />
-                <line id="svg-line-issues" stroke="url(#lineGradient)" stroke-width="2" opacity="0.7" />
-                <line id="svg-line-valuations" stroke="url(#lineGradient)" stroke-width="2" opacity="0.7" />
-                <line id="svg-line-pl" stroke="url(#lineGradient)" stroke-width="2" opacity="0.7" />
-                <line id="svg-line-revenues" stroke="url(#lineGradient)" stroke-width="2" opacity="0.7" />
-                
-                <!-- Sub-connection lines -->
-                <line id="svg-subline-lease" stroke="url(#lineGradient)" stroke-width="2" opacity="0.7" />
-                <line id="svg-subline-invoices" stroke="url(#lineGradient)" stroke-width="2" opacity="0.7" />
-                <line id="svg-subline-renewals" stroke="url(#lineGradient)" stroke-width="2" opacity="0.7" />
-                <line id="svg-subline-actual" stroke="url(#lineGradient)" stroke-width="2" opacity="0.7" />
-                <line id="svg-subline-budgeted" stroke="url(#lineGradient)" stroke-width="2" opacity="0.7" />
-            </svg>
+        <div class="dash-card" data-box-type="lease">
+          <div class="dash-card-icon"><i class="fas fa-file-contract"></i></div>
+          <div class="dash-card-label">Lease</div>
+        </div>
 
-            <!-- Main Module Cards -->
-            <div class="module-card" id="title-deed" data-function="titleDeed" data-box-type="title-deed">
-                <i class="fas fa-file-contract"></i>
-                <span class="card-text">Title Deed</span>
-            </div>
+        <div class="dash-card" data-box-type="open-invoices">
+          <div class="dash-card-icon"><i class="fas fa-file-invoice-dollar"></i></div>
+          <div class="dash-card-label">Invoices</div>
+        </div>
 
-            <div class="module-card" id="property-report" data-function="propertyReport" data-box-type="property-report">
-                <i class="fas fa-chart-line"></i>
-                <span class="card-text">Property Report</span>
-            </div>
+        <div class="dash-card" data-box-type="lease-renewals">
+          <div class="dash-card-icon"><i class="fas fa-sync-alt"></i></div>
+          <div class="dash-card-label">Lease Renewals</div>
+        </div>
 
-            <div class="module-card" id="tenant" data-function="tenant" data-box-type="tenant">
-                <i class="fas fa-users"></i>
-                <span class="card-text">Tenant</span>
-            </div>
+      </div>
+    </div>
 
-            <div class="module-card" id="expenses" data-function="expenses" data-box-type="expenses">
-                <i class="fas fa-calculator"></i>
-                <span class="card-text">Expenses</span>
-            </div>
+    <!-- Financials Section -->
+    <div class="dashboard-section">
+      <h5 class="section-title"><i class="fas fa-coins"></i> Financials</h5>
+      <div class="dashboard-grid">
 
-            <div class="module-card" id="issues" data-function="issues" data-box-type="issues">
-                <i class="fas fa-exclamation-triangle"></i>
-                <span class="card-text">Issues</span>
-            </div>
+        <div class="dash-card" data-box-type="revenues">
+          <div class="dash-card-icon"><i class="fas fa-dollar-sign"></i></div>
+          <div class="dash-card-label">Revenues</div>
+        </div>
 
-            <div class="module-card" id="property-valuations" data-function="propertyValuations" data-box-type="valuation">
+        <div class="dash-card" data-box-type="actual-expenses">
+          <div class="dash-card-icon"><i class="fas fa-receipt"></i></div>
+          <div class="dash-card-label">Actual Expenses</div>
+        </div>
+
+        <div class="dash-card" data-box-type="budgeted-expenses">
+          <div class="dash-card-icon"><i class="fas fa-clipboard-list"></i></div>
+          <div class="dash-card-label">Budgeted Expenses</div>
+        </div>
+
+        <div class="dash-card" data-box-type="profit-loss">
+          <div class="dash-card-icon"><i class="fas fa-chart-pie"></i></div>
+          <div class="dash-card-label">Profit &amp; Loss</div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Property Selection Modal -->
+  <div class="modal fade" id="propertyPickerModal" tabindex="-1" role="dialog" aria-labelledby="propertyPickerModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header" style="background: linear-gradient(135deg, #17a2b8 0%, #138496 100%); color: white;">
+          <h5 class="modal-title" id="propertyPickerModalLabel">
+            <i class="fas fa-building"></i> Select a Property
+          </h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="color:white;">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body" style="padding:0;">
+          <div class="property-picker-list">
+            {% for property in properties %}
+              <div class="property-picker-item"
+                   data-property-id="{{ property.prop_id }}"
+                   data-property-name="{{ property.prop_name }}">
                 <i class="fas fa-home"></i>
-                <span class="card-text">Valuation</span>
-            </div>
-
-            <div class="module-card" id="profit-loss" data-function="profitLoss" data-box-type="profit-loss">
-                <i class="fas fa-chart-pie"></i>
-                <span class="card-text">Profit & Loss</span>
-            </div>
-
-            <div class="module-card" id="revenues" data-function="revenues" data-box-type="revenues">
-                <i class="fas fa-dollar-sign"></i>
-                <span class="card-text">Revenues</span>
-            </div>
-
-            <!-- Sub-module Cards -->
-            <div class="sub-module-card" id="lease" data-function="lease" data-box-type="lease">
-                <i class="fas fa-file-contract"></i>
-                <span class="card-text">Lease</span>
-            </div>
-
-            <div class="sub-module-card" id="open-invoices" data-function="openInvoices" data-box-type="open-invoices">
-                <i class="fas fa-file-invoice-dollar"></i>
-                <span class="card-text">Invoices</span>
-            </div>
-
-            <div class="sub-module-card" id="lease-renewals" data-function="leaseRenewals" data-box-type="lease-renewals">
-                <i class="fas fa-sync-alt"></i>
-                <span class="card-text">Lease Renewals</span>
-            </div>
-
-            <div class="sub-module-card" id="actual-expenses" data-function="actualExpenses" data-box-type="actual-expenses">
-                <i class="fas fa-receipt"></i>
-                <span class="card-text">Actual</span>
-            </div>
-
-            <div class="sub-module-card" id="budgeted-expenses" data-function="budgetedExpenses" data-box-type="budgeted-expenses">
-                <i class="fas fa-clipboard-list"></i>
-                <span class="card-text">Budgeted</span>
-            </div>
+                <span>{{ property.prop_name }}</span>
+                <i class="fas fa-chevron-right picker-chevron"></i>
+              </div>
+            {% endfor %}
+          </div>
         </div>
+      </div>
     </div>
-
-    <!-- Notification -->
-    <div class="notification" id="notification"></div>
-
-    <!-- ==================== HELP MODAL ==================== -->
-    <div class="help-modal" id="helpModal">
-        <div class="help-modal-content">
-            <div class="help-modal-header">
-                <div class="help-modal-header-text">
-                    <h3><i class="fas fa-compass"></i> Property Dashboard &mdash; User Guide</h3>
-                    <small>An immersive, visual hub for exploring everything about a property</small>
-                </div>
-                <span class="help-close-modal" id="helpCloseModal">&times;</span>
-            </div>
-
-            <div class="help-tabs">
-                <button class="help-tab active" data-tab="overview"><i class="fas fa-info-circle"></i> Overview</button>
-                <button class="help-tab" data-tab="getstarted"><i class="fas fa-play-circle"></i> Getting Started</button>
-                <button class="help-tab" data-tab="modules"><i class="fas fa-th-large"></i> Main Modules</button>
-                <button class="help-tab" data-tab="submodules"><i class="fas fa-sitemap"></i> Sub-modules</button>
-                <button class="help-tab" data-tab="tips"><i class="fas fa-lightbulb"></i> Tips</button>
-            </div>
-
-            <div class="help-tab-body">
-
-                <!-- OVERVIEW -->
-                <div class="help-tab-pane active" id="tab-overview">
-                    <h4><i class="fas fa-compass"></i> What is the Dashboard?</h4>
-                    <p>The Property Dashboard is a <strong>visual, interactive hub</strong> for exploring everything about a single property. Instead of menus and tables, you get a glassmorphic radial interface: a centre property selector surrounded by 8 main modules, several of which expand into sub-modules.</p>
-                    <p>Pick a property in the centre, then click whichever angle of the property you want to explore &mdash; legal documents, financial performance, tenants, expenses, issues, valuation, and so on.</p>
-
-                    <h4><i class="fas fa-th"></i> What's on screen</h4>
-                    <ul>
-                        <li><strong>Centre hub</strong> &mdash; the property selector. Starts as <em>"Select Property"</em>; once you've picked one, it shows the property name.</li>
-                        <li><strong>8 main module cards</strong> arranged in a circle around the hub.</li>
-                        <li><strong>5 sub-module cards</strong> branching off the Tenant and Expenses cards.</li>
-                        <li><strong>Connection lines</strong> linking the hub to modules and modules to sub-modules &mdash; they brighten when a property is selected.</li>
-                    </ul>
-
-                    <div class="help-alert help-alert-info">
-                        <i class="fas fa-mouse-pointer"></i> <strong>Cards are dim until you select a property.</strong> That's intentional &mdash; nothing to click on until the system knows <em>which</em> property you want to look at.
-                    </div>
-                </div>
-
-                <!-- GETTING STARTED -->
-                <div class="help-tab-pane" id="tab-getstarted">
-                    <h4><i class="fas fa-play-circle"></i> Three steps to use the Dashboard</h4>
-
-                    <div class="help-info-card">
-                        <h5>1. Click the centre "Select Property" hub</h5>
-                        <p>A modal opens listing all your properties.</p>
-                    </div>
-
-                    <div class="help-info-card">
-                        <h5>2. Pick a property from the list</h5>
-                        <p>The modal closes, the centre hub shows your property name, and every card around it lights up &mdash; the dashboard is now "armed" for that property.</p>
-                    </div>
-
-                    <div class="help-info-card">
-                        <h5>3. Click any module card</h5>
-                        <p>You're navigated to the relevant detail view for the selected property &mdash; e.g. its title deed, its tenants, its open invoices, its profit &amp; loss summary.</p>
-                    </div>
-
-                    <h4><i class="fas fa-redo"></i> Switching property</h4>
-                    <p>Click the centre hub at any time to swap to a different property. All cards reflect the new selection immediately.</p>
-
-                    <h4><i class="fas fa-link"></i> Deep linking</h4>
-                    <p>You can pre-select a property by adding <code>?property=ID</code> to the dashboard URL. Useful when linking from other parts of the system.</p>
-
-                    <h4><i class="fas fa-keyboard"></i> Keyboard</h4>
-                    <p><code>Esc</code> closes the property picker (or this Help modal).</p>
-                </div>
-
-                <!-- MAIN MODULES -->
-                <div class="help-tab-pane" id="tab-modules">
-                    <h4><i class="fas fa-th-large"></i> The eight main module cards</h4>
-                    <p>Each card opens a detail view scoped to the selected property:</p>
-
-                    <div class="help-info-card">
-                        <h5><i class="fas fa-file-contract"></i> Title Deed</h5>
-                        <p><strong>View-only.</strong> Displays the uploaded title deed PDF for the property in an inline viewer. To upload, replace or delete the deed itself, use the <strong>Properties</strong> module.</p>
-                    </div>
-
-                    <div class="help-info-card">
-                        <h5><i class="fas fa-chart-line"></i> Property Report</h5>
-                        <p>A multi-section snapshot of the property: <strong>Property Address</strong>, <strong>Specifications</strong> (square meters, year built), <strong>Utility Accounts</strong>, <strong>Insurance &amp; Status</strong>, plus an <strong>Asset Summary</strong> covering asset statistics, financial summary (purchase value, maintenance cost), assets grouped by category, and a full <strong>Asset Details</strong> table with warranty expiry dates.</p>
-                    </div>
-
-                    <div class="help-info-card">
-                        <h5><i class="fas fa-users"></i> Tenant</h5>
-                        <p>The current tenant for the property: <strong>Type</strong> (Individual or Company), <strong>Contact Information</strong>, <strong>Lease Period</strong> (start/end dates), <strong>Financial Information</strong> (deposit, monthly rent, levies, payment terms), and <strong>Lease Details</strong> (rental type, renewal clause, notice period, renewal status, active flag). Branches into <strong>Lease</strong>, <strong>Invoices</strong> and <strong>Lease Renewals</strong> sub-modules.</p>
-                    </div>
-
-                    <div class="help-info-card">
-                        <h5><i class="fas fa-exclamation-triangle"></i> Issues</h5>
-                        <p>Maintenance, repairs and any open issues raised against this property. When there are none, displays a green <em>"Excellent! No issues have been reported"</em> empty state.</p>
-                    </div>
-
-                    <div class="help-info-card">
-                        <h5><i class="fas fa-home"></i> Valuation</h5>
-                        <p>Compares the original <strong>Purchase Price</strong> against the <strong>Current Value</strong>, with the gain or loss shown in &euro; and as a percentage, accompanied by a green/red trend arrow.</p>
-                    </div>
-
-                    <div class="help-info-card">
-                        <h5><i class="fas fa-dollar-sign"></i> Revenues</h5>
-                        <p>A breakdown of the property's revenue lines &mdash; typically <strong>Rental</strong> and <strong>Levies</strong> &mdash; each with its <em>Revenue Type</em> (Monthly, Yearly) and <em>Amount</em>. Pulled from the tenant's lease data.</p>
-                    </div>
-
-                    <div class="help-info-card no-click">
-                        <h5><i class="fas fa-calculator"></i> Expenses <small style="font-weight:normal;">(parent only &mdash; not directly clickable)</small></h5>
-                        <p>The Expenses card itself is intentionally <strong>not clickable</strong>. You'll get a notification asking you to pick either <strong>Actual</strong> or <strong>Budgeted</strong> instead. Those are the two sub-module cards branching off it.</p>
-                    </div>
-
-                    <div class="help-info-card">
-                        <h5><i class="fas fa-chart-pie"></i> Profit &amp; Loss</h5>
-                        <p>A full 12-month <strong>P&amp;L statement</strong> for the property: <strong>Revenue</strong> rows (Levies, Rental), <strong>Expenses</strong> rows (Communal Fees, Company Tax, Insurance, Prop Tax, Property Manager, etc.) and a <strong>Net Profit</strong> row &mdash; broken down month by month with additional <em>Total</em> and <em>Monthly</em> average columns. A <strong>Budget</strong> toggle in the top-right switches between Actual and Budget views. Below the table, a <strong>Financial Indicators</strong> panel surfaces headline KPIs: Gross ROI, Net ROI, Expenses to Revenue, Rent &euro;/m&sup2;, and % Value Increase.</p>
-                    </div>
-                </div>
-
-                <!-- SUB-MODULES -->
-                <div class="help-tab-pane" id="tab-submodules">
-                    <h4><i class="fas fa-sitemap"></i> Sub-module cards</h4>
-                    <p>Five smaller cards branch off two of the main modules:</p>
-
-                    <h4 style="color:#138496;"><i class="fas fa-users"></i> Branching from Tenant</h4>
-
-                    <div class="help-info-card">
-                        <h5><i class="fas fa-file-contract"></i> Lease</h5>
-                        <p><strong>View-only.</strong> Inline PDF display of the current lease agreement document. Page title shows the property and tenant in parentheses for context.</p>
-                    </div>
-
-                    <div class="help-info-card">
-                        <h5><i class="fas fa-file-invoice-dollar"></i> Invoices</h5>
-                        <p>Open invoices for this property's current tenant. The header shows the <strong>Total Amount Due</strong> in red. Each row lists Invoice Date, Due Date, <strong>Days Overdue</strong>, Amount, and a red <em>Overdue</em> badge in the Status column. Scoped to this property only &mdash; for the system-wide list, use the main Invoices module.</p>
-                    </div>
-
-                    <div class="help-info-card">
-                        <h5><i class="fas fa-sync-alt"></i> Lease Renewals</h5>
-                        <p>The renewal state of the current lease. While the lease is still active, displays a green confirmation: <em>"Current lease is active. No renewal action required at this time."</em> together with the tenant name and lease end date. As expiry approaches, the screen prompts for renewal action.</p>
-                    </div>
-
-                    <h4 style="color:#138496;"><i class="fas fa-calculator"></i> Branching from Expenses</h4>
-
-                    <div class="help-info-card">
-                        <h5><i class="fas fa-receipt"></i> Actual</h5>
-                        <p>A table of expenses actually incurred for this property, with columns for Date, Description, Amount, and a green <strong>invoice icon</strong> that opens the scanned receipt PDF in a popup viewer. A <strong>Year filter</strong> sits in the top-right; the bottom row sums to <em>Total Actual Expenses for [year]</em>.</p>
-                    </div>
-
-                    <div class="help-info-card">
-                        <h5><i class="fas fa-clipboard-list"></i> Budgeted</h5>
-                        <p>The planned expense schedule for this property. Each row lists an <strong>Expense Line Type</strong> (Communal Fees, Company Tax, Insurance, Property Manager, Refuse, etc.), an <strong>Expense Type</strong> indicating <em>when</em> the cost falls (a specific month like <em>June</em> for one-off payments, or <em>Monthly</em> for recurring), and the budgeted <strong>Amount</strong>. This is the baseline that <em>Actual</em> is compared against.</p>
-                    </div>
-
-                    <div class="help-alert help-alert-info">
-                        <i class="fas fa-info-circle"></i> <strong>Why split Expenses into Actual and Budgeted?</strong> Comparing the two is the heart of expense control. Looking at one without the other only tells half the story.
-                    </div>
-                </div>
-
-                <!-- TIPS -->
-                <div class="help-tab-pane" id="tab-tips">
-                    <h4><i class="fas fa-lightbulb"></i> Best Practices</h4>
-                    <ul>
-                        <li><strong>Always pick a property first</strong> &mdash; everything else is locked until you do. The dim cards are a deliberate hint.</li>
-                        <li><strong>Use this as your starting point per property</strong> &mdash; if you're investigating one specific property end-to-end, the Dashboard is faster than navigating module-by-module from the top menu.</li>
-                        <li><strong>Don't try to click the Expenses parent card</strong> &mdash; it's deliberately a "container" only. Click <em>Actual</em> or <em>Budgeted</em> instead.</li>
-                        <li><strong>Compare Actual vs Budgeted</strong> &mdash; click both in turn to spot variances. Big swings either way are worth investigating.</li>
-                        <li><strong>Switch properties without leaving the page</strong> &mdash; click the centre hub again any time. Faster than going Back and re-entering.</li>
-                        <li><strong>Use deep links</strong> &mdash; bookmark <code>?property=ID</code> URLs for properties you check often.</li>
-                        <li><strong>Profit &amp; Loss is the executive view</strong> &mdash; the full 12-month grid plus the Financial Indicators row gives you a property's complete financial picture in one screen. If you only have time for one card per property, it's this one.</li>
-                        <li><strong>Use the Budget toggle on Profit &amp; Loss</strong> &mdash; flip between Actual and Budget views to see where the property is over- or under-performing against the plan.</li>
-                    </ul>
-
-                    <div class="help-alert help-alert-warning">
-                        <i class="fas fa-exclamation-triangle"></i> <strong>Cards still dim after picking a property?</strong> Try clicking the centre hub and re-selecting. If the issue persists, refresh the page.
-                    </div>
-                </div>
-
-            </div>
-
-            <div class="help-modal-footer">
-                <small>Alivente Online &mdash; Property Dashboard User Guide</small>
-                <button type="button" class="help-modal-close-btn" id="helpModalCloseBtn">
-                    <i class="fas fa-times"></i> Close
-                </button>
-            </div>
-        </div>
-    </div>
-    <!-- ==================== END HELP MODAL ==================== -->
-
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script>
-        console.log('=== IMMERSIVE GLASSMORPHISM DASHBOARD LOADED ===');
-
-        class ModernPropertyDashboard {
-            constructor() {
-                this.selectedProperty = null;
-                this.selectedPropertyName = null;
-                this.centerHub = document.getElementById('centerHub');
-                this.propertyDisplayText = document.getElementById('propertyDisplayText');
-                this.propertyModal = document.getElementById('propertyModal');
-                this.closeModal = document.getElementById('closeModal');
-                this.notificationTimeout = null;
-                
-                // Updated positions with SVG line IDs
-                this.modulePositions = [
-                    { angle: 270, id: 'title-deed', lineId: 'svg-line-deed', text: 'Title Deed' },
-                    { angle: 315, id: 'property-report', lineId: 'svg-line-report', text: 'Property Report' },
-                    { angle: 350, id: 'tenant', lineId: 'svg-line-tenant', text: 'Tenant' },
-                    { angle: 45, id: 'issues', lineId: 'svg-line-issues', text: 'Issues' },
-                    { angle: 90, id: 'property-valuations', lineId: 'svg-line-valuations', text: 'Valuation' },
-                    { angle: 135, id: 'revenues', lineId: 'svg-line-revenues', text: 'Revenues' },
-                    { angle: 180, id: 'expenses', lineId: 'svg-line-expenses', text: 'Expenses' },
-                    { angle: 225, id: 'profit-loss', lineId: 'svg-line-pl', text: 'Profit & Loss' }
-                ];
-
-                this.subModulePositions = [
-                    { angle: 325, id: 'lease', lineId: 'svg-subline-lease', parentId: 'tenant', text: 'Lease' },
-                    { angle: 10, id: 'open-invoices', lineId: 'svg-subline-invoices', parentId: 'tenant', text: 'Invoices' },
-                    { angle: 55, id: 'lease-renewals', lineId: 'svg-subline-renewals', parentId: 'tenant', text: 'Lease Renewals' },
-                    { angle: 160, id: 'actual-expenses', lineId: 'svg-subline-actual', parentId: 'expenses', text: 'Actual' },
-                    { angle: 200, id: 'budgeted-expenses', lineId: 'svg-subline-budgeted', parentId: 'expenses', text: 'Budgeted' }
-                ];
-
-                this.init();
-            }
-
-            init() {
-                this.positionElements();
-                this.bindEvents();
-                this.updateElementsVisibility();
-                
-                // Check for pre-selected property
-                const urlParams = new URLSearchParams(window.location.search);
-                const preSelectedProperty = urlParams.get('property');
-                if (preSelectedProperty) {
-                    const propertyItems = document.querySelectorAll('.property-item');
-                    const matchingItem = Array.from(propertyItems).find(item => 
-                        item.getAttribute('data-property-id') === preSelectedProperty
-                    );
-                    if (matchingItem) {
-                        const propertyName = matchingItem.getAttribute('data-property-name');
-                        this.selectProperty(preSelectedProperty, propertyName);
-                    }
-                }
-            }
-
-            positionElements() {
-                const container = document.querySelector('.dashboard-container');
-                if (!container) return;
-                
-                const containerRect = container.getBoundingClientRect();
-                const centerX = containerRect.width / 2;
-                const centerY = containerRect.height / 2;
-                
-                const baseDistance = Math.min(containerRect.width, containerRect.height) * 0.35;
-                const subDistance = baseDistance * 0.72;
-
-                // Position main modules and draw SVG connection lines
-                this.modulePositions.forEach(pos => {
-                    const radian = (pos.angle * Math.PI) / 180;
-                    const x = centerX + Math.cos(radian) * baseDistance;
-                    const y = centerY + Math.sin(radian) * baseDistance;
-
-                    const card = document.getElementById(pos.id);
-                    const line = document.getElementById(pos.lineId);
-
-                    if (card) {
-                        // Position the card
-                        card.style.left = `${x - card.offsetWidth / 2}px`;
-                        card.style.top = `${y - card.offsetHeight / 2}px`;
-                    }
-
-                    if (line) {
-                        // Calculate line endpoints
-                        const hubRadius = 120; // Approximate center hub radius
-                        const cardRadius = 60; // Approximate card radius
-                        
-                        const startX = centerX + Math.cos(radian) * hubRadius;
-                        const startY = centerY + Math.sin(radian) * hubRadius;
-                        const endX = centerX + Math.cos(radian) * (baseDistance - cardRadius);
-                        const endY = centerY + Math.sin(radian) * (baseDistance - cardRadius);
-
-                        line.setAttribute('x1', startX);
-                        line.setAttribute('y1', startY);
-                        line.setAttribute('x2', endX);
-                        line.setAttribute('y2', endY);
-                    }
-                });
-
-                // Position sub-modules and draw their SVG connection lines
-                this.subModulePositions.forEach(pos => {
-                    const parentCard = document.getElementById(pos.parentId);
-                    if (parentCard) {
-                        const parentRect = parentCard.getBoundingClientRect();
-                        const containerRect = container.getBoundingClientRect();
-                        
-                        const parentCenterX = parentRect.left - containerRect.left + parentRect.width / 2;
-                        const parentCenterY = parentRect.top - containerRect.top + parentRect.height / 2;
-
-                        const radian = (pos.angle * Math.PI) / 180;
-                        const x = parentCenterX + Math.cos(radian) * subDistance;
-                        const y = parentCenterY + Math.sin(radian) * subDistance;
-
-                        const card = document.getElementById(pos.id);
-                        const line = document.getElementById(pos.lineId);
-
-                        if (card) {
-                            // Position the sub-card
-                            card.style.left = `${x - card.offsetWidth / 2}px`;
-                            card.style.top = `${y - card.offsetHeight / 2}px`;
-                        }
-
-                        if (line) {
-                            // Calculate sub-line endpoints
-                            const parentRadius = 40; // Approximate parent card radius
-                            const cardRadius = 35; // Approximate sub-card radius
-                            
-                            const startX = parentCenterX + Math.cos(radian) * parentRadius;
-                            const startY = parentCenterY + Math.sin(radian) * parentRadius;
-                            const endX = parentCenterX + Math.cos(radian) * (subDistance - cardRadius);
-                            const endY = parentCenterY + Math.sin(radian) * (subDistance - cardRadius);
-
-                            line.setAttribute('x1', startX);
-                            line.setAttribute('y1', startY);
-                            line.setAttribute('x2', endX);
-                            line.setAttribute('y2', endY);
-                        }
-                    }
-                });
-            }
-
-            bindEvents() {
-                // Center hub click to open modal
-                this.centerHub.addEventListener('click', () => {
-                    this.openPropertyModal();
-                });
-
-                // Close modal events
-                this.closeModal.addEventListener('click', () => {
-                    this.closePropertyModal();
-                });
-
-                this.propertyModal.addEventListener('click', (e) => {
-                    if (e.target === this.propertyModal) {
-                        this.closePropertyModal();
-                    }
-                });
-
-                // Property item clicks
-                document.querySelectorAll('.property-item').forEach(item => {
-                    item.addEventListener('click', (e) => {
-                        const propertyId = e.target.closest('.property-item').getAttribute('data-property-id');
-                        const propertyName = e.target.closest('.property-item').getAttribute('data-property-name');
-                        this.selectProperty(propertyId, propertyName);
-                        this.closePropertyModal();
-                    });
-                });
-
-                // Module card clicks
-                document.querySelectorAll('.module-card').forEach(card => {
-                    card.addEventListener('click', (e) => {
-                        if (card.classList.contains('enabled')) {
-                            this.handleModuleClick(e.target.closest('.module-card'));
-                        }
-                    });
-                });
-
-                // Sub-module card clicks
-                document.querySelectorAll('.sub-module-card').forEach(card => {
-                    card.addEventListener('click', (e) => {
-                        if (card.classList.contains('enabled')) {
-                            this.handleSubModuleClick(e.target.closest('.sub-module-card'));
-                        }
-                    });
-                });
-
-                // Window resize
-                window.addEventListener('resize', () => {
-                    setTimeout(() => this.positionElements(), 100);
-                });
-
-                // ESC key to close modal
-                document.addEventListener('keydown', (e) => {
-                    if (e.key === 'Escape' && this.propertyModal.style.display === 'block') {
-                        this.closePropertyModal();
-                    }
-                });
-            }
-
-            selectProperty(propertyId, propertyName = null) {
-                this.selectedProperty = propertyId;
-                
-                if (propertyId && propertyName) {
-                    this.selectedPropertyName = propertyName;
-                    this.propertyDisplayText.textContent = propertyName;
-                } else {
-                    this.selectedPropertyName = null;
-                    this.propertyDisplayText.textContent = 'Select Property';
-                }
-
-                this.updateElementsVisibility();
-            }
-
-            openPropertyModal() {
-                this.propertyModal.style.display = 'block';
-                document.body.style.overflow = 'hidden';
-            }
-
-            closePropertyModal() {
-                this.propertyModal.style.display = 'none';
-                document.body.style.overflow = 'auto';
-            }
-
-            updateElementsVisibility() {
-                const svgLines = document.querySelectorAll('#connectionSvg line');
-                const moduleCards = document.querySelectorAll('.module-card');
-                const subModuleCards = document.querySelectorAll('.sub-module-card');
-
-                // Update SVG connection lines
-                svgLines.forEach(line => {
-                    if (this.selectedProperty) {
-                        line.setAttribute('stroke', 'url(#lineGradientSelected)');
-                        line.setAttribute('opacity', '1');
-                    } else {
-                        line.setAttribute('stroke', 'url(#lineGradient)');
-                        line.setAttribute('opacity', '0.7');
-                    }
-                });
-
-                // Update module cards
-                moduleCards.forEach(card => {
-                    if (this.selectedProperty) {
-                        card.classList.add('enabled');
-                    } else {
-                        card.classList.remove('enabled');
-                    }
-                });
-
-                // Update sub-module cards
-                subModuleCards.forEach(card => {
-                    if (this.selectedProperty) {
-                        card.classList.add('enabled');
-                    } else {
-                        card.classList.remove('enabled');
-                    }
-                });
-
-                // Update center hub
-                if (this.selectedProperty) {
-                    this.centerHub.classList.add('property-selected');
-                } else {
-                    this.centerHub.classList.remove('property-selected');
-                }
-            }
-
-            handleModuleClick(element) {
-                if (!this.selectedProperty) {
-                    this.showNotification('Please select a property first!', 'error');
-                    return;
-                }
-
-                const boxType = element.getAttribute('data-box-type');
-                
-                // Block the expenses card from being clickable
-                if (boxType === 'expenses') {
-                    this.showNotification('Please select either "Actual" or "Budgeted" Expenses.', 'error');
-                    return;
-                }
-
-                // Remove previous clicked states
-                document.querySelectorAll('.module-card').forEach(card => {
-                    card.classList.remove('clicked');
-                });
-
-                element.classList.add('clicked');
-                
-                // Special handling for Profit & Loss
-                if (boxType === 'profit-loss') {
-                    setTimeout(() => {
-                        this.redirectToProfitLossDashboard(this.selectedProperty);
-                        element.classList.remove('clicked');
-                    }, 500);
-                } else {
-                    setTimeout(() => {
-                        this.redirectToPropertyDetail(this.selectedProperty, boxType);
-                        element.classList.remove('clicked');
-                    }, 500);
-                }
-            }
-
-            handleSubModuleClick(element) {
-                if (!this.selectedProperty) {
-                    this.showNotification('Please select a property first!', 'error');
-                    return;
-                }
-
-                const boxType = element.getAttribute('data-box-type');
-                
-                // Remove previous clicked states
-                document.querySelectorAll('.sub-module-card').forEach(card => {
-                    card.classList.remove('clicked');
-                });
-
-                element.classList.add('clicked');
-
-                setTimeout(() => {
-                    this.redirectToPropertyDetail(this.selectedProperty, boxType);
-                    element.classList.remove('clicked');
-                }, 500);
-            }
-
-            redirectToPropertyDetail(propertyId, boxType) {
-                const url = `/property_detail/${propertyId}/${boxType}/`;
-                window.location.href = url;
-            }
-
-            redirectToProfitLossDashboard(propertyId) {
-                const url = `/property/${propertyId}/profit-loss/`;
-                window.location.href = url;
-            }
-
-            showNotification(message, type = 'success') {
-                const notification = document.getElementById('notification');
-                
-                if (this.notificationTimeout) {
-                    clearTimeout(this.notificationTimeout);
-                }
-                
-                notification.className = 'notification';
-                notification.textContent = message;
-                
-                if (type === 'error') {
-                    notification.classList.add('error');
-                } else if (type === 'info') {
-                    notification.classList.add('info');
-                }
-                
-                setTimeout(() => {
-                    notification.classList.add('show');
-                }, 10);
-                
-                this.notificationTimeout = setTimeout(() => {
-                    notification.classList.remove('show');
-                    
-                    setTimeout(() => {
-                        notification.classList.remove('error', 'info');
-                    }, 400);
-                }, 3000);
-            }
+  </div>
+
+  {% render_help_modal "dashboard" %}
+
+</div>
+
+<style>
+/* ==================== PROPERTY SELECTOR CARD ==================== */
+.property-selector-card {
+  background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+  border-radius: 12px;
+  padding: 24px 30px;
+  margin-bottom: 30px;
+  box-shadow: 0 4px 12px rgba(23, 162, 184, 0.25);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: white;
+}
+
+.property-selector-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(23, 162, 184, 0.35);
+}
+
+.property-selector-card.property-selected {
+  background: linear-gradient(135deg, #138496 0%, #0c5460 100%);
+}
+
+.selector-inner {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.selector-label {
+  font-size: 13px;
+  font-weight: 500;
+  opacity: 0.85;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.selector-value {
+  font-size: 22px;
+  font-weight: 700;
+  flex: 1;
+  min-width: 200px;
+}
+
+.selector-hint {
+  font-size: 13px;
+  opacity: 0.8;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+/* ==================== DASHBOARD SECTIONS ==================== */
+.dashboard-grids {
+  opacity: 0.45;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.dashboard-grids.armed {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.dashboard-section {
+  margin-bottom: 30px;
+}
+
+.section-title {
+  color: #2c3e50;
+  font-weight: 600;
+  margin-bottom: 15px;
+  padding-bottom: 8px;
+  border-bottom: 2px solid #17a2b8;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.section-title i {
+  color: #17a2b8;
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+/* ==================== DASHBOARD CARDS ==================== */
+.dash-card {
+  background: white;
+  border: 1px solid #dee2e6;
+  border-radius: 10px;
+  padding: 24px 18px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 130px;
+}
+
+.dash-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(23, 162, 184, 0.15);
+  border-color: #17a2b8;
+}
+
+.dash-card:hover .dash-card-icon {
+  color: #138496;
+  transform: scale(1.1);
+}
+
+.dash-card-icon {
+  font-size: 32px;
+  color: #17a2b8;
+  margin-bottom: 10px;
+  transition: all 0.25s ease;
+}
+
+.dash-card-label {
+  font-size: 15px;
+  font-weight: 600;
+  color: #2c3e50;
+  letter-spacing: 0.3px;
+}
+
+/* Active/clicked state */
+.dash-card.clicked {
+  transform: scale(0.97);
+  box-shadow: 0 2px 6px rgba(23, 162, 184, 0.3);
+  background: #e7f5f8;
+}
+
+/* ==================== PROPERTY PICKER LIST ==================== */
+.property-picker-list {
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+.property-picker-item {
+  padding: 16px 24px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  cursor: pointer;
+  border-bottom: 1px solid #f1f3f5;
+  transition: all 0.2s ease;
+}
+
+.property-picker-item:last-child {
+  border-bottom: none;
+}
+
+.property-picker-item:hover {
+  background: #e7f5f8;
+  padding-left: 30px;
+}
+
+.property-picker-item > i:first-child {
+  color: #17a2b8;
+  font-size: 18px;
+}
+
+.property-picker-item span {
+  flex: 1;
+  font-weight: 500;
+  color: #2c3e50;
+}
+
+.picker-chevron {
+  color: #adb5bd;
+  font-size: 12px;
+  transition: transform 0.2s ease;
+}
+
+.property-picker-item:hover .picker-chevron {
+  color: #17a2b8;
+  transform: translateX(4px);
+}
+
+/* ==================== RESPONSIVE ==================== */
+@media (max-width: 768px) {
+  .selector-inner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .selector-value {
+    font-size: 18px;
+  }
+
+  .dashboard-grid {
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  }
+
+  .dash-card {
+    min-height: 110px;
+    padding: 18px 12px;
+  }
+
+  .dash-card-icon {
+    font-size: 26px;
+  }
+
+  .dash-card-label {
+    font-size: 13px;
+  }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+
+  var selectedProperty = null;
+  var selectedPropertyName = null;
+
+  var selectorCard = document.getElementById('propertySelectorCard');
+  var propertyDisplayText = document.getElementById('propertyDisplayText');
+  var dashboardGrids = document.getElementById('dashboardGrids');
+  var pickerItems = document.querySelectorAll('.property-picker-item');
+  var dashCards = document.querySelectorAll('.dash-card');
+
+  // Open picker modal when selector card is clicked
+  selectorCard.addEventListener('click', function() {
+    $('#propertyPickerModal').modal('show');
+  });
+
+  // Handle property selection
+  pickerItems.forEach(function(item) {
+    item.addEventListener('click', function() {
+      var propId = item.getAttribute('data-property-id');
+      var propName = item.getAttribute('data-property-name');
+      selectProperty(propId, propName);
+      $('#propertyPickerModal').modal('hide');
+    });
+  });
+
+  // Handle card clicks (navigation)
+  dashCards.forEach(function(card) {
+    card.addEventListener('click', function() {
+      if (!selectedProperty) {
+        return; // Cards are pointer-events:none when no property, but safety check
+      }
+
+      var boxType = card.getAttribute('data-box-type');
+
+      // Visual feedback
+      card.classList.add('clicked');
+      setTimeout(function() { card.classList.remove('clicked'); }, 300);
+
+      // Navigate
+      setTimeout(function() {
+        if (boxType === 'profit-loss') {
+          window.location.href = '/property/' + selectedProperty + '/profit-loss/';
+        } else {
+          window.location.href = '/property_detail/' + selectedProperty + '/' + boxType + '/';
         }
+      }, 200);
+    });
+  });
 
-        // Initialize the dashboard when the page loads
-        document.addEventListener('DOMContentLoaded', () => {
-            new ModernPropertyDashboard();
+  // Selection handler
+  function selectProperty(propId, propName) {
+    selectedProperty = propId;
+    selectedPropertyName = propName;
+    propertyDisplayText.textContent = propName;
+    selectorCard.classList.add('property-selected');
+    dashboardGrids.classList.add('armed');
+  }
 
-            // ============== HELP MODAL CONTROLLER ==============
-            const helpModal = document.getElementById('helpModal');
-            const helpButton = document.getElementById('helpButton');
-            const helpCloseModal = document.getElementById('helpCloseModal');
-            const helpModalCloseBtn = document.getElementById('helpModalCloseBtn');
-            const helpTabs = document.querySelectorAll('.help-tab');
-            const helpTabPanes = document.querySelectorAll('.help-tab-pane');
+  // Pre-select from URL param
+  var urlParams = new URLSearchParams(window.location.search);
+  var preSelectedProperty = urlParams.get('property');
+  if (preSelectedProperty) {
+    var matchingItem = Array.from(pickerItems).find(function(item) {
+      return item.getAttribute('data-property-id') === preSelectedProperty;
+    });
+    if (matchingItem) {
+      selectProperty(
+        matchingItem.getAttribute('data-property-id'),
+        matchingItem.getAttribute('data-property-name')
+      );
+    }
+  }
 
-            function openHelpModal() {
-                helpModal.classList.add('show');
-                document.body.style.overflow = 'hidden';
-            }
+  // Auto-dismiss messages
+  setTimeout(function() {
+    document.querySelectorAll('.auto-dismiss').forEach(function(alert) {
+      alert.classList.remove('show');
+      alert.classList.add('fade');
+      setTimeout(function() { alert.remove(); }, 500);
+    });
+  }, 2000);
 
-            function closeHelpModal() {
-                helpModal.classList.remove('show');
-                document.body.style.overflow = 'auto';
-            }
+});
+</script>
 
-            if (helpButton) helpButton.addEventListener('click', openHelpModal);
-            if (helpCloseModal) helpCloseModal.addEventListener('click', closeHelpModal);
-            if (helpModalCloseBtn) helpModalCloseBtn.addEventListener('click', closeHelpModal);
-
-            if (helpModal) {
-                helpModal.addEventListener('click', function(e) {
-                    if (e.target === helpModal) {
-                        closeHelpModal();
-                    }
-                });
-            }
-
-            document.addEventListener('keydown', function(e) {
-                if (e.key === 'Escape' && helpModal && helpModal.classList.contains('show')) {
-                    closeHelpModal();
-                }
-            });
-
-            helpTabs.forEach(function(tab) {
-                tab.addEventListener('click', function() {
-                    const targetTab = this.getAttribute('data-tab');
-                    helpTabs.forEach(function(t) { t.classList.remove('active'); });
-                    helpTabPanes.forEach(function(p) { p.classList.remove('active'); });
-                    this.classList.add('active');
-                    const targetPane = document.getElementById('tab-' + targetTab);
-                    if (targetPane) targetPane.classList.add('active');
-                });
-            });
-            // ============== END HELP MODAL CONTROLLER ==============
-        });
-
-        console.log('🚀 === IMMERSIVE GLASSMORPHISM DASHBOARD COMPLETE ===');
-    </script>
-</body>
-</html>
+{% endblock %}
