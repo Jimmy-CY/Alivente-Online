@@ -1,0 +1,984 @@
+<!-- Administration & Personal modules help content -->
+
+<!-- ======= PROPERTIES ======= -->
+<section data-module-slug="properties"
+         data-module-name="Properties"
+         data-module-icon="fa-home"
+         data-module-category="Administration"
+         data-module-subtitle="The central hub of Alivente Online &mdash; manage your entire property portfolio">
+
+  <article data-tab-slug="pr-overview"
+           data-tab-name="Overview"
+           data-tab-icon="fa-info-circle">
+    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-info-circle"></i> What is the Properties Module?</h5>
+    <p>The Properties module is the <strong>central hub of Alivente Online</strong>. It lets you manage your entire property portfolio &mdash; from recording property details and locations to tracking assets, title deeds, utility accounts, and generating property reports.</p>
+
+    <p>Every other module in the system depends on the data you capture here. Tenants attach to properties; revenues, expenses, and valuations all reference properties; reports like the P&amp;L and Vacancy Management aggregate data across properties. Getting this module right pays dividends everywhere else.</p>
+
+    <h6 style="margin-top:20px; color:#2c3e50; font-weight:700;"><i class="fas fa-star"></i> Key features</h6>
+
+    <div class="alert" style="background:#e7f5f8; border-left:4px solid #17a2b8;">
+      <strong><i class="fas fa-list"></i> Property List</strong>
+      <p class="mb-0 mt-2">Every property at a glance with its country, status, and quick-access action buttons for editing, viewing the report, opening the title deed, and browsing assets.</p>
+    </div>
+
+    <div class="alert" style="background:#e7f5f8; border-left:4px solid #17a2b8;">
+      <strong><i class="fas fa-map-marked-alt"></i> Map View</strong>
+      <p class="mb-0 mt-2">See all properties plotted on an interactive map. Instantly visualise your portfolio's geographic spread. Click <strong>Map View</strong> in the top action bar.</p>
+    </div>
+
+    <div class="alert" style="background:#e7f5f8; border-left:4px solid #17a2b8;">
+      <strong><i class="fas fa-file-alt"></i> Property Reports</strong>
+      <p class="mb-0 mt-2">Generate a detailed report for any property &mdash; address, specifications, utility accounts, insurance, status, and a full asset summary. Useful for meetings with lawyers, accountants, or tenants.</p>
+    </div>
+
+    <div class="alert" style="background:#e7f5f8; border-left:4px solid #17a2b8;">
+      <strong><i class="fas fa-scroll"></i> Title Deeds</strong>
+      <p class="mb-0 mt-2">Upload and store PDF title deeds for each property. View and download them at any time directly from the property list &mdash; a secure, centralised home for your legal documents.</p>
+    </div>
+
+    <div class="alert" style="background:#e7f5f8; border-left:4px solid #17a2b8;">
+      <strong><i class="fas fa-briefcase"></i> Asset Tracking</strong>
+      <p class="mb-0 mt-2">Record every physical asset (appliances, electronics, furniture) within each property, including brand, purchase date, supplier, and warranty expiry.</p>
+    </div>
+
+    <div class="alert" style="background:#e7f5f8; border-left:4px solid #17a2b8;">
+      <strong><i class="fas fa-filter"></i> Filtering</strong>
+      <p class="mb-0 mt-2">Filter properties by name, country, and status. Active filters are shown as removable tags. Use Clear All to reset.</p>
+    </div>
+
+    <div class="alert alert-warning" style="border-left:4px solid #ffc107; margin-top:20px;">
+      <i class="fas fa-exclamation-triangle"></i> <strong>Important:</strong> Properties marked as <strong>Active</strong> and <strong>Available for Rent</strong> are included in vacancy calculations across the system. Make sure your property statuses are kept up to date &mdash; stale statuses lead to misleading dashboards.
+    </div>
+  </article>
+
+  <article data-tab-slug="pr-list"
+           data-tab-name="Property List"
+           data-tab-icon="fa-list">
+    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-list"></i> Understanding the Property List</h5>
+    <p>Each row on the table represents one property. The columns are:</p>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;">The 7 columns</h6>
+    <ul style="line-height:1.8;">
+      <li><strong>Property</strong> &mdash; The property name as entered in the system.</li>
+      <li><strong>Country</strong> &mdash; The country where the property is located (Cyprus, Greece, Spain, etc.).</li>
+      <li><strong>Status</strong> &mdash; Either <span style="background:#d4edda; color:#155724; padding:2px 8px; border-radius:10px; font-size:11px; font-weight:600;">Active</span> (included in all calculations) or <span style="background:#f8d7da; color:#721c24; padding:2px 8px; border-radius:10px; font-size:11px; font-weight:600;">Inactive</span> (excluded from vacancy and occupancy calculations).</li>
+      <li><strong>Details</strong> &mdash; Opens the Edit Property form (superuser-only for editing; others see a disabled button).</li>
+      <li><strong>Report</strong> &mdash; Generates the full Property Details Report (address, specifications, utility accounts, asset summary).</li>
+      <li><strong>Title Deed</strong> &mdash; Opens the stored title deed PDF in a viewer. Shows "Unavailable" if none has been uploaded.</li>
+      <li><strong>Assets</strong> &mdash; Opens the Asset Manager for this property. Shows "None" if no assets have been recorded.</li>
+    </ul>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-filter"></i> Using the filter panel</h6>
+    <p>Click the <strong>Property Filters</strong> bar at the top to expand filter options. You can filter by:</p>
+    <ul>
+      <li><strong>Search Property</strong> &mdash; free-text search on the property name</li>
+      <li><strong>Country</strong> &mdash; dropdown with each country represented in your portfolio</li>
+      <li><strong>Status</strong> &mdash; Active or Inactive</li>
+    </ul>
+    <p>Filters are combinative &mdash; all selected filters apply at the same time. Active filter tags appear at the bottom of the panel and can be removed individually, or use <strong>Clear All</strong> to reset everything.</p>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-map"></i> Map View</h6>
+    <p>Click the <strong>Map View</strong> button at the top to see all properties as pins on an interactive map. The pins respect the current filter &mdash; so if you're filtered to Cyprus only, only Cyprus properties appear on the map. Use <strong>Center Map</strong> to reset the zoom to show all visible properties.</p>
+
+    <div class="alert alert-info" style="border-left:4px solid #17a2b8; margin-top:18px;">
+      <i class="fas fa-lightbulb"></i> <strong>Tip:</strong> For a property to show on the Map View, its address must be correctly geocoded. If a property is missing from the map, open its Edit form and check the map location &mdash; you may need to use <em>Find Address on Map</em> to set or correct the pin.
+    </div>
+  </article>
+
+  <article data-tab-slug="pr-addedit"
+           data-tab-name="Add / Edit"
+           data-tab-icon="fa-edit">
+    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-edit"></i> Adding and Editing Properties</h5>
+    <p>Click <strong>Add New</strong> in the top-right to create a new property, or the <strong>Edit</strong> button on any row to update an existing one. Both forms contain the same six sections.</p>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-tag"></i> 1. Property Name</h6>
+    <p>Give it a clear, descriptive name (e.g. <em>"Ionion - Villa 24"</em>). This name appears throughout the system &mdash; on the P&amp;L rows, in tenant records, in reports, on maps. A consistent naming convention helps enormously: prefix by building or area, then unit identifier.</p>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-map-marker-alt"></i> 2. Address</h6>
+    <p>Fill in the full address &mdash; <strong>Address Line 1</strong>, <strong>Address Line 2</strong>, <strong>Suburb</strong>, <strong>City</strong>, <strong>Province</strong>, <strong>Country</strong>, <strong>Post Code</strong>. A complete address ensures accurate map placement and correctly-rendered reports.</p>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-globe"></i> 3. Map Location</h6>
+    <p>Two ways to set the pin:</p>
+    <ul>
+      <li><strong>Click directly on the map</strong> &mdash; drops a pin at the clicked location</li>
+      <li><strong>Use "Find Address on Map"</strong> &mdash; auto-locates the pin based on the address fields you've filled in</li>
+    </ul>
+    <p>Use <strong>Clear Location</strong> to remove a saved pin. A pin is required for Map View to display the property.</p>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-ruler-combined"></i> 4. Specifications</h6>
+    <ul>
+      <li><strong>Floor Area (m&sup2;)</strong> &mdash; used for the Rent/m&sup2; KPI on Financial Indicators</li>
+      <li><strong>Year Built</strong> &mdash; informational</li>
+      <li><strong>Include in Occupancy Calculations</strong> &mdash; <em>Yes</em> means this property counts on Vacancy Management and Performance Trends. Set to <em>No</em> for owner-occupied properties, short-term/summer-let properties, or properties not rented on a traditional basis.</li>
+    </ul>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-toggle-on"></i> 5. Status &amp; Availability</h6>
+    <ul>
+      <li><strong>Status</strong> &mdash; Active or Inactive. Inactive properties are hidden from most reports.</li>
+      <li><strong>Available for Rent</strong> &mdash; Active + Available for Rent + no current tenant = counts as <em>Vacant</em> in Notifications and the Dashboard.</li>
+      <li><strong>Title Deed Available</strong> &mdash; indicates whether you hold a deed for this property. The actual PDF is uploaded separately.</li>
+    </ul>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-bolt"></i> 6. Utility Accounts</h6>
+    <p>Record account numbers and supplier info for:</p>
+    <ul>
+      <li>Electricity</li>
+      <li>Water</li>
+      <li>Refuse</li>
+      <li>Property Tax</li>
+      <li>Sewerage</li>
+      <li>Insurance</li>
+    </ul>
+    <p>These appear on the Property Report as a central reference for all service accounts, so you don't have to search through paperwork when a bill arrives or a service needs to be contacted.</p>
+
+    <div class="alert alert-info" style="border-left:4px solid #17a2b8; margin-top:18px;">
+      <i class="fas fa-info-circle"></i> <strong>Adding vs Editing:</strong> The form is identical in both cases &mdash; the only difference is that <em>Add New</em> starts blank, while <em>Edit</em> pre-fills every field with the current values. Only Superusers can add properties; Superusers and ordinary users can edit (check the row-level button to see your permission).
+    </div>
+  </article>
+
+  <article data-tab-slug="pr-assets"
+           data-tab-name="Assets"
+           data-tab-icon="fa-briefcase">
+    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-briefcase"></i> Managing Property Assets</h5>
+    <p>Each property can have unlimited assets &mdash; appliances, electronics, furniture, and more. Assets are grouped by category in the Asset Manager, and are summarised in the Property Report.</p>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-door-open"></i> Accessing the Asset Manager</h6>
+    <p>Two ways to open a property's assets:</p>
+    <ul>
+      <li><strong>From the Property List</strong> &mdash; click <em>View</em> in the Assets column (only appears if at least one asset exists)</li>
+      <li><strong>From the Edit form</strong> &mdash; open the property's Edit form, then click the <em>Assets</em> button in the top-right. This works even if no assets exist yet &mdash; it's how you add the first one.</li>
+    </ul>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-info-circle"></i> Information recorded per asset</h6>
+    <ul style="line-height:1.9;">
+      <li><i class="fas fa-tag" style="color:#17a2b8;"></i> <strong>Asset Name</strong> &mdash; e.g. "Samsung Washing Machine"</li>
+      <li><i class="fas fa-trademark" style="color:#17a2b8;"></i> <strong>Brand</strong> &mdash; the manufacturer</li>
+      <li><i class="fas fa-th-large" style="color:#17a2b8;"></i> <strong>Category</strong> &mdash; Appliances, Electronics, Furniture, etc.</li>
+      <li><i class="fas fa-list-ul" style="color:#17a2b8;"></i> <strong>Subcategory</strong> &mdash; e.g. Air Conditioner, TV, Sofa</li>
+      <li><i class="fas fa-map-pin" style="color:#17a2b8;"></i> <strong>Location / Room</strong> &mdash; e.g. Lounge, Kitchen, Master Bedroom</li>
+      <li><i class="fas fa-calendar" style="color:#17a2b8;"></i> <strong>Purchase Date</strong> &mdash; when the asset was acquired</li>
+      <li><i class="fas fa-truck" style="color:#17a2b8;"></i> <strong>Supplier</strong> &mdash; where it was bought</li>
+      <li><i class="fas fa-shield-alt" style="color:#17a2b8;"></i> <strong>Warranty Expiry Date</strong> &mdash; when the warranty ends</li>
+    </ul>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-traffic-light"></i> Warranty status</h6>
+    <p>Each asset shows one of three warranty badges:</p>
+
+    <div class="alert" style="background:#d4edda; border-left:4px solid #28a745;">
+      <strong style="color:#155724;"><i class="fas fa-check-circle"></i> Active</strong> &mdash; warranty expiry is in the future; the asset is still under warranty.
+    </div>
+
+    <div class="alert" style="background:#f8d7da; border-left:4px solid #dc3545;">
+      <strong style="color:#721c24;"><i class="fas fa-times-circle"></i> Expired</strong> &mdash; warranty expiry is in the past; repairs are now at your cost.
+    </div>
+
+    <div class="alert" style="background:#e2e3e5; border-left:4px solid #6c757d;">
+      <strong style="color:#383d41;"><i class="fas fa-minus-circle"></i> N/A</strong> &mdash; no warranty expiry date recorded (incomplete data).
+    </div>
+
+    <div class="alert alert-info" style="border-left:4px solid #17a2b8; margin-top:18px;">
+      <i class="fas fa-file-alt"></i> <strong>Property Report integration:</strong> The Property Details Report includes an Asset Summary section showing total asset count, active vs expired warranties, total purchase value, and maintenance cost indicators. Keep assets up to date and the report becomes a powerful portfolio inventory.
+    </div>
+  </article>
+
+  <article data-tab-slug="pr-tips"
+           data-tab-name="Tips"
+           data-tab-icon="fa-lightbulb">
+    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-lightbulb"></i> Practical Tips</h5>
+
+    <h6 style="margin-top:10px; color:#2c3e50; font-weight:700;">Setting properties up correctly</h6>
+    <ul style="line-height:1.8;">
+      <li><strong>Always set the map location.</strong> After entering the address, use <em>Find Address on Map</em> &mdash; it auto-places the pin with good accuracy. Properties without a pin won't appear on Map View.</li>
+
+      <li><strong>Keep statuses up to date.</strong> Active + Available for Rent properties with no tenant show as <em>Vacant</em> in Notifications. Stale statuses mislead the whole dashboard &mdash; update as soon as a property goes into or out of service.</li>
+
+      <li><strong>Upload title deeds early.</strong> As soon as a deed becomes available, upload the PDF. It creates a secure, centralised home for your legal documents and makes them easy to share with lawyers, tax authorities, or potential buyers.</li>
+
+      <li><strong>Choose consistent naming.</strong> Whatever convention you pick ("Building - Unit", "City-StreetName", etc.), use it for every property. Reports, dropdowns, and filters all work better with predictable names.</li>
+    </ul>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;">Capturing assets properly</h6>
+    <ul style="line-height:1.8;">
+      <li><strong>Record warranty dates when you capture the asset.</strong> Once the receipt is filed away, warranty info is easy to forget. Enter it the moment the asset is installed.</li>
+
+      <li><strong>Use meaningful Location/Room values.</strong> "Kitchen" and "Master Bedroom" are much more useful than generic labels when a maintenance engineer needs to know where to go.</li>
+
+      <li><strong>Keep supplier info.</strong> When an item fails, knowing where it was bought (and whether it's still under warranty) saves hours of scrolling through emails.</li>
+    </ul>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;">Making the module work for you</h6>
+    <ul style="line-height:1.8;">
+      <li><strong>Fill in utility account details.</strong> Account numbers for electricity, water, refuse, and other services centralised in one place saves time every time a bill needs to be queried.</li>
+
+      <li><strong>Use the Property Report regularly.</strong> The one-page Property Details Report is the best summary document for meetings with lawyers, accountants, property managers, or tenants. Print or PDF-export before any such meeting.</li>
+
+      <li><strong>Use Map View for portfolio reviews.</strong> Visualising your portfolio geographically can reveal patterns &mdash; a cluster of underperforming properties in one area, or over-concentration in a single city.</li>
+
+      <li><strong>Remember the Include in Occupancy flag.</strong> This flag on each property controls whether it appears on Vacancy Management and Performance Trends. Owner-occupied or short-term rentals should be set to No; long-term rentals should be set to Yes.</li>
+    </ul>
+
+    <div class="alert alert-info" style="border-left:4px solid #17a2b8; margin-top:20px;">
+      <i class="fas fa-arrow-right"></i> <strong>Properties is the foundation.</strong> Every other module in Alivente Online &mdash; Tenants, Revenues, Expenses, the P&amp;L, Vacancy Management &mdash; builds on the data you capture here. Time spent keeping property records accurate and complete is repaid across the entire system.
+    </div>
+  </article>
+
+</section>
+<!-- ======= END PROPERTIES ======= -->
+
+
+<!-- ======= PASSPORT MANAGEMENT ======= -->
+<section data-module-slug="passport_management"
+         data-module-name="Passport / ID Management"
+         data-module-icon="fa-id-card"
+         data-module-category="Administration"
+         data-module-subtitle="Manage, track and get notified about all your identity documents">
+
+  <article data-tab-slug="doc-overview"
+           data-tab-name="Overview"
+           data-tab-icon="fa-info-circle">
+    <div style="display:flex; align-items:flex-start; gap:16px; margin-bottom:24px;">
+      <div style="width:50px; height:50px; border-radius:12px; background:#17a2b8; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+        <i class="fas fa-id-card" style="color:white; font-size:22px;"></i>
+      </div>
+      <div>
+        <h5 style="font-weight:700; color:#2c3e50; margin-bottom:6px;">What is Passport / ID Management?</h5>
+        <p style="color:#6c757d; font-size:14px; line-height:1.7;">The Passport / ID Management module is your centralised store for all identity and travel documents belonging to family members or associates. You can upload, view, edit, and delete documents, and the system automatically monitors expiry dates and sends you timely notifications.</p>
+      </div>
+    </div>
+    <h6 style="font-weight:700; color:#2c3e50; margin-bottom:14px; border-bottom:2px solid #17a2b8; padding-bottom:6px;"><i class="fas fa-star" style="color:#17a2b8;"></i> Key Features</h6>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:24px;">
+      <div style="background:#f0fdff; border:1px solid #b2ebf2; border-radius:8px; padding:14px;"><div style="font-weight:600; color:#17a2b8; margin-bottom:4px;"><i class="fas fa-passport"></i> Multiple Document Types</div><div style="font-size:13px; color:#6c757d;">Store Passports, ID Cards, Driver's Licences, ARC cards, and more &mdash; all in one place.</div></div>
+      <div style="background:#f0fdff; border:1px solid #b2ebf2; border-radius:8px; padding:14px;"><div style="font-weight:600; color:#17a2b8; margin-bottom:4px;"><i class="fas fa-eye"></i> View Documents</div><div style="font-size:13px; color:#6c757d;">View uploaded document scans or PDFs directly in the browser without downloading.</div></div>
+      <div style="background:#f0fdff; border:1px solid #b2ebf2; border-radius:8px; padding:14px;"><div style="font-weight:600; color:#17a2b8; margin-bottom:4px;"><i class="fas fa-exclamation-circle" style="color:#dc3545;"></i> Expiry Alerts</div><div style="font-size:13px; color:#6c757d;">Expiry dates shown in red when a document is expiring within 6 months or has already expired.</div></div>
+      <div style="background:#f0fdff; border:1px solid #b2ebf2; border-radius:8px; padding:14px;"><div style="font-weight:600; color:#17a2b8; margin-bottom:4px;"><i class="fas fa-bell"></i> Email Notifications</div><div style="font-size:13px; color:#6c757d;">Automatic email alerts on the 1st and 15th of every month for documents expiring soon or already expired.</div></div>
+      <div style="background:#f0fdff; border:1px solid #b2ebf2; border-radius:8px; padding:14px;"><div style="font-weight:600; color:#17a2b8; margin-bottom:4px;"><i class="fas fa-filter"></i> Filtering</div><div style="font-size:13px; color:#6c757d;">Filter by holder name, document type, country of issue, and status to quickly find any document.</div></div>
+      <div style="background:#f0fdff; border:1px solid #b2ebf2; border-radius:8px; padding:14px;"><div style="font-weight:600; color:#17a2b8; margin-bottom:4px;"><i class="fas fa-users"></i> Multiple Holders</div><div style="font-size:13px; color:#6c757d;">Manage documents for multiple family members or associates &mdash; all in a single, searchable list.</div></div>
+    </div>
+    <div style="background:#fff3cd; border:1px solid #ffc107; border-radius:8px; padding:14px; font-size:13px;">
+      <i class="fas fa-exclamation-triangle" style="color:#856404;"></i>
+      <strong style="color:#856404;"> Important:</strong>
+      <span style="color:#856404;"> Expiry dates shown in <strong style="color:#dc3545;">red</strong> indicate the document has already expired or will expire within 6 months. These are included in the automated email sent on the 1st and 15th of every month.</span>
+    </div>
+  </article>
+
+  <article data-tab-slug="doc-list"
+           data-tab-name="Document List"
+           data-tab-icon="fa-list">
+    <h6 style="font-weight:700; color:#2c3e50; margin-bottom:16px; border-bottom:2px solid #17a2b8; padding-bottom:6px;"><i class="fas fa-list" style="color:#17a2b8;"></i> Understanding the Document List</h6>
+    <p style="font-size:14px; color:#6c757d; margin-bottom:20px;">Each row represents one document. All holders and their documents are shown together in a single list.</p>
+    <table style="width:100%; font-size:13px; border-collapse:collapse; margin-bottom:24px;">
+      <thead><tr style="background:#343a40; color:white;"><th style="padding:10px 14px;">Column</th><th style="padding:10px 14px;">Description</th></tr></thead>
+      <tbody>
+        <tr style="background:#f8f9fa;"><td style="padding:10px 14px; font-weight:600; color:#2c3e50; border-bottom:1px solid #dee2e6;">Holder Name</td><td style="padding:10px 14px; color:#6c757d; border-bottom:1px solid #dee2e6;">The person this document belongs to.</td></tr>
+        <tr><td style="padding:10px 14px; font-weight:600; color:#2c3e50; border-bottom:1px solid #dee2e6;">Document Type</td><td style="padding:10px 14px; color:#6c757d; border-bottom:1px solid #dee2e6;">Colour-coded badge: <span style="background:#007bff; color:white; padding:2px 8px; border-radius:4px; font-size:11px;">Passport</span> <span style="background:#17a2b8; color:white; padding:2px 8px; border-radius:4px; font-size:11px;">ID</span> <span style="background:#6c757d; color:white; padding:2px 8px; border-radius:4px; font-size:11px;">Driver's License</span> <span style="background:#343a40; color:white; padding:2px 8px; border-radius:4px; font-size:11px;">ARC</span></td></tr>
+        <tr style="background:#f8f9fa;"><td style="padding:10px 14px; font-weight:600; color:#2c3e50; border-bottom:1px solid #dee2e6;">Document Number</td><td style="padding:10px 14px; color:#6c757d; border-bottom:1px solid #dee2e6;">The unique number printed on the document.</td></tr>
+        <tr><td style="padding:10px 14px; font-weight:600; color:#2c3e50; border-bottom:1px solid #dee2e6;">Country of Issue</td><td style="padding:10px 14px; color:#6c757d; border-bottom:1px solid #dee2e6;">The country that issued the document.</td></tr>
+        <tr style="background:#f8f9fa;"><td style="padding:10px 14px; font-weight:600; color:#2c3e50; border-bottom:1px solid #dee2e6;">Date of Issue</td><td style="padding:10px 14px; color:#6c757d; border-bottom:1px solid #dee2e6;">The date the document was issued.</td></tr>
+        <tr><td style="padding:10px 14px; font-weight:600; color:#2c3e50; border-bottom:1px solid #dee2e6;">Expiry Date</td><td style="padding:10px 14px; color:#6c757d; border-bottom:1px solid #dee2e6;"><span style="color:#dc3545; font-weight:600;">Shown in red</span> if expired or expiring within 6 months. Shows <strong>-</strong> if no expiry applies.</td></tr>
+        <tr style="background:#f8f9fa;"><td style="padding:10px 14px; font-weight:600; color:#2c3e50; border-bottom:1px solid #dee2e6;">Status</td><td style="padding:10px 14px; color:#6c757d; border-bottom:1px solid #dee2e6;"><span style="background:#28a745; color:white; padding:2px 8px; border-radius:4px; font-size:11px;">Active</span> <span style="background:#ffc107; color:white; padding:2px 8px; border-radius:4px; font-size:11px;">Applied for Renewal</span> <span style="background:#6c757d; color:white; padding:2px 8px; border-radius:4px; font-size:11px;">Inactive</span></td></tr>
+        <tr><td style="padding:10px 14px; font-weight:600; color:#2c3e50;">Actions</td><td style="padding:10px 14px; color:#6c757d;"><span style="background:#28a745; color:white; padding:3px 8px; border-radius:4px; font-size:12px;"><i class="fas fa-eye"></i></span> <strong>View</strong> &mdash; Opens the document scan/PDF.<br><span style="background:#ffc107; color:white; padding:3px 8px; border-radius:4px; font-size:12px; display:inline-block; margin-top:4px;"><i class="fas fa-edit"></i></span> <strong>Edit</strong> &mdash; Update document details.<br><span style="background:#dc3545; color:white; padding:3px 8px; border-radius:4px; font-size:12px; display:inline-block; margin-top:4px;"><i class="fas fa-trash"></i></span> <strong>Delete</strong> &mdash; Permanently removes the record.</td></tr>
+      </tbody>
+    </table>
+    <h6 style="font-weight:700; color:#2c3e50; margin-bottom:12px;"><i class="fas fa-sort" style="color:#17a2b8;"></i> Sorting</h6>
+    <p style="font-size:14px; color:#6c757d; margin-bottom:16px;">Click any column header to sort the list by that column. Click again to reverse the sort order.</p>
+    <h6 style="font-weight:700; color:#2c3e50; margin-bottom:12px;"><i class="fas fa-filter" style="color:#17a2b8;"></i> Using Filters</h6>
+    <p style="font-size:14px; color:#6c757d;">Click <strong>Document Filters</strong> to expand the filter bar. Filter by Holder, Type, Country, and Status. Use <strong>Clear All</strong> to reset.</p>
+  </article>
+
+  <article data-tab-slug="doc-addEdit"
+           data-tab-name="Add / Edit"
+           data-tab-icon="fa-plus-circle">
+    <h6 style="font-weight:700; color:#2c3e50; margin-bottom:16px; border-bottom:2px solid #17a2b8; padding-bottom:6px;"><i class="fas fa-plus-circle" style="color:#17a2b8;"></i> Adding and Editing Documents</h6>
+    <p style="font-size:14px; color:#6c757d; margin-bottom:20px;">Click <strong>+ Add New Passport/ID</strong> at the bottom of the list to add a document, or click the <strong>Edit</strong> button on any row to update it.</p>
+    <div style="display:flex; flex-direction:column; gap:14px;">
+      <div style="background:#f8f9fa; border-radius:8px; padding:14px; border-left:4px solid #17a2b8;"><div style="font-weight:700; color:#2c3e50; margin-bottom:4px;"><span style="background:#17a2b8; color:white; border-radius:50%; padding:1px 7px; margin-right:8px; font-size:11px;">1</span> Holder Name</div><div style="font-size:13px; color:#6c757d;">Select the person this document belongs to. Multiple documents can be added per person.</div></div>
+      <div style="background:#f8f9fa; border-radius:8px; padding:14px; border-left:4px solid #17a2b8;"><div style="font-weight:700; color:#2c3e50; margin-bottom:4px;"><span style="background:#17a2b8; color:white; border-radius:50%; padding:1px 7px; margin-right:8px; font-size:11px;">2</span> Document Type</div><div style="font-size:13px; color:#6c757d;">Select Passport, ID, Driver's License, Visa, or ARC. This determines the badge colour in the list.</div></div>
+      <div style="background:#f8f9fa; border-radius:8px; padding:14px; border-left:4px solid #17a2b8;"><div style="font-weight:700; color:#2c3e50; margin-bottom:4px;"><span style="background:#17a2b8; color:white; border-radius:50%; padding:1px 7px; margin-right:8px; font-size:11px;">3</span> Document Number</div><div style="font-size:13px; color:#6c757d;">Enter the unique number exactly as it appears on the document.</div></div>
+      <div style="background:#f8f9fa; border-radius:8px; padding:14px; border-left:4px solid #17a2b8;"><div style="font-weight:700; color:#2c3e50; margin-bottom:4px;"><span style="background:#17a2b8; color:white; border-radius:50%; padding:1px 7px; margin-right:8px; font-size:11px;">4</span> Country of Issue</div><div style="font-size:13px; color:#6c757d;">Select the country that issued the document.</div></div>
+      <div style="background:#f8f9fa; border-radius:8px; padding:14px; border-left:4px solid #17a2b8;"><div style="font-weight:700; color:#2c3e50; margin-bottom:4px;"><span style="background:#17a2b8; color:white; border-radius:50%; padding:1px 7px; margin-right:8px; font-size:11px;">5</span> Date of Issue &amp; Expiry Date</div><div style="font-size:13px; color:#6c757d;">Enter both dates. The Expiry Date drives the notification system. Leave blank if the document doesn't expire &mdash; it will show as <strong>-</strong>.</div></div>
+      <div style="background:#f8f9fa; border-radius:8px; padding:14px; border-left:4px solid #17a2b8;"><div style="font-weight:700; color:#2c3e50; margin-bottom:4px;"><span style="background:#17a2b8; color:white; border-radius:50%; padding:1px 7px; margin-right:8px; font-size:11px;">6</span> Upload Document Scan</div><div style="font-size:13px; color:#6c757d;">Upload a scan or photo (PDF, JPG, or PNG, max 10MB). This can be viewed via the green View button at any time.</div></div>
+    </div>
+    <div style="background:#d1ecf1; border:1px solid #bee5eb; border-radius:8px; padding:14px; font-size:13px; color:#0c5460; margin-top:20px;">
+      <i class="fas fa-info-circle"></i> <strong>Deleting:</strong> The red Delete button permanently removes both the record and the uploaded file. This cannot be undone.
+    </div>
+  </article>
+
+  <article data-tab-slug="doc-notifications"
+           data-tab-name="Notifications"
+           data-tab-icon="fa-bell">
+    <h6 style="font-weight:700; color:#2c3e50; margin-bottom:16px; border-bottom:2px solid #17a2b8; padding-bottom:6px;"><i class="fas fa-bell" style="color:#17a2b8;"></i> Expiry Notifications</h6>
+    <div style="display:flex; align-items:flex-start; gap:14px; margin-bottom:24px;">
+      <div style="width:44px; height:44px; border-radius:50%; background:#17a2b8; display:flex; align-items:center; justify-content:center; flex-shrink:0;"><i class="fas fa-envelope" style="color:white; font-size:18px;"></i></div>
+      <p style="font-size:14px; color:#6c757d; line-height:1.7; margin:0;">Alivente Online automatically monitors all document expiry dates and sends an email on the <strong>1st</strong> and <strong>15th of every month</strong> listing all documents that have <strong>already expired</strong> or will <strong>expire within the next 6 months</strong>.</p>
+    </div>
+    <h6 style="font-weight:600; color:#2c3e50; margin-bottom:12px;">What triggers a notification?</h6>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:24px;">
+      <div style="background:#f8d7da; border:1px solid #f5c6cb; border-radius:8px; padding:14px; text-align:center;"><i class="fas fa-times-circle" style="color:#dc3545; font-size:24px; margin-bottom:8px; display:block;"></i><div style="font-weight:600; color:#721c24;">Already Expired</div><div style="font-size:12px; color:#721c24; margin-top:4px;">Expiry date has passed</div></div>
+      <div style="background:#fff3cd; border:1px solid #ffc107; border-radius:8px; padding:14px; text-align:center;"><i class="fas fa-exclamation-triangle" style="color:#856404; font-size:24px; margin-bottom:8px; display:block;"></i><div style="font-weight:600; color:#856404;">Expiring Within 6 Months</div><div style="font-size:12px; color:#856404; margin-top:4px;">Less than 6 months until expiry</div></div>
+    </div>
+    <h6 style="font-weight:600; color:#2c3e50; margin-bottom:12px;">Notification schedule</h6>
+    <div style="background:#f8f9fa; border-radius:8px; padding:16px; font-size:13px; color:#6c757d; margin-bottom:16px;">
+      <div style="display:flex; align-items:center; gap:12px; margin-bottom:10px;"><div style="background:#17a2b8; color:white; border-radius:6px; padding:4px 12px; font-weight:700; font-size:13px; flex-shrink:0;">1st</div><div>Email sent on the <strong>1st of every month</strong> &mdash; covers all expired and expiring documents.</div></div>
+      <div style="display:flex; align-items:center; gap:12px;"><div style="background:#17a2b8; color:white; border-radius:6px; padding:4px 10px; font-weight:700; font-size:13px; flex-shrink:0;">15th</div><div>Email sent on the <strong>15th of every month</strong> &mdash; a mid-month check covering the same criteria.</div></div>
+    </div>
+    <div style="background:#d4edda; border:1px solid #c3e6cb; border-radius:8px; padding:14px; font-size:13px; color:#155724;">
+      <i class="fas fa-check-circle"></i> <strong>No action required:</strong> Notifications are fully automatic. Keep your records up to date and the system handles the rest.
+    </div>
+  </article>
+
+  <article data-tab-slug="doc-tips"
+           data-tab-name="Tips"
+           data-tab-icon="fa-lightbulb">
+    <h6 style="font-weight:700; color:#2c3e50; margin-bottom:16px; border-bottom:2px solid #17a2b8; padding-bottom:6px;"><i class="fas fa-lightbulb" style="color:#17a2b8;"></i> Tips and Best Practices</h6>
+    <div style="display:flex; flex-direction:column; gap:14px;">
+      <div style="display:flex; gap:14px; align-items:flex-start;"><div style="width:36px; height:36px; border-radius:50%; background:#17a2b8; display:flex; align-items:center; justify-content:center; flex-shrink:0;"><i class="fas fa-upload" style="color:white; font-size:14px;"></i></div><div><div style="font-weight:600; color:#2c3e50; font-size:14px; margin-bottom:4px;">Always upload a scan</div><div style="font-size:13px; color:#6c757d;">A digital copy means you can access documents from anywhere &mdash; no need to carry originals for routine reference.</div></div></div>
+      <div style="display:flex; gap:14px; align-items:flex-start;"><div style="width:36px; height:36px; border-radius:50%; background:#17a2b8; display:flex; align-items:center; justify-content:center; flex-shrink:0;"><i class="fas fa-calendar-alt" style="color:white; font-size:14px;"></i></div><div><div style="font-weight:600; color:#2c3e50; font-size:14px; margin-bottom:4px;">Always enter the expiry date</div><div style="font-size:13px; color:#6c757d;">Without an expiry date the notification system cannot alert you. Always enter it, even for long-validity documents.</div></div></div>
+      <div style="display:flex; gap:14px; align-items:flex-start;"><div style="width:36px; height:36px; border-radius:50%; background:#17a2b8; display:flex; align-items:center; justify-content:center; flex-shrink:0;"><i class="fas fa-sync-alt" style="color:white; font-size:14px;"></i></div><div><div style="font-weight:600; color:#2c3e50; font-size:14px; margin-bottom:4px;">Update when documents are renewed</div><div style="font-size:13px; color:#6c757d;">Add the new document record with the new number and expiry date. Consider marking the old one as Inactive rather than deleting to keep a history.</div></div></div>
+      <div style="display:flex; gap:14px; align-items:flex-start;"><div style="width:36px; height:36px; border-radius:50%; background:#17a2b8; display:flex; align-items:center; justify-content:center; flex-shrink:0;"><i class="fas fa-eye" style="color:white; font-size:14px;"></i></div><div><div style="font-weight:600; color:#2c3e50; font-size:14px; margin-bottom:4px;">Check red dates before travel</div><div style="font-size:13px; color:#6c757d;">Make it a habit to scan the list before any international travel. Red expiry dates are an immediate visual signal that action is needed.</div></div></div>
+      <div style="display:flex; gap:14px; align-items:flex-start;"><div style="width:36px; height:36px; border-radius:50%; background:#17a2b8; display:flex; align-items:center; justify-content:center; flex-shrink:0;"><i class="fas fa-filter" style="color:white; font-size:14px;"></i></div><div><div style="font-weight:600; color:#2c3e50; font-size:14px; margin-bottom:4px;">Use filters for multiple holders</div><div style="font-size:13px; color:#6c757d;">Filter by Holder to view one person's documents at a time. Filter by Type to see all passports or all driver's licences across everyone.</div></div></div>
+      <div style="display:flex; gap:14px; align-items:flex-start;"><div style="width:36px; height:36px; border-radius:50%; background:#17a2b8; display:flex; align-items:center; justify-content:center; flex-shrink:0;"><i class="fas fa-trash-alt" style="color:white; font-size:14px;"></i></div><div><div style="font-weight:600; color:#2c3e50; font-size:14px; margin-bottom:4px;">Be careful with Delete</div><div style="font-size:13px; color:#6c757d;">Deleting removes the record and the uploaded file permanently. For old documents, consider setting status to Inactive instead.</div></div></div>
+    </div>
+  </article>
+
+</section>
+<!-- ======= END PASSPORT MANAGEMENT ======= -->
+
+
+<!-- ======= CELEBRATIONS ======= -->
+<section data-module-slug="celebration_dashboard"
+         data-module-name="Celebrations"
+         data-module-icon="fa-birthday-cake"
+         data-module-category="Personal"
+         data-module-subtitle="Track birthdays, namedays, anniversaries and get daily email reminders">
+
+  <article data-tab-slug="cel-overview"
+           data-tab-name="Overview"
+           data-tab-icon="fa-info-circle">
+    <div style="display:flex; align-items:flex-start; gap:16px; margin-bottom:24px;">
+      <div style="width:50px; height:50px; border-radius:12px; background:linear-gradient(135deg,#667eea,#764ba2); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+        <i class="fas fa-birthday-cake" style="color:white; font-size:22px;"></i>
+      </div>
+      <div>
+        <h5 style="font-weight:700; color:#2c3e50; margin-bottom:6px;">What is the Celebrations Module?</h5>
+        <p style="color:#6c757d; font-size:14px; line-height:1.7;">The Celebrations module helps you stay on top of the important dates in your life. Add contacts and their special events &mdash; birthdays, namedays, anniversaries, and more &mdash; and the system will remind you every day when a celebration is happening.</p>
+      </div>
+    </div>
+
+    <h6 style="font-weight:700; color:#2c3e50; margin-bottom:14px; border-bottom:2px solid #667eea; padding-bottom:6px;"><i class="fas fa-star" style="color:#667eea;"></i> Key Features</h6>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:24px;">
+      <div style="background:#f5f0ff; border:1px solid #d4c5f9; border-radius:8px; padding:14px;">
+        <div style="font-weight:600; color:#667eea; margin-bottom:4px;"><i class="fas fa-users"></i> Contact Management</div>
+        <div style="font-size:13px; color:#6c757d;">Add contacts with their name, relationship (Family, Friend, Colleague), contact details and notes.</div>
+      </div>
+      <div style="background:#f5f0ff; border:1px solid #d4c5f9; border-radius:8px; padding:14px;">
+        <div style="font-weight:600; color:#667eea; margin-bottom:4px;"><i class="fas fa-calendar-check"></i> Multiple Event Types</div>
+        <div style="font-size:13px; color:#6c757d;">Track Birthdays, Namedays, Anniversaries, and Custom events for each contact.</div>
+      </div>
+      <div style="background:#f5f0ff; border:1px solid #d4c5f9; border-radius:8px; padding:14px;">
+        <div style="font-weight:600; color:#667eea; margin-bottom:4px;"><i class="fas fa-bell"></i> Daily Email Reminders</div>
+        <div style="font-size:13px; color:#6c757d;">Every day, if someone has a celebration, an email is automatically sent listing who is celebrating and what event.</div>
+      </div>
+      <div style="background:#f5f0ff; border:1px solid #d4c5f9; border-radius:8px; padding:14px;">
+        <div style="font-weight:600; color:#667eea; margin-bottom:4px;"><i class="fas fa-calendar-alt"></i> Calendar &amp; Timeline</div>
+        <div style="font-size:13px; color:#6c757d;">View all events in a monthly calendar or a chronological timeline &mdash; see the full year at a glance.</div>
+      </div>
+      <div style="background:#f5f0ff; border:1px solid #d4c5f9; border-radius:8px; padding:14px;">
+        <div style="font-weight:600; color:#667eea; margin-bottom:4px;"><i class="fas fa-clock"></i> 30-Day Upcoming Widget</div>
+        <div style="font-size:13px; color:#6c757d;">The dashboard shows all celebrations in the next 30 days with a countdown so you're never caught off guard.</div>
+      </div>
+      <div style="background:#f5f0ff; border:1px solid #d4c5f9; border-radius:8px; padding:14px;">
+        <div style="font-weight:600; color:#667eea; margin-bottom:4px;"><i class="fas fa-file-excel"></i> Excel Import</div>
+        <div style="font-size:13px; color:#6c757d;">Bulk import contacts and events from an Excel spreadsheet &mdash; ideal for setting up a large contact list quickly.</div>
+      </div>
+    </div>
+
+    <div style="background:#fff3cd; border:1px solid #ffc107; border-radius:8px; padding:14px; font-size:13px;">
+      <i class="fas fa-exclamation-triangle" style="color:#856404;"></i>
+      <strong style="color:#856404;"> Daily Reminder:</strong>
+      <span style="color:#856404;"> An email is sent automatically every day that has at least one celebration. No action is required &mdash; just keep your contacts and events up to date.</span>
+    </div>
+  </article>
+
+  <article data-tab-slug="cel-contacts"
+           data-tab-name="Contacts"
+           data-tab-icon="fa-users">
+    <h6 style="font-weight:700; color:#2c3e50; margin-bottom:16px; border-bottom:2px solid #667eea; padding-bottom:6px;"><i class="fas fa-users" style="color:#667eea;"></i> Managing Contacts</h6>
+
+    <p style="font-size:14px; color:#6c757d; margin-bottom:20px;">Each person in your life is stored as a <strong>Contact</strong>. You then attach events (birthday, nameday, etc.) to each contact. From the Celebration Management page you can view contacts in Detailed or Compact view.</p>
+
+    <h6 style="font-weight:600; color:#2c3e50; margin-bottom:12px;">Adding a Contact</h6>
+    <div style="display:flex; flex-direction:column; gap:12px; margin-bottom:20px;">
+      <div style="background:#f8f9fa; border-radius:8px; padding:12px; border-left:4px solid #667eea; font-size:13px; color:#6c757d;"><strong style="color:#2c3e50;">Name</strong> &mdash; The person's full name as you want it to appear throughout the system.</div>
+      <div style="background:#f8f9fa; border-radius:8px; padding:12px; border-left:4px solid #667eea; font-size:13px; color:#6c757d;"><strong style="color:#2c3e50;">Relationship</strong> &mdash; Family, Friend, Colleague, or Other. Used to group and organise contacts.</div>
+      <div style="background:#f8f9fa; border-radius:8px; padding:12px; border-left:4px solid #667eea; font-size:13px; color:#6c757d;"><strong style="color:#2c3e50;">Email &amp; Phone</strong> &mdash; Optional contact details for your own reference.</div>
+      <div style="background:#f8f9fa; border-radius:8px; padding:12px; border-left:4px solid #667eea; font-size:13px; color:#6c757d;"><strong style="color:#2c3e50;">Notes</strong> &mdash; Any additional notes about the contact.</div>
+    </div>
+
+    <h6 style="font-weight:600; color:#2c3e50; margin-bottom:12px;">Contact Views</h6>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:20px;">
+      <div style="background:#f5f0ff; border:1px solid #d4c5f9; border-radius:8px; padding:14px;">
+        <div style="font-weight:600; color:#667eea; margin-bottom:4px;"><i class="fas fa-list"></i> Detailed View</div>
+        <div style="font-size:13px; color:#6c757d;">Shows each contact with all their events expanded &mdash; ideal for reviewing and managing events.</div>
+      </div>
+      <div style="background:#f5f0ff; border:1px solid #d4c5f9; border-radius:8px; padding:14px;">
+        <div style="font-weight:600; color:#667eea; margin-bottom:4px;"><i class="fas fa-th"></i> Compact View</div>
+        <div style="font-size:13px; color:#6c757d;">Shows contacts as a grid of name cards &mdash; ideal for quickly browsing all your contacts.</div>
+      </div>
+    </div>
+
+    <h6 style="font-weight:600; color:#2c3e50; margin-bottom:12px;"><i class="fas fa-file-excel" style="color:#667eea;"></i> Importing from Excel</h6>
+    <p style="font-size:13px; color:#6c757d; margin-bottom:10px;">Click <strong>Import from Excel</strong> to bulk-add contacts. Your spreadsheet must follow this format:</p>
+    <div style="background:#f8f9fa; border-radius:8px; padding:14px; font-size:13px; color:#6c757d; margin-bottom:16px;">
+      <div style="margin-bottom:8px;"><strong>Required columns:</strong></div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px;">
+        <div><i class="fas fa-check" style="color:#28a745; width:16px;"></i> <strong>Column 1:</strong> NAME</div>
+        <div><i class="fas fa-check" style="color:#28a745; width:16px;"></i> <strong>Column 2:</strong> RELATIONSHIP</div>
+        <div><i class="fas fa-check" style="color:#28a745; width:16px;"></i> <strong>Column 3:</strong> EVENT or EVENT TYPE</div>
+        <div><i class="fas fa-check" style="color:#28a745; width:16px;"></i> <strong>Column 4:</strong> DATE (month/day only)</div>
+      </div>
+      <div style="margin-top:10px; margin-bottom:6px;"><strong>Optional columns:</strong></div>
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px;">
+        <div><i class="fas fa-plus" style="color:#17a2b8; width:16px;"></i> <strong>PRIORITY</strong> &mdash; High/Normal/Low</div>
+        <div><i class="fas fa-plus" style="color:#17a2b8; width:16px;"></i> <strong>NOTIFICATION SETTINGS</strong></div>
+      </div>
+    </div>
+    <div style="background:#d1ecf1; border:1px solid #bee5eb; border-radius:8px; padding:12px; font-size:13px; color:#0c5460;">
+      <i class="fas fa-info-circle"></i> Enable <strong>Skip duplicate contacts</strong> to prevent creating duplicates if a contact already exists by name.
+    </div>
+  </article>
+
+  <article data-tab-slug="cel-events"
+           data-tab-name="Events"
+           data-tab-icon="fa-calendar-check">
+    <h6 style="font-weight:700; color:#2c3e50; margin-bottom:16px; border-bottom:2px solid #667eea; padding-bottom:6px;"><i class="fas fa-calendar-check" style="color:#667eea;"></i> Managing Events</h6>
+
+    <p style="font-size:14px; color:#6c757d; margin-bottom:20px;">Each contact can have multiple events. In the Detailed View, events are shown beneath each contact's name with their date, how many days away they are, and who will receive notifications.</p>
+
+    <h6 style="font-weight:600; color:#2c3e50; margin-bottom:12px;">Event Types</h6>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:20px;">
+      <div style="background:#e8f5e9; border:1px solid #c8e6c9; border-radius:8px; padding:12px; display:flex; align-items:center; gap:10px;">
+        <span style="background:#28a745; color:white; padding:3px 10px; border-radius:10px; font-size:12px; font-weight:600; white-space:nowrap;">Birthday</span>
+        <span style="font-size:13px; color:#6c757d;">Annual birth date celebration</span>
+      </div>
+      <div style="background:#e3f2fd; border:1px solid #bbdefb; border-radius:8px; padding:12px; display:flex; align-items:center; gap:10px;">
+        <span style="background:#17a2b8; color:white; padding:3px 10px; border-radius:10px; font-size:12px; font-weight:600; white-space:nowrap;">Nameday</span>
+        <span style="font-size:13px; color:#6c757d;">Annual name day celebration</span>
+      </div>
+      <div style="background:#fce4ec; border:1px solid #f8bbd9; border-radius:8px; padding:12px; display:flex; align-items:center; gap:10px;">
+        <span style="background:#e91e63; color:white; padding:3px 10px; border-radius:10px; font-size:12px; font-weight:600; white-space:nowrap;">Anniversary</span>
+        <span style="font-size:13px; color:#6c757d;">Wedding or other anniversary</span>
+      </div>
+      <div style="background:#f3e5f5; border:1px solid #e1bee7; border-radius:8px; padding:12px; display:flex; align-items:center; gap:10px;">
+        <span style="background:#9c27b0; color:white; padding:3px 10px; border-radius:10px; font-size:12px; font-weight:600; white-space:nowrap;">Custom</span>
+        <span style="font-size:13px; color:#6c757d;">Any other special occasion</span>
+      </div>
+    </div>
+
+    <h6 style="font-weight:600; color:#2c3e50; margin-bottom:12px;">Notification Recipients</h6>
+    <p style="font-size:13px; color:#6c757d; margin-bottom:16px;">Each event shows a list of names with checkboxes &mdash; these are the family members who will be notified by email when the event occurs. You can control who gets notified per event.</p>
+
+    <h6 style="font-weight:600; color:#2c3e50; margin-bottom:12px;">Event Actions</h6>
+    <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px;">
+      <div style="background:#f8f9fa; border-radius:6px; padding:8px 14px; font-size:13px; color:#6c757d;"><span style="background:#28a745; color:white; padding:3px 8px; border-radius:4px; font-size:12px; margin-right:6px;"><i class="fas fa-plus"></i></span> Add a new event to a contact</div>
+      <div style="background:#f8f9fa; border-radius:6px; padding:8px 14px; font-size:13px; color:#6c757d;"><span style="background:#ffc107; color:white; padding:3px 8px; border-radius:4px; font-size:12px; margin-right:6px;"><i class="fas fa-edit"></i></span> Edit event details or date</div>
+      <div style="background:#f8f9fa; border-radius:6px; padding:8px 14px; font-size:13px; color:#6c757d;"><span style="background:#dc3545; color:white; padding:3px 8px; border-radius:4px; font-size:12px; margin-right:6px;"><i class="fas fa-trash"></i></span> Delete the event</div>
+    </div>
+
+    <div style="background:#fff3cd; border:1px solid #ffc107; border-radius:8px; padding:14px; font-size:13px; color:#856404;">
+      <i class="fas fa-info-circle"></i> <strong>Note:</strong> Event dates are annual &mdash; only the day and month matter. The year is ignored so events repeat every year automatically.
+    </div>
+  </article>
+
+  <article data-tab-slug="cel-calendar"
+           data-tab-name="Calendar"
+           data-tab-icon="fa-calendar-alt">
+    <h6 style="font-weight:700; color:#2c3e50; margin-bottom:16px; border-bottom:2px solid #667eea; padding-bottom:6px;"><i class="fas fa-calendar-alt" style="color:#667eea;"></i> Calendar and Timeline Views</h6>
+
+    <p style="font-size:14px; color:#6c757d; margin-bottom:20px;">Click <strong>View Events</strong> from the dashboard to access the Celebration Calendar. You can switch between two views using the toggle button at the top.</p>
+
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:24px;">
+      <div style="background:#f5f0ff; border:1px solid #d4c5f9; border-radius:10px; padding:18px;">
+        <div style="font-weight:700; color:#667eea; font-size:15px; margin-bottom:10px; display:flex; align-items:center; gap:8px;">
+          <i class="fas fa-calendar-alt"></i> Calendar View
+        </div>
+        <div style="font-size:13px; color:#6c757d; line-height:1.7;">
+          A traditional monthly grid showing all celebrations on their respective dates. Events appear as coloured bars on the day they occur.<br><br>
+          Use <strong>Previous</strong> and <strong>Next</strong> to navigate between months. Today's date is highlighted in yellow.
+        </div>
+      </div>
+      <div style="background:#f5f0ff; border:1px solid #d4c5f9; border-radius:10px; padding:18px;">
+        <div style="font-weight:700; color:#667eea; font-size:15px; margin-bottom:10px; display:flex; align-items:center; gap:8px;">
+          <i class="fas fa-list"></i> Timeline View
+        </div>
+        <div style="font-size:13px; color:#6c757d; line-height:1.7;">
+          A chronological list of all upcoming celebrations grouped by month. Each event shows the contact name, event type badge, exact date, and how many days away it is.<br><br>
+          Ideal for seeing what's coming up across the whole year in one scrollable view.
+        </div>
+      </div>
+    </div>
+
+    <h6 style="font-weight:600; color:#2c3e50; margin-bottom:12px;">Dashboard Upcoming Widget</h6>
+    <p style="font-size:13px; color:#6c757d; margin-bottom:16px;">The main dashboard always shows the <strong>next 30 days</strong> of celebrations in a scrollable list with a countdown badge showing how many days until each event. If today is a celebration day it shows <strong>"Today!"</strong>.</p>
+
+    <div style="background:#d4edda; border:1px solid #c3e6cb; border-radius:8px; padding:14px; font-size:13px; color:#155724;">
+      <i class="fas fa-lightbulb"></i> <strong>Tip:</strong> Use the Timeline View to plan ahead and ensure you have time to organise gifts or messages for important upcoming occasions.
+    </div>
+  </article>
+
+  <article data-tab-slug="cel-notifications"
+           data-tab-name="Notifications"
+           data-tab-icon="fa-bell">
+    <h6 style="font-weight:700; color:#2c3e50; margin-bottom:16px; border-bottom:2px solid #667eea; padding-bottom:6px;"><i class="fas fa-bell" style="color:#667eea;"></i> How the Notification System Works</h6>
+
+    <p style="font-size:14px; color:#6c757d; line-height:1.7; margin-bottom:20px;">
+      The notification system has <strong>three layers</strong> that all work together to determine who gets notified, about which events, and when.
+    </p>
+
+    <div style="display:flex; gap:14px; align-items:flex-start; margin-bottom:16px;">
+      <div style="width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg,#667eea,#764ba2); display:flex; align-items:center; justify-content:center; flex-shrink:0; font-weight:700; color:white; font-size:16px;">1</div>
+      <div style="flex:1;">
+        <div style="font-weight:700; color:#2c3e50; font-size:14px; margin-bottom:6px;">Set up email addresses in Notification Settings</div>
+        <div style="background:#f8f9fa; border-radius:8px; padding:14px; font-size:13px; color:#6c757d; border-left:4px solid #667eea;">
+          Go to <strong>Personal &rarr; Notification Settings</strong> to register each family member's email address.<br><br>
+          <i class="fas fa-envelope" style="color:#667eea; width:16px;"></i> <strong>TO:</strong> Primary recipients &mdash; the main people who receive celebration reminders.<br>
+          <i class="fas fa-envelope" style="color:#667eea; width:16px;"></i> <strong>CC:</strong> Carbon copy recipients &mdash; optional additional people to be kept informed.<br><br>
+          <span style="color:#856404;"><i class="fas fa-exclamation-triangle"></i> A family member will <strong>never</strong> receive a notification unless their email is registered here first.</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex; gap:14px; align-items:flex-start; margin-bottom:16px;">
+      <div style="width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg,#667eea,#764ba2); display:flex; align-items:center; justify-content:center; flex-shrink:0; font-weight:700; color:white; font-size:16px;">2</div>
+      <div style="flex:1;">
+        <div style="font-weight:700; color:#2c3e50; font-size:14px; margin-bottom:6px;">Choose notification timing per event</div>
+        <div style="background:#f8f9fa; border-radius:8px; padding:14px; font-size:13px; color:#6c757d; border-left:4px solid #667eea;">
+          When adding or editing an event, you set when reminders should be sent under <strong>Notification Settings</strong>:<br><br>
+          <div style="display:flex; flex-direction:column; gap:6px; margin-top:4px;">
+            <div><i class="fas fa-check-square" style="color:#667eea; width:18px;"></i> <strong>Notify 1 week before</strong> (sent at 9:00 AM)</div>
+            <div><i class="fas fa-check-square" style="color:#667eea; width:18px;"></i> <strong>Notify 1 day before</strong> (sent at 9:00 AM)</div>
+            <div><i class="fas fa-check-square" style="color:#667eea; width:18px;"></i> <strong>Notify same day</strong> (sent at 9:00 AM)</div>
+          </div>
+          <br>You can tick any combination &mdash; for example, tick all three for important events like a parent's birthday.
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex; gap:14px; align-items:flex-start; margin-bottom:20px;">
+      <div style="width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg,#667eea,#764ba2); display:flex; align-items:center; justify-content:center; flex-shrink:0; font-weight:700; color:white; font-size:16px;">3</div>
+      <div style="flex:1;">
+        <div style="font-weight:700; color:#2c3e50; font-size:14px; margin-bottom:6px;">Choose who to notify per event ("Notify These People")</div>
+        <div style="background:#f8f9fa; border-radius:8px; padding:14px; font-size:13px; color:#6c757d; border-left:4px solid #667eea;">
+          Each event has a <strong>Notify These People</strong> section showing all family members with a tick box next to each name. Tick the family members who have a relationship with this contact and care about this specific event.<br><br>
+          For example:
+          <ul style="margin-top:6px; padding-left:18px;">
+            <li>A close family member's Nameday &rarr; all family ticked &rarr; everyone notified</li>
+            <li>A distant colleague's birthday &rarr; only one person ticked &rarr; only that person notified</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div style="background:#f5f0ff; border:1px solid #d4c5f9; border-radius:8px; padding:16px; margin-bottom:20px;">
+      <div style="font-weight:700; color:#667eea; font-size:14px; margin-bottom:10px;"><i class="fas fa-cogs"></i> The Rule &mdash; all three conditions must be met</div>
+      <div style="font-size:13px; color:#6c757d; line-height:1.8;">
+        A family member receives an email notification if and only if:<br>
+        <div style="margin-top:8px; display:flex; flex-direction:column; gap:6px;">
+          <div style="display:flex; align-items:center; gap:8px;"><span style="background:#28a745; color:white; border-radius:50%; width:20px; height:20px; display:inline-flex; align-items:center; justify-content:center; font-size:11px; flex-shrink:0;">&check;</span> Their email is registered in <strong>Notification Settings</strong></div>
+          <div style="display:flex; align-items:center; gap:8px;"><span style="background:#28a745; color:white; border-radius:50%; width:20px; height:20px; display:inline-flex; align-items:center; justify-content:center; font-size:11px; flex-shrink:0;">&check;</span> They are <strong>ticked</strong> in the "Notify These People" section for that event</div>
+          <div style="display:flex; align-items:center; gap:8px;"><span style="background:#28a745; color:white; border-radius:50%; width:20px; height:20px; display:inline-flex; align-items:center; justify-content:center; font-size:11px; flex-shrink:0;">&check;</span> The notification timing matches (1 week before, 1 day before, or same day)</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="background:#d4edda; border:1px solid #c3e6cb; border-radius:8px; padding:14px; font-size:13px; color:#155724;">
+      <i class="fas fa-check-circle"></i> <strong>Fully automatic:</strong> Once set up correctly, all notifications are sent automatically at 9:00 AM. No manual action is required on the day.
+    </div>
+  </article>
+
+  <article data-tab-slug="cel-tips"
+           data-tab-name="Tips"
+           data-tab-icon="fa-lightbulb">
+    <h6 style="font-weight:700; color:#2c3e50; margin-bottom:16px; border-bottom:2px solid #667eea; padding-bottom:6px;"><i class="fas fa-lightbulb" style="color:#667eea;"></i> Tips and Best Practices</h6>
+    <div style="display:flex; flex-direction:column; gap:14px;">
+      <div style="display:flex; gap:14px; align-items:flex-start;">
+        <div style="width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg,#667eea,#764ba2); display:flex; align-items:center; justify-content:center; flex-shrink:0;"><i class="fas fa-file-excel" style="color:white; font-size:14px;"></i></div>
+        <div><div style="font-weight:600; color:#2c3e50; font-size:14px; margin-bottom:4px;">Use Excel import to set up quickly</div><div style="font-size:13px; color:#6c757d;">If you have a large contact list, prepare an Excel file with all names and dates and import them in one go. It's much faster than adding contacts one by one.</div></div>
+      </div>
+      <div style="display:flex; gap:14px; align-items:flex-start;">
+        <div style="width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg,#667eea,#764ba2); display:flex; align-items:center; justify-content:center; flex-shrink:0;"><i class="fas fa-calendar-check" style="color:white; font-size:14px;"></i></div>
+        <div><div style="font-weight:600; color:#2c3e50; font-size:14px; margin-bottom:4px;">Add all event types per contact</div><div style="font-size:13px; color:#6c757d;">For Greek contacts, remember to add both their Birthday and Nameday &mdash; these are often separate dates. You can add multiple events per contact.</div></div>
+      </div>
+      <div style="display:flex; gap:14px; align-items:flex-start;">
+        <div style="width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg,#667eea,#764ba2); display:flex; align-items:center; justify-content:center; flex-shrink:0;"><i class="fas fa-clock" style="color:white; font-size:14px;"></i></div>
+        <div><div style="font-weight:600; color:#2c3e50; font-size:14px; margin-bottom:4px;">Check the 30-day widget regularly</div><div style="font-size:13px; color:#6c757d;">The dashboard shows upcoming events in the next 30 days. Make it a habit to check it at the start of each month so you can plan ahead for gifts or messages.</div></div>
+      </div>
+      <div style="display:flex; gap:14px; align-items:flex-start;">
+        <div style="width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg,#667eea,#764ba2); display:flex; align-items:center; justify-content:center; flex-shrink:0;"><i class="fas fa-list" style="color:white; font-size:14px;"></i></div>
+        <div><div style="font-weight:600; color:#2c3e50; font-size:14px; margin-bottom:4px;">Use Timeline View for year planning</div><div style="font-size:13px; color:#6c757d;">The Timeline View shows the entire year ahead chronologically. It's the best way to see "what's coming up" and plan for important occasions months in advance.</div></div>
+      </div>
+      <div style="display:flex; gap:14px; align-items:flex-start;">
+        <div style="width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg,#667eea,#764ba2); display:flex; align-items:center; justify-content:center; flex-shrink:0;"><i class="fas fa-bell" style="color:white; font-size:14px;"></i></div>
+        <div><div style="font-weight:600; color:#2c3e50; font-size:14px; margin-bottom:4px;">Trust the daily email</div><div style="font-size:13px; color:#6c757d;">Once your contacts are set up, the daily email does the work for you. You'll receive a reminder every morning on any day with a celebration &mdash; no need to check the system manually.</div></div>
+      </div>
+      <div style="display:flex; gap:14px; align-items:flex-start;">
+        <div style="width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg,#667eea,#764ba2); display:flex; align-items:center; justify-content:center; flex-shrink:0;"><i class="fas fa-search" style="color:white; font-size:14px;"></i></div>
+        <div><div style="font-weight:600; color:#2c3e50; font-size:14px; margin-bottom:4px;">Use search to find contacts quickly</div><div style="font-size:13px; color:#6c757d;">The search bar on the Celebration Management page filters contacts in real time. Type a name to quickly jump to a specific person and view or edit their events.</div></div>
+      </div>
+    </div>
+  </article>
+
+</section>
+<!-- ======= END CELEBRATIONS ======= -->
+
+
+<!-- ======= RECIPE MANAGEMENT ======= -->
+<section data-module-slug="recipe_management"
+         data-module-name="Recipe Management"
+         data-module-icon="fa-utensils"
+         data-module-category="Personal"
+         data-module-subtitle="Your complete recipe collection, meal planner, and cooking companion">
+
+  <article data-tab-slug="rec-overview"
+           data-tab-name="Overview"
+           data-tab-icon="fa-info-circle">
+    <div style="display:flex; align-items:flex-start; gap:16px; margin-bottom:24px;">
+      <div style="width:50px; height:50px; border-radius:12px; background:linear-gradient(135deg,#28a745,#20c997); display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+        <i class="fas fa-utensils" style="color:white; font-size:22px;"></i>
+      </div>
+      <div>
+        <h5 style="font-weight:700; color:#2c3e50; margin-bottom:6px;">What is Recipe Management?</h5>
+        <p style="color:#6c757d; font-size:14px; line-height:1.7;">Recipe Management is your complete digital cookbook. Store, browse, and cook from your entire recipe collection. Plan your weekly meals, generate shopping lists, and use smart tools like the ingredient matcher and cooking calculator.</p>
+      </div>
+    </div>
+    <h6 style="font-weight:700; color:#2c3e50; margin-bottom:14px; border-bottom:2px solid #28a745; padding-bottom:6px;"><i class="fas fa-star" style="color:#28a745;"></i> Key Features</h6>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:20px;">
+      <div style="background:#f0fff4; border:1px solid #b2dfdb; border-radius:8px; padding:12px;"><div style="font-weight:600; color:#28a745; margin-bottom:3px;"><i class="fas fa-th-large"></i> 3 View Modes</div><div style="font-size:12px; color:#6c757d;">Browse in Grid, List, or Book (ring-binder) view.</div></div>
+      <div style="background:#f0fff4; border:1px solid #b2dfdb; border-radius:8px; padding:12px;"><div style="font-weight:600; color:#28a745; margin-bottom:3px;"><i class="fas fa-filter"></i> Smart Filters</div><div style="font-size:12px; color:#6c757d;">Filter by course, category, protein, author, or search by name or ingredient.</div></div>
+      <div style="background:#f0fff4; border:1px solid #b2dfdb; border-radius:8px; padding:12px;"><div style="font-weight:600; color:#28a745; margin-bottom:3px;"><i class="fas fa-shopping-cart"></i> Shopping Lists</div><div style="font-size:12px; color:#6c757d;">Per-recipe or whole meal-plan shopping lists with pantry deduction.</div></div>
+      <div style="background:#f0fff4; border:1px solid #b2dfdb; border-radius:8px; padding:12px;"><div style="font-weight:600; color:#28a745; margin-bottom:3px;"><i class="fas fa-fire"></i> Cooking Calculator</div><div style="font-size:12px; color:#6c757d;">Enter serving time and meat weight &mdash; get a full cooking schedule.</div></div>
+      <div style="background:#f0fff4; border:1px solid #b2dfdb; border-radius:8px; padding:12px;"><div style="font-weight:600; color:#28a745; margin-bottom:3px;"><i class="fas fa-search"></i> What Can I Make?</div><div style="font-size:12px; color:#6c757d;">Select ingredients you have and find recipes with % match scores.</div></div>
+      <div style="background:#f0fff4; border:1px solid #b2dfdb; border-radius:8px; padding:12px;"><div style="font-weight:600; color:#28a745; margin-bottom:3px;"><i class="fas fa-calendar-alt"></i> Meal Plans</div><div style="font-size:12px; color:#6c757d;">Plan up to 7 days of meals and generate a weekly shopping list.</div></div>
+      <div style="background:#f0fff4; border:1px solid #b2dfdb; border-radius:8px; padding:12px;"><div style="font-weight:600; color:#28a745; margin-bottom:3px;"><i class="fas fa-robot"></i> AI Import</div><div style="font-size:12px; color:#6c757d;">Paste any recipe and let AI parse it into a structured format automatically.</div></div>
+      <div style="background:#f0fff4; border:1px solid #b2dfdb; border-radius:8px; padding:12px;"><div style="font-weight:600; color:#28a745; margin-bottom:3px;"><i class="fas fa-heart"></i> Favourites</div><div style="font-size:12px; color:#6c757d;">Mark recipes as favourites and filter to view only your favourite collection.</div></div>
+    </div>
+  </article>
+
+  <article data-tab-slug="rec-browse"
+           data-tab-name="Browsing"
+           data-tab-icon="fa-th-large">
+    <h6 style="font-weight:700; color:#2c3e50; margin-bottom:16px; border-bottom:2px solid #28a745; padding-bottom:6px;"><i class="fas fa-th-large" style="color:#28a745;"></i> Browsing Your Recipe Collection</h6>
+
+    <h6 style="font-weight:600; color:#2c3e50; margin-bottom:10px;">View Modes</h6>
+    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-bottom:20px;">
+      <div style="background:#f8f9fa; border-radius:8px; padding:12px; border-top:3px solid #28a745; text-align:center;">
+        <i class="fas fa-th-large" style="color:#28a745; font-size:20px; margin-bottom:6px; display:block;"></i>
+        <div style="font-weight:600; color:#2c3e50; font-size:13px; margin-bottom:4px;">Grid</div>
+        <div style="font-size:11px; color:#6c757d;">Photo cards with time, servings, difficulty and tags. Hover to reveal actions.</div>
+      </div>
+      <div style="background:#f8f9fa; border-radius:8px; padding:12px; border-top:3px solid #17a2b8; text-align:center;">
+        <i class="fas fa-list" style="color:#17a2b8; font-size:20px; margin-bottom:6px; display:block;"></i>
+        <div style="font-weight:600; color:#2c3e50; font-size:13px; margin-bottom:4px;">List</div>
+        <div style="font-size:11px; color:#6c757d;">Compact rows with thumbnail, name, tags, time and difficulty.</div>
+      </div>
+      <div style="background:#f8f9fa; border-radius:8px; padding:12px; border-top:3px solid #8d6e63; text-align:center;">
+        <i class="fas fa-book-open" style="color:#8d6e63; font-size:20px; margin-bottom:6px; display:block;"></i>
+        <div style="font-weight:600; color:#2c3e50; font-size:13px; margin-bottom:4px;">Book</div>
+        <div style="font-size:11px; color:#6c757d;">Ring-binder style. 3, 6 or 9 per page. Click a recipe for full detail.</div>
+      </div>
+    </div>
+
+    <h6 style="font-weight:600; color:#2c3e50; margin-bottom:10px;">Filters</h6>
+    <p style="font-size:13px; color:#6c757d; margin-bottom:10px;">Click <strong>Recipe Filters</strong> to expand. All dropdowns support multi-select &mdash; pick several courses, categories or proteins at once. Active filters are shown as removable tags.</p>
+    <div style="background:#f8f9fa; border-radius:8px; padding:12px; font-size:12px; color:#6c757d; margin-bottom:16px; display:grid; grid-template-columns:1fr 1fr; gap:6px;">
+      <div><i class="fas fa-search" style="color:#28a745; width:14px;"></i> Search by recipe name or ingredient</div>
+      <div><i class="fas fa-utensils" style="color:#28a745; width:14px;"></i> Courses &mdash; Starter, Main, Side, Dessert&hellip;</div>
+      <div><i class="fas fa-tag" style="color:#28a745; width:14px;"></i> Categories &mdash; Greek, Italian, Grilled&hellip;</div>
+      <div><i class="fas fa-drumstick-bite" style="color:#28a745; width:14px;"></i> Proteins &mdash; Chicken, Lamb, Vegetarian&hellip;</div>
+      <div><i class="fas fa-user-edit" style="color:#28a745; width:14px;"></i> Author &mdash; who created the recipe</div>
+      <div><i class="fas fa-heart" style="color:#dc3545; width:14px;"></i> Favourites button &mdash; show only favourites</div>
+    </div>
+
+    <h6 style="font-weight:600; color:#2c3e50; margin-bottom:8px;">A&ndash;Z Letter Filter</h6>
+    <p style="font-size:13px; color:#6c757d; margin-bottom:16px;">Click any green letter to show only recipes starting with that letter. Grey letters have no recipes. Click the active letter again to clear it.</p>
+
+    <h6 style="font-weight:600; color:#2c3e50; margin-bottom:8px;">Card / Row Actions</h6>
+    <div style="display:flex; gap:6px; flex-wrap:wrap;">
+      <span style="background:#f8f9fa; border-radius:6px; padding:6px 10px; font-size:12px; color:#6c757d;"><span style="background:#28a745; color:white; padding:1px 6px; border-radius:3px; margin-right:4px;"><i class="fas fa-eye"></i></span>View</span>
+      <span style="background:#f8f9fa; border-radius:6px; padding:6px 10px; font-size:12px; color:#6c757d;"><span style="background:#ffc107; color:white; padding:1px 6px; border-radius:3px; margin-right:4px;"><i class="fas fa-edit"></i></span>Edit</span>
+      <span style="background:#f8f9fa; border-radius:6px; padding:6px 10px; font-size:12px; color:#6c757d;"><span style="background:#17a2b8; color:white; padding:1px 6px; border-radius:3px; margin-right:4px;"><i class="fas fa-copy"></i></span>Duplicate</span>
+      <span style="background:#f8f9fa; border-radius:6px; padding:6px 10px; font-size:12px; color:#6c757d;"><span style="background:#dc3545; color:white; padding:1px 6px; border-radius:3px; margin-right:4px;"><i class="fas fa-trash"></i></span>Delete</span>
+      <span style="background:#f8f9fa; border-radius:6px; padding:6px 10px; font-size:12px; color:#6c757d;"><i class="fas fa-heart" style="color:#e74c3c; margin-right:4px;"></i>Toggle favourite</span>
+    </div>
+  </article>
+
+  <article data-tab-slug="rec-detail"
+           data-tab-name="Recipe Detail"
+           data-tab-icon="fa-eye">
+    <h6 style="font-weight:700; color:#2c3e50; margin-bottom:16px; border-bottom:2px solid #28a745; padding-bottom:6px;"><i class="fas fa-eye" style="color:#28a745;"></i> Viewing a Recipe</h6>
+    <p style="font-size:13px; color:#6c757d; margin-bottom:16px;">The recipe header shows prep time, cook time, total time, servings, difficulty, course/category/protein tags and the author. Ingredients are displayed in two columns with weight equivalents shown in grey. Instructions are numbered and grouped by stage.</p>
+
+    <div style="display:flex; flex-direction:column; gap:12px; margin-bottom:4px;">
+
+      <div style="background:#f8f9fa; border-radius:8px; padding:14px; border-left:4px solid #28a745;">
+        <div style="font-weight:600; color:#2c3e50; margin-bottom:6px;"><i class="fas fa-shopping-cart" style="color:#28a745;"></i> Shopping List &mdash; 3 Steps</div>
+        <div style="font-size:13px; color:#6c757d; line-height:1.8;">
+          <strong>Step 1 &mdash; Servings:</strong> Set how many servings you need. All ingredient quantities scale automatically.<br>
+          <strong>Step 2 &mdash; Pantry review:</strong> Tick any ingredients you already have at home &mdash; they are excluded from the list.<br>
+          <strong>Step 3 &mdash; Your list:</strong> Final shopping list grouped by category. Share via <strong>Print</strong>, <strong>Copy</strong>, <strong>Email</strong>, or <strong>WhatsApp</strong>.
+        </div>
+      </div>
+
+      <div style="background:#f8f9fa; border-radius:8px; padding:14px; border-left:4px solid #fd7e14;">
+        <div style="font-weight:600; color:#2c3e50; margin-bottom:6px;"><i class="fas fa-fire" style="color:#fd7e14;"></i> Calculate Cooking Times</div>
+        <div style="font-size:13px; color:#6c757d; line-height:1.7;">
+          For braai/BBQ and oven recipes. Enter your <strong>desired serving time</strong> and <strong>meat weight (grams)</strong>. The calculator works backwards to produce a full schedule:
+          <div style="margin-top:8px; display:flex; flex-direction:column; gap:3px;">
+            <div><i class="fas fa-fire" style="color:#fd7e14; width:18px;"></i> <strong>Light Fire</strong> &mdash; when to start the fire</div>
+            <div><i class="fas fa-play-circle" style="color:#28a745; width:18px;"></i> <strong>Start Cooking</strong> &mdash; when to put the meat on</div>
+            <div><i class="fas fa-check-circle" style="color:#28a745; width:18px;"></i> <strong>Finish Cooking / Start Resting</strong></div>
+            <div><i class="fas fa-cut" style="color:#6c757d; width:18px;"></i> <strong>Start Cutting &amp; Making Sauce</strong></div>
+            <div><i class="fas fa-concierge-bell" style="color:#6f42c1; width:18px;"></i> <strong>Serving Time</strong> &mdash; your target time</div>
+          </div>
+          The schedule can also be accessed directly from the Recipe View page as a pop-up calculator using the serving time and meat weight you enter. Click <strong>Print Schedule</strong> to keep a copy.
+        </div>
+      </div>
+
+      <div style="background:#f8f9fa; border-radius:8px; padding:14px; border-left:4px solid #17a2b8;">
+        <div style="font-weight:600; color:#2c3e50; margin-bottom:6px;"><i class="fas fa-file-pdf" style="color:#17a2b8;"></i> View Document</div>
+        <div style="font-size:13px; color:#6c757d;">Opens the attached PDF document (if one has been uploaded for this recipe) in the browser.</div>
+      </div>
+
+      <div style="background:#f8f9fa; border-radius:8px; padding:14px; border-left:4px solid #6c757d;">
+        <div style="font-weight:600; color:#2c3e50; margin-bottom:6px;"><i class="fas fa-print" style="color:#6c757d;"></i> Print Recipe</div>
+        <div style="font-size:13px; color:#6c757d;">Sends the recipe to your printer in a clean, formatted layout.</div>
+      </div>
+
+    </div>
+  </article>
+
+  <article data-tab-slug="rec-edit"
+           data-tab-name="Add / Edit"
+           data-tab-icon="fa-edit">
+    <h6 style="font-weight:700; color:#2c3e50; margin-bottom:16px; border-bottom:2px solid #28a745; padding-bottom:6px;"><i class="fas fa-edit" style="color:#28a745;"></i> Adding and Editing Recipes</h6>
+
+    <p style="font-size:13px; color:#6c757d; margin-bottom:14px;">Click <strong>Add Recipe &rarr; Manual Entry</strong> to create a recipe from scratch, or <strong>Add Recipe &rarr; AI Import</strong> to paste any recipe text and let AI structure it for you. Click the yellow Edit button on any recipe to update it.</p>
+
+    <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:16px;">
+
+      <div style="background:#f8f9fa; border-radius:8px; padding:12px; border-left:4px solid #28a745;">
+        <div style="font-weight:700; color:#2c3e50; margin-bottom:4px; font-size:13px;"><span style="background:#28a745; color:white; border-radius:50%; padding:1px 6px; margin-right:6px; font-size:11px;">1</span> Basic Information</div>
+        <div style="font-size:12px; color:#6c757d;">Recipe name, description, author, and photo (JPG/PNG/WebP, max 5MB, recommended 800&times;600px).</div>
+      </div>
+
+      <div style="background:#f8f9fa; border-radius:8px; padding:12px; border-left:4px solid #28a745;">
+        <div style="font-weight:700; color:#2c3e50; margin-bottom:4px; font-size:13px;"><span style="background:#28a745; color:white; border-radius:50%; padding:1px 6px; margin-right:6px; font-size:11px;">2</span> Time &amp; Servings</div>
+        <div style="font-size:12px; color:#6c757d;">Prep time, cook time (total is calculated automatically), and number of servings.</div>
+      </div>
+
+      <div style="background:#f8f9fa; border-radius:8px; padding:12px; border-left:4px solid #28a745;">
+        <div style="font-weight:700; color:#2c3e50; margin-bottom:4px; font-size:13px;"><span style="background:#28a745; color:white; border-radius:50%; padding:1px 6px; margin-right:6px; font-size:11px;">3</span> Classification</div>
+        <div style="font-size:12px; color:#6c757d;">Assign one or more Courses and Categories (multi-select with chips). Set difficulty level. You can add new courses or categories on the fly.</div>
+      </div>
+
+      <div style="background:#f8f9fa; border-radius:8px; padding:12px; border-left:4px solid #28a745;">
+        <div style="font-weight:700; color:#2c3e50; margin-bottom:4px; font-size:13px;"><span style="background:#28a745; color:white; border-radius:50%; padding:1px 6px; margin-right:6px; font-size:11px;">4</span> Dietary Information</div>
+        <div style="font-size:12px; color:#6c757d;">Tick "Vegetarian" or select one or more proteins. You can add new proteins on the fly.</div>
+      </div>
+
+      <div style="background:#f8f9fa; border-radius:8px; padding:12px; border-left:4px solid #28a745;">
+        <div style="font-weight:700; color:#2c3e50; margin-bottom:4px; font-size:13px;"><span style="background:#28a745; color:white; border-radius:50%; padding:1px 6px; margin-right:6px; font-size:11px;">5</span> Ingredients</div>
+        <div style="font-size:12px; color:#6c757d;">Enter quantity, measurement unit, ingredient name, preparation note, and group (e.g. "Herb Mix"). Ingredient fields are colour-coded: <strong style="color:#28a745;">green</strong> = valid existing ingredient, <strong style="color:#dc3545;">red</strong> = new item that will be added. Rows can be reordered by dragging.</div>
+      </div>
+
+      <div style="background:#f8f9fa; border-radius:8px; padding:12px; border-left:4px solid #28a745;">
+        <div style="font-weight:700; color:#2c3e50; margin-bottom:4px; font-size:13px;"><span style="background:#28a745; color:white; border-radius:50%; padding:1px 6px; margin-right:6px; font-size:11px;">6</span> Instructions</div>
+        <div style="font-size:12px; color:#6c757d;">Numbered steps with optional group headings (e.g. "Ordering", "Pre-Preparation", "Cooking"). Steps can be reordered by dragging. Use <strong>Check Spelling</strong> to run a spell-check on all instruction text.</div>
+      </div>
+
+      <div style="background:#f8f9fa; border-radius:8px; padding:12px; border-left:4px solid #28a745;">
+        <div style="font-weight:700; color:#2c3e50; margin-bottom:4px; font-size:13px;"><span style="background:#28a745; color:white; border-radius:50%; padding:1px 6px; margin-right:6px; font-size:11px;">7</span> Document Attachment</div>
+        <div style="font-size:12px; color:#6c757d;">Upload a PDF, Word, Excel, JPG or PNG (max 5MB). If a document already exists, choose to <strong>Replace</strong> it or <strong>Add to existing</strong> (merges PDFs). You can also delete the current document.</div>
+      </div>
+
+      <div style="background:#f8f9fa; border-radius:8px; padding:12px; border-left:4px solid #fd7e14;">
+        <div style="font-weight:700; color:#2c3e50; margin-bottom:4px; font-size:13px;"><span style="background:#fd7e14; color:white; border-radius:50%; padding:1px 6px; margin-right:6px; font-size:11px;">8</span> Cooking Calculator (optional)</div>
+        <div style="font-size:12px; color:#6c757d;">For braai/BBQ or oven recipes. Select cooking method and enter: Serving Time, Fire Lighting Time, Meat Weight, Resting Time, Cutting &amp; Sauce time, Rate 1 and Rate 2 (mins per 500g). The live cooking schedule updates as you type and is saved with the recipe.</div>
+      </div>
+
+    </div>
+  </article>
+
+  <article data-tab-slug="rec-matcher"
+           data-tab-name="What Can I Make?"
+           data-tab-icon="fa-search">
+    <h6 style="font-weight:700; color:#2c3e50; margin-bottom:16px; border-bottom:2px solid #28a745; padding-bottom:6px;"><i class="fas fa-search" style="color:#28a745;"></i> What Can I Make?</h6>
+
+    <div style="display:flex; align-items:flex-start; gap:14px; margin-bottom:20px;">
+      <div style="width:44px; height:44px; border-radius:50%; background:#28a745; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+        <i class="fas fa-search" style="color:white; font-size:18px;"></i>
+      </div>
+      <p style="font-size:14px; color:#6c757d; line-height:1.7; margin:0;">Click <strong>What Can I Make?</strong> from the main toolbar. Select the ingredients you currently have at home and the system finds all recipes you can make &mdash; ranked by how well your ingredients match each recipe.</p>
+    </div>
+
+    <div style="display:flex; flex-direction:column; gap:12px; margin-bottom:20px;">
+      <div style="background:#f8f9fa; border-radius:8px; padding:12px; border-left:4px solid #28a745; font-size:13px; color:#6c757d;">
+        <strong style="color:#2c3e50;">Selecting ingredients:</strong> Ingredients are grouped by category (Baking, Dairy, Vegetables, Meat, etc.). Click a category header to expand it. Tick individual ingredients or use <strong>Select All</strong> to tick the whole category. Use the search box to find a specific ingredient quickly.
+      </div>
+      <div style="background:#f8f9fa; border-radius:8px; padding:12px; border-left:4px solid #17a2b8; font-size:13px; color:#6c757d;">
+        <strong style="color:#2c3e50;">Automatic inclusions:</strong> Herbs, spices, oil, and water are automatically included in every search &mdash; you don't need to tick them.
+      </div>
+      <div style="background:#f8f9fa; border-radius:8px; padding:12px; border-left:4px solid #28a745; font-size:13px; color:#6c757d;">
+        <strong style="color:#2c3e50;">Results:</strong> Each matching recipe shows a <strong>% match score</strong>, how many ingredients you have vs the total, and a list of missing ingredients. Missing proteins are highlighted in red. Click any result to open the full recipe.
+      </div>
+      <div style="background:#f8f9fa; border-radius:8px; padding:12px; border-left:4px solid #ffc107; font-size:13px; color:#6c757d;">
+        <strong style="color:#2c3e50;">Modifying selections:</strong> After results are shown, click <strong>"Click to modify selections"</strong> at the top to go back and adjust your ingredient choices without starting over.
+      </div>
+    </div>
+
+    <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px;">
+      <div style="background:#f0fff4; border:1px solid #28a745; border-radius:8px; padding:12px; text-align:center;">
+        <div style="font-size:18px; font-weight:700; color:#28a745;">100%</div>
+        <div style="font-size:11px; color:#28a745; font-weight:600;">Perfect Match</div>
+        <div style="font-size:11px; color:#6c757d; margin-top:4px;">You have everything needed</div>
+      </div>
+      <div style="background:#fffbf0; border:1px solid #ffc107; border-radius:8px; padding:12px; text-align:center;">
+        <div style="font-size:18px; font-weight:700; color:#e6a817;">80&ndash;99%</div>
+        <div style="font-size:11px; color:#e6a817; font-weight:600;">Good Match</div>
+        <div style="font-size:11px; color:#6c757d; margin-top:4px;">Only 1&ndash;2 ingredients missing</div>
+      </div>
+      <div style="background:#f0f9ff; border:1px solid #17a2b8; border-radius:8px; padding:12px; text-align:center;">
+        <div style="font-size:18px; font-weight:700; color:#17a2b8;">&lt;80%</div>
+        <div style="font-size:11px; color:#17a2b8; font-weight:600;">Partial Match</div>
+        <div style="font-size:11px; color:#6c757d; margin-top:4px;">Several ingredients missing</div>
+      </div>
+    </div>
+  </article>
+
+  <article data-tab-slug="rec-mealplans"
+           data-tab-name="Meal Plans"
+           data-tab-icon="fa-calendar-alt">
+    <h6 style="font-weight:700; color:#2c3e50; margin-bottom:16px; border-bottom:2px solid #28a745; padding-bottom:6px;"><i class="fas fa-calendar-alt" style="color:#28a745;"></i> Meal Plans</h6>
+
+    <p style="font-size:13px; color:#6c757d; margin-bottom:16px;">Click <strong>Meal Plans</strong> from the toolbar to manage your weekly meal schedules. View as a list or a calendar. Each plan has a name, a date range of 1&ndash;7 days, and recipes assigned to each day.</p>
+
+    <div style="display:flex; flex-direction:column; gap:12px; margin-bottom:20px;">
+
+      <div style="background:#f8f9fa; border-radius:8px; padding:12px; border-left:4px solid #28a745; font-size:13px; color:#6c757d;">
+        <strong style="color:#2c3e50;"><i class="fas fa-plus-circle" style="color:#28a745;"></i> Creating a Meal Plan:</strong> Give it a name and set a start and end date (1&ndash;7 days). Then assign recipes to each day and set the number of servings per recipe.
+      </div>
+
+      <div style="background:#f8f9fa; border-radius:8px; padding:12px; border-left:4px solid #17a2b8; font-size:13px; color:#6c757d;">
+        <strong style="color:#2c3e50;"><i class="fas fa-calendar" style="color:#17a2b8;"></i> Calendar View:</strong> A mini calendar shows dots on days that have meals planned. Click a day to view and manage that day's recipes. Add or remove recipes directly from the calendar view.
+      </div>
+
+      <div style="background:#f8f9fa; border-radius:8px; padding:12px; border-left:4px solid #28a745; font-size:13px; color:#6c757d;">
+        <strong style="color:#2c3e50;"><i class="fas fa-shopping-cart" style="color:#28a745;"></i> Meal Plan Shopping List:</strong> Click the green <strong>List</strong> button on any meal plan. The system consolidates all ingredients from every recipe across all days into one master shopping list &mdash; quantities are totalled across recipes. Tick off what you already have in your pantry and only the remaining items appear on the final list. Share via Print, Copy, Email or WhatsApp.
+      </div>
+
+      <div style="background:#f8f9fa; border-radius:8px; padding:12px; border-left:4px solid #ffc107; font-size:13px; color:#6c757d;">
+        <strong style="color:#2c3e50;"><i class="fas fa-copy" style="color:#e6a817;"></i> Duplicate a Meal Plan:</strong> Creates a copy with a new name and new start date. The plan keeps the same duration and all the same recipes. Optionally tick <strong>Delete original after duplicating</strong> to effectively shift a plan to new dates.
+      </div>
+
+    </div>
+
+    <div style="background:#d4edda; border:1px solid #c3e6cb; border-radius:8px; padding:12px; font-size:13px; color:#155724;">
+      <i class="fas fa-lightbulb"></i> <strong>Tip:</strong> Use the Meal Plan Shopping List before your weekly grocery shop &mdash; it automatically combines all ingredient quantities across all recipes for the week into one consolidated list.
+    </div>
+  </article>
+
+  <article data-tab-slug="rec-settings"
+           data-tab-name="Settings"
+           data-tab-icon="fa-cog">
+    <h6 style="font-weight:700; color:#2c3e50; margin-bottom:16px; border-bottom:2px solid #28a745; padding-bottom:6px;"><i class="fas fa-cog" style="color:#28a745;"></i> Settings</h6>
+
+    <p style="font-size:13px; color:#6c757d; margin-bottom:16px;">The <strong>Settings</strong> dropdown contains four management pages that control how the system handles ingredients, units and conversions &mdash; all of which affect shopping list aggregation.</p>
+
+    <div style="display:flex; flex-direction:column; gap:14px;">
+
+      <div style="background:#f8f9fa; border-radius:8px; padding:14px; border-left:4px solid #6f42c1;">
+        <div style="font-weight:700; color:#2c3e50; margin-bottom:6px; font-size:13px;"><i class="fas fa-exchange-alt" style="color:#6f42c1;"></i> Unit Conversions</div>
+        <div style="font-size:12px; color:#6c757d; line-height:1.7;">
+          Defines how units convert to each other for shopping list consolidation. For example, <em>1 bag &rarr; 4 kg</em> or <em>1 cup &rarr; 240 ml</em>.<br><br>
+          <strong>Generic</strong> conversions apply to all ingredients (e.g. 1 cup = 240ml for any liquid).<br>
+          <strong>Specific</strong> conversions apply to one ingredient only (e.g. 1 cup Flour = 125g).<br><br>
+          The <strong>Missing Conversions</strong> button highlights combinations that exist in your recipes but have no conversion defined yet.
+        </div>
+      </div>
+
+      <div style="background:#f8f9fa; border-radius:8px; padding:14px; border-left:4px solid #17a2b8;">
+        <div style="font-weight:700; color:#2c3e50; margin-bottom:6px; font-size:13px;"><i class="fas fa-tags" style="color:#17a2b8;"></i> Categories</div>
+        <div style="font-size:12px; color:#6c757d; line-height:1.7;">
+          Manages ingredient categories (Baking, Dairy, Vegetables, Meat, etc.). Categories are used to group ingredients in the <strong>What Can I Make?</strong> selector and on shopping lists. Each category shows how many ingredients use it. You can add, rename, or delete categories.
+        </div>
+      </div>
+
+      <div style="background:#f8f9fa; border-radius:8px; padding:14px; border-left:4px solid #6c757d;">
+        <div style="font-weight:700; color:#2c3e50; margin-bottom:6px; font-size:13px;"><i class="fas fa-ruler" style="color:#6c757d;"></i> Units (Measurement Units)</div>
+        <div style="font-size:12px; color:#6c757d; line-height:1.7;">
+          Manages all measurement units available in the recipe editor (cup, tablespoon, gram, kilogram, etc.). Each unit has a singular and plural form, an optional abbreviation, and a type: <strong>Weight</strong>, <strong>Volume</strong>, <strong>Count</strong>, or <strong>Other</strong>. The type determines rounding behaviour in shopping lists.
+        </div>
+      </div>
+
+      <div style="background:#f8f9fa; border-radius:8px; padding:14px; border-left:4px solid #28a745;">
+        <div style="font-weight:700; color:#2c3e50; margin-bottom:6px; font-size:13px;"><i class="fas fa-balance-scale" style="color:#28a745;"></i> Ingredients (Shopping Units)</div>
+        <div style="font-size:12px; color:#6c757d; line-height:1.7;">
+          Sets the preferred shopping unit for specific ingredients. When a shopping list is generated, ingredients with a defined shopping unit are displayed in that unit (e.g. Butter always shown in grams, Garlic always in cloves). This ensures shopping lists are presented in the most practical unit for each ingredient.
+        </div>
+      </div>
+
+    </div>
+
+    <div style="background:#fff3cd; border:1px solid #ffc107; border-radius:8px; padding:12px; font-size:12px; color:#856404; margin-top:16px;">
+      <i class="fas fa-exclamation-triangle"></i> <strong>Note:</strong> These settings affect how shopping lists are calculated and how units are aggregated. If your shopping list shows unexpected quantities, check Unit Conversions for missing or incorrect conversion rules.
+    </div>
+  </article>
+
+  <article data-tab-slug="rec-tips"
+           data-tab-name="Tips"
+           data-tab-icon="fa-lightbulb">
+    <h6 style="font-weight:700; color:#2c3e50; margin-bottom:16px; border-bottom:2px solid #28a745; padding-bottom:6px;"><i class="fas fa-lightbulb" style="color:#28a745;"></i> Tips and Best Practices</h6>
+    <div style="display:flex; flex-direction:column; gap:14px;">
+
+      <div style="display:flex; gap:14px; align-items:flex-start;">
+        <div style="width:36px; height:36px; border-radius:50%; background:#28a745; display:flex; align-items:center; justify-content:center; flex-shrink:0;"><i class="fas fa-robot" style="color:white; font-size:14px;"></i></div>
+        <div><div style="font-weight:600; color:#2c3e50; font-size:14px; margin-bottom:4px;">Use AI Import to add recipes fast</div><div style="font-size:13px; color:#6c757d;">Find a recipe online, copy the text, and paste it into AI Import. The system structures it automatically &mdash; just review and save. Much faster than manual entry.</div></div>
+      </div>
+
+      <div style="display:flex; gap:14px; align-items:flex-start;">
+        <div style="width:36px; height:36px; border-radius:50%; background:#28a745; display:flex; align-items:center; justify-content:center; flex-shrink:0;"><i class="fas fa-layer-group" style="color:white; font-size:14px;"></i></div>
+        <div><div style="font-weight:600; color:#2c3e50; font-size:14px; margin-bottom:4px;">Use ingredient and instruction groups</div><div style="font-size:13px; color:#6c757d;">Group related ingredients (e.g. "Herb Mix", "For the Sauce") and group instruction steps (e.g. "Pre-Preparation", "Cooking") to make complex recipes easy to follow.</div></div>
+      </div>
+
+      <div style="display:flex; gap:14px; align-items:flex-start;">
+        <div style="width:36px; height:36px; border-radius:50%; background:#28a745; display:flex; align-items:center; justify-content:center; flex-shrink:0;"><i class="fas fa-fire" style="color:white; font-size:14px;"></i></div>
+        <div><div style="font-weight:600; color:#2c3e50; font-size:14px; margin-bottom:4px;">Set up the Cooking Calculator for braai recipes</div><div style="font-size:13px; color:#6c757d;">For any braai, BBQ or oven roast recipe, fill in the cooking calculator fields when editing. Then on the day, just enter the meat weight and target serving time to get the full schedule.</div></div>
+      </div>
+
+      <div style="display:flex; gap:14px; align-items:flex-start;">
+        <div style="width:36px; height:36px; border-radius:50%; background:#28a745; display:flex; align-items:center; justify-content:center; flex-shrink:0;"><i class="fas fa-shopping-cart" style="color:white; font-size:14px;"></i></div>
+        <div><div style="font-weight:600; color:#2c3e50; font-size:14px; margin-bottom:4px;">Use Meal Plans for your weekly shop</div><div style="font-size:13px; color:#6c757d;">Build a 7-day meal plan, then generate the shopping list. Tick off what's in your pantry and the list automatically contains only what you need to buy &mdash; nothing more.</div></div>
+      </div>
+
+      <div style="display:flex; gap:14px; align-items:flex-start;">
+        <div style="width:36px; height:36px; border-radius:50%; background:#28a745; display:flex; align-items:center; justify-content:center; flex-shrink:0;"><i class="fas fa-exchange-alt" style="color:white; font-size:14px;"></i></div>
+        <div><div style="font-weight:600; color:#2c3e50; font-size:14px; margin-bottom:4px;">Keep Unit Conversions up to date</div><div style="font-size:13px; color:#6c757d;">Check Settings &rarr; Unit Conversions &rarr; Missing Conversions regularly. Any undefined conversions prevent shopping list quantities from being properly aggregated across recipes.</div></div>
+      </div>
+
+      <div style="display:flex; gap:14px; align-items:flex-start;">
+        <div style="width:36px; height:36px; border-radius:50%; background:#28a745; display:flex; align-items:center; justify-content:center; flex-shrink:0;"><i class="fas fa-copy" style="color:white; font-size:14px;"></i></div>
+        <div><div style="font-weight:600; color:#2c3e50; font-size:14px; margin-bottom:4px;">Duplicate recipes to create variations</div><div style="font-size:13px; color:#6c757d;">Use the Duplicate button to copy a recipe, then tweak the copy. Great for creating vegetarian versions, different portion sizes, or regional variations without losing the original.</div></div>
+      </div>
+
+      <div style="display:flex; gap:14px; align-items:flex-start;">
+        <div style="width:36px; height:36px; border-radius:50%; background:#28a745; display:flex; align-items:center; justify-content:center; flex-shrink:0;"><i class="fas fa-book-open" style="color:white; font-size:14px;"></i></div>
+        <div><div style="font-weight:600; color:#2c3e50; font-size:14px; margin-bottom:4px;">Use Book View in the kitchen</div><div style="font-size:13px; color:#6c757d;">Switch to Book View for a clean, print-style reading experience. Navigate between recipes with the arrows and read ingredients and instructions side by side &mdash; ideal when cooking.</div></div>
+      </div>
+
+    </div>
+  </article>
+
+</section>
+<!-- ======= END RECIPE MANAGEMENT ======= -->
+
+

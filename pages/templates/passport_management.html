@@ -1,6 +1,8 @@
 {% extends 'base.html' %}
 {% load static %}
 {% load humanize %}
+{% load help_modal_tags %}
+
 {% block title %}Passport/Document Management{% endblock %}
 {% block content %}
 
@@ -72,8 +74,8 @@
 {% endfor %}
 
 <div style="display: flex; justify-content: flex-end; gap: 10px;">
-    <button type="button" class="btn btn-light btn-sm" data-toggle="modal" data-target="#documentHelpModal" title="Help" style="border:1px solid #dee2e6;">
-      <i class="fas fa-question-circle" style="color:#17a2b8;"></i> Help
+    <button type="button" class="btn btn-info" data-toggle="modal" data-target="#passport_managementHelpModal">
+        <i class="fas fa-question-circle"></i> Help
     </button>
     <a href="{% url 'personal_page' %}" class="btn btn-info" role="button">Back</a>
 </div>
@@ -377,141 +379,7 @@
   </div>
 </div>
 
-<!-- ==================== DOCUMENT MANAGEMENT HELP MODAL ==================== -->
-<div class="modal fade" id="documentHelpModal" tabindex="-1" role="dialog" aria-labelledby="documentHelpModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg modal-dialog-scrollable" role="document">
-    <div class="modal-content">
-      <div class="modal-header" style="background: linear-gradient(135deg, #17a2b8 0%, #138496 100%); color: white;">
-        <div>
-          <h5 class="modal-title" id="documentHelpModalLabel" style="font-weight:700; font-size:20px;">
-            <i class="fas fa-id-card"></i> Passport / ID Management — User Guide
-          </h5>
-          <small style="opacity:0.85;">Manage, track and get notified about all your identity documents</small>
-        </div>
-        <button type="button" class="close" data-dismiss="modal" style="color:white; opacity:1;"><span>&times;</span></button>
-      </div>
-      <div class="modal-body" style="padding:0;">
-        <ul class="nav nav-tabs" style="padding: 0 20px; background:#f8f9fa; border-bottom: 2px solid #dee2e6;">
-          <li class="nav-item"><a class="nav-link active" data-toggle="tab" href="#doc-overview" style="font-weight:600; font-size:13px;"><i class="fas fa-info-circle"></i> Overview</a></li>
-          <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#doc-list" style="font-weight:600; font-size:13px;"><i class="fas fa-list"></i> Document List</a></li>
-          <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#doc-addEdit" style="font-weight:600; font-size:13px;"><i class="fas fa-plus-circle"></i> Add / Edit</a></li>
-          <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#doc-notifications" style="font-weight:600; font-size:13px;"><i class="fas fa-bell"></i> Notifications</a></li>
-          <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#doc-tips" style="font-weight:600; font-size:13px;"><i class="fas fa-lightbulb"></i> Tips</a></li>
-        </ul>
-        <div class="tab-content" style="padding: 24px;">
-
-          <!-- OVERVIEW -->
-          <div class="tab-pane fade show active" id="doc-overview">
-            <div style="display:flex; align-items:flex-start; gap:16px; margin-bottom:24px;">
-              <div style="width:50px; height:50px; border-radius:12px; background:#17a2b8; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
-                <i class="fas fa-id-card" style="color:white; font-size:22px;"></i>
-              </div>
-              <div>
-                <h5 style="font-weight:700; color:#2c3e50; margin-bottom:6px;">What is Passport / ID Management?</h5>
-                <p style="color:#6c757d; font-size:14px; line-height:1.7;">The Passport / ID Management module is your centralised store for all identity and travel documents belonging to family members or associates. You can upload, view, edit, and delete documents, and the system automatically monitors expiry dates and sends you timely notifications.</p>
-              </div>
-            </div>
-            <h6 style="font-weight:700; color:#2c3e50; margin-bottom:14px; border-bottom:2px solid #17a2b8; padding-bottom:6px;"><i class="fas fa-star" style="color:#17a2b8;"></i> Key Features</h6>
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:24px;">
-              <div style="background:#f0fdff; border:1px solid #b2ebf2; border-radius:8px; padding:14px;"><div style="font-weight:600; color:#17a2b8; margin-bottom:4px;"><i class="fas fa-passport"></i> Multiple Document Types</div><div style="font-size:13px; color:#6c757d;">Store Passports, ID Cards, Driver's Licences, ARC cards, and more — all in one place.</div></div>
-              <div style="background:#f0fdff; border:1px solid #b2ebf2; border-radius:8px; padding:14px;"><div style="font-weight:600; color:#17a2b8; margin-bottom:4px;"><i class="fas fa-eye"></i> View Documents</div><div style="font-size:13px; color:#6c757d;">View uploaded document scans or PDFs directly in the browser without downloading.</div></div>
-              <div style="background:#f0fdff; border:1px solid #b2ebf2; border-radius:8px; padding:14px;"><div style="font-weight:600; color:#17a2b8; margin-bottom:4px;"><i class="fas fa-exclamation-circle" style="color:#dc3545;"></i> Expiry Alerts</div><div style="font-size:13px; color:#6c757d;">Expiry dates shown in red when a document is expiring within 6 months or has already expired.</div></div>
-              <div style="background:#f0fdff; border:1px solid #b2ebf2; border-radius:8px; padding:14px;"><div style="font-weight:600; color:#17a2b8; margin-bottom:4px;"><i class="fas fa-bell"></i> Email Notifications</div><div style="font-size:13px; color:#6c757d;">Automatic email alerts on the 1st and 15th of every month for documents expiring soon or already expired.</div></div>
-              <div style="background:#f0fdff; border:1px solid #b2ebf2; border-radius:8px; padding:14px;"><div style="font-weight:600; color:#17a2b8; margin-bottom:4px;"><i class="fas fa-filter"></i> Filtering</div><div style="font-size:13px; color:#6c757d;">Filter by holder name, document type, country of issue, and status to quickly find any document.</div></div>
-              <div style="background:#f0fdff; border:1px solid #b2ebf2; border-radius:8px; padding:14px;"><div style="font-weight:600; color:#17a2b8; margin-bottom:4px;"><i class="fas fa-users"></i> Multiple Holders</div><div style="font-size:13px; color:#6c757d;">Manage documents for multiple family members or associates — all in a single, searchable list.</div></div>
-            </div>
-            <div style="background:#fff3cd; border:1px solid #ffc107; border-radius:8px; padding:14px; font-size:13px;">
-              <i class="fas fa-exclamation-triangle" style="color:#856404;"></i>
-              <strong style="color:#856404;"> Important:</strong>
-              <span style="color:#856404;"> Expiry dates shown in <strong style="color:#dc3545;">red</strong> indicate the document has already expired or will expire within 6 months. These are included in the automated email sent on the 1st and 15th of every month.</span>
-            </div>
-          </div>
-
-          <!-- DOCUMENT LIST -->
-          <div class="tab-pane fade" id="doc-list">
-            <h6 style="font-weight:700; color:#2c3e50; margin-bottom:16px; border-bottom:2px solid #17a2b8; padding-bottom:6px;"><i class="fas fa-list" style="color:#17a2b8;"></i> Understanding the Document List</h6>
-            <p style="font-size:14px; color:#6c757d; margin-bottom:20px;">Each row represents one document. All holders and their documents are shown together in a single list.</p>
-            <table style="width:100%; font-size:13px; border-collapse:collapse; margin-bottom:24px;">
-              <thead><tr style="background:#343a40; color:white;"><th style="padding:10px 14px;">Column</th><th style="padding:10px 14px;">Description</th></tr></thead>
-              <tbody>
-                <tr style="background:#f8f9fa;"><td style="padding:10px 14px; font-weight:600; color:#2c3e50; border-bottom:1px solid #dee2e6;">Holder Name</td><td style="padding:10px 14px; color:#6c757d; border-bottom:1px solid #dee2e6;">The person this document belongs to.</td></tr>
-                <tr><td style="padding:10px 14px; font-weight:600; color:#2c3e50; border-bottom:1px solid #dee2e6;">Document Type</td><td style="padding:10px 14px; color:#6c757d; border-bottom:1px solid #dee2e6;">Colour-coded badge: <span style="background:#007bff; color:white; padding:2px 8px; border-radius:4px; font-size:11px;">Passport</span> <span style="background:#17a2b8; color:white; padding:2px 8px; border-radius:4px; font-size:11px;">ID</span> <span style="background:#6c757d; color:white; padding:2px 8px; border-radius:4px; font-size:11px;">Driver's License</span> <span style="background:#343a40; color:white; padding:2px 8px; border-radius:4px; font-size:11px;">ARC</span></td></tr>
-                <tr style="background:#f8f9fa;"><td style="padding:10px 14px; font-weight:600; color:#2c3e50; border-bottom:1px solid #dee2e6;">Document Number</td><td style="padding:10px 14px; color:#6c757d; border-bottom:1px solid #dee2e6;">The unique number printed on the document.</td></tr>
-                <tr><td style="padding:10px 14px; font-weight:600; color:#2c3e50; border-bottom:1px solid #dee2e6;">Country of Issue</td><td style="padding:10px 14px; color:#6c757d; border-bottom:1px solid #dee2e6;">The country that issued the document.</td></tr>
-                <tr style="background:#f8f9fa;"><td style="padding:10px 14px; font-weight:600; color:#2c3e50; border-bottom:1px solid #dee2e6;">Date of Issue</td><td style="padding:10px 14px; color:#6c757d; border-bottom:1px solid #dee2e6;">The date the document was issued.</td></tr>
-                <tr><td style="padding:10px 14px; font-weight:600; color:#2c3e50; border-bottom:1px solid #dee2e6;">Expiry Date</td><td style="padding:10px 14px; color:#6c757d; border-bottom:1px solid #dee2e6;"><span style="color:#dc3545; font-weight:600;">Shown in red</span> if expired or expiring within 6 months. Shows <strong>-</strong> if no expiry applies.</td></tr>
-                <tr style="background:#f8f9fa;"><td style="padding:10px 14px; font-weight:600; color:#2c3e50; border-bottom:1px solid #dee2e6;">Status</td><td style="padding:10px 14px; color:#6c757d; border-bottom:1px solid #dee2e6;"><span style="background:#28a745; color:white; padding:2px 8px; border-radius:4px; font-size:11px;">Active</span> <span style="background:#ffc107; color:white; padding:2px 8px; border-radius:4px; font-size:11px;">Applied for Renewal</span> <span style="background:#6c757d; color:white; padding:2px 8px; border-radius:4px; font-size:11px;">Inactive</span></td></tr>
-                <tr><td style="padding:10px 14px; font-weight:600; color:#2c3e50;">Actions</td><td style="padding:10px 14px; color:#6c757d;"><span style="background:#28a745; color:white; padding:3px 8px; border-radius:4px; font-size:12px;"><i class="fas fa-eye"></i></span> <strong>View</strong> — Opens the document scan/PDF.<br><span style="background:#ffc107; color:white; padding:3px 8px; border-radius:4px; font-size:12px; display:inline-block; margin-top:4px;"><i class="fas fa-edit"></i></span> <strong>Edit</strong> — Update document details.<br><span style="background:#dc3545; color:white; padding:3px 8px; border-radius:4px; font-size:12px; display:inline-block; margin-top:4px;"><i class="fas fa-trash"></i></span> <strong>Delete</strong> — Permanently removes the record.</td></tr>
-              </tbody>
-            </table>
-            <h6 style="font-weight:700; color:#2c3e50; margin-bottom:12px;"><i class="fas fa-sort" style="color:#17a2b8;"></i> Sorting</h6>
-            <p style="font-size:14px; color:#6c757d; margin-bottom:16px;">Click any column header to sort the list by that column. Click again to reverse the sort order.</p>
-            <h6 style="font-weight:700; color:#2c3e50; margin-bottom:12px;"><i class="fas fa-filter" style="color:#17a2b8;"></i> Using Filters</h6>
-            <p style="font-size:14px; color:#6c757d;">Click <strong>Document Filters</strong> to expand the filter bar. Filter by Holder, Type, Country, and Status. Use <strong>Clear All</strong> to reset.</p>
-          </div>
-
-          <!-- ADD / EDIT -->
-          <div class="tab-pane fade" id="doc-addEdit">
-            <h6 style="font-weight:700; color:#2c3e50; margin-bottom:16px; border-bottom:2px solid #17a2b8; padding-bottom:6px;"><i class="fas fa-plus-circle" style="color:#17a2b8;"></i> Adding and Editing Documents</h6>
-            <p style="font-size:14px; color:#6c757d; margin-bottom:20px;">Click <strong>+ Add New Passport/ID</strong> at the bottom of the list to add a document, or click the <strong>Edit</strong> button on any row to update it.</p>
-            <div style="display:flex; flex-direction:column; gap:14px;">
-              <div style="background:#f8f9fa; border-radius:8px; padding:14px; border-left:4px solid #17a2b8;"><div style="font-weight:700; color:#2c3e50; margin-bottom:4px;"><span style="background:#17a2b8; color:white; border-radius:50%; padding:1px 7px; margin-right:8px; font-size:11px;">1</span> Holder Name</div><div style="font-size:13px; color:#6c757d;">Select the person this document belongs to. Multiple documents can be added per person.</div></div>
-              <div style="background:#f8f9fa; border-radius:8px; padding:14px; border-left:4px solid #17a2b8;"><div style="font-weight:700; color:#2c3e50; margin-bottom:4px;"><span style="background:#17a2b8; color:white; border-radius:50%; padding:1px 7px; margin-right:8px; font-size:11px;">2</span> Document Type</div><div style="font-size:13px; color:#6c757d;">Select Passport, ID, Driver's License, Visa, or ARC. This determines the badge colour in the list.</div></div>
-              <div style="background:#f8f9fa; border-radius:8px; padding:14px; border-left:4px solid #17a2b8;"><div style="font-weight:700; color:#2c3e50; margin-bottom:4px;"><span style="background:#17a2b8; color:white; border-radius:50%; padding:1px 7px; margin-right:8px; font-size:11px;">3</span> Document Number</div><div style="font-size:13px; color:#6c757d;">Enter the unique number exactly as it appears on the document.</div></div>
-              <div style="background:#f8f9fa; border-radius:8px; padding:14px; border-left:4px solid #17a2b8;"><div style="font-weight:700; color:#2c3e50; margin-bottom:4px;"><span style="background:#17a2b8; color:white; border-radius:50%; padding:1px 7px; margin-right:8px; font-size:11px;">4</span> Country of Issue</div><div style="font-size:13px; color:#6c757d;">Select the country that issued the document.</div></div>
-              <div style="background:#f8f9fa; border-radius:8px; padding:14px; border-left:4px solid #17a2b8;"><div style="font-weight:700; color:#2c3e50; margin-bottom:4px;"><span style="background:#17a2b8; color:white; border-radius:50%; padding:1px 7px; margin-right:8px; font-size:11px;">5</span> Date of Issue &amp; Expiry Date</div><div style="font-size:13px; color:#6c757d;">Enter both dates. The Expiry Date drives the notification system. Leave blank if the document doesn't expire — it will show as <strong>-</strong>.</div></div>
-              <div style="background:#f8f9fa; border-radius:8px; padding:14px; border-left:4px solid #17a2b8;"><div style="font-weight:700; color:#2c3e50; margin-bottom:4px;"><span style="background:#17a2b8; color:white; border-radius:50%; padding:1px 7px; margin-right:8px; font-size:11px;">6</span> Upload Document Scan</div><div style="font-size:13px; color:#6c757d;">Upload a scan or photo (PDF, JPG, or PNG, max 10MB). This can be viewed via the green View button at any time.</div></div>
-            </div>
-            <div style="background:#d1ecf1; border:1px solid #bee5eb; border-radius:8px; padding:14px; font-size:13px; color:#0c5460; margin-top:20px;">
-              <i class="fas fa-info-circle"></i> <strong>Deleting:</strong> The red Delete button permanently removes both the record and the uploaded file. This cannot be undone.
-            </div>
-          </div>
-
-          <!-- NOTIFICATIONS -->
-          <div class="tab-pane fade" id="doc-notifications">
-            <h6 style="font-weight:700; color:#2c3e50; margin-bottom:16px; border-bottom:2px solid #17a2b8; padding-bottom:6px;"><i class="fas fa-bell" style="color:#17a2b8;"></i> Expiry Notifications</h6>
-            <div style="display:flex; align-items:flex-start; gap:14px; margin-bottom:24px;">
-              <div style="width:44px; height:44px; border-radius:50%; background:#17a2b8; display:flex; align-items:center; justify-content:center; flex-shrink:0;"><i class="fas fa-envelope" style="color:white; font-size:18px;"></i></div>
-              <p style="font-size:14px; color:#6c757d; line-height:1.7; margin:0;">Alivente Online automatically monitors all document expiry dates and sends an email on the <strong>1st</strong> and <strong>15th of every month</strong> listing all documents that have <strong>already expired</strong> or will <strong>expire within the next 6 months</strong>.</p>
-            </div>
-            <h6 style="font-weight:600; color:#2c3e50; margin-bottom:12px;">What triggers a notification?</h6>
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:24px;">
-              <div style="background:#f8d7da; border:1px solid #f5c6cb; border-radius:8px; padding:14px; text-align:center;"><i class="fas fa-times-circle" style="color:#dc3545; font-size:24px; margin-bottom:8px; display:block;"></i><div style="font-weight:600; color:#721c24;">Already Expired</div><div style="font-size:12px; color:#721c24; margin-top:4px;">Expiry date has passed</div></div>
-              <div style="background:#fff3cd; border:1px solid #ffc107; border-radius:8px; padding:14px; text-align:center;"><i class="fas fa-exclamation-triangle" style="color:#856404; font-size:24px; margin-bottom:8px; display:block;"></i><div style="font-weight:600; color:#856404;">Expiring Within 6 Months</div><div style="font-size:12px; color:#856404; margin-top:4px;">Less than 6 months until expiry</div></div>
-            </div>
-            <h6 style="font-weight:600; color:#2c3e50; margin-bottom:12px;">Notification schedule</h6>
-            <div style="background:#f8f9fa; border-radius:8px; padding:16px; font-size:13px; color:#6c757d; margin-bottom:16px;">
-              <div style="display:flex; align-items:center; gap:12px; margin-bottom:10px;"><div style="background:#17a2b8; color:white; border-radius:6px; padding:4px 12px; font-weight:700; font-size:13px; flex-shrink:0;">1st</div><div>Email sent on the <strong>1st of every month</strong> — covers all expired and expiring documents.</div></div>
-              <div style="display:flex; align-items:center; gap:12px;"><div style="background:#17a2b8; color:white; border-radius:6px; padding:4px 10px; font-weight:700; font-size:13px; flex-shrink:0;">15th</div><div>Email sent on the <strong>15th of every month</strong> — a mid-month check covering the same criteria.</div></div>
-            </div>
-            <div style="background:#d4edda; border:1px solid #c3e6cb; border-radius:8px; padding:14px; font-size:13px; color:#155724;">
-              <i class="fas fa-check-circle"></i> <strong>No action required:</strong> Notifications are fully automatic. Keep your records up to date and the system handles the rest.
-            </div>
-          </div>
-
-          <!-- TIPS -->
-          <div class="tab-pane fade" id="doc-tips">
-            <h6 style="font-weight:700; color:#2c3e50; margin-bottom:16px; border-bottom:2px solid #17a2b8; padding-bottom:6px;"><i class="fas fa-lightbulb" style="color:#17a2b8;"></i> Tips and Best Practices</h6>
-            <div style="display:flex; flex-direction:column; gap:14px;">
-              <div style="display:flex; gap:14px; align-items:flex-start;"><div style="width:36px; height:36px; border-radius:50%; background:#17a2b8; display:flex; align-items:center; justify-content:center; flex-shrink:0;"><i class="fas fa-upload" style="color:white; font-size:14px;"></i></div><div><div style="font-weight:600; color:#2c3e50; font-size:14px; margin-bottom:4px;">Always upload a scan</div><div style="font-size:13px; color:#6c757d;">A digital copy means you can access documents from anywhere — no need to carry originals for routine reference.</div></div></div>
-              <div style="display:flex; gap:14px; align-items:flex-start;"><div style="width:36px; height:36px; border-radius:50%; background:#17a2b8; display:flex; align-items:center; justify-content:center; flex-shrink:0;"><i class="fas fa-calendar-alt" style="color:white; font-size:14px;"></i></div><div><div style="font-weight:600; color:#2c3e50; font-size:14px; margin-bottom:4px;">Always enter the expiry date</div><div style="font-size:13px; color:#6c757d;">Without an expiry date the notification system cannot alert you. Always enter it, even for long-validity documents.</div></div></div>
-              <div style="display:flex; gap:14px; align-items:flex-start;"><div style="width:36px; height:36px; border-radius:50%; background:#17a2b8; display:flex; align-items:center; justify-content:center; flex-shrink:0;"><i class="fas fa-sync-alt" style="color:white; font-size:14px;"></i></div><div><div style="font-weight:600; color:#2c3e50; font-size:14px; margin-bottom:4px;">Update when documents are renewed</div><div style="font-size:13px; color:#6c757d;">Add the new document record with the new number and expiry date. Consider marking the old one as Inactive rather than deleting to keep a history.</div></div></div>
-              <div style="display:flex; gap:14px; align-items:flex-start;"><div style="width:36px; height:36px; border-radius:50%; background:#17a2b8; display:flex; align-items:center; justify-content:center; flex-shrink:0;"><i class="fas fa-eye" style="color:white; font-size:14px;"></i></div><div><div style="font-weight:600; color:#2c3e50; font-size:14px; margin-bottom:4px;">Check red dates before travel</div><div style="font-size:13px; color:#6c757d;">Make it a habit to scan the list before any international travel. Red expiry dates are an immediate visual signal that action is needed.</div></div></div>
-              <div style="display:flex; gap:14px; align-items:flex-start;"><div style="width:36px; height:36px; border-radius:50%; background:#17a2b8; display:flex; align-items:center; justify-content:center; flex-shrink:0;"><i class="fas fa-filter" style="color:white; font-size:14px;"></i></div><div><div style="font-weight:600; color:#2c3e50; font-size:14px; margin-bottom:4px;">Use filters for multiple holders</div><div style="font-size:13px; color:#6c757d;">Filter by Holder to view one person's documents at a time. Filter by Type to see all passports or all driver's licences across everyone.</div></div></div>
-              <div style="display:flex; gap:14px; align-items:flex-start;"><div style="width:36px; height:36px; border-radius:50%; background:#17a2b8; display:flex; align-items:center; justify-content:center; flex-shrink:0;"><i class="fas fa-trash-alt" style="color:white; font-size:14px;"></i></div><div><div style="font-weight:600; color:#2c3e50; font-size:14px; margin-bottom:4px;">Be careful with Delete</div><div style="font-size:13px; color:#6c757d;">Deleting removes the record and the uploaded file permanently. For old documents, consider setting status to Inactive instead.</div></div></div>
-            </div>
-          </div>
-
-        </div>
-      </div>
-      <div class="modal-footer" style="background:#f8f9fa; border-top:1px solid #dee2e6;">
-        <small class="text-muted" style="flex:1;">Alivente Online — Passport / ID Management User Guide</small>
-        <button type="button" class="btn btn-info btn-sm" data-dismiss="modal"><i class="fas fa-times"></i> Close</button>
-      </div>
-    </div>
-  </div>
-</div>
-<!-- ==================== END HELP MODAL ==================== -->
+{% render_help_modal "passport_management" %}
 
 {% endif %}
 

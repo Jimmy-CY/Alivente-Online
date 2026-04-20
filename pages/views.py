@@ -15409,7 +15409,7 @@ def find_matching_recipes(request):
         
         # Auto-include Oil and Water (by name search)
         common_items = Ingredient.objects.filter(
-            name__in=['Oil', 'Olive Oil', 'Vegetable Oil', 'Water']
+            name__in=['Oil', 'Olive Oil', 'Vegetable Oil', 'Sunflower Oil', 'Water']
         ).values_list('ingredient_id', flat=True)
         selected_ingredient_ids.extend(list(common_items))
         
@@ -15478,6 +15478,9 @@ def find_matching_recipes(request):
             # Calculate weighted match percentage
             match_percentage = (weighted_matched / weighted_total * 100) if weighted_total > 0 else 0
 
+            # Calculate missing count (used for frontend "Missing ≤ 1" filter)
+            missing_count = len(missing_ingredients)
+
             # Store ALL recipes with their match percentages (no filtering yet)
             results.append({
                 'recipe_id': recipe.recipe_id,
@@ -15486,27 +15489,29 @@ def find_matching_recipes(request):
                 'match_percentage': round(match_percentage, 1),
                 'matched_count': matched_count,
                 'total_ingredients': total_ingredients,
+                'missing_count': missing_count,
                 'missing_ingredients': missing_ingredients,
                 'prep_time': recipe.prep_time,
                 'cook_time': recipe.cook_time,
                 'difficulty_level': recipe.difficulty_level
             })
 
-            # Sort by match percentage (highest first)
-            results.sort(key=lambda x: x['match_percentage'], reverse=True)
+        # ========== SORT AND FILTER (ONCE, AFTER LOOP) ==========
+        # Sort by match percentage (highest first)
+        results.sort(key=lambda x: x['match_percentage'], reverse=True)
 
-            # SMART FILTERING LOGIC
-            # If we have 5+ recipes with ≥50% match, use 50% threshold
-            # Otherwise, take top 5 recipes regardless of percentage
-            recipes_above_50 = [r for r in results if r['match_percentage'] >= 50]
+        # SMART FILTERING LOGIC
+        # If we have 5+ recipes with ≥50% match, use 50% threshold
+        # Otherwise, take top 5 recipes regardless of percentage
+        recipes_above_50 = [r for r in results if r['match_percentage'] >= 50]
 
-            if len(recipes_above_50) >= 5:
-                # Use standard 50% threshold
-                results = recipes_above_50
-            else:
-                # Take top 5 recipes (or all if less than 5 total)
-                results = results[:5]
-        
+        if len(recipes_above_50) >= 5:
+            # Use standard 50% threshold
+            results = recipes_above_50
+        else:
+            # Take top 5 recipes (or all if less than 5 total)
+            results = results[:5]
+
         # Return top 10 for initial display
         # Frontend can request more with pagination
         return JsonResponse({
