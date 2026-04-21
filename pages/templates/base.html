@@ -244,6 +244,10 @@
           {% endif %}
       </a>
 
+      <a href="{% url 'help_page' %}" class="sidebar-link {% if request.resolver_match.url_name == 'help_page' %}active{% endif %}" data-tooltip="Help">
+          <i class="fas fa-question-circle"></i><span class="link-text">Help</span>
+      </a>
+
     </div>
 
     <div class="sidebar-user">
@@ -311,6 +315,7 @@
           {% if user.is_authenticated %}
             {% if user.is_superuser or perms.auth.can_access_administration %}<li class="nav-item"><a class="nav-link" href="{% url 'admin_apms' %}">Administration</a></li>{% endif %}
             {% if user.is_superuser or perms.auth.can_access_personal %}<li class="nav-item"><a class="nav-link" href="{% url 'personal_page' %}">Personal</a></li>{% endif %}
+            <li class="nav-item"><a class="nav-link" href="{% url 'help_page' %}"><i class="fas fa-question-circle"></i> Help</a></li>
             <li class="nav-item">
                 <a class="nav-link" href="{% url 'logout' %}" title="Logout" style="padding: 4px 12px;">
                     <div style="width:36px;height:36px;border-radius:50%;background:rgba(220,53,69,0.2);display:inline-flex;align-items:center;justify-content:center;color:#dc3545;font-size:18px;border:2px solid rgba(220,53,69,0.4);transition:all 0.2s;"

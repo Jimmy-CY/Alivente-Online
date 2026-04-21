@@ -33,6 +33,9 @@ urlpatterns = [
     path('user-administration/<int:user_id>/permissions/', views.user_permissions, name='user_permissions'),
     path('user-administration/<int:user_id>/delete/', views.user_delete, name='user_delete'),
     path('my-profile/', views.my_profile, name='my_profile'),
+    path('help/', views.help_page, name='help_page'),
+    path('help/', views.help_page, name='help_page'),
+    path('help/generate-manual/', views.generate_user_manual, name='generate_user_manual'),
 
     #
     #Reports - Dashboard

@@ -1,0 +1,369 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Alivente Online — User Manual</title>
+<style type="text/css">
+
+  @page {
+    size: A4 portrait;
+    margin: 2cm 2cm 2cm 2cm;
+  }
+  @page cover_page {
+    size: A4 portrait;
+    margin: 0cm;
+  }
+
+  body {
+    font-family: Helvetica, Arial, sans-serif;
+    font-size: 10.5pt;
+    line-height: 1.5;
+    color: #2c3e50;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: Helvetica, Arial, sans-serif;
+    color: #17a2b8;
+    page-break-after: avoid;
+  }
+  h1 {
+    font-size: 22pt;
+    border-bottom: 2pt solid #17a2b8;
+    padding-bottom: 6pt;
+    margin-top: 0;
+    margin-bottom: 14pt;
+    -pdf-outline: true;
+    -pdf-outline-open: true;
+  }
+  h2 {
+    font-size: 16pt;
+    margin-top: 14pt;
+    margin-bottom: 8pt;
+    color: #138496;
+    -pdf-outline: true;
+  }
+  h3 {
+    font-size: 13pt;
+    margin-top: 10pt;
+    margin-bottom: 6pt;
+    color: #2c3e50;
+    -pdf-outline: true;
+  }
+  h4, h5, h6 {
+    font-size: 11pt;
+    margin-top: 8pt;
+    margin-bottom: 4pt;
+    color: #2c3e50;
+    font-weight: bold;
+    -pdf-outline: false;
+  }
+
+  p { margin: 4pt 0 8pt 0; }
+  ul, ol { margin: 6pt 0 10pt 14pt; }
+  li { margin-bottom: 3pt; }
+  strong { font-weight: bold; }
+  em { font-style: italic; }
+  code {
+    background: #f1f3f5;
+    padding: 1pt 4pt;
+    font-family: Courier, monospace;
+    font-size: 9.5pt;
+  }
+
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 8pt 0;
+    font-size: 10pt;
+  }
+  th, td {
+    border: 0.5pt solid #ced4da;
+    padding: 5pt 7pt;
+    text-align: left;
+    vertical-align: top;
+  }
+  th {
+    background: #e9ecef;
+    font-weight: bold;
+    color: #2c3e50;
+  }
+
+  .alert {
+    margin: 8pt 0;
+    padding: 8pt 12pt;
+    border-left: 3pt solid #17a2b8;
+    background: #e7f5f8;
+    color: #2c3e50;
+  }
+  .alert-info    { border-left-color: #17a2b8; background: #e7f5f8; }
+  .alert-warning { border-left-color: #ffc107; background: #fff3cd; color: #856404; }
+  .alert-danger  { border-left-color: #dc3545; background: #f8d7da; color: #721c24; }
+  .alert-success { border-left-color: #28a745; background: #d4edda; color: #155724; }
+  .alert-light   { border-left-color: #6c757d; background: #f8f9fa; color: #495057; }
+
+  .badge, .badge-info, .badge-danger, .badge-warning, .badge-success {
+    padding: 1pt 5pt;
+    background: #e9ecef;
+    color: #495057;
+    font-size: 9pt;
+  }
+  .badge-warning { background: #fff3cd; color: #856404; }
+  .badge-success { background: #d4edda; color: #155724; }
+  .badge-danger  { background: #f8d7da; color: #721c24; }
+
+  .cover-eyebrow {
+    background: #17a2b8;
+    color: white;
+    padding: 3.5cm 1cm 0.2cm 1cm;
+    font-size: 11pt;
+    letter-spacing: 2pt;
+    margin: 0;
+  }
+  .cover-title {
+    background: #17a2b8;
+    color: white;
+    padding: 0.4cm 1cm 0.2cm 1cm;
+    font-size: 40pt;
+    font-weight: bold;
+    margin: 0;
+    -pdf-outline: false;
+  }
+  .cover-subtitle {
+    background: #17a2b8;
+    color: white;
+    padding: 0.4cm 1cm 3cm 1cm;
+    font-size: 13pt;
+    margin: 0 0 1.5cm 0;
+  }
+
+  .cover-meta-row {
+    padding: 0 2cm;
+    margin: 0 0 8pt 0;
+    font-size: 11pt;
+  }
+  .cover-meta-label {
+    color: #17a2b8;
+    font-weight: bold;
+  }
+  .cover-modules-title {
+    color: #17a2b8;
+    font-size: 13pt;
+    font-weight: bold;
+    margin: 22pt 2cm 8pt 2cm;
+    padding-bottom: 4pt;
+    border-bottom: 1pt solid #17a2b8;
+  }
+  .cover-module-item {
+    padding: 2pt 2cm 2pt 2.8cm;
+    font-size: 10.5pt;
+    line-height: 1.5;
+  }
+
+  .toc-heading {
+    font-size: 22pt;
+    color: #17a2b8;
+    border-bottom: 2pt solid #17a2b8;
+    padding-bottom: 6pt;
+    margin-bottom: 14pt;
+    -pdf-outline: false;
+  }
+
+  /* TOC entries use a table for reliable right-aligned page numbers */
+  table.toc-table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 0;
+  }
+  table.toc-table td {
+    border: none;
+    padding: 2pt 0;
+  }
+  table.toc-table td.toc-label { text-align: left; }
+  table.toc-table td.toc-pagenum {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    width: 30pt;
+  }
+
+  .toc-group td.toc-label,
+  .toc-group td.toc-pagenum {
+    font-weight: bold;
+    color: #17a2b8;
+    font-size: 12pt;
+    padding-top: 10pt;
+    padding-bottom: 4pt;
+  }
+  .toc-module td.toc-label,
+  .toc-module td.toc-pagenum {
+    padding-left: 14pt;
+    font-size: 10.5pt;
+    color: #2c3e50;
+    padding-top: 2pt;
+    padding-bottom: 2pt;
+  }
+  .toc-module td.toc-pagenum { padding-left: 0; }
+
+  .toc-nested td.toc-label,
+  .toc-nested td.toc-pagenum {
+    padding-left: 28pt;
+    font-size: 10pt;
+    color: #495057;
+    padding-top: 2pt;
+    padding-bottom: 2pt;
+  }
+  .toc-nested td.toc-pagenum { padding-left: 0; }
+
+  .toc-section td.toc-label,
+  .toc-section td.toc-pagenum {
+    padding-left: 14pt;
+    font-size: 9.5pt;
+    font-weight: bold;
+    color: #6c757d;
+    padding-top: 6pt;
+    padding-bottom: 2pt;
+  }
+  .toc-section td.toc-pagenum { padding-left: 0; }
+
+  .module-subtitle {
+    font-style: italic;
+    color: #6c757d;
+    font-size: 10.5pt;
+    margin-top: -6pt;
+    margin-bottom: 12pt;
+  }
+  .tab-heading { margin-top: 10pt; }
+  .group-heading {
+    font-size: 26pt;
+    color: #17a2b8;
+    border-bottom: 3pt solid #17a2b8;
+    padding-bottom: 8pt;
+    margin-top: 0;
+    margin-bottom: 18pt;
+  }
+
+</style>
+</head>
+<body>
+
+<!-- COVER -->
+<div class="cover-eyebrow">ALIVENTE ONLINE</div>
+<div class="cover-title">User Manual</div>
+<div class="cover-subtitle">A personalised reference for the features you use</div>
+
+<div class="cover-meta-row">
+  <span class="cover-meta-label">Generated for:</span> {{ user_full_name }}
+</div>
+<div class="cover-meta-row">
+  <span class="cover-meta-label">Username:</span> {{ user_username }}
+</div>
+<div class="cover-meta-row">
+  <span class="cover-meta-label">Generated on:</span> {{ generated_on|date:"l, d F Y" }}
+</div>
+<div class="cover-meta-row">
+  <span class="cover-meta-label">Modules included:</span> {{ total_modules }}
+</div>
+
+<div class="cover-modules-title">Contents at a glance</div>
+{% for name in cover_module_list %}
+  <div class="cover-module-item">&bull; &nbsp; {{ name }}</div>
+{% endfor %}
+
+<pdf:nextpage />
+
+<!-- TOC -->
+<div class="toc-heading">Table of Contents</div>
+
+<table class="toc-table">
+{% for group in pdf_groups %}
+  <tr class="toc-group">
+    <td class="toc-label">{{ group.name }}</td>
+    <td class="toc-pagenum">{{ group.page_num|default:"" }}</td>
+  </tr>
+  {% for chapter in group.chapters %}
+    {% if chapter.module %}
+      <tr class="toc-module">
+        <td class="toc-label">{{ chapter.module.name }}</td>
+        <td class="toc-pagenum">{{ chapter.module.page_num|default:"" }}</td>
+      </tr>
+    {% endif %}
+    {% for nested in chapter.nested %}
+      <tr class="toc-section">
+        <td class="toc-label">{{ nested.name }}</td>
+        <td class="toc-pagenum"></td>
+      </tr>
+      {% for nm in nested.modules %}
+        <tr class="toc-nested">
+          <td class="toc-label">{{ nm.name }}</td>
+          <td class="toc-pagenum">{{ nm.page_num|default:"" }}</td>
+        </tr>
+      {% endfor %}
+    {% endfor %}
+  {% endfor %}
+  {% for osc in group.orphan_sub_chapters %}
+    <tr class="toc-section">
+      <td class="toc-label">{{ osc.name }}</td>
+      <td class="toc-pagenum"></td>
+    </tr>
+    {% for om in osc.modules %}
+      <tr class="toc-nested">
+        <td class="toc-label">{{ om.name }}</td>
+        <td class="toc-pagenum">{{ om.page_num|default:"" }}</td>
+      </tr>
+    {% endfor %}
+  {% endfor %}
+{% endfor %}
+</table>
+
+<pdf:nextpage />
+
+<!-- CHAPTERS -->
+{% for group in pdf_groups %}
+
+  <h1 class="group-heading">{{ group.name }}</h1>
+
+  {% for chapter in group.chapters %}
+    {% if chapter.module %}
+      <h2>{{ chapter.module.name }}</h2>
+      {% if chapter.module.subtitle %}
+        <div class="module-subtitle">{{ chapter.module.subtitle|safe }}</div>
+      {% endif %}
+      {% for tab in chapter.module.tabs %}
+        <h4 class="tab-heading">{{ tab.name }}</h4>
+        {{ tab.content_html|safe }}
+      {% endfor %}
+    {% endif %}
+
+    {% for nested in chapter.nested %}
+      {% for nm in nested.modules %}
+        <h3>{{ nm.name }} <span style="font-size:9pt; color:#6c757d; font-weight:normal;">({{ nested.name }})</span></h3>
+        {% if nm.subtitle %}
+          <div class="module-subtitle">{{ nm.subtitle|safe }}</div>
+        {% endif %}
+        {% for tab in nm.tabs %}
+          <h4 class="tab-heading">{{ tab.name }}</h4>
+          {{ tab.content_html|safe }}
+        {% endfor %}
+      {% endfor %}
+    {% endfor %}
+  {% endfor %}
+
+  {% for osc in group.orphan_sub_chapters %}
+    {% for om in osc.modules %}
+      <h2>{{ om.name }} <span style="font-size:9pt; color:#6c757d; font-weight:normal;">({{ osc.name }})</span></h2>
+      {% if om.subtitle %}
+        <div class="module-subtitle">{{ om.subtitle|safe }}</div>
+      {% endif %}
+      {% for tab in om.tabs %}
+        <h4 class="tab-heading">{{ tab.name }}</h4>
+        {{ tab.content_html|safe }}
+      {% endfor %}
+    {% endfor %}
+  {% endfor %}
+
+  {% if not forloop.last %}<pdf:nextpage />{% endif %}
+{% endfor %}
+
+</body>
+</html>

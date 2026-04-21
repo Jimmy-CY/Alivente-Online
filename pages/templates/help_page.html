@@ -1,0 +1,1444 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load help_modal_tags %}
+
+{% block title %}Help & User Manual{% endblock %}
+
+{% block content %}
+
+<style>
+  .help-page-wrap {
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .help-hero {
+    text-align: center;
+    margin-bottom: 30px;
+  }
+  .help-hero h2 {
+    font-weight: 700;
+    color: #2c3e50;
+    margin-bottom: 6px;
+  }
+  .help-hero p {
+    color: #6c757d;
+    margin: 0;
+  }
+
+  /* Search bar */
+  .help-search-wrap {
+    max-width: 600px;
+    margin: 0 auto 30px;
+  }
+  .help-search-field {
+    position: relative;
+  }
+  .help-search-input {
+    width: 100%;
+    padding: 14px 48px 14px 46px;
+    border: 2px solid #17a2b8;
+    border-radius: 30px;
+    font-size: 15px;
+    outline: none;
+    transition: box-shadow 0.2s;
+    background: white;
+  }
+  .help-search-input:focus {
+    box-shadow: 0 0 0 4px rgba(23,162,184,0.15);
+  }
+  .help-search-icon {
+    position: absolute;
+    left: 18px;
+    top: 0;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    color: #17a2b8;
+    font-size: 15px;
+    pointer-events: none;
+  }
+  .help-search-clear {
+    position: absolute;
+    right: 10px;
+    top: 0;
+    bottom: 0;
+    margin: auto 0;
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    background: #e9ecef;
+    color: #6c757d;
+    border: none;
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    justify-content: center;
+  }
+  .help-search-clear:hover { background: #dc3545; color: white; }
+  .help-search-clear.visible { display: inline-flex; }
+
+  .help-search-stats {
+    text-align: center;
+    color: #6c757d;
+    font-size: 13px;
+    margin-top: 8px;
+    min-height: 18px;
+  }
+
+  /* Accordion cards */
+  .help-group {
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 12px;
+    margin-bottom: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+    transition: box-shadow 0.2s;
+  }
+  .help-group:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  }
+
+  .help-group-header {
+    display: flex;
+    align-items: center;
+    padding: 18px 22px;
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.15s;
+  }
+  .help-group-header:hover { background: #f8f9fa; }
+
+  .help-group-icon {
+    width: 42px; height: 42px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #17a2b8, #138496);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .help-group-titlebox {
+    flex: 1;
+    margin-left: 16px;
+    min-width: 0;
+  }
+  .help-group-name {
+    font-weight: 700;
+    color: #2c3e50;
+    font-size: 17px;
+    margin: 0;
+  }
+  .help-group-sub {
+    color: #6c757d;
+    font-size: 12px;
+    margin-top: 2px;
+  }
+  .help-group-count {
+    background: #e9ecef;
+    color: #495057;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-right: 14px;
+    flex-shrink: 0;
+  }
+  .help-group-chevron {
+    color: #6c757d;
+    font-size: 14px;
+    transition: transform 0.25s;
+    flex-shrink: 0;
+  }
+  .help-group.expanded .help-group-chevron {
+    transform: rotate(180deg);
+  }
+
+  .help-group-body {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s ease;
+  }
+  .help-group.expanded .help-group-body {
+    max-height: 5000px;
+  }
+
+  .help-group-body-inner {
+    padding: 4px 22px 22px;
+  }
+
+  /* Module chips */
+  .help-chips {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 10px;
+  }
+  .help-chip {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 14px;
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    color: #2c3e50;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.15s;
+    position: relative;
+  }
+  .help-chip:hover {
+    background: #e7f5f8;
+    border-color: #17a2b8;
+    color: #2c3e50;
+    text-decoration: none;
+    transform: translateY(-1px);
+  }
+  .help-chip-icon {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    background: white;
+    color: #17a2b8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+    border: 1px solid #d1ecf1;
+  }
+  .help-chip-body {
+    flex: 1;
+    min-width: 0;
+  }
+  .help-chip-name {
+    font-weight: 600;
+    font-size: 14px;
+    color: #2c3e50;
+    margin: 0;
+  }
+  .help-chip-sub {
+    font-size: 12px;
+    color: #6c757d;
+    margin-top: 2px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .help-chip-expand-hint {
+    font-size: 11px;
+    color: #17a2b8;
+    margin-top: 4px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .help-chip-expand-hint .chev {
+    transition: transform 0.2s;
+  }
+
+  /* Parent-module card (wraps a chip and its nested sub-sections) */
+  .help-parent-card {
+    grid-column: 1 / -1;
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    overflow: hidden;
+    transition: border-color 0.15s;
+  }
+  .help-parent-card:hover {
+    border-color: #b2ebf2;
+  }
+  .help-parent-card.expanded {
+    border-color: #17a2b8;
+    background: white;
+  }
+  .help-parent-card.expanded .help-chip-expand-hint .chev {
+    transform: rotate(180deg);
+  }
+  .help-parent-card-chip {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 16px;
+    cursor: pointer;
+  }
+  .help-parent-card-chip:hover {
+    background: #f1f8fa;
+  }
+  .help-parent-card.expanded .help-parent-card-chip {
+    border-bottom: 1px solid #dee2e6;
+  }
+  .help-parent-view-btn {
+    flex-shrink: 0;
+    width: 32px; height: 32px;
+    background: white;
+    border: 1px solid #d1ecf1;
+    border-radius: 8px;
+    color: #17a2b8;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    transition: all 0.15s;
+    margin-left: 8px;
+  }
+  .help-parent-view-btn:hover {
+    background: #17a2b8;
+    color: white;
+    border-color: #17a2b8;
+  }
+
+  .help-parent-card-body {
+    display: none;
+    padding: 16px 20px 18px;
+  }
+  .help-parent-card.expanded .help-parent-card-body {
+    display: block;
+  }
+
+  /* Nested sub-section inside a parent card */
+  .help-subsection {
+    margin-top: 14px;
+    padding-top: 12px;
+    border-top: 1px dashed #dee2e6;
+  }
+  .help-subsection:first-child {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: none;
+  }
+  .help-subsection-title {
+    font-size: 12px;
+    font-weight: 700;
+    color: #17a2b8;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  /* Hidden by search */
+  .help-chip.filtered,
+  .help-parent-card.filtered,
+  .help-subsection.filtered,
+  .help-group.filtered {
+    display: none;
+  }
+
+  /* No results state */
+  .help-empty {
+    text-align: center;
+    padding: 60px 20px;
+    color: #6c757d;
+    display: none;
+  }
+  .help-empty.visible { display: block; }
+  .help-empty i { font-size: 48px; color: #adb5bd; margin-bottom: 14px; }
+
+  /* Generate Manual button in hero area */
+  .help-hero-actions {
+    margin-top: 14px;
+  }
+  .btn-generate-manual {
+    background: linear-gradient(135deg, #17a2b8, #138496);
+    color: white;
+    border: none;
+    padding: 10px 22px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .btn-generate-manual:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 14px rgba(23,162,184,0.35);
+    color: white;
+  }
+
+  /* Generate Manual modal styling */
+  .manual-modal .modal-dialog {
+    max-width: 780px;
+  }
+  .manual-modal .modal-header {
+    background: linear-gradient(135deg, #17a2b8, #138496);
+    color: white;
+    border-radius: 4px 4px 0 0;
+  }
+  .manual-modal .modal-header .close {
+    color: white;
+    opacity: 0.85;
+    text-shadow: none;
+  }
+  .manual-modal .modal-body {
+    max-height: 65vh;
+    overflow-y: auto;
+    padding: 20px 26px;
+  }
+  .manual-preset-bar {
+    display: flex;
+    gap: 10px;
+    padding-bottom: 14px;
+    margin-bottom: 16px;
+    border-bottom: 1px solid #dee2e6;
+  }
+  .manual-preset-btn {
+    background: #e9ecef;
+    color: #495057;
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+    padding: 6px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .manual-preset-btn:hover {
+    background: #17a2b8;
+    color: white;
+    border-color: #17a2b8;
+  }
+  .manual-selection-counter {
+    margin-left: auto;
+    color: #6c757d;
+    font-size: 13px;
+    align-self: center;
+  }
+  .manual-selection-counter strong { color: #17a2b8; }
+
+  .manual-group {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    overflow: hidden;
+  }
+  .manual-group-header {
+    display: flex;
+    align-items: center;
+    padding: 10px 14px;
+    background: white;
+    cursor: pointer;
+    user-select: none;
+    border-bottom: 1px solid transparent;
+  }
+  .manual-group.expanded .manual-group-header {
+    border-bottom-color: #dee2e6;
+  }
+  .manual-group-chevron {
+    color: #6c757d;
+    font-size: 11px;
+    margin-right: 10px;
+    transition: transform 0.2s;
+  }
+  .manual-group.expanded .manual-group-chevron {
+    transform: rotate(90deg);
+  }
+  .manual-checkbox {
+    width: 17px; height: 17px;
+    margin-right: 10px;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .manual-group-name {
+    font-weight: 600;
+    color: #2c3e50;
+    flex: 1;
+  }
+  .manual-group-count {
+    background: #e9ecef;
+    color: #495057;
+    padding: 2px 10px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .manual-group-body {
+    display: none;
+    padding: 8px 14px 12px;
+  }
+  .manual-group.expanded .manual-group-body {
+    display: block;
+  }
+
+  .manual-module {
+    padding: 6px 0 6px 28px;
+  }
+  .manual-module-header {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+  }
+  .manual-module-chevron {
+    color: #adb5bd;
+    font-size: 10px;
+    margin-right: 8px;
+    transition: transform 0.2s;
+    width: 10px;
+  }
+  .manual-module.expanded .manual-module-chevron {
+    transform: rotate(90deg);
+  }
+  .manual-module-name {
+    color: #2c3e50;
+    flex: 1;
+    font-size: 14px;
+  }
+  .manual-module-tabcount {
+    color: #6c757d;
+    font-size: 11px;
+    margin-right: 4px;
+  }
+  .manual-tabs {
+    display: none;
+    padding: 6px 0 2px 52px;
+  }
+  .manual-module.expanded .manual-tabs {
+    display: block;
+  }
+  .manual-tab {
+    display: flex;
+    align-items: center;
+    padding: 3px 0;
+    font-size: 13px;
+    color: #495057;
+  }
+  .manual-tab label {
+    margin: 0;
+    cursor: pointer;
+    flex: 1;
+  }
+  .manual-tab i {
+    color: #17a2b8;
+    font-size: 11px;
+    width: 14px;
+    margin-right: 6px;
+  }
+
+  .manual-subsection-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: #6c757d;
+    padding: 10px 0 4px 28px;
+    font-weight: 700;
+  }
+
+  /* Sub-sections nested under a parent module (e.g. Reports within Financials) */
+  .manual-nested-subsections {
+    padding-left: 30px;
+    margin-top: 4px;
+    border-left: 2px solid #e9ecef;
+    margin-left: 14px;
+  }
+  .manual-nested-subsections .manual-subsection-label {
+    padding-left: 12px;
+  }
+
+  .manual-modal .modal-footer {
+    padding: 14px 26px;
+  }
+  .manual-modal .btn-primary {
+    background: #17a2b8;
+    border-color: #17a2b8;
+    padding: 8px 20px;
+    font-weight: 600;
+  }
+  .manual-modal .btn-primary:hover {
+    background: #138496;
+    border-color: #138496;
+  }
+  .manual-modal .btn-primary:disabled {
+    background: #adb5bd;
+    border-color: #adb5bd;
+    cursor: not-allowed;
+  }
+
+  /* =============================================================
+     MANUAL GENERATION — loading overlay + preview modal
+     ============================================================= */
+
+  /* Full-page loading overlay while xhtml2pdf is generating */
+  .manual-loading-overlay {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    background: rgba(44, 62, 80, 0.55);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 2100;            /* above Bootstrap modals (z-1050) */
+    backdrop-filter: blur(2px);
+  }
+  .manual-loading-overlay.visible { display: flex; }
+  .manual-loading-card {
+    background: white;
+    border-radius: 14px;
+    padding: 32px 44px;
+    text-align: center;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.25);
+    max-width: 360px;
+  }
+  .manual-loading-card .spinner {
+    width: 48px; height: 48px;
+    border: 4px solid #e9ecef;
+    border-top-color: #17a2b8;
+    border-radius: 50%;
+    margin: 0 auto 18px;
+    animation: manualSpin 0.9s linear infinite;
+  }
+  @keyframes manualSpin { to { transform: rotate(360deg); } }
+  .manual-loading-card h5 {
+    color: #2c3e50;
+    margin: 0 0 4px 0;
+    font-weight: 700;
+  }
+  .manual-loading-card p {
+    color: #6c757d;
+    font-size: 13px;
+    margin: 0;
+  }
+
+  /* Preview modal */
+  .manual-preview-modal .modal-dialog {
+    max-width: 1100px;
+    width: 90vw;
+    margin: 3vh auto;
+  }
+  .manual-preview-modal .modal-content {
+    height: 94vh;
+    display: flex;
+    flex-direction: column;
+  }
+  .manual-preview-modal .modal-header {
+    background: linear-gradient(135deg, #17a2b8, #138496);
+    color: white;
+    border-radius: 4px 4px 0 0;
+    flex-shrink: 0;
+  }
+  .manual-preview-modal .modal-header .close {
+    color: white;
+    opacity: 0.85;
+    text-shadow: none;
+  }
+  .manual-preview-modal .modal-body {
+    flex: 1;
+    padding: 0;
+    background: #525659;     /* dark grey behind the PDF */
+    overflow: hidden;
+  }
+  .manual-preview-modal iframe {
+    width: 100%;
+    height: 100%;
+    border: 0;
+    display: block;
+  }
+  .manual-preview-modal .modal-footer {
+    flex-shrink: 0;
+    background: #f8f9fa;
+    padding: 12px 22px;
+  }
+  .btn-preview-action {
+    padding: 8px 20px;
+    font-weight: 600;
+    border-radius: 6px;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.15s;
+  }
+  .btn-preview-cancel {
+    background: #e9ecef;
+    color: #495057;
+  }
+  .btn-preview-cancel:hover { background: #dee2e6; }
+  .btn-preview-print {
+    background: #6c757d;
+    color: white;
+  }
+  .btn-preview-print:hover { background: #5a6268; color: white; }
+  .btn-preview-download {
+    background: linear-gradient(135deg, #17a2b8, #138496);
+    color: white;
+  }
+  .btn-preview-download:hover {
+    box-shadow: 0 4px 10px rgba(23,162,184,0.35);
+    color: white;
+  }
+  .btn-preview-action:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  /* Error state inside preview modal */
+  .manual-preview-error {
+    display: none;
+    padding: 40px 30px;
+    text-align: center;
+    color: #721c24;
+    background: #f8d7da;
+    border-radius: 8px;
+    margin: 20px;
+  }
+  .manual-preview-error.visible { display: block; }
+  .manual-preview-error i {
+    font-size: 36px;
+    margin-bottom: 12px;
+    color: #dc3545;
+  }
+</style>
+
+<div class="help-page-wrap">
+
+  <div class="help-hero">
+    <h2><i class="fas fa-question-circle" style="color:#17a2b8;"></i> Help &amp; User Manual</h2>
+    <p>Browse every module in Alivente Online. Search below or expand a section to find what you need.</p>
+    <div class="help-hero-actions">
+      <button type="button" class="btn-generate-manual" data-toggle="modal" data-target="#generateManualModal">
+        <i class="fas fa-book"></i> Generate User Manual
+      </button>
+    </div>
+  </div>
+
+  <div class="help-search-wrap">
+    <div class="help-search-field">
+      <i class="fas fa-search help-search-icon"></i>
+      <input type="text"
+             id="helpSearchInput"
+             class="help-search-input"
+             placeholder="Search help topics, content, or keywords..."
+             autocomplete="off">
+      <button type="button" class="help-search-clear" id="helpSearchClear" title="Clear">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <div class="help-search-stats" id="helpSearchStats">
+      {{ total_module_count }} topics available
+    </div>
+  </div>
+
+  {% for group in grouped %}
+  <div class="help-group" data-group-name="{{ group.name|lower }}">
+
+    <div class="help-group-header" onclick="toggleGroup(this)">
+      <div class="help-group-icon">
+        <i class="fas {{ group.icon }}"></i>
+      </div>
+      <div class="help-group-titlebox">
+        <div class="help-group-name">{{ group.name }}</div>
+        <div class="help-group-sub">{{ group.total_count }} topic{{ group.total_count|pluralize }}</div>
+      </div>
+      <span class="help-group-count">{{ group.total_count }}</span>
+      <i class="fas fa-chevron-down help-group-chevron"></i>
+    </div>
+
+    <div class="help-group-body">
+      <div class="help-group-body-inner">
+
+        {% if group.direct_modules %}
+        <div class="help-chips">
+          {% for m in group.direct_modules %}
+
+            {% if m.nested_subs %}
+            {# === Parent module with nested sub-sections (Financials, Administration) === #}
+            <div class="help-parent-card" data-search-text="{{ m.search_text }}">
+              <div class="help-parent-card-chip" onclick="toggleParentCard(this, event)">
+                <div class="help-chip-icon"><i class="fas {{ m.icon }}"></i></div>
+                <div class="help-chip-body">
+                  <div class="help-chip-name">{{ m.name }}</div>
+                  {% if m.subtitle %}<div class="help-chip-sub">{{ m.subtitle|safe }}</div>{% endif %}
+                  <div class="help-chip-expand-hint">
+                    <i class="fas fa-chevron-down chev"></i> Show nested modules
+                  </div>
+                </div>
+                <button type="button"
+                        class="help-parent-view-btn"
+                        title="View {{ m.name }} help"
+                        data-toggle="modal"
+                        data-target="#{{ m.slug }}HelpModal"
+                        onclick="event.stopPropagation();">
+                  <i class="fas fa-question-circle"></i>
+                </button>
+              </div>
+              <div class="help-parent-card-body">
+                {% for sub in m.nested_subs %}
+                <div class="help-subsection" data-subsection-name="{{ sub.name|lower }}">
+                  <div class="help-subsection-title">
+                    <i class="fas fa-folder-open"></i> {{ sub.name }}
+                  </div>
+                  <div class="help-chips">
+                    {% for sm in sub.modules %}
+                    <a href="javascript:void(0);"
+                       class="help-chip"
+                       data-toggle="modal"
+                       data-target="#{{ sm.slug }}HelpModal"
+                       data-search-text="{{ sm.search_text }}">
+                      <div class="help-chip-icon"><i class="fas {{ sm.icon }}"></i></div>
+                      <div class="help-chip-body">
+                        <div class="help-chip-name">{{ sm.name }}</div>
+                        {% if sm.subtitle %}<div class="help-chip-sub">{{ sm.subtitle|safe }}</div>{% endif %}
+                      </div>
+                    </a>
+                    {% endfor %}
+                  </div>
+                </div>
+                {% endfor %}
+              </div>
+            </div>
+
+            {% else %}
+            {# === Simple module — just opens its modal === #}
+            <a href="javascript:void(0);"
+               class="help-chip"
+               data-toggle="modal"
+               data-target="#{{ m.slug }}HelpModal"
+               data-search-text="{{ m.search_text }}">
+              <div class="help-chip-icon"><i class="fas {{ m.icon }}"></i></div>
+              <div class="help-chip-body">
+                <div class="help-chip-name">{{ m.name }}</div>
+                {% if m.subtitle %}<div class="help-chip-sub">{{ m.subtitle|safe }}</div>{% endif %}
+              </div>
+            </a>
+            {% endif %}
+
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        {# Orphan sub-sections — should normally be empty once HTML is correct #}
+        {% for sub in group.orphan_subsections %}
+        <div class="help-subsection" data-subsection-name="{{ sub.name|lower }}">
+          <div class="help-subsection-title">
+            <i class="fas fa-folder-open"></i> {{ sub.name }}
+          </div>
+          <div class="help-chips">
+            {% for m in sub.modules %}
+            <a href="javascript:void(0);"
+               class="help-chip"
+               data-toggle="modal"
+               data-target="#{{ m.slug }}HelpModal"
+               data-search-text="{{ m.search_text }}">
+              <div class="help-chip-icon"><i class="fas {{ m.icon }}"></i></div>
+              <div class="help-chip-body">
+                <div class="help-chip-name">{{ m.name }}</div>
+                {% if m.subtitle %}<div class="help-chip-sub">{{ m.subtitle|safe }}</div>{% endif %}
+              </div>
+            </a>
+            {% endfor %}
+          </div>
+        </div>
+        {% endfor %}
+
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+
+  <div class="help-empty" id="helpEmpty">
+    <i class="fas fa-search"></i>
+    <h5>No topics match your search</h5>
+    <p>Try different keywords, or clear the search to see everything.</p>
+  </div>
+
+</div>
+
+{# Render all help modals so any chip click opens instantly. #}
+{% for m in all_modules_flat %}
+  {% render_help_modal m.slug %}
+{% endfor %}
+
+<!-- Generate User Manual Modal -->
+<div class="modal fade manual-modal" id="generateManualModal" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <form method="post" action="{% url 'generate_user_manual' %}" id="manualForm">
+      {% csrf_token %}
+      <div class="modal-content">
+
+        <div class="modal-header">
+          <h5 class="modal-title">
+            <i class="fas fa-book"></i> Generate User Manual
+          </h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+
+        <div class="modal-body">
+
+          <p style="color:#6c757d; margin-bottom:14px;">
+            Choose which modules and tabs to include in your personalised manual.
+            Everything is selected by default.
+          </p>
+
+          <div class="manual-preset-bar">
+            <button type="button" class="manual-preset-btn" id="manualSelectAll">
+              <i class="fas fa-check-square"></i> Select All
+            </button>
+            <button type="button" class="manual-preset-btn" id="manualSelectNone">
+              <i class="fas fa-square"></i> Select None
+            </button>
+            <span class="manual-selection-counter" id="manualCounter">
+              <strong>0</strong> modules / <strong>0</strong> tabs selected
+            </span>
+          </div>
+
+          {% for group in grouped %}
+          <div class="manual-group expanded" data-group="{{ forloop.counter0 }}">
+            <div class="manual-group-header" onclick="manualToggleGroup(this, event)">
+              <i class="fas fa-chevron-right manual-group-chevron"></i>
+              <input type="checkbox"
+                     class="manual-checkbox manual-group-cb"
+                     checked
+                     onclick="event.stopPropagation(); manualGroupChanged(this);">
+              <div class="manual-group-name">
+                <i class="fas {{ group.icon }}" style="color:#17a2b8; margin-right:6px;"></i>
+                {{ group.name }}
+              </div>
+              <span class="manual-group-count">{{ group.total_count }}</span>
+            </div>
+            <div class="manual-group-body">
+
+              {% for m in group.direct_modules %}
+              <div class="manual-module expanded" data-module-slug="{{ m.slug }}">
+                <div class="manual-module-header" onclick="manualToggleModule(this, event)">
+                  <i class="fas fa-chevron-right manual-module-chevron"></i>
+                  <input type="checkbox"
+                         class="manual-checkbox manual-module-cb"
+                         name="selected_modules"
+                         value="{{ m.slug }}"
+                         checked
+                         onclick="event.stopPropagation(); manualModuleChanged(this);">
+                  <i class="fas {{ m.icon }}" style="color:#17a2b8; margin-right:6px; font-size:13px; width:14px;"></i>
+                  <div class="manual-module-name">{{ m.name }}</div>
+                  <span class="manual-module-tabcount">{{ m.tabs|length }} tab{{ m.tabs|length|pluralize }}</span>
+                </div>
+                <div class="manual-tabs">
+                  {% for tab in m.tabs %}
+                  <div class="manual-tab">
+                    <input type="checkbox"
+                           class="manual-checkbox manual-tab-cb"
+                           name="selected_tabs"
+                           value="{{ m.slug }}::{{ tab.slug }}"
+                           data-parent-module="{{ m.slug }}"
+                           id="tab-{{ m.slug }}-{{ tab.slug }}"
+                           checked
+                           onclick="event.stopPropagation(); manualTabChanged(this);">
+                    <label for="tab-{{ m.slug }}-{{ tab.slug }}">
+                      <i class="fas {{ tab.icon }}"></i>{{ tab.name }}
+                    </label>
+                  </div>
+                  {% endfor %}
+                </div>
+
+                {# --- Nested sub-sections belonging to this parent module --- #}
+                {% for sub in m.nested_subs %}
+                <div class="manual-nested-subsections">
+                  <div class="manual-subsection-label">
+                    <i class="fas fa-folder-open" style="margin-right:4px;"></i>{{ sub.name }}
+                  </div>
+                  {% for sm in sub.modules %}
+                  <div class="manual-module expanded manual-module-nested" data-module-slug="{{ sm.slug }}">
+                    <div class="manual-module-header" onclick="manualToggleModule(this, event)">
+                      <i class="fas fa-chevron-right manual-module-chevron"></i>
+                      <input type="checkbox"
+                             class="manual-checkbox manual-module-cb"
+                             name="selected_modules"
+                             value="{{ sm.slug }}"
+                             checked
+                             onclick="event.stopPropagation(); manualModuleChanged(this);">
+                      <i class="fas {{ sm.icon }}" style="color:#17a2b8; margin-right:6px; font-size:13px; width:14px;"></i>
+                      <div class="manual-module-name">{{ sm.name }}</div>
+                      <span class="manual-module-tabcount">{{ sm.tabs|length }} tab{{ sm.tabs|length|pluralize }}</span>
+                    </div>
+                    <div class="manual-tabs">
+                      {% for tab in sm.tabs %}
+                      <div class="manual-tab">
+                        <input type="checkbox"
+                               class="manual-checkbox manual-tab-cb"
+                               name="selected_tabs"
+                               value="{{ sm.slug }}::{{ tab.slug }}"
+                               data-parent-module="{{ sm.slug }}"
+                               id="tab-{{ sm.slug }}-{{ tab.slug }}"
+                               checked
+                               onclick="event.stopPropagation(); manualTabChanged(this);">
+                        <label for="tab-{{ sm.slug }}-{{ tab.slug }}">
+                          <i class="fas {{ tab.icon }}"></i>{{ tab.name }}
+                        </label>
+                      </div>
+                      {% endfor %}
+                    </div>
+                  </div>
+                  {% endfor %}
+                </div>
+                {% endfor %}
+
+              </div>
+              {% endfor %}
+
+              {# Orphan sub-sections (no parent module) — should be empty once HTML is correct #}
+              {% for sub in group.orphan_subsections %}
+              <div class="manual-subsection-label">
+                <i class="fas fa-folder-open" style="margin-right:4px;"></i>{{ sub.name }}
+              </div>
+              {% for sm in sub.modules %}
+              <div class="manual-module expanded" data-module-slug="{{ sm.slug }}">
+                <div class="manual-module-header" onclick="manualToggleModule(this, event)">
+                  <i class="fas fa-chevron-right manual-module-chevron"></i>
+                  <input type="checkbox"
+                         class="manual-checkbox manual-module-cb"
+                         name="selected_modules"
+                         value="{{ sm.slug }}"
+                         checked
+                         onclick="event.stopPropagation(); manualModuleChanged(this);">
+                  <i class="fas {{ sm.icon }}" style="color:#17a2b8; margin-right:6px; font-size:13px; width:14px;"></i>
+                  <div class="manual-module-name">{{ sm.name }}</div>
+                  <span class="manual-module-tabcount">{{ sm.tabs|length }} tab{{ sm.tabs|length|pluralize }}</span>
+                </div>
+                <div class="manual-tabs">
+                  {% for tab in sm.tabs %}
+                  <div class="manual-tab">
+                    <input type="checkbox"
+                           class="manual-checkbox manual-tab-cb"
+                           name="selected_tabs"
+                           value="{{ sm.slug }}::{{ tab.slug }}"
+                           data-parent-module="{{ sm.slug }}"
+                           id="tab-{{ sm.slug }}-{{ tab.slug }}"
+                           checked
+                           onclick="event.stopPropagation(); manualTabChanged(this);">
+                    <label for="tab-{{ sm.slug }}-{{ tab.slug }}">
+                      <i class="fas {{ tab.icon }}"></i>{{ tab.name }}
+                    </label>
+                  </div>
+                  {% endfor %}
+                </div>
+              </div>
+              {% endfor %}
+              {% endfor %}
+
+            </div>
+          </div>
+          {% endfor %}
+
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="manualSubmit">
+            <i class="fas fa-file-pdf"></i> Generate PDF
+          </button>
+        </div>
+
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Loading overlay shown while the PDF is being built server-side -->
+<div class="manual-loading-overlay" id="manualLoadingOverlay">
+  <div class="manual-loading-card">
+    <div class="spinner"></div>
+    <h5>Generating your User Manual</h5>
+    <p>This usually takes a few seconds. Please don't close this window.</p>
+  </div>
+</div>
+
+<!-- Preview modal with iframe-rendered PDF and action buttons -->
+<div class="modal fade manual-preview-modal" id="manualPreviewModal" tabindex="-1" role="dialog" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+
+      <div class="modal-header">
+        <h5 class="modal-title">
+          <i class="fas fa-file-pdf"></i> User Manual Preview
+        </h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <iframe id="manualPreviewFrame" title="User Manual Preview"></iframe>
+        <div class="manual-preview-error" id="manualPreviewError">
+          <i class="fas fa-exclamation-triangle"></i>
+          <h5>Couldn't display the preview</h5>
+          <p id="manualPreviewErrorMessage">Something went wrong generating the manual.</p>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-preview-action btn-preview-cancel" data-dismiss="modal">
+          <i class="fas fa-times"></i> Cancel
+        </button>
+        <button type="button" class="btn-preview-action btn-preview-print" id="manualPreviewPrint">
+          <i class="fas fa-print"></i> Print
+        </button>
+        <button type="button" class="btn-preview-action btn-preview-download" id="manualPreviewDownload">
+          <i class="fas fa-download"></i> Download
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+// =============================================================
+// Help page — accordion + search
+// =============================================================
+(function() {
+  const input   = document.getElementById('helpSearchInput');
+  const clear   = document.getElementById('helpSearchClear');
+  const stats   = document.getElementById('helpSearchStats');
+  const empty   = document.getElementById('helpEmpty');
+  const groups  = document.querySelectorAll('.help-group');
+  const total   = {{ total_module_count }};
+
+  // Group-level accordion: expanding one collapses the others.
+  function toggleGroup(header) {
+    const clicked = header.parentElement;
+    const wasExpanded = clicked.classList.contains('expanded');
+    groups.forEach(g => g.classList.remove('expanded'));
+    if (!wasExpanded) {
+      clicked.classList.add('expanded');
+    }
+  }
+  window.toggleGroup = toggleGroup;
+
+  // Parent-module card expand/collapse (Financials, Administration).
+  function toggleParentCard(chipEl, e) {
+    // Ignore clicks that came from the "View help" button on the right.
+    if (e.target.closest('.help-parent-view-btn')) return;
+    chipEl.parentElement.classList.toggle('expanded');
+  }
+  window.toggleParentCard = toggleParentCard;
+
+  function runSearch() {
+    const q = input.value.trim().toLowerCase();
+    clear.classList.toggle('visible', q.length > 0);
+
+    let visibleCount = 0;
+
+    groups.forEach(group => {
+      let groupVisible = 0;
+
+      // Leaf chips within this group
+      const chips = group.querySelectorAll('.help-chip');
+      chips.forEach(chip => {
+        const text = chip.dataset.searchText || '';
+        const match = !q || text.includes(q);
+        chip.classList.toggle('filtered', !match);
+        if (match) groupVisible++;
+      });
+
+      // Parent cards (Financials, Administration)
+      const parentCards = group.querySelectorAll('.help-parent-card');
+      parentCards.forEach(card => {
+        const selfText = card.dataset.searchText || '';
+        const selfMatch = !q || selfText.includes(q);
+        const nestedChipsVisible = Array.from(card.querySelectorAll('.help-chip'))
+                                        .some(c => !c.classList.contains('filtered'));
+        const show = selfMatch || nestedChipsVisible;
+        card.classList.toggle('filtered', !show);
+        if (show) {
+          groupVisible++;
+          if (q && nestedChipsVisible) {
+            card.classList.add('expanded');
+          } else if (!q) {
+            card.classList.remove('expanded');
+          }
+        }
+      });
+
+      // Sub-sections within parent cards — hide if all their chips are filtered
+      const subs = group.querySelectorAll('.help-subsection');
+      subs.forEach(sub => {
+        const subChips = sub.querySelectorAll('.help-chip');
+        const anyVisible = Array.from(subChips).some(c => !c.classList.contains('filtered'));
+        sub.classList.toggle('filtered', !anyVisible);
+      });
+
+      group.classList.toggle('filtered', groupVisible === 0);
+
+      if (q && groupVisible > 0) {
+        group.classList.add('expanded');
+      } else if (!q) {
+        group.classList.remove('expanded');
+      }
+
+      visibleCount += groupVisible;
+    });
+
+    if (q) {
+      stats.textContent = visibleCount + ' match' + (visibleCount === 1 ? '' : 'es') + ' for "' + q + '"';
+      empty.classList.toggle('visible', visibleCount === 0);
+    } else {
+      stats.textContent = total + ' topics available';
+      empty.classList.remove('visible');
+    }
+  }
+
+  input.addEventListener('input', runSearch);
+  clear.addEventListener('click', function() {
+    input.value = '';
+    input.focus();
+    runSearch();
+  });
+  input.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') { input.value = ''; runSearch(); }
+  });
+})();
+
+
+// =============================================================
+// Generate User Manual modal — checkbox tree logic + AJAX submit
+// =============================================================
+(function() {
+  const form = document.getElementById('manualForm');
+  if (!form) return;
+
+  const counter = document.getElementById('manualCounter');
+  const submitBtn = document.getElementById('manualSubmit');
+
+  // --- Expand / collapse
+  window.manualToggleGroup = function(header, e) {
+    if (e.target.matches('input[type="checkbox"]')) return;
+    header.parentElement.classList.toggle('expanded');
+  };
+  window.manualToggleModule = function(header, e) {
+    if (e.target.matches('input[type="checkbox"]')) return;
+    header.parentElement.classList.toggle('expanded');
+  };
+
+  // --- Checkbox cascades
+  window.manualGroupChanged = function(cb) {
+    const group = cb.closest('.manual-group');
+    const checked = cb.checked;
+    group.querySelectorAll('.manual-module-cb, .manual-tab-cb')
+         .forEach(c => { c.checked = checked; c.indeterminate = false; });
+    updateCounter();
+  };
+
+  window.manualModuleChanged = function(cb) {
+    const module = cb.closest('.manual-module');
+    const checked = cb.checked;
+    module.querySelectorAll('.manual-tab-cb')
+          .forEach(c => { c.checked = checked; });
+    cb.indeterminate = false;
+    refreshGroupState(cb.closest('.manual-group'));
+    updateCounter();
+  };
+
+  window.manualTabChanged = function(cb) {
+    const module = cb.closest('.manual-module');
+    refreshModuleState(module);
+    refreshGroupState(cb.closest('.manual-group'));
+    updateCounter();
+  };
+
+  function refreshModuleState(module) {
+    const tabs = module.querySelectorAll('.manual-tab-cb');
+    const modCb = module.querySelector('.manual-module-cb');
+    const checked = Array.from(tabs).filter(t => t.checked).length;
+    if (checked === 0) {
+      modCb.checked = false;
+      modCb.indeterminate = false;
+    } else if (checked === tabs.length) {
+      modCb.checked = true;
+      modCb.indeterminate = false;
+    } else {
+      modCb.checked = true;
+      modCb.indeterminate = true;
+    }
+  }
+
+  function refreshGroupState(group) {
+    if (!group) return;
+    const modCbs = group.querySelectorAll('.manual-module-cb');
+    const groupCb = group.querySelector('.manual-group-cb');
+    let fullyChecked = 0, partial = 0;
+    modCbs.forEach(c => {
+      if (c.indeterminate) partial++;
+      else if (c.checked) fullyChecked++;
+    });
+    if (fullyChecked === 0 && partial === 0) {
+      groupCb.checked = false;
+      groupCb.indeterminate = false;
+    } else if (fullyChecked === modCbs.length && partial === 0) {
+      groupCb.checked = true;
+      groupCb.indeterminate = false;
+    } else {
+      groupCb.checked = true;
+      groupCb.indeterminate = true;
+    }
+  }
+
+  // --- Counter + submit-enable
+  function updateCounter() {
+    const modules = form.querySelectorAll('.manual-module-cb:checked, .manual-module-cb:indeterminate').length;
+    const tabs = form.querySelectorAll('.manual-tab-cb:checked').length;
+    counter.innerHTML = '<strong>' + modules + '</strong> modules / <strong>' + tabs + '</strong> tabs selected';
+    submitBtn.disabled = tabs === 0;
+  }
+
+  // --- Presets
+  document.getElementById('manualSelectAll').addEventListener('click', function() {
+    form.querySelectorAll('.manual-checkbox').forEach(c => { c.checked = true; c.indeterminate = false; });
+    updateCounter();
+  });
+  document.getElementById('manualSelectNone').addEventListener('click', function() {
+    form.querySelectorAll('.manual-checkbox').forEach(c => { c.checked = false; c.indeterminate = false; });
+    updateCounter();
+  });
+
+  // --- Submit: AJAX POST, then preview modal --------------------
+  form.addEventListener('submit', function(e) {
+    e.preventDefault();  // we handle submission ourselves
+
+    const tabsSelected = form.querySelectorAll('.manual-tab-cb:checked').length;
+    if (tabsSelected === 0) return;
+
+    // Close the selection modal, show the loading overlay
+    $('#generateManualModal').modal('hide');
+    const overlay = document.getElementById('manualLoadingOverlay');
+    overlay.classList.add('visible');
+
+    const formData = new FormData(form);
+
+    fetch(form.action, {
+      method: 'POST',
+      body: formData,
+      credentials: 'same-origin',
+      headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(function(response) {
+      if (!response.ok) {
+        return response.text().then(function(text) {
+          throw new Error(text || ('Server returned ' + response.status));
+        });
+      }
+      const filename = response.headers.get('X-Manual-Filename') || 'alivente_user_manual.pdf';
+      return response.blob().then(function(blob) {
+        return { blob: blob, filename: filename };
+      });
+    })
+    .then(function(result) {
+      overlay.classList.remove('visible');
+      openPreviewModal(result.blob, result.filename);
+    })
+    .catch(function(err) {
+      overlay.classList.remove('visible');
+      openPreviewModalError(err.message || 'Unknown error');
+    })
+    .finally(function() {
+      // Reset submit button so reopening the modal works cleanly
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = '<i class="fas fa-file-pdf"></i> Generate PDF';
+    });
+  });
+
+  // Initial count
+  updateCounter();
+})();
+
+
+// =============================================================
+// Preview modal — displays the generated PDF in an iframe
+// =============================================================
+(function() {
+  let currentBlobUrl = null;
+  let currentFilename = null;
+
+  const previewFrame    = document.getElementById('manualPreviewFrame');
+  const previewError    = document.getElementById('manualPreviewError');
+  const previewErrorMsg = document.getElementById('manualPreviewErrorMessage');
+  const downloadBtn     = document.getElementById('manualPreviewDownload');
+  const printBtn        = document.getElementById('manualPreviewPrint');
+
+  window.openPreviewModal = function(blob, filename) {
+    revokeCurrent();
+
+    currentBlobUrl = URL.createObjectURL(blob);
+    currentFilename = filename;
+
+    previewError.classList.remove('visible');
+    previewFrame.style.display = 'block';
+    previewFrame.src = currentBlobUrl;
+
+    downloadBtn.disabled = false;
+    printBtn.disabled = false;
+
+    $('#manualPreviewModal').modal('show');
+  };
+
+  window.openPreviewModalError = function(message) {
+    revokeCurrent();
+    previewFrame.style.display = 'none';
+    previewFrame.src = 'about:blank';
+    previewError.classList.add('visible');
+    previewErrorMsg.textContent = "Couldn't generate the manual: " + message +
+      ". Please try again, or contact support if the problem persists.";
+
+    downloadBtn.disabled = true;
+    printBtn.disabled = true;
+
+    $('#manualPreviewModal').modal('show');
+  };
+
+  function revokeCurrent() {
+    if (currentBlobUrl) {
+      URL.revokeObjectURL(currentBlobUrl);
+      currentBlobUrl = null;
+    }
+  }
+
+  // Download — create a temporary <a download> and click it
+  downloadBtn.addEventListener('click', function() {
+    if (!currentBlobUrl) return;
+    const a = document.createElement('a');
+    a.href = currentBlobUrl;
+    a.download = currentFilename || 'alivente_user_manual.pdf';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  });
+
+  // Print — try iframe.print(); fall back to new tab if blocked
+  printBtn.addEventListener('click', function() {
+    if (!currentBlobUrl) return;
+    try {
+      previewFrame.contentWindow.focus();
+      previewFrame.contentWindow.print();
+    } catch (err) {
+      const w = window.open(currentBlobUrl, '_blank');
+      if (w) {
+        w.focus();
+      } else {
+        alert('Please allow pop-ups to print, or use Download and print from your PDF viewer.');
+      }
+    }
+  });
+
+  // Clean up blob URL when the modal closes (Cancel, X, or ESC)
+  $('#manualPreviewModal').on('hidden.bs.modal', function() {
+    previewFrame.src = 'about:blank';
+    revokeCurrent();
+  });
+})();
+
+</script>
+
+{% endblock %}

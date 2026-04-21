@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load help_modal_tags %}
 
 {% block title %}Administration{% endblock %}
 
@@ -27,7 +28,7 @@
 {% endfor %}
 
 <div style="display: flex; justify-content: flex-end; gap: 10px;">
-  <button type="button" class="btn btn-info" data-toggle="modal" data-target="#adminLandingHelpModal">
+  <button type="button" class="btn btn-info" data-toggle="modal" data-target="#admin_apmsHelpModal">
     <i class="fas fa-question-circle"></i> Help
   </button>
   <a href="{% url 'notification_settings' %}" class="btn btn-info" role="button">
@@ -339,171 +340,6 @@ function switchTab(tab) {
   <center><img src="{% static 'images/alivente_online_logo.png' %}" alt="Alivente" width="480" height="300"></center>
 {% endif %}
 
-<!-- ==================== ADMINISTRATION LANDING PAGE HELP MODAL ==================== -->
-<div class="modal fade" id="adminLandingHelpModal" tabindex="-1" role="dialog" aria-labelledby="adminLandingHelpModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg modal-dialog-scrollable" role="document">
-    <div class="modal-content">
-
-      <!-- Header -->
-      <div class="modal-header" style="background: linear-gradient(135deg, #17a2b8 0%, #138496 100%); color: white;">
-        <div>
-          <h5 class="modal-title" id="adminLandingHelpModalLabel" style="font-weight:700; font-size:20px;">
-            <i class="fas fa-cogs"></i> Administration &mdash; User Guide
-          </h5>
-          <small style="opacity:0.85;">Functional and system tools for managing the application</small>
-        </div>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="color:white; opacity:0.9; font-size:28px; text-shadow:none;">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-
-      <!-- Tabs -->
-      <ul class="nav nav-tabs" role="tablist" style="background:#f8f9fa; padding:0 15px; border-bottom:2px solid #17a2b8;">
-        <li class="nav-item"><a class="nav-link active" data-toggle="tab" href="#adOverview" role="tab"><i class="fas fa-info-circle"></i> Overview</a></li>
-        <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#adFunctional" role="tab"><i class="fas fa-building"></i> Functional</a></li>
-        <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#adSystem" role="tab"><i class="fas fa-cog"></i> System</a></li>
-        <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#adTips" role="tab"><i class="fas fa-lightbulb"></i> Tips</a></li>
-      </ul>
-
-      <!-- Body -->
-      <div class="modal-body" style="padding:25px; background:white;">
-        <div class="tab-content">
-
-          <!-- OVERVIEW -->
-          <div class="tab-pane fade show active" id="adOverview" role="tabpanel">
-            <h6 style="color:#17a2b8; font-weight:700;"><i class="fas fa-cogs"></i> What is the Administration page?</h6>
-            <p>Administration is the central hub for <strong>property-document workflows</strong> and <strong>system-wide settings</strong>. The page is split into two tabs:</p>
-            <ul>
-              <li><strong style="color:#17a2b8;">Functional</strong> &mdash; day-to-day property document tasks: lease agreements, title deeds and invoice generation.</li>
-              <li><strong style="color:#6c757d;">System</strong> &mdash; account and application settings: user management and menu preference.</li>
-            </ul>
-
-            <h6 style="color:#17a2b8; font-weight:700; margin-top:20px;"><i class="fas fa-envelope"></i> The Notifications button</h6>
-            <p>The <strong>Notifications</strong> button (top-right) takes you to <strong>Administration Notification Settings</strong>, where you configure who receives operational emails &mdash; daily property reports, invoice and expense alerts, the Friday Status Report, and so on.</p>
-
-            <div class="alert alert-warning" style="border-left:4px solid #ffc107;">
-              <i class="fas fa-shield-alt"></i> <strong>Superuser only:</strong> The Administration tabs and cards are visible only to <strong>Superuser</strong> accounts. Regular users see the Alivente logo on this page instead.
-            </div>
-          </div>
-
-          <!-- FUNCTIONAL -->
-          <div class="tab-pane fade" id="adFunctional" role="tabpanel">
-            <h6 style="color:#17a2b8; font-weight:700;"><i class="fas fa-building"></i> Functional cards</h6>
-            <p>Four cards covering lease, deed and invoice document workflows:</p>
-
-            <div class="card mb-3" style="border-left:4px solid #17a2b8;">
-              <div class="card-body">
-                <h6 style="color:#17a2b8;"><i class="fas fa-file-contract"></i> <strong>Manage Lease Agreements</strong></h6>
-                <p class="mb-1">Opens the <em>Tenant Lease Agreements &mdash; Upload / View / Delete</em> page, listing every tenant lease with its property, start and end date.</p>
-                <ul class="mb-0">
-                  <li><strong>View</strong> &mdash; opens the uploaded lease PDF</li>
-                  <li><strong>Upload</strong> &mdash; appears when no lease is on file yet</li>
-                  <li><strong>Delete</strong> &mdash; removes an uploaded lease document</li>
-                  <li>End dates shown in <span style="color:#dc3545;"><strong>red</strong></span> are expired</li>
-                </ul>
-              </div>
-            </div>
-
-            <div class="card mb-3" style="border-left:4px solid #17a2b8;">
-              <div class="card-body">
-                <h6 style="color:#17a2b8;"><i class="fas fa-plus-circle"></i> <strong>Generate Lease Agreement</strong></h6>
-                <p class="mb-1">A 3-step wizard that <strong>generates a new lease document from scratch</strong> using pre-defined templates with placeholders.</p>
-                <ul class="mb-1">
-                  <li><strong>Step 1</strong> &mdash; pick the <strong>Country</strong> (Cyprus, Spain or Greece) and <strong>Language</strong> (English or Greek)</li>
-                  <li><strong>Step 2</strong> &mdash; select the <strong>Property</strong> and <strong>Tenant</strong>, then complete additional data: passport / ID, lease terms (rent, deposit, dates, communal expenses, extension, rental increase), landlord information, amenities, furniture &amp; appliances, and keys provided</li>
-                  <li><strong>Step 3</strong> &mdash; click <strong>Generate Lease Agreement</strong> to produce the final document</li>
-                </ul>
-                <p class="mb-0"><small class="text-muted">A second tenant can be added in Step 2 via <em>+ Add Second Tenant</em>.</small></p>
-              </div>
-            </div>
-
-            <div class="card mb-3" style="border-left:4px solid #17a2b8;">
-              <div class="card-body">
-                <h6 style="color:#17a2b8;"><i class="fas fa-scroll"></i> <strong>Manage Title Deeds</strong></h6>
-                <p class="mb-0">Opens the <em>Property Title Deeds &mdash; Upload / View / Delete</em> page, listing every property with its address, year, area and status. Same Upload / View / Delete pattern as the lease agreements page, but for property title deed documents.</p>
-              </div>
-            </div>
-
-            <div class="card mb-3" style="border-left:4px solid #17a2b8;">
-              <div class="card-body">
-                <h6 style="color:#17a2b8;"><i class="fas fa-file-invoice"></i> <strong>Generate Invoices</strong></h6>
-                <p class="mb-1">Tenant invoices are <strong>automatically generated on the 1st of every month</strong>. You normally don't need to do anything &mdash; just check that they appear.</p>
-                <p class="mb-0">Use this card when you need to <strong>generate invoices on the fly</strong> &mdash; for example, if the automatic run was missed for any reason, or you've added a new tenant mid-month and need their invoice straight away. The system only creates invoices that haven't already been generated, so it's safe to click any time.</p>
-              </div>
-            </div>
-
-            <div class="alert alert-info" style="border-left:4px solid #17a2b8;">
-              <i class="fas fa-info-circle"></i> <strong>Tip:</strong> The Notifications Dashboard shows <strong>Overdue Invoices</strong> at a glance &mdash; a quick way to confirm the automatic monthly run did its job.
-            </div>
-          </div>
-
-          <!-- SYSTEM -->
-          <div class="tab-pane fade" id="adSystem" role="tabpanel">
-            <h6 style="color:#6c757d; font-weight:700;"><i class="fas fa-cog"></i> System cards</h6>
-            <p>Four cards (two active, two reserved for the future) covering account and application settings:</p>
-
-            <div class="card mb-3" style="border-left:4px solid #6c757d;">
-              <div class="card-body">
-                <h6 style="color:#6c757d;"><i class="fas fa-users-cog"></i> <strong>User Administration</strong></h6>
-                <p class="mb-1">Manage the people who can log into the system. From here you can:</p>
-                <ul class="mb-0">
-                  <li><strong>Add User</strong> &mdash; create a new user with first/last name, username, email, password, role (User or Superuser) and active status</li>
-                  <li><strong>Edit</strong> (yellow pencil) &mdash; update an existing user's details</li>
-                  <li><strong>Permissions</strong> (teal key) &mdash; grant or revoke access to individual modules (Properties, Tenants, Suppliers, etc.). Superusers have automatic full access &mdash; their permissions cannot be changed.</li>
-                  <li><strong>Disable</strong> (red icon) &mdash; prevent a user from logging in (without deleting them)</li>
-                  <li><strong>Re-enable</strong> (green tick) &mdash; restore access to a previously disabled user</li>
-                  <li><strong>Delete</strong> (red trash) &mdash; permanently remove a user (only available for disabled users)</li>
-                </ul>
-              </div>
-            </div>
-
-            <div class="card mb-3" style="border-left:4px solid #6c757d;">
-              <div class="card-body">
-                <h6 style="color:#6c757d;"><i class="fas fa-columns"></i> <strong>Menu Preference</strong></h6>
-                <p class="mb-0">A shortcut to your <strong>My Profile</strong> page where you can switch between the <em>Top Menu</em> and <em>Sidebar</em> navigation styles.</p>
-              </div>
-            </div>
-
-            <div class="card mb-3" style="border-left:4px solid #adb5bd;">
-              <div class="card-body">
-                <h6 style="color:#6c757d;"><i class="fas fa-clock"></i> <strong>Coming Soon</strong> <small>(&times; 2)</small></h6>
-                <p class="mb-0">Two greyed-out placeholders reserved for upcoming system features. They are not clickable today.</p>
-              </div>
-            </div>
-          </div>
-
-          <!-- TIPS -->
-          <div class="tab-pane fade" id="adTips" role="tabpanel">
-            <h6 style="color:#17a2b8; font-weight:700;"><i class="fas fa-lightbulb"></i> Best Practices</h6>
-            <ul>
-              <li><strong>Check invoices on the 2nd</strong> &mdash; if the 1st-of-month auto-run didn't fire for any reason, click <strong>Generate Invoices</strong> on the 2nd. The system only creates ones that don't already exist, so clicking it is always safe.</li>
-              <li><strong>Use Generate Lease Agreement for consistency</strong> &mdash; the template-based wizard ensures every lease has the same structure, language and required fields. Manually drafted leases drift over time.</li>
-              <li><strong>Keep Title Deeds and Lease Agreements up to date</strong> &mdash; these are the legal anchors of every property and tenancy. Upload as soon as you receive the signed document.</li>
-              <li><strong>Configure Notifications first</strong> &mdash; before relying on alerts (overdue invoices, expense approvals, daily reports), use the Notifications button to set the right TO / CC recipients in Administration Notification Settings.</li>
-              <li><strong>Disable rather than delete users</strong> &mdash; if someone leaves, disable their account. You can always re-enable later. Delete is only available for disabled users for that reason.</li>
-              <li><strong>Don't bother editing Superuser permissions</strong> &mdash; Superusers automatically have full access to every module. Module checkboxes for Superusers are read-only and ignored.</li>
-              <li><strong>End dates in red mean expired</strong> &mdash; on the Manage Lease Agreements page, any end date shown in red is a lease that has already ended. Renew or close out promptly.</li>
-            </ul>
-
-            <div class="alert alert-warning" style="border-left:4px solid #ffc107;">
-              <i class="fas fa-exclamation-triangle"></i> <strong>If invoices didn't generate automatically:</strong> Check your scheduled job logs first. Then click <strong>Generate Invoices</strong> to create any missing invoices on the fly. If invoices still don't appear, check that the tenant has an active lease covering the current month.
-            </div>
-          </div>
-
-        </div>
-      </div>
-
-      <!-- Footer -->
-      <div class="modal-footer" style="background:#f8f9fa; border-top:1px solid #dee2e6;">
-        <small class="text-muted" style="flex:1;">Alivente Online &mdash; Administration User Guide</small>
-        <button type="button" class="btn btn-sm" data-dismiss="modal" style="background:linear-gradient(135deg,#17a2b8,#138496); color:white; border:none;">
-          <i class="fas fa-times"></i> Close
-        </button>
-      </div>
-
-    </div>
-  </div>
-</div>
-<!-- ==================== END ADMINISTRATION LANDING PAGE HELP MODAL ==================== -->
+{% render_help_modal "admin_apms" %}
 
 {% endblock %}

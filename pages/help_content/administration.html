@@ -2,6 +2,8 @@
 
 <!-- ======= PROPERTIES ======= -->
 <section data-module-slug="properties"
+         data-module-group="Property Operations"
+         data-module-permission="can_access_properties"
          data-module-name="Properties"
          data-module-icon="fa-home"
          data-module-category="Administration"
@@ -229,6 +231,8 @@
 
 <!-- ======= PASSPORT MANAGEMENT ======= -->
 <section data-module-slug="passport_management"
+         data-module-group="Personal"
+         data-module-permission="can_access_personal"
          data-module-name="Passport / ID Management"
          data-module-icon="fa-id-card"
          data-module-category="Administration"
@@ -347,6 +351,8 @@
 
 <!-- ======= CELEBRATIONS ======= -->
 <section data-module-slug="celebration_dashboard"
+         data-module-group="Personal"
+         data-module-permission="can_access_personal"
          data-module-name="Celebrations"
          data-module-icon="fa-birthday-cake"
          data-module-category="Personal"
@@ -634,6 +640,8 @@
 
 <!-- ======= RECIPE MANAGEMENT ======= -->
 <section data-module-slug="recipe_management"
+         data-module-group="Personal"
+         data-module-permission="can_access_personal"
          data-module-name="Recipe Management"
          data-module-icon="fa-utensils"
          data-module-category="Personal"
@@ -980,5 +988,1242 @@
 
 </section>
 <!-- ======= END RECIPE MANAGEMENT ======= -->
+
+
+<!-- ======= PERSONAL NOTIFICATION SETTINGS ======= -->
+<section data-module-slug="personal_notification_settings"
+         data-module-group="Personal"
+         data-module-permission="can_access_personal"
+         data-module-name="Personal Notification Settings"
+         data-module-icon="fa-envelope"
+         data-module-category="Personal"
+         data-module-subtitle="Manage who receives celebration reminders and document expiry alerts">
+
+  <article data-tab-slug="pn-overview"
+           data-tab-name="Overview"
+           data-tab-icon="fa-info-circle">
+    <h6 style="color:#28a745; font-weight:700;"><i class="fas fa-envelope-open-text"></i> What is this page?</h6>
+    <p>Personal Notification Settings is the central place where you decide <strong>who in your family</strong> should receive personal email notifications from the system.</p>
+
+    <p>There are <strong>two types</strong> of personal notifications you can configure here:</p>
+    <ul>
+      <li><strong style="color:#28a745;">Celebration Reminders</strong> &mdash; Daily emails that remind you about upcoming birthdays, namedays and anniversaries.</li>
+      <li><strong style="color:#28a745;">Document Expiry Alerts</strong> &mdash; Twice-monthly emails that warn you about passports and IDs that are about to expire.</li>
+    </ul>
+
+    <div class="alert alert-info" style="border-left:4px solid #17a2b8;">
+      <i class="fas fa-info-circle"></i> <strong>Why is this important?</strong><br>
+      Without email addresses configured here, no one will receive these notifications &mdash; even if a celebration or document expiry date matches today.
+    </div>
+
+    <div class="alert alert-success" style="border-left:4px solid #28a745;">
+      <i class="fas fa-link"></i> <strong>Looking for business / property notifications?</strong> Things like Daily Property Reports, Lease Reminders, Invoice and Expense alerts, and the Friday Status Report are configured separately under <strong>Administration &rarr; Notification Settings</strong>.
+    </div>
+  </article>
+
+  <article data-tab-slug="pn-how-it-works"
+           data-tab-name="How It Works"
+           data-tab-icon="fa-cogs">
+    <h6 style="color:#28a745; font-weight:700;"><i class="fas fa-cogs"></i> Understanding TO and CC</h6>
+    <p>Each notification type has two recipient fields, just like a normal email:</p>
+
+    <div class="card mb-3" style="border-left:4px solid #28a745;">
+      <div class="card-body">
+        <h6 style="color:#28a745;"><strong>TO: Primary Recipients</strong></h6>
+        <p class="mb-1">The main people who should receive &mdash; and act on &mdash; the notification.</p>
+        <p class="mb-0"><small class="text-muted">Example: <code>demetri@gmail.com, angy@gmail.com, erene@gmail.com</code></small></p>
+      </div>
+    </div>
+
+    <div class="card mb-3" style="border-left:4px solid #6c757d;">
+      <div class="card-body">
+        <h6 style="color:#6c757d;"><strong>CC: Carbon Copy Recipients (optional)</strong></h6>
+        <p class="mb-1">Additional people who should be kept informed but don't necessarily need to take action. Leave blank if not needed.</p>
+        <p class="mb-0"><small class="text-muted">Example: <code>angmaniasbakery@gmail.com</code></small></p>
+      </div>
+    </div>
+
+    <h6 style="color:#28a745; font-weight:700; margin-top:20px;"><i class="fas fa-keyboard"></i> Email Format</h6>
+    <ul>
+      <li>Enter <strong>one or many</strong> email addresses per field.</li>
+      <li>Separate multiple addresses with a <strong>comma</strong> &mdash; for example <code>email1@example.com, email2@example.com</code>.</li>
+      <li>Spaces after commas are fine and will be ignored.</li>
+    </ul>
+
+    <h6 style="color:#28a745; font-weight:700; margin-top:20px;"><i class="fas fa-save"></i> Saving Changes</h6>
+    <p>Each section (Celebration Reminders, Document Expiry Alerts) has its <strong>own Save button</strong>. After editing a section you must click Save in <em>that</em> section &mdash; changes in one section are independent of the other and are not saved together.</p>
+  </article>
+
+  <article data-tab-slug="pn-types"
+           data-tab-name="Notification Types"
+           data-tab-icon="fa-bell">
+
+    <div class="card mb-3" style="border:1px solid #dee2e6;">
+      <div class="card-header" style="background:#28a745; color:white;">
+        <h6 style="margin:0;"><i class="fas fa-birthday-cake"></i> Celebration Reminders</h6>
+      </div>
+      <div class="card-body">
+        <p><strong>What it does:</strong> Sends email reminders for birthdays, namedays and anniversaries.</p>
+        <p><strong>When it sends:</strong> Every morning at 9:00 AM, but <strong>only on days where there is a matching event</strong> (1 week before, 1 day before, or same-day &mdash; based on each event's settings in the Celebrations module).</p>
+        <p><strong>Who is reminded:</strong> The recipients you list here, but only if the family member is also <strong>ticked on that specific event</strong> in the Celebrations module.</p>
+        <p class="mb-0"><strong>TO field hint:</strong> <em>Family members who should be reminded</em></p>
+      </div>
+    </div>
+
+    <div class="card mb-3" style="border:1px solid #dee2e6;">
+      <div class="card-header" style="background:#28a745; color:white;">
+        <h6 style="margin:0;"><i class="fas fa-id-card"></i> Document Expiry Alerts</h6>
+      </div>
+      <div class="card-body">
+        <p><strong>What it does:</strong> Warns you about passports and IDs that are about to expire (or have already expired).</p>
+        <p><strong>When it sends:</strong> Twice a month &mdash; on the <strong>1st and 15th</strong>.</p>
+        <p><strong>What's included:</strong> Any passport or ID expiring <strong>within the next 6 months</strong>, plus any that have already expired.</p>
+        <p class="mb-0"><strong>TO field hint:</strong> <em>Family members who manage documents</em></p>
+      </div>
+    </div>
+
+    <div class="alert alert-success" style="border-left:4px solid #28a745;">
+      <i class="fas fa-link"></i> <strong>Related modules:</strong> Celebrations, Passports / Documents.
+    </div>
+  </article>
+
+  <article data-tab-slug="pn-tips"
+           data-tab-name="Tips"
+           data-tab-icon="fa-lightbulb">
+    <h6 style="color:#28a745; font-weight:700;"><i class="fas fa-lightbulb"></i> Best Practices</h6>
+    <ul>
+      <li><strong>Add multiple recipients</strong> &mdash; if one person is on holiday, others will still see the notification.</li>
+      <li><strong>Use CC for awareness</strong> &mdash; keep someone in the loop without making them responsible for action.</li>
+      <li><strong>Save each section separately</strong> &mdash; don't forget to click the Save button in the section you've edited.</li>
+      <li><strong>Test with your own email first</strong> &mdash; before adding others, save with just your address to confirm you receive the next scheduled notification.</li>
+      <li><strong>Keep it tidy</strong> &mdash; remove old or obsolete email addresses to avoid noise.</li>
+      <li><strong>Pair with the Celebrations module</strong> &mdash; adding an email here doesn't automatically tick that person on every event. You must also tick "Notify These People" on each celebration for them to be included.</li>
+    </ul>
+
+    <div class="alert alert-warning" style="border-left:4px solid #ffc107;">
+      <i class="fas fa-exclamation-triangle"></i> <strong>Not receiving a celebration notification?</strong> Check three things:
+      <ol class="mb-0 mt-2">
+        <li>Is the email address registered <strong>here</strong> (in Notification Settings)?</li>
+        <li>Is the person <strong>ticked</strong> on the specific event in Celebrations?</li>
+        <li>Is the timing (1 week / 1 day / same day) <strong>enabled</strong> on that event?</li>
+      </ol>
+      All three conditions must be true for the email to be sent.
+    </div>
+  </article>
+
+</section>
+<!-- ======= END PERSONAL NOTIFICATION SETTINGS ======= -->
+
+
+<!-- ======= ADMINISTRATION NOTIFICATION SETTINGS ======= -->
+<section data-module-slug="admin_notification_settings"
+         data-module-group="Administration"
+         data-module-permission="can_access_administration"
+         data-module-name="Administration Notification Settings"
+         data-module-icon="fa-envelope"
+         data-module-category="Administration"
+         data-module-subtitle="Manage email recipients for property management and operational notifications">
+
+  <article data-tab-slug="an-overview"
+           data-tab-name="Overview"
+           data-tab-icon="fa-info-circle">
+    <h6 style="color:#17a2b8; font-weight:700;"><i class="fas fa-envelope-open-text"></i> What is this page?</h6>
+    <p>Administration Notification Settings is the central place where you decide <strong>who in the organisation</strong> receives operational email notifications &mdash; covering property management, leases, invoices, expenses and the weekly status report.</p>
+
+    <p>There are <strong>eight notification types</strong> you can configure on this page:</p>
+    <ol>
+      <li>Daily Property Management Report</li>
+      <li>New Lease Upload Reminders</li>
+      <li>Invoice Marked as Paid</li>
+      <li>Expense Needs Approval</li>
+      <li>Expense Approved</li>
+      <li>Expense Paid</li>
+      <li>Friday Status Report (Submitted by Supervisor)</li>
+      <li>Friday Status Report (Submitted by Staff)</li>
+    </ol>
+
+    <div class="alert alert-info" style="border-left:4px solid #17a2b8;">
+      <i class="fas fa-info-circle"></i> <strong>Why is this important?</strong><br>
+      Each notification represents a real business event &mdash; an invoice paid, an expense awaiting approval, a lease about to be uploaded. Configuring the right recipients for each one ensures the right person sees the right alert at the right time.
+    </div>
+
+    <div class="alert alert-success" style="border-left:4px solid #28a745;">
+      <i class="fas fa-link"></i> <strong>Looking for personal notifications?</strong> Birthday and anniversary reminders, plus passport / ID expiry alerts, are configured separately under <strong>Personal &rarr; Notification Settings</strong>.
+    </div>
+  </article>
+
+  <article data-tab-slug="an-how-it-works"
+           data-tab-name="How It Works"
+           data-tab-icon="fa-cogs">
+    <h6 style="color:#17a2b8; font-weight:700;"><i class="fas fa-cogs"></i> Understanding TO and CC</h6>
+    <p>Each of the eight notification types has the same two recipient fields, just like a normal email:</p>
+
+    <div class="card mb-3" style="border-left:4px solid #17a2b8;">
+      <div class="card-body">
+        <h6 style="color:#17a2b8;"><strong>TO: Primary Recipients</strong></h6>
+        <p class="mb-1">The main person (or people) responsible for acting on the notification.</p>
+        <p class="mb-0"><small class="text-muted">Example: <code>stella.simitopoulos@alivente.com</code></small></p>
+      </div>
+    </div>
+
+    <div class="card mb-3" style="border-left:4px solid #6c757d;">
+      <div class="card-body">
+        <h6 style="color:#6c757d;"><strong>CC: Carbon Copy Recipients (optional)</strong></h6>
+        <p class="mb-1">Additional people who should be kept informed for visibility but don't need to take action. Leave blank if not needed.</p>
+        <p class="mb-0"><small class="text-muted">Example: <code>angmaniasbakery@gmail.com</code></small></p>
+      </div>
+    </div>
+
+    <h6 style="color:#17a2b8; font-weight:700; margin-top:20px;"><i class="fas fa-keyboard"></i> Email Format</h6>
+    <ul>
+      <li>Enter <strong>one or many</strong> email addresses per field.</li>
+      <li>Separate multiple addresses with a <strong>comma</strong> &mdash; for example <code>email1@example.com, email2@example.com</code>.</li>
+      <li>Spaces after commas are fine and will be ignored.</li>
+    </ul>
+
+    <h6 style="color:#17a2b8; font-weight:700; margin-top:20px;"><i class="fas fa-save"></i> Saving Changes</h6>
+    <p>Each notification section has its <strong>own Save button</strong>. After editing a section you must click Save in <em>that</em> section &mdash; the eight sections are saved independently of each other.</p>
+
+    <div class="alert alert-warning" style="border-left:4px solid #ffc107;">
+      <i class="fas fa-exclamation-triangle"></i> <strong>Tip:</strong> If you edit several sections, click Save in each one before navigating away. Unsaved changes will be lost.
+    </div>
+  </article>
+
+  <article data-tab-slug="an-types"
+           data-tab-name="Notification Types"
+           data-tab-icon="fa-bell">
+
+    <div class="card mb-3" style="border:1px solid #dee2e6;">
+      <div class="card-header" style="background:#17a2b8; color:white;">
+        <h6 style="margin:0;"><i class="fas fa-chart-line"></i> 1. Daily Property Management Report</h6>
+      </div>
+      <div class="card-body">
+        <p><strong>What it does:</strong> Automated daily report covering vacant properties, expiring leases and overdue invoices.</p>
+        <p><strong>When it sends:</strong> Once a day, automatically.</p>
+        <p class="mb-0"><strong>Typical recipient:</strong> Property managers and supervisors who need to take daily operational action.</p>
+      </div>
+    </div>
+
+    <div class="card mb-3" style="border:1px solid #dee2e6;">
+      <div class="card-header" style="background:#17a2b8; color:white;">
+        <h6 style="margin:0;"><i class="fas fa-file-contract"></i> 2. New Lease Upload Reminders</h6>
+      </div>
+      <div class="card-body">
+        <p><strong>What it does:</strong> Urgent notifications when a new lease agreement needs to be uploaded into the system.</p>
+        <p class="mb-0"><strong>Typical recipient:</strong> The person responsible for uploading and managing lease documents.</p>
+      </div>
+    </div>
+
+    <div class="card mb-3" style="border:1px solid #dee2e6;">
+      <div class="card-header" style="background:#17a2b8; color:white;">
+        <h6 style="margin:0;"><i class="fas fa-receipt"></i> 3. Invoice Marked as Paid</h6>
+      </div>
+      <div class="card-body">
+        <p><strong>What it does:</strong> Triggered when an invoice is marked as paid in the system.</p>
+        <p class="mb-0"><strong>Typical recipient:</strong> The person who tracks invoice payments and reconciles accounts.</p>
+      </div>
+    </div>
+
+    <div class="card mb-3" style="border:1px solid #dee2e6;">
+      <div class="card-header" style="background:#17a2b8; color:white;">
+        <h6 style="margin:0;"><i class="fas fa-clipboard-check"></i> 4. Expense Needs Approval</h6>
+      </div>
+      <div class="card-body">
+        <p><strong>What it does:</strong> Triggered when a non-supervisor user creates an expense that requires approval.</p>
+        <p class="mb-0"><strong>Typical recipient:</strong> The person who approves expenses (usually a supervisor).</p>
+      </div>
+    </div>
+
+    <div class="card mb-3" style="border:1px solid #dee2e6;">
+      <div class="card-header" style="background:#17a2b8; color:white;">
+        <h6 style="margin:0;"><i class="fas fa-check-circle"></i> 5. Expense Approved</h6>
+      </div>
+      <div class="card-body">
+        <p><strong>What it does:</strong> Triggered when an expense has been approved and is now pending payment.</p>
+        <p class="mb-0"><strong>Typical recipient:</strong> The person who processes payments &mdash; this is their cue to pay.</p>
+      </div>
+    </div>
+
+    <div class="card mb-3" style="border:1px solid #dee2e6;">
+      <div class="card-header" style="background:#17a2b8; color:white;">
+        <h6 style="margin:0;"><i class="fas fa-money-check-alt"></i> 6. Expense Paid</h6>
+      </div>
+      <div class="card-body">
+        <p><strong>What it does:</strong> Triggered when an expense has been marked as paid in the system.</p>
+        <p class="mb-0"><strong>Typical recipient:</strong> The person who tracks completed expenses for record-keeping.</p>
+      </div>
+    </div>
+
+    <div class="card mb-3" style="border:1px solid #dee2e6;">
+      <div class="card-header" style="background:#17a2b8; color:white;">
+        <h6 style="margin:0;"><i class="fas fa-flag-checkered"></i> 7. Friday Status Report (Submitted by Supervisor)</h6>
+      </div>
+      <div class="card-body">
+        <p><strong>What it does:</strong> Triggered when a supervisor submits the Friday Status Report.</p>
+        <p class="mb-0"><strong>Typical recipient:</strong> The main recipient of the supervisor's weekly report (usually senior management or ownership).</p>
+      </div>
+    </div>
+
+    <div class="card mb-3" style="border:1px solid #dee2e6;">
+      <div class="card-header" style="background:#17a2b8; color:white;">
+        <h6 style="margin:0;"><i class="fas fa-flag-checkered"></i> 8. Friday Status Report (Submitted by Staff)</h6>
+      </div>
+      <div class="card-body">
+        <p><strong>What it does:</strong> Triggered when a non-supervisor staff member submits the Friday Status Report.</p>
+        <p class="mb-0"><strong>Typical recipient:</strong> The supervisor (so they can review the staff report before passing it up the chain).</p>
+      </div>
+    </div>
+
+  </article>
+
+  <article data-tab-slug="an-workflows"
+           data-tab-name="Workflows"
+           data-tab-icon="fa-project-diagram">
+    <h6 style="color:#17a2b8; font-weight:700;"><i class="fas fa-project-diagram"></i> How notifications support business processes</h6>
+    <p>Several notifications work together as a chain &mdash; configuring them correctly turns the system into an end-to-end alerting pipeline.</p>
+
+    <div class="card mb-3" style="border-left:4px solid #17a2b8;">
+      <div class="card-body">
+        <h6 style="color:#17a2b8;"><i class="fas fa-arrow-right"></i> Expense Approval Chain</h6>
+        <ol class="mb-0">
+          <li><strong>Staff member creates an expense</strong> &rarr; <em>Expense Needs Approval</em> notifies the approver.</li>
+          <li><strong>Approver approves it</strong> &rarr; <em>Expense Approved</em> notifies the payer.</li>
+          <li><strong>Payer pays it</strong> &rarr; <em>Expense Paid</em> notifies the tracker for record-keeping.</li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="card mb-3" style="border-left:4px solid #17a2b8;">
+      <div class="card-body">
+        <h6 style="color:#17a2b8;"><i class="fas fa-arrow-right"></i> Friday Status Report Chain</h6>
+        <ol class="mb-0">
+          <li><strong>Staff submit their reports</strong> &rarr; <em>Friday Status Report (Staff)</em> notifies the supervisor for review.</li>
+          <li><strong>Supervisor submits the consolidated report</strong> &rarr; <em>Friday Status Report (Supervisor)</em> notifies senior management.</li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="card mb-3" style="border-left:4px solid #17a2b8;">
+      <div class="card-body">
+        <h6 style="color:#17a2b8;"><i class="fas fa-arrow-right"></i> Daily Operational Awareness</h6>
+        <p class="mb-0">The <em>Daily Property Management Report</em> and <em>New Lease Upload Reminders</em> work as proactive nudges &mdash; the system tells managers what needs doing rather than waiting for them to log in and check.</p>
+      </div>
+    </div>
+
+    <div class="alert alert-info" style="border-left:4px solid #17a2b8;">
+      <i class="fas fa-lightbulb"></i> <strong>Design tip:</strong> Set <strong>different people</strong> in TO at each step of a chain. If the same person appears in TO at every step they'll get email fatigue and start ignoring alerts. Use CC for visibility, TO for action.
+    </div>
+  </article>
+
+  <article data-tab-slug="an-tips"
+           data-tab-name="Tips"
+           data-tab-icon="fa-lightbulb">
+    <h6 style="color:#17a2b8; font-weight:700;"><i class="fas fa-lightbulb"></i> Best Practices</h6>
+    <ul>
+      <li><strong>Match the recipient to the role</strong> &mdash; the person in TO should be the one who actually does something with the notification, not a generic inbox.</li>
+      <li><strong>Always have a backup</strong> &mdash; add a second TO recipient (or CC) so cover is in place when the primary person is out.</li>
+      <li><strong>Use CC for visibility</strong> &mdash; senior managers often want to know what's happening without being on the hook to act.</li>
+      <li><strong>Save each section separately</strong> &mdash; each of the eight notifications has its own Save button.</li>
+      <li><strong>Avoid email fatigue</strong> &mdash; don't put the same person in TO across all eight notifications, or they'll start ignoring everything.</li>
+      <li><strong>Test changes</strong> &mdash; after editing a section, trigger the relevant action (e.g. mark a test invoice as paid) to confirm the notification reaches the right inbox.</li>
+      <li><strong>Review periodically</strong> &mdash; staff change roles, leave, or take on new responsibilities. Review these settings every few months.</li>
+    </ul>
+
+    <div class="alert alert-warning" style="border-left:4px solid #ffc107;">
+      <i class="fas fa-exclamation-triangle"></i> <strong>Not receiving an expected notification?</strong> Check three things:
+      <ol class="mb-0 mt-2">
+        <li>Is the email address registered <strong>here</strong> in the relevant section?</li>
+        <li>Did you click <strong>Save</strong> on that specific section after editing?</li>
+        <li>Is the email being filtered into spam? Whitelist the sending address.</li>
+      </ol>
+    </div>
+  </article>
+
+</section>
+<!-- ======= END ADMINISTRATION NOTIFICATION SETTINGS ======= -->
+
+
+<!-- ======= NOTIFICATIONS DASHBOARD ======= -->
+<section data-module-slug="notification"
+         data-module-group="Notifications"
+         data-module-name="Notifications Dashboard"
+         data-module-icon="fa-bell"
+         data-module-category="Administration"
+         data-module-subtitle="Property management alerts and status at a glance">
+
+  <article data-tab-slug="nd-overview"
+           data-tab-name="Overview"
+           data-tab-icon="fa-info-circle">
+    <h6 style="color:#17a2b8; font-weight:700;"><i class="fas fa-tachometer-alt"></i> What is this dashboard?</h6>
+    <p>The Notifications Dashboard is a <strong>single-glance health check</strong> of your property portfolio. It surfaces six key indicators that need attention &mdash; from vacant properties and expiring leases through to overdue invoices and pending expenses.</p>
+
+    <p>It's the visual companion to the <strong>Daily Property Management Report</strong> email &mdash; the same data, rendered as clickable cards you can drill into.</p>
+
+    <div class="alert alert-info" style="border-left:4px solid #17a2b8;">
+      <i class="fas fa-sync-alt"></i> <strong>Live data:</strong> The dashboard pulls live data from the database every time it loads, and again whenever you click <strong>Refresh Data</strong>. There's no cache &mdash; what you see is current.
+    </div>
+
+    <div class="alert alert-success" style="border-left:4px solid #28a745;">
+      <i class="fas fa-link"></i> <strong>Related:</strong> Daily Property Management Report email (configured in <strong>Administration &rarr; Notification Settings</strong>).
+    </div>
+  </article>
+
+  <article data-tab-slug="nd-cards"
+           data-tab-name="Status Cards"
+           data-tab-icon="fa-th">
+    <h6 style="color:#17a2b8; font-weight:700;"><i class="fas fa-th"></i> The six status cards</h6>
+    <p>Each card shows a count and is colour-coded by urgency. Click any card to see the underlying records.</p>
+
+    <div class="card mb-2" style="border-left:4px solid #17a2b8;">
+      <div class="card-body" style="padding:12px 15px;">
+        <h6 style="margin:0 0 5px 0;"><i class="fas fa-home" style="color:#17a2b8;"></i> <strong>Vacant Properties</strong></h6>
+        <p class="mb-0" style="font-size:13px;">Properties currently without a tenant. Each vacant property is lost income &mdash; act fast.</p>
+      </div>
+    </div>
+
+    <div class="card mb-2" style="border-left:4px solid #17a2b8;">
+      <div class="card-body" style="padding:12px 15px;">
+        <h6 style="margin:0 0 5px 0;"><i class="fas fa-calendar-times" style="color:#17a2b8;"></i> <strong>Expiring Leases</strong></h6>
+        <p class="mb-0" style="font-size:13px;">Leases coming up for renewal. Drill in to see tenant, lease end date and renewal due date.</p>
+      </div>
+    </div>
+
+    <div class="card mb-2" style="border-left:4px solid #17a2b8;">
+      <div class="card-body" style="padding:12px 15px;">
+        <h6 style="margin:0 0 5px 0;"><i class="fas fa-times-circle" style="color:#17a2b8;"></i> <strong>Declined Renewals</strong></h6>
+        <p class="mb-0" style="font-size:13px;">Tenants who have declined to renew their lease. These properties will need a new tenant before the lease ends.</p>
+      </div>
+    </div>
+
+    <div class="card mb-2" style="border-left:4px solid #17a2b8;">
+      <div class="card-body" style="padding:12px 15px;">
+        <h6 style="margin:0 0 5px 0;"><i class="fas fa-exclamation-triangle" style="color:#17a2b8;"></i> <strong>Overdue Invoices</strong></h6>
+        <p class="mb-0" style="font-size:13px;">Tenant invoices past their due date. Drill in to see the amount, the tenant and how many days overdue.</p>
+      </div>
+    </div>
+
+    <div class="card mb-2" style="border-left:4px solid #17a2b8;">
+      <div class="card-body" style="padding:12px 15px;">
+        <h6 style="margin:0 0 5px 0;"><i class="fas fa-clipboard-check" style="color:#17a2b8;"></i> <strong>Expenses Waiting for Approval</strong></h6>
+        <p class="mb-0" style="font-size:13px;">Expenses submitted by staff that need a supervisor's approval before they can be paid.</p>
+      </div>
+    </div>
+
+    <div class="card mb-2" style="border-left:4px solid #17a2b8;">
+      <div class="card-body" style="padding:12px 15px;">
+        <h6 style="margin:0 0 5px 0;"><i class="fas fa-credit-card" style="color:#17a2b8;"></i> <strong>Expenses Waiting for Payment</strong></h6>
+        <p class="mb-0" style="font-size:13px;">Expenses that have been approved and are now awaiting payment by the finance team.</p>
+      </div>
+    </div>
+  </article>
+
+  <article data-tab-slug="nd-colors"
+           data-tab-name="Colour Coding"
+           data-tab-icon="fa-palette">
+    <h6 style="color:#17a2b8; font-weight:700;"><i class="fas fa-palette"></i> What the colours mean</h6>
+    <p>Cards change colour based on the count and the severity of the indicator:</p>
+
+    <div class="card mb-3" style="border-left:4px solid #28a745;">
+      <div class="card-body" style="background:#d4edda;">
+        <h6 style="color:#28a745; margin-bottom:5px;"><i class="fas fa-check-circle"></i> <strong>Green &mdash; All Clear</strong></h6>
+        <p class="mb-0">The count is <strong>zero</strong>. Nothing to worry about &mdash; this category needs no attention.</p>
+      </div>
+    </div>
+
+    <div class="card mb-3" style="border-left:4px solid #ffc107;">
+      <div class="card-body" style="background:#fff3cd;">
+        <h6 style="color:#856404; margin-bottom:5px;"><i class="fas fa-exclamation-triangle"></i> <strong>Yellow &mdash; Warning</strong></h6>
+        <p class="mb-1">There are items needing attention soon, but they aren't urgent yet. Used for:</p>
+        <ul class="mb-0" style="font-size:13px;">
+          <li>Expiring Leases</li>
+          <li>Expenses Waiting for Approval</li>
+          <li>Expenses Waiting for Payment</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card mb-3" style="border-left:4px solid #dc3545;">
+      <div class="card-body" style="background:#f8d7da;">
+        <h6 style="color:#dc3545; margin-bottom:5px;"><i class="fas fa-fire"></i> <strong>Red &mdash; Urgent</strong></h6>
+        <p class="mb-1">Items that need <strong>immediate action</strong> &mdash; you're losing money or risk losing money. Used for:</p>
+        <ul class="mb-0" style="font-size:13px;">
+          <li>Vacant Properties</li>
+          <li>Declined Renewals</li>
+          <li>Overdue Invoices</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="alert alert-info" style="border-left:4px solid #17a2b8;">
+      <i class="fas fa-eye"></i> <strong>Quick scan:</strong> If everything is green you can move on with your day. Any red card &mdash; deal with it now.
+    </div>
+  </article>
+
+  <article data-tab-slug="nd-using"
+           data-tab-name="Using It"
+           data-tab-icon="fa-mouse-pointer">
+    <h6 style="color:#17a2b8; font-weight:700;"><i class="fas fa-mouse-pointer"></i> How to use the dashboard</h6>
+
+    <div class="card mb-3" style="border-left:4px solid #17a2b8;">
+      <div class="card-body">
+        <h6 style="color:#17a2b8;"><i class="fas fa-hand-pointer"></i> <strong>Click any card</strong></h6>
+        <p class="mb-0">Click a status card to open a popup listing every record in that category &mdash; with all the details you need to take action (property name, tenant, dates, amounts, etc.).</p>
+      </div>
+    </div>
+
+    <div class="card mb-3" style="border-left:4px solid #17a2b8;">
+      <div class="card-body">
+        <h6 style="color:#17a2b8;"><i class="fas fa-sync-alt"></i> <strong>Refresh Data</strong></h6>
+        <p class="mb-0">The dashboard loads fresh data when you arrive on the page. Click <strong>Refresh Data</strong> any time you want to re-pull the numbers (for example, after you've actioned something in another module).</p>
+      </div>
+    </div>
+
+    <div class="card mb-3" style="border-left:4px solid #17a2b8;">
+      <div class="card-body">
+        <h6 style="color:#17a2b8;"><i class="fas fa-tag"></i> <strong>Status badges in detail popups</strong></h6>
+        <p class="mb-1">Inside each detail popup, records are tagged with coloured badges:</p>
+        <ul class="mb-0">
+          <li><span class="badge badge-danger" style="background:#dc3545; color:white; padding:3px 8px; border-radius:4px;">VACANT</span> / <span class="badge badge-danger" style="background:#dc3545; color:white; padding:3px 8px; border-radius:4px;">NEED NEW TENANT</span> &mdash; urgent action</li>
+          <li><span class="badge" style="background:#ffc107; color:#212529; padding:3px 8px; border-radius:4px;">PENDING</span> / <span class="badge" style="background:#ffc107; color:#212529; padding:3px 8px; border-radius:4px;">PENDING APPROVAL</span> &mdash; awaiting next step</li>
+          <li><span class="badge" style="background:#17a2b8; color:white; padding:3px 8px; border-radius:4px;">APPROVED &mdash; AWAITING PAYMENT</span> &mdash; ready for finance</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card mb-3" style="border-left:4px solid #17a2b8;">
+      <div class="card-body">
+        <h6 style="color:#17a2b8;"><i class="fas fa-arrow-left"></i> <strong>Back</strong></h6>
+        <p class="mb-0">Returns you to the home dashboard.</p>
+      </div>
+    </div>
+  </article>
+
+  <article data-tab-slug="nd-tips"
+           data-tab-name="Tips"
+           data-tab-icon="fa-lightbulb">
+    <h6 style="color:#17a2b8; font-weight:700;"><i class="fas fa-lightbulb"></i> Best Practices</h6>
+    <ul>
+      <li><strong>Make this your morning page</strong> &mdash; open it first thing each day. A 10-second scan tells you whether anything needs immediate action.</li>
+      <li><strong>Aim for all-green</strong> &mdash; the goal is six green cards. Each red or yellow card is a piece of work to close out.</li>
+      <li><strong>Click before you act</strong> &mdash; don't act on the count alone. Click the card first to see <em>which</em> properties / leases / invoices are affected.</li>
+      <li><strong>Refresh after actioning</strong> &mdash; once you've paid an invoice or approved an expense, click Refresh Data to confirm the count has dropped.</li>
+      <li><strong>Pair with the email report</strong> &mdash; the Daily Property Management Report email gives you the same data passively. Use email to stay aware on the move; use this dashboard for action.</li>
+      <li><strong>Drill into Overdue Invoices first</strong> &mdash; this category usually represents real cash you should be collecting. Prioritise red here.</li>
+    </ul>
+
+    <div class="alert alert-warning" style="border-left:4px solid #ffc107;">
+      <i class="fas fa-exclamation-triangle"></i> <strong>If a card shows zero but you expected items:</strong> Click <strong>Refresh Data</strong> first. If still zero, the underlying record may be in a status that excludes it (e.g. the invoice was just paid, the lease was just renewed). Check the relevant module to verify.
+    </div>
+  </article>
+
+</section>
+<!-- ======= END NOTIFICATIONS DASHBOARD ======= -->
+
+
+<!-- ======= MY PROFILE ======= -->
+<section data-module-slug="my_profile"
+         data-module-group="My Profile"
+         data-module-name="My Profile"
+         data-module-icon="fa-user-circle"
+         data-module-category="Personal"
+         data-module-subtitle="Manage your photo, personal information and menu preference">
+
+  <article data-tab-slug="mp-overview"
+           data-tab-name="Overview"
+           data-tab-icon="fa-info-circle">
+    <h6 style="color:#667eea; font-weight:700;"><i class="fas fa-user-circle"></i> What is the My Profile page?</h6>
+    <p>My Profile is where you manage your personal account settings within Alivente Online. The page is split into <strong>three sections</strong>:</p>
+    <ul>
+      <li><strong style="color:#667eea;">Profile Photo</strong> &mdash; the picture (or initials) that represent you in the system</li>
+      <li><strong style="color:#667eea;">Personal Information</strong> &mdash; your name, email address and username</li>
+      <li><strong style="color:#667eea;">Menu Preference</strong> &mdash; how you want the navigation to appear (top bar or left sidebar)</li>
+    </ul>
+
+    <h6 style="color:#667eea; font-weight:700; margin-top:20px;"><i class="fas fa-id-badge"></i> The User Meta box</h6>
+    <p>Just below the page header you'll see a small grey box showing three pieces of read-only info:</p>
+    <ul>
+      <li><strong>Username</strong> &mdash; your login name</li>
+      <li><strong>Role</strong> &mdash; either <em>Superuser</em> (administrator) or <em>User</em></li>
+      <li><strong>Joined</strong> &mdash; the date your account was created</li>
+    </ul>
+    <p>These values cannot be changed from this page.</p>
+
+    <div class="alert alert-info" style="border-left:4px solid #667eea;">
+      <i class="fas fa-save"></i> <strong>One Save button covers everything:</strong> You can edit any combination of the three sections at once. A single click on <strong>Save Profile</strong> at the bottom commits all your changes together.
+    </div>
+  </article>
+
+  <article data-tab-slug="mp-photo"
+           data-tab-name="Profile Photo"
+           data-tab-icon="fa-camera">
+    <h6 style="color:#667eea; font-weight:700;"><i class="fas fa-camera"></i> What appears in your profile circle?</h6>
+    <p>The system follows a simple <strong>three-step fallback</strong> when deciding what to show in the round profile area:</p>
+
+    <div class="card mb-2" style="border-left:4px solid #667eea;">
+      <div class="card-body">
+        <h6 style="color:#667eea;"><strong>1. Uploaded photo</strong> <small>(takes priority)</small></h6>
+        <p class="mb-0">If you have uploaded a photo, it is shown. The photo overrides everything else.</p>
+      </div>
+    </div>
+
+    <div class="card mb-2" style="border-left:4px solid #667eea;">
+      <div class="card-body">
+        <h6 style="color:#667eea;"><strong>2. Initials from your name</strong></h6>
+        <p class="mb-0">If you have <strong>no photo</strong> but you have filled in <strong>both First Name and Last Name</strong> in Personal Information, the system shows your <strong>initials</strong> in the coloured circle &mdash; for example "Demetri Manias" becomes <code>DM</code>.</p>
+      </div>
+    </div>
+
+    <div class="card mb-3" style="border-left:4px solid #667eea;">
+      <div class="card-body">
+        <h6 style="color:#667eea;"><strong>3. First letter of your username</strong> <small>(fallback)</small></h6>
+        <p class="mb-0">If you have <strong>no photo</strong> and your name fields are <strong>incomplete</strong> (one or both blank), the system falls back to the <strong>first letter of your username</strong> &mdash; for example user <code>admin</code> shows as <code>A</code>.</p>
+      </div>
+    </div>
+
+    <div class="alert alert-info" style="border-left:4px solid #667eea;">
+      <i class="fas fa-magic"></i> <strong>Want initials instead of a photo?</strong> Don't upload anything &mdash; just fill in both First Name and Last Name in Personal Information and click Save. Your initials will appear automatically.
+    </div>
+
+    <h6 style="color:#667eea; font-weight:700; margin-top:25px;"><i class="fas fa-upload"></i> Uploading a photo</h6>
+    <div class="card mb-3" style="border-left:4px solid #667eea;">
+      <div class="card-body">
+        <p class="mb-1">Click the <strong>Upload Photo</strong> button to choose an image from your device. A preview appears immediately, but the photo is only saved once you click <strong>Save Profile</strong>.</p>
+        <p class="mb-1"><strong>Requirements:</strong></p>
+        <ul class="mb-0">
+          <li>Format: <strong>JPG, PNG or GIF</strong></li>
+          <li>Maximum size: <strong>2 MB</strong></li>
+          <li>Square images work best (the photo is shown as a circle)</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card mb-3" style="border-left:4px solid #dc3545;">
+      <div class="card-body">
+        <h6 style="color:#dc3545;"><i class="fas fa-trash"></i> <strong>Remove current photo</strong></h6>
+        <p class="mb-0">Once you have a photo uploaded, a <strong>Remove current photo</strong> checkbox appears beneath the upload button. Tick it and click <strong>Save Profile</strong> to revert back to the initials (or username letter) placeholder.</p>
+      </div>
+    </div>
+  </article>
+
+  <article data-tab-slug="mp-personal"
+           data-tab-name="Personal Info"
+           data-tab-icon="fa-user">
+    <h6 style="color:#667eea; font-weight:700;"><i class="fas fa-user"></i> Personal Information fields</h6>
+
+    <div class="card mb-3" style="border-left:4px solid #667eea;">
+      <div class="card-body">
+        <h6 style="color:#667eea;"><strong>First Name &amp; Last Name</strong></h6>
+        <p class="mb-1">Your full display name. These appear wherever your activity is shown in the system &mdash; for example next to expenses you've created or reports you've submitted.</p>
+        <p class="mb-0"><strong>Bonus:</strong> filling in both fields also generates your <strong>profile initials</strong> (e.g. <code>DM</code> for Demetri Manias) when you don't have a photo uploaded.</p>
+      </div>
+    </div>
+
+    <div class="card mb-3" style="border-left:4px solid #667eea;">
+      <div class="card-body">
+        <h6 style="color:#667eea;"><strong>Email Address</strong></h6>
+        <p class="mb-1">The email address linked to your account. This is important &mdash; it's the address that <strong>system notifications</strong> are sent to (when configured to do so in Notification Settings).</p>
+        <p class="mb-0">Keep this up to date. If your work email changes, update it here so you don't miss anything.</p>
+      </div>
+    </div>
+
+    <div class="card mb-3" style="border-left:4px solid #6c757d;">
+      <div class="card-body">
+        <h6 style="color:#6c757d;"><strong>Username</strong> <small>(read-only)</small></h6>
+        <p class="mb-0">Your login name, shown in grey because it cannot be changed from this page. Usernames are set once at account creation and need an administrator to change.</p>
+      </div>
+    </div>
+
+    <div class="alert alert-warning" style="border-left:4px solid #ffc107;">
+      <i class="fas fa-exclamation-triangle"></i> <strong>Need to change your username?</strong> Contact your system administrator. Username changes affect login credentials and aren't done lightly.
+    </div>
+  </article>
+
+  <article data-tab-slug="mp-menu"
+           data-tab-name="Menu Preference"
+           data-tab-icon="fa-columns">
+    <h6 style="color:#667eea; font-weight:700;"><i class="fas fa-columns"></i> Choosing your navigation style</h6>
+    <p>Alivente Online supports two navigation styles. Pick whichever suits your screen size and workflow &mdash; you can switch any time.</p>
+
+    <div class="card mb-3" style="border-left:4px solid #667eea;">
+      <div class="card-body">
+        <h6 style="color:#667eea;"><i class="fas fa-grip-horizontal"></i> <strong>Top Menu</strong> <small>(default)</small></h6>
+        <p class="mb-0">A horizontal navigation bar runs across the top of every page. Best for <strong>wider screens</strong> (laptops, desktops, large monitors) where you have plenty of horizontal space.</p>
+      </div>
+    </div>
+
+    <div class="card mb-3" style="border-left:4px solid #667eea;">
+      <div class="card-body">
+        <h6 style="color:#667eea;"><i class="fas fa-bars"></i> <strong>Sidebar</strong></h6>
+        <p class="mb-0">A collapsible menu sits on the left-hand side of the screen. Better for <strong>narrower screens</strong>, multi-window setups, or anyone who prefers a vertical menu they can hide when not needed.</p>
+      </div>
+    </div>
+
+    <div class="alert alert-info" style="border-left:4px solid #667eea;">
+      <i class="fas fa-sync-alt"></i> <strong>Your choice persists:</strong> Once you save, the menu style stays the same on every login from any device until you change it again.
+    </div>
+  </article>
+
+  <article data-tab-slug="mp-tips"
+           data-tab-name="Tips"
+           data-tab-icon="fa-lightbulb">
+    <h6 style="color:#667eea; font-weight:700;"><i class="fas fa-lightbulb"></i> Best Practices</h6>
+    <ul>
+      <li><strong>Fill in both First and Last Name</strong> &mdash; even if you don't want to upload a photo, completing both name fields gives you a tidy two-letter initial (e.g. <code>DM</code>) instead of a single username letter.</li>
+      <li><strong>Keep your email up to date</strong> &mdash; it's where notifications and system alerts are sent. An out-of-date email means you'll miss important updates.</li>
+      <li><strong>Upload a recognisable photo</strong> &mdash; especially useful for shared / team accounts so colleagues can quickly identify who's who.</li>
+      <li><strong>Use a square photo</strong> &mdash; the photo is displayed inside a circular frame, so square images crop best. Portrait or landscape photos may have parts cut off.</li>
+      <li><strong>Pick the menu that fits your screen</strong> &mdash; Top Menu works well on a 27-inch desktop monitor, while Sidebar is more comfortable on a narrow laptop or when you have multiple windows side-by-side.</li>
+      <li><strong>Always click Save Profile</strong> &mdash; changes aren't applied until you save. Clicking <strong>Cancel</strong> or <strong>Back</strong> discards anything you've edited but not saved.</li>
+    </ul>
+
+    <div class="alert alert-warning" style="border-left:4px solid #ffc107;">
+      <i class="fas fa-exclamation-triangle"></i> <strong>Photo not uploading?</strong> Check that the file is under <strong>2 MB</strong> and in <strong>JPG, PNG or GIF</strong> format. Other formats (HEIC, BMP, TIFF, etc.) won't be accepted.
+    </div>
+  </article>
+
+</section>
+<!-- ======= END MY PROFILE ======= -->
+
+
+<!-- ======= ADMINISTRATION LANDING PAGE ======= -->
+<section data-module-slug="admin_apms"
+         data-module-group="Administration"
+         data-module-permission="can_access_administration"
+         data-module-name="Administration"
+         data-module-icon="fa-cogs"
+         data-module-category="Administration"
+         data-module-subtitle="Functional and system tools for managing the application">
+
+  <article data-tab-slug="ad-overview"
+           data-tab-name="Overview"
+           data-tab-icon="fa-info-circle">
+    <h6 style="color:#17a2b8; font-weight:700;"><i class="fas fa-cogs"></i> What is the Administration page?</h6>
+    <p>Administration is the central hub for <strong>property-document workflows</strong> and <strong>system-wide settings</strong>. The page is split into two tabs:</p>
+    <ul>
+      <li><strong style="color:#17a2b8;">Functional</strong> &mdash; day-to-day property document tasks: lease agreements, title deeds and invoice generation.</li>
+      <li><strong style="color:#6c757d;">System</strong> &mdash; account and application settings: user management and menu preference.</li>
+    </ul>
+
+    <h6 style="color:#17a2b8; font-weight:700; margin-top:20px;"><i class="fas fa-envelope"></i> The Notifications button</h6>
+    <p>The <strong>Notifications</strong> button (top-right) takes you to <strong>Administration Notification Settings</strong>, where you configure who receives operational emails &mdash; daily property reports, invoice and expense alerts, the Friday Status Report, and so on.</p>
+
+    <div class="alert alert-warning" style="border-left:4px solid #ffc107;">
+      <i class="fas fa-shield-alt"></i> <strong>Superuser only:</strong> The Administration tabs and cards are visible only to <strong>Superuser</strong> accounts. Regular users see the Alivente logo on this page instead.
+    </div>
+  </article>
+
+  <article data-tab-slug="ad-functional"
+           data-tab-name="Functional"
+           data-tab-icon="fa-building">
+    <h6 style="color:#17a2b8; font-weight:700;"><i class="fas fa-building"></i> Functional cards</h6>
+    <p>Four cards covering lease, deed and invoice document workflows:</p>
+
+    <div class="card mb-3" style="border-left:4px solid #17a2b8;">
+      <div class="card-body">
+        <h6 style="color:#17a2b8;"><i class="fas fa-file-contract"></i> <strong>Manage Lease Agreements</strong></h6>
+        <p class="mb-1">Opens the <em>Tenant Lease Agreements &mdash; Upload / View / Delete</em> page, listing every tenant lease with its property, start and end date.</p>
+        <ul class="mb-0">
+          <li><strong>View</strong> &mdash; opens the uploaded lease PDF</li>
+          <li><strong>Upload</strong> &mdash; appears when no lease is on file yet</li>
+          <li><strong>Delete</strong> &mdash; removes an uploaded lease document</li>
+          <li>End dates shown in <span style="color:#dc3545;"><strong>red</strong></span> are expired</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card mb-3" style="border-left:4px solid #17a2b8;">
+      <div class="card-body">
+        <h6 style="color:#17a2b8;"><i class="fas fa-plus-circle"></i> <strong>Generate Lease Agreement</strong></h6>
+        <p class="mb-1">A 3-step wizard that <strong>generates a new lease document from scratch</strong> using pre-defined templates with placeholders.</p>
+        <ul class="mb-1">
+          <li><strong>Step 1</strong> &mdash; pick the <strong>Country</strong> (Cyprus, Spain or Greece) and <strong>Language</strong> (English or Greek)</li>
+          <li><strong>Step 2</strong> &mdash; select the <strong>Property</strong> and <strong>Tenant</strong>, then complete additional data: passport / ID, lease terms (rent, deposit, dates, communal expenses, extension, rental increase), landlord information, amenities, furniture &amp; appliances, and keys provided</li>
+          <li><strong>Step 3</strong> &mdash; click <strong>Generate Lease Agreement</strong> to produce the final document</li>
+        </ul>
+        <p class="mb-0"><small class="text-muted">A second tenant can be added in Step 2 via <em>+ Add Second Tenant</em>.</small></p>
+      </div>
+    </div>
+
+    <div class="card mb-3" style="border-left:4px solid #17a2b8;">
+      <div class="card-body">
+        <h6 style="color:#17a2b8;"><i class="fas fa-scroll"></i> <strong>Manage Title Deeds</strong></h6>
+        <p class="mb-0">Opens the <em>Property Title Deeds &mdash; Upload / View / Delete</em> page, listing every property with its address, year, area and status. Same Upload / View / Delete pattern as the lease agreements page, but for property title deed documents.</p>
+      </div>
+    </div>
+
+    <div class="card mb-3" style="border-left:4px solid #17a2b8;">
+      <div class="card-body">
+        <h6 style="color:#17a2b8;"><i class="fas fa-file-invoice"></i> <strong>Generate Invoices</strong></h6>
+        <p class="mb-1">Tenant invoices are <strong>automatically generated on the 1st of every month</strong>. You normally don't need to do anything &mdash; just check that they appear.</p>
+        <p class="mb-0">Use this card when you need to <strong>generate invoices on the fly</strong> &mdash; for example, if the automatic run was missed for any reason, or you've added a new tenant mid-month and need their invoice straight away. The system only creates invoices that haven't already been generated, so it's safe to click any time.</p>
+      </div>
+    </div>
+
+    <div class="alert alert-info" style="border-left:4px solid #17a2b8;">
+      <i class="fas fa-info-circle"></i> <strong>Tip:</strong> The Notifications Dashboard shows <strong>Overdue Invoices</strong> at a glance &mdash; a quick way to confirm the automatic monthly run did its job.
+    </div>
+  </article>
+
+  <article data-tab-slug="ad-system"
+           data-tab-name="System"
+           data-tab-icon="fa-cog">
+    <h6 style="color:#6c757d; font-weight:700;"><i class="fas fa-cog"></i> System cards</h6>
+    <p>Four cards (two active, two reserved for the future) covering account and application settings:</p>
+
+    <div class="card mb-3" style="border-left:4px solid #6c757d;">
+      <div class="card-body">
+        <h6 style="color:#6c757d;"><i class="fas fa-users-cog"></i> <strong>User Administration</strong></h6>
+        <p class="mb-1">Manage the people who can log into the system. From here you can:</p>
+        <ul class="mb-0">
+          <li><strong>Add User</strong> &mdash; create a new user with first/last name, username, email, password, role (User or Superuser) and active status</li>
+          <li><strong>Edit</strong> (yellow pencil) &mdash; update an existing user's details</li>
+          <li><strong>Permissions</strong> (teal key) &mdash; grant or revoke access to individual modules (Properties, Tenants, Suppliers, etc.). Superusers have automatic full access &mdash; their permissions cannot be changed.</li>
+          <li><strong>Disable</strong> (red icon) &mdash; prevent a user from logging in (without deleting them)</li>
+          <li><strong>Re-enable</strong> (green tick) &mdash; restore access to a previously disabled user</li>
+          <li><strong>Delete</strong> (red trash) &mdash; permanently remove a user (only available for disabled users)</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card mb-3" style="border-left:4px solid #6c757d;">
+      <div class="card-body">
+        <h6 style="color:#6c757d;"><i class="fas fa-columns"></i> <strong>Menu Preference</strong></h6>
+        <p class="mb-0">A shortcut to your <strong>My Profile</strong> page where you can switch between the <em>Top Menu</em> and <em>Sidebar</em> navigation styles.</p>
+      </div>
+    </div>
+
+    <div class="card mb-3" style="border-left:4px solid #adb5bd;">
+      <div class="card-body">
+        <h6 style="color:#6c757d;"><i class="fas fa-clock"></i> <strong>Coming Soon</strong> <small>(&times; 2)</small></h6>
+        <p class="mb-0">Two greyed-out placeholders reserved for upcoming system features. They are not clickable today.</p>
+      </div>
+    </div>
+  </article>
+
+  <article data-tab-slug="ad-tips"
+           data-tab-name="Tips"
+           data-tab-icon="fa-lightbulb">
+    <h6 style="color:#17a2b8; font-weight:700;"><i class="fas fa-lightbulb"></i> Best Practices</h6>
+    <ul>
+      <li><strong>Check invoices on the 2nd</strong> &mdash; if the 1st-of-month auto-run didn't fire for any reason, click <strong>Generate Invoices</strong> on the 2nd. The system only creates ones that don't already exist, so clicking it is always safe.</li>
+      <li><strong>Use Generate Lease Agreement for consistency</strong> &mdash; the template-based wizard ensures every lease has the same structure, language and required fields. Manually drafted leases drift over time.</li>
+      <li><strong>Keep Title Deeds and Lease Agreements up to date</strong> &mdash; these are the legal anchors of every property and tenancy. Upload as soon as you receive the signed document.</li>
+      <li><strong>Configure Notifications first</strong> &mdash; before relying on alerts (overdue invoices, expense approvals, daily reports), use the Notifications button to set the right TO / CC recipients in Administration Notification Settings.</li>
+      <li><strong>Disable rather than delete users</strong> &mdash; if someone leaves, disable their account. You can always re-enable later. Delete is only available for disabled users for that reason.</li>
+      <li><strong>Don't bother editing Superuser permissions</strong> &mdash; Superusers automatically have full access to every module. Module checkboxes for Superusers are read-only and ignored.</li>
+      <li><strong>End dates in red mean expired</strong> &mdash; on the Manage Lease Agreements page, any end date shown in red is a lease that has already ended. Renew or close out promptly.</li>
+    </ul>
+
+    <div class="alert alert-warning" style="border-left:4px solid #ffc107;">
+      <i class="fas fa-exclamation-triangle"></i> <strong>If invoices didn't generate automatically:</strong> Check your scheduled job logs first. Then click <strong>Generate Invoices</strong> to create any missing invoices on the fly. If invoices still don't appear, check that the tenant has an active lease covering the current month.
+    </div>
+  </article>
+
+</section>
+<!-- ======= END ADMINISTRATION LANDING PAGE ======= -->
+
+
+<!-- ======= GENERATE LEASE AGREEMENT ======= -->
+<section data-module-slug="generate_lease_agreement"
+         data-module-group="Administration"
+         data-module-parent="Administration"
+         data-module-permission="can_access_administration"
+         data-module-name="Generate Lease Agreement"
+         data-module-icon="fa-file-contract"
+         data-module-category="Functional"
+         data-module-subtitle="A 3-step wizard for creating template-based lease agreements">
+
+  <article data-tab-slug="gl-overview"
+           data-tab-name="Overview"
+           data-tab-icon="fa-info-circle">
+    <h6 style="color:#17a2b8; font-weight:700;"><i class="fas fa-file-contract"></i> What is Generate Lease Agreement?</h6>
+    <p>This page is a <strong>3-step wizard</strong> that produces a fully-formed lease agreement document from a pre-defined template. You pick a country, language, property and tenant; complete the details; and the system fills the template's placeholders with the data you've supplied.</p>
+
+    <h6 style="color:#17a2b8; font-weight:700; margin-top:20px;"><i class="fas fa-list-ol"></i> The 3 steps</h6>
+    <ol>
+      <li><strong>Step 1 &mdash; Country &amp; Language</strong> &mdash; choose the jurisdiction and language for the agreement</li>
+      <li><strong>Step 2 &mdash; Property &amp; Tenant</strong> &mdash; pick the property and either an existing tenant or create a brand-new one. Complete all the lease details in a popup data form.</li>
+      <li><strong>Step 3 &mdash; Generate</strong> &mdash; click the button and the document is produced</li>
+    </ol>
+    <p>Each step only becomes available once the previous step is complete. You can't skip ahead.</p>
+
+    <div class="alert alert-info" style="border-left:4px solid #17a2b8;">
+      <i class="fas fa-magic"></i> <strong>Why template-based?</strong> Templates ensure every lease has the same structure, legal language and required clauses. Manually drafted leases drift over time &mdash; with templates, every tenancy is consistent and audit-ready.
+    </div>
+
+    <div class="alert alert-warning" style="border-left:4px solid #ffc107;">
+      <i class="fas fa-shield-alt"></i> <strong>Superuser only:</strong> Only Superuser accounts can generate lease agreements. Regular users see the Alivente logo on this page.
+    </div>
+  </article>
+
+  <article data-tab-slug="gl-steps"
+           data-tab-name="Steps 1 &amp; 2"
+           data-tab-icon="fa-list-ol">
+
+    <div class="card mb-3" style="border-left:4px solid #17a2b8;">
+      <div class="card-body">
+        <h6 style="color:#17a2b8;"><i class="fas fa-globe-americas"></i> <strong>Step 1: Country &amp; Language</strong></h6>
+        <p class="mb-1"><strong>Country</strong> options:</p>
+        <ul class="mb-2">
+          <li><strong>Cyprus</strong> &mdash; available now</li>
+          <li><strong>Greece</strong> &mdash; available now</li>
+          <li><strong>Spain</strong> &mdash; coming soon (greyed out)</li>
+        </ul>
+        <p class="mb-1"><strong>Language</strong> options depend on the country chosen:</p>
+        <ul class="mb-1">
+          <li><strong>Cyprus</strong> &rarr; English or Greek</li>
+          <li><strong>Greece</strong> &rarr; Greek</li>
+          <li><strong>Spain</strong> &rarr; Spanish (when launched)</li>
+        </ul>
+        <p class="mb-0">Once both are selected, the <em>Selected:</em> confirmation banner appears and Step 2 reveals itself.</p>
+      </div>
+    </div>
+
+    <div class="card mb-3" style="border-left:4px solid #17a2b8;">
+      <div class="card-body">
+        <h6 style="color:#17a2b8;"><i class="fas fa-home"></i> <strong>Step 2: Property &amp; Tenant</strong></h6>
+        <p class="mb-2"><strong>Property dropdown</strong> &mdash; only shows properties located in the country chosen in Step 1.</p>
+        <p class="mb-2"><strong>Tenant dropdown</strong> &mdash; shows two kinds of options:</p>
+        <ul class="mb-2">
+          <li><strong>Existing tenants</strong> &mdash; only those already associated with the selected property</li>
+          <li><strong>+ New Tenant</strong> &mdash; a special option to create a brand-new tenant on the fly (collected in the data modal)</li>
+        </ul>
+        <p class="mb-2">Once both are picked, a <strong>Selected Data Preview</strong> appears summarising what you've chosen, plus a <strong>Review &amp; Complete Data</strong> button.</p>
+        <p class="mb-0">Clicking that button opens the <strong>Complete Lease Agreement Data</strong> modal &mdash; the bulk of the work. See the <em>Lease Data Modal</em> tab for what's inside.</p>
+      </div>
+    </div>
+
+    <div class="alert alert-info" style="border-left:4px solid #17a2b8;">
+      <i class="fas fa-info-circle"></i> <strong>Order matters:</strong> Country must be picked before properties are filtered, and property must be picked before tenants are filtered. Changing an earlier selection resets later ones.
+    </div>
+  </article>
+
+  <article data-tab-slug="gl-modal"
+           data-tab-name="Lease Data Modal"
+           data-tab-icon="fa-edit">
+    <h6 style="color:#17a2b8; font-weight:700;"><i class="fas fa-edit"></i> The Complete Lease Agreement Data modal</h6>
+    <p>This is where you enter every detail that goes into the lease document. The modal has several sections:</p>
+
+    <div class="card mb-2" style="border-left:4px solid #17a2b8;">
+      <div class="card-body" style="padding:12px 15px;">
+        <h6 style="margin:0 0 5px 0;"><strong>Property Information &amp; Tenant Information</strong> <small class="text-muted">(read-only)</small></h6>
+        <p class="mb-0" style="font-size:13px;">Two side-by-side cards showing the data the system already knows about your selected property and tenant. The Tenant card has an <strong>+ Add Second Tenant</strong> button (Individual tenants only).</p>
+      </div>
+    </div>
+
+    <div class="card mb-2" style="border-left:4px solid #17a2b8;">
+      <div class="card-body" style="padding:12px 15px;">
+        <h6 style="margin:0 0 5px 0;"><strong>Additional Information Required</strong></h6>
+        <p class="mb-0" style="font-size:13px;">For an existing <em>Individual</em> tenant: Passport/ID Number + Country. For an existing <em>Company</em> tenant: Company Registration Number. (For new tenants, these fields appear in the New Tenant section instead.)</p>
+      </div>
+    </div>
+
+    <div class="card mb-2" style="border-left:4px solid #ffc107;">
+      <div class="card-body" style="padding:12px 15px;">
+        <h6 style="margin:0 0 5px 0;"><strong>New Tenant Information</strong> <small class="text-muted">(only if you chose "+ New Tenant")</small></h6>
+        <p class="mb-0" style="font-size:13px;">All the fields needed to create the tenant from scratch &mdash; type (Individual/Company), name, email, phone, address, and the type-specific fields. The new tenant gets added to your tenant list as part of the lease generation.</p>
+      </div>
+    </div>
+
+    <div class="card mb-2" style="border-left:4px solid #28a745;">
+      <div class="card-body" style="padding:12px 15px;">
+        <h6 style="margin:0 0 5px 0;"><strong>Second Tenant Information</strong> <small class="text-muted">(Individual only)</small></h6>
+        <p class="mb-0" style="font-size:13px;">Co-signatory tenant. Same passport/ID, contact and address fields as the primary. See the <em>Tenant Types</em> tab for the rules.</p>
+      </div>
+    </div>
+
+    <div class="card mb-2" style="border-left:4px solid #17a2b8;">
+      <div class="card-body" style="padding:12px 15px;">
+        <h6 style="margin:0 0 5px 0;"><strong>Lease Terms</strong></h6>
+        <p class="mb-1" style="font-size:13px;">Start Date, End Date, Monthly Rent (€), Security Deposit (€), Communal Expenses (€), Extension Period (months), Extension Date, Rental Increase (%).</p>
+        <p class="mb-0" style="font-size:13px;"><strong>Extension Date is auto-calculated</strong> from End Date + Extension Period (rounded to end of month). Communal Expenses, Extension Period and Rental Increase default to <code>0</code> &mdash; leave them as zero if not applicable.</p>
+      </div>
+    </div>
+
+    <div class="card mb-2" style="border-left:4px solid #17a2b8;">
+      <div class="card-body" style="padding:12px 15px;">
+        <h6 style="margin:0 0 5px 0;"><strong>Landlord Information</strong></h6>
+        <p class="mb-0" style="font-size:13px;">Pre-filled with your default landlord details (Alivente Limited, Demetri Manias, etc.). Edit only if a particular lease has a different landlord.</p>
+      </div>
+    </div>
+
+    <div class="card mb-2" style="border-left:4px solid #17a2b8;">
+      <div class="card-body" style="padding:12px 15px;">
+        <h6 style="margin:0 0 5px 0;"><strong>Amenities</strong></h6>
+        <p class="mb-0" style="font-size:13px;">Two checkboxes &mdash; <strong>Parking</strong> and <strong>Storeroom</strong>. Tick whichever applies to this property.</p>
+      </div>
+    </div>
+
+    <div class="card mb-2" style="border-left:4px solid #17a2b8;">
+      <div class="card-body" style="padding:12px 15px;">
+        <h6 style="margin:0 0 5px 0;"><strong>Furniture and Appliances</strong></h6>
+        <p class="mb-1" style="font-size:13px;">Quantity inputs (0&ndash;9) for every item across <strong>Kitchen, Lounge / Dining, Bedroom, General</strong> and <strong>Balcony</strong>. Records exactly what comes with the property at handover.</p>
+        <p class="mb-0" style="font-size:13px;">A <strong>Fully Furnished</strong> shortcut checkbox sits at the top right of the section &mdash; useful when the property includes the standard fully-furnished bundle.</p>
+      </div>
+    </div>
+
+    <div class="card mb-3" style="border-left:4px solid #17a2b8;">
+      <div class="card-body" style="padding:12px 15px;">
+        <h6 style="margin:0 0 5px 0;"><strong>Keys Provided</strong></h6>
+        <p class="mb-0" style="font-size:13px;">Quantity inputs for Apartment Building Key, Apartment Front Door Key, Storeroom Key and Post Box Key. Records what physical keys are handed to the tenant.</p>
+      </div>
+    </div>
+
+    <div class="alert alert-info" style="border-left:4px solid #17a2b8;">
+      <i class="fas fa-save"></i> <strong>Save &amp; Continue</strong> validates every required field. If anything is missing you'll get a popup telling you which field &mdash; the modal stays open until everything checks out, at which point Step 3 unlocks.
+    </div>
+  </article>
+
+  <article data-tab-slug="gl-tenants"
+           data-tab-name="Tenant Types"
+           data-tab-icon="fa-users">
+    <h6 style="color:#17a2b8; font-weight:700;"><i class="fas fa-users"></i> Individual vs Company tenants</h6>
+    <p>Tenants come in two types. The data the system needs differs for each.</p>
+
+    <div class="card mb-3" style="border-left:4px solid #17a2b8;">
+      <div class="card-body">
+        <h6 style="color:#17a2b8;"><i class="fas fa-user"></i> <strong>Individual</strong></h6>
+        <p class="mb-1"><strong>Required fields:</strong> Passport/ID Number, Passport/ID Country, plus standard contact details.</p>
+        <p class="mb-0"><strong>Second tenant:</strong> Allowed. The <em>+ Add Second Tenant</em> button appears in the Tenant Information panel.</p>
+      </div>
+    </div>
+
+    <div class="card mb-3" style="border-left:4px solid #17a2b8;">
+      <div class="card-body">
+        <h6 style="color:#17a2b8;"><i class="fas fa-building"></i> <strong>Company</strong></h6>
+        <p class="mb-1"><strong>Required fields:</strong> Company Registration Number, Contact Person, plus standard contact details.</p>
+        <p class="mb-0"><strong>Second tenant:</strong> NOT allowed. The Add Second Tenant button is hidden for Company tenants.</p>
+      </div>
+    </div>
+
+    <h6 style="color:#17a2b8; font-weight:700; margin-top:20px;"><i class="fas fa-user-plus"></i> Second Tenant rules</h6>
+    <ul>
+      <li><strong>Individual tenants only</strong> &mdash; you cannot add a second tenant to a Company-type primary tenant.</li>
+      <li>Second tenants are always treated as <strong>Individuals</strong> (no Company option).</li>
+      <li><strong>All fields required</strong> &mdash; name, passport/ID, email, phone, address.</li>
+      <li>Click the <strong>Remove</strong> button on the green Second Tenant header to clear it &mdash; all fields are reset.</li>
+    </ul>
+
+    <div class="alert alert-warning" style="border-left:4px solid #ffc107;">
+      <i class="fas fa-exclamation-triangle"></i> <strong>Switching from Individual to Company:</strong> If you have a second tenant added and try to change the primary tenant type to Company, the system blocks the switch and asks you to remove the second tenant first.
+    </div>
+  </article>
+
+  <article data-tab-slug="gl-tips"
+           data-tab-name="Tips"
+           data-tab-icon="fa-lightbulb">
+    <h6 style="color:#17a2b8; font-weight:700;"><i class="fas fa-lightbulb"></i> Best Practices</h6>
+    <ul>
+      <li><strong>Have everything ready before starting</strong> &mdash; passport numbers, monthly rent, deposit amount, dates. The wizard validates every required field before allowing Save.</li>
+      <li><strong>Double-check the Country</strong> &mdash; it filters which properties appear in Step 2 and which language template gets used. Choose wrong and you'll see no properties.</li>
+      <li><strong>Review the Selected Data Preview</strong> &mdash; before clicking <em>Review &amp; Complete Data</em>, sanity-check that the property and tenant on screen are the right ones.</li>
+      <li><strong>Use 0 for "not applicable"</strong> &mdash; Communal Expenses, Extension Period and Rental Increase all need a number. Enter <code>0</code> rather than leaving them blank.</li>
+      <li><strong>Extension Date auto-calculates</strong> &mdash; the field updates whenever you change End Date or Extension Period. You can't edit it manually.</li>
+      <li><strong>Update Landlord defaults if your standard landlord changes</strong> &mdash; the pre-filled Alivente Limited details apply unless you overwrite them per lease.</li>
+      <li><strong>Furniture quantities cap at 9</strong> &mdash; if you somehow have 10 of something, record it as 9 and add a note to the property file.</li>
+      <li><strong>Validation alerts pause the flow</strong> &mdash; if Save &amp; Continue throws an alert about a missing field, the modal stays open. Fix the field and try again.</li>
+      <li><strong>Once generated, manage it elsewhere</strong> &mdash; the generated lease shows up under <strong>Manage Lease Agreements</strong>. Use that page to view, replace or delete the document later.</li>
+      <li><strong>Generating creates the tenant if "+ New Tenant" was used</strong> &mdash; the new tenant record is added to your system as part of the generation, not before.</li>
+    </ul>
+
+    <div class="alert alert-warning" style="border-left:4px solid #ffc107;">
+      <i class="fas fa-exclamation-triangle"></i> <strong>Generate button stuck disabled?</strong> All four conditions must be true: Country selected, Language selected, Property selected, Tenant selected, AND the <em>Save &amp; Continue</em> step in the data modal completed without validation errors. If any one is missing, the button stays grey.
+    </div>
+  </article>
+
+</section>
+<!-- ======= END GENERATE LEASE AGREEMENT ======= -->
+
+
+<!-- ======= USER ADMINISTRATION ======= -->
+<section data-module-slug="user_administration"
+         data-module-group="Administration"
+         data-module-parent="Administration"
+         data-module-permission="can_access_administration"
+         data-module-name="User Administration"
+         data-module-icon="fa-users-cog"
+         data-module-category="System"
+         data-module-subtitle="Manage system users, roles, permissions and account status">
+
+  <article data-tab-slug="ua-overview"
+           data-tab-name="Overview"
+           data-tab-icon="fa-info-circle">
+    <h6 style="color:#667eea; font-weight:700;"><i class="fas fa-users-cog"></i> What is User Administration?</h6>
+    <p>User Administration is the central place to manage <strong>everyone who can log into Alivente Online</strong>. From this single screen you can:</p>
+    <ul>
+      <li><strong>Add</strong> new users</li>
+      <li><strong>Edit</strong> existing user details (name, email, role, password)</li>
+      <li><strong>Manage permissions</strong> &mdash; grant or revoke access to individual modules</li>
+      <li><strong>Disable</strong> users so they can no longer log in (without losing their data)</li>
+      <li><strong>Re-enable</strong> previously disabled users</li>
+      <li><strong>Delete</strong> users permanently (only available once disabled)</li>
+    </ul>
+
+    <h6 style="color:#667eea; font-weight:700; margin-top:20px;"><i class="fas fa-route"></i> How to get here</h6>
+    <p>Administration <i class="fas fa-arrow-right"></i> System tab <i class="fas fa-arrow-right"></i> User Administration card.</p>
+
+    <div class="alert alert-warning" style="border-left:4px solid #ffc107;">
+      <i class="fas fa-shield-alt"></i> <strong>Superuser only:</strong> User Administration sits inside the Administration page, which is itself Superuser-only. Regular users cannot reach this screen.
+    </div>
+  </article>
+
+  <article data-tab-slug="ua-table"
+           data-tab-name="The User Table"
+           data-tab-icon="fa-table">
+    <h6 style="color:#667eea; font-weight:700;"><i class="fas fa-table"></i> The user table</h6>
+    <p>Every registered user appears as one row, with six columns:</p>
+
+    <div class="card mb-2" style="border-left:4px solid #667eea;">
+      <div class="card-body" style="padding:12px 15px;">
+        <h6 style="margin:0 0 5px 0;"><strong>User</strong></h6>
+        <p class="mb-0" style="font-size:13px;">A circular avatar (uploaded photo if available, otherwise the user's initials, or as a final fallback the first letter of the username), the user's full name, and their email address. "No email" is shown if none was set.</p>
+      </div>
+    </div>
+
+    <div class="card mb-2" style="border-left:4px solid #667eea;">
+      <div class="card-body" style="padding:12px 15px;">
+        <h6 style="margin:0 0 5px 0;"><strong>Role</strong></h6>
+        <p class="mb-0" style="font-size:13px;">A coloured badge: <span style="background:#667eea; color:white; padding:3px 8px; border-radius:10px; font-size:11px; font-weight:600; display:inline-block;"><i class="fas fa-crown"></i> Superuser</span> or <span style="background:#6c757d; color:white; padding:3px 8px; border-radius:10px; font-size:11px; font-weight:600; display:inline-block;"><i class="fas fa-user"></i> User</span>. See the Roles tab for what each one means.</p>
+      </div>
+    </div>
+
+    <div class="card mb-2" style="border-left:4px solid #667eea;">
+      <div class="card-body" style="padding:12px 15px;">
+        <h6 style="margin:0 0 5px 0;"><strong>Status</strong></h6>
+        <p class="mb-0" style="font-size:13px;"><span style="color:#28a745;"><i class="fas fa-circle" style="font-size:8px;"></i> <strong>Active</strong></span> &mdash; can log in. <span style="color:#dc3545;"><i class="fas fa-circle" style="font-size:8px;"></i> <strong>Disabled</strong></span> &mdash; account exists but login is blocked.</p>
+      </div>
+    </div>
+
+    <div class="card mb-2" style="border-left:4px solid #667eea;">
+      <div class="card-body" style="padding:12px 15px;">
+        <h6 style="margin:0 0 5px 0;"><strong>Last Login</strong></h6>
+        <p class="mb-0" style="font-size:13px;">Date and time of the user's most recent login. Shows <em>Never</em> in grey if they've never signed in.</p>
+      </div>
+    </div>
+
+    <div class="card mb-2" style="border-left:4px solid #667eea;">
+      <div class="card-body" style="padding:12px 15px;">
+        <h6 style="margin:0 0 5px 0;"><strong>Date Joined</strong></h6>
+        <p class="mb-0" style="font-size:13px;">When the user account was originally created.</p>
+      </div>
+    </div>
+
+    <div class="card mb-3" style="border-left:4px solid #667eea;">
+      <div class="card-body" style="padding:12px 15px;">
+        <h6 style="margin:0 0 5px 0;"><strong>Actions</strong></h6>
+        <p class="mb-0" style="font-size:13px;">A row of small coloured buttons. The button set changes depending on whether the user is Active or Disabled &mdash; see the Actions tab.</p>
+      </div>
+    </div>
+  </article>
+
+  <article data-tab-slug="ua-roles"
+           data-tab-name="Roles"
+           data-tab-icon="fa-id-badge">
+    <h6 style="color:#667eea; font-weight:700;"><i class="fas fa-id-badge"></i> The two roles</h6>
+    <p>Every user has one role, shown as a coloured badge in the User table.</p>
+
+    <div class="card mb-3" style="border-left:4px solid #667eea;">
+      <div class="card-body">
+        <h6><span style="background:#667eea; color:white; padding:3px 8px; border-radius:10px; font-size:11px; font-weight:600;"><i class="fas fa-crown"></i> Superuser</span></h6>
+        <p class="mb-0">Full administrative access. Superusers <strong>automatically</strong> have access to every module &mdash; the Permissions screen for a Superuser is informational only and any module checkboxes are ignored. Use sparingly &mdash; this role can do everything, including managing other users.</p>
+      </div>
+    </div>
+
+    <div class="card mb-3" style="border-left:4px solid #6c757d;">
+      <div class="card-body">
+        <h6><span style="background:#6c757d; color:white; padding:3px 8px; border-radius:10px; font-size:11px; font-weight:600;"><i class="fas fa-user"></i> User</span></h6>
+        <p class="mb-0">Standard access &mdash; the default role for new accounts. Module access is fully controlled by the Permissions screen.</p>
+      </div>
+    </div>
+
+    <div class="alert alert-info" style="border-left:4px solid #667eea;">
+      <i class="fas fa-info-circle"></i> <strong>Choosing a role:</strong> Default everyone to <strong>User</strong> and grant only the modules they need via Permissions. Reserve <strong>Superuser</strong> for the small number of people who genuinely need to administer the whole system.
+    </div>
+  </article>
+
+  <article data-tab-slug="ua-actions"
+           data-tab-name="Actions"
+           data-tab-icon="fa-tools">
+    <h6 style="color:#667eea; font-weight:700;"><i class="fas fa-tools"></i> Available actions</h6>
+    <p>One header action and a set of per-user row actions.</p>
+
+    <div class="card mb-3" style="border-left:4px solid #28a745;">
+      <div class="card-body">
+        <h6 style="color:#28a745;"><i class="fas fa-user-plus"></i> <strong>Add User</strong> <small class="text-muted">(top-right)</small></h6>
+        <p class="mb-1">Opens the <em>Add New User</em> form, which collects:</p>
+        <ul class="mb-0">
+          <li><strong>Personal Information</strong> &mdash; First Name, Last Name, Username (required), Email Address</li>
+          <li><strong>Password</strong> &mdash; Password and Confirm Password (must match)</li>
+          <li><strong>Role &amp; Status</strong> &mdash; pick <strong>User</strong> or <strong>Superuser</strong>, and tick <em>Active</em> so they can log in immediately</li>
+        </ul>
+      </div>
+    </div>
+
+    <h6 style="color:#667eea; font-weight:700; margin-top:25px;">Per-user row actions</h6>
+
+    <div class="card mb-2" style="border-left:4px solid #ffc107;">
+      <div class="card-body" style="padding:12px 15px;">
+        <h6 style="margin:0 0 5px 0; color:#856404;"><i class="fas fa-pencil-alt"></i> <strong>Edit</strong> <small class="text-muted">(yellow)</small></h6>
+        <p class="mb-0" style="font-size:13px;">Update the user's name, email, role or password. Always available regardless of status.</p>
+      </div>
+    </div>
+
+    <div class="card mb-2" style="border-left:4px solid #17a2b8;">
+      <div class="card-body" style="padding:12px 15px;">
+        <h6 style="margin:0 0 5px 0; color:#17a2b8;"><i class="fas fa-key"></i> <strong>Permissions</strong> <small class="text-muted">(teal)</small></h6>
+        <p class="mb-1" style="font-size:13px;">Opens the Permissions screen, where you tick which of the 12 modules the user can access (Properties, Tenants, Suppliers, Expenses, Petty Cash, Financials, Invoices, Projects, Issues, Dashboard, Administration, Personal).</p>
+        <p class="mb-0" style="font-size:13px;"><strong>Superusers automatically get all 12</strong> &mdash; the checkboxes are read-only for Superuser accounts.</p>
+      </div>
+    </div>
+
+    <div class="card mb-2" style="border-left:4px solid #dc3545;">
+      <div class="card-body" style="padding:12px 15px;">
+        <h6 style="margin:0 0 5px 0; color:#dc3545;"><i class="fas fa-ban"></i> <strong>Disable</strong> <small class="text-muted">(red, only for Active users)</small></h6>
+        <p class="mb-0" style="font-size:13px;">Blocks the user from logging in. Their account and data remain intact &mdash; nothing is lost. A confirmation popup asks you to confirm before applying.</p>
+      </div>
+    </div>
+
+    <div class="card mb-2" style="border-left:4px solid #28a745;">
+      <div class="card-body" style="padding:12px 15px;">
+        <h6 style="margin:0 0 5px 0; color:#28a745;"><i class="fas fa-check"></i> <strong>Enable</strong> <small class="text-muted">(green, only for Disabled users)</small></h6>
+        <p class="mb-0" style="font-size:13px;">Restores login access for a previously disabled user. Replaces the Disable button on disabled rows.</p>
+      </div>
+    </div>
+
+    <div class="card mb-2" style="border-left:4px solid #dc3545;">
+      <div class="card-body" style="padding:12px 15px;">
+        <h6 style="margin:0 0 5px 0; color:#dc3545;"><i class="fas fa-trash"></i> <strong>Delete</strong> <small class="text-muted">(red, only for Disabled users)</small></h6>
+        <p class="mb-1" style="font-size:13px;"><strong>Permanently removes the user and all their associated data</strong> &mdash; meal plans, favourites and any other records. Cannot be undone.</p>
+        <p class="mb-0" style="font-size:13px;">Only available for users who are already disabled. The two-step requirement (Disable first, then Delete) is intentional &mdash; it forces a deliberate pause before destructive action.</p>
+      </div>
+    </div>
+
+    <div class="alert alert-info" style="border-left:4px solid #667eea;">
+      <i class="fas fa-info-circle"></i> <strong>Action button visibility:</strong> Active users show <em>Edit, Permissions, Disable</em>. Disabled users show <em>Edit, Permissions, Enable, Delete</em>.
+    </div>
+  </article>
+
+  <article data-tab-slug="ua-tips"
+           data-tab-name="Tips"
+           data-tab-icon="fa-lightbulb">
+    <h6 style="color:#667eea; font-weight:700;"><i class="fas fa-lightbulb"></i> Best Practices</h6>
+    <ul>
+      <li><strong>Disable rather than delete</strong> &mdash; if someone leaves the team, disable their account. You can always re-enable later if they come back. Delete only when you're certain you'll never need their historical activity.</li>
+      <li><strong>Default new users to "User"</strong> &mdash; grant least privilege. Add only the modules they need via Permissions. Promote to Superuser only when justified.</li>
+      <li><strong>Be sparing with Superuser</strong> &mdash; this role bypasses the Permissions screen entirely. The fewer Superusers, the safer your system.</li>
+      <li><strong>Watch for "Never" Last Login</strong> &mdash; an account that has never logged in is either a failed setup, a forgotten invitation, or a placeholder. Confirm it's intentional or chase the person to log in.</li>
+      <li><strong>Email is important</strong> &mdash; it's where notifications go. Always set a real email when creating a user. "No email" accounts won't receive any system alerts.</li>
+      <li><strong>Don't bother editing Superuser permissions</strong> &mdash; they're ignored. The Permissions screen for Superusers is read-only.</li>
+      <li><strong>Use the avatar as a quick visual cue</strong> &mdash; users with profile photos appear immediately recognisable. Encourage your team to upload one in My Profile.</li>
+      <li><strong>Test permission changes by logging in as that user</strong> &mdash; the cleanest way to confirm someone has the access you intended is to actually try it.</li>
+    </ul>
+
+    <div class="alert alert-warning" style="border-left:4px solid #ffc107;">
+      <i class="fas fa-exclamation-triangle"></i> <strong>Don't disable yourself!</strong> If you disable your own account you'll be locked out at next login. There's no built-in protection against this &mdash; double-check the username before clicking Disable on yourself.
+    </div>
+  </article>
+
+</section>
+<!-- ======= END USER ADMINISTRATION ======= -->
 
 

@@ -1,5 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load help_modal_tags %}
+
 {% block title %}My Profile{% endblock %}
 {% block content %}
 
@@ -220,7 +222,7 @@
     <div class="page-header">
         <h1><i class="fas fa-user-circle"></i> My Profile</h1>
         <div class="header-actions">
-            <button type="button" class="btn btn-light btn-sm" data-toggle="modal" data-target="#myProfileHelpModal">
+            <button type="button" class="btn btn-light btn-sm" data-toggle="modal" data-target="#my_profileHelpModal">
                 <i class="fas fa-question-circle"></i> Help
             </button>
             <a href="{% url 'home' %}" class="btn btn-light btn-sm">
@@ -347,200 +349,7 @@
     </form>
 </div>
 
-<!-- ==================== MY PROFILE HELP MODAL ==================== -->
-<div class="modal fade" id="myProfileHelpModal" tabindex="-1" role="dialog" aria-labelledby="myProfileHelpModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg modal-dialog-scrollable" role="document">
-    <div class="modal-content">
-
-      <!-- Header -->
-      <div class="modal-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
-        <div>
-          <h5 class="modal-title" id="myProfileHelpModalLabel" style="font-weight:700; font-size:20px;">
-            <i class="fas fa-user-circle"></i> My Profile &mdash; User Guide
-          </h5>
-          <small style="opacity:0.85;">Manage your photo, personal information and menu preference</small>
-        </div>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="color:white; opacity:0.9; font-size:28px; text-shadow:none;">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-
-      <!-- Tabs -->
-      <ul class="nav nav-tabs" role="tablist" style="background:#f8f9fa; padding:0 15px; border-bottom:2px solid #667eea;">
-        <li class="nav-item"><a class="nav-link active" data-toggle="tab" href="#mpOverview" role="tab"><i class="fas fa-info-circle"></i> Overview</a></li>
-        <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#mpPhoto" role="tab"><i class="fas fa-camera"></i> Profile Photo</a></li>
-        <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#mpPersonal" role="tab"><i class="fas fa-user"></i> Personal Info</a></li>
-        <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#mpMenu" role="tab"><i class="fas fa-columns"></i> Menu Preference</a></li>
-        <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#mpTips" role="tab"><i class="fas fa-lightbulb"></i> Tips</a></li>
-      </ul>
-
-      <!-- Body -->
-      <div class="modal-body" style="padding:25px; background:white;">
-        <div class="tab-content">
-
-          <!-- OVERVIEW -->
-          <div class="tab-pane fade show active" id="mpOverview" role="tabpanel">
-            <h6 style="color:#667eea; font-weight:700;"><i class="fas fa-user-circle"></i> What is the My Profile page?</h6>
-            <p>My Profile is where you manage your personal account settings within Alivente Online. The page is split into <strong>three sections</strong>:</p>
-            <ul>
-              <li><strong style="color:#667eea;">Profile Photo</strong> &mdash; the picture (or initials) that represent you in the system</li>
-              <li><strong style="color:#667eea;">Personal Information</strong> &mdash; your name, email address and username</li>
-              <li><strong style="color:#667eea;">Menu Preference</strong> &mdash; how you want the navigation to appear (top bar or left sidebar)</li>
-            </ul>
-
-            <h6 style="color:#667eea; font-weight:700; margin-top:20px;"><i class="fas fa-id-badge"></i> The User Meta box</h6>
-            <p>Just below the page header you'll see a small grey box showing three pieces of read-only info:</p>
-            <ul>
-              <li><strong>Username</strong> &mdash; your login name</li>
-              <li><strong>Role</strong> &mdash; either <em>Superuser</em> (administrator) or <em>User</em></li>
-              <li><strong>Joined</strong> &mdash; the date your account was created</li>
-            </ul>
-            <p>These values cannot be changed from this page.</p>
-
-            <div class="alert alert-info" style="border-left:4px solid #667eea;">
-              <i class="fas fa-save"></i> <strong>One Save button covers everything:</strong> You can edit any combination of the three sections at once. A single click on <strong>Save Profile</strong> at the bottom commits all your changes together.
-            </div>
-          </div>
-
-          <!-- PROFILE PHOTO -->
-          <div class="tab-pane fade" id="mpPhoto" role="tabpanel">
-            <h6 style="color:#667eea; font-weight:700;"><i class="fas fa-camera"></i> What appears in your profile circle?</h6>
-            <p>The system follows a simple <strong>three-step fallback</strong> when deciding what to show in the round profile area:</p>
-
-            <div class="card mb-2" style="border-left:4px solid #667eea;">
-              <div class="card-body">
-                <h6 style="color:#667eea;"><strong>1. Uploaded photo</strong> <small>(takes priority)</small></h6>
-                <p class="mb-0">If you have uploaded a photo, it is shown. The photo overrides everything else.</p>
-              </div>
-            </div>
-
-            <div class="card mb-2" style="border-left:4px solid #667eea;">
-              <div class="card-body">
-                <h6 style="color:#667eea;"><strong>2. Initials from your name</strong></h6>
-                <p class="mb-0">If you have <strong>no photo</strong> but you have filled in <strong>both First Name and Last Name</strong> in Personal Information, the system shows your <strong>initials</strong> in the coloured circle &mdash; for example "Demetri Manias" becomes <code>DM</code>.</p>
-              </div>
-            </div>
-
-            <div class="card mb-3" style="border-left:4px solid #667eea;">
-              <div class="card-body">
-                <h6 style="color:#667eea;"><strong>3. First letter of your username</strong> <small>(fallback)</small></h6>
-                <p class="mb-0">If you have <strong>no photo</strong> and your name fields are <strong>incomplete</strong> (one or both blank), the system falls back to the <strong>first letter of your username</strong> &mdash; for example user <code>admin</code> shows as <code>A</code>.</p>
-              </div>
-            </div>
-
-            <div class="alert alert-info" style="border-left:4px solid #667eea;">
-              <i class="fas fa-magic"></i> <strong>Want initials instead of a photo?</strong> Don't upload anything &mdash; just fill in both First Name and Last Name in Personal Information and click Save. Your initials will appear automatically.
-            </div>
-
-            <h6 style="color:#667eea; font-weight:700; margin-top:25px;"><i class="fas fa-upload"></i> Uploading a photo</h6>
-            <div class="card mb-3" style="border-left:4px solid #667eea;">
-              <div class="card-body">
-                <p class="mb-1">Click the <strong>Upload Photo</strong> button to choose an image from your device. A preview appears immediately, but the photo is only saved once you click <strong>Save Profile</strong>.</p>
-                <p class="mb-1"><strong>Requirements:</strong></p>
-                <ul class="mb-0">
-                  <li>Format: <strong>JPG, PNG or GIF</strong></li>
-                  <li>Maximum size: <strong>2 MB</strong></li>
-                  <li>Square images work best (the photo is shown as a circle)</li>
-                </ul>
-              </div>
-            </div>
-
-            <div class="card mb-3" style="border-left:4px solid #dc3545;">
-              <div class="card-body">
-                <h6 style="color:#dc3545;"><i class="fas fa-trash"></i> <strong>Remove current photo</strong></h6>
-                <p class="mb-0">Once you have a photo uploaded, a <strong>Remove current photo</strong> checkbox appears beneath the upload button. Tick it and click <strong>Save Profile</strong> to revert back to the initials (or username letter) placeholder.</p>
-              </div>
-            </div>
-          </div>
-
-          <!-- PERSONAL INFO -->
-          <div class="tab-pane fade" id="mpPersonal" role="tabpanel">
-            <h6 style="color:#667eea; font-weight:700;"><i class="fas fa-user"></i> Personal Information fields</h6>
-
-            <div class="card mb-3" style="border-left:4px solid #667eea;">
-              <div class="card-body">
-                <h6 style="color:#667eea;"><strong>First Name &amp; Last Name</strong></h6>
-                <p class="mb-1">Your full display name. These appear wherever your activity is shown in the system &mdash; for example next to expenses you've created or reports you've submitted.</p>
-                <p class="mb-0"><strong>Bonus:</strong> filling in both fields also generates your <strong>profile initials</strong> (e.g. <code>DM</code> for Demetri Manias) when you don't have a photo uploaded.</p>
-              </div>
-            </div>
-
-            <div class="card mb-3" style="border-left:4px solid #667eea;">
-              <div class="card-body">
-                <h6 style="color:#667eea;"><strong>Email Address</strong></h6>
-                <p class="mb-1">The email address linked to your account. This is important &mdash; it's the address that <strong>system notifications</strong> are sent to (when configured to do so in Notification Settings).</p>
-                <p class="mb-0">Keep this up to date. If your work email changes, update it here so you don't miss anything.</p>
-              </div>
-            </div>
-
-            <div class="card mb-3" style="border-left:4px solid #6c757d;">
-              <div class="card-body">
-                <h6 style="color:#6c757d;"><strong>Username</strong> <small>(read-only)</small></h6>
-                <p class="mb-0">Your login name, shown in grey because it cannot be changed from this page. Usernames are set once at account creation and need an administrator to change.</p>
-              </div>
-            </div>
-
-            <div class="alert alert-warning" style="border-left:4px solid #ffc107;">
-              <i class="fas fa-exclamation-triangle"></i> <strong>Need to change your username?</strong> Contact your system administrator. Username changes affect login credentials and aren't done lightly.
-            </div>
-          </div>
-
-          <!-- MENU PREFERENCE -->
-          <div class="tab-pane fade" id="mpMenu" role="tabpanel">
-            <h6 style="color:#667eea; font-weight:700;"><i class="fas fa-columns"></i> Choosing your navigation style</h6>
-            <p>Alivente Online supports two navigation styles. Pick whichever suits your screen size and workflow &mdash; you can switch any time.</p>
-
-            <div class="card mb-3" style="border-left:4px solid #667eea;">
-              <div class="card-body">
-                <h6 style="color:#667eea;"><i class="fas fa-grip-horizontal"></i> <strong>Top Menu</strong> <small>(default)</small></h6>
-                <p class="mb-0">A horizontal navigation bar runs across the top of every page. Best for <strong>wider screens</strong> (laptops, desktops, large monitors) where you have plenty of horizontal space.</p>
-              </div>
-            </div>
-
-            <div class="card mb-3" style="border-left:4px solid #667eea;">
-              <div class="card-body">
-                <h6 style="color:#667eea;"><i class="fas fa-bars"></i> <strong>Sidebar</strong></h6>
-                <p class="mb-0">A collapsible menu sits on the left-hand side of the screen. Better for <strong>narrower screens</strong>, multi-window setups, or anyone who prefers a vertical menu they can hide when not needed.</p>
-              </div>
-            </div>
-
-            <div class="alert alert-info" style="border-left:4px solid #667eea;">
-              <i class="fas fa-sync-alt"></i> <strong>Your choice persists:</strong> Once you save, the menu style stays the same on every login from any device until you change it again.
-            </div>
-          </div>
-
-          <!-- TIPS -->
-          <div class="tab-pane fade" id="mpTips" role="tabpanel">
-            <h6 style="color:#667eea; font-weight:700;"><i class="fas fa-lightbulb"></i> Best Practices</h6>
-            <ul>
-              <li><strong>Fill in both First and Last Name</strong> &mdash; even if you don't want to upload a photo, completing both name fields gives you a tidy two-letter initial (e.g. <code>DM</code>) instead of a single username letter.</li>
-              <li><strong>Keep your email up to date</strong> &mdash; it's where notifications and system alerts are sent. An out-of-date email means you'll miss important updates.</li>
-              <li><strong>Upload a recognisable photo</strong> &mdash; especially useful for shared / team accounts so colleagues can quickly identify who's who.</li>
-              <li><strong>Use a square photo</strong> &mdash; the photo is displayed inside a circular frame, so square images crop best. Portrait or landscape photos may have parts cut off.</li>
-              <li><strong>Pick the menu that fits your screen</strong> &mdash; Top Menu works well on a 27-inch desktop monitor, while Sidebar is more comfortable on a narrow laptop or when you have multiple windows side-by-side.</li>
-              <li><strong>Always click Save Profile</strong> &mdash; changes aren't applied until you save. Clicking <strong>Cancel</strong> or <strong>Back</strong> discards anything you've edited but not saved.</li>
-            </ul>
-
-            <div class="alert alert-warning" style="border-left:4px solid #ffc107;">
-              <i class="fas fa-exclamation-triangle"></i> <strong>Photo not uploading?</strong> Check that the file is under <strong>2 MB</strong> and in <strong>JPG, PNG or GIF</strong> format. Other formats (HEIC, BMP, TIFF, etc.) won't be accepted.
-            </div>
-          </div>
-
-        </div>
-      </div>
-
-      <!-- Footer -->
-      <div class="modal-footer" style="background:#f8f9fa; border-top:1px solid #dee2e6;">
-        <small class="text-muted" style="flex:1;">Alivente Online &mdash; My Profile User Guide</small>
-        <button type="button" class="btn btn-sm" data-dismiss="modal" style="background:linear-gradient(135deg,#667eea,#764ba2); color:white; border:none;">
-          <i class="fas fa-times"></i> Close
-        </button>
-      </div>
-
-    </div>
-  </div>
-</div>
-<!-- ==================== END MY PROFILE HELP MODAL ==================== -->
+{% render_help_modal "my_profile" %}
 
 <script>
 function selectMenu(element, value) {

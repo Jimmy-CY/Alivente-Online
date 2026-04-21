@@ -55,6 +55,26 @@ HELP_CONTENT_DIR = Path(__file__).resolve().parent.parent / 'help_content'
 _MODULE_CACHE = None
 
 
+# Canonical order of top-level menu groups. Used to sort the output of
+# get_all_modules_grouped() so the Help page matches the menu layout.
+_GROUP_ORDER = [
+    'Property Operations',
+    'Financial Management',
+    'Administration',
+    'Personal',
+    'Notifications',
+    'My Profile',
+]
+
+
+# When a module has NO data-module-parent, its data-module-category is
+# often a legacy value ("Operational", "Administration", "Personal") that
+# should be ignored for grouping. The values listed here are the
+# exceptions — category values that SHOULD be treated as meaningful
+# sub-section labels within their top-level group.
+_EXPLICIT_SUBGROUP_CATEGORIES = {'Functional', 'System'}
+
+
 def _parse_module_section(section):
     """
     Convert a single <section data-module-slug="..."> element into
@@ -70,6 +90,9 @@ def _parse_module_section(section):
     icon = section.get('data-module-icon', 'fa-question-circle')
     subtitle = section.get('data-module-subtitle', '')
     category = section.get('data-module-category', 'Uncategorized')
+    group = section.get('data-module-group', '')
+    parent = section.get('data-module-parent', '')
+    permission = section.get('data-module-permission', '')
 
     tabs = []
     for article in section.find_all('article', recursive=False):
@@ -97,6 +120,9 @@ def _parse_module_section(section):
         'icon': icon,
         'subtitle': subtitle,
         'category': category,
+        'group': group,
+        'parent': parent,
+        'permission': permission,
         'tabs': tabs,
     }
 
@@ -166,6 +192,123 @@ def get_all_modules():
         key=lambda m: (m['category'], m['name'])
     )
 
+def get_all_modules_grouped():
+    """
+    Return every parsed module arranged hierarchically by top-level menu group.
+
+    Used by the Help page (Phase 2) to build category cards and nested lists.
+
+    Returned structure:
+        [
+            {
+                'name': 'Property Operations',
+                'direct_modules': [module_dict, ...],
+                'subsections': [
+                    {
+                        'name': 'Reports',
+                        'parent_module_slug': 'finance',
+                        'parent_module_name': 'Financials',
+                        'modules': [module_dict, ...],
+                    },
+                    ...
+                ],
+            },
+            ...
+        ]
+
+    Rules:
+        - Top-level bucket = module's data-module-group attribute.
+        - Within a group:
+            - Module with a data-module-parent -> goes into a sub-section named
+              by its data-module-category, nested under that parent module.
+            - Module with no parent but category in _EXPLICIT_SUBGROUP_CATEGORIES
+              -> goes into a sub-section within the group (not nested under
+              any module; parent_module_slug is None).
+            - Otherwise -> direct child of the group.
+        - Modules with no data-module-group are skipped entirely.
+        - Groups are emitted in _GROUP_ORDER first, then any unknown groups
+          alphabetically.
+        - Direct modules and sub-sections are sorted alphabetically by name.
+    """
+    global _MODULE_CACHE
+
+    if _MODULE_CACHE is None:
+        _MODULE_CACHE = _load_all_modules()
+
+    # Slug -> display name, for resolving parent_module_name.
+    slug_to_name = {m['slug']: m['name'] for m in _MODULE_CACHE.values()}
+    # Display name -> slug, so authors can write data-module-parent="Financials"
+    # (readable) instead of data-module-parent="finance" (the slug).
+    name_to_slug = {m['name']: m['slug'] for m in _MODULE_CACHE.values()}
+
+    # Bucket modules by their group
+    by_group = {}
+    for module in _MODULE_CACHE.values():
+        group = module.get('group', '')
+        if not group:
+            continue
+        by_group.setdefault(group, []).append(module)
+
+    # Emit groups in canonical order, then any unknown groups alphabetically
+    known_groups = [g for g in _GROUP_ORDER if g in by_group]
+    unknown_groups = sorted(g for g in by_group if g not in _GROUP_ORDER)
+
+    result = []
+    for group_name in known_groups + unknown_groups:
+        modules = by_group[group_name]
+
+        direct = []
+        # Keyed by (parent_slug_or_None, subsection_name) -> list of modules
+        subsection_buckets = {}
+
+        for m in modules:
+            raw_parent = m.get('parent', '')
+            category = m.get('category', '')
+
+            # Resolve parent to canonical slug — accept slug or display name.
+            if raw_parent:
+                if raw_parent in slug_to_name:
+                    parent_slug = raw_parent
+                elif raw_parent in name_to_slug:
+                    parent_slug = name_to_slug[raw_parent]
+                else:
+                    # Unresolved — keep the raw value so it's visible for debugging
+                    # rather than silently dropping the module into "direct".
+                    parent_slug = raw_parent
+            else:
+                parent_slug = ''
+
+            if parent_slug:
+                key = (parent_slug, category)
+                subsection_buckets.setdefault(key, []).append(m)
+            elif category in _EXPLICIT_SUBGROUP_CATEGORIES:
+                key = (None, category)
+                subsection_buckets.setdefault(key, []).append(m)
+            else:
+                direct.append(m)
+
+        direct.sort(key=lambda m: m['name'])
+
+        subsections = []
+        for (parent_slug, sub_name), mods in sorted(
+            subsection_buckets.items(),
+            key=lambda kv: (kv[0][0] or '', kv[0][1])
+        ):
+            mods.sort(key=lambda m: m['name'])
+            subsections.append({
+                'name': sub_name,
+                'parent_module_slug': parent_slug,
+                'parent_module_name': slug_to_name.get(parent_slug) if parent_slug else None,
+                'modules': mods,
+            })
+
+        result.append({
+            'name': group_name,
+            'direct_modules': direct,
+            'subsections': subsections,
+        })
+
+    return result
 
 def clear_cache():
     """

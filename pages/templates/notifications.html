@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load help_modal_tags %}
 
 {% block title %}ALIVENTE ONLINE - NOTIFICATIONS DASHBOARD{% endblock %}
 
@@ -29,7 +30,7 @@
 
     <!-- Action Buttons -->
     <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 20px;">
-        <button class="btn btn-info" data-toggle="modal" data-target="#notifDashboardHelpModal"><i class="fas fa-question-circle"></i> Help</button>
+        <button class="btn btn-info" data-toggle="modal" data-target="#notificationHelpModal"><i class="fas fa-question-circle"></i> Help</button>
         <button class="btn btn-info" onclick="refreshData()">Refresh Data</button>
         <a href="{% url 'home' %}" class="btn btn-info">Back</a>
     </div>
@@ -664,16 +665,15 @@ function refreshData() {
 document.addEventListener('DOMContentLoaded', refreshData);
 </script>
 
-<!-- ==================== NOTIFICATIONS DASHBOARD HELP MODAL ==================== -->
 <!-- Scoped CSS overrides so the Bootstrap help modal isn't affected by the page's custom modal-overlay styles -->
 <style>
-#notifDashboardHelpModal .modal-content {
+#notificationHelpModal .modal-content {
     max-width: none !important;
     max-height: none !important;
     border-radius: 0.3rem;
     box-shadow: none;
 }
-#notifDashboardHelpModal .modal-header {
+#notificationHelpModal .modal-header {
     background: linear-gradient(135deg, #17a2b8 0%, #138496 100%) !important;
     color: white !important;
     padding: 1rem !important;
@@ -681,224 +681,20 @@ document.addEventListener('DOMContentLoaded', refreshData);
     justify-content: space-between;
     align-items: flex-start;
 }
-#notifDashboardHelpModal .modal-body {
+#notificationHelpModal .modal-body {
     padding: 25px !important;
     max-height: none !important;
     background: white;
 }
-#notifDashboardHelpModal .nav-tabs .nav-link {
+#notificationHelpModal .nav-tabs .nav-link {
     color: #495057;
 }
-#notifDashboardHelpModal .nav-tabs .nav-link.active {
+#notificationHelpModal .nav-tabs .nav-link.active {
     color: #17a2b8;
     font-weight: 600;
 }
 </style>
 
-<div class="modal fade" id="notifDashboardHelpModal" tabindex="-1" role="dialog" aria-labelledby="notifDashboardHelpModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg modal-dialog-scrollable" role="document">
-    <div class="modal-content">
-
-      <!-- Header -->
-      <div class="modal-header">
-        <div>
-          <h5 class="modal-title" id="notifDashboardHelpModalLabel" style="font-weight:700; font-size:20px; margin:0;">
-            <i class="fas fa-bell"></i> Notifications Dashboard &mdash; User Guide
-          </h5>
-          <small style="opacity:0.85;">Property management alerts and status at a glance</small>
-        </div>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="color:white; opacity:0.9; font-size:28px; text-shadow:none;">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-
-      <!-- Tabs -->
-      <ul class="nav nav-tabs" role="tablist" style="background:#f8f9fa; padding:0 15px; border-bottom:2px solid #17a2b8;">
-        <li class="nav-item"><a class="nav-link active" data-toggle="tab" href="#ndOverview" role="tab"><i class="fas fa-info-circle"></i> Overview</a></li>
-        <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#ndCards" role="tab"><i class="fas fa-th"></i> Status Cards</a></li>
-        <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#ndColors" role="tab"><i class="fas fa-palette"></i> Colour Coding</a></li>
-        <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#ndUsing" role="tab"><i class="fas fa-mouse-pointer"></i> Using It</a></li>
-        <li class="nav-item"><a class="nav-link" data-toggle="tab" href="#ndTips" role="tab"><i class="fas fa-lightbulb"></i> Tips</a></li>
-      </ul>
-
-      <!-- Body -->
-      <div class="modal-body">
-        <div class="tab-content">
-
-          <!-- OVERVIEW -->
-          <div class="tab-pane fade show active" id="ndOverview" role="tabpanel">
-            <h6 style="color:#17a2b8; font-weight:700;"><i class="fas fa-tachometer-alt"></i> What is this dashboard?</h6>
-            <p>The Notifications Dashboard is a <strong>single-glance health check</strong> of your property portfolio. It surfaces six key indicators that need attention &mdash; from vacant properties and expiring leases through to overdue invoices and pending expenses.</p>
-
-            <p>It's the visual companion to the <strong>Daily Property Management Report</strong> email &mdash; the same data, rendered as clickable cards you can drill into.</p>
-
-            <div class="alert alert-info" style="border-left:4px solid #17a2b8;">
-              <i class="fas fa-sync-alt"></i> <strong>Live data:</strong> The dashboard pulls live data from the database every time it loads, and again whenever you click <strong>Refresh Data</strong>. There's no cache &mdash; what you see is current.
-            </div>
-
-            <div class="alert alert-success" style="border-left:4px solid #28a745;">
-              <i class="fas fa-link"></i> <strong>Related:</strong> Daily Property Management Report email (configured in <strong>Administration &rarr; Notification Settings</strong>).
-            </div>
-          </div>
-
-          <!-- STATUS CARDS -->
-          <div class="tab-pane fade" id="ndCards" role="tabpanel">
-            <h6 style="color:#17a2b8; font-weight:700;"><i class="fas fa-th"></i> The six status cards</h6>
-            <p>Each card shows a count and is colour-coded by urgency. Click any card to see the underlying records.</p>
-
-            <div class="card mb-2" style="border-left:4px solid #17a2b8;">
-              <div class="card-body" style="padding:12px 15px;">
-                <h6 style="margin:0 0 5px 0;"><i class="fas fa-home" style="color:#17a2b8;"></i> <strong>Vacant Properties</strong></h6>
-                <p class="mb-0" style="font-size:13px;">Properties currently without a tenant. Each vacant property is lost income &mdash; act fast.</p>
-              </div>
-            </div>
-
-            <div class="card mb-2" style="border-left:4px solid #17a2b8;">
-              <div class="card-body" style="padding:12px 15px;">
-                <h6 style="margin:0 0 5px 0;"><i class="fas fa-calendar-times" style="color:#17a2b8;"></i> <strong>Expiring Leases</strong></h6>
-                <p class="mb-0" style="font-size:13px;">Leases coming up for renewal. Drill in to see tenant, lease end date and renewal due date.</p>
-              </div>
-            </div>
-
-            <div class="card mb-2" style="border-left:4px solid #17a2b8;">
-              <div class="card-body" style="padding:12px 15px;">
-                <h6 style="margin:0 0 5px 0;"><i class="fas fa-times-circle" style="color:#17a2b8;"></i> <strong>Declined Renewals</strong></h6>
-                <p class="mb-0" style="font-size:13px;">Tenants who have declined to renew their lease. These properties will need a new tenant before the lease ends.</p>
-              </div>
-            </div>
-
-            <div class="card mb-2" style="border-left:4px solid #17a2b8;">
-              <div class="card-body" style="padding:12px 15px;">
-                <h6 style="margin:0 0 5px 0;"><i class="fas fa-exclamation-triangle" style="color:#17a2b8;"></i> <strong>Overdue Invoices</strong></h6>
-                <p class="mb-0" style="font-size:13px;">Tenant invoices past their due date. Drill in to see the amount, the tenant and how many days overdue.</p>
-              </div>
-            </div>
-
-            <div class="card mb-2" style="border-left:4px solid #17a2b8;">
-              <div class="card-body" style="padding:12px 15px;">
-                <h6 style="margin:0 0 5px 0;"><i class="fas fa-clipboard-check" style="color:#17a2b8;"></i> <strong>Expenses Waiting for Approval</strong></h6>
-                <p class="mb-0" style="font-size:13px;">Expenses submitted by staff that need a supervisor's approval before they can be paid.</p>
-              </div>
-            </div>
-
-            <div class="card mb-2" style="border-left:4px solid #17a2b8;">
-              <div class="card-body" style="padding:12px 15px;">
-                <h6 style="margin:0 0 5px 0;"><i class="fas fa-credit-card" style="color:#17a2b8;"></i> <strong>Expenses Waiting for Payment</strong></h6>
-                <p class="mb-0" style="font-size:13px;">Expenses that have been approved and are now awaiting payment by the finance team.</p>
-              </div>
-            </div>
-          </div>
-
-          <!-- COLOUR CODING -->
-          <div class="tab-pane fade" id="ndColors" role="tabpanel">
-            <h6 style="color:#17a2b8; font-weight:700;"><i class="fas fa-palette"></i> What the colours mean</h6>
-            <p>Cards change colour based on the count and the severity of the indicator:</p>
-
-            <div class="card mb-3" style="border-left:4px solid #28a745;">
-              <div class="card-body" style="background:#d4edda;">
-                <h6 style="color:#28a745; margin-bottom:5px;"><i class="fas fa-check-circle"></i> <strong>Green &mdash; All Clear</strong></h6>
-                <p class="mb-0">The count is <strong>zero</strong>. Nothing to worry about &mdash; this category needs no attention.</p>
-              </div>
-            </div>
-
-            <div class="card mb-3" style="border-left:4px solid #ffc107;">
-              <div class="card-body" style="background:#fff3cd;">
-                <h6 style="color:#856404; margin-bottom:5px;"><i class="fas fa-exclamation-triangle"></i> <strong>Yellow &mdash; Warning</strong></h6>
-                <p class="mb-1">There are items needing attention soon, but they aren't urgent yet. Used for:</p>
-                <ul class="mb-0" style="font-size:13px;">
-                  <li>Expiring Leases</li>
-                  <li>Expenses Waiting for Approval</li>
-                  <li>Expenses Waiting for Payment</li>
-                </ul>
-              </div>
-            </div>
-
-            <div class="card mb-3" style="border-left:4px solid #dc3545;">
-              <div class="card-body" style="background:#f8d7da;">
-                <h6 style="color:#dc3545; margin-bottom:5px;"><i class="fas fa-fire"></i> <strong>Red &mdash; Urgent</strong></h6>
-                <p class="mb-1">Items that need <strong>immediate action</strong> &mdash; you're losing money or risk losing money. Used for:</p>
-                <ul class="mb-0" style="font-size:13px;">
-                  <li>Vacant Properties</li>
-                  <li>Declined Renewals</li>
-                  <li>Overdue Invoices</li>
-                </ul>
-              </div>
-            </div>
-
-            <div class="alert alert-info" style="border-left:4px solid #17a2b8;">
-              <i class="fas fa-eye"></i> <strong>Quick scan:</strong> If everything is green you can move on with your day. Any red card &mdash; deal with it now.
-            </div>
-          </div>
-
-          <!-- USING IT -->
-          <div class="tab-pane fade" id="ndUsing" role="tabpanel">
-            <h6 style="color:#17a2b8; font-weight:700;"><i class="fas fa-mouse-pointer"></i> How to use the dashboard</h6>
-
-            <div class="card mb-3" style="border-left:4px solid #17a2b8;">
-              <div class="card-body">
-                <h6 style="color:#17a2b8;"><i class="fas fa-hand-pointer"></i> <strong>Click any card</strong></h6>
-                <p class="mb-0">Click a status card to open a popup listing every record in that category &mdash; with all the details you need to take action (property name, tenant, dates, amounts, etc.).</p>
-              </div>
-            </div>
-
-            <div class="card mb-3" style="border-left:4px solid #17a2b8;">
-              <div class="card-body">
-                <h6 style="color:#17a2b8;"><i class="fas fa-sync-alt"></i> <strong>Refresh Data</strong></h6>
-                <p class="mb-0">The dashboard loads fresh data when you arrive on the page. Click <strong>Refresh Data</strong> any time you want to re-pull the numbers (for example, after you've actioned something in another module).</p>
-              </div>
-            </div>
-
-            <div class="card mb-3" style="border-left:4px solid #17a2b8;">
-              <div class="card-body">
-                <h6 style="color:#17a2b8;"><i class="fas fa-tag"></i> <strong>Status badges in detail popups</strong></h6>
-                <p class="mb-1">Inside each detail popup, records are tagged with coloured badges:</p>
-                <ul class="mb-0">
-                  <li><span class="badge badge-danger" style="background:#dc3545; color:white; padding:3px 8px; border-radius:4px;">VACANT</span> / <span class="badge badge-danger" style="background:#dc3545; color:white; padding:3px 8px; border-radius:4px;">NEED NEW TENANT</span> &mdash; urgent action</li>
-                  <li><span class="badge" style="background:#ffc107; color:#212529; padding:3px 8px; border-radius:4px;">PENDING</span> / <span class="badge" style="background:#ffc107; color:#212529; padding:3px 8px; border-radius:4px;">PENDING APPROVAL</span> &mdash; awaiting next step</li>
-                  <li><span class="badge" style="background:#17a2b8; color:white; padding:3px 8px; border-radius:4px;">APPROVED &mdash; AWAITING PAYMENT</span> &mdash; ready for finance</li>
-                </ul>
-              </div>
-            </div>
-
-            <div class="card mb-3" style="border-left:4px solid #17a2b8;">
-              <div class="card-body">
-                <h6 style="color:#17a2b8;"><i class="fas fa-arrow-left"></i> <strong>Back</strong></h6>
-                <p class="mb-0">Returns you to the home dashboard.</p>
-              </div>
-            </div>
-          </div>
-
-          <!-- TIPS -->
-          <div class="tab-pane fade" id="ndTips" role="tabpanel">
-            <h6 style="color:#17a2b8; font-weight:700;"><i class="fas fa-lightbulb"></i> Best Practices</h6>
-            <ul>
-              <li><strong>Make this your morning page</strong> &mdash; open it first thing each day. A 10-second scan tells you whether anything needs immediate action.</li>
-              <li><strong>Aim for all-green</strong> &mdash; the goal is six green cards. Each red or yellow card is a piece of work to close out.</li>
-              <li><strong>Click before you act</strong> &mdash; don't act on the count alone. Click the card first to see <em>which</em> properties / leases / invoices are affected.</li>
-              <li><strong>Refresh after actioning</strong> &mdash; once you've paid an invoice or approved an expense, click Refresh Data to confirm the count has dropped.</li>
-              <li><strong>Pair with the email report</strong> &mdash; the Daily Property Management Report email gives you the same data passively. Use email to stay aware on the move; use this dashboard for action.</li>
-              <li><strong>Drill into Overdue Invoices first</strong> &mdash; this category usually represents real cash you should be collecting. Prioritise red here.</li>
-            </ul>
-
-            <div class="alert alert-warning" style="border-left:4px solid #ffc107;">
-              <i class="fas fa-exclamation-triangle"></i> <strong>If a card shows zero but you expected items:</strong> Click <strong>Refresh Data</strong> first. If still zero, the underlying record may be in a status that excludes it (e.g. the invoice was just paid, the lease was just renewed). Check the relevant module to verify.
-            </div>
-          </div>
-
-        </div>
-      </div>
-
-      <!-- Footer -->
-      <div class="modal-footer" style="background:#f8f9fa; border-top:1px solid #dee2e6;">
-        <small class="text-muted" style="flex:1;">Alivente Online &mdash; Notifications Dashboard User Guide</small>
-        <button type="button" class="btn btn-sm" data-dismiss="modal" style="background:linear-gradient(135deg,#17a2b8,#138496); color:white; border:none;">
-          <i class="fas fa-times"></i> Close
-        </button>
-      </div>
-
-    </div>
-  </div>
-</div>
-<!-- ==================== END NOTIFICATIONS DASHBOARD HELP MODAL ==================== -->
+{% render_help_modal "notification" %}
 
 {% endblock %}
