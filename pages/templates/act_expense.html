@@ -205,7 +205,11 @@
         <i class="fas fa-question-circle"></i> Help
     </button>
     {% if not from_finance_pl_act %}
-        <a href="{% url 'act_expense_add' %}" class="btn btn-info" style="margin-right:16px" type="button">Add New</a>
+        {% if perms.auth.can_edit_expenses %}
+            <a href="{% url 'act_expense_add' %}" class="btn btn-info" style="margin-right:16px" type="button">Add New</a>
+        {% else %}
+            <span class="btn btn-secondary" style="margin-right:16px; opacity:0.6; cursor:not-allowed; pointer-events:none;">Add New</span>
+        {% endif %}
     {% endif %}
     
     {% if from_finance_pl_act %}
@@ -357,10 +361,12 @@
         <td>{{ expense.act_expense_amount|floatformat:2|intcomma }}</td>
         {% if not from_finance_pl_act %}
             <td>
+                {% if perms.auth.can_access_expenses %}
                 <button type="button" class="btn btn-light" style="border-color:black; width: 100%;"
-                        onclick="openManageModal({{ expense.act_expense_id }}, '{{ expense.act_expense_date|date:"Y-m-d" }}', '{{ expense.prop.prop_name }}', '{{ expense.act_expense_description }}', '{{ expense.act_expense_amount }}', '{{ expense.act_expense_approved }}', '{{ expense.act_expense_paid }}', {% if expense.act_expense_document %}'{{ expense.act_expense_document.url }}', '{{ expense.act_expense_document.name }}'{% else %}null, null{% endif %}, {{ user.is_superuser|yesno:"true,false" }})">
+                        onclick="openManageModal({{ expense.act_expense_id }}, '{{ expense.act_expense_date|date:"Y-m-d" }}', '{{ expense.prop.prop_name }}', '{{ expense.act_expense_description }}', '{{ expense.act_expense_amount }}', '{{ expense.act_expense_approved }}', '{{ expense.act_expense_paid }}', {% if expense.act_expense_document %}'{{ expense.act_expense_document.url }}', '{{ expense.act_expense_document.name }}'{% else %}null, null{% endif %}, {{ user.is_superuser|yesno:"true,false" }}, {{ perms.auth.can_edit_expenses|yesno:"true,false" }})">
                     <span style="color: #007bff;">Manage</span>
                 </button>
+                {% endif %}
             </td>
             <td>
                 {% if user.is_superuser %}
@@ -776,18 +782,25 @@ setTimeout(function() {
 // Modal JavaScript Functions
 let currentExpenseId = null;
 
-function openManageModal(expenseId, date, property, description, amount, approved, paid, documentUrl, documentName, isSuperuser) {
+function openManageModal(expenseId, date, property, description, amount, approved, paid, documentUrl, documentName, isSuperuser, canEditExpenses) {
     currentExpenseId = expenseId;
     
-    // Determine if user can edit (superuser OR expense is neither approved nor paid)
-    const canEdit = isSuperuser || (approved === 'No' && paid === 'No');
-    const canDelete = isSuperuser || (approved === 'No' && paid === 'No');
+    // Determine if user can edit expense details:
+    //   - Superuser: always
+    //   - Edit user: only if expense is still Entered (not approved, not paid)
+    //   - Read-only user: never
+    const canEdit = isSuperuser || (canEditExpenses && approved === 'No' && paid === 'No');
+    const canDelete = canEdit;  // Same rule: edit and delete travel together
+    
+    // Document management is ALWAYS allowed for superusers and edit users,
+    // regardless of approved/paid state. Read-only users cannot manage documents.
+    const canManageDocuments = isSuperuser || canEditExpenses;
     
     // Populate expense details form based on permissions
     populateExpenseDetailsTab(expenseId, date, property, description, amount, approved, paid, canEdit, isSuperuser);
     
     // Populate invoice tab
-    populateInvoiceTab(documentUrl, documentName, expenseId);
+    populateInvoiceTab(documentUrl, documentName, expenseId, canManageDocuments);
     
     // Show/hide delete tab based on permissions
     const deleteTabNav = document.getElementById('delete-tab-nav');
@@ -936,7 +949,7 @@ function populateExpenseDetailsTab(expenseId, date, property, description, amoun
         // Show read-only view
         expenseDetailsContent.innerHTML = `
             <div class="alert alert-warning">
-                <i class="fas fa-lock"></i> <strong>Read Only:</strong> This expense has already been approved and cannot be modified.
+                <i class="fas fa-lock"></i> <strong>Read Only:</strong> This expense cannot be modified.
             </div>
             <div class="form-row">
                 <div class="form-group col-md-3">
@@ -974,9 +987,58 @@ function populateExpenseDetailsTab(expenseId, date, property, description, amoun
     }
 }
 
-function populateInvoiceTab(documentUrl, documentName, expenseId) {
+function populateInvoiceTab(documentUrl, documentName, expenseId, canManageDocuments) {
     const invoiceContent = document.getElementById('invoiceContent');
     
+    // Read-only users: show document if one exists, but no upload/replace/delete/merge controls
+    if (!canManageDocuments) {
+        if (documentUrl && documentName) {
+            const extension = documentName.split('.').pop().toLowerCase();
+            let previewHtml = '';
+            
+            if (extension === 'pdf') {
+                previewHtml = `
+                    <iframe src="${documentUrl}#toolbar=0&navpanes=0&scrollbar=0" width="100%" height="400px" style="border: none;"></iframe>
+                    <p class="text-center mt-2">
+                        <small>If the PDF doesn't display, <a href="${documentUrl}" target="_blank">click here to open it in a new tab</a></small>
+                    </p>
+                `;
+            } else if (['jpg', 'jpeg', 'png'].includes(extension)) {
+                previewHtml = `<img src="${documentUrl}" alt="Invoice" class="img-fluid" style="max-width: 100%; height: auto;">`;
+            } else {
+                previewHtml = `
+                    <div class="text-center">
+                        <i class="fas fa-file-alt fa-3x text-muted mb-3"></i>
+                        <p>File: <strong>${documentName}</strong></p>
+                        <p>This file type cannot be previewed in the browser.</p>
+                    </div>
+                `;
+            }
+            
+            invoiceContent.innerHTML = `
+                <div class="alert alert-info">
+                    <i class="fas fa-eye"></i> <strong>Read Only:</strong> You can view this document but cannot modify it.
+                </div>
+                <h6>Invoice Document:</h6>
+                ${previewHtml}
+                <div class="mt-3">
+                    <a href="${documentUrl}" download="${documentName}" class="btn btn-info btn-sm">
+                        <i class="fas fa-download"></i> Download
+                    </a>
+                </div>
+            `;
+        } else {
+            invoiceContent.innerHTML = `
+                <div class="alert alert-info">
+                    <i class="fas fa-eye"></i> <strong>Read Only:</strong> You do not have permission to manage documents.
+                </div>
+                <p class="text-muted">No invoice document is attached to this expense.</p>
+            `;
+        }
+        return;
+    }
+    
+    // Edit users and superusers: full document management
     if (documentUrl && documentName) {
         // Document exists
         const extension = documentName.split('.').pop().toLowerCase();
@@ -1205,7 +1267,8 @@ $(document).on('submit', '#uploadDocumentForm, #replaceDocumentForm, #addToExist
 
 // Modal cleanup
 $('#manageModal').on('hidden.bs.modal', function () {
-    $('#expenseEditForm')[0].reset();
+    const editForm = $('#expenseEditForm')[0];
+    if (editForm) editForm.reset();
     document.getElementById('deleteConfirmation').checked = false;
     document.getElementById('confirmDeleteBtn').disabled = true;
     hideReplaceUpload(); hideAddToExisting();

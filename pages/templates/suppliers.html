@@ -33,7 +33,11 @@ Suppliers
     <!-- Action Buttons -->
     <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 20px;">
       <button type="button" class="btn btn-info" data-toggle="modal" data-target="#suppliersHelpModal"><i class="fas fa-question-circle"></i> Help</button>
-      <a href="{% url 'suppliers_add' %}" class="btn btn-info">Add New</a>
+        {% if perms.auth.can_edit_suppliers %}
+          <a href="{% url 'suppliers_add' %}" class="btn btn-info">Add New</a>
+        {% else %}
+          <span class="btn btn-secondary" style="opacity:0.6; cursor:not-allowed; pointer-events:none;">Add New</span>
+        {% endif %}
       <a href="{% url 'home' %}" class="btn btn-info">Back</a>
     </div>
 
@@ -106,9 +110,9 @@ Suppliers
           <th style="width: 8%">Country</th>
           <th style="width: 8%">Details</th>
           <th style="width: 8%">Report</th>
-          {% if user.is_superuser %}
-            <th style="width: 8%">Delete</th>
-          {% endif %}
+            {% if perms.auth.can_edit_suppliers %}
+              <th style="width: 8%">Delete</th>
+            {% endif %}
         </tr>
       </thead>
       <tbody>
@@ -120,16 +124,20 @@ Suppliers
             <td>{{sresults.supplier_role}}</td>
             <td>{{sresults.supplier_country}}</td>
             <td>
-              <button type="button" class="btn btn-light action-btn">
-                <a href="{% url 'suppliers_edit' sresults.supplier_id %}">Edit</a>
-              </button>
+              {% if perms.auth.can_edit_suppliers %}
+                <button type="button" class="btn btn-light action-btn">
+                  <a href="{% url 'suppliers_edit' sresults.supplier_id %}">Edit</a>
+                </button>
+              {% else %}
+                <button type="button" class="btn btn-light action-btn" disabled style="opacity: 0.5;">Edit</button>
+              {% endif %}
             </td>
             <td>
               <button type="button" class="btn btn-light action-btn">
                 <a href="{% url 'supplier_report' sresults.supplier_id %}">View</a>
               </button>
             </td>
-            {% if user.is_superuser %}
+            {% if perms.auth.can_edit_suppliers %}
               <td>
                 <button type="button" class="btn btn-danger action-btn delete-btn" 
                         data-supplier-id="{{sresults.supplier_id}}"

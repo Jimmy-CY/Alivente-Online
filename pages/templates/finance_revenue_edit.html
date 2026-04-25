@@ -11,7 +11,7 @@ ALIVENTE - Edit Revenue
 <h4><center>EDIT REVENUE</center></h4>
 <br/>
 
-{% if user.is_superuser %}
+{% if perms.auth.can_access_financials %}
 
 <form action="{% url 'finance_revenue_edit_commit' rev.revenue_id %}" method="post">
   {% csrf_token %}

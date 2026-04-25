@@ -1,10 +1,10 @@
 from django.conf import settings
 from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
-from django.contrib.auth.decorators import login_required, user_passes_test
+from django.contrib.auth.decorators import login_required, user_passes_test, permission_required
 from django.contrib import messages
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm, PasswordChangeForm
 from django.contrib.auth.models import User
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError, PermissionDenied
 from django.core.files.base import ContentFile
 from django.core.files.storage import FileSystemStorage, default_storage
 from django.core.mail import EmailMultiAlternatives
@@ -135,12 +135,14 @@ from datetime import date, timedelta
 from .models import Passport  # Adjust import based on your app structure
 
 @login_required
+@permission_required('auth.can_access_personal', raise_exception=True)
 def passport_management(request):
-    if not request.user.is_superuser:
-        messages.error(request, "You don't have permission to access this page.")
-        return redirect('home')
-    
     if request.method == 'POST':
+        # Edit-level actions — all POST branches require edit permission
+        if not request.user.has_perm('auth.can_edit_personal'):
+            messages.error(request, "You don't have permission to modify passports.")
+            return redirect('passport_management')
+        
         action = request.POST.get('action')
         
         # ADD NEW PASSPORT/ID
@@ -278,6 +280,7 @@ def passport_management(request):
 import re
 
 @login_required
+@permission_required('auth.can_access_personal', raise_exception=True)
 @require_POST
 def spell_check_instructions(request):
     """Spell check recipe instructions"""
@@ -348,7 +351,7 @@ def is_superuser(user):
     return user.is_superuser
 
 @login_required
-@user_passes_test(is_superuser)
+@permission_required('auth.can_edit_tenants', raise_exception=True)
 def generate_lease_agreement_view(request):
     """
     View to display the lease agreement generation form and handle document generation
@@ -468,7 +471,7 @@ def generate_lease_agreement_view(request):
 
 @csrf_exempt
 @login_required
-@user_passes_test(is_superuser)
+@permission_required('auth.can_access_tenants', raise_exception=True)
 @require_http_methods(["POST"])
 def get_property_tenant_data(request):
     """
@@ -1447,6 +1450,7 @@ def create_basic_lease_document(country, language, property_obj, tenant_obj, add
 
 ### CASH FLOW ###
 @login_required
+@permission_required('auth.can_access_financials', raise_exception=True)
 def cashflow_forecast(request):
     if request.headers.get("x-requested-with") == "XMLHttpRequest":
         horizon_months = int(request.GET.get("horizon", 12))
@@ -1511,6 +1515,7 @@ def cashflow_forecast(request):
 
 ### NOTIFICATIONS ###
 @login_required
+@permission_required('auth.can_access_dashboard', raise_exception=True)
 def notifications_dashboard(request):
     """
     Notifications Dashboard view - shows property management alerts and status
@@ -2290,6 +2295,7 @@ def calculate_portfolio_occupancy_with_period(properties, period_start, period_e
     }
 
 @login_required
+@permission_required('auth.can_access_financials', raise_exception=True)
 def occupancy_trends_view(request):
     """
     Display occupancy, days to fill, and vacancy cost trends over time
@@ -2522,6 +2528,7 @@ def calculate_year_metrics(year):
     }
 
 @login_required
+@permission_required('auth.can_access_financials', raise_exception=True)
 def financial_indicators_view(request):
     """
     Display the Financial Indicators Dashboard - ONLY for Active Properties
@@ -2653,6 +2660,7 @@ def financial_indicators_view(request):
     return render(request, 'finance/financial_indicators.html', context)
 
 @login_required
+@permission_required('auth.can_access_financials', raise_exception=True)
 def vacancy_management_view(request):
     """
     Display the Vacancy Management Dashboard - Occupancy Metrics Only
@@ -2933,12 +2941,13 @@ def calculate_property_expenses_for_year(property_obj, year):
 
 ### PROJECTS ###
 @login_required
+@permission_required('auth.can_access_projects', raise_exception=True)
 def projects_list(request):
     """Display list of projects with filtering and handle modal-based deletion - FULLY OPTIMIZED"""
     
     # Handle POST request for modal-based deletion
     if request.method == 'POST' and 'delete_project_id' in request.POST:
-        if not request.user.is_superuser:
+        if not request.user.has_perm('auth.can_edit_projects'):
             messages.error(request, "You don't have permission to delete projects.")
             return redirect('projects')
         
@@ -3046,13 +3055,10 @@ def projects_list(request):
     
     return render(request, 'projects/projects.html', context)
 
+@permission_required('auth.can_edit_projects', raise_exception=True)
 @login_required
 def projects_add(request):
     """Add new project"""
-    if not request.user.is_superuser:
-        messages.error(request, "You don't have permission to add projects.")
-        return redirect('projects')
-    
     if request.method == 'POST':
         project_name = request.POST.get('project_name')
         prop_id = request.POST.get('prop_id')
@@ -3095,12 +3101,9 @@ def projects_add(request):
     return render(request, 'projects/projects_add.html', context)
 
 @login_required
+@permission_required('auth.can_edit_projects', raise_exception=True)
 def projects_edit(request, project_id):
     """Edit existing project - enhanced to handle Gantt chart returns"""
-    if not request.user.is_superuser:
-        messages.error(request, "You don't have permission to edit projects.")
-        return redirect('projects')
-    
     project = get_object_or_404(Project, project_id=project_id)
     
     # Check if coming from Gantt chart
@@ -3150,11 +3153,9 @@ def projects_edit(request, project_id):
     return render(request, 'projects/projects_edit.html', context)
 
 @login_required
+@permission_required('auth.can_edit_projects', raise_exception=True)
 def projects_delete(request, project_id):
     """Delete project with enhanced cascade deletion and warnings - OPTIMIZED"""
-    if not request.user.is_superuser:
-        messages.error(request, "You don't have permission to delete projects.")
-        return redirect('projects')
     
     # OPTIMIZED: Single query with prefetching for counts
     project = get_object_or_404(
@@ -3224,6 +3225,7 @@ def projects_delete(request, project_id):
     return render(request, 'projects/projects_delete.html', context)
 
 @login_required
+@permission_required('auth.can_access_projects', raise_exception=True)
 def projects_detail(request, project_id):
     """Display project details with tasks and subtasks - OPTIMIZED"""
     # OPTIMIZED: Single query with comprehensive prefetching
@@ -3251,12 +3253,9 @@ def projects_detail(request, project_id):
     return render(request, 'projects/projects_detail.html', context)
 
 @login_required
+@permission_required('auth.can_edit_projects', raise_exception=True)
 def project_tasks_add(request, project_id):
     """Add new task to project"""
-    if not request.user.is_superuser:
-        messages.error(request, "You don't have permission to add tasks.")
-        return redirect('projects_detail', project_id=project_id)
-    
     project = get_object_or_404(Project, project_id=project_id)  # Updated model name
     
     if request.method == 'POST':
@@ -3301,14 +3300,8 @@ def project_tasks_add(request, project_id):
     
     return render(request, 'projects/project_tasks_add.html', context)
 
-from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib import messages
-from django.core.exceptions import ValidationError
-from django.utils import timezone
-from datetime import datetime
-from decimal import Decimal
-from .models import Project, ProjectTask
-
+@login_required
+@permission_required('auth.can_edit_projects', raise_exception=True)
 def project_tasks_edit(request, project_id, task_id):
     """
     Edit a project task or subtask with support for Greek language fields
@@ -3443,6 +3436,7 @@ def project_tasks_edit(request, project_id, task_id):
     return render(request, 'projects/project_tasks_edit.html', context)
 
 @login_required
+@permission_required('auth.can_edit_projects', raise_exception=True)
 @require_http_methods(["POST"])
 def translate_text(request):
     """
@@ -3494,12 +3488,9 @@ def translate_to_greek_service(text):
         return text  # Return original text if translation fails
 
 @login_required
+@permission_required('auth.can_edit_projects', raise_exception=True)
 def project_tasks_delete(request, project_id, task_id):
     """Delete task"""
-    if not request.user.is_superuser:
-        messages.error(request, "You don't have permission to delete tasks.")
-        return redirect('projects_detail', project_id=project_id)
-    
     project = get_object_or_404(Project, project_id=project_id)  # Updated model name
     task = get_object_or_404(ProjectTask, task_id=task_id, project=project)  # Updated model name
     task_name = task.task_name
@@ -3517,12 +3508,9 @@ def project_tasks_delete(request, project_id, task_id):
     return render(request, 'projects/project_tasks_delete.html', context)
 
 @login_required
+@permission_required('auth.can_edit_projects', raise_exception=True)
 def project_subtasks_add(request, project_id, parent_task_id):
     """Add subtask to a main task"""
-    if not request.user.is_superuser:
-        messages.error(request, "You don't have permission to add subtasks.")
-        return redirect('projects_detail', project_id=project_id)
-    
     project = get_object_or_404(Project, project_id=project_id)  # Updated model name
     parent_task = get_object_or_404(ProjectTask, task_id=parent_task_id, project=project)  # Updated model name
     
@@ -3571,6 +3559,7 @@ def project_subtasks_add(request, project_id, parent_task_id):
     return render(request, 'projects/project_subtasks_add.html', context)
 
 @login_required
+@permission_required('auth.can_access_projects', raise_exception=True)
 def project_gantt(request, project_id):
     """Display Gantt chart for project with tasks and subtasks - OPTIMIZED"""
     # OPTIMIZED: Single query with comprehensive prefetching
@@ -3703,86 +3692,77 @@ def project_gantt(request, project_id):
     return render(request, 'projects/project_gantt.html', context)
 
 @login_required
+@permission_required('auth.can_edit_projects', raise_exception=True)
+@require_POST
 def ajax_update_project_status(request):
     """AJAX view to update project status"""
-    if request.method == 'POST' and request.user.is_superuser:
-        try:
-            data = json.loads(request.body)
-            project_id = data.get('project_id')
-            new_status = data.get('status')
-            actual_completion_date = data.get('actual_completion_date')
-            
-            project = get_object_or_404(Project, project_id=project_id)
-            project.project_status = new_status
-            
-            if new_status == 'Completed' and actual_completion_date:
-                project.project_actual_completion_date = actual_completion_date
-            elif new_status != 'Completed':
-                project.project_actual_completion_date = None
-            
-            project.save()
-            
-            return JsonResponse({
-                'success': True,
-                'message': f"Project status updated to {new_status}"
-            })
-            
-        except Exception as e:
-            return JsonResponse({
-                'success': False,
-                'message': f"Error updating project status: {str(e)}"
-            })
-    
-    return JsonResponse({'success': False, 'message': 'Invalid request'})
+    try:
+        data = json.loads(request.body)
+        project_id = data.get('project_id')
+        new_status = data.get('status')
+        actual_completion_date = data.get('actual_completion_date')
+        
+        project = get_object_or_404(Project, project_id=project_id)
+        project.project_status = new_status
+        
+        if new_status == 'Completed' and actual_completion_date:
+            project.project_actual_completion_date = actual_completion_date
+        elif new_status != 'Completed':
+            project.project_actual_completion_date = None
+        
+        project.save()
+        
+        return JsonResponse({
+            'success': True,
+            'message': f"Project status updated to {new_status}"
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f"Error updating project status: {str(e)}"
+        })
 
 @login_required
+@permission_required('auth.can_edit_projects', raise_exception=True)
+@require_POST
 def ajax_update_task_status(request):
     """AJAX view to update task status"""
-    if request.method == 'POST' and request.user.is_superuser:
-        try:
-            data = json.loads(request.body)
-            task_id = data.get('task_id')
-            new_status = data.get('status')
-            actual_completion_date = data.get('actual_completion_date')
-            
-            task = get_object_or_404(ProjectTask, task_id=task_id)
-            task.task_status = new_status
-            
-            if new_status == 'Completed' and actual_completion_date:
-                task.task_actual_completion_date = actual_completion_date
-            elif new_status != 'Completed':
-                task.task_actual_completion_date = None
-            
-            task.save()
-            
-            return JsonResponse({
-                'success': True,
-                'message': f"Task status updated to {new_status}"
-            })
-            
-        except Exception as e:
-            return JsonResponse({
-                'success': False,
-                'message': f"Error updating task status: {str(e)}"
-            })
-    
-    return JsonResponse({'success': False, 'message': 'Invalid request'})
+    try:
+        data = json.loads(request.body)
+        task_id = data.get('task_id')
+        new_status = data.get('status')
+        actual_completion_date = data.get('actual_completion_date')
+        
+        task = get_object_or_404(ProjectTask, task_id=task_id)
+        task.task_status = new_status
+        
+        if new_status == 'Completed' and actual_completion_date:
+            task.task_actual_completion_date = actual_completion_date
+        elif new_status != 'Completed':
+            task.task_actual_completion_date = None
+        
+        task.save()
+        
+        return JsonResponse({
+            'success': True,
+            'message': f"Task status updated to {new_status}"
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f"Error updating task status: {str(e)}"
+        })
 
 @login_required
+@permission_required('auth.can_edit_projects', raise_exception=True)
+@require_POST
 def ajax_duplicate_project(request):
     """
     OPTIMIZED: AJAX view to duplicate a project with all its tasks and subtasks,
     adjusting all dates based on the new project start date and handling budget copy options
     """
-    if request.method != 'POST':
-        return JsonResponse({'success': False, 'message': 'Only POST method allowed'})
-    
-    if not request.user.is_superuser:
-        return JsonResponse({
-            'success': False,
-            'message': 'You do not have permission to duplicate projects'
-        })
-    
     try:
         # Parse JSON data
         data = json.loads(request.body)
@@ -4045,6 +4025,7 @@ def ajax_duplicate_project(request):
         })
 
 @login_required
+@permission_required('auth.can_access_projects', raise_exception=True)
 def project_task_list(request, project_id):
     """Display task list for a specific project and assignee - OPTIMIZED"""
     # OPTIMIZED: Single query with comprehensive prefetching
@@ -4219,19 +4200,12 @@ def project_task_list(request, project_id):
     return render(request, 'projects/project_task_list.html', context)
 
 @login_required
+@permission_required('auth.can_edit_projects', raise_exception=True)
+@require_POST
 def ajax_delete_task(request):
     """
     AJAX view to delete a task or subtask
     """
-    if request.method != 'POST':
-        return JsonResponse({'success': False, 'message': 'Only POST method allowed'})
-    
-    if not request.user.is_superuser:
-        return JsonResponse({
-            'success': False,
-            'message': 'You do not have permission to delete tasks'
-        })
-    
     try:
         data = json.loads(request.body)
         task_id = data.get('task_id')
@@ -4306,6 +4280,7 @@ def ajax_delete_task(request):
         })
 
 @login_required
+@permission_required('auth.can_access_projects', raise_exception=True)
 def get_project_assignees(request, project_id):
     """AJAX endpoint to get all assignees for a project - OPTIMIZED"""
     # OPTIMIZED: Single query with prefetching
@@ -4386,6 +4361,7 @@ def home(request):
 
 ### ADMIN ###
 @login_required
+@permission_required('auth.can_access_administration', raise_exception=True)
 def admin_apms(request):
     results = props.objects.all().order_by('prop_country', 'prop_name')
     tresults = tenant.objects.select_related('prop').all().order_by('tenant_name')
@@ -4395,20 +4371,16 @@ def admin_apms(request):
     })
 
 @login_required
+@permission_required('auth.can_access_personal', raise_exception=True)
 def personal_page(request):
     """Personal management page"""
-    if not request.user.is_superuser:
-        messages.error(request, 'You do not have permission to access this page.')
-        return redirect('home')
-    
     return render(request, "personal.html")
 
 @login_required
+@user_passes_test(lambda u: u.is_superuser)
+@permission_required('auth.can_access_administration', raise_exception=True)
 def user_administration(request):
     """User administration screen - list all users"""
-    if not request.user.is_superuser:
-        messages.error(request, 'You do not have permission to access this page.')
-        return redirect('home')
 
     if request.method == 'POST':
         action = request.POST.get('action')
@@ -4448,11 +4420,10 @@ def user_administration(request):
     return render(request, 'user_administration.html', context)
 
 @login_required
+@user_passes_test(lambda u: u.is_superuser)
+@permission_required('auth.can_access_administration', raise_exception=True)
 def user_add(request):
     """Add a new user"""
-    if not request.user.is_superuser:
-        messages.error(request, 'You do not have permission to access this page.')
-        return redirect('home')
     
     if request.method == 'POST':
         first_name = request.POST.get('first_name', '').strip()
@@ -4509,11 +4480,10 @@ def user_add(request):
     return render(request, 'user_add.html', {'form_data': {}})
 
 @login_required
+@user_passes_test(lambda u: u.is_superuser)
+@permission_required('auth.can_access_administration', raise_exception=True)
 def user_edit(request, user_id):
     """Edit an existing user"""
-    if not request.user.is_superuser:
-        messages.error(request, 'You do not have permission to access this page.')
-        return redirect('home')
     
     target_user = get_object_or_404(User, id=user_id)
     profile, _ = UserProfile.objects.get_or_create(user=target_user)
@@ -4572,28 +4542,29 @@ def user_edit(request, user_id):
 
 
 @login_required
+@user_passes_test(lambda u: u.is_superuser)
+@permission_required('auth.can_access_administration', raise_exception=True)
 def user_permissions(request, user_id):
     """Manage module permissions for a user"""
-    if not request.user.is_superuser:
-        messages.error(request, 'You do not have permission to access this page.')
-        return redirect('home')
 
     target_user = get_object_or_404(User, id=user_id)
 
-    # Define all available module permissions
+    # Define all available module permissions.
+    # edit_codename: set this to enable add/edit/delete control for the module.
+    # Leave as None for modules that don't yet have edit-level control.
     all_permissions = [
-        {'codename': 'can_access_properties',  'label': 'Properties',       'icon': 'fa-building'},
-        {'codename': 'can_access_tenants',      'label': 'Tenants',          'icon': 'fa-users'},
-        {'codename': 'can_access_suppliers',    'label': 'Suppliers',        'icon': 'fa-truck'},
-        {'codename': 'can_access_expenses',     'label': 'Expenses',         'icon': 'fa-receipt'},
-        {'codename': 'can_access_petty_cash',   'label': 'Petty Cash',       'icon': 'fa-coins'},
-        {'codename': 'can_access_financials',   'label': 'Financials',       'icon': 'fa-chart-line'},
-        {'codename': 'can_access_invoices',     'label': 'Invoices',         'icon': 'fa-file-invoice'},
-        {'codename': 'can_access_projects',     'label': 'Projects',         'icon': 'fa-project-diagram'},
-        {'codename': 'can_access_issues',       'label': 'Issues',           'icon': 'fa-exclamation-circle'},
-        {'codename': 'can_access_dashboard',    'label': 'Dashboard',        'icon': 'fa-tachometer-alt'},
-        {'codename': 'can_access_administration','label': 'Administration',  'icon': 'fa-cogs'},
-        {'codename': 'can_access_personal',     'label': 'Personal',         'icon': 'fa-user-circle'},
+        {'codename': 'can_access_properties',     'edit_codename': 'can_edit_properties', 'label': 'Properties',       'icon': 'fa-building'},
+        {'codename': 'can_access_tenants',        'edit_codename': 'can_edit_tenants',    'label': 'Tenants',          'icon': 'fa-users'},
+        {'codename': 'can_access_suppliers',      'edit_codename': 'can_edit_suppliers',  'label': 'Suppliers',        'icon': 'fa-truck'},
+        {'codename': 'can_access_expenses',       'edit_codename': 'can_edit_expenses',   'label': 'Expenses',         'icon': 'fa-receipt'},
+        {'codename': 'can_access_petty_cash',     'edit_codename': 'can_edit_petty_cash', 'label': 'Petty Cash',       'icon': 'fa-coins'},
+        {'codename': 'can_access_financials',     'edit_codename': 'can_edit_financials', 'label': 'Financials',       'icon': 'fa-chart-line'},
+        {'codename': 'can_access_invoices',       'edit_codename': 'can_edit_invoices',   'label': 'Invoices',         'icon': 'fa-file-invoice'},
+        {'codename': 'can_access_projects',       'edit_codename': 'can_edit_projects',   'label': 'Projects',         'icon': 'fa-project-diagram'},
+        {'codename': 'can_access_issues',         'edit_codename': 'can_edit_issues',     'label': 'Issues',           'icon': 'fa-exclamation-circle'},
+        {'codename': 'can_access_dashboard',      'edit_codename': None,                  'label': 'Dashboard',        'icon': 'fa-tachometer-alt'},
+        {'codename': 'can_access_administration', 'edit_codename': None,                  'label': 'Administration',   'icon': 'fa-cogs'},
+        {'codename': 'can_access_personal',       'edit_codename': 'can_edit_personal',   'label': 'Personal',         'icon': 'fa-user-circle'},
     ]
 
     from django.contrib.auth.models import Permission
@@ -4607,27 +4578,45 @@ def user_permissions(request, user_id):
             content_type=content_type,
             defaults={'name': f"Can access {perm['label']}"}
         )
+        if perm['edit_codename']:
+            Permission.objects.get_or_create(
+                codename=perm['edit_codename'],
+                content_type=content_type,
+                defaults={'name': f"Can edit {perm['label']}"}
+            )
 
     if request.method == 'POST':
-        # Get submitted permissions
         submitted = request.POST.getlist('permissions')
 
-        # Update permissions for this user
         for perm in all_permissions:
-            permission = Permission.objects.get(
+            # Handle access permission
+            access_permission = Permission.objects.get(
                 codename=perm['codename'],
                 content_type=content_type
             )
-            if perm['codename'] in submitted:
-                target_user.user_permissions.add(permission)
+            has_access = perm['codename'] in submitted
+            if has_access:
+                target_user.user_permissions.add(access_permission)
             else:
-                target_user.user_permissions.remove(permission)
+                target_user.user_permissions.remove(access_permission)
+
+            # Handle edit permission (if applicable)
+            if perm['edit_codename']:
+                edit_permission = Permission.objects.get(
+                    codename=perm['edit_codename'],
+                    content_type=content_type
+                )
+                # Safety: edit requires access. If access isn't granted, revoke edit
+                # even if it was somehow submitted (e.g. via tampered form).
+                if has_access and perm['edit_codename'] in submitted:
+                    target_user.user_permissions.add(edit_permission)
+                else:
+                    target_user.user_permissions.remove(edit_permission)
 
         messages.success(request, f'Permissions updated for "{target_user.username}".')
         return redirect('user_administration')
 
     # GET — build list with current status
-    content_type = ContentType.objects.get_for_model(User)
     user_perm_codenames = set(
         target_user.user_permissions.filter(
             content_type=content_type
@@ -4636,6 +4625,10 @@ def user_permissions(request, user_id):
 
     for perm in all_permissions:
         perm['granted'] = perm['codename'] in user_perm_codenames
+        if perm['edit_codename']:
+            perm['edit_granted'] = perm['edit_codename'] in user_perm_codenames
+        else:
+            perm['edit_granted'] = False
 
     context = {
         'target_user': target_user,
@@ -4645,11 +4638,10 @@ def user_permissions(request, user_id):
     return render(request, 'user_permissions.html', context)
 
 @login_required
+@user_passes_test(lambda u: u.is_superuser)
+@permission_required('auth.can_access_administration', raise_exception=True)
 def user_delete(request, user_id):
     """Permanently delete a disabled user"""
-    if not request.user.is_superuser:
-        messages.error(request, 'You do not have permission to access this page.')
-        return redirect('home')
 
     target_user = get_object_or_404(User, id=user_id)
 
@@ -4722,49 +4714,7 @@ def my_profile(request):
     return render(request, 'my_profile.html', context)
 
 @login_required
-def lease_agreement_report(request, tenant_id):
-    try:
-        # Get tenant and property info
-        tenant_obj = get_object_or_404(tenant, pk=tenant_id)
-        if not hasattr(tenant_obj, 'prop') or not tenant_obj.prop:
-            raise Http404("Tenant has no property assigned")
-        
-        property_name = tenant_obj.prop.prop_name
-        filename = f"{property_name} - Lease Agreement.pdf"
-        file_path = os.path.join(settings.MEDIA_ROOT, 'lease_agreements', filename)
-        
-        context = {
-            'tenant': tenant_obj,
-            'property': tenant_obj.prop,
-            'filename': filename,
-            'file_exists': os.path.exists(file_path),
-            'file_url': os.path.join(settings.MEDIA_URL, 'lease_agreements', filename)
-        }
-        return render(request, 'lease_agreement_report.html', context)
-        
-    except Exception as e:
-        return render(request, 'error.html', {'error': str(e)})
-
-@login_required
-def serve_lease(request, filename):
-    try:
-        # Security validation
-        if not filename.endswith(' - Lease Agreement.pdf'):
-            raise Http404("Invalid filename format")
-            
-        file_path = os.path.join(settings.MEDIA_ROOT, 'lease_agreements', filename)
-        
-        if not os.path.exists(file_path):
-            raise Http404("File not found")
-            
-        response = FileResponse(open(file_path, 'rb'), content_type='application/pdf')
-        response['Cache-Control'] = 'no-cache, no-store, must-revalidate'
-        return response
-        
-    except Exception as e:
-        return Http404(str(e))
-
-@login_required
+@permission_required('auth.can_edit_tenants', raise_exception=True)
 def upload_lease_agreement(request):
     if request.method == 'POST':
         tenant_id = request.POST.get('tenant')
@@ -4805,6 +4755,7 @@ def upload_lease_agreement(request):
     return redirect('admin_apms')
 
 @login_required
+@permission_required('auth.can_access_tenants', raise_exception=True)
 def serve_lease(request, filename):
     """Secure file serving for exact filename format"""
     try:
@@ -4828,6 +4779,7 @@ def serve_lease(request, filename):
         return redirect('admin_apms')
 
 @login_required
+@permission_required('auth.can_edit_properties', raise_exception=True)
 def upload_title_deed(request):
     if request.method == 'POST':
         # Get the selected property name
@@ -4871,6 +4823,7 @@ def upload_title_deed(request):
     return redirect('admin_apms')
 
 @login_required
+@user_passes_test(lambda u: u.is_superuser)
 def admin_clear(request):
 	import os
 	import glob
@@ -4881,6 +4834,7 @@ def admin_clear(request):
 	return redirect("admin_apms")
 
 @login_required
+@permission_required('auth.can_access_administration', raise_exception=True)
 def admin_unpaid(request):
 	import open_invoices
 	rep_output = "Email"
@@ -4894,6 +4848,7 @@ def admin_unpaid(request):
 	return redirect("admin_apms")
 
 @login_required
+@permission_required('auth.can_access_administration', raise_exception=True)
 def admin_renewals(request):
 	import lease_renewal
 	rep_output = "Email"
@@ -4907,6 +4862,8 @@ def admin_renewals(request):
 	return redirect("admin_apms")
 
 @login_required
+@permission_required('auth.can_access_administration', raise_exception=True)
+@permission_required('auth.can_edit_invoices', raise_exception=True)
 def admin_invoices(request):
 	import open_invoices
 	today = date.today()
@@ -4915,6 +4872,7 @@ def admin_invoices(request):
 	return redirect("admin_apms")
 
 ### DASHBOARD ###
+@permission_required('auth.can_access_dashboard', raise_exception=True)
 @login_required
 def property_management_dashboard(request):
     """
@@ -4947,6 +4905,27 @@ def property_management_dashboard(request):
 
 @login_required
 def property_detail(request, property_id, box_type):
+    # Map box_type to owning module's access permission.
+    # Dashboard is a cross-module launcher; each tile is gated by the
+    # underlying module's access permission.
+    box_type_permissions = {
+        'property-report':    'auth.can_access_properties',
+        'title-deed':         'auth.can_access_properties',
+        'tenant':             'auth.can_access_tenants',
+        'lease':              'auth.can_access_tenants',
+        'lease-renewals':     'auth.can_access_tenants',
+        'open-invoices':      'auth.can_access_invoices',
+        'issues':             'auth.can_access_issues',
+        'valuation':          'auth.can_access_financials',
+        'revenues':           'auth.can_access_financials',
+        'budgeted-expenses':  'auth.can_access_financials',
+        'actual-expenses':    'auth.can_access_expenses',
+        'profit-loss':        'auth.can_access_financials',
+    }
+    required_perm = box_type_permissions.get(box_type)
+    if required_perm and not (request.user.is_superuser or request.user.has_perm(required_perm)):
+        raise PermissionDenied
+    
     property_obj = get_object_or_404(props, prop_id=property_id)
     
     # Get the active tenant for this property (there should only be one)
@@ -5239,6 +5218,7 @@ def property_detail(request, property_id, box_type):
     return render(request, 'property_detail.html', context)
 
 @login_required
+@permission_required('auth.can_access_financials', raise_exception=True)
 def dashboard_pl(request, property_id):
     """
     Dedicated view for Profit & Loss dashboard
@@ -5392,11 +5372,13 @@ def dashboard_pl(request, property_id):
 
 ### FINANCE ###
 @login_required
+@permission_required('auth.can_access_financials', raise_exception=True)
 def finance(request):
 #	return redirect("finance")
 	return render (request, "finance.html", {})
 
 @login_required
+@permission_required('auth.can_access_financials', raise_exception=True)
 def finance_revenue(request):
 	prop_output = request.POST.get('propname')
 	if prop_output is None or prop_output == "All":
@@ -5419,6 +5401,7 @@ def finance_revenue(request):
 	})
 
 @login_required
+@permission_required('auth.can_edit_financials', raise_exception=True)
 def finance_revenue_add(request):
     props_data = props.objects.all().order_by('prop_country', 'prop_name')
     revenue_types_list = revenue_types.objects.all()  # Fetch all revenue types
@@ -5431,6 +5414,7 @@ def finance_revenue_add(request):
     })
 
 @login_required
+@permission_required('auth.can_edit_financials', raise_exception=True)
 def finance_revenue_commit(request):
     if request.method == "POST":
         # Extract form data
@@ -5473,6 +5457,7 @@ def finance_revenue_commit(request):
     return redirect('finance_revenue_add')
 
 @login_required
+@permission_required('auth.can_edit_financials', raise_exception=True)
 def finance_revenue_edit(request, revenue_id):
     rev = get_object_or_404(revenue, pk=revenue_id)
     props_data = props.objects.all().order_by('prop_country', 'prop_name')
@@ -5489,6 +5474,7 @@ def finance_revenue_edit(request, revenue_id):
     })
 
 @login_required
+@permission_required('auth.can_edit_financials', raise_exception=True)
 def finance_revenue_edit_commit(request, revenue_id):
     rev = get_object_or_404(revenue, pk=revenue_id)
     
@@ -5547,6 +5533,7 @@ def finance_revenue_edit_commit(request, revenue_id):
     })
 
 @login_required
+@permission_required('auth.can_access_financials', raise_exception=True)
 def finance_revenue_types(request):
     rev_types = revenue_types.objects.all()
     return render(request, "finance_revenue_types.html", {
@@ -5554,11 +5541,13 @@ def finance_revenue_types(request):
     })
 
 @login_required
+@permission_required('auth.can_edit_financials', raise_exception=True)
 def finance_revenue_types_add(request):
     rev_types = revenue_types.objects.all().order_by('revenue_types_name')
     return render(request, "finance_revenue_types_add.html", {"rtresults":rev_types})
 
 @login_required
+@permission_required('auth.can_edit_financials', raise_exception=True)
 def finance_revenue_types_commit(request):
     if request.method == "POST":
         form = RevenueTypesForm(request.POST or None)
@@ -5569,11 +5558,13 @@ def finance_revenue_types_commit(request):
     return render(request, "finance_revenue_types.html", {"rtresults":rev_types})
 
 @login_required
+@permission_required('auth.can_edit_financials', raise_exception=True)
 def finance_revenue_types_edit(request, revenue_types_id):
     rev_types = revenue_types.objects.filter(pk=revenue_types_id)
     return render(request, "finance_revenue_types_edit.html", {"rtresults":rev_types})
 
 @login_required
+@permission_required('auth.can_edit_financials', raise_exception=True)
 def finance_revenue_types_edit_commit(request, revenue_types_id):
     rev = get_object_or_404(revenue_types, pk=revenue_types_id)
     all_types = revenue_types.objects.all().order_by('revenue_types_name')
@@ -5603,6 +5594,7 @@ def finance_revenue_types_edit_commit(request, revenue_types_id):
     })
 
 @login_required
+@permission_required('auth.can_access_financials', raise_exception=True)
 def finance_revenue_line_types(request):
     rev_line_types = revenue_line_types.objects.all()
     return render(request, "finance_revenue_line_types.html", {
@@ -5610,11 +5602,13 @@ def finance_revenue_line_types(request):
     })
 
 @login_required
+@permission_required('auth.can_edit_financials', raise_exception=True)
 def finance_revenue_line_types_add(request):
     rev_line_types = revenue_line_types.objects.all().order_by('revenue_line_types_name')
     return render(request, "finance_revenue_line_types_add.html", {"rltresults":rev_line_types})
 
 @login_required
+@permission_required('auth.can_edit_financials', raise_exception=True)
 def finance_revenue_line_types_commit(request):
     if request.method == "POST":
         form = RevenueLineForm(request.POST or None)
@@ -5625,11 +5619,13 @@ def finance_revenue_line_types_commit(request):
     return render(request, "finance_revenue_line_types.html", {"rltresults":rev_line_types})
 
 @login_required
+@permission_required('auth.can_edit_financials', raise_exception=True)
 def finance_revenue_line_types_edit(request, revenue_line_types_id):
     rev_line_types = revenue_line_types.objects.filter(pk=revenue_line_types_id)
     return render(request, "finance_revenue_line_types_edit.html", {"rltresults":rev_line_types})
 
 @login_required
+@permission_required('auth.can_edit_financials', raise_exception=True)
 def finance_revenue_line_types_edit_commit(request, revenue_line_types_id):
     rev = get_object_or_404(revenue_line_types, pk=revenue_line_types_id)
     all_types = revenue_line_types.objects.all().order_by('revenue_line_types_name')
@@ -5660,6 +5656,7 @@ def finance_revenue_line_types_edit_commit(request, revenue_line_types_id):
     })
 
 @login_required
+@permission_required('auth.can_access_financials', raise_exception=True)
 def finance_expense(request):
     prop_output = request.POST.get('propname')
     if prop_output is None or prop_output == "All":
@@ -5682,6 +5679,7 @@ def finance_expense(request):
     })
 
 @login_required
+@permission_required('auth.can_edit_financials', raise_exception=True)
 def finance_expense_add(request):
     # Get properties with their values (using select_related if it's a ForeignKey)
     props_data = props.objects.all().order_by('prop_country', 'prop_name')
@@ -5704,6 +5702,7 @@ def finance_expense_add(request):
     })
 
 @login_required
+@permission_required('auth.can_edit_financials', raise_exception=True)
 def finance_expense_commit(request):
     if request.method == "POST":
         # Extract form data
@@ -5781,6 +5780,7 @@ def finance_expense_commit(request):
     return redirect('finance_expense_add')
 
 @login_required
+@permission_required('auth.can_edit_financials', raise_exception=True)
 def finance_expense_edit(request, expense_id):
     # Get the existing expense
     try:
@@ -5824,6 +5824,7 @@ def finance_expense_edit(request, expense_id):
     })
 
 @login_required
+@permission_required('auth.can_edit_financials', raise_exception=True)
 def finance_expense_edit_commit(request, expense_id):
     # Get the existing expense first
     try:
@@ -5934,6 +5935,7 @@ def finance_expense_edit_commit(request, expense_id):
     return redirect('finance_expense_edit', expense_id=expense_id)
 
 @login_required
+@permission_required('auth.can_access_financials', raise_exception=True)
 def finance_expense_types(request):
     exp_types = expense_types.objects.all()
     return render(request, "finance_expense_types.html", {
@@ -5941,11 +5943,13 @@ def finance_expense_types(request):
     })
 
 @login_required
+@permission_required('auth.can_edit_financials', raise_exception=True)
 def finance_expense_types_add(request):
     exp_types = expense_types.objects.all().order_by('expense_types_name')
     return render(request, "finance_expense_types_add.html", {"etresults":exp_types})
 
 @login_required
+@permission_required('auth.can_edit_financials', raise_exception=True)
 def finance_expense_types_commit(request):
     if request.method == "POST":
         form = ExpenseTypesForm(request.POST or None)
@@ -5956,11 +5960,13 @@ def finance_expense_types_commit(request):
     return render(request, "finance_expense_types.html", {"etresults":exp_types})
 
 @login_required
+@permission_required('auth.can_edit_financials', raise_exception=True)
 def finance_expense_types_edit(request, expense_types_id):
     exp_types = expense_types.objects.filter(pk=expense_types_id)
     return render(request, "finance_expense_types_edit.html", {"etresults":exp_types})
 
 @login_required
+@permission_required('auth.can_edit_financials', raise_exception=True)
 def finance_expense_types_edit_commit(request, expense_types_id):
     exp = get_object_or_404(expense_types, pk=expense_types_id)
     all_types = expense_types.objects.all().order_by('expense_types_name')
@@ -5991,6 +5997,7 @@ def finance_expense_types_edit_commit(request, expense_types_id):
     })
 
 @login_required
+@permission_required('auth.can_access_financials', raise_exception=True)
 def finance_expense_line_types(request):
     exp_line_types = expense_line_types.objects.all().order_by('expense_line_types_name')
     return render(request, "finance_expense_line_types.html", {
@@ -5998,11 +6005,13 @@ def finance_expense_line_types(request):
     })
 
 @login_required
+@permission_required('auth.can_edit_financials', raise_exception=True)
 def finance_expense_line_types_add(request):
     exp_line_types = expense_line_types.objects.all()
     return render(request, "finance_expense_line_types_add.html", {"eltresults":exp_line_types})
 
 @login_required
+@permission_required('auth.can_edit_financials', raise_exception=True)
 def finance_expense_line_types_commit(request):
     if request.method == "POST":
         form = ExpenseLineForm(request.POST or None)
@@ -6013,6 +6022,7 @@ def finance_expense_line_types_commit(request):
     return render(request, "finance_expense_line_types.html", {"eltresults":exp_line_types})
 
 @login_required
+@permission_required('auth.can_edit_financials', raise_exception=True)
 def finance_expense_line_types_edit(request, expense_line_types_id):
     exp_line_types = expense_line_types.objects.filter(pk=expense_line_types_id)
     
@@ -6028,6 +6038,7 @@ def finance_expense_line_types_edit(request, expense_line_types_id):
     })
 
 @login_required
+@permission_required('auth.can_edit_financials', raise_exception=True)
 def finance_expense_line_types_edit_commit(request, expense_line_types_id):
     exp = get_object_or_404(expense_line_types, pk=expense_line_types_id)
     all_types = expense_line_types.objects.all().order_by('expense_line_types_name')
@@ -6058,13 +6069,12 @@ def finance_expense_line_types_edit_commit(request, expense_line_types_id):
     })
 
 @login_required
+@permission_required('auth.can_edit_financials', raise_exception=True)
 def check_expenses_for_line_type(request, expense_line_type_id):
     """
     Check if there are expenses linked to this expense line type
     Returns JSON with expense details if any exist
     """
-    if not request.user.is_superuser:
-        return JsonResponse({'error': 'Unauthorized'}, status=403)
     
     try:
         # Get the expense line type
@@ -6119,12 +6129,11 @@ def check_expenses_for_line_type(request, expense_line_type_id):
         return JsonResponse({'error': str(e)}, status=500)
 
 @login_required
+@permission_required('auth.can_edit_financials', raise_exception=True)
 def delete_expense_line_type(request, expense_line_type_id):
     """
     Delete an expense line type and all its linked expenses
     """
-    if not request.user.is_superuser:
-        return JsonResponse({'error': 'Unauthorized'}, status=403)
     
     if request.method != 'POST':
         return JsonResponse({'error': 'Method not allowed'}, status=405)
@@ -6166,10 +6175,9 @@ def delete_expense_line_type(request, expense_line_type_id):
         }, status=500)
 
 @login_required
+@permission_required('auth.can_edit_financials', raise_exception=True)
 def preview_prorata_amount_change(request, expense_line_types_id):
     """Compute the before/after pro-rata distribution for a preview modal."""
-    if not request.user.is_superuser:
-        return JsonResponse({'success': False, 'error': 'Unauthorized'}, status=403)
     
     try:
         new_pr_amount = float(request.GET.get('new_pr_amount', 0))
@@ -6257,11 +6265,9 @@ def preview_prorata_amount_change(request, expense_line_types_id):
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
 @login_required
+@permission_required('auth.can_edit_financials', raise_exception=True)
 def finance_expense_line_types_edit_and_recalc_commit(request, expense_line_types_id):
     """Save the Line Type AND cascade new amounts to all linked Expenses."""
-    if not request.user.is_superuser:
-        messages.error(request, "Unauthorized")
-        return redirect('finance_expense_line_types')
     
     if request.method != "POST":
         return redirect('finance_expense_line_types')
@@ -6362,6 +6368,7 @@ def finance_expense_line_types_edit_and_recalc_commit(request, expense_line_type
                         expense_line_types_id=expense_line_types_id)
 
 @login_required
+@permission_required('auth.can_access_financials', raise_exception=True)
 def finance_valuations(request):
     props_list = props.objects.all().order_by('prop_country', 'prop_name')
     valuations = prop_values.objects.all()
@@ -6389,6 +6396,7 @@ def finance_valuations(request):
     })
 
 @login_required
+@permission_required('auth.can_edit_financials', raise_exception=True)
 def finance_valuations_add(request):
 	results = props.objects.all().order_by('prop_country', 'prop_name')
 	vresults = prop_values.objects.all()
@@ -6399,6 +6407,7 @@ def finance_valuations_add(request):
 	return render(request, "finance_valuations_add.html", context)
 
 @login_required
+@permission_required('auth.can_edit_financials', raise_exception=True)
 def finance_valuations_commit(request):
     if request.method == "POST":
         prop_id = request.POST.get('prop_id')  # Get property ID from form
@@ -6432,6 +6441,7 @@ def finance_valuations_commit(request):
     return render(request, "finance_valuations.html", context)
 
 @login_required
+@permission_required('auth.can_edit_financials', raise_exception=True)
 def finance_valuations_edit(request, prop_values_id):
 	try:
 		vresults = prop_values.objects.get(pk=prop_values_id)
@@ -6445,6 +6455,7 @@ def finance_valuations_edit(request, prop_values_id):
 	})
 
 @login_required
+@permission_required('auth.can_edit_financials', raise_exception=True)
 def finance_valuations_edit_commit(request, prop_values_id):
     print("Form data received:", request.POST)
     vresult = prop_values.objects.get(pk=prop_values_id)
@@ -6464,10 +6475,9 @@ def finance_valuations_edit_commit(request, prop_values_id):
     return redirect('finance_valuations')
 
 @login_required
+@permission_required('auth.can_edit_financials', raise_exception=True)
 def preview_valuation_change(request, prop_values_id):
     """Compute the full Pro-Rata impact of a Current Value change."""
-    if not request.user.is_superuser:
-        return JsonResponse({'success': False, 'error': 'Unauthorized'}, status=403)
     
     try:
         new_cv = float(request.GET.get('new_current_value', 0))
@@ -6626,11 +6636,9 @@ def preview_valuation_change(request, prop_values_id):
     })
 
 @login_required
+@permission_required('auth.can_edit_financials', raise_exception=True)
 def finance_valuations_edit_and_recalc_commit(request, prop_values_id):
     """Save the valuation AND cascade new amounts to all linked Pro-Rata Expenses."""
-    if not request.user.is_superuser:
-        messages.error(request, "Unauthorized")
-        return redirect('finance_valuations')
     
     if request.method != "POST":
         return redirect('finance_valuations')
@@ -6719,6 +6727,7 @@ def finance_valuations_edit_and_recalc_commit(request, prop_values_id):
 
 ### TENANTS ###
 @login_required
+@permission_required('auth.can_access_tenants', raise_exception=True)
 def tenant_page(request):
     # Get filter values from the new form
     selected_property = request.POST.get('propname', '').strip()
@@ -6757,18 +6766,21 @@ def tenant_page(request):
     return render(request, "tenant.html", context)
 
 @login_required
+@permission_required('auth.can_edit_tenants', raise_exception=True)
 def tenant_add(request):
 	results = props.objects.all().order_by('prop_country','prop_name')
 	tresults = tenant.objects.all().order_by('tenant_name')
 	return render(request, "tenant_add.html", {"props":results, "tenant":tresults})
 
 @login_required
+@permission_required('auth.can_edit_tenants', raise_exception=True)
 def tenant_edit(request, tenant_id):
 	tresults = tenant.objects.filter(pk=tenant_id)
 	results = props.objects.all().order_by('prop_country','prop_name')
 	return render (request, "tenant_edit.html", {"props":results, "tenant":tresults})
 
 @login_required
+@permission_required('auth.can_edit_tenants', raise_exception=True)
 def tenant_commit(request):
     props_list = props.objects.all().order_by('prop_country','prop_name')
     
@@ -6804,6 +6816,7 @@ def tenant_commit(request):
     })
 
 @login_required
+@permission_required('auth.can_edit_tenants', raise_exception=True)
 def tenant_edit_commit(request, tenant_id):
 	ten = tenant.objects.get(pk=tenant_id)
 	if request.method == "POST":
@@ -6816,6 +6829,7 @@ def tenant_edit_commit(request, tenant_id):
 	return render (request, "tenant.html", {"tenant":tresults, "props":results})
 
 @login_required
+@permission_required('auth.can_access_tenants', raise_exception=True)
 def tenant_lease_agreement(request):
     tenants = tenant.objects.all().order_by('prop__prop_country', 'prop__prop_name', 'tenant_name')
     
@@ -6887,6 +6901,7 @@ def tenant_lease_agreement(request):
     return render(request, 'tenant_lease_agreement.html', context)
 
 @login_required
+@permission_required('auth.can_access_tenants', raise_exception=True)
 def lease_timeline_view(request):
     # Get all properties with their tenants
     properties = props.objects.filter(prop_status='Active').prefetch_related(
@@ -6920,6 +6935,7 @@ def lease_timeline_view(request):
     return render(request, 'lease_timeline.html', context)
 
 @login_required
+@permission_required('auth.can_edit_tenants', raise_exception=True)
 def duplicate_tenant_view(request, tenant_id):
     """
     Duplicate an existing tenant to create a renewal or new lease.
@@ -6979,15 +6995,13 @@ def duplicate_tenant_view(request, tenant_id):
         return redirect('tenant')  # ← FIXED
 
 @login_required
+@permission_required('auth.can_edit_tenants', raise_exception=True)
 def delete_tenant_view(request, tenant_id):
     """
     Delete a tenant and automatically recalculate vacancy periods.
-    Only superusers can delete tenants.
+    Requires can_edit_tenants permission.
     """
-    if not request.user.is_superuser:
-        messages.error(request, 'You do not have permission to delete tenants.')
-        return redirect('tenant')
-    
+
     try:
         tenant_to_delete = tenant.objects.get(pk=tenant_id)
         tenant_name = tenant_to_delete.tenant_name
@@ -7011,6 +7025,7 @@ def delete_tenant_view(request, tenant_id):
 
 ### SUPPLIERS ###
 @login_required
+@permission_required('auth.can_access_suppliers', raise_exception=True)
 def suppliers(request):
     sup_output = request.POST.get('supname')
     sup_count = request.POST.get('supcount')
@@ -7036,16 +7051,19 @@ def suppliers(request):
     return render(request, "suppliers.html", context)
 
 @login_required
+@permission_required('auth.can_edit_suppliers', raise_exception=True)
 def suppliers_add(request):
 	sresults = supplier.objects.all().order_by('supplier_country','supplier_contact_person')
 	return render(request, "suppliers_add.html", {"supplier":sresults})
 
 @login_required
+@permission_required('auth.can_edit_suppliers', raise_exception=True)
 def suppliers_edit(request, supplier_id):
 	sresults = supplier.objects.filter(pk=supplier_id)
 	return render (request, "suppliers_edit.html", {"supplier":sresults})
 
 @login_required
+@permission_required('auth.can_edit_suppliers', raise_exception=True)
 def suppliers_commit(request):
 	if request.method == "POST":
 		form = SupplierForm(request.POST or None)
@@ -7058,6 +7076,7 @@ def suppliers_commit(request):
 	return render (request, "suppliers.html", {"supplier":sresults})
 
 @login_required
+@permission_required('auth.can_edit_suppliers', raise_exception=True)
 def suppliers_edit_commit(request, supplier_id):
 	sup = supplier.objects.get(pk=supplier_id)
 	if request.method == "POST":
@@ -7069,6 +7088,7 @@ def suppliers_edit_commit(request, supplier_id):
 	return render (request, "suppliers.html", {"supplier":sresults})
 
 @login_required
+@permission_required('auth.can_edit_suppliers', raise_exception=True)
 def suppliers_delete(request, supplier_id):
     if request.method == 'POST' and request.user.is_superuser:
         try:
@@ -7086,6 +7106,8 @@ def suppliers_delete(request, supplier_id):
     return redirect('suppliers')
 
 ### INVOICES ###
+
+@permission_required('auth.can_access_invoices', raise_exception=True)
 @login_required
 def invoices_page(request):
     # Get filter values from POST request
@@ -7125,6 +7147,7 @@ def invoices_page(request):
     
     return render(request, "invoices.html", context)
 
+@permission_required('auth.can_edit_invoices', raise_exception=True)
 @login_required
 def invoices_commit(request, invoice_id):
     inv_tbp = invoices.objects.filter(pk=invoice_id).update(invoice_paid="Yes")
@@ -7278,6 +7301,7 @@ Automated Invoice Tracking"""
 
 ### PROPERTIES ###
 @login_required
+@permission_required('auth.can_access_properties', raise_exception=True)
 def properties_page(request):
     # Get filter values from the new form
     search_query = request.POST.get('search', '').strip()
@@ -7311,6 +7335,7 @@ def properties_page(request):
     return render(request, "properties.html", context)
 
 @login_required
+@permission_required('auth.can_access_properties', raise_exception=True)
 def properties_map_view(request):
     """Display all properties on an interactive map"""
     
@@ -7356,6 +7381,7 @@ def properties_map_view(request):
     return render(request, 'map_view.html', context)
 
 @login_required
+@permission_required('auth.can_access_properties', raise_exception=True)
 def properties_title_deed(request):
     properties = props.objects.all().order_by('prop_country','prop_name')
     
@@ -7427,12 +7453,14 @@ def properties_title_deed(request):
     return render(request, 'properties_title_deed.html', context)
 
 @login_required
+@permission_required('auth.can_edit_properties', raise_exception=True)
 def properties_add(request):
 	results = props.objects.all().order_by('prop_country','prop_name')
 	existing_names = list(props.objects.values_list('prop_name', flat=True))
 	return render(request, "properties_add.html", {"props":results, "existing_names": existing_names})
 
 @login_required
+@permission_required('auth.can_edit_properties', raise_exception=True)
 def properties_commit(request):
 	if request.method == "POST":
 		form = PropForm(request.POST or None)
@@ -7443,6 +7471,7 @@ def properties_commit(request):
 	return render (request, "properties.html", {"props":results})
 
 @login_required
+@permission_required('auth.can_edit_properties', raise_exception=True)
 def properties_edit(request, prop_id):
     # Get the current property being edited
     current_property = get_object_or_404(props, pk=prop_id)
@@ -7456,6 +7485,7 @@ def properties_edit(request, prop_id):
     })
 
 @login_required
+@permission_required('auth.can_edit_properties', raise_exception=True)
 def properties_edit_commit(request, prop_id):
     prop = get_object_or_404(props, pk=prop_id)
     existing_names = props.objects.exclude(prop_id=prop_id).values_list('prop_name', flat=True)
@@ -7492,6 +7522,7 @@ def properties_edit_commit(request, prop_id):
 
 
 ### ACTUAL EXPENSES ###
+@permission_required('auth.can_edit_expenses', raise_exception=True)
 @login_required
 def act_expense_manage_document(request):
     """
@@ -7604,6 +7635,7 @@ def act_expense_manage_document(request):
 
 from datetime import datetime
 
+@permission_required('auth.can_access_expenses', raise_exception=True)
 @login_required
 def act_expense_all(request):
     # Get filter parameters from request
@@ -7683,119 +7715,7 @@ def act_expense_all(request):
         'selected_to_date': to_date,
     })
 
-@login_required
-def act_expense_upload_inv(request):
-    # Get all expenses to display in the table
-    expenses = act_expense.objects.all().order_by('-act_expense_date')
-    
-    if request.method == 'POST':
-        action = request.POST.get('action')
-        document_action = request.POST.get('document_action')  # Get the document action type
-        expense_id = request.POST.get('expense_id')
-        
-        if not expense_id:
-            messages.error(request, 'No expense selected')
-            return redirect('act_expense_upload_inv')
-        
-        try:
-            expense = get_object_or_404(act_expense, pk=expense_id)
-            
-            if action == 'delete':
-                # Handle file deletion
-                if expense.act_expense_document:
-                    # Delete the physical file
-                    if expense.act_expense_document.storage.exists(expense.act_expense_document.name):
-                        expense.act_expense_document.delete(save=False)
-                    
-                    # Clear the database field
-                    expense.act_expense_document = None
-                    expense.save()
-                    
-                    messages.success(request, f'Document deleted successfully for expense on {expense.act_expense_date}!')
-                else:
-                    messages.warning(request, 'No document found to delete.')
-                    
-            elif action == 'upload':
-                # Handle file upload
-                if 'act_expense_document' in request.FILES:
-                    uploaded_file = request.FILES['act_expense_document']
-                    
-                    # Validate file size (5MB limit)
-                    if uploaded_file.size > 5 * 1024 * 1024:
-                        messages.error(request, 'File size exceeds 5MB limit')
-                        return redirect('act_expense_upload_inv')
-                    
-                    # Validate file type
-                    allowed_extensions = ['.pdf', '.jpg', '.jpeg', '.png', '.xlsx', '.xls', '.doc', '.docx']
-                    file_extension = os.path.splitext(uploaded_file.name)[1].lower()
-                    
-                    if file_extension not in allowed_extensions:
-                        messages.error(request, 'Invalid file type. Please upload PDF, JPG, PNG, Excel, or Word files only.')
-                        return redirect('act_expense_upload_inv')
-                    
-                    # Check if we're adding to existing or replacing
-                    if document_action == 'add_to_existing' and expense.act_expense_document:
-                        # For merge, existing file must be PDF
-                        if not is_pdf(expense.act_expense_document):
-                            messages.error(request, 'Cannot merge: Existing document is not a PDF. Please use Replace instead.')
-                            return redirect('act_expense_upload_inv')
-                        
-                        # Convert uploaded file to PDF first if necessary
-                        try:
-                            pdf_content, pdf_filename = convert_to_pdf(uploaded_file)
-                            
-                            # Merge the PDFs (pdf_content is already a ContentFile)
-                            merged_pdf = merge_pdfs(expense.act_expense_document, pdf_content)
-                            
-                            # Generate a new filename
-                            original_name = os.path.splitext(os.path.basename(expense.act_expense_document.name))[0]
-                            new_filename = f"{original_name}_merged.pdf"
-                            
-                            # Delete the old file
-                            if expense.act_expense_document.storage.exists(expense.act_expense_document.name):
-                                expense.act_expense_document.delete(save=False)
-                            
-                            # Save the merged PDF
-                            expense.act_expense_document.save(new_filename, merged_pdf, save=True)
-                            
-                            messages.success(request, f'Documents merged successfully for expense on {expense.act_expense_date}!')
-                        except ValueError as e:
-                            messages.error(request, f'Error: {str(e)}')
-                            return redirect('act_expense_upload_inv')
-                        except Exception as e:
-                            messages.error(request, f'Error merging documents: {str(e)}')
-                            return redirect('act_expense_upload_inv')
-                    else:
-                        # Regular upload/replace with automatic PDF conversion
-                        # Delete existing file if present
-                        if expense.act_expense_document:
-                            if expense.act_expense_document.storage.exists(expense.act_expense_document.name):
-                                expense.act_expense_document.delete(save=False)
-                        
-                        # Convert to PDF if necessary
-                        try:
-                            pdf_content, pdf_filename = convert_to_pdf(uploaded_file)
-                            expense.act_expense_document.save(pdf_filename, pdf_content, save=True)
-                            
-                            # Show different message if conversion happened
-                            if file_extension != '.pdf':
-                                messages.success(request, f'Document uploaded and converted to PDF successfully for expense on {expense.act_expense_date}!')
-                            else:
-                                messages.success(request, f'Document uploaded successfully for expense on {expense.act_expense_date}!')
-                        except Exception as e:
-                            messages.error(request, f'Error processing document: {str(e)}')
-                            return redirect('act_expense_upload_inv')
-                else:
-                    messages.error(request, 'Please select a file to upload')
-                    
-        except Exception as e:
-            messages.error(request, f'Error processing request: {str(e)}')
-    
-    context = {
-        'expenses': expenses,
-    }
-    return render(request, 'act_expense_upload_inv.html', context)
-
+@permission_required('auth.can_access_expenses', raise_exception=True)
 @login_required
 def act_expense_view(request):
     # Get year/month from request or use current year as default
@@ -7862,10 +7782,17 @@ def act_expense_view(request):
         'selected_property_id': property_id
     })
 
+@permission_required('auth.can_edit_expenses', raise_exception=True)
 @login_required
 def act_expense_edit(request, expense_id):
     # Get the current expense being edited
     current_expense = get_object_or_404(act_expense, pk=expense_id)
+
+    # Non-superusers cannot edit approved or paid expenses
+    if not request.user.is_superuser:
+        if current_expense.act_expense_approved == 'Yes' or current_expense.act_expense_paid == 'Yes':
+            messages.error(request, 'You cannot edit an expense that has been approved or paid.')
+            return redirect('act_expense_all')
     
     # Get property details from props table
     results = props.objects.filter(prop_status="Active").order_by('prop_country','prop_name')
@@ -7875,11 +7802,18 @@ def act_expense_edit(request, expense_id):
         "current_expense": current_expense,
     })
 
+@permission_required('auth.can_edit_expenses', raise_exception=True)
 @login_required
 def act_expense_edit_commit(request, expense_id):
     if request.method == 'POST':
         try:
             expense = act_expense.objects.get(act_expense_id=expense_id)
+            
+            # Non-superusers cannot edit approved or paid expenses
+            if not request.user.is_superuser:
+                if expense.act_expense_approved == 'Yes' or expense.act_expense_paid == 'Yes':
+                    messages.error(request, 'You cannot edit an expense that has been approved or paid.')
+                    return redirect('act_expense_all')
             
             # Update expense fields
             expense.act_expense_date = request.POST.get('act_expense_date')
@@ -7896,6 +7830,9 @@ def act_expense_edit_commit(request, expense_id):
                     paid_value = request.POST.get('act_expense_paid_hidden')
                 
                 expense.act_expense_paid = paid_value
+            # Note: for non-superusers, we do NOT read approved/paid from the form.
+            # We leave expense.act_expense_approved and expense.act_expense_paid at their
+            # DB-loaded values, which blocks any form tampering.
             
             expense.save()
             
@@ -7905,32 +7842,10 @@ def act_expense_edit_commit(request, expense_id):
             messages.error(request, 'Expense not found.')
         except Exception as e:
             messages.error(request, f'Error updating expense: {str(e)}')
-    
+
     return redirect('act_expense_all')
 
-@login_required
-def get_expense_invoice(request, expense_id):
-    try:
-        # Adjust this query based on your Expense model
-        # expense_id might be the date or actual expense ID
-        expense = YourExpenseModel.objects.filter(
-            # Add your filter logic here - could be by date, ID, etc.
-            date=expense_id  # or id=expense_id
-        ).first()
-        
-        if expense and expense.invoice_file:  # Adjust field name
-            response = HttpResponse(
-                expense.invoice_file.read(), 
-                content_type='application/pdf'  # or detect content type
-            )
-            response['Content-Disposition'] = f'inline; filename="invoice_{expense_id}.pdf"'
-            return response
-        else:
-            raise Http404("Invoice not found")
-            
-    except Exception as e:
-        raise Http404("Invoice not found")
-
+@user_passes_test(lambda u: u.is_superuser, login_url='/', redirect_field_name=None)
 @login_required
 def mark_approved(request, expense_id):
     expense = get_object_or_404(act_expense, pk=expense_id)
@@ -7951,6 +7866,7 @@ def mark_approved(request, expense_id):
             messages.warning(request, "Expense approved, but email could not be sent.")
     return redirect('act_expense_all')
 
+@user_passes_test(lambda u: u.is_superuser, login_url='/', redirect_field_name=None)
 @login_required
 def mark_paid(request, expense_id):
     expense = get_object_or_404(act_expense, pk=expense_id)
@@ -7971,16 +7887,25 @@ def mark_paid(request, expense_id):
             messages.warning(request, "Expense marked as paid, but email could not be sent.")
     return redirect('act_expense_all')
 
+@permission_required('auth.can_edit_expenses', raise_exception=True)
 @login_required
 def mark_deleted(request, expense_id):
     try:
         expense = get_object_or_404(act_expense, pk=expense_id)
+        
+        # Non-superusers cannot delete approved or paid expenses
+        if not request.user.is_superuser:
+            if expense.act_expense_approved == 'Yes' or expense.act_expense_paid == 'Yes':
+                messages.error(request, 'You cannot delete an expense that has been approved or paid.')
+                return redirect('act_expense_all')
+        
         expense.delete()  # Permanently deletes the record
         messages.success(request, "Expense deleted successfully")
     except Exception as e:
         messages.error(request, f"Error deleting expense: {str(e)}")
     return redirect('act_expense_all')
 
+@permission_required('auth.can_edit_expenses', raise_exception=True)
 @login_required
 def act_expense_add(request):
     results = props.objects.filter(prop_status="Active").order_by('prop_country','prop_name')
@@ -8253,6 +8178,7 @@ Alivente Property Management System"""
         # Close database connection
         connection.close()
 
+@permission_required('auth.can_edit_expenses', raise_exception=True)
 @login_required
 def act_expense_commit(request):
     if request.method == 'POST':
@@ -8316,6 +8242,7 @@ def act_expense_commit(request):
 
 ### PETTY CASH ###
 @login_required
+@permission_required('auth.can_access_petty_cash', raise_exception=True)
 def petty_cash(request):
 	presults = petty.objects.all().order_by('petty_cash_date')
 	pvalues = petty.objects.values()
@@ -8328,6 +8255,7 @@ def petty_cash(request):
 	return render (request, "petty_cash.html", {"petty":presults, "balance":balance})
 
 @login_required
+@permission_required('auth.can_edit_petty_cash', raise_exception=True)
 def petty_cash_commit(request):
 	if request.method == "POST":
 		form = PettyForm(request.POST or None)
@@ -8346,6 +8274,7 @@ def petty_cash_commit(request):
 	return render (request, "petty_cash.html", {"petty":presults, "balance":balance})
 
 @login_required
+@permission_required('auth.can_edit_petty_cash', raise_exception=True)
 def petty_cash_add(request):
 	presults = petty.objects.all().order_by('petty_cash_date')
 	return render(request, "petty_cash_add.html", {"petty":presults})
@@ -8353,6 +8282,7 @@ def petty_cash_add(request):
 
 ### ISSUES - FRIDAY STATUS REPORT ###
 @login_required
+@permission_required('auth.can_access_issues', raise_exception=True)
 def fsr(request):
     # Get filter parameters
     prop_output = request.POST.get('propname', '').strip()
@@ -8408,10 +8338,9 @@ def fsr(request):
 
 @login_required
 @require_POST
+@permission_required('auth.can_edit_issues', raise_exception=True)
 def delete_issue(request, issue_id):
-    if not request.user.is_superuser:
-        return JsonResponse({'success': False, 'error': 'Permission denied'})
-    
+   
     try:
         with transaction.atomic():
             # Get the issue (using your actual model name)
@@ -8428,6 +8357,7 @@ def delete_issue(request, issue_id):
         return JsonResponse({'success': False, 'error': str(e)})
 
 @login_required
+@permission_required('auth.can_edit_issues', raise_exception=True)
 def fsr_add(request):
 	results = props.objects.all().order_by('prop_country','prop_name')
 	isresults = issues.objects.all().order_by('issues_date_logged','issues_status')
@@ -8436,6 +8366,7 @@ def fsr_add(request):
 	return render(request, "fsr_add.html", {"props":results, "issues":isresults, "issues_details":idresults, "log_date":log_date})
 
 @login_required
+@permission_required('auth.can_edit_issues', raise_exception=True)
 def fsr_commit(request):
     if request.method == "POST":
         form = IssuesForm(request.POST or None)
@@ -8447,6 +8378,7 @@ def fsr_commit(request):
     return redirect(reverse("fsr_details", args=[is_id]) + "?from=fsr_add&origin=fsr")
 
 @login_required
+@permission_required('auth.can_access_issues', raise_exception=True)
 def fsr_details(request, issues_id):
     isresults = issues.objects.filter(pk=issues_id)
     results = props.objects.all().order_by('prop_country','prop_name')
@@ -8476,6 +8408,7 @@ def fsr_details(request, issues_id):
     return render(request, "fsr_details.html", context)
 
 @login_required
+@permission_required('auth.can_edit_issues', raise_exception=True)
 def fsr_commit_status_change(request):
     if request.method == "POST":
         # Get form data
@@ -8515,6 +8448,7 @@ def fsr_commit_status_change(request):
                 return redirect(reverse('fsr') + "?refresh=true")
 
 @login_required
+@permission_required('auth.can_edit_issues', raise_exception=True)
 def fsr_comment_add(request, issues_id):
     if request.method == 'POST':
         # Get comment text from form
@@ -8562,6 +8496,7 @@ def fsr_comment_add(request, issues_id):
     # If not POST, redirect to details page
     return redirect('fsr_details', issues_id=issues_id)
 
+@permission_required('auth.can_access_issues', raise_exception=True)
 def fsr_pdf(request):
     """
     Generate PDF version of FSR report
@@ -8725,6 +8660,7 @@ def get_fsr_context_data(request):
         connection.close()
 
 @login_required
+@permission_required('auth.can_edit_issues', raise_exception=True)
 def fsr_notification(request):
     from django.db import connection
     from django.db.utils import OperationalError, InterfaceError
@@ -8909,6 +8845,7 @@ def fsr_notification(request):
     return redirect('fsr')
 
 @login_required
+@permission_required('auth.can_access_issues', raise_exception=True)
 def comments_report(request):
     """Generate a report of all comments with filtering by time period"""
     
@@ -8986,15 +8923,11 @@ def comments_report(request):
     return render(request, 'comments_report.html', context)
 
 @login_required
+@permission_required('auth.can_edit_issues', raise_exception=True)
 def delete_comment(request, comment_id):
     """Delete a comment from the issues_details table (admin only)"""
     from django.urls import reverse
     from urllib.parse import urlencode
-    
-    # Check if user is superuser
-    if not request.user.is_superuser:
-        messages.error(request, 'You do not have permission to delete comments.')
-        return HttpResponseForbidden("You do not have permission to delete comments.")
     
     # Only allow POST requests for deletion
     if request.method == 'POST':
@@ -9025,6 +8958,7 @@ def delete_comment(request, comment_id):
     return redirect(url)
 
 @login_required
+@permission_required('auth.can_access_issues', raise_exception=True)
 def get_issue_details(request, issue_id):
     """
     Fetch issue details and all comments for modal display
@@ -9077,6 +9011,7 @@ def get_issue_details(request, issue_id):
 ### REPORTS - DASHBOARD (FROM HOME PAGE) ###
 # Add these views to your views.py file
 @login_required
+@permission_required('auth.can_access_financials', raise_exception=True)
 def revenue_details_view(request):
     """
     View to show revenue details breakdown for budgeted/fixed revenues
@@ -9160,6 +9095,7 @@ def revenue_details_view(request):
     return render(request, 'revenue_details.html', context)
 
 @login_required
+@permission_required('auth.can_access_financials', raise_exception=True)
 def budget_expense_details_view(request):
     """
     View to show budgeted expense details breakdown
@@ -9243,6 +9179,7 @@ def budget_expense_details_view(request):
     return render(request, 'budget_expense_details.html', context)
 
 @login_required
+@permission_required('auth.can_access_financials', raise_exception=True)
 def total_expense_details_view(request):
     """
     View to show combined actual + budgeted expense details
@@ -9320,6 +9257,7 @@ def total_expense_details_view(request):
     return render(request, 'total_expense_details.html', context)
 
 @login_required
+@permission_required('auth.can_access_financials', raise_exception=True)
 def finance_pl(request):
     # Get selected properties from request
     selected_properties = request.GET.getlist('properties')
@@ -9582,6 +9520,7 @@ def finance_pl(request):
     return render(request, 'finance_pl.html', context)
 
 @login_required
+@permission_required('auth.can_access_financials', raise_exception=True)
 def finance_pl_act(request):
     # Get selected year from request (default to 'budget')
     selected_year = request.GET.get('year', 'budget')
@@ -9954,6 +9893,7 @@ def finance_pl_act(request):
     })
 
 @login_required
+@permission_required('auth.can_access_petty_cash', raise_exception=True)
 def petty_cash_rep(request):
 	import petty_cash
 	rep_output = request.POST.get('d_e')
@@ -9965,6 +9905,7 @@ def petty_cash_rep(request):
 	return redirect('home')
 
 @login_required
+@permission_required('auth.can_access_tenants', raise_exception=True)
 def lease_agreements(request):
 	import print_lease
 	prop = request.POST.get('propname')
@@ -9977,6 +9918,7 @@ def lease_agreements(request):
 	return redirect('home')
 
 @login_required
+@permission_required('auth.can_access_properties', raise_exception=True)
 def title_deeds(request):
 	import print_title
 	prop = request.POST.get('propname')
@@ -9989,6 +9931,7 @@ def title_deeds(request):
 	return redirect('home')
 
 @login_required
+@permission_required('auth.can_access_properties', raise_exception=True)
 def prop_rep(request):
 	import print_prop
 	prop = request.POST.get('propname')
@@ -10001,6 +9944,7 @@ def prop_rep(request):
 	return redirect('home')
 
 @login_required
+@permission_required('auth.can_access_properties', raise_exception=True)
 def property_report(request, prop_id):
     today = date.today()
     property = get_object_or_404(props.objects.only(
@@ -10052,6 +9996,7 @@ def property_report(request, prop_id):
     return render(request, 'property_report.html', context)
 
 @login_required
+@permission_required('auth.can_access_properties', raise_exception=True)
 def title_deed_report(request, prop_id):
     property = get_object_or_404(props, pk=prop_id)
     
@@ -10066,6 +10011,7 @@ def title_deed_report(request, prop_id):
     })
 
 @login_required
+@permission_required('auth.can_access_tenants', raise_exception=True)
 def lease_agreement_report(request, tenant_id):
 	today = date.today()
 	tenant_obj = get_object_or_404(tenant.objects.only(
@@ -10091,6 +10037,7 @@ def lease_agreement_report(request, tenant_id):
 	return render(request, 'lease_agreement_report.html', context)
 
 @login_required
+@permission_required('auth.can_access_tenants', raise_exception=True)
 def tenant_report(request, tenant_id):
 	today = date.today()
 	tenant_obj = get_object_or_404(tenant.objects.only(
@@ -10107,6 +10054,7 @@ def tenant_report(request, tenant_id):
 	return render(request, 'tenant_report.html', context)
 
 @login_required
+@permission_required('auth.can_access_suppliers', raise_exception=True)
 def supplier_report(request, supplier_id):
 	today = date.today()
 	supplier_obj = get_object_or_404(supplier.objects.only(
@@ -10121,6 +10069,7 @@ def supplier_report(request, supplier_id):
 	return render(request, 'supplier_report.html', context)
 
 @login_required
+@permission_required('auth.can_access_tenants', raise_exception=True)
 def tenant_rep(request):
 	import print_tenant
 	prop = request.POST.get('propname')
@@ -10133,6 +10082,7 @@ def tenant_rep(request):
 	return redirect('home')
 
 @login_required
+@permission_required('auth.can_access_suppliers', raise_exception=True)
 def suppliers_rep(request):
 	import print_supplier
 	sup = request.POST.get('supname')
@@ -10145,6 +10095,7 @@ def suppliers_rep(request):
 	return redirect('home')
 
 @login_required
+@permission_required('auth.can_access_issues', raise_exception=True)
 def fsr_rep(request):
 	import fsr
 	rep_type = request.POST.get('d_s')
@@ -10158,6 +10109,7 @@ def fsr_rep(request):
 	return redirect('home')
 
 @login_required
+@permission_required('auth.can_access_issues', raise_exception=True)
 def friday_status_report(request):
     from django.db import connection
     from django.db.utils import OperationalError, InterfaceError
@@ -10363,6 +10315,7 @@ def friday_status_report(request):
             return redirect('fsr')
 
 @login_required
+@permission_required('auth.can_access_issues', raise_exception=True)
 def resolved_issues_report(request):
     # Get dates from GET parameters
     f_date_str = request.GET.get('f_date')
@@ -10487,6 +10440,7 @@ def resolved_issues_report(request):
         return redirect('fsr')
 
 @login_required
+@permission_required('auth.can_access_issues', raise_exception=True)
 def issues_rep(request):
 	import issues
 	f_d = request.POST.get('from_date')
@@ -10505,6 +10459,7 @@ def issues_rep(request):
 	return redirect('home')
 
 @login_required
+@permission_required('auth.can_access_invoices', raise_exception=True)
 def open_invoices(request):
 	import open_invoices
 	rep_output = request.POST.get('d_e')
@@ -10517,6 +10472,7 @@ def open_invoices(request):
 	return redirect('home')
 
 @login_required
+@permission_required('auth.can_access_invoices', raise_exception=True)
 def open_invoices_report(request):
     
     today = date.today()
@@ -10637,6 +10593,7 @@ def open_invoices_report(request):
     return render(request, 'open_invoices_report.html', context)
 
 @login_required
+@permission_required('auth.can_access_tenants', raise_exception=True)
 def lease_renewal_report(request):
     
     today = date.today()
@@ -10721,6 +10678,7 @@ def lease_renewal_report(request):
     return render(request, 'lease_renewal_report.html', context)
 
 @login_required
+@permission_required('auth.can_access_tenants', raise_exception=True)
 def lease_renewal(request):
 	import lease_renewal
 	rep_output = request.POST.get('d_e')
@@ -10749,6 +10707,7 @@ def login_user(request):
 	else:
 		return render(request, 'login.html', {})
 
+@login_required
 def logout_user(request):
     logout(request)
     messages.success(request, ('You Have Succefully Logged Out.'))
@@ -10869,11 +10828,10 @@ def get_or_create_preparation(name):
 # RECIPE MANAGEMENT
 
 @login_required
+@permission_required('auth.can_edit_personal', raise_exception=True)
 @require_POST
 def send_shopping_list(request):
     """Generate shopping list with unit conversion - DEBUG VERSION"""
-    if not request.user.is_superuser:
-        return JsonResponse({'success': False, 'error': 'Permission denied'}, status=403)
     
     try:
         data = json.loads(request.body)
@@ -10970,6 +10928,7 @@ def send_shopping_list(request):
         }, status=500)
 
 @login_required
+@permission_required('auth.can_access_personal', raise_exception=True)
 def recipe_book_detail(request, recipe_id):
     recipe = get_object_or_404(Recipe, recipe_id=recipe_id)
     ingredients = recipe.recipe_ingredients.select_related(
@@ -11040,14 +10999,15 @@ def recipe_book_detail(request, recipe_id):
     return JsonResponse(data)
 
 @login_required
+@permission_required('auth.can_access_personal', raise_exception=True)
 def recipe_management(request):
     """Recipe management page with multi-select filtering, A-Z filter, and pagination"""
-    if not request.user.is_superuser:
-        messages.error(request, 'You do not have permission to access this page.')
-        return redirect('home')
-    
     # Handle delete action
     if request.method == 'POST' and request.POST.get('action') == 'delete':
+        if not request.user.has_perm('auth.can_edit_personal'):
+            messages.error(request, "You don't have permission to delete recipes.")
+            return redirect('recipe_management')
+        
         recipe_id = request.POST.get('recipe_id')
         try:
             recipe = Recipe.objects.get(recipe_id=recipe_id)
@@ -11226,6 +11186,8 @@ def recipe_management(request):
     return render(request, 'recipe_management.html', context)
 
 @login_required
+@permission_required('auth.can_edit_personal', raise_exception=True)
+@require_POST
 def recipe_manage_document(request):
     """Handle document upload, replacement, merging and deletion for recipes"""
     if request.method == 'POST':
@@ -11320,10 +11282,10 @@ def recipe_manage_document(request):
     return redirect('recipe_management')
 
 @login_required
+@permission_required('auth.can_edit_personal', raise_exception=True)
+@require_POST
 def duplicate_recipe(request, recipe_id):
     """Duplicate a recipe with all its ingredients and related data"""
-    if not request.user.is_superuser:
-        return JsonResponse({'success': False, 'error': 'Permission denied'}, status=403)
     
     if request.method != 'POST':
         return JsonResponse({'success': False, 'error': 'POST required'}, status=405)
@@ -11432,11 +11394,9 @@ def duplicate_recipe(request, recipe_id):
 # ============================================
 
 @login_required
+@permission_required('auth.can_access_personal', raise_exception=True)
 def view_recipe(request, recipe_id):
     """View recipe detail page"""
-    if not request.user.is_superuser:
-        messages.error(request, 'You do not have permission to access this page.')
-        return redirect('home')
     
     # Prefetch all related objects in one go to avoid N+1 queries
     recipe = get_object_or_404(
@@ -11528,11 +11488,9 @@ def view_recipe(request, recipe_id):
 # ============================================
 
 @login_required
+@permission_required('auth.can_edit_personal', raise_exception=True)
 def create_recipe(request):
     """Create new recipe - same for manual and AI import"""
-    if not request.user.is_superuser:
-        messages.error(request, 'You do not have permission to access this page.')
-        return redirect('home')
     
     if request.method == 'POST':
         try:
@@ -11678,11 +11636,9 @@ def create_recipe(request):
 # ============================================
 
 @login_required
+@permission_required('auth.can_edit_personal', raise_exception=True)
 def edit_recipe(request, recipe_id):
     """Edit an existing recipe"""
-    if not request.user.is_superuser:
-        messages.error(request, 'You do not have permission to access this page.')
-        return redirect('home')
     
     recipe = get_object_or_404(
         Recipe.objects.prefetch_related(
@@ -12023,11 +11979,10 @@ def edit_recipe(request, recipe_id):
     return render(request, 'preview_imported_recipe.html', context)
 
 @login_required
+@permission_required('auth.can_edit_personal', raise_exception=True)
 @require_POST
 def add_recipe_course(request):
     """AJAX view to add a new recipe course"""
-    if not request.user.is_superuser:
-        return JsonResponse({'success': False, 'error': 'Permission denied'})
     
     try:
         data = json.loads(request.body)
@@ -12057,11 +12012,10 @@ def add_recipe_course(request):
 
 
 @login_required
+@permission_required('auth.can_edit_personal', raise_exception=True)
 @require_POST
 def add_recipe_category(request):
     """AJAX view to add a new recipe category"""
-    if not request.user.is_superuser:
-        return JsonResponse({'success': False, 'error': 'Permission denied'})
     
     try:
         data = json.loads(request.body)
@@ -12085,6 +12039,7 @@ def add_recipe_category(request):
         return JsonResponse({'success': False, 'error': str(e)})
 
 @login_required
+@permission_required('auth.can_access_personal', raise_exception=True)
 def recipe_check_name(request):
     """AJAX endpoint to check if a recipe name already exists"""
     name = request.GET.get('name', '').strip()
@@ -12100,11 +12055,10 @@ def recipe_check_name(request):
     return JsonResponse({'exists': qs.exists()})
 
 @login_required
+@permission_required('auth.can_edit_personal', raise_exception=True)
 @require_POST
 def add_recipe_ingredient(request):
     """AJAX view to add a new ingredient"""
-    if not request.user.is_superuser:
-        return JsonResponse({'success': False, 'error': 'Permission denied'})
     
     try:
         data = json.loads(request.body)
@@ -12134,11 +12088,10 @@ def add_recipe_ingredient(request):
 
 
 @login_required
+@permission_required('auth.can_edit_personal', raise_exception=True)
 @require_POST
 def add_recipe_protein(request):
     """AJAX view to add a new custom protein - UPDATED"""
-    if not request.user.is_superuser:
-        return JsonResponse({'success': False, 'error': 'Permission denied'})
     
     try:
         data = json.loads(request.body)
@@ -12172,6 +12125,7 @@ class TempRecipeData:
         self.data = data
 
 @login_required
+@permission_required('auth.can_edit_personal', raise_exception=True)
 def import_recipe(request):
     """Upload recipe file for AI extraction"""
     
@@ -12227,6 +12181,7 @@ def import_recipe(request):
 # ============================================
 
 @login_required
+@permission_required('auth.can_access_personal', raise_exception=True)
 def preview_imported_recipe(request, temp_id):
     """Preview and edit AI-extracted recipe data - SAME save logic as create_recipe"""
     
@@ -12237,6 +12192,11 @@ def preview_imported_recipe(request, temp_id):
         return redirect('import_recipe')
     
     if request.method == 'POST':
+        # Edit-level — POST creates the recipe
+        if not request.user.has_perm('auth.can_edit_personal'):
+            messages.error(request, "You don't have permission to save recipes.")
+            return redirect('recipe_management')
+        
         # ========== SAVE LOGIC - IDENTICAL TO create_recipe ==========
         try:
             recipe = Recipe()
@@ -12591,11 +12551,9 @@ def aggregate_meal_plan_ingredients(meal_plan):
     return (dict(categorized_ingredients), missing_conversions, missing_shopping_units)
 
 @login_required
+@permission_required('auth.can_access_personal', raise_exception=True)
 def meal_plans(request):
     """List all meal plans"""
-    if not request.user.is_superuser:
-        messages.error(request, 'You do not have permission to access this page.')
-        return redirect('home')
     
     # Get all meal plans with recipe counts, sorted by most recent first
     meal_plans_list = MealPlan.objects.annotate(
@@ -12609,11 +12567,9 @@ def meal_plans(request):
     return render(request, 'meal_plans.html', context)
 
 @login_required
+@permission_required('auth.can_edit_personal', raise_exception=True)
 def create_meal_plan(request):
     """Create a new meal plan"""
-    if not request.user.is_superuser:
-        messages.error(request, 'You do not have permission to access this page.')
-        return redirect('home')
     
     if request.method == 'POST':
         try:
@@ -12727,11 +12683,9 @@ def create_meal_plan(request):
     return render(request, 'create_meal_plan.html', context)
 
 @login_required
+@permission_required('auth.can_access_personal', raise_exception=True)
 def view_meal_plan(request, meal_plan_id):
     """View a meal plan with all days and recipes"""
-    if not request.user.is_superuser:
-        messages.error(request, 'You do not have permission to access this page.')
-        return redirect('home')
     
     # Get meal plan with optimized prefetch
     meal_plan = get_object_or_404(
@@ -12765,11 +12719,9 @@ def view_meal_plan(request, meal_plan_id):
     return render(request, 'view_meal_plan.html', context)
 
 @login_required
+@permission_required('auth.can_edit_personal', raise_exception=True)
 def delete_meal_plan(request, meal_plan_id):
     """Delete a meal plan"""
-    if not request.user.is_superuser:
-        messages.error(request, 'You do not have permission to perform this action.')
-        return redirect('meal_plans')
     
     # Only allow POST requests for deletion
     if request.method != 'POST':
@@ -12795,11 +12747,9 @@ def delete_meal_plan(request, meal_plan_id):
     return redirect('meal_plans')
 
 @login_required
+@permission_required('auth.can_edit_personal', raise_exception=True)
 def edit_meal_plan(request, meal_plan_id):
     """Edit an existing meal plan"""
-    if not request.user.is_superuser:
-        messages.error(request, 'You do not have permission to access this page.')
-        return redirect('home')
     
     meal_plan = get_object_or_404(
         MealPlan.objects.prefetch_related(
@@ -12992,11 +12942,9 @@ def edit_meal_plan(request, meal_plan_id):
     return render(request, 'create_meal_plan.html', context)
 
 @login_required
+@permission_required('auth.can_edit_personal', raise_exception=True)
 def duplicate_meal_plan(request, meal_plan_id):
     """Duplicate a meal plan to new dates"""
-    if not request.user.is_superuser:
-        messages.error(request, 'You do not have permission to perform this action.')
-        return redirect('meal_plans')
     
     try:
         # Get the original meal plan with all related data
@@ -13081,6 +13029,7 @@ def duplicate_meal_plan(request, meal_plan_id):
         return redirect('meal_plans')
 
 @login_required
+@permission_required('auth.can_access_personal', raise_exception=True)
 def meal_plan_calendar(request):
     """Calendar view for meal plans"""
     from datetime import timedelta
@@ -13109,9 +13058,9 @@ def meal_plan_calendar(request):
     # Get all days we need to show (including overflow from prev/next months)
     cal = monthcalendar(year, month)  # Returns weeks starting from Monday
     
-    # Get all meal plans for this user
-    all_meal_plans = MealPlan.objects.filter(created_by=request.user).order_by('-start_date')
-    
+    # Get all meal plans (shared across users)
+    all_meal_plans = MealPlan.objects.all().order_by('-start_date')
+
     # Get meal plans that overlap with this month (for dot indicators)
     month_start = date(year, month, 1)
     if month == 12:
@@ -13120,7 +13069,6 @@ def meal_plan_calendar(request):
         month_end = date(year, month + 1, 1) - timedelta(days=1)
     
     month_meal_plans = MealPlan.objects.filter(
-        created_by=request.user,
         start_date__lte=month_end,
         end_date__gte=month_start
     )
@@ -13167,7 +13115,6 @@ def meal_plan_calendar(request):
     
     # Get the meal plan for the selected week (if any)
     selected_meal_plan = MealPlan.objects.filter(
-        created_by=request.user,
         start_date__lte=selected_week_end,
         end_date__gte=selected_week_start
     ).first()
@@ -13251,11 +13198,9 @@ def meal_plan_calendar(request):
     return render(request, 'meal_plan_calendar.html', context)
 
 @login_required
+@permission_required('auth.can_access_personal', raise_exception=True)
 def meal_plan_shopping_list(request, meal_plan_id):
     """Display shopping list with unit conversion and prompt for missing conversions"""
-    if not request.user.is_superuser:
-        messages.error(request, 'You do not have permission to access this page.')
-        return redirect('meal_plans')
     
     try:
         # Get meal plan with optimized prefetching
@@ -13311,7 +13256,8 @@ def meal_plan_shopping_list(request, meal_plan_id):
 
 @login_required
 @require_POST
-def add_recipe_to_meal_plan_day(request):
+@permission_required('auth.can_edit_personal', raise_exception=True)
+def add_recipe_to_meal_plan_day(request, meal_plan_id):
     """Add a recipe to a meal plan day"""
     meal_plan_day_id = request.POST.get('meal_plan_day_id')
     recipe_id = request.POST.get('recipe_id')
@@ -13350,7 +13296,8 @@ def add_recipe_to_meal_plan_day(request):
 
 @login_required
 @require_POST
-def remove_recipe_from_meal_plan(request):
+@permission_required('auth.can_edit_personal', raise_exception=True)
+def remove_recipe_from_meal_plan(request, meal_plan_id):
     """Remove a recipe from a meal plan day"""
     meal_plan_recipe_id = request.POST.get('meal_plan_recipe_id')
     
@@ -13424,12 +13371,10 @@ def round_shopping_quantity(qty, unit):
         return max(1, math.ceil(qty))
 
 @login_required
+@permission_required('auth.can_access_personal', raise_exception=True)
 @require_POST
 def generate_recipe_shopping_list(request):
     """Generate shopping list for a single recipe with unit conversion to shopping units"""
-    if not request.user.is_superuser:
-        return JsonResponse({'success': False, 'error': 'Permission denied'}, status=403)
-    
     try:
         data = json.loads(request.body)
         recipe_id = data.get('recipe_id')
@@ -13770,11 +13715,10 @@ def convert_quantity(amount, from_unit, to_unit, ingredient=None, conversion_cac
     return (None, None)
 
 @login_required
+@permission_required('auth.can_edit_personal', raise_exception=True)
 @require_POST
 def save_unit_conversion(request):
     """Save a new unit conversion"""
-    if not request.user.is_superuser:
-        return JsonResponse({'success': False, 'error': 'Permission denied'}, status=403)
     
     try:
         data = json.loads(request.body)
@@ -13903,10 +13847,9 @@ def scan_for_missing_conversions():
     return missing
 
 @login_required
+@permission_required('auth.can_edit_personal', raise_exception=True)
 def add_conversion(request):
     """Add a new unit conversion via AJAX"""
-    if not request.user.is_superuser:
-        return JsonResponse({'success': False, 'error': 'Permission denied'})
     
     if request.method == 'POST':
         try:
@@ -13954,11 +13897,9 @@ def add_conversion(request):
     return JsonResponse({'success': False, 'error': 'Invalid request method'})
 
 @login_required
+@permission_required('auth.can_access_personal', raise_exception=True)
 def unit_conversions_management(request):
     """Manage unit conversions"""
-    if not request.user.is_superuser:
-        messages.error(request, 'You do not have permission to access this page.')
-        return redirect('home')
     
     conversions = UnitConversion.objects.all().select_related(
         'from_unit', 
@@ -13983,11 +13924,10 @@ def unit_conversions_management(request):
     return render(request, 'unit_conversions_management.html', context)
 
 @login_required
+@permission_required('auth.can_edit_personal', raise_exception=True)
 @require_POST
 def add_unit_conversion_manual(request):
     """Add a new unit conversion"""
-    if not request.user.is_superuser:
-        return JsonResponse({'success': False, 'error': 'Permission denied'}, status=403)
     
     try:
         data = json.loads(request.body)
@@ -14055,11 +13995,10 @@ def add_unit_conversion_manual(request):
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
 @login_required
+@permission_required('auth.can_edit_personal', raise_exception=True)
 @require_POST
 def edit_unit_conversion(request):
     """Edit an existing unit conversion"""
-    if not request.user.is_superuser:
-        return JsonResponse({'success': False, 'error': 'Permission denied'}, status=403)
     
     try:
         data = json.loads(request.body)
@@ -14116,11 +14055,10 @@ def edit_unit_conversion(request):
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
 @login_required
+@permission_required('auth.can_edit_personal', raise_exception=True)
 @require_POST
 def delete_unit_conversion(request):
     """Delete a unit conversion"""
-    if not request.user.is_superuser:
-        return JsonResponse({'success': False, 'error': 'Permission denied'}, status=403)
     
     try:
         data = json.loads(request.body)
@@ -14149,11 +14087,9 @@ def delete_unit_conversion(request):
 # ============================================
 
 @login_required
+@permission_required('auth.can_access_personal', raise_exception=True)
 def ingredient_base_units_management(request):
     """Manage ingredient shopping units"""
-    if not request.user.is_superuser:
-        messages.error(request, 'You do not have permission to access this page.')
-        return redirect('home')
     
     # Get filter parameters
     search_query = request.GET.get('search', '')
@@ -14235,11 +14171,10 @@ def ingredient_base_units_management(request):
     return render(request, 'ingredient_base_units_management.html', context)
 
 @login_required
+@permission_required('auth.can_edit_personal', raise_exception=True)
 @require_POST
 def update_ingredient_base_unit(request):
     """Update an ingredient's default unit"""
-    if not request.user.is_superuser:
-        return JsonResponse({'success': False, 'error': 'Permission denied'}, status=403)
     
     try:
         data = json.loads(request.body)
@@ -14279,10 +14214,9 @@ def update_ingredient_base_unit(request):
 
 @login_required
 @require_POST
-def send_meal_plan_shopping_list(request):
+@permission_required('auth.can_edit_personal', raise_exception=True)
+def send_meal_plan_shopping_list(request, meal_plan_id):
     """Send meal plan shopping list via email"""
-    if not request.user.is_superuser:
-        return JsonResponse({'success': False, 'error': 'Permission denied'}, status=403)
     
     try:
         data = json.loads(request.body)
@@ -14468,6 +14402,7 @@ Items to Buy:
         }, status=500)
 
 @login_required
+@permission_required('auth.can_access_personal', raise_exception=True)
 def check_ingredient_usage(request):
     """Check if ingredient is used in any recipes"""
     if request.method == 'POST':
@@ -14497,6 +14432,7 @@ def check_ingredient_usage(request):
     return JsonResponse({'success': False, 'error': 'Invalid request'})
 
 @login_required
+@permission_required('auth.can_edit_personal', raise_exception=True)
 def delete_ingredient(request):
     """Delete ingredient if not used in any recipes"""
     if request.method == 'POST':
@@ -14530,6 +14466,7 @@ def delete_ingredient(request):
     return JsonResponse({'success': False, 'error': 'Invalid request'})
 
 @login_required
+@permission_required('auth.can_edit_personal', raise_exception=True)
 def update_ingredient_full(request):
     """Update ingredient name, category, and shopping unit"""
     if request.method == 'POST':
@@ -14595,6 +14532,7 @@ def update_ingredient_full(request):
     return JsonResponse({'success': False, 'error': 'Invalid request'})
 
 @login_required
+@permission_required('auth.can_access_personal', raise_exception=True)
 def categories_management(request):
     """Manage ingredient categories"""
     # Get all categories sorted alphabetically
@@ -14619,6 +14557,7 @@ def categories_management(request):
     return render(request, 'categories_management.html', context)
 
 @login_required
+@permission_required('auth.can_edit_personal', raise_exception=True)
 def add_category(request):
     """Add a new ingredient category"""
     if request.method == 'POST':
@@ -14652,6 +14591,7 @@ def add_category(request):
     return JsonResponse({'success': False, 'error': 'Invalid request'})
 
 @login_required
+@permission_required('auth.can_edit_personal', raise_exception=True)
 def update_category(request):
     """Update category name"""
     if request.method == 'POST':
@@ -14693,6 +14633,7 @@ def update_category(request):
     return JsonResponse({'success': False, 'error': 'Invalid request'})
 
 @login_required
+@permission_required('auth.can_access_personal', raise_exception=True)
 def check_category_usage(request):
     """Check if category is used by any ingredients"""
     if request.method == 'POST':
@@ -14722,6 +14663,7 @@ def check_category_usage(request):
     return JsonResponse({'success': False, 'error': 'Invalid request'})
 
 @login_required
+@permission_required('auth.can_edit_personal', raise_exception=True)
 def delete_category(request):
     """Delete category if not used by any ingredients"""
     if request.method == 'POST':
@@ -14755,6 +14697,7 @@ def delete_category(request):
     return JsonResponse({'success': False, 'error': 'Invalid request'})
 
 @login_required
+@permission_required('auth.can_access_personal', raise_exception=True)
 def measurement_units_management(request):
     from collections import defaultdict
 
@@ -14824,6 +14767,7 @@ def measurement_units_management(request):
     return render(request, 'measurement_units_management.html', context)
 
 @login_required
+@permission_required('auth.can_edit_personal', raise_exception=True)
 def add_measurement_unit(request):
     """Add a new measurement unit"""
     if request.method == 'POST':
@@ -14881,6 +14825,7 @@ def add_measurement_unit(request):
     return JsonResponse({'success': False, 'error': 'Invalid request'})
 
 @login_required
+@permission_required('auth.can_edit_personal', raise_exception=True)
 def update_measurement_unit(request):
     """Update measurement unit name, abbreviation, and type"""
     if request.method == 'POST':
@@ -14944,6 +14889,8 @@ def update_measurement_unit(request):
     return JsonResponse({'success': False, 'error': 'Invalid request'})
 
 @login_required
+@permission_required('auth.can_edit_personal', raise_exception=True)
+@require_POST
 def toggle_recipe_favourite(request, recipe_id):
     """Toggle a recipe as favourite for the current user"""
     if request.method == 'POST':
@@ -14968,6 +14915,7 @@ def toggle_recipe_favourite(request, recipe_id):
     return JsonResponse({'success': False}, status=400)
 
 @login_required
+@permission_required('auth.can_access_personal', raise_exception=True)
 def check_unit_usage(request):
     """Check if measurement unit is used in recipes, ingredients, or conversions"""
     if request.method == 'POST':
@@ -15019,6 +14967,7 @@ def check_unit_usage(request):
     return JsonResponse({'success': False, 'error': 'Invalid request'})
 
 @login_required
+@permission_required('auth.can_edit_personal', raise_exception=True)
 def delete_measurement_unit(request):
     """Delete measurement unit if not used anywhere"""
     if request.method == 'POST':
@@ -15247,6 +15196,7 @@ Return ONLY valid JSON with these fields. If a field is not found, use null for 
 
 # AJAX endpoint to add new measurement
 @login_required
+@permission_required('auth.can_edit_personal', raise_exception=True)
 @require_POST
 def add_measurement_ajax(request):
     """Add new measurement unit via AJAX"""
@@ -15291,6 +15241,7 @@ def add_measurement_ajax(request):
 
 # AJAX endpoint to add new ingredient
 @login_required
+@permission_required('auth.can_edit_personal', raise_exception=True)
 @require_POST
 def add_ingredient_ajax(request):
     try:
@@ -15326,37 +15277,7 @@ def add_ingredient_ajax(request):
         return JsonResponse({'success': False, 'message': str(e)})
 
 @login_required
-@require_POST
-def add_preparation_ajax(request):
-    """Add new preparation method via AJAX"""
-    try:
-        data = json.loads(request.body)
-        name = data.get('name', '').strip()
-        
-        if not name:
-            return JsonResponse({'success': False, 'message': 'Name is required'})
-        
-        # Lowercase for consistency
-        name = name.lower()
-        
-        # Check if already exists
-        if PreparationMethod.objects.filter(name__iexact=name).exists():
-            return JsonResponse({'success': False, 'message': 'Preparation method already exists'})
-        
-        # Create new preparation method
-        preparation = PreparationMethod.objects.create(name=name)
-        
-        return JsonResponse({
-            'success': True,
-            'message': 'Preparation method added successfully',
-            'preparation_id': preparation.preparation_method_id,
-            'name': preparation.name
-        })
-        
-    except Exception as e:
-        return JsonResponse({'success': False, 'message': str(e)})
-
-@login_required
+@permission_required('auth.can_edit_personal', raise_exception=True)
 @require_POST
 def add_preparation_ajax(request):
     """Add new preparation method via AJAX"""
@@ -15385,7 +15306,7 @@ def add_preparation_ajax(request):
         return JsonResponse({'success': False, 'message': str(e)})
 
 @login_required
-@require_POST
+@permission_required('auth.can_access_personal', raise_exception=True)
 def find_matching_recipes(request):
     """
     Find recipes that match selected ingredients with smart weighting.
@@ -15540,11 +15461,9 @@ def find_matching_recipes(request):
 
 ### CELEBRATION MANAGEMENT VIEWS ###
 @login_required
+@permission_required('auth.can_access_personal', raise_exception=True)
 def celebration_management(request):
     """Main celebration management page"""
-    if not request.user.is_superuser:
-        messages.error(request, 'You do not have permission to access this page.')
-        return redirect('home')
     
     # Handle Contact CRUD
     if request.method == 'POST':
@@ -15573,7 +15492,7 @@ def celebration_management(request):
         elif action == 'edit_contact':
             contact_id = request.POST.get('contact_id')
             try:
-                contact = Contact.objects.get(id=contact_id, created_by=request.user)
+                contact = Contact.objects.get(id=contact_id)
                 contact.name = request.POST.get('name')
                 contact.relationship = request.POST.get('relationship')
                 contact.email = request.POST.get('email')
@@ -15587,7 +15506,7 @@ def celebration_management(request):
         elif action == 'delete_contact':
             contact_id = request.POST.get('contact_id')
             try:
-                contact = Contact.objects.get(id=contact_id, created_by=request.user)
+                contact = Contact.objects.get(id=contact_id)
                 name = contact.name
                 contact.delete()
                 messages.success(request, f'Contact "{name}" deleted successfully!')
@@ -15597,7 +15516,7 @@ def celebration_management(request):
         elif action == 'add_event':
             contact_id = request.POST.get('contact_id')
             try:
-                contact = Contact.objects.get(id=contact_id, created_by=request.user)
+                contact = Contact.objects.get(id=contact_id)
                 event_type = request.POST.get('event_type')
                 event_date_str = request.POST.get('event_date')
                 priority = request.POST.get('priority', 'normal')
@@ -15644,7 +15563,7 @@ def celebration_management(request):
         elif action == 'edit_event':
             event_id = request.POST.get('event_id')
             try:
-                event = CelebrationEvent.objects.get(id=event_id, created_by=request.user)
+                event = CelebrationEvent.objects.get(id=event_id)
                 event.event_type = request.POST.get('event_type')
                 event_date_str = request.POST.get('event_date')
                 event.priority = request.POST.get('priority', 'normal')
@@ -15678,7 +15597,7 @@ def celebration_management(request):
         elif action == 'delete_event':
             event_id = request.POST.get('event_id')
             try:
-                event = CelebrationEvent.objects.get(id=event_id, created_by=request.user)
+                event = CelebrationEvent.objects.get(id=event_id)
                 event.delete()
                 messages.success(request, 'Event deleted successfully!')
             except CelebrationEvent.DoesNotExist:
@@ -15686,8 +15605,8 @@ def celebration_management(request):
         
         return redirect('celebration_management')
     
-    # Get all contacts with their events
-    contacts = Contact.objects.filter(created_by=request.user).prefetch_related('celebration_events')
+    # Get all contacts with their events (shared across users)
+    contacts = Contact.objects.prefetch_related('celebration_events')
     
     # Get upcoming events for dashboard
     today = timezone.now().date()
@@ -15718,17 +15637,15 @@ def celebration_management(request):
     })
 
 @login_required
+@permission_required('auth.can_access_personal', raise_exception=True)
 def celebration_calendar(request):
     """Calendar view of all celebrations"""
-    if not request.user.is_superuser:
-        messages.error(request, 'You do not have permission to access this page.')
-        return redirect('home')
     
     # Get today's date
     today = timezone.now().date()
     
-    # Get all events for this user
-    events = CelebrationEvent.objects.filter(created_by=request.user).select_related('contact')
+    # Get all events (shared across users)
+    events = CelebrationEvent.objects.select_related('contact')
     
     # Find first month with events (from today forward)
     first_event_date = None
@@ -15765,7 +15682,7 @@ def celebration_calendar(request):
     
     # Get all upcoming events for timeline view (next 365 days)
     all_events = []
-    contacts = Contact.objects.filter(created_by=request.user).prefetch_related('celebration_events')
+    contacts = Contact.objects.prefetch_related('celebration_events')
     
     for contact in contacts:
         for event in contact.celebration_events.all():
@@ -15810,12 +15727,10 @@ def celebration_calendar(request):
     })
 
 @login_required
+@permission_required('auth.can_edit_personal', raise_exception=True)
 @require_POST
 def import_celebrations(request):
     """Import contacts and events from Excel file"""
-    if not request.user.is_superuser:
-        messages.error(request, 'You do not have permission to access this page.')
-        return redirect('home')
     
     if 'excel_file' not in request.FILES:
         messages.error(request, 'No file uploaded.')
@@ -15871,8 +15786,8 @@ def import_celebrations(request):
             if not name:
                 continue
             
-            # Check if contact exists
-            if skip_duplicates and Contact.objects.filter(created_by=request.user, name__iexact=name).exists():
+            # Check if contact exists (shared — any user's contact counts as duplicate)
+            if skip_duplicates and Contact.objects.filter(name__iexact=name).exists():
                 contacts_skipped += 1
                 continue
             
@@ -15958,15 +15873,13 @@ def import_celebrations(request):
     return redirect('celebration_management')
 
 @login_required
+@permission_required('auth.can_access_personal', raise_exception=True)
 def celebration_dashboard(request):
     """Dashboard showing upcoming celebrations"""
-    if not request.user.is_superuser:
-        messages.error(request, 'You do not have permission to access this page.')
-        return redirect('home')
     
-    # Get all contacts with their events
+    # Get all contacts with their events (shared across users)
     today = timezone.now().date()
-    contacts = Contact.objects.filter(created_by=request.user).prefetch_related('celebration_events')
+    contacts = Contact.objects.prefetch_related('celebration_events')
     
     # Get upcoming events for dashboard (next 30 days)
     all_events = []
@@ -15992,11 +15905,9 @@ def celebration_dashboard(request):
     })
 
 @login_required
+@permission_required('auth.can_access_administration', raise_exception=True)
 def notification_settings(request):
     """Manage email notification recipients for administration items"""
-    if not request.user.is_superuser:
-        messages.error(request, 'You do not have permission to access this page.')
-        return redirect('home')
     
     # Handle form submission
     if request.method == 'POST':
@@ -16050,11 +15961,17 @@ def notification_settings(request):
     })
 
 @login_required
+@permission_required('auth.can_access_personal', raise_exception=True)
 def personal_notification_settings(request):
     """Manage email notification recipients for personal items"""
     
     # Handle form submission
     if request.method == 'POST':
+        # Edit-level permission required to change notification settings
+        if not request.user.has_perm('auth.can_edit_personal'):
+            messages.error(request, 'You do not have permission to edit notification settings.')
+            return redirect('personal_notification_settings')
+        
         notification_type = request.POST.get('notification_type')
         to_addresses = request.POST.get('to_addresses', '')
         cc_addresses = request.POST.get('cc_addresses', '')
@@ -16096,6 +16013,7 @@ def personal_notification_settings(request):
     })
 
 @login_required
+@permission_required('auth.can_edit_personal', raise_exception=True)
 @require_POST
 def update_event_notifications(request, event_id):
     """Update notification preferences for a specific event via AJAX"""
@@ -16139,6 +16057,7 @@ def update_event_notifications(request, event_id):
 # ==================== ASSET LIST VIEW ====================
 
 @login_required
+@permission_required('auth.can_access_properties', raise_exception=True)
 def property_assets(request, prop_id):
     """
     Display all assets for a specific property
@@ -16178,6 +16097,7 @@ def property_assets(request, prop_id):
     return render(request, 'property_assets.html', context)
 
 @login_required
+@permission_required('auth.can_edit_properties', raise_exception=True)
 @require_POST
 def add_asset(request, prop_id):
     """Add a new asset to a property"""
@@ -16243,6 +16163,7 @@ def add_asset(request, prop_id):
 # ==================== EDIT ASSET ====================
 
 @login_required
+@permission_required('auth.can_edit_properties', raise_exception=True)
 def edit_asset(request, asset_id):
     """Edit an existing asset"""
     asset = get_object_or_404(PropertyAsset, pk=asset_id)
@@ -16306,6 +16227,7 @@ def edit_asset(request, asset_id):
 # ==================== DELETE ASSET ====================
 
 @login_required
+@permission_required('auth.can_edit_properties', raise_exception=True)
 @require_POST
 def delete_asset(request, asset_id):
     """Delete an asset"""
@@ -16325,6 +16247,7 @@ def delete_asset(request, asset_id):
 # ==================== ASSET DETAIL VIEW ====================
 
 @login_required
+@permission_required('auth.can_access_properties', raise_exception=True)
 def asset_detail(request, asset_id):
     """
     Display detailed information about an asset
@@ -16355,6 +16278,7 @@ def asset_detail(request, asset_id):
 # ==================== AJAX: GET SUBCATEGORIES ====================
 
 @login_required
+@permission_required('auth.can_access_properties', raise_exception=True)
 def get_subcategories(request, category_id):
     """
     AJAX endpoint to get subcategories for a category
@@ -16372,6 +16296,7 @@ def get_subcategories(request, category_id):
 # ==================== AJAX: ADD NEW CATEGORY ====================
 
 @login_required
+@permission_required('auth.can_edit_properties', raise_exception=True)
 @require_POST
 def add_category_ajax(request):
     """AJAX endpoint to add a new category"""
@@ -16404,6 +16329,7 @@ def add_category_ajax(request):
 # ==================== AJAX: ADD NEW SUBCATEGORY ====================
 
 @login_required
+@permission_required('auth.can_edit_properties', raise_exception=True)
 @require_POST
 def add_subcategory_ajax(request):
     """AJAX endpoint to add a new subcategory"""
@@ -16440,6 +16366,7 @@ def add_subcategory_ajax(request):
 # ==================== AJAX: ADD NEW SUPPLIER ====================
 
 @login_required
+@permission_required('auth.can_edit_properties', raise_exception=True)
 @require_POST
 def add_supplier_ajax(request):
     """AJAX endpoint to add a new supplier"""
@@ -16472,6 +16399,7 @@ def add_supplier_ajax(request):
 # ==================== MAINTENANCE RECORD VIEWS ====================
 
 @login_required
+@permission_required('auth.can_edit_properties', raise_exception=True)
 @require_POST
 def add_maintenance(request, asset_id):
     """Add a maintenance record for an asset"""
@@ -16502,6 +16430,7 @@ def add_maintenance(request, asset_id):
     return redirect('asset_detail', asset_id=asset_id)
 
 @login_required
+@permission_required('auth.can_edit_properties', raise_exception=True)
 @require_POST
 def delete_maintenance(request, maintenance_id):
     """Delete a maintenance record"""
@@ -16517,6 +16446,7 @@ def delete_maintenance(request, maintenance_id):
     return redirect('asset_detail', asset_id=asset_id)
 
 @login_required
+@permission_required('auth.can_edit_properties', raise_exception=True)
 def edit_maintenance(request, maintenance_id):
     """Edit a maintenance record"""
     maintenance = get_object_or_404(AssetMaintenance, pk=maintenance_id)
@@ -16539,6 +16469,8 @@ def edit_maintenance(request, maintenance_id):
             messages.error(request, f'Error updating maintenance record: {str(e)}')
 
     return redirect('asset_detail', asset_id=asset_id)
+
+
 
 @login_required
 def help_page(request):

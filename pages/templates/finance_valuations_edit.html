@@ -8,7 +8,7 @@
 <h4><center>EDIT EXISTING VALUATION</center></h4>
 <br/>
 
-{% if user.is_superuser %}
+{% if perms.auth.can_access_financials %}
 
 <div style="display: flex ; justify-content: flex-end">
     <button class="btn btn-info" form="valuationForm" style="margin-right:16px" type="submit">Save</button>

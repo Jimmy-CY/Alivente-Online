@@ -10,7 +10,7 @@
 <h4><center>EDIT EXISTING TENANT</center></h4>
 <br/>
 
-{% if user.is_superuser %}
+{% if perms.auth.can_edit_tenants %}
 
 {% for tresults in tenant %}
 <form action = "{% url 'tenant_edit_commit' tresults.tenant_id %}" method="post">

@@ -32,13 +32,17 @@
   
 <body>
 
-{% if user.is_superuser %}
+{% if perms.auth.can_access_financials %}
   
   <div style="display: flex ; justify-content: flex-end">
     <button type="button" class="btn btn-info" style="margin-right:16px" data-toggle="modal" data-target="#finance_expenseHelpModal">
       <i class="fas fa-question-circle"></i> Help
     </button>
-    <a href="{% url 'finance_expense_add' %}" class="btn btn-info" style="margin-right:16px" type="button">Add New</a>
+    {% if perms.auth.can_edit_financials %}
+      <a href="{% url 'finance_expense_add' %}" class="btn btn-info" style="margin-right:16px" type="button">Add New</a>
+    {% else %}
+      <span class="btn btn-secondary" style="margin-right:16px; opacity:0.6; cursor:not-allowed; pointer-events:none;">Add New</span>
+    {% endif %}
     <a href="{% url 'finance' %}" class="btn btn-info" style="margin-right:16px" role="button">Back</a>
   </div>
   
@@ -80,9 +84,15 @@
                     <td>{{ exp.expense_types.expense_types_name }}</td>
                     <td style="text-align: right;">€ {{ exp.expense_amount|floatformat:0|intcomma }}</td>
                     <td>
-                      <button class="btn btn-light" style="border-color:black; width: auto; padding: 0.25rem 0.5rem;">
-                        <a href="{% url 'finance_expense_edit' exp.expense_id %}">Edit</a>
-                      </button>
+                      {% if perms.auth.can_edit_financials %}
+                        <button class="btn btn-light" style="border-color:black; width: auto; padding: 0.25rem 0.5rem;">
+                          <a href="{% url 'finance_expense_edit' exp.expense_id %}">Edit</a>
+                        </button>
+                      {% else %}
+                        <button class="btn btn-light" style="border-color:black; width: auto; padding: 0.25rem 0.5rem; opacity:0.5; cursor:not-allowed; pointer-events:none;" disabled>
+                          <span style="color: #999;">Edit</span>
+                        </button>
+                      {% endif %}
                     </td>
                   </tr>
                 {% endfor %}

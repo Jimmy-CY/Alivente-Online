@@ -39,6 +39,14 @@
     font-weight: 500;
 }
 
+.btn-header-disabled {
+    background: rgba(255,255,255,0.3) !important;
+    color: rgba(255,255,255,0.7) !important;
+    opacity: 0.6;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
 .calendar-layout {
     display: grid;
     grid-template-columns: 320px 1fr;
@@ -234,6 +242,12 @@
 
 .create-plan-btn:hover {
     background: #218838;
+}
+
+.create-plan-btn-disabled {
+    background: #6c757d;
+    opacity: 0.6;
+    cursor: not-allowed;
 }
 
 /* ==================== RIGHT PANEL - WEEK DETAIL ==================== */
@@ -461,6 +475,13 @@
     background: #5a6fd6;
 }
 
+.add-recipe-btn-disabled {
+    background: #adb5bd !important;
+    opacity: 0.6;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
 .add-another-btn {
     width: 100%;
     padding: 10px;
@@ -478,6 +499,12 @@
     border-color: #667eea;
     color: #667eea;
     background: #f8f9ff;
+}
+
+.add-another-btn-disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    pointer-events: none;
 }
 
 /* Legend */
@@ -645,6 +672,14 @@
     color: white;
 }
 
+.btn-action-disabled {
+    background: #e9ecef !important;
+    color: #6c757d !important;
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
 </style>
 
 <div class="calendar-container">
@@ -653,9 +688,15 @@
     <div class="calendar-header">
         <h1><i class="fas fa-calendar-alt"></i> Meal Plan Calendar</h1>
         <div class="calendar-header-actions">
+            {% if perms.auth.can_edit_personal %}
             <a href="{% url 'create_meal_plan' %}" class="btn btn-success">
                 <i class="fas fa-plus"></i> New Meal Plan
             </a>
+            {% else %}
+            <span class="btn btn-header-disabled" title="No permission to create">
+                <i class="fas fa-plus"></i> New Meal Plan
+            </span>
+            {% endif %}
             
             <!-- View Toggle -->
             <div class="view-toggle">
@@ -750,9 +791,15 @@
                     </p>
                 {% endif %}
                 
+                {% if perms.auth.can_edit_personal %}
                 <button class="create-plan-btn" onclick="window.location.href='{% url 'create_meal_plan' %}'">
                     <i class="fas fa-plus"></i> Create New Meal Plan
                 </button>
+                {% else %}
+                <button class="create-plan-btn create-plan-btn-disabled" disabled title="No permission to create">
+                    <i class="fas fa-plus"></i> Create New Meal Plan
+                </button>
+                {% endif %}
             </div>
             
         </div>
@@ -774,12 +821,19 @@
                 <a href="{% url 'view_meal_plan' selected_meal_plan.meal_plan_id %}" class="btn btn-view">
                     <i class="fas fa-eye"></i> View
                 </a>
+                {% if perms.auth.can_edit_personal %}
                 <a href="{% url 'edit_meal_plan' selected_meal_plan.meal_plan_id %}" class="btn btn-edit">
                     <i class="fas fa-edit"></i> Edit
                 </a>
+                {% else %}
+                <span class="btn btn-action-disabled" title="No permission to edit">
+                    <i class="fas fa-edit"></i> Edit
+                </span>
+                {% endif %}
                 <a href="{% url 'meal_plan_shopping_list' selected_meal_plan.meal_plan_id %}" class="btn btn-shopping">
                     <i class="fas fa-shopping-cart"></i> List
                 </a>
+                {% if perms.auth.can_edit_personal %}
                 <button type="button" class="btn btn-duplicate"
                         onclick="confirmDuplicate('{% url 'duplicate_meal_plan' selected_meal_plan.meal_plan_id %}', '{{ selected_meal_plan.plan_name|escapejs }}')">
                     <i class="fas fa-copy"></i> Duplicate
@@ -788,6 +842,14 @@
                         onclick="confirmDelete('{% url 'delete_meal_plan' selected_meal_plan.meal_plan_id %}', '{{ selected_meal_plan.plan_name|escapejs }}')">
                     <i class="fas fa-trash"></i> Delete
                 </button>
+                {% else %}
+                <span class="btn btn-action-disabled" title="No permission to duplicate">
+                    <i class="fas fa-copy"></i> Duplicate
+                </span>
+                <span class="btn btn-action-disabled" title="No permission to delete">
+                    <i class="fas fa-trash"></i> Delete
+                </span>
+                {% endif %}
             </div>
             {% endif %}
             </div>
@@ -827,25 +889,43 @@
                                             <a href="{% url 'view_recipe' recipe.recipe_id %}" class="btn btn-primary btn-sm">
                                                 <i class="fas fa-eye"></i> View
                                             </a>
+                                            {% if perms.auth.can_edit_personal %}
                                             <button class="btn btn-outline-danger btn-sm"
                                                     onclick="removeRecipe({{ recipe.meal_plan_recipe_id }}, '{{ recipe.name|escapejs }}')">
                                                 <i class="fas fa-times"></i>
                                             </button>
+                                            {% else %}
+                                            <span class="btn btn-action-disabled btn-sm" title="No permission to remove">
+                                                <i class="fas fa-times"></i>
+                                            </span>
+                                            {% endif %}
                                         </div>
                                     </div>
                                 </div>
                                 {% endfor %}
                                 
+                                {% if perms.auth.can_edit_personal %}
                                 <button class="add-another-btn" onclick="addRecipeToDay({{ day.meal_plan_day_id }}, '{{ day.date|date:'Y-m-d' }}', '{{ day.day_name }}')">
                                     <i class="fas fa-plus"></i> Add Another Recipe
                                 </button>
+                                {% else %}
+                                <button class="add-another-btn add-another-btn-disabled" disabled title="No permission to add recipes">
+                                    <i class="fas fa-plus"></i> Add Another Recipe
+                                </button>
+                                {% endif %}
                             {% else %}
                                 <div class="empty-day">
                                     <i class="fas fa-utensils"></i>
                                     <p>No meal planned</p>
+                                    {% if perms.auth.can_edit_personal %}
                                     <button class="add-recipe-btn" onclick="addRecipeToDay({{ day.meal_plan_day_id }}, '{{ day.date|date:'Y-m-d' }}', '{{ day.day_name }}')">
                                         <i class="fas fa-plus"></i> Add Recipe
                                     </button>
+                                    {% else %}
+                                    <button class="add-recipe-btn add-recipe-btn-disabled" disabled title="No permission to add recipes">
+                                        <i class="fas fa-plus"></i> Add Recipe
+                                    </button>
+                                    {% endif %}
                                 </div>
                             {% endif %}
                         </div>
@@ -857,10 +937,14 @@
                     <div class="no-meal-plan">
                         <i class="fas fa-calendar-times"></i>
                         <h3>No Meal Plan for This Week</h3>
+                        {% if perms.auth.can_edit_personal %}
                         <p>Create a meal plan to start adding recipes to this week.</p>
                         <a href="{% url 'create_meal_plan' %}?start_date={{ selected_week_start|date:'Y-m-d' }}" class="btn btn-success btn-lg">
                             <i class="fas fa-plus"></i> Create Meal Plan for This Week
                         </a>
+                        {% else %}
+                        <p>No meal plan has been created for this week.</p>
+                        {% endif %}
                     </div>
                 {% endif %}
             </div>
@@ -868,6 +952,7 @@
         
     </div>
 
+    {% if perms.auth.can_edit_personal %}
     <!-- Delete Confirmation Modal -->
     <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog">
         <div class="modal-dialog" role="document">
@@ -949,9 +1034,11 @@
             </div>
         </div>
     </div>
+    {% endif %}
 
 </div>
 
+{% if perms.auth.can_edit_personal %}
 <!-- Add Recipe Modal -->
 <div class="modal fade" id="addRecipeModal" tabindex="-1" role="dialog">
     <div class="modal-dialog modal-lg" role="document">
@@ -1011,6 +1098,7 @@
         </div>
     </div>
 </div>
+{% endif %}
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>

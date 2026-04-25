@@ -84,6 +84,7 @@ Issues (Comments)
                     <!-- Comments and Status Change Section -->
                     <div class="status-card">
                         <!-- Add Comment Form with Status Change Controls on same line -->
+                        {% if perms.auth.can_edit_issues %}
                         <div class="add-comment-container-inline">
                             <form action="{% url 'fsr_comment_add' isresults.issues_id %}" method="post" class="add-comment-form">
                                 {% csrf_token %}
@@ -120,6 +121,7 @@ Issues (Comments)
                                 </div>
                             </form>
                         </div>
+                        {% endif %}
                         
                         <!-- Comments Section -->
                         <div class="comments-section">

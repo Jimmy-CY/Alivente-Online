@@ -10,7 +10,7 @@
 <h4 class="text-center">ADD EXPENSE TYPE</h4>
 <br/>
 
-{% if user.is_superuser %}
+{% if perms.auth.can_access_financials %}
 
 <form action="{% url 'finance_expense_types_commit' %}" method="post" id="ExpenseTypeForm">
   

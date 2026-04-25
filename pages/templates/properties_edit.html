@@ -10,7 +10,7 @@
 <h4><center>EDIT EXISTING PROPERTY</center></h4>
 <br/>
 
-{% if user.is_superuser %}
+{% if perms.auth.can_edit_properties %}
 
 {% for results in props %}
 <form action="{% url 'properties_edit_commit' results.prop_id %}" method="post" onsubmit="return validatePropertyName()">

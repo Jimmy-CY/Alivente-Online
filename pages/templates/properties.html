@@ -38,7 +38,7 @@ Properties
     <a href="{% url 'properties_map_view' %}" class="btn btn-info">
         🗺️ Map View
     </a>
-    {% if user.is_superuser %}
+    {% if perms.auth.can_edit_properties %}
       <a href="{% url 'properties_add' %}" class="btn btn-info">Add New</a>
     {% else %}
       <span class="btn btn-secondary" style="opacity:0.6; cursor:not-allowed; pointer-events:none;">Add New</span>
@@ -140,15 +140,15 @@ Properties
               </span>
             </td>
             <td>
-              {% if user.is_superuser %}
-                <button type="button" class="btn btn-light action-btn">
-                  <a href="{% url 'properties_edit' results.prop_id %}">Edit</a>
-                </button>
-              {% else %}
-                <button type="button" class="btn btn-light action-btn" disabled style="opacity: 0.5;">
-                  <span style="color: #6c757d;">Edit</span>
-                </button>
-              {% endif %}
+            {% if perms.auth.can_edit_properties %}
+              <button type="button" class="btn btn-light action-btn">
+                <a href="{% url 'properties_edit' results.prop_id %}">Edit</a>
+              </button>
+            {% else %}
+              <button type="button" class="btn btn-light action-btn" disabled style="opacity: 0.5;">
+                <span style="color: #6c757d;">Edit</span>
+              </button>
+            {% endif %}
             </td>
             <td>
               <button type="button" class="btn btn-light action-btn">
@@ -156,19 +156,13 @@ Properties
               </button>
             </td>
             <td>
-              {% if user.is_superuser %}
-                {% if results.prop_title_deed %}
-                  <button type="button" class="btn btn-light action-btn"
-                          onclick="viewTitleDeed('{{ results.prop_title_deed.url }}', '{{ results.prop_title_deed.name }}', '{{ results.prop_name }}')">
-                    <a href="#" style="text-decoration: none;">View</a>
-                  </button>
-                {% else %}
-                  <span class="text-muted">Unavailable</span>
-                {% endif %}
-              {% else %}
-                <button type="button" class="btn btn-light action-btn" disabled style="opacity: 0.5;">
-                  <span style="color: #6c757d;">View</span>
+              {% if results.prop_title_deed %}
+                <button type="button" class="btn btn-light action-btn"
+                        onclick="viewTitleDeed('{{ results.prop_title_deed.url }}', '{{ results.prop_title_deed.name }}', '{{ results.prop_name }}')">
+                  <a href="#" style="text-decoration: none;">View</a>
                 </button>
+              {% else %}
+                <span class="text-muted">Unavailable</span>
               {% endif %}
             </td>
             <td>

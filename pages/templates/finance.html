@@ -41,7 +41,7 @@ ALIVENTE ONLINE - FINANCE
 
 {% render_help_modal "finance" %}
 
-{% if user.is_superuser %}
+{% if perms.auth.can_access_financials %}
 
 <div class="container">
   <div class="row">

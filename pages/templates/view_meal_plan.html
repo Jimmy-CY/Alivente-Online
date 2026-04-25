@@ -63,6 +63,15 @@
     gap: 5px;
 }
 
+.btn-action-disabled {
+    background: #e9ecef !important;
+    color: #6c757d !important;
+    border: none;
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
 /* Two-column grid for days */
 .days-grid {
     display: grid;
@@ -347,6 +356,7 @@
             <a href="{% url 'meal_plan_shopping_list' meal_plan.meal_plan_id %}" class="btn btn-success">
                 <i class="fas fa-shopping-cart"></i> Shopping List
             </a>
+            {% if perms.auth.can_edit_personal %}
             <a href="{% url 'edit_meal_plan' meal_plan.meal_plan_id %}" class="btn btn-warning">
                 <i class="fas fa-edit"></i> Edit
             </a>
@@ -356,15 +366,29 @@
                     onclick="confirmDuplicate(this, '{{ meal_plan.plan_name|escapejs }}')">
                 <i class="fas fa-copy"></i> Duplicate
             </button>
+            {% else %}
+            <span class="btn btn-action-disabled" title="No permission to edit">
+                <i class="fas fa-edit"></i> Edit
+            </span>
+            <span class="btn btn-action-disabled" title="No permission to duplicate">
+                <i class="fas fa-copy"></i> Duplicate
+            </span>
+            {% endif %}
             <button onclick="window.print()" class="btn btn-secondary">
                 <i class="fas fa-print"></i> Print
             </button>
+            {% if perms.auth.can_edit_personal %}
             <button type="button" 
                     class="btn btn-danger"
                     data-delete-url="{% url 'delete_meal_plan' meal_plan.meal_plan_id %}"
                     onclick="confirmDelete(this, '{{ meal_plan.plan_name|escapejs }}')">
                 <i class="fas fa-trash"></i> Delete
             </button>
+            {% else %}
+            <span class="btn btn-action-disabled" title="No permission to delete">
+                <i class="fas fa-trash"></i> Delete
+            </span>
+            {% endif %}
         </div>
     </div>
 
@@ -471,6 +495,7 @@
 
 </div>
 
+{% if perms.auth.can_edit_personal %}
 <!-- Delete Confirmation Modal -->
 <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog">
     <div class="modal-dialog" role="document">
@@ -563,11 +588,12 @@
                     <button type="submit" class="btn btn-info">
                         <i class="fas fa-copy"></i> Duplicate Meal Plan
                     </button>
-                </form>
-            </div>
+                </div>
+            </form>
         </div>
     </div>
 </div>
+{% endif %}
 
 <script>
 function confirmDelete(button, mealPlanName) {

@@ -7,7 +7,7 @@ Title Deed - {{ property.prop_name }}
 
 {% block content %}
 
-{% if user.is_superuser %}
+{% if perms.auth.can_access_properties %}
 
 <div class="report-container">
     <div class="report-content">

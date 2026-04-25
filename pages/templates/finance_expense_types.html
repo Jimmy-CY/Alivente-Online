@@ -31,7 +31,7 @@
     </script>
   {% endfor %}
 
-{% if user.is_superuser %}
+{% if perms.auth.can_access_financials %}
 
 <body>
   
@@ -39,7 +39,11 @@
     <button type="button" class="btn btn-info" style="margin-right:16px" data-toggle="modal" data-target="#finance_expense_typesHelpModal">
       <i class="fas fa-question-circle"></i> Help
     </button>
-    <a href="{% url 'finance_expense_types_add' %}" class="btn btn-info" style="margin-right:16px" type="button">Add New</a>
+    {% if perms.auth.can_edit_financials %}
+      <a href="{% url 'finance_expense_types_add' %}" class="btn btn-info" style="margin-right:16px" type="button">Add New</a>
+    {% else %}
+      <span class="btn btn-secondary" style="margin-right:16px; opacity:0.6; cursor:not-allowed; pointer-events:none;">Add New</span>
+    {% endif %}
     <a href="{% url 'finance' %}" class="btn btn-info" style="margin-right:16px" role="button">Back</a>
   </div>
 <br>
@@ -82,9 +86,15 @@
             <td style="width: 5%; box-sizing: border-box; {% if exp.expense_types_nov == 'Yes' %}background-color: #90EE90;{% elif exp.expense_types_nov == 'No' %}background-color: #FFCCCB;{% endif %}">{{ exp.expense_types_nov }}</td>
             <td style="width: 5%; box-sizing: border-box; {% if exp.expense_types_dec == 'Yes' %}background-color: #90EE90;{% elif exp.expense_types_dec == 'No' %}background-color: #FFCCCB;{% endif %}">{{ exp.expense_types_dec }}</td>
             <td>
-              <button type="button" class="btn btn-light" style="border-color:black; width: 100%">
-                <a href="{% url 'finance_expense_types_edit' exp.expense_types_id %}">Edit</a>
-              </button>
+              {% if perms.auth.can_edit_financials %}
+                <button type="button" class="btn btn-light" style="border-color:black; width: 100%">
+                  <a href="{% url 'finance_expense_types_edit' exp.expense_types_id %}">Edit</a>
+                </button>
+              {% else %}
+                <button type="button" class="btn btn-light" style="border-color:black; width: 100%; opacity:0.5; cursor:not-allowed; pointer-events:none;" disabled>
+                  <span style="color: #999;">Edit</span>
+                </button>
+              {% endif %}
             </td>  
           </tr>
         {% endfor %}

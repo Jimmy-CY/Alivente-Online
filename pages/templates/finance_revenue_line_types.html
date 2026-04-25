@@ -3,7 +3,6 @@
 {% load humanize %}
 {% load custom_filters %}
 {% load help_modal_tags %}
-
 {% block title %}
 {% endblock %}
 {% block content %}
@@ -28,14 +27,18 @@
     </script>
   {% endfor %}
   
-{% if user.is_superuser %}
+{% if perms.auth.can_access_financials %}
 <body>
   
   <div style="display: flex ; justify-content: flex-end">
     <button type="button" class="btn btn-info" style="margin-right:16px" data-toggle="modal" data-target="#finance_revenue_line_typesHelpModal">
       <i class="fas fa-question-circle"></i> Help
     </button>
-    <a href="{% url 'finance_revenue_line_types_add' %}" class="btn btn-info" style="margin-right:16px" type="button">Add New</a>
+    {% if perms.auth.can_edit_financials %}
+      <a href="{% url 'finance_revenue_line_types_add' %}" class="btn btn-info" style="margin-right:16px" type="button">Add New</a>
+    {% else %}
+      <span class="btn btn-secondary" style="margin-right:16px; opacity:0.6; cursor:not-allowed; pointer-events:none;">Add New</span>
+    {% endif %}
     <a href="{% url 'finance' %}" class="btn btn-info" style="margin-right:16px" role="button">Back</a>
   </div>
 <br>
@@ -56,9 +59,15 @@
             <td style="text-align: left; box-sizing: border-box;">{{ rev.revenue_line_types_name }}</td>
             <td style="text-align: left; box-sizing: border-box;">{{ rev.revenue_line_types_description }}</td>
             <td> 
-              <button type="button" class="btn btn-light" style="border-color:black">
-                <a href="{% url 'finance_revenue_line_types_edit' rev.revenue_line_types_id %}">Edit</a>
-              </button>
+              {% if perms.auth.can_edit_financials %}
+                <button type="button" class="btn btn-light" style="border-color:black">
+                  <a href="{% url 'finance_revenue_line_types_edit' rev.revenue_line_types_id %}">Edit</a>
+                </button>
+              {% else %}
+                <button type="button" class="btn btn-light" style="border-color:black; opacity:0.5; cursor:not-allowed; pointer-events:none;" disabled>
+                  <span style="color: #999;">Edit</span>
+                </button>
+              {% endif %}
             </td>    
           </tr>
         {% endfor %}
@@ -66,9 +75,7 @@
     </table>    
   </div>
 </form>
-
 {% render_help_modal "finance_revenue_line_types" %}
-
 </body>
 {% endif %}
 {% endblock %}

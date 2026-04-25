@@ -51,6 +51,19 @@
     color: white;
 }
 
+.btn-create-disabled {
+    background: #6c757d;
+    color: white;
+    padding: 12px 30px;
+    font-size: 16px;
+    font-weight: 500;
+    border-radius: 8px;
+    border: none;
+    opacity: 0.6;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
 .meal-plan-card {
     background: white;
     border-radius: 8px;
@@ -174,6 +187,15 @@
     color: white;
 }
 
+.btn-action-disabled {
+    background: #e9ecef;
+    color: #6c757d;
+    border: none;
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
 .empty-state {
     text-align: center;
     padding: 60px 20px;
@@ -251,9 +273,15 @@
 
     <!-- Action Buttons -->
     <div class="action-buttons">
+        {% if perms.auth.can_edit_personal %}
         <a href="{% url 'create_meal_plan' %}" class="btn btn-create">
             <i class="fas fa-plus"></i> Create New Meal Plan
         </a>
+        {% else %}
+        <span class="btn btn-create-disabled" title="You don't have permission to create meal plans">
+            <i class="fas fa-plus"></i> Create New Meal Plan
+        </span>
+        {% endif %}
         
         <div style="display: flex; align-items: center; gap: 15px;">
             <!-- View Toggle -->
@@ -321,12 +349,19 @@
                 <a href="{% url 'view_meal_plan' plan.meal_plan_id %}" class="btn btn-view">
                     <i class="fas fa-eye"></i> View
                 </a>
+                {% if perms.auth.can_edit_personal %}
                 <a href="{% url 'edit_meal_plan' plan.meal_plan_id %}" class="btn btn-edit">
                     <i class="fas fa-edit"></i> Edit
                 </a>
+                {% else %}
+                <span class="btn btn-action-disabled" title="No permission to edit">
+                    <i class="fas fa-edit"></i> Edit
+                </span>
+                {% endif %}
                 <a href="{% url 'meal_plan_shopping_list' plan.meal_plan_id %}" class="btn btn-shopping">
                     <i class="fas fa-shopping-cart"></i> List
                 </a>
+                {% if perms.auth.can_edit_personal %}
                 <button type="button" 
                         class="btn btn-duplicate"
                         data-duplicate-url="{% url 'duplicate_meal_plan' plan.meal_plan_id %}"
@@ -339,6 +374,14 @@
                         onclick="confirmDelete(this, '{{ plan.plan_name|escapejs }}')">
                     <i class="fas fa-trash"></i> Delete
                 </button>
+                {% else %}
+                <span class="btn btn-action-disabled" title="No permission to duplicate">
+                    <i class="fas fa-copy"></i> Duplicate
+                </span>
+                <span class="btn btn-action-disabled" title="No permission to delete">
+                    <i class="fas fa-trash"></i> Delete
+                </span>
+                {% endif %}
             </div>
         </div>
         {% endfor %}
@@ -347,15 +390,20 @@
         <div class="empty-state">
             <i class="fas fa-calendar-times"></i>
             <h3>No Meal Plans Yet</h3>
-            <p>Start planning your meals by creating your first meal plan!</p>
-            <a href="{% url 'create_meal_plan' %}" class="btn btn-create btn-lg">
-                <i class="fas fa-plus"></i> Create Your First Meal Plan
-            </a>
+            {% if perms.auth.can_edit_personal %}
+                <p>Start planning your meals by creating your first meal plan!</p>
+                <a href="{% url 'create_meal_plan' %}" class="btn btn-create btn-lg">
+                    <i class="fas fa-plus"></i> Create Your First Meal Plan
+                </a>
+            {% else %}
+                <p>No meal plans have been created yet.</p>
+            {% endif %}
         </div>
     {% endif %}
 
 </div>
 
+{% if perms.auth.can_edit_personal %}
 <!-- Delete Confirmation Modal -->
 <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
@@ -438,6 +486,7 @@
         </div>
     </div>
 </div>
+{% endif %}
 
 <script>
 // Delete meal plan confirmation

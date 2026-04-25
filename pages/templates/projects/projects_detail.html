@@ -36,9 +36,15 @@ Project Details - {{ project.project_name }}
   <a href="{% url 'project_gantt' project.project_id %}" class="btn btn-info">
     <i class="fas fa-chart-gantt"></i> Gantt Chart
   </a>
-  <button type="button" class="btn btn-warning" onclick="showDuplicateModal()">
-    <i class="fas fa-copy"></i> Duplicate Project
-  </button>
+  {% if perms.auth.can_edit_projects %}
+    <button type="button" class="btn btn-warning" onclick="showDuplicateModal()">
+      <i class="fas fa-copy"></i> Duplicate Project
+    </button>
+  {% else %}
+    <span class="btn btn-secondary" style="opacity:0.6; cursor:not-allowed; pointer-events:none;">
+      <i class="fas fa-copy"></i> Duplicate Project
+    </span>
+  {% endif %}
   <a href="{% url 'projects' %}" class="btn btn-info">
     <i class="fas fa-arrow-left"></i> Back to Projects
   </a>
@@ -65,10 +71,14 @@ Project Details - {{ project.project_name }}
           {{ project.get_calculated_status }}
         </span>
         
-        {% if user.is_superuser %}
+        {% if perms.auth.can_edit_projects %}
           <a href="{% url 'projects_edit' project.project_id %}" class="btn btn-sm btn-info ml-2">
             <i class="fas fa-edit"></i>
           </a>
+        {% else %}
+          <button type="button" class="btn btn-sm btn-light ml-2" disabled style="opacity: 0.5;">
+            <i class="fas fa-edit" style="color: #6c757d;"></i>
+          </button>
         {% endif %}
       </div>
     </div>
@@ -144,7 +154,7 @@ Project Details - {{ project.project_name }}
 <div class="tasks-section">
   <h4>
     <i class="fas fa-tasks"></i> Project Tasks
-    {% if user.is_superuser %}
+    {% if perms.auth.can_edit_projects %}
       <a href="{% url 'project_tasks_add' project.project_id %}" class="btn btn-sm btn-info ml-3">
         <i class="fas fa-plus"></i> Add Task
       </a>
@@ -162,7 +172,7 @@ Project Details - {{ project.project_name }}
                   {{ task.task_priority }}
                 </span>
                 {{ task.task_name }}
-                {% if user.is_superuser %}
+                {% if perms.auth.can_edit_projects %}
                   <a href="{% url 'project_subtasks_add' project.project_id task.task_id %}" class="btn btn-sm btn-info ml-3">
                     <i class="fas fa-plus"></i> Add Subtask
                   </a>
@@ -214,13 +224,22 @@ Project Details - {{ project.project_name }}
               <span class="task-status-badge status-{{ task.get_calculated_status|slugify }}">
                 {{ task.get_calculated_status }}
               </span>
-              {% if user.is_superuser %}
+              {% if perms.auth.can_edit_projects %}
                 <div class="btn-group ml-2">
                   <a href="{% url 'project_tasks_edit' project.project_id task.task_id %}" class="btn btn-sm btn-info">
                     <i class="fas fa-edit"></i>
                   </a>
                   <button type="button" class="btn btn-sm btn-danger" onclick="confirmDeleteTask('{{ task.task_id }}', '{{ task.task_name|escapejs }}', {{ task.subtasks.all|length }})">
                     <i class="fas fa-trash"></i>
+                  </button>
+                </div>
+              {% else %}
+                <div class="btn-group ml-2">
+                  <button type="button" class="btn btn-sm btn-light" disabled style="opacity: 0.5;">
+                    <i class="fas fa-edit" style="color: #6c757d;"></i>
+                  </button>
+                  <button type="button" class="btn btn-sm btn-light" disabled style="opacity: 0.5;">
+                    <i class="fas fa-trash" style="color: #6c757d;"></i>
                   </button>
                 </div>
               {% endif %}
@@ -246,7 +265,7 @@ Project Details - {{ project.project_name }}
                         {{ subtask.task_name }}
                       </div>
                       <div class="subtask-actions">
-                        {% if user.is_superuser %}
+                        {% if perms.auth.can_edit_projects %}
                           <span class="subtask-status-badge status-{{ subtask.task_status|slugify }} clickable-status" 
                                 onclick="editTaskStatus('{{ subtask.task_id }}', '{{ subtask.task_status }}')">
                             {{ subtask.task_status }}
@@ -261,6 +280,12 @@ Project Details - {{ project.project_name }}
                           <span class="subtask-status-badge status-{{ subtask.task_status|slugify }}">
                             {{ subtask.task_status }}
                           </span>
+                          <button type="button" class="btn btn-xs btn-light ml-1" disabled style="opacity: 0.5;">
+                            <i class="fas fa-edit" style="color: #6c757d;"></i>
+                          </button>
+                          <button type="button" class="btn btn-xs btn-light ml-1" disabled style="opacity: 0.5;">
+                            <i class="fas fa-trash" style="color: #6c757d;"></i>
+                          </button>
                         {% endif %}
                       </div>
                     </div>
@@ -320,7 +345,7 @@ Project Details - {{ project.project_name }}
         <i class="fas fa-tasks fa-3x text-muted mb-3"></i>
         <h5>No tasks yet</h5>
         <p class="text-muted">Get started by adding your first task to this project.</p>
-        {% if user.is_superuser %}
+        {% if perms.auth.can_edit_projects %}
           <a href="{% url 'project_tasks_add' project.project_id %}" class="btn btn-info">
             <i class="fas fa-plus"></i> Add First Task
           </a>

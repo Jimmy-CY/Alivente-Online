@@ -10,7 +10,7 @@
 <h4><center>EDIT EXISTING LINE TYPES</center></h4>
 <br/>
 
-{% if user.is_superuser %}
+{% if perms.auth.can_access_financials %}
 
 {% for exp in eltresults %}
 <form action="{% url 'finance_expense_line_types_edit_commit' exp.expense_line_types_id %}" method="post"

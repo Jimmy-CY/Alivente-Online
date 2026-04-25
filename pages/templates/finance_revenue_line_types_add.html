@@ -10,7 +10,7 @@
 <h4><center>ADD LINE TYPE</center></h4>
 <br/>
 
-{% if user.is_superuser %}
+{% if perms.auth.can_access_financials %}
 
 <form action = "{% url 'finance_revenue_line_types_commit' %}" method="post">
   

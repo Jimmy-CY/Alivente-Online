@@ -34,8 +34,6 @@
 </div>
 <br>
 
-{% if user.is_superuser %}
-
 <style>
   /* Colour Variables */
   :root {
@@ -251,9 +249,5 @@
   </div>
   
 </div>
-
-{% else %}
-  <center><img src="{% static 'images/alivente_online_logo.png' %}" alt="Alivente" width="480" height="300"></center>
-{% endif %}
 
 {% endblock %}

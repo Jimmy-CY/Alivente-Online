@@ -77,6 +77,11 @@
     box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
 }
 
+.notification-card .form-control[readonly] {
+    background-color: #f8f9fa;
+    cursor: not-allowed;
+}
+
 .form-group label {
     font-weight: 500;
     color: #495057;
@@ -88,6 +93,12 @@
     color: #6c757d;
     font-style: italic;
     margin-top: 4px;
+}
+
+.btn-save-disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
 }
 </style>
 
@@ -135,6 +146,7 @@
                 name="to_addresses" 
                 rows="2" 
                 placeholder="email1@example.com, email2@example.com"
+                {% if not perms.auth.can_edit_personal %}readonly{% endif %}
             >{{ notification_settings.celebration_reminder.to_emails }}</textarea>
             <div class="field-hint">Family members who should be reminded</div>
         </div>
@@ -146,13 +158,20 @@
                 name="cc_addresses" 
                 rows="2" 
                 placeholder="email1@example.com, email2@example.com"
+                {% if not perms.auth.can_edit_personal %}readonly{% endif %}
             >{{ notification_settings.celebration_reminder.cc_emails }}</textarea>
             <div class="field-hint">Additional recipients who should be informed</div>
         </div>
         
+        {% if perms.auth.can_edit_personal %}
         <button type="submit" class="btn btn-success">
             <i class="fas fa-save"></i> Save
         </button>
+        {% else %}
+        <button type="button" class="btn btn-success btn-save-disabled" disabled title="No permission to edit">
+            <i class="fas fa-save"></i> Save
+        </button>
+        {% endif %}
     </form>
 </div>
 
@@ -172,6 +191,7 @@
                 name="to_addresses" 
                 rows="2" 
                 placeholder="email1@example.com, email2@example.com"
+                {% if not perms.auth.can_edit_personal %}readonly{% endif %}
             >{{ notification_settings.document_expiry.to_emails }}</textarea>
             <div class="field-hint">Family members who manage documents</div>
         </div>
@@ -183,13 +203,20 @@
                 name="cc_addresses" 
                 rows="2" 
                 placeholder="email1@example.com, email2@example.com"
+                {% if not perms.auth.can_edit_personal %}readonly{% endif %}
             >{{ notification_settings.document_expiry.cc_emails }}</textarea>
             <div class="field-hint">Additional recipients who should be informed</div>
         </div>
         
+        {% if perms.auth.can_edit_personal %}
         <button type="submit" class="btn btn-success">
             <i class="fas fa-save"></i> Save
         </button>
+        {% else %}
+        <button type="button" class="btn btn-success btn-save-disabled" disabled title="No permission to edit">
+            <i class="fas fa-save"></i> Save
+        </button>
+        {% endif %}
     </form>
 </div>
 

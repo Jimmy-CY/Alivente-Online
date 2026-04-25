@@ -174,6 +174,17 @@
     color: #6c757d;
 }
 
+.action-btn-disabled {
+    color: #adb5bd !important;
+    cursor: not-allowed !important;
+    opacity: 0.6;
+}
+
+.action-btn-disabled:hover {
+    background: transparent !important;
+    color: #adb5bd !important;
+}
+
 .action-buttons {
     display: flex;
     gap: 5px;
@@ -338,9 +349,15 @@
         <a href="{% url 'recipe_management' %}" class="btn btn-secondary">
             <i class="fas fa-arrow-left"></i> Back to Recipe Management
         </a>
+        {% if perms.auth.can_edit_personal %}
         <button type="button" class="btn btn-success" data-toggle="modal" data-target="#addUnitModal">
             <i class="fas fa-plus"></i> Add Measurement Unit
         </button>
+        {% else %}
+        <button type="button" class="btn btn-success" disabled style="opacity: 0.6; cursor: not-allowed;" title="No permission to edit">
+            <i class="fas fa-plus"></i> Add Measurement Unit
+        </button>
+        {% endif %}
     </div>
 
     <!-- Page Header -->
@@ -377,6 +394,7 @@
                             <br><small style="color: #6c757d;">Plural: {{ item.unit.name_plural }}</small>
                             {% endif %}
                         </span>
+                        {% if perms.auth.can_edit_personal %}
                         <div class="unit-name-edit">
                             <div class="edit-field-label">Singular</div>
                             <input type="text" 
@@ -393,6 +411,7 @@
                                        placeholder="e.g., cups">
                             </div>
                         </div>
+                        {% endif %}
                     </td>
                     
                     <!-- Abbreviation -->
@@ -407,6 +426,7 @@
                             <span style="color: #6c757d; font-style: italic;">-</span>
                             {% endif %}
                         </span>
+                        {% if perms.auth.can_edit_personal %}
                         <div class="unit-abbr-edit">
                             <div class="edit-field-label">Singular</div>
                             <input type="text" 
@@ -423,6 +443,7 @@
                                        placeholder="e.g., c (same if unchanged)">
                             </div>
                         </div>
+                        {% endif %}
                     </td>
                     
                     <!-- Unit Type -->
@@ -432,6 +453,7 @@
                                 {{ item.unit.get_unit_type_display }}
                             </span>
                         </span>
+                        {% if perms.auth.can_edit_personal %}
                         <select class="unit-type-edit unit-input" data-original-value="{{ item.unit.unit_type }}">
                             {% for value, label in unit_types %}
                             <option value="{{ value }}" {% if item.unit.unit_type == value %}selected{% endif %}>
@@ -439,6 +461,7 @@
                             </option>
                             {% endfor %}
                         </select>
+                        {% endif %}
                     </td>
                     
                     <!-- Usage Count with Clickable Popups -->
@@ -492,6 +515,7 @@
                     <!-- Actions -->
                     <td style="text-align: center;">
                         <div class="action-buttons">
+                            {% if perms.auth.can_edit_personal %}
                             <!-- View Mode Actions -->
                             <div class="view-actions">
                                 <button class="action-btn btn-edit" onclick="enterEditMode({{ item.unit.measurement_unit_id }})" title="Edit">
@@ -511,6 +535,17 @@
                                     <i class="fas fa-times"></i>
                                 </button>
                             </div>
+                            {% else %}
+                            <!-- Read-only: disabled icons -->
+                            <div class="view-actions">
+                                <span class="action-btn action-btn-disabled" title="No permission to edit">
+                                    <i class="fas fa-pencil-alt"></i>
+                                </span>
+                                <span class="action-btn action-btn-disabled" title="No permission to delete">
+                                    <i class="fas fa-trash-alt"></i>
+                                </span>
+                            </div>
+                            {% endif %}
                         </div>
                     </td>
                 </tr>
@@ -521,13 +556,18 @@
         <div class="empty-state" id="emptyState">
             <i class="fas fa-ruler"></i>
             <h3>No Measurement Units Yet</h3>
+            {% if perms.auth.can_edit_personal %}
             <p>Click "Add Measurement Unit" to create your first unit.</p>
+            {% else %}
+            <p>No measurement units have been set up yet.</p>
+            {% endif %}
         </div>
         {% endif %}
     </div>
 
 </div>
 
+{% if perms.auth.can_edit_personal %}
 <!-- Add Unit Modal -->
 <div class="modal fade" id="addUnitModal" tabindex="-1" role="dialog">
     <div class="modal-dialog" role="document">
@@ -616,6 +656,7 @@
         </div>
     </div>
 </div>
+{% endif %}
 
 <script>
 // Toggle usage popup on click
@@ -654,6 +695,7 @@ document.addEventListener('keydown', function(event) {
     }
 });
 
+{% if perms.auth.can_edit_personal %}
 // Enter edit mode
 function enterEditMode(unitId) {
     const row = document.getElementById(`unit-row-${unitId}`);
@@ -928,6 +970,7 @@ $('#addUnitModal').on('hidden.bs.modal', function () {
     document.getElementById('newUnitAbbrPlural').value = '';
     document.getElementById('newUnitType').value = 'other';
 });
+{% endif %}
 </script>
 
 {% endblock %}

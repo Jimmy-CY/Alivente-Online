@@ -29,7 +29,6 @@ Invoices
   </script>
 {% endfor %}
 
-{% if user.is_superuser %}
 <body>
   <!-- Action Buttons -->
   <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 20px;">
@@ -126,9 +125,13 @@ Invoices
                   <td style="text-align: center">{{ iresults.invoice_date|date:"Y-m-d" }}</td>
                   <td style="text-align: center">{{ due_date|date:"Y-m-d" }}</td>
                   <td style="text-align: center; {% if days_overdue > 0 %}color: #dc3545; font-weight: bold;{% endif %}">{{ days_overdue }}</td>
-                  <td style="text-align: center">
-                    <a href="{% url 'invoices_commit' iresults.invoice_id %}" class="btn btn-link">Paid</a>
-                  </td>
+                    <td style="text-align: center">
+                      {% if perms.auth.can_edit_invoices %}
+                        <a href="{% url 'invoices_commit' iresults.invoice_id %}" class="btn btn-link">Paid</a>
+                      {% else %}
+                        <span class="btn btn-link" style="opacity:0.5; cursor:not-allowed; pointer-events:none;">Paid</span>
+                      {% endif %}
+                    </td>
                 </tr>
               {% endif %}
             {% endfor %}
@@ -471,14 +474,5 @@ function clearFilter(filterType) {
     document.getElementById('filterForm').submit();
 }
 </script>
-
-{% else %}
-  <div class="alert alert-warning text-center" role="alert">
-    <h4 class="alert-heading">Access Restricted</h4>
-    <p>You do not have permission to view invoices. Please contact an administrator.</p>
-    <hr>
-    <a href="{% url 'home' %}" class="btn btn-info">Back to Home</a>
-  </div>
-{% endif %}
 
 {% endblock %}

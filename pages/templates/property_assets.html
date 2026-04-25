@@ -30,9 +30,15 @@
  
 <!-- Action Buttons -->
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <button type="button" class="btn btn-info" data-toggle="modal" data-target="#addAssetModal">
-        <i class="fas fa-plus"></i> Add Asset
-    </button>
+    {% if perms.auth.can_edit_properties %}
+        <button type="button" class="btn btn-info" data-toggle="modal" data-target="#addAssetModal">
+            <i class="fas fa-plus"></i> Add Asset
+        </button>
+    {% else %}
+        <span class="btn btn-secondary" style="opacity:0.6; cursor:not-allowed; pointer-events:none;">
+            <i class="fas fa-plus"></i> Add Asset
+        </span>
+    {% endif %}
     {% if request.GET.next == 'edit' %}
         <a href="{% url 'properties_edit' property.prop_id %}" class="btn btn-info">
             <i class="fas fa-arrow-left"></i> Back

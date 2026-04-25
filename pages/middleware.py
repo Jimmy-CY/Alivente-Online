@@ -571,8 +571,7 @@ class ModuleAccessMiddleware(MiddlewareMixin):
         
         # URLs that require login but no specific module permission
         self.LOGIN_ONLY_PATTERNS = [
-            'profile/',
-            'settings/',
+            'my-profile/',
             'help/',
         ]
 
@@ -633,37 +632,243 @@ class ModuleAccessMiddleware(MiddlewareMixin):
         return False
 
     def _get_required_permission(self, path):
-        """Determine which permission is required for the given path"""
-        # Remove trailing slashes for consistent matching
+        """Determine which permission is required for the given path.
+
+        Checks URL prefixes against module permissions. First match wins,
+        so more specific patterns MUST come before more general ones.
+        """
         clean_path = path.rstrip('/')
-        
-        # Check for exact matches first (most specific)
-        exact_matches = {
-            'property_management_dashboard': 'auth.can_access_dashboard',
-            'act_expenses_all': 'auth.can_access_expenses',
-            'petty_cash': 'auth.can_access_petty_cash',
-            'invoices': 'auth.can_access_invoices',
-        }
-        
-        for pattern, permission in exact_matches.items():
-            if clean_path == pattern or clean_path.startswith(pattern + '/'):
+
+        # Special case: the bare notifications dashboard is available to all
+        # authenticated users, but its sub-URLs (notifications/personal,
+        # notifications/settings) are module-restricted. Return None here only
+        # for the exact path, so the sub-URLs fall through to the loop below.
+        if clean_path == 'notifications':
+            return None
+
+        # (url_prefix, permission_codename)
+        # First match wins — order matters!
+        url_permission_map = [
+
+            # ---------- NOTIFICATIONS (two module-restricted sub-pages) ----------
+            # Must come FIRST so these specific sub-URLs match before any
+            # broader rule could catch them.
+            ('notifications/personal', 'auth.can_access_personal'),
+            ('notifications/settings', 'auth.can_access_administration'),
+
+            # ---------- ADMINISTRATION ----------
+            ('admin_apms', 'auth.can_access_administration'),
+            ('admin_clear', 'auth.can_access_administration'),
+            ('admin_unpaid', 'auth.can_access_administration'),
+            ('admin_renewals', 'auth.can_access_administration'),
+            ('admin_invoices', 'auth.can_access_administration'),
+            ('user-administration', 'auth.can_access_administration'),
+            ('setup-permissions', 'auth.can_access_administration'),
+
+            # ---------- PERSONAL ----------
+            ('personal', 'auth.can_access_personal'),
+            ('passport-management', 'auth.can_access_personal'),
+            ('recipe_management', 'auth.can_access_personal'),
+            ('recipes/', 'auth.can_access_personal'),
+            ('recipe/', 'auth.can_access_personal'),
+            ('view_recipe', 'auth.can_access_personal'),
+            ('create_recipe', 'auth.can_access_personal'),
+            ('import_recipe', 'auth.can_access_personal'),
+            ('preview_imported_recipe', 'auth.can_access_personal'),
+            ('spell-check-instructions', 'auth.can_access_personal'),
+            ('add-recipe-protein', 'auth.can_access_personal'),
+            ('meal_plans', 'auth.can_access_personal'),
+            ('celebrations', 'auth.can_access_personal'),
+            ('unit_conversions', 'auth.can_access_personal'),
+            ('save_unit_conversion', 'auth.can_access_personal'),
+            ('add_unit_conversion_manual', 'auth.can_access_personal'),
+            ('edit_unit_conversion', 'auth.can_access_personal'),
+            ('delete_unit_conversion', 'auth.can_access_personal'),
+            ('ingredient_base_units', 'auth.can_access_personal'),
+            ('update_ingredient_base_unit', 'auth.can_access_personal'),
+            ('check-ingredient-usage', 'auth.can_access_personal'),
+            ('delete-ingredient', 'auth.can_access_personal'),
+            ('update-ingredient-full', 'auth.can_access_personal'),
+            ('categories-management', 'auth.can_access_personal'),
+            ('add-category', 'auth.can_access_personal'),
+            ('update-category', 'auth.can_access_personal'),
+            ('check-category-usage', 'auth.can_access_personal'),
+            ('delete-category', 'auth.can_access_personal'),
+            ('measurement-units-management', 'auth.can_access_personal'),
+            ('add-measurement-unit', 'auth.can_access_personal'),
+            ('update-measurement-unit', 'auth.can_access_personal'),
+            ('check-unit-usage', 'auth.can_access_personal'),
+            ('delete-measurement-unit', 'auth.can_access_personal'),
+            ('ajax/add_recipe_course', 'auth.can_access_personal'),
+            ('ajax/add_recipe_category', 'auth.can_access_personal'),
+            ('ajax/add_recipe_ingredient', 'auth.can_access_personal'),
+            ('ajax/add_measurement', 'auth.can_access_personal'),
+            ('ajax/add_ingredient', 'auth.can_access_personal'),
+            ('ajax/add_preparation', 'auth.can_access_personal'),
+
+            # ---------- PROPERTIES ----------
+            ('properties', 'auth.can_access_properties'),
+            ('properties_add', 'auth.can_access_properties'),
+            ('properties_edit', 'auth.can_access_properties'),
+            ('properties_commit', 'auth.can_access_properties'),
+            ('properties_edit_commit', 'auth.can_access_properties'),
+            ('properties_title_deed', 'auth.can_access_properties'),
+            ('property_report', 'auth.can_access_properties'),
+            ('property/', 'auth.can_access_properties'),
+            ('prop_rep', 'auth.can_access_properties'),
+            ('title_deeds', 'auth.can_access_properties'),
+            ('upload_title_deed', 'auth.can_access_properties'),
+            ('assets/', 'auth.can_access_properties'),
+            ('maintenance/', 'auth.can_access_properties'),
+            ('ajax/category/', 'auth.can_access_properties'),
+            ('ajax/subcategory/', 'auth.can_access_properties'),
+            ('ajax/supplier/', 'auth.can_access_properties'),
+
+            # ---------- TENANTS ----------
+            ('tenant', 'auth.can_access_tenants'),
+            ('tenant_add', 'auth.can_access_tenants'),
+            ('tenant_edit', 'auth.can_access_tenants'),
+            ('tenant_edit_commit', 'auth.can_access_tenants'),
+            ('tenant_commit', 'auth.can_access_tenants'),
+            ('tenant_lease_agreement', 'auth.can_access_tenants'),
+            ('tenant_rep', 'auth.can_access_tenants'),
+            ('tenant_report', 'auth.can_access_tenants'),
+            ('lease', 'auth.can_access_tenants'),
+            ('lease-timeline', 'auth.can_access_tenants'),
+            ('lease_renewal', 'auth.can_access_tenants'),
+            ('lease_renewal_report', 'auth.can_access_tenants'),
+            ('lease_agreements', 'auth.can_access_tenants'),
+            ('upload_lease_agreement', 'auth.can_access_tenants'),
+            ('generate-lease-agreement', 'auth.can_access_tenants'),
+            ('get-property-tenant-data', 'auth.can_access_tenants'),
+            ('open_invoices_report', 'auth.can_access_tenants'),
+
+            # ---------- SUPPLIERS ----------
+            ('suppliers', 'auth.can_access_suppliers'),
+            ('suppliers_add', 'auth.can_access_suppliers'),
+            ('suppliers_edit', 'auth.can_access_suppliers'),
+            ('suppliers_commit', 'auth.can_access_suppliers'),
+            ('suppliers_edit_commit', 'auth.can_access_suppliers'),
+            ('suppliers_rep', 'auth.can_access_suppliers'),
+            ('supplier_report', 'auth.can_access_suppliers'),
+
+            # ---------- ISSUES (FSR) ----------
+            ('fsr', 'auth.can_access_issues'),
+            ('fsr_add', 'auth.can_access_issues'),
+            ('fsr_commit', 'auth.can_access_issues'),
+            ('fsr_details', 'auth.can_access_issues'),
+            ('fsr_commit_status_change', 'auth.can_access_issues'),
+            ('fsr_comment_add', 'auth.can_access_issues'),
+            ('fsr_notification', 'auth.can_access_issues'),
+            ('fsr_rep', 'auth.can_access_issues'),
+            ('issues', 'auth.can_access_issues'),
+            ('issues_rep', 'auth.can_access_issues'),
+            ('issue-details', 'auth.can_access_issues'),
+            ('friday_status_report', 'auth.can_access_issues'),
+            ('resolved_issues_report', 'auth.can_access_issues'),
+            ('comments-report', 'auth.can_access_issues'),
+            ('delete-comment', 'auth.can_access_issues'),
+
+            # ---------- PROJECTS ----------
+            # 'projects' MUST come before 'project_*' variants since startswith
+            # is used. Check more specific patterns first within this block.
+            ('projects', 'auth.can_access_projects'),
+            ('ajax/projects', 'auth.can_access_projects'),
+            ('ajax/tasks', 'auth.can_access_projects'),
+            ('ajax/update_project_status', 'auth.can_access_projects'),
+            ('ajax/update_task_status', 'auth.can_access_projects'),
+            ('ajax/duplicate_project', 'auth.can_access_projects'),
+            ('ajax/delete-task', 'auth.can_access_projects'),
+            ('translate', 'auth.can_access_projects'),
+
+            # ---------- DASHBOARD ----------
+            # Landing page + tile dispatcher: can_access_dashboard required.
+            # property_detail further checks each tile's OWNING module internally.
+            ('property_management_dashboard', 'auth.can_access_dashboard'),
+            ('property_detail', 'auth.can_access_dashboard'),
+            ('dashboard_pl', 'auth.can_access_financials'),
+            # The following are Finance-page reports, not Dashboard tiles.
+            # They are listed here because they originated as dashboard-era
+            # reports, but their owning module is Financials.
+            ('occupancy-trends', 'auth.can_access_financials'),
+            ('vacancy-management', 'auth.can_access_financials'),
+            ('forecast', 'auth.can_access_financials'),
+
+            # ---------- INVOICES ----------
+            ('invoices', 'auth.can_access_invoices'),
+            ('invoices_commit', 'auth.can_access_invoices'),
+            ('open_invoices', 'auth.can_access_invoices'),
+
+            # ---------- EXPENSES ----------
+            ('act_expense_all', 'auth.can_access_expenses'),
+            ('act_expense_view', 'auth.can_access_expenses'),
+            ('act_expense_add', 'auth.can_access_expenses'),
+            ('act_expense_commit', 'auth.can_access_expenses'),
+            ('act_expense_edit', 'auth.can_access_expenses'),
+            ('act_expense_edit_commit', 'auth.can_access_expenses'),
+            ('act_expense_manage_document', 'auth.can_access_expenses'),
+            ('mark_approved', 'auth.can_access_expenses'),
+            ('mark_paid', 'auth.can_access_expenses'),
+            ('mark_deleted', 'auth.can_access_expenses'),
+
+            # ---------- PETTY CASH ----------
+            ('petty_cash', 'auth.can_access_petty_cash'),
+            ('petty_cash_add', 'auth.can_access_petty_cash'),
+            ('petty_cash_commit', 'auth.can_access_petty_cash'),
+            ('petty_cash_rep', 'auth.can_access_petty_cash'),
+
+            # ---------- FINANCIALS ----------
+            ('finance', 'auth.can_access_financials'),
+            ('finance_valuations', 'auth.can_access_financials'),
+            ('finance_valuations_add', 'auth.can_access_financials'),
+            ('finance_valuations_commit', 'auth.can_access_financials'),
+            ('finance_valuations_edit', 'auth.can_access_financials'),
+            ('finance_valuations_edit_commit', 'auth.can_access_financials'),
+            ('finance_revenue', 'auth.can_access_financials'),
+            ('finance_revenue_add', 'auth.can_access_financials'),
+            ('finance_revenue_commit', 'auth.can_access_financials'),
+            ('finance_revenue_edit', 'auth.can_access_financials'),
+            ('finance_revenue_edit_commit', 'auth.can_access_financials'),
+            ('finance_revenue_types', 'auth.can_access_financials'),
+            ('finance_revenue_types_add', 'auth.can_access_financials'),
+            ('finance_revenue_types_commit', 'auth.can_access_financials'),
+            ('finance_revenue_types_edit', 'auth.can_access_financials'),
+            ('finance_revenue_types_edit_commit', 'auth.can_access_financials'),
+            ('finance_revenue_line_types', 'auth.can_access_financials'),
+            ('finance_revenue_line_types_add', 'auth.can_access_financials'),
+            ('finance_revenue_line_types_commit', 'auth.can_access_financials'),
+            ('finance_revenue_line_types_edit', 'auth.can_access_financials'),
+            ('finance_revenue_line_types_edit_commit', 'auth.can_access_financials'),
+            ('finance_expense', 'auth.can_access_financials'),
+            ('finance_expense_add', 'auth.can_access_financials'),
+            ('finance_expense_commit', 'auth.can_access_financials'),
+            ('finance_expense_edit', 'auth.can_access_financials'),
+            ('finance_expense_edit_commit', 'auth.can_access_financials'),
+            ('finance_expense_types', 'auth.can_access_financials'),
+            ('finance_expense_types_add', 'auth.can_access_financials'),
+            ('finance_expense_types_commit', 'auth.can_access_financials'),
+            ('finance_expense_types_edit', 'auth.can_access_financials'),
+            ('finance_expense_types_edit_commit', 'auth.can_access_financials'),
+            ('finance_expense_line_types', 'auth.can_access_financials'),
+            ('finance_expense_line_types_add', 'auth.can_access_financials'),
+            ('finance_expense_line_types_commit', 'auth.can_access_financials'),
+            ('finance_expense_line_types_edit', 'auth.can_access_financials'),
+            ('finance_expense_line_types_edit_commit', 'auth.can_access_financials'),
+            ('finance_expense_line_types_edit_and_recalc_commit', 'auth.can_access_financials'),
+            ('finance_pl', 'auth.can_access_financials'),
+            ('finance_pl_act', 'auth.can_access_financials'),
+            ('revenue-details', 'auth.can_access_financials'),
+            ('budget-expense-details', 'auth.can_access_financials'),
+            ('total-expense-details', 'auth.can_access_financials'),
+            ('financial-indicators', 'auth.can_access_financials'),
+        ]
+
+        for prefix, permission in url_permission_map:
+            if (clean_path == prefix
+                or clean_path.startswith(prefix + '/')
+                or clean_path.startswith(prefix + '_')):
                 return permission
-        
-        # Then check for substring matches (less specific)
-        substring_matches = {
-            'properties': 'auth.can_access_properties',
-            'tenant': 'auth.can_access_tenants',
-            'suppliers': 'auth.can_access_suppliers',
-            'fsr': 'auth.can_access_fsr',
-            'finance': 'auth.can_access_financials',
-            'projects': 'auth.can_access_projects',  # This will catch /projects/
-            'project': 'auth.can_access_projects',   # This will catch /project_gantt/, etc.
-        }
-        
-        for pattern, permission in substring_matches.items():
-            if pattern in clean_path:
-                return permission
-        
+
         return None
 
     def _render_access_denied(self, request, required_permission):

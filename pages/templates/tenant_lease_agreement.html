@@ -28,7 +28,7 @@
 </div>
 <br/>
 
-{% if user.is_superuser %}
+{% if perms.auth.can_access_tenants %}
 
 <div>
 <table class="table table-bordered table-striped text-center">
@@ -70,16 +70,20 @@
             {% endif %}
         </td>
         <td>
-            {% if tenant.tenant_lease_agreement %}
-                <!-- Delete Button -->
-                <button type="button" class="btn btn-sm btn-danger" onclick="deleteDocument({{ tenant.tenant_id }}, '{{ tenant.tenant_name }}')">
-                    <i class="fas fa-trash"></i> Delete
-                </button>
+            {% if perms.auth.can_edit_tenants %}
+                {% if tenant.tenant_lease_agreement %}
+                    <!-- Delete Button -->
+                    <button type="button" class="btn btn-sm btn-danger" onclick="deleteDocument({{ tenant.tenant_id }}, '{{ tenant.tenant_name }}')">
+                        <i class="fas fa-trash"></i> Delete
+                    </button>
+                {% else %}
+                    <!-- Upload Button -->
+                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="uploadDocument({{ tenant.tenant_id }})">
+                        <i class="fas fa-upload"></i> Upload
+                    </button>
+                {% endif %}
             {% else %}
-                <!-- Upload Button -->
-                <button type="button" class="btn btn-sm btn-outline-primary" onclick="uploadDocument({{ tenant.tenant_id }})">
-                    <i class="fas fa-upload"></i> Upload
-                </button>
+                <span class="text-muted">-</span>
             {% endif %}
         </td>
     </tr>
@@ -88,6 +92,7 @@
 </table>    
 </div>
 
+{% if perms.auth.can_edit_tenants %}
 <!-- Upload Document Modal -->
 <div class="modal fade" id="uploadModal" tabindex="-1" role="dialog" aria-labelledby="uploadModalLabel" aria-hidden="true">
   <div class="modal-dialog" role="document">
@@ -154,6 +159,7 @@
     </div>
   </div>
 </div>
+{% endif %}
 
 <!-- View Document Modal -->
 <div class="modal fade" id="viewModal" tabindex="-1" role="dialog" aria-labelledby="viewModalLabel" aria-hidden="true">
@@ -181,6 +187,7 @@
 {% endif %}
 
 <script>
+{% if perms.auth.can_edit_tenants %}
 function uploadDocument(tenantId) {
     document.getElementById('tenant_id').value = tenantId;
     $('#uploadModal').modal('show');
@@ -191,6 +198,7 @@ function deleteDocument(tenantId, tenantName) {
     document.getElementById('deleteTenantName').textContent = tenantName;
     $('#deleteModal').modal('show');
 }
+{% endif %}
 
 function viewDocument(documentUrl, documentName, tenantName) {
     const documentViewer = document.getElementById('documentViewer');
@@ -249,6 +257,7 @@ function viewDocument(documentUrl, documentName, tenantName) {
     $('#viewModal').modal('show');
 }
 
+{% if perms.auth.can_edit_tenants %}
 // Auto-hide modals on form submission success
 $(document).ready(function() {
     // Hide modals after successful form submission
@@ -258,6 +267,7 @@ $(document).ready(function() {
         }, 100);
     });
 });
+{% endif %}
 </script>
 
 {% endblock %}

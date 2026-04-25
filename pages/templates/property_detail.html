@@ -37,27 +37,21 @@
                         <!-- Title Deed Content -->
                         <div class="title-deed-section">
                             <h5><i class="fas fa-file-contract text-info"></i> Title Deed Information</h5>
-                            {% if user.is_superuser %}
-                                {% if property.prop_title_deed %}
-                                    <div class="document-viewer mt-3">
-                                        <div class="document-preview border p-3 rounded">
-                                            {% if property.prop_title_deed.name|slice:"-4:" == ".pdf" %}
-                                                <iframe src="{{ property.prop_title_deed.url }}#navpanes=0&scrollbar=1&page=1&view=FitH" width="100%" height="600px" style="border: 1px solid #ddd; border-radius: 4px;">
-                                                    <p>Your browser does not support PDFs. <a href="{{ property.prop_title_deed.url }}" target="_blank">Click here to view</a></p>
-                                                </iframe>
-                                            {% else %}
-                                                <img src="{{ property.prop_title_deed.url }}" alt="Title Deed" class="img-fluid" style="max-height: 600px; width: 100%;">
-                                            {% endif %}
-                                        </div>
+                            {% if property.prop_title_deed %}
+                                <div class="document-viewer mt-3">
+                                    <div class="document-preview border p-3 rounded">
+                                        {% if property.prop_title_deed.name|slice:"-4:" == ".pdf" %}
+                                            <iframe src="{{ property.prop_title_deed.url }}#navpanes=0&scrollbar=1&page=1&view=FitH" width="100%" height="600px" style="border: 1px solid #ddd; border-radius: 4px;">
+                                                <p>Your browser does not support PDFs. <a href="{{ property.prop_title_deed.url }}" target="_blank">Click here to view</a></p>
+                                            </iframe>
+                                        {% else %}
+                                            <img src="{{ property.prop_title_deed.url }}" alt="Title Deed" class="img-fluid" style="max-height: 600px; width: 100%;">
+                                        {% endif %}
                                     </div>
-                                {% else %}
-                                    <div class="alert alert-warning">
-                                        <i class="fas fa-exclamation-triangle"></i> No title deed available for this property.
-                                    </div>
-                                {% endif %}
+                                </div>
                             {% else %}
-                                <div class="alert alert-danger">
-                                    <i class="fas fa-lock"></i> Access denied. Superuser privileges required to view title deeds.
+                                <div class="alert alert-warning">
+                                    <i class="fas fa-exclamation-triangle"></i> No title deed available for this property.
                                 </div>
                             {% endif %}
                         </div>
@@ -787,80 +781,73 @@
                         <div class="valuations-section">
                             <h5><i class="fas fa-home text-info"></i> Property Valuation</h5>
                             
-                            {% if user.is_superuser %}
-                                {% if property_valuation %}
-                                    <!-- Valuation Details -->
-                                    <div class="valuation-container mt-3">
-                                        <div class="valuation-card">
-                                            <h3 class="property-name">{{ property.prop_name }}</h3>
-                                            
-                                            <div class="valuation-details">
-                                                <div class="valuation-row">
-                                                    <div class="valuation-item purchase">
-                                                        <div class="valuation-icon">
-                                                            <i class="fas fa-shopping-cart"></i>
-                                                        </div>
-                                                        <div class="valuation-content">
-                                                            <div class="valuation-label">Purchase Price</div>
-                                                            <div class="valuation-amount">€{{ property_valuation.prop_values_purchase_price|floatformat:"0"|intcomma }}</div>
-                                                        </div>
+                            {% if property_valuation %}
+                                <!-- Valuation Details -->
+                                <div class="valuation-container mt-3">
+                                    <div class="valuation-card">
+                                        <h3 class="property-name">{{ property.prop_name }}</h3>
+                                        
+                                        <div class="valuation-details">
+                                            <div class="valuation-row">
+                                                <div class="valuation-item purchase">
+                                                    <div class="valuation-icon">
+                                                        <i class="fas fa-shopping-cart"></i>
                                                     </div>
-                                                    
-                                                    <div class="valuation-item current">
-                                                        <div class="valuation-icon">
-                                                            <i class="fas fa-chart-line"></i>
-                                                        </div>
-                                                        <div class="valuation-content">
-                                                            <div class="valuation-label">Current Value</div>
-                                                            <div class="valuation-amount">€{{ property_valuation.prop_values_current_value|floatformat:"0"|intcomma }}</div>
-                                                        </div>
+                                                    <div class="valuation-content">
+                                                        <div class="valuation-label">Purchase Price</div>
+                                                        <div class="valuation-amount">€{{ property_valuation.prop_values_purchase_price|floatformat:"0"|intcomma }}</div>
                                                     </div>
                                                 </div>
                                                 
-                                                <!-- Value Change Calculation -->
-                                                <div class="valuation-summary">
-                                                    <div class="value-change {% if property_valuation.value_difference >= 0 %}positive{% else %}negative{% endif %}">
-                                                        <div class="change-icon">
-                                                            {% if property_valuation.value_difference >= 0 %}
-                                                                <i class="fas fa-arrow-up"></i>
-                                                            {% else %}
-                                                                <i class="fas fa-arrow-down"></i>
-                                                            {% endif %}
-                                                        </div>
-                                                        <div class="change-content">
-                                                            <div class="change-amount">
-                                                                {% if property_valuation.value_difference >= 0 %}+{% endif %}€{{ property_valuation.value_difference|floatformat:"0"|intcomma }}
-                                                            </div>
-                                                            <div class="change-percentage">
-                                                                {% if property_valuation.value_percentage >= 0 %}+{% endif %}{{ property_valuation.value_percentage|floatformat:1 }}%
-                                                            </div>
-                                                        </div>
+                                                <div class="valuation-item current">
+                                                    <div class="valuation-icon">
+                                                        <i class="fas fa-chart-line"></i>
+                                                    </div>
+                                                    <div class="valuation-content">
+                                                        <div class="valuation-label">Current Value</div>
+                                                        <div class="valuation-amount">€{{ property_valuation.prop_values_current_value|floatformat:"0"|intcomma }}</div>
                                                     </div>
                                                 </div>
-                                                
-                                                <!-- Additional Details -->
-                                                {% if property_valuation.prop_values_date %}
-                                                    <div class="valuation-meta">
-                                                        <p><strong>Last Updated:</strong> {{ property_valuation.prop_values_date|date:"d/m/Y" }}</p>
-                                                    </div>
-                                                {% endif %}
                                             </div>
+                                            
+                                            <!-- Value Change Calculation -->
+                                            <div class="valuation-summary">
+                                                <div class="value-change {% if property_valuation.value_difference >= 0 %}positive{% else %}negative{% endif %}">
+                                                    <div class="change-icon">
+                                                        {% if property_valuation.value_difference >= 0 %}
+                                                            <i class="fas fa-arrow-up"></i>
+                                                        {% else %}
+                                                            <i class="fas fa-arrow-down"></i>
+                                                        {% endif %}
+                                                    </div>
+                                                    <div class="change-content">
+                                                        <div class="change-amount">
+                                                            {% if property_valuation.value_difference >= 0 %}+{% endif %}€{{ property_valuation.value_difference|floatformat:"0"|intcomma }}
+                                                        </div>
+                                                        <div class="change-percentage">
+                                                            {% if property_valuation.value_percentage >= 0 %}+{% endif %}{{ property_valuation.value_percentage|floatformat:1 }}%
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Additional Details -->
+                                            {% if property_valuation.prop_values_date %}
+                                                <div class="valuation-meta">
+                                                    <p><strong>Last Updated:</strong> {{ property_valuation.prop_values_date|date:"d/m/Y" }}</p>
+                                                </div>
+                                            {% endif %}
                                         </div>
                                     </div>
-                                {% else %}
-                                    <!-- No Valuation Data -->
-                                    <div class="no-valuation mt-4">
-                                        <div class="no-valuation-icon">
-                                            <i class="fas fa-chart-line"></i>
-                                        </div>
-                                        <h4>No Valuation Data</h4>
-                                        <p>No valuation information has been recorded for this property.</p>
-                                    </div>
-                                {% endif %}
+                                </div>
                             {% else %}
-                                <!-- Access Denied -->
-                                <div class="alert alert-danger mt-3">
-                                    <i class="fas fa-lock"></i> Access denied. Superuser privileges required to view property valuations.
+                                <!-- No Valuation Data -->
+                                <div class="no-valuation mt-4">
+                                    <div class="no-valuation-icon">
+                                        <i class="fas fa-chart-line"></i>
+                                    </div>
+                                    <h4>No Valuation Data</h4>
+                                    <p>No valuation information has been recorded for this property.</p>
                                 </div>
                             {% endif %}
                         </div>
@@ -919,7 +906,7 @@
                                     </div>
                                     <h4>No Budgeted Expenses</h4>
                                     <p>No budgeted expense information has been recorded for this property.</p>
-                                    {% if user.is_superuser %}
+                                    {% if perms.auth.can_edit_financials %}
                                         <div class="expenses-actions mt-3">
                                             <a href="{% url 'finance_expense_add' %}" class="btn btn-info">
                                                 <i class="fas fa-plus"></i> Add Expense
@@ -984,7 +971,7 @@
                                     </div>
                                     <h4>No Revenue Data</h4>
                                     <p>No revenue information has been recorded for this property.</p>
-                                    {% if user.is_superuser %}
+                                    {% if perms.auth.can_edit_financials %}
                                         <div class="revenue-actions mt-3">
                                             <a href="{% url 'finance_revenue_add' %}" class="btn btn-info">
                                                 <i class="fas fa-plus"></i> Add Revenue

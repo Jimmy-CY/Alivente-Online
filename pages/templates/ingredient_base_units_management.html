@@ -233,6 +233,17 @@
     color: #6c757d;
 }
 
+.action-btn-disabled {
+    color: #adb5bd !important;
+    cursor: not-allowed !important;
+    opacity: 0.6;
+}
+
+.action-btn-disabled:hover {
+    background: transparent !important;
+    color: #adb5bd !important;
+}
+
 .action-buttons {
     display: flex;
     gap: 5px;
@@ -353,10 +364,12 @@
                         <span class="ingredient-name-display">
                             <strong>{{ item.ingredient.name }}</strong>
                         </span>
+                        {% if perms.auth.can_edit_personal %}
                         <input type="text" 
                                class="ingredient-name-edit ingredient-name-input" 
                                value="{{ item.ingredient.name }}"
                                data-original-value="{{ item.ingredient.name }}">
+                        {% endif %}
                     </td>
                     
                     <!-- Category -->
@@ -368,6 +381,7 @@
                             <span style="color: #6c757d; font-style: italic;">No category</span>
                             {% endif %}
                         </span>
+                        {% if perms.auth.can_edit_personal %}
                         <select class="category-edit category-input" data-original-value="{% if item.ingredient.category %}{{ item.ingredient.category.ingredient_category_id }}{% endif %}">
                             <option value="">-- Select Category --</option>
                             {% for cat in categories %}
@@ -377,6 +391,7 @@
                             </option>
                             {% endfor %}
                         </select>
+                        {% endif %}
                     </td>
                     
                     <!-- Shopping Unit -->
@@ -388,6 +403,7 @@
                             <span style="color: #6c757d; font-style: italic;">Not set</span>
                             {% endif %}
                         </span>
+                        {% if perms.auth.can_edit_personal %}
                         <select class="unit-edit unit-select" data-original-value="{% if item.ingredient.default_unit %}{{ item.ingredient.default_unit.measurement_unit_id }}{% endif %}">
                             <option value="">-- Select Unit --</option>
                             {% for unit in all_units %}
@@ -397,11 +413,13 @@
                             </option>
                             {% endfor %}
                         </select>
+                        {% endif %}
                     </td>
                     
                     <!-- Actions -->
                     <td style="text-align: center;">
                         <div class="action-buttons">
+                            {% if perms.auth.can_edit_personal %}
                             <!-- View Mode Actions -->
                             <div class="view-actions">
                                 <button class="action-btn btn-edit" onclick="enterEditMode({{ item.ingredient.ingredient_id }})" title="Edit">
@@ -421,6 +439,17 @@
                                     <i class="fas fa-times"></i>
                                 </button>
                             </div>
+                            {% else %}
+                            <!-- Read-only: disabled icons -->
+                            <div class="view-actions">
+                                <span class="action-btn action-btn-disabled" title="No permission to edit">
+                                    <i class="fas fa-pencil-alt"></i>
+                                </span>
+                                <span class="action-btn action-btn-disabled" title="No permission to delete">
+                                    <i class="fas fa-trash-alt"></i>
+                                </span>
+                            </div>
+                            {% endif %}
                         </div>
                     </td>
                 </tr>
@@ -439,6 +468,7 @@
 </div>
 
 <script>
+{% if perms.auth.can_edit_personal %}
 // Enter edit mode for a row
 function enterEditMode(ingredientId) {
     const row = document.getElementById(`ingredient-row-${ingredientId}`);
@@ -643,6 +673,7 @@ async function deleteIngredient(ingredientId) {
         alert('Error deleting ingredient');
     }
 }
+{% endif %}
 </script>
 
 {% endblock %}

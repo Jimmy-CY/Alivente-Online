@@ -29,12 +29,16 @@
   {% endfor %}
   
 <body>
-{% if user.is_superuser %}
+{% if perms.auth.can_access_financials %}
   <div style="display: flex ; justify-content: flex-end">
     <button type="button" class="btn btn-info" style="margin-right:16px" data-toggle="modal" data-target="#finance_valuationsHelpModal">
       <i class="fas fa-question-circle"></i> Help
     </button>
-    <a href="{% url 'finance_valuations_add' %}" class="btn btn-info" style="margin-right:16px" type="button">Add New</a>
+    {% if perms.auth.can_edit_financials %}
+      <a href="{% url 'finance_valuations_add' %}" class="btn btn-info" style="margin-right:16px" type="button">Add New</a>
+    {% else %}
+      <span class="btn btn-secondary" style="margin-right:16px; opacity:0.6; cursor:not-allowed; pointer-events:none;">Add New</span>
+    {% endif %}
     <a href="{% url 'finance' %}" class="btn btn-info" style="margin-right:16px" role="button">Back</a>
   </div>
 <br>
@@ -97,9 +101,15 @@
                   {% endif %}
                 </td>
                 <td>
-                  <button type="button" class="btn btn-light" style="border-color:black; width: 100%">
-                    <a href="{% url 'finance_valuations_edit' valuation.prop_values_id %}">Edit</a>
-                  </button>
+                  {% if perms.auth.can_edit_financials %}
+                    <button type="button" class="btn btn-light" style="border-color:black; width: 100%">
+                      <a href="{% url 'finance_valuations_edit' valuation.prop_values_id %}">Edit</a>
+                    </button>
+                  {% else %}
+                    <button type="button" class="btn btn-light" style="border-color:black; width: 100%; opacity:0.5; cursor:not-allowed; pointer-events:none;" disabled>
+                      <span style="color: #999;">Edit</span>
+                    </button>
+                  {% endif %}
                 </td>
               </tr>
             {% endif %}

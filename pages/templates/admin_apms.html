@@ -38,7 +38,7 @@
 </div>
 <br>
 
-{% if user.is_superuser %}
+{% if perms.auth.can_access_administration %}
 
 <style>
   /* Colour Variables */
@@ -221,6 +221,20 @@
     opacity: 0.6;
     cursor: default;
   }
+
+  /* Permission-disabled button: greyed out, no hover effect, no pointer */
+  .admin-btn.btn-perm-disabled {
+    background-color: #adb5bd;
+    border: none;
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+
+  .admin-btn.btn-perm-disabled:hover {
+    transform: none;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  }
   
   /* Responsive */
   @media (max-width: 768px) {
@@ -254,29 +268,57 @@
   <div id="panel-alivente" class="tab-panel alivente-panel active">
     <div class="admin-grid">
       
-      <!-- Manage Lease Agreements -->
-      <a href="{% url 'tenant_lease_agreement' %}" class="admin-btn btn-alivente">
-        <i class="fas fa-file-contract"></i>
-        <h6>Manage Lease Agreements</h6>
-      </a>
+      <!-- Manage Lease Agreements (requires Tenants access) -->
+      {% if perms.auth.can_access_tenants %}
+        <a href="{% url 'tenant_lease_agreement' %}" class="admin-btn btn-alivente">
+          <i class="fas fa-file-contract"></i>
+          <h6>Manage Lease Agreements</h6>
+        </a>
+      {% else %}
+        <div class="admin-btn btn-perm-disabled" title="You do not have permission to access Tenants">
+          <i class="fas fa-file-contract"></i>
+          <h6>Manage Lease Agreements</h6>
+        </div>
+      {% endif %}
 
-      <!-- Generate Lease Agreement -->
-      <a href="{% url 'generate_lease_agreement' %}" class="admin-btn btn-alivente">
-        <i class="fas fa-plus-circle"></i>
-        <h6>Generate Lease Agreement</h6>
-      </a>
+      <!-- Generate Lease Agreement (requires Tenants edit) -->
+      {% if perms.auth.can_edit_tenants %}
+        <a href="{% url 'generate_lease_agreement' %}" class="admin-btn btn-alivente">
+          <i class="fas fa-plus-circle"></i>
+          <h6>Generate Lease Agreement</h6>
+        </a>
+      {% else %}
+        <div class="admin-btn btn-perm-disabled" title="You do not have permission to edit Tenants">
+          <i class="fas fa-plus-circle"></i>
+          <h6>Generate Lease Agreement</h6>
+        </div>
+      {% endif %}
 
-      <!-- Manage Title Deeds -->
-      <a href="{% url 'properties_title_deed' %}" class="admin-btn btn-alivente">
-        <i class="fas fa-scroll"></i>
-        <h6>Manage Title Deeds</h6>
-      </a>
+      <!-- Manage Title Deeds (requires Properties access) -->
+      {% if perms.auth.can_access_properties %}
+        <a href="{% url 'properties_title_deed' %}" class="admin-btn btn-alivente">
+          <i class="fas fa-scroll"></i>
+          <h6>Manage Title Deeds</h6>
+        </a>
+      {% else %}
+        <div class="admin-btn btn-perm-disabled" title="You do not have permission to access Properties">
+          <i class="fas fa-scroll"></i>
+          <h6>Manage Title Deeds</h6>
+        </div>
+      {% endif %}
 
-      <!-- Generate Invoices -->
-      <a href="{% url 'admin_invoices' %}" class="admin-btn btn-alivente">
-        <i class="fas fa-file-invoice"></i>
-        <h6>Generate Invoices</h6>
-      </a>
+      <!-- Generate Invoices (requires Invoices edit) -->
+      {% if perms.auth.can_edit_invoices %}
+        <a href="{% url 'admin_invoices' %}" class="admin-btn btn-alivente">
+          <i class="fas fa-file-invoice"></i>
+          <h6>Generate Invoices</h6>
+        </a>
+      {% else %}
+        <div class="admin-btn btn-perm-disabled" title="You do not have permission to edit Invoices">
+          <i class="fas fa-file-invoice"></i>
+          <h6>Generate Invoices</h6>
+        </div>
+      {% endif %}
 
     </div>
   </div>
@@ -285,11 +327,18 @@
   <div id="panel-future" class="tab-panel future-panel">
     <div class="admin-grid">
 
-      <!-- User Administration -->
-      <a href="{% url 'user_administration' %}" class="admin-btn btn-future">
-        <i class="fas fa-users-cog"></i>
-        <h6>User Administration</h6>
-      </a>
+      <!-- User Administration (superuser only) -->
+      {% if user.is_superuser %}
+        <a href="{% url 'user_administration' %}" class="admin-btn btn-future">
+          <i class="fas fa-users-cog"></i>
+          <h6>User Administration</h6>
+        </a>
+      {% else %}
+        <div class="admin-btn btn-perm-disabled" title="User Administration is restricted to superusers">
+          <i class="fas fa-users-cog"></i>
+          <h6>User Administration</h6>
+        </div>
+      {% endif %}
 
       <!-- Menu Preference -->
       <a href="{% url 'my_profile' %}" class="admin-btn btn-future">

@@ -35,7 +35,7 @@ Projects
     <button type="button" class="btn btn-info" data-toggle="modal" data-target="#projectsHelpModal">
       <i class="fas fa-question-circle"></i> Help
     </button>
-    {% if user.is_superuser %}
+    {% if perms.auth.can_edit_projects %}
       <a href="{% url 'projects_add' %}" class="btn btn-info">Add New Project</a>
     {% else %}
       <span class="btn btn-secondary" style="opacity:0.6; cursor:not-allowed; pointer-events:none;">Add New Project</span>
@@ -197,7 +197,7 @@ Projects
               {% endif %}
             </td>
             <td>
-              {% if user.is_superuser %}
+              {% if perms.auth.can_edit_projects %}
                 <a href="{% url 'projects_edit' project.project_id %}" class="btn btn-light action-btn">
                   Edit
                 </a>
@@ -208,7 +208,7 @@ Projects
               {% endif %}
             </td>
             <td>
-              {% if user.is_superuser %}
+              {% if perms.auth.can_edit_projects %}
                 <a href="{% url 'projects_delete' project.project_id %}" 
                    class="btn btn-danger action-btn delete-btn"
                    title="Delete Project">
@@ -229,7 +229,7 @@ Projects
                 <a href="{% url 'projects' %}">Clear filters</a>
               {% else %}
                 No projects found. 
-                {% if user.is_superuser %}
+                {% if perms.auth.can_edit_projects %}
                   <a href="{% url 'projects_add' %}">Add your first project</a>
                 {% endif %}
               {% endif %}

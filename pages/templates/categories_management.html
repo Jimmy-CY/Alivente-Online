@@ -136,6 +136,17 @@
     color: #6c757d;
 }
 
+.action-btn-disabled {
+    color: #adb5bd !important;
+    cursor: not-allowed !important;
+    opacity: 0.6;
+}
+
+.action-btn-disabled:hover {
+    background: transparent !important;
+    color: #adb5bd !important;
+}
+
 .action-buttons {
     display: flex;
     gap: 5px;
@@ -283,9 +294,15 @@
         <a href="{% url 'recipe_management' %}" class="btn btn-secondary">
             <i class="fas fa-arrow-left"></i> Back to Recipe Management
         </a>
+        {% if perms.auth.can_edit_personal %}
         <button type="button" class="btn btn-success" data-toggle="modal" data-target="#addCategoryModal">
             <i class="fas fa-plus"></i> Add Category
         </button>
+        {% else %}
+        <button type="button" class="btn btn-success" disabled style="opacity: 0.6; cursor: not-allowed;" title="No permission to edit">
+            <i class="fas fa-plus"></i> Add Category
+        </button>
+        {% endif %}
     </div>
 
     <!-- Page Header -->
@@ -315,10 +332,12 @@
                     <!-- Category Name -->
                     <td>
                         <span class="category-name-display">{{ item.category.name }}</span>
+                        {% if perms.auth.can_edit_personal %}
                         <input type="text" 
                                class="category-name-edit" 
                                value="{{ item.category.name }}"
                                data-original-value="{{ item.category.name }}">
+                        {% endif %}
                     </td>
                     
                     <!-- Ingredient Count with Popup -->
@@ -348,6 +367,7 @@
                     <!-- Actions -->
                     <td style="text-align: center;">
                         <div class="action-buttons">
+                            {% if perms.auth.can_edit_personal %}
                             <!-- View Mode Actions -->
                             <div class="view-actions">
                                 <button class="action-btn btn-edit" onclick="enterEditMode({{ item.category.ingredient_category_id }})" title="Edit">
@@ -367,6 +387,17 @@
                                     <i class="fas fa-times"></i>
                                 </button>
                             </div>
+                            {% else %}
+                            <!-- Read-only: disabled icons -->
+                            <div class="view-actions">
+                                <span class="action-btn action-btn-disabled" title="No permission to edit">
+                                    <i class="fas fa-pencil-alt"></i>
+                                </span>
+                                <span class="action-btn action-btn-disabled" title="No permission to delete">
+                                    <i class="fas fa-trash-alt"></i>
+                                </span>
+                            </div>
+                            {% endif %}
                         </div>
                     </td>
                 </tr>
@@ -377,13 +408,18 @@
         <div class="empty-state" id="emptyState">
             <i class="fas fa-tags"></i>
             <h3>No Categories Yet</h3>
+            {% if perms.auth.can_edit_personal %}
             <p>Click "Add Category" to create your first category.</p>
+            {% else %}
+            <p>No categories have been set up yet.</p>
+            {% endif %}
         </div>
         {% endif %}
     </div>
 
 </div>
 
+{% if perms.auth.can_edit_personal %}
 <!-- Add Category Modal -->
 <div class="modal fade" id="addCategoryModal" tabindex="-1" role="dialog">
     <div class="modal-dialog" role="document">
@@ -416,6 +452,7 @@
         </div>
     </div>
 </div>
+{% endif %}
 
 <script>
 // Toggle ingredient popup on click
@@ -454,6 +491,7 @@ document.addEventListener('keydown', function(event) {
     }
 });
 
+{% if perms.auth.can_edit_personal %}
 // Enter edit mode
 function enterEditMode(categoryId) {
     const row = document.getElementById(`category-row-${categoryId}`);
@@ -669,6 +707,7 @@ async function addCategory() {
 $('#addCategoryModal').on('hidden.bs.modal', function () {
     document.getElementById('newCategoryName').value = '';
 });
+{% endif %}
 </script>
 
 {% endblock %}

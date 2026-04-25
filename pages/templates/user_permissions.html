@@ -164,6 +164,45 @@
     font-size: 12px;
     padding: 4px 12px;
 }
+
+.permission-info {
+    flex: 1;
+}
+
+.edit-checkbox-wrapper {
+    margin-top: 6px;
+    cursor: default;
+}
+
+.edit-checkbox-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0;
+    cursor: pointer;
+    font-size: 11px;
+    color: #495057;
+    font-weight: 500;
+    padding: 2px 0;
+}
+
+.edit-checkbox-label input[type="checkbox"] {
+    width: 14px;
+    height: 14px;
+    cursor: pointer;
+    margin: 0;
+    flex-shrink: 0;
+}
+
+.edit-checkbox-label input[type="checkbox"]:disabled {
+    cursor: not-allowed;
+    opacity: 0.4;
+}
+
+.edit-checkbox-label input[type="checkbox"]:disabled + span {
+    color: #adb5bd;
+}
+
 </style>
 
 <div class="permissions-container">
@@ -241,6 +280,7 @@
                        id="perm-item-{{ forloop.counter }}"
                        {% if not target_user.is_superuser %}onclick="togglePermission({{ forloop.counter }})"{% endif %}>
                     <input type="checkbox"
+                           class="access-checkbox"
                            name="permissions"
                            value="{{ perm.codename }}"
                            id="perm-{{ forloop.counter }}"
@@ -252,17 +292,31 @@
                          style="{% if perm.granted or target_user.is_superuser %}background:#28a745;color:white;{% endif %}">
                         <i class="fas {{ perm.icon }}"></i>
                     </div>
-                    <div>
+                    <div class="permission-info">
                         <div class="permission-label">{{ perm.label }}</div>
                         <div class="permission-status {% if perm.granted or target_user.is_superuser %}granted{% else %}denied{% endif %}"
                              id="perm-status-{{ forloop.counter }}">
                             {% if perm.granted or target_user.is_superuser %}✓ Access granted{% else %}✗ No access{% endif %}
                         </div>
+                        {% if perm.edit_codename %}
+                        <div class="edit-checkbox-wrapper" onclick="event.stopPropagation();">
+                            <label class="edit-checkbox-label">
+                                <input type="checkbox"
+                                       class="edit-checkbox"
+                                       name="permissions"
+                                       value="{{ perm.edit_codename }}"
+                                       id="perm-edit-{{ forloop.counter }}"
+                                       {% if perm.edit_granted or target_user.is_superuser %}checked{% endif %}
+                                       {% if target_user.is_superuser %}disabled{% elif not perm.granted %}disabled{% endif %}
+                                       onchange="updateEditUI({{ forloop.counter }})">
+                                <span>Can edit (add / edit / delete)</span>
+                            </label>
+                        </div>
+                        {% endif %}
                     </div>
                 </label>
                 {% endfor %}
             </div>
-        </div>
 
         <!-- Action Buttons -->
         <div style="display:flex; justify-content:space-between; margin-bottom:30px;">
@@ -294,6 +348,7 @@ function updatePermissionUI(index) {
     const item = document.getElementById(`perm-item-${index}`);
     const icon = document.getElementById(`perm-icon-${index}`);
     const status = document.getElementById(`perm-status-${index}`);
+    const editCheckbox = document.getElementById(`perm-edit-${index}`);
 
     if (checkbox.checked) {
         item.classList.add('granted');
@@ -301,36 +356,60 @@ function updatePermissionUI(index) {
         icon.style.color = 'white';
         status.textContent = '✓ Access granted';
         status.className = 'permission-status granted';
+        if (editCheckbox) {
+            editCheckbox.disabled = false;
+        }
     } else {
         item.classList.remove('granted');
         icon.style.background = '#f8f9fa';
         icon.style.color = '#667eea';
         status.textContent = '✗ No access';
         status.className = 'permission-status denied';
+        if (editCheckbox) {
+            editCheckbox.checked = false;   // auto-uncheck edit when access is revoked
+            editCheckbox.disabled = true;
+        }
     }
 
     updateGrantedCount();
 }
 
+// Called when an edit checkbox changes — just updates the count.
+function updateEditUI(index) {
+    updateGrantedCount();
+}
+
 function updateGrantedCount() {
-    const total = document.querySelectorAll('input[name="permissions"]').length;
-    const checked = document.querySelectorAll('input[name="permissions"]:checked').length;
+    // Count only access-level permissions so "X of 12 modules granted" stays accurate.
+    const checked = document.querySelectorAll('input.access-checkbox:checked').length;
     document.getElementById('grantedCount').textContent = checked;
 }
 
 function selectAll() {
-    const checkboxes = document.querySelectorAll('input[name="permissions"]');
-    checkboxes.forEach((cb, index) => {
+    document.querySelectorAll('input.access-checkbox').forEach(cb => {
         cb.checked = true;
-        updatePermissionUI(index + 1);
+    });
+    document.querySelectorAll('input.edit-checkbox').forEach(cb => {
+        cb.disabled = false;
+        cb.checked = true;
+    });
+    document.querySelectorAll('input.access-checkbox').forEach(cb => {
+        const index = cb.id.replace('perm-', '');
+        updatePermissionUI(index);
     });
 }
 
 function selectNone() {
-    const checkboxes = document.querySelectorAll('input[name="permissions"]');
-    checkboxes.forEach((cb, index) => {
+    document.querySelectorAll('input.access-checkbox').forEach(cb => {
         cb.checked = false;
-        updatePermissionUI(index + 1);
+    });
+    document.querySelectorAll('input.edit-checkbox').forEach(cb => {
+        cb.checked = false;
+        cb.disabled = true;
+    });
+    document.querySelectorAll('input.access-checkbox').forEach(cb => {
+        const index = cb.id.replace('perm-', '');
+        updatePermissionUI(index);
     });
 }
 </script>

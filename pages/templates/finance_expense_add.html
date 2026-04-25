@@ -10,7 +10,7 @@
 <h4><center>ADD EXPENSE</center></h4>
 <br/>
 
-{% if user.is_superuser %}
+{% if perms.auth.can_access_financials %}
 
 <form action="{% url 'finance_expense_commit' %}" method="post">
   {% csrf_token %}

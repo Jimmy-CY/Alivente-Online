@@ -23,7 +23,7 @@
 </div>
 {% endif %}
 
-{% if user.is_superuser %}
+{% if perms.auth.can_edit_tenants %}
 
 <form id="tenantForm" action="{% url 'tenant_commit' %}" method="post">
   {% csrf_token %}

@@ -30,7 +30,11 @@
       <button type="button" class="btn btn-info" data-toggle="modal" data-target="#petty_cashHelpModal" style="margin-right:16px">
         <i class="fas fa-question-circle"></i> Help
       </button>
-      <a href="{% url 'petty_cash_add' %}" class="btn btn-info" style="margin-right:16px" type="button">Add New</a>
+      {% if perms.auth.can_edit_petty_cash %}
+        <a href="{% url 'petty_cash_add' %}" class="btn btn-info" style="margin-right:16px" type="button">Add New</a>
+      {% else %}
+        <span class="btn btn-secondary" style="margin-right:16px; opacity:0.6; cursor:not-allowed; pointer-events:none;">Add New</span>
+      {% endif %}
     <a href="{% url 'home' %}" class="btn btn-info" style="margin-right:16px" role="button">Back</a>
   </div>
 <br/>

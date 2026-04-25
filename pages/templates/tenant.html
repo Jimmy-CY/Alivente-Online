@@ -38,11 +38,11 @@ Tenants
       <a href="{% url 'lease_timeline' %}" class="btn btn-info">📅 Lease Timeline</a>
       <a href="{% url 'open_invoices_report' %}" class="btn btn-info">Open Invoices</a>
       <a href="{% url 'lease_renewal_report' %}" class="btn btn-info">Lease Renewals</a>
-      {% if user.is_superuser %}
-        <a href="{% url 'tenant_add' %}" class="btn btn-info">Add New</a>
-      {% else %}
-        <span class="btn btn-secondary" style="opacity:0.6; cursor:not-allowed; pointer-events:none;">Add New</span>
-      {% endif %}
+    {% if perms.auth.can_edit_tenants %}
+      <a href="{% url 'tenant_add' %}" class="btn btn-info">Add New</a>
+    {% else %}
+      <span class="btn btn-secondary" style="opacity:0.6; cursor:not-allowed; pointer-events:none;">Add New</span>
+    {% endif %}
       <a href="{% url 'home' %}" class="btn btn-info">Back</a>
     </div>
 
@@ -138,28 +138,33 @@ Tenants
                   </span>
                 </td>
                 <td>
-                  {% if user.is_superuser %}
-                    <div style="display: flex; gap: 5px; justify-content: center;">
-                      <!-- Edit Button -->
-                      <a href="{% url 'tenant_edit' tresults.tenant_id %}" 
-                         class="btn btn-sm btn-outline-primary icon-btn" 
-                         title="Edit Tenant">
-                        <i class="fas fa-edit"></i>
-                      </a>
-                      
-                      <!-- Delete Button -->
-                      <a href="{% url 'delete_tenant' tresults.tenant_id %}" 
-                         class="btn btn-sm btn-outline-danger icon-btn" 
-                         title="Delete Tenant"
-                         onclick="return confirm('⚠️ DELETE TENANT: {{ tresults.tenant_name }}\n\nThis will:\n✗ Permanently delete the tenant record\n✗ Remove related vacancy periods\n✓ Recalculate gaps automatically\n✓ Update dashboard metrics\n\nThis action CANNOT be undone!\n\nAre you sure?');">
-                        <i class="fas fa-trash"></i>
-                      </a>
-                    </div>
-                  {% else %}
-                    <button type="button" class="btn btn-sm btn-outline-secondary icon-btn" disabled style="opacity: 0.5;">
-                      <i class="fas fa-edit"></i>
-                    </button>
-                  {% endif %}
+                    {% if perms.auth.can_edit_tenants %}
+                      <div style="display: flex; gap: 5px; justify-content: center;">
+                        <!-- Edit Button -->
+                        <a href="{% url 'tenant_edit' tresults.tenant_id %}" 
+                           class="btn btn-sm btn-outline-primary icon-btn" 
+                           title="Edit Tenant">
+                          <i class="fas fa-edit"></i>
+                        </a>
+                        
+                        <!-- Delete Button -->
+                        <a href="{% url 'delete_tenant' tresults.tenant_id %}" 
+                           class="btn btn-sm btn-outline-danger icon-btn" 
+                           title="Delete Tenant"
+                           onclick="return confirm('⚠️ DELETE TENANT: {{ tresults.tenant_name }}\n\nThis will:\n✗ Permanently delete the tenant record\n✗ Remove related vacancy periods\n✓ Recalculate gaps automatically\n✓ Update dashboard metrics\n\nThis action CANNOT be undone!\n\nAre you sure?');">
+                          <i class="fas fa-trash"></i>
+                        </a>
+                      </div>
+                    {% else %}
+                      <div style="display: flex; gap: 5px; justify-content: center;">
+                        <button type="button" class="btn btn-sm btn-outline-secondary icon-btn" disabled style="opacity: 0.5;" title="Edit Tenant">
+                          <i class="fas fa-edit"></i>
+                        </button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary icon-btn" disabled style="opacity: 0.5;" title="Delete Tenant">
+                          <i class="fas fa-trash"></i>
+                        </button>
+                      </div>
+                    {% endif %}
                 </td>
                 <td>
                   <button type="button" class="btn btn-light action-btn">

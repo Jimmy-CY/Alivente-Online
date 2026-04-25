@@ -297,6 +297,20 @@
     margin-bottom: 20px;
 }
 
+.email-section select:disabled {
+    background: #f8f9fa;
+    border-color: #ced4da;
+    color: #6c757d;
+    cursor: not-allowed;
+}
+
+.email-btn-disabled {
+    background: #adb5bd !important;
+    opacity: 0.6 !important;
+    cursor: not-allowed !important;
+    pointer-events: none;
+}
+
 /* Missing Conversions Styles */
 .conversions-needed-card {
     background: #fff3cd;
@@ -446,7 +460,8 @@
     </div>
 
     {% if has_missing_conversions %}
-    <!-- Missing Conversions Card -->
+    {% if perms.auth.can_edit_personal %}
+    <!-- Missing Conversions Card (Edit users see the form) -->
     <div class="conversions-needed-card">
         <h2>
             <i class="fas fa-exchange-alt"></i>
@@ -671,6 +686,27 @@
     </script>
 
     {% else %}
+    <!-- Access-only users: read-only notice instead of the conversion form -->
+    <div class="conversions-needed-card">
+        <h2>
+            <i class="fas fa-exchange-alt"></i>
+            Unit Conversions Needed
+        </h2>
+        
+        <div class="alert">
+            <i class="fas fa-info-circle"></i>
+            <strong>Shopping list cannot be generated yet.</strong> Some ingredients in this meal plan use units that need to be converted. Please ask a user with edit permissions to set up the required conversions before the shopping list can be viewed.
+        </div>
+        
+        <div style="margin-top: 20px;">
+            <a href="{% url 'view_meal_plan' meal_plan.meal_plan_id %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Meal Plan
+            </a>
+        </div>
+    </div>
+    {% endif %}
+
+    {% else %}
     <!-- Normal Shopping List Flow (No Missing Conversions) -->
     
     {% if ingredients %}
@@ -743,7 +779,7 @@
                 <h3>
                     <i class="fas fa-envelope"></i> Email this list to:
                 </h3>
-                <select id="emailSelect">
+                <select id="emailSelect" {% if not perms.auth.can_edit_personal %}disabled{% endif %}>
                     <option value="">Select email address...</option>
                     <option value="demetrimanias@gmail.com">demetrimanias@gmail.com</option>
                     <option value="angmaniasbakers@gmail.com">angmaniasbakers@gmail.com</option>
@@ -762,10 +798,17 @@
                         <span style="font-size: 13px;">Copy</span>
                     </button>
                     
+                    {% if perms.auth.can_edit_personal %}
                     <button onclick="sendEmail()" id="sendEmailBtn" class="btn" style="background: #28a745; color: white; padding: 12px; border-radius: 8px; display: flex; flex-direction: column; align-items: center; gap: 5px; border: none;">
                         <i class="fas fa-paper-plane" style="font-size: 20px;"></i>
                         <span style="font-size: 13px;">Email</span>
                     </button>
+                    {% else %}
+                    <button disabled class="btn email-btn-disabled" style="background: #28a745; color: white; padding: 12px; border-radius: 8px; display: flex; flex-direction: column; align-items: center; gap: 5px; border: none;" title="No permission to send email">
+                        <i class="fas fa-paper-plane" style="font-size: 20px;"></i>
+                        <span style="font-size: 13px;">Email</span>
+                    </button>
+                    {% endif %}
                     
                     <button onclick="shareToWhatsApp()" class="btn" style="background: #25D366; color: white; padding: 12px; border-radius: 8px; display: flex; flex-direction: column; align-items: center; gap: 5px; border: none;">
                         <i class="fab fa-whatsapp" style="font-size: 20px;"></i>
@@ -953,6 +996,7 @@
         window.open(url, '_blank');
     }
 
+    {% if perms.auth.can_edit_personal %}
     function sendEmail() {
         const email = document.getElementById('emailSelect').value;
         
@@ -999,6 +1043,7 @@
             btn.innerHTML = '<i class="fas fa-paper-plane" style="font-size: 20px;"></i><span style="font-size: 13px;">Email</span>';
         });
     }
+    {% endif %}
     </script>
     {% endif %}
 

@@ -10,7 +10,7 @@
 <h4><center>EDIT EXISTING LINE TYPES</center></h4>
 <br/>
 
-{% if user.is_superuser %}
+{% if perms.auth.can_access_financials %}
 
 {% for rev in rltresults %}
 <form action="{% url 'finance_revenue_line_types_edit_commit' rev.revenue_line_types_id %}" method="post">

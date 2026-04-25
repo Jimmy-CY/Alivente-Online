@@ -172,6 +172,20 @@
     transform: scale(1.05);
 }
 
+.btn-icon-disabled {
+    background: #e9ecef !important;
+    color: #adb5bd !important;
+    border-color: #dee2e6 !important;
+    cursor: not-allowed !important;
+    opacity: 0.6;
+}
+
+.btn-icon-disabled:hover {
+    background: #e9ecef !important;
+    color: #adb5bd !important;
+    transform: none !important;
+}
+
 .empty-state {
     text-align: center;
     padding: 60px 20px;
@@ -277,13 +291,25 @@
         </a>
         <div style="display: flex; gap: 10px;">
             {% if missing_count > 0 %}
-            <button onclick="openMissingConversionsModal()" class="btn btn-warning">
-                <i class="fas fa-exclamation-triangle"></i> Missing Conversions ({{ missing_count }})
-            </button>
+                {% if perms.auth.can_edit_personal %}
+                <button onclick="openMissingConversionsModal()" class="btn btn-warning">
+                    <i class="fas fa-exclamation-triangle"></i> Missing Conversions ({{ missing_count }})
+                </button>
+                {% else %}
+                <button class="btn btn-warning" disabled style="opacity: 0.6; cursor: not-allowed;" title="No permission to edit">
+                    <i class="fas fa-exclamation-triangle"></i> Missing Conversions ({{ missing_count }})
+                </button>
+                {% endif %}
             {% endif %}
+            {% if perms.auth.can_edit_personal %}
             <button onclick="openAddModal()" class="btn btn-success">
                 <i class="fas fa-plus"></i> Add New Conversion
             </button>
+            {% else %}
+            <button class="btn btn-success" disabled style="opacity: 0.6; cursor: not-allowed;" title="No permission to edit">
+                <i class="fas fa-plus"></i> Add New Conversion
+            </button>
+            {% endif %}
         </div>
     </div>
 
@@ -370,6 +396,7 @@
                     
                     <!-- Actions -->
                     <td class="actions-cell" style="text-align: center;">
+                        {% if perms.auth.can_edit_personal %}
                         <button onclick="openEditModal({{ conversion.unit_conversion_id }}, '{{ conversion.from_unit.name }}', '{{ conversion.to_unit.name }}', '{{ conversion.multiplier }}', {% if conversion.specific_ingredient %}{{ conversion.specific_ingredient.ingredient_id }}{% else %}null{% endif %}, '{% if conversion.specific_ingredient %}{{ conversion.specific_ingredient.name }}{% endif %}')" 
                                 class="btn-icon btn-edit" 
                                 title="Edit">
@@ -380,6 +407,14 @@
                                 title="Delete">
                             <i class="fas fa-trash"></i>
                         </button>
+                        {% else %}
+                        <span class="btn-icon btn-icon-disabled" title="No permission to edit">
+                            <i class="fas fa-edit"></i>
+                        </span>
+                        <span class="btn-icon btn-icon-disabled" title="No permission to delete">
+                            <i class="fas fa-trash"></i>
+                        </span>
+                        {% endif %}
                     </td>
                 </tr>
                 {% endfor %}
@@ -398,13 +433,18 @@
         <div class="empty-state">
             <i class="fas fa-exchange-alt"></i>
             <h3>No Conversions Defined</h3>
+            {% if perms.auth.can_edit_personal %}
             <p>Click "Add New Conversion" to create your first unit conversion.</p>
+            {% else %}
+            <p>No conversions have been set up yet.</p>
+            {% endif %}
         </div>
         {% endif %}
     </div>
 
 </div>
 
+{% if perms.auth.can_edit_personal %}
 <!-- Add Conversion Modal -->
 <div class="modal fade" id="addConversionModal" tabindex="-1">
     <div class="modal-dialog">
@@ -546,6 +586,7 @@
         </div>
     </div>
 </div>
+{% endif %}
 
 <script>
 // ==================== FILTER FUNCTIONALITY ====================
@@ -618,6 +659,7 @@ function clearFilters() {
 }
 // ==================== END FILTER FUNCTIONALITY ====================
 
+{% if perms.auth.can_edit_personal %}
 // Preview conversion formula while typing
 document.addEventListener('DOMContentLoaded', function() {
     const fromSelect = document.getElementById('addFromUnit');
@@ -982,6 +1024,7 @@ function saveConversion(fromUnitId, toUnitId, ingredientId, multiplier, index, b
         alert('An error occurred while saving the conversion');
     });
 }
+{% endif %}
 </script>
 
 {% endblock %}

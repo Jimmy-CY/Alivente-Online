@@ -393,6 +393,14 @@ body {
     color: white;
 }
 
+.btn-action-disabled {
+    background: #e9ecef !important;
+    color: #6c757d !important;
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
 /* Shopping List Modal Styles */
 .modal-step {
     display: none;
@@ -527,6 +535,13 @@ body {
     font-size: 14px;
 }
 
+.email-selector select:disabled {
+    background: #f8f9fa;
+    border-color: #ced4da;
+    color: #6c757d;
+    cursor: not-allowed;
+}
+
 .share-buttons {
     display: flex;
     gap: 10px;
@@ -537,6 +552,13 @@ body {
 .share-buttons .btn {
     flex: 1;
     min-width: 120px;
+}
+
+.share-btn-disabled {
+    background: #adb5bd !important;
+    opacity: 0.6 !important;
+    cursor: not-allowed !important;
+    pointer-events: none;
 }
 
 .modal-navigation {
@@ -837,9 +859,15 @@ body {
             <button onclick="openShoppingListModal()" class="btn btn-success">
                 <i class="fas fa-shopping-cart"></i> Shopping List
             </button>
+            {% if perms.auth.can_edit_personal %}
             <a href="{% url 'edit_recipe' recipe.recipe_id %}" class="btn btn-warning">
                 <i class="fas fa-edit"></i> Edit Recipe
             </a>
+            {% else %}
+            <span class="btn btn-action-disabled" title="No permission to edit">
+                <i class="fas fa-edit"></i> Edit Recipe
+            </span>
+            {% endif %}
             <button onclick="window.print()" class="btn btn-secondary">
                 <i class="fas fa-print"></i> Print Recipe
             </button>
@@ -1229,7 +1257,7 @@ body {
                         <label for="emailSelect">
                             <i class="fas fa-envelope"></i> Email this list to:
                         </label>
-                        <select id="emailSelect" class="form-control">
+                        <select id="emailSelect" class="form-control" {% if not perms.auth.can_edit_personal %}disabled{% endif %}>
                             <option value="">Select email address...</option>
                             <option value="demetrimanias@gmail.com">demetrimanias@gmail.com</option>
                             <option value="angmaniasbakers@gmail.com">angmaniasbakers@gmail.com</option>
@@ -1245,9 +1273,15 @@ body {
                         <button class="btn btn-info" onclick="copyToClipboard()">
                             <i class="fas fa-copy"></i> Copy
                         </button>
+                        {% if perms.auth.can_edit_personal %}
                         <button class="btn btn-success" onclick="sendEmail()">
                             <i class="fas fa-envelope"></i> Email
                         </button>
+                        {% else %}
+                        <button class="btn btn-success share-btn-disabled" disabled title="No permission to send email">
+                            <i class="fas fa-envelope"></i> Email
+                        </button>
+                        {% endif %}
                         <button class="btn btn-success" onclick="shareToWhatsApp()">
                             <i class="fab fa-whatsapp"></i> WhatsApp
                         </button>
@@ -1259,6 +1293,7 @@ body {
                         <i class="fas fa-exchange-alt"></i> Unit Conversions Needed
                     </h5>
                     
+                    {% if perms.auth.can_edit_personal %}
                     <div class="alert alert-warning">
                         <i class="fas fa-info-circle"></i>
                         <strong>We need your help!</strong> Some ingredients use different units that need to be converted. 
@@ -1268,6 +1303,12 @@ body {
                     <div id="conversionsFormContainer" style="max-height: 350px; overflow-y: auto;">
                         <!-- Conversion forms will be inserted here by JavaScript -->
                     </div>
+                    {% else %}
+                    <div class="alert alert-warning">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>Shopping list cannot be generated yet.</strong> Some ingredients use units that need to be converted. Please ask a user with edit permissions to set up the required conversions before the shopping list can be generated.
+                    </div>
+                    {% endif %}
                 </div>                
 
             </div>
@@ -1318,6 +1359,9 @@ const recipeData = {
     originalServings: {{ recipe.servings }},
     ingredients: []
 };
+
+// Permission flag for JS
+const USER_CAN_EDIT_PERSONAL = {% if perms.auth.can_edit_personal %}true{% else %}false{% endif %};
 
 // ========== SHOPPING LIST STATE ==========
 let currentStep = 1;
@@ -1609,11 +1653,18 @@ function showStep(step) {
         cancelBtn.style.display = 'none';
         doneBtn.style.display = 'block';
     } else if (step === 4) {
-        // Conversion step - show Save button
-        nextBtn.style.display = 'block';
-        cancelBtn.style.display = 'block';
-        doneBtn.style.display = 'none';
-        nextBtn.innerHTML = '<i class="fas fa-save"></i> Save Conversions & Generate List';
+        // Conversion step - only edit users see the Save button
+        if (USER_CAN_EDIT_PERSONAL) {
+            nextBtn.style.display = 'block';
+            cancelBtn.style.display = 'block';
+            doneBtn.style.display = 'none';
+            nextBtn.innerHTML = '<i class="fas fa-save"></i> Save Conversions & Generate List';
+        } else {
+            // Access-only: no save button, just Close
+            nextBtn.style.display = 'none';
+            cancelBtn.style.display = 'block';
+            doneBtn.style.display = 'none';
+        }
     } else {
         // Steps 1-2 - show Next and Cancel, hide Done
         nextBtn.style.display = 'block';
@@ -1633,8 +1684,10 @@ function nextStep() {
     } else if (currentStep === 2) {
         generateFinalListFromServer();  // ← CHANGED: Now calls server
     } else if (currentStep === 4) {
-        // Coming from conversion input - save and retry
-        saveConversionsAndRetry();
+        // Coming from conversion input - save and retry (edit users only)
+        if (USER_CAN_EDIT_PERSONAL) {
+            saveConversionsAndRetry();
+        }
     }
 }
 
@@ -1851,7 +1904,7 @@ function generateFinalListFromServer() {
             showStep(3);
             
         } else if (data.needs_conversions) {
-            // Missing conversions - show input form
+            // Missing conversions - show input form (edit users) or read-only notice (access-only)
             showConversionForm(data.missing_conversions, data.missing_shopping_units);
         } else {
             alert('Error: ' + (data.error || 'Unknown error'));
@@ -1867,6 +1920,12 @@ function generateFinalListFromServer() {
 
 // ========== NEW: Show conversion input form ==========
 function showConversionForm(missingConversions, missingShoppingUnits) {
+    // If user lacks edit permission, just show the read-only message (baked into step4 markup)
+    if (!USER_CAN_EDIT_PERSONAL) {
+        showStep(4);
+        return;
+    }
+    
     const container = document.getElementById('conversionsFormContainer');
     container.innerHTML = '';
     
@@ -2120,6 +2179,7 @@ function copyToClipboard() {
     });
 }
 
+{% if perms.auth.can_edit_personal %}
 function sendEmail() {
     const email = document.getElementById('emailSelect').value;
     
@@ -2162,6 +2222,7 @@ function sendEmail() {
         alert('✗ Failed to send email');
     });
 }
+{% endif %}
 
 function shareToWhatsApp() {
     let message = `🛒 Shopping List for ${recipeData.name}\n\nServings: ${shoppingListData.desiredServings} (${shoppingListData.multiplier.toFixed(1)}x original)\n\nItems to Buy:\n`;

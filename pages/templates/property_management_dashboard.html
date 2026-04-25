@@ -49,25 +49,57 @@
       <h5 class="section-title"><i class="fas fa-home"></i> Property</h5>
       <div class="dashboard-grid">
 
-        <div class="dash-card" data-box-type="property-report">
-          <div class="dash-card-icon"><i class="fas fa-chart-line"></i></div>
-          <div class="dash-card-label">Property Report</div>
-        </div>
+        {# Property Report - Properties module #}
+        {% if perms.auth.can_access_properties %}
+          <div class="dash-card" data-box-type="property-report">
+            <div class="dash-card-icon"><i class="fas fa-chart-line"></i></div>
+            <div class="dash-card-label">Property Report</div>
+          </div>
+        {% else %}
+          <div class="dash-card dash-card-disabled" title="You do not have permission to access Properties">
+            <div class="dash-card-icon"><i class="fas fa-chart-line"></i></div>
+            <div class="dash-card-label">Property Report</div>
+          </div>
+        {% endif %}
 
-        <div class="dash-card" data-box-type="title-deed">
-          <div class="dash-card-icon"><i class="fas fa-file-contract"></i></div>
-          <div class="dash-card-label">Title Deed</div>
-        </div>
+        {# Title Deed - Properties module #}
+        {% if perms.auth.can_access_properties %}
+          <div class="dash-card" data-box-type="title-deed">
+            <div class="dash-card-icon"><i class="fas fa-file-contract"></i></div>
+            <div class="dash-card-label">Title Deed</div>
+          </div>
+        {% else %}
+          <div class="dash-card dash-card-disabled" title="You do not have permission to access Properties">
+            <div class="dash-card-icon"><i class="fas fa-file-contract"></i></div>
+            <div class="dash-card-label">Title Deed</div>
+          </div>
+        {% endif %}
 
-        <div class="dash-card" data-box-type="valuation">
-          <div class="dash-card-icon"><i class="fas fa-home"></i></div>
-          <div class="dash-card-label">Valuation</div>
-        </div>
+        {# Valuation - Financials module #}
+        {% if perms.auth.can_access_financials %}
+          <div class="dash-card" data-box-type="valuation">
+            <div class="dash-card-icon"><i class="fas fa-home"></i></div>
+            <div class="dash-card-label">Valuation</div>
+          </div>
+        {% else %}
+          <div class="dash-card dash-card-disabled" title="You do not have permission to access Financials">
+            <div class="dash-card-icon"><i class="fas fa-home"></i></div>
+            <div class="dash-card-label">Valuation</div>
+          </div>
+        {% endif %}
 
-        <div class="dash-card" data-box-type="issues">
-          <div class="dash-card-icon"><i class="fas fa-exclamation-triangle"></i></div>
-          <div class="dash-card-label">Issues</div>
-        </div>
+        {# Issues - Issues module #}
+        {% if perms.auth.can_access_issues %}
+          <div class="dash-card" data-box-type="issues">
+            <div class="dash-card-icon"><i class="fas fa-exclamation-triangle"></i></div>
+            <div class="dash-card-label">Issues</div>
+          </div>
+        {% else %}
+          <div class="dash-card dash-card-disabled" title="You do not have permission to access Issues">
+            <div class="dash-card-icon"><i class="fas fa-exclamation-triangle"></i></div>
+            <div class="dash-card-label">Issues</div>
+          </div>
+        {% endif %}
 
       </div>
     </div>
@@ -77,25 +109,57 @@
       <h5 class="section-title"><i class="fas fa-users"></i> Tenant</h5>
       <div class="dashboard-grid">
 
-        <div class="dash-card" data-box-type="tenant">
-          <div class="dash-card-icon"><i class="fas fa-users"></i></div>
-          <div class="dash-card-label">Tenant Report</div>
-        </div>
+        {# Tenant Report - Tenants module #}
+        {% if perms.auth.can_access_tenants %}
+          <div class="dash-card" data-box-type="tenant">
+            <div class="dash-card-icon"><i class="fas fa-users"></i></div>
+            <div class="dash-card-label">Tenant Report</div>
+          </div>
+        {% else %}
+          <div class="dash-card dash-card-disabled" title="You do not have permission to access Tenants">
+            <div class="dash-card-icon"><i class="fas fa-users"></i></div>
+            <div class="dash-card-label">Tenant Report</div>
+          </div>
+        {% endif %}
 
-        <div class="dash-card" data-box-type="lease">
-          <div class="dash-card-icon"><i class="fas fa-file-contract"></i></div>
-          <div class="dash-card-label">Lease</div>
-        </div>
+        {# Lease - Tenants module #}
+        {% if perms.auth.can_access_tenants %}
+          <div class="dash-card" data-box-type="lease">
+            <div class="dash-card-icon"><i class="fas fa-file-contract"></i></div>
+            <div class="dash-card-label">Lease</div>
+          </div>
+        {% else %}
+          <div class="dash-card dash-card-disabled" title="You do not have permission to access Tenants">
+            <div class="dash-card-icon"><i class="fas fa-file-contract"></i></div>
+            <div class="dash-card-label">Lease</div>
+          </div>
+        {% endif %}
 
-        <div class="dash-card" data-box-type="open-invoices">
-          <div class="dash-card-icon"><i class="fas fa-file-invoice-dollar"></i></div>
-          <div class="dash-card-label">Invoices</div>
-        </div>
+        {# Invoices - Invoices module #}
+        {% if perms.auth.can_access_invoices %}
+          <div class="dash-card" data-box-type="open-invoices">
+            <div class="dash-card-icon"><i class="fas fa-file-invoice-dollar"></i></div>
+            <div class="dash-card-label">Invoices</div>
+          </div>
+        {% else %}
+          <div class="dash-card dash-card-disabled" title="You do not have permission to access Invoices">
+            <div class="dash-card-icon"><i class="fas fa-file-invoice-dollar"></i></div>
+            <div class="dash-card-label">Invoices</div>
+          </div>
+        {% endif %}
 
-        <div class="dash-card" data-box-type="lease-renewals">
-          <div class="dash-card-icon"><i class="fas fa-sync-alt"></i></div>
-          <div class="dash-card-label">Lease Renewals</div>
-        </div>
+        {# Lease Renewals - Tenants module #}
+        {% if perms.auth.can_access_tenants %}
+          <div class="dash-card" data-box-type="lease-renewals">
+            <div class="dash-card-icon"><i class="fas fa-sync-alt"></i></div>
+            <div class="dash-card-label">Lease Renewals</div>
+          </div>
+        {% else %}
+          <div class="dash-card dash-card-disabled" title="You do not have permission to access Tenants">
+            <div class="dash-card-icon"><i class="fas fa-sync-alt"></i></div>
+            <div class="dash-card-label">Lease Renewals</div>
+          </div>
+        {% endif %}
 
       </div>
     </div>
@@ -105,25 +169,57 @@
       <h5 class="section-title"><i class="fas fa-coins"></i> Financials</h5>
       <div class="dashboard-grid">
 
-        <div class="dash-card" data-box-type="revenues">
-          <div class="dash-card-icon"><i class="fas fa-dollar-sign"></i></div>
-          <div class="dash-card-label">Revenues</div>
-        </div>
+        {# Revenues - Financials module #}
+        {% if perms.auth.can_access_financials %}
+          <div class="dash-card" data-box-type="revenues">
+            <div class="dash-card-icon"><i class="fas fa-dollar-sign"></i></div>
+            <div class="dash-card-label">Revenues</div>
+          </div>
+        {% else %}
+          <div class="dash-card dash-card-disabled" title="You do not have permission to access Financials">
+            <div class="dash-card-icon"><i class="fas fa-dollar-sign"></i></div>
+            <div class="dash-card-label">Revenues</div>
+          </div>
+        {% endif %}
 
-        <div class="dash-card" data-box-type="actual-expenses">
-          <div class="dash-card-icon"><i class="fas fa-receipt"></i></div>
-          <div class="dash-card-label">Actual Expenses</div>
-        </div>
+        {# Actual Expenses - Expenses module #}
+        {% if perms.auth.can_access_expenses %}
+          <div class="dash-card" data-box-type="actual-expenses">
+            <div class="dash-card-icon"><i class="fas fa-receipt"></i></div>
+            <div class="dash-card-label">Actual Expenses</div>
+          </div>
+        {% else %}
+          <div class="dash-card dash-card-disabled" title="You do not have permission to access Expenses">
+            <div class="dash-card-icon"><i class="fas fa-receipt"></i></div>
+            <div class="dash-card-label">Actual Expenses</div>
+          </div>
+        {% endif %}
 
-        <div class="dash-card" data-box-type="budgeted-expenses">
-          <div class="dash-card-icon"><i class="fas fa-clipboard-list"></i></div>
-          <div class="dash-card-label">Budgeted Expenses</div>
-        </div>
+        {# Budgeted Expenses - Financials module #}
+        {% if perms.auth.can_access_financials %}
+          <div class="dash-card" data-box-type="budgeted-expenses">
+            <div class="dash-card-icon"><i class="fas fa-clipboard-list"></i></div>
+            <div class="dash-card-label">Budgeted Expenses</div>
+          </div>
+        {% else %}
+          <div class="dash-card dash-card-disabled" title="You do not have permission to access Financials">
+            <div class="dash-card-icon"><i class="fas fa-clipboard-list"></i></div>
+            <div class="dash-card-label">Budgeted Expenses</div>
+          </div>
+        {% endif %}
 
-        <div class="dash-card" data-box-type="profit-loss">
-          <div class="dash-card-icon"><i class="fas fa-chart-pie"></i></div>
-          <div class="dash-card-label">Profit &amp; Loss</div>
-        </div>
+        {# Profit & Loss - Financials module #}
+        {% if perms.auth.can_access_financials %}
+          <div class="dash-card" data-box-type="profit-loss">
+            <div class="dash-card-icon"><i class="fas fa-chart-pie"></i></div>
+            <div class="dash-card-label">Profit &amp; Loss</div>
+          </div>
+        {% else %}
+          <div class="dash-card dash-card-disabled" title="You do not have permission to access Financials">
+            <div class="dash-card-icon"><i class="fas fa-chart-pie"></i></div>
+            <div class="dash-card-label">Profit &amp; Loss</div>
+          </div>
+        {% endif %}
 
       </div>
     </div>
@@ -306,6 +402,29 @@
   background: #e7f5f8;
 }
 
+/* Permission-disabled tile: greyed out, no hover effect, no click */
+.dash-card.dash-card-disabled {
+  background: #f1f3f5;
+  border-color: #dee2e6;
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.dash-card.dash-card-disabled:hover {
+  transform: none;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+  border-color: #dee2e6;
+}
+
+.dash-card.dash-card-disabled .dash-card-icon {
+  color: #adb5bd;
+}
+
+.dash-card.dash-card-disabled .dash-card-label {
+  color: #adb5bd;
+}
+
 /* ==================== PROPERTY PICKER LIST ==================== */
 .property-picker-list {
   max-height: 60vh;
@@ -394,7 +513,8 @@ document.addEventListener('DOMContentLoaded', function() {
   var propertyDisplayText = document.getElementById('propertyDisplayText');
   var dashboardGrids = document.getElementById('dashboardGrids');
   var pickerItems = document.querySelectorAll('.property-picker-item');
-  var dashCards = document.querySelectorAll('.dash-card');
+  // Only bind click handlers to ACTIVE cards - disabled cards have no data-box-type
+  var dashCards = document.querySelectorAll('.dash-card[data-box-type]');
 
   // Open picker modal when selector card is clicked
   selectorCard.addEventListener('click', function() {
