@@ -31,7 +31,7 @@ Properties
 
 <body>
   <!-- Action Buttons -->
-  <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 20px;">
+  <div class="page-action-buttons">
     <button type="button" class="btn btn-info" data-toggle="modal" data-target="#propertiesHelpModal">
       <i class="fas fa-question-circle"></i> Help
     </button>
@@ -50,14 +50,14 @@ Properties
   <div class="filter-panel" id="filterPanel">
     <div class="filter-header" onclick="toggleFilters()">
       <h5 class="filter-title">
-        <i class="fas fa-filter"></i> Property Filters
+        <i class="fas fa-filter"></i> <span class="filter-title-text">Property Filters</span><span class="filter-title-text-mobile">Filters</span>
         <i class="fas fa-chevron-down filter-toggle-icon" id="filterToggleIcon"></i>
       </h5>
       <button type="button" id="clearAllBtn" class="btn btn-outline-secondary btn-sm" onclick="event.stopPropagation();">
-        <i class="fas fa-times-circle"></i> Clear All
+        <i class="fas fa-times-circle"></i> <span class="clear-all-text">Clear All</span><span class="clear-all-text-mobile">Clear</span>
       </button>
     </div>
-    
+
     <div class="filter-content" id="filterContent">
       <form action="{% url 'properties' %}" method="post" id="filterForm">
         {% csrf_token %}
@@ -68,10 +68,10 @@ Properties
               <i class="fas fa-search"></i> Search Property
             </label>
             <div class="search-input-group">
-              <input type="text" 
-                     name="search" 
+              <input type="text"
+                     name="search"
                      id="searchInput"
-                     class="form-control search-input" 
+                     class="form-control search-input"
                      placeholder="Search by property name..."
                      value="{{ search_query|default:'' }}">
               <button type="button" class="search-btn" id="searchBtn">
@@ -115,64 +115,67 @@ Properties
     </div>
   </div>
 
-  <!-- Properties Table -->
+  <!-- Properties Table (desktop) / Card list (mobile) -->
   <div class="table-container">
-    <table class="table table-bordered table-striped text-center">
+    <table class="table table-bordered table-striped text-center properties-table">
       <thead>
         <tr>
-            <th style="text-align: left; width: 32%">Property</th>
-            <th style="width: 14%">Country</th>
-            <th style="width: 10%">Status</th>
-            <th style="width: 8%">Details</th>
+            <th style="text-align: left; width: 40%">Property</th>
+            <th style="width: 16%">Country</th>
+            <th style="width: 12%">Status</th>
+            <th style="width: 8%">Edit</th>
             <th style="width: 8%">Report</th>
-            <th style="width: 10%">Title Deed</th>
+            <th style="width: 8%">Title Deed</th>
             <th style="width: 8%">Assets</th>
         </tr>
       </thead>
       <tbody>
         {% for results in props %}
           <tr>
-            <td style="text-align: left">{{results.prop_name}}</td>
-            <td>{{results.prop_country}}</td>
-            <td>
+            <td data-label="Property" style="text-align: left">{{results.prop_name}}</td>
+            <td data-label="Country">{{results.prop_country}}</td>
+            <td data-label="Status">
               <span class="status-badge {% if results.prop_status == 'Active' %}status-active{% else %}status-inactive{% endif %}">
                 {{results.prop_status}}
               </span>
             </td>
-            <td>
+            <td data-label="Edit">
             {% if perms.auth.can_edit_properties %}
-              <button type="button" class="btn btn-light action-btn">
-                <a href="{% url 'properties_edit' results.prop_id %}">Edit</a>
-              </button>
+              <a href="{% url 'properties_edit' results.prop_id %}" class="icon-action-btn icon-edit" title="Edit Property">
+                <i class="fas fa-pencil-alt"></i>
+              </a>
             {% else %}
-              <button type="button" class="btn btn-light action-btn" disabled style="opacity: 0.5;">
-                <span style="color: #6c757d;">Edit</span>
-              </button>
+              <span class="icon-action-btn icon-disabled" title="No edit permission">
+                <i class="fas fa-pencil-alt"></i>
+              </span>
             {% endif %}
             </td>
-            <td>
-              <button type="button" class="btn btn-light action-btn">
-                <a href="{% url 'property_report' results.prop_id %}">View</a>
-              </button>
+            <td data-label="Report">
+              <a href="{% url 'property_report' results.prop_id %}" class="icon-action-btn icon-view" title="View Property Report">
+                <i class="fas fa-eye"></i>
+              </a>
             </td>
-            <td>
+            <td data-label="Title Deed">
               {% if results.prop_title_deed %}
-                <button type="button" class="btn btn-light action-btn"
-                        onclick="viewTitleDeed('{{ results.prop_title_deed.url }}', '{{ results.prop_title_deed.name }}', '{{ results.prop_name }}')">
-                  <a href="#" style="text-decoration: none;">View</a>
-                </button>
+                <a href="#" onclick="viewTitleDeed('{{ results.prop_title_deed.url }}', '{{ results.prop_title_deed.name }}', '{{ results.prop_name }}'); return false;" class="icon-action-btn icon-view" title="View Title Deed">
+                  <i class="fas fa-eye"></i>
+                </a>
               {% else %}
-                <span class="text-muted">Unavailable</span>
+                <span class="icon-action-btn icon-disabled" title="No title deed uploaded">
+                  <i class="fas fa-eye-slash"></i>
+                </span>
               {% endif %}
             </td>
-            <td>
-                {% if results.assets.count > 0 %}
-                    <button type="button" class="btn btn-light action-btn">
-                        <a href="{% url 'property_assets' results.prop_id %}">View</a>
-                    </button>
-                {% else %}
-                    <span class="text-muted">None</span>
-                {% endif %}
+            <td data-label="Assets">
+              {% if results.assets.count > 0 %}
+                <a href="{% url 'property_assets' results.prop_id %}" class="icon-action-btn icon-view" title="View Property Assets">
+                  <i class="fas fa-eye"></i>
+                </a>
+              {% else %}
+                <span class="icon-action-btn icon-disabled" title="No assets recorded">
+                  <i class="fas fa-eye-slash"></i>
+                </span>
+              {% endif %}
             </td>
           </tr>
         {% endfor %}
@@ -211,6 +214,13 @@ Properties
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
 <style>
+/* ==================== DESKTOP STYLES ==================== */
+.page-action-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-bottom: 20px;
+}
 .filter-panel {
     background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
     border: 1px solid #dee2e6;
@@ -258,14 +268,203 @@ Properties
 .status-badge { padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 500; }
 .status-active { background: #d4edda; color: #155724; }
 .status-inactive { background: #f8d7da; color: #721c24; }
-.action-btn { border-color: #dee2e6; transition: all 0.2s ease; }
-.action-btn:hover { transform: translateY(-1px); box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); }
 .btn-info { background-color: #17a2b8; color: white; border: 1px solid #17a2b8; transition: all 0.3s ease; border-radius: 6px; font-weight: 500; }
 .btn-info:hover { background-color: #138496; border-color: #117a8b; color: white; text-decoration: none; transform: translateY(-1px); box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+
+/* Icon action buttons (Edit / View) */
+.icon-action-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 6px;
+    border: 2px solid;
+    background: white;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    font-size: 14px;
+    cursor: pointer;
+}
+.icon-action-btn i { font-size: 14px; }
+.icon-action-btn:hover {
+    transform: translateY(-1px);
+    text-decoration: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+}
+.icon-edit {
+    color: #007bff;
+    border-color: #007bff;
+}
+.icon-edit:hover {
+    background-color: #007bff;
+    color: white;
+}
+.icon-view {
+    color: #17a2b8;
+    border-color: #17a2b8;
+}
+.icon-view:hover {
+    background-color: #17a2b8;
+    color: white;
+}
+.icon-disabled {
+    color: #adb5bd;
+    border-color: #dee2e6;
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+.icon-disabled:hover {
+    transform: none;
+    box-shadow: none;
+}
+
+/* Hide mobile-only label variants on desktop */
+.filter-title-text-mobile, .clear-all-text-mobile { display: none; }
+
+/* ==================== MOBILE STYLES (≤768px) ==================== */
 @media (max-width: 768px) {
-    .filter-grid { grid-template-columns: 1fr; gap: 16px; }
-    .filter-header { flex-direction: column; gap: 12px; align-items: stretch; }
-    .search-input-group { width: 100%; }
+
+  /* Action buttons: 2-column grid */
+  .page-action-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    justify-content: stretch;
+  }
+  .page-action-buttons .btn,
+  .page-action-buttons a {
+    width: 100%;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    padding: 6px 8px;
+    margin: 0;
+  }
+
+  /* Filter header — single row, matched to button height */
+  .filter-panel {
+    padding: 8px 12px;
+  }
+  .filter-panel.expanded {
+    padding: 12px;
+  }
+  .filter-header {
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    padding-bottom: 0;
+    border-bottom: none;
+    min-height: 38px;
+  }
+  .filter-header.expanded {
+    padding-bottom: 8px;
+    border-bottom: 1px solid #dee2e6;
+    margin-bottom: 12px;
+  }
+  .filter-header:hover {
+    margin: 0;
+    padding: 0;
+    background: transparent;
+  }
+  .filter-header.expanded:hover {
+    padding: 0 0 8px 0;
+  }
+  .filter-title {
+    font-size: 14px;
+    flex: 1;
+    min-width: 0;
+  }
+  .filter-title-text { display: none; }
+  .filter-title-text-mobile { display: inline; }
+  .clear-all-text { display: none; }
+  .clear-all-text-mobile { display: inline; }
+  #clearAllBtn {
+    height: 32px;
+    padding: 4px 10px;
+    font-size: 12px;
+    flex-shrink: 0;
+  }
+
+  /* Filter form: single column */
+  .filter-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  .search-input-group { width: 100%; }
+
+  /* Active filters: tighter on mobile */
+  .active-filters {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    margin-top: 12px;
+    padding-top: 12px;
+  }
+
+  /* Table → Card layout */
+  .table-container {
+    background: transparent;
+    box-shadow: none;
+    border-radius: 0;
+  }
+  .properties-table {
+    border: none;
+    background: transparent;
+  }
+  .properties-table thead {
+    display: none;
+  }
+  .properties-table,
+  .properties-table tbody,
+  .properties-table tr,
+  .properties-table td {
+    display: block;
+    width: 100%;
+  }
+  .properties-table tbody tr {
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    padding: 12px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+  }
+  .properties-table tbody tr:nth-of-type(even) {
+    background: white;
+  }
+  .properties-table td {
+    border: none !important;
+    padding: 6px 0 !important;
+    text-align: left !important;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    min-height: 28px;
+  }
+  .properties-table td::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: #495057;
+    font-size: 13px;
+    flex-shrink: 0;
+  }
+  /* The Property Name (first cell) gets prominence — no label, larger text */
+  .properties-table td[data-label="Property"] {
+    font-size: 16px;
+    font-weight: 600;
+    color: #2c3e50;
+    padding-bottom: 8px !important;
+    margin-bottom: 4px;
+    border-bottom: 1px solid #f1f3f5 !important;
+    display: block;
+  }
+  .properties-table td[data-label="Property"]::before {
+    display: none;
+  }
 }
 </style>
 

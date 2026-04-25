@@ -130,13 +130,33 @@
     .main-content.with-sidebar { margin-left: 240px; padding: 20px; min-height: 100vh; }
     .main-content.with-sidebar.minimised { margin-left: 60px; }
     .main-content.with-topnav { padding: 0; }
+
+    /* ==================== MOBILE OVERRIDES (≤991px) ==================== */
+    /* When viewport drops below 992px, sidebar users get the top nav instead. */
+    @media (max-width: 991px) {
+        .sidebar { display: none !important; }
+        body.has-sidebar { margin: 0; padding: 0; }
+        body.has-sidebar .main-content.with-sidebar {
+            margin-left: 0 !important;
+            padding: 0 !important;
+        }
+        body.has-sidebar .main-content.with-sidebar.minimised {
+            margin-left: 0 !important;
+        }
+        /* Ensure mobile-fallback top nav is visible for sidebar users */
+        body.has-sidebar .navbar.mobile-fallback-nav { display: flex !important; }
+    }
+    /* On desktop, hide the mobile-fallback nav when user prefers sidebar */
+    @media (min-width: 992px) {
+        body.has-sidebar .navbar.mobile-fallback-nav { display: none !important; }
+    }
     </style>
   </head>
 
   <body class="{% if user.is_authenticated and menu_preference == 'sidebar' %}has-sidebar{% endif %}">
 
   {% if user.is_authenticated and menu_preference == 'sidebar' %}
-  <!-- ==================== SIDEBAR ==================== -->
+  <!-- ==================== SIDEBAR (desktop only at ≥992px) ==================== -->
   <div class="sidebar" id="mainSidebar">
 
     <button class="sidebar-toggle" id="sidebarToggle" onclick="toggleSidebar()" title="Toggle sidebar">
@@ -272,9 +292,10 @@
     </div>
 
   </div>
-  {% else %}
-  <!-- ==================== TOP NAV ==================== -->
-  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+  {% endif %}
+
+  <!-- ==================== TOP NAV (always rendered, but CSS hides it for sidebar users on desktop) ==================== -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark{% if user.is_authenticated and menu_preference == 'sidebar' %} mobile-fallback-nav{% endif %}">
       <a class="navbar-brand" href="{% url 'home' %}"><img src="{% static 'images/alivente_online_logo.png' %}" alt="Alivente" width="82" height="50"></a>
       <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
@@ -354,7 +375,6 @@
         </ul>
       </div>
   </nav>
-  {% endif %}
 
   <!-- ==================== SINGLE CONTENT BLOCK ==================== -->
   <div class="main-content {% if user.is_authenticated and menu_preference == 'sidebar' %}with-sidebar{% else %}with-topnav{% endif %}" id="mainContent">
@@ -428,7 +448,8 @@
       });
   });
   </script>
-  {% else %}
+  {% endif %}
+
   <script>
   $(document).ready(function() {
       $('.dropdown').hover(
@@ -451,7 +472,6 @@
       });
   });
   </script>
-  {% endif %}
 
   </body>
 </html>

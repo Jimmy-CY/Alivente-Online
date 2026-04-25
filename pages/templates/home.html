@@ -179,28 +179,67 @@ Home
       margin-bottom: 6px;
     }
 
+    /* Tablet / large phone landscape — 2 tiles per row */
     @media (max-width: 767px) {
       .module-tile { width: 140px; flex: 0 0 140px; }
       .home-module-btn { width: 140px; height: 75px; }
       .home-module-btn h5 { font-size: 0.75rem; }
       .home-module-btn i { font-size: 1.2rem; }
     }
+
+    /* Phone portrait — 1 tile per row, full-width tappable bars */
+    @media (max-width: 479px) {
+      .modules-grid {
+        flex-direction: column;
+        flex-wrap: nowrap;
+        align-items: stretch;
+        padding: 6px;
+        gap: 8px;
+      }
+      .module-tile {
+        width: 100%;
+        flex: 0 0 auto;
+      }
+      .home-module-btn {
+        width: 100%;
+        height: 60px;
+        flex-direction: row;
+        justify-content: flex-start;
+        padding-left: 20px;
+      }
+      .home-module-btn i {
+        font-size: 1.3rem;
+        margin-bottom: 0;
+        margin-right: 14px;
+      }
+      .home-module-btn h5 {
+        font-size: 0.95rem;
+      }
+    }
   </style>
 
   <script>
     document.addEventListener('DOMContentLoaded', function() {
       const grid = document.getElementById('modulesGrid');
+      if (!grid) return;
       const tiles = grid.querySelectorAll('.module-tile');
       const count = tiles.length;
       if (count === 0) return;
 
-      // Calculate columns for max 2 rows
-      const cols = Math.ceil(count / 2);
-      const tileWidth = 180;
-      const gap = 12;
-      const totalWidth = (cols * tileWidth) + ((cols - 1) * gap) + 20;
-      grid.style.maxWidth = totalWidth + 'px';
-      grid.style.margin = '0 auto';
+      // Only run the desktop max-width calc above 767px.
+      // Below that, CSS handles the layout (2-col tablet, 1-col phone).
+      if (window.innerWidth >= 768) {
+        const cols = Math.ceil(count / 2);
+        const tileWidth = 180;
+        const gap = 12;
+        const totalWidth = (cols * tileWidth) + ((cols - 1) * gap) + 20;
+        grid.style.maxWidth = totalWidth + 'px';
+        grid.style.margin = '0 auto';
+      } else {
+        // On mobile, clear any inline style so CSS takes over
+        grid.style.maxWidth = '';
+        grid.style.margin = '';
+      }
     });
   </script>
 
