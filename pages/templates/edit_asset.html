@@ -5,7 +5,7 @@
 
 {% block content %}
 
-<h2><center>EDIT ASSET</center></h2>
+<h2 class="page-title-h2"><center>EDIT ASSET</center></h2>
 <br/>
 
 {% for msg in messages %}
@@ -26,21 +26,23 @@
   </script>
 {% endfor %}
 
-<!-- Action Buttons -->
-<div style="display: flex; justify-content: flex-end; margin-bottom: 20px;">
-    <a href="{% url 'asset_detail' asset.id %}" class="btn btn-info">Back</a>
+<!-- Action Buttons (top) -->
+<div class="page-action-buttons page-action-buttons-single">
+    <a href="{% url 'asset_detail' asset.id %}" class="btn btn-info action-btn-back">
+        <i class="fas fa-arrow-left"></i> Back
+    </a>
 </div>
 
 <!-- Edit Asset Form -->
-<div class="card">
+<div class="card form-card">
     <div class="card-header bg-warning text-white">
         <h4 class="mb-0"><i class="fas fa-edit"></i> Edit: {{ asset.name }}</h4>
     </div>
     <div class="card-body">
-        <form method="post" enctype="multipart/form-data">
+        <form method="post" enctype="multipart/form-data" id="editAssetForm">
             {% csrf_token %}
-            
-            <div class="row">
+
+            <div class="form-row">
                 <!-- Category -->
                 <div class="col-md-6">
                     <div class="form-group">
@@ -55,7 +57,7 @@
                         </select>
                     </div>
                 </div>
-                
+
                 <!-- Subcategory -->
                 <div class="col-md-6">
                     <div class="form-group">
@@ -71,8 +73,8 @@
                     </div>
                 </div>
             </div>
-            
-            <div class="row">
+
+            <div class="form-row">
                 <!-- Asset Name -->
                 <div class="col-md-6">
                     <div class="form-group">
@@ -80,7 +82,7 @@
                         <input type="text" name="name" class="form-control" required value="{{ asset.name }}">
                     </div>
                 </div>
-                
+
                 <!-- Location/Room -->
                 <div class="col-md-6">
                     <div class="form-group">
@@ -89,8 +91,8 @@
                     </div>
                 </div>
             </div>
-            
-            <div class="row">
+
+            <div class="form-row">
                 <!-- Purchase Date -->
                 <div class="col-md-6">
                     <div class="form-group">
@@ -98,7 +100,7 @@
                         <input type="date" name="purchase_date" class="form-control" value="{% if asset.purchase_date %}{{ asset.purchase_date|date:'Y-m-d' }}{% endif %}">
                     </div>
                 </div>
-                
+
                 <!-- Supplier -->
                 <div class="col-md-6">
                     <div class="form-group">
@@ -114,8 +116,8 @@
                     </div>
                 </div>
             </div>
-            
-            <div class="row">
+
+            <div class="form-row">
                 <!-- Purchase Price (Optional) -->
                 <div class="col-md-6">
                     <div class="form-group">
@@ -123,7 +125,7 @@
                         <input type="number" name="purchase_price" class="form-control" step="0.01" placeholder="Optional" value="{% if asset.purchase_price %}{{ asset.purchase_price }}{% endif %}">
                     </div>
                 </div>
-                
+
                 <!-- Brand/Manufacturer (Optional) -->
                 <div class="col-md-6">
                     <div class="form-group">
@@ -132,11 +134,11 @@
                     </div>
                 </div>
             </div>
-            
+
             <!-- Warranty Section -->
             <hr>
-            <h5>Warranty Information</h5>
-            <div class="row">
+            <h5 class="form-section-heading">Warranty Information</h5>
+            <div class="form-row">
                 <div class="col-md-6">
                     <div class="form-group">
                         <label>Warranty Duration (months)</label>
@@ -152,27 +154,29 @@
                     </div>
                 </div>
             </div>
-            
+
             <!-- Purchase Invoice Upload -->
             <div class="form-group">
                 <label>Purchase Invoice/Receipt</label>
                 {% if asset.purchase_invoice %}
-                    <div class="alert alert-info">
+                    <div class="alert alert-info current-file-info">
                         Current file: <a href="{{ asset.purchase_invoice.url }}" target="_blank">{{ asset.purchase_invoice.name }}</a>
                     </div>
                 {% endif %}
                 <input type="file" name="purchase_invoice" class="form-control-file" accept=".pdf,.jpg,.jpeg,.png">
                 <small class="form-text text-muted">Upload a new file to replace the existing one</small>
             </div>
-            
+
             <!-- Notes -->
             <div class="form-group">
                 <label>Notes</label>
                 <textarea name="notes" class="form-control" rows="4" placeholder="Additional notes...">{{ asset.notes }}</textarea>
             </div>
-            
+
             <hr>
-            <div class="text-right">
+
+            <!-- Submit Buttons -->
+            <div class="form-submit-row">
                 <a href="{% url 'asset_detail' asset.id %}" class="btn btn-secondary">
                     <i class="fas fa-times"></i> Cancel
                 </a>
@@ -184,12 +188,155 @@
     </div>
 </div>
 
+<style>
+/* ==================== DESKTOP STYLES ==================== */
+
+.page-title-h2 {
+    margin-top: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+/* Top action buttons */
+.page-action-buttons {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 1.5rem;
+}
+.page-action-buttons-single {
+    justify-content: flex-end;
+}
+
+/* Form card */
+.form-card {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+.form-card .card-header h4 {
+    color: white;
+}
+.form-card .card-body {
+    padding: 24px;
+}
+
+/* Form section heading (above warranty section) */
+.form-section-heading {
+    color: #2c3e50;
+    font-weight: 600;
+    margin-top: 8px;
+    margin-bottom: 16px;
+    font-size: 1.15rem;
+}
+
+/* Current file info banner (when an invoice is already attached) */
+.current-file-info {
+    margin-bottom: 8px;
+    padding: 10px 14px;
+}
+
+/* Submit row at bottom of form (Cancel + Save) */
+.form-submit-row {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 8px;
+}
+
+/* ==================== MOBILE STYLES (≤768px) ==================== */
+@media (max-width: 768px) {
+
+    .page-title-h2 {
+        font-size: 1.25rem;
+    }
+
+    /* Action buttons row — Back full-width */
+    .page-action-buttons {
+        margin-bottom: 1rem;
+    }
+    .action-btn-back {
+        width: 100%;
+        text-align: center;
+        padding: 10px 12px;
+    }
+
+    /* Form card — tighter padding */
+    .form-card .card-header {
+        padding: 10px 14px;
+    }
+    .form-card .card-header h4 {
+        font-size: 1.05rem;
+    }
+    .form-card .card-body {
+        padding: 14px;
+    }
+
+    /* Form fields — full-width single column, prevent iOS zoom */
+    .form-row {
+        margin-left: 0;
+        margin-right: 0;
+    }
+    .form-row > [class^="col-"] {
+        padding-left: 0;
+        padding-right: 0;
+    }
+    .form-group {
+        margin-bottom: 14px;
+    }
+    .form-control,
+    select.form-control,
+    input[type="date"].form-control,
+    input[type="number"].form-control,
+    input[type="text"].form-control,
+    textarea.form-control {
+        font-size: 16px; /* prevents iOS zoom-on-focus */
+        padding: 10px 12px;
+    }
+    .form-card label {
+        font-size: 13px;
+        margin-bottom: 4px;
+        font-weight: 600;
+    }
+    .form-card input[type="file"] {
+        font-size: 14px;
+    }
+    .form-card .form-text {
+        font-size: 12px;
+    }
+
+    /* Warranty section heading */
+    .form-section-heading {
+        font-size: 1.05rem;
+        margin-top: 4px;
+        margin-bottom: 12px;
+    }
+
+    /* Current file banner — wrap long filenames */
+    .current-file-info {
+        font-size: 13px;
+        padding: 10px;
+        word-break: break-all;
+    }
+
+    /* Submit buttons — stack with primary (Save) on top */
+    .form-submit-row {
+        flex-direction: column-reverse;
+        gap: 8px;
+        margin-top: 12px;
+    }
+    .form-submit-row .btn {
+        width: 100%;
+        padding: 12px;
+        margin: 0 !important;
+    }
+}
+</style>
+
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
 <script>
 // Validate Edit Asset form before submission
-document.querySelector('form').addEventListener('submit', function(e) {
+document.getElementById('editAssetForm').addEventListener('submit', function(e) {
     const warrantyMonths = parseInt(document.querySelector('input[name="warranty_duration_months"]').value) || 0;
     const purchaseDate = document.querySelector('input[name="purchase_date"]').value;
 
@@ -198,18 +345,18 @@ document.querySelector('form').addEventListener('submit', function(e) {
         alert('Purchase Date is required when Warranty Duration is entered.');
     }
 });
-    
+
 // Load subcategories when category changes
 function loadSubcategories() {
     const categoryId = document.getElementById('category').value;
     const subcategorySelect = document.getElementById('subcategory');
     const currentSubcategoryId = {{ asset.subcategory.id }};
-    
+
     if (!categoryId) {
         subcategorySelect.innerHTML = '<option value="">Select Category First</option>';
         return;
     }
-    
+
     // AJAX call to get subcategories
     fetch(`/ajax/category/${categoryId}/subcategories/`)
         .then(response => response.json())
@@ -236,11 +383,11 @@ function loadSubcategories() {
 function calculateWarrantyExpiry() {
     const purchaseDate = document.querySelector('input[name="purchase_date"]').value;
     const months = parseInt(document.querySelector('input[name="warranty_duration_months"]').value);
-    
+
     if (purchaseDate && months) {
         const expiry = new Date(purchaseDate);
         expiry.setMonth(expiry.getMonth() + months);
-        
+
         // Format as YYYY-MM-DD for the date input
         const formatted = expiry.toISOString().split('T')[0];
         document.querySelector('input[name="warranty_expiry_date"]').value = formatted;

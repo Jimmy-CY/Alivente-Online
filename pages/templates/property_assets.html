@@ -1,13 +1,13 @@
 {% extends 'base.html' %}
 {% load static %}
- 
+
 {% block title %}Assets - {{ property.prop_name }}{% endblock %}
- 
+
 {% block content %}
- 
-<h2><center>PROPERTY ASSETS - {{ property.prop_name|upper }}</center></h2>
+
+<h2 class="page-title-h2"><center>PROPERTY ASSETS - {{ property.prop_name|upper }}</center></h2>
 <br/>
- 
+
 {% for msg in messages %}
   <div class="alert alert-secondary alert-dismissible fade show auto-dismiss" role="alert">
     <strong></strong> <center>{{ msg }}</center>
@@ -25,107 +25,117 @@
     }, 2000);
   </script>
 {% endfor %}
- 
+
 {% if user.is_authenticated %}
- 
+
 <!-- Action Buttons -->
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="page-action-buttons">
     {% if perms.auth.can_edit_properties %}
-        <button type="button" class="btn btn-info" data-toggle="modal" data-target="#addAssetModal">
+        <button type="button" class="btn btn-info action-btn-add" data-toggle="modal" data-target="#addAssetModal">
             <i class="fas fa-plus"></i> Add Asset
         </button>
     {% else %}
-        <span class="btn btn-secondary" style="opacity:0.6; cursor:not-allowed; pointer-events:none;">
+        <span class="btn btn-secondary action-btn-add disabled-btn">
             <i class="fas fa-plus"></i> Add Asset
         </span>
     {% endif %}
     {% if request.GET.next == 'edit' %}
-        <a href="{% url 'properties_edit' property.prop_id %}" class="btn btn-info">
+        <a href="{% url 'properties_edit' property.prop_id %}" class="btn btn-info action-btn-back">
             <i class="fas fa-arrow-left"></i> Back
         </a>
     {% else %}
-        <a href="{% url 'properties' %}" class="btn btn-info">
+        <a href="{% url 'properties' %}" class="btn btn-info action-btn-back">
             <i class="fas fa-arrow-left"></i> Back
         </a>
     {% endif %}
 </div>
- 
+
 <!-- Assets Summary Card -->
-<div class="card mb-4">
+<div class="card mb-4 summary-card">
     <div class="card-body">
-        <h5 class="card-title">Asset Summary</h5>
-        <p class="card-text">
-            <strong>Total Assets:</strong> {{ total_assets }}<br>
-            <strong>Property:</strong> {{ property.prop_name }} ({{ property.prop_country }})<br>
-            <strong>Address:</strong> {{ property.prop_address1 }}{% if property.prop_address2 %}, {{ property.prop_address2 }}{% endif %}
-        </p>
+        <h5 class="card-title"><i class="fas fa-info-circle"></i> Asset Summary</h5>
+        <div class="summary-grid">
+            <div class="summary-row">
+                <span class="summary-label">Total Assets:</span>
+                <span class="summary-value"><strong>{{ total_assets }}</strong></span>
+            </div>
+            <div class="summary-row">
+                <span class="summary-label">Property:</span>
+                <span class="summary-value">{{ property.prop_name }} ({{ property.prop_country }})</span>
+            </div>
+            <div class="summary-row">
+                <span class="summary-label">Address:</span>
+                <span class="summary-value">{{ property.prop_address1 }}{% if property.prop_address2 %}, {{ property.prop_address2 }}{% endif %}</span>
+            </div>
+        </div>
     </div>
 </div>
- 
+
 <!-- Assets by Category -->
 {% if assets_by_category %}
     {% for category_name, asset_list in assets_by_category.items %}
     <div class="category-section mb-4">
         <h4 class="category-header">
-            <i class="fas fa-tag"></i> {{ category_name }}
-            <span class="badge badge-secondary">{{ asset_list|length }}</span>
+            <i class="fas fa-tag"></i> <span class="category-name">{{ category_name }}</span>
+            <span class="badge badge-secondary category-count">{{ asset_list|length }}</span>
         </h4>
- 
-        <div class="table-responsive">
-            <table class="table table-bordered table-striped asset-table">
-                <thead>
-                    <tr>
-                        <th style="width: 22%">Asset Name</th>
-                        <th style="width: 16%">Subcategory</th>
-                        <th style="width: 14%">Location/Room</th>
-                        <th style="width: 14%">Purchase Date</th>
-                        <th style="width: 16%">Supplier</th>
-                        <th style="width: 18%; text-align: center;">Warranty Expiry</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for asset in asset_list %}
-                    <tr onclick="window.location='{% url 'asset_detail' asset.id %}?next={{ request.GET.next }}';" style="cursor: pointer;">
-                        <td>
-                            <strong>{{ asset.name }}</strong>
-                            {% if asset.brand_manufacturer %}
-                                <br><small class="text-muted">{{ asset.brand_manufacturer }}</small>
-                            {% endif %}
-                        </td>
-                        <td>{{ asset.subcategory.name }}</td>
-                        <td>{{ asset.location_room }}</td>
-                        <td>{{ asset.purchase_date|date:"Y-m-d" }}</td>
-                        <td>{{ asset.supplier.name }}</td>
-                        <td class="text-center">
-                            {% if asset.warranty_expiry_date %}
-                                {% if asset.is_warranty_active %}
-                                    <span style="color: #28a745; font-weight: bold;">✓ Active</span><br>
-                                    <small>{{ asset.warranty_expiry_date|date:"Y-m-d" }}</small>
-                                {% else %}
-                                    <span style="color: #dc3545; font-weight: bold;">✗ Expired</span><br>
-                                    <small>{{ asset.warranty_expiry_date|date:"Y-m-d" }}</small>
-                                {% endif %}
+
+        <table class="asset-table">
+            <thead>
+                <tr>
+                    <th>Asset Name</th>
+                    <th>Subcategory</th>
+                    <th>Location/Room</th>
+                    <th>Purchase Date</th>
+                    <th>Supplier</th>
+                    <th class="text-center">Warranty Expiry</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for asset in asset_list %}
+                <tr class="asset-row" data-href="{% url 'asset_detail' asset.id %}?next={{ request.GET.next }}">
+                    <td data-label="Asset Name">
+                        <strong>{{ asset.name }}</strong>
+                        {% if asset.brand_manufacturer %}
+                            <br><small class="text-muted">{{ asset.brand_manufacturer }}</small>
+                        {% endif %}
+                    </td>
+                    <td data-label="Subcategory">{{ asset.subcategory.name }}</td>
+                    <td data-label="Location">{{ asset.location_room }}</td>
+                    <td data-label="Purchase Date">{{ asset.purchase_date|date:"Y-m-d" }}</td>
+                    <td data-label="Supplier">{{ asset.supplier.name }}</td>
+                    <td data-label="Warranty Expiry" class="text-center">
+                        {% if asset.warranty_expiry_date %}
+                            {% if asset.is_warranty_active %}
+                                <span class="warranty-active">✓ Active</span><br>
+                                <small>{{ asset.warranty_expiry_date|date:"Y-m-d" }}</small>
                             {% else %}
-                                <span class="text-muted">N/A</span>
+                                <span class="warranty-expired">✗ Expired</span><br>
+                                <small>{{ asset.warranty_expiry_date|date:"Y-m-d" }}</small>
                             {% endif %}
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
+                        {% else %}
+                            <span class="text-muted">N/A</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
     {% endfor %}
 {% else %}
-    <div class="alert alert-info">
-        <h5><i class="fas fa-info-circle"></i> No Assets Found</h5>
+    <div class="empty-state-card">
+        <div class="empty-state-icon">
+            <i class="fas fa-box-open"></i>
+        </div>
+        <h4>No Assets Found</h4>
         <p>This property doesn't have any assets yet. Click "Add Asset" to get started!</p>
     </div>
 {% endif %}
- 
+
 <!-- Add Asset Modal -->
 <div class="modal fade" id="addAssetModal" tabindex="-1" role="dialog">
-    <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-dialog modal-lg modal-fullscreen-mobile" role="document">
         <div class="modal-content">
             <form method="post" action="{% url 'add_asset' property.prop_id %}" enctype="multipart/form-data">
                 {% csrf_token %}
@@ -136,7 +146,7 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <div class="row">
+                    <div class="form-row">
                         <!-- Category -->
                         <div class="col-md-6">
                             <div class="form-group">
@@ -155,7 +165,7 @@
                                     </div>
                                 </div>
                                 <!-- Inline new category -->
-                                <div id="newCategoryRow" style="display:none; margin-top:6px;">
+                                <div id="newCategoryRow" class="inline-add-row" style="display:none;">
                                     <div class="input-group">
                                         <input type="text" id="newCategoryName" class="form-control form-control-sm" placeholder="New category name...">
                                         <div class="input-group-append">
@@ -166,7 +176,7 @@
                                 </div>
                             </div>
                         </div>
- 
+
                         <!-- Subcategory -->
                         <div class="col-md-6">
                             <div class="form-group">
@@ -182,7 +192,7 @@
                                     </div>
                                 </div>
                                 <!-- Inline new subcategory -->
-                                <div id="newSubcategoryRow" style="display:none; margin-top:6px;">
+                                <div id="newSubcategoryRow" class="inline-add-row" style="display:none;">
                                     <div class="input-group">
                                         <input type="text" id="newSubcategoryName" class="form-control form-control-sm" placeholder="New subcategory name...">
                                         <div class="input-group-append">
@@ -195,8 +205,8 @@
                             </div>
                         </div>
                     </div>
- 
-                    <div class="row">
+
+                    <div class="form-row">
                         <!-- Asset Name -->
                         <div class="col-md-6">
                             <div class="form-group">
@@ -204,7 +214,7 @@
                                 <input type="text" name="name" class="form-control" required>
                             </div>
                         </div>
- 
+
                         <!-- Location/Room -->
                         <div class="col-md-6">
                             <div class="form-group">
@@ -213,8 +223,8 @@
                             </div>
                         </div>
                     </div>
- 
-                    <div class="row">
+
+                    <div class="form-row">
                         <!-- Purchase Date -->
                         <div class="col-md-6">
                             <div class="form-group">
@@ -222,7 +232,7 @@
                                 <input type="date" name="purchase_date" id="modal_purchase_date" class="form-control">
                             </div>
                         </div>
- 
+
                         <!-- Supplier -->
                         <div class="col-md-6">
                             <div class="form-group">
@@ -241,7 +251,7 @@
                                     </div>
                                 </div>
                                 <!-- Inline new supplier -->
-                                <div id="newSupplierRow" style="display:none; margin-top:6px;">
+                                <div id="newSupplierRow" class="inline-add-row" style="display:none;">
                                     <div class="input-group">
                                         <input type="text" id="newSupplierName" class="form-control form-control-sm" placeholder="New supplier name...">
                                         <div class="input-group-append">
@@ -253,8 +263,8 @@
                             </div>
                         </div>
                     </div>
- 
-                    <div class="row">
+
+                    <div class="form-row">
                         <!-- Purchase Price -->
                         <div class="col-md-6">
                             <div class="form-group">
@@ -262,7 +272,7 @@
                                 <input type="number" name="purchase_price" class="form-control" step="0.01" placeholder="Optional">
                             </div>
                         </div>
- 
+
                         <!-- Brand/Manufacturer -->
                         <div class="col-md-6">
                             <div class="form-group">
@@ -271,11 +281,11 @@
                             </div>
                         </div>
                     </div>
- 
+
                     <!-- Warranty Section -->
                     <hr>
-                    <h6>Warranty Information</h6>
-                    <div class="row">
+                    <h6 class="form-section-heading">Warranty Information</h6>
+                    <div class="form-row">
                         <div class="col-md-6">
                             <div class="form-group">
                                 <label>Warranty Duration (months)</label>
@@ -291,13 +301,13 @@
                             </div>
                         </div>
                     </div>
- 
+
                     <!-- Purchase Invoice Upload -->
                     <div class="form-group">
                         <label>Purchase Invoice/Receipt</label>
                         <input type="file" name="purchase_invoice" class="form-control-file" accept=".pdf,.jpg,.jpeg,.png">
                     </div>
- 
+
                     <!-- Notes -->
                     <div class="form-group">
                         <label>Notes</label>
@@ -312,49 +322,416 @@
         </div>
     </div>
 </div>
- 
+
 <!-- Delete Confirmation Form (Hidden) -->
 <form id="deleteForm" method="post" style="display: none;">
     {% csrf_token %}
 </form>
- 
+
 <style>
+/* ==================== DESKTOP STYLES ==================== */
+
+.page-title-h2 {
+    margin-top: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+/* Top action buttons */
+.page-action-buttons {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 1.5rem;
+}
+.disabled-btn {
+    opacity: 0.6;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* Summary card */
+.summary-card .card-title {
+    color: #2c3e50;
+    margin-bottom: 12px;
+}
+.summary-card .card-title i {
+    color: #17a2b8;
+    margin-right: 6px;
+}
+.summary-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.summary-row {
+    display: flex;
+    gap: 8px;
+    line-height: 1.5;
+}
+.summary-label {
+    font-weight: 600;
+    color: #495057;
+    min-width: 110px;
+}
+.summary-value {
+    color: #495057;
+}
+
+/* Category section */
 .category-section {
     background: white;
     border-radius: 8px;
     padding: 20px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
- 
+
 .category-header {
     color: #2c3e50;
     border-bottom: 2px solid #17a2b8;
     padding-bottom: 10px;
     margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
- 
-.table thead th {
+.category-header .category-count {
+    margin-left: auto;
+}
+
+/* Asset table — desktop */
+.asset-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+}
+.asset-table thead tr {
     background-color: #2c3e50;
     color: white;
-    font-weight: 600;
-    border: 1px solid #34495e;
 }
- 
+.asset-table th {
+    padding: 12px 8px;
+    text-align: left;
+    border: 1px solid #34495e;
+    font-weight: 600;
+}
+.asset-table th.text-center {
+    text-align: center;
+}
+.asset-table td {
+    padding: 10px 8px;
+    border: 1px solid #dee2e6;
+    vertical-align: middle;
+}
+.asset-table td.text-center {
+    text-align: center;
+}
+.asset-table tbody tr {
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+.asset-table tbody tr:nth-child(even) {
+    background-color: #f8f9fa;
+}
+.asset-table tbody tr:hover {
+    background-color: #e9ecef;
+}
+
+.warranty-active {
+    color: #28a745;
+    font-weight: bold;
+}
+.warranty-expired {
+    color: #dc3545;
+    font-weight: bold;
+}
+
 .badge {
     font-size: 0.85em;
 }
- 
-/* Clickable row hover effect */
-.asset-table tbody tr:hover {
-    background-color: #e9ecef;
-    transition: background-color 0.2s ease;
+
+/* Empty state */
+.empty-state-card {
+    text-align: center;
+    padding: 60px 20px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+.empty-state-icon i {
+    font-size: 4rem;
+    color: #6c757d;
+    margin-bottom: 20px;
+}
+.empty-state-card h4 {
+    color: #495057;
+    font-weight: 600;
+    margin-bottom: 12px;
+}
+.empty-state-card p {
+    color: #6c757d;
+    margin-bottom: 0;
+}
+
+/* Modal — form-section heading */
+.form-section-heading {
+    color: #2c3e50;
+    font-weight: 600;
+    margin-top: 8px;
+    margin-bottom: 12px;
+}
+
+/* Inline-add row inside the modal */
+.inline-add-row {
+    margin-top: 6px;
+    padding: 8px;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+    border: 1px dashed #ced4da;
+}
+
+/* ==================== MOBILE STYLES (≤768px) ==================== */
+@media (max-width: 768px) {
+
+    .page-title-h2 {
+        font-size: 1.25rem;
+    }
+
+    /* Action buttons → 2-column grid (Add Asset + Back) */
+    .page-action-buttons {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin-bottom: 1rem;
+    }
+    .page-action-buttons .btn,
+    .page-action-buttons .disabled-btn {
+        width: 100%;
+        text-align: center;
+        padding: 10px 12px;
+        margin: 0 !important;
+    }
+
+    /* Summary card — stack each row */
+    .summary-card .card-body {
+        padding: 14px;
+    }
+    .summary-row {
+        flex-direction: column;
+        gap: 2px;
+        margin-bottom: 8px;
+    }
+    .summary-label {
+        min-width: 0;
+        font-size: 12px;
+        color: #6c757d;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+    }
+    .summary-value {
+        font-size: 14px;
+    }
+
+    /* Category section — tighter padding */
+    .category-section {
+        padding: 14px;
+    }
+    .category-header {
+        font-size: 1rem;
+    }
+
+    /* Asset table → cards */
+    .asset-table {
+        border: none;
+        background: transparent;
+    }
+    .asset-table thead {
+        display: none;
+    }
+    .asset-table,
+    .asset-table tbody,
+    .asset-table tr,
+    .asset-table td {
+        display: block;
+        width: 100%;
+    }
+    .asset-table tbody tr {
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        margin-bottom: 12px;
+        padding: 12px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+    }
+    .asset-table tbody tr:nth-child(even) {
+        background: white;
+    }
+    .asset-table tbody tr:hover {
+        background-color: white;
+    }
+    .asset-table td {
+        border: none !important;
+        padding: 6px 0 !important;
+        text-align: left !important;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 8px;
+        min-height: 24px;
+    }
+    .asset-table td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        color: #495057;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+        flex-shrink: 0;
+        padding-top: 2px;
+    }
+    /* Asset Name (first cell) gets prominence */
+    .asset-table td[data-label="Asset Name"] {
+        font-size: 15px;
+        font-weight: 600;
+        color: #2c3e50;
+        padding-bottom: 8px !important;
+        margin-bottom: 4px;
+        border-bottom: 1px solid #f1f3f5 !important;
+        display: block;
+    }
+    .asset-table td[data-label="Asset Name"]::before {
+        display: none;
+    }
+    /* Warranty cell — multi-line content right-aligned */
+    .asset-table td[data-label="Warranty Expiry"] {
+        text-align: right !important;
+    }
+
+    /* Empty state — less vertical waste */
+    .empty-state-card {
+        padding: 32px 16px;
+    }
+    .empty-state-icon i {
+        font-size: 2.8rem;
+        margin-bottom: 12px;
+    }
+
+    /* ============= MODAL — full-screen on mobile ============= */
+    .modal-fullscreen-mobile {
+        max-width: 100%;
+        margin: 0;
+        padding: 0;
+    }
+    .modal-fullscreen-mobile .modal-content {
+        border-radius: 0;
+        min-height: 100vh;
+    }
+    .modal-fullscreen-mobile .modal-header,
+    .modal-fullscreen-mobile .modal-footer {
+        padding: 12px 14px;
+    }
+    .modal-fullscreen-mobile .modal-body {
+        padding: 14px;
+    }
+
+    /* Form — single column on mobile (col-md-6 stacks naturally,
+       but we tighten the gap and form-row spacing) */
+    .modal-body .form-row {
+        margin-left: 0;
+        margin-right: 0;
+    }
+    .modal-body .form-row > [class^="col-"] {
+        padding-left: 0;
+        padding-right: 0;
+    }
+    .modal-body .form-group {
+        margin-bottom: 14px;
+    }
+    .modal-body .form-control,
+    .modal-body select.form-control,
+    .modal-body input[type="date"],
+    .modal-body input[type="number"],
+    .modal-body input[type="text"] {
+        font-size: 16px; /* prevents iOS zoom-on-focus */
+        padding: 10px 12px;
+    }
+    .modal-body label {
+        font-size: 13px;
+        margin-bottom: 4px;
+        font-weight: 600;
+    }
+
+    /* Input group with [+] button on the right — keep inline (don't wrap) */
+    .modal-body .input-group {
+        flex-wrap: nowrap;
+    }
+    .modal-body .input-group-append .btn {
+        padding: 0 14px;
+    }
+
+    /* Inline-add rows — full-width inputs, buttons stay together */
+    .inline-add-row {
+        margin-top: 8px;
+        padding: 10px;
+    }
+    .inline-add-row .input-group {
+        flex-direction: column;
+        gap: 6px;
+    }
+    .inline-add-row .input-group .form-control-sm {
+        width: 100%;
+        font-size: 16px;
+    }
+    .inline-add-row .input-group-append {
+        display: flex;
+        gap: 6px;
+        margin-left: 0 !important;
+    }
+    .inline-add-row .input-group-append .btn {
+        flex: 1;
+        padding: 8px 12px;
+        border-radius: 4px !important;
+    }
+
+    /* File upload */
+    .modal-body input[type="file"] {
+        font-size: 14px;
+    }
+
+    /* Modal footer buttons — stack and full-width */
+    .modal-fullscreen-mobile .modal-footer {
+        flex-direction: column-reverse;
+        gap: 8px;
+        align-items: stretch;
+    }
+    .modal-fullscreen-mobile .modal-footer .btn {
+        width: 100%;
+        margin: 0 !important;
+        padding: 12px;
+    }
+
+    .form-section-heading {
+        font-size: 1rem;
+    }
 }
 </style>
- 
+
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
- 
+
 <script>
+// Make asset cards/rows tappable to navigate to detail page
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.asset-row').forEach(function(row) {
+        row.addEventListener('click', function() {
+            const href = this.getAttribute('data-href');
+            if (href) {
+                window.location.href = href;
+            }
+        });
+    });
+});
+
 // Validate Add Asset form before submission
 document.querySelector('#addAssetModal form').addEventListener('submit', function(e) {
     const warrantyMonths = parseInt(document.getElementById('modal_warranty_months').value) || 0;
@@ -365,7 +742,7 @@ document.querySelector('#addAssetModal form').addEventListener('submit', functio
         alert('Purchase Date is required when Warranty Duration is entered.');
     }
 });
-    
+
 // Sort a select dropdown alphabetically, keeping the placeholder option in place
 function sortSelect(selectEl) {
     const placeholder = selectEl.options[0];
@@ -381,7 +758,7 @@ function toggleInline(id) {
     const el = document.getElementById(id);
     el.style.display = el.style.display === 'none' ? 'block' : 'none';
 }
- 
+
 // Load subcategories when category changes
 function loadSubcategories() {
     const categoryId = document.getElementById('category').value;
@@ -402,11 +779,11 @@ function loadSubcategories() {
                 option.textContent = sub.name;
                 subcategorySelect.appendChild(option);
             });
-            sortSelect(subcategorySelect); // ← ADD THIS LINE
+            sortSelect(subcategorySelect);
         })
         .catch(error => console.error('Error loading subcategories:', error));
 }
- 
+
 // Save new Category
 function saveCategory() {
     const name = document.getElementById('newCategoryName').value.trim();
@@ -428,7 +805,7 @@ function saveCategory() {
             select.appendChild(option);
             select.value = data.category.id;
             document.getElementById('newCategoryName').value = '';
-            sortSelect(select);           
+            sortSelect(select);
             toggleInline('newCategoryRow');
             loadSubcategories();
         } else {
@@ -501,13 +878,13 @@ function saveSupplier() {
     })
     .catch(() => alert('Error saving supplier.'));
 }
- 
+
 // Auto-calculate warranty expiry date from purchase date + months (modal)
 document.addEventListener('DOMContentLoaded', function () {
     const modalMonths = document.getElementById('modal_warranty_months');
     const modalPurchaseDate = document.getElementById('modal_purchase_date');
     const modalExpiry = document.getElementById('modal_warranty_expiry');
- 
+
     function calcModalExpiry() {
         const purchaseDate = modalPurchaseDate.value;
         const months = parseInt(modalMonths.value);
@@ -517,11 +894,11 @@ document.addEventListener('DOMContentLoaded', function () {
             modalExpiry.value = expiry.toISOString().split('T')[0];
         }
     }
- 
+
     if (modalMonths) modalMonths.addEventListener('input', calcModalExpiry);
     if (modalPurchaseDate) modalPurchaseDate.addEventListener('change', calcModalExpiry);
 });
- 
+
 // Get CSRF token from cookie
 function getCsrfToken() {
     const name = 'csrftoken';
@@ -532,7 +909,7 @@ function getCsrfToken() {
     }
     return '';
 }
- 
+
 // Confirm delete
 function confirmDelete(assetId, assetName) {
     if (confirm(`Are you sure you want to delete "${assetName}"?\n\nThis will also delete all maintenance records for this asset.`)) {
@@ -542,7 +919,7 @@ function confirmDelete(assetId, assetName) {
     }
 }
 </script>
- 
+
 {% else %}
   <div class="alert alert-warning text-center" role="alert">
     <h4 class="alert-heading">Access Restricted</h4>
@@ -551,5 +928,5 @@ function confirmDelete(assetId, assetName) {
     <a href="{% url 'home' %}" class="btn btn-info">Back to Home</a>
   </div>
 {% endif %}
- 
+
 {% endblock %}

@@ -5,7 +5,7 @@
 
 {% block content %}
 
-<h2><center>ASSET DETAILS</center></h2>
+<h2 class="page-title-h2"><center>ASSET DETAILS</center></h2>
 <br/>
 
 {% for msg in messages %}
@@ -27,102 +27,98 @@
 {% endfor %}
 
 <!-- Action Buttons -->
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
+<div class="page-action-buttons">
+    <div class="action-buttons-left">
         {% if perms.auth.can_edit_properties %}
             <a href="{% url 'edit_asset' asset.id %}" class="btn btn-warning">
                 <i class="fas fa-edit"></i> Edit Asset
             </a>
-            <form method="post" action="{% url 'delete_asset' asset.id %}" style="display: inline; margin-left: 5px;" onsubmit="return confirm('Are you sure you want to delete this asset and all its maintenance records?');">
+            <form method="post" action="{% url 'delete_asset' asset.id %}" class="delete-asset-form" onsubmit="return confirm('Are you sure you want to delete this asset and all its maintenance records?');">
                 {% csrf_token %}
                 <button type="submit" class="btn btn-danger">
                     <i class="fas fa-trash"></i> Delete Asset
                 </button>
             </form>
         {% else %}
-            <span class="btn btn-warning" style="opacity:0.6; cursor:not-allowed; pointer-events:none;">
+            <span class="btn btn-warning disabled-btn">
                 <i class="fas fa-edit"></i> Edit Asset
             </span>
-            <span class="btn btn-danger" style="opacity:0.6; cursor:not-allowed; pointer-events:none; margin-left: 5px;">
+            <span class="btn btn-danger disabled-btn">
                 <i class="fas fa-trash"></i> Delete Asset
             </span>
         {% endif %}
     </div>
-    <a href="{% url 'property_assets' asset.property.prop_id %}?next={{ request.GET.next }}" class="btn btn-info">
+    <a href="{% url 'property_assets' asset.property.prop_id %}?next={{ request.GET.next }}" class="btn btn-info action-btn-back">
         <i class="fas fa-arrow-left"></i> Back
     </a>
 </div>
 
 <!-- Asset Information Card -->
-<div class="card mb-4">
+<div class="card mb-4 detail-card">
     <div class="card-header bg-primary text-white">
         <h4 class="mb-0"><i class="fas fa-box"></i> {{ asset.name }}</h4>
     </div>
     <div class="card-body">
-        <div class="row">
-            <div class="col-md-6">
-                <table class="table table-borderless">
-                    <tr>
-                        <th style="width: 40%">Property:</th>
-                        <td>{{ asset.property.prop_name }}</td>
-                    </tr>
-                    <tr>
-                        <th>Category:</th>
-                        <td>{{ asset.category.name }} &rarr; {{ asset.subcategory.name }}</td>
-                    </tr>
-                    <tr>
-                        <th>Location/Room:</th>
-                        <td>{{ asset.location_room }}</td>
-                    </tr>
-                    <tr>
-                        <th>Brand:</th>
-                        <td>{{ asset.brand_manufacturer|default:"N/A" }}</td>
-                    </tr>
-                </table>
+        <div class="detail-groups">
+            <!-- Left column on desktop -->
+            <div class="detail-group">
+                <div class="detail-row">
+                    <span class="detail-label">Property:</span>
+                    <span class="detail-value">{{ asset.property.prop_name }}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Category:</span>
+                    <span class="detail-value">{{ asset.category.name }} &rarr; {{ asset.subcategory.name }}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Location/Room:</span>
+                    <span class="detail-value">{{ asset.location_room }}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Brand:</span>
+                    <span class="detail-value">{{ asset.brand_manufacturer|default:"N/A" }}</span>
+                </div>
             </div>
-            <div class="col-md-6">
-                <table class="table table-borderless">
-                    <tr>
-                        <th style="width: 40%">Purchase Date:</th>
-                        <td>{{ asset.purchase_date|date:"F d, Y" }}</td>
-                    </tr>
-                    <tr>
-                        <th>Supplier:</th>
-                        <td>{% if asset.supplier %}{{ asset.supplier.name }}{% else %}N/A{% endif %}</td>
-                    </tr>
-                    <tr>
-                        <th>Purchase Price:</th>
-                        <td>{% if asset.purchase_price %}&euro;{{ asset.purchase_price }}{% else %}N/A{% endif %}</td>
-                    </tr>
-                    <tr>
-                        <th>Invoice:</th>
-                        <td>
-                            {% if asset.purchase_invoice %}
-                                <button type="button" class="btn btn-sm btn-info" onclick="viewInvoice('{{ asset.purchase_invoice.url }}', '{{ asset.purchase_invoice.name }}')">
-                                    <i class="fas fa-file-pdf"></i> View Invoice
-                                </button>
-                            {% else %}
-                                N/A
-                            {% endif %}
-                        </td>
-                    </tr>
-                </table>
+            <!-- Right column on desktop -->
+            <div class="detail-group">
+                <div class="detail-row">
+                    <span class="detail-label">Purchase Date:</span>
+                    <span class="detail-value">{{ asset.purchase_date|date:"F d, Y" }}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Supplier:</span>
+                    <span class="detail-value">{% if asset.supplier %}{{ asset.supplier.name }}{% else %}N/A{% endif %}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Purchase Price:</span>
+                    <span class="detail-value">{% if asset.purchase_price %}&euro;{{ asset.purchase_price }}{% else %}N/A{% endif %}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Invoice:</span>
+                    <span class="detail-value">
+                        {% if asset.purchase_invoice %}
+                            <button type="button" class="btn btn-sm btn-info" onclick="viewInvoice('{{ asset.purchase_invoice.url }}', '{{ asset.purchase_invoice.name }}')">
+                                <i class="fas fa-file-pdf"></i> View Invoice
+                            </button>
+                        {% else %}
+                            N/A
+                        {% endif %}
+                    </span>
+                </div>
             </div>
         </div>
 
         {% if asset.notes %}
-        <div class="row mt-3">
-            <div class="col-md-12">
-                <h6><strong>Notes:</strong></h6>
-                <p class="text-muted">{{ asset.notes }}</p>
-            </div>
+        <div class="notes-section">
+            <h6><strong>Notes:</strong></h6>
+            <p class="text-muted">{{ asset.notes }}</p>
         </div>
         {% endif %}
     </div>
 </div>
 
 <!-- Warranty Information Card -->
-<div class="card mb-4">
+<div class="card mb-4 detail-card">
     <div class="card-header {% if asset.is_warranty_active %}bg-success{% else %}bg-secondary{% endif %} text-white">
         <h5 class="mb-0">
             <i class="fas fa-shield-alt"></i> Warranty Information
@@ -134,130 +130,136 @@
         </h5>
     </div>
     <div class="card-body">
-        <div class="row">
-            <div class="col-md-4">
-                <strong>Duration:</strong><br>
-                {% if asset.warranty_duration_months %}
-                    {{ asset.warranty_duration_months }} months
-                {% else %}
-                    N/A
-                {% endif %}
+        <div class="warranty-grid">
+            <div class="warranty-item">
+                <div class="warranty-label">Duration</div>
+                <div class="warranty-value">
+                    {% if asset.warranty_duration_months %}
+                        {{ asset.warranty_duration_months }} months
+                    {% else %}
+                        N/A
+                    {% endif %}
+                </div>
             </div>
-            <div class="col-md-4">
-                <strong>Expiry Date:</strong><br>
-                {% if asset.warranty_expiry_date %}
-                    {{ asset.warranty_expiry_date|date:"F d, Y" }}
-                {% else %}
-                    N/A
-                {% endif %}
+            <div class="warranty-item">
+                <div class="warranty-label">Expiry Date</div>
+                <div class="warranty-value">
+                    {% if asset.warranty_expiry_date %}
+                        {{ asset.warranty_expiry_date|date:"F d, Y" }}
+                    {% else %}
+                        N/A
+                    {% endif %}
+                </div>
             </div>
-            <div class="col-md-4">
-                <strong>Days Remaining:</strong><br>
-                {% if asset.is_warranty_active %}
-                    <span class="text-success">{{ asset.warranty_days_remaining }} days</span>
-                {% else %}
-                    <span class="text-muted">&mdash;</span>
-                {% endif %}
+            <div class="warranty-item">
+                <div class="warranty-label">Days Remaining</div>
+                <div class="warranty-value">
+                    {% if asset.is_warranty_active %}
+                        <span class="text-success">{{ asset.warranty_days_remaining }} days</span>
+                    {% else %}
+                        <span class="text-muted">&mdash;</span>
+                    {% endif %}
+                </div>
             </div>
         </div>
     </div>
 </div>
 
 <!-- Maintenance History Card -->
-<div class="card mb-4">
+<div class="card mb-4 detail-card">
     <div class="card-header bg-info text-white">
-        <h5 class="mb-0">
-            <i class="fas fa-wrench"></i> Maintenance History
+        <div class="card-header-row">
+            <h5 class="mb-0">
+                <i class="fas fa-wrench"></i> Maintenance History
+            </h5>
             {% if perms.auth.can_edit_properties %}
-                <button type="button" class="btn btn-sm btn-light float-right" data-toggle="modal" data-target="#addMaintenanceModal">
+                <button type="button" class="btn btn-sm btn-light" data-toggle="modal" data-target="#addMaintenanceModal">
                     <i class="fas fa-plus"></i> Add Record
                 </button>
             {% else %}
-                <span class="btn btn-sm btn-light float-right" style="opacity:0.6; cursor:not-allowed; pointer-events:none;">
+                <span class="btn btn-sm btn-light disabled-btn">
                     <i class="fas fa-plus"></i> Add Record
                 </span>
             {% endif %}
-        </h5>
+        </div>
     </div>
     <div class="card-body">
         {% if maintenance_records %}
-            <div class="alert alert-secondary">
+            <div class="alert alert-secondary maintenance-total">
                 <strong>Total Maintenance Cost:</strong> &euro;{{ total_maintenance_cost|default:"0.00" }}
             </div>
 
-            <div class="table-responsive">
-                <table class="table table-bordered table-striped">
-                    <thead>
-                        <tr>
-                            <th style="width: 12%">Date</th>
-                            <th style="width: 13%">Type</th>
-                            <th style="width: 30%">Description</th>
-                            <th style="width: 13%">Service Provider</th>
-                            <th style="width: 9%">Cost (&euro;)</th>
-                            <th style="width: 8%; text-align: center;">Invoice</th>
-                            <th style="width: 15%; text-align: center;">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for record in maintenance_records %}
-                        <tr>
-                            <td>{{ record.date|date:"Y-m-d" }}</td>
-                            <td>
-                                <span class="badge badge-{% if record.maintenance_type == 'scheduled' %}info{% elif record.maintenance_type == 'repair' %}warning{% elif record.maintenance_type == 'inspection' %}primary{% elif record.maintenance_type == 'cleaning' %}success{% elif record.maintenance_type == 'service' %}dark{% else %}secondary{% endif %}">
-                                    {{ record.get_maintenance_type_display }}
-                                </span>
-                            </td>
-                            <td>{{ record.description }}</td>
-                            <td>{{ record.service_provider|default:"&mdash;" }}</td>
-                            <td style="text-align: right; font-family: 'Courier New', monospace;">
-                                {% if record.cost %}&euro;{{ record.cost }}{% else %}&mdash;{% endif %}
-                            </td>
-                            <td style="text-align: center;">
-                                {% if record.invoice %}
-                                    <button type="button" class="btn btn-sm btn-info" onclick="viewInvoice('{{ record.invoice.url }}', '{{ record.invoice.name }}')">
-                                        <i class="fas fa-file-invoice"></i>
-                                    </button>
-                                {% else %}
-                                    <span class="text-muted">&mdash;</span>
-                                {% endif %}
-                            </td>
-                            <td style="text-align: center;">
-                                {% if perms.auth.can_edit_properties %}
-                                    <button type="button" class="btn btn-sm btn-warning"
-                                        onclick="openEditMaintenance(
-                                            {{ record.id }},
-                                            '{{ record.date|date:'Y-m-d' }}',
-                                            '{{ record.maintenance_type }}',
-                                            '{{ record.description|escapejs }}',
-                                            '{{ record.service_provider|default:''|escapejs }}',
-                                            '{{ record.cost|default:'' }}'
-                                        )">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                    <button type="button" class="btn btn-sm btn-danger" onclick="confirmDeleteMaintenance({{ record.id }})">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                {% else %}
-                                    <button type="button" class="btn btn-sm btn-warning" disabled style="opacity:0.5;">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                    <button type="button" class="btn btn-sm btn-danger" disabled style="opacity:0.5;">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                {% endif %}
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
+            <table class="maintenance-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Type</th>
+                        <th>Description</th>
+                        <th>Service Provider</th>
+                        <th class="text-right">Cost (&euro;)</th>
+                        <th class="text-center">Invoice</th>
+                        <th class="text-center">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for record in maintenance_records %}
+                    <tr>
+                        <td data-label="Date">{{ record.date|date:"Y-m-d" }}</td>
+                        <td data-label="Type">
+                            <span class="badge badge-{% if record.maintenance_type == 'scheduled' %}info{% elif record.maintenance_type == 'repair' %}warning{% elif record.maintenance_type == 'inspection' %}primary{% elif record.maintenance_type == 'cleaning' %}success{% elif record.maintenance_type == 'service' %}dark{% else %}secondary{% endif %}">
+                                {{ record.get_maintenance_type_display }}
+                            </span>
+                        </td>
+                        <td data-label="Description">{{ record.description }}</td>
+                        <td data-label="Service Provider">{{ record.service_provider|default:"&mdash;" }}</td>
+                        <td data-label="Cost" class="text-right cost-cell">
+                            {% if record.cost %}&euro;{{ record.cost }}{% else %}&mdash;{% endif %}
+                        </td>
+                        <td data-label="Invoice" class="text-center">
+                            {% if record.invoice %}
+                                <button type="button" class="btn btn-sm btn-info" onclick="viewInvoice('{{ record.invoice.url }}', '{{ record.invoice.name }}')">
+                                    <i class="fas fa-file-invoice"></i>
+                                </button>
+                            {% else %}
+                                <span class="text-muted">&mdash;</span>
+                            {% endif %}
+                        </td>
+                        <td data-label="Action" class="text-center action-cell">
+                            {% if perms.auth.can_edit_properties %}
+                                <button type="button" class="btn btn-sm btn-warning"
+                                    onclick="openEditMaintenance(
+                                        {{ record.id }},
+                                        '{{ record.date|date:'Y-m-d' }}',
+                                        '{{ record.maintenance_type }}',
+                                        '{{ record.description|escapejs }}',
+                                        '{{ record.service_provider|default:''|escapejs }}',
+                                        '{{ record.cost|default:'' }}'
+                                    )">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-danger" onclick="confirmDeleteMaintenance({{ record.id }})">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            {% else %}
+                                <button type="button" class="btn btn-sm btn-warning disabled-btn">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button type="button" class="btn btn-sm btn-danger disabled-btn">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         {% else %}
             {% if perms.auth.can_edit_properties %}
-                <div class="alert alert-info">
+                <div class="alert alert-info maintenance-empty">
                     <i class="fas fa-info-circle"></i> No maintenance records yet. Click "Add Record" to log maintenance or repairs.
                 </div>
             {% else %}
-                <div class="alert alert-info">
+                <div class="alert alert-info maintenance-empty">
                     <i class="fas fa-info-circle"></i> No maintenance records yet.
                 </div>
             {% endif %}
@@ -267,7 +269,7 @@
 
 <!-- Add Maintenance Modal -->
 <div class="modal fade" id="addMaintenanceModal" tabindex="-1" role="dialog">
-    <div class="modal-dialog" role="document">
+    <div class="modal-dialog modal-fullscreen-mobile" role="document">
         <div class="modal-content">
             <form method="post" action="{% url 'add_maintenance' asset.id %}" enctype="multipart/form-data">
                 {% csrf_token %}
@@ -327,7 +329,7 @@
 
 <!-- Edit Maintenance Modal -->
 <div class="modal fade" id="editMaintenanceModal" tabindex="-1" role="dialog">
-    <div class="modal-dialog" role="document">
+    <div class="modal-dialog modal-fullscreen-mobile" role="document">
         <div class="modal-content">
             <form method="post" id="editMaintenanceForm" enctype="multipart/form-data">
                 {% csrf_token %}
@@ -387,7 +389,7 @@
 
 <!-- Invoice Viewer Modal -->
 <div class="modal fade" id="invoiceViewerModal" tabindex="-1" role="dialog">
-    <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-dialog modal-lg modal-fullscreen-mobile" role="document">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Invoice / Receipt</h5>
@@ -416,6 +418,415 @@
 <form id="deleteMaintenanceForm" method="post" style="display: none;">
     {% csrf_token %}
 </form>
+
+<style>
+/* ==================== DESKTOP STYLES ==================== */
+
+.page-title-h2 {
+    margin-top: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+/* Top action buttons */
+.page-action-buttons {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 1.5rem;
+}
+.action-buttons-left {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+.delete-asset-form {
+    display: inline;
+    margin: 0;
+}
+.disabled-btn {
+    opacity: 0.6;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* Detail card */
+.detail-card {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+.detail-card .card-header h4,
+.detail-card .card-header h5 {
+    color: white;
+}
+
+/* Card-header row (heading + button) */
+.card-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Detail groups grid (Asset Information card) */
+.detail-groups {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 25px;
+}
+.detail-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.detail-row {
+    display: flex;
+    gap: 12px;
+    line-height: 1.5;
+}
+.detail-label {
+    font-weight: 600;
+    color: #343a40;
+    min-width: 130px;
+}
+.detail-value {
+    color: #495057;
+    flex: 1;
+}
+
+/* Notes section (below detail-groups) */
+.notes-section {
+    margin-top: 18px;
+    padding-top: 14px;
+    border-top: 1px solid #e9ecef;
+}
+
+/* Warranty grid (3 cols on desktop) */
+.warranty-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 20px;
+}
+.warranty-item {
+    text-align: left;
+}
+.warranty-label {
+    font-weight: 600;
+    color: #343a40;
+    margin-bottom: 4px;
+}
+.warranty-value {
+    color: #495057;
+}
+
+/* Maintenance total alert */
+.maintenance-total {
+    margin-bottom: 16px;
+}
+
+/* Maintenance table — desktop */
+.maintenance-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+}
+.maintenance-table thead tr {
+    background-color: #2c3e50;
+    color: white;
+}
+.maintenance-table th {
+    padding: 10px 8px;
+    text-align: left;
+    border: 1px solid #34495e;
+    font-weight: 600;
+}
+.maintenance-table th.text-right {
+    text-align: right;
+}
+.maintenance-table th.text-center {
+    text-align: center;
+}
+.maintenance-table td {
+    padding: 8px;
+    border: 1px solid #dee2e6;
+    vertical-align: middle;
+}
+.maintenance-table td.text-right {
+    text-align: right;
+}
+.maintenance-table td.text-center {
+    text-align: center;
+}
+.maintenance-table .cost-cell {
+    font-family: 'Courier New', monospace;
+}
+.maintenance-table tbody tr:nth-child(even) {
+    background-color: #f8f9fa;
+}
+.maintenance-table .action-cell .btn {
+    margin-right: 4px;
+}
+.maintenance-table .action-cell .btn:last-child {
+    margin-right: 0;
+}
+
+.maintenance-empty {
+    margin-bottom: 0;
+}
+
+/* ==================== MOBILE STYLES (≤768px) ==================== */
+@media (max-width: 768px) {
+
+    .page-title-h2 {
+        font-size: 1.25rem;
+    }
+
+    /* Action buttons row — stack into 3-row grid: [Edit | Delete] / [Back] */
+    .page-action-buttons {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 8px;
+        margin-bottom: 1rem;
+    }
+    .action-buttons-left {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        width: 100%;
+    }
+    .action-buttons-left .btn,
+    .action-buttons-left .disabled-btn,
+    .action-buttons-left .delete-asset-form {
+        width: 100%;
+        margin: 0;
+    }
+    .action-buttons-left .delete-asset-form .btn {
+        width: 100%;
+    }
+    .action-btn-back {
+        width: 100%;
+        text-align: center;
+        padding: 10px 12px;
+    }
+
+    /* Card heading row — wrap, "Add Record" button slides below */
+    .card-header-row {
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+    .card-header-row .btn {
+        margin-left: 0;
+    }
+
+    .detail-card .card-body {
+        padding: 14px;
+    }
+    .detail-card .card-header {
+        padding: 10px 14px;
+    }
+    .detail-card .card-header h4,
+    .detail-card .card-header h5 {
+        font-size: 1.05rem;
+    }
+
+    /* Detail groups → single column, stacked label/value */
+    .detail-groups {
+        grid-template-columns: 1fr;
+        gap: 14px;
+    }
+    .detail-group {
+        gap: 12px;
+    }
+    .detail-row {
+        flex-direction: column;
+        gap: 2px;
+    }
+    .detail-label {
+        min-width: 0;
+        font-size: 12px;
+        color: #6c757d;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+    }
+    .detail-value {
+        font-size: 14px;
+    }
+
+    /* Notes section */
+    .notes-section {
+        margin-top: 12px;
+        padding-top: 10px;
+    }
+
+    /* Warranty grid → stacked label/value rows */
+    .warranty-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+    .warranty-item {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid #f1f3f5;
+    }
+    .warranty-item:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+    .warranty-label {
+        font-size: 12px;
+        color: #6c757d;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+        margin-bottom: 2px;
+    }
+    .warranty-value {
+        font-size: 14px;
+    }
+
+    /* Maintenance table → cards */
+    .maintenance-table {
+        border: none;
+        background: transparent;
+    }
+    .maintenance-table thead {
+        display: none;
+    }
+    .maintenance-table,
+    .maintenance-table tbody,
+    .maintenance-table tr,
+    .maintenance-table td {
+        display: block;
+        width: 100%;
+    }
+    .maintenance-table tbody tr {
+        background: white !important;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        margin-bottom: 12px;
+        padding: 12px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+    }
+    .maintenance-table tbody tr:nth-child(even) {
+        background: white !important;
+    }
+    .maintenance-table td {
+        border: none !important;
+        padding: 6px 0 !important;
+        text-align: left !important;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 8px;
+        min-height: 24px;
+    }
+    .maintenance-table td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        color: #495057;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+        flex-shrink: 0;
+        padding-top: 2px;
+    }
+    /* Description cell — full-width body text on mobile */
+    .maintenance-table td[data-label="Description"] {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .maintenance-table td[data-label="Description"]::before {
+        margin-bottom: 4px;
+    }
+    /* Date cell prominent at top */
+    .maintenance-table td[data-label="Date"] {
+        font-size: 14px;
+        font-weight: 600;
+        color: #2c3e50;
+        padding-bottom: 8px !important;
+        margin-bottom: 4px;
+        border-bottom: 1px solid #f1f3f5 !important;
+    }
+    /* Action cell — buttons in a row at the bottom */
+    .maintenance-table td[data-label="Action"] {
+        margin-top: 6px;
+        padding-top: 8px !important;
+        border-top: 1px solid #f1f3f5 !important;
+        justify-content: flex-end;
+    }
+    .maintenance-table td[data-label="Action"]::before {
+        margin-right: auto;
+    }
+    .maintenance-table td[data-label="Action"] .btn {
+        padding: 6px 12px;
+        margin-left: 4px;
+    }
+    /* Invoice cell — button right-aligned */
+    .maintenance-table td[data-label="Invoice"] {
+        justify-content: space-between;
+    }
+
+    /* ============= MODAL — full-screen on mobile ============= */
+    .modal-fullscreen-mobile {
+        max-width: 100%;
+        margin: 0;
+        padding: 0;
+    }
+    .modal-fullscreen-mobile .modal-content {
+        border-radius: 0;
+        min-height: 100vh;
+    }
+    .modal-fullscreen-mobile .modal-header,
+    .modal-fullscreen-mobile .modal-footer {
+        padding: 12px 14px;
+    }
+    .modal-fullscreen-mobile .modal-body {
+        padding: 14px;
+    }
+
+    /* Modal form fields — prevent iOS zoom-on-focus */
+    .modal-body .form-control,
+    .modal-body select.form-control,
+    .modal-body input[type="date"],
+    .modal-body input[type="number"],
+    .modal-body input[type="text"],
+    .modal-body textarea {
+        font-size: 16px;
+        padding: 10px 12px;
+    }
+    .modal-body label {
+        font-size: 13px;
+        margin-bottom: 4px;
+        font-weight: 600;
+    }
+    .modal-body .form-group {
+        margin-bottom: 14px;
+    }
+    .modal-body input[type="file"] {
+        font-size: 14px;
+    }
+
+    /* Modal footer — stack buttons full-width with primary on top */
+    .modal-fullscreen-mobile .modal-footer {
+        flex-direction: column-reverse;
+        gap: 8px;
+        align-items: stretch;
+    }
+    .modal-fullscreen-mobile .modal-footer .btn {
+        width: 100%;
+        margin: 0 !important;
+        padding: 12px;
+    }
+
+    /* Invoice viewer modal — iframe goes 70vh */
+    #invoiceViewerModal .modal-fullscreen-mobile iframe {
+        height: 70vh !important;
+    }
+    #invoiceViewerModal .modal-fullscreen-mobile img {
+        max-height: 70vh !important;
+    }
+}
+</style>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -451,7 +862,7 @@ function viewInvoice(url, filename) {
     $('#invoiceViewerModal').modal('show');
 }
 
-// Confirm delete asset
+// Confirm delete asset (kept for compatibility — current Edit/Delete uses inline form submit)
 function confirmDelete() {
     if (confirm('Are you sure you want to delete "{{ asset.name }}"?\n\nThis will also delete all maintenance records for this asset.\n\nThis action cannot be undone.')) {
         document.getElementById('deleteAssetForm').submit();

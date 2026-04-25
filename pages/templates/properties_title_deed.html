@@ -1,269 +1,176 @@
 {% extends 'base.html' %}
 {% load static %}
-{% load humanize %}
-{% block title %}Property Title Deeds{% endblock %}
+{% block title %}
+Title Deed - {{ property.prop_name }}
+{% endblock %}
 {% block content %}
-<h2><center>ALIVENTE ONLINE - PROPERTY TITLE DEEDS</center></h2>
-<h4><center>UPLOAD / VIEW / DELETE</center></h4>
-<br/>
-{% for msg in messages %}
-<div class="alert alert-secondary alert-dismissible fade show auto-dismiss" role="alert">
-  <strong></strong> <center>{{ msg }}</center>
-  <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-    <span aria-hidden="true">&times;</span>
-  </button>
-</div>
-<script>
-  setTimeout(function() {
-    document.querySelectorAll('.auto-dismiss').forEach(alert => {
-      alert.classList.remove('show');
-      alert.classList.add('fade');
-      setTimeout(() => alert.remove(), 500);
-    });
-  }, 2000);
-</script>
-{% endfor %}
-<div style="display: flex ; justify-content: flex-end">
-    <a href="{% url 'admin_apms' %}" class="btn btn-info" style="margin-right:16px" role="button">Back</a>
-</div>
-<br/>
-
 {% if perms.auth.can_access_properties %}
-
-<div>
-<table class="table table-bordered table-striped text-center">
-<thead>
-    <tr>
-        <th style="text-align: left; width: 21%">Property Name</th>
-        <th style="text-align: left; width: 25%">Address</th>
-        <th style="text-align: center; width: 8%">Year</th>
-        <th style="width: 8%">Area</th>
-        <th style="width: 8%">Status</th>
-        <th style="width: 15%">Title Deed</th>
-        <th style="width: 15%">Actions</th>
-    </tr>
-</thead>
-<tbody>
-    {% for property in properties %}
-    <tr>
-        <td style="text-align: left">{{ property.prop_name }}</td>
-        <td style="text-align: left">
-            {{ property.prop_address1 }}<br>
-            {% if property.prop_address2 %}{{ property.prop_address2 }}<br>{% endif %}
-            {{ property.prop_suburb }}, {{ property.prop_city }}
-        </td>
-        <td>{{ property.prop_year_built|default:"-" }}</td>
-        <td>{{ property.prop_floor_area|default:"-" }} m²</td>
-        <td>{{ property.prop_status|default:"-" }}</td>
-        <td>
-            {% if property.prop_title_deed %}
-                <button type="button" class="btn btn-sm btn-success" 
-                        onclick="viewDocument('{{ property.prop_title_deed.url }}', '{{ property.prop_title_deed.name }}', '{{ property.prop_name }}')">
-                    <i class="fas fa-file-contract"></i> View
-                </button>
-            {% else %}
-                <span>-</span>
-            {% endif %}
-        </td>
-        <td>
-            {% if perms.auth.can_edit_properties %}
-                {% if property.prop_title_deed %}
-                    <!-- Delete Button -->
-                    <button type="button" class="btn btn-sm btn-danger" onclick="deleteDocument({{ property.prop_id }}, '{{ property.prop_name }}')">
-                        <i class="fas fa-trash"></i> Delete
-                    </button>
-                {% else %}
-                    <!-- Upload Button -->
-                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="uploadDocument({{ property.prop_id }})">
-                        <i class="fas fa-upload"></i> Upload
-                    </button>
+<div class="report-container">
+    <div class="report-content">
+        <div class="header-container">
+            <div class="title-wrapper">
+                <h2 class="report-title">TITLE DEED ({{ property.prop_name }})</h2>
+                {% if property.prop_address %}
+                <h3 class="report-subtitle">{{ property.prop_address }}</h3>
                 {% endif %}
-            {% else %}
-                <span class="text-muted">-</span>
-            {% endif %}
-        </td>
-    </tr>
-    {% endfor %}
-</tbody>
-</table>    
-</div>
-
-{% if perms.auth.can_edit_properties %}
-<!-- Upload Document Modal -->
-<div class="modal fade" id="uploadModal" tabindex="-1" role="dialog" aria-labelledby="uploadModalLabel" aria-hidden="true">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="uploadModalLabel">Upload Title Deed</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="$('#uploadModal').modal('hide');">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-      <form method="post" enctype="multipart/form-data" id="uploadForm">
-        <div class="modal-body">
-          {% csrf_token %}
-          <input type="hidden" id="property_id" name="property_id">
-          <input type="hidden" name="action" value="upload">
-          
-          <div class="form-group">
-            <label for="title_deed">Select Title Deed (PDF, JPG, PNG):</label>
-            <input type="file" class="form-control-file" id="title_deed" name="title_deed" accept=".pdf,.jpg,.jpeg,.png" required>
-            <small class="form-text text-muted">Max file size: 10MB (Recommended: PDF format)</small>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="$('#uploadModal').modal('hide');">Cancel</button>
-          <button type="submit" class="btn btn-info">
-            <i class="fas fa-upload"></i> Upload Title Deed
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
-</div>
-
-<!-- Delete Confirmation Modal -->
-<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header bg-danger text-white">
-        <h5 class="modal-title" id="deleteModalLabel">Confirm Delete</h5>
-        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close" onclick="$('#deleteModal').modal('hide');">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-      <form method="post" id="deleteForm">
-        <div class="modal-body">
-          {% csrf_token %}
-          <input type="hidden" id="delete_property_id" name="property_id">
-          <input type="hidden" name="action" value="delete">
-          
-          <div class="text-center">
-            <i class="fas fa-exclamation-triangle fa-3x text-danger mb-3"></i>
-            <h5>Are you sure you want to delete this title deed?</h5>
-            <p class="text-muted">This action cannot be undone.</p>
-            <p><strong>Property:</strong> <span id="deletePropertyName"></span></p>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="$('#deleteModal').modal('hide');">Cancel</button>
-          <button type="submit" class="btn btn-danger">
-            <i class="fas fa-trash"></i> Delete Title Deed
-          </button>
-        </div>
-      </form>
-    </div>
-  </div>
-</div>
-{% endif %}
-
-<!-- View Document Modal -->
-<div class="modal fade" id="viewModal" tabindex="-1" role="dialog" aria-labelledby="viewModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="viewModalLabel">View Title Deed</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="$('#viewModal').modal('hide');">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-      <div class="modal-body">
-        <div id="documentViewer">
-          <!-- Document content will be loaded here -->
-        </div>
-      </div>
-      <div class="modal-footer">
-        <a id="downloadLink" href="#" target="_blank" class="btn btn-info">Download</a>
-        <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="$('#viewModal').modal('hide');">Close</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-{% endif %}
-
-<script>
-{% if perms.auth.can_edit_properties %}
-function uploadDocument(propertyId) {
-    document.getElementById('property_id').value = propertyId;
-    $('#uploadModal').modal('show');
-}
-
-function deleteDocument(propertyId, propertyName) {
-    document.getElementById('delete_property_id').value = propertyId;
-    document.getElementById('deletePropertyName').textContent = propertyName;
-    $('#deleteModal').modal('show');
-}
-{% endif %}
-
-function viewDocument(documentUrl, documentName, propertyName) {
-    const documentViewer = document.getElementById('documentViewer');
-    const downloadLink = document.getElementById('downloadLink');
-    const viewModalLabel = document.getElementById('viewModalLabel');
-
-    // Set modal heading
-    viewModalLabel.textContent = `Title Deed (${propertyName})`;
-
-    // Set download link
-    downloadLink.href = documentUrl;
-    downloadLink.download = documentName;
-
-    // Clear previous content
-    documentViewer.innerHTML = '';
-
-    // Get file extension
-    const extension = documentName.split('.').pop().toLowerCase();
-
-    if (extension === 'pdf') {
-        // Add URL parameters to hide toolbar and navigation panes
-        documentViewer.innerHTML = `
-            <embed src="${documentUrl}#toolbar=0&navpanes=0&scrollbar=0" type="application/pdf" width="100%" height="500px">
-            <p class="text-center mt-2">
-                <small>If the PDF doesn't display, <a href="${documentUrl}" target="_blank">click here to open it in a new tab</a></small>
-            </p>
-        `;
-        
-        // Alternative option using iframe (uncomment to use instead of embed)
-        /*
-        documentViewer.innerHTML = `
-            <iframe src="${documentUrl}#toolbar=0&navpanes=0&scrollbar=0" width="100%" height="500px" frameborder="0">
-                <p>Your browser does not support iframes. <a href="${documentUrl}" target="_blank">Click here to view the PDF</a></p>
-            </iframe>
-            <p class="text-center mt-2">
-                <small>If the PDF doesn't display, <a href="${documentUrl}" target="_blank">click here to open it in a new tab</a></small>
-            </p>
-        `;
-        */
-        
-    } else if (['jpg', 'jpeg', 'png'].includes(extension)) {
-        documentViewer.innerHTML = `
-            <img src="${documentUrl}" alt="Title Deed" class="img-fluid" style="max-width: 100%; height: auto;">
-        `;
-    } else {
-        documentViewer.innerHTML = `
-            <div class="text-center">
-                <i class="fas fa-file-contract fa-5x text-muted mb-3"></i>
-                <p>This file type cannot be previewed in the browser.</p>
-                <p>File: <strong>${documentName}</strong></p>
-                <p>Click the Download button below to view the file.</p>
             </div>
-        `;
+            <a href="{% url 'properties' %}" class="btn btn-info back-button" role="button">Back</a>
+        </div>
+
+        <div class="property-section">
+            <!-- Error message (only shows if PDF fails to load) -->
+            <div id="title-deeds-error" class="alert alert-warning" style="display: none;">
+                <p>Title deed not found for this property.</p>
+                <a href="#" class="btn btn-sm btn-primary" id="download-title-deed" download>Download Instead</a>
+            </div>
+            <!-- Title Deed PDF Viewer -->
+            {% with pdf_name=property.prop_name %}
+                {% static 'title_deeds/'|add:pdf_name|add:' - Title Deed.pdf' as pdf_url %}
+                <iframe
+                    src="{{ pdf_url }}"
+                    class="title-deed-iframe"
+                    title="Title Deed for {{ property.prop_name }}"
+                    onerror="handlePdfError(this)"
+                ></iframe>
+            {% endwith %}
+        </div>
+        <script>
+            function handlePdfError(iframe) {
+                iframe.style.display = 'none';
+                const errorDiv = document.getElementById('title-deeds-error');
+                errorDiv.style.display = 'block';
+
+                // Set up download link with cache busting
+                const downloadBtn = document.getElementById('download-title-deed');
+                const newUrl = "{% static 'title_deeds/' %}{{ property.prop_name }} - Title Deed.pdf?v=" + Date.now();
+                downloadBtn.href = newUrl;
+            }
+        </script>
+    </div>
+</div>
+<style>
+    /* ==================== DESKTOP STYLES ==================== */
+    .report-container {
+        display: flex;
+        justify-content: center;
+        width: 100%;
+        padding: 20px;
+        min-height: 80vh;
     }
 
-    $('#viewModal').modal('show');
-}
+    .report-content {
+        width: 90%;
+        max-width: 1200px;
+        background: white;
+        padding: 30px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
 
-{% if perms.auth.can_edit_properties %}
-// Auto-hide modals on form submission success
-$(document).ready(function() {
-    // Hide modals after successful form submission
-    $('#uploadForm, #deleteForm').on('submit', function() {
-        setTimeout(function() {
-            $('.modal').modal('hide');
-        }, 100);
-    });
-});
+    .header-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        gap: 20px;
+    }
+
+    .title-wrapper {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .report-title {
+        font-size: 1.8rem;
+        color: #2c3e50;
+        margin: 0;
+        font-weight: bold;
+        text-transform: uppercase;
+        word-wrap: break-word;
+    }
+
+    .report-subtitle {
+        font-size: 1.4rem;
+        color: #2c3e50;
+        margin: 5px 0 0 0;
+        font-weight: normal;
+    }
+
+    .back-button {
+        background-color: #17a2b8;
+        color: white;
+        padding: 8px 16px;
+        text-decoration: none;
+        border-radius: 4px;
+        font-weight: 500;
+        white-space: nowrap;
+        height: fit-content;
+    }
+
+    .back-button:hover {
+        background-color: #138496;
+        color: white;
+    }
+
+    /* PDF iframe — desktop fixed, mobile fluid */
+    .title-deed-iframe {
+        width: 100%;
+        height: 600px;
+        border: 1px solid #eee;
+        border-radius: 4px;
+        margin-top: 20px;
+        display: block;
+    }
+
+    .alert {
+        margin-top: 20px;
+        padding: 20px;
+        background-color: #fff3cd;
+        border-color: #ffeeba;
+        color: #856404;
+    }
+
+    /* ==================== MOBILE STYLES (≤768px) ==================== */
+    @media (max-width: 768px) {
+        .report-container {
+            padding: 8px;
+        }
+
+        .report-content {
+            width: 100%;
+            padding: 16px;
+            border-radius: 6px;
+        }
+
+        /* Header — stack title and Back button */
+        .header-container {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .report-title {
+            font-size: 1.3rem;
+        }
+
+        .report-subtitle {
+            font-size: 1.05rem;
+        }
+
+        .back-button {
+            width: 100%;
+            text-align: center;
+            padding: 10px 16px;
+        }
+
+        /* PDF viewer — fluid height on mobile */
+        .title-deed-iframe {
+            height: 70vh;
+            min-height: 400px;
+            margin-top: 12px;
+        }
+    }
+</style>
 {% endif %}
-</script>
-
 {% endblock %}

@@ -6,8 +6,8 @@
 
 {% block content %}
 
-<h2><center>ALIVENTE ONLINE - PROPERTIES</center></h2>
-<h4><center>EDIT EXISTING PROPERTY</center></h4>
+<h2 class="page-title-h2"><center>ALIVENTE ONLINE - PROPERTIES</center></h2>
+<h4 class="page-subtitle-h4"><center>EDIT EXISTING PROPERTY</center></h4>
 <br/>
 
 {% if perms.auth.can_edit_properties %}
@@ -15,51 +15,72 @@
 {% for results in props %}
 <form action="{% url 'properties_edit_commit' results.prop_id %}" method="post" onsubmit="return validatePropertyName()">
   {% csrf_token %}
-  <div style="display: flex ; justify-content: flex-end">
-      <a href="{% url 'property_assets' results.prop_id %}?next=edit" class="btn btn-info" style="margin-right:16px" role="button">
+
+  <!-- Action Buttons (Assets + Save + Back) -->
+  <div class="page-action-buttons page-action-buttons-edit">
+      <a href="{% url 'property_assets' results.prop_id %}?next=edit" class="btn btn-info action-btn-assets" role="button">
           <i class="fas fa-box"></i> Assets
       </a>
-      <button class="btn btn-info" style="margin-right:16px" type="submit">Save</button>
-      <a href="{% url 'properties' %}" class="btn btn-info" style="margin-right:16px" role="button">Back</a>
+      <button class="btn btn-info action-btn-save" type="submit">
+          <i class="fas fa-save"></i> Save
+      </button>
+      <a href="{% url 'properties' %}" class="btn btn-info action-btn-back" role="button">
+          <i class="fas fa-arrow-left"></i> Back
+      </a>
   </div>
-  
+
   <input type="hidden" id="original_prop_name" value="{{ results.prop_name }}">
-  
+
   <!-- Hidden fields for coordinates -->
   <input type="hidden" name="prop_latitude" id="prop_latitude" value="{{ results.prop_latitude|default:'' }}">
   <input type="hidden" name="prop_longitude" id="prop_longitude" value="{{ results.prop_longitude|default:'' }}">
-  
+
   <div class="form-row">
-    <div class="form-group col-md-4">
-      <label for="prop_name"><strong>Property Name</strong></label>
-      <input type="text" class="form-control" id="prop_name" name="prop_name" placeholder="Property Name" value="{{ results.prop_name }}" required>
-      <small id="nameError" class="text-danger d-none">A property with this name already exists.</small>
+    <div class="col-md-4">
+      <div class="form-group">
+        <label for="prop_name"><strong>Property Name</strong></label>
+        <input type="text" class="form-control" id="prop_name" name="prop_name" placeholder="Property Name" value="{{ results.prop_name }}" required>
+        <small id="nameError" class="text-danger d-none">A property with this name already exists.</small>
+      </div>
     </div>
   </div>
-    <div class="form-row">
-      <div class="form-group col-md-4">
+
+  <div class="form-row">
+    <div class="col-md-4">
+      <div class="form-group">
         <label for="prop_address1"><strong>Address</strong></label>
         <input type="text" class="form-control" id="prop_address1" name="prop_address1" placeholder="Address 1" value="{{results.prop_address1}}" required>
       </div>
-      <div class="form-group col-md-4">
+    </div>
+    <div class="col-md-4">
+      <div class="form-group">
         <label for="prop_address2"><strong>Address</strong></label>
         <input type="text" class="form-control" id="prop_address2" name="prop_address2" placeholder="Address 2" value="{{results.prop_address2}}">
       </div>
-      <div class="form-group col-md-4">
+    </div>
+    <div class="col-md-4">
+      <div class="form-group">
         <label for="prop_suburb"><strong>Suburb</strong></label>
         <input type="text" class="form-control" id="prop_suburb" name="prop_suburb" placeholder="Suburb" value="{{results.prop_suburb}}">
       </div>
     </div>
-    <div class="form-row">
-        <div class="form-group col-md-4">
+  </div>
+
+  <div class="form-row">
+    <div class="col-md-4">
+      <div class="form-group">
         <label for="prop_city"><strong>City</strong></label>
         <input type="text" class="form-control" id="prop_city" name="prop_city" placeholder="City" value="{{results.prop_city}}" required>
       </div>
-      <div class="form-group col-md-4">
+    </div>
+    <div class="col-md-4">
+      <div class="form-group">
         <label for="prop_province"><strong>Province</strong></label>
         <input type="text" class="form-control" id="prop_province" name="prop_province" placeholder="Province" value="{{results.prop_province}}">
       </div>
-      <div class="form-group col-md-2">
+    </div>
+    <div class="col-md-2">
+      <div class="form-group">
         <label for="prop_country"><strong>Country</strong></label>
         <select class="form-control" id="prop_country" name="prop_country" required>
           <option value="" disabled>Select Country</option>
@@ -73,29 +94,33 @@
           <option value="United Kingdom" {% if results.prop_country == 'United Kingdom' %}selected{% endif %}>United Kingdom</option>
         </select>
       </div>
-      <div class="form-group col-md-2">
+    </div>
+    <div class="col-md-2">
+      <div class="form-group">
         <label for="prop_pcode"><strong>Post Code</strong></label>
         <input type="text" class="form-control" id="prop_pcode" name="prop_pcode" placeholder="Post Code" value="{{results.prop_pcode}}" required>
       </div>
     </div>
-    
-    <!-- MAP SECTION -->
-    <div class="form-row">
-      <div class="form-group col-md-12">
+  </div>
+
+  <!-- MAP SECTION -->
+  <div class="form-row">
+    <div class="col-md-12">
+      <div class="form-group">
         <label><strong>Property Location on Map</strong></label>
-        <p class="text-muted small">Click on the map to set the exact property location</p>
+        <p class="text-muted small map-help-text">Click on the map to set the exact property location</p>
         <div class="map-container">
           <div id="propertyMap" class="property-location-map"></div>
-          <div class="map-controls mt-2">
-            <button type="button" id="findOnMapBtn" class="btn btn-primary btn-sm">
-              📍 Find Address on Map
+          <div class="map-controls">
+            <button type="button" id="findOnMapBtn" class="btn btn-primary btn-sm map-find-btn">
+              <i class="fas fa-map-marker-alt"></i> Find Address on Map
             </button>
-            <button type="button" id="clearLocationBtn" class="btn btn-warning btn-sm ml-2">
-              🗑️ Clear Location
+            <button type="button" id="clearLocationBtn" class="btn btn-warning btn-sm map-clear-btn">
+              <i class="fas fa-trash-alt"></i> Clear Location
             </button>
-            <div class="coordinates-display ml-3">
+            <div class="coordinates-display">
               <small class="text-muted">
-                <strong>Coordinates:</strong> 
+                <strong>Coordinates:</strong>
                 <span id="coordinatesDisplay">
                   {% if results.prop_latitude and results.prop_longitude %}
                     Latitude: {{ results.prop_latitude|floatformat:6 }}, Longitude: {{ results.prop_longitude|floatformat:6 }}
@@ -109,17 +134,23 @@
         </div>
       </div>
     </div>
-    
-    <div class="form-row">
-      <div class="form-group col-md-4">
+  </div>
+
+  <div class="form-row">
+    <div class="col-md-4">
+      <div class="form-group">
         <label for="prop_floor_area"><strong>Floor Area</strong></label>
         <input type="number" class="form-control" id="prop_floor_area" name="prop_floor_area" placeholder="Floor Area" value="{{results.prop_floor_area}}">
       </div>
-      <div class="form-group col-md-4">
+    </div>
+    <div class="col-md-4">
+      <div class="form-group">
         <label for="prop_year_built"><strong>Year Built</strong></label>
         <input type="number" class="form-control" id="prop_year_built" name="prop_year_built" placeholder="Year Built" value="{{results.prop_year_built}}">
       </div>
-      <div class="form-group col-md-4">
+    </div>
+    <div class="col-md-4">
+      <div class="form-group">
         <label for="prop_include_in_occupancy"><strong>Include in Occupancy Calculations</strong></label>
         <select id="prop_include_in_occupancy" class="form-control" name="prop_include_in_occupancy" required>
           {% if results.prop_include_in_occupancy %}
@@ -132,8 +163,11 @@
         </select>
       </div>
     </div>
-    <div class="form-row">
-      <div class="form-group col-md-4">
+  </div>
+
+  <div class="form-row">
+    <div class="col-md-4">
+      <div class="form-group">
         <label for="prop_status"><strong>Status</strong></label>
         <select id="prop_status" class="form-control" name="prop_status" required>
           <option disabled>Select Property Status</option>
@@ -148,8 +182,10 @@
             <option value="Inactive">Inactive</option>
           {% endif %}
         </select>
-      </div>    
-      <div class="form-group col-md-4">
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="form-group">
         <label for="prop_available_for_rent"><strong>Available For Rent</strong></label>
         <select id="prop_available_for_rent" class="form-control" name="prop_available_for_rent" required>
           <option disabled>Select if Available for Rent</option>
@@ -164,8 +200,10 @@
             <option value="No">No</option>
           {% endif %}
         </select>
-      </div>    
-      <div class="form-group col-md-4">
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="form-group">
         <label for="prop_title_deed_status"><strong>Title Deed Available</strong></label>
         <select id="prop_title_deed_status" class="form-control" name="prop_title_deed_status" required>
           <option disabled>Select if Title Deed is Available</option>
@@ -181,42 +219,79 @@
           {% endif %}
         </select>
       </div>
-    </div> 
-    <div class="form-row">
-      <div class="form-group col-md-4">
+    </div>
+  </div>
+
+  <div class="form-row">
+    <div class="col-md-4">
+      <div class="form-group">
         <label for="prop_electricity"><strong>Electricity Details</strong></label>
         <input type="text" class="form-control" id="prop_electricity" name="prop_electricity" placeholder="Electricity Details" value="{{results.prop_electricity}}">
       </div>
-      <div class="form-group col-md-4">
+    </div>
+    <div class="col-md-4">
+      <div class="form-group">
         <label for="prop_water"><strong>Water Details</strong></label>
         <input type="text" class="form-control" id="prop_water" name="prop_water" placeholder="Water Details" value="{{results.prop_water}}">
       </div>
-      <div class="form-group col-md-4">
+    </div>
+    <div class="col-md-4">
+      <div class="form-group">
         <label for="prop_refuse"><strong>Refuse Details</strong></label>
         <input type="text" class="form-control" id="prop_refuse" name="prop_refuse" placeholder="Refuse Details" value="{{results.prop_refuse}}">
       </div>
     </div>
-    <div class="form-row">
-      <div class="form-group col-md-4">
+  </div>
+
+  <div class="form-row">
+    <div class="col-md-4">
+      <div class="form-group">
         <label for="prop_property_tax"><strong>Property Tax Details</strong></label>
         <input type="text" class="form-control" id="prop_property_tax" name="prop_property_tax" placeholder="Property Tax Details" value="{{results.prop_property_tax}}">
       </div>
-      <div class="form-group col-md-4">
+    </div>
+    <div class="col-md-4">
+      <div class="form-group">
         <label for="prop_sewerage"><strong>Sewerage Details</strong></label>
         <input type="text" class="form-control" id="prop_sewerage" name="prop_sewerage" placeholder="Sewerage Details" value="{{results.prop_sewerage}}">
       </div>
-      <div class="form-group col-md-4">
+    </div>
+    <div class="col-md-4">
+      <div class="form-group">
         <label for="prop_insurance"><strong>Insurance Details</strong></label>
         <input type="text" class="form-control" id="prop_insurance" name="prop_insurance" placeholder="Insurance Details" value="{{results.prop_insurance}}">
       </div>
     </div>
- 
+  </div>
+
 </form>
 {% endfor %}
 
 {% endif %}
 
 <style>
+/* ==================== DESKTOP STYLES ==================== */
+
+.page-title-h2 {
+    margin-top: 0.5rem;
+    margin-bottom: 0;
+}
+.page-subtitle-h4 {
+    margin-top: 0.25rem;
+    margin-bottom: 1rem;
+}
+
+/* Top action buttons (Assets + Save + Back) — right-aligned on desktop */
+.page-action-buttons {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 1.5rem;
+}
+.page-action-buttons-edit {
+    justify-content: flex-end;
+}
+
+/* Map */
 .map-container {
     background-color: #f8f9fa;
     padding: 15px;
@@ -231,10 +306,16 @@
     margin-bottom: 10px;
 }
 
+.map-help-text {
+    margin-bottom: 8px;
+}
+
 .map-controls {
     display: flex;
     align-items: center;
     flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 8px;
 }
 
 .coordinates-display {
@@ -245,15 +326,87 @@
     display: inline-block;
 }
 
+/* ==================== MOBILE STYLES (≤768px) ==================== */
 @media (max-width: 768px) {
+
+    .page-title-h2 {
+        font-size: 1.25rem;
+    }
+    .page-subtitle-h4 {
+        font-size: 1rem;
+        margin-bottom: 0.75rem;
+    }
+
+    /* Action buttons — 3-column grid (Assets + Save + Back), each compact */
+    .page-action-buttons-edit {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 8px;
+        margin-bottom: 1rem;
+    }
+    .page-action-buttons-edit .btn {
+        width: 100%;
+        text-align: center;
+        padding: 10px 8px;
+        font-size: 13px;
+        margin: 0 !important;
+    }
+
+    /* Form — single column, prevent iOS zoom on focus */
+    .form-row {
+        margin-left: 0;
+        margin-right: 0;
+    }
+    .form-row > [class^="col-"] {
+        padding-left: 0;
+        padding-right: 0;
+    }
+    .form-group {
+        margin-bottom: 14px;
+    }
+    .form-control,
+    select.form-control,
+    input[type="date"].form-control,
+    input[type="number"].form-control,
+    input[type="text"].form-control {
+        font-size: 16px;
+        padding: 10px 12px;
+    }
+    label {
+        font-size: 13px;
+        margin-bottom: 4px;
+    }
+
+    /* Map — sized for phone */
+    .map-container {
+        padding: 10px;
+    }
+    .property-location-map {
+        height: 320px;
+        margin-bottom: 8px;
+    }
+    .map-help-text {
+        font-size: 12px;
+    }
+
+    /* Map controls — Find + Clear in a 2-col grid, coordinates below */
     .map-controls {
         flex-direction: column;
-        align-items: flex-start;
+        align-items: stretch;
+        gap: 8px;
     }
-    
+    .map-find-btn,
+    .map-clear-btn {
+        width: 100%;
+        padding: 10px 12px;
+        font-size: 14px;
+    }
     .coordinates-display {
         margin-left: 0 !important;
-        margin-top: 10px;
+        margin-top: 0;
+        text-align: center;
+        font-size: 12px;
+        word-break: break-word;
     }
 }
 </style>
@@ -269,23 +422,23 @@ const existingNames = {{ existing_names|safe }};
 function validatePropertyName() {
     const propName = document.getElementById('prop_name').value.trim();
     const originalName = document.getElementById('original_prop_name').value.trim();
-    
+
     // Skip validation if name hasn't changed
     if (propName.toLowerCase() === originalName.toLowerCase()) {
         return true;
     }
-    
+
     // Check for duplicates (case-insensitive)
-    const isDuplicate = existingNames.some(name => 
+    const isDuplicate = existingNames.some(name =>
         name.toLowerCase() === propName.toLowerCase()
     );
-    
+
     if (isDuplicate) {
         document.getElementById('nameError').classList.remove('d-none');
         alert('A property with this name already exists. Please choose a different name.');
         return false;
     }
-    
+
     document.getElementById('nameError').classList.add('d-none');
     return true;
 }
@@ -294,59 +447,59 @@ document.addEventListener('DOMContentLoaded', function() {
     // Get existing coordinates if editing
     var existingLat = document.getElementById('prop_latitude').value;
     var existingLng = document.getElementById('prop_longitude').value;
-    
+
     // Initialize the map
     var initialView = [35.1264, 33.4299]; // Default to Cyprus
     var initialZoom = 8;
-    
+
     if (existingLat && existingLng) {
         initialView = [parseFloat(existingLat), parseFloat(existingLng)];
         initialZoom = 15;
     }
-    
+
     var map = L.map('propertyMap').setView(initialView, initialZoom);
-    
+
     // Add OpenStreetMap tiles
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© OpenStreetMap contributors',
         maxZoom: 18
     }).addTo(map);
-    
+
     var currentMarker = null;
-    
+
     // Add existing marker if coordinates exist
     if (existingLat && existingLng) {
         var lat = parseFloat(existingLat);
         var lng = parseFloat(existingLng);
         currentMarker = L.marker([lat, lng]).addTo(map);
     }
-    
+
     // Handle map clicks
     map.on('click', function(e) {
         var lat = e.latlng.lat;
         var lng = e.latlng.lng;
-        
+
         // Remove existing marker
         if (currentMarker) {
             map.removeLayer(currentMarker);
         }
-        
+
         // Add new marker
         currentMarker = L.marker([lat, lng]).addTo(map);
-        
+
         // Update form fields
         document.getElementById('prop_latitude').value = lat.toFixed(8);
         document.getElementById('prop_longitude').value = lng.toFixed(8);
-        
+
         updateCoordinatesDisplay(lat, lng);
     });
-    
+
     // Update coordinates display
     function updateCoordinatesDisplay(lat, lng) {
-        document.getElementById('coordinatesDisplay').textContent = 
+        document.getElementById('coordinatesDisplay').textContent =
             `Latitude: ${lat.toFixed(6)}, Longitude: ${lng.toFixed(6)}`;
     }
-    
+
     // Find address on map button
     document.getElementById('findOnMapBtn').addEventListener('click', function() {
         var addressParts = [
@@ -354,41 +507,41 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('prop_city').value,
             document.getElementById('prop_country').value
         ].filter(part => part && part.trim() !== '');
-        
+
         if (addressParts.length === 0) {
             alert('Please enter at least a city and country to search for the location.');
             return;
         }
-        
+
         var address = addressParts.join(', ');
         var geocodeUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1`;
-        
+
         // Show loading
-        document.getElementById('findOnMapBtn').innerHTML = '🔍 Searching...';
+        document.getElementById('findOnMapBtn').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Searching...';
         document.getElementById('findOnMapBtn').disabled = true;
-        
+
         fetch(geocodeUrl)
             .then(response => response.json())
             .then(data => {
                 if (data && data.length > 0) {
                     var lat = parseFloat(data[0].lat);
                     var lng = parseFloat(data[0].lon);
-                    
+
                     // Remove existing marker
                     if (currentMarker) {
                         map.removeLayer(currentMarker);
                     }
-                    
+
                     // Add new marker
                     currentMarker = L.marker([lat, lng]).addTo(map);
                     map.setView([lat, lng], 15);
-                    
+
                     // Update form fields
                     document.getElementById('prop_latitude').value = lat.toFixed(8);
                     document.getElementById('prop_longitude').value = lng.toFixed(8);
-                    
+
                     updateCoordinatesDisplay(lat, lng);
-                    
+
                     alert('Location found! You can fine-tune the position by clicking on the map.');
                 } else {
                     alert('Location not found. Please try a different address or place the marker manually.');
@@ -400,11 +553,11 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .finally(() => {
                 // Reset button
-                document.getElementById('findOnMapBtn').innerHTML = '📍 Find Address on Map';
+                document.getElementById('findOnMapBtn').innerHTML = '<i class="fas fa-map-marker-alt"></i> Find Address on Map';
                 document.getElementById('findOnMapBtn').disabled = false;
             });
     });
-    
+
     // Clear location button
     document.getElementById('clearLocationBtn').addEventListener('click', function() {
         if (confirm('Are you sure you want to clear the property location?')) {
@@ -413,16 +566,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 map.removeLayer(currentMarker);
                 currentMarker = null;
             }
-            
+
             // Clear form fields
             document.getElementById('prop_latitude').value = '';
             document.getElementById('prop_longitude').value = '';
-            
+
             // Update display
             document.getElementById('coordinatesDisplay').textContent = 'Click on map to set location';
         }
     });
-    
+
     // Auto-center map when country changes
     document.getElementById('prop_country').addEventListener('change', function() {
         var country = this.value;
@@ -436,11 +589,17 @@ document.addEventListener('DOMContentLoaded', function() {
             'Germany': [51.1657, 10.4515],
             'United Kingdom': [55.3781, -3.4360]
         };
-        
+
         if (countryCoordinates[country]) {
             map.setView(countryCoordinates[country], 8);
         }
     });
+
+    // Mobile fix: Leaflet maps need to recalculate size when their container changes
+    // This handles the case where the container width changes during page load on mobile
+    setTimeout(function() {
+        map.invalidateSize();
+    }, 250);
 });
 </script>
 

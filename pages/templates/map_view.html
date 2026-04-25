@@ -4,23 +4,27 @@
 {% block title %}Properties Map View{% endblock %}
 
 {% block content %}
-<div class="map-container">
-    <div class="map-header">
-        <div>
-            <h2>Properties Map View</h2>
-            <p id="propertyCount" class="text-muted">Loading properties...</p>
+<div class="map-page-container">
+    <div class="map-page-header">
+        <div class="map-page-title-wrap">
+            <h2 class="map-page-title">Properties Map View</h2>
+            <p id="propertyCount" class="map-page-subtitle text-muted">Loading properties...</p>
         </div>
-        <div class="map-controls">
-            <button id="centerMapBtn" class="btn btn-info">Center Map</button>
-            <a href="{% url 'properties' %}" class="btn btn-info">Back</a>
+        <div class="map-page-controls">
+            <button id="centerMapBtn" class="btn btn-info">
+                <i class="fas fa-crosshairs"></i> Center Map
+            </button>
+            <a href="{% url 'properties' %}" class="btn btn-info">
+                <i class="fas fa-arrow-left"></i> Back
+            </a>
         </div>
     </div>
-    
+
     <div id="map" class="property-map"></div>
-    
+
     <!-- Property Info Modal -->
     <div id="propertyModal" class="modal fade" tabindex="-1" role="dialog">
-        <div class="modal-dialog" role="document">
+        <div class="modal-dialog modal-fullscreen-mobile" role="document">
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">Property Details</h5>
@@ -40,106 +44,154 @@
 </div>
 
 <style>
-    .map-container {
-        width: 100%;
-        height: 100vh;
-        padding: 20px;
-        box-sizing: border-box;
+/* ==================== DESKTOP STYLES ==================== */
+
+.map-page-container {
+    width: 100%;
+    height: 100vh;
+    padding: 20px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+}
+
+.map-page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    gap: 16px;
+    flex-shrink: 0;
+}
+
+.map-page-title-wrap {
+    flex: 1;
+    min-width: 0;
+}
+
+.map-page-title {
+    margin: 0;
+    color: #2c3e50;
+}
+
+.map-page-subtitle {
+    margin: 4px 0 0 0;
+    font-size: 14px;
+}
+
+.map-page-controls {
+    display: flex;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+.property-map {
+    flex: 1;
+    width: 100%;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    min-height: 400px;
+}
+
+/* Custom marker popup styles */
+.property-popup {
+    font-family: Arial, sans-serif;
+}
+
+.property-popup h4 {
+    margin: 0 0 10px 0;
+    color: #2c3e50;
+    font-size: 16px;
+}
+
+.property-popup p {
+    margin: 5px 0;
+    font-size: 14px;
+}
+
+.property-popup .status-active {
+    color: #28a745;
+    font-weight: bold;
+}
+
+.property-popup .status-inactive {
+    color: #dc3545;
+    font-weight: bold;
+}
+
+.property-popup .view-details {
+    color: #007bff;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.property-popup .view-details:hover {
+    text-decoration: underline;
+}
+
+/* ==================== MOBILE STYLES (≤768px) ==================== */
+@media (max-width: 768px) {
+
+    .map-page-container {
+        padding: 10px;
+        height: calc(100vh - 56px); /* leave room for the top nav */
+        min-height: 500px;
     }
-    
-    .map-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 15px;
-    }
-    
-    .map-header h2 {
-        margin: 0;
-        color: #2c3e50;
-    }
-    
-    .map-controls {
-        display: flex;
+
+    /* Header — stack title and controls vertically */
+    .map-page-header {
+        flex-direction: column;
+        align-items: stretch;
         gap: 10px;
+        margin-bottom: 10px;
     }
-    
-    .property-map {
+
+    .map-page-title {
+        font-size: 1.3rem;
+    }
+
+    .map-page-subtitle {
+        font-size: 12px;
+    }
+
+    /* Controls — 2-column grid (Center Map + Back) */
+    .map-page-controls {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+    }
+    .map-page-controls .btn {
         width: 100%;
-        height: calc(100vh - 120px);
-        border: 2px solid #ddd;
-        border-radius: 8px;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        text-align: center;
+        padding: 10px 12px;
+        margin: 0;
     }
-    
-    .btn {
-        padding: 8px 16px;
-        border: none;
-        border-radius: 4px;
-        text-decoration: none;
-        display: inline-block;
-        font-weight: 500;
-        cursor: pointer;
-        transition: background-color 0.3s;
+
+    /* Map — fills remaining height */
+    .property-map {
+        min-height: 60vh;
     }
-    
-    .btn-secondary {
-        background-color: #6c757d;
-        color: white;
+
+    /* Modal — full-screen on mobile */
+    .modal-fullscreen-mobile {
+        max-width: 100%;
+        margin: 0;
+        padding: 0;
     }
-    
-    .btn-secondary:hover {
-        background-color: #5a6268;
-        color: white;
-        text-decoration: none;
+    .modal-fullscreen-mobile .modal-content {
+        border-radius: 0;
+        min-height: 100vh;
     }
-    
-    .btn-info {
-        background-color: #17a2b8;
-        color: white;
-    }
-    
-    .btn-info:hover {
-        background-color: #138496;
-        color: white;
-        text-decoration: none;
-    }
-    
-    /* Custom marker popup styles */
-    .property-popup {
-        font-family: Arial, sans-serif;
-    }
-    
+
+    /* Popup typography — slightly smaller for mobile */
     .property-popup h4 {
-        margin: 0 0 10px 0;
-        color: #2c3e50;
-        font-size: 16px;
+        font-size: 15px;
     }
-    
     .property-popup p {
-        margin: 5px 0;
-        font-size: 14px;
+        font-size: 13px;
     }
-    
-    .property-popup .status-active {
-        color: #28a745;
-        font-weight: bold;
-    }
-    
-    .property-popup .status-inactive {
-        color: #dc3545;
-        font-weight: bold;
-    }
-    
-    .property-popup .view-details {
-        color: #007bff;
-        text-decoration: none;
-        font-weight: 500;
-    }
-    
-    .property-popup .view-details:hover {
-        text-decoration: underline;
-    }
+}
 </style>
 
 <!-- Include Leaflet CSS and JS -->
@@ -149,70 +201,70 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Map script starting...');
-    
+
     // Update status
     document.getElementById('propertyCount').textContent = 'Initializing map...';
-    
+
     // Initialize the map
     var map = L.map('map').setView([35.1264, 33.4299], 6);
-    
+
     // Add OpenStreetMap tiles
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© OpenStreetMap contributors',
         maxZoom: 18
     }).addTo(map);
-    
+
     // Store all markers for centering
     var markers = [];
-    
+
     // Get properties data - simple approach
     var rawPropertiesData = '{{ properties_json|escapejs }}';
     var properties = [];
-    
+
     try {
         properties = JSON.parse(rawPropertiesData);
         console.log('Properties loaded:', properties.length);
         console.log('First property:', properties[0]);
-        
+
         // Debug each property's coordinates
         properties.forEach(function(prop, index) {
-            console.log('Property ' + index + ':', prop.name, 
+            console.log('Property ' + index + ':', prop.name,
                        'Lat:', prop.latitude, '(type: ' + typeof prop.latitude + ')',
                        'Lng:', prop.longitude, '(type: ' + typeof prop.longitude + ')');
         });
-        
+
     } catch (error) {
         console.error('Error parsing properties:', error);
         document.getElementById('propertyCount').textContent = 'Error loading properties: ' + error.message;
         return;
     }
-    
+
     // Filter properties with coordinates
     var propertiesWithCoords = properties.filter(function(property) {
         var hasLat = property.latitude && property.latitude !== '' && property.latitude !== 'None' && property.latitude !== null;
         var hasLng = property.longitude && property.longitude !== '' && property.longitude !== 'None' && property.longitude !== null;
-        
-        console.log('Filtering property:', property.name, 
+
+        console.log('Filtering property:', property.name,
                    'hasLat:', hasLat, '(' + property.latitude + ')',
                    'hasLng:', hasLng, '(' + property.longitude + ')');
-        
+
         return hasLat && hasLng;
     });
-    
+
     console.log('Properties with coordinates:', propertiesWithCoords.length);
-    
+
     // Add properties to map
     propertiesWithCoords.forEach(function(property, index) {
         var lat = parseFloat(property.latitude);
         var lon = parseFloat(property.longitude);
-        
+
         if (isNaN(lat) || isNaN(lon)) {
             console.warn('Invalid coordinates for property:', property.name, lat, lon);
             return;
         }
-        
+
         console.log('Adding marker for:', property.name, 'at', lat, lon);
-        
+
         // Create location pin marker
         var icon = L.divIcon({
             className: 'custom-marker',
@@ -220,11 +272,11 @@ document.addEventListener('DOMContentLoaded', function() {
             iconSize: [20, 20],
             iconAnchor: [10, 20]
         });
-        
+
         // Create marker
         var marker = L.marker([lat, lon], { icon: icon }).addTo(map);
         markers.push(marker);
-        
+
         // Build complete address for display
         var addressParts = [
             property.address1,
@@ -238,27 +290,27 @@ document.addEventListener('DOMContentLoaded', function() {
         var displayAddress = addressParts.filter(function(part) {
             return part && part.trim() !== '';
         }).join(', ');
-        
+
         // Create popup content
         var popupContent = '<div class="property-popup">' +
             '<h4>' + (property.name || 'Property #' + property.id) + '</h4>' +
             '<p><strong>Address:</strong> ' + (displayAddress || 'Address not available') + '</p>' +
             '<p><strong>Status:</strong> <span class="status-' + (property.status ? property.status.toLowerCase() : 'unknown') + '">' + (property.status || 'Unknown') + '</span></p>' +
             '<p><strong>Available for Rent:</strong> ' + (property.available_for_rent || 'Unknown') + '</p>';
-        
+
         if (property.floor_area) {
             popupContent += '<p><strong>Floor Area:</strong> ' + property.floor_area + ' m²</p>';
         }
         if (property.year_built) {
             popupContent += '<p><strong>Year Built:</strong> ' + property.year_built + '</p>';
         }
-        
+
         popupContent += '<p><strong>Coordinates:</strong> ' + lat.toFixed(6) + ', ' + lon.toFixed(6) + '</p>' +
             '</div>';
-        
+
         marker.bindPopup(popupContent);
     });
-    
+
     // Update property count with user-friendly text
     if (propertiesWithCoords.length === properties.length) {
         // All properties are shown
@@ -268,11 +320,11 @@ document.addEventListener('DOMContentLoaded', function() {
         var missingCount = properties.length - propertiesWithCoords.length;
         var propertyWord = missingCount === 1 ? 'property' : 'properties';
         var verbWord = missingCount === 1 ? 'is' : 'are';
-        
-        document.getElementById('propertyCount').innerHTML = 
+
+        document.getElementById('propertyCount').innerHTML =
             '<small class="text-warning">' + missingCount + ' ' + propertyWord + ' without coordinates ' + verbWord + ' hidden</small>';
     }
-    
+
     // Function to center map on all markers
     function centerMapOnMarkers() {
         if (markers.length > 0) {
@@ -280,17 +332,22 @@ document.addEventListener('DOMContentLoaded', function() {
             map.fitBounds(group.getBounds().pad(0.1));
         }
     }
-    
+
     // Center map on load
     if (markers.length > 0) {
         centerMapOnMarkers();
     }
-    
+
     // Center map button functionality
     document.getElementById('centerMapBtn').addEventListener('click', function() {
         centerMapOnMarkers();
     });
-    
+
+    // Mobile fix: Leaflet maps need to recalculate size when their container changes
+    setTimeout(function() {
+        map.invalidateSize();
+    }, 250);
+
     console.log('Map initialization complete. Markers:', markers.length);
 });
 </script>

@@ -8,18 +8,18 @@
 
 {% block content %}
 
-<div class="container-fluid mt-4">
+<div class="container-fluid mt-4 property-detail-page">
     <!-- Header Section -->
     <div class="row mb-4">
         <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center">
-                <div>
+            <div class="page-header">
+                <div class="page-header-title">
                     <h2 class="mb-1">
                         {{ property.prop_name }}
                         {% if active_tenant and box_type == 'lease' %} ({{ active_tenant.tenant_name }}){% endif %}
                     </h2>
                 </div>
-                <div>
+                <div class="page-header-actions">
                     <a href="{% url 'property_management_dashboard' %}?property={{ property.prop_id }}" class="btn btn-info">
                         <i class="fas fa-home"></i> Property Dashboard
                     </a>
@@ -36,16 +36,16 @@
                     {% if box_type == 'title-deed' %}
                         <!-- Title Deed Content -->
                         <div class="title-deed-section">
-                            <h5><i class="fas fa-file-contract text-info"></i> Title Deed Information</h5>
+                            <h5 class="section-heading"><i class="fas fa-file-contract text-info"></i> Title Deed Information</h5>
                             {% if property.prop_title_deed %}
                                 <div class="document-viewer mt-3">
-                                    <div class="document-preview border p-3 rounded">
+                                    <div class="document-preview pdf-viewer-wrap border p-3 rounded">
                                         {% if property.prop_title_deed.name|slice:"-4:" == ".pdf" %}
-                                            <iframe src="{{ property.prop_title_deed.url }}#navpanes=0&scrollbar=1&page=1&view=FitH" width="100%" height="600px" style="border: 1px solid #ddd; border-radius: 4px;">
+                                            <iframe class="pdf-viewer-iframe" src="{{ property.prop_title_deed.url }}#navpanes=0&scrollbar=1&page=1&view=FitH">
                                                 <p>Your browser does not support PDFs. <a href="{{ property.prop_title_deed.url }}" target="_blank">Click here to view</a></p>
                                             </iframe>
                                         {% else %}
-                                            <img src="{{ property.prop_title_deed.url }}" alt="Title Deed" class="img-fluid" style="max-height: 600px; width: 100%;">
+                                            <img src="{{ property.prop_title_deed.url }}" alt="Title Deed" class="img-fluid pdf-viewer-image">
                                         {% endif %}
                                     </div>
                                 </div>
@@ -59,11 +59,11 @@
                     {% elif box_type == 'property-report' %}
                         <!-- Property Report Content -->
                         <div class="property-report-section">
-                            <h5><i class="fas fa-chart-line text-info"></i> Property Report</h5>
-                            
+                            <h5 class="section-heading"><i class="fas fa-chart-line text-info"></i> Property Report</h5>
+
                             <div class="property-card mt-3">
                                 <h3 class="property-name">{{ property.prop_name }}</h3>
-                                
+
                                 <div class="detail-groups">
                                     <!-- Property Address Section -->
                                     <div class="detail-group">
@@ -89,7 +89,7 @@
                                             </span>
                                         </div>
                                     </div>
-                                    
+
                                     <!-- Property Specifications -->
                                     <div class="detail-group">
                                         <h4 class="section-title">Property Specifications</h4>
@@ -102,7 +102,7 @@
                                             <span class="detail-value">{{ property.prop_year_built }}</span>
                                         </div>
                                     </div>
-                                    
+
                                     <!-- Utility Accounts -->
                                     <div class="detail-group">
                                         <h4 class="section-title">Utility Accounts</h4>
@@ -127,7 +127,7 @@
                                             <span class="detail-value">{{ property.prop_sewerage }}</span>
                                         </div>
                                     </div>
-                                    
+
                                     <!-- Insurance and Status -->
                                     <div class="detail-group">
                                         <h4 class="section-title">Insurance & Status</h4>
@@ -152,17 +152,17 @@
                             </div>
                             <!-- Asset Summary Section -->
                             {% if total_assets > 0 %}
-                            <div class="property-card" style="margin-top: 30px;">
-                                <div style="margin-bottom: 20px;">
-                                    <h3 class="property-name" style="margin-bottom: 0; border-bottom: none;">
+                            <div class="property-card mt-30">
+                                <div class="mb-20">
+                                    <h3 class="property-name no-border">
                                         <i class="fas fa-box"></i> Asset Summary
                                     </h3>
                                 </div>
-                                
+
                                 <!-- Asset Statistics Cards -->
-                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 25px;">
+                                <div class="stats-cards-grid">
                                     <!-- Stats Card -->
-                                    <div style="background: white; padding: 20px; border-radius: 8px; border-left: 4px solid #17a2b8;">
+                                    <div class="stats-card stats-card-info">
                                         <h4 class="section-title">Asset Statistics</h4>
                                         <div class="detail-row">
                                             <span class="detail-label">Total Assets:</span>
@@ -177,78 +177,78 @@
                                             <span class="badge" style="background-color: #dc3545; color: white;">{{ expired_warranties }}</span>
                                         </div>
                                     </div>
-                                    
+
                                     <!-- Financial Card -->
-                                    <div style="background: white; padding: 20px; border-radius: 8px; border-left: 4px solid #28a745;">
+                                    <div class="stats-card stats-card-success">
                                         <h4 class="section-title">Financial Summary</h4>
                                         <div class="detail-row">
                                             <span class="detail-label">Purchase Value:</span>
-                                            <span class="detail-value" style="font-family: 'Courier New', monospace;"><strong>€{{ total_purchase_value|floatformat:2|intcomma }}</strong></span>
+                                            <span class="detail-value money"><strong>€{{ total_purchase_value|floatformat:2|intcomma }}</strong></span>
                                         </div>
                                         <div class="detail-row">
                                             <span class="detail-label">Maintenance Cost:</span>
-                                            <span class="detail-value" style="font-family: 'Courier New', monospace;"><strong>€{{ total_maintenance_cost|floatformat:2|intcomma }}</strong></span>
+                                            <span class="detail-value money"><strong>€{{ total_maintenance_cost|floatformat:2|intcomma }}</strong></span>
                                         </div>
                                     </div>
                                 </div>
-                                
+
                                 <!-- Assets by Category -->
-                                <div style="margin-bottom: 25px;">
+                                <div class="categories-section">
                                     <h4 class="section-title">Assets by Category</h4>
-                                    <table style="width: 100%; border-collapse: collapse; background: white;">
+                                    <table class="categories-table">
                                         <thead>
-                                            <tr style="background-color: #2c3e50; color: white;">
-                                                <th style="padding: 12px; text-align: left; border: 1px solid #34495e;">Category</th>
-                                                <th style="padding: 12px; text-align: center; border: 1px solid #34495e; width: 150px;">Count</th>
+                                            <tr>
+                                                <th>Category</th>
+                                                <th class="count-col">Count</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             {% for cat in assets_by_category %}
                                             <tr>
-                                                <td style="padding: 10px; border: 1px solid #dee2e6;">{{ cat.category__name }}</td>
-                                                <td style="padding: 10px; text-align: center; border: 1px solid #dee2e6;"><strong>{{ cat.count }}</strong></td>
+                                                <td data-label="Category">{{ cat.category__name }}</td>
+                                                <td data-label="Count" class="count-col"><strong>{{ cat.count }}</strong></td>
                                             </tr>
                                             {% endfor %}
                                         </tbody>
                                     </table>
                                 </div>
-                                
+
                                 <!-- Asset Details Table -->
                                 <div>
                                     <h4 class="section-title">Asset Details</h4>
-                                    <table style="width: 100%; border-collapse: collapse; background: white; font-size: 0.9rem;">
+                                    <table class="assets-table">
                                         <thead>
-                                            <tr style="background-color: #2c3e50; color: white;">
-                                                <th style="padding: 10px; text-align: left; border: 1px solid #34495e;">Asset Name</th>
-                                                <th style="padding: 10px; text-align: left; border: 1px solid #34495e;">Category</th>
-                                                <th style="padding: 10px; text-align: left; border: 1px solid #34495e;">Location</th>
-                                                <th style="padding: 10px; text-align: center; border: 1px solid #34495e;">Purchase Date</th>
-                                                <th style="padding: 10px; text-align: left; border: 1px solid #34495e;">Supplier</th>
-                                                <th style="padding: 10px; text-align: center; border: 1px solid #34495e;">Warranty Expiry</th>
+                                            <tr>
+                                                <th>Asset Name</th>
+                                                <th>Category</th>
+                                                <th>Location</th>
+                                                <th class="text-center">Purchase Date</th>
+                                                <th>Supplier</th>
+                                                <th class="text-center">Warranty Expiry</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             {% for asset in assets %}
                                             <tr>
-                                                <td style="padding: 8px; border: 1px solid #dee2e6;">
+                                                <td data-label="Asset Name">
                                                     <strong>{{ asset.name }}</strong>
                                                     {% if asset.brand_manufacturer %}
-                                                        <br><small style="color: #6c757d;">{{ asset.brand_manufacturer }}</small>
+                                                        <br><small class="muted-small">{{ asset.brand_manufacturer }}</small>
                                                     {% endif %}
                                                 </td>
-                                                <td style="padding: 8px; border: 1px solid #dee2e6;">{{ asset.subcategory.name }}</td>
-                                                <td style="padding: 8px; border: 1px solid #dee2e6;">{{ asset.location_room }}</td>
-                                                <td style="padding: 8px; text-align: center; border: 1px solid #dee2e6;">{{ asset.purchase_date|date:"Y-m-d" }}</td>
-                                                <td style="padding: 8px; border: 1px solid #dee2e6;">{{ asset.supplier.name }}</td>
-                                                <td style="padding: 8px; text-align: center; border: 1px solid #dee2e6;">
+                                                <td data-label="Category">{{ asset.subcategory.name }}</td>
+                                                <td data-label="Location">{{ asset.location_room }}</td>
+                                                <td data-label="Purchase Date" class="text-center">{{ asset.purchase_date|date:"Y-m-d" }}</td>
+                                                <td data-label="Supplier">{{ asset.supplier.name }}</td>
+                                                <td data-label="Warranty Expiry" class="text-center">
                                                     {% if asset.warranty_expiry_date %}
                                                         {% if asset.is_warranty_active %}
-                                                            <strong style="color: #28a745;">{{ asset.warranty_expiry_date|date:"Y-m-d" }}</strong>
+                                                            <strong class="warranty-active">{{ asset.warranty_expiry_date|date:"Y-m-d" }}</strong>
                                                         {% else %}
-                                                            <strong style="color: #dc3545;">{{ asset.warranty_expiry_date|date:"Y-m-d" }}</strong>
+                                                            <strong class="warranty-expired">{{ asset.warranty_expiry_date|date:"Y-m-d" }}</strong>
                                                         {% endif %}
                                                     {% else %}
-                                                        <span style="color: #6c757d;">N/A</span>
+                                                        <span class="muted">N/A</span>
                                                     {% endif %}
                                                 </td>
                                             </tr>
@@ -258,13 +258,13 @@
                                 </div>
                             </div>
                             {% else %}
-                            <div class="property-card" style="margin-top: 30px;">
-                                <div style="margin-bottom: 0;">
-                                    <h3 class="property-name" style="margin-bottom: 0; border-bottom: none;">
+                            <div class="property-card mt-30">
+                                <div class="mb-0">
+                                    <h3 class="property-name no-border">
                                         <i class="fas fa-box"></i> Asset Summary
                                     </h3>
                                 </div>
-                                <div style="padding: 20px; background-color: #d1ecf1; border: 1px solid #bee5eb; border-radius: 4px; margin-top: 15px;">
+                                <div class="no-assets-info">
                                     <i class="fas fa-info-circle"></i> No assets have been added to this property yet.
                                 </div>
                             </div>
@@ -276,8 +276,8 @@
                     {% elif box_type == 'tenant' %}
                         <!-- Tenant Information Content -->
                         <div class="tenant-section">
-                            <h5><i class="fas fa-users text-info"></i> Tenant Information</h5>
-                            
+                            <h5 class="section-heading"><i class="fas fa-users text-info"></i> Tenant Information</h5>
+
                             {% if property.prop_status != 'Active' and property.prop_available_for_rent != 'Yes' %}
                                 <!-- Property not active and not available for rent -->
                                 <div class="alert alert-warning mt-3">
@@ -289,8 +289,8 @@
                                     <!-- Active tenant found - show tenant details -->
                                     <div class="property-card mt-3">
                                         <h3 class="property-name">{{ active_tenant.tenant_name }}</h3>
-                                        
-                                        <div class="tenant-details">
+
+                                        <div class="tenant-details detail-groups">
                                             <!-- Basic Info Section -->
                                             <div class="detail-group">
                                                 <h4 class="section-title">Tenant Information</h4>
@@ -299,7 +299,7 @@
                                                     <span class="detail-value">{{ active_tenant.tenant_type }}</span>
                                                 </div>
                                             </div>
-                                            
+
                                             <!-- Contact Info Section -->
                                             <div class="detail-group">
                                                 <h4 class="section-title">Contact Information</h4>
@@ -316,16 +316,17 @@
                                                     <span class="detail-value">{{ active_tenant.tenant_email }}</span>
                                                 </div>
                                             </div>
-                                            
+
                                             <!-- Lease Dates Section -->
                                             <div class="detail-group">
                                                 <h4 class="section-title">Lease Period</h4>
-                                                <div class="date-row detail-row">
+                                                <div class="detail-row">
                                                     <span class="detail-label">Start Date:</span>
-                                                    <span class="date-box">{{ active_tenant.tenant_lease_start_date }}</span>
+                                                    <span class="detail-value"><span class="date-box">{{ active_tenant.tenant_lease_start_date }}</span></span>
                                                 </div>
-                                                <div class="date-row detail-row">
+                                                <div class="detail-row">
                                                     <span class="detail-label">End Date:</span>
+                                                    <span class="detail-value">
                                                     {% if active_tenant.tenant_lease_end_date %}
                                                         {% now "Y-m-d" as today_date %}
                                                         {% if active_tenant.tenant_lease_end_date|date:"Y-m-d" < today_date %}
@@ -336,32 +337,33 @@
                                                     {% else %}
                                                         <span class="date-box">-</span>
                                                     {% endif %}
+                                                    </span>
                                                 </div>
                                             </div>
-                                            
+
                                             <!-- Financial Information -->
                                             <div class="detail-group">
                                                 <h4 class="section-title">Financial Information</h4>
-                                                <div class="financial-row detail-row">
+                                                <div class="detail-row">
                                                     <span class="detail-label">Deposit:</span>
                                                     <span class="detail-value amount">€{{ active_tenant.tenant_deposit|floatformat:"0"|intcomma }}</span>
                                                 </div>
-                                                <div class="financial-row detail-row">
+                                                <div class="detail-row">
                                                     <span class="detail-label">Monthly Rent:</span>
                                                     <span class="detail-value amount">€{{ active_tenant.tenant_rent|floatformat:"0"|intcomma }}</span>
                                                 </div>
-                                                <div class="financial-row detail-row">
+                                                <div class="detail-row">
                                                     <span class="detail-label">Levies:</span>
                                                     <span class="detail-value amount">€{{ active_tenant.tenant_levies|floatformat:"0"|intcomma }}</span>
                                                 </div>
-                                                <div class="financial-row detail-row">
+                                                <div class="detail-row">
                                                     <span class="detail-label">Payment Terms:</span>
                                                     <span class="detail-value">
                                                         {% if active_tenant.tenant_payment_terms == 0 %}Immediate{% else %}{{ active_tenant.tenant_payment_terms }} days{% endif %}
                                                     </span>
                                                 </div>
                                             </div>
-                                            
+
                                             <!-- Lease Details -->
                                             <div class="detail-group">
                                                 <h4 class="section-title">Lease Details</h4>
@@ -381,7 +383,7 @@
                                                 {% endif %}
                                                 <div class="detail-row">
                                                     <span class="detail-label">Renewal Status:</span>
-                                                    <span class="renewal-status-badge 
+                                                    <span class="renewal-status-badge
                                                         {% if active_tenant.tenant_renewal_status == 'pending' or not active_tenant.tenant_renewal_status %}renewal-pending
                                                         {% elif active_tenant.tenant_renewal_status == 'declined' %}renewal-declined
                                                         {% elif active_tenant.tenant_renewal_status == 'new_lease_signed' %}renewal-signed
@@ -418,8 +420,8 @@
                     {% elif box_type == 'lease-renewals' %}
                         <!-- Lease Renewals Content -->
                         <div class="renewals-section">
-                            <h5><i class="fas fa-sync-alt text-info"></i> Lease Renewals</h5>
-                            
+                            <h5 class="section-heading"><i class="fas fa-sync-alt text-info"></i> Lease Renewals</h5>
+
                             {% if property.prop_available_for_rent != 'Yes' %}
                                 <!-- Property not available for rent -->
                                 <div class="alert alert-warning mt-3">
@@ -428,59 +430,56 @@
                             {% elif lease_renewal_data %}
                                 {% if lease_renewal_data.status == 'vacant' %}
                                     <!-- Vacant Property -->
-                                    <div class="vacant-property-card mt-3">
+                                    <div class="vacant-property-card mt-3 renewal-status-card">
                                         <h3 class="property-name">{{ property.prop_name }}</h3>
                                         <p class="highlight-red"><strong>{{ lease_renewal_data.message }}</strong></p>
                                     </div>
-                                    
+
                                 {% elif lease_renewal_data.status == 'declined' %}
                                     <!-- Declined Renewal -->
-                                    <div class="declined-renewal-card mt-3">
+                                    <div class="declined-renewal-card mt-3 renewal-status-card">
                                         <h3 class="property-name">{{ property.prop_name }}</h3>
                                         <p class="highlight-red"><strong>{{ lease_renewal_data.message }}</strong></p>
-                                        <div class="tenant-details">
+                                        <div class="renewal-details-block">
                                             <p><strong>Current Tenant:</strong> {{ lease_renewal_data.tenant.tenant_name }}</p>
                                             <p><strong>Contact:</strong> {{ lease_renewal_data.tenant.tenant_contact_person }} | {{ lease_renewal_data.tenant.tenant_contact_number }}</p>
                                             <p><strong>Email:</strong> {{ lease_renewal_data.tenant.tenant_email }}</p>
                                         </div>
                                     </div>
-                                    
+
                                 {% elif lease_renewal_data.status == 'renewed' %}
                                     <!-- Renewed Lease -->
-                                    <div class="renewed-lease-card mt-3">
+                                    <div class="renewed-lease-card mt-3 renewal-status-card">
                                         <h3 class="property-name">{{ property.prop_name }}</h3>
                                         <p class="highlight-green"><strong>{{ lease_renewal_data.message }}</strong></p>
-                                        <div class="tenant-details">
+                                        <div class="renewal-details-block">
                                             <p><strong>Tenant:</strong> {{ lease_renewal_data.tenant.tenant_name }}</p>
                                             <p><strong>Previous Lease End:</strong> {{ lease_renewal_data.tenant.tenant_lease_end_date }}</p>
                                         </div>
                                     </div>
-                                    
+
                                 {% elif lease_renewal_data.needs_renewal %}
                                     <!-- Needs Renewal -->
-                                    <div class="tenant-renewal-card mt-3">
+                                    <div class="tenant-renewal-card mt-3 renewal-status-card">
                                         <h3 class="property-name">{{ property.prop_name }}</h3>
-                                        
-                                        <div class="tenant-details">
-                                            <!-- Type and Name on one line -->
+
+                                        <div class="renewal-details-block">
                                             <p>
-                                                <strong>Type:</strong> {{ lease_renewal_data.tenant.tenant_type }} | 
+                                                <strong>Type:</strong> {{ lease_renewal_data.tenant.tenant_type }} |
                                                 <strong>Name:</strong> {{ lease_renewal_data.tenant.tenant_name }} |
                                                 <strong>Rental Type:</strong> {{ lease_renewal_data.tenant.tenant_rental_type }}
                                             </p>
-                                            
-                                            <!-- Contact Person and Number on one line -->
+
                                             <p>
-                                                <strong>Contact:</strong> {{ lease_renewal_data.tenant.tenant_contact_person }} | 
+                                                <strong>Contact:</strong> {{ lease_renewal_data.tenant.tenant_contact_person }} |
                                                 <strong>Number:</strong> {{ lease_renewal_data.tenant.tenant_contact_number }}
                                             </p>
-                                            
+
                                             <p><strong>Email:</strong> {{ lease_renewal_data.tenant.tenant_email }}</p>
-                                            
-                                            <!-- Lease Dates on one line -->
+
                                             <p>
-                                                <strong>Lease Period:</strong> 
-                                                {{ lease_renewal_data.tenant.tenant_lease_start_date }} to 
+                                                <strong>Lease Period:</strong>
+                                                {{ lease_renewal_data.tenant.tenant_lease_start_date }} to
                                                 <span class="highlight-red">{{ lease_renewal_data.tenant.tenant_lease_end_date }}</span>
                                             </p>
                                             <p>
@@ -488,23 +487,22 @@
                                                 <strong>Lease Renewal Notice Period:</strong> {{ lease_renewal_data.tenant.tenant_renewal_period }} days
                                             </p>
                                             <p class="highlight-red"><strong>Tenant Contact Date:</strong> {{ lease_renewal_data.renewal_date }}</p>
-                                            
-                                            <!-- Financial Information -->
+
                                             <p>
-                                                <strong>Current Rent:</strong> €{{ lease_renewal_data.tenant.tenant_rent|floatformat:"0"|intcomma }} | 
+                                                <strong>Current Rent:</strong> €{{ lease_renewal_data.tenant.tenant_rent|floatformat:"0"|intcomma }} |
                                                 <strong>Deposit:</strong> €{{ lease_renewal_data.tenant.tenant_deposit|floatformat:"0"|intcomma }}
                                             </p>
                                         </div>
                                     </div>
-                                    
+
                                 {% else %}
                                     <!-- Current Lease (No Action Required) -->
-                                    <div class="current-lease-card mt-3">
+                                    <div class="current-lease-card mt-3 renewal-status-card">
                                         <h3 class="property-name">{{ property.prop_name }}</h3>
                                         <div class="alert alert-success">
                                             <i class="fas fa-check-circle"></i> Current lease is active. No renewal action required at this time.
                                         </div>
-                                        <div class="tenant-details">
+                                        <div class="renewal-details-block">
                                             <p><strong>Tenant:</strong> {{ lease_renewal_data.tenant.tenant_name }}</p>
                                             <p><strong>Lease End Date:</strong> {{ lease_renewal_data.tenant.tenant_lease_end_date }}</p>
                                         </div>
@@ -520,8 +518,8 @@
                     {% elif box_type == 'lease' %}
                         <!-- Lease Agreement Content -->
                         <div class="lease-section">
-                            <h5><i class="fas fa-file-contract text-info"></i> Lease Agreement</h5>
-                            
+                            <h5 class="section-heading"><i class="fas fa-file-contract text-info"></i> Lease Agreement</h5>
+
                             {% if active_tenant %}
                                 <div class="lease-container mt-3">
                                     <div class="lease-viewer">
@@ -533,37 +531,35 @@
                                                 <i class="fas fa-download"></i> Try Download Instead
                                             </a>
                                         </div>
-                                        
+
                                         <!-- Lease Agreement PDF Viewer -->
-                                        <iframe 
-                                            src="{% static 'lease_agreements/' %}{{ property.prop_name }} - Lease Agreement.pdf#navpanes=0&toolbar=1" 
-                                            width="100%" 
-                                            height="600px" 
-                                            style="border: 1px solid #dee2e6; border-radius: 8px;"
+                                        <iframe
+                                            class="pdf-viewer-iframe"
+                                            src="{% static 'lease_agreements/' %}{{ property.prop_name }} - Lease Agreement.pdf#navpanes=0&toolbar=1"
                                             title="Lease Agreement for {{ property.prop_name }}"
                                             onerror="handlePdfError(this)"
                                             id="lease-iframe"
                                         ></iframe>
                                     </div>
                                 </div>
-                                
+
                                 <script>
                                     function handlePdfError(iframe) {
                                         iframe.style.display = 'none';
                                         const errorDiv = document.getElementById('lease-error');
                                         errorDiv.style.display = 'block';
-                                        
+
                                         // Set up download link with cache busting
                                         const downloadBtn = document.getElementById('download-lease');
                                         const newUrl = "{% static 'lease_agreements/' %}{{ property.prop_name }} - Lease Agreement.pdf?v=" + Date.now();
                                         downloadBtn.href = newUrl;
                                     }
                                 </script>
-                                
+
                             {% else %}
                                 <!-- No Active Tenant -->
-                                <div class="no-lease mt-4">
-                                    <div class="no-lease-icon">
+                                <div class="no-lease mt-4 empty-state-card">
+                                    <div class="empty-state-icon">
                                         <i class="fas fa-file-contract"></i>
                                     </div>
                                     <h4>No Active Lease</h4>
@@ -576,8 +572,8 @@
                         <!-- Actual Expenses Content -->
                         <div class="expenses-section">
                             <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h5><i class="fas fa-receipt text-info"></i> Actual Expenses</h5>
-                                
+                                <h5 class="section-heading"><i class="fas fa-receipt text-info"></i> Actual Expenses</h5>
+
                                 <!-- Year Filter -->
                                 {% if actual_expense_years %}
                                     <div class="year-filter">
@@ -590,7 +586,7 @@
                                     </div>
                                 {% endif %}
                             </div>
-                            
+
                             {% if property_actual_expenses and property_actual_expenses|length > 0 %}
                                 <!-- Actual Expenses Table -->
                                 <div class="actual-expenses-table-container mt-3">
@@ -604,34 +600,34 @@
                                                     <th scope="col" class="text-center" style="width: 15%;">Invoice</th>
                                                 </tr>
                                             </thead>
-                                            <tbody>
-                                                {% for expense in property_actual_expenses %}
-                                                <tr>
-                                                    <td class="text-center">
-                                                        {{ expense.act_expense_date|date:"Y-m-d" }}
-                                                    </td>
-                                                    <td class="text-left">
-                                                        <strong>{{ expense.act_expense_description }}</strong>
-                                                    </td>
-                                                    <td class="text-right">
-                                                        <span class="amount-display">€{{ expense.act_expense_amount|floatformat:"2"|intcomma }}</span>
-                                                    </td>
-                                                    <td class="text-center">
-                                                        {% if expense.act_expense_document %}
-                                                            <i class="fas fa-file-alt invoice-icon" 
-                                                               style="cursor: pointer; color: #28a745; font-size: 1.2em;" 
-                                                               onclick="viewActualExpenseInvoice('{{ expense.act_expense_document.url }}', '{{ expense.act_expense_document.name }}')"
-                                                               title="Click to view invoice"></i>
-                                                        {% else %}
-                                                            <span class="text-muted">-</span>
-                                                        {% endif %}
-                                                    </td>
-                                                </tr>
-                                                {% endfor %}
-                                            </tbody>
+
                                         </table>
                                     </div>
-                                    
+                                    <tbody>
+                                        {% for expense in property_actual_expenses %}
+                                        <tr>
+                                            <td data-label="Date" class="text-center">
+                                                {{ expense.act_expense_date|date:"Y-m-d" }}
+                                            </td>
+                                            <td data-label="Description" class="text-left">
+                                                <strong>{{ expense.act_expense_description }}</strong>
+                                            </td>
+                                            <td data-label="Amount" class="text-right">
+                                                <span class="amount-display">€{{ expense.act_expense_amount|floatformat:"2"|intcomma }}</span>
+                                            </td>
+                                            <td data-label="Invoice" class="text-center">
+                                                {% if expense.act_expense_document %}
+                                                    <i class="fas fa-file-alt invoice-icon"
+                                                       style="cursor: pointer; color: #28a745; font-size: 1.2em;"
+                                                       onclick="viewActualExpenseInvoice('{{ expense.act_expense_document.url }}', '{{ expense.act_expense_document.name }}')"
+                                                       title="Click to view invoice"></i>
+                                                {% else %}
+                                                    <span class="text-muted">-</span>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
                                     <!-- Total Summary -->
                                     <div class="actual-expenses-summary mt-3 p-3 bg-light border rounded">
                                         <div class="row">
@@ -648,8 +644,8 @@
                                 </div>
                             {% else %}
                                 <!-- No Actual Expenses Data -->
-                                <div class="no-actual-expenses mt-4">
-                                    <div class="no-expenses-icon">
+                                <div class="no-actual-expenses mt-4 empty-state-card">
+                                    <div class="empty-state-icon">
                                         <i class="fas fa-receipt"></i>
                                     </div>
                                     <h4>No Actual Expenses</h4>
@@ -666,8 +662,8 @@
                     {% elif box_type == 'issues' %}
                         <!-- Issues Content -->
                         <div class="issues-section">
-                            <h5><i class="fas fa-exclamation-triangle text-info"></i> Property Issues</h5>
-                            
+                            <h5 class="section-heading"><i class="fas fa-exclamation-triangle text-info"></i> Property Issues</h5>
+
                             {% if property.prop_status != 'Active' and property.prop_available_for_rent != 'Yes' %}
                                 <!-- Property not active and not available for rent -->
                                 <div class="alert alert-warning mt-3">
@@ -691,29 +687,29 @@
                                                 <tbody>
                                                     {% for issue in property_issues %}
                                                     <tr>
-                                                        <td class="text-left">
+                                                        <td data-label="Issue" class="text-left">
                                                             <strong>{{ issue.issues_heading }}</strong>
                                                         </td>
-                                                        <td class="text-left">
+                                                        <td data-label="Description" class="text-left">
                                                             <span class="issue-description">{{ issue.issues_description|truncatechars:100 }}</span>
                                                         </td>
-                                                        <td class="text-center date-logged">
+                                                        <td data-label="Date Logged" class="text-center date-logged">
                                                             {% if issue.issues_date_logged %}
                                                                 {{ issue.issues_date_logged|date:"d/m/Y" }}
                                                             {% else %}
                                                                 <span class="text-muted">N/A</span>
                                                             {% endif %}
                                                         </td>
-                                                        <td class="text-center">
-                                                            <span class="status-badge 
+                                                        <td data-label="Status" class="text-center">
+                                                            <span class="status-badge
                                                                 {% if issue.issues_status == 'Resolved' %}status-success
                                                                 {% elif issue.issues_status == 'Unresolved' %}status-warning
                                                                 {% else %}status-danger{% endif %}">
                                                                 {{ issue.issues_status }}
                                                             </span>
                                                         </td>
-                                                        <td class="text-center">
-                                                            <a href="{% url 'fsr_details' issue.issues_id %}?from=property_detail&property_id={{ property.prop_id }}&box_type=issues" 
+                                                        <td data-label="Comments" class="text-center">
+                                                            <a href="{% url 'fsr_details' issue.issues_id %}?from=property_detail&property_id={{ property.prop_id }}&box_type=issues"
                                                                class="btn btn-light action-btn">
                                                                 <i class="fas fa-comments"></i> Comments
                                                             </a>
@@ -723,7 +719,7 @@
                                                 </tbody>
                                             </table>
                                         </div>
-                                        
+
                                         <!-- Summary Stats -->
                                         <div class="issues-summary mt-3">
                                             <div class="row">
@@ -765,8 +761,8 @@
                                     </div>
                                 {% else %}
                                     <!-- No Issues -->
-                                    <div class="no-issues mt-4">
-                                        <div class="no-issues-icon">
+                                    <div class="no-issues mt-4 empty-state-card empty-state-success">
+                                        <div class="empty-state-icon">
                                             <i class="fas fa-check-circle"></i>
                                         </div>
                                         <h4>Excellent!</h4>
@@ -779,14 +775,14 @@
                     {% elif box_type == 'valuation' %}
                         <!-- Property Valuations Content -->
                         <div class="valuations-section">
-                            <h5><i class="fas fa-home text-info"></i> Property Valuation</h5>
-                            
+                            <h5 class="section-heading"><i class="fas fa-home text-info"></i> Property Valuation</h5>
+
                             {% if property_valuation %}
                                 <!-- Valuation Details -->
                                 <div class="valuation-container mt-3">
                                     <div class="valuation-card">
                                         <h3 class="property-name">{{ property.prop_name }}</h3>
-                                        
+
                                         <div class="valuation-details">
                                             <div class="valuation-row">
                                                 <div class="valuation-item purchase">
@@ -798,7 +794,7 @@
                                                         <div class="valuation-amount">€{{ property_valuation.prop_values_purchase_price|floatformat:"0"|intcomma }}</div>
                                                     </div>
                                                 </div>
-                                                
+
                                                 <div class="valuation-item current">
                                                     <div class="valuation-icon">
                                                         <i class="fas fa-chart-line"></i>
@@ -809,7 +805,7 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                            
+
                                             <!-- Value Change Calculation -->
                                             <div class="valuation-summary">
                                                 <div class="value-change {% if property_valuation.value_difference >= 0 %}positive{% else %}negative{% endif %}">
@@ -830,7 +826,7 @@
                                                     </div>
                                                 </div>
                                             </div>
-                                            
+
                                             <!-- Additional Details -->
                                             {% if property_valuation.prop_values_date %}
                                                 <div class="valuation-meta">
@@ -842,8 +838,8 @@
                                 </div>
                             {% else %}
                                 <!-- No Valuation Data -->
-                                <div class="no-valuation mt-4">
-                                    <div class="no-valuation-icon">
+                                <div class="no-valuation mt-4 empty-state-card">
+                                    <div class="empty-state-icon">
                                         <i class="fas fa-chart-line"></i>
                                     </div>
                                     <h4>No Valuation Data</h4>
@@ -855,7 +851,7 @@
                     {% elif box_type == 'expenses' %}
                         <!-- Budgeted Expenses Content -->
                         <div class="budget-expenses-section">
-                            <h5><i class="fas fa-calculator text-info"></i> Expenses</h5>
+                            <h5 class="section-heading"><i class="fas fa-calculator text-info"></i> Expenses</h5>
                             <div class="alert alert-info mt-3">
                                 <i class="fas fa-info-circle"></i> Budgeted expenses functionality will be implemented here.
                                 <br><strong>Property:</strong> {{ property.prop_name }}
@@ -866,8 +862,8 @@
                     {% elif box_type == 'budgeted-expenses' %}
                         <!-- Budgeted Expenses Content -->
                         <div class="budget-expenses-section">
-                            <h5><i class="fas fa-clipboard-list text-info"></i> Budgeted Expenses</h5>
-                            
+                            <h5 class="section-heading"><i class="fas fa-clipboard-list text-info"></i> Budgeted Expenses</h5>
+
                             {% if property_budgeted_expenses and property_budgeted_expenses|length > 0 %}
                                 <!-- Budgeted Expenses Table -->
                                 <div class="expenses-table-container mt-3">
@@ -883,13 +879,13 @@
                                             <tbody>
                                                 {% for expense in property_budgeted_expenses %}
                                                 <tr>
-                                                    <td class="text-left">
+                                                    <td data-label="Expense Line Type" class="text-left">
                                                         <strong>{{ expense.expense_line_types.expense_line_types_name }}</strong>
                                                     </td>
-                                                    <td class="text-left">
+                                                    <td data-label="Expense Type" class="text-left">
                                                         {{ expense.expense_types.expense_types_name }}
                                                     </td>
-                                                    <td class="text-right">
+                                                    <td data-label="Amount" class="text-right">
                                                         <span class="amount-display">€{{ expense.expense_amount|floatformat:"0"|intcomma }}</span>
                                                     </td>
                                                 </tr>
@@ -900,8 +896,8 @@
                                 </div>
                             {% else %}
                                 <!-- No Budgeted Expenses Data -->
-                                <div class="no-expenses mt-4">
-                                    <div class="no-expenses-icon">
+                                <div class="no-expenses mt-4 empty-state-card">
+                                    <div class="empty-state-icon">
                                         <i class="fas fa-clipboard-list"></i>
                                     </div>
                                     <h4>No Budgeted Expenses</h4>
@@ -920,7 +916,7 @@
                     {% elif box_type == 'profit-loss' %}
                         <!-- Profit & Loss Content -->
                         <div class="profit-loss-section">
-                            <h5><i class="fas fa-chart-pie text-info"></i> Profit & Loss Statement</h5>
+                            <h5 class="section-heading"><i class="fas fa-chart-pie text-info"></i> Profit & Loss Statement</h5>
                             <div class="alert alert-info mt-3">
                                 <i class="fas fa-info-circle"></i> Profit & Loss functionality will be implemented here.
                                 <br><strong>Property:</strong> {{ property.prop_name }}
@@ -931,8 +927,8 @@
                     {% elif box_type == 'revenues' %}
                         <!-- Revenues Content -->
                         <div class="revenues-section">
-                            <h5><i class="fas fa-dollar-sign text-info"></i> Revenue Details</h5>
-                            
+                            <h5 class="section-heading"><i class="fas fa-dollar-sign text-info"></i> Revenue Details</h5>
+
                             {% if property_revenues and property_revenues|length > 0 %}
                                 <!-- Revenue Table -->
                                 <div class="revenue-table-container mt-3">
@@ -948,13 +944,13 @@
                                             <tbody>
                                                 {% for revenue in property_revenues %}
                                                 <tr>
-                                                    <td class="text-left">
+                                                    <td data-label="Revenue Line Type" class="text-left">
                                                         <strong>{{ revenue.revenue_line_types.revenue_line_types_name }}</strong>
                                                     </td>
-                                                    <td class="text-left">
+                                                    <td data-label="Revenue Type" class="text-left">
                                                         {{ revenue.revenue_types.revenue_types_name }}
                                                     </td>
-                                                    <td class="text-right">
+                                                    <td data-label="Amount" class="text-right">
                                                         <span class="amount-display">€{{ revenue.revenue_amount|floatformat:"0"|intcomma }}</span>
                                                     </td>
                                                 </tr>
@@ -965,8 +961,8 @@
                                 </div>
                             {% else %}
                                 <!-- No Revenue Data -->
-                                <div class="no-revenue mt-4">
-                                    <div class="no-revenue-icon">
+                                <div class="no-revenue mt-4 empty-state-card">
+                                    <div class="empty-state-icon">
                                         <i class="fas fa-dollar-sign"></i>
                                     </div>
                                     <h4>No Revenue Data</h4>
@@ -985,7 +981,7 @@
                     {% elif box_type == 'open-invoices' %}
                         <!-- Open Invoices Content -->
                         <div class="invoices-section">
-                            <h5>
+                            <h5 class="section-heading">
                                 <i class="fas fa-file-invoice-dollar text-info"></i> Open Invoices
                                 {% if open_invoices_data and open_invoices_data|length > 0 %}
                                     <span class="total-amount-due">
@@ -993,7 +989,7 @@
                                     </span>
                                 {% endif %}
                             </h5>
-                            
+
                             <!-- Check if there are any unpaid invoices for this property -->
                             {% if open_invoices_data and open_invoices_data|length > 0 %}
                                 <div class="invoices-table-section mt-4">
@@ -1011,17 +1007,17 @@
                                             <tbody>
                                                 {% for invoice in open_invoices_data %}
                                                 <tr class="{% if invoice.overdue %}table-danger{% endif %}">
-                                                    <td class="text-left"><strong>{{ invoice.invoice_date }}</strong></td>
-                                                    <td class="text-left"><strong>{{ invoice.due_date }}</strong></td>
-                                                    <td class="text-center">
+                                                    <td data-label="Invoice Date" class="text-left"><strong>{{ invoice.invoice_date }}</strong></td>
+                                                    <td data-label="Due Date" class="text-left"><strong>{{ invoice.due_date }}</strong></td>
+                                                    <td data-label="Days Overdue" class="text-center">
                                                         <span class="{% if invoice.days_overdue > 0 %}text-danger fw-bold{% else %}text-muted{% endif %}">
                                                             {{ invoice.days_overdue|intcomma }}
                                                         </span>
                                                     </td>
-                                                    <td class="text-right">
+                                                    <td data-label="Amount" class="text-right">
                                                         <span class="amount-display">€{{ invoice.amount|floatformat:"0"|intcomma }}</span>
                                                     </td>
-                                                    <td class="text-center">
+                                                    <td data-label="Status" class="text-center">
                                                         <span class="badge {% if invoice.overdue %}badge-danger{% else %}badge-success{% endif %} px-3 py-2">
                                                             {% if invoice.overdue %}
                                                                 <i class="fas fa-exclamation-triangle me-1"></i>Overdue
@@ -1038,8 +1034,8 @@
                                 </div>
                             {% else %}
                                 <!-- No outstanding invoices -->
-                                <div class="no-outstanding-balances mt-4">
-                                    <div class="no-balances-icon">
+                                <div class="no-outstanding-balances mt-4 empty-state-card empty-state-success">
+                                    <div class="empty-state-icon">
                                         <i class="fas fa-check-circle"></i>
                                     </div>
                                     <h4>Excellent News!</h4>
@@ -1052,7 +1048,7 @@
                     {% else %}
                         <!-- Default/Unknown Box Type -->
                         <div class="alert alert-warning">
-                            <i class="fas fa-exclamation-triangle"></i> 
+                            <i class="fas fa-exclamation-triangle"></i>
                             Unknown section type: {{ box_type }}. Please check the URL parameters.
                         </div>
                     {% endif %}
@@ -1064,7 +1060,7 @@
 
 <!-- Actual Expense Invoice Viewer Modal -->
 <div class="modal fade" id="actualExpenseInvoiceModal" tabindex="-1" role="dialog" aria-labelledby="actualExpenseInvoiceModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-dialog modal-lg modal-fullscreen-mobile" role="document">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="actualExpenseInvoiceModalLabel">Expense Invoice</h5>
@@ -1087,7 +1083,7 @@
 
 <!-- Title Deed Viewer Modal -->
 <div class="modal fade" id="titleDeedModal" tabindex="-1" role="dialog" aria-labelledby="titleDeedModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-dialog modal-lg modal-fullscreen-mobile" role="document">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="titleDeedModalLabel">Title Deed</h5>
@@ -1114,6 +1110,8 @@
 <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
 
 <style>
+/* ==================== DESKTOP STYLES ==================== */
+
 .card {
     transition: transform 0.2s ease-in-out;
 }
@@ -1126,6 +1124,18 @@
 .document-preview iframe,
 .document-preview img {
     border-radius: 8px;
+}
+
+/* PDF viewer — desktop fixed height, mobile fluid via media query */
+.pdf-viewer-iframe {
+    width: 100%;
+    height: 600px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+.pdf-viewer-image {
+    max-height: 600px;
+    width: 100%;
 }
 
 .badge {
@@ -1145,6 +1155,25 @@
     border-radius: 6px;
 }
 
+/* Page header */
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+}
+.page-header-title h2 {
+    margin-bottom: 4px;
+}
+.page-header-actions {
+    flex-shrink: 0;
+}
+
+/* Section heading (used by every box type) */
+.section-heading {
+    margin-bottom: 0;
+}
+
 /* Property Report Styles */
 .property-card {
     margin-bottom: 30px;
@@ -1152,6 +1181,7 @@
     background-color: #f8f9fa;
     border-radius: 8px;
 }
+.property-card.mt-30 { margin-top: 30px; }
 
 .property-name {
     font-size: 1.5rem;
@@ -1159,6 +1189,10 @@
     margin-bottom: 20px;
     padding-bottom: 10px;
     border-bottom: 1px solid #dee2e6;
+}
+.property-name.no-border {
+    margin-bottom: 0;
+    border-bottom: none;
 }
 
 .detail-groups {
@@ -1194,6 +1228,9 @@
 .detail-value {
     color: #495057;
 }
+.detail-value.money {
+    font-family: 'Courier New', monospace;
+}
 
 .badge {
     display: inline-block;
@@ -1203,39 +1240,104 @@
     font-weight: 500;
 }
 
-.badge-success {
-    background-color: #28a745;
+.badge-success { background-color: #28a745; color: white; }
+.badge-secondary { background-color: #6c757d; color: white; }
+.badge-info { background-color: #17a2b8; color: white; }
+.badge-light { background-color: #f8f9fa; color: #212529; }
+.badge-available { background-color: #28a745; color: white; }
+.badge-not-available { background-color: #dc3545; color: white; }
+.badge-danger { background-color: #dc3545; color: white; }
+
+/* Stats cards (Asset Summary section) */
+.stats-cards-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 25px;
+}
+.stats-card {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+}
+.stats-card-info { border-left: 4px solid #17a2b8; }
+.stats-card-success { border-left: 4px solid #28a745; }
+
+/* Categories + Assets tables (Asset Summary section) */
+.categories-section {
+    margin-bottom: 25px;
+}
+.categories-table,
+.assets-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+}
+.assets-table { font-size: 0.9rem; }
+.categories-table thead tr,
+.assets-table thead tr {
+    background-color: #2c3e50;
     color: white;
 }
-
-.badge-secondary {
-    background-color: #6c757d;
-    color: white;
+.categories-table th,
+.assets-table th {
+    padding: 12px;
+    text-align: left;
+    border: 1px solid #34495e;
 }
-
-.badge-info {
-    background-color: #17a2b8;
-    color: white;
+.categories-table th.count-col,
+.assets-table th.text-center {
+    text-align: center;
 }
+.categories-table th.count-col { width: 150px; }
+.categories-table td,
+.assets-table td {
+    padding: 10px;
+    border: 1px solid #dee2e6;
+}
+.assets-table td { padding: 8px; }
+.categories-table td.count-col,
+.assets-table td.text-center {
+    text-align: center;
+}
+.warranty-active { color: #28a745; font-weight: bold; }
+.warranty-expired { color: #dc3545; }
+.muted { color: #6c757d; }
+.muted-small { color: #6c757d; }
 
-.badge-light {
+/* No assets / empty state cards */
+.no-assets-info {
+    padding: 20px;
+    background-color: #d1ecf1;
+    border: 1px solid #bee5eb;
+    border-radius: 4px;
+    margin-top: 15px;
+}
+.empty-state-card {
+    text-align: center;
+    padding: 60px 20px;
     background-color: #f8f9fa;
-    color: #212529;
+    border-radius: 8px;
 }
-
-.badge-available {
-    background-color: #28a745;  /* Green for Yes */
-    color: white;
+.empty-state-icon i {
+    font-size: 4rem;
+    color: #6c757d;
+    margin-bottom: 20px;
 }
-
-.badge-not-available {
-    background-color: #dc3545;  /* Red for No */
-    color: white;
+.empty-state-card h4 {
+    color: #6c757d;
+    font-weight: 600;
+    margin-bottom: 15px;
 }
-
-.badge-danger {
-    background-color: #dc3545;
-    color: white;
+.empty-state-card p {
+    color: #6c757d;
+    margin-bottom: 10px;
+}
+.empty-state-success .empty-state-icon i {
+    color: #28a745;
+}
+.empty-state-success h4 {
+    color: #28a745;
 }
 
 /* Renewal Status Badges */
@@ -1247,897 +1349,672 @@
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
+.renewal-pending { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+.renewal-declined { background: #f8d7da; color: #721c24; border: 1px solid #f1b0b7; }
+.renewal-signed { background: #d1edff; color: #0c5460; border: 1px solid #bee5eb; }
 
-.renewal-pending {
-    background: #fff3cd;
-    color: #856404;
-    border: 1px solid #ffeaa7;
-}
-
-.renewal-declined {
-    background: #f8d7da;
-    color: #721c24;
-    border: 1px solid #f1b0b7;
-}
-
-.renewal-signed {
-    background: #d1edff;
-    color: #0c5460;
-    border: 1px solid #bee5eb;
-}
-
-/* Lease Renewal Styles */
-.tenant-renewal-card, .vacant-property-card, .declined-renewal-card, .renewed-lease-card, .current-lease-card {
+/* Lease Renewal Cards */
+.renewal-status-card {
     margin-bottom: 20px;
     padding: 20px;
     border-radius: 8px;
     background-color: #f9f9f9;
     border: 1px solid #eee;
 }
-
-.vacant-property-card, .declined-renewal-card {
+.renewal-details-block p {
+    margin-bottom: 8px;
+}
+.vacant-property-card,
+.declined-renewal-card {
     background-color: #fff3f3;
     border-left: 4px solid #dc3545;
 }
-
 .renewed-lease-card {
     background-color: #f3fff3;
     border-left: 4px solid #28a745;
 }
-
 .current-lease-card {
     background-color: #f8f9fa;
     border-left: 4px solid #17a2b8;
 }
-
 .tenant-renewal-card {
     background-color: #fff8dc;
     border-left: 4px solid #ffc107;
 }
 
-.lease-renewal-section .property-name {
-    font-size: 1.4rem;
-    color: #2c3e50;
-    margin-bottom: 15px;
-    border-bottom: 1px solid #ddd;
-    padding-bottom: 5px;
-}
-
-.highlight-red {
-    color: #dc3545;
-    font-weight: bold;
-}
-
-.highlight-green {
-    color: #28a745;
-    font-weight: bold;
-}
+.highlight-red { color: #dc3545; font-weight: bold; }
+.highlight-green { color: #28a745; font-weight: bold; }
 
 .date-box {
     background: #ecf0f1;
     padding: 4px 8px;
     border-radius: 4px;
     font-weight: 500;
+    display: inline-block;
 }
 
-/* Special styling for different value types */
 .detail-value.amount {
     font-weight: bold;
     color: #27ae60;
     font-size: 1.1em;
 }
 
+/* === Pass 2 will overhaul the rules below === */
+/* Issues / Valuations / Lease / Invoices / Revenues / Expenses tables and cards */
+/* Currently kept as-is for desktop; mobile treatment comes in Pass 2 */
+
 /* Issues Section Styles */
-.issues-table-container {
-    background: white;
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-}
+.issues-table-container { background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06); }
+.issues-table { font-size: 0.9rem; margin-bottom: 0; }
+.issues-table th { background-color: #343a40 !important; color: white; font-weight: 600; border: none; padding: 12px 8px; }
+.issues-table th.text-left { text-align: left !important; }
+.issues-table th.text-center { text-align: center !important; }
+.issues-table td { vertical-align: middle; padding: 12px 8px; border-top: 1px solid #dee2e6; }
+.issue-description { color: #6c757d; font-size: 0.85rem; line-height: 1.4; }
+.date-logged { color: #495057; font-size: 0.85rem; }
+.date-logged .text-muted { font-style: italic; }
 
-.issues-table {
-    font-size: 0.9rem;
-    margin-bottom: 0;
-}
+.status-badge { padding: 4px 12px; border-radius: 12px; font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.5px; }
+.status-success { background: #d4edda; color: #155724; }
+.status-warning { background: #fff3cd; color: #856404; }
+.status-danger { background: #f8d7da; color: #721c24; }
 
-.issues-table th {
-    background-color: #343a40 !important;
-    color: white;
-    font-weight: 600;
-    border: none;
-    padding: 12px 8px;
-}
+.action-btn { border-color: #dee2e6; transition: all 0.2s ease; padding: 6px 12px; font-size: 11px; text-decoration: none; color: #495057; border-radius: 4px; }
+.action-btn:hover { transform: translateY(-1px); box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); color: #17a2b8; text-decoration: none; }
+.action-btn i { margin-right: 4px; }
 
-.issues-table th.text-left {
-    text-align: left !important;
-}
+.issues-summary { padding: 20px; background: #f8f9fa; border-top: 1px solid #dee2e6; }
+.summary-card { background: white; border-radius: 8px; padding: 15px; display: flex; align-items: center; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); transition: transform 0.2s ease; }
+.summary-card:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); }
+.summary-card.resolved { border-left: 4px solid #28a745; }
+.summary-card.unresolved { border-left: 4px solid #ffc107; }
+.summary-card.total { border-left: 4px solid #17a2b8; }
+.summary-icon { font-size: 2rem; margin-right: 15px; opacity: 0.8; }
+.summary-card.resolved .summary-icon { color: #28a745; }
+.summary-card.unresolved .summary-icon { color: #ffc107; }
+.summary-card.total .summary-icon { color: #17a2b8; }
+.summary-content { text-align: left; }
+.summary-number { font-size: 1.8rem; font-weight: bold; color: #2c3e50; line-height: 1; }
+.summary-label { font-size: 0.9rem; color: #6c757d; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
 
-.issues-table th.text-center {
-    text-align: center !important;
-}
-
-.issues-table td {
-    vertical-align: middle;
-    padding: 12px 8px;
-    border-top: 1px solid #dee2e6;
-}
-
-.issue-description {
-    color: #6c757d;
-    font-size: 0.85rem;
-    line-height: 1.4;
-}
-
-.date-logged {
-    color: #495057;
-    font-size: 0.85rem;
-}
-
-.date-logged .text-muted {
-    font-style: italic;
-}
-
-/* Status Badge Styles */
-.status-badge {
-    padding: 4px 12px;
-    border-radius: 12px;
-    font-size: 11px;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-
-.status-success {
-    background: #d4edda;
-    color: #155724;
-}
-
-.status-warning {
-    background: #fff3cd;
-    color: #856404;
-}
-
-.status-danger {
-    background: #f8d7da;
-    color: #721c24;
-}
-
-.action-btn {
-    border-color: #dee2e6;
-    transition: all 0.2s ease;
-    padding: 6px 12px;
-    font-size: 11px;
-    text-decoration: none;
-    color: #495057;
-    border-radius: 4px;
-}
-
-.action-btn:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    color: #17a2b8;
-    text-decoration: none;
-}
-
-.action-btn i {
-    margin-right: 4px;
-}
-
-/* Issues Summary Cards */
-.issues-summary {
-    padding: 20px;
-    background: #f8f9fa;
-    border-top: 1px solid #dee2e6;
-}
-
-.summary-card {
-    background: white;
-    border-radius: 8px;
-    padding: 15px;
-    display: flex;
-    align-items: center;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-    transition: transform 0.2s ease;
-}
-
-.summary-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-.summary-card.resolved {
-    border-left: 4px solid #28a745;
-}
-
-.summary-card.unresolved {
-    border-left: 4px solid #ffc107;
-}
-
-.summary-card.total {
-    border-left: 4px solid #17a2b8;
-}
-
-.summary-icon {
-    font-size: 2rem;
-    margin-right: 15px;
-    opacity: 0.8;
-}
-
-.summary-card.resolved .summary-icon {
-    color: #28a745;
-}
-
-.summary-card.unresolved .summary-icon {
-    color: #ffc107;
-}
-
-.summary-card.total .summary-icon {
-    color: #17a2b8;
-}
-
-.summary-content {
-    text-align: left;
-}
-
-.summary-number {
-    font-size: 1.8rem;
-    font-weight: bold;
-    color: #2c3e50;
-    line-height: 1;
-}
-
-.summary-label {
-    font-size: 0.9rem;
-    color: #6c757d;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-top: 2px;
-}
-
-/* No Issues State */
-.no-issues {
-    text-align: center;
-    padding: 60px 20px;
-    background-color: #f8f9fa;
-    border-radius: 8px;
-}
-
-.no-issues-icon i {
-    font-size: 4rem;
-    color: #28a745;
-    margin-bottom: 20px;
-}
-
-.no-issues h4 {
-    color: #28a745;
-    font-weight: 600;
-    margin-bottom: 15px;
-}
-
-.no-issues p {
-    color: #6c757d;
-    margin-bottom: 20px;
-}
-
-/* Property Valuation Styles */
-.valuation-container {
-    background: white;
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-}
-
-.valuation-card {
-    padding: 25px;
-    background-color: #f8f9fa;
-    border-radius: 8px;
-}
-
-.valuation-card .property-name {
-    font-size: 1.5rem;
-    color: #2c3e50;
-    margin-bottom: 20px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid #dee2e6;
-}
-
-.valuation-details {
-    margin-top: 20px;
-}
-
-.valuation-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-    margin-bottom: 25px;
-}
-
-.valuation-item {
-    background: white;
-    border-radius: 8px;
-    padding: 20px;
-    display: flex;
-    align-items: center;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-    transition: transform 0.2s ease;
-}
-
-.valuation-item:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-}
-
-.valuation-item.purchase {
-    border-left: 4px solid #6c757d;
-}
-
-.valuation-item.current {
-    border-left: 4px solid #17a2b8;
-}
-
-.valuation-icon {
-    font-size: 2rem;
-    margin-right: 15px;
-    opacity: 0.8;
-}
-
-.valuation-item.purchase .valuation-icon {
-    color: #6c757d;
-}
-
-.valuation-item.current .valuation-icon {
-    color: #17a2b8;
-}
-
-.valuation-content {
-    text-align: left;
-}
-
-.valuation-label {
-    font-size: 0.9rem;
-    color: #6c757d;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 5px;
-}
-
-.valuation-amount {
-    font-size: 1.8rem;
-    font-weight: bold;
-    color: #2c3e50;
-    line-height: 1;
-}
-
-.valuation-summary {
-    background: white;
-    border-radius: 8px;
-    padding: 20px;
-    margin-bottom: 20px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-}
-
-.value-change {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.value-change.positive {
-    color: #28a745;
-}
-
-.value-change.negative {
-    color: #dc3545;
-}
-
-.change-icon {
-    font-size: 2rem;
-    margin-right: 15px;
-    opacity: 0.8;
-}
-
-.change-content {
-    text-align: center;
-}
-
-.change-amount {
-    font-size: 1.6rem;
-    font-weight: bold;
-    line-height: 1;
-    margin-bottom: 5px;
-}
-
-.change-percentage {
-    font-size: 1.1rem;
-    font-weight: 500;
-    opacity: 0.8;
-}
-
-.valuation-meta {
-    background: white;
-    border-radius: 8px;
-    padding: 15px;
-    margin-bottom: 20px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-}
-
-.valuation-meta p {
-    margin: 0;
-    color: #6c757d;
-}
-
-/* No Valuation State */
-.no-valuation {
-    text-align: center;
-    padding: 60px 20px;
-    background-color: #f8f9fa;
-    border-radius: 8px;
-}
-
-.no-valuation-icon i {
-    font-size: 4rem;
-    color: #6c757d;
-    margin-bottom: 20px;
-}
-
-.no-valuation h4 {
-    color: #6c757d;
-    font-weight: 600;
-    margin-bottom: 15px;
-}
-
-.no-valuation p {
-    color: #6c757d;
-    margin-bottom: 20px;
-}
-
-/* Responsive Design for Valuations */
-@media (max-width: 768px) {
-    .valuation-row {
-        grid-template-columns: 1fr;
-        gap: 15px;
-    }
-    
-    .valuation-item {
-        padding: 15px;
-    }
-    
-    .valuation-amount {
-        font-size: 1.5rem;
-    }
-    
-    .change-amount {
-        font-size: 1.4rem;
-    }
-}
+/* Valuation Styles */
+.valuation-container { background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06); }
+.valuation-card { padding: 25px; background-color: #f8f9fa; border-radius: 8px; }
+.valuation-card .property-name { font-size: 1.5rem; color: #2c3e50; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #dee2e6; }
+.valuation-details { margin-top: 20px; }
+.valuation-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 25px; }
+.valuation-item { background: white; border-radius: 8px; padding: 20px; display: flex; align-items: center; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); transition: transform 0.2s ease; }
+.valuation-item:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); }
+.valuation-item.purchase { border-left: 4px solid #6c757d; }
+.valuation-item.current { border-left: 4px solid #17a2b8; }
+.valuation-icon { font-size: 2rem; margin-right: 15px; opacity: 0.8; }
+.valuation-item.purchase .valuation-icon { color: #6c757d; }
+.valuation-item.current .valuation-icon { color: #17a2b8; }
+.valuation-content { text-align: left; }
+.valuation-label { font-size: 0.9rem; color: #6c757d; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 5px; }
+.valuation-amount { font-size: 1.8rem; font-weight: bold; color: #2c3e50; line-height: 1; }
+.valuation-summary { background: white; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); }
+.value-change { display: flex; align-items: center; justify-content: center; }
+.value-change.positive { color: #28a745; }
+.value-change.negative { color: #dc3545; }
+.change-icon { font-size: 2rem; margin-right: 15px; opacity: 0.8; }
+.change-content { text-align: center; }
+.change-amount { font-size: 1.6rem; font-weight: bold; line-height: 1; margin-bottom: 5px; }
+.change-percentage { font-size: 1.1rem; font-weight: 500; opacity: 0.8; }
+.valuation-meta { background: white; border-radius: 8px; padding: 15px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); }
+.valuation-meta p { margin: 0; color: #6c757d; }
 
 /* Lease Agreement Styles */
-.lease-container {
-    background: white;
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-}
-
-.lease-header {
-    background: linear-gradient(135deg, #17a2b8, #138496);
-    color: white;
-    padding: 20px 25px;
-    text-align: center;
-}
-
-.lease-title-wrapper h3,
-.lease-title-wrapper h4 {
-    margin: 0;
-    color: white;
-}
-
-.lease-title {
-    font-size: 1.5rem;
-    font-weight: 600;
-}
-
-.lease-subtitle {
-    font-size: 1.1rem;
-    font-weight: 400;
-    opacity: 0.9;
-}
-
-.lease-viewer {
-    padding: 20px;
-}
-
-.lease-viewer iframe {
-    margin-top: 10px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-/* No Lease State */
-.no-lease {
-    text-align: center;
-    padding: 60px 20px;
-    background-color: #f8f9fa;
-    border-radius: 8px;
-}
-
-.no-lease-icon i {
-    font-size: 4rem;
-    color: #6c757d;
-    margin-bottom: 20px;
-}
-
-.no-lease h4 {
-    color: #6c757d;
-    font-weight: 600;
-    margin-bottom: 15px;
-}
-
-.no-lease p {
-    color: #6c757d;
-    margin-bottom: 20px;
-}
-
-/* Invoice table styling */
-.invoices-table {
-    font-size: 0.95rem;
-}
-
-.invoices-table th {
-    background-color: #343a40 !important;
-    color: white;
-    font-weight: 600;
-}
-
-.invoices-table th.text-left {
-    text-align: left !important;
-}
-
-.invoices-table th.text-center {
-    text-align: center !important;
-}
-
-.invoices-table th.text-right {
-    text-align: right !important;
-}
-
-.invoices-table td {
-    vertical-align: middle;
-}
-
-.amount-display {
-    font-weight: 600;
-    font-size: 1.1rem;
-}
-
-.total-amount-due {
-    color: #dc3545;
-    font-weight: 600;
-}
-
-.no-outstanding-balances {
-    text-align: center;
-    padding: 60px 20px;
-    background-color: #f8f9fa;
-    border-radius: 8px;
-}
-
-.no-balances-icon i {
-    font-size: 4rem;
-    color: #28a745;
-    margin-bottom: 20px;
-}
-
-.no-outstanding-balances h4 {
-    color: #28a745;
-    font-weight: 600;
-    margin-bottom: 15px;
-}
-
-.no-outstanding-balances p {
-    color: #6c757d;
-    margin-bottom: 5px;
-}
-
-.sub-message {
-    font-style: italic;
-}
-
-/* Revenue Section Styles */
-.revenue-table-container {
-    background: white;
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-}
-
-.revenue-table {
-    font-size: 0.95rem;
-    margin-bottom: 0;
-}
-
-.revenue-table th {
-    background-color: #343a40 !important;
-    color: white;
-    font-weight: 600;
-    border: none;
-    padding: 15px;
-}
-
-.revenue-table th.text-left {
-    text-align: left !important;
-}
-
-.revenue-table th.text-center {
-    text-align: center !important;
-}
-
-.revenue-table th.text-right {
-    text-align: right !important;
-}
-
-.revenue-table td {
-    vertical-align: middle;
-    padding: 12px 15px;
-    border-top: 1px solid #dee2e6;
-}
-
-.total-revenue-amount {
-    color: #28a745;
-    font-weight: 600;
-    font-size: 0.9em;
-}
-
-.revenue-summary {
-    padding: 20px;
-    background: #f8f9fa;
-    border-top: 1px solid #dee2e6;
-}
-
-.summary-card.revenue-count {
-    border-left: 4px solid #17a2b8;
-}
-
-.summary-card.revenue-total {
-    border-left: 4px solid #28a745;
-}
-
-.summary-card.revenue-average {
-    border-left: 4px solid #ffc107;
-}
-
-.summary-card.revenue-count .summary-icon {
-    color: #17a2b8;
-}
-
-.summary-card.revenue-total .summary-icon {
-    color: #28a745;
-}
-
-.summary-card.revenue-average .summary-icon {
-    color: #ffc107;
-}
-
-/* No Revenue State */
-.no-revenue {
-    text-align: center;
-    padding: 60px 20px;
-    background-color: #f8f9fa;
-    border-radius: 8px;
-}
-
-.no-revenue-icon i {
-    font-size: 4rem;
-    color: #6c757d;
-    margin-bottom: 20px;
-}
-
-.no-revenue h4 {
-    color: #6c757d;
-    font-weight: 600;
-    margin-bottom: 15px;
-}
-
-.no-revenue p {
-    color: #6c757d;
-    margin-bottom: 20px;
-}
-
-.revenue-actions {
-    margin-top: 20px;
-}
-
-/* Expenses Section Styles */
-.expenses-table-container {
-    background: white;
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-}
-
-.expenses-table {
-    font-size: 0.95rem;
-    margin-bottom: 0;
-}
-
-.expenses-table th {
-    background-color: #343a40 !important;
-    color: white;
-    font-weight: 600;
-    border: none;
-    padding: 15px;
-}
-
-.expenses-table th.text-left {
-    text-align: left !important;
-}
-
-.expenses-table th.text-center {
-    text-align: center !important;
-}
-
-.expenses-table th.text-right {
-    text-align: right !important;
-}
-
-.expenses-table td {
-    vertical-align: middle;
-    padding: 12px 15px;
-    border-top: 1px solid #dee2e6;
-}
-
-/* No Expenses State */
-.no-expenses {
-    text-align: center;
-    padding: 60px 20px;
-    background-color: #f8f9fa;
-    border-radius: 8px;
-}
-
-.no-expenses-icon i {
-    font-size: 4rem;
-    color: #6c757d;
-    margin-bottom: 20px;
-}
-
-.no-expenses h4 {
-    color: #6c757d;
-    font-weight: 600;
-    margin-bottom: 15px;
-}
-
-.no-expenses p {
-    color: #6c757d;
-    margin-bottom: 20px;
-}
-
-.expenses-actions {
-    margin-top: 20px;
-}
-
-/* Actual Expenses Section Styles */
-.actual-expenses-table-container {
-    background: white;
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-}
-
-.actual-expenses-table {
-    font-size: 0.95rem;
-    margin-bottom: 0;
-}
-
-.actual-expenses-table th {
-    background-color: #343a40 !important;
-    color: white;
-    font-weight: 600;
-    border: none;
-    padding: 15px;
-}
-
-.actual-expenses-table th.text-left {
-    text-align: left !important;
-}
-
-.actual-expenses-table th.text-center {
-    text-align: center !important;
-}
-
-.actual-expenses-table th.text-right {
-    text-align: right !important;
-}
-
-.actual-expenses-table td {
-    vertical-align: middle;
-    padding: 12px 15px;
-    border-top: 1px solid #dee2e6;
-}
-
-.invoice-icon {
-    transition: all 0.2s ease;
-}
-
-.invoice-icon:hover {
-    transform: scale(1.2);
-    color: #218838 !important;
-}
-
-.year-filter {
-    display: flex;
-    align-items: center;
-}
-
-.year-filter label {
-    color: #495057;
-    font-weight: 500;
-    margin-right: 8px;
-}
-
-.actual-expenses-summary {
-    background-color: #f8f9fa !important;
-    border: 1px solid #dee2e6 !important;
-}
-
-/* No Actual Expenses State */
-.no-actual-expenses {
-    text-align: center;
-    padding: 60px 20px;
-    background-color: #f8f9fa;
-    border-radius: 8px;
-}
-
-.no-actual-expenses .no-expenses-icon i {
-    font-size: 4rem;
-    color: #6c757d;
-    margin-bottom: 20px;
-}
-
-.no-actual-expenses h4 {
-    color: #6c757d;
-    font-weight: 600;
-    margin-bottom: 15px;
-}
-
-.no-actual-expenses p {
-    color: #6c757d;
-    margin-bottom: 10px;
-}
-
-/* Responsive Design */
+.lease-container { background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06); }
+.lease-viewer { padding: 20px; }
+.lease-viewer iframe { margin-top: 10px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); }
+
+/* Invoices */
+.invoices-table { font-size: 0.95rem; }
+.invoices-table th { background-color: #343a40 !important; color: white; font-weight: 600; }
+.invoices-table th.text-left { text-align: left !important; }
+.invoices-table th.text-center { text-align: center !important; }
+.invoices-table th.text-right { text-align: right !important; }
+.invoices-table td { vertical-align: middle; }
+.amount-display { font-weight: 600; font-size: 1.1rem; }
+.total-amount-due { color: #dc3545; font-weight: 600; }
+
+/* Revenue */
+.revenue-table-container { background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06); }
+.revenue-table { font-size: 0.95rem; margin-bottom: 0; }
+.revenue-table th { background-color: #343a40 !important; color: white; font-weight: 600; border: none; padding: 15px; }
+.revenue-table th.text-left { text-align: left !important; }
+.revenue-table th.text-center { text-align: center !important; }
+.revenue-table th.text-right { text-align: right !important; }
+.revenue-table td { vertical-align: middle; padding: 12px 15px; border-top: 1px solid #dee2e6; }
+
+/* Expenses */
+.expenses-table-container { background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06); }
+.expenses-table { font-size: 0.95rem; margin-bottom: 0; }
+.expenses-table th { background-color: #343a40 !important; color: white; font-weight: 600; border: none; padding: 15px; }
+.expenses-table th.text-left { text-align: left !important; }
+.expenses-table th.text-center { text-align: center !important; }
+.expenses-table th.text-right { text-align: right !important; }
+.expenses-table td { vertical-align: middle; padding: 12px 15px; border-top: 1px solid #dee2e6; }
+
+/* Actual Expenses */
+.actual-expenses-table-container { background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06); }
+.actual-expenses-table { font-size: 0.95rem; margin-bottom: 0; }
+.actual-expenses-table th { background-color: #343a40 !important; color: white; font-weight: 600; border: none; padding: 15px; }
+.actual-expenses-table th.text-left { text-align: left !important; }
+.actual-expenses-table th.text-center { text-align: center !important; }
+.actual-expenses-table th.text-right { text-align: right !important; }
+.actual-expenses-table td { vertical-align: middle; padding: 12px 15px; border-top: 1px solid #dee2e6; }
+.invoice-icon { transition: all 0.2s ease; }
+.invoice-icon:hover { transform: scale(1.2); color: #218838 !important; }
+.year-filter { display: flex; align-items: center; }
+.year-filter label { color: #495057; font-weight: 500; margin-right: 8px; }
+.actual-expenses-summary { background-color: #f8f9fa !important; border: 1px solid #dee2e6 !important; }
+.sub-message { font-style: italic; }
+
+
+/* ==================== MOBILE STYLES (≤768px) — Pass 1 ==================== */
 @media (max-width: 768px) {
+
+    /* Page wrapper — tighter padding */
+    .property-detail-page.container-fluid {
+        padding-left: 8px;
+        padding-right: 8px;
+    }
+
+    /* Header — stack title and Property Dashboard button */
+    .page-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+    }
+    .page-header-title h2 {
+        font-size: 1.3rem;
+        margin-bottom: 0;
+    }
+    .page-header-actions .btn {
+        width: 100%;
+        text-align: center;
+        padding: 10px 16px;
+    }
+
+    /* Card body — tighter on mobile */
+    .card-body {
+        padding: 14px;
+    }
+    /* Section heading — smaller, but keep the icon */
+    .section-heading {
+        font-size: 1.05rem;
+        line-height: 1.3;
+    }
+
+    /* Property card — tighter padding */
+    .property-card {
+        padding: 14px;
+        margin-bottom: 20px;
+    }
+    .property-card.mt-30 {
+        margin-top: 20px;
+    }
+    .property-name {
+        font-size: 1.2rem;
+    }
+    .section-title {
+        font-size: 1rem;
+    }
+
+    /* Detail rows — stack label above value */
     .detail-row {
         flex-direction: column;
-        align-items: flex-start;
-        gap: 5px;
+        gap: 2px;
+        margin-bottom: 12px;
     }
-    
     .detail-label {
-        flex: none;
+        min-width: 0;
+        font-size: 12px;
+        color: #6c757d;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
     }
-    
     .detail-value {
-        text-align: left;
+        font-size: 14px;
     }
-    
-    .property-card {
-        padding: 15px;
+
+    /* Detail groups grid → single column */
+    .detail-groups {
+        grid-template-columns: 1fr;
+        gap: 18px;
     }
-    
-    .detail-group {
-        padding: 15px;
+
+    /* Stats cards → single column */
+    .stats-cards-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+        margin-bottom: 18px;
     }
+    .stats-card {
+        padding: 14px;
+    }
+
+    /* Categories table — keep but tighten */
+    .categories-table {
+        font-size: 14px;
+    }
+    .categories-table th,
+    .categories-table td {
+        padding: 8px;
+    }
+    .categories-table th.count-col {
+        width: auto;
+    }
+
+    /* Assets table → card layout (Property Report section) */
+    .assets-table {
+        border: none;
+        background: transparent;
+    }
+    .assets-table thead {
+        display: none;
+    }
+    .assets-table,
+    .assets-table tbody,
+    .assets-table tr,
+    .assets-table td {
+        display: block;
+        width: 100%;
+    }
+    .assets-table tbody tr {
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        margin-bottom: 12px;
+        padding: 12px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+    }
+    .assets-table td {
+        border: none !important;
+        padding: 6px 0 !important;
+        text-align: left !important;
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 8px;
+        min-height: 24px;
+    }
+    .assets-table td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        color: #495057;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+        flex-shrink: 0;
+        padding-top: 2px;
+    }
+    .assets-table td[data-label="Asset Name"] {
+        font-size: 15px;
+        font-weight: 600;
+        color: #2c3e50;
+        padding-bottom: 8px !important;
+        margin-bottom: 4px;
+        border-bottom: 1px solid #f1f3f5 !important;
+        display: block;
+    }
+    .assets-table td[data-label="Asset Name"]::before {
+        display: none;
+    }
+    .assets-table td[data-label="Warranty Expiry"] {
+        text-align: right !important;
+    }
+
+    /* PDF viewer (title-deed and lease box types) — fluid height on mobile */
+    .pdf-viewer-iframe {
+        height: 70vh;
+        min-height: 400px;
+    }
+    .pdf-viewer-image {
+        max-height: 70vh;
+    }
+    .document-preview.pdf-viewer-wrap {
+        padding: 6px !important;
+    }
+    .lease-viewer {
+        padding: 6px;
+    }
+
+    /* Lease renewal cards — tighten typography */
+    .renewal-status-card {
+        padding: 14px;
+    }
+    .renewal-status-card .property-name {
+        font-size: 1.15rem;
+    }
+    .renewal-details-block p {
+        font-size: 14px;
+        line-height: 1.5;
+        margin-bottom: 10px;
+    }
+
+    /* Empty state cards — less vertical waste */
+    .empty-state-card {
+        padding: 32px 16px;
+    }
+    .empty-state-icon i {
+        font-size: 2.8rem;
+        margin-bottom: 12px;
+    }
+
+    /* Modals — go full-width on mobile */
+    .modal-fullscreen-mobile {
+        max-width: 100%;
+        margin: 0;
+        padding: 0;
+    }
+    .modal-fullscreen-mobile .modal-content {
+        border-radius: 0;
+        min-height: 100vh;
+    }
+    .modal-fullscreen-mobile iframe {
+        height: 70vh !important;
+    }
+    .modal-fullscreen-mobile img {
+        max-height: 70vh !important;
+    }
+
+/* ==================== PASS 2 — Tables and stat cards ==================== */
+
+    /* Generic shared mobile-card styling for the 5 box-type tables */
+    .issues-table,
+    .actual-expenses-table,
+    .expenses-table,
+    .revenue-table,
+    .invoices-table {
+        border: none;
+        background: transparent;
+        font-size: 14px;
+    }
+    .issues-table thead,
+    .actual-expenses-table thead,
+    .expenses-table thead,
+    .revenue-table thead,
+    .invoices-table thead {
+        display: none;
+    }
+    .issues-table,
+    .issues-table tbody,
+    .issues-table tr,
+    .issues-table td,
+    .actual-expenses-table,
+    .actual-expenses-table tbody,
+    .actual-expenses-table tr,
+    .actual-expenses-table td,
+    .expenses-table,
+    .expenses-table tbody,
+    .expenses-table tr,
+    .expenses-table td,
+    .revenue-table,
+    .revenue-table tbody,
+    .revenue-table tr,
+    .revenue-table td,
+    .invoices-table,
+    .invoices-table tbody,
+    .invoices-table tr,
+    .invoices-table td {
+        display: block;
+        width: 100%;
+    }
+    .issues-table tbody tr,
+    .actual-expenses-table tbody tr,
+    .expenses-table tbody tr,
+    .revenue-table tbody tr,
+    .invoices-table tbody tr {
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        margin-bottom: 12px;
+        padding: 12px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+    }
+    .issues-table td,
+    .actual-expenses-table td,
+    .expenses-table td,
+    .revenue-table td,
+    .invoices-table td {
+        border: none !important;
+        padding: 6px 0 !important;
+        text-align: left !important;
+        display: flex !important;
+        justify-content: space-between !important;
+        align-items: flex-start;
+        gap: 8px;
+        min-height: 24px;
+    }
+    .issues-table td::before,
+    .actual-expenses-table td::before,
+    .expenses-table td::before,
+    .revenue-table td::before,
+    .invoices-table td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        color: #495057;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+        flex-shrink: 0;
+        padding-top: 2px;
+    }
+    /* Wrapping containers — remove their inner padding/shadows on mobile so cards flow naturally */
+    .issues-table-container,
+    .actual-expenses-table-container,
+    .expenses-table-container,
+    .revenue-table-container,
+    .invoices-table-section {
+        background: transparent !important;
+        box-shadow: none !important;
+        overflow: visible !important;
+    }
+    /* Don't horizontal-scroll on mobile; let cards flow */
+    .issues-section .table-responsive,
+    .expenses-section .table-responsive,
+    .budget-expenses-section .table-responsive,
+    .revenues-section .table-responsive,
+    .invoices-section .table-responsive {
+        overflow-x: visible !important;
+    }
+
+    /* Issues — table-specific tweaks */
+    .issues-table td[data-label="Issue"] {
+        font-size: 15px;
+        font-weight: 600;
+        color: #2c3e50;
+        padding-bottom: 8px !important;
+        margin-bottom: 4px;
+        border-bottom: 1px solid #f1f3f5 !important;
+        display: block !important;
+    }
+    .issues-table td[data-label="Issue"]::before {
+        display: none;
+    }
+    .issues-table td[data-label="Description"] {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+    }
+    .issues-table td[data-label="Description"] .issue-description {
+        font-size: 14px;
+        line-height: 1.5;
+    }
+    .issues-table td[data-label="Comments"] {
+        margin-top: 4px;
+        padding-top: 8px !important;
+        border-top: 1px solid #f1f3f5 !important;
+    }
+    .issues-table td[data-label="Comments"] .action-btn {
+        padding: 8px 14px;
+        font-size: 13px;
+    }
+
+    /* Actual Expenses — Description prominent, Amount on its own row */
+    .actual-expenses-table td[data-label="Description"] {
+        font-size: 15px;
+        font-weight: 600;
+        color: #2c3e50;
+        padding-bottom: 8px !important;
+        margin-bottom: 4px;
+        border-bottom: 1px solid #f1f3f5 !important;
+        display: block !important;
+    }
+    .actual-expenses-table td[data-label="Description"]::before {
+        display: none;
+    }
+    .actual-expenses-table td[data-label="Amount"] .amount-display {
+        font-size: 15px;
+        color: #2c3e50;
+    }
+
+    /* Budgeted Expenses — Line Type prominent at top */
+    .expenses-table td[data-label="Expense Line Type"] {
+        font-size: 15px;
+        font-weight: 600;
+        color: #2c3e50;
+        padding-bottom: 8px !important;
+        margin-bottom: 4px;
+        border-bottom: 1px solid #f1f3f5 !important;
+        display: block !important;
+    }
+    .expenses-table td[data-label="Expense Line Type"]::before {
+        display: none;
+    }
+
+    /* Revenues — Line Type prominent at top */
+    .revenue-table td[data-label="Revenue Line Type"] {
+        font-size: 15px;
+        font-weight: 600;
+        color: #2c3e50;
+        padding-bottom: 8px !important;
+        margin-bottom: 4px;
+        border-bottom: 1px solid #f1f3f5 !important;
+        display: block !important;
+    }
+    .revenue-table td[data-label="Revenue Line Type"]::before {
+        display: none;
+    }
+
+    /* Open Invoices — overdue card gets red tint */
+    .invoices-table tbody tr.table-danger {
+        background: #fff5f5 !important;
+        border-color: #f1b0b7 !important;
+    }
+    .invoices-table td[data-label="Amount"] .amount-display {
+        font-size: 15px;
+        color: #2c3e50;
+    }
+
+    /* Year filter (Actual Expenses) — keep label inline with select */
+    .expenses-section .d-flex.justify-content-between {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    .year-filter {
+        flex-shrink: 0;
+    }
+
+    /* Actual Expenses summary row — stack the two halves */
+    .actual-expenses-summary .row {
+        flex-direction: column;
+        gap: 8px;
+    }
+    .actual-expenses-summary .col-md-4 {
+        text-align: left !important;
+    }
+
+    /* Open Invoices — total amount due in section heading */
+    .invoices-section .section-heading {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+    .total-amount-due {
+        font-size: 13px;
+    }
+
+    /* ============= VALUATION ============= */
+    /* Force the 2-card grid (Purchase Price / Current Value) to single column */
+    .valuation-row {
+        grid-template-columns: 1fr !important;
+        gap: 12px !important;
+        margin-bottom: 18px !important;
+    }
+    .valuation-item {
+        padding: 14px !important;
+    }
+    .valuation-amount {
+        font-size: 1.4rem !important;
+    }
+    .valuation-label {
+        font-size: 0.8rem;
+    }
+    .valuation-card {
+        padding: 14px;
+    }
+    .valuation-summary {
+        padding: 14px;
+    }
+    .change-amount {
+        font-size: 1.3rem !important;
+    }
+    .change-percentage {
+        font-size: 1rem;
+    }
+    .change-icon {
+        font-size: 1.5rem;
+        margin-right: 10px;
+    }
+
+    /* ============= ISSUES SUMMARY CARDS ============= */
+    /* Tighten the 3 stat cards (Resolved / Unresolved / Total) */
+    .issues-summary {
+        padding: 12px;
+    }
+    .issues-summary .row {
+        margin-left: 0;
+        margin-right: 0;
+    }
+    .issues-summary .col-md-4 {
+        padding-left: 0;
+        padding-right: 0;
+    }
+    .summary-card {
+        padding: 12px;
+        margin-bottom: 10px;
+    }
+    .summary-icon {
+        font-size: 1.6rem;
+        margin-right: 12px;
+    }
+    .summary-number {
+        font-size: 1.4rem;
+    }
+    .summary-label {
+        font-size: 0.75rem;
+    }
+
+    /* ============= PROFIT & LOSS / GENERIC ALERTS ============= */
+    /* Make sure long-content alert boxes wrap and don't overflow */
+    .alert {
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+    }
+
 }
 
-/* Additional responsive adjustments */
+/* Additional small phone adjustments */
 @media (max-width: 576px) {
     .summary-card {
         margin-bottom: 15px;
     }
-    
     .summary-number {
         font-size: 1.5rem;
     }
-    
     .summary-icon {
         font-size: 1.5rem;
     }
@@ -2145,30 +2022,29 @@
 </style>
 
 <script>
-// Title Deed Viewer Function - From your properties template
+// Title Deed Viewer Function
 function viewTitleDeed(documentUrl, documentName, propertyName) {
     const documentViewer = document.getElementById('titleDeedContent');
     const downloadLink = document.getElementById('downloadDeed');
     const modalTitle = document.getElementById('titleDeedModalLabel');
-    
+
     if (!documentViewer || !downloadLink || !modalTitle) {
         console.error('Modal elements not found');
         return;
     }
-    
+
     modalTitle.textContent = `Title Deed (${propertyName})`;
     downloadLink.href = documentUrl;
     downloadLink.download = documentName;
     documentViewer.innerHTML = '';
-    
+
     const extension = documentName.split('.').pop().toLowerCase();
-    
+
     if (extension === 'pdf') {
-        // Use iframe with PDF parameters to hide sidebar and toolbar
         documentViewer.innerHTML = `
-            <iframe src="${documentUrl}#toolbar=0&navpanes=0&scrollbar=1&page=1&view=FitH" 
-                    type="application/pdf" 
-                    width="100%" 
+            <iframe src="${documentUrl}#toolbar=0&navpanes=0&scrollbar=1&page=1&view=FitH"
+                    type="application/pdf"
+                    width="100%"
                     height="500px"
                     style="border: none;">
             </iframe>
@@ -2190,7 +2066,7 @@ function viewTitleDeed(documentUrl, documentName, propertyName) {
             </div>
         `;
     }
-    
+
     $('#titleDeedModal').modal('show');
 }
 
@@ -2199,25 +2075,24 @@ function viewActualExpenseInvoice(documentUrl, documentName) {
     const documentViewer = document.getElementById('actualExpenseInvoiceContent');
     const downloadLink = document.getElementById('actualExpenseDownloadLink');
     const modalTitle = document.getElementById('actualExpenseInvoiceModalLabel');
-    
+
     if (!documentViewer || !downloadLink || !modalTitle) {
         console.error('Modal elements not found');
         return;
     }
-    
+
     modalTitle.textContent = `Expense Invoice - ${documentName}`;
     downloadLink.href = documentUrl;
     downloadLink.download = documentName;
     documentViewer.innerHTML = '';
-    
+
     const extension = documentName.split('.').pop().toLowerCase();
-    
+
     if (extension === 'pdf') {
-        // Use iframe with PDF parameters to hide sidebar and toolbar
         documentViewer.innerHTML = `
-            <iframe src="${documentUrl}#toolbar=1&navpanes=0&scrollbar=1&page=1&view=FitH" 
-                    type="application/pdf" 
-                    width="100%" 
+            <iframe src="${documentUrl}#toolbar=1&navpanes=0&scrollbar=1&page=1&view=FitH"
+                    type="application/pdf"
+                    width="100%"
                     height="500px"
                     style="border: none;">
             </iframe>
@@ -2239,7 +2114,7 @@ function viewActualExpenseInvoice(documentUrl, documentName) {
             </div>
         `;
     }
-    
+
     $('#actualExpenseInvoiceModal').modal('show');
 }
 

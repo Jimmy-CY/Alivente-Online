@@ -6,170 +6,246 @@
 
 {% block content %}
 
-<h2><center>ALIVENTE ONLINE - PROPERTIES</center></h2>
-<h4><center>ADD NEW PROPERTY</center></h4>
+<h2 class="page-title-h2"><center>ALIVENTE ONLINE - PROPERTIES</center></h2>
+<h4 class="page-subtitle-h4"><center>ADD NEW PROPERTY</center></h4>
 <br/>
 
 {% if perms.auth.can_edit_properties %}
 
 <form id="propertyForm" action="{% url 'properties_commit' %}" method="post" onsubmit="return validatePropertyName()">
   {% csrf_token %}
-  <div style="display: flex ; justify-content: flex-end">
-      <button class="btn btn-info" style="margin-right:16px" type="submit" id="submitBtn">Save</button>
-      <a href="{% url 'properties' %}" class="btn btn-info" style="margin-right:16px" role="button">Back</a>
+
+  <!-- Action Buttons (Save + Back) -->
+  <div class="page-action-buttons page-action-buttons-form">
+      <button class="btn btn-info action-btn-save" type="submit" id="submitBtn">
+          <i class="fas fa-save"></i> Save
+      </button>
+      <a href="{% url 'properties' %}" class="btn btn-info action-btn-back" role="button">
+          <i class="fas fa-arrow-left"></i> Back
+      </a>
   </div>
-  
+
   <!-- Hidden fields for coordinates -->
   <input type="hidden" name="prop_latitude" id="prop_latitude">
   <input type="hidden" name="prop_longitude" id="prop_longitude">
-  
+
   <div class="form-row">
-    <div class="form-group col-md-4">
-      <label for="prop_name"><strong>Property Name</strong></label>
-      <input type="text" class="form-control" id="prop_name" name="prop_name" placeholder="Property Name" required>
+    <div class="col-md-4">
+      <div class="form-group">
+        <label for="prop_name"><strong>Property Name</strong></label>
+        <input type="text" class="form-control" id="prop_name" name="prop_name" placeholder="Property Name" required>
+      </div>
     </div>
   </div>
+
   <div class="form-row">
-    <div class="form-group col-md-4">
-      <label for="prop_address1"><strong>Address</strong></label>
-      <input type="text" class="form-control" id="prop_address1" name="prop_address1" placeholder="Address 1" required>
+    <div class="col-md-4">
+      <div class="form-group">
+        <label for="prop_address1"><strong>Address</strong></label>
+        <input type="text" class="form-control" id="prop_address1" name="prop_address1" placeholder="Address 1" required>
+      </div>
     </div>
-    <div class="form-group col-md-4">
-      <label for="prop_address2"><strong>Address</strong></label>
-      <input type="text" class="form-control" id="prop_address2" name="prop_address2" placeholder="Address 2">
+    <div class="col-md-4">
+      <div class="form-group">
+        <label for="prop_address2"><strong>Address</strong></label>
+        <input type="text" class="form-control" id="prop_address2" name="prop_address2" placeholder="Address 2">
+      </div>
     </div>
-    <div class="form-group col-md-4">
-      <label for="prop_suburb"><strong>Suburb</strong></label>
-      <input type="text" class="form-control" id="prop_suburb" name="prop_suburb" placeholder="Suburb">
+    <div class="col-md-4">
+      <div class="form-group">
+        <label for="prop_suburb"><strong>Suburb</strong></label>
+        <input type="text" class="form-control" id="prop_suburb" name="prop_suburb" placeholder="Suburb">
+      </div>
     </div>
   </div>
+
   <div class="form-row">
-      <div class="form-group col-md-4">
-      <label for="prop_city"><strong>City</strong></label>
-      <input type="text" class="form-control" id="prop_city" name="prop_city" placeholder="City" required>
+    <div class="col-md-4">
+      <div class="form-group">
+        <label for="prop_city"><strong>City</strong></label>
+        <input type="text" class="form-control" id="prop_city" name="prop_city" placeholder="City" required>
+      </div>
     </div>
-    <div class="form-group col-md-4">
-      <label for="prop_province"><strong>Province</strong></label>
-      <input type="text" class="form-control" id="prop_province" name="prop_province" placeholder="Province">
+    <div class="col-md-4">
+      <div class="form-group">
+        <label for="prop_province"><strong>Province</strong></label>
+        <input type="text" class="form-control" id="prop_province" name="prop_province" placeholder="Province">
+      </div>
     </div>
-    <div class="form-group col-md-2">
-      <label for="prop_country"><strong>Country</strong></label>
-      <select class="form-control" id="prop_country" name="prop_country" required>
-        <option value="" disabled selected>Select Country</option>
-        <option value="Cyprus">Cyprus</option>
-        <option value="Greece">Greece</option>
-        <option value="Spain">Spain</option>
-        <option value="Portugal">Portugal</option>
-        <option value="Italy">Italy</option>
-        <option value="France">France</option>
-        <option value="Germany">Germany</option>
-        <option value="United Kingdom">United Kingdom</option>
-      </select>
+    <div class="col-md-2">
+      <div class="form-group">
+        <label for="prop_country"><strong>Country</strong></label>
+        <select class="form-control" id="prop_country" name="prop_country" required>
+          <option value="" disabled selected>Select Country</option>
+          <option value="Cyprus">Cyprus</option>
+          <option value="Greece">Greece</option>
+          <option value="Spain">Spain</option>
+          <option value="Portugal">Portugal</option>
+          <option value="Italy">Italy</option>
+          <option value="France">France</option>
+          <option value="Germany">Germany</option>
+          <option value="United Kingdom">United Kingdom</option>
+        </select>
+      </div>
     </div>
-    <div class="form-group col-md-2">
-      <label for="prop_pcode"><strong>Post Code</strong></label>
-      <input type="text" class="form-control" id="prop_pcode" name="prop_pcode" placeholder="Post Code" required>
+    <div class="col-md-2">
+      <div class="form-group">
+        <label for="prop_pcode"><strong>Post Code</strong></label>
+        <input type="text" class="form-control" id="prop_pcode" name="prop_pcode" placeholder="Post Code" required>
+      </div>
     </div>
   </div>
-  
+
   <!-- MAP SECTION -->
   <div class="form-row">
-    <div class="form-group col-md-12">
-      <label><strong>Property Location on Map</strong></label>
-      <p class="text-muted small">Click on the map to set the exact property location</p>
-      <div class="map-container">
-        <div id="propertyMap" class="property-location-map"></div>
-        <div class="map-controls mt-2">
-          <button type="button" id="findOnMapBtn" class="btn btn-primary btn-sm">
-            📍 Find Address on Map
-          </button>
-          <div class="coordinates-display ml-3">
-            <small class="text-muted">
-              <strong>Coordinates:</strong> 
-              <span id="coordinatesDisplay">Click on map to set location</span>
-            </small>
+    <div class="col-md-12">
+      <div class="form-group">
+        <label><strong>Property Location on Map</strong></label>
+        <p class="text-muted small map-help-text">Click on the map to set the exact property location</p>
+        <div class="map-container">
+          <div id="propertyMap" class="property-location-map"></div>
+          <div class="map-controls">
+            <button type="button" id="findOnMapBtn" class="btn btn-primary btn-sm map-find-btn">
+              <i class="fas fa-map-marker-alt"></i> Find Address on Map
+            </button>
+            <div class="coordinates-display">
+              <small class="text-muted">
+                <strong>Coordinates:</strong>
+                <span id="coordinatesDisplay">Click on map to set location</span>
+              </small>
+            </div>
           </div>
         </div>
       </div>
     </div>
   </div>
-  
+
   <div class="form-row">
-    <div class="form-group col-md-4">
-      <label for="prop_floor_area"><strong>Floor Area</strong></label>
-      <input type="number" class="form-control" id="prop_floor_area" name="prop_floor_area" placeholder="Floor Area">
+    <div class="col-md-4">
+      <div class="form-group">
+        <label for="prop_floor_area"><strong>Floor Area</strong></label>
+        <input type="number" class="form-control" id="prop_floor_area" name="prop_floor_area" placeholder="Floor Area">
+      </div>
     </div>
-    <div class="form-group col-md-4">
-      <label for="prop_year_built"><strong>Year Built</strong></label>
-      <input type="number" class="form-control" id="prop_year_built" name="prop_year_built" placeholder="Year Built">
+    <div class="col-md-4">
+      <div class="form-group">
+        <label for="prop_year_built"><strong>Year Built</strong></label>
+        <input type="number" class="form-control" id="prop_year_built" name="prop_year_built" placeholder="Year Built">
+      </div>
     </div>
-    <div class="form-group col-md-4">
-      <label for="prop_include_in_occupancy"><strong>Include in Occupancy Calculations</strong></label>
-      <select id="prop_include_in_occupancy" class="form-control" name="prop_include_in_occupancy" required>
-        <option value="True" selected>Yes</option>
-        <option value="False">No</option>
-      </select>
+    <div class="col-md-4">
+      <div class="form-group">
+        <label for="prop_include_in_occupancy"><strong>Include in Occupancy Calculations</strong></label>
+        <select id="prop_include_in_occupancy" class="form-control" name="prop_include_in_occupancy" required>
+          <option value="True" selected>Yes</option>
+          <option value="False">No</option>
+        </select>
+      </div>
     </div>
   </div>
+
   <div class="form-row">
-    <div class="form-group col-md-4">
-      <label for="prop_status"><strong>Status</strong></label>
-      <select id="prop_status" class="form-control" name="prop_status" required>
-        <option value="" disabled selected>Select Property Status</option>
-        <option value="Active">Active</option>
-        <option value="Inactive">Inactive</option>
-      </select>
-    </div>    
-    <div class="form-group col-md-4">
-      <label for="prop_available_for_rent"><strong>Available For Rent</strong></label>
-      <select id="prop_available_for_rent" class="form-control" name="prop_available_for_rent" required>
-        <option value="" disabled selected>Select if Available for Rent</option>
-        <option value="Yes">Yes</option>
-        <option value="No">No</option>
-      </select>
-    </div>    
-    <div class="form-group col-md-4">
-      <label for="prop_title_deed_status"><strong>Title Deed Available</strong></label>
-      <select id="prop_title_deed_status" class="form-control" name="prop_title_deed_status" required>
-        <option value="" disabled selected>Select if Title Deed is Available</option>
-        <option value="Yes">Yes</option>
-        <option value="No">No</option>
-      </select>
+    <div class="col-md-4">
+      <div class="form-group">
+        <label for="prop_status"><strong>Status</strong></label>
+        <select id="prop_status" class="form-control" name="prop_status" required>
+          <option value="" disabled selected>Select Property Status</option>
+          <option value="Active">Active</option>
+          <option value="Inactive">Inactive</option>
+        </select>
+      </div>
     </div>
-  </div> 
-  <div class="form-row">
-    <div class="form-group col-md-4">
-      <label for="prop_electricity"><strong>Electricity Details</strong></label>
-      <input type="text" class="form-control" id="prop_electricity" name="prop_electricity" placeholder="Electricity Details">
+    <div class="col-md-4">
+      <div class="form-group">
+        <label for="prop_available_for_rent"><strong>Available For Rent</strong></label>
+        <select id="prop_available_for_rent" class="form-control" name="prop_available_for_rent" required>
+          <option value="" disabled selected>Select if Available for Rent</option>
+          <option value="Yes">Yes</option>
+          <option value="No">No</option>
+        </select>
+      </div>
     </div>
-    <div class="form-group col-md-4">
-      <label for="prop_water"><strong>Water Details</strong></label>
-      <input type="text" class="form-control" id="prop_water" name="prop_water" placeholder="Water Details">
-    </div>
-    <div class="form-group col-md-4">
-      <label for="prop_refuse"><strong>Refuse Details</strong></label>
-      <input type="text" class="form-control" id="prop_refuse" name="prop_refuse" placeholder="Refuse Details">
+    <div class="col-md-4">
+      <div class="form-group">
+        <label for="prop_title_deed_status"><strong>Title Deed Available</strong></label>
+        <select id="prop_title_deed_status" class="form-control" name="prop_title_deed_status" required>
+          <option value="" disabled selected>Select if Title Deed is Available</option>
+          <option value="Yes">Yes</option>
+          <option value="No">No</option>
+        </select>
+      </div>
     </div>
   </div>
+
   <div class="form-row">
-    <div class="form-group col-md-4">
-      <label for="prop_property_tax"><strong>Property Tax Details</strong></label>
-      <input type="text" class="form-control" id="prop_property_tax" name="prop_property_tax" placeholder="Property Tax Details">
+    <div class="col-md-4">
+      <div class="form-group">
+        <label for="prop_electricity"><strong>Electricity Details</strong></label>
+        <input type="text" class="form-control" id="prop_electricity" name="prop_electricity" placeholder="Electricity Details">
+      </div>
     </div>
-    <div class="form-group col-md-4">
-      <label for="prop_sewerage"><strong>Sewerage Details</strong></label>
-      <input type="text" class="form-control" id="prop_sewerage" name="prop_sewerage" placeholder="Sewerage Details">
+    <div class="col-md-4">
+      <div class="form-group">
+        <label for="prop_water"><strong>Water Details</strong></label>
+        <input type="text" class="form-control" id="prop_water" name="prop_water" placeholder="Water Details">
+      </div>
     </div>
-    <div class="form-group col-md-4">
-      <label for="prop_insurance"><strong>Insurance Details</strong></label>
-      <input type="text" class="form-control" id="prop_insurance" name="prop_insurance" placeholder="Insurance Details">
+    <div class="col-md-4">
+      <div class="form-group">
+        <label for="prop_refuse"><strong>Refuse Details</strong></label>
+        <input type="text" class="form-control" id="prop_refuse" name="prop_refuse" placeholder="Refuse Details">
+      </div>
     </div>
   </div>
+
+  <div class="form-row">
+    <div class="col-md-4">
+      <div class="form-group">
+        <label for="prop_property_tax"><strong>Property Tax Details</strong></label>
+        <input type="text" class="form-control" id="prop_property_tax" name="prop_property_tax" placeholder="Property Tax Details">
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="form-group">
+        <label for="prop_sewerage"><strong>Sewerage Details</strong></label>
+        <input type="text" class="form-control" id="prop_sewerage" name="prop_sewerage" placeholder="Sewerage Details">
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="form-group">
+        <label for="prop_insurance"><strong>Insurance Details</strong></label>
+        <input type="text" class="form-control" id="prop_insurance" name="prop_insurance" placeholder="Insurance Details">
+      </div>
+    </div>
+  </div>
+
 </form>
 
 {% endif %}
 
 <style>
+/* ==================== DESKTOP STYLES ==================== */
+
+.page-title-h2 {
+    margin-top: 0.5rem;
+    margin-bottom: 0;
+}
+.page-subtitle-h4 {
+    margin-top: 0.25rem;
+    margin-bottom: 1rem;
+}
+
+/* Top action buttons (Save + Back) — right-aligned on desktop */
+.page-action-buttons {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 1.5rem;
+}
+.page-action-buttons-form {
+    justify-content: flex-end;
+}
+
+/* Map */
 .map-container {
     background-color: #f8f9fa;
     padding: 15px;
@@ -184,10 +260,16 @@
     margin-bottom: 10px;
 }
 
+.map-help-text {
+    margin-bottom: 8px;
+}
+
 .map-controls {
     display: flex;
     align-items: center;
     flex-wrap: wrap;
+    gap: 12px;
+    margin-top: 8px;
 }
 
 .coordinates-display {
@@ -198,15 +280,85 @@
     display: inline-block;
 }
 
+/* ==================== MOBILE STYLES (≤768px) ==================== */
 @media (max-width: 768px) {
+
+    .page-title-h2 {
+        font-size: 1.25rem;
+    }
+    .page-subtitle-h4 {
+        font-size: 1rem;
+        margin-bottom: 0.75rem;
+    }
+
+    /* Action buttons — 2-column grid (Save + Back), each full-width */
+    .page-action-buttons-form {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin-bottom: 1rem;
+    }
+    .page-action-buttons-form .btn {
+        width: 100%;
+        text-align: center;
+        padding: 10px 12px;
+        margin: 0 !important;
+    }
+
+    /* Form — single column, prevent iOS zoom on focus */
+    .form-row {
+        margin-left: 0;
+        margin-right: 0;
+    }
+    .form-row > [class^="col-"] {
+        padding-left: 0;
+        padding-right: 0;
+    }
+    .form-group {
+        margin-bottom: 14px;
+    }
+    .form-control,
+    select.form-control,
+    input[type="date"].form-control,
+    input[type="number"].form-control,
+    input[type="text"].form-control {
+        font-size: 16px;
+        padding: 10px 12px;
+    }
+    label {
+        font-size: 13px;
+        margin-bottom: 4px;
+    }
+
+    /* Map — sized for phone */
+    .map-container {
+        padding: 10px;
+    }
+    .property-location-map {
+        height: 320px;
+        margin-bottom: 8px;
+    }
+    .map-help-text {
+        font-size: 12px;
+    }
+
+    /* Map controls — stack with full-width Find button */
     .map-controls {
         flex-direction: column;
-        align-items: flex-start;
+        align-items: stretch;
+        gap: 8px;
     }
-    
+    .map-find-btn {
+        width: 100%;
+        padding: 10px 12px;
+        font-size: 14px;
+    }
     .coordinates-display {
         margin-left: 0 !important;
-        margin-top: 10px;
+        margin-top: 0;
+        text-align: center;
+        font-size: 12px;
+        word-break: break-word;
     }
 }
 </style>
@@ -230,41 +382,41 @@ function validatePropertyName() {
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize the map
     var map = L.map('propertyMap').setView([35.1264, 33.4299], 8); // Default to Cyprus
-    
+
     // Add OpenStreetMap tiles
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© OpenStreetMap contributors',
         maxZoom: 18
     }).addTo(map);
-    
+
     var currentMarker = null;
-    
+
     // Handle map clicks
     map.on('click', function(e) {
         var lat = e.latlng.lat;
         var lng = e.latlng.lng;
-        
+
         // Remove existing marker
         if (currentMarker) {
             map.removeLayer(currentMarker);
         }
-        
+
         // Add new marker
         currentMarker = L.marker([lat, lng]).addTo(map);
-        
+
         // Update form fields
         document.getElementById('prop_latitude').value = lat.toFixed(8);
         document.getElementById('prop_longitude').value = lng.toFixed(8);
-        
+
         updateCoordinatesDisplay(lat, lng);
     });
-    
+
     // Update coordinates display
     function updateCoordinatesDisplay(lat, lng) {
-        document.getElementById('coordinatesDisplay').textContent = 
+        document.getElementById('coordinatesDisplay').textContent =
             `Latitude: ${lat.toFixed(6)}, Longitude: ${lng.toFixed(6)}`;
     }
-    
+
     // Find address on map button
     document.getElementById('findOnMapBtn').addEventListener('click', function() {
         var addressParts = [
@@ -272,41 +424,41 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('prop_city').value,
             document.getElementById('prop_country').value
         ].filter(part => part && part.trim() !== '');
-        
+
         if (addressParts.length === 0) {
             alert('Please enter at least a city and country to search for the location.');
             return;
         }
-        
+
         var address = addressParts.join(', ');
         var geocodeUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1`;
-        
+
         // Show loading
-        document.getElementById('findOnMapBtn').innerHTML = '🔍 Searching...';
+        document.getElementById('findOnMapBtn').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Searching...';
         document.getElementById('findOnMapBtn').disabled = true;
-        
+
         fetch(geocodeUrl)
             .then(response => response.json())
             .then(data => {
                 if (data && data.length > 0) {
                     var lat = parseFloat(data[0].lat);
                     var lng = parseFloat(data[0].lon);
-                    
+
                     // Remove existing marker
                     if (currentMarker) {
                         map.removeLayer(currentMarker);
                     }
-                    
+
                     // Add new marker
                     currentMarker = L.marker([lat, lng]).addTo(map);
                     map.setView([lat, lng], 15);
-                    
+
                     // Update form fields
                     document.getElementById('prop_latitude').value = lat.toFixed(8);
                     document.getElementById('prop_longitude').value = lng.toFixed(8);
-                    
+
                     updateCoordinatesDisplay(lat, lng);
-                    
+
                     alert('Location found! You can fine-tune the position by clicking on the map.');
                 } else {
                     alert('Location not found. Please try a different address or place the marker manually.');
@@ -318,11 +470,11 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .finally(() => {
                 // Reset button
-                document.getElementById('findOnMapBtn').innerHTML = '📍 Find Address on Map';
+                document.getElementById('findOnMapBtn').innerHTML = '<i class="fas fa-map-marker-alt"></i> Find Address on Map';
                 document.getElementById('findOnMapBtn').disabled = false;
             });
     });
-    
+
     // Auto-center map when country changes
     document.getElementById('prop_country').addEventListener('change', function() {
         var country = this.value;
@@ -336,11 +488,17 @@ document.addEventListener('DOMContentLoaded', function() {
             'Germany': [51.1657, 10.4515],
             'United Kingdom': [55.3781, -3.4360]
         };
-        
+
         if (countryCoordinates[country]) {
             map.setView(countryCoordinates[country], 8);
         }
     });
+
+    // Mobile fix: Leaflet maps need to recalculate size when their container changes
+    // This handles the case where the container width changes during page load on mobile
+    setTimeout(function() {
+        map.invalidateSize();
+    }, 250);
 });
 </script>
 
