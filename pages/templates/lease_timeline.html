@@ -8,57 +8,68 @@
 <h5 class="page-subtitle-h5"><center>VISUAL LEASE CALENDAR</center></h5>
 <br/>
 
-<!-- Controls Row -->
-<div class="timeline-controls">
-    <div class="timeline-controls-group">
-        <button id="navLeft" class="btn btn-info btn-sm timeline-nav-btn">
-            <i class="fas fa-chevron-left"></i> <span class="btn-label-full">Previous Month</span><span class="btn-label-short">Prev</span>
-        </button>
-        <button id="navRight" class="btn btn-info btn-sm timeline-nav-btn">
-            <span class="btn-label-full">Next Month</span><span class="btn-label-short">Next</span> <i class="fas fa-chevron-right"></i>
-        </button>
-        <span class="timeline-control-divider"></span>
-        <button id="zoomIn" class="btn btn-info btn-sm timeline-nav-btn">
-            <i class="fas fa-search-plus"></i> <span class="btn-label-full">Zoom In</span>
-        </button>
-        <button id="zoomOut" class="btn btn-info btn-sm timeline-nav-btn">
-            <i class="fas fa-search-minus"></i> <span class="btn-label-full">Zoom Out</span>
-        </button>
-        <button id="fitAll" class="btn btn-info btn-sm timeline-nav-btn">
-            <i class="fas fa-expand"></i> <span class="btn-label-full">Fit All</span><span class="btn-label-short">Fit</span>
-        </button>
-    </div>
-    <div class="timeline-controls-secondary">
-        <label class="timeline-checkbox-label">
-            <input type="checkbox" id="showInactive" checked> <span>Show Inactive Leases</span>
-        </label>
-        <a href="{% url 'tenant' %}" class="btn btn-info btn-sm timeline-back-btn">
-            <i class="fas fa-arrow-left"></i> Back
+<!-- Mobile portrait orientation prompt — visible only on phones in portrait -->
+<div class="rotate-prompt">
+    <div class="rotate-prompt-content">
+        <i class="fas fa-mobile-alt rotate-icon"></i>
+        <h3>Please Rotate Your Phone</h3>
+        <p>The Lease Timeline is best viewed in <strong>landscape mode</strong>.</p>
+        <p class="rotate-instruction">Turn your phone sideways to see the calendar.</p>
+        <a href="{% url 'tenant' %}" class="btn btn-info rotate-back-btn">
+            <i class="fas fa-arrow-left"></i> Back to Tenants
         </a>
     </div>
 </div>
 
-<!-- Legend -->
-<div class="timeline-legend">
-    <span class="legend-item">
-        <span class="legend-color" style="background: #28a745;"></span> Active Lease
-    </span>
-    <span class="legend-item">
-        <span class="legend-color" style="background: #6c757d;"></span> Past Lease
-    </span>
-    <span class="legend-item">
-        <span class="legend-color" style="background: #dc3545;"></span> Expired (Still Marked Active)
-    </span>
-</div>
+<!-- Timeline UI — hidden on mobile portrait, visible elsewhere -->
+<div class="timeline-ui">
+    <!-- Controls Row -->
+    <div class="timeline-controls">
+        <div class="timeline-controls-group">
+            <button id="navLeft" class="btn btn-info btn-sm timeline-nav-btn">
+                <i class="fas fa-chevron-left"></i> <span class="btn-label-full">Previous Month</span><span class="btn-label-short">Prev</span>
+            </button>
+            <button id="navRight" class="btn btn-info btn-sm timeline-nav-btn">
+                <span class="btn-label-full">Next Month</span><span class="btn-label-short">Next</span> <i class="fas fa-chevron-right"></i>
+            </button>
+            <span class="timeline-control-divider"></span>
+            <button id="zoomIn" class="btn btn-info btn-sm timeline-nav-btn">
+                <i class="fas fa-search-plus"></i> <span class="btn-label-full">Zoom In</span>
+            </button>
+            <button id="zoomOut" class="btn btn-info btn-sm timeline-nav-btn">
+                <i class="fas fa-search-minus"></i> <span class="btn-label-full">Zoom Out</span>
+            </button>
+            <button id="fitAll" class="btn btn-info btn-sm timeline-nav-btn">
+                <i class="fas fa-expand"></i> <span class="btn-label-full">Fit All</span><span class="btn-label-short">Fit</span>
+            </button>
+        </div>
+        <div class="timeline-controls-secondary">
+            <label class="timeline-checkbox-label">
+                <input type="checkbox" id="showInactive" checked> <span>Show Inactive Leases</span>
+            </label>
+            <a href="{% url 'tenant' %}" class="btn btn-info btn-sm timeline-back-btn">
+                <i class="fas fa-arrow-left"></i> Back
+            </a>
+        </div>
+    </div>
 
-<!-- Mobile-only: scroll hint -->
-<div class="timeline-scroll-hint">
-    <i class="fas fa-arrows-alt-h"></i> Swipe horizontally to explore the timeline
-</div>
+    <!-- Legend -->
+    <div class="timeline-legend">
+        <span class="legend-item">
+            <span class="legend-color" style="background: #28a745;"></span> Active Lease
+        </span>
+        <span class="legend-item">
+            <span class="legend-color" style="background: #6c757d;"></span> Past Lease
+        </span>
+        <span class="legend-item">
+            <span class="legend-color" style="background: #dc3545;"></span> Expired (Still Marked Active)
+        </span>
+    </div>
 
-<!-- Timeline Container — wrapped for horizontal scroll on mobile -->
-<div class="timeline-scroll-wrap">
-    <div id="leaseTimeline" class="timeline-element"></div>
+    <!-- Timeline Container -->
+    <div class="timeline-scroll-wrap">
+        <div id="leaseTimeline" class="timeline-element"></div>
+    </div>
 </div>
 
 <style>
@@ -72,6 +83,16 @@
     margin-top: 0.25rem;
     margin-bottom: 1rem;
     color: #6c757d;
+}
+
+/* Rotate prompt — hidden on desktop and landscape */
+.rotate-prompt {
+    display: none;
+}
+
+/* Timeline UI shown on desktop and landscape */
+.timeline-ui {
+    display: block;
 }
 
 /* Controls row */
@@ -145,11 +166,6 @@
     display: inline-block;
 }
 
-/* Scroll hint — hidden on desktop */
-.timeline-scroll-hint {
-    display: none;
-}
-
 /* Timeline container */
 .timeline-scroll-wrap {
     width: 100%;
@@ -177,7 +193,6 @@
     color: #2c3e50;
 }
 
-/* Tooltip styling */
 .vis-tooltip {
     background: #2c3e50 !important;
     color: white !important;
@@ -187,7 +202,6 @@
     box-shadow: 0 4px 12px rgba(0,0,0,0.3) !important;
 }
 
-/* Fix row heights — make all rows exactly 65px */
 .vis-labelset .vis-label {
     height: 65px !important;
     min-height: 65px !important;
@@ -263,8 +277,8 @@
     color: #2c3e50 !important;
 }
 
-/* ==================== MOBILE STYLES (≤768px) ==================== */
-@media (max-width: 768px) {
+/* ==================== MOBILE PORTRAIT — show rotate prompt ==================== */
+@media (max-width: 768px) and (orientation: portrait) {
 
     .page-title-h2 {
         font-size: 1.25rem;
@@ -274,73 +288,130 @@
         margin-bottom: 12px;
     }
 
-    /* Controls — stack vertically */
+    /* Hide the timeline UI completely */
+    .timeline-ui {
+        display: none;
+    }
+
+    /* Show the rotate prompt */
+    .rotate-prompt {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 60vh;
+        padding: 20px;
+    }
+
+    .rotate-prompt-content {
+        text-align: center;
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border: 1px solid #dee2e6;
+        border-radius: 12px;
+        padding: 40px 24px;
+        max-width: 360px;
+        width: 100%;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    }
+
+    .rotate-icon {
+        font-size: 4rem;
+        color: #17a2b8;
+        margin-bottom: 20px;
+        display: inline-block;
+        animation: rotate-hint 2.5s ease-in-out infinite;
+    }
+
+    @keyframes rotate-hint {
+        0%, 100% { transform: rotate(0deg); }
+        25% { transform: rotate(-90deg); }
+        75% { transform: rotate(-90deg); }
+    }
+
+    .rotate-prompt-content h3 {
+        color: #2c3e50;
+        font-size: 1.4rem;
+        margin: 0 0 16px 0;
+        font-weight: 600;
+    }
+
+    .rotate-prompt-content p {
+        color: #495057;
+        font-size: 1rem;
+        line-height: 1.5;
+        margin: 0 0 12px 0;
+    }
+
+    .rotate-prompt-content p strong {
+        color: #17a2b8;
+    }
+
+    .rotate-instruction {
+        font-size: 0.95rem !important;
+        color: #6c757d !important;
+        font-style: italic;
+        margin-bottom: 24px !important;
+    }
+
+    .rotate-back-btn {
+        margin-top: 12px;
+        padding: 10px 24px;
+    }
+}
+
+/* ==================== MOBILE LANDSCAPE — show timeline with mobile-friendly controls ==================== */
+@media (max-width: 992px) and (orientation: landscape) and (max-height: 600px) {
+
+    .page-title-h2 {
+        font-size: 1.15rem;
+        margin-bottom: 0;
+    }
+    .page-subtitle-h5 {
+        font-size: 0.85rem;
+        margin-bottom: 8px;
+    }
+
+    /* Compact controls in landscape — single row using full width */
     .timeline-controls {
-        flex-direction: column;
-        align-items: stretch;
         gap: 10px;
-        margin-bottom: 12px;
+        margin-bottom: 10px;
     }
 
-    /* Navigation buttons — 5-column grid (Prev | Next | divider | Zoom+ | Zoom- | Fit) */
-    /* Actually use 3 rows for clarity: prev/next, zoom+/zoom-/fit, then secondary controls */
     .timeline-controls-group {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
         gap: 6px;
-        width: 100%;
     }
 
-    .timeline-controls-group .timeline-nav-btn {
-        width: 100%;
+    .timeline-nav-btn {
         font-size: 12px;
-        padding: 8px 6px;
+        padding: 6px 10px;
     }
 
-    /* Hide the desktop full labels, show short labels on mobile */
+    /* Hide the desktop full labels, show short labels */
     .btn-label-full { display: none; }
     .btn-label-short { display: inline; }
 
-    /* The divider span doesn't make sense in a grid — hide it on mobile */
+    /* Hide the divider in landscape too */
     .timeline-control-divider {
         display: none;
     }
 
-    /* Place the 5 buttons across two rows: 
-       Row 1: Prev | Next
-       Row 2: Zoom+ | Zoom- | Fit (3-col span via individual placement) */
-    .timeline-nav-btn:nth-child(3) { grid-column: 1 / 2; } /* Zoom+ becomes 3rd */
-    .timeline-nav-btn:nth-child(4) { grid-column: 2 / 3; } /* Zoom- becomes 4th */
-    .timeline-nav-btn:nth-child(5) { grid-column: 1 / 3; } /* Fit spans full width */
-
-    /* Secondary controls — checkbox + back button on the same row */
     .timeline-controls-secondary {
-        display: flex;
-        flex-direction: row;
-        justify-content: space-between;
-        align-items: center;
-        gap: 8px;
-        width: 100%;
-        padding-top: 6px;
-        border-top: 1px solid #f1f3f5;
+        gap: 12px;
     }
 
     .timeline-checkbox-label {
-        font-size: 13px;
-        flex: 1;
+        font-size: 12px;
     }
 
     .timeline-back-btn {
-        flex-shrink: 0;
         padding: 6px 12px;
         font-size: 12px;
     }
 
-    /* Legend — wrap nicely */
+    /* Legend tighter */
     .timeline-legend {
-        padding: 10px 14px;
-        gap: 10px 16px;
-        margin-bottom: 12px;
+        padding: 8px 12px;
+        gap: 12px;
+        margin-bottom: 10px;
     }
 
     .legend-item {
@@ -352,48 +423,18 @@
         height: 16px;
     }
 
-    /* Scroll hint visible on mobile */
-    .timeline-scroll-hint {
-        display: block;
-        text-align: center;
-        font-size: 12px;
-        color: #6c757d;
-        font-style: italic;
-        margin-bottom: 8px;
-        padding: 8px 12px;
-        background: #f8f9fa;
-        border-radius: 6px;
-        border: 1px dashed #dee2e6;
-    }
-    .timeline-scroll-hint i {
-        margin-right: 6px;
-        color: #17a2b8;
-    }
-
-    /* Timeline container — horizontal scroll */
-    .timeline-scroll-wrap {
-        overflow-x: auto;
-        overflow-y: hidden;
-        -webkit-overflow-scrolling: touch;
-        border-radius: 8px;
-    }
-
-    .timeline-element {
-        min-width: 800px;
-    }
-
-    /* Tighten vis-timeline labels on mobile */
+    /* Tighten vis-timeline labels */
     .vis-labelset .vis-label {
-        font-size: 13px !important;
+        font-size: 12px !important;
     }
 
     .vis-time-axis .vis-text {
-        font-size: 12px !important;
+        font-size: 11px !important;
     }
 
     .vis-item .vis-item-content {
         padding: 6px !important;
-        font-size: 12px !important;
+        font-size: 11px !important;
     }
 }
 </style>
@@ -408,20 +449,38 @@
 <script>
 console.log('=== LEASE TIMELINE LOADING ===');
 
-const timelineDataElement = document.getElementById('timeline-data');
+// Detect if we should skip timeline initialization (mobile portrait)
+function isMobilePortrait() {
+    return window.matchMedia('(max-width: 768px) and (orientation: portrait)').matches;
+}
 
-if (!timelineDataElement) {
-    console.error('Timeline data element not found!');
-    document.getElementById('leaseTimeline').innerHTML = `
-        <div style="display: flex; align-items: center; justify-content: center; height: 100%; flex-direction: column; color: #6c757d; padding: 40px 20px;">
-            <i class="fas fa-exclamation-triangle fa-4x mb-3"></i>
-            <h4>Error Loading Timeline</h4>
-            <p>Timeline data could not be loaded.</p>
-        </div>
-    `;
-} else {
+// Only initialize the timeline if we're not in mobile portrait
+function initTimelineIfNeeded() {
+    if (isMobilePortrait()) {
+        console.log('Mobile portrait detected — skipping timeline initialization');
+        return false;
+    }
+
+    const timelineDataElement = document.getElementById('timeline-data');
+
+    if (!timelineDataElement) {
+        console.error('Timeline data element not found!');
+        document.getElementById('leaseTimeline').innerHTML = `
+            <div style="display: flex; align-items: center; justify-content: center; height: 100%; flex-direction: column; color: #6c757d; padding: 40px 20px;">
+                <i class="fas fa-exclamation-triangle fa-4x mb-3"></i>
+                <h4>Error Loading Timeline</h4>
+                <p>Timeline data could not be loaded.</p>
+            </div>
+        `;
+        return false;
+    }
+
+    // Avoid re-initializing if already done
+    if (window._timelineInitialized) {
+        return true;
+    }
+
     const timelineData = JSON.parse(timelineDataElement.textContent);
-
     console.log('Timeline data loaded:', timelineData);
     console.log('Number of leases:', timelineData.length);
 
@@ -434,184 +493,203 @@ if (!timelineDataElement) {
                 <p class="text-muted">Add tenants with lease start dates to see them on the timeline.</p>
             </div>
         `;
-    } else {
-        // Create groups (properties)
-        const groups = new vis.DataSet();
-        const seenProperties = new Set();
-
-        timelineData.forEach(item => {
-            if (!seenProperties.has(item.property_id)) {
-                groups.add({
-                    id: item.property_id,
-                    content: item.property_name
-                });
-                seenProperties.add(item.property_id);
-            }
-        });
-
-        console.log('Groups created:', groups.length);
-
-        // Create items (leases)
-        const items = new vis.DataSet();
-        const today = new Date();
-
-        timelineData.forEach(item => {
-            const startDate = new Date(item.start_date);
-            const endDate = item.end_date ? new Date(item.end_date) : new Date();
-            const isExpired = item.end_date && new Date(item.end_date) < today && item.is_active;
-
-            let color;
-            if (isExpired) {
-                color = '#dc3545';
-            } else if (item.is_active) {
-                color = '#28a745';
-            } else {
-                color = '#6c757d';
-            }
-
-            const tooltip = `
-                <strong>${item.tenant_name}</strong><br>
-                Start: ${startDate.toLocaleDateString()}<br>
-                End: ${endDate.toLocaleDateString()}<br>
-                Rent: €${item.rent.toFixed(2)}/month<br>
-                Status: ${item.is_active ? 'Active' : 'Inactive'}
-                ${isExpired ? '<br><span style="color: #ff6b6b;">⚠️ EXPIRED</span>' : ''}
-            `;
-
-            items.add({
-                id: `lease_${item.tenant_id}`,
-                group: item.property_id,
-                content: item.tenant_name,
-                start: startDate,
-                end: endDate,
-                style: `background-color: ${color}; border-color: ${color};`,
-                title: tooltip,
-                className: item.is_active ? 'active-lease' : 'inactive-lease',
-                editable: false
-            });
-        });
-
-        console.log('Items created:', items.length);
-
-        // Calculate exact timeline height based on number of groups
-        const rowHeight = 65;
-        const timeAxisHeight = 50;
-        const totalHeight = (groups.length * rowHeight) + timeAxisHeight;
-
-        console.log(`Setting timeline height: ${groups.length} properties × ${rowHeight}px + ${timeAxisHeight}px axis = ${totalHeight}px`);
-
-        // Timeline options
-        const options = {
-            width: '100%',
-            height: `${totalHeight}px`,
-            margin: {
-                item: 10,
-                axis: 10
-            },
-            orientation: 'top',
-            start: new Date(today.getFullYear(), today.getMonth() - 6, 1),
-            end: new Date(today.getFullYear(), today.getMonth() + 6, 1),
-            zoomMin: 1000 * 60 * 60 * 24 * 31,
-            zoomMax: 1000 * 60 * 60 * 24 * 365 * 3,
-            moveable: true,
-            zoomable: true,
-            showCurrentTime: true,
-            stack: false,
-            tooltip: {
-                followMouse: true,
-                overflowMethod: 'cap'
-            },
-            maxHeight: `${totalHeight}px`,
-            minHeight: `${totalHeight}px`
-        };
-
-        const container = document.getElementById('leaseTimeline');
-        const timeline = new vis.Timeline(container, items, groups, options);
-
-        // Force height adjustment after timeline renders
-        setTimeout(() => {
-            container.style.height = `${totalHeight}px`;
-            timeline.redraw();
-            console.log('Timeline height locked to:', totalHeight);
-        }, 100);
-
-        console.log('Timeline initialized successfully');
-
-        // Zoom controls
-        document.getElementById('zoomIn').addEventListener('click', () => {
-            timeline.zoomIn(0.5);
-        });
-
-        document.getElementById('zoomOut').addEventListener('click', () => {
-            timeline.zoomOut(0.5);
-        });
-
-        document.getElementById('fitAll').addEventListener('click', () => {
-            timeline.fit();
-        });
-
-        // Navigation controls — move left/right by 1 month
-        document.getElementById('navLeft').addEventListener('click', () => {
-            const range = timeline.getWindow();
-            const moveAmount = 1000 * 60 * 60 * 24 * 30;
-
-            timeline.setWindow({
-                start: new Date(range.start.getTime() - moveAmount),
-                end: new Date(range.end.getTime() - moveAmount)
-            });
-        });
-
-        document.getElementById('navRight').addEventListener('click', () => {
-            const range = timeline.getWindow();
-            const moveAmount = 1000 * 60 * 60 * 24 * 30;
-
-            timeline.setWindow({
-                start: new Date(range.start.getTime() + moveAmount),
-                end: new Date(range.end.getTime() + moveAmount)
-            });
-        });
-
-        // Show/hide inactive leases
-        document.getElementById('showInactive').addEventListener('change', function() {
-            const showInactive = this.checked;
-
-            timelineData.forEach(item => {
-                const itemId = `lease_${item.tenant_id}`;
-                const existingItem = items.get(itemId);
-
-                if (existingItem) {
-                    if (!showInactive && !item.is_active) {
-                        items.remove(itemId);
-                    }
-                } else if (showInactive && !item.is_active) {
-                    const startDate = new Date(item.start_date);
-                    const endDate = item.end_date ? new Date(item.end_date) : new Date();
-
-                    items.add({
-                        id: itemId,
-                        group: item.property_id,
-                        content: item.tenant_name,
-                        start: startDate,
-                        end: endDate,
-                        style: 'background-color: #6c757d; border-color: #6c757d;',
-                        title: `${item.tenant_name} (Inactive)`,
-                        className: 'inactive-lease',
-                        editable: false
-                    });
-                }
-            });
-        });
-
-        // Click event — currently just logs, can be wired to navigate
-        timeline.on('select', function(properties) {
-            if (properties.items.length > 0) {
-                const itemId = properties.items[0];
-                const tenantId = itemId.replace('lease_', '');
-                console.log('Selected tenant:', tenantId);
-            }
-        });
+        window._timelineInitialized = true;
+        return true;
     }
+
+    const groups = new vis.DataSet();
+    const seenProperties = new Set();
+
+    timelineData.forEach(item => {
+        if (!seenProperties.has(item.property_id)) {
+            groups.add({
+                id: item.property_id,
+                content: item.property_name
+            });
+            seenProperties.add(item.property_id);
+        }
+    });
+
+    console.log('Groups created:', groups.length);
+
+    const items = new vis.DataSet();
+    const today = new Date();
+
+    timelineData.forEach(item => {
+        const startDate = new Date(item.start_date);
+        const endDate = item.end_date ? new Date(item.end_date) : new Date();
+        const isExpired = item.end_date && new Date(item.end_date) < today && item.is_active;
+
+        let color;
+        if (isExpired) {
+            color = '#dc3545';
+        } else if (item.is_active) {
+            color = '#28a745';
+        } else {
+            color = '#6c757d';
+        }
+
+        const tooltip = `
+            <strong>${item.tenant_name}</strong><br>
+            Start: ${startDate.toLocaleDateString()}<br>
+            End: ${endDate.toLocaleDateString()}<br>
+            Rent: €${item.rent.toFixed(2)}/month<br>
+            Status: ${item.is_active ? 'Active' : 'Inactive'}
+            ${isExpired ? '<br><span style="color: #ff6b6b;">⚠️ EXPIRED</span>' : ''}
+        `;
+
+        items.add({
+            id: `lease_${item.tenant_id}`,
+            group: item.property_id,
+            content: item.tenant_name,
+            start: startDate,
+            end: endDate,
+            style: `background-color: ${color}; border-color: ${color};`,
+            title: tooltip,
+            className: item.is_active ? 'active-lease' : 'inactive-lease',
+            editable: false
+        });
+    });
+
+    console.log('Items created:', items.length);
+
+    const rowHeight = 65;
+    const timeAxisHeight = 50;
+    const totalHeight = (groups.length * rowHeight) + timeAxisHeight;
+
+    console.log(`Setting timeline height: ${groups.length} properties × ${rowHeight}px + ${timeAxisHeight}px axis = ${totalHeight}px`);
+
+    const options = {
+        width: '100%',
+        height: `${totalHeight}px`,
+        margin: {
+            item: 10,
+            axis: 10
+        },
+        orientation: 'top',
+        start: new Date(today.getFullYear(), today.getMonth() - 6, 1),
+        end: new Date(today.getFullYear(), today.getMonth() + 6, 1),
+        zoomMin: 1000 * 60 * 60 * 24 * 31,
+        zoomMax: 1000 * 60 * 60 * 24 * 365 * 3,
+        moveable: true,
+        zoomable: true,
+        showCurrentTime: true,
+        stack: false,
+        tooltip: {
+            followMouse: true,
+            overflowMethod: 'cap'
+        },
+        maxHeight: `${totalHeight}px`,
+        minHeight: `${totalHeight}px`
+    };
+
+    const container = document.getElementById('leaseTimeline');
+    const timeline = new vis.Timeline(container, items, groups, options);
+
+    setTimeout(() => {
+        container.style.height = `${totalHeight}px`;
+        timeline.redraw();
+        console.log('Timeline height locked to:', totalHeight);
+    }, 100);
+
+    console.log('Timeline initialized successfully');
+
+    // Wire up controls
+    document.getElementById('zoomIn').addEventListener('click', () => {
+        timeline.zoomIn(0.5);
+    });
+
+    document.getElementById('zoomOut').addEventListener('click', () => {
+        timeline.zoomOut(0.5);
+    });
+
+    document.getElementById('fitAll').addEventListener('click', () => {
+        timeline.fit();
+    });
+
+    document.getElementById('navLeft').addEventListener('click', () => {
+        const range = timeline.getWindow();
+        const moveAmount = 1000 * 60 * 60 * 24 * 30;
+        timeline.setWindow({
+            start: new Date(range.start.getTime() - moveAmount),
+            end: new Date(range.end.getTime() - moveAmount)
+        });
+    });
+
+    document.getElementById('navRight').addEventListener('click', () => {
+        const range = timeline.getWindow();
+        const moveAmount = 1000 * 60 * 60 * 24 * 30;
+        timeline.setWindow({
+            start: new Date(range.start.getTime() + moveAmount),
+            end: new Date(range.end.getTime() + moveAmount)
+        });
+    });
+
+    document.getElementById('showInactive').addEventListener('change', function() {
+        const showInactive = this.checked;
+
+        timelineData.forEach(item => {
+            const itemId = `lease_${item.tenant_id}`;
+            const existingItem = items.get(itemId);
+
+            if (existingItem) {
+                if (!showInactive && !item.is_active) {
+                    items.remove(itemId);
+                }
+            } else if (showInactive && !item.is_active) {
+                const startDate = new Date(item.start_date);
+                const endDate = item.end_date ? new Date(item.end_date) : new Date();
+
+                items.add({
+                    id: itemId,
+                    group: item.property_id,
+                    content: item.tenant_name,
+                    start: startDate,
+                    end: endDate,
+                    style: 'background-color: #6c757d; border-color: #6c757d;',
+                    title: `${item.tenant_name} (Inactive)`,
+                    className: 'inactive-lease',
+                    editable: false
+                });
+            }
+        });
+    });
+
+    timeline.on('select', function(properties) {
+        if (properties.items.length > 0) {
+            const itemId = properties.items[0];
+            const tenantId = itemId.replace('lease_', '');
+            console.log('Selected tenant:', tenantId);
+        }
+    });
+
+    // Store timeline reference for redraws on orientation change
+    window._leaseTimeline = timeline;
+    window._timelineInitialized = true;
+    return true;
 }
+
+// Initial load
+initTimelineIfNeeded();
+
+// Handle orientation change: if user rotates from portrait to landscape, initialize the timeline now
+window.addEventListener('orientationchange', function() {
+    setTimeout(function() {
+        if (initTimelineIfNeeded() && window._leaseTimeline) {
+            // Force a redraw to handle the new viewport size
+            window._leaseTimeline.redraw();
+        }
+    }, 300); // wait for the orientation change to settle
+});
+
+// Also handle resize, in case user uses browser dev tools or resizes a window
+window.addEventListener('resize', function() {
+    setTimeout(function() {
+        if (initTimelineIfNeeded() && window._leaseTimeline) {
+            window._leaseTimeline.redraw();
+        }
+    }, 200);
+});
 
 console.log('=== LEASE TIMELINE SCRIPT COMPLETE ===');
 </script>

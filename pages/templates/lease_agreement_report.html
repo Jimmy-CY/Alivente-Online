@@ -19,54 +19,41 @@ Lease Agreement - {{ property.prop_name }}
         </div>
 
         <div class="property-section">
-            <!-- Error message (only shows if PDF fails to load) -->
+            <!-- Lease Agreement Card with View button -->
+            <div class="lease-document-card">
+                <div class="lease-document-icon">
+                    <i class="fas fa-file-contract"></i>
+                </div>
+                <div class="lease-document-info">
+                    <h4 class="lease-document-title">Lease Agreement Document</h4>
+                    <p class="lease-document-property">
+                        <strong>Property:</strong> {{ property.prop_name }}
+                    </p>
+                    <p class="lease-document-tenant">
+                        <strong>Tenant:</strong> {{ tenant.tenant_name }}
+                    </p>
+                </div>
+                <div class="lease-document-actions">
+                    <button type="button" class="btn btn-info btn-lg lease-view-btn" id="viewLeaseBtn">
+                        <i class="fas fa-eye"></i> View Lease Agreement
+                    </button>
+                </div>
+            </div>
+
+            <!-- Error fallback (only shown if PDF doesn't exist) -->
             <div id="lease-error" class="alert alert-warning lease-error-alert" style="display: none;">
-                <p>Lease agreement not found for this property.</p>
+                <h5><i class="fas fa-exclamation-triangle"></i> Lease agreement not found</h5>
+                <p>The lease agreement file could not be located for this property. The file may not have been uploaded yet.</p>
                 <a href="#" class="btn btn-sm btn-info" id="download-lease" download>
-                    <i class="fas fa-download"></i> Download Instead
+                    <i class="fas fa-download"></i> Try Download Anyway
                 </a>
             </div>
-            <!-- Lease Agreement PDF Viewer -->
-            <iframe
-                id="lease-iframe"
-                src="{% static 'lease_agreements/' %}{{ property.prop_name }} - Lease Agreement.pdf"
-                class="pdf-viewer-iframe"
-                title="Lease Agreement for {{ property.prop_name }}"
-            ></iframe>
         </div>
-
-        <script>
-            // Detect PDF load failure and show fallback
-            // Iframes don't fire reliable onerror events for missing files,
-            // so we use a probe fetch to test if the file exists
-            (function() {
-                const pdfUrl = "{% static 'lease_agreements/' %}{{ property.prop_name }} - Lease Agreement.pdf";
-                const iframe = document.getElementById('lease-iframe');
-                const errorDiv = document.getElementById('lease-error');
-                const downloadBtn = document.getElementById('download-lease');
-
-                // Probe the PDF URL with a HEAD request
-                fetch(pdfUrl, { method: 'HEAD' })
-                    .then(function(response) {
-                        if (!response.ok) {
-                            // PDF doesn't exist — show error fallback
-                            iframe.style.display = 'none';
-                            errorDiv.style.display = 'block';
-
-                            // Set up download link with cache busting
-                            downloadBtn.href = pdfUrl + '?v=' + Date.now();
-                        }
-                    })
-                    .catch(function() {
-                        // Network error — show error fallback
-                        iframe.style.display = 'none';
-                        errorDiv.style.display = 'block';
-                        downloadBtn.href = pdfUrl + '?v=' + Date.now();
-                    });
-            })();
-        </script>
     </div>
 </div>
+
+<!-- PDF viewer component (provides openPdfViewer/closePdfViewer functions) -->
+{% include 'components/pdf_viewer.html' %}
 
 <style>
 /* ==================== DESKTOP STYLES ==================== */
@@ -124,13 +111,64 @@ Lease Agreement - {{ property.prop_name }}
     flex-shrink: 0;
 }
 
-/* PDF iframe */
-.pdf-viewer-iframe {
-    width: 100%;
-    height: 600px;
+.property-section {
     margin-top: 20px;
-    border: 1px solid #eee;
-    border-radius: 4px;
+}
+
+/* Lease document card */
+.lease-document-card {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border: 1px solid #dee2e6;
+    border-radius: 12px;
+    padding: 32px;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.lease-document-icon {
+    flex-shrink: 0;
+    width: 80px;
+    height: 80px;
+    background: white;
+    border: 2px solid #17a2b8;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 36px;
+    color: #17a2b8;
+}
+
+.lease-document-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.lease-document-title {
+    font-size: 1.4rem;
+    color: #2c3e50;
+    margin: 0 0 12px 0;
+    font-weight: 600;
+}
+
+.lease-document-property,
+.lease-document-tenant {
+    margin: 4px 0;
+    color: #495057;
+    font-size: 1rem;
+    word-break: break-word;
+}
+
+.lease-document-actions {
+    flex-shrink: 0;
+}
+
+.lease-view-btn {
+    padding: 12px 28px;
+    font-size: 1rem;
+    font-weight: 600;
 }
 
 /* Error fallback alert */
@@ -140,6 +178,9 @@ Lease Agreement - {{ property.prop_name }}
     background-color: #fff3cd;
     border-color: #ffeeba;
     color: #856404;
+}
+.lease-error-alert h5 {
+    margin-bottom: 12px;
 }
 .lease-error-alert p {
     margin-bottom: 12px;
@@ -175,10 +216,38 @@ Lease Agreement - {{ property.prop_name }}
         padding: 10px 12px;
     }
 
-    /* PDF iframe — taller proportional height on phones */
-    .pdf-viewer-iframe {
-        height: 70vh;
-        margin-top: 12px;
+    /* Lease document card stacks vertically */
+    .lease-document-card {
+        flex-direction: column;
+        text-align: center;
+        gap: 16px;
+        padding: 20px 16px;
+    }
+
+    .lease-document-icon {
+        width: 64px;
+        height: 64px;
+        font-size: 28px;
+    }
+
+    .lease-document-title {
+        font-size: 1.15rem;
+        margin-bottom: 8px;
+    }
+
+    .lease-document-property,
+    .lease-document-tenant {
+        font-size: 0.95rem;
+    }
+
+    .lease-document-actions {
+        width: 100%;
+    }
+
+    .lease-view-btn {
+        width: 100%;
+        padding: 12px 16px;
+        font-size: 0.95rem;
     }
 
     /* Error fallback */
@@ -199,14 +268,59 @@ Lease Agreement - {{ property.prop_name }}
         padding: 0;
         box-shadow: none;
     }
-    .back-button {
+    .back-button,
+    .lease-document-actions {
         display: none;
     }
-    .pdf-viewer-iframe {
-        height: 100vh;
-        border: none;
-        margin-top: 10px;
+    .lease-document-card {
+        background: white;
+        border: 1px solid #ccc;
+        page-break-inside: avoid;
     }
 }
 </style>
+
+<script>
+(function() {
+    'use strict';
+
+    const pdfUrl = "{% static 'lease_agreements/' %}{{ property.prop_name }} - Lease Agreement.pdf";
+    const propertyName = "{{ property.prop_name|escapejs }}";
+    const tenantName = "{{ tenant.tenant_name|escapejs }}";
+    const downloadFilename = `Lease Agreement - ${propertyName}.pdf`;
+
+    const viewBtn = document.getElementById('viewLeaseBtn');
+    const errorDiv = document.getElementById('lease-error');
+    const errorDownloadBtn = document.getElementById('download-lease');
+
+    // Probe the PDF URL with a HEAD request to see if it exists
+    fetch(pdfUrl, { method: 'HEAD' })
+        .then(function(response) {
+            if (!response.ok) {
+                // PDF doesn't exist — disable view button, show error
+                if (viewBtn) {
+                    viewBtn.disabled = true;
+                    viewBtn.classList.remove('btn-info');
+                    viewBtn.classList.add('btn-secondary');
+                    viewBtn.innerHTML = '<i class="fas fa-times-circle"></i> Document Not Available';
+                }
+                if (errorDiv) errorDiv.style.display = 'block';
+                if (errorDownloadBtn) errorDownloadBtn.href = pdfUrl + '?v=' + Date.now();
+            }
+        })
+        .catch(function() {
+            // Network error — assume the file might still exist; show button
+            console.warn('Could not probe PDF URL; viewing will attempt anyway');
+        });
+
+    // View button opens the PDF in the modal viewer
+    if (viewBtn) {
+        viewBtn.addEventListener('click', function() {
+            if (this.disabled) return;
+            const title = `Lease Agreement (${propertyName})`;
+            openPdfViewer(pdfUrl, title, downloadFilename);
+        });
+    }
+})();
+</script>
 {% endblock %}

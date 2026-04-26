@@ -14,40 +14,50 @@ Title Deed - {{ property.prop_name }}
                 <h3 class="report-subtitle">{{ property.prop_address }}</h3>
                 {% endif %}
             </div>
-            <a href="{% url 'properties' %}" class="btn btn-info back-button" role="button">Back</a>
+            <a href="{% url 'properties' %}" class="btn btn-info back-button" role="button">
+                <i class="fas fa-arrow-left"></i> Back
+            </a>
         </div>
 
         <div class="property-section">
-            <!-- Error message (only shows if PDF fails to load) -->
-            <div id="title-deeds-error" class="alert alert-warning" style="display: none;">
-                <p>Title deed not found for this property.</p>
-                <a href="#" class="btn btn-sm btn-primary" id="download-title-deed" download>Download Instead</a>
+            <!-- Title Deed Card with View button -->
+            <div class="title-deed-card">
+                <div class="title-deed-icon">
+                    <i class="fas fa-file-alt"></i>
+                </div>
+                <div class="title-deed-info">
+                    <h4 class="title-deed-doc-title">Title Deed Document</h4>
+                    <p class="title-deed-property">
+                        <strong>Property:</strong> {{ property.prop_name }}
+                    </p>
+                    {% if property.prop_address %}
+                    <p class="title-deed-address">
+                        <strong>Address:</strong> {{ property.prop_address }}
+                    </p>
+                    {% endif %}
+                </div>
+                <div class="title-deed-actions">
+                    <button type="button" class="btn btn-info btn-lg title-deed-view-btn" id="viewTitleDeedBtn">
+                        <i class="fas fa-eye"></i> View Title Deed
+                    </button>
+                </div>
             </div>
-            <!-- Title Deed PDF Viewer -->
-            {% with pdf_name=property.prop_name %}
-                {% static 'title_deeds/'|add:pdf_name|add:' - Title Deed.pdf' as pdf_url %}
-                <iframe
-                    src="{{ pdf_url }}"
-                    class="title-deed-iframe"
-                    title="Title Deed for {{ property.prop_name }}"
-                    onerror="handlePdfError(this)"
-                ></iframe>
-            {% endwith %}
-        </div>
-        <script>
-            function handlePdfError(iframe) {
-                iframe.style.display = 'none';
-                const errorDiv = document.getElementById('title-deeds-error');
-                errorDiv.style.display = 'block';
 
-                // Set up download link with cache busting
-                const downloadBtn = document.getElementById('download-title-deed');
-                const newUrl = "{% static 'title_deeds/' %}{{ property.prop_name }} - Title Deed.pdf?v=" + Date.now();
-                downloadBtn.href = newUrl;
-            }
-        </script>
+            <!-- Error fallback (only shown if PDF doesn't exist) -->
+            <div id="title-deeds-error" class="alert alert-warning title-deed-error-alert" style="display: none;">
+                <h5><i class="fas fa-exclamation-triangle"></i> Title deed not found</h5>
+                <p>The title deed file could not be located for this property. The file may not have been uploaded yet.</p>
+                <a href="#" class="btn btn-sm btn-info" id="download-title-deed" download>
+                    <i class="fas fa-download"></i> Try Download Anyway
+                </a>
+            </div>
+        </div>
     </div>
 </div>
+
+<!-- PDF viewer component (provides openPdfViewer/closePdfViewer functions) -->
+{% include 'components/pdf_viewer.html' %}
+
 <style>
     /* ==================== DESKTOP STYLES ==================== */
     .report-container {
@@ -94,40 +104,88 @@ Title Deed - {{ property.prop_name }}
         color: #2c3e50;
         margin: 5px 0 0 0;
         font-weight: normal;
+        word-wrap: break-word;
     }
 
     .back-button {
-        background-color: #17a2b8;
-        color: white;
-        padding: 8px 16px;
-        text-decoration: none;
-        border-radius: 4px;
-        font-weight: 500;
         white-space: nowrap;
         height: fit-content;
+        flex-shrink: 0;
     }
 
-    .back-button:hover {
-        background-color: #138496;
-        color: white;
-    }
-
-    /* PDF iframe — desktop fixed, mobile fluid */
-    .title-deed-iframe {
-        width: 100%;
-        height: 600px;
-        border: 1px solid #eee;
-        border-radius: 4px;
+    .property-section {
         margin-top: 20px;
-        display: block;
     }
 
-    .alert {
+    /* Title deed document card */
+    .title-deed-card {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        border: 1px solid #dee2e6;
+        border-radius: 12px;
+        padding: 32px;
+        display: flex;
+        align-items: center;
+        gap: 24px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    }
+
+    .title-deed-icon {
+        flex-shrink: 0;
+        width: 80px;
+        height: 80px;
+        background: white;
+        border: 2px solid #17a2b8;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 36px;
+        color: #17a2b8;
+    }
+
+    .title-deed-info {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .title-deed-doc-title {
+        font-size: 1.4rem;
+        color: #2c3e50;
+        margin: 0 0 12px 0;
+        font-weight: 600;
+    }
+
+    .title-deed-property,
+    .title-deed-address {
+        margin: 4px 0;
+        color: #495057;
+        font-size: 1rem;
+        word-break: break-word;
+    }
+
+    .title-deed-actions {
+        flex-shrink: 0;
+    }
+
+    .title-deed-view-btn {
+        padding: 12px 28px;
+        font-size: 1rem;
+        font-weight: 600;
+    }
+
+    /* Error fallback alert */
+    .title-deed-error-alert {
         margin-top: 20px;
         padding: 20px;
         background-color: #fff3cd;
         border-color: #ffeeba;
         color: #856404;
+    }
+    .title-deed-error-alert h5 {
+        margin-bottom: 12px;
+    }
+    .title-deed-error-alert p {
+        margin-bottom: 12px;
     }
 
     /* ==================== MOBILE STYLES (≤768px) ==================== */
@@ -151,26 +209,126 @@ Title Deed - {{ property.prop_name }}
         }
 
         .report-title {
-            font-size: 1.3rem;
+            font-size: 1.15rem;
         }
 
         .report-subtitle {
-            font-size: 1.05rem;
+            font-size: 0.95rem;
         }
 
         .back-button {
             width: 100%;
             text-align: center;
-            padding: 10px 16px;
+            padding: 10px 12px;
         }
 
-        /* PDF viewer — fluid height on mobile */
-        .title-deed-iframe {
-            height: 70vh;
-            min-height: 400px;
+        /* Title deed card stacks vertically */
+        .title-deed-card {
+            flex-direction: column;
+            text-align: center;
+            gap: 16px;
+            padding: 20px 16px;
+        }
+
+        .title-deed-icon {
+            width: 64px;
+            height: 64px;
+            font-size: 28px;
+        }
+
+        .title-deed-doc-title {
+            font-size: 1.15rem;
+            margin-bottom: 8px;
+        }
+
+        .title-deed-property,
+        .title-deed-address {
+            font-size: 0.95rem;
+        }
+
+        .title-deed-actions {
+            width: 100%;
+        }
+
+        .title-deed-view-btn {
+            width: 100%;
+            padding: 12px 16px;
+            font-size: 0.95rem;
+        }
+
+        /* Error fallback */
+        .title-deed-error-alert {
+            padding: 14px;
             margin-top: 12px;
         }
     }
+
+    /* ==================== PRINT STYLES ==================== */
+    @media print {
+        .report-container {
+            padding: 0;
+        }
+        .report-content {
+            width: 100%;
+            max-width: 100%;
+            padding: 0;
+            box-shadow: none;
+        }
+        .back-button,
+        .title-deed-actions {
+            display: none;
+        }
+        .title-deed-card {
+            background: white;
+            border: 1px solid #ccc;
+            page-break-inside: avoid;
+        }
+    }
 </style>
+
+<script>
+(function() {
+    'use strict';
+
+    {% with pdf_name=property.prop_name %}
+    const pdfUrl = "{% static 'title_deeds/' %}{{ pdf_name }} - Title Deed.pdf";
+    {% endwith %}
+    const propertyName = "{{ property.prop_name|escapejs }}";
+    const downloadFilename = `Title Deed - ${propertyName}.pdf`;
+
+    const viewBtn = document.getElementById('viewTitleDeedBtn');
+    const errorDiv = document.getElementById('title-deeds-error');
+    const errorDownloadBtn = document.getElementById('download-title-deed');
+
+    // Probe the PDF URL with a HEAD request to see if it exists
+    fetch(pdfUrl, { method: 'HEAD' })
+        .then(function(response) {
+            if (!response.ok) {
+                // PDF doesn't exist — disable view button, show error
+                if (viewBtn) {
+                    viewBtn.disabled = true;
+                    viewBtn.classList.remove('btn-info');
+                    viewBtn.classList.add('btn-secondary');
+                    viewBtn.innerHTML = '<i class="fas fa-times-circle"></i> Document Not Available';
+                }
+                if (errorDiv) errorDiv.style.display = 'block';
+                if (errorDownloadBtn) errorDownloadBtn.href = pdfUrl + '?v=' + Date.now();
+            }
+        })
+        .catch(function() {
+            // Network error — assume the file might still exist; show button
+            console.warn('Could not probe PDF URL; viewing will attempt anyway');
+        });
+
+    // View button opens the PDF in the modal viewer
+    if (viewBtn) {
+        viewBtn.addEventListener('click', function() {
+            if (this.disabled) return;
+            const title = `Title Deed (${propertyName})`;
+            openPdfViewer(pdfUrl, title, downloadFilename);
+        });
+    }
+})();
+</script>
 {% endif %}
 {% endblock %}

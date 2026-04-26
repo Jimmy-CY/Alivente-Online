@@ -414,26 +414,8 @@
 </div>
 {% endif %}
 
-<!-- View Modal (available to all users with access) -->
-<div class="modal fade" id="viewModal" tabindex="-1" role="dialog" aria-hidden="true">
-  <div class="modal-dialog modal-lg modal-fullscreen-mobile" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="viewModalLabel">View Passport/ID Document</h5>
-        <button type="button" class="close" data-dismiss="modal" onclick="$('#viewModal').modal('hide');"><span>&times;</span></button>
-      </div>
-      <div class="modal-body">
-        <div id="documentViewer"></div>
-      </div>
-      <div class="modal-footer modal-footer-stack-mobile">
-        <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="$('#viewModal').modal('hide');">Close</button>
-        <a id="downloadLink" href="#" target="_blank" class="btn btn-info">
-          <i class="fas fa-download"></i> Download
-        </a>
-      </div>
-    </div>
-  </div>
-</div>
+<!-- PDF viewer component (provides openPdfViewer/closePdfViewer functions) -->
+{% include 'components/pdf_viewer.html' %}
 
 {% render_help_modal "passport_management" %}
 
@@ -872,17 +854,6 @@
         margin: 0 !important;
         padding: 10px 12px;
     }
-
-    /* PDF/image viewer in document modal */
-    #documentViewer iframe,
-    #documentViewer embed {
-        height: 70vh !important;
-    }
-    #documentViewer img {
-        max-height: 70vh !important;
-        width: 100%;
-        height: auto;
-    }
 }
 </style>
 
@@ -922,7 +893,6 @@ document.addEventListener('DOMContentLoaded', function() {
     // Mobile sort dropdown — apply default sort by expiry date soonest first on load
     const mobileSortSelect = document.getElementById('mobileSortSelect');
     if (mobileSortSelect) {
-        // Apply the default sort on page load (so cards are sorted by expiry asc by default on mobile)
         applyMobileSort(mobileSortSelect.value);
         mobileSortSelect.addEventListener('change', function() {
             applyMobileSort(this.value);
@@ -1041,7 +1011,6 @@ function uploadDocument(passportId) {
             document.getElementById('uploadHolderName').textContent = holderCell.textContent.trim();
         }
     }
-    // Reset the file input so previous selection doesn't linger
     document.getElementById('upload_document_file').value = '';
     $('#uploadModal').modal('show');
 }
@@ -1053,22 +1022,9 @@ function deleteDocument(passportId, holderName) {
 }
 
 function viewDocument(documentUrl, documentName, holderName) {
-    const documentViewer = document.getElementById('documentViewer');
-    const downloadLink = document.getElementById('downloadLink');
-    const viewModalLabel = document.getElementById('viewModalLabel');
-    viewModalLabel.textContent = `Passport/ID Document (${holderName})`;
-    downloadLink.href = documentUrl;
-    downloadLink.download = documentName;
-    documentViewer.innerHTML = '';
-    const extension = documentName.split('.').pop().toLowerCase();
-    if (extension === 'pdf') {
-        documentViewer.innerHTML = `<embed src="${documentUrl}#toolbar=0&navpanes=0&scrollbar=0" type="application/pdf" width="100%" height="500px"><p class="text-center mt-2"><small>If the PDF doesn't display, <a href="${documentUrl}" target="_blank">click here to open it in a new tab</a></small></p>`;
-    } else if (['jpg', 'jpeg', 'png'].includes(extension)) {
-        documentViewer.innerHTML = `<img src="${documentUrl}" alt="Passport/ID Document" class="img-fluid" style="max-width: 100%; height: auto;">`;
-    } else {
-        documentViewer.innerHTML = `<div class="text-center"><i class="fas fa-passport fa-5x text-muted mb-3"></i><p>This file type cannot be previewed.</p><p>File: <strong>${documentName}</strong></p><p>Click Download to view the file.</p></div>`;
-    }
-    $('#viewModal').modal('show');
+    // Use the shared PDF viewer component
+    const title = `Passport/ID Document (${holderName})`;
+    openPdfViewer(documentUrl, title, documentName);
 }
 
 $(document).ready(function() {
@@ -1077,7 +1033,7 @@ $(document).ready(function() {
     });
 });
 
-/* === Desktop column sort (existing behaviour) === */
+/* === Desktop column sort === */
 function sortTable(columnIndex) {
     const table = document.getElementById("passportTable");
     if (!table) return;
@@ -1130,7 +1086,6 @@ function applyMobileSort(value) {
     const rows = Array.from(tbody.querySelectorAll('tr'));
     if (rows.length === 0) return;
 
-    // Parse the sort key and direction from the value (e.g. "expiry-asc")
     const lastDash = value.lastIndexOf('-');
     const sortKey = value.substring(0, lastDash);
     const direction = value.substring(lastDash + 1);
@@ -1144,7 +1099,6 @@ function applyMobileSort(value) {
         let valueA = (cellA.dataset.sortValue || '').trim();
         let valueB = (cellB.dataset.sortValue || '').trim();
 
-        // Empty values sort last regardless of direction
         const aEmpty = (valueA === '' || valueA === '-');
         const bEmpty = (valueB === '' || valueB === '-');
         if (aEmpty && bEmpty) return 0;

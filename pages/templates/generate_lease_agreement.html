@@ -114,6 +114,11 @@
     font-size: 0.75rem;
     padding: 0.25rem 0.5rem;
   }
+
+  /* Desktop-only message — hidden by default */
+  .desktop-only-message {
+    display: none;
+  }
   
   @media (max-width: 768px) {
     .furniture-row {
@@ -126,9 +131,86 @@
       grid-template-columns: 1fr;
     }
   }
+
+  /* ==================== MOBILE DESKTOP-ONLY GUARD ==================== */
+  /* On mobile (≤768px), hide the entire wizard and show a message instead */
+  @media (max-width: 768px) {
+
+    /* Hide the help/back button row on mobile */
+    .desktop-wizard-controls {
+      display: none !important;
+    }
+
+    /* Hide the wizard container on mobile */
+    .desktop-wizard-container {
+      display: none !important;
+    }
+
+    /* Show the desktop-only message on mobile */
+    .desktop-only-message {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 60vh;
+      padding: 20px;
+    }
+
+    .desktop-only-content {
+      text-align: center;
+      background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+      border: 1px solid #dee2e6;
+      border-radius: 12px;
+      padding: 40px 24px;
+      max-width: 400px;
+      width: 100%;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+
+    .desktop-only-icon {
+      font-size: 4rem;
+      color: #17a2b8;
+      margin-bottom: 20px;
+    }
+
+    .desktop-only-content h3 {
+      color: #2c3e50;
+      font-size: 1.3rem;
+      margin: 0 0 16px 0;
+      font-weight: 600;
+    }
+
+    .desktop-only-content p {
+      color: #495057;
+      font-size: 1rem;
+      line-height: 1.5;
+      margin: 0 0 12px 0;
+    }
+
+    .desktop-only-content p strong {
+      color: #17a2b8;
+    }
+
+    .desktop-only-instruction {
+      font-size: 0.95rem !important;
+      color: #6c757d !important;
+      font-style: italic;
+      margin-bottom: 24px !important;
+    }
+
+    .desktop-only-back-btn {
+      margin-top: 12px;
+      padding: 10px 24px;
+    }
+
+    /* Make the page title smaller on mobile */
+    .desktop-only-h2 {
+      font-size: 1.25rem;
+      margin-bottom: 0.5rem;
+    }
+  }
 </style>
 
-<h2><center>GENERATE LEASE AGREEMENT</center></h2>
+<h2 class="desktop-only-h2"><center>GENERATE LEASE AGREEMENT</center></h2>
 <br/>
 
 {% for msg in messages %}
@@ -149,8 +231,21 @@
   </script>
 {% endfor %}
 
+<!-- Mobile-only desktop guard message (hidden on desktop, shown on mobile) -->
+<div class="desktop-only-message">
+    <div class="desktop-only-content">
+        <i class="fas fa-desktop desktop-only-icon"></i>
+        <h3>Desktop or Tablet Required</h3>
+        <p>The lease agreement generator requires a <strong>larger screen</strong> for the best experience.</p>
+        <p class="desktop-only-instruction">Please open this page on a desktop, laptop, or tablet to generate lease agreements.</p>
+        <a href="{% url 'admin_apms' %}" class="btn btn-info desktop-only-back-btn">
+            <i class="fas fa-arrow-left"></i> Back
+        </a>
+    </div>
+</div>
+
 <body>
-  <div style="display: flex; justify-content: flex-end">
+  <div class="desktop-wizard-controls" style="display: flex; justify-content: flex-end">
     <button type="button" class="btn btn-info" data-toggle="modal" data-target="#generate_lease_agreementHelpModal" style="margin-right:16px">
       <i class="fas fa-question-circle"></i> Help
     </button>
@@ -160,7 +255,7 @@
 
   {% if perms.auth.can_edit_tenants %}
   
-  <div class="container mt-4 border rounded p-4" style="max-width: 800px; border-color: #dee2e6 !important;">
+  <div class="container mt-4 border rounded p-4 desktop-wizard-container" style="max-width: 800px; border-color: #dee2e6 !important;">
     <form method="post" id="lease-generation-form">
       {% csrf_token %}
       
