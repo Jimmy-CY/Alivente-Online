@@ -280,6 +280,231 @@
 .no-results-row {
     display: none;
 }
+
+/* ============================================================
+   MOBILE RESPONSIVE — max-width: 768px
+   ============================================================ */
+@media (max-width: 768px) {
+    .conversions-container {
+        padding: 0 8px;
+    }
+
+    /* Page header — tighter */
+    .page-header {
+        padding: 22px 16px;
+        margin-bottom: 18px;
+        border-radius: 10px;
+    }
+    .page-header h1 {
+        font-size: 22px;
+        margin-bottom: 6px;
+    }
+    .page-header > p {
+        font-size: 14px !important;
+    }
+
+    /* Action bar — Back full-width on top, action buttons stack below */
+    .action-bar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+        margin-bottom: 16px;
+    }
+    .action-bar > a:first-child {
+        width: 100%;
+        justify-content: center;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .action-bar > div {
+        display: flex !important;
+        flex-direction: column;
+        gap: 8px !important;
+        width: 100%;
+    }
+    .action-bar > div .btn {
+        width: 100%;
+        justify-content: center;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    /* Card padding tighter */
+    .conversions-card {
+        padding: 16px;
+        border-radius: 10px;
+    }
+    .conversions-card > h2 {
+        font-size: 17px !important;
+        margin-bottom: 14px !important;
+    }
+
+    /* Filter bar — stack */
+    .filter-bar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+    }
+    .filter-search,
+    .filter-select {
+        width: 100%;
+        min-width: 0;
+        max-width: none;
+    }
+    .scope-toggle {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+    }
+    .scope-btn {
+        padding: 10px 4px;
+    }
+    .filter-results-count {
+        text-align: center;
+    }
+    .filter-bar > .btn {
+        width: 100%;
+    }
+
+    /* iOS zoom guard */
+    .form-control,
+    input[type="text"],
+    input[type="number"],
+    input[type="date"],
+    select,
+    textarea,
+    .filter-search,
+    .filter-select {
+        font-size: 16px !important;
+    }
+
+    /* Conversions table → card layout */
+    .conversions-table thead {
+        display: none;
+    }
+    .conversions-table {
+        border-spacing: 0;
+    }
+    .conversions-table,
+    .conversions-table tbody,
+    .conversions-table tbody tr {
+        display: block;
+        width: 100%;
+    }
+    .conversions-table tbody tr,
+    .conversions-table tbody tr:nth-child(even) {
+        background: white !important;
+        border: 1px solid #dee2e6;
+        border-radius: 10px !important;
+        padding: 14px;
+        margin-bottom: 10px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+    .conversions-table tbody tr:hover {
+        transform: none;
+        background: white !important;
+    }
+    .conversions-table tbody td {
+        display: block !important;
+        padding: 6px 0 !important;
+        border: none;
+        border-radius: 0 !important;
+        text-align: left !important;
+    }
+
+    /* Field labels via ::before */
+    .conversions-table tbody td::before {
+        display: block;
+        font-weight: 700;
+        font-size: 11px;
+        text-transform: uppercase;
+        color: #6c757d;
+        margin-bottom: 4px;
+        letter-spacing: 0.5px;
+    }
+    .conversions-table tbody td:nth-child(1)::before { content: 'Conversion'; }
+    .conversions-table tbody td:nth-child(2)::before { content: 'Applies To'; }
+    .conversions-table tbody td:nth-child(3)::before { content: 'Actions'; }
+
+    /* Conversion display wraps within card */
+    .conversion-display {
+        flex-wrap: wrap;
+        gap: 8px;
+        font-size: 14px;
+    }
+    .conversion-number {
+        font-size: 14px;
+        padding: 6px 10px;
+        min-width: 38px;
+    }
+    .conversion-arrow {
+        font-size: 16px;
+    }
+
+    /* Action buttons */
+    .actions-cell {
+        text-align: left !important;
+    }
+    .btn-icon {
+        padding: 9px 14px;
+        margin: 0 4px 0 0;
+    }
+
+    /* No-results row — JS sets display:table-row, override on mobile */
+    #noResultsRow[style*="table-row"] {
+        display: block !important;
+    }
+    #noResultsRow td {
+        display: block !important;
+    }
+    #noResultsRow td::before {
+        display: none;
+    }
+
+    /* MODALS — full screen */
+    .modal-dialog {
+        max-width: 100% !important;
+        margin: 0 !important;
+        height: 100vh;
+    }
+    .modal-content {
+        height: 100vh;
+        border-radius: 0;
+        display: flex;
+        flex-direction: column;
+        border: none;
+    }
+    .modal-header {
+        flex-shrink: 0;
+    }
+    .modal-body {
+        flex: 1 1 auto;
+        overflow-y: auto;
+    }
+    .modal-footer {
+        flex-direction: column-reverse !important;
+        gap: 8px;
+        flex-shrink: 0;
+    }
+    .modal-footer .btn {
+        width: 100%;
+        margin: 0 !important;
+    }
+    .modal-header .close {
+        font-size: 28px;
+        padding: 8px 12px;
+    }
+
+    /* Missing Conversions modal — stack the inner row fields */
+    #missingConversionsModal .row .col-md-2,
+    #missingConversionsModal .row .col-md-6 {
+        margin-bottom: 10px;
+    }
+    #missingConversionsModal .col-md-6 {
+        margin-bottom: 8px;
+    }
+}
 </style>
 
 <div class="conversions-container">

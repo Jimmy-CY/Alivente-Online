@@ -287,6 +287,146 @@
     border-color: #28a745;
     outline: none;
 }
+
+/* ============================================================
+   MOBILE RESPONSIVE — max-width: 768px
+   ============================================================ */
+@media (max-width: 768px) {
+    .ingredients-container {
+        padding: 0 8px;
+    }
+
+    /* Page header */
+    .page-header {
+        padding: 22px 16px;
+        margin-bottom: 18px;
+        border-radius: 10px;
+    }
+    .page-header h1 {
+        font-size: 22px;
+        margin-bottom: 6px;
+    }
+    .page-header > p {
+        font-size: 14px !important;
+    }
+
+    /* Action bar — stack full-width */
+    .action-bar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+        margin-bottom: 16px;
+    }
+    .action-bar > a {
+        width: 100%;
+        justify-content: center;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    /* Filter bar — stack rows */
+    .filter-bar {
+        padding: 14px;
+        margin-bottom: 16px;
+        border-radius: 10px;
+    }
+    .filter-row {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+    .filter-row > div[style*="display: flex"][style*="align-items: end"] {
+        justify-content: stretch;
+    }
+    .filter-row .btn {
+        width: 100%;
+        justify-content: center;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    /* Card */
+    .ingredients-card {
+        padding: 16px;
+        border-radius: 10px;
+    }
+    .ingredients-card > h2 {
+        font-size: 17px !important;
+        margin-bottom: 14px !important;
+    }
+
+    /* iOS zoom guard */
+    .form-control,
+    input[type="text"],
+    select,
+    textarea,
+    .ingredient-name-input,
+    .category-input,
+    .unit-select,
+    .mode-select {
+        font-size: 16px !important;
+    }
+
+    /* Ingredients table → cards */
+    .ingredients-table thead {
+        display: none;
+    }
+    .ingredients-table,
+    .ingredients-table tbody,
+    .ingredients-table tbody tr {
+        display: block;
+        width: 100%;
+    }
+    .ingredients-table tbody tr {
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 10px;
+        padding: 12px 14px;
+        margin-bottom: 10px;
+    }
+    .ingredients-table tbody tr:hover {
+        background: white;
+    }
+    .ingredients-table tbody tr.edit-mode {
+        background: #fffbf0 !important;
+        border-color: #ffc107;
+    }
+    .ingredients-table tbody td {
+        display: block !important;
+        padding: 8px 0 !important;
+        border-bottom: none !important;
+        text-align: left !important;
+    }
+    .ingredients-table tbody td::before {
+        display: block;
+        font-weight: 700;
+        font-size: 11px;
+        text-transform: uppercase;
+        color: #6c757d;
+        margin-bottom: 4px;
+        letter-spacing: 0.5px;
+    }
+    .ingredients-table tbody td:nth-child(1)::before { content: 'Ingredient Name'; }
+    .ingredients-table tbody td:nth-child(2)::before { content: 'Category'; }
+    .ingredients-table tbody td:nth-child(3)::before { content: 'Shopping Unit'; }
+    .ingredients-table tbody td:nth-child(4)::before { content: 'Action'; }
+
+    /* Action buttons left-align in card */
+    .action-buttons {
+        justify-content: flex-start;
+    }
+    .action-btn {
+        padding: 8px 14px;
+        font-size: 16px;
+    }
+
+    /* Edit mode: select inputs full-width inside card */
+    .unit-select,
+    .mode-select {
+        max-width: none;
+    }
+}
 </style>
 
 <div class="ingredients-container">
