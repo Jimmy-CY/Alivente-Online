@@ -223,70 +223,142 @@
     margin-bottom: 5px;
 }
 
-/* Mobile responsive - stack to single column */
+/* ============================================================
+   MOBILE RESPONSIVE — max-width: 768px
+   ============================================================ */
 @media (max-width: 768px) {
     .days-grid {
         grid-template-columns: 1fr;
     }
-    
-    /* Top action bar */
+
+    /* Top action bar — Back full-width on top, action buttons in 2-col grid below */
     .action-bar {
         flex-direction: column;
         align-items: stretch;
+        gap: 8px;
     }
-    
-    .action-buttons {
-        width: 100%;
-        flex-direction: column;
-    }
-    
-    .action-buttons .btn {
+
+    /* Back button (first child of action-bar) — full-width */
+    .action-bar > a:first-child {
         width: 100%;
         justify-content: center;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 11px 14px;
+        font-size: 14px;
     }
-    
+
+    /* Action buttons div → 2-col grid */
+    .action-buttons {
+        width: 100%;
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px !important;
+        flex-wrap: unset;
+    }
+
+    /* If the last button is alone on its row (odd count: 5), span both columns */
+    .action-buttons > *:last-child:nth-child(odd) {
+        grid-column: span 2;
+    }
+
+    /* All action buttons fill their cell */
+    .action-buttons .btn,
+    .action-buttons .btn-action-disabled {
+        width: 100%;
+        justify-content: center;
+        padding: 11px 8px;
+        font-size: 14px;
+        white-space: normal;
+        line-height: 1.25;
+    }
+
     .page-header {
         flex-direction: column;
         gap: 10px;
         text-align: center;
         padding: 15px;
     }
-    
+
     .header-meta {
         flex-direction: column;
         gap: 5px;
     }
-    
+
     /* Recipe cards on mobile */
     .recipe-card {
         padding: 6px 10px;
     }
-    
+
     .recipe-image,
     .recipe-image-placeholder {
         width: 45px;
         height: 45px;
     }
-    
+
     .recipe-name {
         font-size: 13px;
     }
-    
+
     .recipe-meta span {
         font-size: 10px;
     }
-    
+
     .recipe-tag {
         font-size: 9px;
         padding: 2px 6px;
     }
-    
+
     .day-header-left h2 {
         font-size: 14px;
     }
-    
+
     .day-header-right {
         font-size: 11px;
+    }
+
+    /* iOS zoom guard (matters for the duplicate modal name + date inputs) */
+    .form-control,
+    input[type="text"],
+    input[type="date"],
+    select,
+    textarea {
+        font-size: 16px !important;
+    }
+
+    /* MODALS — full screen (Delete + Duplicate) */
+    .modal-dialog {
+        max-width: 100% !important;
+        margin: 0 !important;
+        height: 100vh;
+    }
+    .modal-content {
+        height: 100vh;
+        border-radius: 0;
+        display: flex;
+        flex-direction: column;
+        border: none;
+    }
+    .modal-header {
+        flex-shrink: 0;
+    }
+    .modal-body {
+        flex: 1 1 auto;
+        overflow-y: auto;
+    }
+    .modal-footer {
+        flex-direction: column-reverse !important;
+        gap: 8px;
+        flex-shrink: 0;
+    }
+    .modal-footer .btn {
+        width: 100%;
+        margin: 0 !important;
+    }
+    .modal-header .close {
+        font-size: 28px;
+        padding: 8px 12px;
     }
 }
 

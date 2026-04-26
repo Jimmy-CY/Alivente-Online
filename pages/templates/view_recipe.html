@@ -439,19 +439,30 @@ body {
    ============================================================ */
 @media (max-width: 768px) {
 
-    /* === TOP BUTTON BAR — stack everything full-width === */
+    /* === TOP BUTTON BAR — 2-col grid for inner buttons, Back full-width below === */
     .recipe-detail-container > div:first-of-type {
         flex-direction: column !important;
         gap: 8px !important;
     }
+    /* Inner button group: 2-column grid */
     .recipe-detail-container > div:first-of-type > div:first-child {
         width: 100%;
-        flex-direction: column !important;
+        display: grid !important;
+        grid-template-columns: repeat(2, 1fr) !important;
         gap: 8px !important;
     }
+    /* If the last button is alone on its row (odd count: 3 or 5), span both columns */
+    .recipe-detail-container > div:first-of-type > div:first-child > *:last-child:nth-child(odd) {
+        grid-column: span 2;
+    }
+    /* All buttons centered, full-width within their grid cell */
     .recipe-detail-container > div:first-of-type .btn {
         width: 100%;
         justify-content: center;
+        padding: 11px 8px;
+        font-size: 14px;
+        white-space: normal;
+        line-height: 1.25;
     }
 
     /* === RECIPE HEADER — split into hero image + green content card === */

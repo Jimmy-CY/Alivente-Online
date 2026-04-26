@@ -432,6 +432,199 @@
         page-break-inside: avoid;
     }
 }
+
+/* ============================================================
+   MOBILE RESPONSIVE — max-width: 768px
+   ============================================================ */
+@media (max-width: 768px) {
+    .shopping-list-container {
+        padding: 0 8px;
+    }
+
+    /* Action bar — Back button full width */
+    .action-bar {
+        margin-bottom: 16px;
+    }
+    .action-bar .btn {
+        width: 100%;
+        justify-content: center;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    /* Page header — tighter */
+    .page-header {
+        padding: 22px 16px;
+        margin-bottom: 18px;
+        border-radius: 10px;
+    }
+    .page-header h1 {
+        font-size: 24px;
+        margin-bottom: 6px;
+    }
+    .page-header > p {
+        font-size: 15px !important;
+    }
+    .page-header-meta {
+        flex-direction: column;
+        gap: 8px;
+        margin-top: 12px;
+        font-size: 13px;
+    }
+
+    /* Step indicator — shrink badges */
+    .step-indicator {
+        gap: 8px;
+        margin-bottom: 18px;
+        flex-wrap: wrap;
+    }
+    .step-badge {
+        padding: 8px 12px;
+        font-size: 13px;
+        gap: 6px;
+    }
+    .step-number {
+        width: 22px;
+        height: 22px;
+        font-size: 12px;
+    }
+
+    /* Ingredients card — tighter padding */
+    .ingredients-card {
+        padding: 16px;
+        border-radius: 10px;
+    }
+    .ingredients-card h2 {
+        font-size: 20px;
+        margin-bottom: 14px;
+        padding-bottom: 12px;
+    }
+    .category-header {
+        font-size: 17px;
+    }
+
+    /* Review list */
+    .review-list {
+        padding: 12px;
+        max-height: 60vh;
+    }
+    .review-item {
+        gap: 10px;
+        padding: 10px 8px;
+    }
+    .review-item label {
+        font-size: 14px;
+    }
+
+    /* Step navigation — stack column-reverse so primary action lands on top */
+    .step-navigation {
+        flex-direction: column-reverse;
+        gap: 8px;
+        margin-top: 18px;
+        padding-top: 18px;
+    }
+    .step-navigation .btn {
+        width: 100%;
+        padding: 12px 16px;
+        font-size: 15px;
+        justify-content: center;
+    }
+
+    /* Tip box */
+    .tip-box {
+        padding: 12px 14px;
+        font-size: 14px;
+    }
+
+    /* Conversions card */
+    .conversions-needed-card {
+        padding: 16px;
+        margin-bottom: 18px;
+    }
+    .conversions-needed-card h2 {
+        font-size: 18px;
+    }
+    .conversions-needed-card .alert {
+        font-size: 13px;
+        padding: 12px;
+    }
+    .conversion-form-group {
+        padding: 14px;
+    }
+    .conversion-form-group h4 {
+        font-size: 15px;
+        flex-wrap: wrap;
+    }
+
+    /* Conversion input row — switch from 4-col to 2-col so each input pairs with its decoration */
+    .conversion-input-row {
+        grid-template-columns: 1fr auto !important;
+        gap: 10px 8px !important;
+    }
+    .conversion-input-row .equals-sign {
+        text-align: center;
+        align-self: end;
+        padding-bottom: 10px;
+    }
+
+    /* Conversion radio cards — stack vertically (target the inline flex with gap:15px) */
+    .conversion-form-group div[style*="display: flex"][style*="gap: 15px"] {
+        flex-direction: column !important;
+        gap: 8px !important;
+    }
+
+    /* Save Conversions / Cancel button row — stack column-reverse so Save lands on top */
+    .conversions-needed-card > div[style*="margin-top: 25px"] {
+        flex-direction: column-reverse !important;
+        gap: 8px !important;
+    }
+    .conversions-needed-card > div[style*="margin-top: 25px"] .btn {
+        width: 100%;
+        justify-content: center;
+        flex: unset !important;
+        padding: 12px 16px !important;
+        font-size: 15px !important;
+    }
+
+    /* iOS zoom guard */
+    .form-control,
+    input[type="text"],
+    input[type="number"],
+    input[type="email"],
+    input[type="date"],
+    select,
+    textarea,
+    .conversion-input-row input,
+    .email-section select {
+        font-size: 16px !important;
+    }
+
+    /* Email section */
+    .email-section {
+        margin-top: 22px;
+        padding-top: 22px;
+    }
+    .email-section h3 {
+        font-size: 16px;
+    }
+    /* 4-button grid (Print/Copy/Email/WhatsApp) → 2x2 on mobile */
+    .email-section > div[style*="grid-template-columns: repeat(4"] {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 8px !important;
+    }
+    .email-section > div[style*="grid-template-columns: repeat(4"] .btn {
+        padding: 12px 8px !important;
+    }
+
+    /* Empty state */
+    .empty-state {
+        padding: 40px 16px;
+    }
+    .empty-state i {
+        font-size: 60px;
+    }
+}
 </style>
 
 <div class="shopping-list-container">
