@@ -4,25 +4,38 @@
 {% block title %}Lease Timeline{% endblock %}
 
 {% block content %}
-<h2><center>ALIVENTE ONLINE - LEASE TIMELINE</center></h2>
-<h5><center>VISUAL LEASE CALENDAR</center></h5>
+<h2 class="page-title-h2"><center>ALIVENTE ONLINE - LEASE TIMELINE</center></h2>
+<h5 class="page-subtitle-h5"><center>VISUAL LEASE CALENDAR</center></h5>
 <br/>
 
-<div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
-    <div style="display: flex; gap: 10px;">
-        <button id="navLeft" class="btn btn-info btn-sm">⬅️ Previous Month</button>
-        <button id="navRight" class="btn btn-info btn-sm">Next Month ➡️</button>
-        <span style="border-left: 2px solid #dee2e6; margin: 0 10px;"></span>
-        <button id="zoomIn" class="btn btn-info btn-sm">🔍 Zoom In</button>
-        <button id="zoomOut" class="btn btn-info btn-sm">🔍 Zoom Out</button>
-        <button id="fitAll" class="btn btn-info btn-sm">📅 Fit All</button>
+<!-- Controls Row -->
+<div class="timeline-controls">
+    <div class="timeline-controls-group">
+        <button id="navLeft" class="btn btn-info btn-sm timeline-nav-btn">
+            <i class="fas fa-chevron-left"></i> <span class="btn-label-full">Previous Month</span><span class="btn-label-short">Prev</span>
+        </button>
+        <button id="navRight" class="btn btn-info btn-sm timeline-nav-btn">
+            <span class="btn-label-full">Next Month</span><span class="btn-label-short">Next</span> <i class="fas fa-chevron-right"></i>
+        </button>
+        <span class="timeline-control-divider"></span>
+        <button id="zoomIn" class="btn btn-info btn-sm timeline-nav-btn">
+            <i class="fas fa-search-plus"></i> <span class="btn-label-full">Zoom In</span>
+        </button>
+        <button id="zoomOut" class="btn btn-info btn-sm timeline-nav-btn">
+            <i class="fas fa-search-minus"></i> <span class="btn-label-full">Zoom Out</span>
+        </button>
+        <button id="fitAll" class="btn btn-info btn-sm timeline-nav-btn">
+            <i class="fas fa-expand"></i> <span class="btn-label-full">Fit All</span><span class="btn-label-short">Fit</span>
+        </button>
     </div>
-    <div>
-        <label class="mr-2">
-            <input type="checkbox" id="showInactive" checked> Show Inactive Leases
+    <div class="timeline-controls-secondary">
+        <label class="timeline-checkbox-label">
+            <input type="checkbox" id="showInactive" checked> <span>Show Inactive Leases</span>
         </label>
+        <a href="{% url 'tenant' %}" class="btn btn-info btn-sm timeline-back-btn">
+            <i class="fas fa-arrow-left"></i> Back
+        </a>
     </div>
-    <a href="{% url 'tenant' %}" class="btn btn-info">Back</a>
 </div>
 
 <!-- Legend -->
@@ -38,10 +51,75 @@
     </span>
 </div>
 
-<!-- Timeline Container -->
-<div id="leaseTimeline" style="border: 1px solid #ddd; border-radius: 8px;"></div>
+<!-- Mobile-only: scroll hint -->
+<div class="timeline-scroll-hint">
+    <i class="fas fa-arrows-alt-h"></i> Swipe horizontally to explore the timeline
+</div>
+
+<!-- Timeline Container — wrapped for horizontal scroll on mobile -->
+<div class="timeline-scroll-wrap">
+    <div id="leaseTimeline" class="timeline-element"></div>
+</div>
 
 <style>
+/* ==================== DESKTOP STYLES ==================== */
+
+.page-title-h2 {
+    margin-top: 0.5rem;
+    margin-bottom: 0;
+}
+.page-subtitle-h5 {
+    margin-top: 0.25rem;
+    margin-bottom: 1rem;
+    color: #6c757d;
+}
+
+/* Controls row */
+.timeline-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.timeline-controls-group {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.timeline-controls-secondary {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+}
+
+.timeline-control-divider {
+    border-left: 2px solid #dee2e6;
+    height: 24px;
+    margin: 0 4px;
+}
+
+.timeline-checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0;
+    cursor: pointer;
+    font-size: 14px;
+    color: #495057;
+}
+.timeline-checkbox-label input[type="checkbox"] {
+    cursor: pointer;
+}
+
+/* Hide short labels on desktop */
+.btn-label-short { display: none; }
+
+/* Legend */
 .timeline-legend {
     background: #f8f9fa;
     padding: 12px 20px;
@@ -50,6 +128,7 @@
     display: flex;
     gap: 20px;
     align-items: center;
+    flex-wrap: wrap;
 }
 
 .legend-item {
@@ -66,6 +145,22 @@
     display: inline-block;
 }
 
+/* Scroll hint — hidden on desktop */
+.timeline-scroll-hint {
+    display: none;
+}
+
+/* Timeline container */
+.timeline-scroll-wrap {
+    width: 100%;
+}
+
+.timeline-element {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+}
+
+/* vis-timeline overrides */
 .vis-item {
     border-radius: 4px;
     border: 2px solid #fff;
@@ -92,7 +187,7 @@
     box-shadow: 0 4px 12px rgba(0,0,0,0.3) !important;
 }
 
-/* Fix row heights - make all rows exactly 65px */
+/* Fix row heights — make all rows exactly 65px */
 .vis-labelset .vis-label {
     height: 65px !important;
     min-height: 65px !important;
@@ -100,6 +195,16 @@
     line-height: 65px !important;
     box-sizing: border-box;
     overflow: hidden !important;
+    font-weight: 700 !important;
+    vertical-align: middle !important;
+    display: flex !important;
+    align-items: center !important;
+    padding-left: 10px !important;
+    background-color: #f8f9fa !important;
+}
+
+.vis-labelset .vis-label .vis-inner {
+    font-weight: 700 !important;
 }
 
 .vis-foreground .vis-group {
@@ -113,21 +218,18 @@
     height: 65px !important;
 }
 
-/* Prevent last row from being oversized */
 .vis-panel.vis-center,
 .vis-panel.vis-left,
 .vis-panel.vis-right {
     overflow: hidden !important;
 }
 
-/* Force EVERY row including the last one to be exactly 50px */
 .vis-panel.vis-bottom,
 .vis-panel.vis-center,
 .vis-panel.vis-top {
     overflow: hidden !important;
 }
 
-/* Prevent extra space after last group */
 .vis-panel.vis-center > .vis-content {
     overflow: hidden !important;
 }
@@ -137,42 +239,19 @@
     height: auto !important;
 }
 
-/* Remove any padding/margin that might cause height issues */
 .vis-panel.vis-left .vis-content,
 .vis-panel.vis-right .vis-content {
     padding: 0 !important;
 }
 
-/* Bold property names and vertical alignment */
-.vis-labelset .vis-label {
-    height: 65px !important;
-    min-height: 65px !important;
-    max-height: 65px !important;
-    line-height: 65px !important;
-    box-sizing: border-box;
-    overflow: hidden !important;
-    font-weight: 700 !important; /* Bold property names */
-    vertical-align: middle !important;
-    display: flex !important;
-    align-items: center !important;
-    padding-left: 10px !important;
-    background-color: #f8f9fa !important; /* Very light gray background */
-}
-
-.vis-labelset .vis-label .vis-inner {
-    font-weight: 700 !important;
-}
-
-/* Bold calendar dates at the top */
 .vis-time-axis .vis-text {
     font-weight: 700 !important;
 }
 
 .vis-panel.vis-top {
-    background-color: #f8f9fa !important; /* Very light gray background for calendar */
+    background-color: #f8f9fa !important;
 }
 
-/* Style the timeline axis labels (months/years) */
 .vis-time-axis .vis-grid.vis-major,
 .vis-time-axis .vis-grid.vis-minor {
     border-color: #dee2e6 !important;
@@ -183,25 +262,158 @@
     font-weight: 700 !important;
     color: #2c3e50 !important;
 }
+
+/* ==================== MOBILE STYLES (≤768px) ==================== */
+@media (max-width: 768px) {
+
+    .page-title-h2 {
+        font-size: 1.25rem;
+    }
+    .page-subtitle-h5 {
+        font-size: 0.95rem;
+        margin-bottom: 12px;
+    }
+
+    /* Controls — stack vertically */
+    .timeline-controls {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+        margin-bottom: 12px;
+    }
+
+    /* Navigation buttons — 5-column grid (Prev | Next | divider | Zoom+ | Zoom- | Fit) */
+    /* Actually use 3 rows for clarity: prev/next, zoom+/zoom-/fit, then secondary controls */
+    .timeline-controls-group {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 6px;
+        width: 100%;
+    }
+
+    .timeline-controls-group .timeline-nav-btn {
+        width: 100%;
+        font-size: 12px;
+        padding: 8px 6px;
+    }
+
+    /* Hide the desktop full labels, show short labels on mobile */
+    .btn-label-full { display: none; }
+    .btn-label-short { display: inline; }
+
+    /* The divider span doesn't make sense in a grid — hide it on mobile */
+    .timeline-control-divider {
+        display: none;
+    }
+
+    /* Place the 5 buttons across two rows: 
+       Row 1: Prev | Next
+       Row 2: Zoom+ | Zoom- | Fit (3-col span via individual placement) */
+    .timeline-nav-btn:nth-child(3) { grid-column: 1 / 2; } /* Zoom+ becomes 3rd */
+    .timeline-nav-btn:nth-child(4) { grid-column: 2 / 3; } /* Zoom- becomes 4th */
+    .timeline-nav-btn:nth-child(5) { grid-column: 1 / 3; } /* Fit spans full width */
+
+    /* Secondary controls — checkbox + back button on the same row */
+    .timeline-controls-secondary {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+        width: 100%;
+        padding-top: 6px;
+        border-top: 1px solid #f1f3f5;
+    }
+
+    .timeline-checkbox-label {
+        font-size: 13px;
+        flex: 1;
+    }
+
+    .timeline-back-btn {
+        flex-shrink: 0;
+        padding: 6px 12px;
+        font-size: 12px;
+    }
+
+    /* Legend — wrap nicely */
+    .timeline-legend {
+        padding: 10px 14px;
+        gap: 10px 16px;
+        margin-bottom: 12px;
+    }
+
+    .legend-item {
+        font-size: 12px;
+    }
+
+    .legend-color {
+        width: 16px;
+        height: 16px;
+    }
+
+    /* Scroll hint visible on mobile */
+    .timeline-scroll-hint {
+        display: block;
+        text-align: center;
+        font-size: 12px;
+        color: #6c757d;
+        font-style: italic;
+        margin-bottom: 8px;
+        padding: 8px 12px;
+        background: #f8f9fa;
+        border-radius: 6px;
+        border: 1px dashed #dee2e6;
+    }
+    .timeline-scroll-hint i {
+        margin-right: 6px;
+        color: #17a2b8;
+    }
+
+    /* Timeline container — horizontal scroll */
+    .timeline-scroll-wrap {
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+        border-radius: 8px;
+    }
+
+    .timeline-element {
+        min-width: 800px;
+    }
+
+    /* Tighten vis-timeline labels on mobile */
+    .vis-labelset .vis-label {
+        font-size: 13px !important;
+    }
+
+    .vis-time-axis .vis-text {
+        font-size: 12px !important;
+    }
+
+    .vis-item .vis-item-content {
+        padding: 6px !important;
+        font-size: 12px !important;
+    }
+}
 </style>
 
 <!-- Include vis-timeline library -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/vis-timeline/7.7.3/vis-timeline-graph2d.min.js"></script>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/vis-timeline/7.7.3/vis-timeline-graph2d.min.css" rel="stylesheet" />
 
-<!-- JSON Data from Django (using Django's json_script filter) -->
+<!-- JSON Data from Django -->
 {{ timeline_data|json_script:"timeline-data" }}
 
 <script>
 console.log('=== LEASE TIMELINE LOADING ===');
 
-// Load timeline data from JSON script tag
 const timelineDataElement = document.getElementById('timeline-data');
 
 if (!timelineDataElement) {
     console.error('Timeline data element not found!');
     document.getElementById('leaseTimeline').innerHTML = `
-        <div style="display: flex; align-items: center; justify-content: center; height: 100%; flex-direction: column; color: #6c757d;">
+        <div style="display: flex; align-items: center; justify-content: center; height: 100%; flex-direction: column; color: #6c757d; padding: 40px 20px;">
             <i class="fas fa-exclamation-triangle fa-4x mb-3"></i>
             <h4>Error Loading Timeline</h4>
             <p>Timeline data could not be loaded.</p>
@@ -209,15 +421,13 @@ if (!timelineDataElement) {
     `;
 } else {
     const timelineData = JSON.parse(timelineDataElement.textContent);
-    
-    // Debug: Log the data
+
     console.log('Timeline data loaded:', timelineData);
     console.log('Number of leases:', timelineData.length);
-    
-    // If no data, show message
+
     if (timelineData.length === 0) {
         document.getElementById('leaseTimeline').innerHTML = `
-            <div style="display: flex; align-items: center; justify-content: center; height: 100%; flex-direction: column; color: #6c757d;">
+            <div style="display: flex; align-items: center; justify-content: center; height: 100%; flex-direction: column; color: #6c757d; padding: 40px 20px;">
                 <i class="fas fa-calendar-times fa-4x mb-3"></i>
                 <h4>No Lease Data Available</h4>
                 <p>There are no tenants with lease dates to display on the timeline.</p>
@@ -228,7 +438,7 @@ if (!timelineDataElement) {
         // Create groups (properties)
         const groups = new vis.DataSet();
         const seenProperties = new Set();
-        
+
         timelineData.forEach(item => {
             if (!seenProperties.has(item.property_id)) {
                 groups.add({
@@ -238,29 +448,27 @@ if (!timelineDataElement) {
                 seenProperties.add(item.property_id);
             }
         });
-        
+
         console.log('Groups created:', groups.length);
-        
+
         // Create items (leases)
         const items = new vis.DataSet();
         const today = new Date();
-        
+
         timelineData.forEach(item => {
             const startDate = new Date(item.start_date);
             const endDate = item.end_date ? new Date(item.end_date) : new Date();
             const isExpired = item.end_date && new Date(item.end_date) < today && item.is_active;
-            
-            // Determine color
+
             let color;
             if (isExpired) {
-                color = '#dc3545'; // Red - expired but still marked active
+                color = '#dc3545';
             } else if (item.is_active) {
-                color = '#28a745'; // Green - active
+                color = '#28a745';
             } else {
-                color = '#6c757d'; // Gray - past lease
+                color = '#6c757d';
             }
-            
-            // Create tooltip content
+
             const tooltip = `
                 <strong>${item.tenant_name}</strong><br>
                 Start: ${startDate.toLocaleDateString()}<br>
@@ -269,7 +477,7 @@ if (!timelineDataElement) {
                 Status: ${item.is_active ? 'Active' : 'Inactive'}
                 ${isExpired ? '<br><span style="color: #ff6b6b;">⚠️ EXPIRED</span>' : ''}
             `;
-            
+
             items.add({
                 id: `lease_${item.tenant_id}`,
                 group: item.property_id,
@@ -282,20 +490,20 @@ if (!timelineDataElement) {
                 editable: false
             });
         });
-        
+
         console.log('Items created:', items.length);
-        
+
         // Calculate exact timeline height based on number of groups
-        const rowHeight = 65; // Height per property row
-        const timeAxisHeight = 50; // Height of the time axis at top
+        const rowHeight = 65;
+        const timeAxisHeight = 50;
         const totalHeight = (groups.length * rowHeight) + timeAxisHeight;
-        
+
         console.log(`Setting timeline height: ${groups.length} properties × ${rowHeight}px + ${timeAxisHeight}px axis = ${totalHeight}px`);
-        
+
         // Timeline options
         const options = {
             width: '100%',
-            height: `${totalHeight}px`, // Dynamic height based on number of properties
+            height: `${totalHeight}px`,
             margin: {
                 item: 10,
                 axis: 10
@@ -313,41 +521,40 @@ if (!timelineDataElement) {
                 followMouse: true,
                 overflowMethod: 'cap'
             },
-            maxHeight: `${totalHeight}px`, // Lock maximum height
-            minHeight: `${totalHeight}px`  // Lock minimum height
+            maxHeight: `${totalHeight}px`,
+            minHeight: `${totalHeight}px`
         };
-        
-        // Create timeline
+
         const container = document.getElementById('leaseTimeline');
         const timeline = new vis.Timeline(container, items, groups, options);
-        
+
         // Force height adjustment after timeline renders
         setTimeout(() => {
             container.style.height = `${totalHeight}px`;
             timeline.redraw();
             console.log('Timeline height locked to:', totalHeight);
         }, 100);
-        
+
         console.log('Timeline initialized successfully');
-        
+
         // Zoom controls
         document.getElementById('zoomIn').addEventListener('click', () => {
             timeline.zoomIn(0.5);
         });
-        
+
         document.getElementById('zoomOut').addEventListener('click', () => {
             timeline.zoomOut(0.5);
         });
-        
+
         document.getElementById('fitAll').addEventListener('click', () => {
             timeline.fit();
         });
-        
-        // Navigation controls - move left/right by 1 month
+
+        // Navigation controls — move left/right by 1 month
         document.getElementById('navLeft').addEventListener('click', () => {
             const range = timeline.getWindow();
-            const moveAmount = 1000 * 60 * 60 * 24 * 30; // 30 days
-            
+            const moveAmount = 1000 * 60 * 60 * 24 * 30;
+
             timeline.setWindow({
                 start: new Date(range.start.getTime() - moveAmount),
                 end: new Date(range.end.getTime() - moveAmount)
@@ -356,8 +563,8 @@ if (!timelineDataElement) {
 
         document.getElementById('navRight').addEventListener('click', () => {
             const range = timeline.getWindow();
-            const moveAmount = 1000 * 60 * 60 * 24 * 30; // 30 days
-            
+            const moveAmount = 1000 * 60 * 60 * 24 * 30;
+
             timeline.setWindow({
                 start: new Date(range.start.getTime() + moveAmount),
                 end: new Date(range.end.getTime() + moveAmount)
@@ -367,20 +574,19 @@ if (!timelineDataElement) {
         // Show/hide inactive leases
         document.getElementById('showInactive').addEventListener('change', function() {
             const showInactive = this.checked;
-            
+
             timelineData.forEach(item => {
                 const itemId = `lease_${item.tenant_id}`;
                 const existingItem = items.get(itemId);
-                
+
                 if (existingItem) {
                     if (!showInactive && !item.is_active) {
                         items.remove(itemId);
                     }
                 } else if (showInactive && !item.is_active) {
-                    // Re-add inactive item
                     const startDate = new Date(item.start_date);
                     const endDate = item.end_date ? new Date(item.end_date) : new Date();
-                    
+
                     items.add({
                         id: itemId,
                         group: item.property_id,
@@ -395,14 +601,12 @@ if (!timelineDataElement) {
                 }
             });
         });
-        
-        // Click event - navigate to tenant edit
+
+        // Click event — currently just logs, can be wired to navigate
         timeline.on('select', function(properties) {
             if (properties.items.length > 0) {
                 const itemId = properties.items[0];
                 const tenantId = itemId.replace('lease_', '');
-                // Uncomment to enable navigation to tenant edit
-                // window.location.href = `/tenant/edit/${tenantId}`;
                 console.log('Selected tenant:', tenantId);
             }
         });
