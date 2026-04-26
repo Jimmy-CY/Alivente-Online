@@ -2,62 +2,327 @@
 {% load static %}
 {% load help_modal_tags %}
 
-{% block title %}
-{% endblock %}
+{% block title %}Petty Cash{% endblock %}
 {% block content %}
-<h2><center>ALIVENTE ONLINE - PETTY CASH</center></h2>
+
+<h2 class="page-title-h2"><center>ALIVENTE ONLINE - PETTY CASH</center></h2>
 <br/>
-  {% for msg in messages %}
-    <div class="alert alert-secondary alert-dismissible fade show auto-dismiss" role="alert">
-      <strong></strong> <center>{{ msg }}</center>
-      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-        <span aria-hidden="true">&times;</span>
-      </button>
-    </div>
-    <script>
-      // Automatically close the alert after 3 seconds (3000 milliseconds)
-      setTimeout(function() {
-        document.querySelectorAll('.auto-dismiss').forEach(alert => {
-          alert.classList.remove('show'); // Hide alert visually
-          alert.classList.add('fade'); // Add fade effect
-          setTimeout(() => alert.remove(), 500); // Remove from DOM after fade
-        });
-      }, 2000);
-    </script>
-  {% endfor %}
-  
-  <div style="display: flex ; justify-content: flex-end">
-      <button type="button" class="btn btn-info" data-toggle="modal" data-target="#petty_cashHelpModal" style="margin-right:16px">
-        <i class="fas fa-question-circle"></i> Help
-      </button>
-      {% if perms.auth.can_edit_petty_cash %}
-        <a href="{% url 'petty_cash_add' %}" class="btn btn-info" style="margin-right:16px" type="button">Add New</a>
-      {% else %}
-        <span class="btn btn-secondary" style="margin-right:16px; opacity:0.6; cursor:not-allowed; pointer-events:none;">Add New</span>
-      {% endif %}
-    <a href="{% url 'home' %}" class="btn btn-info" style="margin-right:16px" role="button">Back</a>
+
+{% for msg in messages %}
+  <div class="alert alert-secondary alert-dismissible fade show auto-dismiss" role="alert">
+    <strong></strong> <center>{{ msg }}</center>
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+      <span aria-hidden="true">&times;</span>
+    </button>
   </div>
-<br/>
-<body>
-<div>
-<table class="table table-bordered table-striped text-center">
-<thead>
-  <tr><th align="center">Date</th><th align="left">Description</th><th align="center">Amount</th><th align="center">Income / Expense</th></tr>
-</thead>
-<tbody>
-  {% for presults in petty %}
-    {% if presults.petty_cash_dr_cr == "DR" %}
-      <tr><td align="center">{{presults.petty_cash_date}}</td><td align="left">{{presults.petty_cash_description}}</td><td align="right" style="color: green; font-weight: bold;">{{presults.petty_cash_amount}}</td><td align="center">Income</td></tr>
-    {% else %}
-      <tr><td align="center">{{presults.petty_cash_date}}</td><td align="left">{{presults.petty_cash_description}}</td><td align="right" style="color: red; font-weight: bold;">- {{presults.petty_cash_amount}}</td><td align="center">Expense</td></tr>
-    {% endif %}
-  {% endfor %}
-  <tr><td></td><td style="font-weight:bold" align="left">CLOSING BALANCE</td><td style="font-weight:bold; {% if balance >= 0 %}color: green;{% else %}color: red;{% endif %}" align="right">{{balance}}</td><td ></td></tr>
-</tbody>
-</table>    
+  <script>
+    setTimeout(function() {
+      document.querySelectorAll('.auto-dismiss').forEach(alert => {
+        alert.classList.remove('show');
+        alert.classList.add('fade');
+        setTimeout(() => alert.remove(), 500);
+      });
+    }, 2000);
+  </script>
+{% endfor %}
+
+<!-- Action Buttons -->
+<div class="page-action-buttons">
+  <button type="button" class="btn btn-info" data-toggle="modal" data-target="#petty_cashHelpModal">
+    <i class="fas fa-question-circle"></i> Help
+  </button>
+  {% if perms.auth.can_edit_petty_cash %}
+    <a href="{% url 'petty_cash_add' %}" class="btn btn-info">Add New</a>
+  {% else %}
+    <span class="btn btn-secondary" style="opacity:0.6; cursor:not-allowed; pointer-events:none;">Add New</span>
+  {% endif %}
+  <a href="{% url 'home' %}" class="btn btn-info">Back</a>
 </div>
-</body>
+
+<!-- Closing Balance Banner -->
+<div class="closing-balance-banner {% if balance >= 0 %}balance-positive{% else %}balance-negative{% endif %}">
+  <div class="closing-balance-label">
+    <i class="fas fa-wallet"></i> Closing Balance
+  </div>
+  <div class="closing-balance-value">
+    {% if balance >= 0 %}
+      €{{ balance }}
+    {% else %}
+      -€{{ balance|stringformat:"s"|slice:"1:" }}
+    {% endif %}
+  </div>
+</div>
+
+<!-- Petty Cash Table (desktop) / Card list (mobile) -->
+<div class="table-container">
+  <table class="table table-bordered table-striped text-center petty-cash-table">
+    <thead>
+      <tr>
+        <th style="text-align: center; width: 15%;">Date</th>
+        <th style="text-align: left; width: 50%;">Description</th>
+        <th style="text-align: right; width: 17%;">Amount</th>
+        <th style="text-align: center; width: 18%;">Income / Expense</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for presults in petty|dictsortreversed:"petty_cash_id"|dictsortreversed:"petty_cash_date" %}
+        {% if presults.petty_cash_dr_cr == "DR" %}
+          <tr class="petty-row-income">
+            <td data-label="Date" style="text-align: center;">{{ presults.petty_cash_date }}</td>
+            <td data-label="Description" style="text-align: left;">{{ presults.petty_cash_description }}</td>
+            <td data-label="Amount" style="text-align: right; color: green; font-weight: bold;">€{{ presults.petty_cash_amount }}</td>
+            <td data-label="Type" style="text-align: center;">
+              <span class="petty-type-badge type-income">Income</span>
+            </td>
+          </tr>
+        {% else %}
+          <tr class="petty-row-expense">
+            <td data-label="Date" style="text-align: center;">{{ presults.petty_cash_date }}</td>
+            <td data-label="Description" style="text-align: left;">{{ presults.petty_cash_description }}</td>
+            <td data-label="Amount" style="text-align: right; color: red; font-weight: bold;">- €{{ presults.petty_cash_amount }}</td>
+            <td data-label="Type" style="text-align: center;">
+              <span class="petty-type-badge type-expense">Expense</span>
+            </td>
+          </tr>
+        {% endif %}
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
 
 {% render_help_modal "petty_cash" %}
+
+<style>
+/* ==================== DESKTOP STYLES ==================== */
+
+.page-title-h2 {
+    margin-top: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+/* Action buttons row */
+.page-action-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+/* Closing Balance Banner */
+.closing-balance-banner {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border: 2px solid #17a2b8;
+    border-left-width: 6px;
+    border-radius: 12px;
+    padding: 20px 28px;
+    margin-bottom: 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+.closing-balance-banner.balance-positive {
+    border-color: #28a745;
+}
+.closing-balance-banner.balance-negative {
+    border-color: #dc3545;
+}
+.closing-balance-label {
+    font-size: 1.1rem;
+    color: #495057;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.closing-balance-label i {
+    color: #17a2b8;
+    font-size: 1.3rem;
+}
+.balance-positive .closing-balance-label i {
+    color: #28a745;
+}
+.balance-negative .closing-balance-label i {
+    color: #dc3545;
+}
+.closing-balance-value {
+    font-size: 2rem;
+    font-weight: 700;
+    font-family: 'Courier New', monospace;
+    letter-spacing: 0.5px;
+}
+.balance-positive .closing-balance-value {
+    color: #28a745;
+}
+.balance-negative .closing-balance-value {
+    color: #dc3545;
+}
+
+/* Table */
+.table-container {
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+/* Type badges (replaces plain Income/Expense text) */
+.petty-type-badge {
+    display: inline-block;
+    padding: 3px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+}
+.type-income {
+    background: #d4edda;
+    color: #155724;
+}
+.type-expense {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+/* ==================== MOBILE STYLES (≤768px) ==================== */
+@media (max-width: 768px) {
+
+    .page-title-h2 {
+        font-size: 1.25rem;
+        margin-bottom: 0.75rem;
+    }
+
+    /* Action buttons — 2-column grid (Help + Add Row 1, Back full Row 2) */
+    .page-action-buttons {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin-bottom: 14px;
+    }
+    .page-action-buttons .btn,
+    .page-action-buttons a {
+        width: 100%;
+        height: 38px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 13px;
+        padding: 6px 8px;
+        margin: 0;
+    }
+    /* Make Back full-width on its own row */
+    .page-action-buttons > a:last-child {
+        grid-column: 1 / -1;
+    }
+
+    /* Closing Balance Banner — stacks vertically, centred */
+    .closing-balance-banner {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 4px;
+        padding: 16px;
+        margin-bottom: 16px;
+    }
+    .closing-balance-label {
+        font-size: 0.95rem;
+    }
+    .closing-balance-value {
+        font-size: 1.8rem;
+    }
+
+    /* Table → Card layout */
+    .table-container {
+        background: transparent;
+        box-shadow: none;
+        border-radius: 0;
+    }
+    .petty-cash-table {
+        border: none;
+        background: transparent;
+    }
+    .petty-cash-table thead {
+        display: none;
+    }
+    .petty-cash-table,
+    .petty-cash-table tbody,
+    .petty-cash-table tr,
+    .petty-cash-table td {
+        display: block;
+        width: 100%;
+    }
+    .petty-cash-table tbody tr {
+        background: white;
+        border: 1px solid #dee2e6;
+        border-left-width: 4px;
+        border-radius: 8px;
+        margin-bottom: 12px;
+        padding: 12px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+    }
+    /* Income rows get green left border, Expense rows get red */
+    .petty-cash-table tbody tr.petty-row-income {
+        border-left-color: #28a745;
+    }
+    .petty-cash-table tbody tr.petty-row-expense {
+        border-left-color: #dc3545;
+    }
+    .petty-cash-table tbody tr:nth-of-type(even) {
+        background: white;
+    }
+    .petty-cash-table td {
+        border: none !important;
+        padding: 6px 0 !important;
+        text-align: left !important;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+        min-height: 28px;
+    }
+    .petty-cash-table td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        color: #495057;
+        font-size: 13px;
+        flex-shrink: 0;
+    }
+    /* Date cell prominent at top */
+    .petty-cash-table td[data-label="Date"] {
+        font-size: 16px;
+        font-weight: 600;
+        color: #2c3e50;
+        padding-bottom: 8px !important;
+        margin-bottom: 4px;
+        border-bottom: 1px solid #f1f3f5 !important;
+        display: block;
+    }
+    .petty-cash-table td[data-label="Date"]::before {
+        display: none;
+    }
+    /* Description — full-width below date */
+    .petty-cash-table td[data-label="Description"] {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 6px 0 !important;
+    }
+    .petty-cash-table td[data-label="Description"]::before {
+        font-size: 11px;
+        color: #6c757d;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+        margin-bottom: 2px;
+    }
+    /* Amount cell — keep number right-aligned but the row layout still flex-spaces label/value */
+    .petty-cash-table td[data-label="Amount"] {
+        font-size: 16px;
+    }
+    /* Type badge stays right-aligned */
+    .petty-cash-table td[data-label="Type"] {
+        margin-top: 4px;
+    }
+}
+</style>
 
 {% endblock %}

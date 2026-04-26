@@ -75,16 +75,16 @@ Suppliers
             </div>
           </div>
 
-          <!-- Country Filter -->
+          <!-- Country Filter (dynamic — populated from existing supplier records) -->
           <div class="filter-group">
             <label class="filter-label">
               <i class="fas fa-globe"></i> Country
             </label>
             <select name="supcount" class="form-control filter-select" id="countrySelect">
               <option value="All">All Countries</option>
-              <option value="Cyprus" {% if selected_country == 'Cyprus' %}selected{% endif %}>Cyprus</option>
-              <option value="Greece" {% if selected_country == 'Greece' %}selected{% endif %}>Greece</option>
-              <option value="Spain" {% if selected_country == 'Spain' %}selected{% endif %}>Spain</option>
+              {% for country in distinct_countries %}
+                <option value="{{ country }}" {% if selected_country == country %}selected{% endif %}>{{ country }}</option>
+              {% endfor %}
             </select>
           </div>
         </div>
@@ -110,9 +110,7 @@ Suppliers
           <th style="width: 10%">Country</th>
           <th style="width: 8%">Edit</th>
           <th style="width: 8%">Report</th>
-            {% if perms.auth.can_edit_suppliers %}
-              <th style="width: 8%">Delete</th>
-            {% endif %}
+          <th style="width: 8%">Delete</th>
         </tr>
       </thead>
       <tbody>
@@ -123,7 +121,9 @@ Suppliers
             <td data-label="Company">{{sresults.supplier_company_name}}</td>
             <td data-label="Role">{{sresults.supplier_role}}</td>
             <td data-label="Country">{{sresults.supplier_country}}</td>
-            <td data-label="Edit">
+
+            <!-- Desktop action cells -->
+            <td data-label="Edit" class="desktop-action-cell">
               {% if perms.auth.can_edit_suppliers %}
                 <a href="{% url 'suppliers_edit' sresults.supplier_id %}" class="icon-action-btn icon-edit" title="Edit Supplier">
                   <i class="fas fa-pencil-alt"></i>
@@ -134,13 +134,13 @@ Suppliers
                 </span>
               {% endif %}
             </td>
-            <td data-label="Report">
+            <td data-label="Report" class="desktop-action-cell">
               <a href="{% url 'supplier_report' sresults.supplier_id %}" class="icon-action-btn icon-view" title="View Supplier Report">
                 <i class="fas fa-eye"></i>
               </a>
             </td>
-            {% if perms.auth.can_edit_suppliers %}
-              <td data-label="Delete">
+            <td data-label="Delete" class="desktop-action-cell">
+              {% if perms.auth.can_edit_suppliers %}
                 <button type="button" class="icon-action-btn icon-delete delete-btn"
                         data-supplier-id="{{sresults.supplier_id}}"
                         data-contact-person="{{sresults.supplier_contact_person}}"
@@ -149,8 +149,48 @@ Suppliers
                         title="Delete Supplier">
                   <i class="fas fa-trash"></i>
                 </button>
-              </td>
-            {% endif %}
+              {% else %}
+                <span class="icon-action-btn icon-disabled" title="No delete permission">
+                  <i class="fas fa-trash"></i>
+                </span>
+              {% endif %}
+            </td>
+
+            <!-- Mobile-only action bar (hidden on desktop) -->
+            <td class="mobile-action-bar">
+              {% if perms.auth.can_edit_suppliers %}
+                <a href="{% url 'suppliers_edit' sresults.supplier_id %}" class="mobile-action-btn">
+                  <i class="fas fa-pencil-alt mobile-action-icon icon-color-edit"></i>
+                  <span class="mobile-action-label">Edit</span>
+                </a>
+              {% else %}
+                <span class="mobile-action-btn mobile-action-disabled">
+                  <i class="fas fa-pencil-alt mobile-action-icon"></i>
+                  <span class="mobile-action-label">Edit</span>
+                </span>
+              {% endif %}
+
+              <a href="{% url 'supplier_report' sresults.supplier_id %}" class="mobile-action-btn">
+                <i class="fas fa-eye mobile-action-icon icon-color-view"></i>
+                <span class="mobile-action-label">Report</span>
+              </a>
+
+              {% if perms.auth.can_edit_suppliers %}
+                <button type="button" class="mobile-action-btn delete-btn-mobile"
+                        data-supplier-id="{{sresults.supplier_id}}"
+                        data-contact-person="{{sresults.supplier_contact_person}}"
+                        data-company-name="{{sresults.supplier_company_name}}"
+                        data-role="{{sresults.supplier_role}}">
+                  <i class="fas fa-trash mobile-action-icon icon-color-delete"></i>
+                  <span class="mobile-action-label">Delete</span>
+                </button>
+              {% else %}
+                <span class="mobile-action-btn mobile-action-disabled">
+                  <i class="fas fa-trash mobile-action-icon"></i>
+                  <span class="mobile-action-label">Delete</span>
+                </span>
+              {% endif %}
+            </td>
           </tr>
         {% endfor %}
       </tbody>
@@ -159,7 +199,7 @@ Suppliers
 
   <!-- Delete Confirmation Modal -->
   <div class="modal fade" id="deleteSupplierModal" tabindex="-1" role="dialog" aria-labelledby="deleteSupplierModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
+    <div class="modal-dialog modal-fullscreen-mobile" role="document">
       <div class="modal-content">
         <div class="modal-header bg-danger text-white">
           <h5 class="modal-title" id="deleteSupplierModalLabel">
@@ -174,29 +214,26 @@ Suppliers
             <strong>Warning:</strong> This action cannot be undone. The supplier and all associated data will be permanently deleted.
           </div>
 
-          <div class="row">
-            <div class="col-md-6">
+          <div class="delete-modal-grid">
+            <div>
               <strong>Contact Person:</strong><br>
               <span id="modalContactPerson"></span>
             </div>
-            <div class="col-md-6">
+            <div>
               <strong>Supplier ID:</strong><br>
               <span id="modalSupplierId"></span>
             </div>
-          </div>
-          <br>
-          <div class="row">
-            <div class="col-md-6">
+            <div>
               <strong>Company Name:</strong><br>
               <span id="modalCompanyName"></span>
             </div>
-            <div class="col-md-6">
+            <div>
               <strong>Role:</strong><br>
               <span id="modalRole"></span>
             </div>
           </div>
         </div>
-        <div class="modal-footer">
+        <div class="modal-footer modal-footer-stack-mobile">
           <button type="button" class="btn btn-secondary" data-dismiss="modal">
             <i class="fas fa-times"></i> Cancel
           </button>
@@ -278,6 +315,14 @@ Suppliers
 .modal-header .close { color: white; opacity: 0.8; }
 .modal-header .close:hover { opacity: 1; }
 
+/* Delete modal grid (replaces Bootstrap row/col) */
+.delete-modal-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-top: 8px;
+}
+
 /* Icon action buttons (Edit / Delete / View) */
 .icon-action-btn {
     display: inline-flex;
@@ -338,10 +383,13 @@ Suppliers
 /* Hide mobile-only label variants on desktop */
 .filter-title-text-mobile, .clear-all-text-mobile { display: none; }
 
+/* Mobile action bar — hidden on desktop */
+.mobile-action-bar { display: none !important; }
+
 /* ==================== MOBILE STYLES (≤768px) ==================== */
 @media (max-width: 768px) {
 
-  /* Action buttons: 2-column grid (3 buttons → row 1: Help+Add, row 2: Back full) */
+  /* Action buttons: 2-column grid (Help + Add Row 1, Back full Row 2) */
   .page-action-buttons {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -410,6 +458,12 @@ Suppliers
     gap: 12px;
   }
   .search-input-group { width: 100%; }
+
+  /* iOS zoom guard */
+  .filter-select,
+  .search-input {
+    font-size: 16px;
+  }
 
   /* Active filters: tighter on mobile */
   .active-filters {
@@ -480,6 +534,117 @@ Suppliers
   }
   .suppliers-table td[data-label="Contact Person"]::before {
     display: none;
+  }
+
+  /* === Hide the three desktop action cells on mobile === */
+  .desktop-action-cell {
+    display: none !important;
+  }
+
+  /* === Show and style the mobile action bar — 3-column grid === */
+  .mobile-action-bar {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+    margin-top: 10px;
+    padding: 10px 0 0 0 !important;
+    border-top: 1px solid #f1f3f5;
+    align-items: stretch !important;
+    min-height: auto !important;
+    justify-content: stretch !important;
+  }
+  .mobile-action-bar::before {
+    display: none !important;
+  }
+  .mobile-action-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 6px;
+    padding: 8px 4px;
+    border-radius: 6px;
+    text-decoration: none;
+    color: #495057;
+    font-size: 11px;
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    transition: background-color 0.15s ease;
+    min-height: 56px;
+    cursor: pointer;
+  }
+  .mobile-action-btn:hover,
+  .mobile-action-btn:active {
+    background: #e9ecef;
+    text-decoration: none;
+    color: #495057;
+  }
+  .mobile-action-icon {
+    font-size: 18px;
+    line-height: 1;
+  }
+  .mobile-action-label {
+    font-size: 11px;
+    font-weight: 500;
+    line-height: 1.2;
+    text-align: center;
+  }
+  /* Icon colours match desktop semantic colours */
+  .icon-color-edit { color: #007bff; }
+  .icon-color-view { color: #17a2b8; }
+  .icon-color-delete { color: #dc3545; }
+
+  /* Disabled state */
+  .mobile-action-disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    color: #adb5bd;
+  }
+  .mobile-action-disabled .mobile-action-icon {
+    color: #adb5bd;
+  }
+  .mobile-action-disabled:hover,
+  .mobile-action-disabled:active {
+    background: #f8f9fa;
+    color: #adb5bd;
+  }
+
+  /* Delete modal — full-screen on mobile */
+  .modal-fullscreen-mobile {
+    max-width: 100%;
+    margin: 0;
+  }
+  .modal-fullscreen-mobile .modal-content {
+    border-radius: 0;
+    min-height: 100vh;
+  }
+  .modal-fullscreen-mobile .modal-body {
+    padding: 16px;
+  }
+
+  /* Delete modal grid stacks single column */
+  .delete-modal-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  /* Modal footer — stack with primary on top */
+  .modal-footer-stack-mobile {
+    flex-direction: column-reverse;
+    gap: 8px;
+    padding: 14px;
+  }
+  .modal-footer-stack-mobile .btn,
+  .modal-footer-stack-mobile form {
+    width: 100%;
+    margin: 0 !important;
+  }
+  .modal-footer-stack-mobile form .btn {
+    width: 100%;
+    padding: 10px 12px;
+  }
+  .modal-footer-stack-mobile > .btn {
+    padding: 10px 12px;
   }
 }
 </style>
@@ -574,8 +739,8 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Delete button functionality
-    const deleteButtons = document.querySelectorAll('.delete-btn');
+    // Delete button functionality (works for both desktop .delete-btn and mobile .delete-btn-mobile)
+    const deleteButtons = document.querySelectorAll('.delete-btn, .delete-btn-mobile');
     deleteButtons.forEach(button => {
         button.addEventListener('click', function() {
             const supplierId = this.getAttribute('data-supplier-id');

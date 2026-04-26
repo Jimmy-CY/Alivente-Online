@@ -1,49 +1,204 @@
 {% extends 'base.html' %}
 {% load static %}
-
-{% block title %}
-{% endblock %}
-
+{% block title %}Add Supplier{% endblock %}
 {% block content %}
 
-<h2><center>ALIVENTE ONLINE - SUPPLIERS</center></h2>
-<h4><center>ADD NEW SUPPLIER</center></h4>
+<h2 class="page-title-h2"><center>ALIVENTE ONLINE - SUPPLIERS</center></h2>
+<h4 class="page-subtitle-h4"><center>ADD NEW SUPPLIER</center></h4>
 <br/>
 
-<form action = "{% url 'suppliers_commit' %}" method="post">
+<form action="{% url 'suppliers_commit' %}" method="post" id="supplierForm">
   {% csrf_token %}
-  <div style="display: flex ; justify-content: flex-end">
-      <button class="btn btn-info" style="margin-right:16px" type="submit">Save</button>
-      <a href="{% url 'suppliers' %}" class="btn btn-info" style="margin-right:16px" role="button">Back</a>
+
+  <!-- Action Buttons -->
+  <div class="form-action-buttons">
+    <button class="btn btn-info action-btn-save" type="submit">
+      <i class="fas fa-save"></i> Save
+    </button>
+    <a href="{% url 'suppliers' %}" class="btn btn-info action-btn-back" role="button">
+      <i class="fas fa-arrow-left"></i> Back
+    </a>
   </div>
-  <div class="form-row">
-    <div class="form-group col-md-4">
-      <label for="supplier_contact_person"><strong>Contact Person</strong></label>
-      <input type="text" class="form-control" id="supplier_contact_person" name="supplier_contact_person" placeholder="Name of Contact Person" required>
-    </div>
-    <div class="form-group col-md-4">
-      <label for="supplier_contact_number"><strong>Contact Number</strong></label>
-      <input type="text" class="form-control" id="supplier_contact_number" name="supplier_contact_number" placeholder="Contact Number" required>
-    </div>
-    <div class="form-group col-md-4">
-      <label for="supplier_email"><strong>Email Address</strong></label>
-      <input type="text" class="form-control" id="supplier_email" name="supplier_email" placeholder="Supplier Email Address">
-    </div>
-  </div>
-  <div class="form-row">
-    <div class="form-group col-md-4">
-      <label for="supplier_company_name"><strong>Company Name</strong></label>
-      <input type="text" class="form-control" id="supplier_company_name" name="supplier_company_name" placeholder="Name of Company">
-    </div>
-    <div class="form-group col-md-4">
-      <label for="supplier_role"><strong>Role / Service</strong></label>
-      <input type="text" class="form-control" id="supplier_role" name="supplier_role" placeholder="Role or Service" required>
-    </div>
-    <div class="form-group col-md-4">
-      <label for="supplier_country"><strong>Country</strong></label>
-      <input type="text" class="form-control" id="supplier_country" name="supplier_country" placeholder="Country" required>
+
+  <!-- Contact Information Section -->
+  <div class="form-section">
+    <h5 class="form-section-title"><i class="fas fa-user"></i> Contact Information</h5>
+    <div class="form-row">
+      <div class="form-group col-md-4">
+        <label for="supplier_contact_person"><strong>Contact Person <span class="text-danger">*</span></strong></label>
+        <input type="text" class="form-control" id="supplier_contact_person" name="supplier_contact_person" placeholder="Name of Contact Person" required>
+      </div>
+      <div class="form-group col-md-4">
+        <label for="supplier_contact_number"><strong>Contact Number <span class="text-danger">*</span></strong></label>
+        <input type="tel" class="form-control" id="supplier_contact_number" name="supplier_contact_number" placeholder="Contact Number" required>
+      </div>
+      <div class="form-group col-md-4">
+        <label for="supplier_email"><strong>Email Address</strong></label>
+        <input type="email" class="form-control" id="supplier_email" name="supplier_email" placeholder="Supplier Email Address">
+      </div>
     </div>
   </div>
+
+  <!-- Company Details Section -->
+  <div class="form-section">
+    <h5 class="form-section-title"><i class="fas fa-building"></i> Company Details</h5>
+    <div class="form-row">
+      <div class="form-group col-md-4">
+        <label for="supplier_company_name"><strong>Company Name</strong></label>
+        <input type="text" class="form-control" id="supplier_company_name" name="supplier_company_name" placeholder="Name of Company">
+      </div>
+      <div class="form-group col-md-4">
+        <label for="supplier_role"><strong>Role / Service <span class="text-danger">*</span></strong></label>
+        <input type="text" class="form-control" id="supplier_role" name="supplier_role" placeholder="Role or Service" required>
+      </div>
+      <div class="form-group col-md-4">
+        <label for="supplier_country"><strong>Country <span class="text-danger">*</span></strong></label>
+        <input type="text" class="form-control" id="supplier_country" name="supplier_country" placeholder="Country" required>
+      </div>
+    </div>
+  </div>
+
 </form>
+
+<style>
+/* ==================== DESKTOP STYLES ==================== */
+.page-title-h2 {
+    margin-top: 0.5rem;
+    margin-bottom: 0;
+}
+.page-subtitle-h4 {
+    margin-top: 0.25rem;
+    margin-bottom: 1rem;
+    color: #6c757d;
+    font-weight: normal;
+}
+
+/* Action buttons row */
+.form-action-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-bottom: 24px;
+}
+.form-action-buttons .btn {
+    padding: 8px 20px;
+}
+
+/* Form section cards */
+.form-section {
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 20px 24px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+}
+.form-section-title {
+    color: #2c3e50;
+    font-weight: 600;
+    margin: 0 0 16px 0;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #e9ecef;
+    font-size: 1.05rem;
+}
+.form-section-title i {
+    color: #17a2b8;
+    margin-right: 6px;
+}
+
+/* Form group / form row tweaks */
+.form-row {
+    margin-left: -8px;
+    margin-right: -8px;
+}
+.form-row > [class*="col-"] {
+    padding-left: 8px;
+    padding-right: 8px;
+}
+.form-group label {
+    margin-bottom: 6px;
+    font-size: 14px;
+}
+.form-group .form-control {
+    border: 2px solid #e9ecef;
+    border-radius: 6px;
+    padding: 8px 12px;
+    transition: all 0.2s ease;
+}
+.form-group .form-control:focus {
+    border-color: #17a2b8;
+    box-shadow: 0 0 0 3px rgba(23, 162, 184, 0.1);
+    outline: none;
+}
+
+/* ==================== MOBILE STYLES (≤768px) ==================== */
+@media (max-width: 768px) {
+
+    .page-title-h2 {
+        font-size: 1.25rem;
+    }
+    .page-subtitle-h4 {
+        font-size: 1rem;
+        margin-bottom: 0.75rem;
+    }
+
+    /* Action buttons — column-reverse so Save sits on top, Back on bottom */
+    .form-action-buttons {
+        display: flex;
+        flex-direction: column-reverse;
+        gap: 8px;
+        margin-bottom: 16px;
+    }
+    .form-action-buttons .btn,
+    .form-action-buttons a {
+        width: 100%;
+        padding: 10px 12px;
+        margin: 0;
+        text-align: center;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Form section — tighter padding */
+    .form-section {
+        padding: 14px 14px;
+        margin-bottom: 14px;
+        border-radius: 6px;
+    }
+    .form-section-title {
+        font-size: 0.95rem;
+        margin-bottom: 12px;
+        padding-bottom: 8px;
+    }
+
+    /* Form rows → single column */
+    .form-row {
+        margin-left: 0;
+        margin-right: 0;
+    }
+    .form-row > [class*="col-"] {
+        padding-left: 0;
+        padding-right: 0;
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+    .form-group {
+        margin-bottom: 12px;
+    }
+    .form-group:last-child {
+        margin-bottom: 0;
+    }
+    .form-group label {
+        font-size: 13px;
+    }
+
+    /* Inputs — 16px font to prevent iOS zoom-on-focus */
+    .form-group .form-control {
+        font-size: 16px;
+        padding: 10px 12px;
+    }
+}
+</style>
 
 {% endblock %}
