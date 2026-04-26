@@ -22,6 +22,20 @@
     font-weight: 600;
 }
 
+.calendar-toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.calendar-toolbar-left {
+    display: flex;
+    gap: 10px;
+}
+
 .calendar-navigation {
     display: flex;
     justify-content: space-between;
@@ -31,16 +45,14 @@
     padding: 20px;
     border-radius: 12px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    gap: 12px;
 }
 
 .calendar-navigation h3 {
     margin: 0;
     color: #2c3e50;
-}
-
-.nav-buttons {
-    display: flex;
-    gap: 10px;
+    text-align: center;
+    flex: 1;
 }
 
 .calendar-container {
@@ -138,6 +150,7 @@
     padding: 15px;
     background: #f8f9fa;
     border-radius: 8px;
+    flex-wrap: wrap;
 }
 
 .legend-item {
@@ -152,6 +165,11 @@
     height: 20px;
     border-radius: 4px;
 }
+
+.legend-color.birthday { background: #17a2b8; }
+.legend-color.nameday { background: #6f42c1; }
+.legend-color.anniversary { background: #dc3545; }
+.legend-color.custom { background: #28a745; }
 
 /* Timeline/List View Styles */
 .timeline-container {
@@ -187,6 +205,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 12px;
 }
 
 .timeline-month-header h4 {
@@ -199,6 +218,8 @@
     padding: 4px 12px;
     border-radius: 12px;
     font-size: 14px;
+    flex-shrink: 0;
+    white-space: nowrap;
 }
 
 .timeline-events {
@@ -217,6 +238,7 @@
     justify-content: space-between;
     align-items: center;
     transition: all 0.3s ease;
+    gap: 12px;
 }
 
 .timeline-event-item:hover {
@@ -246,6 +268,7 @@
 
 .timeline-event-info {
     flex: 1;
+    min-width: 0;
 }
 
 .timeline-event-date {
@@ -253,6 +276,7 @@
     font-weight: 600;
     color: #2c3e50;
     margin-bottom: 5px;
+    word-break: break-word;
 }
 
 .timeline-event-details {
@@ -279,6 +303,7 @@
     display: flex;
     align-items: center;
     gap: 15px;
+    flex-shrink: 0;
 }
 
 .timeline-event-countdown {
@@ -288,6 +313,7 @@
     font-size: 14px;
     font-weight: 600;
     color: #6c757d;
+    white-space: nowrap;
 }
 
 .timeline-event-countdown.today {
@@ -312,30 +338,127 @@
     opacity: 0.3;
 }
 
+/* Mobile-only banner explaining timeline view */
+.mobile-view-banner {
+    display: none;
+    background: linear-gradient(135deg, #e7f5f8 0%, #d4edda 100%);
+    border: 1px solid #b8daff;
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-bottom: 16px;
+    font-size: 13px;
+    color: #495057;
+    text-align: center;
+}
+.mobile-view-banner i {
+    color: #17a2b8;
+    margin-right: 6px;
+}
+
+/* ==================== MOBILE STYLES (≤768px) ==================== */
 @media (max-width: 768px) {
-    .calendar-table td {
-        height: 80px;
-        padding: 4px;
+
+    /* Header — tighter */
+    .calendar-header {
+        padding: 16px;
+        margin-bottom: 16px;
     }
-    
-    .day-number {
+    .calendar-header h2 {
+        font-size: 1.3rem;
+    }
+
+    /* Toolbar — stack: Back button on top full-width, then toggle (hidden) */
+    .calendar-toolbar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+        margin-bottom: 12px;
+    }
+    .calendar-toolbar-left {
+        order: 2; /* Push toggle below Back, but it's hidden anyway */
+    }
+    .calendar-toolbar-right {
+        order: 1;
+    }
+    .calendar-toolbar .btn {
+        width: 100%;
+        padding: 10px 12px;
+    }
+
+    /* Hide the calendar/timeline toggle on mobile — we always show timeline */
+    #viewToggleBtn {
+        display: none !important;
+    }
+
+    /* Hide calendar grid view entirely on mobile — always show timeline */
+    .calendar-view-container,
+    .calendar-view-container.active,
+    #calendarNavigation {
+        display: none !important;
+    }
+
+    /* Force timeline view to be visible on mobile regardless of toggle state */
+    .timeline-container {
+        display: block !important;
+        padding: 14px;
+    }
+
+    /* Show the mobile-view banner explaining timeline-only on mobile */
+    .mobile-view-banner {
+        display: block;
+    }
+
+    /* Timeline month header tighter */
+    .timeline-month-header {
+        padding: 12px 14px;
+        margin-bottom: 12px;
+        flex-wrap: wrap;
+    }
+    .timeline-month-header h4 {
+        font-size: 1rem;
+    }
+    .timeline-event-count {
         font-size: 12px;
+        padding: 3px 10px;
     }
-    
-    .event-dot {
-        font-size: 9px;
-        padding: 2px 4px;
-    }
-    
+
+    /* Timeline event items stack info above countdown */
     .timeline-event-item {
         flex-direction: column;
         align-items: flex-start;
         gap: 10px;
+        padding: 12px 14px;
     }
-    
+    .timeline-event-item:hover {
+        transform: none;
+    }
+    .timeline-event-date {
+        font-size: 15px;
+        margin-bottom: 4px;
+    }
+    .timeline-event-name {
+        font-size: 14px;
+    }
+    .timeline-event-badge {
+        font-size: 11px;
+        padding: 3px 8px;
+    }
     .timeline-event-meta {
         width: 100%;
-        justify-content: space-between;
+        justify-content: flex-start;
+        gap: 8px;
+    }
+    .timeline-event-countdown {
+        font-size: 13px;
+        padding: 6px 12px;
+    }
+
+    /* No-events fallback on mobile */
+    .no-events-timeline {
+        padding: 40px 16px;
+    }
+    .no-events-timeline i {
+        font-size: 48px;
     }
 }
 </style>
@@ -344,9 +467,9 @@
     <h2><i class="fas fa-calendar-alt"></i> Celebration Calendar</h2>
 </div>
 
-<div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
-    <div style="display: flex; gap: 10px;">
-        <!-- View Toggle Button -->
+<div class="calendar-toolbar">
+    <div class="calendar-toolbar-left">
+        <!-- View Toggle Button (hidden on mobile via CSS) -->
         <button class="btn btn-info" id="viewToggleBtn" onclick="toggleCalendarView()">
             {% if default_view == 'timeline' %}
                 <i class="fas fa-calendar"></i> Calendar View
@@ -355,10 +478,17 @@
             {% endif %}
         </button>
     </div>
-    
-    <a href="{% url 'celebration_dashboard' %}" class="btn btn-secondary">
-        <i class="fas fa-arrow-left"></i> Back to Dashboard
-    </a>
+
+    <div class="calendar-toolbar-right">
+        <a href="{% url 'celebration_dashboard' %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Dashboard
+        </a>
+    </div>
+</div>
+
+<!-- Mobile-only banner explaining the simplified view -->
+<div class="mobile-view-banner">
+    <i class="fas fa-mobile-alt"></i> Showing timeline view (calendar grid available on desktop)
 </div>
 
 <!-- Calendar Navigation (shown only in calendar view) -->
@@ -366,9 +496,9 @@
     <a href="?month={{ prev_month }}&year={{ prev_year }}" class="btn btn-outline-primary">
         <i class="fas fa-chevron-left"></i> Previous
     </a>
-    
+
     <h3>{{ month_name }} {{ year }}</h3>
-    
+
     <a href="?month={{ next_month }}&year={{ next_year }}" class="btn btn-outline-primary">
         Next <i class="fas fa-chevron-right"></i>
     </a>
@@ -396,11 +526,11 @@
                     <td class="{% if day == 0 %}empty{% elif day == today.day and month == today.month and year == today.year %}today{% endif %}">
                         {% if day != 0 %}
                             <div class="day-number">{{ day }}</div>
-                            
+
                             {% if day in events_by_day %}
                             <div class="day-events">
                                 {% for event in events_by_day|dict_get:day %}
-                                <div class="event-dot {{ event.event_type }}" 
+                                <div class="event-dot {{ event.event_type }}"
                                      title="{{ event.contact.name }} - {{ event.get_event_type_display }}">
                                     <i class="fas {{ event.get_icon }}"></i> {{ event.contact.name }}
                                 </div>
@@ -440,18 +570,18 @@
 <!-- Timeline/List View -->
 <div class="timeline-container" id="timelineView">
     {% regroup all_events by next_date.month as events_by_month %}
-    
+
     {% if all_events %}
         {% for month_group in events_by_month %}
         <div class="timeline-month">
             <div class="timeline-month-header">
                 <h4>
-                    <i class="fas fa-calendar"></i> 
+                    <i class="fas fa-calendar"></i>
                     {{ month_group.list.0.next_date|date:"F Y" }}
                 </h4>
                 <span class="timeline-event-count">{{ month_group.list|length }} event{{ month_group.list|length|pluralize }}</span>
             </div>
-            
+
             <div class="timeline-events">
                 {% for event_data in month_group.list %}
                 <div class="timeline-event-item {{ event_data.event.event_type }}">
@@ -473,7 +603,7 @@
                             {% endif %}
                         </div>
                     </div>
-                    
+
                     <div class="timeline-event-meta">
                         <div class="timeline-event-countdown {% if event_data.days_until == 0 %}today{% elif event_data.days_until <= 7 %}soon{% endif %}">
                             {% if event_data.days_until == 0 %}
@@ -502,18 +632,27 @@
 </div>
 
 <script>
-// Detect which view to show from URL parameter
+// Detect viewport — desktop uses URL param toggle, mobile always shows timeline
+function isMobileViewport() {
+    return window.matchMedia('(max-width: 768px)').matches;
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     const urlParams = new URLSearchParams(window.location.search);
     const viewParam = urlParams.get('view');
-    
+
+    if (isMobileViewport()) {
+        // Mobile: always show timeline view, hide calendar grid
+        // CSS handles the actual show/hide; we just don't toggle .active classes here
+        return;
+    }
+
+    // Desktop: respect URL parameter
     if (viewParam === 'timeline') {
-        // Show timeline view
         document.getElementById('calendarView').classList.remove('active');
         document.getElementById('timelineView').classList.add('active');
         document.getElementById('calendarNavigation').style.display = 'none';
     } else {
-        // Show calendar view (default)
         document.getElementById('calendarView').classList.add('active');
         document.getElementById('timelineView').classList.remove('active');
         document.getElementById('calendarNavigation').style.display = 'flex';

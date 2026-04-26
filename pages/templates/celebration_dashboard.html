@@ -53,6 +53,7 @@
 .action-card.events i { color: #17a2b8; }
 .action-card h4 { margin: 0 0 10px 0; font-weight: 600; }
 .action-card p { margin: 0; color: #6c757d; font-size: 14px; }
+
 .upcoming-widget {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
@@ -71,10 +72,11 @@
     justify-content: space-between;
     align-items: center;
     transition: all 0.2s;
+    gap: 12px;
 }
 .upcoming-item:hover { background: rgba(255, 255, 255, 0.2); }
-.upcoming-item-info { flex: 1; }
-.upcoming-item-name { font-size: 18px; font-weight: 600; margin-bottom: 5px; }
+.upcoming-item-info { flex: 1; min-width: 0; }
+.upcoming-item-name { font-size: 18px; font-weight: 600; margin-bottom: 5px; word-break: break-word; }
 .upcoming-item-date { font-size: 14px; opacity: 0.9; }
 .upcoming-days {
     background: rgba(255, 255, 255, 0.3);
@@ -82,10 +84,105 @@
     border-radius: 12px;
     font-size: 14px;
     font-weight: 600;
+    flex-shrink: 0;
+    white-space: nowrap;
 }
 .no-events { text-align: center; padding: 60px 20px; color: rgba(255, 255, 255, 0.8); }
 .no-events i { font-size: 64px; margin-bottom: 20px; opacity: 0.5; }
-@media (max-width: 768px) { .dashboard-actions { grid-template-columns: 1fr; } }
+
+.back-button-container {
+    text-align: center;
+}
+
+/* ==================== MOBILE STYLES (≤768px) ==================== */
+@media (max-width: 768px) {
+    .dashboard-header {
+        padding: 18px 16px 16px 16px;
+        margin-bottom: 16px;
+    }
+    .dashboard-header h2 {
+        font-size: 1.3rem;
+        margin-bottom: 6px;
+    }
+    .dashboard-header p {
+        font-size: 0.9rem;
+    }
+    .help-btn-corner {
+        position: static;
+        display: block;
+        margin-top: 12px;
+        width: 100%;
+    }
+    .help-btn-corner .btn {
+        width: 100%;
+        padding: 8px 12px;
+    }
+
+    /* Action cards — single column */
+    .dashboard-actions {
+        grid-template-columns: 1fr;
+        gap: 12px;
+        margin-bottom: 20px;
+    }
+    .action-card {
+        padding: 20px;
+    }
+    .action-card i {
+        font-size: 36px;
+        margin-bottom: 10px;
+    }
+    .action-card h4 {
+        font-size: 1.05rem;
+    }
+    .action-card p {
+        font-size: 13px;
+    }
+
+    /* Upcoming widget */
+    .upcoming-widget {
+        padding: 16px;
+        margin-bottom: 20px;
+    }
+    .upcoming-widget h3 {
+        font-size: 1.1rem;
+        margin-bottom: 14px;
+    }
+
+    /* Stack item info above countdown badge on mobile */
+    .upcoming-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+        padding: 12px 14px;
+    }
+    .upcoming-item-name {
+        font-size: 15px;
+    }
+    .upcoming-item-date {
+        font-size: 13px;
+    }
+    .upcoming-days {
+        font-size: 13px;
+        padding: 6px 12px;
+        align-self: flex-start;
+    }
+
+    .no-events {
+        padding: 40px 16px;
+    }
+    .no-events i {
+        font-size: 48px;
+    }
+    .no-events h4 {
+        font-size: 1.1rem;
+    }
+
+    /* Back button full-width */
+    .back-button-container .btn {
+        width: 100%;
+        padding: 10px 12px;
+    }
+}
 </style>
 
 <div class="dashboard-header">
@@ -137,7 +234,7 @@
     {% endif %}
 </div>
 
-<div style="text-align: center;">
+<div class="back-button-container">
     <a href="{% url 'personal_page' %}" class="btn btn-secondary btn-lg">
         <i class="fas fa-arrow-left"></i> Back to Personal Page
     </a>
