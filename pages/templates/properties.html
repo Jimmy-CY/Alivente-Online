@@ -139,7 +139,7 @@ Properties
                 {{results.prop_status}}
               </span>
             </td>
-            <td data-label="Edit">
+            <td data-label="Edit" class="desktop-action-cell">
             {% if perms.auth.can_edit_properties %}
               <a href="{% url 'properties_edit' results.prop_id %}" class="icon-action-btn icon-edit" title="Edit Property">
                 <i class="fas fa-pencil-alt"></i>
@@ -150,12 +150,12 @@ Properties
               </span>
             {% endif %}
             </td>
-            <td data-label="Report">
+            <td data-label="Report" class="desktop-action-cell">
               <a href="{% url 'property_report' results.prop_id %}" class="icon-action-btn icon-view" title="View Property Report">
                 <i class="fas fa-eye"></i>
               </a>
             </td>
-            <td data-label="Title Deed">
+            <td data-label="Title Deed" class="desktop-action-cell">
               {% if results.prop_title_deed %}
                 <a href="#" onclick="viewTitleDeed('{{ results.prop_title_deed.url }}', '{{ results.prop_title_deed.name }}', '{{ results.prop_name }}'); return false;" class="icon-action-btn icon-view" title="View Title Deed">
                   <i class="fas fa-eye"></i>
@@ -166,7 +166,7 @@ Properties
                 </span>
               {% endif %}
             </td>
-            <td data-label="Assets">
+            <td data-label="Assets" class="desktop-action-cell">
               {% if results.assets.count > 0 %}
                 <a href="{% url 'property_assets' results.prop_id %}" class="icon-action-btn icon-view" title="View Property Assets">
                   <i class="fas fa-eye"></i>
@@ -174,6 +174,50 @@ Properties
               {% else %}
                 <span class="icon-action-btn icon-disabled" title="No assets recorded">
                   <i class="fas fa-eye-slash"></i>
+                </span>
+              {% endif %}
+            </td>
+
+            <!-- Mobile-only action bar (hidden on desktop) -->
+            <td class="mobile-action-bar">
+              {% if perms.auth.can_edit_properties %}
+                <a href="{% url 'properties_edit' results.prop_id %}" class="mobile-action-btn">
+                  <i class="fas fa-pencil-alt mobile-action-icon icon-color-edit"></i>
+                  <span class="mobile-action-label">Edit</span>
+                </a>
+              {% else %}
+                <span class="mobile-action-btn mobile-action-disabled">
+                  <i class="fas fa-pencil-alt mobile-action-icon"></i>
+                  <span class="mobile-action-label">Edit</span>
+                </span>
+              {% endif %}
+
+              <a href="{% url 'property_report' results.prop_id %}" class="mobile-action-btn">
+                <i class="fas fa-eye mobile-action-icon icon-color-view"></i>
+                <span class="mobile-action-label">Report</span>
+              </a>
+
+              {% if results.prop_title_deed %}
+                <a href="#" onclick="viewTitleDeed('{{ results.prop_title_deed.url }}', '{{ results.prop_title_deed.name }}', '{{ results.prop_name }}'); return false;" class="mobile-action-btn">
+                  <i class="fas fa-file-contract mobile-action-icon icon-color-view"></i>
+                  <span class="mobile-action-label">Deed</span>
+                </a>
+              {% else %}
+                <span class="mobile-action-btn mobile-action-disabled">
+                  <i class="fas fa-file-contract mobile-action-icon"></i>
+                  <span class="mobile-action-label">Deed</span>
+                </span>
+              {% endif %}
+
+              {% if results.assets.count > 0 %}
+                <a href="{% url 'property_assets' results.prop_id %}" class="mobile-action-btn">
+                  <i class="fas fa-box mobile-action-icon icon-color-view"></i>
+                  <span class="mobile-action-label">Assets</span>
+                </a>
+              {% else %}
+                <span class="mobile-action-btn mobile-action-disabled">
+                  <i class="fas fa-box mobile-action-icon"></i>
+                  <span class="mobile-action-label">Assets</span>
                 </span>
               {% endif %}
             </td>
@@ -322,6 +366,9 @@ Properties
 /* Hide mobile-only label variants on desktop */
 .filter-title-text-mobile, .clear-all-text-mobile { display: none; }
 
+/* Mobile action bar — hidden on desktop */
+.mobile-action-bar { display: none !important; }
+
 /* ==================== MOBILE STYLES (≤768px) ==================== */
 @media (max-width: 768px) {
 
@@ -464,6 +511,77 @@ Properties
   }
   .properties-table td[data-label="Property"]::before {
     display: none;
+  }
+
+  /* === Hide the four desktop action cells on mobile === */
+  .desktop-action-cell {
+    display: none !important;
+  }
+
+  /* === Show and style the mobile action bar === */
+  .mobile-action-bar {
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 4px;
+    margin-top: 10px;
+    padding: 10px 0 0 0 !important;
+    border-top: 1px solid #f1f3f5;
+    align-items: stretch !important;
+    min-height: auto !important;
+    justify-content: stretch !important;
+  }
+  .mobile-action-bar::before {
+    display: none !important;
+  }
+  .mobile-action-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 6px;
+    padding: 8px 4px;
+    border-radius: 6px;
+    text-decoration: none;
+    color: #495057;
+    font-size: 11px;
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    transition: background-color 0.15s ease;
+    min-height: 56px;
+  }
+  .mobile-action-btn:hover,
+  .mobile-action-btn:active {
+    background: #e9ecef;
+    text-decoration: none;
+    color: #495057;
+  }
+  .mobile-action-icon {
+    font-size: 18px;
+    line-height: 1;
+  }
+  .mobile-action-label {
+    font-size: 11px;
+    font-weight: 500;
+    line-height: 1.2;
+    text-align: center;
+  }
+  /* Icon colours match desktop semantic colours */
+  .icon-color-edit { color: #007bff; }
+  .icon-color-view { color: #17a2b8; }
+
+  /* Disabled state */
+  .mobile-action-disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    color: #adb5bd;
+  }
+  .mobile-action-disabled .mobile-action-icon {
+    color: #adb5bd;
+  }
+  .mobile-action-disabled:hover,
+  .mobile-action-disabled:active {
+    background: #f8f9fa;
+    color: #adb5bd;
   }
 }
 </style>
