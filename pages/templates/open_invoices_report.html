@@ -11,29 +11,28 @@
 function handleTenantClick(element) {
     const tenantName = element.getAttribute('data-tenant-name');
     const tenantId = element.getAttribute('data-tenant-id');
-    
+
     console.log('Tenant clicked:', tenantName, 'ID:', tenantId);
-    
-    // Show modal with tenant name in title
+
     showModal('Invoice Details - ' + tenantName, 'Loading invoice details...');
-    
-    // Find tenant data and show it
+
     setTimeout(function() {
-        const tenantData = findTenantData(tenantName, tenantId);
-        if (tenantData) {
-            document.getElementById('invoiceContent').innerHTML = generateTenantHTML(tenantData, false); // false = don't show tenant line
+        const foundTenant = findTenantData(tenantName, tenantId);
+        if (foundTenant) {
+            document.getElementById('invoiceContent').innerHTML = generateTenantHTML(foundTenant, false);
         } else {
-            document.getElementById('invoiceContent').innerHTML = 
-                '<div class="no-invoices"><p>No invoice details found for ' + tenantName + '</p></div>';
+            document.getElementById('invoiceContent').innerHTML =
+                '<div class="no-invoices"><p>No invoice details found for <strong>' + tenantName + '</strong>.</p>' +
+                '<p class="text-muted">This tenant may not have any individual invoices recorded yet.</p></div>';
         }
     }, 300);
 }
 
 function handleTotalClick() {
     console.log('Total clicked');
-    
+
     showModal('All Outstanding Invoices', 'Loading all invoice details...');
-    
+
     setTimeout(function() {
         const allTenantsHTML = generateAllTenantsHTML();
         document.getElementById('invoiceContent').innerHTML = allTenantsHTML;
@@ -43,12 +42,11 @@ function handleTotalClick() {
 function showModal(title, content) {
     const modalTitle = document.getElementById('invoiceModalLabel');
     const modalContent = document.getElementById('invoiceContent');
-    
+
     if (modalTitle && modalContent) {
         modalTitle.textContent = title;
         modalContent.innerHTML = '<div class="loading">' + content + '</div>';
-        
-        // Show modal using jQuery (Bootstrap 4/5)
+
         if (typeof $ !== 'undefined') {
             $('#invoiceModal').modal('show');
         }
@@ -61,25 +59,26 @@ function closeModal() {
     }
 }
 
-// Hardcoded tenant data based on your debug output
-var tenantData = [
+// Tenant data populated from Django context
+// Note: numeric fields use |default:'null' to ensure JSON validity even when None
+var tenantDataList = [
     {% for property in properties_with_invoices %}
     {
-        prop_name: '{{ property.prop_name|escapejs }}',
-        prop_country: '{{ property.prop_country|escapejs }}',
-        tenant_id: {{ property.tenant_id }},
-        tenant_name: '{{ property.tenant_name|escapejs }}',
-        tenant_contact_person: '{{ property.tenant_contact_person|escapejs }}',
-        tenant_contact_number: '{{ property.tenant_contact_number|escapejs }}',
-        tenant_email: '{{ property.tenant_email|escapejs }}',
-        tenant_rent: {{ property.tenant_rent }},
-        tenant_payment_terms: {{ property.tenant_payment_terms }},
+        prop_name: '{{ property.prop_name|default_if_none:""|escapejs }}',
+        prop_country: '{{ property.prop_country|default_if_none:""|escapejs }}',
+        tenant_id: {{ property.tenant_id|default_if_none:"null" }},
+        tenant_name: '{{ property.tenant_name|default_if_none:""|escapejs }}',
+        tenant_contact_person: '{{ property.tenant_contact_person|default_if_none:""|escapejs }}',
+        tenant_contact_number: '{{ property.tenant_contact_number|default_if_none:""|escapejs }}',
+        tenant_email: '{{ property.tenant_email|default_if_none:""|escapejs }}',
+        tenant_rent: {{ property.tenant_rent|default_if_none:"0" }},
+        tenant_payment_terms: {{ property.tenant_payment_terms|default_if_none:"0" }},
         invoices: [
             {% for invoice in property.invoices %}
             {
-                invoice_date: '{{ invoice.invoice_date }}',
-                due_date: '{{ invoice.due_date }}',
-                days_overdue: {{ invoice.days_overdue }},
+                invoice_date: '{{ invoice.invoice_date|default_if_none:""|escapejs }}',
+                due_date: '{{ invoice.due_date|default_if_none:""|escapejs }}',
+                days_overdue: {{ invoice.days_overdue|default_if_none:"0" }},
                 overdue: {% if invoice.overdue %}true{% else %}false{% endif %}
             }{% if not forloop.last %},{% endif %}
             {% endfor %}
@@ -89,55 +88,110 @@ var tenantData = [
 ];
 
 function findTenantData(tenantName, tenantId) {
-    for (var i = 0; i < tenantData.length; i++) {
-        if (tenantData[i].tenant_name === tenantName || tenantData[i].tenant_id == tenantId) {
-            return tenantData[i];
+    if (!Array.isArray(tenantDataList) || tenantDataList.length === 0) {
+        return null;
+    }
+    for (var i = 0; i < tenantDataList.length; i++) {
+        var t = tenantDataList[i];
+        if (!t) continue;
+        if (t.tenant_name === tenantName || t.tenant_id == tenantId) {
+            return t;
         }
     }
     return null;
 }
 
 function generateTenantHTML(tenant, showTenantLine) {
-    if (showTenantLine === undefined) showTenantLine = true; // Default to showing tenant line
-    
-    var html = '<div class="property-card">';
-    html += '<h3 class="property-name">' + tenant.prop_name + ' (' + tenant.prop_country + ')</h3>';
-    html += '<div class="tenant-details">';
-    
-    // Only show tenant line if showTenantLine is true
-    if (showTenantLine) {
-        html += '<p><strong>Tenant:</strong> ' + tenant.tenant_name + '</p>';
+    if (!tenant) {
+        return '<div class="no-invoices"><p>Tenant data unavailable.</p></div>';
     }
-    
-    html += '<p><strong>Contact:</strong> ' + tenant.tenant_contact_person + ' | ' + tenant.tenant_contact_number + '</p>';
-    html += '<p><strong>Email:</strong> ' + tenant.tenant_email + '</p>';
-    html += '<p><strong>Payment Terms:</strong> ' + (tenant.tenant_payment_terms == 0 ? 'Immediate' : tenant.tenant_payment_terms + ' days') + '</p>';
+    if (showTenantLine === undefined) showTenantLine = true;
+
+    var html = '<div class="property-card">';
+    html += '<h3 class="property-name">' + (tenant.prop_name || 'Property') + ' (' + (tenant.prop_country || '-') + ')</h3>';
+    html += '<div class="tenant-details">';
+
+    if (showTenantLine) {
+        html += '<p><strong>Tenant:</strong> ' + (tenant.tenant_name || '-') + '</p>';
+    }
+
+    html += '<p><strong>Contact:</strong> ' + (tenant.tenant_contact_person || '-') + ' | ' + (tenant.tenant_contact_number || '-') + '</p>';
+    html += '<p><strong>Email:</strong> ' + (tenant.tenant_email || '-') + '</p>';
+    html += '<p><strong>Payment Terms:</strong> ' + (tenant.tenant_payment_terms == 0 ? 'Immediate' : (tenant.tenant_payment_terms || '-') + ' days') + '</p>';
     html += '</div>';
+
+    var invoices = Array.isArray(tenant.invoices) ? tenant.invoices : [];
+
     html += '<div class="invoices-list">';
     html += '<h4>Outstanding Invoices:</h4>';
-    html += '<table class="invoice-table">';
-    html += '<thead><tr><th>Invoice Date</th><th>Due Date</th><th>Days Overdue</th><th>Amount</th></tr></thead>';
-    html += '<tbody>';
-    
-    for (var i = 0; i < tenant.invoices.length; i++) {
-        var invoice = tenant.invoices[i];
-        html += '<tr class="' + (invoice.overdue ? 'overdue' : '') + '">';
-        html += '<td>' + invoice.invoice_date + '</td>';
-        html += '<td>' + invoice.due_date + '</td>';
-        html += '<td>' + invoice.days_overdue + '</td>';
-        html += '<td>€' + tenant.tenant_rent + '</td>';
-        html += '</tr>';
+
+    if (invoices.length === 0) {
+        html += '<p class="no-invoices-inline">No individual invoices recorded for this tenant.</p>';
+    } else {
+        // Desktop: traditional table
+        html += '<div class="invoice-table-wrap desktop-only-invoices">';
+        html += '<table class="invoice-table">';
+        html += '<thead><tr><th>Invoice Date</th><th>Due Date</th><th>Days Overdue</th><th>Amount</th></tr></thead>';
+        html += '<tbody>';
+
+        for (var i = 0; i < invoices.length; i++) {
+            var invoice = invoices[i];
+            if (!invoice) continue;
+            html += '<tr class="' + (invoice.overdue ? 'overdue' : '') + '">';
+            html += '<td data-label="Invoice Date">' + (invoice.invoice_date || '-') + '</td>';
+            html += '<td data-label="Due Date">' + (invoice.due_date || '-') + '</td>';
+            html += '<td data-label="Days Overdue">' + (invoice.days_overdue !== undefined ? invoice.days_overdue : '-') + '</td>';
+            html += '<td data-label="Amount">€' + (tenant.tenant_rent || 0) + '</td>';
+            html += '</tr>';
+        }
+
+        html += '</tbody></table></div>';
+
+        // Mobile: compact row cards
+        html += '<div class="invoice-rows mobile-only-invoices">';
+        for (var j = 0; j < invoices.length; j++) {
+            var inv = invoices[j];
+            if (!inv) continue;
+            var amount = (tenant.tenant_rent || 0).toLocaleString('en-US');
+            var daysOverdue = inv.days_overdue !== undefined ? inv.days_overdue : 0;
+            var daysClass = daysOverdue > 90 ? 'days-pill-severe' :
+                            daysOverdue > 60 ? 'days-pill-high' :
+                            daysOverdue > 30 ? 'days-pill-medium' :
+                            daysOverdue > 0 ? 'days-pill-low' : 'days-pill-current';
+
+            html += '<div class="invoice-row ' + (inv.overdue ? 'invoice-row-overdue' : '') + '">';
+            html += '<div class="invoice-row-main">';
+            html += '<div class="invoice-row-date">' + (inv.invoice_date || '-') + '</div>';
+            html += '<div class="invoice-row-amount">€' + amount + '</div>';
+            html += '</div>';
+            html += '<div class="invoice-row-meta">';
+            html += '<span class="invoice-row-due">Due: ' + (inv.due_date || '-') + '</span>';
+            if (daysOverdue > 0) {
+                html += '<span class="days-pill ' + daysClass + '">' + daysOverdue + ' days late</span>';
+            } else {
+                html += '<span class="days-pill days-pill-current">Current</span>';
+            }
+            html += '</div>';
+            html += '</div>';
+        }
+        html += '</div>';
     }
-    
-    html += '</tbody></table></div></div>';
+
+    html += '</div></div>';
     return html;
 }
 
 function generateAllTenantsHTML() {
+    if (!Array.isArray(tenantDataList) || tenantDataList.length === 0) {
+        return '<div class="no-invoices"><p>No outstanding invoices to display.</p></div>';
+    }
+
     var html = '';
-    for (var i = 0; i < tenantData.length; i++) {
-        html += generateTenantHTML(tenantData[i], true); // true = show tenant line for all tenants view
-        if (i < tenantData.length - 1) {
+    for (var i = 0; i < tenantDataList.length; i++) {
+        var t = tenantDataList[i];
+        if (!t) continue;
+        html += generateTenantHTML(t, true);
+        if (i < tenantDataList.length - 1) {
             html += '<hr class="property-divider">';
         }
     }
@@ -145,7 +199,7 @@ function generateAllTenantsHTML() {
 }
 
 console.log('Functions defined in content block');
-console.log('Tenant data loaded:', tenantData.length, 'properties');
+console.log('Tenant data loaded:', (Array.isArray(tenantDataList) ? tenantDataList.length : 0), 'properties');
 </script>
 
 <div class="report-container">
@@ -155,14 +209,18 @@ console.log('Tenant data loaded:', tenantData.length, 'properties');
                 <h2 class="report-title-main">OUTSTANDING INVOICES REPORT</h2>
                 <h3 class="report-title-sub">{{ today }}</h3>
             </div>
-            <a href="{% url 'tenant' %}" class="btn btn-info back-button" role="button">Back</a>
+            <a href="{% url 'tenant' %}" class="btn btn-info back-button" role="button">
+                <i class="fas fa-arrow-left"></i> Back
+            </a>
         </div>
 
-        <!-- Debtors Age Analysis Table -->
+        <!-- Debtors Age Analysis -->
         {% if debtors_age_analysis %}
         <div class="age-analysis-section">
             <h3 class="analysis-title">Debtors Age Analysis</h3>
-            <table class="age-analysis-table">
+
+            <!-- Desktop: traditional table -->
+            <table class="age-analysis-table desktop-only-table">
                 <thead>
                     <tr>
                         <th>Tenant Name</th>
@@ -178,8 +236,8 @@ console.log('Tenant data loaded:', tenantData.length, 'properties');
                     <tr>
                         <td class="tenant-name-cell">{{ debtor.tenant_name }}</td>
                         {% if debtor.total_outstanding > 0 %}
-                        <td class="amount-cell total-amount clickable-amount" 
-                            data-tenant-name="{{ debtor.tenant_name }}" 
+                        <td class="amount-cell total-amount clickable-amount"
+                            data-tenant-name="{{ debtor.tenant_name }}"
                             data-tenant-id="{{ debtor.tenant_id }}"
                             onclick="handleTenantClick(this)">
                             €{{ debtor.total_outstanding|floatformat:0|add_thousand_separator }}
@@ -208,6 +266,102 @@ console.log('Tenant data loaded:', tenantData.length, 'properties');
                     </tr>
                 </tbody>
             </table>
+
+            <!-- Mobile: card list with sparkline-style age breakdown -->
+            <div class="mobile-only-cards">
+                {% for debtor in debtors_age_analysis %}
+                {% if debtor.total_outstanding > 0 %}
+                <div class="debtor-card clickable-debtor-card"
+                     data-tenant-name="{{ debtor.tenant_name }}"
+                     data-tenant-id="{{ debtor.tenant_id }}"
+                     onclick="handleTenantClick(this)">
+                {% else %}
+                <div class="debtor-card">
+                {% endif %}
+                    <div class="debtor-card-header">
+                        <span class="debtor-name">{{ debtor.tenant_name }}</span>
+                        <span class="debtor-total">€{{ debtor.total_outstanding|floatformat:0|add_thousand_separator }}</span>
+                    </div>
+
+                    {% if debtor.total_outstanding > 0 %}
+                    <!-- Sparkline: 4 proportional segments showing age distribution -->
+                    <div class="age-sparkline" aria-label="Age distribution"
+                         data-current="{{ debtor.current_0_30 }}"
+                         data-due-31-60="{{ debtor.past_due_31_60 }}"
+                         data-due-61-90="{{ debtor.past_due_61_90 }}"
+                         data-due-91-plus="{{ debtor.past_due_91_plus }}"
+                         data-total="{{ debtor.total_outstanding }}">
+                        <div class="sparkline-bar"></div>
+                    </div>
+
+                    <!-- Age breakdown legend (small text under the bar) -->
+                    <div class="age-breakdown">
+                        <div class="age-segment-row">
+                            <span class="age-dot age-dot-current"></span>
+                            <span class="age-label">0-30 days:</span>
+                            <span class="age-value">€{{ debtor.current_0_30|floatformat:0|add_thousand_separator }}</span>
+                        </div>
+                        <div class="age-segment-row">
+                            <span class="age-dot age-dot-31-60"></span>
+                            <span class="age-label">31-60 days:</span>
+                            <span class="age-value">€{{ debtor.past_due_31_60|floatformat:0|add_thousand_separator }}</span>
+                        </div>
+                        <div class="age-segment-row">
+                            <span class="age-dot age-dot-61-90"></span>
+                            <span class="age-label">61-90 days:</span>
+                            <span class="age-value">€{{ debtor.past_due_61_90|floatformat:0|add_thousand_separator }}</span>
+                        </div>
+                        <div class="age-segment-row">
+                            <span class="age-dot age-dot-91-plus"></span>
+                            <span class="age-label">91+ days:</span>
+                            <span class="age-value">€{{ debtor.past_due_91_plus|floatformat:0|add_thousand_separator }}</span>
+                        </div>
+                    </div>
+
+                    <div class="card-tap-hint">
+                        <i class="fas fa-hand-pointer"></i> Tap for invoice details
+                    </div>
+                    {% else %}
+                    <div class="no-debt-message">
+                        <i class="fas fa-check-circle"></i> No outstanding amount
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+
+                <!-- Totals card -->
+                <div class="debtor-card totals-card clickable-debtor-card" onclick="handleTotalClick()">
+                    <div class="debtor-card-header">
+                        <span class="debtor-name">TOTALS</span>
+                        <span class="debtor-total">€{{ totals.total_outstanding|floatformat:0|add_thousand_separator }}</span>
+                    </div>
+                    <div class="age-breakdown">
+                        <div class="age-segment-row">
+                            <span class="age-dot age-dot-current"></span>
+                            <span class="age-label">0-30 days:</span>
+                            <span class="age-value">€{{ totals.current_0_30|floatformat:0|add_thousand_separator }}</span>
+                        </div>
+                        <div class="age-segment-row">
+                            <span class="age-dot age-dot-31-60"></span>
+                            <span class="age-label">31-60 days:</span>
+                            <span class="age-value">€{{ totals.past_due_31_60|floatformat:0|add_thousand_separator }}</span>
+                        </div>
+                        <div class="age-segment-row">
+                            <span class="age-dot age-dot-61-90"></span>
+                            <span class="age-label">61-90 days:</span>
+                            <span class="age-value">€{{ totals.past_due_61_90|floatformat:0|add_thousand_separator }}</span>
+                        </div>
+                        <div class="age-segment-row">
+                            <span class="age-dot age-dot-91-plus"></span>
+                            <span class="age-label">91+ days:</span>
+                            <span class="age-value">€{{ totals.past_due_91_plus|floatformat:0|add_thousand_separator }}</span>
+                        </div>
+                    </div>
+                    <div class="card-tap-hint">
+                        <i class="fas fa-hand-pointer"></i> Tap for all invoices
+                    </div>
+                </div>
+            </div>
         </div>
         {% else %}
         <div class="age-analysis-section">
@@ -227,7 +381,7 @@ console.log('Tenant data loaded:', tenantData.length, 'properties');
 
 <!-- Invoice Details Modal -->
 <div class="modal fade" id="invoiceModal" tabindex="-1" role="dialog" aria-labelledby="invoiceModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-xl" role="document">
+    <div class="modal-dialog modal-xl modal-fullscreen-mobile" role="document">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="invoiceModalLabel">Invoice Details</h5>
@@ -248,286 +402,646 @@ console.log('Tenant data loaded:', tenantData.length, 'properties');
 </div>
 
 <style>
+/* ==================== DESKTOP STYLES ==================== */
+
+.report-container {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    padding: 20px;
+    min-height: auto;
+}
+
+.report-content {
+    width: 90%;
+    max-width: 1400px;
+    background: white;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    min-height: auto;
+}
+
+.header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    gap: 16px;
+}
+
+.report-title-container {
+    flex: 1;
+    min-width: 0;
+}
+
+.report-title-main {
+    font-size: 1.8rem;
+    color: #2c3e50;
+    margin: 0;
+    font-weight: bold;
+}
+
+.report-title-sub {
+    font-size: 1.4rem;
+    color: #6c757d;
+    margin: 5px 0 0 0;
+    font-weight: normal;
+}
+
+.back-button {
+    flex-shrink: 0;
+}
+
+/* Age Analysis */
+.age-analysis-section {
+    margin-bottom: 40px;
+}
+
+.analysis-title {
+    font-size: 1.5rem;
+    color: #2c3e50;
+    margin-bottom: 20px;
+    font-weight: bold;
+}
+
+/* Desktop table */
+.age-analysis-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+    font-size: 0.9rem;
+}
+
+.age-analysis-table th {
+    background-color: #2c3e50;
+    color: white;
+    padding: 12px 8px;
+    text-align: center;
+    font-weight: 600;
+    border: 1px solid #34495e;
+    font-size: 0.85rem;
+    line-height: 1.2;
+    min-width: 120px;
+}
+
+.age-analysis-table td {
+    padding: 10px 8px;
+    border: 1px solid #dee2e6;
+    text-align: center;
+}
+
+.tenant-name-cell {
+    text-align: left !important;
+    font-weight: 500;
+    background-color: #f8f9fa;
+}
+
+.amount-cell {
+    text-align: right !important;
+    font-family: 'Courier New', monospace;
+}
+
+.total-amount {
+    background-color: #e3f2fd;
+    font-weight: 600;
+}
+
+.clickable-amount {
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    text-decoration: underline;
+    color: #007bff;
+}
+
+.clickable-amount:hover {
+    background-color: #d1ecf1 !important;
+    color: #0056b3;
+}
+
+.current { background-color: #eceff1; }
+.past-due-31-60 { background-color: #e1f5fe; }
+.past-due-61-90 { background-color: #e0e4e7; }
+.past-due-91-plus { background-color: #e3f2fd; }
+
+.totals-row {
+    background-color: #f1f3f4;
+    border-top: 2px solid #2c3e50;
+}
+
+.totals-row .amount-cell {
+    font-weight: bold;
+}
+
+/* Hide mobile cards on desktop, show table */
+.mobile-only-cards { display: none; }
+.desktop-only-table { display: table; }
+
+/* Hide mobile invoice rows on desktop, show desktop invoice table */
+.mobile-only-invoices { display: none; }
+.desktop-only-invoices { display: block; }
+
+/* Modal Styles */
+.modal-xl {
+    max-width: 1200px;
+}
+
+.modal-body {
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+.property-card {
+    margin-bottom: 30px;
+    padding: 20px;
+    background-color: #f8f9fa;
+    border-radius: 5px;
+    border: 1px solid #dee2e6;
+}
+
+.property-name {
+    font-size: 1.4rem;
+    color: #2c3e50;
+    margin-bottom: 15px;
+    border-bottom: 2px solid #17a2b8;
+    padding-bottom: 10px;
+}
+
+.tenant-details p {
+    margin-bottom: 8px;
+    line-height: 1.5;
+    word-break: break-word;
+}
+
+.invoices-list {
+    margin-top: 20px;
+}
+
+.invoice-table-wrap {
+    overflow-x: auto;
+}
+
+.invoice-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+.invoice-table th, .invoice-table td {
+    padding: 10px;
+    text-align: left;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.invoice-table th {
+    background-color: #e9ecef;
+    font-weight: 600;
+}
+
+.overdue {
+    color: #dc3545;
+    font-weight: bold;
+}
+
+.property-divider {
+    border: 0;
+    height: 1px;
+    background-color: #dee2e6;
+    margin: 30px 0;
+}
+
+.no-invoices {
+    text-align: center;
+    padding: 40px;
+    font-style: italic;
+    color: #6c757d;
+}
+
+.no-invoices-inline {
+    text-align: center;
+    padding: 20px;
+    font-style: italic;
+    color: #6c757d;
+    margin-top: 10px;
+}
+
+.loading {
+    text-align: center;
+    padding: 40px;
+    font-style: italic;
+    color: #6c757d;
+}
+
+/* No Outstanding Balances */
+.no-outstanding-balances {
+    text-align: center;
+    padding: 60px 40px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    border: 2px solid #d4edda;
+}
+
+.no-balances-icon {
+    font-size: 4rem;
+    color: #28a745;
+    margin-bottom: 20px;
+}
+
+.no-outstanding-balances h4 {
+    color: #155724;
+    font-size: 1.5rem;
+    margin-bottom: 15px;
+    font-weight: 600;
+}
+
+.no-outstanding-balances p {
+    color: #6c757d;
+    font-size: 1.1rem;
+    margin-bottom: 10px;
+}
+
+.sub-message {
+    color: #28a745;
+    font-weight: 500;
+    font-size: 1rem !important;
+}
+
+/* ==================== MOBILE STYLES (≤768px) ==================== */
+@media (max-width: 768px) {
+
     .report-container {
-        display: flex;
-        justify-content: center;
-        width: 100%;
-        padding: 20px;
-        min-height: auto;
+        padding: 10px;
     }
-    
     .report-content {
-        width: 90%;
-        max-width: 1400px;
-        background: white;
-        padding: 30px;
-        border-radius: 8px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        min-height: auto;
-    }
-    
-    .header-container {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 30px;
-    }
-    
-    .report-title-main {
-        font-size: 1.8rem;
-        color: #2c3e50;
-        margin: 0;
-        font-weight: bold;
-    }
-    
-    .report-title-sub {
-        font-size: 1.4rem;
-        color: #6c757d;
-        margin: 5px 0 0 0;
-        font-weight: normal;
+        width: 100%;
+        padding: 16px;
     }
 
-    /* Age Analysis Styles */
-    .age-analysis-section {
-        margin-bottom: 40px;
+    /* Header — stack title block above Back button */
+    .header-container {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+        margin-bottom: 20px;
+    }
+    .report-title-main {
+        font-size: 1.25rem;
+    }
+    .report-title-sub {
+        font-size: 1rem;
+    }
+    .back-button {
+        width: 100%;
+        text-align: center;
+        padding: 10px 12px;
     }
 
     .analysis-title {
-        font-size: 1.5rem;
-        color: #2c3e50;
-        margin-bottom: 20px;
-        font-weight: bold;
-    }
-
-    .age-analysis-table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-bottom: 20px;
-        font-size: 0.9rem;
-    }
-
-    .age-analysis-table th {
-        background-color: #2c3e50;
-        color: white;
-        padding: 12px 8px;
-        text-align: center;
-        font-weight: 600;
-        border: 1px solid #34495e;
-        font-size: 0.85rem;
-        line-height: 1.2;
-        min-width: 120px;
-    }
-
-    .age-analysis-table td {
-        padding: 10px 8px;
-        border: 1px solid #dee2e6;
-        text-align: center;
-    }
-
-    .tenant-name-cell {
-        text-align: left !important;
-        font-weight: 500;
-        background-color: #f8f9fa;
-    }
-
-    .amount-cell {
-        text-align: right !important;
-        font-family: 'Courier New', monospace;
-    }
-
-    .total-amount {
-        background-color: #e3f2fd;
-        font-weight: 600;
-    }
-
-    .clickable-amount {
-        cursor: pointer;
-        transition: background-color 0.2s ease;
-        text-decoration: underline;
-        color: #007bff;
-    }
-
-    .clickable-amount:hover {
-        background-color: #d1ecf1 !important;
-        color: #0056b3;
-    }
-
-    .current {
-        background-color: #eceff1;
-    }
-
-    .past-due-31-60 {
-        background-color: #e1f5fe;
-    }
-
-    .past-due-61-90 {
-        background-color: #e0e4e7;
-    }
-
-    .past-due-91-plus {
-        background-color: #e3f2fd;
-    }
-
-    .totals-row {
-        background-color: #f1f3f4;
-        border-top: 2px solid #2c3e50;
-    }
-
-    .totals-row .amount-cell {
-        font-weight: bold;
-    }
-    
-    .back-button {
-        background-color: #17a2b8;
-        color: white;
-        padding: 8px 16px;
-        text-decoration: none;
-        border-radius: 4px;
-        font-weight: 500;
-    }
-
-    /* Modal Styles */
-    .modal-xl {
-        max-width: 1200px;
-    }
-
-    .modal-body {
-        max-height: 70vh;
-        overflow-y: auto;
-    }
-
-    /* Styles for modal content */
-    .property-card {
-        margin-bottom: 30px;
-        padding: 20px;
-        background-color: #f8f9fa;
-        border-radius: 5px;
-        border: 1px solid #dee2e6;
-    }
-    
-    .property-name {
-        font-size: 1.4rem;
-        color: #2c3e50;
-        margin-bottom: 15px;
-        border-bottom: 2px solid #17a2b8;
-        padding-bottom: 10px;
-    }
-    
-    .tenant-details p {
-        margin-bottom: 8px;
-        line-height: 1.5;
-    }
-    
-    .invoices-list {
-        margin-top: 20px;
-    }
-    
-    .invoice-table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-top: 10px;
-    }
-    
-    .invoice-table th, .invoice-table td {
-        padding: 10px;
-        text-align: left;
-        border-bottom: 1px solid #dee2e6;
-    }
-    
-    .invoice-table th {
-        background-color: #e9ecef;
-        font-weight: 600;
-    }
-    
-    .overdue {
-        color: #dc3545;
-        font-weight: bold;
-    }
-    
-    .property-divider {
-        border: 0;
-        height: 1px;
-        background-color: #dee2e6;
-        margin: 30px 0;
-    }
-    
-    .no-invoices {
-        text-align: center;
-        padding: 40px;
-        font-style: italic;
-        color: #6c757d;
-    }
-
-    .loading {
-        text-align: center;
-        padding: 40px;
-        font-style: italic;
-        color: #6c757d;
-    }
-
-    /* No Outstanding Balances Styles */
-    .no-outstanding-balances {
-        text-align: center;
-        padding: 60px 40px;
-        background-color: #f8f9fa;
-        border-radius: 8px;
-        border: 2px solid #d4edda;
-    }
-
-    .no-balances-icon {
-        font-size: 4rem;
-        color: #28a745;
-        margin-bottom: 20px;
-    }
-
-    .no-outstanding-balances h4 {
-        color: #155724;
-        font-size: 1.5rem;
-        margin-bottom: 15px;
-        font-weight: 600;
-    }
-
-    .no-outstanding-balances p {
-        color: #6c757d;
         font-size: 1.1rem;
+        margin-bottom: 12px;
+    }
+
+    /* Hide desktop table, show mobile cards */
+    .desktop-only-table { display: none; }
+    .mobile-only-cards { display: block; }
+
+    /* Inside drill-down modal: hide desktop table, show mobile invoice rows */
+    .desktop-only-invoices { display: none !important; }
+    .mobile-only-invoices { display: block !important; }
+
+    /* Debtor cards */
+    .debtor-card {
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        margin-bottom: 12px;
+        padding: 14px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+    }
+
+    .totals-card {
+        background: #f1f3f4;
+        border: 2px solid #2c3e50;
+    }
+
+    .clickable-debtor-card {
+        cursor: pointer;
+        transition: background-color 0.2s ease, transform 0.1s ease;
+    }
+    .clickable-debtor-card:active {
+        background-color: #f8f9fa;
+        transform: scale(0.99);
+    }
+
+    .debtor-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 12px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #f1f3f5;
         margin-bottom: 10px;
     }
 
-    .sub-message {
+    .debtor-name {
+        font-size: 16px;
+        font-weight: 600;
+        color: #2c3e50;
+        word-break: break-word;
+        flex: 1;
+        min-width: 0;
+    }
+
+    .debtor-total {
+        font-size: 18px;
+        font-weight: 700;
+        color: #007bff;
+        font-family: 'Courier New', monospace;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+    .totals-card .debtor-total {
+        color: #2c3e50;
+    }
+
+    /* Sparkline bar — 4 proportional segments */
+    .age-sparkline {
+        height: 8px;
+        border-radius: 4px;
+        overflow: hidden;
+        margin-bottom: 12px;
+        background-color: #e9ecef;
+        display: flex;
+    }
+    .sparkline-bar {
+        display: flex;
+        width: 100%;
+        height: 100%;
+    }
+    .sparkline-segment {
+        height: 100%;
+    }
+    .sparkline-segment-current { background-color: #28a745; }
+    .sparkline-segment-31-60 { background-color: #ffc107; }
+    .sparkline-segment-61-90 { background-color: #fd7e14; }
+    .sparkline-segment-91-plus { background-color: #dc3545; }
+
+    /* Age breakdown legend */
+    .age-breakdown {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .age-segment-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+    }
+
+    .age-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        flex-shrink: 0;
+    }
+    .age-dot-current { background-color: #28a745; }
+    .age-dot-31-60 { background-color: #ffc107; }
+    .age-dot-61-90 { background-color: #fd7e14; }
+    .age-dot-91-plus { background-color: #dc3545; }
+
+    .age-label {
+        color: #495057;
+        font-weight: 500;
+        flex: 1;
+    }
+
+    .age-value {
+        color: #2c3e50;
+        font-family: 'Courier New', monospace;
+        font-weight: 500;
+    }
+
+    /* Tap hint */
+    .card-tap-hint {
+        margin-top: 12px;
+        padding-top: 10px;
+        border-top: 1px dashed #dee2e6;
+        text-align: center;
+        font-size: 12px;
+        color: #6c757d;
+        font-style: italic;
+    }
+    .card-tap-hint i {
+        margin-right: 4px;
+    }
+
+    .no-debt-message {
+        margin-top: 8px;
+        text-align: center;
+        font-size: 13px;
         color: #28a745;
         font-weight: 500;
-        font-size: 1rem !important;
     }
-    
-    @media print {
-        .report-container {
-            padding: 0;
-        }
-        
-        .report-content {
-            width: 100%;
-            max-width: 100%;
-            padding: 0;
-            box-shadow: none;
-        }
-        
-        .back-button {
-            display: none;
-        }
-        
-        .age-analysis-section {
-            page-break-inside: avoid;
-        }
 
-        .age-analysis-table {
-            font-size: 0.8rem;
-        }
-
-        .clickable-amount {
-            text-decoration: none;
-            color: inherit;
-        }
+    /* Empty state */
+    .no-outstanding-balances {
+        padding: 30px 16px;
     }
+    .no-balances-icon {
+        font-size: 3rem;
+        margin-bottom: 12px;
+    }
+    .no-outstanding-balances h4 {
+        font-size: 1.2rem;
+    }
+    .no-outstanding-balances p {
+        font-size: 1rem;
+    }
+
+    /* Modal full-screen on mobile */
+    .modal-fullscreen-mobile {
+        max-width: 100%;
+        margin: 0;
+    }
+    .modal-fullscreen-mobile .modal-content {
+        border-radius: 0;
+        min-height: 100vh;
+    }
+
+    /* Modal content cards (inside drill-down modal) */
+    .property-card {
+        padding: 14px;
+        margin-bottom: 16px;
+    }
+    .property-name {
+        font-size: 1.1rem;
+        margin-bottom: 12px;
+    }
+
+    /* Compact invoice rows on mobile (inside drill-down modal) */
+    .invoice-rows {
+        margin-top: 10px;
+    }
+
+    .invoice-row {
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 6px;
+        padding: 10px 12px;
+        margin-bottom: 8px;
+    }
+
+    .invoice-row-overdue {
+        border-left: 3px solid #dc3545;
+    }
+
+    .invoice-row-main {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 8px;
+        margin-bottom: 4px;
+    }
+
+    .invoice-row-date {
+        font-size: 14px;
+        font-weight: 600;
+        color: #2c3e50;
+        font-family: 'Courier New', monospace;
+    }
+
+    .invoice-row-amount {
+        font-size: 15px;
+        font-weight: 700;
+        color: #2c3e50;
+        font-family: 'Courier New', monospace;
+        white-space: nowrap;
+    }
+
+    .invoice-row-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+        font-size: 12px;
+    }
+
+    .invoice-row-due {
+        color: #6c757d;
+    }
+
+    /* Days-late pill */
+    .days-pill {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 10px;
+        font-size: 11px;
+        font-weight: 600;
+        white-space: nowrap;
+    }
+    .days-pill-current {
+        background: #d4edda;
+        color: #155724;
+    }
+    .days-pill-low {
+        background: #fff3cd;
+        color: #856404;
+    }
+    .days-pill-medium {
+        background: #ffe5d0;
+        color: #b54708;
+    }
+    .days-pill-high {
+        background: #f8d7da;
+        color: #721c24;
+    }
+    .days-pill-severe {
+        background: #dc3545;
+        color: white;
+    }
+
+    /* Modal footer — full-width close button */
+    .modal-footer .btn {
+        width: 100%;
+        margin: 0;
+    }
+}
+
+/* ==================== PRINT STYLES ==================== */
+@media print {
+    .report-container {
+        padding: 0;
+    }
+
+    .report-content {
+        width: 100%;
+        max-width: 100%;
+        padding: 0;
+        box-shadow: none;
+    }
+
+    .back-button {
+        display: none;
+    }
+
+    .age-analysis-section {
+        page-break-inside: avoid;
+    }
+
+    .age-analysis-table {
+        font-size: 0.8rem;
+    }
+
+    .clickable-amount {
+        text-decoration: none;
+        color: inherit;
+    }
+
+    /* On print, always show desktop table even if printing from mobile */
+    .desktop-only-table { display: table !important; }
+    .mobile-only-cards { display: none !important; }
+
+    /* Same for invoice details inside modal — desktop layout for paper */
+    .desktop-only-invoices { display: block !important; }
+    .mobile-only-invoices { display: none !important; }
+}
 </style>
+
+<script>
+// Build sparkline bars from data attributes after DOM ready
+document.addEventListener('DOMContentLoaded', function() {
+    const sparklines = document.querySelectorAll('.age-sparkline');
+    sparklines.forEach(function(spark) {
+        const total = parseFloat(spark.dataset.total) || 0;
+        if (total <= 0) return;
+
+        const current = parseFloat(spark.dataset.current) || 0;
+        const due3160 = parseFloat(spark.dataset['due-31-60']) || 0;
+        const due6190 = parseFloat(spark.dataset['due-61-90']) || 0;
+        const due91 = parseFloat(spark.dataset['due-91-plus']) || 0;
+
+        const bar = spark.querySelector('.sparkline-bar');
+        if (!bar) return;
+
+        const segments = [
+            { value: current, className: 'sparkline-segment-current' },
+            { value: due3160, className: 'sparkline-segment-31-60' },
+            { value: due6190, className: 'sparkline-segment-61-90' },
+            { value: due91, className: 'sparkline-segment-91-plus' }
+        ];
+
+        let html = '';
+        segments.forEach(function(seg) {
+            if (seg.value > 0) {
+                const pct = (seg.value / total) * 100;
+                html += `<div class="sparkline-segment ${seg.className}" style="width: ${pct}%"></div>`;
+            }
+        });
+        bar.innerHTML = html;
+    });
+});
+</script>
 
 {% endblock %}

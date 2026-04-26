@@ -12,14 +12,16 @@
                 <h2 class="report-title-main">TENANT DETAILS REPORT</h2>
                 <h3 class="report-title-sub">{{ today|date:"Y-m-d" }}</h3>
             </div>
-            <a href="{% url 'tenant' %}" class="btn btn-info back-button" role="button">Back</a>
+            <a href="{% url 'tenant' %}" class="btn btn-info back-button" role="button">
+                <i class="fas fa-arrow-left"></i> Back
+            </a>
         </div>
 
         <div class="tenant-section">
             <div class="property-card">
                 <h3 class="property-name">{{ tenant.tenant_name }}</h3>
-                
-                <div class="tenant-details">
+
+                <div class="detail-groups">
                     <!-- Basic Info Section -->
                     <div class="detail-group">
                         <h4 class="section-title">Tenant Information</h4>
@@ -28,7 +30,7 @@
                             <span class="detail-value">{{ tenant.tenant_type }}</span>
                         </div>
                     </div>
-                    
+
                     <!-- Contact Info Section -->
                     <div class="detail-group">
                         <h4 class="section-title">Contact Information</h4>
@@ -45,16 +47,16 @@
                             <span class="detail-value">{{ tenant.tenant_email }}</span>
                         </div>
                     </div>
-                    
+
                     <!-- Lease Dates Section -->
                     <div class="detail-group">
                         <h4 class="section-title">Lease Period</h4>
-                        <div class="date-row">
+                        <div class="detail-row date-row">
                             <span class="detail-label">Start Date:</span>
                             <span class="date-box">{{ tenant.tenant_lease_start_date }}</span>
                         </div>
-                        <div class="date-row">
-                            <span class="detail-label">End Date: </span>
+                        <div class="detail-row date-row">
+                            <span class="detail-label">End Date:</span>
                             {% if tenant.tenant_lease_end_date %}
                                 {% now "Y-m-d" as today_date %}
                                 {% if tenant.tenant_lease_end_date|date:"Y-m-d" < today_date %}
@@ -67,30 +69,30 @@
                             {% endif %}
                         </div>
                     </div>
-                    
+
                     <!-- Financial Information -->
                     <div class="detail-group">
                         <h4 class="section-title">Financial Information</h4>
-                        <div class="financial-row">
+                        <div class="detail-row financial-row">
                             <span class="detail-label">Deposit:</span>
                             <span class="detail-value amount">€ {{ tenant.tenant_deposit }}</span>
                         </div>
-                        <div class="financial-row">
+                        <div class="detail-row financial-row">
                             <span class="detail-label">Monthly Rent:</span>
                             <span class="detail-value amount">€ {{ tenant.tenant_rent }}</span>
                         </div>
-                        <div class="financial-row">
+                        <div class="detail-row financial-row">
                             <span class="detail-label">Levies:</span>
                             <span class="detail-value amount">€ {{ tenant.tenant_levies }}</span>
                         </div>
-                        <div class="financial-row">
+                        <div class="detail-row financial-row">
                             <span class="detail-label">Payment Terms:</span>
                             <span class="detail-value">
                                 {% if tenant.tenant_payment_terms == 0 %}Immediate{% else %}{{ tenant.tenant_payment_terms }} days{% endif %}
                             </span>
                         </div>
                     </div>
-                    
+
                     <!-- Lease Details -->
                     <div class="detail-group">
                         <h4 class="section-title">Lease Details</h4>
@@ -110,7 +112,7 @@
                         {% endif %}
                         <div class="detail-row">
                             <span class="detail-label">Renewal Status:</span>
-                            <span class="renewal-status-badge 
+                            <span class="renewal-status-badge
                                 {% if tenant.tenant_renewal_status == 'pending' or not tenant.tenant_renewal_status %}renewal-pending
                                 {% elif tenant.tenant_renewal_status == 'declined' %}renewal-declined
                                 {% elif tenant.tenant_renewal_status == 'new_lease_signed' %}renewal-signed
@@ -140,201 +142,320 @@
 </div>
 
 <style>
+/* ==================== DESKTOP STYLES ==================== */
+
+.report-container {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    padding: 20px;
+    min-height: 80vh;
+}
+
+.report-content {
+    width: 90%;
+    max-width: 1200px;
+    background: white;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    gap: 16px;
+}
+
+.report-title-container {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+}
+
+.report-title-main {
+    font-size: 1.8rem;
+    color: #2c3e50;
+    margin: 0;
+    font-weight: bold;
+}
+
+.report-title-sub {
+    font-size: 1.4rem;
+    color: #6c757d;
+    margin: 5px 0 0 0;
+    font-weight: normal;
+}
+
+.back-button {
+    flex-shrink: 0;
+}
+
+.property-card {
+    margin-bottom: 30px;
+    padding: 25px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+}
+
+.property-name {
+    font-size: 1.5rem;
+    color: #2c3e50;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #dee2e6;
+}
+
+/* Grid layout for the 5 detail sections — 2 columns on desktop */
+.detail-groups {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 25px;
+}
+
+.detail-group {
+    margin-bottom: 0; /* gap on .detail-groups handles spacing now */
+}
+
+.section-title {
+    font-size: 1.2rem;
+    color: #495057;
+    margin-bottom: 15px;
+    padding-bottom: 5px;
+    border-bottom: 1px dashed #ced4da;
+}
+
+.detail-row {
+    display: flex;
+    margin-bottom: 10px;
+    line-height: 1.5;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.detail-label {
+    font-weight: 600;
+    color: #343a40;
+    min-width: 150px;
+    flex-shrink: 0;
+}
+
+.detail-value {
+    color: #495057;
+    word-break: break-word;
+}
+
+.date-box {
+    display: inline-block;
+    padding: 4px 10px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    background-color: #f8f9fa;
+}
+
+.highlight-red {
+    color: #dc3545;
+    font-weight: bold;
+}
+
+.badge {
+    display: inline-block;
+    padding: 5px 10px;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.badge-success {
+    background-color: #28a745;
+    color: white;
+}
+
+.badge-secondary {
+    background-color: #6c757d;
+    color: white;
+}
+
+/* Renewal Status Badge Styles */
+.renewal-status-badge {
+    display: inline-block;
+    padding: 5px 12px;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.renewal-pending {
+    background-color: #ffc107;
+    color: #212529;
+}
+
+.renewal-declined {
+    background-color: #dc3545;
+    color: white;
+}
+
+.renewal-signed {
+    background-color: #28a745;
+    color: white;
+}
+
+/* ==================== MOBILE STYLES (≤768px) ==================== */
+@media (max-width: 768px) {
+
     .report-container {
-        display: flex;
-        justify-content: center;
-        width: 100%;
-        padding: 20px;
-        min-height: 80vh;
+        padding: 10px;
     }
-    
     .report-content {
-        width: 90%;
-        max-width: 1200px;
-        background: white;
-        padding: 30px;
-        border-radius: 8px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        width: 100%;
+        padding: 16px;
     }
-    
+
+    /* Header row stacks: title block on top, Back full-width below */
     .header-container {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 30px;
-    }
-    
-    .report-title-container {
-        display: flex;
         flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+        margin-bottom: 16px;
     }
-    
     .report-title-main {
-        font-size: 1.8rem;
-        color: #2c3e50;
-        margin: 0;
-        font-weight: bold;
+        font-size: 1.25rem;
     }
-    
     .report-title-sub {
-        font-size: 1.4rem;
-        color: #6c757d;
-        margin: 5px 0 0 0;
-        font-weight: normal;
+        font-size: 1rem;
     }
-    
+    .back-button {
+        width: 100%;
+        text-align: center;
+        padding: 10px 12px;
+    }
+
+    /* Property card — tighter padding */
     .property-card {
-        margin-bottom: 30px;
-        padding: 25px;
-        background-color: #f8f9fa;
-        border-radius: 8px;
+        padding: 14px;
+        margin-bottom: 12px;
     }
-    
     .property-name {
-        font-size: 1.5rem;
-        color: #2c3e50;
-        margin-bottom: 20px;
-        padding-bottom: 10px;
-        border-bottom: 1px solid #dee2e6;
+        font-size: 1.15rem;
+        margin-bottom: 12px;
+        padding-bottom: 8px;
     }
-    
+
+    /* Detail groups — stack to single column */
+    .detail-groups {
+        grid-template-columns: 1fr;
+        gap: 18px;
+    }
+
+    .section-title {
+        font-size: 1rem;
+        margin-bottom: 10px;
+    }
+
+    /* Detail rows — stack label above value on mobile */
+    .detail-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 2px;
+        margin-bottom: 10px;
+    }
+    .detail-label {
+        font-size: 12px;
+        color: #6c757d;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+        min-width: 0;
+    }
+    .detail-value {
+        font-size: 14px;
+        color: #2c3e50;
+        font-weight: 500;
+    }
+
+    /* Badges and date boxes wrap cleanly under the label */
+    .badge,
+    .renewal-status-badge,
+    .date-box {
+        font-size: 12px;
+        padding: 4px 10px;
+    }
+    .renewal-status-badge {
+        letter-spacing: 0.2px;
+    }
+}
+
+/* ==================== PRINT STYLES (unchanged) ==================== */
+@media print {
+    .report-container {
+        padding: 0;
+    }
+
+    .report-content {
+        width: 100%;
+        max-width: 100%;
+        padding: 0;
+        box-shadow: none;
+    }
+
+    .back-button {
+        display: none;
+    }
+
+    .property-card {
+        page-break-inside: avoid;
+        border: none;
+        background-color: transparent;
+        padding: 0;
+    }
+
+    /* Restore single-column inline layout for print */
+    .detail-groups {
+        display: block;
+    }
     .detail-group {
         margin-bottom: 25px;
+        page-break-inside: avoid;
     }
-    
-    .section-title {
-        font-size: 1.2rem;
-        color: #495057;
-        margin-bottom: 15px;
-        padding-bottom: 5px;
-        border-bottom: 1px dashed #ced4da;
-    }
-    
     .detail-row {
-        display: flex;
-        margin-bottom: 10px;
-        line-height: 1.5;
+        flex-direction: row;
+        align-items: center;
     }
-    
     .detail-label {
-        font-weight: 600;
+        min-width: 120px;
+        font-size: 1rem;
         color: #343a40;
-        min-width: 150px;
+        text-transform: none;
+        letter-spacing: 0;
     }
-    
     .detail-value {
+        font-size: 1rem;
         color: #495057;
+        font-weight: normal;
     }
-    
-    .date-box {
-        display: inline-block;
-        padding: 4px 10px;
-        border: 1px solid #ced4da;
-        border-radius: 4px;
-        background-color: #f8f9fa;
-    }
-    
-    .highlight-red {
-        color: #dc3545;
-        font-weight: bold;
-    }
-    
-    .badge {
-        display: inline-block;
-        padding: 5px 10px;
-        border-radius: 12px;
-        font-size: 0.9rem;
-        font-weight: 500;
-    }
-    
-    .badge-success {
-        background-color: #28a745;
-        color: white;
-    }
-    
-    .badge-secondary {
-        background-color: #6c757d;
-        color: white;
-    }
-    
-    /* Renewal Status Badge Styles */
-    .renewal-status-badge {
-        display: inline-block;
-        padding: 5px 12px;
-        border-radius: 12px;
-        font-size: 0.9rem;
-        font-weight: 500;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-    
+
+    /* Print styles for renewal status */
     .renewal-pending {
-        background-color: #ffc107;
-        color: #212529;
+        background-color: #ffc107 !important;
+        color: #212529 !important;
     }
-    
+
     .renewal-declined {
-        background-color: #dc3545;
-        color: white;
+        background-color: #dc3545 !important;
+        color: white !important;
     }
-    
+
     .renewal-signed {
-        background-color: #28a745;
-        color: white;
+        background-color: #28a745 !important;
+        color: white !important;
     }
-    
-    .back-button {
-        background-color: #17a2b8;
-        color: white;
-        padding: 8px 16px;
-        text-decoration: none;
-        border-radius: 4px;
-        font-weight: 500;
-    }
-    
-    @media print {
-        .report-container {
-            padding: 0;
-        }
-        
-        .report-content {
-            width: 100%;
-            max-width: 100%;
-            padding: 0;
-            box-shadow: none;
-        }
-        
-        .back-button {
-            display: none;
-        }
-        
-        .property-card {
-            page-break-inside: avoid;
-            border: none;
-            background-color: transparent;
-            padding: 0;
-        }
-        
-        .detail-label {
-            min-width: 120px;
-        }
-        
-        /* Print styles for renewal status */
-        .renewal-pending {
-            background-color: #ffc107 !important;
-            color: #212529 !important;
-        }
-        
-        .renewal-declined {
-            background-color: #dc3545 !important;
-            color: white !important;
-        }
-        
-        .renewal-signed {
-            background-color: #28a745 !important;
-            color: white !important;
-        }
-    }
+}
 </style>
 
 <script>

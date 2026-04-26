@@ -12,43 +12,73 @@
                 <h2 class="report-title-main">LEASE RENEWAL REPORT</h2>
                 <h3 class="report-title-sub">{{ today }}</h3>
             </div>
-            <a href="{% url 'tenant' %}" class="btn btn-info back-button" role="button">Back</a>
+            <a href="{% url 'tenant' %}" class="btn btn-info back-button" role="button">
+                <i class="fas fa-arrow-left"></i> Back
+            </a>
         </div>
 
         <div class="lease-renewal-section">
             <!-- Tenants needing renewal (Pending status) -->
             {% for tenant in tenants %}
                 {% if tenant.needs_renewal %}
-                <div class="tenant-card">
+                <div class="renewal-card tenant-card">
+                    <div class="card-status-bar status-bar-pending">
+                        <i class="fas fa-clock"></i> RENEWAL PENDING
+                    </div>
                     <h3 class="property-name">{{ tenant.prop_name }}</h3>
-                    
+
                     <div class="tenant-details">
-                        <!-- Type and Name on one line -->
-                        <p>
-                            <strong>Type:</strong> {{ tenant.tenant_type }} | 
-                            <strong>Name:</strong> {{ tenant.tenant_name }} |
-                            <strong>Rental Type:</strong> {{ tenant.tenant_rental_type }}
-                        </p>
-                        
-                        <!-- Contact Person and Number on one line -->
-                        <p>
-                            <strong>Contact:</strong> {{ tenant.tenant_contact_person }} | 
-                            <strong>Number:</strong> {{ tenant.tenant_contact_number }}
-                        </p>
-                        
-                        <p><strong>Email:</strong> {{ tenant.tenant_email }}</p>
-                        
-                        <!-- Lease Dates on one line -->
-                        <p>
-                            <strong>Lease Period:</strong> 
-                            {{ tenant.tenant_lease_start_date }} to 
-                            <span class="highlight-red">{{ tenant.tenant_lease_end_date }}</span>
-                        </p>
-                        <p>
-                            <strong>Lease Renewal Clause:</strong> {{ tenant.tenant_renewal }} |
-                            <strong>Lease Renewal Notice Period:</strong> {{ tenant.tenant_renewal_period }} days
-                        </p>
-                        <p class="highlight-red"><strong>Tenant Contact Date:</strong> {{ tenant.renewal_date }}</p>
+                        <!-- Type, Name, Rental Type -->
+                        <div class="detail-row">
+                            <span class="detail-label">Type:</span>
+                            <span class="detail-value">{{ tenant.tenant_type }}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Name:</span>
+                            <span class="detail-value">{{ tenant.tenant_name }}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Rental Type:</span>
+                            <span class="detail-value">{{ tenant.tenant_rental_type }}</span>
+                        </div>
+
+                        <!-- Contact Info -->
+                        <div class="detail-row">
+                            <span class="detail-label">Contact:</span>
+                            <span class="detail-value">{{ tenant.tenant_contact_person }}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Number:</span>
+                            <span class="detail-value">{{ tenant.tenant_contact_number }}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Email:</span>
+                            <span class="detail-value">{{ tenant.tenant_email }}</span>
+                        </div>
+
+                        <!-- Lease Period -->
+                        <div class="detail-row">
+                            <span class="detail-label">Lease Start:</span>
+                            <span class="detail-value">{{ tenant.tenant_lease_start_date }}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Lease End:</span>
+                            <span class="detail-value highlight-red">{{ tenant.tenant_lease_end_date }}</span>
+                        </div>
+
+                        <!-- Renewal Info -->
+                        <div class="detail-row">
+                            <span class="detail-label">Renewal Clause:</span>
+                            <span class="detail-value">{{ tenant.tenant_renewal }}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Notice Period:</span>
+                            <span class="detail-value">{{ tenant.tenant_renewal_period }} days</span>
+                        </div>
+                        <div class="detail-row tenant-contact-row">
+                            <span class="detail-label">Contact Tenant By:</span>
+                            <span class="detail-value highlight-red">{{ tenant.renewal_date }}</span>
+                        </div>
                     </div>
                 </div>
                 {% endif %}
@@ -56,26 +86,38 @@
 
             <!-- Tenants who declined renewal -->
             {% for declined in declined_renewals %}
-                <div class="declined-renewal-card">
+                <div class="renewal-card declined-renewal-card">
+                    <div class="card-status-bar status-bar-declined">
+                        <i class="fas fa-times-circle"></i> RENEWAL DECLINED
+                    </div>
                     <h3 class="property-name">{{ declined.prop_name }}</h3>
-                    <p class="highlight-red"><strong>{{ declined.message }}</strong></p>
+                    <p class="card-message">{{ declined.message }}</p>
                     <div class="tenant-details">
-                        <p><strong>Current Tenant:</strong> {{ declined.tenant_name }}</p>
-                        <p><strong>Lease End Date:</strong> <span class="highlight-red">{{ declined.lease_end_date }}</span></p>
+                        <div class="detail-row">
+                            <span class="detail-label">Current Tenant:</span>
+                            <span class="detail-value">{{ declined.tenant_name }}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span class="detail-label">Lease End Date:</span>
+                            <span class="detail-value highlight-red">{{ declined.lease_end_date }}</span>
+                        </div>
                     </div>
                 </div>
             {% endfor %}
 
             <!-- Vacant properties -->
             {% for property in vacant_properties %}
-                <div class="vacant-property-card">
+                <div class="renewal-card vacant-property-card">
+                    <div class="card-status-bar status-bar-vacant">
+                        <i class="fas fa-home"></i> VACANT - NEEDS NEW TENANT
+                    </div>
                     <h3 class="property-name">{{ property.prop_name }}</h3>
-                    <p class="highlight-red"><strong>NO CURRENT TENANT - NEED NEW TENANT</strong></p>
                 </div>
             {% endfor %}
 
             {% if not tenants and not vacant_properties and not declined_renewals %}
                 <div class="no-renewals">
+                    <i class="fas fa-check-circle no-renewals-icon"></i>
                     <p>No lease renewals or vacant properties to report at this time.</p>
                 </div>
             {% endif %}
@@ -84,132 +126,344 @@
 </div>
 
 <style>
+/* ==================== DESKTOP STYLES ==================== */
+
+.report-container {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    padding: 20px;
+    min-height: 80vh;
+}
+
+.report-content {
+    width: 90%;
+    max-width: 1200px;
+    background: white;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    gap: 16px;
+}
+
+.report-title-container {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    flex: 1;
+    min-width: 0;
+}
+
+.report-title-main {
+    font-size: 1.8rem;
+    color: #2c3e50;
+    margin: 0;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.report-title-sub {
+    font-size: 1.4rem;
+    color: #2c3e50;
+    margin: 5px 0 0 0;
+    font-weight: normal;
+}
+
+.back-button {
+    flex-shrink: 0;
+}
+
+.lease-renewal-section {
+    margin-top: 20px;
+}
+
+/* Cards: shared layout */
+.renewal-card {
+    margin-bottom: 24px;
+    padding: 0;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    background-color: white;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+}
+
+/* Status bar at top of each card */
+.card-status-bar {
+    padding: 10px 20px;
+    color: white;
+    font-weight: 700;
+    font-size: 0.9rem;
+    letter-spacing: 0.8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.status-bar-pending {
+    background: #ffc107;
+    color: #212529;
+}
+.status-bar-declined {
+    background: #dc3545;
+    color: white;
+}
+.status-bar-vacant {
+    background: #6c757d;
+    color: white;
+}
+
+/* Card content (below status bar) */
+.renewal-card .property-name,
+.renewal-card .card-message,
+.renewal-card .tenant-details {
+    padding-left: 20px;
+    padding-right: 20px;
+}
+
+.property-name {
+    font-size: 1.4rem;
+    color: #2c3e50;
+    margin: 16px 0 12px 0;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #dee2e6;
+    word-break: break-word;
+}
+
+.card-message {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #dc3545;
+    margin: 0 0 12px 0;
+}
+
+.tenant-details {
+    padding-bottom: 16px;
+}
+
+.detail-row {
+    display: flex;
+    margin-bottom: 8px;
+    line-height: 1.5;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.detail-label {
+    font-weight: 600;
+    color: #343a40;
+    min-width: 150px;
+    flex-shrink: 0;
+}
+
+.detail-value {
+    color: #495057;
+    word-break: break-word;
+}
+
+.highlight-red {
+    color: #dc3545;
+    font-weight: bold;
+}
+
+/* The "Contact Tenant By" row gets a top border for emphasis */
+.tenant-contact-row {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px dashed #dee2e6;
+}
+
+/* Vacant cards have no body content beyond the property name */
+.vacant-property-card .property-name {
+    margin-bottom: 16px;
+    border-bottom: none;
+    padding-bottom: 0;
+}
+
+/* Empty state */
+.no-renewals {
+    text-align: center;
+    padding: 40px 20px;
+    color: #6c757d;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+}
+.no-renewals-icon {
+    font-size: 3rem;
+    color: #28a745;
+    margin-bottom: 16px;
+    display: block;
+}
+.no-renewals p {
+    font-size: 1.1rem;
+    margin: 0;
+}
+
+/* ==================== MOBILE STYLES (≤768px) ==================== */
+@media (max-width: 768px) {
+
     .report-container {
-        display: flex;
-        justify-content: center;
-        width: 100%;
-        padding: 20px;
-        min-height: 80vh;
+        padding: 10px;
     }
-    
     .report-content {
-        width: 90%;
-        max-width: 1200px;
-        background: white;
-        padding: 30px;
-        border-radius: 8px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        width: 100%;
+        padding: 16px;
     }
-    
+
+    /* Header — stack title block above Back button */
     .header-container {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 20px;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+        margin-bottom: 16px;
     }
-    
-    .report-title-container {
-        display: flex;
+    .report-title-main {
+        font-size: 1.25rem;
+    }
+    .report-title-sub {
+        font-size: 1rem;
+    }
+    .back-button {
+        width: 100%;
+        text-align: center;
+        padding: 10px 12px;
+    }
+
+    .lease-renewal-section {
+        margin-top: 12px;
+    }
+
+    /* Cards — tighter padding */
+    .renewal-card {
+        margin-bottom: 16px;
+    }
+
+    .card-status-bar {
+        padding: 8px 14px;
+        font-size: 0.8rem;
+        letter-spacing: 0.4px;
+    }
+
+    .renewal-card .property-name,
+    .renewal-card .card-message,
+    .renewal-card .tenant-details {
+        padding-left: 14px;
+        padding-right: 14px;
+    }
+
+    .property-name {
+        font-size: 1.1rem;
+        margin: 12px 0 10px 0;
+        padding-bottom: 6px;
+    }
+
+    .card-message {
+        font-size: 0.95rem;
+        margin-bottom: 10px;
+    }
+
+    .tenant-details {
+        padding-bottom: 14px;
+    }
+
+    /* Detail rows — stack label above value on mobile */
+    .detail-row {
         flex-direction: column;
         align-items: flex-start;
+        gap: 2px;
+        margin-bottom: 10px;
     }
-    
-    .report-title-main {
-        font-size: 1.8rem;
-        color: #2c3e50;
-        margin: 0;
-        font-weight: bold;
+    .detail-label {
+        font-size: 12px;
+        color: #6c757d;
+        font-weight: 600;
         text-transform: uppercase;
+        letter-spacing: 0.3px;
+        min-width: 0;
     }
-    
-    .report-title-sub {
-        font-size: 1.4rem;
+    .detail-value {
+        font-size: 14px;
         color: #2c3e50;
-        margin: 5px 0 0 0;
-        font-weight: normal;
-    }
-    
-    .back-button {
-        background-color: #17a2b8;
-        color: white;
-        padding: 8px 16px;
-        text-decoration: none;
-        border-radius: 4px;
         font-weight: 500;
     }
-    
-    .back-button:hover {
-        background-color: #138496;
-        color: white;
-    }
-    
-    .lease-renewal-section {
-        margin-top: 20px;
-    }
-    
-    .tenant-card, .vacant-property-card, .declined-renewal-card {
-        margin-bottom: 30px;
-        padding: 20px;
-        border: 1px solid #eee;
-        border-radius: 4px;
-        background-color: #f9f9f9;
-    }
-    
-    .vacant-property-card, .declined-renewal-card {
-        background-color: #fff3f3;
-        border-left: 4px solid #d9534f;
-    }
-    
-    .property-name {
-        font-size: 1.4rem;
-        color: #2c3e50;
-        margin-bottom: 15px;
-        border-bottom: 1px solid #ddd;
-        padding-bottom: 5px;
-    }
-    
-    .tenant-details p {
-        margin-bottom: 8px;
-        line-height: 1.5;
-    }
-    
-    .highlight-red {
-        color: #d9534f;
-        font-weight: bold;
-    }
-    
+
+    /* Empty state — tighter on mobile */
     .no-renewals {
-        text-align: center;
-        padding: 30px;
-        font-style: italic;
-        color: #666;
+        padding: 24px 16px;
     }
-    
-    @media print {
-        .report-container {
-            padding: 0;
-        }
-        
-        .report-content {
-            width: 100%;
-            max-width: 100%;
-            padding: 0;
-            box-shadow: none;
-        }
-        
-        .back-button {
-            display: none;
-        }
-        
-        .tenant-card, .vacant-property-card, .declined-renewal-card {
-            page-break-inside: avoid;
-            border: none;
-            padding: 10px 0;
-        }
-        
-        .highlight-red {
-            color: #d9534f !important;
-        }
+    .no-renewals-icon {
+        font-size: 2.25rem;
+        margin-bottom: 12px;
     }
+    .no-renewals p {
+        font-size: 1rem;
+    }
+}
+
+/* ==================== PRINT STYLES ==================== */
+@media print {
+    .report-container {
+        padding: 0;
+    }
+    .report-content {
+        width: 100%;
+        max-width: 100%;
+        padding: 0;
+        box-shadow: none;
+    }
+    .back-button {
+        display: none;
+    }
+    .renewal-card {
+        page-break-inside: avoid;
+        border: 1px solid #ccc;
+        margin-bottom: 16px;
+    }
+    .card-status-bar {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+    .status-bar-pending {
+        background-color: #ffc107 !important;
+        color: #212529 !important;
+    }
+    .status-bar-declined {
+        background-color: #dc3545 !important;
+        color: white !important;
+    }
+    .status-bar-vacant {
+        background-color: #6c757d !important;
+        color: white !important;
+    }
+    .highlight-red {
+        color: #dc3545 !important;
+    }
+    /* Restore desktop horizontal detail layout for paper */
+    .detail-row {
+        flex-direction: row;
+        align-items: center;
+    }
+    .detail-label {
+        min-width: 130px;
+        font-size: 1rem;
+        color: #343a40;
+        text-transform: none;
+        letter-spacing: 0;
+    }
+    .detail-value {
+        font-size: 1rem;
+        color: #495057;
+        font-weight: normal;
+    }
+}
 </style>
 {% endblock %}

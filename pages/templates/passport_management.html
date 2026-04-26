@@ -6,53 +6,8 @@
 {% block title %}Passport/Document Management{% endblock %}
 {% block content %}
 
-<style>
-.passport-filter-panel {
-    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-    border: 1px solid #dee2e6;
-    border-radius: 12px;
-    padding: 24px;
-    margin-bottom: 30px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-}
-.passport-filter-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-    padding-bottom: 12px;
-    border-bottom: 2px solid #dee2e6;
-    cursor: pointer;
-}
-.passport-filter-title {
-    margin: 0;
-    color: #2c3e50;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 18px;
-}
-.passport-filter-title i.fas { color: #17a2b8; font-size: 16px; }
-.passport-filter-toggle-icon { transition: transform 0.3s ease; margin-left: 8px; font-size: 14px; }
-.passport-filter-content { display: none; }
-.passport-filter-content.expanded { display: block; }
-.passport-filter-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; align-items: end; margin-bottom: 20px; }
-.passport-filter-group { display: flex; flex-direction: column; }
-.passport-filter-label { font-weight: 500; color: #495057; margin-bottom: 6px; font-size: 14px; display: flex; align-items: center; gap: 6px; }
-.passport-search-input-group { display: flex; }
-.passport-search-input { border: 2px solid #e9ecef; border-radius: 8px 0 0 8px; border-right: none; padding: 10px 14px; font-size: 14px; background: white; flex: 1; height: 44px; }
-.passport-search-btn { background: #17a2b8; border: 2px solid #17a2b8; border-left: none; border-radius: 0 8px 8px 0; color: white; padding: 10px 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; height: 44px; }
-.passport-filter-select { border: 2px solid #e9ecef; border-radius: 8px; padding: 10px 14px; font-size: 14px; background: white; width: 100%; height: 44px; cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e"); background-position: right 12px center; background-repeat: no-repeat; background-size: 16px 12px; padding-right: 40px; }
-.passport-active-filters { margin-top: 16px; padding-top: 16px; border-top: 1px solid #dee2e6; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-.passport-filter-tags { display: flex; gap: 8px; flex-wrap: wrap; }
-.passport-filter-tag { background: #17a2b8; color: white; padding: 4px 12px; border-radius: 16px; font-size: 12px; font-weight: 500; display: flex; align-items: center; gap: 6px; }
-.passport-remove-tag { background: rgba(255,255,255,0.3); border: none; color: white; border-radius: 50%; width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 10px; line-height: 1; }
-.passport-remove-tag:hover { background: rgba(255,255,255,0.5); }
-</style>
-
-<h2><center>ALIVENTE ONLINE - PASSPORT/DOCUMENT MANAGEMENT</center></h2>
-<h4><center>UPLOAD / VIEW / DELETE</center></h4>
+<h2 class="page-title-h2"><center>ALIVENTE ONLINE - PASSPORT/DOCUMENT MANAGEMENT</center></h2>
+<h4 class="page-subtitle-h4"><center>UPLOAD / VIEW / DELETE</center></h4>
 <br/>
 
 {% for msg in messages %}
@@ -73,23 +28,25 @@
 </script>
 {% endfor %}
 
-<div style="display: flex; justify-content: flex-end; gap: 10px;">
+<!-- Action Buttons (Help + Back) -->
+<div class="page-action-buttons">
     <button type="button" class="btn btn-info" data-toggle="modal" data-target="#passport_managementHelpModal">
         <i class="fas fa-question-circle"></i> Help
     </button>
-    <a href="{% url 'personal_page' %}" class="btn btn-info" role="button">Back</a>
+    <a href="{% url 'personal_page' %}" class="btn btn-info" role="button">
+        <i class="fas fa-arrow-left"></i> Back
+    </a>
 </div>
-<br/>
 
 <!-- Filter Panel -->
 <div class="passport-filter-panel" id="passportFilterPanel">
     <div class="passport-filter-header" onclick="togglePassportFilterPanel()">
         <h5 class="passport-filter-title">
-            <i class="fas fa-filter"></i> Document Filters
+            <i class="fas fa-filter"></i> <span class="filter-title-text">Document Filters</span><span class="filter-title-text-mobile">Filters</span>
             <i class="fas fa-chevron-down passport-filter-toggle-icon" id="passportFilterToggleIcon"></i>
         </h5>
         <button type="button" class="btn btn-outline-secondary btn-sm" onclick="clearAllPassportFilters(event)">
-            <i class="fas fa-times-circle"></i> Clear All
+            <i class="fas fa-times-circle"></i> <span class="clear-all-text">Clear All</span><span class="clear-all-text-mobile">Clear</span>
         </button>
     </div>
     <div class="passport-filter-content" id="passportFilterContent">
@@ -144,26 +101,55 @@
     </div>
 </div>
 
-<!-- Passports Table -->
-<div>
-<table class="table table-bordered table-striped text-center" id="passportTable">
+<!-- Mobile-only sort control -->
+<div class="mobile-sort-control">
+    <label for="mobileSortSelect" class="mobile-sort-label"><i class="fas fa-sort"></i> Sort by:</label>
+    <select id="mobileSortSelect" class="form-control mobile-sort-select">
+        <option value="expiry-asc" selected>Expiry Date (soonest first)</option>
+        <option value="expiry-desc">Expiry Date (latest first)</option>
+        <option value="holder-asc">Holder Name (A-Z)</option>
+        <option value="doc-type-asc">Document Type (A-Z)</option>
+        <option value="country-asc">Country of Issue (A-Z)</option>
+        <option value="issue-desc">Date of Issue (newest first)</option>
+        <option value="status-asc">Status (A-Z)</option>
+    </select>
+</div>
+
+<!-- Add New Button (top, before table) -->
+{% if perms.auth.can_edit_personal %}
+<div class="add-new-button-row">
+    <button type="button" class="btn btn-info action-btn-add" onclick="addNewDocument()">
+        <i class="fas fa-plus"></i> Add New Passport/ID
+    </button>
+</div>
+{% else %}
+<div class="add-new-button-row">
+    <span class="btn btn-secondary action-btn-add" style="opacity:0.6; cursor:not-allowed; pointer-events:none;">
+        <i class="fas fa-plus"></i> Add New Passport/ID
+    </span>
+</div>
+{% endif %}
+
+<!-- Passports Table (desktop) / Card list (mobile) -->
+<div class="table-container">
+<table class="table table-bordered table-striped text-center passport-table" id="passportTable">
 <thead>
     <tr>
-        <th style="text-align: left; width: 16%; cursor: pointer;" onclick="sortTable(0)">Passport/ID Holder Name <i class="fas fa-sort"></i></th>
-        <th style="text-align: center; width: 12%; cursor: pointer;" onclick="sortTable(1)">Document Type <i class="fas fa-sort"></i></th>
-        <th style="text-align: center; width: 12%; cursor: pointer;" onclick="sortTable(2)">Document Number <i class="fas fa-sort"></i></th>
-        <th style="text-align: center; width: 12%; cursor: pointer;" onclick="sortTable(3)">Country of Issue <i class="fas fa-sort"></i></th>
-        <th style="text-align: center; width: 11%; cursor: pointer; white-space: nowrap;" onclick="sortTable(4)">Date of Issue <i class="fas fa-sort"></i></th>
-        <th style="text-align: center; width: 11%; cursor: pointer; white-space: nowrap;" onclick="sortTable(5)">Expiry Date <i class="fas fa-sort"></i></th>
-        <th style="text-align: center; width: 12%; cursor: pointer;" onclick="sortTable(6)">Status <i class="fas fa-sort"></i></th>
+        <th class="sortable-header" style="text-align: left; width: 16%;" onclick="sortTable(0)">Passport/ID Holder Name <i class="fas fa-sort"></i></th>
+        <th class="sortable-header" style="text-align: center; width: 12%;" onclick="sortTable(1)">Document Type <i class="fas fa-sort"></i></th>
+        <th class="sortable-header" style="text-align: center; width: 12%;" onclick="sortTable(2)">Document Number <i class="fas fa-sort"></i></th>
+        <th class="sortable-header" style="text-align: center; width: 12%;" onclick="sortTable(3)">Country of Issue <i class="fas fa-sort"></i></th>
+        <th class="sortable-header" style="text-align: center; width: 11%; white-space: nowrap;" onclick="sortTable(4)">Date of Issue <i class="fas fa-sort"></i></th>
+        <th class="sortable-header" style="text-align: center; width: 11%; white-space: nowrap;" onclick="sortTable(5)">Expiry Date <i class="fas fa-sort"></i></th>
+        <th class="sortable-header" style="text-align: center; width: 12%;" onclick="sortTable(6)">Status <i class="fas fa-sort"></i></th>
         <th style="text-align: center; width: 14%">Actions</th>
     </tr>
 </thead>
 <tbody>
     {% for passport in passports %}
     <tr>
-        <td style="text-align: left">{{ passport.holder_name }}</td>
-        <td style="text-align: center">
+        <td data-label="Holder" data-sort-key="holder" data-sort-value="{{ passport.holder_name }}" style="text-align: left">{{ passport.holder_name }}</td>
+        <td data-label="Type" data-sort-key="doc-type" data-sort-value="{{ passport.document_type }}" style="text-align: center">
             {% if passport.document_type == 'passport' %}<span class="badge badge-primary">Passport</span>
             {% elif passport.document_type == 'id' %}<span class="badge badge-info">ID</span>
             {% elif passport.document_type == 'drivers_license' %}<span class="badge badge-secondary">Driver's License</span>
@@ -172,17 +158,17 @@
             {% else %}<span class="badge badge-secondary">{{ passport.get_document_type_display }}</span>
             {% endif %}
         </td>
-        <td style="text-align: center">{{ passport.document_number|default:"-" }}</td>
-        <td style="text-align: center">{{ passport.country_of_issue|default:"-" }}</td>
-        <td style="text-align: center; white-space: nowrap;">{{ passport.date_of_issue|date:"Y-m-d"|default:"-" }}</td>
-        <td style="text-align: center; white-space: nowrap;">
+        <td data-label="Number" style="text-align: center">{{ passport.document_number|default:"-" }}</td>
+        <td data-label="Country" data-sort-key="country" data-sort-value="{{ passport.country_of_issue }}" style="text-align: center">{{ passport.country_of_issue|default:"-" }}</td>
+        <td data-label="Issued" data-sort-key="issue" data-sort-value="{{ passport.date_of_issue|date:'Y-m-d' }}" style="text-align: center; white-space: nowrap;">{{ passport.date_of_issue|date:"Y-m-d"|default:"-" }}</td>
+        <td data-label="Expires" data-sort-key="expiry" data-sort-value="{{ passport.expiry_date|date:'Y-m-d' }}" style="text-align: center; white-space: nowrap;">
             {% if passport.expiry_date %}
                 {% now "Y-m-d" as today_date %}
                 {% with expiry_str=passport.expiry_date|date:"Y-m-d" %}
                     {% if expiry_str < today_date %}
-                        <span style="color: red; font-weight: bold;">{{ expiry_str }}</span>
+                        <span class="expiry-expired">{{ expiry_str }}</span>
                     {% elif passport.expiring_soon %}
-                        <span style="color: red; font-weight: bold;">{{ expiry_str }}</span>
+                        <span class="expiry-soon">{{ expiry_str }}</span>
                     {% else %}
                         {{ expiry_str }}
                     {% endif %}
@@ -191,14 +177,16 @@
                 -
             {% endif %}
         </td>
-        <td style="text-align: center">
+        <td data-label="Status" data-sort-key="status" data-sort-value="{{ passport.status }}" style="text-align: center">
             {% if passport.status == 'active' %}<span class="badge badge-success">Active</span>
             {% elif passport.status == 'renewal' %}<span class="badge badge-warning">Applied for Renewal</span>
             {% elif passport.status == 'inactive' %}<span class="badge badge-secondary">Inactive</span>
             {% else %}<span class="badge badge-secondary">-</span>
             {% endif %}
         </td>
-        <td style="text-align: center">
+
+        <!-- Desktop actions cell -->
+        <td class="desktop-action-cell" style="text-align: center">
             {% if passport.document_file %}
                 <button type="button" class="btn btn-sm btn-success" onclick="viewDocument('{{ passport.document_file.url }}', '{{ passport.document_file.name }}', '{{ passport.holder_name }}')" title="View Document"><i class="fas fa-eye"></i></button>
                 {% if perms.auth.can_edit_personal %}
@@ -218,31 +206,62 @@
                 {% endif %}
             {% endif %}
         </td>
+
+        <!-- Mobile actions bar -->
+        <td class="mobile-action-bar">
+            {% if passport.document_file %}
+                <button type="button" class="mobile-action-btn" onclick="viewDocument('{{ passport.document_file.url }}', '{{ passport.document_file.name }}', '{{ passport.holder_name }}')">
+                    <i class="fas fa-eye mobile-action-icon icon-color-view"></i>
+                    <span class="mobile-action-label">View</span>
+                </button>
+            {% else %}
+                {% if perms.auth.can_edit_personal %}
+                    <button type="button" class="mobile-action-btn" onclick="uploadDocument({{ passport.id }})">
+                        <i class="fas fa-upload mobile-action-icon icon-color-upload"></i>
+                        <span class="mobile-action-label">Upload</span>
+                    </button>
+                {% else %}
+                    <span class="mobile-action-btn mobile-action-disabled">
+                        <i class="fas fa-upload mobile-action-icon"></i>
+                        <span class="mobile-action-label">Upload</span>
+                    </span>
+                {% endif %}
+            {% endif %}
+
+            {% if perms.auth.can_edit_personal %}
+                <button type="button" class="mobile-action-btn" onclick="editDocument({{ passport.id }}, '{{ passport.holder_name }}', '{{ passport.document_type }}', '{{ passport.document_number }}', '{{ passport.country_of_issue }}', '{{ passport.date_of_issue|date:'Y-m-d' }}', '{{ passport.expiry_date|date:'Y-m-d' }}', '{{ passport.status }}')">
+                    <i class="fas fa-edit mobile-action-icon icon-color-edit"></i>
+                    <span class="mobile-action-label">Edit</span>
+                </button>
+            {% else %}
+                <span class="mobile-action-btn mobile-action-disabled">
+                    <i class="fas fa-edit mobile-action-icon"></i>
+                    <span class="mobile-action-label">Edit</span>
+                </span>
+            {% endif %}
+
+            {% if passport.document_file and perms.auth.can_edit_personal %}
+                <button type="button" class="mobile-action-btn" onclick="deleteDocument({{ passport.id }}, '{{ passport.holder_name }}')">
+                    <i class="fas fa-trash mobile-action-icon icon-color-delete"></i>
+                    <span class="mobile-action-label">Delete</span>
+                </button>
+            {% else %}
+                <span class="mobile-action-btn mobile-action-disabled">
+                    <i class="fas fa-trash mobile-action-icon"></i>
+                    <span class="mobile-action-label">Delete</span>
+                </span>
+            {% endif %}
+        </td>
     </tr>
     {% endfor %}
 </tbody>
 </table>
 </div>
 
-<!-- Add New Button -->
-{% if perms.auth.can_edit_personal %}
-<div style="display: flex; justify-content: flex-start; margin-bottom: 20px;">
-    <button type="button" class="btn btn-info" onclick="addNewDocument()">
-        <i class="fas fa-plus"></i> Add New Passport/ID
-    </button>
-</div>
-{% else %}
-<div style="display: flex; justify-content: flex-start; margin-bottom: 20px;">
-    <span class="btn btn-secondary" style="opacity:0.6; cursor:not-allowed; pointer-events:none;">
-        <i class="fas fa-plus"></i> Add New Passport/ID
-    </span>
-</div>
-{% endif %}
-
 {% if perms.auth.can_edit_personal %}
 <!-- Add/Edit Modal -->
 <div class="modal fade" id="addEditModal" tabindex="-1" role="dialog" aria-hidden="true">
-  <div class="modal-dialog" role="document">
+  <div class="modal-dialog modal-fullscreen-mobile" role="document">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="addEditModalLabel">Add Passport/ID</h5>
@@ -306,14 +325,18 @@
             </select>
           </div>
           <div class="form-group" id="file_upload_group">
-            <label for="document_file">Upload Document (PDF, JPG, PNG): <span class="text-danger">*</span></label>
-            <input type="file" class="form-control-file" id="document_file" name="document_file" accept=".pdf,.jpg,.jpeg,.png">
-            <small class="form-text text-muted">Max file size: 10MB (Recommended: PDF format)</small>
+            <label for="document_file">Upload Document <span class="text-danger required-marker">*</span></label>
+            <input type="file" class="form-control-file file-upload-input" id="document_file" name="document_file" accept="image/*,application/pdf" capture="environment">
+            <small class="form-text text-muted">PDF, JPG or PNG. Max file size: 10MB. On mobile, you can take a photo or pick from your files.</small>
           </div>
         </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="$('#addEditModal').modal('hide');">Cancel</button>
-          <button type="submit" class="btn btn-info" id="submitBtn"><i class="fas fa-save"></i> <span id="submitBtnText">Save</span></button>
+        <div class="modal-footer modal-footer-stack-mobile">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="$('#addEditModal').modal('hide');">
+            <i class="fas fa-times"></i> Cancel
+          </button>
+          <button type="submit" class="btn btn-info" id="submitBtn">
+            <i class="fas fa-save"></i> <span id="submitBtnText">Save</span>
+          </button>
         </div>
       </form>
     </div>
@@ -322,7 +345,7 @@
 
 <!-- Upload Modal -->
 <div class="modal fade" id="uploadModal" tabindex="-1" role="dialog" aria-hidden="true">
-  <div class="modal-dialog" role="document">
+  <div class="modal-dialog modal-fullscreen-mobile" role="document">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title">Upload Passport/ID Document</h5>
@@ -333,15 +356,24 @@
           {% csrf_token %}
           <input type="hidden" id="upload_passport_id" name="passport_id">
           <input type="hidden" name="action" value="upload">
+
+          <div class="upload-target-info">
+            <strong>Holder:</strong> <span id="uploadHolderName"></span>
+          </div>
+
           <div class="form-group">
-            <label for="upload_document_file">Select Document (PDF, JPG, PNG):</label>
-            <input type="file" class="form-control-file" id="upload_document_file" name="document_file" accept=".pdf,.jpg,.jpeg,.png" required>
-            <small class="form-text text-muted">Max file size: 10MB (Recommended: PDF format)</small>
+            <label for="upload_document_file"><strong>Select Document</strong></label>
+            <input type="file" class="form-control-file file-upload-input" id="upload_document_file" name="document_file" accept="image/*,application/pdf" capture="environment" required>
+            <small class="form-text text-muted">PDF, JPG or PNG. Max file size: 10MB. On mobile, you can take a photo or pick from your files.</small>
           </div>
         </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="$('#uploadModal').modal('hide');">Cancel</button>
-          <button type="submit" class="btn btn-info"><i class="fas fa-upload"></i> Upload Document</button>
+        <div class="modal-footer modal-footer-stack-mobile">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="$('#uploadModal').modal('hide');">
+            <i class="fas fa-times"></i> Cancel
+          </button>
+          <button type="submit" class="btn btn-info">
+            <i class="fas fa-upload"></i> Upload Document
+          </button>
         </div>
       </form>
     </div>
@@ -350,7 +382,7 @@
 
 <!-- Delete Modal -->
 <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-hidden="true">
-  <div class="modal-dialog" role="document">
+  <div class="modal-dialog modal-fullscreen-mobile" role="document">
     <div class="modal-content">
       <div class="modal-header bg-danger text-white">
         <h5 class="modal-title">Confirm Delete</h5>
@@ -368,9 +400,13 @@
             <p><strong>Holder:</strong> <span id="deleteHolderName"></span></p>
           </div>
         </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="$('#deleteModal').modal('hide');">Cancel</button>
-          <button type="submit" class="btn btn-danger"><i class="fas fa-trash"></i> Delete Document</button>
+        <div class="modal-footer modal-footer-stack-mobile">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="$('#deleteModal').modal('hide');">
+            <i class="fas fa-times"></i> Cancel
+          </button>
+          <button type="submit" class="btn btn-danger">
+            <i class="fas fa-trash"></i> Delete Document
+          </button>
         </div>
       </form>
     </div>
@@ -380,7 +416,7 @@
 
 <!-- View Modal (available to all users with access) -->
 <div class="modal fade" id="viewModal" tabindex="-1" role="dialog" aria-hidden="true">
-  <div class="modal-dialog modal-lg" role="document">
+  <div class="modal-dialog modal-lg modal-fullscreen-mobile" role="document">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="viewModalLabel">View Passport/ID Document</h5>
@@ -389,15 +425,466 @@
       <div class="modal-body">
         <div id="documentViewer"></div>
       </div>
-      <div class="modal-footer">
-        <a id="downloadLink" href="#" target="_blank" class="btn btn-info">Download</a>
+      <div class="modal-footer modal-footer-stack-mobile">
         <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="$('#viewModal').modal('hide');">Close</button>
+        <a id="downloadLink" href="#" target="_blank" class="btn btn-info">
+          <i class="fas fa-download"></i> Download
+        </a>
       </div>
     </div>
   </div>
 </div>
 
 {% render_help_modal "passport_management" %}
+
+<style>
+/* ==================== DESKTOP STYLES ==================== */
+
+.page-title-h2 {
+    margin-top: 0.5rem;
+    margin-bottom: 0;
+}
+.page-subtitle-h4 {
+    margin-top: 0.25rem;
+    margin-bottom: 1rem;
+}
+
+/* Top action buttons */
+.page-action-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+/* Filter panel */
+.passport-filter-panel {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border: 1px solid #dee2e6;
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 30px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+.passport-filter-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #dee2e6;
+    cursor: pointer;
+}
+.passport-filter-title {
+    margin: 0;
+    color: #2c3e50;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 18px;
+}
+.passport-filter-title i.fas { color: #17a2b8; font-size: 16px; }
+.passport-filter-toggle-icon { transition: transform 0.3s ease; margin-left: 8px; font-size: 14px; }
+.passport-filter-content { display: none; }
+.passport-filter-content.expanded { display: block; }
+.passport-filter-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+    align-items: end;
+    margin-bottom: 20px;
+}
+.passport-filter-group { display: flex; flex-direction: column; }
+.passport-filter-label {
+    font-weight: 500;
+    color: #495057;
+    margin-bottom: 6px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.passport-filter-select {
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 14px;
+    background: white;
+    width: 100%;
+    height: 44px;
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 12px center;
+    background-repeat: no-repeat;
+    background-size: 16px 12px;
+    padding-right: 40px;
+}
+.passport-active-filters {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid #dee2e6;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+.passport-filter-tags { display: flex; gap: 8px; flex-wrap: wrap; }
+.passport-filter-tag {
+    background: #17a2b8;
+    color: white;
+    padding: 4px 12px;
+    border-radius: 16px;
+    font-size: 12px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.passport-remove-tag {
+    background: rgba(255,255,255,0.3);
+    border: none;
+    color: white;
+    border-radius: 50%;
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 10px;
+    line-height: 1;
+}
+.passport-remove-tag:hover { background: rgba(255,255,255,0.5); }
+
+/* Add New button row */
+.add-new-button-row {
+    display: flex;
+    justify-content: flex-start;
+    margin-bottom: 20px;
+}
+
+/* Table */
+.table-container {
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    margin-bottom: 20px;
+}
+.sortable-header {
+    cursor: pointer;
+    user-select: none;
+}
+.sortable-header:hover {
+    background-color: #f8f9fa;
+}
+
+/* Expiry highlights */
+.expiry-expired,
+.expiry-soon {
+    color: #dc3545;
+    font-weight: bold;
+}
+
+/* Upload-target info banner */
+.upload-target-info {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    padding: 10px 14px;
+    margin-bottom: 16px;
+    font-size: 14px;
+}
+
+/* Hide mobile-only elements on desktop */
+.filter-title-text-mobile,
+.clear-all-text-mobile { display: none; }
+.mobile-action-bar { display: none !important; }
+.mobile-sort-control { display: none !important; }
+
+/* ==================== MOBILE STYLES (≤768px) ==================== */
+@media (max-width: 768px) {
+
+    .page-title-h2 {
+        font-size: 1.25rem;
+    }
+    .page-subtitle-h4 {
+        font-size: 1rem;
+        margin-bottom: 0.75rem;
+    }
+
+    /* Action buttons — 2-col grid */
+    .page-action-buttons {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        justify-content: stretch;
+    }
+    .page-action-buttons .btn,
+    .page-action-buttons a {
+        width: 100%;
+        height: 38px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 13px;
+        padding: 6px 8px;
+        margin: 0;
+    }
+
+    /* Filter panel — tighter */
+    .passport-filter-panel {
+        padding: 8px 12px;
+        margin-bottom: 12px;
+    }
+    .passport-filter-header {
+        margin-bottom: 0;
+        padding-bottom: 0;
+        border-bottom: none;
+        min-height: 38px;
+    }
+    .passport-filter-title { font-size: 14px; flex: 1; min-width: 0; }
+    .filter-title-text { display: none; }
+    .filter-title-text-mobile { display: inline; }
+    .clear-all-text { display: none; }
+    .clear-all-text-mobile { display: inline; }
+
+    .passport-filter-content.expanded {
+        margin-top: 12px;
+        padding-top: 12px;
+        border-top: 1px solid #dee2e6;
+    }
+    .passport-filter-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+        margin-bottom: 12px;
+    }
+    .passport-filter-select {
+        font-size: 16px; /* prevents iOS zoom-on-focus */
+    }
+
+    /* Mobile-only sort dropdown */
+    .mobile-sort-control {
+        display: flex !important;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 12px;
+    }
+    .mobile-sort-label {
+        font-size: 13px;
+        font-weight: 600;
+        color: #495057;
+        margin: 0;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+    .mobile-sort-select {
+        font-size: 16px; /* prevents iOS zoom */
+        padding: 8px 12px;
+        flex: 1;
+    }
+
+    /* Add New button — full-width */
+    .add-new-button-row {
+        margin-bottom: 12px;
+    }
+    .action-btn-add {
+        width: 100%;
+        text-align: center;
+        padding: 10px 12px;
+    }
+
+    /* Table → Card layout */
+    .table-container {
+        background: transparent;
+        box-shadow: none;
+        border-radius: 0;
+        overflow: visible;
+    }
+    .passport-table {
+        border: none;
+        background: transparent;
+    }
+    .passport-table thead {
+        display: none;
+    }
+    .passport-table,
+    .passport-table tbody,
+    .passport-table tr,
+    .passport-table td {
+        display: block;
+        width: 100%;
+    }
+    .passport-table tbody tr {
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        margin-bottom: 12px;
+        padding: 12px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+    }
+    .passport-table tbody tr:nth-of-type(even) {
+        background: white;
+    }
+    .passport-table td {
+        border: none !important;
+        padding: 6px 0 !important;
+        text-align: left !important;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+        min-height: 28px;
+        white-space: normal !important;
+    }
+    .passport-table td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        color: #495057;
+        font-size: 13px;
+        flex-shrink: 0;
+    }
+    /* The Holder Name (first cell) gets prominence */
+    .passport-table td[data-label="Holder"] {
+        font-size: 16px;
+        font-weight: 600;
+        color: #2c3e50;
+        padding-bottom: 8px !important;
+        margin-bottom: 4px;
+        border-bottom: 1px solid #f1f3f5 !important;
+        display: block;
+    }
+    .passport-table td[data-label="Holder"]::before {
+        display: none;
+    }
+
+    /* Hide desktop action cell */
+    .desktop-action-cell {
+        display: none !important;
+    }
+
+    /* Show and style mobile action bar — 3-column grid (View/Upload + Edit + Delete) */
+    .mobile-action-bar {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 6px;
+        margin-top: 10px;
+        padding: 10px 0 0 0 !important;
+        border-top: 1px solid #f1f3f5;
+        align-items: stretch !important;
+        min-height: auto !important;
+        justify-content: stretch !important;
+    }
+    .mobile-action-bar::before {
+        display: none !important;
+    }
+    .mobile-action-btn {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 6px;
+        padding: 8px 4px;
+        border-radius: 6px;
+        text-decoration: none;
+        color: #495057;
+        font-size: 11px;
+        background: #f8f9fa;
+        border: 1px solid #e9ecef;
+        transition: background-color 0.15s ease;
+        min-height: 56px;
+        cursor: pointer;
+    }
+    .mobile-action-btn:hover,
+    .mobile-action-btn:active {
+        background: #e9ecef;
+        text-decoration: none;
+        color: #495057;
+    }
+    .mobile-action-icon {
+        font-size: 18px;
+        line-height: 1;
+    }
+    .mobile-action-label {
+        font-size: 11px;
+        font-weight: 500;
+        line-height: 1.2;
+        text-align: center;
+    }
+    /* Icon colours */
+    .icon-color-view { color: #17a2b8; }
+    .icon-color-edit { color: #ffc107; }
+    .icon-color-delete { color: #dc3545; }
+    .icon-color-upload { color: #007bff; }
+
+    /* Disabled state */
+    .mobile-action-disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+        color: #adb5bd;
+    }
+    .mobile-action-disabled .mobile-action-icon {
+        color: #adb5bd;
+    }
+
+    /* Modal full-screen on mobile */
+    .modal-fullscreen-mobile {
+        max-width: 100%;
+        margin: 0;
+    }
+    .modal-fullscreen-mobile .modal-content {
+        border-radius: 0;
+        min-height: 100vh;
+    }
+
+    /* Modal form fields — 16px to prevent iOS zoom */
+    .modal-body .form-control,
+    .modal-body select.form-control,
+    .modal-body input.form-control {
+        font-size: 16px;
+        padding: 10px 12px;
+    }
+    .modal-body label {
+        font-size: 13px;
+        margin-bottom: 4px;
+    }
+    .modal-body .form-text {
+        font-size: 12px;
+    }
+
+    /* File upload input */
+    .file-upload-input {
+        font-size: 14px;
+        padding: 8px 0;
+        width: 100%;
+    }
+
+    /* Modal footer — stack buttons full-width with primary on top */
+    .modal-footer-stack-mobile {
+        flex-direction: column-reverse;
+        gap: 8px;
+        padding: 14px;
+    }
+    .modal-footer-stack-mobile .btn {
+        width: 100%;
+        margin: 0 !important;
+        padding: 10px 12px;
+    }
+
+    /* PDF/image viewer in document modal */
+    #documentViewer iframe,
+    #documentViewer embed {
+        height: 70vh !important;
+    }
+    #documentViewer img {
+        max-height: 70vh !important;
+        width: 100%;
+        height: auto;
+    }
+}
+</style>
 
 <script>
 var sortDirections = {};
@@ -431,6 +918,16 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     if (justClearedFilters) setTimeout(() => { sessionStorage.removeItem('passportJustClearedFilters'); }, 200);
     if (justUsedDropdown) setTimeout(() => { sessionStorage.removeItem('passportJustUsedDropdown'); }, 200);
+
+    // Mobile sort dropdown — apply default sort by expiry date soonest first on load
+    const mobileSortSelect = document.getElementById('mobileSortSelect');
+    if (mobileSortSelect) {
+        // Apply the default sort on page load (so cards are sorted by expiry asc by default on mobile)
+        applyMobileSort(mobileSortSelect.value);
+        mobileSortSelect.addEventListener('change', function() {
+            applyMobileSort(this.value);
+        });
+    }
 });
 
 function checkForPassportActiveFilters() {
@@ -513,6 +1010,7 @@ function addNewDocument() {
     document.getElementById('submitBtnText').textContent = 'Save';
     document.getElementById('document_file').required = true;
     document.getElementById('file_upload_group').style.display = 'block';
+    document.querySelector('#file_upload_group .required-marker').style.display = 'inline';
     $('#addEditModal').modal('show');
 }
 
@@ -529,11 +1027,22 @@ function editDocument(passportId, holderName, docType, docNumber, country, issue
     document.getElementById('addEditModalLabel').textContent = 'Edit Passport/ID Information';
     document.getElementById('submitBtnText').textContent = 'Update';
     document.getElementById('document_file').required = false;
+    document.querySelector('#file_upload_group .required-marker').style.display = 'none';
     $('#addEditModal').modal('show');
 }
 
 function uploadDocument(passportId) {
     document.getElementById('upload_passport_id').value = passportId;
+    // Find holder name from the row to display in upload modal
+    const row = document.querySelector(`button[onclick*="uploadDocument(${passportId})"]`).closest('tr');
+    if (row) {
+        const holderCell = row.querySelector('td[data-label="Holder"]');
+        if (holderCell) {
+            document.getElementById('uploadHolderName').textContent = holderCell.textContent.trim();
+        }
+    }
+    // Reset the file input so previous selection doesn't linger
+    document.getElementById('upload_document_file').value = '';
     $('#uploadModal').modal('show');
 }
 
@@ -568,6 +1077,7 @@ $(document).ready(function() {
     });
 });
 
+/* === Desktop column sort (existing behaviour) === */
 function sortTable(columnIndex) {
     const table = document.getElementById("passportTable");
     if (!table) return;
@@ -611,6 +1121,44 @@ function updateSortIcons(activeColumn, isAscending) {
     const activeHeader = headers[activeColumn];
     const activeIcon = activeHeader.querySelector('i');
     if (activeIcon) activeIcon.className = isAscending ? 'fas fa-sort-up' : 'fas fa-sort-down';
+}
+
+/* === Mobile sort dropdown === */
+function applyMobileSort(value) {
+    const tbody = document.querySelector('#passportTable tbody');
+    if (!tbody) return;
+    const rows = Array.from(tbody.querySelectorAll('tr'));
+    if (rows.length === 0) return;
+
+    // Parse the sort key and direction from the value (e.g. "expiry-asc")
+    const lastDash = value.lastIndexOf('-');
+    const sortKey = value.substring(0, lastDash);
+    const direction = value.substring(lastDash + 1);
+    const isAscending = direction === 'asc';
+
+    rows.sort((rowA, rowB) => {
+        const cellA = rowA.querySelector(`td[data-sort-key="${sortKey}"]`);
+        const cellB = rowB.querySelector(`td[data-sort-key="${sortKey}"]`);
+        if (!cellA || !cellB) return 0;
+
+        let valueA = (cellA.dataset.sortValue || '').trim();
+        let valueB = (cellB.dataset.sortValue || '').trim();
+
+        // Empty values sort last regardless of direction
+        const aEmpty = (valueA === '' || valueA === '-');
+        const bEmpty = (valueB === '' || valueB === '-');
+        if (aEmpty && bEmpty) return 0;
+        if (aEmpty) return 1;
+        if (bEmpty) return -1;
+
+        let comparison = 0;
+        if (valueA < valueB) comparison = -1;
+        else if (valueA > valueB) comparison = 1;
+        return isAscending ? comparison : -comparison;
+    });
+
+    while (tbody.firstChild) tbody.removeChild(tbody.firstChild);
+    rows.forEach(row => tbody.appendChild(row));
 }
 </script>
 

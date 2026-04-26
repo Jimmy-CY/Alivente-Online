@@ -6,35 +6,37 @@
 
 {% block content %}
 
-<h2><center>ALIVENTE ONLINE - TENANTS</center></h2>
-<h4><center>EDIT EXISTING TENANT</center></h4>
+<h2 class="page-title-h2"><center>ALIVENTE ONLINE - TENANTS</center></h2>
+<h4 class="page-subtitle-h4"><center>EDIT EXISTING TENANT</center></h4>
 <br/>
 
 {% if perms.auth.can_edit_tenants %}
 
 {% for tresults in tenant %}
-<form action = "{% url 'tenant_edit_commit' tresults.tenant_id %}" method="post">
+<form action="{% url 'tenant_edit_commit' tresults.tenant_id %}" method="post">
   {% csrf_token %}
-  
-  <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 20px;">
-      <button class="btn btn-success" type="submit">
+
+  <!-- Action Buttons (Save + Duplicate + Back) -->
+  <div class="page-action-buttons page-action-buttons-edit">
+      <button class="btn btn-success action-btn-save" type="submit">
           <i class="fas fa-save"></i> Save
       </button>
-      <a href="{% url 'duplicate_tenant' tresults.tenant_id %}" 
-         class="btn btn-warning"
+      <a href="{% url 'duplicate_tenant' tresults.tenant_id %}"
+         class="btn btn-warning action-btn-duplicate"
          onclick="return confirm('Duplicate this lease to create a renewal?\n\nThis will copy all tenant details except lease dates.\n\nYou will then need to:\n- Set new lease dates\n- Update rental/levies if changed\n- Set to Active when ready');">
-          <i class="fas fa-copy"></i> Duplicate for Renewal
+          <i class="fas fa-copy"></i> <span class="duplicate-label-full">Duplicate for Renewal</span><span class="duplicate-label-short">Duplicate</span>
       </a>
-      <a href="{% url 'tenant' %}" class="btn btn-secondary" role="button">
+      <a href="{% url 'tenant' %}" class="btn btn-secondary action-btn-back" role="button">
           <i class="fas fa-arrow-left"></i> Back
       </a>
   </div>
 
   <div class="form-row">
-    <div class="form-group col-md-4">
-      <label for="tenant_type"><strong>Tenant Type</strong></label>
-      <select id="tenant_type" class="form-control" name="tenant_type" required>
-        <option disabled>Select Tenant Type</option>
+    <div class="col-md-4">
+      <div class="form-group">
+        <label for="tenant_type"><strong>Tenant Type</strong></label>
+        <select id="tenant_type" class="form-control" name="tenant_type" required>
+          <option disabled>Select Tenant Type</option>
           {% if tresults.tenant_type == "Company" %}
             <option selected value="Company">Company</option>
           {% else %}
@@ -45,40 +47,56 @@
           {% else %}
             <option value="Individual">Individual</option>
           {% endif %}
-      </select>
+        </select>
+      </div>
     </div>
-    <div class="form-group col-md-4">
-      <label for="tenant_name"><strong>Tenant</strong></label>
-      <input type="text" class="form-control" id="tenant_name" name="tenant_name" placeholder="Company or Tenant Name" value= "{{tresults.tenant_name}}" required>
-    </div>
-  </div>
-  <div class="form-row">
-    <div class="form-group col-md-4">
-      <label for="tenant_contact_person"><strong>Contact Person</strong></label>
-      <input type="text" class="form-control" id="tenant_contact_person" name="tenant_contact_person" placeholder="Name of Contact Person" value= "{{tresults.tenant_contact_person}}" required>
-    </div>
-    <div class="form-group col-md-4">
-      <label for="tenant_contact_number"><strong>Contact Number</strong></label>
-      <input type="text" class="form-control" id="tenant_contact_number" name="tenant_contact_number" placeholder="Contact Number" value= "{{tresults.tenant_contact_number}}" required>
-    </div>
-    <div class="form-group col-md-4">
-      <label for="tenant_email"><strong>Email Address</strong></label>
-      <input type="text" class="form-control" id="tenant_email" name="tenant_email" placeholder="Tenant Email Address" value= "{{tresults.tenant_email}}">
+    <div class="col-md-4">
+      <div class="form-group">
+        <label for="tenant_name"><strong>Tenant</strong></label>
+        <input type="text" class="form-control" id="tenant_name" name="tenant_name" placeholder="Company or Tenant Name" value="{{tresults.tenant_name}}" required>
+      </div>
     </div>
   </div>
+
   <div class="form-row">
-    <div class="form-group col-md-4">
-      <label for="tenant_lease_start_date"><strong>Lease Start Date</strong></label>
-      <input type="date" class="form-control" id="tenant_lease_start_date" name="tenant_lease_start_date" placeholder="Lease Start Date" value= "{{tresults.tenant_lease_start_date|date:'Y-m-d'}}" required>
+    <div class="col-md-4">
+      <div class="form-group">
+        <label for="tenant_contact_person"><strong>Contact Person</strong></label>
+        <input type="text" class="form-control" id="tenant_contact_person" name="tenant_contact_person" placeholder="Name of Contact Person" value="{{tresults.tenant_contact_person}}" required>
+      </div>
     </div>
-    <div class="form-group col-md-4">
-      <label for="tenant_lease_end_date"><strong>Lease End Date</strong></label>
-      <input type="date" class="form-control" id="tenant_lease_end_date" name="tenant_lease_end_date" placeholder="Lease End Date" value= "{{tresults.tenant_lease_end_date|date:'Y-m-d'}}" required>
+    <div class="col-md-4">
+      <div class="form-group">
+        <label for="tenant_contact_number"><strong>Contact Number</strong></label>
+        <input type="text" class="form-control" id="tenant_contact_number" name="tenant_contact_number" placeholder="Contact Number" value="{{tresults.tenant_contact_number}}" required>
+      </div>
     </div>
-    <div class="form-group col-md-4">
-      <label for="tenant_rental_type"><strong>Rental Type</strong></label>
-      <select id="tenant_rental_type" class="form-control" name="tenant_rental_type" required>
-        <option disabled>Select Rental Type</option>
+    <div class="col-md-4">
+      <div class="form-group">
+        <label for="tenant_email"><strong>Email Address</strong></label>
+        <input type="email" class="form-control" id="tenant_email" name="tenant_email" placeholder="Tenant Email Address" value="{{tresults.tenant_email}}">
+      </div>
+    </div>
+  </div>
+
+  <div class="form-row">
+    <div class="col-md-4">
+      <div class="form-group">
+        <label for="tenant_lease_start_date"><strong>Lease Start Date</strong></label>
+        <input type="date" class="form-control" id="tenant_lease_start_date" name="tenant_lease_start_date" placeholder="Lease Start Date" value="{{tresults.tenant_lease_start_date|date:'Y-m-d'}}" required>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="form-group">
+        <label for="tenant_lease_end_date"><strong>Lease End Date</strong></label>
+        <input type="date" class="form-control" id="tenant_lease_end_date" name="tenant_lease_end_date" placeholder="Lease End Date" value="{{tresults.tenant_lease_end_date|date:'Y-m-d'}}" required>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="form-group">
+        <label for="tenant_rental_type"><strong>Rental Type</strong></label>
+        <select id="tenant_rental_type" class="form-control" name="tenant_rental_type" required>
+          <option disabled>Select Rental Type</option>
           {% if tresults.tenant_rental_type == "Weekly" %}
             <option selected value="Weekly">Weekly</option>
           {% else %}
@@ -94,32 +112,44 @@
           {% else %}
             <option value="Annual">Annual</option>
           {% endif %}
-      </select>
+        </select>
+      </div>
     </div>
   </div>
+
   <div class="form-row">
-    <div class="form-group col-md-4">
-      <label for="tenant_deposit"><strong>Deposit</strong></label>
-      <input type="number" class="form-control" id="tenant_deposit" name="tenant_deposit" placeholder="Deposit Amount" value= "{{tresults.tenant_deposit}}" required>
+    <div class="col-md-4">
+      <div class="form-group">
+        <label for="tenant_deposit"><strong>Deposit</strong></label>
+        <input type="number" class="form-control" id="tenant_deposit" name="tenant_deposit" placeholder="Deposit Amount" value="{{tresults.tenant_deposit}}" required>
+      </div>
     </div>
-    <div class="form-group col-md-4">
-      <label for="tenant_rent"><strong>Rental</strong></label>
-      <input type="number" class="form-control" id="tenant_rent" name="tenant_rent" placeholder="Rental Amount" value= "{{tresults.tenant_rent}}" required>
+    <div class="col-md-4">
+      <div class="form-group">
+        <label for="tenant_rent"><strong>Rental</strong></label>
+        <input type="number" class="form-control" id="tenant_rent" name="tenant_rent" placeholder="Rental Amount" value="{{tresults.tenant_rent}}" required>
+      </div>
     </div>
-    <div class="form-group col-md-4">
-      <label for="tenant_levies"><strong>Levies</strong></label>
-      <input type="number" class="form-control" id="tenant_levies" name="tenant_levies" placeholder="Monthly Levy Amount" value= "{{tresults.tenant_levies}}" required>
+    <div class="col-md-4">
+      <div class="form-group">
+        <label for="tenant_levies"><strong>Levies</strong></label>
+        <input type="number" class="form-control" id="tenant_levies" name="tenant_levies" placeholder="Monthly Levy Amount" value="{{tresults.tenant_levies}}" required>
+      </div>
     </div>
   </div>
+
   <div class="form-row">
-    <div class="form-group col-md-4">
-      <label for="tenant_payment_terms"><strong>Rental Payment Terms</strong></label>
-      <input type="number" class="form-control" id="tenant_payment_terms" name="tenant_payment_terms" placeholder="Payment Terms (Days)" value= "{{tresults.tenant_payment_terms}}" required>
+    <div class="col-md-4">
+      <div class="form-group">
+        <label for="tenant_payment_terms"><strong>Rental Payment Terms</strong></label>
+        <input type="number" class="form-control" id="tenant_payment_terms" name="tenant_payment_terms" placeholder="Payment Terms (Days)" value="{{tresults.tenant_payment_terms}}" required>
+      </div>
     </div>
-    <div class="form-group col-md-4">
-      <label for="tenant_renewal"><strong>Renewal Option</strong></label>
-      <select id="tenant_renewal" class="form-control" name="tenant_renewal" required>
-        <option disabled>Select if Lease is Renewable</option>
+    <div class="col-md-4">
+      <div class="form-group">
+        <label for="tenant_renewal"><strong>Renewal Option</strong></label>
+        <select id="tenant_renewal" class="form-control" name="tenant_renewal" required>
+          <option disabled>Select if Lease is Renewable</option>
           {% if tresults.tenant_renewal == "Yes" %}
             <option selected value="Yes">Yes</option>
           {% else %}
@@ -130,38 +160,45 @@
           {% else %}
             <option value="No">No</option>
           {% endif %}
-      </select>
-    </div>    
-    <div class="form-group col-md-4">
-      <label for="tenant_renewal_period"><strong>Renewal Period</strong></label>
-      <input type="number" class="form-control" id="tenant_renewal_period" name="tenant_renewal_period" placeholder="Renewal Period (Days)" value= "{{tresults.tenant_renewal_period}}" required>
+        </select>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="form-group">
+        <label for="tenant_renewal_period"><strong>Renewal Period</strong></label>
+        <input type="number" class="form-control" id="tenant_renewal_period" name="tenant_renewal_period" placeholder="Renewal Period (Days)" value="{{tresults.tenant_renewal_period}}" required>
+      </div>
     </div>
   </div>
+
   <div class="form-row">
-    <div class="form-group col-md-4">
-      <label for="tenant_renewal_status"><strong>Renewal Status</strong></label>
-      <select id="tenant_renewal_status" class="form-control" name="tenant_renewal_status">
-        {% if tresults.tenant_renewal_status == "pending" or not tresults.tenant_renewal_status %}
-          <option selected value="pending">Pending</option>
-        {% else %}
-          <option value="pending">Pending</option>
-        {% endif %}
-        {% if tresults.tenant_renewal_status == "declined" %}
-          <option selected value="declined">Declined</option>
-        {% else %}
-          <option value="declined">Declined</option>
-        {% endif %}
-        {% if tresults.tenant_renewal_status == "new_lease_signed" %}
-          <option selected value="new_lease_signed">New Lease Signed</option>
-        {% else %}
-          <option value="new_lease_signed">New Lease Signed</option>
-        {% endif %}
-      </select>
+    <div class="col-md-4">
+      <div class="form-group">
+        <label for="tenant_renewal_status"><strong>Renewal Status</strong></label>
+        <select id="tenant_renewal_status" class="form-control" name="tenant_renewal_status">
+          {% if tresults.tenant_renewal_status == "pending" or not tresults.tenant_renewal_status %}
+            <option selected value="pending">Pending</option>
+          {% else %}
+            <option value="pending">Pending</option>
+          {% endif %}
+          {% if tresults.tenant_renewal_status == "declined" %}
+            <option selected value="declined">Declined</option>
+          {% else %}
+            <option value="declined">Declined</option>
+          {% endif %}
+          {% if tresults.tenant_renewal_status == "new_lease_signed" %}
+            <option selected value="new_lease_signed">New Lease Signed</option>
+          {% else %}
+            <option value="new_lease_signed">New Lease Signed</option>
+          {% endif %}
+        </select>
+      </div>
     </div>
-    <div class="form-group col-md-4">
-      <label for="tenant_current"><strong>Tenant Status</strong></label>
-      <select id="tenant_current" class="form-control" name="tenant_current" required>
-        <option disabled>Select Active or Inactive</option>
+    <div class="col-md-4">
+      <div class="form-group">
+        <label for="tenant_current"><strong>Tenant Status</strong></label>
+        <select id="tenant_current" class="form-control" name="tenant_current" required>
+          <option disabled>Select Active or Inactive</option>
           {% if tresults.tenant_current == "Yes" %}
             <option selected value="Yes">Active</option>
           {% else %}
@@ -172,27 +209,113 @@
           {% else %}
             <option value="No">Inactive</option>
           {% endif %}
-      </select>
-    </div>  
-    <div class="form-group col-md-4">
-      <label for="prop"><strong>Property</strong></label>
-      <select id="prop" class="form-control" name="prop" required>
-        <option disabled>Select Property</option>
-        {% for results in props %}
-          {% if results.prop_id == tresults.prop_id %}
-            <option selected value={{results.prop_id}}>{{results.prop_name}}</option>
-          {% else %}
-            {% if results.prop_available_for_rent == "Yes" %}
-              <option value={{results.prop_id}}>{{results.prop_name}}</option>
+        </select>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="form-group">
+        <label for="prop"><strong>Property</strong></label>
+        <select id="prop" class="form-control" name="prop" required>
+          <option disabled>Select Property</option>
+          {% for results in props %}
+            {% if results.prop_id == tresults.prop_id %}
+              <option selected value="{{results.prop_id}}">{{results.prop_name}}</option>
+            {% else %}
+              {% if results.prop_available_for_rent == "Yes" %}
+                <option value="{{results.prop_id}}">{{results.prop_name}}</option>
+              {% endif %}
             {% endif %}
-          {% endif %}
-        {% endfor %}
-      </select>
-    </div>    
-   </div>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
   </div>
 </form>
 {% endfor %}
 
 {% endif %}
+
+<style>
+/* ==================== DESKTOP STYLES ==================== */
+
+.page-title-h2 {
+    margin-top: 0.5rem;
+    margin-bottom: 0;
+}
+.page-subtitle-h4 {
+    margin-top: 0.25rem;
+    margin-bottom: 1rem;
+}
+
+/* Top action buttons (Save + Duplicate + Back) — right-aligned on desktop */
+.page-action-buttons {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 1.5rem;
+}
+.page-action-buttons-edit {
+    justify-content: flex-end;
+}
+
+/* Hide the short label on desktop, show full label */
+.duplicate-label-short { display: none; }
+
+/* ==================== MOBILE STYLES (≤768px) ==================== */
+@media (max-width: 768px) {
+
+    .page-title-h2 {
+        font-size: 1.25rem;
+    }
+    .page-subtitle-h4 {
+        font-size: 1rem;
+        margin-bottom: 0.75rem;
+    }
+
+    /* Action buttons — 3-column grid (Save + Duplicate + Back), each compact */
+    .page-action-buttons-edit {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 8px;
+        margin-bottom: 1rem;
+    }
+    .page-action-buttons-edit .btn {
+        width: 100%;
+        text-align: center;
+        padding: 10px 6px;
+        font-size: 13px;
+        margin: 0 !important;
+    }
+
+    /* Show short Duplicate label on mobile, hide full label */
+    .duplicate-label-full { display: none; }
+    .duplicate-label-short { display: inline; }
+
+    /* Form — single column, prevent iOS zoom on focus */
+    .form-row {
+        margin-left: 0;
+        margin-right: 0;
+    }
+    .form-row > [class^="col-"] {
+        padding-left: 0;
+        padding-right: 0;
+    }
+    .form-group {
+        margin-bottom: 14px;
+    }
+    .form-control,
+    select.form-control,
+    input[type="date"].form-control,
+    input[type="number"].form-control,
+    input[type="text"].form-control,
+    input[type="email"].form-control {
+        font-size: 16px; /* prevents iOS zoom-on-focus */
+        padding: 10px 12px;
+    }
+    label {
+        font-size: 13px;
+        margin-bottom: 4px;
+    }
+}
+</style>
+
 {% endblock %}

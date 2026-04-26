@@ -3,9 +3,11 @@
 {% load humanize %}
 {% block title %}Tenant Lease Agreements{% endblock %}
 {% block content %}
-<h2><center>ALIVENTE ONLINE - TENANT LEASE AGREEMENTS</center></h2>
-<h4><center>UPLOAD / VIEW / DELETE</center></h4>
+
+<h2 class="page-title-h2"><center>ALIVENTE ONLINE - TENANT LEASE AGREEMENTS</center></h2>
+<h4 class="page-subtitle-h4"><center>UPLOAD / VIEW / DELETE</center></h4>
 <br/>
+
 {% for msg in messages %}
 <div class="alert alert-secondary alert-dismissible fade show auto-dismiss" role="alert">
   <strong></strong> <center>{{ msg }}</center>
@@ -23,15 +25,19 @@
   }, 2000);
 </script>
 {% endfor %}
-<div style="display: flex ; justify-content: flex-end">
-    <a href="{% url 'admin_apms' %}" class="btn btn-info" style="margin-right:16px" role="button">Back</a>
+
+<!-- Action Buttons -->
+<div class="page-action-buttons page-action-buttons-single">
+    <a href="{% url 'admin_apms' %}" class="btn btn-info action-btn-back" role="button">
+        <i class="fas fa-arrow-left"></i> Back
+    </a>
 </div>
-<br/>
 
 {% if perms.auth.can_access_tenants %}
 
-<div>
-<table class="table table-bordered table-striped text-center">
+<!-- Lease Agreements Table (desktop) / Card list (mobile) -->
+<div class="table-container">
+<table class="table table-bordered table-striped text-center lease-agreements-table">
 <thead>
     <tr>
         <th style="text-align: left; width: 25%">Tenant Name</th>
@@ -45,14 +51,14 @@
 <tbody>
     {% for tenant in tenants %}
     <tr>
-        <td style="text-align: left">{{ tenant.tenant_name }}</td>
-        <td style="text-align: left">{{ tenant.prop.prop_name }}</td>
-        <td>{{ tenant.tenant_lease_start_date|date:"Y-m-d"|default:"-" }}</td>
-        <td>
+        <td data-label="Tenant" style="text-align: left">{{ tenant.tenant_name }}</td>
+        <td data-label="Property" style="text-align: left">{{ tenant.prop.prop_name }}</td>
+        <td data-label="Start Date">{{ tenant.tenant_lease_start_date|date:"Y-m-d"|default:"-" }}</td>
+        <td data-label="End Date">
             {% if tenant.tenant_lease_end_date %}
                 {% now "Y-m-d" as today_date %}
                 {% if tenant.tenant_lease_end_date|date:"Y-m-d" < today_date %}
-                    <span style="color: red; font-weight: bold;">{{ tenant.tenant_lease_end_date|date:"Y-m-d" }}</span>
+                    <span class="end-date-expired">{{ tenant.tenant_lease_end_date|date:"Y-m-d" }}</span>
                 {% else %}
                     {{ tenant.tenant_lease_end_date|date:"Y-m-d" }}
                 {% endif %}
@@ -60,24 +66,22 @@
                 -
             {% endif %}
         </td>
-        <td>
+        <td data-label="Agreement" class="desktop-action-cell">
             {% if tenant.tenant_lease_agreement %}
                 <button type="button" class="btn btn-sm btn-success" onclick="viewDocument('{{ tenant.tenant_lease_agreement.url }}', '{{ tenant.tenant_lease_agreement.name }}', '{{ tenant.tenant_name }}')">
                     <i class="fas fa-file-contract"></i> View
                 </button>
             {% else %}
-                <span>-</span>
+                <span class="text-muted">-</span>
             {% endif %}
         </td>
-        <td>
+        <td data-label="Action" class="desktop-action-cell">
             {% if perms.auth.can_edit_tenants %}
                 {% if tenant.tenant_lease_agreement %}
-                    <!-- Delete Button -->
                     <button type="button" class="btn btn-sm btn-danger" onclick="deleteDocument({{ tenant.tenant_id }}, '{{ tenant.tenant_name }}')">
                         <i class="fas fa-trash"></i> Delete
                     </button>
                 {% else %}
-                    <!-- Upload Button -->
                     <button type="button" class="btn btn-sm btn-outline-primary" onclick="uploadDocument({{ tenant.tenant_id }})">
                         <i class="fas fa-upload"></i> Upload
                     </button>
@@ -86,16 +90,50 @@
                 <span class="text-muted">-</span>
             {% endif %}
         </td>
+
+        <!-- Mobile-only action bar (hidden on desktop) -->
+        <td class="mobile-action-bar">
+            {% if tenant.tenant_lease_agreement %}
+                <button type="button" class="mobile-action-btn" onclick="viewDocument('{{ tenant.tenant_lease_agreement.url }}', '{{ tenant.tenant_lease_agreement.name }}', '{{ tenant.tenant_name }}')">
+                    <i class="fas fa-file-contract mobile-action-icon icon-color-view"></i>
+                    <span class="mobile-action-label">View</span>
+                </button>
+            {% else %}
+                <span class="mobile-action-btn mobile-action-disabled">
+                    <i class="fas fa-file-contract mobile-action-icon"></i>
+                    <span class="mobile-action-label">View</span>
+                </span>
+            {% endif %}
+
+            {% if perms.auth.can_edit_tenants %}
+                {% if tenant.tenant_lease_agreement %}
+                    <button type="button" class="mobile-action-btn" onclick="deleteDocument({{ tenant.tenant_id }}, '{{ tenant.tenant_name }}')">
+                        <i class="fas fa-trash mobile-action-icon icon-color-delete"></i>
+                        <span class="mobile-action-label">Delete</span>
+                    </button>
+                {% else %}
+                    <button type="button" class="mobile-action-btn" onclick="uploadDocument({{ tenant.tenant_id }})">
+                        <i class="fas fa-upload mobile-action-icon icon-color-upload"></i>
+                        <span class="mobile-action-label">Upload</span>
+                    </button>
+                {% endif %}
+            {% else %}
+                <span class="mobile-action-btn mobile-action-disabled">
+                    <i class="fas fa-upload mobile-action-icon"></i>
+                    <span class="mobile-action-label">Upload</span>
+                </span>
+            {% endif %}
+        </td>
     </tr>
     {% endfor %}
 </tbody>
-</table>    
+</table>
 </div>
 
 {% if perms.auth.can_edit_tenants %}
 <!-- Upload Document Modal -->
 <div class="modal fade" id="uploadModal" tabindex="-1" role="dialog" aria-labelledby="uploadModalLabel" aria-hidden="true">
-  <div class="modal-dialog" role="document">
+  <div class="modal-dialog modal-fullscreen-mobile" role="document">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="uploadModalLabel">Upload Lease Agreement</h5>
@@ -108,15 +146,21 @@
           {% csrf_token %}
           <input type="hidden" id="tenant_id" name="tenant_id">
           <input type="hidden" name="action" value="upload">
-          
+
+          <div class="upload-target-info">
+            <strong>Tenant:</strong> <span id="uploadTenantName"></span>
+          </div>
+
           <div class="form-group">
-            <label for="lease_agreement">Select Lease Agreement (PDF, JPG, PNG):</label>
-            <input type="file" class="form-control-file" id="lease_agreement" name="lease_agreement" accept=".pdf,.jpg,.jpeg,.png" required>
-            <small class="form-text text-muted">Max file size: 10MB (Recommended: PDF format)</small>
+            <label for="lease_agreement"><strong>Select Lease Agreement</strong></label>
+            <input type="file" class="form-control-file file-upload-input" id="lease_agreement" name="lease_agreement" accept=".pdf,.jpg,.jpeg,.png" required>
+            <small class="form-text text-muted">PDF, JPG or PNG. Max file size: 10MB. PDF format recommended.</small>
           </div>
         </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="$('#uploadModal').modal('hide');">Cancel</button>
+        <div class="modal-footer modal-footer-stack-mobile">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="$('#uploadModal').modal('hide');">
+            <i class="fas fa-times"></i> Cancel
+          </button>
           <button type="submit" class="btn btn-info">
             <i class="fas fa-upload"></i> Upload Lease Agreement
           </button>
@@ -128,7 +172,7 @@
 
 <!-- Delete Confirmation Modal -->
 <div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
-  <div class="modal-dialog" role="document">
+  <div class="modal-dialog modal-fullscreen-mobile" role="document">
     <div class="modal-content">
       <div class="modal-header bg-danger text-white">
         <h5 class="modal-title" id="deleteModalLabel">Confirm Delete</h5>
@@ -141,7 +185,7 @@
           {% csrf_token %}
           <input type="hidden" id="delete_tenant_id" name="tenant_id">
           <input type="hidden" name="action" value="delete">
-          
+
           <div class="text-center">
             <i class="fas fa-exclamation-triangle fa-3x text-danger mb-3"></i>
             <h5>Are you sure you want to delete this lease agreement?</h5>
@@ -149,8 +193,10 @@
             <p><strong>Tenant:</strong> <span id="deleteTenantName"></span></p>
           </div>
         </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="$('#deleteModal').modal('hide');">Cancel</button>
+        <div class="modal-footer modal-footer-stack-mobile">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="$('#deleteModal').modal('hide');">
+            <i class="fas fa-times"></i> Cancel
+          </button>
           <button type="submit" class="btn btn-danger">
             <i class="fas fa-trash"></i> Delete Lease Agreement
           </button>
@@ -163,7 +209,7 @@
 
 <!-- View Document Modal -->
 <div class="modal fade" id="viewModal" tabindex="-1" role="dialog" aria-labelledby="viewModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg" role="document">
+  <div class="modal-dialog modal-lg modal-fullscreen-mobile" role="document">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="viewModalLabel">View Lease Agreement</h5>
@@ -176,8 +222,10 @@
           <!-- Document content will be loaded here -->
         </div>
       </div>
-      <div class="modal-footer">
-        <a id="downloadLink" href="#" target="_blank" class="btn btn-info">Download</a>
+      <div class="modal-footer modal-footer-stack-mobile">
+        <a id="downloadLink" href="#" target="_blank" class="btn btn-info">
+            <i class="fas fa-download"></i> Download
+        </a>
         <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="$('#viewModal').modal('hide');">Close</button>
       </div>
     </div>
@@ -186,10 +234,270 @@
 
 {% endif %}
 
+<style>
+/* ==================== DESKTOP STYLES ==================== */
+
+.page-title-h2 {
+    margin-top: 0.5rem;
+    margin-bottom: 0;
+}
+.page-subtitle-h4 {
+    margin-top: 0.25rem;
+    margin-bottom: 1rem;
+}
+
+/* Top action buttons */
+.page-action-buttons {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+.page-action-buttons-single {
+    justify-content: flex-end;
+}
+
+.table-container {
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+/* End date red when expired */
+.end-date-expired {
+    color: #dc3545;
+    font-weight: bold;
+}
+
+/* Upload-target info banner */
+.upload-target-info {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    padding: 10px 14px;
+    margin-bottom: 16px;
+    font-size: 14px;
+}
+
+/* Mobile action bar — hidden on desktop */
+.mobile-action-bar { display: none !important; }
+
+/* ==================== MOBILE STYLES (≤768px) ==================== */
+@media (max-width: 768px) {
+
+    .page-title-h2 {
+        font-size: 1.25rem;
+    }
+    .page-subtitle-h4 {
+        font-size: 1rem;
+        margin-bottom: 0.75rem;
+    }
+
+    /* Action buttons — Back full-width */
+    .page-action-buttons-single {
+        margin-bottom: 1rem;
+    }
+    .action-btn-back {
+        width: 100%;
+        text-align: center;
+        padding: 10px 12px;
+    }
+
+    /* Table → Card layout */
+    .table-container {
+        background: transparent;
+        box-shadow: none;
+        border-radius: 0;
+    }
+    .lease-agreements-table {
+        border: none;
+        background: transparent;
+    }
+    .lease-agreements-table thead {
+        display: none;
+    }
+    .lease-agreements-table,
+    .lease-agreements-table tbody,
+    .lease-agreements-table tr,
+    .lease-agreements-table td {
+        display: block;
+        width: 100%;
+    }
+    .lease-agreements-table tbody tr {
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        margin-bottom: 12px;
+        padding: 12px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+    }
+    .lease-agreements-table tbody tr:nth-of-type(even) {
+        background: white;
+    }
+    .lease-agreements-table td {
+        border: none !important;
+        padding: 6px 0 !important;
+        text-align: left !important;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+        min-height: 28px;
+    }
+    .lease-agreements-table td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        color: #495057;
+        font-size: 13px;
+        flex-shrink: 0;
+    }
+    /* The Tenant Name (first cell) gets prominence */
+    .lease-agreements-table td[data-label="Tenant"] {
+        font-size: 16px;
+        font-weight: 600;
+        color: #2c3e50;
+        padding-bottom: 8px !important;
+        margin-bottom: 4px;
+        border-bottom: 1px solid #f1f3f5 !important;
+        display: block;
+    }
+    .lease-agreements-table td[data-label="Tenant"]::before {
+        display: none;
+    }
+
+    /* Hide desktop action cells on mobile */
+    .desktop-action-cell {
+        display: none !important;
+    }
+
+    /* Show and style mobile action bar — 2-column grid */
+    .mobile-action-bar {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin-top: 10px;
+        padding: 10px 0 0 0 !important;
+        border-top: 1px solid #f1f3f5;
+        align-items: stretch !important;
+        min-height: auto !important;
+        justify-content: stretch !important;
+    }
+    .mobile-action-bar::before {
+        display: none !important;
+    }
+    .mobile-action-btn {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 6px;
+        padding: 10px 4px;
+        border-radius: 6px;
+        text-decoration: none;
+        color: #495057;
+        font-size: 11px;
+        background: #f8f9fa;
+        border: 1px solid #e9ecef;
+        transition: background-color 0.15s ease;
+        min-height: 56px;
+        cursor: pointer;
+    }
+    .mobile-action-btn:hover,
+    .mobile-action-btn:active {
+        background: #e9ecef;
+        text-decoration: none;
+        color: #495057;
+    }
+    .mobile-action-icon {
+        font-size: 18px;
+        line-height: 1;
+    }
+    .mobile-action-label {
+        font-size: 11px;
+        font-weight: 500;
+        line-height: 1.2;
+        text-align: center;
+    }
+    /* Icon colours */
+    .icon-color-view { color: #17a2b8; }
+    .icon-color-delete { color: #dc3545; }
+    .icon-color-upload { color: #007bff; }
+
+    /* Disabled state */
+    .mobile-action-disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+        color: #adb5bd;
+    }
+    .mobile-action-disabled .mobile-action-icon {
+        color: #adb5bd;
+    }
+
+    /* Modal full-screen on mobile */
+    .modal-fullscreen-mobile {
+        max-width: 100%;
+        margin: 0;
+    }
+    .modal-fullscreen-mobile .modal-content {
+        border-radius: 0;
+        min-height: 100vh;
+    }
+
+    /* File upload input — readable on mobile */
+    .file-upload-input {
+        font-size: 14px;
+        padding: 8px 0;
+        width: 100%;
+    }
+
+    /* Form labels and helper text on mobile */
+    .modal-body label {
+        font-size: 13px;
+        margin-bottom: 4px;
+    }
+    .modal-body .form-text {
+        font-size: 12px;
+    }
+
+    /* Modal footer — stack buttons full-width with primary on top */
+    .modal-footer-stack-mobile {
+        flex-direction: column-reverse;
+        gap: 8px;
+        padding: 14px;
+    }
+    .modal-footer-stack-mobile .btn {
+        width: 100%;
+        margin: 0 !important;
+        padding: 10px 12px;
+    }
+
+    /* PDF viewer in document modal */
+    #documentViewer iframe,
+    #documentViewer embed {
+        height: 70vh !important;
+    }
+    #documentViewer img {
+        max-height: 70vh !important;
+        width: 100%;
+        height: auto;
+    }
+}
+</style>
+
 <script>
 {% if perms.auth.can_edit_tenants %}
 function uploadDocument(tenantId) {
     document.getElementById('tenant_id').value = tenantId;
+    // Find tenant name from card or row for the upload modal display
+    const row = document.querySelector(`button[onclick*="uploadDocument(${tenantId})"]`).closest('tr');
+    if (row) {
+        const tenantNameCell = row.querySelector('td[data-label="Tenant"]');
+        if (tenantNameCell) {
+            document.getElementById('uploadTenantName').textContent = tenantNameCell.textContent.trim();
+        }
+    }
+    // Reset the file input so previous selection doesn't linger
+    document.getElementById('lease_agreement').value = '';
     $('#uploadModal').modal('show');
 }
 
@@ -219,26 +527,12 @@ function viewDocument(documentUrl, documentName, tenantName) {
     const extension = documentName.split('.').pop().toLowerCase();
 
     if (extension === 'pdf') {
-        // Add URL parameters to hide toolbar and navigation panes
         documentViewer.innerHTML = `
-            <embed src="${documentUrl}#toolbar=0&navpanes=0&scrollbar=0" type="application/pdf" width="100%" height="500px">
+            <iframe src="${documentUrl}#toolbar=0&navpanes=0&scrollbar=0" type="application/pdf" width="100%" height="500px" style="border: none;"></iframe>
             <p class="text-center mt-2">
                 <small>If the PDF doesn't display, <a href="${documentUrl}" target="_blank">click here to open it in a new tab</a></small>
             </p>
         `;
-        
-        // Alternative option using iframe (uncomment to use instead of embed)
-        /*
-        documentViewer.innerHTML = `
-            <iframe src="${documentUrl}#toolbar=0&navpanes=0&scrollbar=0" width="100%" height="500px" frameborder="0">
-                <p>Your browser does not support iframes. <a href="${documentUrl}" target="_blank">Click here to view the PDF</a></p>
-            </iframe>
-            <p class="text-center mt-2">
-                <small>If the PDF doesn't display, <a href="${documentUrl}" target="_blank">click here to open it in a new tab</a></small>
-            </p>
-        `;
-        */
-        
     } else if (['jpg', 'jpeg', 'png'].includes(extension)) {
         documentViewer.innerHTML = `
             <img src="${documentUrl}" alt="Lease Agreement" class="img-fluid" style="max-width: 100%; height: auto;">
@@ -258,9 +552,8 @@ function viewDocument(documentUrl, documentName, tenantName) {
 }
 
 {% if perms.auth.can_edit_tenants %}
-// Auto-hide modals on form submission success
+// Auto-hide modals on form submission
 $(document).ready(function() {
-    // Hide modals after successful form submission
     $('#uploadForm, #deleteForm').on('submit', function() {
         setTimeout(function() {
             $('.modal').modal('hide');

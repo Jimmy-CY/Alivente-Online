@@ -13,115 +13,200 @@ Lease Agreement - {{ property.prop_name }}
                 <h2 class="report-title">LEASE AGREEMENT ({{ property.prop_name }})</h2>
                 <h3 class="report-subtitle">for {{ tenant.tenant_name }}</h3>
             </div>
-            <a href="{% url 'tenant' %}" class="btn btn-info back-button" role="button">Back</a>
+            <a href="{% url 'tenant' %}" class="btn btn-info back-button" role="button">
+                <i class="fas fa-arrow-left"></i> Back
+            </a>
         </div>
-        
+
         <div class="property-section">
             <!-- Error message (only shows if PDF fails to load) -->
-            <div id="lease-error" class="alert alert-warning" style="display: none;">
+            <div id="lease-error" class="alert alert-warning lease-error-alert" style="display: none;">
                 <p>Lease agreement not found for this property.</p>
-                <a href="#" class="btn btn-sm btn-primary" id="download-lease" download>Download Instead</a>
+                <a href="#" class="btn btn-sm btn-info" id="download-lease" download>
+                    <i class="fas fa-download"></i> Download Instead
+                </a>
             </div>
-
             <!-- Lease Agreement PDF Viewer -->
-            <iframe 
-                src="{% static 'lease_agreements/' %}{{ property.prop_name }} - Lease Agreement.pdf" 
-                width="100%" 
-                height="600px" 
-                style="border: none;"
+            <iframe
+                id="lease-iframe"
+                src="{% static 'lease_agreements/' %}{{ property.prop_name }} - Lease Agreement.pdf"
+                class="pdf-viewer-iframe"
                 title="Lease Agreement for {{ property.prop_name }}"
-                onerror="handlePdfError(this)"
             ></iframe>
         </div>
 
         <script>
-            function handlePdfError(iframe) {
-                iframe.style.display = 'none';
+            // Detect PDF load failure and show fallback
+            // Iframes don't fire reliable onerror events for missing files,
+            // so we use a probe fetch to test if the file exists
+            (function() {
+                const pdfUrl = "{% static 'lease_agreements/' %}{{ property.prop_name }} - Lease Agreement.pdf";
+                const iframe = document.getElementById('lease-iframe');
                 const errorDiv = document.getElementById('lease-error');
-                errorDiv.style.display = 'block';
-                
-                // Set up download link with cache busting
                 const downloadBtn = document.getElementById('download-lease');
-                const newUrl = "{% static 'lease_agreements/' %}{{ property.prop_name }} - Lease Agreement.pdf?v=" + Date.now();
-                downloadBtn.href = newUrl;
-            }
+
+                // Probe the PDF URL with a HEAD request
+                fetch(pdfUrl, { method: 'HEAD' })
+                    .then(function(response) {
+                        if (!response.ok) {
+                            // PDF doesn't exist — show error fallback
+                            iframe.style.display = 'none';
+                            errorDiv.style.display = 'block';
+
+                            // Set up download link with cache busting
+                            downloadBtn.href = pdfUrl + '?v=' + Date.now();
+                        }
+                    })
+                    .catch(function() {
+                        // Network error — show error fallback
+                        iframe.style.display = 'none';
+                        errorDiv.style.display = 'block';
+                        downloadBtn.href = pdfUrl + '?v=' + Date.now();
+                    });
+            })();
         </script>
     </div>
 </div>
 
 <style>
+/* ==================== DESKTOP STYLES ==================== */
+
+.report-container {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    padding: 20px;
+    min-height: 80vh;
+}
+
+.report-content {
+    width: 90%;
+    max-width: 1200px;
+    background: white;
+    padding: 30px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    gap: 20px;
+}
+
+.title-wrapper {
+    flex: 1;
+    min-width: 0;
+}
+
+.report-title {
+    font-size: 1.8rem;
+    color: #2c3e50;
+    margin: 0;
+    font-weight: bold;
+    text-transform: uppercase;
+    word-break: break-word;
+}
+
+.report-subtitle {
+    font-size: 1.4rem;
+    color: #2c3e50;
+    margin: 5px 0 0 0;
+    font-weight: normal;
+    word-break: break-word;
+}
+
+.back-button {
+    white-space: nowrap;
+    height: fit-content;
+    flex-shrink: 0;
+}
+
+/* PDF iframe */
+.pdf-viewer-iframe {
+    width: 100%;
+    height: 600px;
+    margin-top: 20px;
+    border: 1px solid #eee;
+    border-radius: 4px;
+}
+
+/* Error fallback alert */
+.lease-error-alert {
+    margin-top: 20px;
+    padding: 20px;
+    background-color: #fff3cd;
+    border-color: #ffeeba;
+    color: #856404;
+}
+.lease-error-alert p {
+    margin-bottom: 12px;
+}
+
+/* ==================== MOBILE STYLES (≤768px) ==================== */
+@media (max-width: 768px) {
+
     .report-container {
-        display: flex;
-        justify-content: center;
-        width: 100%;
-        padding: 20px;
-        min-height: 80vh;
+        padding: 10px;
     }
-    
     .report-content {
-        width: 90%;
-        max-width: 1200px;
-        background: white;
-        padding: 30px;
-        border-radius: 8px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        width: 100%;
+        padding: 16px;
     }
-    
+
+    /* Header — stack title block above Back button */
     .header-container {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 20px;
-        gap: 20px;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+        margin-bottom: 16px;
     }
-    
-    .title-wrapper {
-        flex: 1;
-    }
-    
     .report-title {
-        font-size: 1.8rem;
-        color: #2c3e50;
-        margin: 0;
-        font-weight: bold;
-        text-transform: uppercase;
+        font-size: 1.15rem;
     }
-    
     .report-subtitle {
-        font-size: 1.4rem;
-        color: #2c3e50;
-        margin: 5px 0 0 0;
-        font-weight: normal;
+        font-size: 0.95rem;
     }
-    
     .back-button {
-        background-color: #17a2b8;
-        color: white;
-        padding: 8px 16px;
-        text-decoration: none;
-        border-radius: 4px;
-        font-weight: 500;
-        white-space: nowrap;
-        height: fit-content;
+        width: 100%;
+        text-align: center;
+        padding: 10px 12px;
     }
-    
-    .back-button:hover {
-        background-color: #138496;
-        color: white;
+
+    /* PDF iframe — taller proportional height on phones */
+    .pdf-viewer-iframe {
+        height: 70vh;
+        margin-top: 12px;
     }
-    
-    iframe {
-        margin-top: 20px;
-        border: 1px solid #eee;
-        border-radius: 4px;
+
+    /* Error fallback */
+    .lease-error-alert {
+        padding: 14px;
+        margin-top: 12px;
     }
-    
-    .alert {
-        margin-top: 20px;
-        padding: 20px;
-        background-color: #fff3cd;
-        border-color: #ffeeba;
-        color: #856404;
+}
+
+/* ==================== PRINT STYLES ==================== */
+@media print {
+    .report-container {
+        padding: 0;
     }
+    .report-content {
+        width: 100%;
+        max-width: 100%;
+        padding: 0;
+        box-shadow: none;
+    }
+    .back-button {
+        display: none;
+    }
+    .pdf-viewer-iframe {
+        height: 100vh;
+        border: none;
+        margin-top: 10px;
+    }
+}
 </style>
 {% endblock %}
