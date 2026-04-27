@@ -28,13 +28,13 @@
 </script>
 {% endfor %}
 
-<!-- Action Buttons (Help + Back) -->
+<!-- Action Buttons (Help + Back) — Back+1 standard -->
 <div class="page-action-buttons">
-    <button type="button" class="btn btn-info" data-toggle="modal" data-target="#passport_managementHelpModal">
+    <button type="button" class="btn btn-info action-primary" data-toggle="modal" data-target="#passport_managementHelpModal">
         <i class="fas fa-question-circle"></i> Help
     </button>
-    <a href="{% url 'personal_page' %}" class="btn btn-info" role="button">
-        <i class="fas fa-arrow-left"></i> Back
+    <a href="{% url 'personal_page' %}" class="btn btn-info action-back" role="button" aria-label="Back to personal page">
+        <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
     </a>
 </div>
 
@@ -597,23 +597,42 @@
         margin-bottom: 0.75rem;
     }
 
-    /* Action buttons — 2-col grid */
+    /* Action buttons — Back+1 standard: Help (wide) + Back (icon-only) */
     .page-action-buttons {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
+        display: flex;
+        flex-direction: row;
         gap: 8px;
+        flex-wrap: nowrap;
+        align-items: stretch;
         justify-content: stretch;
     }
-    .page-action-buttons .btn,
-    .page-action-buttons a {
-        width: 100%;
+    .page-action-buttons .action-primary {
+        flex: 1 1 auto;
+        min-width: 0;
         height: 38px;
         display: flex;
         align-items: center;
         justify-content: center;
         font-size: 13px;
-        padding: 6px 8px;
+        padding: 0 12px;
         margin: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        gap: 6px;
+    }
+    .page-action-buttons .action-back {
+        flex: 0 0 auto;
+        width: 44px;
+        height: 38px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0;
+    }
+    .action-back-label {
+        display: none;
     }
 
     /* Filter panel — tighter */

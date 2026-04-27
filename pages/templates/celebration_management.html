@@ -59,6 +59,7 @@
     gap: 10px;
     flex: 1;
     flex-wrap: wrap;
+    align-items: center;
 }
 
 .toolbar-search {
@@ -66,6 +67,9 @@
     gap: 10px;
     align-items: center;
 }
+
+/* Desktop: hide the mobile "More" dropdown wrapper */
+.toolbar-actions .action-more-wrapper { display: none; }
 
 .contact-card {
     background: white;
@@ -374,26 +378,124 @@
         font-size: 0.9rem;
     }
 
-    /* Toolbar — stacked rows */
+    /* Toolbar — stacked rows, action row first then search */
     .celebration-toolbar {
         flex-direction: column;
         align-items: stretch;
-        gap: 8px;
+        gap: 10px;
+        margin-bottom: 14px;
     }
+
+    /* Action row — Back+2+ standard:
+       [Add Contact (wide)] [⋮ More] [← Back] */
     .toolbar-actions {
-        flex-wrap: wrap;
+        display: flex;
+        flex-direction: row;
         gap: 8px;
+        flex-wrap: nowrap;
+        align-items: stretch;
     }
-    .toolbar-actions .btn {
-        flex: 1 1 calc(50% - 4px);
+
+    /* Hide secondary actions on mobile — they live in the More menu */
+    .toolbar-actions .action-secondary {
+        display: none;
+    }
+
+    /* Add Contact takes the leftover space (primary action) */
+    .toolbar-actions .action-primary {
+        flex: 1 1 auto;
         min-width: 0;
-        padding: 8px 6px;
+        height: 38px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 0 12px;
         font-size: 13px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin: 0;
+        gap: 6px;
     }
-    /* Toggle button stays last in toolbar-actions, full width */
-    .toolbar-actions #viewToggleBtn {
-        flex: 1 1 100%;
+
+    /* More dropdown wrapper — visible on mobile only */
+    .toolbar-actions .action-more-wrapper {
+        display: block;
+        position: relative;
+        flex: 0 0 auto;
     }
+    .toolbar-actions .action-more-btn {
+        width: 44px;
+        height: 38px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0;
+    }
+    .toolbar-actions .action-more-menu {
+        position: absolute;
+        top: calc(100% + 6px);
+        right: 0;
+        z-index: 200;
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        min-width: 220px;
+        padding: 6px 0;
+    }
+    .toolbar-actions .action-more-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        width: 100%;
+        background: none;
+        border: none;
+        text-align: left;
+        padding: 12px 16px;
+        font-size: 14px;
+        color: #2c3e50;
+        cursor: pointer;
+        transition: background 0.15s ease;
+        text-decoration: none;
+    }
+    .toolbar-actions .action-more-item i {
+        color: #667eea;
+        width: 18px;
+        text-align: center;
+        flex-shrink: 0;
+    }
+    .toolbar-actions .action-more-item:hover,
+    .toolbar-actions .action-more-item:active,
+    .toolbar-actions .action-more-item:focus {
+        background: #f0f2ff;
+        outline: none;
+        color: #2c3e50;
+        text-decoration: none;
+    }
+    .toolbar-actions .action-more-item.btn-action-disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+    }
+
+    /* Back button — icon-only on mobile */
+    .toolbar-actions .action-back {
+        flex: 0 0 auto;
+        width: 44px;
+        height: 38px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0;
+    }
+    .action-back-label {
+        display: none;
+    }
+
+    /* Search row */
     .toolbar-search {
         flex-direction: column;
         gap: 8px;
@@ -402,10 +504,6 @@
     .toolbar-search #contactSearch {
         width: 100% !important;
         font-size: 16px; /* prevent iOS zoom */
-    }
-    .toolbar-search .btn {
-        width: 100%;
-        padding: 8px 12px;
     }
 
     /* Contact card tighter */
@@ -433,9 +531,11 @@
         gap: 6px;
     }
 
-    /* Hide desktop contact-actions on mobile (moved to bottom action bar) */
+    /* Hide desktop contact-actions on mobile (moved to bottom action bar).
+       Use !important so any inline display set by JS toggleView/toggleCardExpand
+       cannot leak the desktop icons onto mobile. */
     .contact-header .contact-actions {
-        display: none;
+        display: none !important;
     }
 
     /* Show mobile-only contact action bar at bottom of card */
@@ -482,6 +582,11 @@
         color: #adb5bd;
     }
 
+    /* In compact (collapsed) state — hide the mobile action bar too */
+    .contact-card.compact-view:not(.expanded) .contact-action-bar-mobile {
+        display: none;
+    }
+
     /* Event item — stack content above action buttons */
     .event-item {
         flex-direction: column;
@@ -513,9 +618,10 @@
         font-size: 13px;
     }
 
-    /* Hide desktop event-actions on mobile (moved to bottom of event card) */
+    /* Hide desktop event-actions on mobile (moved to bottom of event card).
+       !important guards against JS-set inline styles, same reason as contact-actions. */
     .event-item .event-actions {
-        display: none;
+        display: none !important;
     }
 
     /* Show mobile-only event action bar at bottom of each event */
@@ -630,28 +736,58 @@
 
 <div class="celebration-toolbar">
     <div class="toolbar-actions">
+        <!-- PRIMARY action (wide on mobile) -->
         {% if perms.auth.can_edit_personal %}
-        <button class="btn btn-primary" onclick="addContact()">
+        <button class="btn btn-primary action-primary" onclick="addContact()">
             <i class="fas fa-user-plus"></i> Add Contact
         </button>
+        {% else %}
+        <button class="btn btn-primary action-primary btn-action-disabled" disabled title="No permission to edit">
+            <i class="fas fa-user-plus"></i> Add Contact
+        </button>
+        {% endif %}
 
-        <!-- Import Contacts Button -->
-        <button class="btn btn-success" onclick="$('#importModal').modal('show')">
+        <!-- SECONDARY actions: visible on desktop, hidden on mobile (moved to More menu) -->
+        {% if perms.auth.can_edit_personal %}
+        <button class="btn btn-success action-secondary" onclick="$('#importModal').modal('show')">
             <i class="fas fa-file-upload"></i> Import from Excel
         </button>
         {% else %}
-        <button class="btn btn-primary btn-action-disabled" disabled title="No permission to edit">
-            <i class="fas fa-user-plus"></i> Add Contact
-        </button>
-        <button class="btn btn-success btn-action-disabled" disabled title="No permission to edit">
+        <button class="btn btn-success action-secondary btn-action-disabled" disabled title="No permission to edit">
             <i class="fas fa-file-upload"></i> Import from Excel
         </button>
         {% endif %}
 
-        <!-- View Toggle Button -->
-        <button class="btn btn-outline-secondary" id="viewToggleBtn" onclick="toggleView()">
+        <button class="btn btn-outline-secondary action-secondary" id="viewToggleBtn" onclick="toggleView()">
             <i class="fas fa-th-large"></i> Compact View
         </button>
+
+        <!-- MOBILE-ONLY "More" dropdown -->
+        <div class="action-more-wrapper">
+            <button type="button" class="btn btn-primary action-more-btn" id="actionMoreBtn"
+                    aria-label="More actions" aria-expanded="false" aria-haspopup="true">
+                <i class="fas fa-ellipsis-v"></i>
+            </button>
+            <div class="action-more-menu" id="actionMoreMenu" role="menu" hidden>
+                {% if perms.auth.can_edit_personal %}
+                <button type="button" class="action-more-item" role="menuitem" onclick="$('#importModal').modal('show')">
+                    <i class="fas fa-file-upload"></i> Import from Excel
+                </button>
+                {% else %}
+                <button type="button" class="action-more-item btn-action-disabled" role="menuitem" disabled>
+                    <i class="fas fa-file-upload"></i> Import from Excel
+                </button>
+                {% endif %}
+                <button type="button" class="action-more-item" role="menuitem" id="viewToggleMoreItem" onclick="toggleView()">
+                    <i class="fas fa-th-large"></i> Compact View
+                </button>
+            </div>
+        </div>
+
+        <!-- BACK -->
+        <a href="{% url 'celebration_dashboard' %}" class="btn btn-secondary action-back" aria-label="Back to Dashboard">
+            <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back to Dashboard</span>
+        </a>
     </div>
 
     <div class="toolbar-search">
@@ -661,9 +797,6 @@
                placeholder="Search contacts..."
                onkeyup="searchContacts()"
                style="width: 250px;">
-        <a href="{% url 'celebration_dashboard' %}" class="btn btn-secondary">
-            <i class="fas fa-arrow-left"></i> Back to Dashboard
-        </a>
     </div>
 </div>
 
@@ -1170,6 +1303,7 @@ function toggleView() {
     const contactCards = document.querySelectorAll('.contact-card');
     const contactsContainer = document.querySelector('.contacts-container');
     const toggleBtn = document.getElementById('viewToggleBtn');
+    const toggleMoreItem = document.getElementById('viewToggleMoreItem');
 
     contactCards.forEach(card => {
         const eventList = card.querySelector('.event-list');
@@ -1190,10 +1324,15 @@ function toggleView() {
                 }
             };
         } else {
-            eventList.style.display = 'block';
-            if (contactActions) contactActions.style.display = 'flex';
+            // Restore default visibility — clear inline styles so the CSS
+            // (including the mobile @media rules that hide .contact-actions
+            // and show .contact-action-bar-mobile) takes over again.
+            // Setting an explicit value here would force the desktop icons
+            // to appear on mobile alongside the mobile bar.
+            eventList.style.display = '';
+            if (contactActions) contactActions.style.display = '';
             if (contactActionBarMobile) contactActionBarMobile.style.display = '';
-            card.style.cursor = 'default';
+            card.style.cursor = '';
             card.classList.remove('compact-view', 'expanded');
             card.onclick = null;
         }
@@ -1206,12 +1345,18 @@ function toggleView() {
         toggleBtn.innerHTML = '<i class="fas fa-list"></i> Detailed View';
         toggleBtn.classList.remove('btn-outline-secondary');
         toggleBtn.classList.add('btn-secondary');
+        if (toggleMoreItem) {
+            toggleMoreItem.innerHTML = '<i class="fas fa-list"></i> Detailed View';
+        }
     } else {
         contactsContainer.classList.remove('compact-grid');
         contactsContainer.classList.add('detailed-grid');
         toggleBtn.innerHTML = '<i class="fas fa-th-large"></i> Compact View';
         toggleBtn.classList.remove('btn-secondary');
         toggleBtn.classList.add('btn-outline-secondary');
+        if (toggleMoreItem) {
+            toggleMoreItem.innerHTML = '<i class="fas fa-th-large"></i> Compact View';
+        }
     }
 }
 
@@ -1221,14 +1366,18 @@ function toggleCardExpand(card) {
     const contactActionBarMobile = card.querySelector('.contact-action-bar-mobile');
 
     if (card.classList.contains('expanded')) {
+        // Collapse — hide everything
         card.classList.remove('expanded');
         eventList.style.display = 'none';
         if (contactActions) contactActions.style.display = 'none';
         if (contactActionBarMobile) contactActionBarMobile.style.display = 'none';
     } else {
+        // Expand — clear inline styles so CSS (incl. mobile @media) decides
+        // visibility. Forcing 'flex' here would override the mobile rule
+        // and leak desktop icons onto the mobile layout.
         card.classList.add('expanded');
-        eventList.style.display = 'block';
-        if (contactActions) contactActions.style.display = 'flex';
+        eventList.style.display = '';
+        if (contactActions) contactActions.style.display = '';
         if (contactActionBarMobile) contactActionBarMobile.style.display = '';
     }
 }
@@ -1249,6 +1398,47 @@ function searchContacts() {
         }
     });
 }
+
+// Mobile-only "More" actions dropdown (toolbar)
+function initializeMoreMenu() {
+    const moreBtn = document.getElementById('actionMoreBtn');
+    const moreMenu = document.getElementById('actionMoreMenu');
+    if (!moreBtn || !moreMenu) return;
+
+    function closeMenu() {
+        moreMenu.setAttribute('hidden', '');
+        moreBtn.setAttribute('aria-expanded', 'false');
+    }
+    function openMenu() {
+        moreMenu.removeAttribute('hidden');
+        moreBtn.setAttribute('aria-expanded', 'true');
+    }
+
+    moreBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        const isOpen = !moreMenu.hasAttribute('hidden');
+        if (isOpen) closeMenu(); else openMenu();
+    });
+
+    document.addEventListener('click', function(e) {
+        if (!moreBtn.contains(e.target) && !moreMenu.contains(e.target)) closeMenu();
+    });
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && !moreMenu.hasAttribute('hidden')) {
+            closeMenu();
+            moreBtn.focus();
+        }
+    });
+
+    moreMenu.querySelectorAll('.action-more-item').forEach(item => {
+        item.addEventListener('click', function() { closeMenu(); });
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    initializeMoreMenu();
+});
 
 {% if perms.auth.can_edit_personal %}
 // Update event type handler to show/hide year for namedays

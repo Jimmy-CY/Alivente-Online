@@ -19,11 +19,21 @@
 }
 .dashboard-header h2 { margin: 0 0 10px 0; font-weight: 600; font-size: 32px; }
 .dashboard-header p { margin: 0; opacity: 0.9; font-size: 18px; }
-.help-btn-corner {
+
+/* Header action buttons (Help + Back) — top-right corner on desktop */
+.header-actions {
     position: absolute;
     top: 16px;
     right: 16px;
+    display: flex;
+    gap: 8px;
 }
+.header-actions .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
 .dashboard-actions {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -90,10 +100,6 @@
 .no-events { text-align: center; padding: 60px 20px; color: rgba(255, 255, 255, 0.8); }
 .no-events i { font-size: 64px; margin-bottom: 20px; opacity: 0.5; }
 
-.back-button-container {
-    text-align: center;
-}
-
 /* ==================== MOBILE STYLES (≤768px) ==================== */
 @media (max-width: 768px) {
     .dashboard-header {
@@ -107,15 +113,42 @@
     .dashboard-header p {
         font-size: 0.9rem;
     }
-    .help-btn-corner {
+
+    /* Header actions — flow inline below the heading on mobile.
+       HTML order is heading → subtitle → action row, so margin-top
+       gives breathing room below the subtitle.
+       Layout: [Help (wide)] [← Back small icon] — Back+1 standard. */
+    .header-actions {
         position: static;
-        display: block;
-        margin-top: 12px;
-        width: 100%;
+        display: flex;
+        flex-direction: row;
+        gap: 8px;
+        margin-top: 16px;
+        align-items: stretch;
     }
-    .help-btn-corner .btn {
-        width: 100%;
-        padding: 8px 12px;
+    .header-actions .action-primary {
+        flex: 1 1 auto;
+        min-width: 0;
+        height: 38px;
+        justify-content: center;
+        padding: 0 12px;
+        font-size: 13px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin: 0;
+        gap: 6px;
+    }
+    .header-actions .action-back {
+        flex: 0 0 auto;
+        width: 50px;
+        height: 38px;
+        padding: 0;
+        justify-content: center;
+        margin: 0;
+    }
+    .action-back-label {
+        display: none;
     }
 
     /* Action cards — single column */
@@ -176,21 +209,20 @@
     .no-events h4 {
         font-size: 1.1rem;
     }
-
-    /* Back button full-width */
-    .back-button-container .btn {
-        width: 100%;
-        padding: 10px 12px;
-    }
 }
 </style>
 
 <div class="dashboard-header">
-    <button type="button" class="btn btn-light btn-sm help-btn-corner" data-toggle="modal" data-target="#celebration_dashboardHelpModal" title="Help">
-        <i class="fas fa-question-circle" style="color:#667eea;"></i> Help
-    </button>
     <h2><i class="fas fa-birthday-cake"></i> Celebration Dashboard</h2>
     <p>Track birthdays, namedays, anniversaries, and special occasions</p>
+    <div class="header-actions">
+        <button type="button" class="btn btn-light btn-sm action-primary" data-toggle="modal" data-target="#celebration_dashboardHelpModal" title="Help">
+            <i class="fas fa-question-circle" style="color:#667eea;"></i> Help
+        </button>
+        <a href="{% url 'personal_page' %}" class="btn btn-light btn-sm action-back" aria-label="Back to Personal Page">
+            <i class="fas fa-arrow-left" style="color:#667eea;"></i><span class="action-back-label" style="color:#495057;"> Back</span>
+        </a>
+    </div>
 </div>
 
 <div class="dashboard-actions">
@@ -232,12 +264,6 @@
         <p>No events in the next 30 days. Click "Manage Contacts" to add some!</p>
     </div>
     {% endif %}
-</div>
-
-<div class="back-button-container">
-    <a href="{% url 'personal_page' %}" class="btn btn-secondary btn-lg">
-        <i class="fas fa-arrow-left"></i> Back to Personal Page
-    </a>
 </div>
 
 {% render_help_modal "celebration_dashboard" %}

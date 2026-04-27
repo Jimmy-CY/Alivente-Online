@@ -35,6 +35,14 @@
     opacity: 0.9;
 }
 
+/* Action group inside the green header (Help + Back) */
+.settings-header-actions {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+    align-items: stretch;
+}
+
 .settings-header .help-btn {
     background: white;
     color: #28a745;
@@ -45,12 +53,17 @@
     box-shadow: 0 2px 6px rgba(0,0,0,0.15);
     transition: all 0.2s ease;
     flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    text-decoration: none;
 }
 
 .settings-header .help-btn:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 10px rgba(0,0,0,0.2);
     color: #1e7e34;
+    text-decoration: none;
 }
 
 .notification-card {
@@ -107,11 +120,6 @@
     pointer-events: none;
 }
 
-.back-button-container {
-    text-align: center;
-    margin-top: 30px;
-}
-
 /* ==================== MOBILE STYLES (≤768px) ==================== */
 @media (max-width: 768px) {
     .settings-header {
@@ -129,9 +137,37 @@
     .settings-header p {
         font-size: 0.9rem;
     }
-    .settings-header .help-btn {
+
+    /* Action row inside header — Back+1 standard:
+       [Help (wide)] [← Back small icon] */
+    .settings-header-actions {
         width: 100%;
-        padding: 10px 12px;
+        flex-direction: row;
+        gap: 8px;
+        align-items: stretch;
+    }
+    .settings-header-actions .action-primary {
+        flex: 1 1 auto;
+        min-width: 0;
+        height: 38px;
+        justify-content: center;
+        padding: 0 12px;
+        font-size: 13px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin: 0;
+    }
+    .settings-header-actions .action-back {
+        flex: 0 0 auto;
+        width: 50px;
+        height: 38px;
+        padding: 0;
+        justify-content: center;
+        margin: 0;
+    }
+    .action-back-label {
+        display: none;
     }
 
     .notification-card {
@@ -158,12 +194,6 @@
         width: 100%;
         padding: 10px 12px;
     }
-
-    /* Back button full-width */
-    .back-button-container .btn {
-        width: 100%;
-        padding: 10px 12px;
-    }
 }
 </style>
 
@@ -172,9 +202,14 @@
         <h2><i class="fas fa-envelope"></i> Personal Notification Settings</h2>
         <p>Manage email recipients for celebrations and document expiry notifications</p>
     </div>
-    <button type="button" class="help-btn" data-toggle="modal" data-target="#personal_notification_settingsHelpModal" title="Help">
-        <i class="fas fa-question-circle"></i> Help
-    </button>
+    <div class="settings-header-actions">
+        <button type="button" class="help-btn action-primary" data-toggle="modal" data-target="#personal_notification_settingsHelpModal" title="Help">
+            <i class="fas fa-question-circle"></i> Help
+        </button>
+        <a href="{% url 'personal_page' %}" class="help-btn action-back" aria-label="Back to Personal">
+            <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
+        </a>
+    </div>
 </div>
 
 {% for msg in messages %}
@@ -283,12 +318,6 @@
         </button>
         {% endif %}
     </form>
-</div>
-
-<div class="back-button-container">
-    <a href="{% url 'personal_page' %}" class="btn btn-secondary btn-lg">
-        <i class="fas fa-arrow-left"></i> Back to Personal
-    </a>
 </div>
 
 {% render_help_modal "personal_notification_settings" %}

@@ -28,6 +28,15 @@
     margin: 0;
 }
 
+.page-header .header-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+/* Desktop default: hide the mobile "More" dropdown wrapper */
+.action-more-wrapper { display: none; }
+
 .user-table {
     background: white;
     border-radius: 10px;
@@ -179,7 +188,7 @@
         padding: 0 8px;
     }
 
-    /* Page header — stack with title on top, action buttons full-width */
+    /* Page header — stack with title on top, action row below */
     .page-header {
         flex-direction: column;
         align-items: stretch;
@@ -192,18 +201,110 @@
         font-size: 18px;
         text-align: center;
     }
-    .page-header > div[style*="display:flex"],
-    .page-header > div[style*="display: flex"] {
-        flex-direction: column;
-        gap: 8px !important;
-    }
-    .page-header .btn {
+
+    /* Action row — Add User (wide) + More (icon) + Back (icon), follows new standard */
+    .page-header .header-actions {
+        display: flex;
+        flex-direction: row;
+        gap: 8px;
         width: 100%;
-        justify-content: center;
-        display: inline-flex;
+        flex-wrap: nowrap;
+        align-items: stretch;
+    }
+
+    /* Hide secondary actions on mobile — they're now in the More menu */
+    .page-header .header-actions .action-secondary {
+        display: none;
+    }
+
+    /* Add User takes the leftover space (primary action) */
+    .page-header .header-actions .action-primary {
+        flex: 1 1 auto;
+        min-width: 0;
+        height: 38px;
+        display: flex;
         align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 0 12px;
+        font-size: 13px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin: 0;
         gap: 6px;
-        padding: 10px 12px;
+    }
+
+    /* More dropdown wrapper — visible on mobile only */
+    .page-header .action-more-wrapper {
+        display: block;
+        position: relative;
+        flex: 0 0 auto;
+    }
+    .action-more-btn {
+        width: 44px;
+        height: 38px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0;
+    }
+    .action-more-menu {
+        position: absolute;
+        top: calc(100% + 6px);
+        right: 0;
+        z-index: 200;
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        min-width: 220px;
+        padding: 6px 0;
+    }
+    .action-more-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        width: 100%;
+        background: none;
+        border: none;
+        text-align: left;
+        padding: 12px 16px;
+        font-size: 14px;
+        color: #2c3e50;
+        cursor: pointer;
+        transition: background 0.15s ease;
+        text-decoration: none;
+    }
+    .action-more-item i {
+        color: #17a2b8;
+        width: 18px;
+        text-align: center;
+        flex-shrink: 0;
+    }
+    .action-more-item:hover,
+    .action-more-item:active,
+    .action-more-item:focus {
+        background: #f0f8ff;
+        outline: none;
+        color: #2c3e50;
+        text-decoration: none;
+    }
+
+    /* Back button — icon-only on mobile */
+    .page-header .header-actions .action-back {
+        flex: 0 0 auto;
+        width: 44px;
+        height: 38px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0;
+    }
+    .action-back-label {
+        display: none;
     }
 
     /* iOS zoom guard */
@@ -340,15 +441,32 @@
     <!-- Page Header -->
     <div class="page-header">
         <h1><i class="fas fa-users-cog"></i> User Administration</h1>
-        <div style="display:flex; gap:10px; align-items:center;">
-            <button type="button" class="btn btn-light btn-sm" data-toggle="modal" data-target="#user_administrationHelpModal">
-                <i class="fas fa-question-circle"></i> Help
-            </button>
-            <a href="{% url 'user_add' %}" class="btn btn-success btn-sm">
+        <div class="header-actions">
+            <a href="{% url 'user_add' %}" class="btn btn-info btn-sm action-primary">
                 <i class="fas fa-user-plus"></i> Add User
             </a>
-            <a href="{% url 'admin_apms' %}" class="btn btn-light btn-sm">
-                <i class="fas fa-arrow-left"></i> Back
+
+            <!-- Desktop-visible secondary buttons (hidden on mobile, accessed via More menu) -->
+            <button type="button" class="btn btn-light btn-sm action-secondary" data-toggle="modal" data-target="#user_administrationHelpModal">
+                <i class="fas fa-question-circle"></i> Help
+            </button>
+
+            <!-- Mobile-only "More" dropdown -->
+            <div class="action-more-wrapper">
+                <button type="button" class="btn btn-light btn-sm action-more-btn" id="actionMoreBtn"
+                        aria-label="More actions" aria-expanded="false" aria-haspopup="true">
+                    <i class="fas fa-ellipsis-v"></i>
+                </button>
+                <div class="action-more-menu" id="actionMoreMenu" role="menu" hidden>
+                    <button type="button" class="action-more-item" role="menuitem"
+                            data-toggle="modal" data-target="#user_administrationHelpModal">
+                        <i class="fas fa-question-circle"></i> Help
+                    </button>
+                </div>
+            </div>
+
+            <a href="{% url 'admin_apms' %}" class="btn btn-light btn-sm action-back" aria-label="Back">
+                <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
             </a>
         </div>
     </div>
@@ -536,6 +654,47 @@ function confirmDelete(userId, username) {
     document.getElementById('deleteForm').action = `/user-administration/${userId}/delete/`;
     $('#deleteModal').modal('show');
 }
+
+// Mobile-only "More" actions dropdown
+function initializeMoreMenu() {
+    const moreBtn = document.getElementById('actionMoreBtn');
+    const moreMenu = document.getElementById('actionMoreMenu');
+    if (!moreBtn || !moreMenu) return;
+
+    function closeMenu() {
+        moreMenu.setAttribute('hidden', '');
+        moreBtn.setAttribute('aria-expanded', 'false');
+    }
+    function openMenu() {
+        moreMenu.removeAttribute('hidden');
+        moreBtn.setAttribute('aria-expanded', 'true');
+    }
+
+    moreBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        const isOpen = !moreMenu.hasAttribute('hidden');
+        if (isOpen) closeMenu(); else openMenu();
+    });
+
+    document.addEventListener('click', function(e) {
+        if (!moreBtn.contains(e.target) && !moreMenu.contains(e.target)) closeMenu();
+    });
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && !moreMenu.hasAttribute('hidden')) {
+            closeMenu();
+            moreBtn.focus();
+        }
+    });
+
+    moreMenu.querySelectorAll('.action-more-item').forEach(item => {
+        item.addEventListener('click', function() { closeMenu(); });
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    initializeMoreMenu();
+});
 </script>
 
 {% endblock %}

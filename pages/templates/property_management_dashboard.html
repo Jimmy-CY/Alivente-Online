@@ -20,24 +20,39 @@
     </div>
   {% endfor %}
 
-  <!-- Action Buttons -->
-  <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 20px;">
-    <button type="button" class="btn btn-info" data-toggle="modal" data-target="#dashboardHelpModal">
-      <i class="fas fa-question-circle"></i> Help
-    </button>
-    <a href="{% url 'home' %}" class="btn btn-info">Back</a>
-  </div>
+  <!-- Top Row: Property Selector (left) + Side Actions (right column with hamburger + back stacked) -->
+  <div class="dashboard-top-row">
+    <!-- Property Selector Card -->
+    <div class="property-selector-card" id="propertySelectorCard">
+      <div class="selector-inner">
+        <div class="selector-label">
+          <i class="fas fa-building"></i> Current Property
+        </div>
+        <div class="selector-value" id="propertyDisplayText">Click to select a property</div>
+        <div class="selector-hint">
+          <i class="fas fa-mouse-pointer"></i> Click to choose
+        </div>
+      </div>
+    </div>
 
-  <!-- Property Selector Card -->
-  <div class="property-selector-card" id="propertySelectorCard">
-    <div class="selector-inner">
-      <div class="selector-label">
-        <i class="fas fa-building"></i> Current Property
+    <!-- Side actions: hamburger (More menu — currently just Help) on top, Back below -->
+    <div class="dashboard-side-actions">
+      <div class="action-more-wrapper">
+        <button type="button" class="btn btn-info action-more-btn" id="actionMoreBtn"
+                aria-label="More actions" aria-expanded="false" aria-haspopup="true">
+          <i class="fas fa-ellipsis-v"></i>
+        </button>
+        <div class="action-more-menu" id="actionMoreMenu" role="menu" hidden>
+          <button type="button" class="action-more-item" role="menuitem"
+                  data-toggle="modal" data-target="#dashboardHelpModal">
+            <i class="fas fa-question-circle"></i> Help
+          </button>
+        </div>
       </div>
-      <div class="selector-value" id="propertyDisplayText">Click to select a property</div>
-      <div class="selector-hint">
-        <i class="fas fa-mouse-pointer"></i> Click to choose
-      </div>
+      <a href="{% url 'home' %}" class="btn btn-info action-back-stacked"
+         role="button" aria-label="Back to home">
+        <i class="fas fa-arrow-left"></i>
+      </a>
     </div>
   </div>
 
@@ -260,16 +275,25 @@
 </div>
 
 <style>
+/* ==================== TOP ROW: Property Selector + Side Actions ==================== */
+.dashboard-top-row {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 30px;
+  align-items: stretch;
+}
+
 /* ==================== PROPERTY SELECTOR CARD ==================== */
 .property-selector-card {
+  flex: 1 1 auto;
   background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
   border-radius: 12px;
   padding: 24px 30px;
-  margin-bottom: 30px;
   box-shadow: 0 4px 12px rgba(23, 162, 184, 0.25);
   cursor: pointer;
   transition: all 0.3s ease;
   color: white;
+  min-width: 0; /* allow flex item to shrink below content size */
 }
 
 .property-selector-card:hover {
@@ -305,6 +329,7 @@
   font-weight: 700;
   flex: 1;
   min-width: 200px;
+  word-break: break-word;
 }
 
 .selector-hint {
@@ -314,6 +339,90 @@
   align-items: center;
   gap: 6px;
   white-space: nowrap;
+}
+
+/* ==================== SIDE ACTIONS (hamburger + back, stacked) ==================== */
+.dashboard-side-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex-shrink: 0;
+  width: 56px;
+}
+
+.dashboard-side-actions .action-more-wrapper {
+  position: relative;
+  flex: 1 1 50%;
+  display: flex;
+}
+
+.dashboard-side-actions .action-more-btn {
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  margin: 0;
+}
+
+.dashboard-side-actions .action-back-stacked {
+  flex: 1 1 50%;
+  width: 100%;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  text-decoration: none;
+  margin: 0;
+}
+
+/* More dropdown menu (Help is the only item for now) */
+.dashboard-side-actions .action-more-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  z-index: 200;
+  background: white;
+  border: 1px solid #dee2e6;
+  border-radius: 8px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  min-width: 200px;
+  padding: 6px 0;
+}
+
+.dashboard-side-actions .action-more-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  background: none;
+  border: none;
+  text-align: left;
+  padding: 12px 16px;
+  font-size: 14px;
+  color: #2c3e50;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  text-decoration: none;
+}
+
+.dashboard-side-actions .action-more-item i {
+  color: #17a2b8;
+  width: 18px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.dashboard-side-actions .action-more-item:hover,
+.dashboard-side-actions .action-more-item:active,
+.dashboard-side-actions .action-more-item:focus {
+  background: #f0f8ff;
+  outline: none;
+  color: #2c3e50;
+  text-decoration: none;
 }
 
 /* ==================== DASHBOARD SECTIONS ==================== */
@@ -474,14 +583,45 @@
 
 /* ==================== RESPONSIVE ==================== */
 @media (max-width: 768px) {
+
+  .dashboard-top-row {
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+
+  .property-selector-card {
+    padding: 16px 18px;
+  }
+
   .selector-inner {
     flex-direction: column;
     align-items: flex-start;
-    gap: 10px;
+    gap: 6px;
+  }
+
+  .selector-label {
+    font-size: 11px;
+    letter-spacing: 0.6px;
   }
 
   .selector-value {
-    font-size: 18px;
+    font-size: 16px;
+    min-width: 0;
+  }
+
+  .selector-hint {
+    font-size: 11px;
+  }
+
+  /* Side actions — narrower column on mobile */
+  .dashboard-side-actions {
+    width: 44px;
+    gap: 6px;
+  }
+
+  .dashboard-side-actions .action-more-btn,
+  .dashboard-side-actions .action-back-stacked {
+    font-size: 16px;
   }
 
   .dashboard-grid {
@@ -588,7 +728,47 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }, 2000);
 
+  // Initialize the More dropdown menu (hamburger)
+  initializeMoreMenu();
+
 });
+
+// Hamburger / "More" actions dropdown
+function initializeMoreMenu() {
+    const moreBtn = document.getElementById('actionMoreBtn');
+    const moreMenu = document.getElementById('actionMoreMenu');
+    if (!moreBtn || !moreMenu) return;
+
+    function closeMenu() {
+        moreMenu.setAttribute('hidden', '');
+        moreBtn.setAttribute('aria-expanded', 'false');
+    }
+    function openMenu() {
+        moreMenu.removeAttribute('hidden');
+        moreBtn.setAttribute('aria-expanded', 'true');
+    }
+
+    moreBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        const isOpen = !moreMenu.hasAttribute('hidden');
+        if (isOpen) closeMenu(); else openMenu();
+    });
+
+    document.addEventListener('click', function(e) {
+        if (!moreBtn.contains(e.target) && !moreMenu.contains(e.target)) closeMenu();
+    });
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && !moreMenu.hasAttribute('hidden')) {
+            closeMenu();
+            moreBtn.focus();
+        }
+    });
+
+    moreMenu.querySelectorAll('.action-more-item').forEach(item => {
+        item.addEventListener('click', function() { closeMenu(); });
+    });
+}
 </script>
 
 {% endblock %}

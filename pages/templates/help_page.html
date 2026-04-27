@@ -342,9 +342,13 @@
   .help-empty.visible { display: block; }
   .help-empty i { font-size: 48px; color: #adb5bd; margin-bottom: 14px; }
 
-  /* Generate Manual button in hero area */
+  /* Hero action row — Generate User Manual + Back */
   .help-hero-actions {
     margin-top: 14px;
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    align-items: stretch;
   }
   .btn-generate-manual {
     background: linear-gradient(135deg, #17a2b8, #138496);
@@ -364,6 +368,26 @@
     transform: translateY(-1px);
     box-shadow: 0 6px 14px rgba(23,162,184,0.35);
     color: white;
+  }
+  .btn-help-back {
+    background: white;
+    color: #17a2b8;
+    border: 2px solid #17a2b8;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.15s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    text-decoration: none;
+  }
+  .btn-help-back:hover {
+    background: #17a2b8;
+    color: white;
+    text-decoration: none;
   }
 
   /* Generate Manual modal styling */
@@ -709,7 +733,7 @@
       padding: 0 8px;
     }
 
-    /* Hero — tighter, button full-width */
+    /* Hero — tighter, action row: Generate (wide) + Back (icon) */
     .help-hero {
       margin-bottom: 18px;
     }
@@ -719,10 +743,28 @@
     .help-hero p {
       font-size: 13px;
     }
+    .help-hero-actions {
+      gap: 8px;
+      flex-wrap: nowrap;
+    }
     .btn-generate-manual {
-      width: 100%;
+      flex: 1 1 auto;
+      min-width: 0;
       justify-content: center;
-      padding: 12px 16px;
+      padding: 12px 14px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .btn-help-back {
+      flex: 0 0 auto;
+      width: 50px;
+      padding: 0;
+      justify-content: center;
+      align-items: center;
+    }
+    .btn-help-back .help-back-label {
+      display: none;
     }
 
     /* Search bar */
@@ -883,6 +925,9 @@
       <button type="button" class="btn-generate-manual" data-toggle="modal" data-target="#generateManualModal">
         <i class="fas fa-book"></i> Generate User Manual
       </button>
+      <a href="{% url 'home' %}" class="btn-help-back" aria-label="Back to home">
+        <i class="fas fa-arrow-left"></i><span class="help-back-label"> Back</span>
+      </a>
     </div>
   </div>
 

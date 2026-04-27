@@ -31,6 +31,7 @@
 .page-header .header-actions {
     display: flex;
     gap: 8px;
+    align-items: center;
 }
 
 .form-card {
@@ -222,7 +223,7 @@
         padding: 0 8px;
     }
 
-    /* Page header — stack */
+    /* Page header — stack title above action row */
     .page-header {
         flex-direction: column;
         align-items: stretch;
@@ -235,18 +236,44 @@
         font-size: 18px;
         text-align: center;
     }
+
+    /* Action row — Help (wide) + Back (icon), follows new standard */
     .page-header .header-actions {
-        flex-direction: column;
+        display: flex;
+        flex-direction: row;
         gap: 8px;
         width: 100%;
+        flex-wrap: nowrap;
+        align-items: stretch;
     }
-    .page-header .btn {
-        width: 100%;
-        justify-content: center;
-        display: inline-flex;
+    .page-header .header-actions .action-primary {
+        flex: 1 1 auto;
+        min-width: 0;
+        height: 38px;
+        display: flex;
         align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 0 12px;
+        font-size: 13px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin: 0;
         gap: 6px;
-        padding: 10px 12px;
+    }
+    .page-header .header-actions .action-back {
+        flex: 0 0 auto;
+        width: 44px;
+        height: 38px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0;
+    }
+    .action-back-label {
+        display: none;
     }
 
     /* iOS zoom guard */
@@ -339,11 +366,11 @@
     <div class="page-header">
         <h1><i class="fas fa-user-circle"></i> My Profile</h1>
         <div class="header-actions">
-            <button type="button" class="btn btn-light btn-sm" data-toggle="modal" data-target="#my_profileHelpModal">
+            <button type="button" class="btn btn-light btn-sm action-primary" data-toggle="modal" data-target="#my_profileHelpModal">
                 <i class="fas fa-question-circle"></i> Help
             </button>
-            <a href="{% url 'home' %}" class="btn btn-light btn-sm">
-                <i class="fas fa-arrow-left"></i> Back
+            <a href="{% url 'home' %}" class="btn btn-light btn-sm action-back" aria-label="Back to home">
+                <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
             </a>
         </div>
     </div>

@@ -28,15 +28,36 @@
 
 <!-- Action Buttons -->
 <div class="page-action-buttons">
-  <button type="button" class="btn btn-info" data-toggle="modal" data-target="#petty_cashHelpModal">
+  {% if perms.auth.can_edit_petty_cash %}
+    <a href="{% url 'petty_cash_add' %}" class="btn btn-info action-add-new">
+      <i class="fas fa-plus"></i> Add New
+    </a>
+  {% else %}
+    <span class="btn btn-secondary action-add-new" style="opacity:0.6; cursor:not-allowed; pointer-events:none;">
+      <i class="fas fa-plus"></i> Add New
+    </span>
+  {% endif %}
+
+  <!-- Desktop-visible secondary buttons (hidden on mobile, accessed via "More" menu) -->
+  <button type="button" class="btn btn-info action-secondary" data-toggle="modal" data-target="#petty_cashHelpModal">
     <i class="fas fa-question-circle"></i> Help
   </button>
-  {% if perms.auth.can_edit_petty_cash %}
-    <a href="{% url 'petty_cash_add' %}" class="btn btn-info">Add New</a>
-  {% else %}
-    <span class="btn btn-secondary" style="opacity:0.6; cursor:not-allowed; pointer-events:none;">Add New</span>
-  {% endif %}
-  <a href="{% url 'home' %}" class="btn btn-info">Back</a>
+
+  <!-- Mobile-only "More" dropdown -->
+  <div class="action-more-wrapper">
+    <button type="button" class="btn btn-info action-more-btn" id="actionMoreBtn" aria-label="More actions" aria-expanded="false" aria-haspopup="true">
+      <i class="fas fa-ellipsis-v"></i>
+    </button>
+    <div class="action-more-menu" id="actionMoreMenu" role="menu" hidden>
+      <button type="button" class="action-more-item" role="menuitem" data-toggle="modal" data-target="#petty_cashHelpModal">
+        <i class="fas fa-question-circle"></i> Help
+      </button>
+    </div>
+  </div>
+
+  <a href="{% url 'home' %}" class="btn btn-info action-back" aria-label="Back to home">
+    <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
+  </a>
 </div>
 
 <!-- Closing Balance Banner -->
@@ -107,6 +128,9 @@
     gap: 12px;
     margin-bottom: 20px;
 }
+
+/* Desktop default: hide the mobile "More" dropdown wrapper */
+.action-more-wrapper { display: none; }
 
 /* Closing Balance Banner */
 .closing-balance-banner {
@@ -193,27 +217,109 @@
         margin-bottom: 0.75rem;
     }
 
-    /* Action buttons — 2-column grid (Help + Add Row 1, Back full Row 2) */
+    /* Action button row — compact: Add New (flex) + More (icon) + Back (icon) */
     .page-action-buttons {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
+        display: flex;
+        flex-direction: row;
         gap: 8px;
+        width: 100%;
+        flex-wrap: nowrap;
+        align-items: stretch;
         margin-bottom: 14px;
     }
-    .page-action-buttons .btn,
-    .page-action-buttons a {
-        width: 100%;
+
+    /* Hide secondary actions on mobile — they're now in the More menu */
+    .page-action-buttons .action-secondary {
+        display: none;
+    }
+
+    /* Add New takes the leftover space (primary CTA) */
+    .action-add-new {
+        flex: 1 1 auto;
+        min-width: 0;
         height: 38px;
         display: flex;
         align-items: center;
         justify-content: center;
+        text-align: center;
+        padding: 0 12px;
         font-size: 13px;
-        padding: 6px 8px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
         margin: 0;
     }
-    /* Make Back full-width on its own row */
-    .page-action-buttons > a:last-child {
-        grid-column: 1 / -1;
+
+    /* More dropdown wrapper — visible on mobile only */
+    .action-more-wrapper {
+        display: block;
+        position: relative;
+        flex: 0 0 auto;
+    }
+    .action-more-btn {
+        width: 44px;
+        height: 38px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0;
+    }
+    .action-more-menu {
+        position: absolute;
+        top: calc(100% + 6px);
+        right: 0;
+        z-index: 200;
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        min-width: 220px;
+        padding: 6px 0;
+    }
+    .action-more-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        width: 100%;
+        background: none;
+        border: none;
+        text-align: left;
+        padding: 12px 16px;
+        font-size: 14px;
+        color: #2c3e50;
+        cursor: pointer;
+        transition: background 0.15s ease;
+        text-decoration: none;
+    }
+    .action-more-item i {
+        color: #17a2b8;
+        width: 18px;
+        text-align: center;
+        flex-shrink: 0;
+    }
+    .action-more-item:hover,
+    .action-more-item:active,
+    .action-more-item:focus {
+        background: #f0f8ff;
+        outline: none;
+        color: #2c3e50;
+        text-decoration: none;
+    }
+
+    /* Back button — icon-only on mobile */
+    .action-back {
+        flex: 0 0 auto;
+        width: 44px;
+        height: 38px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0;
+    }
+    .action-back-label {
+        display: none;
     }
 
     /* Closing Balance Banner — stacks vertically, centred */
@@ -324,5 +430,48 @@
     }
 }
 </style>
+
+<script>
+// Mobile-only "More" actions dropdown
+function initializeMoreMenu() {
+    const moreBtn = document.getElementById('actionMoreBtn');
+    const moreMenu = document.getElementById('actionMoreMenu');
+    if (!moreBtn || !moreMenu) return;
+
+    function closeMenu() {
+        moreMenu.setAttribute('hidden', '');
+        moreBtn.setAttribute('aria-expanded', 'false');
+    }
+    function openMenu() {
+        moreMenu.removeAttribute('hidden');
+        moreBtn.setAttribute('aria-expanded', 'true');
+    }
+
+    moreBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        const isOpen = !moreMenu.hasAttribute('hidden');
+        if (isOpen) closeMenu(); else openMenu();
+    });
+
+    document.addEventListener('click', function(e) {
+        if (!moreBtn.contains(e.target) && !moreMenu.contains(e.target)) closeMenu();
+    });
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && !moreMenu.hasAttribute('hidden')) {
+            closeMenu();
+            moreBtn.focus();
+        }
+    });
+
+    moreMenu.querySelectorAll('.action-more-item').forEach(item => {
+        item.addEventListener('click', function() { closeMenu(); });
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    initializeMoreMenu();
+});
+</script>
 
 {% endblock %}

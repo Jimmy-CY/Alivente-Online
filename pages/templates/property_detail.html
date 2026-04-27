@@ -34,23 +34,29 @@
             <div class="card">
                 <div class="card-body">
                     {% if box_type == 'title-deed' %}
-                        <!-- Title Deed Content -->
+                        <!-- Title Deed Content — uses the shared PDF Viewer component -->
                         <div class="title-deed-section">
                             <h5 class="section-heading"><i class="fas fa-file-contract text-info"></i> Title Deed Information</h5>
                             {% if property.prop_title_deed %}
-                                <div class="document-viewer mt-3">
-                                    <div class="document-preview pdf-viewer-wrap border p-3 rounded">
-                                        {% if property.prop_title_deed.name|slice:"-4:" == ".pdf" %}
-                                            <iframe class="pdf-viewer-iframe" src="{{ property.prop_title_deed.url }}#navpanes=0&scrollbar=1&page=1&view=FitH">
-                                                <p>Your browser does not support PDFs. <a href="{{ property.prop_title_deed.url }}" target="_blank">Click here to view</a></p>
-                                            </iframe>
-                                        {% else %}
-                                            <img src="{{ property.prop_title_deed.url }}" alt="Title Deed" class="img-fluid pdf-viewer-image">
-                                        {% endif %}
+                                <div class="document-launcher-card mt-3">
+                                    <div class="document-launcher-icon">
+                                        <i class="fas fa-file-contract"></i>
                                     </div>
+                                    <div class="document-launcher-content">
+                                        <div class="document-launcher-title">Title Deed</div>
+                                        <div class="document-launcher-subtitle">{{ property.prop_name }}</div>
+                                    </div>
+                                    <button type="button"
+                                            class="btn btn-info document-launcher-btn"
+                                            data-doc-url="{{ property.prop_title_deed.url }}"
+                                            data-doc-title="Title Deed ({{ property.prop_name }})"
+                                            data-doc-filename="{{ property.prop_name }} - Title Deed{{ property.prop_title_deed.name|slice:'-4:' }}"
+                                            onclick="launchDocViewer(this)">
+                                        <i class="fas fa-eye"></i> View Document
+                                    </button>
                                 </div>
                             {% else %}
-                                <div class="alert alert-warning">
+                                <div class="alert alert-warning mt-3">
                                     <i class="fas fa-exclamation-triangle"></i> No title deed available for this property.
                                 </div>
                             {% endif %}
@@ -516,46 +522,28 @@
                         </div>
 
                     {% elif box_type == 'lease' %}
-                        <!-- Lease Agreement Content -->
+                        <!-- Lease Agreement Content — uses the shared PDF Viewer component -->
                         <div class="lease-section">
                             <h5 class="section-heading"><i class="fas fa-file-contract text-info"></i> Lease Agreement</h5>
 
                             {% if active_tenant %}
-                                <div class="lease-container mt-3">
-                                    <div class="lease-viewer">
-                                        <!-- Error message (only shows if PDF fails to load) -->
-                                        <div id="lease-error" class="alert alert-warning" style="display: none;">
-                                            <i class="fas fa-exclamation-triangle"></i>
-                                            <p>Lease agreement not found for this property.</p>
-                                            <a href="#" class="btn btn-sm btn-info" id="download-lease" download>
-                                                <i class="fas fa-download"></i> Try Download Instead
-                                            </a>
-                                        </div>
-
-                                        <!-- Lease Agreement PDF Viewer -->
-                                        <iframe
-                                            class="pdf-viewer-iframe"
-                                            src="{% static 'lease_agreements/' %}{{ property.prop_name }} - Lease Agreement.pdf#navpanes=0&toolbar=1"
-                                            title="Lease Agreement for {{ property.prop_name }}"
-                                            onerror="handlePdfError(this)"
-                                            id="lease-iframe"
-                                        ></iframe>
+                                <div class="document-launcher-card mt-3">
+                                    <div class="document-launcher-icon">
+                                        <i class="fas fa-file-contract"></i>
                                     </div>
+                                    <div class="document-launcher-content">
+                                        <div class="document-launcher-title">Lease Agreement</div>
+                                        <div class="document-launcher-subtitle">{{ active_tenant.tenant_name }}</div>
+                                    </div>
+                                    <button type="button"
+                                            class="btn btn-info document-launcher-btn"
+                                            data-doc-url="{% static 'lease_agreements/' %}{{ property.prop_name }} - Lease Agreement.pdf"
+                                            data-doc-title="Lease Agreement ({{ active_tenant.tenant_name }})"
+                                            data-doc-filename="{{ property.prop_name }} - Lease Agreement.pdf"
+                                            onclick="launchDocViewer(this)">
+                                        <i class="fas fa-eye"></i> View Document
+                                    </button>
                                 </div>
-
-                                <script>
-                                    function handlePdfError(iframe) {
-                                        iframe.style.display = 'none';
-                                        const errorDiv = document.getElementById('lease-error');
-                                        errorDiv.style.display = 'block';
-
-                                        // Set up download link with cache busting
-                                        const downloadBtn = document.getElementById('download-lease');
-                                        const newUrl = "{% static 'lease_agreements/' %}{{ property.prop_name }} - Lease Agreement.pdf?v=" + Date.now();
-                                        downloadBtn.href = newUrl;
-                                    }
-                                </script>
-
                             {% else %}
                                 <!-- No Active Tenant -->
                                 <div class="no-lease mt-4 empty-state-card">
@@ -1058,51 +1046,10 @@
     </div>
 </div>
 
-<!-- Actual Expense Invoice Viewer Modal -->
-<div class="modal fade" id="actualExpenseInvoiceModal" tabindex="-1" role="dialog" aria-labelledby="actualExpenseInvoiceModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-fullscreen-mobile" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="actualExpenseInvoiceModalLabel">Expense Invoice</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="closeActualExpenseInvoiceModal()">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body" id="actualExpenseInvoiceContent">
-                <!-- Content will be loaded here -->
-            </div>
-            <div class="modal-footer">
-                <a id="actualExpenseDownloadLink" href="#" class="btn btn-info" target="_blank">
-                    <i class="fas fa-download"></i> Download
-                </a>
-                <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="closeActualExpenseInvoiceModal()">Close</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Title Deed Viewer Modal -->
-<div class="modal fade" id="titleDeedModal" tabindex="-1" role="dialog" aria-labelledby="titleDeedModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-fullscreen-mobile" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="titleDeedModalLabel">Title Deed</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="$('#titleDeedModal').modal('hide');">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body" id="titleDeedContent">
-                <!-- Content will be loaded here -->
-            </div>
-            <div class="modal-footer">
-                <a id="downloadDeed" href="#" class="btn btn-info" target="_blank">
-                    <i class="fas fa-download"></i> Download
-                </a>
-                <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="$('#titleDeedModal').modal('hide');">Close</button>
-            </div>
-        </div>
-    </div>
-</div>
+<!-- Shared PDF Viewer component — used for Title Deeds, Lease Agreements, and Expense Invoices -->
+{% if box_type == 'title-deed' or box_type == 'lease' or box_type == 'actual-expenses' %}
+    {% include 'components/pdf_viewer.html' %}
+{% endif %}
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
@@ -1119,23 +1066,6 @@
 .card:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-}
-
-.document-preview iframe,
-.document-preview img {
-    border-radius: 8px;
-}
-
-/* PDF viewer — desktop fixed height, mobile fluid via media query */
-.pdf-viewer-iframe {
-    width: 100%;
-    height: 600px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-}
-.pdf-viewer-image {
-    max-height: 600px;
-    width: 100%;
 }
 
 .badge {
@@ -1172,6 +1102,50 @@
 /* Section heading (used by every box type) */
 .section-heading {
     margin-bottom: 0;
+}
+
+/* ==================== DOCUMENT LAUNCHER CARD ==================== */
+/* Used by Title Deed and Lease Agreement sections to launch the PDF Viewer modal */
+.document-launcher-card {
+    background: white;
+    border: 1px solid #dee2e6;
+    border-left: 4px solid #17a2b8;
+    border-radius: 8px;
+    padding: 24px;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
+    flex-wrap: wrap;
+}
+.document-launcher-icon {
+    font-size: 2.5rem;
+    color: #17a2b8;
+    flex-shrink: 0;
+    line-height: 1;
+}
+.document-launcher-content {
+    flex: 1;
+    min-width: 200px;
+}
+.document-launcher-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #2c3e50;
+    line-height: 1.3;
+}
+.document-launcher-subtitle {
+    color: #6c757d;
+    font-size: 0.95rem;
+    margin-top: 4px;
+}
+.document-launcher-btn {
+    flex-shrink: 0;
+    padding: 10px 20px;
+    font-weight: 500;
+}
+.document-launcher-btn i {
+    margin-right: 6px;
 }
 
 /* Property Report Styles */
@@ -1399,9 +1373,7 @@
     font-size: 1.1em;
 }
 
-/* === Pass 2 will overhaul the rules below === */
 /* Issues / Valuations / Lease / Invoices / Revenues / Expenses tables and cards */
-/* Currently kept as-is for desktop; mobile treatment comes in Pass 2 */
 
 /* Issues Section Styles */
 .issues-table-container { background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06); }
@@ -1464,11 +1436,6 @@
 .valuation-meta { background: white; border-radius: 8px; padding: 15px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); }
 .valuation-meta p { margin: 0; color: #6c757d; }
 
-/* Lease Agreement Styles */
-.lease-container { background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06); }
-.lease-viewer { padding: 20px; }
-.lease-viewer iframe { margin-top: 10px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); }
-
 /* Invoices */
 .invoices-table { font-size: 0.95rem; }
 .invoices-table th { background-color: #343a40 !important; color: white; font-weight: 600; }
@@ -1513,7 +1480,7 @@
 .sub-message { font-style: italic; }
 
 
-/* ==================== MOBILE STYLES (≤768px) — Pass 1 ==================== */
+/* ==================== MOBILE STYLES (≤768px) ==================== */
 @media (max-width: 768px) {
 
     /* Page wrapper — tighter padding */
@@ -1546,6 +1513,30 @@
     .section-heading {
         font-size: 1.05rem;
         line-height: 1.3;
+    }
+
+    /* Document launcher card — stack the button below content on mobile */
+    .document-launcher-card {
+        padding: 16px;
+        gap: 12px;
+    }
+    .document-launcher-icon {
+        font-size: 2rem;
+    }
+    .document-launcher-title {
+        font-size: 1.05rem;
+    }
+    .document-launcher-subtitle {
+        font-size: 0.9rem;
+    }
+    .document-launcher-content {
+        min-width: 0;
+        flex: 1 1 calc(100% - 56px);
+    }
+    .document-launcher-btn {
+        width: 100%;
+        order: 3;
+        padding: 12px 20px;
     }
 
     /* Property card — tighter padding */
@@ -1667,21 +1658,6 @@
         text-align: right !important;
     }
 
-    /* PDF viewer (title-deed and lease box types) — fluid height on mobile */
-    .pdf-viewer-iframe {
-        height: 70vh;
-        min-height: 400px;
-    }
-    .pdf-viewer-image {
-        max-height: 70vh;
-    }
-    .document-preview.pdf-viewer-wrap {
-        padding: 6px !important;
-    }
-    .lease-viewer {
-        padding: 6px;
-    }
-
     /* Lease renewal cards — tighten typography */
     .renewal-status-card {
         padding: 14px;
@@ -1703,25 +1679,6 @@
         font-size: 2.8rem;
         margin-bottom: 12px;
     }
-
-    /* Modals — go full-width on mobile */
-    .modal-fullscreen-mobile {
-        max-width: 100%;
-        margin: 0;
-        padding: 0;
-    }
-    .modal-fullscreen-mobile .modal-content {
-        border-radius: 0;
-        min-height: 100vh;
-    }
-    .modal-fullscreen-mobile iframe {
-        height: 70vh !important;
-    }
-    .modal-fullscreen-mobile img {
-        max-height: 70vh !important;
-    }
-
-/* ==================== PASS 2 — Tables and stat cards ==================== */
 
     /* Generic shared mobile-card styling for the 5 box-type tables */
     .issues-table,
@@ -1937,8 +1894,7 @@
         font-size: 13px;
     }
 
-    /* ============= VALUATION ============= */
-    /* Force the 2-card grid (Purchase Price / Current Value) to single column */
+    /* Valuation — single column */
     .valuation-row {
         grid-template-columns: 1fr !important;
         gap: 12px !important;
@@ -1970,8 +1926,7 @@
         margin-right: 10px;
     }
 
-    /* ============= ISSUES SUMMARY CARDS ============= */
-    /* Tighten the 3 stat cards (Resolved / Unresolved / Total) */
+    /* Issues summary cards */
     .issues-summary {
         padding: 12px;
     }
@@ -1998,8 +1953,7 @@
         font-size: 0.75rem;
     }
 
-    /* ============= PROFIT & LOSS / GENERIC ALERTS ============= */
-    /* Make sure long-content alert boxes wrap and don't overflow */
+    /* Generic alerts — wrap long text */
     .alert {
         word-wrap: break-word;
         overflow-wrap: break-word;
@@ -2022,114 +1976,71 @@
 </style>
 
 <script>
-// Title Deed Viewer Function
-function viewTitleDeed(documentUrl, documentName, propertyName) {
-    const documentViewer = document.getElementById('titleDeedContent');
-    const downloadLink = document.getElementById('downloadDeed');
-    const modalTitle = document.getElementById('titleDeedModalLabel');
+/* ==========================================================================
+   Document Viewer Launchers
+   All document viewing on this page (Title Deeds, Lease Agreements, Expense
+   Invoices) goes through the shared PDF Viewer component, which provides:
+     - PDF.js-based rendering with zoom and page navigation
+     - Mobile Share button (Web Share API → WhatsApp, Mail, AirDrop, etc.)
+     - Download fallback
+     - Image viewer fallback for non-PDF attachments
+   ========================================================================== */
 
-    if (!documentViewer || !downloadLink || !modalTitle) {
-        console.error('Modal elements not found');
+// Generic launcher used by Title Deed and Lease Agreement buttons.
+// Reads URL/title/filename from data-* attributes on the clicked button.
+function launchDocViewer(btn) {
+    if (typeof openPdfViewer !== 'function') {
+        console.error('PDF viewer component not loaded');
         return;
     }
-
-    modalTitle.textContent = `Title Deed (${propertyName})`;
-    downloadLink.href = documentUrl;
-    downloadLink.download = documentName;
-    documentViewer.innerHTML = '';
-
-    const extension = documentName.split('.').pop().toLowerCase();
-
-    if (extension === 'pdf') {
-        documentViewer.innerHTML = `
-            <iframe src="${documentUrl}#toolbar=0&navpanes=0&scrollbar=1&page=1&view=FitH"
-                    type="application/pdf"
-                    width="100%"
-                    height="500px"
-                    style="border: none;">
-            </iframe>
-            <p class="text-center mt-2">
-                <small>If the PDF doesn't display, <a href="${documentUrl}" target="_blank">click here to open it in a new tab</a></small>
-            </p>
-        `;
-    } else if (['jpg', 'jpeg', 'png'].includes(extension)) {
-        documentViewer.innerHTML = `
-            <img src="${documentUrl}" alt="Title Deed" class="img-fluid mx-auto d-block" style="max-height: 70vh;">
-        `;
-    } else {
-        documentViewer.innerHTML = `
-            <div class="text-center">
-                <i class="fas fa-file fa-5x text-muted mb-3"></i>
-                <p>This file type cannot be previewed.</p>
-                <p>File: <strong>${documentName}</strong></p>
-                <p>Please download the file to view it.</p>
-            </div>
-        `;
-    }
-
-    $('#titleDeedModal').modal('show');
+    const url = btn.getAttribute('data-doc-url');
+    const title = btn.getAttribute('data-doc-title');
+    const filename = btn.getAttribute('data-doc-filename');
+    openPdfViewer(url, title, filename);
 }
 
-// Actual Expense Invoice Viewer Functions
+// Called by the file icon in the Actual Expenses table.
+// Thin wrapper around openPdfViewer so the existing onclick handlers still work.
 function viewActualExpenseInvoice(documentUrl, documentName) {
-    const documentViewer = document.getElementById('actualExpenseInvoiceContent');
-    const downloadLink = document.getElementById('actualExpenseDownloadLink');
-    const modalTitle = document.getElementById('actualExpenseInvoiceModalLabel');
-
-    if (!documentViewer || !downloadLink || !modalTitle) {
-        console.error('Modal elements not found');
+    if (typeof openPdfViewer !== 'function') {
+        console.error('PDF viewer component not loaded');
         return;
     }
-
-    modalTitle.textContent = `Expense Invoice - ${documentName}`;
-    downloadLink.href = documentUrl;
-    downloadLink.download = documentName;
-    documentViewer.innerHTML = '';
-
-    const extension = documentName.split('.').pop().toLowerCase();
-
-    if (extension === 'pdf') {
-        documentViewer.innerHTML = `
-            <iframe src="${documentUrl}#toolbar=1&navpanes=0&scrollbar=1&page=1&view=FitH"
-                    type="application/pdf"
-                    width="100%"
-                    height="500px"
-                    style="border: none;">
-            </iframe>
-            <p class="text-center mt-2">
-                <small>If the PDF doesn't display, <a href="${documentUrl}" target="_blank">click here to open it in a new tab</a></small>
-            </p>
-        `;
-    } else if (['jpg', 'jpeg', 'png'].includes(extension)) {
-        documentViewer.innerHTML = `
-            <img src="${documentUrl}" alt="Expense Invoice" class="img-fluid mx-auto d-block" style="max-height: 70vh;">
-        `;
-    } else {
-        documentViewer.innerHTML = `
-            <div class="text-center">
-                <i class="fas fa-file fa-5x text-muted mb-3"></i>
-                <p>This file type cannot be previewed.</p>
-                <p>File: <strong>${documentName}</strong></p>
-                <p>Please download the file to view it.</p>
-            </div>
-        `;
-    }
-
-    $('#actualExpenseInvoiceModal').modal('show');
+    // documentName from Django can include the upload path (e.g. "expenses/invoice.pdf");
+    // pull out just the filename for a cleaner display
+    const cleanName = documentName.split('/').pop();
+    openPdfViewer(documentUrl, 'Expense Invoice — ' + cleanName, cleanName);
 }
 
-function closeActualExpenseInvoiceModal() {
-    $('#actualExpenseInvoiceModal').modal('hide');
-    document.getElementById('actualExpenseInvoiceContent').innerHTML = '';
-}
-
-// Year filter change function
+// Year filter change function (Actual Expenses)
 function changeYear() {
     const selectedYear = document.getElementById('yearSelect').value;
     const currentUrl = new URL(window.location.href);
     currentUrl.searchParams.set('year', selectedYear);
     window.location.href = currentUrl.toString();
 }
+
+{% if box_type == 'title-deed' and property.prop_title_deed %}
+// Title Deed page — auto-open the document viewer on page load.
+// User clicked "Title Deed" on the dashboard, so the document should display
+// immediately rather than requiring an additional click.
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(function() {
+        const btn = document.querySelector('.title-deed-section .document-launcher-btn');
+        if (btn) launchDocViewer(btn);
+    }, 400);
+});
+{% endif %}
+
+{% if box_type == 'lease' and active_tenant %}
+// Lease Agreement page — auto-open the document viewer on page load.
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(function() {
+        const btn = document.querySelector('.lease-section .document-launcher-btn');
+        if (btn) launchDocViewer(btn);
+    }, 400);
+});
+{% endif %}
 </script>
 
 {% endblock %}
