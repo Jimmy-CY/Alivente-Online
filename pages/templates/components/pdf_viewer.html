@@ -265,6 +265,29 @@ BOTTOM BUTTON LAYOUT:
         max-height: 100vh;
     }
 
+    /* On mobile, move the footer (Share/Download/Close) to appear right
+       below the header so the action buttons are always visible without
+       scrolling. The PDF body and page-nav controls stay below.
+
+       Visual order on mobile:
+         1. Header (title + X)
+         2. Footer  ← actions surfaced at top
+         3. Body    ← PDF content
+         4. Controls (page nav + zoom)
+
+       .pdf-viewer-modal-content is already display:flex column, so we
+       just reorder the children. */
+    .pdf-viewer-modal-content > .pdf-viewer-header   { order: 1; }
+    .pdf-viewer-modal-content > .pdf-viewer-footer   { order: 2; }
+    .pdf-viewer-modal-content > .pdf-viewer-body     { order: 3; }
+    .pdf-viewer-modal-content > .pdf-viewer-controls { order: 4; }
+
+    /* Hide the redundant X close button in the header on mobile —
+       Close is already in the (now top-positioned) footer */
+    .pdf-viewer-header .close {
+        display: none;
+    }
+
     .pdf-viewer-body {
         min-height: 0;
     }

@@ -588,34 +588,33 @@
                                                     <th scope="col" class="text-center" style="width: 15%;">Invoice</th>
                                                 </tr>
                                             </thead>
-
+                                            <tbody>
+                                                {% for expense in property_actual_expenses %}
+                                                <tr>
+                                                    <td data-label="Date" class="text-center">
+                                                        {{ expense.act_expense_date|date:"Y-m-d" }}
+                                                    </td>
+                                                    <td data-label="Description" class="text-left">
+                                                        <strong>{{ expense.act_expense_description }}</strong>
+                                                    </td>
+                                                    <td data-label="Amount" class="text-right">
+                                                        <span class="amount-display">€{{ expense.act_expense_amount|floatformat:"2"|intcomma }}</span>
+                                                    </td>
+                                                    <td data-label="Invoice" class="text-center">
+                                                        {% if expense.act_expense_document %}
+                                                            <i class="fas fa-file-alt invoice-icon"
+                                                               style="cursor: pointer; color: #28a745; font-size: 1.2em;"
+                                                               onclick="viewActualExpenseInvoice('{{ expense.act_expense_document.url }}', '{{ expense.act_expense_document.name }}')"
+                                                               title="Click to view invoice"></i>
+                                                        {% else %}
+                                                            <span class="text-muted">-</span>
+                                                        {% endif %}
+                                                    </td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
                                         </table>
                                     </div>
-                                    <tbody>
-                                        {% for expense in property_actual_expenses %}
-                                        <tr>
-                                            <td data-label="Date" class="text-center">
-                                                {{ expense.act_expense_date|date:"Y-m-d" }}
-                                            </td>
-                                            <td data-label="Description" class="text-left">
-                                                <strong>{{ expense.act_expense_description }}</strong>
-                                            </td>
-                                            <td data-label="Amount" class="text-right">
-                                                <span class="amount-display">€{{ expense.act_expense_amount|floatformat:"2"|intcomma }}</span>
-                                            </td>
-                                            <td data-label="Invoice" class="text-center">
-                                                {% if expense.act_expense_document %}
-                                                    <i class="fas fa-file-alt invoice-icon"
-                                                       style="cursor: pointer; color: #28a745; font-size: 1.2em;"
-                                                       onclick="viewActualExpenseInvoice('{{ expense.act_expense_document.url }}', '{{ expense.act_expense_document.name }}')"
-                                                       title="Click to view invoice"></i>
-                                                {% else %}
-                                                    <span class="text-muted">-</span>
-                                                {% endif %}
-                                            </td>
-                                        </tr>
-                                        {% endfor %}
-                                    </tbody>
                                     <!-- Total Summary -->
                                     <div class="actual-expenses-summary mt-3 p-3 bg-light border rounded">
                                         <div class="row">
