@@ -11,11 +11,11 @@
             <p id="propertyCount" class="map-page-subtitle text-muted">Loading properties...</p>
         </div>
         <div class="map-page-controls">
-            <button id="centerMapBtn" class="btn btn-info">
+            <button id="centerMapBtn" class="btn btn-info action-primary">
                 <i class="fas fa-crosshairs"></i> Center Map
             </button>
-            <a href="{% url 'properties' %}" class="btn btn-info">
-                <i class="fas fa-arrow-left"></i> Back
+            <a href="{% url 'properties' %}" class="btn btn-info action-back" role="button" aria-label="Back">
+                <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
             </a>
         </div>
     </div>
@@ -155,17 +155,42 @@
         font-size: 12px;
     }
 
-    /* Controls — 2-column grid (Center Map + Back) */
+    /* Controls — Center Map (wide) + Back (icon only), follows new standard */
     .map-page-controls {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
+        display: flex;
+        flex-direction: row;
         gap: 8px;
-    }
-    .map-page-controls .btn {
         width: 100%;
+        flex-wrap: nowrap;
+        align-items: stretch;
+    }
+    .map-page-controls .action-primary {
+        flex: 1 1 auto;
+        min-width: 0;
+        height: 38px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         text-align: center;
-        padding: 10px 12px;
+        padding: 0 12px;
+        font-size: 13px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
         margin: 0;
+    }
+    .map-page-controls .action-back {
+        flex: 0 0 auto;
+        width: 44px;
+        height: 38px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0;
+    }
+    .action-back-label {
+        display: none;
     }
 
     /* Map — fills remaining height */

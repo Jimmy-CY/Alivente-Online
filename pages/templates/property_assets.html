@@ -31,21 +31,21 @@
 <!-- Action Buttons -->
 <div class="page-action-buttons">
     {% if perms.auth.can_edit_properties %}
-        <button type="button" class="btn btn-info action-btn-add" data-toggle="modal" data-target="#addAssetModal">
+        <button type="button" class="btn btn-info action-primary" data-toggle="modal" data-target="#addAssetModal">
             <i class="fas fa-plus"></i> Add Asset
         </button>
     {% else %}
-        <span class="btn btn-secondary action-btn-add disabled-btn">
+        <span class="btn btn-secondary action-primary disabled-btn">
             <i class="fas fa-plus"></i> Add Asset
         </span>
     {% endif %}
     {% if request.GET.next == 'edit' %}
-        <a href="{% url 'properties_edit' property.prop_id %}" class="btn btn-info action-btn-back">
-            <i class="fas fa-arrow-left"></i> Back
+        <a href="{% url 'properties_edit' property.prop_id %}" class="btn btn-info action-back" role="button" aria-label="Back">
+            <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
         </a>
     {% else %}
-        <a href="{% url 'properties' %}" class="btn btn-info action-btn-back">
-            <i class="fas fa-arrow-left"></i> Back
+        <a href="{% url 'properties' %}" class="btn btn-info action-back" role="button" aria-label="Back">
+            <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
         </a>
     {% endif %}
 </div>
@@ -497,19 +497,44 @@
         font-size: 1.25rem;
     }
 
-    /* Action buttons → 2-column grid (Add Asset + Back) */
+    /* Action buttons — Add Asset (wide) + Back (icon) */
     .page-action-buttons {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
+        display: flex;
+        flex-direction: row;
+        justify-content: flex-start;
         gap: 8px;
+        width: 100%;
+        flex-wrap: nowrap;
+        align-items: stretch;
         margin-bottom: 1rem;
     }
-    .page-action-buttons .btn,
-    .page-action-buttons .disabled-btn {
-        width: 100%;
+    .page-action-buttons .action-primary {
+        flex: 1 1 auto;
+        min-width: 0;
+        height: 38px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         text-align: center;
-        padding: 10px 12px;
-        margin: 0 !important;
+        padding: 0 12px;
+        font-size: 13px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin: 0;
+    }
+    .page-action-buttons .action-back {
+        flex: 0 0 auto;
+        width: 44px;
+        height: 38px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0;
+    }
+    .action-back-label {
+        display: none;
     }
 
     /* Summary card — stack each row */
@@ -634,8 +659,7 @@
         padding: 14px;
     }
 
-    /* Form — single column on mobile (col-md-6 stacks naturally,
-       but we tighten the gap and form-row spacing) */
+    /* Form — single column on mobile */
     .modal-body .form-row {
         margin-left: 0;
         margin-right: 0;
@@ -652,7 +676,7 @@
     .modal-body input[type="date"],
     .modal-body input[type="number"],
     .modal-body input[type="text"] {
-        font-size: 16px; /* prevents iOS zoom-on-focus */
+        font-size: 16px;
         padding: 10px 12px;
     }
     .modal-body label {

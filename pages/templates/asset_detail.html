@@ -28,28 +28,42 @@
 
 <!-- Action Buttons -->
 <div class="page-action-buttons">
-    <div class="action-buttons-left">
-        {% if perms.auth.can_edit_properties %}
-            <a href="{% url 'edit_asset' asset.id %}" class="btn btn-warning">
-                <i class="fas fa-edit"></i> Edit Asset
-            </a>
-            <form method="post" action="{% url 'delete_asset' asset.id %}" class="delete-asset-form" onsubmit="return confirm('Are you sure you want to delete this asset and all its maintenance records?');">
-                {% csrf_token %}
-                <button type="submit" class="btn btn-danger">
+    {% if perms.auth.can_edit_properties %}
+        <a href="{% url 'edit_asset' asset.id %}" class="btn btn-warning action-primary">
+            <i class="fas fa-edit"></i> Edit Asset
+        </a>
+        <button type="button" class="btn btn-danger action-secondary" onclick="confirmDelete()">
+            <i class="fas fa-trash"></i> Delete Asset
+        </button>
+    {% else %}
+        <span class="btn btn-warning action-primary disabled-btn">
+            <i class="fas fa-edit"></i> Edit Asset
+        </span>
+        <span class="btn btn-danger action-secondary disabled-btn">
+            <i class="fas fa-trash"></i> Delete Asset
+        </span>
+    {% endif %}
+
+    <!-- Mobile-only "More" dropdown -->
+    <div class="action-more-wrapper">
+        <button type="button" class="btn btn-info action-more-btn" id="actionMoreBtn" aria-label="More actions" aria-expanded="false" aria-haspopup="true">
+            <i class="fas fa-ellipsis-v"></i>
+        </button>
+        <div class="action-more-menu" id="actionMoreMenu" role="menu" hidden>
+            {% if perms.auth.can_edit_properties %}
+                <button type="button" class="action-more-item action-more-item-danger" role="menuitem" onclick="confirmDelete()">
                     <i class="fas fa-trash"></i> Delete Asset
                 </button>
-            </form>
-        {% else %}
-            <span class="btn btn-warning disabled-btn">
-                <i class="fas fa-edit"></i> Edit Asset
-            </span>
-            <span class="btn btn-danger disabled-btn">
-                <i class="fas fa-trash"></i> Delete Asset
-            </span>
-        {% endif %}
+            {% else %}
+                <span class="action-more-item action-more-item-danger disabled-btn">
+                    <i class="fas fa-trash"></i> Delete Asset
+                </span>
+            {% endif %}
+        </div>
     </div>
-    <a href="{% url 'property_assets' asset.property.prop_id %}?next={{ request.GET.next }}" class="btn btn-info action-btn-back">
-        <i class="fas fa-arrow-left"></i> Back
+
+    <a href="{% url 'property_assets' asset.property.prop_id %}?next={{ request.GET.next }}" class="btn btn-info action-back" role="button" aria-label="Back">
+        <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
     </a>
 </div>
 
@@ -427,28 +441,24 @@
     margin-bottom: 1rem;
 }
 
-/* Top action buttons */
+/* Top action buttons — Edit + Delete grouped left, Back pushed right via margin-left:auto */
 .page-action-buttons {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    gap: 12px;
+    gap: 8px;
     margin-bottom: 1.5rem;
 }
-.action-buttons-left {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-}
-.delete-asset-form {
-    display: inline;
-    margin: 0;
+.page-action-buttons .action-back {
+    margin-left: auto;
 }
 .disabled-btn {
     opacity: 0.6;
     cursor: not-allowed;
     pointer-events: none;
 }
+
+/* Desktop: hide the More dropdown (mobile-only) */
+.action-more-wrapper { display: none; }
 
 /* Detail card */
 .detail-card {
@@ -580,32 +590,121 @@
         font-size: 1.25rem;
     }
 
-    /* Action buttons row — stack into 3-row grid: [Edit | Delete] / [Back] */
+    /* Action buttons — Edit (wide) + More (icon, contains Delete) + Back (icon) */
     .page-action-buttons {
-        display: grid;
-        grid-template-columns: 1fr;
+        display: flex;
+        flex-direction: row;
         gap: 8px;
+        width: 100%;
+        flex-wrap: nowrap;
+        align-items: stretch;
         margin-bottom: 1rem;
     }
-    .action-buttons-left {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 8px;
-        width: 100%;
+    .page-action-buttons .action-back {
+        margin-left: 0; /* reset desktop trick */
     }
-    .action-buttons-left .btn,
-    .action-buttons-left .disabled-btn,
-    .action-buttons-left .delete-asset-form {
-        width: 100%;
+    .page-action-buttons .action-secondary {
+        display: none;
+    }
+    .page-action-buttons .action-primary {
+        flex: 1 1 auto;
+        min-width: 0;
+        height: 38px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 0 12px;
+        font-size: 13px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
         margin: 0;
     }
-    .action-buttons-left .delete-asset-form .btn {
-        width: 100%;
+
+    /* More dropdown wrapper — visible on mobile only */
+    .action-more-wrapper {
+        display: block;
+        position: relative;
+        flex: 0 0 auto;
     }
-    .action-btn-back {
+    .action-more-btn {
+        width: 44px;
+        height: 38px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0;
+    }
+    .action-more-menu {
+        position: absolute;
+        top: calc(100% + 6px);
+        right: 0;
+        z-index: 200;
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        min-width: 220px;
+        padding: 6px 0;
+    }
+    .action-more-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
         width: 100%;
+        background: none;
+        border: none;
+        text-align: left;
+        padding: 12px 16px;
+        font-size: 14px;
+        color: #2c3e50;
+        cursor: pointer;
+        transition: background 0.15s ease;
+        text-decoration: none;
+    }
+    .action-more-item i {
+        color: #17a2b8;
+        width: 18px;
         text-align: center;
-        padding: 10px 12px;
+        flex-shrink: 0;
+    }
+    .action-more-item:hover,
+    .action-more-item:active,
+    .action-more-item:focus {
+        background: #f0f8ff;
+        outline: none;
+        color: #2c3e50;
+        text-decoration: none;
+    }
+
+    /* Danger variant for destructive menu items (Delete Asset) */
+    .action-more-item-danger {
+        color: #dc3545;
+    }
+    .action-more-item-danger i {
+        color: #dc3545;
+    }
+    .action-more-item-danger:hover,
+    .action-more-item-danger:active,
+    .action-more-item-danger:focus {
+        background: #fdf2f3;
+        color: #dc3545;
+    }
+
+    /* Back button — icon-only on mobile */
+    .page-action-buttons .action-back {
+        flex: 0 0 auto;
+        width: 44px;
+        height: 38px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .action-back-label {
+        display: none;
     }
 
     /* Card heading row — wrap, "Add Record" button slides below */
@@ -862,7 +961,7 @@ function viewInvoice(url, filename) {
     $('#invoiceViewerModal').modal('show');
 }
 
-// Confirm delete asset (kept for compatibility — current Edit/Delete uses inline form submit)
+// Confirm delete asset — submits the hidden #deleteAssetForm
 function confirmDelete() {
     if (confirm('Are you sure you want to delete "{{ asset.name }}"?\n\nThis will also delete all maintenance records for this asset.\n\nThis action cannot be undone.')) {
         document.getElementById('deleteAssetForm').submit();
@@ -889,6 +988,47 @@ function openEditMaintenance(id, date, type, description, serviceProvider, cost)
     document.getElementById('editMaintenanceForm').action = `/maintenance/${id}/edit/`;
     $('#editMaintenanceModal').modal('show');
 }
+
+// Mobile-only "More" actions dropdown
+function initializeMoreMenu() {
+    const moreBtn = document.getElementById('actionMoreBtn');
+    const moreMenu = document.getElementById('actionMoreMenu');
+    if (!moreBtn || !moreMenu) return;
+
+    function closeMenu() {
+        moreMenu.setAttribute('hidden', '');
+        moreBtn.setAttribute('aria-expanded', 'false');
+    }
+    function openMenu() {
+        moreMenu.removeAttribute('hidden');
+        moreBtn.setAttribute('aria-expanded', 'true');
+    }
+
+    moreBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        const isOpen = !moreMenu.hasAttribute('hidden');
+        if (isOpen) closeMenu(); else openMenu();
+    });
+
+    document.addEventListener('click', function(e) {
+        if (!moreBtn.contains(e.target) && !moreMenu.contains(e.target)) closeMenu();
+    });
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && !moreMenu.hasAttribute('hidden')) {
+            closeMenu();
+            moreBtn.focus();
+        }
+    });
+
+    moreMenu.querySelectorAll('.action-more-item').forEach(item => {
+        item.addEventListener('click', function() { closeMenu(); });
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    initializeMoreMenu();
+});
 </script>
 
 {% endblock %}

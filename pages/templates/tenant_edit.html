@@ -18,16 +18,32 @@
 
   <!-- Action Buttons (Save + Duplicate + Back) -->
   <div class="page-action-buttons page-action-buttons-edit">
-      <button class="btn btn-success action-btn-save" type="submit">
+      <button class="btn btn-success action-primary" type="submit">
           <i class="fas fa-save"></i> Save
       </button>
       <a href="{% url 'duplicate_tenant' tresults.tenant_id %}"
-         class="btn btn-warning action-btn-duplicate"
+         class="btn btn-warning action-secondary"
          onclick="return confirm('Duplicate this lease to create a renewal?\n\nThis will copy all tenant details except lease dates.\n\nYou will then need to:\n- Set new lease dates\n- Update rental/levies if changed\n- Set to Active when ready');">
-          <i class="fas fa-copy"></i> <span class="duplicate-label-full">Duplicate for Renewal</span><span class="duplicate-label-short">Duplicate</span>
+          <i class="fas fa-copy"></i> Duplicate for Renewal
       </a>
-      <a href="{% url 'tenant' %}" class="btn btn-secondary action-btn-back" role="button">
-          <i class="fas fa-arrow-left"></i> Back
+
+      <!-- Mobile-only "More" dropdown -->
+      <div class="action-more-wrapper">
+          <button type="button" class="btn btn-info action-more-btn" id="actionMoreBtn" aria-label="More actions" aria-expanded="false" aria-haspopup="true">
+              <i class="fas fa-ellipsis-v"></i>
+          </button>
+          <div class="action-more-menu" id="actionMoreMenu" role="menu" hidden>
+              <a href="{% url 'duplicate_tenant' tresults.tenant_id %}"
+                 class="action-more-item"
+                 role="menuitem"
+                 onclick="return confirm('Duplicate this lease to create a renewal?\n\nThis will copy all tenant details except lease dates.\n\nYou will then need to:\n- Set new lease dates\n- Update rental/levies if changed\n- Set to Active when ready');">
+                  <i class="fas fa-copy"></i> Duplicate for Renewal
+              </a>
+          </div>
+      </div>
+
+      <a href="{% url 'tenant' %}" class="btn btn-secondary action-back" role="button" aria-label="Back">
+          <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
       </a>
   </div>
 
@@ -247,18 +263,19 @@
     margin-bottom: 1rem;
 }
 
-/* Top action buttons (Save + Duplicate + Back) — right-aligned on desktop */
+/* Top action buttons (Save + Duplicate + Back) — Save+Duplicate left, Back pushed right */
 .page-action-buttons {
     display: flex;
+    align-items: center;
     gap: 12px;
     margin-bottom: 1.5rem;
 }
-.page-action-buttons-edit {
-    justify-content: flex-end;
+.page-action-buttons-edit .action-back {
+    margin-left: auto;
 }
 
-/* Hide the short label on desktop, show full label */
-.duplicate-label-short { display: none; }
+/* Desktop: hide the More dropdown (mobile-only) */
+.action-more-wrapper { display: none; }
 
 /* ==================== MOBILE STYLES (≤768px) ==================== */
 @media (max-width: 768px) {
@@ -271,24 +288,108 @@
         margin-bottom: 0.75rem;
     }
 
-    /* Action buttons — 3-column grid (Save + Duplicate + Back), each compact */
+    /* Action buttons row — Save (wide) + ⋮ More + Back (icon) */
     .page-action-buttons-edit {
-        display: grid;
-        grid-template-columns: 1fr 1fr 1fr;
+        display: flex;
+        flex-direction: row;
         gap: 8px;
+        width: 100%;
+        flex-wrap: nowrap;
+        align-items: stretch;
         margin-bottom: 1rem;
     }
-    .page-action-buttons-edit .btn {
-        width: 100%;
+    .page-action-buttons-edit .action-back {
+        margin-left: 0; /* reset desktop trick */
+    }
+    .page-action-buttons-edit .action-secondary {
+        display: none; /* hide Duplicate visible button on mobile — moved to More menu */
+    }
+    .page-action-buttons-edit .action-primary {
+        flex: 1 1 auto;
+        min-width: 0;
+        height: 38px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         text-align: center;
-        padding: 10px 6px;
+        padding: 0 12px;
         font-size: 13px;
-        margin: 0 !important;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin: 0;
     }
 
-    /* Show short Duplicate label on mobile, hide full label */
-    .duplicate-label-full { display: none; }
-    .duplicate-label-short { display: inline; }
+    /* More dropdown wrapper — visible on mobile only */
+    .action-more-wrapper {
+        display: block;
+        position: relative;
+        flex: 0 0 auto;
+    }
+    .action-more-btn {
+        width: 44px;
+        height: 38px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0;
+    }
+    .action-more-menu {
+        position: absolute;
+        top: calc(100% + 6px);
+        right: 0;
+        z-index: 200;
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        min-width: 220px;
+        padding: 6px 0;
+    }
+    .action-more-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        width: 100%;
+        background: none;
+        border: none;
+        text-align: left;
+        padding: 12px 16px;
+        font-size: 14px;
+        color: #2c3e50;
+        cursor: pointer;
+        transition: background 0.15s ease;
+        text-decoration: none;
+    }
+    .action-more-item i {
+        color: #17a2b8;
+        width: 18px;
+        text-align: center;
+        flex-shrink: 0;
+    }
+    .action-more-item:hover,
+    .action-more-item:active,
+    .action-more-item:focus {
+        background: #f0f8ff;
+        outline: none;
+        color: #2c3e50;
+        text-decoration: none;
+    }
+
+    /* Back button — icon-only on mobile */
+    .page-action-buttons-edit .action-back {
+        flex: 0 0 auto;
+        width: 44px;
+        height: 38px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .action-back-label {
+        display: none;
+    }
 
     /* Form — single column, prevent iOS zoom on focus */
     .form-row {
@@ -317,5 +418,48 @@
     }
 }
 </style>
+
+<script>
+// Mobile-only "More" actions dropdown
+function initializeMoreMenu() {
+    const moreBtn = document.getElementById('actionMoreBtn');
+    const moreMenu = document.getElementById('actionMoreMenu');
+    if (!moreBtn || !moreMenu) return;
+
+    function closeMenu() {
+        moreMenu.setAttribute('hidden', '');
+        moreBtn.setAttribute('aria-expanded', 'false');
+    }
+    function openMenu() {
+        moreMenu.removeAttribute('hidden');
+        moreBtn.setAttribute('aria-expanded', 'true');
+    }
+
+    moreBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        const isOpen = !moreMenu.hasAttribute('hidden');
+        if (isOpen) closeMenu(); else openMenu();
+    });
+
+    document.addEventListener('click', function(e) {
+        if (!moreBtn.contains(e.target) && !moreMenu.contains(e.target)) closeMenu();
+    });
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && !moreMenu.hasAttribute('hidden')) {
+            closeMenu();
+            moreBtn.focus();
+        }
+    });
+
+    moreMenu.querySelectorAll('.action-more-item').forEach(item => {
+        item.addEventListener('click', function() { closeMenu(); });
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    initializeMoreMenu();
+});
+</script>
 
 {% endblock %}

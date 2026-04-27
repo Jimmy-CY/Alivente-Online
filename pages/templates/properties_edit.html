@@ -18,14 +18,27 @@
 
   <!-- Action Buttons (Assets + Save + Back) -->
   <div class="page-action-buttons page-action-buttons-edit">
-      <a href="{% url 'property_assets' results.prop_id %}?next=edit" class="btn btn-info action-btn-assets" role="button">
+      <a href="{% url 'property_assets' results.prop_id %}?next=edit" class="btn btn-info action-secondary" role="button">
           <i class="fas fa-box"></i> Assets
       </a>
-      <button class="btn btn-info action-btn-save" type="submit">
+      <button class="btn btn-info action-primary" type="submit">
           <i class="fas fa-save"></i> Save
       </button>
-      <a href="{% url 'properties' %}" class="btn btn-info action-btn-back" role="button">
-          <i class="fas fa-arrow-left"></i> Back
+
+      <!-- Mobile-only "More" dropdown -->
+      <div class="action-more-wrapper">
+          <button type="button" class="btn btn-info action-more-btn" id="actionMoreBtn" aria-label="More actions" aria-expanded="false" aria-haspopup="true">
+              <i class="fas fa-ellipsis-v"></i>
+          </button>
+          <div class="action-more-menu" id="actionMoreMenu" role="menu" hidden>
+              <a href="{% url 'property_assets' results.prop_id %}?next=edit" class="action-more-item" role="menuitem">
+                  <i class="fas fa-box"></i> Assets
+              </a>
+          </div>
+      </div>
+
+      <a href="{% url 'properties' %}" class="btn btn-info action-back" role="button" aria-label="Back">
+          <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
       </a>
   </div>
 
@@ -291,6 +304,9 @@
     justify-content: flex-end;
 }
 
+/* Desktop: hide the More dropdown (mobile-only) */
+.action-more-wrapper { display: none; }
+
 /* Map */
 .map-container {
     background-color: #f8f9fa;
@@ -337,19 +353,105 @@
         margin-bottom: 0.75rem;
     }
 
-    /* Action buttons — 3-column grid (Assets + Save + Back), each compact */
+    /* Action buttons — Save (wide) + More (icon) + Back (icon); Assets hidden, accessed via More */
     .page-action-buttons-edit {
-        display: grid;
-        grid-template-columns: 1fr 1fr 1fr;
+        display: flex;
+        flex-direction: row;
         gap: 8px;
+        width: 100%;
+        flex-wrap: nowrap;
+        align-items: stretch;
         margin-bottom: 1rem;
     }
-    .page-action-buttons-edit .btn {
-        width: 100%;
+    .page-action-buttons-edit .action-secondary {
+        display: none;
+    }
+    .page-action-buttons-edit .action-primary {
+        flex: 1 1 auto;
+        min-width: 0;
+        height: 38px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         text-align: center;
-        padding: 10px 8px;
+        padding: 0 12px;
         font-size: 13px;
-        margin: 0 !important;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin: 0;
+    }
+
+    /* More dropdown wrapper — visible on mobile only */
+    .action-more-wrapper {
+        display: block;
+        position: relative;
+        flex: 0 0 auto;
+    }
+    .action-more-btn {
+        width: 44px;
+        height: 38px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0;
+    }
+    .action-more-menu {
+        position: absolute;
+        top: calc(100% + 6px);
+        right: 0;
+        z-index: 200;
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        min-width: 200px;
+        padding: 6px 0;
+    }
+    .action-more-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        width: 100%;
+        background: none;
+        border: none;
+        text-align: left;
+        padding: 12px 16px;
+        font-size: 14px;
+        color: #2c3e50;
+        cursor: pointer;
+        transition: background 0.15s ease;
+        text-decoration: none;
+    }
+    .action-more-item i {
+        color: #17a2b8;
+        width: 18px;
+        text-align: center;
+        flex-shrink: 0;
+    }
+    .action-more-item:hover,
+    .action-more-item:active,
+    .action-more-item:focus {
+        background: #f0f8ff;
+        outline: none;
+        color: #2c3e50;
+        text-decoration: none;
+    }
+
+    /* Back button — icon-only on mobile */
+    .page-action-buttons-edit .action-back {
+        flex: 0 0 auto;
+        width: 44px;
+        height: 38px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0;
+    }
+    .action-back-label {
+        display: none;
     }
 
     /* Form — single column, prevent iOS zoom on focus */
@@ -443,7 +545,47 @@ function validatePropertyName() {
     return true;
 }
 
+// Mobile-only "More" actions dropdown
+function initializeMoreMenu() {
+    const moreBtn = document.getElementById('actionMoreBtn');
+    const moreMenu = document.getElementById('actionMoreMenu');
+    if (!moreBtn || !moreMenu) return;
+
+    function closeMenu() {
+        moreMenu.setAttribute('hidden', '');
+        moreBtn.setAttribute('aria-expanded', 'false');
+    }
+    function openMenu() {
+        moreMenu.removeAttribute('hidden');
+        moreBtn.setAttribute('aria-expanded', 'true');
+    }
+
+    moreBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        const isOpen = !moreMenu.hasAttribute('hidden');
+        if (isOpen) closeMenu(); else openMenu();
+    });
+
+    document.addEventListener('click', function(e) {
+        if (!moreBtn.contains(e.target) && !moreMenu.contains(e.target)) closeMenu();
+    });
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && !moreMenu.hasAttribute('hidden')) {
+            closeMenu();
+            moreBtn.focus();
+        }
+    });
+
+    moreMenu.querySelectorAll('.action-more-item').forEach(item => {
+        item.addEventListener('click', function() { closeMenu(); });
+    });
+}
+
 document.addEventListener('DOMContentLoaded', function() {
+    // Initialize the More menu
+    initializeMoreMenu();
+
     // Get existing coordinates if editing
     var existingLat = document.getElementById('prop_latitude').value;
     var existingLng = document.getElementById('prop_longitude').value;
@@ -479,22 +621,18 @@ document.addEventListener('DOMContentLoaded', function() {
         var lat = e.latlng.lat;
         var lng = e.latlng.lng;
 
-        // Remove existing marker
         if (currentMarker) {
             map.removeLayer(currentMarker);
         }
 
-        // Add new marker
         currentMarker = L.marker([lat, lng]).addTo(map);
 
-        // Update form fields
         document.getElementById('prop_latitude').value = lat.toFixed(8);
         document.getElementById('prop_longitude').value = lng.toFixed(8);
 
         updateCoordinatesDisplay(lat, lng);
     });
 
-    // Update coordinates display
     function updateCoordinatesDisplay(lat, lng) {
         document.getElementById('coordinatesDisplay').textContent =
             `Latitude: ${lat.toFixed(6)}, Longitude: ${lng.toFixed(6)}`;
@@ -516,7 +654,6 @@ document.addEventListener('DOMContentLoaded', function() {
         var address = addressParts.join(', ');
         var geocodeUrl = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1`;
 
-        // Show loading
         document.getElementById('findOnMapBtn').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Searching...';
         document.getElementById('findOnMapBtn').disabled = true;
 
@@ -527,16 +664,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     var lat = parseFloat(data[0].lat);
                     var lng = parseFloat(data[0].lon);
 
-                    // Remove existing marker
                     if (currentMarker) {
                         map.removeLayer(currentMarker);
                     }
 
-                    // Add new marker
                     currentMarker = L.marker([lat, lng]).addTo(map);
                     map.setView([lat, lng], 15);
 
-                    // Update form fields
                     document.getElementById('prop_latitude').value = lat.toFixed(8);
                     document.getElementById('prop_longitude').value = lng.toFixed(8);
 
@@ -552,7 +686,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 alert('Error finding location. Please place the marker manually on the map.');
             })
             .finally(() => {
-                // Reset button
                 document.getElementById('findOnMapBtn').innerHTML = '<i class="fas fa-map-marker-alt"></i> Find Address on Map';
                 document.getElementById('findOnMapBtn').disabled = false;
             });
@@ -561,17 +694,12 @@ document.addEventListener('DOMContentLoaded', function() {
     // Clear location button
     document.getElementById('clearLocationBtn').addEventListener('click', function() {
         if (confirm('Are you sure you want to clear the property location?')) {
-            // Remove marker
             if (currentMarker) {
                 map.removeLayer(currentMarker);
                 currentMarker = null;
             }
-
-            // Clear form fields
             document.getElementById('prop_latitude').value = '';
             document.getElementById('prop_longitude').value = '';
-
-            // Update display
             document.getElementById('coordinatesDisplay').textContent = 'Click on map to set location';
         }
     });
@@ -596,7 +724,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Mobile fix: Leaflet maps need to recalculate size when their container changes
-    // This handles the case where the container width changes during page load on mobile
     setTimeout(function() {
         map.invalidateSize();
     }, 250);

@@ -19,9 +19,17 @@ The component provides:
     - A Bootstrap modal with PDF.js canvas viewer
     - Page navigation (Previous/Next)
     - Zoom controls (In/Out/Fit)
-    - Download button
+    - Download button (always)
+    - Share button (mobile only, uses Web Share API to attach the file
+      to WhatsApp / Mail / AirDrop / etc. via the native OS share sheet)
     - Mobile-responsive (full-screen on phones)
     - Image fallback for non-PDF files (jpg/jpeg/png)
+
+BOTTOM BUTTON LAYOUT:
+    Desktop:    [⬇ Download]  [Close]              (right-aligned, unchanged)
+    Mobile:     [📤 Share (wide)]  [⬇]  [✕]       (single row, Share is primary)
+                If Web Share API is unavailable, Share is hidden and Download
+                becomes the wide primary instead: [⬇ Download (wide)]  [✕]
 ============================================================================
 {% endcomment %}
 
@@ -94,10 +102,18 @@ The component provides:
             </div>
 
             <div class="modal-footer pdf-viewer-footer">
-                <a id="pdfViewerDownloadBtn" href="#" download class="btn btn-info">
-                    <i class="fas fa-download"></i> Download
+                <!-- Share — mobile only when Web Share API supports files -->
+                <button type="button" id="pdfViewerShareBtn" class="btn btn-info pdf-action-share">
+                    <i class="fas fa-share-alt"></i> <span class="pdf-share-label-default">Share</span><span class="pdf-share-label-busy" hidden><i class="fas fa-spinner fa-spin"></i> Preparing…</span>
+                </button>
+                <!-- Download — always present; full button on desktop, icon-only on mobile -->
+                <a id="pdfViewerDownloadBtn" href="#" download class="btn btn-info pdf-action-download" aria-label="Download">
+                    <i class="fas fa-download"></i><span class="pdf-action-label"> Download</span>
                 </a>
-                <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="closePdfViewer()">Close</button>
+                <!-- Close — text on desktop, X icon on mobile -->
+                <button type="button" class="btn btn-secondary pdf-action-close" data-dismiss="modal" onclick="closePdfViewer()" aria-label="Close">
+                    <i class="fas fa-times pdf-action-mobile-icon"></i><span class="pdf-action-label">Close</span>
+                </button>
             </div>
         </div>
     </div>
@@ -231,6 +247,10 @@ The component provides:
     flex-shrink: 0;
 }
 
+/* Desktop default state — Share is hidden, Download/Close show full text labels */
+.pdf-action-share { display: none; }
+.pdf-action-mobile-icon { display: none; }
+
 /* ==================== MOBILE STYLES ==================== */
 @media (max-width: 768px) {
 
@@ -273,16 +293,71 @@ The component provides:
         height: 20px;
     }
 
-    /* Footer — stack buttons full-width with download on top */
+    /* === Footer layout — Share (wide) + Download (icon) + Close (icon) === */
     .pdf-viewer-footer {
-        flex-direction: column-reverse;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        align-items: stretch;
         gap: 8px;
         padding: 12px;
     }
     .pdf-viewer-footer .btn {
-        width: 100%;
         margin: 0 !important;
-        padding: 10px 12px;
+        height: 38px;
+        padding: 0 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Share — wide primary on mobile (only shown if Web Share API supports files) */
+    .pdf-action-share {
+        display: inline-flex;
+        flex: 1 1 auto;
+        min-width: 0;
+        font-size: 13px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        gap: 6px;
+    }
+
+    /* Download — icon-only square button on mobile */
+    .pdf-action-download {
+        flex: 0 0 auto;
+        width: 44px;
+        padding: 0;
+    }
+    .pdf-action-download .pdf-action-label {
+        display: none;
+    }
+
+    /* Close — icon-only square button on mobile */
+    .pdf-action-close {
+        flex: 0 0 auto;
+        width: 44px;
+        padding: 0;
+    }
+    .pdf-action-close .pdf-action-label {
+        display: none;
+    }
+    .pdf-action-mobile-icon {
+        display: inline;
+    }
+
+    /* === Fallback: Web Share API NOT supported on this device === */
+    /* JS adds .pdf-share-unsupported to the modal; Share hides, Download becomes wide */
+    .pdf-share-unsupported .pdf-action-share {
+        display: none;
+    }
+    .pdf-share-unsupported .pdf-action-download {
+        flex: 1 1 auto;
+        width: auto;
+        padding: 0 12px;
+        font-size: 13px;
+    }
+    .pdf-share-unsupported .pdf-action-download .pdf-action-label {
+        display: inline;
     }
 
     /* Loading and error states tighter */
@@ -300,7 +375,7 @@ The component provides:
 
 <script>
 /* ==========================================================================
-   PDF Viewer Module — handles PDF.js rendering, navigation, and zoom
+   PDF Viewer Module — handles PDF.js rendering, navigation, zoom, and share
    ========================================================================== */
 (function() {
     'use strict';
@@ -312,12 +387,14 @@ The component provides:
     let _isRendering = false;
     let _pendingPage = null;
     let _currentDownloadUrl = null;
+    let _currentDownloadFilename = null;
 
     // Elements (resolved on first open to ensure DOM is ready)
     let canvas, ctx, currentPageSpan, totalPagesSpan,
         prevBtn, nextBtn, zoomInBtn, zoomOutBtn, zoomFitBtn,
         loadingEl, errorEl, errorMsgEl, errorDownloadBtn,
-        canvasWrap, imageWrap, imageEl, controlsEl, downloadBtn, modalTitle;
+        canvasWrap, imageWrap, imageEl, controlsEl, downloadBtn, modalTitle,
+        shareBtn, modalEl;
 
     function resolveElements() {
         canvas = document.getElementById('pdfViewerCanvas');
@@ -339,6 +416,8 @@ The component provides:
         controlsEl = document.getElementById('pdfViewerControls');
         downloadBtn = document.getElementById('pdfViewerDownloadBtn');
         modalTitle = document.getElementById('pdfViewerModalLabel');
+        shareBtn = document.getElementById('pdfViewerShareBtn');
+        modalEl = document.getElementById('pdfViewerModal');
     }
 
     function showState(state) {
@@ -470,6 +549,93 @@ The component provides:
         if (errorDownloadBtn) errorDownloadBtn.href = url;
     }
 
+    /* ==========================================================================
+       Web Share API helpers — used by the mobile Share button
+       ========================================================================== */
+
+    // Probe whether the browser can share files. iOS Safari and Android Chrome
+    // typically return true; desktop browsers and older mobile browsers return false.
+    function isShareWithFilesSupported() {
+        if (typeof navigator.canShare !== 'function' || typeof navigator.share !== 'function') {
+            return false;
+        }
+        try {
+            const dummy = new File(['probe'], 'probe.pdf', { type: 'application/pdf' });
+            return navigator.canShare({ files: [dummy] });
+        } catch (e) {
+            return false;
+        }
+    }
+
+    function getMimeTypeForExt(ext) {
+        const map = {
+            pdf:  'application/pdf',
+            png:  'image/png',
+            jpg:  'image/jpeg',
+            jpeg: 'image/jpeg',
+            gif:  'image/gif',
+            webp: 'image/webp'
+        };
+        return map[(ext || '').toLowerCase()] || 'application/octet-stream';
+    }
+
+    function setShareBusy(busy) {
+        if (!shareBtn) return;
+        const labelDefault = shareBtn.querySelector('.pdf-share-label-default');
+        const labelBusy = shareBtn.querySelector('.pdf-share-label-busy');
+        if (busy) {
+            shareBtn.disabled = true;
+            if (labelDefault) labelDefault.setAttribute('hidden', '');
+            if (labelBusy) labelBusy.removeAttribute('hidden');
+        } else {
+            shareBtn.disabled = false;
+            if (labelDefault) labelDefault.removeAttribute('hidden');
+            if (labelBusy) labelBusy.setAttribute('hidden', '');
+        }
+    }
+
+    async function handleShareClick() {
+        if (!_currentDownloadUrl) return;
+
+        setShareBusy(true);
+        try {
+            // Fetch the file from the server as a blob
+            const response = await fetch(_currentDownloadUrl);
+            if (!response.ok) {
+                throw new Error('Failed to fetch file (HTTP ' + response.status + ')');
+            }
+            const blob = await response.blob();
+
+            // Build a File object with proper name and MIME type
+            const filename = _currentDownloadFilename
+                || (_currentDownloadUrl.split('/').pop().split('?')[0])
+                || 'document';
+            const ext = filename.split('.').pop().toLowerCase();
+            const mimeType = getMimeTypeForExt(ext);
+            const file = new File([blob], filename, { type: mimeType });
+
+            // Final check before sharing
+            if (!navigator.canShare || !navigator.canShare({ files: [file] })) {
+                throw new Error('Sharing this file type is not supported on this device.');
+            }
+
+            await navigator.share({
+                files: [file],
+                title: filename
+            });
+            // Success — native share sheet handled the rest
+        } catch (err) {
+            // User cancellation is normal — stay silent
+            if (err && err.name === 'AbortError') {
+                return;
+            }
+            console.error('Share failed:', err);
+            alert('Sharing failed. Please try downloading the file instead.');
+        } finally {
+            setShareBusy(false);
+        }
+    }
+
     // Public function — called by pages to open the viewer
     window.openPdfViewer = function(url, title, downloadFilename) {
         resolveElements();
@@ -479,6 +645,8 @@ The component provides:
         }
 
         _currentDownloadUrl = url;
+        _currentDownloadFilename = downloadFilename || (url.split('/').pop().split('?')[0]) || 'document';
+
         if (downloadBtn) {
             downloadBtn.href = url;
             if (downloadFilename) {
@@ -494,12 +662,23 @@ The component provides:
             }
         }
 
+        // Toggle the .pdf-share-unsupported class on the modal so CSS can adjust
+        // the mobile layout when this device doesn't support Web Share with files
+        if (modalEl) {
+            if (isShareWithFilesSupported()) {
+                modalEl.classList.remove('pdf-share-unsupported');
+            } else {
+                modalEl.classList.add('pdf-share-unsupported');
+            }
+        }
+
         // Reset state
         _pdfDoc = null;
         _currentPage = 1;
         _currentScale = 1.5;
         _isRendering = false;
         _pendingPage = null;
+        setShareBusy(false);
 
         // Determine file type from URL or filename
         const fname = (downloadFilename || url).split('?')[0]; // strip query string
@@ -575,6 +754,11 @@ The component provides:
             zoomFitBtn.addEventListener('click', function() {
                 fitToWidth();
             });
+        }
+
+        // Share button — wired once; uses the most-recent _currentDownloadUrl
+        if (shareBtn) {
+            shareBtn.addEventListener('click', handleShareClick);
         }
 
         // Reset state when modal closes
