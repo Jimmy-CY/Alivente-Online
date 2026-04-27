@@ -6,7 +6,7 @@
 
 {% block content %}
 
-<h2><center>ALIVENTE ONLINE - ISSUES</center></h2>
+<h2 class="page-title-center">ALIVENTE ONLINE - ISSUES</h2>
 <br/>
 
 {% for msg in messages %}
@@ -29,7 +29,7 @@
 
 <!-- Comments Report Modal -->
 <div class="modal fade" id="commentsReportModal" tabindex="-1" role="dialog" aria-labelledby="commentsReportModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
+    <div class="modal-dialog modal-fullscreen-mobile" role="document">
         <div class="modal-content">
             <div class="modal-header bg-info text-white">
                 <h5 class="modal-title" id="commentsReportModalLabel">
@@ -41,7 +41,7 @@
             </div>
             <div class="modal-body">
                 <p class="text-muted mb-3">Select a time period to view comments:</p>
-                
+
                 <div class="time-period-options">
                     <div class="form-check time-period-option" onclick="selectTimePeriod('7')">
                         <input class="form-check-input" type="radio" name="timePeriod" id="period7" value="7">
@@ -69,7 +69,7 @@
                     </div>
                 </div>
             </div>
-            <div class="modal-footer">
+            <div class="modal-footer modal-footer-stack-mobile">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">
                     <i class="fas fa-times"></i> Cancel
                 </button>
@@ -83,7 +83,7 @@
 
 <!-- Date Range Modal -->
 <div class="modal fade" id="dateRangeModal" tabindex="-1" role="dialog" aria-labelledby="dateRangeModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
+    <div class="modal-dialog modal-fullscreen-mobile" role="document">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="dateRangeModalLabel">Select Date Range</h5>
@@ -102,7 +102,7 @@
                         <input type="date" class="form-control" id="toDate" name="t_date" required>
                     </div>
                 </div>
-                <div class="modal-footer">
+                <div class="modal-footer modal-footer-stack-mobile">
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-primary">Generate Report</button>
                 </div>
@@ -113,7 +113,7 @@
 
 <!-- Friday Status Report Type Modal -->
 <div class="modal fade" id="fridayReportModal" tabindex="-1" role="dialog" aria-labelledby="fridayReportModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-dialog modal-lg modal-fullscreen-mobile" role="document">
         <div class="modal-content">
             <div class="modal-header bg-info text-white">
                 <h5 class="modal-title" id="fridayReportModalLabel">
@@ -149,7 +149,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <!-- Summarized Options Panel -->
                     <div class="summarized-options" id="summarizedOptionsPanel" style="display: none;">
                         <div class="form-group">
@@ -170,7 +170,7 @@
                     </div>
                 </div>
             </div>
-            <div class="modal-footer">
+            <div class="modal-footer modal-footer-stack-mobile">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">
                     <i class="fas fa-times"></i> Cancel
                 </button>
@@ -184,7 +184,7 @@
 
 <!-- Delete Issue Modal -->
 <div class="modal fade" id="deleteIssueModal" tabindex="-1" role="dialog" aria-labelledby="deleteIssueModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-dialog modal-lg modal-fullscreen-mobile" role="document">
         <div class="modal-content">
             <div class="modal-header bg-danger text-white">
                 <h5 class="modal-title" id="deleteIssueModalLabel">
@@ -198,7 +198,7 @@
                 <div class="alert alert-warning">
                     <strong>Warning:</strong> This action cannot be undone. The issue and all its comments will be permanently deleted.
                 </div>
-                
+
                 <div class="issue-details">
                     <div class="row">
                         <div class="col-md-6">
@@ -234,7 +234,7 @@
                     </div>
                 </div>
             </div>
-            <div class="modal-footer">
+            <div class="modal-footer modal-footer-stack-mobile">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">
                     <i class="fas fa-times"></i> Cancel
                 </button>
@@ -249,9 +249,8 @@
 {% render_help_modal "fsr" %}
 
 <!-- Action Buttons -->
-<!-- Action Buttons -->
-<div style="display: flex; justify-content: flex-end; margin-bottom: 20px;">
-    <div style="display: flex; gap: 16px;">
+<div class="page-action-bar">
+    <div class="page-action-bar-inner">
         <button class="btn btn-info" data-toggle="modal" data-target="#fsrHelpModal">
             <i class="fas fa-question-circle"></i> Help
         </button>
@@ -284,7 +283,7 @@
             <i class="fas fa-times-circle"></i> Clear All
         </button>
     </div>
-    
+
     <div class="filter-content" id="filterContent">
         <form action="{% url 'fsr' %}" method="post" id="filterForm">
             {% csrf_token %}
@@ -295,10 +294,10 @@
                         <i class="fas fa-search"></i> Search Issues
                     </label>
                     <div class="search-input-group">
-                        <input type="text" 
-                               name="search" 
+                        <input type="text"
+                               name="search"
                                id="searchInput"
-                               class="form-control search-input" 
+                               class="form-control search-input"
                                placeholder="Search by issue heading or description..."
                                value="{{ search_query|default:'' }}">
                         <button type="button" class="search-btn" id="searchBtn">
@@ -388,29 +387,29 @@
                             {% if not request.POST.propcountry or request.POST.propcountry == 'All' or request.POST.propcountry == results.prop_country %}
                             {% if not request.POST.propname or request.POST.propname == 'All' or request.POST.propname == results.prop_name %}
                             {% if not request.POST.issuestatus or request.POST.issuestatus == 'All' or request.POST.issuestatus == isresults.issues_status %}
-                            <tr class="issue-row" 
+                            <tr class="issue-row"
                                 data-property="{{ results.prop_name }}"
                                 data-date="{{ isresults.issues_date_logged|date:'Y-m-d' }}"
                                 data-status="{{ isresults.issues_status }}">
-                                <td class="text-left">{{ results.prop_name }}</td>
-                                <td class="text-left">{{ isresults.issues_heading }}</td>
-                                <td class="text-left">{{ isresults.issues_description }}</td>
-                                <td class="text-center date-logged">
+                                <td data-label="Property" class="text-left">{{ results.prop_name }}</td>
+                                <td data-label="Issue" class="text-left">{{ isresults.issues_heading }}</td>
+                                <td data-label="Description" class="text-left">{{ isresults.issues_description }}</td>
+                                <td data-label="Date Logged" class="text-center date-logged">
                                     {% if isresults.issues_date_logged %}
                                         {{ isresults.issues_date_logged|date:"d/m/Y" }}
                                     {% else %}
                                         <span class="text-muted">N/A</span>
                                     {% endif %}
                                 </td>
-                                <td class="text-center">
-                                    <span class="status-badge 
+                                <td data-label="Status" class="text-center">
+                                    <span class="status-badge
                                         {% if isresults.issues_status == 'Resolved' %}status-success
                                         {% elif isresults.issues_status == 'Unresolved' %}status-warning
                                         {% else %}status-danger{% endif %}">
                                         {{ isresults.issues_status }}
                                     </span>
                                 </td>
-                                <td class="text-center">
+                                <td data-label="Comments" class="text-center action-cell action-cell-comments">
                                     <button type="button" class="btn btn-light action-btn">
                                         <a href="{% url 'fsr_details' isresults.issues_id %}?from=fsr&search={{ request.POST.search|default:'' }}&propcountry={{ request.POST.propcountry|default:'' }}&propname={{ request.POST.propname|default:'' }}&issuestatus={{ request.POST.issuestatus|default:'' }}" class="issue-heading-link">
                                             Comments
@@ -418,9 +417,9 @@
                                     </button>
                                 </td>
                                 {% if perms.auth.can_edit_issues %}
-                                <td class="text-center">
-                                    <button type="button" 
-                                            class="btn btn-danger btn-sm delete-issue-btn" 
+                                <td data-label="Delete" class="text-center action-cell action-cell-delete">
+                                    <button type="button"
+                                            class="btn btn-danger btn-sm delete-issue-btn"
                                             data-issue-id="{{ isresults.issues_id }}"
                                             data-issue-heading="{{ isresults.issues_heading }}"
                                             data-issue-description="{{ isresults.issues_description }}"
@@ -440,7 +439,7 @@
                     {% endfor %}
                 {% endfor %}
             {% else %}
-                <tr>
+                <tr class="no-issues-row">
                     <td colspan="{% if perms.auth.can_edit_issues %}7{% else %}6{% endif %}" class="text-center">No issues found</td>
                 </tr>
             {% endif %}
@@ -452,6 +451,23 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
 <style>
+/* Page title (centered) */
+.page-title-center {
+    text-align: center;
+}
+
+/* Action button row (replaces inline styles) */
+.page-action-bar {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 20px;
+}
+
+.page-action-bar-inner {
+    display: flex;
+    gap: 16px;
+}
+
 /* Enhanced Filter Panel Styles */
 .filter-panel {
     background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
@@ -979,7 +995,7 @@
         align-items: flex-start;
         gap: 10px;
     }
-    
+
     .form-control-inline {
         width: 100%;
         min-width: auto;
@@ -1031,25 +1047,21 @@
         grid-template-columns: 1fr;
         gap: 16px;
     }
-    
+
     .filter-header {
         flex-direction: column;
         gap: 12px;
         align-items: stretch;
     }
-    
+
     .search-input-group {
         width: 100%;
     }
-    
-    .table-container {
-        overflow-x: auto;
-    }
-    
+
     .report-option-container .row {
         flex-direction: column;
     }
-    
+
     .report-option-container .col-md-6 {
         margin-bottom: 20px;
     }
@@ -1137,6 +1149,283 @@
     margin-right: 10px;
     width: 18px;
 }
+
+/* ==================== MOBILE RESPONSIVE (≤768px) ==================== */
+@media (max-width: 768px) {
+    /* Page title */
+    .page-title-center {
+        font-size: 1.2rem;
+        padding: 0 8px;
+    }
+
+    /* Action button row — stack column full-width */
+    .page-action-bar {
+        margin-bottom: 16px;
+    }
+
+    .page-action-bar-inner {
+        flex-direction: column;
+        gap: 8px;
+        width: 100%;
+    }
+
+    .page-action-bar-inner > .btn,
+    .page-action-bar-inner > a,
+    .page-action-bar-inner > span,
+    .page-action-bar-inner > button {
+        width: 100%;
+        text-align: center;
+    }
+
+    /* Filter panel — stack & 16px input font (iOS zoom guard) */
+    .filter-panel {
+        padding: 12px 14px;
+    }
+
+    .filter-panel.expanded,
+    .filter-panel.force-expanded {
+        padding: 14px !important;
+    }
+
+    .filter-input,
+    .filter-select,
+    .search-input,
+    .form-control,
+    select.form-control,
+    input[type="date"].form-control,
+    input[type="text"].form-control {
+        font-size: 16px !important;
+    }
+
+    /* Active filter tags wrap nicely */
+    .active-filters {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    /* Issues table → card layout */
+    .table-container {
+        background: transparent;
+        box-shadow: none;
+        overflow: visible;
+        border-radius: 0;
+    }
+
+    #issuesTable {
+        border: none;
+    }
+
+    #issuesTable thead {
+        display: none;
+    }
+
+    #issuesTable,
+    #issuesTable tbody,
+    #issuesTable tr {
+        display: block;
+        width: 100%;
+    }
+
+    #issuesTable tr.issue-row {
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 10px;
+        margin-bottom: 14px;
+        padding: 12px 14px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    }
+
+    #issuesTable tr.issue-row td {
+        display: block;
+        width: auto;
+        text-align: left !important;
+        padding: 6px 0;
+        border: none;
+        font-size: 14px;
+        line-height: 1.4;
+    }
+
+    #issuesTable tr.issue-row td::before {
+        content: attr(data-label) ": ";
+        font-weight: 600;
+        color: #495057;
+        margin-right: 6px;
+        display: inline;
+    }
+
+    /* Property name as the card title — bigger, no inline label needed */
+    #issuesTable tr.issue-row td[data-label="Property"] {
+        font-size: 16px;
+        font-weight: 600;
+        color: #2c3e50;
+        padding-bottom: 8px;
+        border-bottom: 1px solid #f0f0f0;
+        margin-bottom: 6px;
+    }
+
+    #issuesTable tr.issue-row td[data-label="Property"]::before {
+        display: none;
+    }
+
+    /* Status: keep the badge inline next to the label */
+    #issuesTable tr.issue-row td[data-label="Status"] .status-badge {
+        display: inline-block;
+        margin-left: 4px;
+    }
+
+    /* Action cells — 2-col grid at the bottom of the card */
+    #issuesTable tr.issue-row td.action-cell {
+        display: inline-block;
+        vertical-align: top;
+        box-sizing: border-box;
+        width: calc(50% - 4px);
+        margin-top: 10px;
+        padding-top: 10px;
+        border-top: 1px solid #f0f0f0;
+    }
+
+    #issuesTable tr.issue-row td.action-cell-comments {
+        padding-right: 4px;
+    }
+
+    #issuesTable tr.issue-row td.action-cell-delete {
+        padding-left: 4px;
+    }
+
+    /* When Delete is hidden (no edit perms), Comments takes full width */
+    #issuesTable tr.issue-row td.action-cell-comments:last-child {
+        width: 100%;
+        padding-right: 0;
+    }
+
+    #issuesTable tr.issue-row td.action-cell::before {
+        display: none;
+    }
+
+    /* Action buttons fill the cell */
+    #issuesTable tr.issue-row td.action-cell .action-btn {
+        width: 100%;
+        padding: 9px 8px;
+        font-size: 13px;
+        margin: 0;
+    }
+
+    #issuesTable tr.issue-row td.action-cell .action-btn a {
+        display: block;
+        width: 100%;
+    }
+
+    #issuesTable tr.issue-row td.action-cell .delete-issue-btn {
+        width: 100%;
+        padding: 9px 8px;
+        font-size: 13px;
+        margin: 0;
+    }
+
+    /* Add "Delete" text after the trash icon on mobile */
+    #issuesTable tr.issue-row td.action-cell .delete-issue-btn::after {
+        content: " Delete";
+        font-weight: 500;
+    }
+
+    /* No-issues row */
+    #issuesTable tr.no-issues-row {
+        display: block;
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 10px;
+        padding: 18px;
+        text-align: center;
+    }
+
+    #issuesTable tr.no-issues-row td {
+        display: block;
+        border: none;
+        padding: 0;
+    }
+
+    #issuesTable tr.no-issues-row td::before {
+        display: none;
+    }
+
+    /* ==================== MODALS — full-screen on mobile ==================== */
+    .modal-fullscreen-mobile {
+        max-width: 100% !important;
+        width: 100% !important;
+        margin: 0 !important;
+        height: 100vh !important;
+    }
+
+    .modal-fullscreen-mobile .modal-content {
+        height: 100vh !important;
+        border-radius: 0 !important;
+        border: none !important;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .modal-fullscreen-mobile .modal-body {
+        overflow-y: auto;
+        flex: 1;
+    }
+
+    /* Modal footer — column-reverse, primary on top, full-width buttons */
+    .modal-footer-stack-mobile {
+        flex-direction: column-reverse !important;
+        gap: 8px;
+        padding: 12px 16px !important;
+    }
+
+    .modal-footer-stack-mobile .btn {
+        width: 100%;
+        margin: 0 !important;
+    }
+
+    /* Delete modal: stack the 2-col rows */
+    .issue-details {
+        padding: 14px;
+    }
+
+    .issue-details .row {
+        margin-left: 0;
+        margin-right: 0;
+    }
+
+    .issue-details .col-md-6,
+    .issue-details .col-12 {
+        padding-left: 0;
+        padding-right: 0;
+        margin-bottom: 6px;
+    }
+
+    .issue-details strong {
+        display: inline-block;
+    }
+
+    .issue-details p {
+        padding: 2px 0 0 0;
+        word-break: break-word;
+    }
+
+    /* Friday Report cards — already 1-col via existing rule */
+    .report-option-card {
+        padding: 18px 16px;
+    }
+
+    .option-title {
+        font-size: 1.1rem;
+    }
+
+    .option-icon {
+        font-size: 1.6rem;
+        margin-bottom: 10px;
+    }
+
+    /* Time-period options inside Comments Report modal */
+    .time-period-option {
+        padding: 12px 14px;
+    }
+}
 </style>
 
 <script>
@@ -1156,24 +1445,24 @@ let currentSort = {
 
 document.addEventListener('DOMContentLoaded', function() {
     console.log('DOM loaded - initializing FSR filter panel');
-    
+
     // Set default dates for date range modal
     const today = new Date().toISOString().split('T')[0];
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
     const fromDateDefault = thirtyDaysAgo.toISOString().split('T')[0];
-    
+
     const toDateInput = document.getElementById('toDate');
     const fromDateInput = document.getElementById('fromDate');
     if (toDateInput) toDateInput.value = today;
     if (fromDateInput) fromDateInput.value = fromDateDefault;
-    
+
     // Initialize Friday Report Modal functionality
     initializeFridayReportModal();
-    
+
     // Initialize delete functionality
     initializeDeleteFunctionality();
-    
+
     // MODAL CLOSE FIX - Ensure modal close buttons work
     document.querySelectorAll('[data-dismiss="modal"]').forEach(button => {
         button.addEventListener('click', function(e) {
@@ -1183,29 +1472,29 @@ document.addEventListener('DOMContentLoaded', function() {
             $(`#${modalId}`).modal('hide');
         });
     });
-    
+
     // Handle escape key to close modals
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
             $('.modal.show').modal('hide');
         }
     });
-    
+
     // Handle modal backdrop clicks
     $('.modal').on('click', function(e) {
         if (e.target === this) {
             $(this).modal('hide');
         }
     });
-    
+
     // Check if panel was forcibly expanded
     const wasForceExpanded = sessionStorage.getItem('FORCE_PANEL_EXPANDED') === 'true';
     const wasClearAllProtected = sessionStorage.getItem('CLEAR_ALL_PROTECTION') === 'true';
     const windowFlag = window.PANEL_MUST_STAY_EXPANDED;
     const clearAllFlag = window.CLEAR_ALL_PROTECTION_ACTIVE;
-    
+
     console.log(`🔍 Checking forced expansion: sessionStorage=${wasForceExpanded}, clearAll=${wasClearAllProtected}, window=${windowFlag}`);
-    
+
     // Initialize filter panel
     const filterPanel = document.getElementById('filterPanel');
     if (filterPanel) {
@@ -1218,7 +1507,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 toggleIcon.classList.add('rotated');
             }
             PANEL_IS_MANUALLY_EXPANDED = true;
-            
+
             // Clear the force flags
             sessionStorage.removeItem('FORCE_PANEL_EXPANDED');
             sessionStorage.removeItem('CLEAR_ALL_PROTECTION');
@@ -1234,30 +1523,30 @@ document.addEventListener('DOMContentLoaded', function() {
     // Set up continuous monitoring
     setupInterferenceProtection();
     updateActiveFilters();
-    
+
     // Store current filter values for preservation when navigating to details
     storeCurrentFilterValues();
-    
+
     // Auto-submit on dropdown filter change
     ['countrySelect', 'propertySelect', 'statusSelect'].forEach(id => {
         const element = document.getElementById(id);
         if (element) {
             element.addEventListener('change', function() {
                 console.log(`🔄 Filter changed: ${id} = ${this.value}`);
-                
+
                 if (PANEL_IS_MANUALLY_EXPANDED) {
                     console.log('🔒 LOCKING PANEL STATE BEFORE FORM SUBMISSION');
                     lockPanelState();
                 }
-                
+
                 // Store current filter values before submitting
                 storeCurrentFilterValues();
-                
+
                 document.getElementById('filterForm').submit();
             });
         }
     });
-    
+
     // Search functionality
     const searchBtn = document.getElementById('searchBtn');
     if (searchBtn) {
@@ -1269,7 +1558,7 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('filterForm').submit();
         });
     }
-    
+
     const searchInput = document.getElementById('searchInput');
     if (searchInput) {
         searchInput.addEventListener('keypress', function(e) {
@@ -1283,29 +1572,29 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
-    
+
     // Clear all functionality
     const clearAllBtn = document.getElementById('clearAllBtn');
     if (clearAllBtn) {
         clearAllBtn.addEventListener('click', function() {
             console.log('🚨🧹 CLEAR ALL CLICKED - MAXIMUM PROTECTION MODE 🧹🚨');
-            
+
             if (PANEL_IS_MANUALLY_EXPANDED) {
                 console.log('🔒🔒 LOCKING PANEL STATE FOR CLEAR ALL 🔒🔒');
-                
+
                 const filterPanel = document.getElementById('filterPanel');
                 if (filterPanel) {
                     filterPanel.classList.add('force-expanded');
                     filterPanel.style.cssText += 'display: block !important; visibility: visible !important;';
                     filterPanel.setAttribute('data-force-expanded', 'true');
                 }
-                
+
                 sessionStorage.setItem('FORCE_PANEL_EXPANDED', 'true');
                 sessionStorage.setItem('CLEAR_ALL_PROTECTION', 'true');
                 window.PANEL_MUST_STAY_EXPANDED = true;
                 window.CLEAR_ALL_PROTECTION_ACTIVE = true;
             }
-            
+
             document.getElementById('searchInput').value = '';
             document.getElementById('countrySelect').value = '';
             document.getElementById('propertySelect').value = '';
@@ -1313,7 +1602,7 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('filterForm').submit();
         });
     }
-    
+
     // Handle refresh parameter
     const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.has('refresh')) {
@@ -1321,7 +1610,7 @@ document.addEventListener('DOMContentLoaded', function() {
         window.history.replaceState({}, document.title, cleanUrl);
         window.location.reload(true);
     }
-    
+
     // Handle date range form
     const dateRangeForm = document.getElementById('dateRangeForm');
     if (dateRangeForm) {
@@ -1334,7 +1623,7 @@ document.addEventListener('DOMContentLoaded', function() {
             window.location.href = reportUrl;
         });
     }
-    
+
     // Initialize table sorting
     initializeTableSorting();
 
@@ -1344,7 +1633,7 @@ document.addEventListener('DOMContentLoaded', function() {
 // Delete functionality
 function initializeDeleteFunctionality() {
     console.log('🗑️ Initializing delete functionality');
-    
+
     // Handle delete button clicks
     document.querySelectorAll('.delete-issue-btn').forEach(button => {
         button.addEventListener('click', function() {
@@ -1354,7 +1643,7 @@ function initializeDeleteFunctionality() {
             const propertyName = this.dataset.propertyName;
             const dateLogged = this.dataset.dateLogged;
             const status = this.dataset.status;
-            
+
             // Populate modal with issue details
             document.getElementById('modalPropertyName').textContent = propertyName;
             document.getElementById('modalStatus').textContent = status;
@@ -1362,36 +1651,36 @@ function initializeDeleteFunctionality() {
             document.getElementById('modalIssueId').textContent = issueId;
             document.getElementById('modalIssueHeading').textContent = issueHeading;
             document.getElementById('modalIssueDescription').textContent = issueDescription;
-            
+
             // Store issue ID for deletion
             document.getElementById('confirmDeleteBtn').dataset.issueId = issueId;
-            
+
             // Show modal
             $('#deleteIssueModal').modal('show');
         });
     });
-    
+
     // Handle confirm delete
     document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
         const issueId = this.dataset.issueId;
         deleteIssue(issueId);
     });
-    
+
     console.log('✅ Delete functionality initialized');
 }
 
 function deleteIssue(issueId) {
     console.log(`🗑️ Deleting issue ID: ${issueId}`);
-    
+
     // Get CSRF token
     const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-    
+
     // Show loading state
     const confirmBtn = document.getElementById('confirmDeleteBtn');
     const originalText = confirmBtn.innerHTML;
     confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Deleting...';
     confirmBtn.disabled = true;
-    
+
     fetch(`/issues/delete/${issueId}/`, {
         method: 'POST',
         headers: {
@@ -1405,7 +1694,7 @@ function deleteIssue(issueId) {
         if (data.success) {
             // Hide modal
             $('#deleteIssueModal').modal('hide');
-            
+
             // Show success message and refresh page
             alert('Issue deleted successfully!');
             window.location.reload();
@@ -1427,52 +1716,52 @@ function deleteIssue(issueId) {
 // Friday Report Modal Functions
 function initializeFridayReportModal() {
     console.log('🎯 Initializing Friday Report Modal');
-    
+
     const detailedOption = document.getElementById('detailedOption');
     const summarizedOption = document.getElementById('summarizedOption');
     const summarizedOptionsPanel = document.getElementById('summarizedOptionsPanel');
     const generateReportBtn = document.getElementById('generateReportBtn');
-    
+
     if (detailedOption) {
         detailedOption.addEventListener('click', function() {
             selectReportType('detailed');
         });
     }
-    
+
     if (summarizedOption) {
         summarizedOption.addEventListener('click', function() {
             selectReportType('summarized');
         });
     }
-    
+
     if (generateReportBtn) {
         generateReportBtn.addEventListener('click', function() {
             generateFridayReport();
         });
     }
-    
+
     // Reset modal when it's closed
     $('#fridayReportModal').on('hidden.bs.modal', function() {
         resetReportModal();
     });
-    
+
     console.log('✅ Friday Report Modal initialized');
 }
 
 function selectReportType(type) {
     console.log(`📋 Report type selected: ${type}`);
-    
+
     const detailedOption = document.getElementById('detailedOption');
     const summarizedOption = document.getElementById('summarizedOption');
     const summarizedOptionsPanel = document.getElementById('summarizedOptionsPanel');
     const generateReportBtn = document.getElementById('generateReportBtn');
-    
+
     // Remove previous selections
     if (detailedOption) detailedOption.classList.remove('selected');
     if (summarizedOption) summarizedOption.classList.remove('selected');
-    
+
     selectedReportType = type;
-    
+
     if (type === 'detailed') {
         if (detailedOption) detailedOption.classList.add('selected');
         if (summarizedOptionsPanel) summarizedOptionsPanel.style.display = 'none';
@@ -1495,20 +1784,20 @@ function selectReportType(type) {
             generateReportBtn.innerHTML = '<i class="fas fa-file-download"></i> Generate Summarized Report';
         }
     }
-    
+
     console.log(`✅ Report type "${type}" selected and UI updated`);
 }
 
 function generateFridayReport() {
     console.log(`🚀 Generating ${selectedReportType} Friday report`);
-    
+
     if (!selectedReportType) {
         console.error('❌ No report type selected');
         return;
     }
-    
+
     let reportUrl = "{% url 'friday_status_report' %}";
-    
+
     if (selectedReportType === 'summarized') {
         const maxComments = document.getElementById('maxComments').value;
         reportUrl += `?max_comments=${maxComments}`;
@@ -1516,66 +1805,66 @@ function generateFridayReport() {
     } else {
         console.log('📋 Detailed report with all comments');
     }
-    
+
     console.log(`🔗 Navigating to: ${reportUrl}`);
-    
+
     // Close the modal first
     $('#fridayReportModal').modal('hide');
-    
+
     // Navigate to the report
     window.location.href = reportUrl;
 }
 
 function resetReportModal() {
     console.log('🔄 Resetting Friday Report Modal');
-    
+
     const detailedOption = document.getElementById('detailedOption');
     const summarizedOption = document.getElementById('summarizedOption');
     const summarizedOptionsPanel = document.getElementById('summarizedOptionsPanel');
     const generateReportBtn = document.getElementById('generateReportBtn');
     const maxComments = document.getElementById('maxComments');
-    
+
     // Clear selections
     if (detailedOption) detailedOption.classList.remove('selected');
     if (summarizedOption) summarizedOption.classList.remove('selected');
-    
+
     // Hide summarized options
     if (summarizedOptionsPanel) {
         summarizedOptionsPanel.style.display = 'none';
         summarizedOptionsPanel.style.opacity = '0';
         summarizedOptionsPanel.style.transform = 'translateY(10px)';
     }
-    
+
     // Reset dropdown to default
     if (maxComments) maxComments.value = '2';
-    
+
     // Disable generate button
     if (generateReportBtn) {
         generateReportBtn.disabled = true;
         generateReportBtn.innerHTML = '<i class="fas fa-file-download"></i> Generate Report';
     }
-    
+
     selectedReportType = null;
     console.log('✅ Modal reset complete');
 }
 
 function lockPanelState() {
     const filterPanel = document.getElementById('filterPanel');
-    
+
     if (filterPanel) {
         filterPanel.classList.add('force-expanded');
         filterPanel.style.cssText += 'display: block !important;';
     }
-    
+
     sessionStorage.setItem('FORCE_PANEL_EXPANDED', 'true');
     window.PANEL_MUST_STAY_EXPANDED = true;
-    
+
     const originalHide = window.hideFilters;
     window.hideFilters = function() {
         console.log('🚫 BLOCKED: hideFilters() call during form submission');
         return false;
     };
-    
+
     setTimeout(() => {
         window.hideFilters = originalHide;
     }, 100);
@@ -1584,7 +1873,7 @@ function lockPanelState() {
 function forceExpandPanel() {
     const filterPanel = document.getElementById('filterPanel');
     const toggleIcon = document.getElementById('filterToggleIcon');
-    
+
     if (filterPanel && !filterPanel.classList.contains('expanded')) {
         console.log('🔥 FORCING PANEL TO EXPAND');
         filterPanel.classList.add('expanded');
@@ -1598,12 +1887,12 @@ function forceExpandPanel() {
 function setupInterferenceProtection() {
     const filterPanel = document.getElementById('filterPanel');
     if (!filterPanel) return;
-    
+
     const observer = new MutationObserver(function(mutations) {
         mutations.forEach(function(mutation) {
             if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
                 const hasExpanded = filterPanel.classList.contains('expanded');
-                
+
                 if (PANEL_IS_MANUALLY_EXPANDED && !hasExpanded) {
                     console.log('🚨 EXTERNAL INTERFERENCE DETECTED!');
                     filterPanel.classList.add('expanded');
@@ -1616,12 +1905,12 @@ function setupInterferenceProtection() {
             }
         });
     });
-    
+
     observer.observe(filterPanel, {
         attributes: true,
         attributeFilter: ['class']
     });
-    
+
     console.log('🛡️ FSR Interference protection activated');
 }
 
@@ -1629,29 +1918,29 @@ function toggleFilters() {
     console.log('🔄🔄 Toggle filters called - MANUAL USER ACTION 🔄🔄');
     const filterPanel = document.getElementById('filterPanel');
     const toggleIcon = document.getElementById('filterToggleIcon');
-    
+
     if (!filterPanel || !toggleIcon) {
         console.log('❌ Panel or icon not found');
         return;
     }
-    
+
     const isExpanded = filterPanel.classList.contains('expanded') || filterPanel.classList.contains('force-expanded');
     console.log(`📊📊 Current state: ${isExpanded ? 'expanded' : 'collapsed'} 📊📊`);
-    
+
     if (isExpanded) {
         // MANUAL COLLAPSE
         console.log('📉📉 MANUAL COLLAPSE 📉📉');
-        
+
         PANEL_IS_MANUALLY_EXPANDED = false;
         sessionStorage.removeItem('FORCE_PANEL_EXPANDED');
         sessionStorage.removeItem('CLEAR_ALL_PROTECTION');
         window.PANEL_MUST_STAY_EXPANDED = false;
         window.CLEAR_ALL_PROTECTION_ACTIVE = false;
-        
+
         // FORCE removal of all classes
         filterPanel.classList.remove('expanded', 'force-expanded');
         filterPanel.removeAttribute('data-force-expanded');
-        
+
         // NUCLEAR CSS override
         filterPanel.style.cssText = '';
         filterPanel.style.display = '';
@@ -1660,7 +1949,7 @@ function toggleFilters() {
         filterPanel.style.height = '';
         filterPanel.style.overflow = '';
         filterPanel.style.padding = '';
-        
+
         // Force hide the content directly
         const filterContent = document.getElementById('filterContent');
         if (filterContent) {
@@ -1671,11 +1960,11 @@ function toggleFilters() {
             filterContent.style.overflow = 'hidden';
             filterContent.classList.remove('show');
         }
-        
+
         toggleIcon.classList.remove('rotated');
-        
+
         console.log('📉📉 Panel FORCE collapsed - ALL PROTECTION NUKED 📉📉');
-        
+
         // Verify the collapse worked
         setTimeout(() => {
             const isStillExpanded = filterPanel.classList.contains('expanded') || filterPanel.classList.contains('force-expanded');
@@ -1689,7 +1978,7 @@ function toggleFilters() {
                 }
             }
         }, 50);
-        
+
     } else {
         // MANUAL EXPANSION
         console.log('📈📈 Panel manually expanded - PROTECTION ACTIVATED 📈📈');
@@ -1697,7 +1986,7 @@ function toggleFilters() {
         filterPanel.classList.remove('force-expanded');
         toggleIcon.classList.add('rotated');
         PANEL_IS_MANUALLY_EXPANDED = true;
-        
+
         // Ensure content is visible
         const filterContent = document.getElementById('filterContent');
         if (filterContent) {
@@ -1719,56 +2008,56 @@ function updateActiveFilters() {
     const statusSelect = document.getElementById('statusSelect');
     const activeFiltersDiv = document.getElementById('activeFilters');
     const filterTagsDiv = document.getElementById('filterTags');
-    
+
     if (!searchInput || !countrySelect || !propertySelect || !statusSelect || !activeFiltersDiv || !filterTagsDiv) {
         console.log('❌ Some elements missing for updateActiveFilters');
         return;
     }
-    
+
     const search = searchInput.value;
     const country = countrySelect.value;
     const property = propertySelect.value;
     const status = statusSelect.value;
-    
+
     console.log(`📊 Filter values - Search: "${search}", Country: "${country}", Property: "${property}", Status: "${status}"`);
-    
+
     filterTagsDiv.innerHTML = '';
     let hasFilters = false;
-    
+
     if (search) {
         filterTagsDiv.innerHTML += `<span class="filter-tag">Search: "${search}" <button class="remove-tag" onclick="clearFilter('search')">×</button></span>`;
         hasFilters = true;
     }
-    
+
     if (country) {
         filterTagsDiv.innerHTML += `<span class="filter-tag">Country: ${country} <button class="remove-tag" onclick="clearFilter('country')">×</button></span>`;
         hasFilters = true;
     }
-    
+
     if (property) {
         filterTagsDiv.innerHTML += `<span class="filter-tag">Property: ${property} <button class="remove-tag" onclick="clearFilter('property')">×</button></span>`;
         hasFilters = true;
     }
-    
+
     if (status) {
         filterTagsDiv.innerHTML += `<span class="filter-tag">Status: ${status} <button class="remove-tag" onclick="clearFilter('status')">×</button></span>`;
         hasFilters = true;
     }
-    
+
     activeFiltersDiv.style.display = hasFilters ? 'flex' : 'none';
     console.log(`✅ Filter tags updated, hasFilters: ${hasFilters}`);
-    
+
     console.log('✅ updateActiveFilters completed - panel state UNCHANGED');
 }
 
 function clearFilter(filterType) {
     console.log(`🧹 clearFilter called for: ${filterType}`);
-    
+
     if (PANEL_IS_MANUALLY_EXPANDED) {
         console.log('🔒 LOCKING PANEL STATE BEFORE INDIVIDUAL FILTER CLEAR');
         lockPanelState();
     }
-    
+
     switch(filterType) {
         case 'search':
             const searchInput = document.getElementById('searchInput');
@@ -1797,14 +2086,14 @@ function storeCurrentFilterValues() {
         const countrySelect = document.getElementById('countrySelect');
         const propertySelect = document.getElementById('propertySelect');
         const statusSelect = document.getElementById('statusSelect');
-        
+
         const filterData = {
             search: searchInput ? searchInput.value : '',
             propcountry: countrySelect ? countrySelect.value : '',
             propname: propertySelect ? propertySelect.value : '',
             issuestatus: statusSelect ? statusSelect.value : ''
         };
-        
+
         // Store in sessionStorage for use when returning from fsr_details
         sessionStorage.setItem('current_fsr_filters', JSON.stringify(filterData));
         console.log('✅ Filter values stored:', filterData);
@@ -1830,19 +2119,19 @@ setInterval(() => {
 
 function initializeTableSorting() {
     console.log('📊 Initializing table sorting');
-    
+
     const sortableHeaders = document.querySelectorAll('.sortable');
-    
+
     sortableHeaders.forEach(header => {
         header.addEventListener('click', function() {
             const sortColumn = this.dataset.sort;
             handleSort(sortColumn);
         });
     });
-    
+
     // Apply default sort (Property ASC, then Date ASC)
     applyDefaultSort();
-    
+
     console.log('✅ Table sorting initialized');
 }
 
@@ -1854,17 +2143,17 @@ function applyDefaultSort() {
 
 function handleSort(column) {
     console.log(`🔀 Sort clicked: ${column}`);
-    
+
     let newDirection = 'asc';
-    
+
     // If clicking the same column, toggle direction
     if (currentSort.column === column) {
         newDirection = currentSort.direction === 'asc' ? 'desc' : 'asc';
     }
-    
+
     currentSort.column = column;
     currentSort.direction = newDirection;
-    
+
     sortTable(column, newDirection, false);
     updateSortIndicators(column, newDirection);
 }
@@ -1872,15 +2161,15 @@ function handleSort(column) {
 function sortTable(column, direction, isDefault) {
     const tbody = document.getElementById('issuesTableBody');
     if (!tbody) return;
-    
+
     const rows = Array.from(tbody.querySelectorAll('.issue-row'));
     if (rows.length === 0) return;
-    
+
     console.log(`📊 Sorting ${rows.length} rows by ${column} ${direction}`);
-    
+
     rows.sort((a, b) => {
         let valueA, valueB;
-        
+
         switch(column) {
             case 'property':
                 valueA = a.dataset.property || '';
@@ -1900,9 +2189,9 @@ function sortTable(column, direction, isDefault) {
                 valueA = '';
                 valueB = '';
         }
-        
+
         let comparison = 0;
-        
+
         if (column === 'date') {
             // Date comparison
             comparison = valueA.localeCompare(valueB);
@@ -1913,12 +2202,12 @@ function sortTable(column, direction, isDefault) {
             // String comparison (case-insensitive)
             comparison = valueA.toLowerCase().localeCompare(valueB.toLowerCase());
         }
-        
+
         // Apply direction
         if (direction === 'desc') {
             comparison = -comparison;
         }
-        
+
         // Secondary sort when primary values are equal
         if (comparison === 0) {
             if (column === 'property') {
@@ -1934,13 +2223,13 @@ function sortTable(column, direction, isDefault) {
             }
             // When column === 'date', no further tiebreaker needed
         }
-        
+
         return comparison;
     });
-    
+
     // Re-append rows in new order
     rows.forEach(row => tbody.appendChild(row));
-    
+
     console.log(`✅ Sort complete: ${column} ${direction}`);
 }
 
@@ -1957,14 +2246,14 @@ function getStatusOrder(status) {
 
 function updateSortIndicators(activeColumn, direction) {
     const sortableHeaders = document.querySelectorAll('.sortable');
-    
+
     sortableHeaders.forEach(header => {
         const column = header.dataset.sort;
         const icon = header.querySelector('.sort-icon');
-        
+
         // Remove existing sort classes
         header.classList.remove('sort-asc', 'sort-desc');
-        
+
         if (column === activeColumn) {
             // Add appropriate class for active column
             header.classList.add(direction === 'asc' ? 'sort-asc' : 'sort-desc');
@@ -1978,25 +2267,25 @@ let selectedTimePeriod = null;
 
 function selectTimePeriod(period) {
     console.log(`📅 Time period selected: ${period}`);
-    
+
     selectedTimePeriod = period;
-    
+
     // Update radio button
     const radio = document.querySelector(`input[name="timePeriod"][value="${period}"]`);
     if (radio) {
         radio.checked = true;
     }
-    
+
     // Update visual selection
     document.querySelectorAll('.time-period-option').forEach(opt => {
         opt.classList.remove('selected');
     });
-    
+
     const selectedOption = document.querySelector(`input[value="${period}"]`).closest('.time-period-option');
     if (selectedOption) {
         selectedOption.classList.add('selected');
     }
-    
+
     // Enable the generate button
     const generateBtn = document.getElementById('generateCommentsReportBtn');
     if (generateBtn) {
@@ -2009,13 +2298,13 @@ function generateCommentsReport() {
         alert('Please select a time period');
         return;
     }
-    
+
     console.log(`📊 Generating comments report for: ${selectedTimePeriod}`);
-    
+
     // Build URL
     let reportUrl = "{% url 'comments_report' %}";
     reportUrl += `?period=${selectedTimePeriod}`;
-    
+
     // Close modal and navigate
     $('#commentsReportModal').modal('hide');
     window.location.href = reportUrl;
