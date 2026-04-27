@@ -1198,7 +1198,6 @@
     z-index: 5;
 }
 
-.recipe-favourite-btn:hover { transform: scale(1.15); color: #e74c3c; }
 .recipe-favourite-btn.is-favourite { color: #e74c3c; background: rgba(255, 255, 255, 0.95); }
 
 .recipe-list-favourite-btn {
@@ -1217,8 +1216,18 @@
     box-shadow: 0 1px 4px rgba(0,0,0,0.15);
 }
 
-.recipe-list-favourite-btn:hover { transform: scale(1.15); color: #e74c3c; }
 .recipe-list-favourite-btn.is-favourite { color: #e74c3c; }
+
+/* Hover scale effect — desktop only.
+   On touch devices `:hover` sticks after a tap until the user taps
+   somewhere else, leaving the favourite button visually frozen in its
+   enlarged/red state and making the toggle feel like it "hung". The
+   `(hover: hover)` media query matches only pointers that can actually
+   hover (mice/trackpads), so touchscreens skip these rules entirely. */
+@media (hover: hover) and (pointer: fine) {
+    .recipe-favourite-btn:hover { transform: scale(1.15); color: #e74c3c; }
+    .recipe-list-favourite-btn:hover { transform: scale(1.15); color: #e74c3c; }
+}
 
 /* ============================================================
    MOBILE RESPONSIVE — comprehensive rules (max-width: 768px)
@@ -3390,6 +3399,15 @@ function duplicateRecipe(recipeId, recipeName) {
 
 // ==================== FAVOURITES ====================
 function toggleFavourite(recipeId, btn) {
+    // Optimistic update — flip the visual state immediately so the user
+    // gets instant feedback. If the server call fails we revert below.
+    const wasFavourite = btn.classList.contains('is-favourite');
+    btn.classList.toggle('is-favourite');
+    btn.title = wasFavourite ? 'Add to Favourites' : 'Remove from Favourites';
+    // Drop focus so any sticky :focus / :hover styling on touch devices
+    // is cleared and the user sees a clean toggled state right away.
+    btn.blur();
+
     fetch(`/recipe/${recipeId}/favourite/`, {
         method: 'POST',
         headers: {
@@ -3400,6 +3418,7 @@ function toggleFavourite(recipeId, btn) {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
+            // Reconcile with server in case our optimistic toggle was wrong
             if (data.is_favourite) {
                 btn.classList.add('is-favourite');
                 btn.title = 'Remove from Favourites';
@@ -3412,9 +3431,18 @@ function toggleFavourite(recipeId, btn) {
                     if (card) card.remove();
                 }
             }
+        } else {
+            // Server reported failure — revert the optimistic toggle
+            btn.classList.toggle('is-favourite');
+            btn.title = wasFavourite ? 'Remove from Favourites' : 'Add to Favourites';
         }
     })
-    .catch(error => console.error('Error toggling favourite:', error));
+    .catch(error => {
+        // Network error — revert the optimistic toggle
+        console.error('Error toggling favourite:', error);
+        btn.classList.toggle('is-favourite');
+        btn.title = wasFavourite ? 'Remove from Favourites' : 'Add to Favourites';
+    });
 }
 // ==================== END FAVOURITES ====================
 
