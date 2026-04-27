@@ -156,7 +156,7 @@
 
 .action-buttons {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-end;
     gap: 10px;
     margin-top: 30px;
 }
@@ -266,10 +266,213 @@
     display: block !important;
 }
 
+/* ==================== MOBILE STYLES (≤768px) ==================== */
+@media (max-width: 768px) {
+    /* Header tighter */
+    .page-header {
+        padding: 18px 16px;
+        margin-bottom: 16px;
+    }
+    .page-header h1 {
+        font-size: 1.4rem;
+        margin-bottom: 6px;
+    }
+    .page-header p {
+        font-size: 0.9rem;
+    }
+
+    /* Form sections — tighter padding */
+    .form-section {
+        padding: 16px;
+        margin-bottom: 16px;
+        border-radius: 10px;
+    }
+    .section-title {
+        font-size: 1.05rem;
+        margin-bottom: 14px;
+        padding-bottom: 8px;
+    }
+
+    /* Date inputs — stack on mobile so they don't shrink */
+    .date-range-inputs {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+    .date-input,
+    .form-control,
+    .servings-input {
+        font-size: 16px; /* prevent iOS zoom on focus */
+    }
+
+    /* Day card — tighter */
+    .day-card {
+        padding: 16px;
+        margin-bottom: 14px;
+    }
+    .day-header {
+        margin-bottom: 14px;
+    }
+    .day-title {
+        font-size: 1.05rem;
+    }
+    .day-date {
+        font-size: 0.8rem;
+    }
+
+    /* Recipe row — grid layout so all three columns share the row width
+       and the trash button always lines up flush with the right edge.
+
+       Two-column main row [name | servings] with the trash on its own
+       column (column 3). Names wrap inside their cell — they no longer
+       push the servings + trash off the right edge. min-width:0 on the
+       grid container is the key to letting children shrink below their
+       content width. */
+    .recipe-item {
+        display: grid;
+        grid-template-columns: 1fr auto auto;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 12px;
+        min-width: 0;
+    }
+    /* Recipe name cell (first child after the hidden input) */
+    .recipe-item > div:first-of-type {
+        min-width: 0;
+        flex: unset !important;
+        overflow: hidden;
+    }
+    .recipe-item > div:first-of-type strong {
+        font-size: 0.92rem;
+        line-height: 1.25;
+        word-wrap: break-word;
+        overflow-wrap: anywhere;
+        display: block;
+    }
+    /* Servings cell (the inline-styled flex wrapper) */
+    .recipe-item > div:nth-of-type(2) {
+        gap: 4px !important;
+        flex-shrink: 0;
+    }
+    .recipe-item .servings-input {
+        width: 56px;
+        padding: 6px 4px;
+        font-size: 0.95rem;
+    }
+    /* "servings" label — too long for mobile, hide it */
+    .recipe-item > div:nth-of-type(2) > span {
+        display: none;
+    }
+    /* Trash button — fixed compact size, doesn't grow */
+    .recipe-item .btn-remove-recipe {
+        flex-shrink: 0;
+        padding: 8px 10px;
+        min-width: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* Add Recipe button full-width inside day card */
+    .btn-add-recipe {
+        width: 100%;
+        margin-top: 14px;
+        padding: 11px 12px;
+    }
+
+    /* Empty day state — tighter */
+    .empty-day-state {
+        padding: 18px 10px;
+    }
+    .empty-day-state i {
+        font-size: 32px;
+    }
+    .empty-day-state p {
+        font-size: 0.85rem;
+        margin-bottom: 0;
+    }
+
+    /* Action buttons (Cancel / Save) — Back+1 standard:
+       [Save (wide green)] [← Cancel small icon] */
+    .action-buttons {
+        flex-direction: row;
+        flex-wrap: nowrap;
+        align-items: stretch;
+        gap: 8px;
+        margin-top: 18px;
+    }
+    .action-buttons .action-primary {
+        flex: 1 1 auto;
+        min-width: 0;
+        height: 38px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 12px;
+        font-size: 13px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin: 0;
+        gap: 6px;
+    }
+    .action-buttons .action-back {
+        flex: 0 0 auto;
+        width: 50px;
+        height: 38px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0;
+    }
+    .action-back-label {
+        display: none;
+    }
+
+    /* Recipe Selector Modal — full-screen on mobile */
+    #recipeSelectorModal .modal-dialog {
+        max-width: 100% !important;
+        margin: 0;
+    }
+    #recipeSelectorModal .modal-content {
+        border-radius: 0;
+        min-height: 100vh;
+    }
+    #recipeSelectorModal .modal-header h5 {
+        font-size: 1rem;
+    }
+    /* Modal filter rows — stack columns 1-per-row */
+    #recipeSelectorModal .row.g-2 > [class*="col-md-"] {
+        flex: 0 0 100%;
+        max-width: 100%;
+        margin-bottom: 8px;
+    }
+    /* Modal filter inputs — 16px to prevent iOS zoom */
+    #recipeSelectorModal .form-control,
+    #recipeSelectorModal select {
+        font-size: 16px;
+    }
+    /* Recipe selector grid — single column on narrow phones, 2 on slightly larger */
+    .recipe-selector-grid {
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 12px;
+        max-height: 60vh;
+    }
+    .recipe-selector-card-image,
+    .recipe-selector-card-placeholder {
+        height: 110px;
+    }
+    .recipe-selector-card-placeholder {
+        font-size: 36px;
+    }
+    .recipe-selector-card-title {
+        font-size: 0.85rem;
+    }
+}
 </style>
 
 <div class="meal-plan-container">
-    
+
     <!-- Page Header -->
     <div class="page-header">
         {% if edit_mode %}
@@ -288,44 +491,44 @@
     {% endif %}
 
         {% csrf_token %}
-        
+
         <!-- Basic Information -->
         <div class="form-section">
             <h2 class="section-title">
                 <i class="fas fa-info-circle"></i> Basic Information
             </h2>
-            
+
             <div class="form-group">
                 <label for="plan_name">Meal Plan Name *</label>
-                <input type="text" 
-                       class="form-control" 
-                       id="plan_name" 
-                       name="plan_name" 
-                       placeholder="e.g., Week of November 11-17" 
+                <input type="text"
+                       class="form-control"
+                       id="plan_name"
+                       name="plan_name"
+                       placeholder="e.g., Week of November 11-17"
                        required>
             </div>
-            
+
             <div class="alert-info">
                 <i class="fas fa-info-circle"></i> Select a date range between 1 and 7 days
             </div>
-            
+
             <div class="date-range-inputs">
                 <div class="form-group">
                     <label for="start_date">Start Date *</label>
-                    <input type="date" 
-                           class="date-input form-control" 
-                           id="start_date" 
-                           name="start_date" 
+                    <input type="date"
+                           class="date-input form-control"
+                           id="start_date"
+                           name="start_date"
                            min="{{ today|date:'Y-m-d' }}"
                            required>
                 </div>
-                
+
                 <div class="form-group">
                     <label for="end_date">End Date *</label>
-                    <input type="date" 
-                           class="date-input form-control" 
-                           id="end_date" 
-                           name="end_date" 
+                    <input type="date"
+                           class="date-input form-control"
+                           id="end_date"
+                           name="end_date"
                            min="{{ today|date:'Y-m-d' }}"
                            required>
                 </div>
@@ -337,28 +540,28 @@
             <h2 class="section-title">
                 <i class="fas fa-utensils"></i> Assign Recipes to Days
             </h2>
-            
+
             <div id="daysContainer">
                 <!-- Days will be dynamically added here -->
             </div>
         </div>
 
-        <!-- Action Buttons -->
+        <!-- Action Buttons (Save primary + Cancel-as-Back on mobile) -->
         <div class="action-buttons">
-            <a href="{% url 'meal_plans' %}" class="btn btn-secondary">
-                <i class="fas fa-arrow-left"></i> Cancel
-            </a>
             {% if edit_mode %}
-            <button type="submit" class="btn btn-success" id="saveBtn">
+            <button type="submit" class="btn btn-success action-primary" id="saveBtn">
                 <i class="fas fa-save"></i> Update Meal Plan
             </button>
             {% else %}
-            <button type="submit" class="btn btn-success" id="saveBtn" disabled>
+            <button type="submit" class="btn btn-success action-primary" id="saveBtn" disabled>
                 <i class="fas fa-save"></i> Create Meal Plan
             </button>
             {% endif %}
+            <a href="{% url 'meal_plans' %}" class="btn btn-secondary action-back" aria-label="Cancel and go back to Meal Plans">
+                <i class="fas fa-arrow-left"></i><span class="action-back-label"> Cancel</span>
+            </a>
         </div>
-        
+
     </form>
 
 </div>
@@ -385,16 +588,16 @@ let mealPlanData = null;
 if (editMode) {
     mealPlanData = JSON.parse('{{ meal_plan_json|escapejs }}');
     console.log('Edit mode detected. Loading meal plan:', mealPlanData);
-    
+
     // Pre-populate basic fields
     document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('plan_name').value = mealPlanData.plan_name;
         document.getElementById('start_date').value = mealPlanData.start_date;
         document.getElementById('end_date').value = mealPlanData.end_date;
-        
+
         // Trigger date range update to create day cards
         updateDateRange();
-        
+
         // After a short delay, populate recipes for each day
         setTimeout(() => {
             populateExistingRecipes();
@@ -404,53 +607,53 @@ if (editMode) {
 
 function populateExistingRecipes() {
     if (!editMode || !mealPlanData) return;
-    
+
     console.log('Populating existing recipes...');
-    
+
     mealPlanData.days.forEach(day => {
         const recipeList = document.getElementById(`recipes-${day.date}`);
-        
+
         if (!recipeList) {
             console.error(`Recipe list not found for date: ${day.date}`);
             return;
         }
-        
+
         // Remove empty state if present
         const emptyState = recipeList.querySelector('.empty-day-state');
         if (emptyState) {
             emptyState.remove();
         }
-        
+
         // Add each recipe
         day.recipes.forEach(recipe => {
             const recipeItem = document.createElement('div');
             recipeItem.className = 'recipe-item';
-            
+
             recipeItem.innerHTML = `
                 <input type="hidden" name="recipes_${day.date}[]" value="${recipe.recipe_id}">
                 <div style="flex: 1;">
                     <strong>${recipe.recipe_name}</strong>
                 </div>
-                
+
                 <div style="display: flex; align-items: center; gap: 5px;">
-                    <input type="number" 
-                           name="servings_${day.date}[]" 
-                           class="servings-input" 
-                           min="1" 
-                           value="${recipe.servings}" 
+                    <input type="number"
+                           name="servings_${day.date}[]"
+                           class="servings-input"
+                           min="1"
+                           value="${recipe.servings}"
                            required>
                     <span style="color: #6c757d; font-size: 14px;">servings</span>
                 </div>
-                
+
                 <button type="button" class="btn-remove-recipe" onclick="removeRecipe(this)">
                     <i class="fas fa-trash"></i>
                 </button>
             `;
-            
+
             recipeList.appendChild(recipeItem);
         });
     });
-    
+
     console.log('✓ Existing recipes populated');
 }
 
@@ -464,56 +667,56 @@ document.getElementById('end_date').addEventListener('change', updateDateRange);
 function updateDateRange() {
     const startDateStr = document.getElementById('start_date').value;
     const endDateStr = document.getElementById('end_date').value;
-    
+
     console.log('Start date value:', startDateStr);
     console.log('End date value:', endDateStr);
-    
+
     if (!startDateStr || !endDateStr) {
         console.log('Missing date values');
         return;
     }
-    
+
     // Parse dates properly - input type="date" gives YYYY-MM-DD format
     const start = new Date(startDateStr + 'T00:00:00');
     const end = new Date(endDateStr + 'T00:00:00');
-    
+
     console.log('Parsed start:', start);
     console.log('Parsed end:', end);
-    
+
     // Check if dates are valid
     if (isNaN(start.getTime()) || isNaN(end.getTime())) {
         console.error('Invalid date format');
         alert('Invalid date format. Please select valid dates.');
         return;
     }
-    
+
     // Validate date range
     if (end < start) {
         alert('End date must be after start date');
         document.getElementById('end_date').value = '';
         return;
     }
-    
+
     const daysDiff = Math.floor((end - start) / (1000 * 60 * 60 * 24)) + 1;
     console.log('Days difference:', daysDiff);
-    
+
     if (daysDiff > 7) {
         alert('Meal plan cannot exceed 7 days');
         document.getElementById('end_date').value = '';
         return;
     }
-    
+
     console.log('✓ Valid date range - generating', daysDiff, 'days');
-    
+
     // In edit mode, save existing recipes before regenerating days
     let savedRecipes = {};
     if (editMode) {
         savedRecipes = saveExistingRecipes();
     }
-    
+
     // Generate days
     generateDays(start, end);
-    
+
     // In edit mode, restore recipes for days that still exist
     if (editMode && Object.keys(savedRecipes).length > 0) {
         restoreRecipes(savedRecipes);
@@ -522,23 +725,23 @@ function updateDateRange() {
 
 function saveExistingRecipes() {
     const savedRecipes = {};
-    
+
     // Loop through all existing day cards
     document.querySelectorAll('.day-card').forEach(dayCard => {
         const recipeList = dayCard.querySelector('.recipe-list');
         const dateMatch = recipeList.id.match(/recipes-(\d{4}-\d{2}-\d{2})/);
-        
+
         if (!dateMatch) return;
-        
+
         const dateStr = dateMatch[1];
         savedRecipes[dateStr] = [];
-        
+
         // Save all recipes for this day
         recipeList.querySelectorAll('.recipe-item').forEach(item => {
             const recipeId = item.querySelector('input[name^="recipes_"]').value;
             const servings = item.querySelector('input[name^="servings_"]').value;
             const recipeName = item.querySelector('strong').textContent;
-            
+
             savedRecipes[dateStr].push({
                 recipeId: recipeId,
                 servings: servings,
@@ -546,68 +749,68 @@ function saveExistingRecipes() {
             });
         });
     });
-    
+
     console.log('Saved recipes:', savedRecipes);
     return savedRecipes;
 }
 
 function restoreRecipes(savedRecipes) {
     console.log('Restoring recipes...');
-    
+
     Object.keys(savedRecipes).forEach(dateStr => {
         const recipeList = document.getElementById(`recipes-${dateStr}`);
-        
+
         if (!recipeList) {
             console.log(`Date ${dateStr} no longer exists in range - recipes discarded`);
             return;
         }
-        
+
         // Remove empty state
         const emptyState = recipeList.querySelector('.empty-day-state');
         if (emptyState) {
             emptyState.remove();
         }
-        
+
         // Restore each recipe
         savedRecipes[dateStr].forEach(recipe => {
             const recipeItem = document.createElement('div');
             recipeItem.className = 'recipe-item';
-            
+
             recipeItem.innerHTML = `
                 <input type="hidden" name="recipes_${dateStr}[]" value="${recipe.recipeId}">
                 <div style="flex: 1;">
                     <strong>${recipe.recipeName}</strong>
                 </div>
-                
+
                 <div style="display: flex; align-items: center; gap: 5px;">
-                    <input type="number" 
-                           name="servings_${dateStr}[]" 
-                           class="servings-input" 
-                           min="1" 
-                           value="${recipe.servings}" 
+                    <input type="number"
+                           name="servings_${dateStr}[]"
+                           class="servings-input"
+                           min="1"
+                           value="${recipe.servings}"
                            required>
                     <span style="color: #6c757d; font-size: 14px;">servings</span>
                 </div>
-                
+
                 <button type="button" class="btn-remove-recipe" onclick="removeRecipe(this)">
                     <i class="fas fa-trash"></i>
                 </button>
             `;
-            
+
             recipeList.appendChild(recipeItem);
         });
-        
+
         console.log(`Restored ${savedRecipes[dateStr].length} recipes for ${dateStr}`);
     });
 }
 
 function generateDays(startDate, endDate) {
     console.log('generateDays called with:', startDate, endDate);
-    
+
     const container = document.getElementById('daysContainer');
     const section = document.getElementById('daysSection');
     const saveBtn = document.getElementById('saveBtn');
-    
+
     if (!container || !section || !saveBtn) {
         console.error('Required elements not found:', {
             container: !!container,
@@ -616,40 +819,40 @@ function generateDays(startDate, endDate) {
         });
         return;
     }
-    
+
     container.innerHTML = '';
     selectedDates = [];
-    
+
     let currentDate = new Date(startDate);
     let dayCount = 0;
-    
+
     while (currentDate <= endDate) {
         dayCount++;
         selectedDates.push(new Date(currentDate));
         createDayCard(new Date(currentDate), container);
         currentDate.setDate(currentDate.getDate() + 1);
     }
-    
+
     console.log('Created', dayCount, 'day cards');
-    
+
     section.style.display = 'block';
     saveBtn.disabled = false;
-    
+
     console.log('✓ Days section shown, save button enabled');
 }
 
 function createDayCard(date, container) {
     const dayCard = document.createElement('div');
     dayCard.className = 'day-card';
-    
+
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
     const dateStr = `${year}-${month}-${day}`;
-    
+
     const dayName = date.toLocaleDateString('en-US', { weekday: 'long' });
     const dateDisplay = date.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-    
+
     dayCard.innerHTML = `
         <div class="day-header">
             <div>
@@ -657,19 +860,19 @@ function createDayCard(date, container) {
                 <p class="day-date">${dateDisplay}</p>
             </div>
         </div>
-        
+
         <div class="recipe-list" id="recipes-${dateStr}">
             <div class="empty-day-state">
                 <i class="fas fa-utensils"></i>
                 <p>No recipes added yet. Click "Add Recipe" below.</p>
             </div>
         </div>
-        
+
         <button type="button" class="btn-add-recipe" onclick="addRecipe('${dateStr}')">
             <i class="fas fa-plus"></i> Add Recipe
         </button>
     `;
-    
+
     container.appendChild(dayCard);
 }
 
@@ -683,9 +886,9 @@ function addRecipe(dateStr) {
 function removeRecipe(button) {
     const recipeItem = button.closest('.recipe-item');
     const recipeList = recipeItem.parentElement;
-    
+
     recipeItem.remove();
-    
+
     if (recipeList.querySelectorAll('.recipe-item').length === 0) {
         recipeList.innerHTML = `
             <div class="empty-day-state">
@@ -703,14 +906,14 @@ function updatePlanName() {
     const startDate = document.getElementById('start_date').value;
     const endDate = document.getElementById('end_date').value;
     const planNameInput = document.getElementById('plan_name');
-    
+
     if (startDate && endDate && !planNameInput.value) {
         const start = new Date(startDate + 'T00:00:00');
         const end = new Date(endDate + 'T00:00:00');
-        
+
         const startStr = start.toLocaleDateString('en-US', { month: 'long', day: 'numeric' });
         const endStr = end.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
-        
+
         planNameInput.value = `Week of ${startStr} - ${endStr}`;
     }
 }
@@ -718,13 +921,13 @@ function updatePlanName() {
 document.getElementById('mealPlanForm').addEventListener('submit', function(e) {
     const startDate = document.getElementById('start_date').value;
     const endDate = document.getElementById('end_date').value;
-    
+
     if (!startDate || !endDate) {
         e.preventDefault();
         alert('Please select both start and end dates');
         return false;
     }
-    
+
     return true;
 });
 
@@ -750,23 +953,23 @@ function openRecipeSelector(dateStr, dayName) {
 
     allRecipesForSelector = [...recipes];
     filteredRecipes = [...recipes];
-    
+
     populateFilterDropdowns();
-    
+
     displayedRecipesInSelector = 0;
     displayRecipesInSelector();
-    
+
     const modal = new bootstrap.Modal(document.getElementById('recipeSelectorModal'));
     modal.show();
 }
 
 function displayRecipesInSelector() {
     const grid = document.getElementById('recipeSelectorGrid');
-    
+
     if (displayedRecipesInSelector === 0) {
         grid.innerHTML = '';
     }
-    
+
     if (filteredRecipes.length === 0) {
         grid.innerHTML = `
             <div class="text-center py-5 col-span-full">
@@ -778,19 +981,19 @@ function displayRecipesInSelector() {
         document.getElementById('recipeSelectorShowMore').style.display = 'none';
         return;
     }
-    
+
     const recipesToShow = filteredRecipes.slice(
         displayedRecipesInSelector,
         displayedRecipesInSelector + RECIPES_PER_LOAD
     );
-    
+
     recipesToShow.forEach(recipe => {
         const card = createRecipeSelectorCard(recipe);
         grid.appendChild(card);
     });
-    
+
     displayedRecipesInSelector += recipesToShow.length;
-    
+
     const showMoreBtn = document.getElementById('recipeSelectorShowMore');
     if (displayedRecipesInSelector < filteredRecipes.length) {
         showMoreBtn.style.display = 'block';
@@ -805,13 +1008,13 @@ function populateFilterDropdowns() {
     allCourses.forEach(course => {
         courseSelect.innerHTML += `<option value="${course.name}">${course.name}</option>`;
     });
-    
+
     const categorySelect = document.getElementById('recipeSelectorCategory');
     categorySelect.innerHTML = '<option value="">🏷️ All Categories</option>';
     allCategories.forEach(cat => {
         categorySelect.innerHTML += `<option value="${cat.name}">${cat.name}</option>`;
     });
-    
+
     const proteinSelect = document.getElementById('recipeSelectorProtein');
     proteinSelect.innerHTML = '<option value="">🥩 All Proteins</option>';
     allProteins.forEach(protein => {
@@ -830,24 +1033,24 @@ function createRecipeSelectorCard(recipe) {
     const card = document.createElement('div');
     card.className = 'recipe-selector-card';
     card.onclick = () => selectRecipeForDay(recipe.recipe_id, recipe.recipe_name, recipe.servings);
-    
+
     let imageHtml;
     if (recipe.recipe_image) {
         imageHtml = `<img src="${recipe.recipe_image}" class="recipe-selector-card-image" alt="${recipe.recipe_name}">`;
     } else {
         imageHtml = `<div class="recipe-selector-card-placeholder"><i class="fas fa-utensils"></i></div>`;
     }
-    
+
     let metaHtml = `<span class="recipe-selector-card-badge"><i class="fas fa-users"></i> ${recipe.servings}</span>`;
-    
+
     if (recipe.prep_time) {
         metaHtml += `<span class="recipe-selector-card-badge"><i class="fas fa-clock"></i> ${recipe.prep_time}m</span>`;
     }
-    
+
     if (recipe.difficulty_level) {
         metaHtml += `<span class="recipe-selector-card-badge"><i class="fas fa-signal"></i> ${recipe.difficulty_level}</span>`;
     }
-    
+
     let tagsHtml = '';
     recipe.courses.forEach(course => {
         tagsHtml += `<span class="recipe-selector-card-badge" style="background: #17a2b8; color: white;">${course}</span>`;
@@ -855,7 +1058,7 @@ function createRecipeSelectorCard(recipe) {
     recipe.categories.forEach(cat => {
         tagsHtml += `<span class="recipe-selector-card-badge" style="background: #6f42c1; color: white;">${cat}</span>`;
     });
-    
+
     if (recipe.is_vegetarian) {
         tagsHtml += `<span class="recipe-selector-card-badge" style="background: #28a745; color: white;"><i class="fas fa-leaf"></i> Vegetarian</span>`;
     } else {
@@ -863,7 +1066,7 @@ function createRecipeSelectorCard(recipe) {
             tagsHtml += `<span class="recipe-selector-card-badge" style="background: #fd7e14; color: white;">${protein}</span>`;
         });
     }
-    
+
     const isFav = userFavouriteIds.has(recipe.recipe_id);
     card.innerHTML = `
         <div style="position:relative;">
@@ -878,44 +1081,44 @@ function createRecipeSelectorCard(recipe) {
             </div>
         </div>
     `;
-    
+
     return card;
 }
 
 function selectRecipeForDay(recipeId, recipeName, servings) {
     const recipeList = document.getElementById(`recipes-${currentMealPlanDate}`);
-    
+
     const emptyState = recipeList.querySelector('.empty-day-state');
     if (emptyState) {
         emptyState.remove();
     }
-    
+
     const recipeItem = document.createElement('div');
     recipeItem.className = 'recipe-item';
-    
+
     recipeItem.innerHTML = `
         <input type="hidden" name="recipes_${currentMealPlanDate}[]" value="${recipeId}">
         <div style="flex: 1;">
             <strong>${recipeName}</strong>
         </div>
-        
+
         <div style="display: flex; align-items: center; gap: 5px;">
-            <input type="number" 
-                   name="servings_${currentMealPlanDate}[]" 
-                   class="servings-input" 
-                   min="1" 
-                   value="${servings}" 
+            <input type="number"
+                   name="servings_${currentMealPlanDate}[]"
+                   class="servings-input"
+                   min="1"
+                   value="${servings}"
                    required>
             <span style="color: #6c757d; font-size: 14px;">servings</span>
         </div>
-        
+
         <button type="button" class="btn-remove-recipe" onclick="removeRecipe(this)">
             <i class="fas fa-trash"></i>
         </button>
     `;
-    
+
     recipeList.appendChild(recipeItem);
-    
+
     const modal = bootstrap.Modal.getInstance(document.getElementById('recipeSelectorModal'));
     modal.hide();
 }
@@ -925,20 +1128,20 @@ function searchRecipesInSelector() {
     const courseFilter = document.getElementById('recipeSelectorCourse').value;
     const categoryFilter = document.getElementById('recipeSelectorCategory').value;
     const proteinFilter = document.getElementById('recipeSelectorProtein').value;
-    const authorFilter = document.getElementById('recipeSelectorAuthor').value;  // ← ADD THIS
-    
+    const authorFilter = document.getElementById('recipeSelectorAuthor').value;
+
     filteredRecipes = allRecipesForSelector.filter(recipe => {
         const matchesSearch = !searchTerm || recipe.recipe_name.toLowerCase().includes(searchTerm);
         const matchesCourse = !courseFilter || recipe.courses.includes(courseFilter);
         const matchesCategory = !categoryFilter || recipe.categories.includes(categoryFilter);
-        const matchesProtein = !proteinFilter || 
+        const matchesProtein = !proteinFilter ||
             (proteinFilter === 'vegetarian' ? recipe.is_vegetarian : recipe.proteins.includes(proteinFilter));
         const matchesAuthor = !authorFilter || recipe.author === authorFilter;
         const matchesFavourite = !showFavouritesOnly || userFavouriteIds.has(recipe.recipe_id);
-        
+
         return matchesSearch && matchesCourse && matchesCategory && matchesProtein && matchesAuthor && matchesFavourite;
     });
-    
+
     displayedRecipesInSelector = 0;
     displayRecipesInSelector();
 }
@@ -1001,7 +1204,7 @@ function loadMoreRecipesInSelector() {
 
 </script>
 
-<!-- Recipe Selector Modal - ADD THIS HERE -->
+<!-- Recipe Selector Modal -->
 <div class="modal fade" id="recipeSelectorModal" tabindex="-1" role="dialog">
     <div class="modal-dialog modal-xl" role="document" style="max-width: 1000px;">
         <div class="modal-content">
@@ -1038,7 +1241,7 @@ function loadMoreRecipesInSelector() {
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Filter Dropdowns (Second Row) -->
                 <div class="mb-4">
                     <div class="row g-2">
@@ -1064,7 +1267,7 @@ function loadMoreRecipesInSelector() {
                         </div>
                     </div>
                 </div>
-                
+
                 <!-- Recipe Cards Grid -->
                 <div id="recipeSelectorGrid" class="recipe-selector-grid">
                     <div class="text-center py-5">
@@ -1072,7 +1275,7 @@ function loadMoreRecipesInSelector() {
                         <p class="mt-3">Loading recipes...</p>
                     </div>
                 </div>
-                
+
                 <!-- Show More -->
                 <div id="recipeSelectorShowMore" class="text-center mt-3" style="display: none;">
                     <button class="btn btn-outline-primary" onclick="loadMoreRecipesInSelector()">

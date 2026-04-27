@@ -63,6 +63,9 @@
     gap: 5px;
 }
 
+/* Desktop: hide the mobile-only More dropdown wrapper */
+.action-buttons .action-more-wrapper { display: none; }
+
 .btn-action-disabled {
     background: #e9ecef !important;
     color: #6c757d !important;
@@ -231,47 +234,110 @@
         grid-template-columns: 1fr;
     }
 
-    /* Top action bar — Back full-width on top, action buttons in 2-col grid below */
+    /* Top action bar — Back+2+ standard:
+       [Shopping List (wide)] [⋮ More: Edit, Duplicate, Print, Delete] [← Back small icon]
+       HTML order is [Back, action-buttons]; CSS order swaps them on mobile. */
     .action-bar {
-        flex-direction: column;
+        flex-direction: row;
+        flex-wrap: nowrap;
         align-items: stretch;
         gap: 8px;
+        margin-bottom: 14px;
     }
-
-    /* Back button (first child of action-bar) — full-width */
-    .action-bar > a:first-child {
-        width: 100%;
-        justify-content: center;
+    .action-bar > .action-back {
+        order: 2;
+        flex: 0 0 auto;
+        width: 44px;
+        height: 38px;
+        padding: 0;
         display: flex;
         align-items: center;
-        gap: 6px;
-        padding: 11px 14px;
-        font-size: 14px;
-    }
-
-    /* Action buttons div → 2-col grid */
-    .action-buttons {
-        width: 100%;
-        display: grid !important;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 8px !important;
-        flex-wrap: unset;
-    }
-
-    /* If the last button is alone on its row (odd count: 5), span both columns */
-    .action-buttons > *:last-child:nth-child(odd) {
-        grid-column: span 2;
-    }
-
-    /* All action buttons fill their cell */
-    .action-buttons .btn,
-    .action-buttons .btn-action-disabled {
-        width: 100%;
         justify-content: center;
-        padding: 11px 8px;
+        margin: 0;
+    }
+    .action-bar > .action-buttons {
+        order: 1;
+        flex: 1 1 auto;
+        min-width: 0;
+        display: flex !important;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        gap: 8px !important;
+        align-items: stretch;
+    }
+    /* Hide secondaries on mobile — they live in More menu */
+    .action-buttons .action-secondary {
+        display: none;
+    }
+    .action-buttons .action-primary {
+        flex: 1 1 auto;
+        min-width: 0;
+        height: 38px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 12px;
+        font-size: 13px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin: 0;
+        gap: 6px;
+    }
+    .action-buttons .action-more-wrapper {
+        display: block;
+        position: relative;
+        flex: 0 0 auto;
+    }
+    .action-buttons .action-more-btn {
+        width: 44px;
+        height: 38px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0;
+    }
+    .action-back-label {
+        display: none;
+    }
+    .action-more-menu {
+        position: absolute;
+        top: calc(100% + 6px);
+        right: 0;
+        z-index: 200;
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        min-width: 240px;
+        padding: 6px 0;
+    }
+    .action-more-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        width: 100%;
+        background: none;
+        border: none;
+        text-align: left;
+        padding: 12px 16px;
         font-size: 14px;
-        white-space: normal;
-        line-height: 1.25;
+        color: #2c3e50;
+        cursor: pointer;
+        text-decoration: none;
+    }
+    .action-more-item i {
+        color: #28a745;
+        width: 18px;
+        flex-shrink: 0;
+        text-align: center;
+    }
+    .action-more-item:hover, .action-more-item:active, .action-more-item:focus {
+        background: #f0fff4;
+        outline: none;
+        color: #2c3e50;
+        text-decoration: none;
     }
 
     .page-header {
@@ -420,47 +486,91 @@
    
     <!-- Action Bar -->
     <div class="action-bar">
-        <a href="{% url 'meal_plans' %}" class="btn btn-secondary">
-            <i class="fas fa-arrow-left"></i> Back to Meal Plans
+        <a href="{% url 'meal_plans' %}" class="btn btn-secondary action-back" aria-label="Back to Meal Plans">
+            <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back to Meal Plans</span>
         </a>
-        
+
         <div class="action-buttons">
-            <a href="{% url 'meal_plan_shopping_list' meal_plan.meal_plan_id %}" class="btn btn-success">
+            <!-- PRIMARY: Shopping List -->
+            <a href="{% url 'meal_plan_shopping_list' meal_plan.meal_plan_id %}" class="btn btn-success action-primary">
                 <i class="fas fa-shopping-cart"></i> Shopping List
             </a>
+
+            <!-- SECONDARIES (desktop visible, mobile hidden) -->
             {% if perms.auth.can_edit_personal %}
-            <a href="{% url 'edit_meal_plan' meal_plan.meal_plan_id %}" class="btn btn-warning">
+            <a href="{% url 'edit_meal_plan' meal_plan.meal_plan_id %}" class="btn btn-warning action-secondary">
                 <i class="fas fa-edit"></i> Edit
             </a>
-            <button type="button" 
-                    class="btn btn-info"
+            <button type="button"
+                    class="btn btn-info action-secondary"
                     data-duplicate-url="{% url 'duplicate_meal_plan' meal_plan.meal_plan_id %}"
                     onclick="confirmDuplicate(this, '{{ meal_plan.plan_name|escapejs }}')">
                 <i class="fas fa-copy"></i> Duplicate
             </button>
             {% else %}
-            <span class="btn btn-action-disabled" title="No permission to edit">
+            <span class="btn btn-action-disabled action-secondary" title="No permission to edit">
                 <i class="fas fa-edit"></i> Edit
             </span>
-            <span class="btn btn-action-disabled" title="No permission to duplicate">
+            <span class="btn btn-action-disabled action-secondary" title="No permission to duplicate">
                 <i class="fas fa-copy"></i> Duplicate
             </span>
             {% endif %}
-            <button onclick="window.print()" class="btn btn-secondary">
+            <button onclick="window.print()" class="btn btn-secondary action-secondary">
                 <i class="fas fa-print"></i> Print
             </button>
             {% if perms.auth.can_edit_personal %}
-            <button type="button" 
-                    class="btn btn-danger"
+            <button type="button"
+                    class="btn btn-danger action-secondary"
                     data-delete-url="{% url 'delete_meal_plan' meal_plan.meal_plan_id %}"
                     onclick="confirmDelete(this, '{{ meal_plan.plan_name|escapejs }}')">
                 <i class="fas fa-trash"></i> Delete
             </button>
             {% else %}
-            <span class="btn btn-action-disabled" title="No permission to delete">
+            <span class="btn btn-action-disabled action-secondary" title="No permission to delete">
                 <i class="fas fa-trash"></i> Delete
             </span>
             {% endif %}
+
+            <!-- Mobile-only More dropdown -->
+            <div class="action-more-wrapper">
+                <button type="button" class="btn btn-success action-more-btn" id="actionMoreBtn"
+                        aria-label="More actions" aria-expanded="false" aria-haspopup="true">
+                    <i class="fas fa-ellipsis-v"></i>
+                </button>
+                <div class="action-more-menu" id="actionMoreMenu" role="menu" hidden>
+                    {% if perms.auth.can_edit_personal %}
+                    <a href="{% url 'edit_meal_plan' meal_plan.meal_plan_id %}" class="action-more-item" role="menuitem">
+                        <i class="fas fa-edit"></i> Edit
+                    </a>
+                    <button type="button" class="action-more-item" role="menuitem"
+                            data-duplicate-url="{% url 'duplicate_meal_plan' meal_plan.meal_plan_id %}"
+                            onclick="confirmDuplicate(this, '{{ meal_plan.plan_name|escapejs }}')">
+                        <i class="fas fa-copy"></i> Duplicate
+                    </button>
+                    {% else %}
+                    <span class="action-more-item" style="opacity:0.4; cursor:not-allowed;">
+                        <i class="fas fa-edit"></i> Edit
+                    </span>
+                    <span class="action-more-item" style="opacity:0.4; cursor:not-allowed;">
+                        <i class="fas fa-copy"></i> Duplicate
+                    </span>
+                    {% endif %}
+                    <button type="button" class="action-more-item" role="menuitem" onclick="window.print()">
+                        <i class="fas fa-print"></i> Print
+                    </button>
+                    {% if perms.auth.can_edit_personal %}
+                    <button type="button" class="action-more-item" role="menuitem"
+                            data-delete-url="{% url 'delete_meal_plan' meal_plan.meal_plan_id %}"
+                            onclick="confirmDelete(this, '{{ meal_plan.plan_name|escapejs }}')">
+                        <i class="fas fa-trash"></i> Delete
+                    </button>
+                    {% else %}
+                    <span class="action-more-item" style="opacity:0.4; cursor:not-allowed;">
+                        <i class="fas fa-trash"></i> Delete
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
         </div>
     </div>
 
@@ -668,6 +778,43 @@
 {% endif %}
 
 <script>
+// Mobile-only "More" actions dropdown
+function initializeMoreMenu() {
+    const moreBtn = document.getElementById('actionMoreBtn');
+    const moreMenu = document.getElementById('actionMoreMenu');
+    if (!moreBtn || !moreMenu) return;
+
+    function closeMenu() {
+        moreMenu.setAttribute('hidden', '');
+        moreBtn.setAttribute('aria-expanded', 'false');
+    }
+    function openMenu() {
+        moreMenu.removeAttribute('hidden');
+        moreBtn.setAttribute('aria-expanded', 'true');
+    }
+    moreBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        const isOpen = !moreMenu.hasAttribute('hidden');
+        if (isOpen) closeMenu(); else openMenu();
+    });
+    document.addEventListener('click', function(e) {
+        if (!moreBtn.contains(e.target) && !moreMenu.contains(e.target)) closeMenu();
+    });
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && !moreMenu.hasAttribute('hidden')) {
+            closeMenu();
+            moreBtn.focus();
+        }
+    });
+    moreMenu.querySelectorAll('.action-more-item').forEach(item => {
+        item.addEventListener('click', function() { closeMenu(); });
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    initializeMoreMenu();
+});
+
 function confirmDelete(button, mealPlanName) {
     document.getElementById('deleteForm').action = button.getAttribute('data-delete-url');
     document.getElementById('deletePlanName').textContent = mealPlanName;

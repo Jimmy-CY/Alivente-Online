@@ -26,12 +26,15 @@
 
 .action-bar {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-end;
     align-items: center;
     margin-bottom: 25px;
     gap: 10px;
     flex-wrap: wrap;
 }
+
+/* Desktop: hide the mobile-only "More" dropdown wrapper */
+.action-bar .action-more-wrapper { display: none; }
 
 /* Card-Style Conversion Table */
 .conversions-card {
@@ -303,32 +306,91 @@
         font-size: 14px !important;
     }
 
-    /* Action bar — Back full-width on top, action buttons stack below */
+    /* Action bar — Back+2+ standard:
+       [Add Conversion (wide)] [⋮ Missing Conversions when present] [← Back] */
     .action-bar {
-        flex-direction: column;
+        flex-direction: row;
+        flex-wrap: nowrap;
         align-items: stretch;
         gap: 8px;
         margin-bottom: 16px;
     }
-    .action-bar > a:first-child {
-        width: 100%;
-        justify-content: center;
-        display: inline-flex;
+    .action-bar .action-secondary {
+        display: none;  /* Missing Conversions warning lives in More menu on mobile */
+    }
+    .action-bar .action-primary {
+        flex: 1 1 auto;
+        min-width: 0;
+        height: 38px;
+        display: flex;
         align-items: center;
+        justify-content: center;
+        padding: 0 12px;
+        font-size: 13px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin: 0;
         gap: 6px;
     }
-    .action-bar > div {
-        display: flex !important;
-        flex-direction: column;
-        gap: 8px !important;
-        width: 100%;
+    .action-bar .action-more-wrapper {
+        display: block;
+        position: relative;
+        flex: 0 0 auto;
     }
-    .action-bar > div .btn {
-        width: 100%;
-        justify-content: center;
-        display: inline-flex;
+    .action-bar .action-more-btn {
+        width: 44px;
+        height: 38px;
+        padding: 0;
+        display: flex;
         align-items: center;
-        gap: 6px;
+        justify-content: center;
+        margin: 0;
+    }
+    .action-more-menu {
+        position: absolute;
+        top: calc(100% + 6px);
+        right: 0;
+        z-index: 200;
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        min-width: 240px;
+        padding: 6px 0;
+    }
+    .action-more-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        width: 100%;
+        background: none;
+        border: none;
+        text-align: left;
+        padding: 12px 16px;
+        font-size: 14px;
+        color: #2c3e50;
+        cursor: pointer;
+        text-decoration: none;
+    }
+    .action-more-item i { color: #ffc107; width: 18px; flex-shrink: 0; text-align: center; }
+    .action-more-item:hover, .action-more-item:active, .action-more-item:focus {
+        background: #fff8e1;
+        outline: none;
+        color: #2c3e50;
+    }
+    .action-bar .action-back {
+        flex: 0 0 auto;
+        width: 44px;
+        height: 38px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0;
+    }
+    .action-back-label {
+        display: none;
     }
 
     /* Card padding tighter */
@@ -511,31 +573,51 @@
     
     <!-- Action Bar -->
     <div class="action-bar">
-        <a href="{% url 'recipe_management' %}" class="btn btn-secondary">
-            <i class="fas fa-arrow-left"></i> Back to Recipe Management
-        </a>
-        <div style="display: flex; gap: 10px;">
-            {% if missing_count > 0 %}
-                {% if perms.auth.can_edit_personal %}
-                <button onclick="openMissingConversionsModal()" class="btn btn-warning">
-                    <i class="fas fa-exclamation-triangle"></i> Missing Conversions ({{ missing_count }})
-                </button>
-                {% else %}
-                <button class="btn btn-warning" disabled style="opacity: 0.6; cursor: not-allowed;" title="No permission to edit">
-                    <i class="fas fa-exclamation-triangle"></i> Missing Conversions ({{ missing_count }})
-                </button>
-                {% endif %}
-            {% endif %}
+        {% if perms.auth.can_edit_personal %}
+        <button onclick="openAddModal()" class="btn btn-success action-primary">
+            <i class="fas fa-plus"></i> Add New Conversion
+        </button>
+        {% else %}
+        <button class="btn btn-success action-primary" disabled style="opacity: 0.6; cursor: not-allowed;" title="No permission to edit">
+            <i class="fas fa-plus"></i> Add New Conversion
+        </button>
+        {% endif %}
+
+        {% if missing_count > 0 %}
+            <!-- Desktop secondary (hidden on mobile, accessed via More menu) -->
             {% if perms.auth.can_edit_personal %}
-            <button onclick="openAddModal()" class="btn btn-success">
-                <i class="fas fa-plus"></i> Add New Conversion
+            <button onclick="openMissingConversionsModal()" class="btn btn-warning action-secondary">
+                <i class="fas fa-exclamation-triangle"></i> Missing Conversions ({{ missing_count }})
             </button>
             {% else %}
-            <button class="btn btn-success" disabled style="opacity: 0.6; cursor: not-allowed;" title="No permission to edit">
-                <i class="fas fa-plus"></i> Add New Conversion
+            <button class="btn btn-warning action-secondary" disabled style="opacity: 0.6; cursor: not-allowed;" title="No permission to edit">
+                <i class="fas fa-exclamation-triangle"></i> Missing Conversions ({{ missing_count }})
             </button>
             {% endif %}
-        </div>
+
+            <!-- Mobile-only More dropdown -->
+            <div class="action-more-wrapper">
+                <button type="button" class="btn btn-success action-more-btn" id="actionMoreBtn"
+                        aria-label="More actions" aria-expanded="false" aria-haspopup="true">
+                    <i class="fas fa-ellipsis-v"></i>
+                </button>
+                <div class="action-more-menu" id="actionMoreMenu" role="menu" hidden>
+                    {% if perms.auth.can_edit_personal %}
+                    <button type="button" class="action-more-item" role="menuitem" onclick="openMissingConversionsModal()">
+                        <i class="fas fa-exclamation-triangle"></i> Missing Conversions ({{ missing_count }})
+                    </button>
+                    {% else %}
+                    <span class="action-more-item" style="opacity:0.5; cursor:not-allowed;">
+                        <i class="fas fa-exclamation-triangle"></i> Missing Conversions ({{ missing_count }})
+                    </span>
+                    {% endif %}
+                </div>
+            </div>
+        {% endif %}
+
+        <a href="{% url 'recipe_management' %}" class="btn btn-secondary action-back" aria-label="Back to Recipe Management">
+            <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back to Recipe Management</span>
+        </a>
     </div>
 
     <!-- Page Header -->
@@ -885,8 +967,44 @@ function clearFilters() {
 // ==================== END FILTER FUNCTIONALITY ====================
 
 {% if perms.auth.can_edit_personal %}
+// Mobile-only "More" actions dropdown
+function initializeMoreMenu() {
+    const moreBtn = document.getElementById('actionMoreBtn');
+    const moreMenu = document.getElementById('actionMoreMenu');
+    if (!moreBtn || !moreMenu) return;
+
+    function closeMenu() {
+        moreMenu.setAttribute('hidden', '');
+        moreBtn.setAttribute('aria-expanded', 'false');
+    }
+    function openMenu() {
+        moreMenu.removeAttribute('hidden');
+        moreBtn.setAttribute('aria-expanded', 'true');
+    }
+
+    moreBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        const isOpen = !moreMenu.hasAttribute('hidden');
+        if (isOpen) closeMenu(); else openMenu();
+    });
+    document.addEventListener('click', function(e) {
+        if (!moreBtn.contains(e.target) && !moreMenu.contains(e.target)) closeMenu();
+    });
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && !moreMenu.hasAttribute('hidden')) {
+            closeMenu();
+            moreBtn.focus();
+        }
+    });
+    moreMenu.querySelectorAll('.action-more-item').forEach(item => {
+        item.addEventListener('click', function() { closeMenu(); });
+    });
+}
+
 // Preview conversion formula while typing
 document.addEventListener('DOMContentLoaded', function() {
+    initializeMoreMenu();
+
     const fromSelect = document.getElementById('addFromUnit');
     const toSelect = document.getElementById('addToUnit');
     const multiplierInput = document.getElementById('addMultiplier');

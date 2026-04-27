@@ -12,6 +12,15 @@
     margin: 0 auto;
 }
 
+/* Top action bar */
+.preview-action-bar {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
 .preview-header {
     {% if mode == 'edit' %}
     background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
@@ -785,22 +794,52 @@ tr.sortable-chosen {
         padding: 0 8px;
     }
 
-    /* Top buttons row — stack full-width */
-    .preview-container > div:first-of-type {
-        flex-direction: column !important;
-        gap: 8px !important;
-        margin-bottom: 14px !important;
+    /* Top action bar — Back+1 standard:
+       [View Recipe (wide, edit mode only)] [← Back small icon] */
+    .preview-action-bar {
+        flex-direction: row;
+        flex-wrap: nowrap;
+        align-items: stretch;
+        gap: 8px;
+        margin-bottom: 14px;
     }
-    .preview-container > div:first-of-type > div {
-        flex-direction: column !important;
-        width: 100%;
-        gap: 8px !important;
-    }
-    .preview-container > div:first-of-type .btn {
-        width: 100%;
-        justify-content: center;
+    .preview-action-bar .action-primary {
+        flex: 1 1 auto;
+        min-width: 0;
+        height: 38px;
         display: flex;
         align-items: center;
+        justify-content: center;
+        padding: 0 12px;
+        font-size: 13px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin: 0;
+        gap: 6px;
+    }
+    .preview-action-bar .action-back {
+        flex: 0 0 auto;
+        height: 38px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0;
+    }
+    /* When there's a primary (edit mode), Back is icon-only.
+       When no primary (create/import), Back takes full width with label visible. */
+    .preview-action-bar.has-primary .action-back {
+        width: 50px;
+    }
+    .preview-action-bar.has-primary .action-back-label {
+        display: none;
+    }
+    .preview-action-bar:not(.has-primary) .action-back {
+        flex: 1 1 auto;
+        padding: 0 12px;
+        font-size: 13px;
+        white-space: nowrap;
         gap: 6px;
     }
 
@@ -1160,18 +1199,19 @@ tr.sortable-chosen {
 
 <div class="preview-container">
     
-    <div style="display: flex; justify-content: space-between; margin-bottom: 20px;">
-        <div style="display: flex; gap: 10px;">
-            {% if mode == 'edit' %}
-            <a href="{% url 'view_recipe' recipe.recipe_id %}" class="btn btn-success">
-                <i class="fas fa-eye"></i> View Recipe
-            </a>
-            {% endif %}
-            
-            <a href="{% if mode == 'import' %}{% url 'import_recipe' %}{% else %}{% url 'recipe_management' %}{% endif %}" class="btn btn-secondary">
-                <i class="fas fa-arrow-left"></i> {% if mode == 'import' %}Back to Import{% else %}Back to Recipes{% endif %}
-            </a>
-        </div>
+    <!-- Top action bar -->
+    <div class="preview-action-bar{% if mode == 'edit' %} has-primary{% endif %}">
+        {% if mode == 'edit' %}
+        <a href="{% url 'view_recipe' recipe.recipe_id %}" class="btn btn-success action-primary">
+            <i class="fas fa-eye"></i> View Recipe
+        </a>
+        {% endif %}
+
+        <a href="{% if mode == 'import' %}{% url 'import_recipe' %}{% else %}{% url 'recipe_management' %}{% endif %}"
+           class="btn btn-secondary action-back"
+           aria-label="{% if mode == 'import' %}Back to Import{% else %}Back to Recipes{% endif %}">
+            <i class="fas fa-arrow-left"></i><span class="action-back-label"> {% if mode == 'import' %}Back to Import{% else %}Back to Recipes{% endif %}</span>
+        </a>
     </div>
 
     <div class="preview-header">

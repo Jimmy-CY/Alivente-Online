@@ -304,6 +304,14 @@
     flex-wrap: wrap;
 }
 
+.top-button-right {
+    display: flex;
+    gap: 10px;
+}
+
+/* Desktop: hide the mobile-only More dropdown */
+.top-button-right .action-more-wrapper { display: none; }
+
 /* View Toggle Styles */
 .view-toggle-container {
     display: flex;
@@ -1221,39 +1229,129 @@
     h2 { font-size: 1.3rem; }
     h4 { font-size: 1rem; }
 
-    /* === TOP BUTTON BAR === */
-    .top-button-bar { flex-direction: column; align-items: stretch; gap: 8px; }
-    .top-button-group {
-        width: 100%;
-        display: grid;
-        grid-template-columns: 1fr 1fr;
+    /* === TOP BUTTON BAR — Back+2+ standard:
+       [Add Recipe (wide)] [⋮ More menu] [← Back small icon]
+       All other actions (Meal Plans, What Can I Make, Favourites, Settings sub-items, Help)
+       live in the More menu. === */
+    .top-button-bar {
+        flex-direction: row;
+        flex-wrap: nowrap;
+        align-items: stretch;
         gap: 8px;
-        flex-direction: unset;
     }
-    /* Add Recipe (first child) → full-width */
-    .top-button-group > .dropdown-btn-container:first-child,
-    .top-button-group > span.dropdown-btn:first-child {
-        grid-column: 1 / -1;
-    }
-    .top-button-group > .dropdown-btn-container,
-    .top-button-group > .btn,
-    .top-button-group > a.btn,
-    .top-button-group > span { width: 100%; }
-    .top-button-group > .dropdown-btn-container > .btn,
-    .top-button-group > .dropdown-btn-container > span {
-        width: 100%;
-        justify-content: center;
+    .top-button-group {
+        flex: 1 1 auto;
+        min-width: 0;
         display: flex;
+        flex-wrap: nowrap;
+        gap: 0;
     }
-    /* Right group (Help + Back) — 50/50 grid */
-    .top-button-bar > div:last-child {
-        display: grid !important;
-        grid-template-columns: 1fr 1fr;
-        gap: 8px !important;
+    /* Hide all secondaries (Meal Plans / What Can I Make / Favourites / Settings) on mobile */
+    .top-button-group .action-secondary {
+        display: none;
+    }
+    /* Add Recipe primary takes the leftover space */
+    .top-button-group .action-primary {
+        flex: 1 1 auto;
+        min-width: 0;
         width: 100%;
     }
-    .top-button-bar > div:last-child > .btn,
-    .top-button-bar > div:last-child > a { width: 100%; }
+    .top-button-group .action-primary .dropdown-btn {
+        width: 100%;
+        height: 38px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 12px;
+        font-size: 13px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        gap: 6px;
+    }
+
+    /* Right group: More + Back (Help button hidden on mobile) */
+    .top-button-right {
+        flex: 0 0 auto;
+        display: flex;
+        gap: 8px;
+        align-items: stretch;
+    }
+    .top-button-right .action-secondary {
+        display: none;  /* Help — hidden, goes into More menu */
+    }
+    .top-button-right .action-more-wrapper {
+        display: block;
+        position: relative;
+    }
+    .top-button-right .action-more-btn {
+        width: 44px;
+        height: 38px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0;
+    }
+    .action-more-menu {
+        position: absolute;
+        top: calc(100% + 6px);
+        right: 0;
+        z-index: 200;
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        min-width: 240px;
+        padding: 6px 0;
+    }
+    .action-more-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        width: 100%;
+        background: none;
+        border: none;
+        text-align: left;
+        padding: 12px 16px;
+        font-size: 14px;
+        color: #2c3e50;
+        cursor: pointer;
+        text-decoration: none;
+    }
+    .action-more-item i {
+        color: #28a745;
+        width: 18px;
+        flex-shrink: 0;
+        text-align: center;
+    }
+    .action-more-item:hover, .action-more-item:active, .action-more-item:focus {
+        background: #f0fff4;
+        outline: none;
+        color: #2c3e50;
+        text-decoration: none;
+    }
+    .action-more-divider {
+        height: 1px;
+        background: #e9ecef;
+        margin: 6px 0;
+    }
+    .top-button-right .action-back {
+        flex: 0 0 auto;
+        width: 44px;
+        height: 38px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0;
+    }
+    .action-back-label {
+        display: none;
+    }
+
+    /* Hide Add Recipe dropdown menu on mobile — primary button still works as link to first option */
+    /* Actually keep dropdown working — the existing mobile-active class handles it */
 
     /* === DROPDOWN MENUS — flow inline below button on mobile via .mobile-active === */
     .dropdown-menu-custom {
@@ -1433,9 +1531,9 @@
 
 <div class="top-button-bar">
     <div class="top-button-group">
-        <!-- Add Recipe Dropdown -->
+        <!-- Add Recipe Dropdown (PRIMARY) -->
         {% if perms.auth.can_edit_personal %}
-        <div class="dropdown-btn-container">
+        <div class="dropdown-btn-container action-primary">
             <button class="btn btn-success dropdown-btn">
                 <i class="fas fa-plus"></i> Add Recipe
                 <i class="fas fa-chevron-down"></i>
@@ -1450,30 +1548,30 @@
             </div>
         </div>
         {% else %}
-        <span class="btn btn-secondary dropdown-btn" style="opacity:0.6; cursor:not-allowed; pointer-events:none;">
+        <span class="btn btn-secondary dropdown-btn action-primary" style="opacity:0.6; cursor:not-allowed; pointer-events:none;">
             <i class="fas fa-plus"></i> Add Recipe
             <i class="fas fa-chevron-down"></i>
         </span>
         {% endif %}
 
         <!-- Meal Plans -->
-        <a href="{% url 'meal_plans' %}" class="btn btn-primary">
+        <a href="{% url 'meal_plans' %}" class="btn btn-primary action-secondary">
             <i class="fas fa-calendar-alt"></i> Meal Plans
         </a>
 
         <!-- What Can I Make -->
-        <button type="button" class="btn btn-primary" onclick="openIngredientMatcher()">
+        <button type="button" class="btn btn-primary action-secondary" onclick="openIngredientMatcher()">
             <i class="fas fa-search"></i> What Can I Make?
         </button>
 
         <!-- Favourites Filter -->
         <a href="{% if show_favourites %}{% url 'recipe_management' %}{% else %}?favourites=1{% endif %}"
-           class="btn {% if show_favourites %}btn-danger{% else %}btn-outline-danger{% endif %}">
+           class="btn {% if show_favourites %}btn-danger{% else %}btn-outline-danger{% endif %} action-secondary">
             <i class="fas fa-heart"></i> Favourites
         </a>
 
         <!-- Settings Dropdown -->
-        <div class="dropdown-btn-container">
+        <div class="dropdown-btn-container action-secondary">
             <button class="btn btn-secondary dropdown-btn">
                 <i class="fas fa-cog"></i> Settings
                 <i class="fas fa-chevron-down"></i>
@@ -1495,11 +1593,51 @@
         </div>
     </div>
 
-    <div style="display:flex; gap:10px;">
-        <button type="button" class="btn btn-success" data-toggle="modal" data-target="#recipe_managementHelpModal">
+    <div class="top-button-right">
+        <!-- Desktop Help button (hidden on mobile, accessed via More menu) -->
+        <button type="button" class="btn btn-success action-secondary" data-toggle="modal" data-target="#recipe_managementHelpModal">
             <i class="fas fa-question-circle"></i> Help
         </button>
-        <a href="{% url 'personal_page' %}" class="btn btn-success" role="button">Back</a>
+
+        <!-- Mobile-only More dropdown — contains everything secondary -->
+        <div class="action-more-wrapper">
+            <button type="button" class="btn btn-success action-more-btn" id="actionMoreBtn"
+                    aria-label="More actions" aria-expanded="false" aria-haspopup="true">
+                <i class="fas fa-ellipsis-v"></i>
+            </button>
+            <div class="action-more-menu" id="actionMoreMenu" role="menu" hidden>
+                <a href="{% url 'meal_plans' %}" class="action-more-item" role="menuitem">
+                    <i class="fas fa-calendar-alt"></i> Meal Plans
+                </a>
+                <button type="button" class="action-more-item" role="menuitem" onclick="openIngredientMatcher()">
+                    <i class="fas fa-search"></i> What Can I Make?
+                </button>
+                <a href="{% if show_favourites %}{% url 'recipe_management' %}{% else %}?favourites=1{% endif %}" class="action-more-item" role="menuitem">
+                    <i class="fas fa-heart"></i> {% if show_favourites %}Show All Recipes{% else %}Favourites Only{% endif %}
+                </a>
+                <div class="action-more-divider"></div>
+                <a href="{% url 'unit_conversions_management' %}" class="action-more-item" role="menuitem">
+                    <i class="fas fa-exchange-alt"></i> Unit Conversions
+                </a>
+                <a href="{% url 'categories_management' %}" class="action-more-item" role="menuitem">
+                    <i class="fas fa-tags"></i> Categories
+                </a>
+                <a href="{% url 'measurement_units_management' %}" class="action-more-item" role="menuitem">
+                    <i class="fas fa-ruler"></i> Units
+                </a>
+                <a href="{% url 'ingredient_base_units_management' %}" class="action-more-item" role="menuitem">
+                    <i class="fas fa-balance-scale"></i> Ingredients
+                </a>
+                <div class="action-more-divider"></div>
+                <button type="button" class="action-more-item" role="menuitem" data-toggle="modal" data-target="#recipe_managementHelpModal">
+                    <i class="fas fa-question-circle"></i> Help
+                </button>
+            </div>
+        </div>
+
+        <a href="{% url 'personal_page' %}" class="btn btn-success action-back" role="button" aria-label="Back to Personal">
+            <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
+        </a>
     </div>
 </div>
 <br/>
@@ -2256,7 +2394,43 @@ const USER_CAN_EDIT_PERSONAL = {% if perms.auth.can_edit_personal %}true{% else 
 // ==================== MOBILE DROPDOWN TAP-TOGGLE ====================
 // On mobile, the .dropdown-btn-container :hover trigger doesn't reliably fire on touch.
 // Add tap-to-toggle: tap button -> toggles .mobile-active class; tap outside -> closes.
+
+// Mobile-only "More" actions dropdown (action-more-btn / action-more-menu)
+function initializeMoreMenu() {
+    const moreBtn = document.getElementById('actionMoreBtn');
+    const moreMenu = document.getElementById('actionMoreMenu');
+    if (!moreBtn || !moreMenu) return;
+
+    function closeMenu() {
+        moreMenu.setAttribute('hidden', '');
+        moreBtn.setAttribute('aria-expanded', 'false');
+    }
+    function openMenu() {
+        moreMenu.removeAttribute('hidden');
+        moreBtn.setAttribute('aria-expanded', 'true');
+    }
+    moreBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        const isOpen = !moreMenu.hasAttribute('hidden');
+        if (isOpen) closeMenu(); else openMenu();
+    });
+    document.addEventListener('click', function(e) {
+        if (!moreBtn.contains(e.target) && !moreMenu.contains(e.target)) closeMenu();
+    });
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && !moreMenu.hasAttribute('hidden')) {
+            closeMenu();
+            moreBtn.focus();
+        }
+    });
+    moreMenu.querySelectorAll('.action-more-item').forEach(item => {
+        item.addEventListener('click', function() { closeMenu(); });
+    });
+}
+
 document.addEventListener('DOMContentLoaded', function() {
+    initializeMoreMenu();
+
     document.querySelectorAll('.dropdown-btn-container').forEach(container => {
         const trigger = container.querySelector('.dropdown-btn');
         if (!trigger) return;

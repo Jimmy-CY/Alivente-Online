@@ -33,6 +33,13 @@
     gap: 12px;
 }
 
+/* View toggle on its own row */
+.view-toggle-row {
+    display: flex;
+    justify-content: center;
+    margin: 0 0 20px 0;
+}
+
 .calendar-header-actions .btn {
     padding: 10px 20px;
     border-radius: 8px;
@@ -580,36 +587,51 @@
         font-size: 22px;
     }
 
-    /* Header actions: New Meal Plan full-width on top; view-toggle + Back side-by-side below */
+    /* Header actions — Back+1 standard:
+       [New Meal Plan (wide)] [← Back small icon]
+       View Toggle lives in its own row below */
     .calendar-header-actions {
-        display: grid !important;
-        grid-template-columns: auto 1fr;
+        display: flex !important;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        align-items: stretch;
         gap: 8px !important;
         width: 100%;
     }
-    /* First child (New Meal Plan link/span) spans both columns */
-    .calendar-header-actions > a:first-child,
-    .calendar-header-actions > span:first-child {
-        grid-column: 1 / -1;
-        width: 100%;
-        justify-content: center;
+    .calendar-header-actions .action-primary {
+        flex: 1 1 auto;
+        min-width: 0;
+        height: 38px;
         display: flex;
         align-items: center;
-        gap: 6px;
-        padding: 11px 16px;
-    }
-    .calendar-header-actions .view-toggle {
-        flex-shrink: 0;
-    }
-    .calendar-header-actions .view-toggle .toggle-btn {
-        padding: 9px 14px;
-    }
-    .calendar-header-actions > a.btn-secondary {
         justify-content: center;
-        display: flex;
-        align-items: center;
-        gap: 6px;
+        padding: 0 12px;
+        font-size: 13px;
         white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin: 0;
+        gap: 6px;
+    }
+    .calendar-header-actions .action-back {
+        flex: 0 0 auto;
+        width: 50px;
+        height: 38px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0;
+    }
+    .action-back-label {
+        display: none;
+    }
+
+    .view-toggle-row {
+        margin-bottom: 16px;
+    }
+    .view-toggle .toggle-btn {
+        padding: 9px 14px;
     }
 
     /* Left panel — stack mini-calendar above meal-plans-panel */
@@ -906,27 +928,29 @@
         <h1><i class="fas fa-calendar-alt"></i> Meal Plan Calendar</h1>
         <div class="calendar-header-actions">
             {% if perms.auth.can_edit_personal %}
-            <a href="{% url 'create_meal_plan' %}" class="btn btn-success">
+            <a href="{% url 'create_meal_plan' %}" class="btn btn-success action-primary">
                 <i class="fas fa-plus"></i> New Meal Plan
             </a>
             {% else %}
-            <span class="btn btn-header-disabled" title="No permission to create">
+            <span class="btn btn-header-disabled action-primary" title="No permission to create">
                 <i class="fas fa-plus"></i> New Meal Plan
             </span>
             {% endif %}
-            
-            <!-- View Toggle -->
-            <div class="view-toggle">
-                <a href="{% url 'meal_plans' %}" class="toggle-btn" title="List View" onclick="sessionStorage.setItem('meal_plan_view_preference', 'list')">
-                    <i class="fas fa-list"></i>
-                </a>
-                <a href="{% url 'meal_plan_calendar' %}" class="toggle-btn active" title="Calendar View" onclick="sessionStorage.setItem('meal_plan_view_preference', 'calendar')">
-                    <i class="fas fa-calendar-alt"></i>
-                </a>
-            </div>
-            
-            <a href="{% url 'recipe_management' %}" class="btn btn-secondary">
-                <i class="fas fa-arrow-left"></i> Back
+
+            <a href="{% url 'recipe_management' %}" class="btn btn-secondary action-back" aria-label="Back to Recipes">
+                <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- View Toggle (List vs Calendar) — its own row -->
+    <div class="view-toggle-row">
+        <div class="view-toggle">
+            <a href="{% url 'meal_plans' %}" class="toggle-btn" title="List View" onclick="sessionStorage.setItem('meal_plan_view_preference', 'list')">
+                <i class="fas fa-list"></i>
+            </a>
+            <a href="{% url 'meal_plan_calendar' %}" class="toggle-btn active" title="Calendar View" onclick="sessionStorage.setItem('meal_plan_view_preference', 'calendar')">
+                <i class="fas fa-calendar-alt"></i>
             </a>
         </div>
     </div>

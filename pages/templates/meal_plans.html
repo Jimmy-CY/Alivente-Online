@@ -33,7 +33,14 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 30px;
+    margin-bottom: 16px;
+}
+
+/* View toggle on its own row */
+.view-toggle-row {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 24px;
 }
 
 .btn-create {
@@ -284,42 +291,50 @@
         font-size: 14px;
     }
 
-    /* Action buttons row — Create on top, view-toggle + back side-by-side below */
+    /* Action buttons row — Back+1 standard:
+       [Create New Meal Plan (wide)] [← Back small icon]
+       View Toggle lives in its own row below */
     .action-buttons {
-        flex-direction: column;
-        gap: 10px;
+        flex-direction: row;
+        flex-wrap: nowrap;
         align-items: stretch;
-        margin-bottom: 18px;
+        gap: 8px;
+        margin-bottom: 12px;
     }
-    .action-buttons > a.btn-create,
-    .action-buttons > span.btn-create-disabled {
-        width: 100%;
-        justify-content: center;
+    .action-buttons .action-primary {
+        flex: 1 1 auto;
+        min-width: 0;
+        height: 38px;
         display: flex;
         align-items: center;
+        justify-content: center;
+        padding: 0 12px;
+        font-size: 13px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin: 0;
         gap: 6px;
-        padding: 12px 20px;
-        font-size: 15px;
     }
-    /* The right-side wrapper (view toggle + back) — keep as flex row, full width */
-    .action-buttons > div:last-child {
-        width: 100%;
-        gap: 8px !important;
-        justify-content: space-between !important;
+    .action-buttons .action-back {
+        flex: 0 0 auto;
+        width: 50px;
+        height: 38px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0;
     }
-    .view-toggle {
-        flex-shrink: 0;
+    .action-back-label {
+        display: none;
+    }
+
+    .view-toggle-row {
+        margin-bottom: 18px;
     }
     .view-toggle .toggle-btn {
         padding: 9px 14px;
-    }
-    .action-buttons .btn-secondary {
-        flex: 1;
-        justify-content: center;
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        white-space: nowrap;
     }
 
     /* Meal plan cards — tighter, single column */
@@ -436,28 +451,28 @@
     <!-- Action Buttons -->
     <div class="action-buttons">
         {% if perms.auth.can_edit_personal %}
-        <a href="{% url 'create_meal_plan' %}" class="btn btn-create">
+        <a href="{% url 'create_meal_plan' %}" class="btn btn-create action-primary">
             <i class="fas fa-plus"></i> Create New Meal Plan
         </a>
         {% else %}
-        <span class="btn btn-create-disabled" title="You don't have permission to create meal plans">
+        <span class="btn btn-create-disabled action-primary" title="You don't have permission to create meal plans">
             <i class="fas fa-plus"></i> Create New Meal Plan
         </span>
         {% endif %}
-        
-        <div style="display: flex; align-items: center; gap: 15px;">
-            <!-- View Toggle -->
-            <div class="view-toggle">
-                <a href="{% url 'meal_plans' %}" class="toggle-btn active" title="List View" onclick="sessionStorage.setItem('meal_plan_view_preference', 'list')">
-                    <i class="fas fa-list"></i>
-                </a>
-                <a href="{% url 'meal_plan_calendar' %}" class="toggle-btn" title="Calendar View" onclick="sessionStorage.setItem('meal_plan_view_preference', 'calendar')">
-                    <i class="fas fa-calendar-alt"></i>
-                </a>
-            </div>
-            
-            <a href="{% url 'recipe_management' %}" class="btn btn-secondary">
-                <i class="fas fa-arrow-left"></i> Back to Recipes
+
+        <a href="{% url 'recipe_management' %}" class="btn btn-secondary action-back" aria-label="Back to Recipes">
+            <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back to Recipes</span>
+        </a>
+    </div>
+
+    <!-- View Toggle (List vs Calendar) — its own row -->
+    <div class="view-toggle-row">
+        <div class="view-toggle">
+            <a href="{% url 'meal_plans' %}" class="toggle-btn active" title="List View" onclick="sessionStorage.setItem('meal_plan_view_preference', 'list')">
+                <i class="fas fa-list"></i>
+            </a>
+            <a href="{% url 'meal_plan_calendar' %}" class="toggle-btn" title="Calendar View" onclick="sessionStorage.setItem('meal_plan_view_preference', 'calendar')">
+                <i class="fas fa-calendar-alt"></i>
             </a>
         </div>
     </div>
