@@ -20,6 +20,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 16px;
 }
 
 .report-header-left h1 {
@@ -39,6 +40,7 @@
     padding: 12px 24px;
     border-radius: 8px;
     text-align: center;
+    flex-shrink: 0;
 }
 
 .stat-box .stat-value {
@@ -56,6 +58,7 @@
     display: flex;
     justify-content: space-between;
     margin-bottom: 20px;
+    gap: 12px;
 }
 
 .table-container {
@@ -117,6 +120,8 @@
     max-width: 500px;
     line-height: 1.5;
     cursor: pointer;
+    word-break: break-word;
+    overflow-wrap: break-word;
 }
 
 .comment-cell:hover {
@@ -263,6 +268,7 @@
     gap: 20px;
     margin-bottom: 15px;
     font-size: 13px;
+    flex-wrap: wrap;
 }
 
 .legend-item {
@@ -275,6 +281,7 @@
     width: 20px;
     height: 20px;
     border-radius: 4px;
+    flex-shrink: 0;
 }
 
 .legend-color.admin {
@@ -287,7 +294,7 @@
     border: 1px solid #ffcc80;
 }
 
-/* Modal Styles */
+/* Modal Styles (custom modal — not Bootstrap) */
 .modal {
     display: none;
     position: fixed;
@@ -325,11 +332,13 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 12px;
 }
 
 .modal-header h2 {
     margin: 0;
     font-size: 24px;
+    word-break: break-word;
 }
 
 .modal-close {
@@ -345,6 +354,7 @@
     align-items: center;
     justify-content: center;
     opacity: 0.8;
+    flex-shrink: 0;
 }
 
 .modal-close:hover {
@@ -456,44 +466,344 @@
     .action-buttons, .color-legend, .btn-delete-icon, .modal {
         display: none !important;
     }
-    
+
     .report-header {
         background: #17a2b8 !important;
         -webkit-print-color-adjust: exact;
         print-color-adjust: exact;
     }
-    
+
     .report-table tbody tr.admin-comment {
         background-color: #e3f2fd !important;
         -webkit-print-color-adjust: exact;
         print-color-adjust: exact;
     }
-    
+
     .report-table tbody tr.user-comment {
         background-color: #fff3e0 !important;
         -webkit-print-color-adjust: exact;
         print-color-adjust: exact;
     }
-    
+
     .status-badge {
         border: 1px solid #000 !important;
         -webkit-print-color-adjust: exact;
         print-color-adjust: exact;
     }
 }
+
+/* ==================== MOBILE (≤768px) ==================== */
+@media (max-width: 768px) {
+    .report-container {
+        padding: 0 6px;
+    }
+
+    /* Header — stack title and stat box */
+    .report-header {
+        flex-direction: column;
+        align-items: stretch;
+        text-align: center;
+        gap: 14px;
+        padding: 16px 18px;
+        margin-bottom: 18px;
+        border-radius: 10px;
+    }
+
+    .report-header-left h1 {
+        font-size: 1.3rem;
+    }
+
+    .report-header-left .subtitle {
+        font-size: 13px;
+    }
+
+    .stat-box {
+        padding: 10px 16px;
+    }
+
+    .stat-box .stat-value {
+        font-size: 22px;
+    }
+
+    /* Action buttons — primary wide + back icon (row-reverse: DOM is Back,Print but visual is Print,Back) */
+    .action-buttons {
+        flex-direction: row-reverse;
+        gap: 8px;
+        margin-bottom: 16px;
+        align-items: stretch;
+    }
+
+    .action-buttons .action-primary {
+        flex: 1 1 auto;
+        min-width: 0;
+        height: 38px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        padding: 0 12px;
+        font-size: 13px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin: 0;
+    }
+
+    .action-buttons .action-back {
+        flex: 0 0 auto;
+        width: 44px;
+        height: 38px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0;
+    }
+
+    .action-back-label {
+        display: none;
+    }
+
+    /* Legend wraps */
+    .color-legend {
+        gap: 12px;
+        font-size: 12px;
+        margin-bottom: 12px;
+        padding: 0 4px;
+    }
+
+    /* Table → cards */
+    .table-container {
+        background: transparent;
+        box-shadow: none;
+        overflow: visible;
+        border-radius: 0;
+    }
+
+    .report-table {
+        border: none;
+    }
+
+    .report-table thead {
+        display: none;
+    }
+
+    .report-table,
+    .report-table tbody,
+    .report-table tr {
+        display: block;
+        width: 100%;
+    }
+
+    .report-table tbody tr {
+        margin-bottom: 12px;
+        border-radius: 10px;
+        padding: 14px;
+        border-left: 4px solid #17a2b8;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    }
+
+    .report-table tbody tr.admin-comment {
+        background-color: #e3f2fd;
+        border-left-color: #1565c0;
+    }
+
+    .report-table tbody tr.user-comment {
+        background-color: #fff3e0;
+        border-left-color: #e65100;
+    }
+
+    .report-table tbody tr:hover {
+        background-color: inherit;
+    }
+
+    .report-table tbody tr td {
+        display: block;
+        width: auto;
+        padding: 4px 0;
+        border: none;
+        font-size: 14px;
+        line-height: 1.4;
+    }
+
+    .report-table tbody tr td.comment-cell {
+        max-width: 100%;
+        font-size: 14px;
+        padding-bottom: 8px;
+        margin-bottom: 8px;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+    }
+
+    .report-table tbody tr td.comment-cell::before {
+        display: none;
+    }
+
+    .report-table tbody tr td.date-cell::before {
+        content: "Date: ";
+        font-weight: 600;
+        color: #495057;
+        margin-right: 4px;
+    }
+
+    .report-table tbody tr td.property-cell::before {
+        content: "Property: ";
+        font-weight: 600;
+        color: #495057;
+        margin-right: 4px;
+    }
+
+    .report-table tbody tr td.status-cell::before {
+        content: "Status: ";
+        font-weight: 600;
+        color: #495057;
+        margin-right: 4px;
+    }
+
+    .report-table tbody tr td.user-cell::before {
+        content: "User: ";
+        font-weight: 600;
+        color: #495057;
+        margin-right: 4px;
+    }
+
+    /* Status cell text-align reset */
+    .report-table tbody tr td.status-cell,
+    .report-table tbody tr td.delete-cell {
+        text-align: left !important;
+    }
+
+    /* Delete cell — full-width button on its own row */
+    .report-table tbody tr td.delete-cell {
+        margin-top: 8px;
+        padding-top: 8px;
+        border-top: 1px solid rgba(0, 0, 0, 0.08);
+    }
+
+    .report-table tbody tr td.delete-cell::before {
+        display: none;
+    }
+
+    .report-table tbody tr td.delete-cell form {
+        width: 100%;
+        display: block;
+    }
+
+    .report-table tbody tr td.delete-cell .btn-delete-icon {
+        width: 100%;
+        height: auto;
+        padding: 10px 12px;
+    }
+
+    .report-table tbody tr td.delete-cell .btn-delete-icon::after {
+        content: " Delete Comment";
+        font-weight: 500;
+    }
+
+    /* Issue link */
+    .issue-link {
+        font-size: 13px;
+        margin-top: 6px;
+    }
+
+    /* No comments card */
+    .no-comments {
+        padding: 40px 16px;
+        background: white;
+        border-radius: 10px;
+    }
+
+    /* ====== MODAL — full-screen on mobile ====== */
+    .modal-dialog {
+        max-width: 100% !important;
+        width: 100% !important;
+        margin: 0 !important;
+        height: 100vh !important;
+    }
+
+    .modal-content {
+        height: 100vh !important;
+        border-radius: 0 !important;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .modal-header {
+        padding: 14px 16px;
+        flex-shrink: 0;
+    }
+
+    .modal-header h2 {
+        font-size: 1.1rem;
+    }
+
+    .modal-body {
+        padding: 16px;
+        max-height: none !important;
+        flex: 1;
+        overflow-y: auto;
+    }
+
+    /* Issue details inside modal — stack */
+    .issue-details-compact {
+        padding: 14px;
+        margin-bottom: 18px;
+    }
+
+    .detail-row {
+        flex-direction: column;
+        gap: 8px;
+        align-items: flex-start;
+        padding-bottom: 12px;
+        margin-bottom: 12px;
+    }
+
+    .detail-item {
+        gap: 6px;
+    }
+
+    .description-row {
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .comments-history {
+        margin-top: 18px;
+    }
+
+    .comments-history h3 {
+        font-size: 1rem;
+        margin-bottom: 14px;
+    }
+
+    .comment-item {
+        padding: 12px;
+        margin-bottom: 10px;
+    }
+
+    .comment-meta {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 2px;
+        font-size: 12px;
+    }
+
+    .comment-text {
+        font-size: 14px;
+    }
+}
 </style>
 
 <div class="report-container">
-    
+
     <div class="action-buttons">
-        <a href="{% url 'fsr' %}" class="btn btn-back">
-            <i class="fas fa-arrow-left"></i> Back to Issues
+        <a href="{% url 'fsr' %}" class="btn btn-back action-back" aria-label="Back to Issues">
+            <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back to Issues</span>
         </a>
-        <button class="btn btn-print" onclick="window.print()">
+        <button class="btn btn-print action-primary" onclick="window.print()">
             <i class="fas fa-print"></i> Print Report
         </button>
     </div>
-    
+
     <div class="report-header">
         <div class="report-header-left">
             <h1><i class="fas fa-comments"></i> Comments Report</h1>
@@ -504,7 +814,7 @@
             <div class="stat-label">Total Comments</div>
         </div>
     </div>
-    
+
     <!-- Color Legend -->
     <div class="color-legend">
         <div class="legend-item">
@@ -516,7 +826,7 @@
             <span>User Comments</span>
         </div>
     </div>
-    
+
     <div class="table-container">
         {% if report_data %}
         <table class="report-table">
@@ -548,7 +858,7 @@
                     </td>
                     <td class="date-cell">{{ item.date|date:"d/m/Y" }}</td>
                     <td class="property-cell">{{ item.property }}</td>
-                    <td style="text-align: center;">
+                    <td class="status-cell" style="text-align: center;">
                         {% if item.issue_status %}
                             {% if item.issue_status == "Resolved" %}
                                 <span class="status-badge status-resolved">{{ item.issue_status }}</span>
@@ -565,7 +875,7 @@
                         {{ item.user }}
                     </td>
                     {% if perms.auth.can_edit_issues %}
-                    <td style="text-align: center;">
+                    <td class="delete-cell" style="text-align: center;">
                         <form method="post" action="{% url 'delete_comment' item.comment_id %}" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this comment? This action cannot be undone.');">
                             {% csrf_token %}
                             <input type="hidden" name="period" value="{{ period }}">
@@ -587,7 +897,7 @@
         </div>
         {% endif %}
     </div>
-    
+
 </div>
 
 <!-- Issue Details Modal -->
@@ -611,12 +921,10 @@
 <script>
 function showIssueDetails(issueId) {
     if (!issueId) return;
-    
-    // Show modal with loading state
+
     const modal = document.getElementById('issueModal');
     modal.classList.add('show');
-    
-    // Fetch issue details
+
     fetch(`/issue-details/${issueId}/`)
         .then(response => response.json())
         .then(data => {
@@ -635,7 +943,7 @@ function showIssueDetails(issueId) {
 
 function displayIssueDetails(data) {
     document.getElementById('modalTitle').textContent = data.issue_heading;
-    
+
     let commentsHtml = '';
     if (data.comments && data.comments.length > 0) {
         data.comments.forEach(comment => {
@@ -653,12 +961,11 @@ function displayIssueDetails(data) {
     } else {
         commentsHtml = '<p style="color: #6c757d; text-align: center;">No comments yet.</p>';
     }
-    
-    const statusClass = data.status === 'Resolved' ? 'status-resolved' : 
-                       (data.status === 'Unresolved' || data.status === 'Open') ? 'status-unresolved' : 
+
+    const statusClass = data.status === 'Resolved' ? 'status-resolved' :
+                       (data.status === 'Unresolved' || data.status === 'Open') ? 'status-unresolved' :
                        'status-open';
-    
-    // Only show resolution date if status is Resolved
+
     const showResolutionDate = data.status === 'Resolved' && data.resolution_date;
     const resolutionDateHtml = showResolutionDate ? `
         <div class="detail-item">
@@ -666,7 +973,7 @@ function displayIssueDetails(data) {
             <div class="detail-value">${data.resolution_date}</div>
         </div>
     ` : '';
-    
+
     document.getElementById('modalBody').innerHTML = `
         <div class="issue-details-compact">
             <div class="detail-row">
@@ -694,7 +1001,7 @@ function displayIssueDetails(data) {
                 <span class="detail-value">${data.description || '—'}</span>
             </div>
         </div>
-        
+
         <div class="comments-history">
             <h3><i class="fas fa-comments"></i> Comment History (${data.comments.length})</h3>
             ${commentsHtml}
@@ -706,7 +1013,6 @@ function closeModal() {
     document.getElementById('issueModal').classList.remove('show');
 }
 
-// Close modal when clicking outside
 window.onclick = function(event) {
     const modal = document.getElementById('issueModal');
     if (event.target === modal) {
@@ -714,7 +1020,6 @@ window.onclick = function(event) {
     }
 }
 
-// Close modal on ESC key
 document.addEventListener('keydown', function(event) {
     if (event.key === 'Escape') {
         closeModal();

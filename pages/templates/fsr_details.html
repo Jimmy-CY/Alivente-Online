@@ -7,7 +7,7 @@ Issues (Comments)
 
 {% block content %}
 
-<h2><center>ALIVENTE ONLINE - ISSUES (COMMENTS)</center></h2>
+<h2 class="page-title-center">ALIVENTE ONLINE - ISSUES (COMMENTS)</h2>
 <br/>
 
 <!-- Messages -->
@@ -30,8 +30,10 @@ Issues (Comments)
 {% endfor %}
 
 <!-- Back button section -->
-<div style="display: flex; justify-content: flex-end">
-    <a href="#" onclick="handleBackButton(); return false;" class="btn btn-info" style="margin-right:16px">Back</a>
+<div class="page-action-bar">
+    <div class="page-action-bar-inner">
+        <a href="#" onclick="handleBackButton(); return false;" class="btn btn-info">Back</a>
+    </div>
 </div>
 
 <br/>
@@ -40,13 +42,12 @@ Issues (Comments)
 {% for results in props %}
     {% for isresults in issues %}
         {% if results.prop_id == isresults.prop_id %}
-            
+
             <!-- Status Update Form (Hidden) -->
             <form action="{% url 'fsr_commit_status_change' %}" method="post" id="statusForm{{ isresults.issues_id }}" style="display: none;">
                 {% csrf_token %}
                 <input type="hidden" name="issues_id" value="{{ isresults.issues_id }}">
                 <input type="hidden" name="next" value="{{ request.get_full_path }}">
-                <!-- Hidden fields to preserve return parameters -->
                 {% if request.GET.from %}
                     <input type="hidden" name="from" value="{{ request.GET.from }}">
                 {% endif %}
@@ -66,17 +67,14 @@ Issues (Comments)
             <!-- Friday Status Report Style Layout -->
             <div class="report-container">
                 <div class="report-content">
-                    <!-- Issue Header Section (NEW - Moved to top) -->
+                    <!-- Issue Header Section -->
                     <div class="issue-header-section">
                         <h3 class="issue-title">
                             {{ isresults.issues_heading }}
                             <span class="issue-description">({{ isresults.issues_description }})</span>
                         </h3>
-                        
-                        <!-- Date Logged (NEW - Separate line) -->
+
                         <h4 class="date-logged-display">Date Logged: {{ isresults.issues_date_logged|date:"M d, Y" }}</h4>
-                        
-                        <!-- Property Name and Status (NEW - Combined in same box) -->
                         <h4 class="property-display">Property: {{ results.prop_name|upper }}</h4>
                         <h4 class="status-display">Status: {{ isresults.issues_status|upper }}</h4>
                     </div>
@@ -89,7 +87,6 @@ Issues (Comments)
                             <form action="{% url 'fsr_comment_add' isresults.issues_id %}" method="post" class="add-comment-form">
                                 {% csrf_token %}
                                 <input type="hidden" name="next" value="{{ request.get_full_path }}">
-                                <!-- Hidden fields to preserve return parameters -->
                                 {% if request.GET.from %}
                                     <input type="hidden" name="from" value="{{ request.GET.from }}">
                                 {% endif %}
@@ -99,17 +96,16 @@ Issues (Comments)
                                 {% if request.GET.box_type %}
                                     <input type="hidden" name="box_type" value="{{ request.GET.box_type }}">
                                 {% endif %}
-                                
+
                                 <div class="comment-input-group-inline">
-                                    <input placeholder="Enter New Comment" 
-                                           type="text" 
-                                           class="form-control comment-input-full" 
-                                           name="issues_details_comment" 
-                                           maxlength="250" 
+                                    <input placeholder="Enter New Comment"
+                                           type="text"
+                                           class="form-control comment-input-full"
+                                           name="issues_details_comment"
+                                           maxlength="250"
                                            required>
                                     <button class="btn btn-info comment-submit" type="submit">Save Comment</button>
-                                    
-                                    <!-- Status Change Controls on same line -->
+
                                     <div class="status-actions-inline">
                                         <label for="status_dropdown_{{ isresults.issues_id }}" class="status-label">Change Status:</label>
                                         <select name="issues_status" class="status-dropdown" id="status_dropdown_{{ isresults.issues_id }}" onchange="updateStatus({{ isresults.issues_id }}, this.value)">
@@ -122,12 +118,11 @@ Issues (Comments)
                             </form>
                         </div>
                         {% endif %}
-                        
+
                         <!-- Comments Section -->
                         <div class="comments-section">
                             <h5 class="comments-heading">Comments:</h5>
-                            
-                            <!-- Issue Details (Comments) -->
+
                             <div class="issue-details">
                                 {% for idresults in issues_details %}
                                     {% if idresults.issues_id == isresults.issues_id %}
@@ -147,7 +142,6 @@ Issues (Comments)
             </div>
 
             <script>
-            // Auto-submit status form when changed
             function updateStatus(issueId, newStatus) {
                 document.getElementById('issues_status_' + issueId).value = newStatus;
                 document.getElementById('statusForm' + issueId).submit();
@@ -164,27 +158,21 @@ function handleBackButton() {
     const originParam = urlParams.get('origin');
     const propertyId = urlParams.get('property_id');
     const boxType = urlParams.get('box_type');
-    
-    // Determine target URL
+
     let targetUrl;
-    
-    // NEW: Handle property_detail navigation
+
     if (fromParam === 'property_detail' && propertyId && boxType) {
         targetUrl = `/property_detail/${propertyId}/${boxType}/`;
         console.log('🏠 Navigating back to Property Detail:', targetUrl);
         window.location.href = targetUrl;
         return;
     }
-    
-    // If coming from add form, go back to fsr
+
     if (fromParam === 'fsr_add' && originParam === 'fsr') {
         targetUrl = "{% url 'fsr' %}?refresh=true";
     }
     else if (fromParam === 'fsr') {
-        // For FSR, we need to handle POST-based filters
-        // Check if we have stored filter values to restore
         try {
-            // First try to get from current URL parameters (passed from FSR links)
             const currentUrl = new URL(window.location.href);
             let filterData = {
                 search: currentUrl.searchParams.get('search') || '',
@@ -192,8 +180,7 @@ function handleBackButton() {
                 propname: currentUrl.searchParams.get('propname') || '',
                 issuestatus: currentUrl.searchParams.get('issuestatus') || ''
             };
-            
-            // If no filters in URL, try sessionStorage
+
             const hasUrlFilters = Object.values(filterData).some(value => value);
             if (!hasUrlFilters) {
                 const storedFilters = sessionStorage.getItem('current_fsr_filters');
@@ -201,20 +188,17 @@ function handleBackButton() {
                     filterData = JSON.parse(storedFilters);
                 }
             }
-            
-            // Check if we have any filters to restore
+
             const hasFilters = Object.values(filterData).some(value => value);
-            
+
             if (hasFilters) {
                 console.log('🔄 Restoring FSR filters:', filterData);
-                
-                // Create a form and submit it with the stored filter values
+
                 const form = document.createElement('form');
                 form.method = 'POST';
                 form.action = "{% url 'fsr' %}";
                 form.style.display = 'none';
-                
-                // Add CSRF token
+
                 const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]');
                 if (csrfToken) {
                     const csrfInput = document.createElement('input');
@@ -223,8 +207,7 @@ function handleBackButton() {
                     csrfInput.value = csrfToken.value;
                     form.appendChild(csrfInput);
                 }
-                
-                // Add filter parameters
+
                 Object.keys(filterData).forEach(key => {
                     if (filterData[key]) {
                         const input = document.createElement('input');
@@ -234,35 +217,30 @@ function handleBackButton() {
                         form.appendChild(input);
                     }
                 });
-                
-                // Add refresh parameter
+
                 const refreshInput = document.createElement('input');
                 refreshInput.type = 'hidden';
                 refreshInput.name = 'refresh';
                 refreshInput.value = 'true';
                 form.appendChild(refreshInput);
-                
+
                 document.body.appendChild(form);
                 form.submit();
-                return; // Exit early since we're submitting a form
+                return;
             }
         } catch (e) {
             console.log('Error restoring FSR filters:', e);
         }
-        
-        // Fallback to regular navigation if no filters to restore
+
         targetUrl = "{% url 'fsr' %}?refresh=true";
     }
     else if (fromParam === 'status_report') {
-        // Check if we need to preserve summarized report parameters
-        // First check if referrer has max_comments parameter
         let maxComments = null;
         if (document.referrer) {
             const referrerUrl = new URL(document.referrer);
             maxComments = referrerUrl.searchParams.get('max_comments');
         }
-        
-        // If no max_comments in referrer, check sessionStorage as fallback
+
         if (!maxComments) {
             try {
                 const sessionReportType = sessionStorage.getItem('last_report_type');
@@ -270,12 +248,10 @@ function handleBackButton() {
                     maxComments = sessionStorage.getItem('max_comments') || '2';
                 }
             } catch (e) {
-                // sessionStorage might not be available
                 console.log('SessionStorage not available:', e);
             }
         }
-        
-        // Build the Friday Status Report URL with or without max_comments
+
         if (maxComments) {
             targetUrl = "{% url 'friday_status_report' %}?max_comments=" + maxComments + "&refresh=true";
         } else {
@@ -288,12 +264,11 @@ function handleBackButton() {
     else {
         targetUrl = "{% url 'fsr' %}?refresh=true";
     }
-    
+
     console.log('Navigating back to:', targetUrl);
     window.location.href = targetUrl;
 }
 
-// Page refresh logic
 const urlParams = new URLSearchParams(window.location.search);
 if (urlParams.has('refresh')) {
     const cleanUrl = window.location.pathname + window.location.search.replace(/[?&]refresh=true/, '').replace(/&$/, '').replace(/\?$/, '');
@@ -301,14 +276,11 @@ if (urlParams.has('refresh')) {
     window.location.reload(true);
 }
 
-// Store the original referrer information when page loads
-// This helps preserve report type information even after form submissions
 document.addEventListener('DOMContentLoaded', function() {
     try {
         if (document.referrer) {
             const referrerUrl = new URL(document.referrer);
-            
-            // Store Friday Status Report info
+
             if (document.referrer.includes('friday_status_report')) {
                 const maxComments = referrerUrl.searchParams.get('max_comments');
                 if (maxComments) {
@@ -319,29 +291,22 @@ document.addEventListener('DOMContentLoaded', function() {
                     sessionStorage.removeItem('temp_max_comments_from_referrer');
                 }
             }
-            
-            // For FSR filters, we need to get the values from URL parameters that were passed to this page
-            // Check if this page was called with filter context
+
             const currentUrl = new URL(window.location.href);
             const fromParam = currentUrl.searchParams.get('from');
-            
+
             if (fromParam === 'fsr') {
-                // Try to get filter values from URL parameters if they exist
                 const filterData = {};
                 const possibleParams = ['search', 'propcountry', 'propname', 'issuestatus'];
-                
-                // Check current URL for any filter parameters that might have been passed
+
                 possibleParams.forEach(param => {
                     const value = currentUrl.searchParams.get(param);
                     if (value) {
                         filterData[param] = value;
                     }
                 });
-                
-                // If no filters in current URL, try to extract from referrer if it's FSR
+
                 if (Object.keys(filterData).length === 0 && document.referrer.includes('/fsr')) {
-                    // Since FSR uses POST, we can't get the filter values from the referrer URL
-                    // We'll need to rely on the updated FSR page to pass this information
                     console.log('FSR filters: Cannot extract from POST-based referrer');
                 } else if (Object.keys(filterData).length > 0) {
                     sessionStorage.setItem('temp_fsr_filters_data', JSON.stringify(filterData));
@@ -355,7 +320,24 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 
 <style>
-/* Friday Status Report Styling - Updated with new structure */
+/* Page title */
+.page-title-center { text-align: center; }
+
+/* Action button bar */
+.page-action-bar {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 20px;
+}
+.page-action-bar-inner {
+    display: flex;
+    gap: 16px;
+}
+.page-action-bar-inner > .btn {
+    margin-right: 0;
+}
+
+/* Friday Status Report Styling */
 .report-container {
     display: flex;
     justify-content: center;
@@ -373,7 +355,7 @@ document.addEventListener('DOMContentLoaded', function() {
     box-shadow: 0 2px 10px rgba(0,0,0,0.1);
 }
 
-/* NEW: Issue Header Section Styling */
+/* Issue Header Section Styling */
 .issue-header-section {
     margin-bottom: 25px;
     padding: 20px;
@@ -495,7 +477,6 @@ document.addEventListener('DOMContentLoaded', function() {
     min-width: 0;
 }
 
-/* Status Actions Inline - positioned on same line as comment input */
 .status-actions-inline {
     display: flex;
     align-items: center;
@@ -586,6 +567,8 @@ document.addEventListener('DOMContentLoaded', function() {
 .detail-comment {
     display: block;
     width: 100%;
+    word-break: break-word;
+    overflow-wrap: break-word;
 }
 
 /* Standard Button Styling */
@@ -610,64 +593,130 @@ document.addEventListener('DOMContentLoaded', function() {
     box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 
-/* Responsive Design */
+/* ==================== MOBILE (≤768px) ==================== */
 @media (max-width: 768px) {
-    .report-container {
-        padding: 10px;
-    }
-    
-    .report-content {
-        width: 95%;
-        padding: 20px;
-    }
-    
-    .issue-header-section {
-        padding: 15px;
-    }
-    
-    .issue-title {
+    /* Page title */
+    .page-title-center {
         font-size: 1.2rem;
+        padding: 0 8px;
     }
-    
-    .property-display {
+
+    /* Back button — full-width on mobile */
+    .page-action-bar { margin-bottom: 12px; }
+    .page-action-bar-inner {
+        flex-direction: column;
+        gap: 8px;
+        width: 100%;
+    }
+    .page-action-bar-inner > .btn,
+    .page-action-bar-inner > a {
+        width: 100%;
+        text-align: center;
+    }
+
+    /* Report container — minimal padding */
+    .report-container {
+        padding: 8px;
+    }
+
+    .report-content {
+        width: 100%;
+        padding: 14px;
+        border-radius: 6px;
+    }
+
+    /* Issue header — tighter, less indentation */
+    .issue-header-section {
+        padding: 14px;
+        margin-bottom: 16px;
+    }
+
+    .issue-title {
         font-size: 1.1rem;
+        margin-bottom: 10px;
+        word-break: break-word;
     }
-    
-    .status-card {
-        padding: 20px;
-    }
-    
-    .status-title {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 15px;
-    }
-    
-    .status-actions {
+
+    .issue-description {
+        display: block;
         margin-left: 0;
-        flex-direction: column;
-        align-items: stretch;
-        gap: 10px;
+        margin-top: 4px;
+        font-size: 0.95rem;
     }
-    
-    .status-label {
-        text-align: left;
+
+    .date-logged-display,
+    .property-display,
+    .status-display {
+        font-size: 0.95rem;
+        margin-left: 0;
+        margin-bottom: 6px;
     }
-    
+
+    /* Status card — tighter */
+    .status-card {
+        padding: 14px;
+        margin-bottom: 16px;
+    }
+
+    /* Add comment form — stacks (already does, just polish) */
+    .add-comment-container-inline {
+        padding: 12px;
+        margin: 12px 0;
+    }
+
     .comment-input-group-inline {
         flex-direction: column;
         gap: 10px;
     }
-    
+
+    .comment-input-full {
+        width: 100%;
+        font-size: 16px !important; /* iOS zoom guard */
+    }
+
+    .comment-submit {
+        width: 100%;
+        padding: 10px 12px;
+    }
+
     .status-actions-inline {
         margin-left: 0;
-        justify-content: flex-start;
-        margin-top: 5px;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 6px;
+        white-space: normal;
     }
-    
+
+    .status-label {
+        font-weight: 600;
+    }
+
+    .status-dropdown {
+        width: 100%;
+        padding: 10px 12px;
+        font-size: 16px !important; /* iOS zoom guard */
+    }
+
+    /* Comments — tighter */
+    .comments-section {
+        margin-top: 14px;
+    }
+
+    .comments-heading {
+        font-size: 1rem;
+        margin-bottom: 10px;
+    }
+
     .detail-row {
-        padding: 4px 8px;
+        padding: 8px 10px;
         margin-bottom: 6px;
+        font-size: 0.92rem;
+    }
+}
+
+@media print {
+    .page-action-bar {
+        display: none;
     }
 }
 </style>

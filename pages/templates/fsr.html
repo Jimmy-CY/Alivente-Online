@@ -251,24 +251,54 @@
 <!-- Action Buttons -->
 <div class="page-action-bar">
     <div class="page-action-bar-inner">
-        <button class="btn btn-info" data-toggle="modal" data-target="#fsrHelpModal">
+        {% if perms.auth.can_edit_issues %}
+          <a href="{% url 'fsr_add' %}" class="btn btn-info action-add-new">
+              <i class="fas fa-plus"></i> Add New
+          </a>
+        {% else %}
+          <span class="btn btn-secondary action-add-new" style="opacity:0.6; cursor:not-allowed; pointer-events:none;">
+              <i class="fas fa-plus"></i> Add New
+          </span>
+        {% endif %}
+
+        <!-- Desktop-visible action buttons (hidden on mobile, accessed via "More" menu) -->
+        <button class="btn btn-info action-secondary" data-toggle="modal" data-target="#fsrHelpModal">
             <i class="fas fa-question-circle"></i> Help
         </button>
-        <button class="btn btn-info" data-toggle="modal" data-target="#commentsReportModal">
+        <button class="btn btn-info action-secondary" data-toggle="modal" data-target="#commentsReportModal">
             Comments Report
         </button>
-        <button class="btn btn-info" data-toggle="modal" data-target="#dateRangeModal">
+        <button class="btn btn-info action-secondary" data-toggle="modal" data-target="#dateRangeModal">
             Resolved Issues Report
         </button>
-        <button class="btn btn-info" data-toggle="modal" data-target="#fridayReportModal">
+        <button class="btn btn-info action-secondary" data-toggle="modal" data-target="#fridayReportModal">
             Friday Status Report
         </button>
-        {% if perms.auth.can_edit_issues %}
-          <a href="{% url 'fsr_add' %}" class="btn btn-info">Add New</a>
-        {% else %}
-          <span class="btn btn-secondary" style="opacity:0.6; cursor:not-allowed; pointer-events:none;">Add New</span>
-        {% endif %}
-        <a href="{% url 'home' %}" class="btn btn-info">Back</a>
+
+        <!-- Mobile-only "More" dropdown -->
+        <div class="action-more-wrapper">
+            <button type="button" class="btn btn-info action-more-btn" id="actionMoreBtn" aria-label="More actions" aria-expanded="false" aria-haspopup="true">
+                <i class="fas fa-ellipsis-v"></i>
+            </button>
+            <div class="action-more-menu" id="actionMoreMenu" role="menu" hidden>
+                <button type="button" class="action-more-item" role="menuitem" data-toggle="modal" data-target="#fsrHelpModal">
+                    <i class="fas fa-question-circle"></i> Help
+                </button>
+                <button type="button" class="action-more-item" role="menuitem" data-toggle="modal" data-target="#commentsReportModal">
+                    <i class="fas fa-comments"></i> Comments Report
+                </button>
+                <button type="button" class="action-more-item" role="menuitem" data-toggle="modal" data-target="#dateRangeModal">
+                    <i class="fas fa-calendar-alt"></i> Resolved Issues Report
+                </button>
+                <button type="button" class="action-more-item" role="menuitem" data-toggle="modal" data-target="#fridayReportModal">
+                    <i class="fas fa-file-alt"></i> Friday Status Report
+                </button>
+            </div>
+        </div>
+
+        <a href="{% url 'home' %}" class="btn btn-info action-back" aria-label="Back to home">
+            <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
+        </a>
     </div>
 </div>
 
@@ -466,6 +496,11 @@
 .page-action-bar-inner {
     display: flex;
     gap: 16px;
+}
+
+/* Desktop default: hide the mobile "More" dropdown wrapper */
+.action-more-wrapper {
+    display: none;
 }
 
 /* Enhanced Filter Panel Styles */
@@ -1158,23 +1193,106 @@
         padding: 0 8px;
     }
 
-    /* Action button row — stack column full-width */
+    /* Action button row — compact layout: Add New (flex) + More (icon) + Back (icon) */
     .page-action-bar {
-        margin-bottom: 16px;
+        margin-bottom: 14px;
     }
 
     .page-action-bar-inner {
-        flex-direction: column;
+        flex-direction: row;
         gap: 8px;
         width: 100%;
+        flex-wrap: nowrap;
+        align-items: stretch;
     }
 
-    .page-action-bar-inner > .btn,
-    .page-action-bar-inner > a,
-    .page-action-bar-inner > span,
-    .page-action-bar-inner > button {
-        width: 100%;
+    /* Hide secondary actions on mobile — they're now in the More menu */
+    .page-action-bar-inner .action-secondary {
+        display: none;
+    }
+
+    /* Add New takes the leftover space (primary CTA) */
+    .action-add-new {
+        flex: 1 1 auto;
+        min-width: 0;
         text-align: center;
+        padding: 10px 12px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    /* More dropdown wrapper — visible on mobile only */
+    .action-more-wrapper {
+        display: block;
+        position: relative;
+        flex: 0 0 auto;
+    }
+
+    .action-more-btn {
+        width: 44px;
+        min-height: 44px;
+        padding: 10px 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .action-more-menu {
+        position: absolute;
+        top: calc(100% + 6px);
+        right: 0;
+        z-index: 200;
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        min-width: 240px;
+        padding: 6px 0;
+    }
+
+    .action-more-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        width: 100%;
+        background: none;
+        border: none;
+        text-align: left;
+        padding: 12px 16px;
+        font-size: 14px;
+        color: #2c3e50;
+        cursor: pointer;
+        transition: background 0.15s ease;
+    }
+
+    .action-more-item i {
+        color: #17a2b8;
+        width: 18px;
+        text-align: center;
+        flex-shrink: 0;
+    }
+
+    .action-more-item:hover,
+    .action-more-item:active,
+    .action-more-item:focus {
+        background: #f0f8ff;
+        outline: none;
+    }
+
+    /* Back button — icon-only on mobile */
+    .action-back {
+        flex: 0 0 auto;
+        width: 44px;
+        min-height: 44px;
+        padding: 10px 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .action-back-label {
+        display: none;
     }
 
     /* Filter panel — stack & 16px input font (iOS zoom guard) */
@@ -1627,8 +1745,64 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize table sorting
     initializeTableSorting();
 
+    // Initialize the mobile "More" dropdown menu
+    initializeMoreMenu();
+
     console.log('All FSR event listeners attached');
 });
+
+// Mobile-only "More" actions dropdown
+function initializeMoreMenu() {
+    const moreBtn = document.getElementById('actionMoreBtn');
+    const moreMenu = document.getElementById('actionMoreMenu');
+    if (!moreBtn || !moreMenu) return;
+
+    function closeMenu() {
+        moreMenu.setAttribute('hidden', '');
+        moreBtn.setAttribute('aria-expanded', 'false');
+    }
+
+    function openMenu() {
+        moreMenu.removeAttribute('hidden');
+        moreBtn.setAttribute('aria-expanded', 'true');
+    }
+
+    // Toggle on the More button
+    moreBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        const isOpen = !moreMenu.hasAttribute('hidden');
+        if (isOpen) {
+            closeMenu();
+        } else {
+            openMenu();
+        }
+    });
+
+    // Close on outside click
+    document.addEventListener('click', function(e) {
+        if (!moreBtn.contains(e.target) && !moreMenu.contains(e.target)) {
+            closeMenu();
+        }
+    });
+
+    // Close on Escape
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && !moreMenu.hasAttribute('hidden')) {
+            closeMenu();
+            moreBtn.focus();
+        }
+    });
+
+    // Close menu when an item is tapped (it then opens its modal)
+    moreMenu.querySelectorAll('.action-more-item').forEach(item => {
+        item.addEventListener('click', function() {
+            // Don't preventDefault — Bootstrap's data-toggle="modal" still needs to fire
+            closeMenu();
+        });
+    });
+
+    console.log('✅ Mobile "More" menu initialized');
+}
 
 // Delete functionality
 function initializeDeleteFunctionality() {

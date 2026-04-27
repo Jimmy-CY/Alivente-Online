@@ -32,18 +32,48 @@ Tenants
 <body>
     <!-- Action Buttons -->
     <div class="page-action-buttons">
-      <button type="button" class="btn btn-info" data-toggle="modal" data-target="#tenantHelpModal">
+      {% if perms.auth.can_edit_tenants %}
+        <a href="{% url 'tenant_add' %}" class="btn btn-info action-add-new">
+          <i class="fas fa-plus"></i> Add New
+        </a>
+      {% else %}
+        <span class="btn btn-secondary action-add-new" style="opacity:0.6; cursor:not-allowed; pointer-events:none;">
+          <i class="fas fa-plus"></i> Add New
+        </span>
+      {% endif %}
+
+      <!-- Desktop-visible secondary buttons (hidden on mobile, accessed via "More" menu) -->
+      <button type="button" class="btn btn-info action-secondary" data-toggle="modal" data-target="#tenantHelpModal">
         <i class="fas fa-question-circle"></i> Help
       </button>
-      <a href="{% url 'lease_timeline' %}" class="btn btn-info">📅 Lease Timeline</a>
-      <a href="{% url 'open_invoices_report' %}" class="btn btn-info">Open Invoices</a>
-      <a href="{% url 'lease_renewal_report' %}" class="btn btn-info">Lease Renewals</a>
-    {% if perms.auth.can_edit_tenants %}
-      <a href="{% url 'tenant_add' %}" class="btn btn-info">Add New</a>
-    {% else %}
-      <span class="btn btn-secondary" style="opacity:0.6; cursor:not-allowed; pointer-events:none;">Add New</span>
-    {% endif %}
-      <a href="{% url 'home' %}" class="btn btn-info">Back</a>
+      <a href="{% url 'lease_timeline' %}" class="btn btn-info action-secondary">📅 Lease Timeline</a>
+      <a href="{% url 'open_invoices_report' %}" class="btn btn-info action-secondary">Open Invoices</a>
+      <a href="{% url 'lease_renewal_report' %}" class="btn btn-info action-secondary">Lease Renewals</a>
+
+      <!-- Mobile-only "More" dropdown -->
+      <div class="action-more-wrapper">
+        <button type="button" class="btn btn-info action-more-btn" id="actionMoreBtn" aria-label="More actions" aria-expanded="false" aria-haspopup="true">
+          <i class="fas fa-ellipsis-v"></i>
+        </button>
+        <div class="action-more-menu" id="actionMoreMenu" role="menu" hidden>
+          <button type="button" class="action-more-item" role="menuitem" data-toggle="modal" data-target="#tenantHelpModal">
+            <i class="fas fa-question-circle"></i> Help
+          </button>
+          <a href="{% url 'lease_timeline' %}" class="action-more-item" role="menuitem">
+            <i class="fas fa-calendar-alt"></i> Lease Timeline
+          </a>
+          <a href="{% url 'open_invoices_report' %}" class="action-more-item" role="menuitem">
+            <i class="fas fa-file-invoice-dollar"></i> Open Invoices
+          </a>
+          <a href="{% url 'lease_renewal_report' %}" class="action-more-item" role="menuitem">
+            <i class="fas fa-sync-alt"></i> Lease Renewals
+          </a>
+        </div>
+      </div>
+
+      <a href="{% url 'home' %}" class="btn btn-info action-back" aria-label="Back to home">
+        <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
+      </a>
     </div>
 
   <!-- Collapsible Filter Panel -->
@@ -255,6 +285,10 @@ Tenants
     gap: 10px;
     margin-bottom: 20px;
 }
+
+/* Desktop default: hide the mobile "More" dropdown wrapper */
+.action-more-wrapper { display: none; }
+
 .filter-panel {
     background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
     border: 1px solid #dee2e6;
@@ -321,40 +355,14 @@ Tenants
     text-decoration: none;
     box-shadow: 0 2px 4px rgba(0,0,0,0.15);
 }
-.icon-edit {
-    color: #007bff;
-    border-color: #007bff;
-}
-.icon-edit:hover {
-    background-color: #007bff;
-    color: white;
-}
-.icon-view {
-    color: #17a2b8;
-    border-color: #17a2b8;
-}
-.icon-view:hover {
-    background-color: #17a2b8;
-    color: white;
-}
-.icon-delete {
-    color: #dc3545;
-    border-color: #dc3545;
-}
-.icon-delete:hover {
-    background-color: #dc3545;
-    color: white;
-}
-.icon-disabled {
-    color: #adb5bd;
-    border-color: #dee2e6;
-    cursor: not-allowed;
-    opacity: 0.6;
-}
-.icon-disabled:hover {
-    transform: none;
-    box-shadow: none;
-}
+.icon-edit { color: #007bff; border-color: #007bff; }
+.icon-edit:hover { background-color: #007bff; color: white; }
+.icon-view { color: #17a2b8; border-color: #17a2b8; }
+.icon-view:hover { background-color: #17a2b8; color: white; }
+.icon-delete { color: #dc3545; border-color: #dc3545; }
+.icon-delete:hover { background-color: #dc3545; color: white; }
+.icon-disabled { color: #adb5bd; border-color: #dee2e6; cursor: not-allowed; opacity: 0.6; }
+.icon-disabled:hover { transform: none; box-shadow: none; }
 
 /* Hide mobile-only label variants on desktop */
 .filter-title-text-mobile, .clear-all-text-mobile { display: none; }
@@ -365,23 +373,115 @@ Tenants
 /* ==================== MOBILE STYLES (≤768px) ==================== */
 @media (max-width: 768px) {
 
-  /* Action buttons: 2-column grid */
+  /* Action button row — compact: Add New (flex) + More (icon) + Back (icon) */
   .page-action-buttons {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
+    display: flex;
+    flex-direction: row;
     gap: 8px;
-    justify-content: stretch;
-  }
-  .page-action-buttons .btn,
-  .page-action-buttons a {
     width: 100%;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    margin-bottom: 14px;
+  }
+
+  /* Hide secondary actions on mobile — they're now in the More menu */
+  .page-action-buttons .action-secondary {
+    display: none;
+  }
+
+  /* Add New takes the leftover space (primary CTA) */
+  .action-add-new {
+    flex: 1 1 auto;
+    min-width: 0;
     height: 38px;
     display: flex;
     align-items: center;
     justify-content: center;
+    text-align: center;
+    padding: 0 12px;
     font-size: 13px;
-    padding: 6px 8px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
     margin: 0;
+  }
+
+  /* More dropdown wrapper — visible on mobile only */
+  .action-more-wrapper {
+    display: block;
+    position: relative;
+    flex: 0 0 auto;
+  }
+
+  .action-more-btn {
+    width: 44px;
+    height: 38px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+  }
+
+  .action-more-menu {
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    z-index: 200;
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+    min-width: 240px;
+    padding: 6px 0;
+  }
+
+  .action-more-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    background: none;
+    border: none;
+    text-align: left;
+    padding: 12px 16px;
+    font-size: 14px;
+    color: #2c3e50;
+    cursor: pointer;
+    transition: background 0.15s ease;
+    text-decoration: none;
+  }
+
+  .action-more-item i {
+    color: #17a2b8;
+    width: 18px;
+    text-align: center;
+    flex-shrink: 0;
+  }
+
+  .action-more-item:hover,
+  .action-more-item:active,
+  .action-more-item:focus {
+    background: #f0f8ff;
+    outline: none;
+    color: #2c3e50;
+    text-decoration: none;
+  }
+
+  /* Back button — icon-only on mobile */
+  .action-back {
+    flex: 0 0 auto;
+    width: 44px;
+    height: 38px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+  }
+
+  .action-back-label {
+    display: none;
   }
 
   /* Filter header — single row, matched to button height */
@@ -638,7 +738,56 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('filterForm').submit();
         });
     }
+
+    // Initialize the mobile "More" dropdown menu
+    initializeMoreMenu();
 });
+
+// Mobile-only "More" actions dropdown
+function initializeMoreMenu() {
+    const moreBtn = document.getElementById('actionMoreBtn');
+    const moreMenu = document.getElementById('actionMoreMenu');
+    if (!moreBtn || !moreMenu) return;
+
+    function closeMenu() {
+        moreMenu.setAttribute('hidden', '');
+        moreBtn.setAttribute('aria-expanded', 'false');
+    }
+
+    function openMenu() {
+        moreMenu.removeAttribute('hidden');
+        moreBtn.setAttribute('aria-expanded', 'true');
+    }
+
+    moreBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        const isOpen = !moreMenu.hasAttribute('hidden');
+        if (isOpen) {
+            closeMenu();
+        } else {
+            openMenu();
+        }
+    });
+
+    document.addEventListener('click', function(e) {
+        if (!moreBtn.contains(e.target) && !moreMenu.contains(e.target)) {
+            closeMenu();
+        }
+    });
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && !moreMenu.hasAttribute('hidden')) {
+            closeMenu();
+            moreBtn.focus();
+        }
+    });
+
+    moreMenu.querySelectorAll('.action-more-item').forEach(item => {
+        item.addEventListener('click', function() {
+            closeMenu();
+        });
+    });
+}
 
 function forceExpandPanel() {
     const filterPanel = document.getElementById('filterPanel');

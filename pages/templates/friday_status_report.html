@@ -13,43 +13,42 @@
                 {% if is_summarized_report %}
                 <div class="report-type-indicator">
                     <span class="badge badge-info">
-                        <i class="fas fa-compress-alt"></i> 
+                        <i class="fas fa-compress-alt"></i>
                         Summarized Report (Max {{ max_comments }} comment{{ max_comments|pluralize }} per issue)
                     </span>
                 </div>
                 {% else %}
                 <div class="report-type-indicator">
                     <span class="badge badge-success">
-                        <i class="fas fa-list-ul"></i> 
+                        <i class="fas fa-list-ul"></i>
                         Detailed Report (All comments)
                     </span>
                 </div>
                 {% endif %}
             </div>
-            <div style="display: flex; gap: 16px;">
-                <a href="{% url 'fsr_notification' %}" class="btn btn-info back-button" role="button">Submit FSR</a>
-                <a href="{% url 'fsr' %}" class="btn btn-info back-button" role="button">Back</a>
+            <div class="header-actions">
+                <a href="{% url 'fsr_notification' %}" class="btn btn-info action-primary" role="button">Submit FSR</a>
+                <a href="{% url 'fsr' %}" class="btn btn-info action-back" role="button" aria-label="Back to Issues">
+                    <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
+                </a>
             </div>
         </div>
         <div class="report-body">
-            <!-- Check if there are any issues to display -->
             {% if status_groups %}
-                <!-- Issues Section -->
                 {% for status_group in status_groups %}
                 <div class="status-card">
                     <h3 class="status-title">STATUS: {{ status_group.status|upper }}</h3>
-                    
+
                     {% if status_group.property_issues %}
                         {% for property in status_group.property_issues %}
                         <div class="property-card">
                             <h4 class="property-name">{{ property.prop_name|upper }}</h4>
-                            
+
                             {% for issue in property.issues %}
                             <div class="issue-group">
-                                <!-- In your Friday status report template -->
                                 <a href="{% url 'fsr_details' issue.issues_id %}?from=status_report" class="issue-heading-link">
                                     <h5 class="issue-heading">
-                                        {{ issue.issues_heading }} 
+                                        {{ issue.issues_heading }}
                                         <span class="issue-description">({{ issue.issues_description }})</span>
                                         {% if issue.days_to_resolve and status_group.status == 'Resolved' %}
                                             <span class="resolution-time">- Resolution: {{ issue.days_to_resolve }} day{{ issue.days_to_resolve|pluralize }}</span>
@@ -70,8 +69,7 @@
                                         </span>
                                     </div>
                                     {% endfor %}
-                                    
-                                    <!-- Show indicator if there are more comments in summarized view -->
+
                                     {% if is_summarized_report and issue.has_more_comments %}
                                     <div class="more-comments-indicator">
                                         <span class="text-muted">
@@ -88,7 +86,6 @@
                         </div>
                         {% endfor %}
                     {% else %}
-                        <!-- No Issues for this Status -->
                         <div class="no-status-issues">
                             <div class="no-status-issues-content">
                                 <i class="fas fa-info-circle no-status-icon"></i>
@@ -99,7 +96,6 @@
                 </div>
                 {% endfor %}
             {% else %}
-                <!-- No Issues Message -->
                 <div class="no-issues-container">
                     <div class="no-issues-card">
                         <div class="no-issues-icon">
@@ -125,7 +121,7 @@
         padding: 20px;
         min-height: 80vh;
     }
-    
+
     .report-content {
         width: 90%;
         max-width: 1200px;
@@ -134,37 +130,46 @@
         border-radius: 8px;
         box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     }
-    
+
     .header-container {
         display: flex;
         justify-content: space-between;
         align-items: center;
         margin-bottom: 30px;
+        gap: 16px;
     }
-    
+
     .report-title-container {
         display: flex;
         flex-direction: column;
+        flex: 1;
+        min-width: 0;
     }
-    
+
     .report-title-main {
         font-size: 1.8rem;
         color: #2c3e50;
         margin: 0;
         font-weight: bold;
     }
-    
+
     .report-title-sub {
         font-size: 1.4rem;
         color: #6c757d;
         margin: 5px 0 0 0;
         font-weight: normal;
     }
-    
+
     .report-type-indicator {
         margin-top: 10px;
     }
-    
+
+    .header-actions {
+        display: flex;
+        gap: 16px;
+        flex-shrink: 0;
+    }
+
     .badge {
         padding: 8px 16px;
         border-radius: 20px;
@@ -174,17 +179,17 @@
         align-items: center;
         gap: 6px;
     }
-    
+
     .badge-info {
         background-color: #17a2b8;
         color: white;
     }
-    
+
     .badge-success {
         background-color: #28a745;
         color: white;
     }
-    
+
     /* No Issues Styling */
     .no-issues-container {
         display: flex;
@@ -193,7 +198,7 @@
         min-height: 300px;
         width: 100%;
     }
-    
+
     .no-issues-card {
         text-align: center;
         padding: 40px;
@@ -203,27 +208,27 @@
         max-width: 500px;
         width: 100%;
     }
-    
+
     .no-issues-icon {
         font-size: 4rem;
         color: #28a745;
         margin-bottom: 20px;
     }
-    
+
     .no-issues-title {
         font-size: 1.5rem;
         color: #2c3e50;
         margin-bottom: 15px;
         font-weight: 600;
     }
-    
+
     .no-issues-message {
         font-size: 1.1rem;
         color: #6c757d;
         line-height: 1.6;
         margin: 0;
     }
-    
+
     .status-card {
         margin-bottom: 30px;
         padding: 25px;
@@ -231,7 +236,7 @@
         border-radius: 8px;
         page-break-inside: avoid;
     }
-    
+
     .status-title {
         font-size: 1.5rem;
         color: #2c3e50;
@@ -239,7 +244,7 @@
         padding-bottom: 10px;
         border-bottom: 1px solid #dee2e6;
     }
-    
+
     .property-card {
         margin-bottom: 20px;
         padding: 20px;
@@ -248,23 +253,23 @@
         border-left: 4px solid #17a2b8;
         box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     }
-    
+
     .property-name {
         font-size: 1.3rem;
         color: #2c3e50;
         margin-bottom: 15px;
     }
-    
+
     .issue-group {
         margin-bottom: 15px;
     }
-    
+
     .issue-heading-link {
         text-decoration: none;
         color: inherit;
         display: block;
     }
-    
+
     .issue-heading {
         font-size: 1.1rem;
         color: #495057;
@@ -272,20 +277,20 @@
         padding-bottom: 5px;
         border-bottom: 1px dashed #ced4da;
     }
-    
+
     .issue-heading:hover {
         color: #17a2b8;
     }
-    
+
     .issue-description {
         font-weight: normal;
         color: #6c757d;
     }
-    
+
     .issue-details {
         margin-left: 15px;
     }
-    
+
     .detail-row {
         margin-bottom: 8px;
         line-height: 1.4;
@@ -293,38 +298,38 @@
         border-radius: 4px;
         border-left: 3px solid transparent;
     }
-    
-    /* SS User Comments - Orange Highlighting */
+
     .detail-row.ss-comment {
         background-color: #fff3e0;
         border-left-color: #ff8c00;
     }
-    
+
     .detail-row.ss-comment .comment-date,
     .detail-row.ss-comment .comment-user,
     .detail-row.ss-comment .comment-text {
         color: #ff8c00;
         font-weight: 600;
     }
-    
-    /* Regular User Comments - System Blue */
+
     .detail-row.regular-comment {
         background-color: #e3f2fd;
         border-left-color: #17a2b8;
     }
-    
+
     .detail-row.regular-comment .comment-date,
     .detail-row.regular-comment .comment-user,
     .detail-row.regular-comment .comment-text {
         color: #17a2b8;
         font-weight: 600;
     }
-    
+
     .detail-comment {
         display: block;
         width: 100%;
+        word-break: break-word;
+        overflow-wrap: break-word;
     }
-    
+
     .more-comments-indicator {
         margin-top: 12px;
         padding: 8px 12px;
@@ -332,18 +337,18 @@
         border-radius: 4px;
         border-left: 3px solid #17a2b8;
     }
-    
+
     .view-all-link {
         color: #17a2b8;
         text-decoration: none;
         font-weight: 500;
     }
-    
+
     .view-all-link:hover {
         color: #138496;
         text-decoration: underline;
     }
-    
+
     .back-button {
         background-color: #17a2b8;
         color: white;
@@ -358,33 +363,35 @@
         font-weight: normal;
         margin-left: 8px;
     }
-    
+
     .resolution-time {
         color: #FF0000;
         font-weight: normal;
         margin-left: 8px;
     }
-    
+
+    /* ==================== PRINT ==================== */
     @media print {
         .report-container {
             padding: 0;
         }
-        
+
         .report-content {
             width: 100%;
             max-width: 100%;
             padding: 0;
             box-shadow: none;
         }
-        
-        .back-button {
+
+        .back-button,
+        .header-actions {
             display: none;
         }
-        
+
         .report-type-indicator {
             display: none;
         }
-        
+
         .status-card, .property-card {
             page-break-inside: avoid;
             border: none;
@@ -392,74 +399,178 @@
             padding: 0;
             box-shadow: none;
         }
-        
+
         .issue-heading-link {
             pointer-events: none;
         }
-        
+
         .more-comments-indicator {
             background-color: transparent;
             border: 1px solid #dee2e6;
         }
-        
+
         .view-all-link {
             display: none;
         }
-        
+
         .no-issues-card {
             border: 1px solid #28a745;
             background-color: transparent;
         }
-        
+
         .no-issues-icon {
             color: #333;
         }
-        
-        /* Print styles for comments */
+
         .detail-row.ss-comment {
             background-color: #f5f5f5 !important;
             border-left-color: #333 !important;
         }
-        
+
         .detail-row.regular-comment {
             background-color: #fafafa !important;
             border-left-color: #666 !important;
         }
     }
-    
+
+    /* ==================== MOBILE (≤768px) ==================== */
     @media (max-width: 768px) {
+        .report-container {
+            padding: 8px;
+        }
+
+        .report-content {
+            width: 100%;
+            padding: 14px;
+            border-radius: 6px;
+        }
+
+        /* Header — stack title block and action buttons */
         .header-container {
             flex-direction: column;
-            gap: 20px;
+            gap: 14px;
             align-items: stretch;
+            margin-bottom: 18px;
         }
-        
+
         .report-title-container {
             text-align: center;
         }
-        
+
+        .report-title-main {
+            font-size: 1.2rem;
+        }
+
+        .report-title-sub {
+            font-size: 1rem;
+        }
+
         .badge {
             font-size: 12px;
             padding: 6px 12px;
         }
-        
-        .detail-row {
-            padding: 4px 8px;
-            margin-bottom: 6px;
+
+        /* Action buttons — primary wide + back icon */
+        .header-actions {
+            flex-direction: row;
+            gap: 8px;
+            width: 100%;
+            align-items: stretch;
         }
-        
+
+        .header-actions .action-primary {
+            flex: 1 1 auto;
+            min-width: 0;
+            height: 38px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 0 12px;
+            font-size: 13px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            margin: 0;
+        }
+
+        .header-actions .action-back {
+            flex: 0 0 auto;
+            width: 44px;
+            height: 38px;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+        }
+
+        .action-back-label {
+            display: none;
+        }
+
+        /* Status card */
+        .status-card {
+            padding: 14px;
+            margin-bottom: 18px;
+        }
+
+        .status-title {
+            font-size: 1.1rem;
+            margin-bottom: 14px;
+            padding-bottom: 8px;
+        }
+
+        /* Property card */
+        .property-card {
+            padding: 14px;
+            margin-bottom: 14px;
+        }
+
+        .property-name {
+            font-size: 1.05rem;
+            margin-bottom: 10px;
+        }
+
+        /* Issue heading */
+        .issue-heading {
+            font-size: 1rem;
+            word-break: break-word;
+        }
+
+        .issue-description {
+            display: inline-block;
+        }
+
+        .days-open,
+        .resolution-time {
+            margin-left: 4px;
+        }
+
+        /* Issue details — less indent */
+        .issue-details {
+            margin-left: 6px;
+        }
+
+        .detail-row {
+            padding: 6px 8px;
+            margin-bottom: 6px;
+            font-size: 0.92rem;
+        }
+
+        /* No-issues card */
         .no-issues-card {
             padding: 30px 20px;
         }
-        
+
         .no-issues-icon {
             font-size: 3rem;
         }
-        
+
         .no-issues-title {
             font-size: 1.3rem;
         }
-        
+
         .no-issues-message {
             font-size: 1rem;
         }
@@ -467,15 +578,12 @@
 </style>
 
 <script>
-// Detect when user returns to this page via back button
 window.addEventListener('pageshow', function(event) {
-    // If the page is being restored from cache (back button)
     if (event.persisted) {
         location.reload();
     }
 });
 
-// Alternative approach - check if page was accessed via back button
 window.addEventListener('load', function() {
     if (performance.navigation.type === performance.navigation.TYPE_BACK_FORWARD) {
         location.reload();
