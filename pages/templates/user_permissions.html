@@ -203,6 +203,104 @@
     color: #adb5bd;
 }
 
+.form-action-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 30px;
+}
+
+/* ============================================================
+   MOBILE RESPONSIVE — max-width: 768px
+   ============================================================ */
+@media (max-width: 768px) {
+    .permissions-container {
+        padding: 0 8px;
+    }
+
+    /* Page header — stack */
+    .page-header {
+        flex-direction: column;
+        align-items: stretch;
+        padding: 16px;
+        margin-bottom: 16px;
+        gap: 12px;
+        border-radius: 8px;
+    }
+    .page-header h1 {
+        font-size: 17px;
+        text-align: center;
+        word-break: break-word;
+    }
+    .page-header .btn {
+        width: 100%;
+        justify-content: center;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 10px 12px;
+    }
+
+    /* User meta box — stack rows */
+    .user-meta-box {
+        flex-direction: column;
+        gap: 8px;
+        padding: 12px 14px;
+    }
+
+    /* Form card tighter */
+    .form-card {
+        padding: 16px;
+        border-radius: 8px;
+    }
+    .form-card h2 {
+        font-size: 15px;
+        margin-bottom: 16px;
+    }
+
+    /* Select-all bar — stack count above buttons */
+    .select-all-bar {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+        padding: 12px;
+    }
+    .select-all-bar > span {
+        text-align: center;
+    }
+    .select-all-bar > div[style*="display:flex"],
+    .select-all-bar > div[style*="display: flex"] {
+        gap: 8px !important;
+    }
+    .select-all-bar > div .btn {
+        flex: 1;
+        font-size: 12px;
+        padding: 8px 6px;
+    }
+
+    /* Permission grid — single column */
+    .permission-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    .permission-item {
+        padding: 12px 14px;
+    }
+
+    /* Bottom action buttons — column-reverse */
+    .form-action-row {
+        flex-direction: column-reverse;
+        gap: 8px;
+    }
+    .form-action-row .btn,
+    .form-action-row a.btn {
+        width: 100%;
+        justify-content: center;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 11px 14px;
+    }
+}
 </style>
 
 <div class="permissions-container">
@@ -319,7 +417,7 @@
             </div>
 
         <!-- Action Buttons -->
-        <div style="display:flex; justify-content:space-between; margin-bottom:30px;">
+        <div class="form-action-row">
             <a href="{% url 'user_administration' %}" class="btn btn-secondary">
                 <i class="fas fa-times"></i> Cancel
             </a>

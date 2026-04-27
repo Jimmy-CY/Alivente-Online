@@ -20,6 +20,11 @@
     gap: 15px;
 }
 
+.settings-header-text {
+    flex: 1;
+    min-width: 0;
+}
+
 .settings-header h2 {
     margin: 0 0 10px 0;
     font-weight: 600;
@@ -39,6 +44,7 @@
     font-weight: 600;
     box-shadow: 0 2px 6px rgba(0,0,0,0.15);
     transition: all 0.2s ease;
+    flex-shrink: 0;
 }
 
 .settings-header .help-btn:hover {
@@ -89,10 +95,69 @@
     font-style: italic;
     margin-top: 4px;
 }
+
+.back-button-container {
+    text-align: center;
+    margin-top: 30px;
+}
+
+/* ==================== MOBILE STYLES (≤768px) ==================== */
+@media (max-width: 768px) {
+    .settings-header {
+        padding: 18px;
+        margin-bottom: 16px;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+        text-align: center;
+    }
+    .settings-header h2 {
+        font-size: 1.3rem;
+        margin-bottom: 6px;
+    }
+    .settings-header p {
+        font-size: 0.9rem;
+    }
+    .settings-header .help-btn {
+        width: 100%;
+        padding: 10px 12px;
+    }
+
+    .notification-card {
+        padding: 14px;
+        margin-bottom: 14px;
+    }
+    .notification-card h5 {
+        font-size: 1rem;
+    }
+
+    .form-group label {
+        font-size: 13px;
+    }
+
+    /* Textarea — 16px font to prevent iOS zoom */
+    .notification-card .form-control,
+    .notification-card textarea.form-control {
+        font-size: 16px;
+        padding: 10px 12px;
+    }
+
+    /* Save button full-width on mobile */
+    .notification-card .btn-info {
+        width: 100%;
+        padding: 10px 12px;
+    }
+
+    /* Back button full-width */
+    .back-button-container .btn {
+        width: 100%;
+        padding: 10px 12px;
+    }
+}
 </style>
 
 <div class="settings-header">
-    <div>
+    <div class="settings-header-text">
         <h2><i class="fas fa-envelope"></i> Administration Notification Settings</h2>
         <p>Manage email recipients for property management and operational notifications</p>
     </div>
@@ -415,7 +480,7 @@
     </form>
 </div>
 
-<div style="text-align: center; margin-top: 30px;">
+<div class="back-button-container">
     <a href="{% url 'admin_apms' %}" class="btn btn-secondary btn-lg">
         <i class="fas fa-arrow-left"></i> Back to Administration
     </a>

@@ -18,46 +18,58 @@ Title Deed - {{ property.prop_name }}
                 <h3 class="report-subtitle">{{ property.prop_address }}</h3>
                 {% endif %}
             </div>
-            <a href="{% url 'properties' %}" class="btn btn-info back-button" role="button">Back</a>
+            <a href="{% url 'properties' %}" class="btn btn-info back-button" role="button">
+                <i class="fas fa-arrow-left"></i> Back
+            </a>
         </div>
-        
+
         <div class="property-section">
-            <!-- Error message (only shows if PDF fails to load) -->
-            <div id="title-deeds-error" class="alert alert-warning" style="display: none;">
-                <p>Title deed not found for this property.</p>
-                <a href="#" class="btn btn-sm btn-primary" id="download-title-deed" download>Download Instead</a>
-            </div>
+            {% if property.prop_title_deed %}
+                {# Render PDF viewer or image based on file extension #}
+                {% with file_url=property.prop_title_deed.url file_name=property.prop_title_deed.name %}
+                    {% if file_name|slice:"-4:"|lower == ".pdf" %}
+                        <iframe
+                            class="title-deed-iframe"
+                            src="{{ file_url }}#navpanes=0&scrollbar=1&page=1&view=FitH"
+                            title="Title Deed for {{ property.prop_name }}"
+                        >
+                            <p>Your browser does not support PDFs.
+                                <a href="{{ file_url }}" target="_blank">Click here to view</a>
+                            </p>
+                        </iframe>
+                    {% else %}
+                        <img src="{{ file_url }}"
+                             alt="Title Deed for {{ property.prop_name }}"
+                             class="title-deed-image">
+                    {% endif %}
 
-            <!-- Title Deed PDF Viewer -->
-            {% with pdf_name=property.prop_name %}
-                {% static 'title_deeds/'|add:pdf_name|add:' - Title Deed.pdf' as pdf_url %}
-                <iframe 
-                    src="{{ pdf_url }}" 
-                    width="100%" 
-                    height="600px" 
-                    style="border: none;"
-                    title="Title Deed for {{ property.prop_name }}"
-                    onerror="handlePdfError(this)"
-                ></iframe>
-            {% endwith %}
+                    <div class="title-deed-toolbar">
+                        <a href="{{ file_url }}" target="_blank" class="btn btn-sm btn-info">
+                            <i class="fas fa-external-link-alt"></i> Open in New Tab
+                        </a>
+                        <a href="{{ file_url }}" download class="btn btn-sm btn-secondary">
+                            <i class="fas fa-download"></i> Download
+                        </a>
+                    </div>
+                {% endwith %}
+            {% else %}
+                {# No title deed uploaded #}
+                <div class="alert alert-warning title-deed-empty-alert">
+                    <h5><i class="fas fa-exclamation-triangle"></i> Title deed not available</h5>
+                    <p>The title deed file has not been uploaded for this property yet.</p>
+                    {% if perms.auth.can_edit_properties %}
+                    <a href="{% url 'title_deeds_management' %}" class="btn btn-sm btn-info">
+                        <i class="fas fa-upload"></i> Manage Title Deeds
+                    </a>
+                    {% endif %}
+                </div>
+            {% endif %}
         </div>
-
-        <script>
-            function handlePdfError(iframe) {
-                iframe.style.display = 'none';
-                const errorDiv = document.getElementById('title-deeds-error');
-                errorDiv.style.display = 'block';
-                
-                // Set up download link with cache busting
-                const downloadBtn = document.getElementById('download-title-deed');
-                const newUrl = "{% static 'title_deeds/' %}{{ property.prop_name }} - Title Deed.pdf?v=" + Date.now();
-                downloadBtn.href = newUrl;
-            }
-        </script>
     </div>
 </div>
 
 <style>
+    /* ==================== DESKTOP STYLES ==================== */
     .report-container {
         display: flex;
         justify-content: center;
@@ -65,7 +77,7 @@ Title Deed - {{ property.prop_name }}
         padding: 20px;
         min-height: 80vh;
     }
-    
+
     .report-content {
         width: 90%;
         max-width: 1200px;
@@ -74,7 +86,7 @@ Title Deed - {{ property.prop_name }}
         border-radius: 8px;
         box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     }
-    
+
     .header-container {
         display: flex;
         justify-content: space-between;
@@ -82,26 +94,29 @@ Title Deed - {{ property.prop_name }}
         margin-bottom: 20px;
         gap: 20px;
     }
-    
+
     .title-wrapper {
         flex: 1;
+        min-width: 0;
     }
-    
+
     .report-title {
         font-size: 1.8rem;
         color: #2c3e50;
         margin: 0;
         font-weight: bold;
         text-transform: uppercase;
+        word-wrap: break-word;
     }
-    
+
     .report-subtitle {
         font-size: 1.4rem;
         color: #2c3e50;
         margin: 5px 0 0 0;
         font-weight: normal;
+        word-wrap: break-word;
     }
-    
+
     .back-button {
         background-color: #17a2b8;
         color: white;
@@ -111,25 +126,137 @@ Title Deed - {{ property.prop_name }}
         font-weight: 500;
         white-space: nowrap;
         height: fit-content;
+        flex-shrink: 0;
     }
-    
+
     .back-button:hover {
         background-color: #138496;
         color: white;
     }
-    
-    iframe {
+
+    .property-section {
         margin-top: 20px;
+    }
+
+    .title-deed-iframe {
+        width: 100%;
+        height: 600px;
         border: 1px solid #eee;
         border-radius: 4px;
+        margin-top: 0;
     }
-    
-    .alert {
+
+    .title-deed-image {
+        max-width: 100%;
+        height: auto;
+        border: 1px solid #eee;
+        border-radius: 4px;
+        display: block;
+        margin: 0 auto;
+    }
+
+    .title-deed-toolbar {
+        margin-top: 16px;
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+        flex-wrap: wrap;
+    }
+
+    .title-deed-empty-alert {
         margin-top: 20px;
-        padding: 20px;
+        padding: 24px;
         background-color: #fff3cd;
         border-color: #ffeeba;
         color: #856404;
+    }
+
+    .title-deed-empty-alert h5 {
+        margin-bottom: 12px;
+    }
+
+    .title-deed-empty-alert p {
+        margin-bottom: 16px;
+    }
+
+    /* ==================== MOBILE STYLES (≤768px) ==================== */
+    @media (max-width: 768px) {
+        .report-container {
+            padding: 8px;
+        }
+
+        .report-content {
+            width: 100%;
+            padding: 16px;
+            border-radius: 6px;
+        }
+
+        /* Header — stack title and Back button */
+        .header-container {
+            flex-direction: column;
+            align-items: stretch;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .report-title {
+            font-size: 1.15rem;
+        }
+
+        .report-subtitle {
+            font-size: 0.95rem;
+        }
+
+        .back-button {
+            width: 100%;
+            text-align: center;
+            padding: 10px 12px;
+        }
+
+        /* PDF iframe — make it tall but usable on mobile */
+        .title-deed-iframe {
+            height: 70vh;
+            min-height: 400px;
+        }
+
+        /* Toolbar — stack full-width */
+        .title-deed-toolbar {
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .title-deed-toolbar .btn {
+            width: 100%;
+            text-align: center;
+            padding: 10px 12px;
+        }
+
+        /* Empty alert */
+        .title-deed-empty-alert {
+            padding: 14px;
+            margin-top: 12px;
+        }
+    }
+
+    /* ==================== PRINT STYLES ==================== */
+    @media print {
+        .report-container {
+            padding: 0;
+        }
+        .report-content {
+            width: 100%;
+            max-width: 100%;
+            padding: 0;
+            box-shadow: none;
+        }
+        .back-button,
+        .title-deed-toolbar {
+            display: none;
+        }
+        .title-deed-iframe {
+            height: auto;
+            min-height: 90vh;
+        }
     }
 </style>
 

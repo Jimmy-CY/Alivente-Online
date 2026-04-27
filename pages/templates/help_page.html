@@ -700,6 +700,178 @@
     margin-bottom: 12px;
     color: #dc3545;
   }
+
+  /* ============================================================
+     MOBILE RESPONSIVE — max-width: 768px
+     ============================================================ */
+  @media (max-width: 768px) {
+    .help-page-wrap {
+      padding: 0 8px;
+    }
+
+    /* Hero — tighter, button full-width */
+    .help-hero {
+      margin-bottom: 18px;
+    }
+    .help-hero h2 {
+      font-size: 1.4rem;
+    }
+    .help-hero p {
+      font-size: 13px;
+    }
+    .btn-generate-manual {
+      width: 100%;
+      justify-content: center;
+      padding: 12px 16px;
+    }
+
+    /* Search bar */
+    .help-search-wrap {
+      margin-bottom: 18px;
+    }
+    .help-search-input {
+      font-size: 16px; /* iOS zoom guard */
+      padding: 12px 44px 12px 42px;
+    }
+
+    /* Group headers — tighter padding */
+    .help-group-header {
+      padding: 14px 14px;
+    }
+    .help-group-icon {
+      width: 36px; height: 36px;
+      font-size: 16px;
+    }
+    .help-group-titlebox {
+      margin-left: 12px;
+    }
+    .help-group-name {
+      font-size: 15px;
+    }
+    .help-group-count {
+      padding: 3px 9px;
+      margin-right: 8px;
+    }
+    .help-group-body-inner {
+      padding: 4px 14px 16px;
+    }
+
+    /* Chips — single column on mobile */
+    .help-chips {
+      grid-template-columns: 1fr;
+      gap: 8px;
+    }
+    .help-chip {
+      padding: 10px 12px;
+    }
+
+    /* Parent card chip — tighter */
+    .help-parent-card-chip {
+      padding: 12px 12px;
+    }
+    .help-parent-card-body {
+      padding: 12px 12px 14px;
+    }
+
+    /* ===== GENERATE MANUAL MODAL — full screen ===== */
+    .manual-modal .modal-dialog {
+      max-width: 100% !important;
+      width: 100% !important;
+      margin: 0 !important;
+      height: 100vh;
+    }
+    .manual-modal .modal-content {
+      height: 100vh;
+      border-radius: 0;
+      display: flex;
+      flex-direction: column;
+      border: none;
+    }
+    .manual-modal .modal-header {
+      flex-shrink: 0;
+      border-radius: 0;
+    }
+    .manual-modal .modal-body {
+      flex: 1 1 auto;
+      max-height: none;
+      padding: 14px 14px;
+    }
+    .manual-modal .modal-footer {
+      flex-direction: column-reverse !important;
+      gap: 8px;
+      flex-shrink: 0;
+      padding: 12px 14px;
+    }
+    .manual-modal .modal-footer .btn {
+      width: 100%;
+      margin: 0 !important;
+    }
+
+    /* Preset bar — wrap, counter on its own line */
+    .manual-preset-bar {
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .manual-preset-btn {
+      flex: 1;
+      min-width: 0;
+      text-align: center;
+    }
+    .manual-selection-counter {
+      flex-basis: 100%;
+      margin-left: 0;
+      text-align: center;
+      padding-top: 4px;
+    }
+
+    /* Nested module indents — reduce so deep trees still fit */
+    .manual-module {
+      padding-left: 14px;
+    }
+    .manual-tabs {
+      padding-left: 26px;
+    }
+    .manual-subsection-label {
+      padding-left: 14px;
+    }
+    .manual-nested-subsections {
+      padding-left: 14px;
+      margin-left: 8px;
+    }
+    .manual-nested-subsections .manual-subsection-label {
+      padding-left: 6px;
+    }
+
+    /* ===== PREVIEW MODAL — full screen ===== */
+    .manual-preview-modal .modal-dialog {
+      max-width: 100% !important;
+      width: 100% !important;
+      margin: 0 !important;
+      height: 100vh;
+    }
+    .manual-preview-modal .modal-content {
+      height: 100vh;
+      border-radius: 0;
+    }
+    .manual-preview-modal .modal-header {
+      border-radius: 0;
+    }
+    .manual-preview-modal .modal-footer {
+      flex-direction: column-reverse !important;
+      gap: 8px;
+      padding: 10px 12px;
+    }
+    .btn-preview-action {
+      width: 100%;
+      justify-content: center;
+    }
+
+    /* Loading card — keep within viewport */
+    .manual-loading-card {
+      max-width: 88vw;
+      padding: 26px 28px;
+    }
+  }
 </style>
 
 <div class="help-page-wrap">

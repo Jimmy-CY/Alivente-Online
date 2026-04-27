@@ -20,6 +20,7 @@ urlpatterns = [
     path('admin_renewals/', views.admin_renewals, name='admin_renewals'),
     path('admin_invoices/', views.admin_invoices, name='admin_invoices'),
     path('upload_title_deed/', views.upload_title_deed, name='upload_title_deed'),
+    path('title_deeds_management/', views.title_deeds_management, name='title_deeds_management'),
 #    path('upload_lease_agreement/', views.upload_lease_agreement, name='upload_lease_agreement'),
 #    path('lease_agreement_report/<int:tenant_id>/', views.lease_agreement_report, name='lease_agreement_report'),
 #    path('serve_lease/<str:filename>/', views.serve_lease, name='serve_lease'),

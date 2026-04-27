@@ -170,6 +170,162 @@
 .btn-permissions { background: #17a2b8; color: white; }
 .btn-disable { background: #dc3545; color: white; }
 .btn-enable { background: #28a745; color: white; }
+
+/* ============================================================
+   MOBILE RESPONSIVE — max-width: 768px
+   ============================================================ */
+@media (max-width: 768px) {
+    .user-admin-container {
+        padding: 0 8px;
+    }
+
+    /* Page header — stack with title on top, action buttons full-width */
+    .page-header {
+        flex-direction: column;
+        align-items: stretch;
+        padding: 16px;
+        margin-bottom: 16px;
+        gap: 12px;
+        border-radius: 8px;
+    }
+    .page-header h1 {
+        font-size: 18px;
+        text-align: center;
+    }
+    .page-header > div[style*="display:flex"],
+    .page-header > div[style*="display: flex"] {
+        flex-direction: column;
+        gap: 8px !important;
+    }
+    .page-header .btn {
+        width: 100%;
+        justify-content: center;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 10px 12px;
+    }
+
+    /* iOS zoom guard */
+    .form-control,
+    input[type="text"],
+    input[type="email"],
+    select,
+    textarea {
+        font-size: 16px !important;
+    }
+
+    /* User table → card layout */
+    .user-table {
+        background: transparent;
+        box-shadow: none;
+        overflow: visible;
+    }
+    .user-table table,
+    .user-table thead,
+    .user-table tbody,
+    .user-table tr,
+    .user-table td {
+        display: block;
+        width: 100%;
+    }
+    .user-table thead {
+        display: none;
+    }
+    .user-table tbody tr {
+        background: white;
+        border: 1px solid #e9ecef;
+        border-radius: 10px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        margin-bottom: 12px;
+        padding: 14px;
+    }
+    .user-table tbody tr:hover {
+        background: white;
+    }
+    .user-table tbody td {
+        padding: 6px 0 !important;
+        border-bottom: none !important;
+        text-align: left !important;
+    }
+
+    /* First cell — User info — stays as-is, no label */
+    .user-table tbody td:nth-child(1) {
+        padding-bottom: 10px !important;
+        margin-bottom: 8px;
+        border-bottom: 1px solid #f0f0f0 !important;
+    }
+
+    /* Other cells — label/value pairs via ::before */
+    .user-table tbody td:nth-child(n+2):not(:last-child) {
+        display: flex !important;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        font-size: 13px;
+    }
+    .user-table tbody td:nth-child(n+2):not(:last-child)::before {
+        font-weight: 700;
+        font-size: 11px;
+        text-transform: uppercase;
+        color: #6c757d;
+        letter-spacing: 0.4px;
+    }
+    .user-table tbody td:nth-child(2)::before { content: 'Role'; }
+    .user-table tbody td:nth-child(3)::before { content: 'Status'; }
+    .user-table tbody td:nth-child(4)::before { content: 'Last Login'; }
+    .user-table tbody td:nth-child(5)::before { content: 'Date Joined'; }
+
+    /* Last cell — Actions — full width row */
+    .user-table tbody td:last-child {
+        padding-top: 10px !important;
+        margin-top: 8px;
+        border-top: 1px solid #f0f0f0 !important;
+    }
+    .user-table tbody td:last-child > div {
+        justify-content: flex-start !important;
+        gap: 10px !important;
+    }
+    .action-btn {
+        width: 38px;
+        height: 38px;
+        font-size: 14px;
+    }
+
+    /* Modals — full screen */
+    .modal-dialog {
+        max-width: 100% !important;
+        margin: 0 !important;
+        height: 100vh;
+    }
+    .modal-content {
+        height: 100vh;
+        border-radius: 0;
+        display: flex;
+        flex-direction: column;
+        border: none;
+    }
+    .modal-header {
+        flex-shrink: 0;
+    }
+    .modal-body {
+        flex: 1 1 auto;
+        overflow-y: auto;
+    }
+    .modal-footer {
+        flex-direction: column-reverse !important;
+        gap: 8px;
+        flex-shrink: 0;
+    }
+    .modal-footer .btn,
+    .modal-footer form {
+        width: 100%;
+        margin: 0 !important;
+    }
+    .modal-footer form .btn {
+        width: 100%;
+    }
+}
 </style>
 
 <div class="user-admin-container">

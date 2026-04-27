@@ -20,7 +20,7 @@ Title Deed - {{ property.prop_name }}
         </div>
 
         <div class="property-section">
-            <!-- Title Deed Card with View button -->
+            <!-- Title Deed Card -->
             <div class="title-deed-card">
                 <div class="title-deed-icon">
                     <i class="fas fa-file-alt"></i>
@@ -37,20 +37,30 @@ Title Deed - {{ property.prop_name }}
                     {% endif %}
                 </div>
                 <div class="title-deed-actions">
-                    <button type="button" class="btn btn-info btn-lg title-deed-view-btn" id="viewTitleDeedBtn">
-                        <i class="fas fa-eye"></i> View Title Deed
-                    </button>
+                    {% if property.prop_title_deed %}
+                        <button type="button" class="btn btn-info btn-lg title-deed-view-btn" id="viewTitleDeedBtn">
+                            <i class="fas fa-eye"></i> View Title Deed
+                        </button>
+                    {% else %}
+                        <button type="button" class="btn btn-secondary btn-lg title-deed-view-btn" disabled>
+                            <i class="fas fa-times-circle"></i> Document Not Available
+                        </button>
+                    {% endif %}
                 </div>
             </div>
 
-            <!-- Error fallback (only shown if PDF doesn't exist) -->
-            <div id="title-deeds-error" class="alert alert-warning title-deed-error-alert" style="display: none;">
+            <!-- Error fallback (only shown when no title deed is uploaded) -->
+            {% if not property.prop_title_deed %}
+            <div class="alert alert-warning title-deed-error-alert">
                 <h5><i class="fas fa-exclamation-triangle"></i> Title deed not found</h5>
-                <p>The title deed file could not be located for this property. The file may not have been uploaded yet.</p>
-                <a href="#" class="btn btn-sm btn-info" id="download-title-deed" download>
-                    <i class="fas fa-download"></i> Try Download Anyway
+                <p>The title deed file has not been uploaded for this property yet.</p>
+                {% if perms.auth.can_edit_properties %}
+                <a href="{% url 'title_deeds_management' %}" class="btn btn-sm btn-info">
+                    <i class="fas fa-upload"></i> Manage Title Deeds
                 </a>
+                {% endif %}
             </div>
+            {% endif %}
         </div>
     </div>
 </div>
@@ -286,41 +296,17 @@ Title Deed - {{ property.prop_name }}
     }
 </style>
 
+{% if property.prop_title_deed %}
 <script>
 (function() {
     'use strict';
 
-    {% with pdf_name=property.prop_name %}
-    const pdfUrl = "{% static 'title_deeds/' %}{{ pdf_name }} - Title Deed.pdf";
-    {% endwith %}
+    const pdfUrl = "{{ property.prop_title_deed.url }}";
     const propertyName = "{{ property.prop_name|escapejs }}";
     const downloadFilename = `Title Deed - ${propertyName}.pdf`;
 
     const viewBtn = document.getElementById('viewTitleDeedBtn');
-    const errorDiv = document.getElementById('title-deeds-error');
-    const errorDownloadBtn = document.getElementById('download-title-deed');
 
-    // Probe the PDF URL with a HEAD request to see if it exists
-    fetch(pdfUrl, { method: 'HEAD' })
-        .then(function(response) {
-            if (!response.ok) {
-                // PDF doesn't exist — disable view button, show error
-                if (viewBtn) {
-                    viewBtn.disabled = true;
-                    viewBtn.classList.remove('btn-info');
-                    viewBtn.classList.add('btn-secondary');
-                    viewBtn.innerHTML = '<i class="fas fa-times-circle"></i> Document Not Available';
-                }
-                if (errorDiv) errorDiv.style.display = 'block';
-                if (errorDownloadBtn) errorDownloadBtn.href = pdfUrl + '?v=' + Date.now();
-            }
-        })
-        .catch(function() {
-            // Network error — assume the file might still exist; show button
-            console.warn('Could not probe PDF URL; viewing will attempt anyway');
-        });
-
-    // View button opens the PDF in the modal viewer
     if (viewBtn) {
         viewBtn.addEventListener('click', function() {
             if (this.disabled) return;
@@ -330,5 +316,6 @@ Title Deed - {{ property.prop_name }}
     }
 })();
 </script>
+{% endif %}
 {% endif %}
 {% endblock %}

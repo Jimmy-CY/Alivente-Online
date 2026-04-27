@@ -182,6 +182,103 @@
     align-items: center;
     gap: 8px;
 }
+
+.form-action-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 30px;
+}
+
+/* ============================================================
+   MOBILE RESPONSIVE — max-width: 768px
+   ============================================================ */
+@media (max-width: 768px) {
+    .user-form-container {
+        padding: 0 8px;
+    }
+
+    /* Page header — stack */
+    .page-header {
+        flex-direction: column;
+        align-items: stretch;
+        padding: 16px;
+        margin-bottom: 16px;
+        gap: 12px;
+        border-radius: 8px;
+    }
+    .page-header h1 {
+        font-size: 17px;
+        text-align: center;
+        word-break: break-word;
+    }
+    .page-header .btn {
+        width: 100%;
+        justify-content: center;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 10px 12px;
+    }
+
+    /* iOS zoom guard */
+    .form-control,
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    select,
+    textarea {
+        font-size: 16px !important;
+    }
+
+    /* User meta box — stack rows */
+    .user-meta-box {
+        flex-direction: column;
+        gap: 8px;
+        padding: 12px 14px;
+    }
+
+    /* Form cards tighter */
+    .form-card {
+        padding: 16px;
+        border-radius: 8px;
+    }
+    .form-card h2 {
+        font-size: 15px;
+        margin-bottom: 16px;
+    }
+
+    /* 2-column form rows → 1 column */
+    .form-row-2 {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    /* Role selector — keep 2-col on mobile */
+    .role-selector {
+        gap: 8px;
+    }
+    .role-option {
+        padding: 12px 6px;
+    }
+    .role-option i {
+        font-size: 20px;
+    }
+
+    /* Bottom action buttons — column-reverse so primary on top */
+    .form-action-row {
+        flex-direction: column-reverse;
+        gap: 8px;
+    }
+    .form-action-row .btn,
+    .form-action-row a.btn {
+        width: 100%;
+        justify-content: center;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 11px 14px;
+    }
+}
 </style>
 
 <div class="user-form-container">
@@ -330,7 +427,7 @@
         </div>
 
         <!-- Action Buttons -->
-        <div style="display:flex; justify-content:space-between; margin-bottom:30px;">
+        <div class="form-action-row">
             <a href="{% url 'user_administration' %}" class="btn btn-secondary">
                 <i class="fas fa-times"></i> Cancel
             </a>

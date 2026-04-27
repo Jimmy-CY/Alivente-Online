@@ -4779,6 +4779,89 @@ def serve_lease(request, filename):
         return redirect('admin_apms')
 
 @login_required
+@permission_required('auth.can_access_properties', raise_exception=True)
+def title_deeds_management(request):
+    """
+    List all properties with their title deed status.
+    Supports POST actions: 'upload' (add/replace title deed) and 'delete'.
+
+    Mirrors the pattern of tenant_lease_agreement view.
+    """
+    properties_qs = props.objects.all().order_by('prop_country', 'prop_name')
+
+    if request.method == 'POST':
+        # Edit-level permission required for upload/delete
+        if not request.user.has_perm('auth.can_edit_properties'):
+            messages.error(request, 'You do not have permission to modify title deeds.')
+            return redirect('title_deeds_management')
+
+        action = request.POST.get('action')
+        prop_id = request.POST.get('prop_id')
+
+        if not prop_id:
+            messages.error(request, 'No property selected')
+            return redirect('title_deeds_management')
+
+        try:
+            property_obj = get_object_or_404(props, pk=prop_id)
+
+            if action == 'delete':
+                if property_obj.prop_title_deed:
+                    # Delete the file from storage
+                    property_obj.prop_title_deed.delete()
+                    property_obj.prop_title_deed_status = "No Title Deed"
+                    property_obj.save()
+                    messages.success(request, f'Title deed deleted for {property_obj.prop_name}!')
+                else:
+                    messages.warning(request, 'No title deed found to delete.')
+
+            elif action == 'upload':
+                if 'title_deed' in request.FILES:
+                    uploaded_file = request.FILES['title_deed']
+
+                    # Validate file size (10MB limit)
+                    if uploaded_file.size > 10 * 1024 * 1024:
+                        messages.error(request, 'File size exceeds 10MB limit')
+                        return redirect('title_deeds_management')
+
+                    # Validate file type
+                    allowed_extensions = ['.pdf', '.jpg', '.jpeg', '.png']
+                    file_extension = os.path.splitext(uploaded_file.name)[1].lower()
+
+                    if file_extension not in allowed_extensions:
+                        messages.error(request, 'Invalid file type. Please upload PDF or image files only.')
+                        return redirect('title_deeds_management')
+
+                    try:
+                        # Delete old file if exists (so the FileField swap is clean)
+                        if property_obj.prop_title_deed:
+                            property_obj.prop_title_deed.delete(save=False)
+
+                        # Save new file via the FileField (uses title_deed_upload_path)
+                        property_obj.prop_title_deed = uploaded_file
+                        property_obj.prop_title_deed_status = "Available"
+                        property_obj.save()
+
+                        messages.success(request, f'Title deed uploaded for {property_obj.prop_name}!')
+                    except Exception as e:
+                        messages.error(request, f'Error saving title deed: {str(e)}')
+                else:
+                    messages.error(request, 'No file selected for upload.')
+
+            else:
+                messages.error(request, 'Unknown action.')
+
+        except Exception as e:
+            messages.error(request, f'Error: {str(e)}')
+
+        return redirect('title_deeds_management')
+
+    context = {
+        'properties': properties_qs,
+    }
+    return render(request, 'title_deeds_management.html', context)
+
+@login_required
 @permission_required('auth.can_edit_properties', raise_exception=True)
 def upload_title_deed(request):
     if request.method == 'POST':

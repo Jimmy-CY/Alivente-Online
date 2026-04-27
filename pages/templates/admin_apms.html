@@ -6,7 +6,7 @@
 
 {% block content %}
 
-<h2><center>ALIVENTE ONLINE - ADMINISTRATION</center></h2>
+<h2 class="admin-page-title"><center>ALIVENTE ONLINE - ADMINISTRATION</center></h2>
 <br/>
 
 {% for msg in messages %}
@@ -27,7 +27,7 @@
   </script>
 {% endfor %}
 
-<div style="display: flex; justify-content: flex-end; gap: 10px;">
+<div class="admin-action-buttons" style="display: flex; justify-content: flex-end; gap: 10px;">
   <button type="button" class="btn btn-info" data-toggle="modal" data-target="#admin_apmsHelpModal">
     <i class="fas fa-question-circle"></i> Help
   </button>
@@ -236,15 +236,70 @@
     box-shadow: 0 4px 6px rgba(0,0,0,0.1);
   }
   
-  /* Responsive */
+  /* ============================================================
+     MOBILE RESPONSIVE — max-width: 768px
+     ============================================================ */
   @media (max-width: 768px) {
-    .admin-grid {
-      grid-template-columns: 1fr;
+    /* Page title — tighter */
+    .admin-page-title {
+      font-size: 1.25rem;
+      margin-top: 4px;
     }
-    
+
+    /* Top action buttons — stack full-width */
+    .admin-action-buttons {
+      flex-direction: column;
+      gap: 8px !important;
+      margin-bottom: 4px;
+    }
+    .admin-action-buttons .btn,
+    .admin-action-buttons a.btn {
+      width: 100%;
+      justify-content: center;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 11px 14px;
+    }
+
+    /* Tabs — keep side-by-side but size for narrow viewports.
+       Each tab takes equal width via flex:1; reduce padding/font; tighten icon gap. */
+    .admin-tabs {
+      padding: 0 4px;
+    }
     .admin-tab {
-      padding: 12px 15px;
+      flex: 1 1 0;
+      width: auto;
+      padding: 11px 8px;
+      font-size: 0.9rem;
+      gap: 6px;
+    }
+    .admin-tab i {
       font-size: 1rem;
+    }
+
+    /* Tab panel — tighter padding */
+    .tab-panel {
+      padding: 16px;
+      border-radius: 0 8px 8px 8px;
+    }
+
+    /* Tile grid — 2 columns on mobile (matches Personal/Home pattern) */
+    .admin-grid {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+    .admin-btn {
+      height: 110px;
+      padding: 8px;
+    }
+    .admin-btn i {
+      font-size: 1.7rem;
+      margin-bottom: 8px;
+    }
+    .admin-btn h6 {
+      font-size: 0.78rem;
+      line-height: 1.15;
     }
   }
 </style>
@@ -296,7 +351,7 @@
 
       <!-- Manage Title Deeds (requires Properties access) -->
       {% if perms.auth.can_access_properties %}
-        <a href="{% url 'properties_title_deed' %}" class="admin-btn btn-alivente">
+        <a href="{% url 'title_deeds_management' %}" class="admin-btn btn-alivente">
           <i class="fas fa-scroll"></i>
           <h6>Manage Title Deeds</h6>
         </a>

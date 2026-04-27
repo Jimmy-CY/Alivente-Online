@@ -29,7 +29,7 @@
     {% endfor %}
 
     <!-- Action Buttons -->
-    <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 20px;">
+    <div class="notification-action-buttons" style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 20px;">
         <button class="btn btn-info" data-toggle="modal" data-target="#notificationHelpModal"><i class="fas fa-question-circle"></i> Help</button>
         <button class="btn btn-info" onclick="refreshData()">Refresh Data</button>
         <a href="{% url 'home' %}" class="btn btn-info">Back</a>
@@ -289,9 +289,142 @@
 }
 
 @media (max-width: 768px) {
+    /* Page titles tighter */
+    .container-fluid > h2 {
+        font-size: 1.25rem;
+        margin-top: 4px;
+    }
+    .container-fluid > h5 {
+        font-size: 0.95rem;
+    }
+
+    /* Action buttons row — stack full-width */
+    .notification-action-buttons {
+        flex-direction: column;
+        gap: 8px !important;
+        margin-bottom: 14px !important;
+    }
+    .notification-action-buttons .btn,
+    .notification-action-buttons a.btn {
+        width: 100%;
+        justify-content: center;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 11px 14px;
+    }
+
+    /* Indicator panel — tighter */
+    .indicator-panel {
+        padding: 14px;
+        margin-bottom: 18px;
+        border-radius: 10px;
+    }
+    .indicator-header {
+        padding: 10px 14px;
+        margin-bottom: 14px;
+        font-size: 14px;
+    }
+    .indicator-header h5 {
+        font-size: 14px !important;
+    }
+
+    /* Indicator cards — 2 columns */
     .indicator-cards {
         grid-template-columns: repeat(2, 1fr);
         gap: 10px;
+    }
+    .indicator-card {
+        padding: 12px 8px;
+    }
+    .indicator-icon {
+        font-size: 22px;
+        margin-bottom: 6px;
+    }
+    .indicator-label {
+        font-size: 11px;
+        line-height: 1.3;
+    }
+    .indicator-value {
+        font-size: 22px;
+    }
+
+    /* === Detail modal-overlay → full screen, table → cards === */
+    .modal-overlay .modal-content {
+        max-width: 100vw;
+        max-height: 100vh;
+        width: 100vw;
+        height: 100vh;
+        border-radius: 0;
+        display: flex;
+        flex-direction: column;
+    }
+    .modal-overlay .modal-header {
+        padding: 14px 16px;
+        flex-shrink: 0;
+    }
+    .modal-overlay .modal-title {
+        font-size: 16px;
+    }
+    .modal-overlay .modal-body {
+        padding: 14px;
+        max-height: none;
+        flex: 1 1 auto;
+        overflow-y: auto;
+    }
+
+    /* Tables → card layout */
+    .data-table thead {
+        display: none;
+    }
+    .data-table,
+    .data-table tbody,
+    .data-table tr {
+        display: block;
+        width: 100%;
+    }
+    .data-table tr {
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 12px 14px;
+        margin-bottom: 10px;
+    }
+    .data-table tr:hover {
+        background: white;
+    }
+    .data-table td {
+        display: flex !important;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        padding: 6px 0 !important;
+        border-bottom: none;
+        text-align: right !important;
+        font-size: 13px;
+    }
+    .data-table td:first-child {
+        font-size: 15px;
+        font-weight: 600;
+        color: #2c3e50;
+        padding-bottom: 8px !important;
+        margin-bottom: 4px;
+        border-bottom: 1px solid #f0f0f0 !important;
+        text-align: left !important;
+        display: block !important;
+    }
+    .data-table td:not(:first-child)::before {
+        content: attr(data-label);
+        font-weight: 600;
+        color: #6c757d;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+        text-align: left;
+        flex-shrink: 0;
+    }
+    .status-badge {
+        font-size: 11px;
     }
 }
 
@@ -467,9 +600,9 @@ class SimpleNotificationDashboard {
         const rows = items.map(item => `
             <tr>
                 <td>${item.prop_name || ''}</td>
-                <td>${item.prop_country || ''}</td>
-                <td><span class="status-badge status-urgent">VACANT</span></td>
-                <td>Contact estate agents ASAP</td>
+                <td data-label="Country">${item.prop_country || ''}</td>
+                <td data-label="Status"><span class="status-badge status-urgent">VACANT</span></td>
+                <td data-label="Action">Contact estate agents ASAP</td>
             </tr>
         `).join('');
         
@@ -494,11 +627,11 @@ class SimpleNotificationDashboard {
         const rows = items.map(item => `
             <tr>
                 <td>${item.prop_name || ''}</td>
-                <td>${item.prop_country || ''}</td>
-                <td>${item.tenant_name || ''}</td>
-                <td>${item.lease_end_date || ''}</td>
-                <td>${item.renewal_date || ''}</td>
-                <td><span class="status-badge status-warning">PENDING</span></td>
+                <td data-label="Country">${item.prop_country || ''}</td>
+                <td data-label="Tenant">${item.tenant_name || ''}</td>
+                <td data-label="Lease End">${item.lease_end_date || ''}</td>
+                <td data-label="Renewal Due">${item.renewal_date || ''}</td>
+                <td data-label="Status"><span class="status-badge status-warning">PENDING</span></td>
             </tr>
         `).join('');
         
@@ -523,10 +656,10 @@ class SimpleNotificationDashboard {
         const rows = items.map(item => `
             <tr>
                 <td>${item.prop_name || ''}</td>
-                <td>${item.prop_country || ''}</td>
-                <td>${item.tenant_name || ''}</td>
-                <td>${item.lease_end_date || ''}</td>
-                <td><span class="status-badge status-urgent">NEED NEW TENANT</span></td>
+                <td data-label="Country">${item.prop_country || ''}</td>
+                <td data-label="Current Tenant">${item.tenant_name || ''}</td>
+                <td data-label="Lease End">${item.lease_end_date || ''}</td>
+                <td data-label="Status"><span class="status-badge status-urgent">NEED NEW TENANT</span></td>
             </tr>
         `).join('');
         
@@ -554,11 +687,11 @@ class SimpleNotificationDashboard {
             return `
                 <tr>
                     <td>${item.prop_name || ''}</td>
-                    <td>${item.prop_country || ''}</td>
-                    <td>${item.tenant_name || ''}</td>
-                    <td>€${formattedAmount}</td>
-                    <td>${item.due_date || ''}</td>
-                    <td>${item.days_overdue || 0}</td>
+                    <td data-label="Country">${item.prop_country || ''}</td>
+                    <td data-label="Tenant">${item.tenant_name || ''}</td>
+                    <td data-label="Amount">€${formattedAmount}</td>
+                    <td data-label="Due Date">${item.due_date || ''}</td>
+                    <td data-label="Days Overdue">${item.days_overdue || 0}</td>
                 </tr>
             `;
         }).join('');
@@ -584,11 +717,11 @@ class SimpleNotificationDashboard {
         const rows = items.map(item => `
             <tr>
                 <td>${item.property_name || 'N/A'}</td>
-                <td>${item.expense_type || 'General'}</td>
-                <td>${item.description || ''}</td>
-                <td>€${parseFloat(item.amount || 0).toFixed(2)}</td>
-                <td>${item.submitted_date || item.expense_date || ''}</td>
-                <td><span class="status-badge status-warning">PENDING APPROVAL</span></td>
+                <td data-label="Type">${item.expense_type || 'General'}</td>
+                <td data-label="Description">${item.description || ''}</td>
+                <td data-label="Amount">€${parseFloat(item.amount || 0).toFixed(2)}</td>
+                <td data-label="Submitted">${item.submitted_date || item.expense_date || ''}</td>
+                <td data-label="Status"><span class="status-badge status-warning">PENDING APPROVAL</span></td>
             </tr>
         `).join('');
         
@@ -613,11 +746,11 @@ class SimpleNotificationDashboard {
         const rows = items.map(item => `
             <tr>
                 <td>${item.property_name || 'N/A'}</td>
-                <td>${item.expense_type || 'General'}</td>
-                <td>${item.description || ''}</td>
-                <td>€${parseFloat(item.amount || 0).toFixed(2)}</td>
-                <td>${item.approved_date || item.expense_date || ''}</td>
-                <td><span class="status-badge status-info">APPROVED - AWAITING PAYMENT</span></td>
+                <td data-label="Type">${item.expense_type || 'General'}</td>
+                <td data-label="Description">${item.description || ''}</td>
+                <td data-label="Amount">€${parseFloat(item.amount || 0).toFixed(2)}</td>
+                <td data-label="Approved">${item.approved_date || item.expense_date || ''}</td>
+                <td data-label="Status"><span class="status-badge status-info">APPROVED - AWAITING PAYMENT</span></td>
             </tr>
         `).join('');
         

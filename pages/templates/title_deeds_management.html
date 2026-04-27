@@ -1,0 +1,486 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+{% block title %}Title Deeds Management{% endblock %}
+{% block content %}
+
+<h2 class="page-title-h2"><center>ALIVENTE ONLINE - PROPERTY TITLE DEEDS</center></h2>
+<h4 class="page-subtitle-h4"><center>UPLOAD / VIEW / DELETE</center></h4>
+<br/>
+
+{% for msg in messages %}
+<div class="alert alert-secondary alert-dismissible fade show auto-dismiss" role="alert">
+  <strong></strong> <center>{{ msg }}</center>
+  <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+    <span aria-hidden="true">&times;</span>
+  </button>
+</div>
+<script>
+  setTimeout(function() {
+    document.querySelectorAll('.auto-dismiss').forEach(alert => {
+      alert.classList.remove('show');
+      alert.classList.add('fade');
+      setTimeout(() => alert.remove(), 500);
+    });
+  }, 2000);
+</script>
+{% endfor %}
+
+<!-- Action Buttons -->
+<div class="page-action-buttons page-action-buttons-single">
+    <a href="{% url 'admin_apms' %}" class="btn btn-info action-btn-back" role="button">
+        <i class="fas fa-arrow-left"></i> Back
+    </a>
+</div>
+
+{% if perms.auth.can_access_properties %}
+
+<!-- Title Deeds Table (desktop) / Card list (mobile) -->
+<div class="table-container">
+<table class="table table-bordered table-striped text-center title-deeds-table">
+<thead>
+    <tr>
+        <th style="text-align: left; width: 35%">Property Name</th>
+        <th style="text-align: left; width: 25%">Country</th>
+        <th style="width: 15%">Status</th>
+        <th style="width: 15%">Title Deed</th>
+        <th style="width: 10%">Actions</th>
+    </tr>
+</thead>
+<tbody>
+    {% for property in properties %}
+    <tr>
+        <td data-label="Property" style="text-align: left">{{ property.prop_name }}</td>
+        <td data-label="Country" style="text-align: left">{{ property.prop_country|default:"-" }}</td>
+        <td data-label="Status">
+            {% if property.prop_title_deed %}
+                <span class="status-uploaded">Available</span>
+            {% else %}
+                <span class="status-missing">Not Uploaded</span>
+            {% endif %}
+        </td>
+        <td data-label="Title Deed" class="desktop-action-cell">
+            {% if property.prop_title_deed %}
+                <button type="button" class="btn btn-sm btn-success" onclick="viewDocument('{{ property.prop_title_deed.url }}', '{{ property.prop_title_deed.name }}', '{{ property.prop_name }}')">
+                    <i class="fas fa-scroll"></i> View
+                </button>
+            {% else %}
+                <span class="text-muted">-</span>
+            {% endif %}
+        </td>
+        <td data-label="Action" class="desktop-action-cell">
+            {% if perms.auth.can_edit_properties %}
+                {% if property.prop_title_deed %}
+                    <button type="button" class="btn btn-sm btn-danger" onclick="deleteDocument({{ property.prop_id }}, '{{ property.prop_name }}')">
+                        <i class="fas fa-trash"></i> Delete
+                    </button>
+                {% else %}
+                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="uploadDocument({{ property.prop_id }}, '{{ property.prop_name }}')">
+                        <i class="fas fa-upload"></i> Upload
+                    </button>
+                {% endif %}
+            {% else %}
+                <span class="text-muted">-</span>
+            {% endif %}
+        </td>
+
+        <!-- Mobile-only action bar (hidden on desktop) -->
+        <td class="mobile-action-bar">
+            {% if property.prop_title_deed %}
+                <button type="button" class="mobile-action-btn" onclick="viewDocument('{{ property.prop_title_deed.url }}', '{{ property.prop_title_deed.name }}', '{{ property.prop_name }}')">
+                    <i class="fas fa-scroll mobile-action-icon icon-color-view"></i>
+                    <span class="mobile-action-label">View</span>
+                </button>
+            {% else %}
+                <span class="mobile-action-btn mobile-action-disabled">
+                    <i class="fas fa-scroll mobile-action-icon"></i>
+                    <span class="mobile-action-label">View</span>
+                </span>
+            {% endif %}
+
+            {% if perms.auth.can_edit_properties %}
+                {% if property.prop_title_deed %}
+                    <button type="button" class="mobile-action-btn" onclick="deleteDocument({{ property.prop_id }}, '{{ property.prop_name }}')">
+                        <i class="fas fa-trash mobile-action-icon icon-color-delete"></i>
+                        <span class="mobile-action-label">Delete</span>
+                    </button>
+                {% else %}
+                    <button type="button" class="mobile-action-btn" onclick="uploadDocument({{ property.prop_id }}, '{{ property.prop_name }}')">
+                        <i class="fas fa-upload mobile-action-icon icon-color-upload"></i>
+                        <span class="mobile-action-label">Upload</span>
+                    </button>
+                {% endif %}
+            {% else %}
+                <span class="mobile-action-btn mobile-action-disabled">
+                    <i class="fas fa-upload mobile-action-icon"></i>
+                    <span class="mobile-action-label">Upload</span>
+                </span>
+            {% endif %}
+        </td>
+    </tr>
+    {% endfor %}
+</tbody>
+</table>
+</div>
+
+{% if perms.auth.can_edit_properties %}
+<!-- Upload Document Modal -->
+<div class="modal fade" id="uploadModal" tabindex="-1" role="dialog" aria-labelledby="uploadModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-fullscreen-mobile" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="uploadModalLabel">Upload Title Deed</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="$('#uploadModal').modal('hide');">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <form method="post" enctype="multipart/form-data" id="uploadForm">
+        <div class="modal-body">
+          {% csrf_token %}
+          <input type="hidden" id="prop_id" name="prop_id">
+          <input type="hidden" name="action" value="upload">
+
+          <div class="upload-target-info">
+            <strong>Property:</strong> <span id="uploadPropertyName"></span>
+          </div>
+
+          <div class="form-group">
+            <label for="title_deed"><strong>Select Title Deed Document</strong></label>
+            <input type="file" class="form-control-file file-upload-input" id="title_deed" name="title_deed" accept=".pdf,.jpg,.jpeg,.png" required>
+            <small class="form-text text-muted">PDF, JPG or PNG. Max file size: 10MB. PDF format recommended.</small>
+          </div>
+        </div>
+        <div class="modal-footer modal-footer-stack-mobile">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="$('#uploadModal').modal('hide');">
+            <i class="fas fa-times"></i> Cancel
+          </button>
+          <button type="submit" class="btn btn-info">
+            <i class="fas fa-upload"></i> Upload Title Deed
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog" aria-labelledby="deleteModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-fullscreen-mobile" role="document">
+    <div class="modal-content">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title" id="deleteModalLabel">Confirm Delete</h5>
+        <button type="button" class="close text-white" data-dismiss="modal" aria-label="Close" onclick="$('#deleteModal').modal('hide');">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <form method="post" id="deleteForm">
+        <div class="modal-body">
+          {% csrf_token %}
+          <input type="hidden" id="delete_prop_id" name="prop_id">
+          <input type="hidden" name="action" value="delete">
+
+          <div class="text-center">
+            <i class="fas fa-exclamation-triangle fa-3x text-danger mb-3"></i>
+            <h5>Are you sure you want to delete this title deed?</h5>
+            <p class="text-muted">This action cannot be undone.</p>
+            <p><strong>Property:</strong> <span id="deletePropertyName"></span></p>
+          </div>
+        </div>
+        <div class="modal-footer modal-footer-stack-mobile">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="$('#deleteModal').modal('hide');">
+            <i class="fas fa-times"></i> Cancel
+          </button>
+          <button type="submit" class="btn btn-danger">
+            <i class="fas fa-trash"></i> Delete Title Deed
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<!-- PDF viewer component (provides openPdfViewer/closePdfViewer functions) -->
+{% include 'components/pdf_viewer.html' %}
+
+{% endif %}
+
+<style>
+/* ==================== DESKTOP STYLES ==================== */
+
+.page-title-h2 {
+    margin-top: 0.5rem;
+    margin-bottom: 0;
+}
+.page-subtitle-h4 {
+    margin-top: 0.25rem;
+    margin-bottom: 1rem;
+}
+
+/* Top action buttons */
+.page-action-buttons {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+.page-action-buttons-single {
+    justify-content: flex-end;
+}
+
+.table-container {
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+/* Status pills */
+.status-uploaded {
+    color: #28a745;
+    font-weight: 600;
+}
+.status-missing {
+    color: #6c757d;
+    font-style: italic;
+}
+
+/* Upload-target info banner */
+.upload-target-info {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    padding: 10px 14px;
+    margin-bottom: 16px;
+    font-size: 14px;
+}
+
+/* Mobile action bar — hidden on desktop */
+.mobile-action-bar { display: none !important; }
+
+/* ==================== MOBILE STYLES (≤768px) ==================== */
+@media (max-width: 768px) {
+
+    .page-title-h2 {
+        font-size: 1.25rem;
+    }
+    .page-subtitle-h4 {
+        font-size: 1rem;
+        margin-bottom: 0.75rem;
+    }
+
+    /* Action buttons — Back full-width */
+    .page-action-buttons-single {
+        margin-bottom: 1rem;
+    }
+    .action-btn-back {
+        width: 100%;
+        text-align: center;
+        padding: 10px 12px;
+    }
+
+    /* Table → Card layout */
+    .table-container {
+        background: transparent;
+        box-shadow: none;
+        border-radius: 0;
+    }
+    .title-deeds-table {
+        border: none;
+        background: transparent;
+    }
+    .title-deeds-table thead {
+        display: none;
+    }
+    .title-deeds-table,
+    .title-deeds-table tbody,
+    .title-deeds-table tr,
+    .title-deeds-table td {
+        display: block;
+        width: 100%;
+    }
+    .title-deeds-table tbody tr {
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        margin-bottom: 12px;
+        padding: 12px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+    }
+    .title-deeds-table tbody tr:nth-of-type(even) {
+        background: white;
+    }
+    .title-deeds-table td {
+        border: none !important;
+        padding: 6px 0 !important;
+        text-align: left !important;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 8px;
+        min-height: 28px;
+    }
+    .title-deeds-table td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        color: #495057;
+        font-size: 13px;
+        flex-shrink: 0;
+    }
+    /* Property Name (first cell) gets prominence */
+    .title-deeds-table td[data-label="Property"] {
+        font-size: 16px;
+        font-weight: 600;
+        color: #2c3e50;
+        padding-bottom: 8px !important;
+        margin-bottom: 4px;
+        border-bottom: 1px solid #f1f3f5 !important;
+        display: block;
+    }
+    .title-deeds-table td[data-label="Property"]::before {
+        display: none;
+    }
+
+    /* Hide desktop action cells on mobile */
+    .desktop-action-cell {
+        display: none !important;
+    }
+
+    /* Show and style mobile action bar — 2-column grid */
+    .mobile-action-bar {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+        margin-top: 10px;
+        padding: 10px 0 0 0 !important;
+        border-top: 1px solid #f1f3f5;
+        align-items: stretch !important;
+        min-height: auto !important;
+        justify-content: stretch !important;
+    }
+    .mobile-action-bar::before {
+        display: none !important;
+    }
+    .mobile-action-btn {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+        gap: 6px;
+        padding: 10px 4px;
+        border-radius: 6px;
+        text-decoration: none;
+        color: #495057;
+        font-size: 11px;
+        background: #f8f9fa;
+        border: 1px solid #e9ecef;
+        transition: background-color 0.15s ease;
+        min-height: 56px;
+        cursor: pointer;
+    }
+    .mobile-action-btn:hover,
+    .mobile-action-btn:active {
+        background: #e9ecef;
+        text-decoration: none;
+        color: #495057;
+    }
+    .mobile-action-icon {
+        font-size: 18px;
+        line-height: 1;
+    }
+    .mobile-action-label {
+        font-size: 11px;
+        font-weight: 500;
+        line-height: 1.2;
+        text-align: center;
+    }
+    /* Icon colours */
+    .icon-color-view { color: #17a2b8; }
+    .icon-color-delete { color: #dc3545; }
+    .icon-color-upload { color: #007bff; }
+
+    /* Disabled state */
+    .mobile-action-disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+        color: #adb5bd;
+    }
+    .mobile-action-disabled .mobile-action-icon {
+        color: #adb5bd;
+    }
+
+    /* Modal full-screen on mobile */
+    .modal-fullscreen-mobile {
+        max-width: 100%;
+        margin: 0;
+    }
+    .modal-fullscreen-mobile .modal-content {
+        border-radius: 0;
+        min-height: 100vh;
+    }
+
+    /* File upload input — readable on mobile */
+    .file-upload-input {
+        font-size: 14px;
+        padding: 8px 0;
+        width: 100%;
+    }
+
+    /* Form labels and helper text on mobile */
+    .modal-body label {
+        font-size: 13px;
+        margin-bottom: 4px;
+    }
+    .modal-body .form-text {
+        font-size: 12px;
+    }
+
+    /* Modal footer — stack buttons full-width with primary on top */
+    .modal-footer-stack-mobile {
+        flex-direction: column-reverse;
+        gap: 8px;
+        padding: 14px;
+    }
+    .modal-footer-stack-mobile .btn {
+        width: 100%;
+        margin: 0 !important;
+        padding: 10px 12px;
+    }
+}
+</style>
+
+<script>
+{% if perms.auth.can_edit_properties %}
+function uploadDocument(propId, propName) {
+    document.getElementById('prop_id').value = propId;
+    document.getElementById('uploadPropertyName').textContent = propName;
+    // Reset the file input so previous selection doesn't linger
+    document.getElementById('title_deed').value = '';
+    $('#uploadModal').modal('show');
+}
+
+function deleteDocument(propId, propName) {
+    document.getElementById('delete_prop_id').value = propId;
+    document.getElementById('deletePropertyName').textContent = propName;
+    $('#deleteModal').modal('show');
+}
+{% endif %}
+
+function viewDocument(documentUrl, documentName, propName) {
+    // Use the shared PDF viewer component
+    const title = `Title Deed (${propName})`;
+    openPdfViewer(documentUrl, title, documentName);
+}
+
+{% if perms.auth.can_edit_properties %}
+// Auto-hide modals on form submission
+$(document).ready(function() {
+    $('#uploadForm, #deleteForm').on('submit', function() {
+        setTimeout(function() {
+            $('.modal').modal('hide');
+        }, 100);
+    });
+});
+{% endif %}
+</script>
+
+{% endblock %}
