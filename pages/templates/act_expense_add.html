@@ -1,25 +1,33 @@
 {% extends 'base.html' %}
 {% load static %}
+
 {% block title %}
 {% endblock %}
+
 {% block content %}
-<h2><center>ALIVENTE ONLINE - ACTUAL EXPENSES</center></h2>
-<h4><center>ADD EXPENSE</center></h4>
+
+<h2 class="page-title-h2"><center>ALIVENTE ONLINE - ACTUAL EXPENSES</center></h2>
+<h4 class="page-subtitle-h4"><center>ADD EXPENSE</center></h4>
 <br/>
-  
-<form action="{% url 'act_expense_commit' %}" method="post">
+
+<form action="{% url 'act_expense_commit' %}" method="post" class="expense-form">
   {% csrf_token %}
-  
-  <div style="display: flex ; justify-content: flex-end">
-      <button class="btn btn-info" style="margin-right:16px" type="submit">Save</button>
-      <a href="{% url 'act_expense_all' %}" class="btn btn-info" style="margin-right:16px" role="button">Back</a>
+
+  <!-- Action Buttons (Save + Back, Back+1 standard on mobile) -->
+  <div class="form-action-buttons">
+      <button class="btn btn-info action-primary" type="submit">
+          <i class="fas fa-save"></i> Save
+      </button>
+      <a href="{% url 'act_expense_all' %}" class="btn btn-info action-back" role="button" aria-label="Cancel and go back">
+          <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
+      </a>
   </div>
-<br/>
-  
+  <br/>
+
   <!-- Hidden fields for default values -->
   <input type="hidden" name="act_expense_approved" value="No">
   <input type="hidden" name="act_expense_paid" value="No">
-  
+
   <div class="form-row">
     <div class="form-group col-md-2">
       <label for="act_expense_date"><strong>Date</strong></label>
@@ -28,12 +36,12 @@
     <div class="form-group col-md-3">
       <label for="prop"><strong>Property Name</strong></label>
       <select id="prop" class="form-control" name="prop" required>
-        <option value = "" disabled selected value="">Select Property</option>
+        <option value="" disabled selected>Select Property</option>
         {% for results in props %}
           <option value="{{results.prop_id}}">{{results.prop_name}}</option>
         {% endfor %}
       </select>
-    </div>    
+    </div>
     <div class="form-group col-md-4">
       <label for="act_expense_description"><strong>Expense Description</strong></label>
       <input type="text" class="form-control" id="act_expense_description" name="act_expense_description" placeholder="Expense Description" maxlength="55" required>
@@ -43,6 +51,110 @@
       <input type="number" class="form-control" id="act_expense_amount" name="act_expense_amount" placeholder="Amount" step="0.01" required>
     </div>
   </div>
-  
+
 </form>
+
+<style>
+.page-title-h2 {
+    margin-top: 0.5rem;
+    margin-bottom: 0.25rem;
+}
+.page-subtitle-h4 {
+    margin-top: 0;
+    margin-bottom: 1rem;
+    color: #6c757d;
+}
+
+/* ==================== ACTION BUTTONS (DESKTOP) ==================== */
+.form-action-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+.form-action-buttons .btn {
+    margin: 0;
+}
+
+/* ==================== BUTTONS ==================== */
+.btn-info {
+    background-color: #17a2b8;
+    color: white;
+    border: 1px solid #17a2b8;
+    border-radius: 6px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+@media (hover: hover) and (pointer: fine) {
+    .btn-info:hover {
+        background-color: #138496;
+        border-color: #117a8b;
+        color: white;
+        text-decoration: none;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+}
+
+/* ==================== MOBILE STYLES (≤768px) ==================== */
+@media (max-width: 768px) {
+    .page-title-h2 {
+        font-size: 1.25rem;
+    }
+    .page-subtitle-h4 {
+        font-size: 1rem;
+    }
+
+    /* Action buttons — Back+1 standard:
+       [Save (wide)] [← Back small icon] */
+    .form-action-buttons {
+        flex-direction: row;
+        flex-wrap: nowrap;
+        align-items: stretch;
+        gap: 8px;
+        margin-bottom: 14px;
+    }
+    .form-action-buttons .action-primary {
+        flex: 1 1 auto;
+        min-width: 0;
+        height: 38px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 12px;
+        font-size: 13px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        gap: 6px;
+    }
+    .form-action-buttons .action-back {
+        flex: 0 0 auto;
+        width: 50px;
+        height: 38px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .action-back-label {
+        display: none;
+    }
+
+    /* Form fields — 16px to prevent iOS zoom */
+    .expense-form .form-control {
+        font-size: 16px;
+        padding: 10px 12px;
+    }
+    .expense-form label {
+        font-size: 13px;
+    }
+
+    /* Form rows — Bootstrap auto-stacks col-md-* on xs, just add a bit of vertical breathing room */
+    .expense-form .form-group {
+        margin-bottom: 12px;
+    }
+}
+</style>
+
 {% endblock %}

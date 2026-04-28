@@ -9,7 +9,23 @@
 {% block content %}
 
 <style>
-/* Expense Filter Panel Styles */
+.page-title-h2 {
+    margin-top: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+/* ==================== ACTION BUTTONS (DESKTOP) ==================== */
+.expense-action-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+/* Desktop: hide the mobile-only More dropdown wrapper */
+.expense-action-buttons .action-more-wrapper { display: none; }
+
+/* ==================== FILTER PANEL ==================== */
 .filter-panel {
     background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
     border: 1px solid #dee2e6;
@@ -27,6 +43,7 @@
     padding-bottom: 12px;
     border-bottom: 2px solid #dee2e6;
     cursor: pointer;
+    gap: 12px;
 }
 
 .filter-title {
@@ -184,9 +201,392 @@
 .remove-tag:hover {
     background: rgba(255, 255, 255, 0.5);
 }
+
+/* ==================== TABLE ==================== */
+.expense-table-wrapper {
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+.expense-table {
+    margin-bottom: 0;
+}
+
+/* ==================== STATUS BUTTONS (DESKTOP) ==================== */
+.expense-table .status-btn {
+    background: white;
+    border: 1px solid black;
+    width: 100%;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 13px;
+    cursor: pointer;
+}
+.expense-table .status-btn.is-disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* ==================== MOBILE STYLES (≤768px) ==================== */
+@media (max-width: 768px) {
+    .page-title-h2 {
+        font-size: 1.25rem;
+        margin-bottom: 0.75rem;
+    }
+
+    /* === ACTION BAR — Back+1 standard:
+         [Add New (wide)] [⋮ Help] [← Back]
+         When Add New isn't shown (read-only or finance-pl context),
+         degrades to [Help (wide)] [← Back] === */
+    .expense-action-buttons {
+        flex-direction: row;
+        flex-wrap: nowrap;
+        align-items: stretch;
+        gap: 8px;
+        margin-bottom: 14px;
+    }
+    .expense-action-buttons .action-primary {
+        flex: 1 1 auto;
+        min-width: 0;
+        height: 38px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 12px;
+        font-size: 13px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin: 0 !important;
+        gap: 6px;
+    }
+    .expense-action-buttons .action-secondary {
+        display: none;  /* Help — hidden, accessed via More menu */
+    }
+    .expense-action-buttons .action-more-wrapper {
+        display: block;
+        position: relative;
+        flex: 0 0 auto;
+    }
+    .expense-action-buttons .action-more-btn {
+        width: 44px;
+        height: 38px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0;
+    }
+    .action-more-menu {
+        position: absolute;
+        top: calc(100% + 6px);
+        right: 0;
+        z-index: 200;
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        min-width: 200px;
+        padding: 6px 0;
+    }
+    .action-more-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        width: 100%;
+        background: none;
+        border: none;
+        text-align: left;
+        padding: 12px 16px;
+        font-size: 14px;
+        color: #2c3e50;
+        cursor: pointer;
+        text-decoration: none;
+    }
+    .action-more-item i {
+        color: #17a2b8;
+        width: 18px;
+        flex-shrink: 0;
+        text-align: center;
+    }
+    .action-more-item:hover, .action-more-item:active, .action-more-item:focus {
+        background: #f0f8ff;
+        outline: none;
+        color: #2c3e50;
+        text-decoration: none;
+    }
+    .expense-action-buttons .action-back {
+        flex: 0 0 auto;
+        width: 44px;
+        height: 38px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 !important;
+    }
+    .action-back-label {
+        display: none;
+    }
+
+    /* === FILTER PANEL TIGHTER === */
+    .filter-panel {
+        padding: 12px;
+        margin-bottom: 18px;
+        border-radius: 10px;
+    }
+    .filter-header {
+        flex-wrap: wrap;
+        margin-bottom: 12px;
+        padding-bottom: 10px;
+    }
+    .filter-title {
+        font-size: 0.95rem;
+    }
+    .filter-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+        margin-bottom: 12px;
+    }
+    .date-filter-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+    }
+    .search-input,
+    .filter-select,
+    .filter-input {
+        font-size: 16px;  /* iOS zoom guard */
+    }
+
+    /* === TABLE → CARDS === */
+    .expense-table-wrapper {
+        background: transparent;
+        box-shadow: none;
+        border-radius: 0;
+        overflow: visible;
+    }
+    .expense-table {
+        border: none !important;
+        background: transparent;
+    }
+    .expense-table thead {
+        display: none;
+    }
+    .expense-table,
+    .expense-table tbody,
+    .expense-table tr {
+        display: block;
+        width: 100%;
+    }
+    .expense-table tr {
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 10px;
+        padding: 14px;
+        margin-bottom: 12px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+    .expense-table tr:hover {
+        background: white;
+    }
+    .expense-table td {
+        display: flex !important;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        padding: 6px 0 !important;
+        border: none !important;
+        text-align: right !important;
+        font-size: 14px;
+        word-break: break-word;
+    }
+    /* Date is the card title */
+    .expense-table td:first-child {
+        font-size: 0.92rem;
+        font-weight: 600;
+        color: #6c757d;
+        padding-bottom: 8px !important;
+        margin-bottom: 6px;
+        border-bottom: 1px solid #f0f0f0 !important;
+        text-align: left !important;
+        display: block !important;
+    }
+    .expense-table td:not(:first-child)::before {
+        content: attr(data-label);
+        font-weight: 600;
+        color: #6c757d;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+        text-align: left;
+        flex-shrink: 0;
+    }
+    .expense-table td.cell-property {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #2c3e50;
+    }
+    .expense-table td.cell-amount {
+        font-size: 1.05rem;
+        font-weight: 700;
+    }
+    /* The 3 status/action cells — full-width buttons stacked at the bottom */
+    .expense-table td.cell-action {
+        display: block !important;
+        margin-top: 6px;
+        padding-top: 8px !important;
+        border-top: 1px solid #f0f0f0 !important;
+        text-align: center !important;
+    }
+    .expense-table td.cell-action:first-of-type {
+        margin-top: 8px;
+    }
+    .expense-table td.cell-action::before {
+        content: attr(data-label);
+        font-weight: 600;
+        color: #6c757d;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+        display: block;
+        margin-bottom: 6px;
+        text-align: left;
+    }
+    .expense-table td.cell-action .status-btn,
+    .expense-table td.cell-action form,
+    .expense-table td.cell-action button {
+        width: 100%;
+    }
+    .expense-table td.cell-action .status-btn {
+        padding: 9px 12px;
+        font-size: 14px;
+    }
+}
+
+/* ==================== MANAGE MODAL — full-screen on mobile ==================== */
+@media (max-width: 768px) {
+    #manageModal .modal-dialog,
+    #quickViewModal .modal-dialog {
+        max-width: 100%;
+        margin: 0;
+        height: 100vh;
+    }
+    #manageModal .modal-content,
+    #quickViewModal .modal-content {
+        height: 100vh;
+        border-radius: 0;
+        border: none;
+        display: flex;
+        flex-direction: column;
+    }
+    #manageModal .modal-header,
+    #quickViewModal .modal-header {
+        flex-shrink: 0;
+        padding: 14px 16px;
+    }
+    #manageModal .modal-body,
+    #quickViewModal .modal-body {
+        flex: 1 1 auto;
+        overflow-y: auto;
+        padding: 14px;
+    }
+    #manageModal .modal-footer,
+    #quickViewModal .modal-footer {
+        flex-direction: column-reverse;
+        gap: 8px;
+        padding: 12px 14px;
+        flex-shrink: 0;
+    }
+    #manageModal .modal-footer .btn,
+    #quickViewModal .modal-footer .btn {
+        width: 100%;
+        margin: 0 !important;
+    }
+    /* Inputs in the modal — 16px iOS guard */
+    #manageModal .form-control {
+        font-size: 16px;
+    }
+    /* Form rows inside the modal — Bootstrap col-md auto-stacks to 12 on xs */
+    #manageModal .form-row .form-group {
+        margin-bottom: 12px;
+    }
+    /* Tab nav — make it scrollable horizontally if needed and tighter */
+    #manageModal .nav-tabs {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+    }
+    #manageModal .nav-tabs .nav-item {
+        flex-shrink: 0;
+    }
+    #manageModal .nav-tabs .nav-link {
+        font-size: 13px;
+        padding: 10px 12px;
+        white-space: nowrap;
+    }
+    /* Document action buttons — stack neatly */
+    #invoiceContent .doc-action-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    #invoiceContent .doc-action-row .btn {
+        flex: 1 1 calc(50% - 4px);
+        margin: 0;
+        font-size: 13px;
+    }
+}
+
+/* ==================== DOCUMENT LAUNCHER (in Manage modal Invoice tab) ==================== */
+.doc-launcher-card {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border: 2px solid #dee2e6;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 16px;
+    text-align: center;
+}
+.doc-launcher-icon {
+    font-size: 36px;
+    color: #17a2b8;
+    margin-bottom: 10px;
+}
+.doc-launcher-name {
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 14px;
+    word-break: break-all;
+}
+.doc-launcher-btn {
+    background: #17a2b8;
+    color: white;
+    border: none;
+    padding: 10px 22px;
+    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+.doc-launcher-btn:hover {
+    background: #138496;
+    color: white;
+    text-decoration: none;
+}
+
+.doc-action-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+}
 </style>
 
-<h2><center>ALIVENTE ONLINE - ACTUAL EXPENSES</center></h2>
+<h2 class="page-title-h2"><center>ALIVENTE ONLINE - ACTUAL EXPENSES</center></h2>
 <br/>
 
 <!-- Messages -->
@@ -200,27 +600,56 @@
 {% endfor %}
 
 <!-- Action Buttons -->
-<div style="display: flex; justify-content: flex-end; margin-bottom: 20px;">
-    <button type="button" class="btn btn-info" data-toggle="modal" data-target="#expensesHelpModal" style="margin-right:16px">
-        <i class="fas fa-question-circle"></i> Help
-    </button>
-    {% if not from_finance_pl_act %}
-        {% if perms.auth.can_edit_expenses %}
-            <a href="{% url 'act_expense_add' %}" class="btn btn-info" style="margin-right:16px" type="button">Add New</a>
-        {% else %}
-            <span class="btn btn-secondary" style="margin-right:16px; opacity:0.6; cursor:not-allowed; pointer-events:none;">Add New</span>
-        {% endif %}
-    {% endif %}
-    
-    {% if from_finance_pl_act %}
-        <a href="{% url 'finance_pl_act' %}?year={{ request.GET.year|default:selected_year }}&prop={{ request.GET.prop|default:'all' }}" 
-           class="btn btn-info" style="margin-right:16px" role="button">Back</a>
-    {% elif came_from == 'finance' %}
-        <a href="{% url 'finance' %}" class="btn btn-info" style="margin-right:16px" role="button">Back</a>
-    {% elif came_from == 'home' %}
-        <a href="{% url 'home' %}" class="btn btn-info" style="margin-right:16px" role="button">Back</a>
+<div class="expense-action-buttons">
+    {% if not from_finance_pl_act and perms.auth.can_edit_expenses %}
+        <a href="{% url 'act_expense_add' %}" class="btn btn-info action-primary" type="button">
+            <i class="fas fa-plus"></i> Add New
+        </a>
+    {% elif not from_finance_pl_act %}
+        <span class="btn btn-secondary action-primary" style="opacity:0.6; cursor:not-allowed; pointer-events:none;">
+            <i class="fas fa-plus"></i> Add New
+        </span>
     {% else %}
-        <a href="{% url 'home' %}" class="btn btn-info" style="margin-right:16px" role="button">Back</a>
+        <!-- finance_pl_act mode: no Add New, Help becomes the primary -->
+        <button type="button" class="btn btn-info action-primary" data-toggle="modal" data-target="#expensesHelpModal">
+            <i class="fas fa-question-circle"></i> Help
+        </button>
+    {% endif %}
+
+    {% if not from_finance_pl_act %}
+        <!-- Desktop Help (hidden on mobile, accessed via More menu) -->
+        <button type="button" class="btn btn-info action-secondary" data-toggle="modal" data-target="#expensesHelpModal">
+            <i class="fas fa-question-circle"></i> Help
+        </button>
+
+        <!-- Mobile-only More dropdown -->
+        <div class="action-more-wrapper">
+            <button type="button" class="btn btn-info action-more-btn" id="actionMoreBtn"
+                    aria-label="More actions" aria-expanded="false" aria-haspopup="true">
+                <i class="fas fa-ellipsis-v"></i>
+            </button>
+            <div class="action-more-menu" id="actionMoreMenu" role="menu" hidden>
+                <button type="button" class="action-more-item" role="menuitem"
+                        data-toggle="modal" data-target="#expensesHelpModal">
+                    <i class="fas fa-question-circle"></i> Help
+                </button>
+            </div>
+        </div>
+    {% endif %}
+
+    {% if from_finance_pl_act %}
+        <a href="{% url 'finance_pl_act' %}?year={{ request.GET.year|default:selected_year }}&prop={{ request.GET.prop|default:'all' }}"
+           class="btn btn-info action-back" role="button" aria-label="Back">
+            <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
+        </a>
+    {% elif came_from == 'finance' %}
+        <a href="{% url 'finance' %}" class="btn btn-info action-back" role="button" aria-label="Back">
+            <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
+        </a>
+    {% else %}
+        <a href="{% url 'home' %}" class="btn btn-info action-back" role="button" aria-label="Back to home">
+            <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
+        </a>
     {% endif %}
 </div>
 
@@ -235,28 +664,26 @@
             <i class="fas fa-times-circle"></i> Clear All
         </button>
     </div>
-    
+
     <div class="filter-content" id="filterContent">
         <form action="{% url 'act_expense_all' %}" method="GET" id="filterForm">
-            <!-- Preserve parameters -->
             {% if request.GET.from %}
                 <input type="hidden" name="from" value="{{ request.GET.from }}">
             {% endif %}
             {% if request.GET.from_finance_pl_act %}
                 <input type="hidden" name="from_finance_pl_act" value="{{ request.GET.from_finance_pl_act }}">
             {% endif %}
-            
+
             <div class="filter-grid">
-                <!-- Search Bar -->
                 <div class="filter-group">
                     <label class="filter-label">
                         <i class="fas fa-search"></i> Search Expense
                     </label>
                     <div class="search-input-group">
-                        <input type="text" 
-                               name="search" 
+                        <input type="text"
+                               name="search"
                                id="searchInput"
-                               class="form-control search-input" 
+                               class="form-control search-input"
                                placeholder="Search by description..."
                                value="{{ search_query|default:'' }}">
                         <button type="button" class="search-btn" id="searchBtn">
@@ -265,7 +692,6 @@
                     </div>
                 </div>
 
-                <!-- Property Filter -->
                 <div class="filter-group">
                     <label class="filter-label">
                         <i class="fas fa-building"></i> Property
@@ -278,7 +704,6 @@
                     </select>
                 </div>
 
-                <!-- Status Filter -->
                 <div class="filter-group">
                     <label class="filter-label">
                         <i class="fas fa-check-circle"></i> Status
@@ -292,32 +717,30 @@
                 </div>
             </div>
 
-            <!-- Date Range Filters -->
             <div class="date-filter-grid">
                 <div class="filter-group">
                     <label class="filter-label">
                         <i class="fas fa-calendar-alt"></i> From Date
                     </label>
-                    <input type="date" 
-                           name="from_date" 
+                    <input type="date"
+                           name="from_date"
                            id="fromDateInput"
-                           class="form-control filter-input" 
+                           class="form-control filter-input"
                            value="{{ selected_from_date|default:'' }}">
                 </div>
-                
+
                 <div class="filter-group">
                     <label class="filter-label">
                         <i class="fas fa-calendar-alt"></i> To Date
                     </label>
-                    <input type="date" 
-                           name="to_date" 
+                    <input type="date"
+                           name="to_date"
                            id="toDateInput"
-                           class="form-control filter-input" 
+                           class="form-control filter-input"
                            value="{{ selected_to_date|default:'' }}">
                 </div>
             </div>
 
-            <!-- Active Filters Display -->
             <div class="active-filters" id="activeFilters" style="display: none;">
                 <span>Active filters:</span>
                 <div class="filter-tags" id="filterTags"></div>
@@ -329,8 +752,8 @@
 <br/>
 
 <!-- Expenses Table -->
-<div>
-<table class="table table-bordered table-striped text-center">
+<div class="expense-table-wrapper">
+<table class="table table-bordered table-striped text-center expense-table">
 <thead>
     <tr>
         <th style="text-align: center; width: {% if from_finance_pl_act %}15%{% else %}10%{% endif %}">Date</th>
@@ -347,69 +770,69 @@
 <tbody>
     {% for expense in expenses %}
     <tr>
-        <td>{{ expense.act_expense_date|date:"Y-m-d" }}</td>
-        <td style="text-align: left">
+        <td data-label="Date">{{ expense.act_expense_date|date:"Y-m-d" }}</td>
+        <td data-label="Property" class="cell-property" style="text-align: left">
             {{ expense.prop.prop_name }}
             {% if expense.act_expense_document %}
-                <i class="fas fa-file-alt" 
-                   style="cursor: pointer; color: #28a745; margin-left: 8px;" 
+                <i class="fas fa-file-alt"
+                   style="cursor: pointer; color: #28a745; margin-left: 8px;"
                    onclick="viewInvoiceQuick('{{ expense.act_expense_document.url }}', '{{ expense.act_expense_document.name }}')"
                    title="Click to view invoice"></i>
             {% endif %}
         </td>
-        <td style="text-align: left">{{ expense.act_expense_description }}</td>
-        <td>{{ expense.act_expense_amount|floatformat:2|intcomma }}</td>
+        <td data-label="Description" style="text-align: left">{{ expense.act_expense_description }}</td>
+        <td data-label="Amount" class="cell-amount">€{{ expense.act_expense_amount|floatformat:2|intcomma }}</td>
         {% if not from_finance_pl_act %}
-            <td>
+            <td data-label="Manage" class="cell-action">
                 {% if perms.auth.can_access_expenses %}
-                <button type="button" class="btn btn-light" style="border-color:black; width: 100%;"
+                <button type="button" class="status-btn"
                         onclick="openManageModal({{ expense.act_expense_id }}, '{{ expense.act_expense_date|date:"Y-m-d" }}', '{{ expense.prop.prop_name }}', '{{ expense.act_expense_description }}', '{{ expense.act_expense_amount }}', '{{ expense.act_expense_approved }}', '{{ expense.act_expense_paid }}', {% if expense.act_expense_document %}'{{ expense.act_expense_document.url }}', '{{ expense.act_expense_document.name }}'{% else %}null, null{% endif %}, {{ user.is_superuser|yesno:"true,false" }}, {{ perms.auth.can_edit_expenses|yesno:"true,false" }})">
                     <span style="color: #007bff;">Manage</span>
                 </button>
                 {% endif %}
             </td>
-            <td>
+            <td data-label="Approved?" class="cell-action">
                 {% if user.is_superuser %}
                     {% if expense.act_expense_approved == 'Yes' %}
-                        <button type="button" class="btn btn-light" style="border-color:black; width: 100%; opacity: 0.5; cursor: not-allowed; pointer-events: none;" disabled>
+                        <button type="button" class="status-btn is-disabled" disabled>
                             <span style="color: #32CD32;">Approved</span>
                         </button>
                     {% else %}
                         <form method="post" action="{% url 'mark_approved' expense.act_expense_id %}" style="display:inline; width: 100%;">
                             {% csrf_token %}
-                            <button type="submit" class="btn btn-light" style="border-color:black; width: 100%;">
+                            <button type="submit" class="status-btn">
                                 <span style="color: #007bff;">Approve</span>
                             </button>
                         </form>
                     {% endif %}
                 {% else %}
-                    <button type="button" class="btn btn-light" style="border-color:black; width: 100%; opacity: 0.5; cursor: not-allowed; pointer-events: none;" disabled>
+                    <button type="button" class="status-btn is-disabled" disabled>
                         <span style="color: {% if expense.act_expense_approved == 'Yes' %}#32CD32{% else %}#DC143C{% endif %};">
                             {% if expense.act_expense_approved == 'Yes' %}Approved{% else %}Pending{% endif %}
                         </span>
                     </button>
                 {% endif %}
             </td>
-            <td>
+            <td data-label="Paid?" class="cell-action">
                 {% if user.is_superuser %}
                     {% if expense.act_expense_paid == 'Yes' %}
-                        <button type="button" class="btn btn-light" style="border-color:black; width: 100%; opacity: 0.5; cursor: not-allowed; pointer-events: none;" disabled>
+                        <button type="button" class="status-btn is-disabled" disabled>
                             <span style="color: #32CD32;">Paid</span>
                         </button>
                     {% elif expense.act_expense_approved == 'Yes' %}
                         <form method="post" action="{% url 'mark_paid' expense.act_expense_id %}" style="display:inline; width: 100%;">
                             {% csrf_token %}
-                            <button type="submit" class="btn btn-light" style="border-color:black; width: 100%;">
+                            <button type="submit" class="status-btn">
                                 <span style="color: #007bff;">Pay</span>
                             </button>
                         </form>
                     {% else %}
-                        <button type="button" class="btn btn-light" style="border-color:black; width: 100%; opacity: 0.5; cursor: not-allowed; pointer-events: none;" disabled>
+                        <button type="button" class="status-btn is-disabled" disabled>
                             <span style="color: #DC143C;">Approve First</span>
                         </button>
                     {% endif %}
                 {% else %}
-                    <button type="button" class="btn btn-light" style="border-color:black; width: 100%; opacity: 0.5; cursor: not-allowed; pointer-events: none;" disabled>
+                    <button type="button" class="status-btn is-disabled" disabled>
                         <span style="color: {% if expense.act_expense_paid == 'Yes' %}#32CD32{% else %}#DC143C{% endif %};">
                             {% if expense.act_expense_paid == 'Yes' %}Paid{% else %}Pending{% endif %}
                         </span>
@@ -420,7 +843,7 @@
     </tr>
     {% endfor %}
 </tbody>
-</table>    
+</table>
 </div>
 
 <!-- Main Management Modal with 3 Tabs -->
@@ -434,7 +857,6 @@
         </button>
       </div>
       <div class="modal-body">
-        <!-- Tab Navigation -->
         <ul class="nav nav-tabs" id="manageTabs" role="tablist">
           <li class="nav-item">
             <a class="nav-link active" id="expense-tab" data-toggle="tab" href="#expense" role="tab">Expense Details</a>
@@ -447,25 +869,17 @@
           </li>
         </ul>
 
-        <!-- Tab Content -->
         <div class="tab-content" id="manageTabContent">
-          <!-- Expense Details Tab -->
           <div class="tab-pane fade show active" id="expense" role="tabpanel">
             <br>
-            <div id="expenseDetailsContent">
-              <!-- Content will be populated by JavaScript based on permissions -->
-            </div>
+            <div id="expenseDetailsContent"></div>
           </div>
 
-          <!-- Invoice Document Tab -->
           <div class="tab-pane fade" id="invoice" role="tabpanel">
             <br>
-            <div id="invoiceContent">
-              <!-- Content will be populated by JavaScript -->
-            </div>
+            <div id="invoiceContent"></div>
           </div>
 
-          <!-- Delete Expense Tab -->
           <div class="tab-pane fade" id="delete" role="tabpanel">
             <br>
             <div class="text-center">
@@ -473,9 +887,7 @@
               <h5>Delete Entire Expense Record</h5>
               <p class="text-muted">This action will permanently delete this expense and any attached invoice document.</p>
               <p><strong>Expense Details:</strong></p>
-              <div id="deleteExpenseDetails" class="mb-4">
-                <!-- Details will be populated by JavaScript -->
-              </div>
+              <div id="deleteExpenseDetails" class="mb-4"></div>
               <div class="form-check mb-3">
                 <input class="form-check-input" type="checkbox" id="deleteConfirmation" required>
                 <label class="form-check-label" for="deleteConfirmation">
@@ -498,28 +910,9 @@
   </div>
 </div>
 
-<!-- Quick Invoice Viewer Modal -->
-<div class="modal fade" id="quickViewModal" tabindex="-1" role="dialog" aria-labelledby="quickViewModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="quickViewModalLabel">Invoice Document</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="closeQuickViewModal()">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-      <div class="modal-body">
-        <div id="quickDocumentViewer">
-          <!-- Document content will be loaded here -->
-        </div>
-      </div>
-      <div class="modal-footer">
-        <a id="quickDownloadLink" href="#" target="_blank" class="btn btn-info">Download</a>
-        <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="closeQuickViewModal()">Close</button>
-      </div>
-    </div>
-  </div>
-</div>
+<!-- Standard PDF Viewer component (powers both quick-view tap on the table icon
+     and the "View Document" launcher inside the Manage modal Invoice tab) -->
+{% include 'components/pdf_viewer.html' %}
 
 {% render_help_modal "expenses" %}
 
@@ -529,27 +922,20 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('Filter system initializing...');
-    
-    // Always start collapsed on page load
+    // Filter panel — start collapsed unless there's an active filter
     const filterContent = document.getElementById('filterContent');
     const toggleIcon = document.getElementById('filterToggleIcon');
-    
+
     if (filterContent && toggleIcon) {
         filterContent.classList.remove('expanded');
-        toggleIcon.style.transform = 'rotate(0deg)'; // Points down when collapsed
-        console.log('Panel set to collapsed state');
+        toggleIcon.style.transform = 'rotate(0deg)';
     }
-    
-    // Auto-submit form when filters change
-    const filterElements = ['propertySelect', 'statusSelect', 'fromDateInput', 'toDateInput'];
-    
-    filterElements.forEach(id => {
+
+    // Auto-submit on filter change
+    ['propertySelect', 'statusSelect', 'fromDateInput', 'toDateInput'].forEach(id => {
         const element = document.getElementById(id);
         if (element) {
             element.addEventListener('change', function() {
-                console.log(`Filter changed: ${id} = ${this.value}`);
-                // Always remember interaction, even if selecting "All" options
                 sessionStorage.setItem('userInteracted', 'true');
                 sessionStorage.setItem('justUsedDropdown', 'true');
                 expandFilterPanel();
@@ -557,8 +943,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
     });
-    
-    // Search input - submit on Enter key  
+
     const searchInput = document.getElementById('searchInput');
     if (searchInput) {
         searchInput.addEventListener('keypress', function(e) {
@@ -570,8 +955,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
-    
-    // Search button click
+
     const searchBtn = document.getElementById('searchBtn');
     if (searchBtn) {
         searchBtn.addEventListener('click', function() {
@@ -580,39 +964,60 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('filterForm').submit();
         });
     }
-    
-    // Update active filters display
+
     updateActiveFilters();
-    
-    // Only auto-expand if there are active filters AND user has interacted before
-    // OR if user just cleared filters (should stay expanded)
-    // OR if user just used a dropdown (including "All" options)
+
+    // Auto-expand filter panel when there are active filters from any source
+    // (deep link, page refresh after filter use, etc.) — so the user sees
+    // why their list is filtered and can clear it.
     const userHasInteracted = sessionStorage.getItem('userInteracted') === 'true';
     const hasActiveFilters = checkForActiveFilters();
     const justClearedFilters = sessionStorage.getItem('justClearedFilters') === 'true';
     const justUsedDropdown = sessionStorage.getItem('justUsedDropdown') === 'true';
-    
-    if ((userHasInteracted && hasActiveFilters) || justClearedFilters || justUsedDropdown) {
-        setTimeout(() => {
-            expandFilterPanel();
-        }, 100);
+
+    if (hasActiveFilters || justClearedFilters || justUsedDropdown) {
+        setTimeout(() => { expandFilterPanel(); }, 100);
     }
-    
-    // Clear the temporary flags after a short delay
-    if (justClearedFilters) {
-        setTimeout(() => {
-            sessionStorage.removeItem('justClearedFilters');
-        }, 200);
-    }
-    
-    if (justUsedDropdown) {
-        setTimeout(() => {
-            sessionStorage.removeItem('justUsedDropdown');
-        }, 200);
-    }
-    
-    console.log('Filter system ready');
+
+    if (justClearedFilters) setTimeout(() => sessionStorage.removeItem('justClearedFilters'), 200);
+    if (justUsedDropdown) setTimeout(() => sessionStorage.removeItem('justUsedDropdown'), 200);
+
+    // Mobile-only More menu wiring
+    initializeMoreMenu();
 });
+
+// Mobile-only "More" actions dropdown
+function initializeMoreMenu() {
+    const moreBtn = document.getElementById('actionMoreBtn');
+    const moreMenu = document.getElementById('actionMoreMenu');
+    if (!moreBtn || !moreMenu) return;
+
+    function closeMenu() {
+        moreMenu.setAttribute('hidden', '');
+        moreBtn.setAttribute('aria-expanded', 'false');
+    }
+    function openMenu() {
+        moreMenu.removeAttribute('hidden');
+        moreBtn.setAttribute('aria-expanded', 'true');
+    }
+    moreBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        const isOpen = !moreMenu.hasAttribute('hidden');
+        if (isOpen) closeMenu(); else openMenu();
+    });
+    document.addEventListener('click', function(e) {
+        if (!moreBtn.contains(e.target) && !moreMenu.contains(e.target)) closeMenu();
+    });
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && !moreMenu.hasAttribute('hidden')) {
+            closeMenu();
+            moreBtn.focus();
+        }
+    });
+    moreMenu.querySelectorAll('.action-more-item').forEach(item => {
+        item.addEventListener('click', function() { closeMenu(); });
+    });
+}
 
 function checkForActiveFilters() {
     const searchInput = document.getElementById('searchInput');
@@ -620,7 +1025,7 @@ function checkForActiveFilters() {
     const statusSelect = document.getElementById('statusSelect');
     const fromDateInput = document.getElementById('fromDateInput');
     const toDateInput = document.getElementById('toDateInput');
-    
+
     return (searchInput && searchInput.value) ||
            (propertySelect && propertySelect.value) ||
            (statusSelect && statusSelect.value) ||
@@ -631,20 +1036,16 @@ function checkForActiveFilters() {
 function expandFilterPanel() {
     const filterContent = document.getElementById('filterContent');
     const toggleIcon = document.getElementById('filterToggleIcon');
-    
     if (filterContent && toggleIcon) {
         filterContent.classList.add('expanded');
         toggleIcon.style.transform = 'rotate(180deg)';
-        console.log('Panel expanded due to user interaction');
-    } else {
-        console.error('Could not find filter elements to expand');
     }
 }
 
 function toggleFilterPanel() {
     const filterContent = document.getElementById('filterContent');
     const toggleIcon = document.getElementById('filterToggleIcon');
-    
+
     if (filterContent.classList.contains('expanded')) {
         filterContent.classList.remove('expanded');
         toggleIcon.style.transform = 'rotate(0deg)';
@@ -658,45 +1059,28 @@ function toggleFilterPanel() {
 
 function clearAllFilters(event) {
     event.stopPropagation();
-    
-    // Set a flag that we just cleared filters and should keep panel expanded
     sessionStorage.setItem('userInteracted', 'true');
     sessionStorage.setItem('justClearedFilters', 'true');
     expandFilterPanel();
-    
     document.getElementById('searchInput').value = '';
     document.getElementById('propertySelect').value = '';
     document.getElementById('statusSelect').value = '';
     document.getElementById('fromDateInput').value = '';
     document.getElementById('toDateInput').value = '';
-    
     document.getElementById('filterForm').submit();
 }
 
 function clearFilter(filterType) {
-    // Set a flag that we just cleared a filter and should keep panel expanded
     sessionStorage.setItem('userInteracted', 'true');
     sessionStorage.setItem('justClearedFilters', 'true');
     expandFilterPanel();
-    
     switch(filterType) {
-        case 'search':
-            document.getElementById('searchInput').value = '';
-            break;
-        case 'property':
-            document.getElementById('propertySelect').value = '';
-            break;
-        case 'status':
-            document.getElementById('statusSelect').value = '';
-            break;
-        case 'from_date':
-            document.getElementById('fromDateInput').value = '';
-            break;
-        case 'to_date':
-            document.getElementById('toDateInput').value = '';
-            break;
+        case 'search': document.getElementById('searchInput').value = ''; break;
+        case 'property': document.getElementById('propertySelect').value = ''; break;
+        case 'status': document.getElementById('statusSelect').value = ''; break;
+        case 'from_date': document.getElementById('fromDateInput').value = ''; break;
+        case 'to_date': document.getElementById('toDateInput').value = ''; break;
     }
-    
     document.getElementById('filterForm').submit();
 }
 
@@ -708,65 +1092,35 @@ function updateActiveFilters() {
     const toDateInput = document.getElementById('toDateInput');
     const activeFiltersDiv = document.getElementById('activeFilters');
     const filterTagsDiv = document.getElementById('filterTags');
-    
+
     if (!filterTagsDiv) return;
-    
-    const search = searchInput.value;
-    const property = propertySelect.value;
-    const status = statusSelect.value;
-    const fromDate = fromDateInput.value;
-    const toDate = toDateInput.value;
-    
+
     filterTagsDiv.innerHTML = '';
     let hasFilters = false;
-    
-    if (search) {
-        filterTagsDiv.innerHTML += `
-            <span class="filter-tag">
-                Search: "${search}" 
-                <button class="remove-tag" onclick="clearFilter('search')" type="button">×</button>
-            </span>`;
+
+    if (searchInput.value) {
+        filterTagsDiv.innerHTML += `<span class="filter-tag">Search: "${searchInput.value}" <button class="remove-tag" onclick="clearFilter('search')" type="button">×</button></span>`;
         hasFilters = true;
     }
-    
-    if (property) {
-        const propertyText = propertySelect.options[propertySelect.selectedIndex].text;
-        filterTagsDiv.innerHTML += `
-            <span class="filter-tag">
-                Property: ${propertyText} 
-                <button class="remove-tag" onclick="clearFilter('property')" type="button">×</button>
-            </span>`;
+    if (propertySelect.value) {
+        const text = propertySelect.options[propertySelect.selectedIndex].text;
+        filterTagsDiv.innerHTML += `<span class="filter-tag">Property: ${text} <button class="remove-tag" onclick="clearFilter('property')" type="button">×</button></span>`;
         hasFilters = true;
     }
-    
-    if (status) {
-        const statusText = statusSelect.options[statusSelect.selectedIndex].text;
-        filterTagsDiv.innerHTML += `
-            <span class="filter-tag">
-                Status: ${statusText} 
-                <button class="remove-tag" onclick="clearFilter('status')" type="button">×</button>
-            </span>`;
+    if (statusSelect.value) {
+        const text = statusSelect.options[statusSelect.selectedIndex].text;
+        filterTagsDiv.innerHTML += `<span class="filter-tag">Status: ${text} <button class="remove-tag" onclick="clearFilter('status')" type="button">×</button></span>`;
         hasFilters = true;
     }
-    
-    if (fromDate) {
-        filterTagsDiv.innerHTML += `
-            <span class="filter-tag">
-                From: ${fromDate} 
-                <button class="remove-tag" onclick="clearFilter('from_date')" type="button">×</button>
-            </span>`;
+    if (fromDateInput.value) {
+        filterTagsDiv.innerHTML += `<span class="filter-tag">From: ${fromDateInput.value} <button class="remove-tag" onclick="clearFilter('from_date')" type="button">×</button></span>`;
         hasFilters = true;
     }
-    
-    if (toDate) {
-        filterTagsDiv.innerHTML += `
-            <span class="filter-tag">
-                To: ${toDate} 
-                <button class="remove-tag" onclick="clearFilter('to_date')" type="button">×</button>
-            </span>`;
+    if (toDateInput.value) {
+        filterTagsDiv.innerHTML += `<span class="filter-tag">To: ${toDateInput.value} <button class="remove-tag" onclick="clearFilter('to_date')" type="button">×</button></span>`;
         hasFilters = true;
     }
-    
+
     activeFiltersDiv.style.display = hasFilters ? 'flex' : 'none';
 }
 
@@ -779,34 +1133,22 @@ setTimeout(function() {
     });
 }, 2000);
 
-// Modal JavaScript Functions
+// ==================== MANAGE MODAL ====================
 let currentExpenseId = null;
 
 function openManageModal(expenseId, date, property, description, amount, approved, paid, documentUrl, documentName, isSuperuser, canEditExpenses) {
     currentExpenseId = expenseId;
-    
-    // Determine if user can edit expense details:
-    //   - Superuser: always
-    //   - Edit user: only if expense is still Entered (not approved, not paid)
-    //   - Read-only user: never
+
     const canEdit = isSuperuser || (canEditExpenses && approved === 'No' && paid === 'No');
-    const canDelete = canEdit;  // Same rule: edit and delete travel together
-    
-    // Document management is ALWAYS allowed for superusers and edit users,
-    // regardless of approved/paid state. Read-only users cannot manage documents.
+    const canDelete = canEdit;
     const canManageDocuments = isSuperuser || canEditExpenses;
-    
-    // Populate expense details form based on permissions
+
     populateExpenseDetailsTab(expenseId, date, property, description, amount, approved, paid, canEdit, isSuperuser);
-    
-    // Populate invoice tab
     populateInvoiceTab(documentUrl, documentName, expenseId, canManageDocuments);
-    
-    // Show/hide delete tab based on permissions
+
     const deleteTabNav = document.getElementById('delete-tab-nav');
     if (canDelete) {
         deleteTabNav.style.display = 'block';
-        // Populate delete tab
         document.getElementById('deleteExpenseDetails').innerHTML = `
             <p><strong>Date:</strong> ${date}</p>
             <p><strong>Property:</strong> ${property}</p>
@@ -816,34 +1158,29 @@ function openManageModal(expenseId, date, property, description, amount, approve
         document.getElementById('delete_expense_id').value = expenseId;
     } else {
         deleteTabNav.style.display = 'none';
-        // If delete tab was active, switch to expense tab
         if (document.getElementById('delete-tab').classList.contains('active')) {
             document.getElementById('expense-tab').click();
         }
     }
-    
-    // Reset delete confirmation
+
     document.getElementById('deleteConfirmation').checked = false;
     document.getElementById('confirmDeleteBtn').disabled = true;
-    
-    // Show modal
+
     $('#manageModal').modal('show');
 }
 
 function populateExpenseDetailsTab(expenseId, date, property, description, amount, approved, paid, canEdit, isSuperuser) {
     const expenseDetailsContent = document.getElementById('expenseDetailsContent');
-    
+
     if (canEdit) {
-        // Get CSRF token from existing form or cookie
         const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-        
-        // Show editable form
+
         expenseDetailsContent.innerHTML = `
             <form id="expenseEditForm" method="post">
               <input type="hidden" name="csrfmiddlewaretoken" value="${csrfToken}">
               <input type="hidden" id="edit_expense_id" name="expense_id" value="${expenseId}">
               <input type="hidden" name="action" value="edit">
-              
+
               <div class="form-row">
                 <div class="form-group col-md-3">
                   <label for="edit_expense_date"><strong>Expense Date</strong></label>
@@ -888,65 +1225,47 @@ function populateExpenseDetailsTab(expenseId, date, property, description, amoun
               </div>
             </form>
         `;
-        
-        // Set the correct property option
+
         const propSelect = document.getElementById('edit_prop');
         if (propSelect) {
             for (let option of propSelect.options) {
-                if (option.text === property) {
-                    option.selected = true;
-                    break;
-                }
+                if (option.text === property) { option.selected = true; break; }
             }
         }
-        
-        // Add event listener for Approved field to control Paid field
+
         const approvedSelect = document.getElementById('edit_expense_approved');
         const paidSelect = document.getElementById('edit_expense_paid');
-        
+
         if (approvedSelect && paidSelect) {
-            // Create a hidden field to ensure paid value is always submitted
             const hiddenPaidInput = document.createElement('input');
             hiddenPaidInput.type = 'hidden';
             hiddenPaidInput.name = 'act_expense_paid_hidden';
             hiddenPaidInput.id = 'edit_expense_paid_hidden';
             paidSelect.parentNode.appendChild(hiddenPaidInput);
-            
-            // Function to update paid field based on approved status
+
             function updatePaidFieldStatus() {
                 const isApproved = approvedSelect.value === 'Yes';
-                
                 if (!isApproved) {
-                    // If not approved, force paid to "No" and disable
                     paidSelect.value = 'No';
                     paidSelect.disabled = true;
                     paidSelect.style.opacity = '0.5';
                     paidSelect.style.cursor = 'not-allowed';
-                    // Update hidden field to ensure "No" is submitted
                     hiddenPaidInput.value = 'No';
                 } else {
-                    // If approved, enable paid field
                     paidSelect.disabled = false;
                     paidSelect.style.opacity = '1';
                     paidSelect.style.cursor = 'pointer';
-                    // Update hidden field with current value
                     hiddenPaidInput.value = paidSelect.value;
                 }
             }
-            
-            // Set initial state
+
             updatePaidFieldStatus();
-            
-            // Add event listener for changes to approved field
             approvedSelect.addEventListener('change', updatePaidFieldStatus);
-            
-            // Add event listener for changes to paid field (when enabled)
             paidSelect.addEventListener('change', function() {
                 hiddenPaidInput.value = this.value;
             });
         }
     } else {
-        // Show read-only view
         expenseDetailsContent.innerHTML = `
             <div class="alert alert-warning">
                 <i class="fas fa-lock"></i> <strong>Read Only:</strong> This expense cannot be modified.
@@ -989,43 +1308,30 @@ function populateExpenseDetailsTab(expenseId, date, property, description, amoun
 
 function populateInvoiceTab(documentUrl, documentName, expenseId, canManageDocuments) {
     const invoiceContent = document.getElementById('invoiceContent');
-    
-    // Read-only users: show document if one exists, but no upload/replace/delete/merge controls
+    const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+    // Build the document launcher card (used when a document exists)
+    function launcherCard(name) {
+        const cleanName = (name || '').split('/').pop() || 'document';
+        return `
+            <div class="doc-launcher-card">
+                <div class="doc-launcher-icon"><i class="fas fa-file-invoice"></i></div>
+                <div class="doc-launcher-name">${cleanName}</div>
+                <button type="button" class="doc-launcher-btn" onclick="openExpenseDocument('${documentUrl}', '${cleanName}')">
+                    <i class="fas fa-eye"></i> View Document
+                </button>
+            </div>
+        `;
+    }
+
+    // ====== Read-only branch ======
     if (!canManageDocuments) {
         if (documentUrl && documentName) {
-            const extension = documentName.split('.').pop().toLowerCase();
-            let previewHtml = '';
-            
-            if (extension === 'pdf') {
-                previewHtml = `
-                    <iframe src="${documentUrl}#toolbar=0&navpanes=0&scrollbar=0" width="100%" height="400px" style="border: none;"></iframe>
-                    <p class="text-center mt-2">
-                        <small>If the PDF doesn't display, <a href="${documentUrl}" target="_blank">click here to open it in a new tab</a></small>
-                    </p>
-                `;
-            } else if (['jpg', 'jpeg', 'png'].includes(extension)) {
-                previewHtml = `<img src="${documentUrl}" alt="Invoice" class="img-fluid" style="max-width: 100%; height: auto;">`;
-            } else {
-                previewHtml = `
-                    <div class="text-center">
-                        <i class="fas fa-file-alt fa-3x text-muted mb-3"></i>
-                        <p>File: <strong>${documentName}</strong></p>
-                        <p>This file type cannot be previewed in the browser.</p>
-                    </div>
-                `;
-            }
-            
             invoiceContent.innerHTML = `
                 <div class="alert alert-info">
                     <i class="fas fa-eye"></i> <strong>Read Only:</strong> You can view this document but cannot modify it.
                 </div>
-                <h6>Invoice Document:</h6>
-                ${previewHtml}
-                <div class="mt-3">
-                    <a href="${documentUrl}" download="${documentName}" class="btn btn-info btn-sm">
-                        <i class="fas fa-download"></i> Download
-                    </a>
-                </div>
+                ${launcherCard(documentName)}
             `;
         } else {
             invoiceContent.innerHTML = `
@@ -1037,61 +1343,40 @@ function populateInvoiceTab(documentUrl, documentName, expenseId, canManageDocum
         }
         return;
     }
-    
-    // Edit users and superusers: full document management
+
+    // ====== Edit branch (superusers + edit users) ======
     if (documentUrl && documentName) {
-        // Document exists
-        const extension = documentName.split('.').pop().toLowerCase();
-        let previewHtml = '';
-        
-        if (extension === 'pdf') {
-            previewHtml = `
-                <iframe src="${documentUrl}#toolbar=0&navpanes=0&scrollbar=0" width="100%" height="400px" style="border: none;"></iframe>
-                <p class="text-center mt-2">
-                    <small>If the PDF doesn't display, <a href="${documentUrl}" target="_blank">click here to open it in a new tab</a></small>
-                </p>
-            `;
-        } else if (['jpg', 'jpeg', 'png'].includes(extension)) {
-            previewHtml = `<img src="${documentUrl}" alt="Invoice" class="img-fluid" style="max-width: 100%; height: auto;">`;
-        } else {
-            previewHtml = `
-                <div class="text-center">
-                    <i class="fas fa-file-alt fa-3x text-muted mb-3"></i>
-                    <p>File: <strong>${documentName}</strong></p>
-                    <p>This file type cannot be previewed in the browser.</p>
-                </div>
-            `;
-        }
-        
-        // Add "Add to Existing" button for PDFs only
-        let addButton = '';
-        if (extension === 'pdf') {
-            addButton = `
-                <button type="button" class="btn btn-success btn-sm" onclick="showAddToExisting(${expenseId})">
-                    <i class="fas fa-plus"></i> Add to Existing
-                </button>
-            `;
-        }
-        
+        const cleanName = documentName.split('/').pop();
+        const extension = cleanName.split('.').pop().toLowerCase();
+        const isPdf = extension === 'pdf';
+
+        // "Add to Existing" merge button only makes sense for PDFs
+        const addToExistingBtn = isPdf ? `
+            <button type="button" class="btn btn-success btn-sm" onclick="showAddToExisting()">
+                <i class="fas fa-plus"></i> Add to Existing
+            </button>
+        ` : '';
+
         invoiceContent.innerHTML = `
-            <h6>Current Invoice Document:</h6>
-            ${previewHtml}
-            <div class="mt-3">
-                <a href="${documentUrl}" download="${documentName}" class="btn btn-info btn-sm">
+            ${launcherCard(documentName)}
+
+            <div class="doc-action-row">
+                <a href="${documentUrl}" download="${cleanName}" class="btn btn-info btn-sm">
                     <i class="fas fa-download"></i> Download
                 </a>
-                ${addButton}
-                <button type="button" class="btn btn-warning btn-sm" onclick="showReplaceUpload(${expenseId})">
+                ${addToExistingBtn}
+                <button type="button" class="btn btn-warning btn-sm" onclick="showReplaceUpload()">
                     <i class="fas fa-sync"></i> Replace
                 </button>
                 <button type="button" class="btn btn-danger btn-sm" onclick="deleteInvoiceDocument(${expenseId})">
                     <i class="fas fa-trash"></i> Delete Document
                 </button>
             </div>
+
             <div id="addToExistingForm" style="display: none;" class="mt-3 bg-light p-3 border rounded">
                 <h6 class="text-success"><i class="fas fa-plus-circle"></i> Add to Existing PDF</h6>
                 <form method="post" enctype="multipart/form-data" id="addToExistingDocumentForm">
-                    <input type="hidden" name="csrfmiddlewaretoken" value="${document.querySelector('[name=csrfmiddlewaretoken]').value}">
+                    <input type="hidden" name="csrfmiddlewaretoken" value="${csrfToken}">
                     <input type="hidden" name="expense_id" value="${expenseId}">
                     <input type="hidden" name="action" value="upload">
                     <input type="hidden" name="document_action" value="add_to_existing">
@@ -1104,9 +1389,10 @@ function populateInvoiceTab(documentUrl, documentName, expenseId, canManageDocum
                     <button type="button" class="btn btn-secondary btn-sm" onclick="hideAddToExisting()">Cancel</button>
                 </form>
             </div>
+
             <div id="replaceUploadForm" style="display: none;" class="mt-3">
                 <form method="post" enctype="multipart/form-data" id="replaceDocumentForm">
-                    <input type="hidden" name="csrfmiddlewaretoken" value="${document.querySelector('[name=csrfmiddlewaretoken]').value}">
+                    <input type="hidden" name="csrfmiddlewaretoken" value="${csrfToken}">
                     <input type="hidden" name="expense_id" value="${expenseId}">
                     <input type="hidden" name="action" value="upload">
                     <div class="form-group">
@@ -1120,12 +1406,11 @@ function populateInvoiceTab(documentUrl, documentName, expenseId, canManageDocum
             </div>
         `;
     } else {
-        // No document exists
         invoiceContent.innerHTML = `
             <h6>No Invoice Document Attached</h6>
             <p class="text-muted">Upload an invoice document for this expense.</p>
             <form method="post" enctype="multipart/form-data" id="uploadDocumentForm">
-                <input type="hidden" name="csrfmiddlewaretoken" value="${document.querySelector('[name=csrfmiddlewaretoken]').value}">
+                <input type="hidden" name="csrfmiddlewaretoken" value="${csrfToken}">
                 <input type="hidden" name="expense_id" value="${expenseId}">
                 <input type="hidden" name="action" value="upload">
                 <div class="form-group">
@@ -1141,111 +1426,88 @@ function populateInvoiceTab(documentUrl, documentName, expenseId, canManageDocum
     }
 }
 
-function showAddToExisting(expenseId) {
+function showAddToExisting() {
     document.getElementById('addToExistingForm').style.display = 'block';
     document.getElementById('replaceUploadForm').style.display = 'none';
 }
-
 function hideAddToExisting() {
     document.getElementById('addToExistingForm').style.display = 'none';
 }
-
-function showReplaceUpload(expenseId) {
+function showReplaceUpload() {
     document.getElementById('replaceUploadForm').style.display = 'block';
     document.getElementById('addToExistingForm').style.display = 'none';
 }
-
 function hideReplaceUpload() {
     document.getElementById('replaceUploadForm').style.display = 'none';
 }
 
 function deleteInvoiceDocument(expenseId) {
     if (confirm('Are you sure you want to delete this invoice document?')) {
-        // Create a form and submit it
         const form = document.createElement('form');
         form.method = 'POST';
         form.action = '{% url "act_expense_manage_document" %}';
-        
-        // Add CSRF token
+
         const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
         const csrfInput = document.createElement('input');
         csrfInput.type = 'hidden';
         csrfInput.name = 'csrfmiddlewaretoken';
         csrfInput.value = csrfToken;
         form.appendChild(csrfInput);
-        
-        // Add expense ID
+
         const expenseInput = document.createElement('input');
         expenseInput.type = 'hidden';
         expenseInput.name = 'expense_id';
         expenseInput.value = expenseId;
         form.appendChild(expenseInput);
-        
-        // Add action
+
         const actionInput = document.createElement('input');
         actionInput.type = 'hidden';
         actionInput.name = 'action';
         actionInput.value = 'delete_document';
         form.appendChild(actionInput);
-        
-        // Submit the form
+
         document.body.appendChild(form);
         form.submit();
     }
 }
 
+// ==================== DOCUMENT VIEWER ====================
+// Both quick-view (table icon tap) and the View Document launcher in the
+// Manage modal Invoice tab call the same shared pdf_viewer component.
+// The component handles PDF + image preview, mobile Share sheet, page nav,
+// zoom and Download — same UX as title deeds, leases and recipe documents.
+
 function viewInvoiceQuick(documentUrl, documentName) {
-    const quickViewer = document.getElementById('quickDocumentViewer');
-    const quickDownload = document.getElementById('quickDownloadLink');
-    
-    quickDownload.href = documentUrl;
-    quickDownload.download = documentName;
-    
-    const extension = documentName.split('.').pop().toLowerCase();
-    
-    if (extension === 'pdf') {
-        quickViewer.innerHTML = `
-            <iframe src="${documentUrl}#toolbar=0&navpanes=0&scrollbar=0" width="100%" height="500px" style="border: none;"></iframe>
-            <p class="text-center mt-2">
-                <small>If the PDF doesn't display, <a href="${documentUrl}" target="_blank">click here to open it in a new tab</a></small>
-            </p>
-        `;
-    } else if (['jpg', 'jpeg', 'png'].includes(extension)) {
-        quickViewer.innerHTML = `<img src="${documentUrl}" alt="Invoice" class="img-fluid" style="max-width: 100%; height: auto;">`;
+    const cleanName = (documentName || '').split('/').pop() || 'invoice';
+    if (typeof openPdfViewer === 'function') {
+        openPdfViewer(documentUrl, 'Expense Invoice', cleanName);
     } else {
-        quickViewer.innerHTML = `
-            <div class="text-center">
-                <i class="fas fa-file-alt fa-5x text-muted mb-3"></i>
-                <p>File: <strong>${documentName}</strong></p>
-                <p>This file type cannot be previewed in the browser.</p>
-                <p>Click the Download button below to view the file.</p>
-            </div>
-        `;
+        // Fallback if the component failed to load — open in a new tab
+        window.open(documentUrl, '_blank');
     }
-    
-    $('#quickViewModal').modal('show');
 }
 
-// Modal closing functions
+function openExpenseDocument(documentUrl, cleanName) {
+    if (typeof openPdfViewer === 'function') {
+        openPdfViewer(documentUrl, 'Expense Invoice', cleanName);
+    } else {
+        window.open(documentUrl, '_blank');
+    }
+}
+
+// ==================== MODAL CLEANUP ====================
 function closeManageModal() {
     $('#manageModal').modal('hide');
     document.getElementById('deleteConfirmation').checked = false;
     document.getElementById('confirmDeleteBtn').disabled = true;
 }
 
-function closeQuickViewModal() {
-    $('#quickViewModal').modal('hide');
-    document.getElementById('quickDocumentViewer').innerHTML = '';
-}
-
-// Enable/disable delete button based on confirmation checkbox
 document.addEventListener('change', function(e) {
     if (e.target.id === 'deleteConfirmation') {
         document.getElementById('confirmDeleteBtn').disabled = !e.target.checked;
     }
 });
 
-// Handle form submissions
 $(document).on('submit', '#expenseEditForm', function(e) {
     e.preventDefault();
     this.action = `{% url 'act_expense_edit_commit' 0 %}`.replace('0', currentExpenseId);
@@ -1258,24 +1520,19 @@ $(document).on('submit', '#deleteExpenseForm', function(e) {
     this.submit();
 });
 
-// Handle document upload forms
 $(document).on('submit', '#uploadDocumentForm, #replaceDocumentForm, #addToExistingDocumentForm', function(e) {
     e.preventDefault();
     this.action = '{% url "act_expense_manage_document" %}';
     this.submit();
 });
 
-// Modal cleanup
 $('#manageModal').on('hidden.bs.modal', function () {
     const editForm = $('#expenseEditForm')[0];
     if (editForm) editForm.reset();
     document.getElementById('deleteConfirmation').checked = false;
     document.getElementById('confirmDeleteBtn').disabled = true;
-    hideReplaceUpload(); hideAddToExisting();
-});
-
-$('#quickViewModal').on('hidden.bs.modal', function () {
-    document.getElementById('quickDocumentViewer').innerHTML = '';
+    hideReplaceUpload();
+    hideAddToExisting();
 });
 </script>
 

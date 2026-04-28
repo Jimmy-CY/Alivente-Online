@@ -13,9 +13,11 @@
     transition: transform 0.2s ease-in-out;
 }
 
-.card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+@media (hover: hover) and (pointer: fine) {
+    .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
 }
 
 /* Profit & Loss Table Styles */
@@ -51,7 +53,7 @@
     border: 1px solid #dee2e6;
 }
 
-/* Column Widths for P&L Table */
+/* Column Widths for P&L Table (desktop default) */
 .profit-loss-table th:first-child,
 .profit-loss-table td:first-child {
     width: 150px;
@@ -147,9 +149,11 @@
     flex: 1 1 calc(33.333% - 10px);
 }
 
-.roi-section > div > div:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+@media (hover: hover) and (pointer: fine) {
+    .roi-section > div > div:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 3px 8px rgba(0, 0, 0, 0.15);
+    }
 }
 
 .roi-section .font-weight-bold {
@@ -157,23 +161,146 @@
     color: #495057;
 }
 
-/* Responsive Design */
+/* ====================================================
+   ROTATE-PROMPT (portrait small screens only)
+   ====================================================
+   Same pattern as lease_timeline.html — pure CSS, no JS.
+   Default: prompt hidden, P&L visible.
+   Mobile portrait: prompt visible, P&L hidden. */
+
+.rotate-prompt {
+    display: none;
+}
+
+.pl-content {
+    display: block;
+}
+
+body .rotate-prompt .rotate-prompt-inner,
+.main-content .rotate-prompt-inner {
+    text-align: center !important;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%) !important;
+    border: 1px solid #dee2e6 !important;
+    border-radius: 12px !important;
+    padding: 40px 24px !important;
+    max-width: 360px !important;
+    width: 100% !important;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
+}
+
+body .rotate-prompt .rotate-prompt-icon,
+.main-content .rotate-prompt-icon {
+    font-size: 4rem !important;
+    color: #17a2b8 !important;
+    margin-bottom: 20px !important;
+    display: inline-block !important;
+    animation: rotateHint 2.5s ease-in-out infinite !important;
+    transform-origin: center !important;
+}
+
+@keyframes rotateHint {
+    0%, 100% { transform: rotate(0deg); }
+    25%      { transform: rotate(-90deg); }
+    75%      { transform: rotate(-90deg); }
+}
+
+body .rotate-prompt .rotate-prompt-title,
+.main-content .rotate-prompt-title {
+    color: #2c3e50 !important;
+    font-size: 1.4rem !important;
+    margin: 0 0 16px 0 !important;
+    font-weight: 600 !important;
+    line-height: 1.3 !important;
+}
+
+body .rotate-prompt .rotate-prompt-message,
+.main-content .rotate-prompt-message {
+    color: #495057 !important;
+    font-size: 1rem !important;
+    line-height: 1.5 !important;
+    margin: 0 0 12px 0 !important;
+}
+
+body .rotate-prompt .rotate-prompt-message strong,
+.main-content .rotate-prompt-message strong {
+    color: #17a2b8 !important;
+}
+
+body .rotate-prompt .rotate-prompt-instruction,
+.main-content .rotate-prompt-instruction {
+    font-size: 0.95rem !important;
+    color: #6c757d !important;
+    font-style: italic !important;
+    margin: 0 0 24px 0 !important;
+}
+
+body .rotate-prompt .rotate-prompt-back,
+.main-content .rotate-prompt-back {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    background: #17a2b8 !important;
+    color: white !important;
+    padding: 10px 24px !important;
+    border-radius: 6px !important;
+    text-decoration: none !important;
+    font-weight: 500 !important;
+    font-size: 14px !important;
+    border: none !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    margin-top: 12px !important;
+}
+
+body .rotate-prompt .rotate-prompt-back:hover,
+.main-content .rotate-prompt-back:hover {
+    background: #138496 !important;
+    color: white !important;
+    text-decoration: none !important;
+}
+
+/* Mobile portrait: hide P&L, show rotate prompt.
+   Use high-specificity selectors with !important to beat any
+   rules in base.html that target .main-content / .with-sidebar
+   descendants. */
+@media (max-width: 768px) and (orientation: portrait) {
+    body .pl-content,
+    .main-content .pl-content,
+    .main-content.with-sidebar .pl-content {
+        display: none !important;
+    }
+    body .rotate-prompt,
+    .main-content .rotate-prompt {
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
+        min-height: 60vh;
+        padding: 20px;
+    }
+}
+
+/* ====================================================
+   RESPONSIVE TABLE BREAKPOINTS
+   ==================================================== */
+
+/* Desktop / large tablet: existing behaviour (already defined above) */
+
 @media (max-width: 1200px) {
     .profit-loss-table {
         font-size: 0.75rem;
     }
-    
+
     .profit-loss-table td, .profit-loss-table th {
         padding: 3px 4px;
     }
-    
+
     .profit-loss-table th:first-child,
     .profit-loss-table td:first-child {
         width: 120px;
         min-width: 120px;
         max-width: 120px;
     }
-    
+
     .roi-section > div > div {
         flex: 1 1 calc(50% - 10px);
         min-width: 180px;
@@ -184,14 +311,14 @@
     .profit-loss-table {
         font-size: 0.7rem;
     }
-    
+
     .profit-loss-table th:first-child,
     .profit-loss-table td:first-child {
         width: 100px;
         min-width: 100px;
         max-width: 100px;
     }
-    
+
     .profit-loss-table th:not(:first-child),
     .profit-loss-table td:not(:first-child) {
         width: 60px;
@@ -200,20 +327,116 @@
     }
 }
 
+/* Mobile landscape — tighten further so the 15-column table fits
+   into ~700-850px landscape phones without needing horizontal scroll.
+   Combines orientation and aspect-ratio for maximum compatibility. */
+@media (max-width: 900px) and (orientation: landscape),
+       (max-width: 900px) and (min-aspect-ratio: 13/10) {
+    .container-fluid.mt-4 {
+        padding-left: 8px;
+        padding-right: 8px;
+    }
+    .card-body {
+        padding: 12px;
+    }
+    .profit-loss-section h5 {
+        font-size: 1rem;
+    }
+    h2.mb-1 {
+        font-size: 1.15rem;
+        margin-bottom: 0;
+    }
+    .profit-loss-table {
+        font-size: 0.6rem;
+    }
+    .profit-loss-table thead th {
+        font-size: 0.6rem;
+        padding: 5px 2px;
+    }
+    .profit-loss-table td, .profit-loss-table th {
+        padding: 3px 2px;
+    }
+    /* First column (label) — narrower */
+    .profit-loss-table th:first-child,
+    .profit-loss-table td:first-child {
+        width: 90px;
+        min-width: 90px;
+        max-width: 90px;
+        white-space: normal;  /* allow long labels to wrap onto 2 lines */
+        line-height: 1.2;
+    }
+    /* Month columns — tight */
+    .profit-loss-table th:not(:first-child),
+    .profit-loss-table td:not(:first-child) {
+        width: 48px;
+        min-width: 48px;
+        max-width: 48px;
+    }
+    /* Total + Monthly columns slightly wider */
+    .profit-loss-table th:last-child,
+    .profit-loss-table td:last-child,
+    .profit-loss-table th:nth-last-child(2),
+    .profit-loss-table td:nth-last-child(2) {
+        width: 56px;
+        min-width: 56px;
+        max-width: 56px;
+    }
+
+    /* Header row — shrink the property title and stack the year selector neatly */
+    .pl-header-row {
+        gap: 8px;
+    }
+    .pl-header-row .btn {
+        font-size: 12px;
+        padding: 5px 10px;
+    }
+    .pl-section-header-row {
+        flex-direction: row !important;
+        gap: 8px !important;
+        align-items: center !important;
+    }
+
+    /* ROI cards — 2 per row in landscape */
+    .roi-section {
+        padding: 12px;
+    }
+    .roi-section > div > div {
+        flex: 1 1 calc(50% - 10px);
+        min-width: 0;
+        padding: 8px 12px;
+        font-size: 0.85rem;
+    }
+}
+
+/* Very narrow landscape (older phones) — let the table scroll horizontally
+   if absolutely necessary, rather than truncating data */
+@media (max-width: 640px) and (orientation: landscape),
+       (max-width: 640px) and (min-aspect-ratio: 13/10) {
+    .profit-loss-table {
+        min-width: 700px;
+    }
+    .table-responsive {
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+}
+
+/* Original ≤768px rules — kept but only effective in non-portrait
+   contexts (because portrait now hides .pl-content entirely) */
 @media (max-width: 768px) {
     .profit-loss-table {
         font-size: 0.65rem;
     }
-    
-    .d-flex.justify-content-between {
+
+    .pl-section-header-row {
         flex-direction: column;
         gap: 15px;
     }
-    
-    .d-flex.justify-content-between .year-selector {
+
+    .pl-section-header-row .year-selector {
         align-self: flex-end;
     }
-    
+
     .roi-section > div > div {
         flex: 1 1 100%;
         min-width: unset;
@@ -224,11 +447,11 @@
     .profit-loss-table td, .profit-loss-table th {
         padding: 2px 3px;
     }
-    
+
     .roi-section {
         padding: 15px;
     }
-    
+
     .roi-section > div > div {
         padding: 8px 12px;
     }
@@ -261,20 +484,21 @@
 
 /* Print Styles */
 @media print {
-    .year-selector {
-        display: none;
+    .year-selector, .rotate-prompt {
+        display: none !important;
     }
-    
+    .pl-content {
+        display: block !important;
+    }
     .profit-loss-table {
         font-size: 10px;
     }
-    
     .roi-section {
         page-break-inside: avoid;
     }
 }
 
-/* More specific styling to override Bootstrap */
+/* Year selector dropdown styling */
 .year-selector select.form-control.year-dropdown {
     background-color: #17a2b8 !important;
     color: white !important;
@@ -309,16 +533,48 @@
     outline: none !important;
     box-shadow: 0 0 0 0.2rem rgba(23, 162, 184, 0.25) !important;
 }
-
 </style>
 {% endblock %}
 
 {% block content %}
+
+<!-- ============================================================
+     ROTATE-TO-LANDSCAPE PROMPT (mobile portrait only)
+     CSS hides the full P&L (.pl-content) in portrait on small screens
+     and shows this prompt instead. When the user rotates, CSS
+     auto-swaps without needing a page refresh.
+     ============================================================ -->
+<div class="rotate-prompt" aria-live="polite">
+    <div class="rotate-prompt-inner" style="text-align: center; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border: 1px solid #dee2e6; border-radius: 12px; padding: 40px 24px; max-width: 360px; width: 100%; margin: 0 auto; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); box-sizing: border-box;">
+        <div class="rotate-prompt-icon" aria-hidden="true" style="font-size: 4rem; color: #17a2b8; margin-bottom: 20px; display: inline-block; animation: rotateHint 2.5s ease-in-out infinite; transform-origin: center;">
+            <i class="fas fa-mobile-alt"></i>
+        </div>
+        <div class="rotate-prompt-title" style="color: #2c3e50; font-size: 1.4rem; margin: 0 0 16px 0; font-weight: 600; line-height: 1.3;">
+            Please Rotate Your Phone
+        </div>
+        <div class="rotate-prompt-message" style="color: #495057; font-size: 1rem; line-height: 1.5; margin: 0 0 12px 0;">
+            The Profit &amp; Loss report is best viewed in <strong style="color: #17a2b8;">landscape mode</strong>.
+        </div>
+        <div class="rotate-prompt-instruction" style="font-size: 0.95rem; color: #6c757d; font-style: italic; margin: 0 0 24px 0;">
+            Turn your phone sideways to see all 12 months of data.
+        </div>
+        <a href="{% url 'property_management_dashboard' %}?property={{ property.prop_id }}"
+           class="rotate-prompt-back"
+           style="display: inline-flex; align-items: center; gap: 8px; background: #17a2b8; color: white; padding: 10px 24px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; border: none; cursor: pointer; margin-top: 12px;">
+            <i class="fas fa-arrow-left"></i> Back to Dashboard
+        </a>
+    </div>
+</div>
+
+<!-- ============================================================
+     FULL P&L (desktop + tablet always; mobile in landscape only)
+     ============================================================ -->
+<div class="pl-content">
 <div class="container-fluid mt-4">
     <!-- Header Section -->
     <div class="row mb-4">
         <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center">
+            <div class="d-flex justify-content-between align-items-center pl-header-row">
                 <div>
                     <h2 class="mb-1">{{ property.prop_name }}</h2>
                 </div>
@@ -337,19 +593,19 @@
             <div class="card">
                 <div class="card-body">
                     <div class="profit-loss-section">
-                        <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-3 pl-section-header-row">
                             <h5><i class="fas fa-chart-pie text-info"></i> Profit & Loss Statement</h5>
-                            
-                            <!-- Year Selector - Inline Styled Select -->
+
+                            <!-- Year Selector -->
                             <div class="year-selector">
-                                <select onchange="window.location.href='?year=' + this.value" 
-                                        style="background-color: #17a2b8 !important; 
-                                               color: white !important; 
-                                               border: 1px solid #17a2b8 !important; 
-                                               border-radius: 6px !important; 
-                                               padding: 8px 16px !important; 
-                                               font-weight: 500 !important; 
-                                               font-size: 14px !important; 
+                                <select onchange="window.location.href='?year=' + this.value"
+                                        style="background-color: #17a2b8 !important;
+                                               color: white !important;
+                                               border: 1px solid #17a2b8 !important;
+                                               border-radius: 6px !important;
+                                               padding: 8px 16px !important;
+                                               font-weight: 500 !important;
+                                               font-size: 14px !important;
                                                min-width: 120px !important;
                                                cursor: pointer !important;
                                                appearance: none !important;
@@ -437,7 +693,7 @@
                                             <td class="text-right">{{ property_revenue_total.year|default:0|floatformat:"0"|intcomma }}</td>
                                             <td class="text-right">{{ property_revenue_total.year|divide:12|default:0|floatformat:"0"|intcomma }}</td>
                                         </tr>
-                                        
+
                                         <!-- EXPENSES SECTION -->
                                         <tr class="section-header">
                                             <td class="font-weight-bold" style="background-color: #17a2b8; color: white;">EXPENSES</td>
@@ -489,7 +745,7 @@
                                         {% endif %}
                                         {% endwith %}
                                         {% endfor %}
-                                        
+
                                         <!-- TOTAL EXPENSES -->
                                         <tr class="font-weight-bold" style="background-color: #f8f9fa">
                                             <td>TOTAL EXPENSES:</td>
@@ -525,7 +781,7 @@
                                                 <td class="text-right">{{ property_expense_total.year|divide:12|default:0|floatformat:"0"|intcomma }}</td>
                                             {% endif %}
                                         </tr>
-                                        
+
                                         <!-- PROFIT SECTION -->
                                         <tr class="section-header">
                                             <td class="font-weight-bold" style="background-color: #17a2b8; color: white;">PROFIT</td>
@@ -570,14 +826,14 @@
                             </div>
                         </div>
 
-                        <!-- FINANCIAL INDICATORS for specific property -->
+                        <!-- FINANCIAL INDICATORS -->
                         <div class="roi-section mt-3">
                             <h6 class="section-title" style="background-color: #17a2b8; color: white; padding: 8px; border-radius: 4px; width: fit-content;">FINANCIAL INDICATORS</h6>
-                            
+
                             <div style="display: flex; gap: 10px; flex-wrap: wrap;">
                                 <!-- GROSS ROI -->
                                 <div style="background-color: #f8f9fa; padding: 8px; border-radius: 4px; width: fit-content; border: 1.5px solid #dee2e6;">
-                                    <span class="font-weight-bold">Gross ROI: 
+                                    <span class="font-weight-bold">Gross ROI:
                                         {% with current_value=property.prop_values_set.first.prop_values_purchase_price %}
                                         {% if current_value %}
                                             {{ property_revenue_total.year|divide:current_value|multiply:100|floatformat:"2" }}%
@@ -587,10 +843,10 @@
                                         {% endwith %}
                                     </span>
                                 </div>
-                                
+
                                 <!-- NET ROI -->
                                 <div style="background-color: #f8f9fa; padding: 8px; border-radius: 4px; width: fit-content; border: 1.5px solid #dee2e6;">
-                                    <span class="font-weight-bold">Net ROI: 
+                                    <span class="font-weight-bold">Net ROI:
                                         {% with current_value=property.prop_values_set.first.prop_values_purchase_price %}
                                         {% if current_value %}
                                             {% if selected_year != 'budget' %}
@@ -611,7 +867,7 @@
 
                                 <!-- EXPENSE RATIO -->
                                 <div style="background-color: #f8f9fa; padding: 8px; border-radius: 4px; width: fit-content; border: 1.5px solid #dee2e6;">
-                                    <span class="font-weight-bold">Expenses to Revenue: 
+                                    <span class="font-weight-bold">Expenses to Revenue:
                                         {% if property_revenue_total.year %}
                                             {% if selected_year != 'budget' %}
                                                 {% with total_expenses=property_expense_total.year|add:property_actual_expense_total.year|default:0 %}
@@ -625,10 +881,10 @@
                                         {% endif %}
                                     </span>
                                 </div>
-                                
+
                                 <!-- RENT PER SQ M -->
                                 <div style="background-color: #f8f9fa; padding: 8px; border-radius: 4px; width: fit-content; border: 1.5px solid #dee2e6;">
-                                    <span class="font-weight-bold">Rent (€/m<sup>2</sup>): 
+                                    <span class="font-weight-bold">Rent (€/m<sup>2</sup>):
                                         {% if property_revenue_total.year and property.prop_floor_area %}
                                             {{ property_revenue_total.year|divide:12|divide:property.prop_floor_area|floatformat:"2" }}
                                         {% else %}
@@ -639,7 +895,7 @@
 
                                 <!-- VALUE INCREASE -->
                                 <div style="background-color: #f8f9fa; padding: 8px; border-radius: 4px; width: fit-content; border: 1.5px solid #dee2e6;">
-                                    <span class="font-weight-bold">% Value Increase: 
+                                    <span class="font-weight-bold">% Value Increase:
                                         {% with prop_values=property.prop_values_set.first %}
                                         {% if prop_values and prop_values.prop_values_purchase_price and prop_values.prop_values_current_value %}
                                             {{ prop_values.prop_values_current_value|subtract:prop_values.prop_values_purchase_price|divide:prop_values.prop_values_purchase_price|multiply:100|floatformat:"2" }}%
@@ -659,27 +915,69 @@
         </div>
     </div>
 </div>
+</div>
+
+<!-- Inline mobile portrait controller — runs as content loads.
+     Uses setProperty('display', value, 'important') which writes
+     an inline style WITH !important — highest possible specificity,
+     wins against any external CSS rule including base.html. -->
+<script>
+(function() {
+    function applyMobilePortrait() {
+        var w = window.innerWidth;
+        var h = window.innerHeight;
+        var pl = document.querySelector('.pl-content');
+        var rp = document.querySelector('.rotate-prompt');
+        var isPhonePortrait = (w <= 768 && h > w);
+
+        if (pl) {
+            if (isPhonePortrait) {
+                pl.style.setProperty('display', 'none', 'important');
+            } else {
+                pl.style.setProperty('display', 'block', 'important');
+            }
+        }
+        if (rp) {
+            if (isPhonePortrait) {
+                rp.style.setProperty('display', 'flex', 'important');
+            } else {
+                rp.style.setProperty('display', 'none', 'important');
+            }
+        }
+        console.log('[P&L] viewport=' + w + 'x' + h + ' phonePortrait=' + isPhonePortrait);
+    }
+
+    // Run as soon as possible
+    applyMobilePortrait();
+
+    // And on every viewport change
+    window.addEventListener('resize', applyMobilePortrait);
+    window.addEventListener('orientationchange', function() {
+        setTimeout(applyMobilePortrait, 200);
+    });
+    // Run again after DOM fully loaded in case base.html JS adjusts things
+    if (document.readyState !== 'complete') {
+        window.addEventListener('load', applyMobilePortrait);
+    }
+})();
+</script>
 {% endblock %}
 
 {% block extra_js %}
 <script>
-// Profit & Loss Year Selector Functions
+// Profit & Loss Year Selector
 document.addEventListener('DOMContentLoaded', function() {
-    // Handle Bootstrap dropdown (compatible with both v4 and v5)
     if (typeof bootstrap !== 'undefined') {
         const dropdownToggle = document.querySelector('.year-selector .dropdown-toggle');
         if (dropdownToggle) {
             new bootstrap.Dropdown(dropdownToggle);
         }
     }
-    
-    // Alternative jQuery handling for Bootstrap 4
     if (typeof $ !== 'undefined') {
         $('.year-selector .dropdown-toggle').dropdown();
     }
 });
 
-// Function to handle year selection change for profit & loss
 function changeYearProfitLoss(year) {
     const currentUrl = new URL(window.location.href);
     currentUrl.searchParams.set('year', year);

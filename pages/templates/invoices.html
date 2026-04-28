@@ -8,7 +8,7 @@ Invoices
 
 {% block content %}
 
-<h2><center>ALIVENTE ONLINE - OPEN INVOICES</center></h2>
+<h2 class="page-title-h2"><center>ALIVENTE ONLINE - OPEN INVOICES</center></h2>
 <br/>
 
 {% for msg in messages %}
@@ -29,13 +29,14 @@ Invoices
   </script>
 {% endfor %}
 
-<body>
-  <!-- Action Buttons -->
-  <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 20px;">
-    <button type="button" class="btn btn-info" data-toggle="modal" data-target="#invoicesHelpModal">
+  <!-- Action Buttons (Help + Back, Back+1 standard on mobile) -->
+  <div class="invoices-action-buttons">
+    <button type="button" class="btn btn-info action-primary" data-toggle="modal" data-target="#invoicesHelpModal">
       <i class="fas fa-question-circle"></i> Help
     </button>
-    <a href="{% url 'home' %}" class="btn btn-info">Back</a>
+    <a href="{% url 'home' %}" class="btn btn-info action-back" aria-label="Back to home">
+      <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
+    </a>
   </div>
 
   <!-- Collapsible Filter Panel -->
@@ -49,7 +50,7 @@ Invoices
         <i class="fas fa-times-circle"></i> Clear All
       </button>
     </div>
-    
+
     <div class="filter-content" id="filterContent">
       <form action="{% url 'invoices' %}" method="post" id="filterForm">
         {% csrf_token %}
@@ -96,7 +97,7 @@ Invoices
 
   <!-- Invoices Table -->
   <div class="table-container">
-    <table class="table table-bordered table-striped">
+    <table class="table table-bordered table-striped invoices-table">
       <thead>
         <tr>
           <th style="text-align: left; width: 20%">Property</th>
@@ -118,20 +119,24 @@ Invoices
                 {% calculate_due_date iresults.invoice_date tresults.tenant_payment_terms as due_date %}
                 {% calculate_days_overdue due_date as days_overdue %}
                 <tr>
-                  <td style="text-align: left">{{ results.prop_name }}</td>
-                  <td style="text-align: center">{{ results.prop_country }}</td>
-                  <td style="text-align: left">{{ tresults.tenant_name }}</td>
-                  <td style="text-align: right; font-family: 'Courier New', monospace;">€{{ tresults.tenant_rent|floatformat:0 }}</td>
-                  <td style="text-align: center">{{ iresults.invoice_date|date:"Y-m-d" }}</td>
-                  <td style="text-align: center">{{ due_date|date:"Y-m-d" }}</td>
-                  <td style="text-align: center; {% if days_overdue > 0 %}color: #dc3545; font-weight: bold;{% endif %}">{{ days_overdue }}</td>
-                    <td style="text-align: center">
-                      {% if perms.auth.can_edit_invoices %}
-                        <a href="{% url 'invoices_commit' iresults.invoice_id %}" class="btn btn-link">Paid</a>
-                      {% else %}
-                        <span class="btn btn-link" style="opacity:0.5; cursor:not-allowed; pointer-events:none;">Paid</span>
-                      {% endif %}
-                    </td>
+                  <td data-label="Property" style="text-align: left">{{ results.prop_name }}</td>
+                  <td data-label="Country" style="text-align: center">{{ results.prop_country }}</td>
+                  <td data-label="Tenant" style="text-align: left">{{ tresults.tenant_name }}</td>
+                  <td data-label="Amount" style="text-align: right; font-family: 'Courier New', monospace;" class="amount-cell">€{{ tresults.tenant_rent|floatformat:0 }}</td>
+                  <td data-label="Invoice Date" style="text-align: center">{{ iresults.invoice_date|date:"Y-m-d" }}</td>
+                  <td data-label="Due Date" style="text-align: center">{{ due_date|date:"Y-m-d" }}</td>
+                  <td data-label="Days Overdue" style="text-align: center;" class="overdue-cell {% if days_overdue > 0 %}is-overdue{% endif %}">{{ days_overdue }}</td>
+                  <td data-label="Mark as Paid" style="text-align: center" class="action-cell">
+                    {% if perms.auth.can_edit_invoices %}
+                      <a href="{% url 'invoices_commit' iresults.invoice_id %}" class="btn btn-paid">
+                        <i class="fas fa-check"></i> Paid
+                      </a>
+                    {% else %}
+                      <span class="btn btn-paid" style="opacity:0.5; cursor:not-allowed; pointer-events:none;">
+                        <i class="fas fa-check"></i> Paid
+                      </span>
+                    {% endif %}
+                  </td>
                 </tr>
               {% endif %}
             {% endfor %}
@@ -143,13 +148,24 @@ Invoices
 
   {% render_help_modal "invoices" %}
 
-</body>
-
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
 <style>
-/* Clean Filter Panel Styles */
+.page-title-h2 {
+    margin-top: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+/* ==================== ACTION BUTTONS (DESKTOP) ==================== */
+.invoices-action-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+/* ==================== FILTER PANEL ==================== */
 .filter-panel {
     background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
     border: 1px solid #dee2e6;
@@ -169,6 +185,7 @@ Invoices
     align-items: center;
     cursor: pointer;
     padding-bottom: 0;
+    gap: 12px;
 }
 
 .filter-header:hover {
@@ -313,7 +330,7 @@ Invoices
     font-size: 10px;
 }
 
-/* Clean Table Styles */
+/* ==================== TABLE ==================== */
 .table-container {
     background: white;
     border-radius: 8px;
@@ -342,12 +359,45 @@ Invoices
     background-color: #f8f9fa;
 }
 
-/* Amount column styling */
-td[style*="font-family: 'Courier New'"] {
+/* Amount column */
+td.amount-cell {
     font-weight: 500;
 }
 
-/* Button Styles */
+/* Days Overdue red highlight */
+td.overdue-cell.is-overdue {
+    color: #dc3545;
+    font-weight: bold;
+}
+
+/* Mark as Paid button */
+.btn-paid {
+    background-color: #28a745;
+    color: white;
+    border: 1px solid #28a745;
+    border-radius: 6px;
+    padding: 6px 14px;
+    font-size: 13px;
+    font-weight: 500;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .btn-paid:hover {
+        background-color: #218838;
+        border-color: #1e7e34;
+        color: white;
+        text-decoration: none;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+}
+
+/* ==================== BUTTON STYLES ==================== */
 .btn-info {
     background-color: #17a2b8;
     color: white;
@@ -357,37 +407,177 @@ td[style*="font-family: 'Courier New'"] {
     font-weight: 500;
 }
 
-.btn-info:hover {
-    background-color: #138496;
-    border-color: #117a8b;
-    color: white;
-    text-decoration: none;
-    transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+@media (hover: hover) and (pointer: fine) {
+    .btn-info:hover {
+        background-color: #138496;
+        border-color: #117a8b;
+        color: white;
+        text-decoration: none;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
 }
 
-.btn-link {
-    color: #17a2b8;
-    font-weight: 500;
-    text-decoration: none;
-}
-
-.btn-link:hover {
-    color: #138496;
-    text-decoration: underline;
-}
-
-/* Responsive Design */
+/* ==================== MOBILE STYLES (≤768px) ==================== */
 @media (max-width: 768px) {
+    .page-title-h2 {
+        font-size: 1.25rem;
+        margin-bottom: 0.75rem;
+    }
+
+    /* Action buttons — Back+1 standard:
+       [Help (wide)] [← Back small icon] */
+    .invoices-action-buttons {
+        flex-direction: row;
+        flex-wrap: nowrap;
+        align-items: stretch;
+        gap: 8px;
+        margin-bottom: 14px;
+    }
+    .invoices-action-buttons .action-primary {
+        flex: 1 1 auto;
+        min-width: 0;
+        height: 38px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 12px;
+        font-size: 13px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin: 0;
+        gap: 6px;
+    }
+    .invoices-action-buttons .action-back {
+        flex: 0 0 auto;
+        width: 50px;
+        height: 38px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0;
+    }
+    .action-back-label {
+        display: none;
+    }
+
+    /* Filter panel — tighter on mobile */
+    .filter-panel {
+        padding: 12px;
+        margin-bottom: 18px;
+        border-radius: 10px;
+    }
+    .filter-panel.expanded {
+        padding: 16px;
+    }
+    .filter-header {
+        flex-direction: row;
+        gap: 10px;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+    .filter-title {
+        font-size: 0.95rem;
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+    /* Filter inputs single column on mobile */
     .filter-grid {
         grid-template-columns: 1fr;
-        gap: 16px;
-    }
-    
-    .filter-header {
-        flex-direction: column;
         gap: 12px;
-        align-items: stretch;
+    }
+    .filter-select {
+        font-size: 16px;  /* iOS zoom guard */
+    }
+
+    /* Table → cards on mobile */
+    .table-container {
+        background: transparent;
+        box-shadow: none;
+        border-radius: 0;
+        overflow: visible;
+    }
+    .invoices-table {
+        border: none !important;
+        background: transparent;
+    }
+    .invoices-table thead {
+        display: none;
+    }
+    .invoices-table,
+    .invoices-table tbody,
+    .invoices-table tr {
+        display: block;
+        width: 100%;
+    }
+    .invoices-table tr {
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 10px;
+        padding: 14px;
+        margin-bottom: 12px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    }
+    .invoices-table tr:hover {
+        background: white;
+    }
+    .invoices-table td {
+        display: flex !important;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        padding: 6px 0 !important;
+        border: none !important;
+        text-align: right !important;
+        font-size: 14px;
+        word-break: break-word;
+    }
+    /* Property name = card title */
+    .invoices-table td:first-child {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #2c3e50;
+        padding-bottom: 8px !important;
+        margin-bottom: 6px;
+        border-bottom: 1px solid #f0f0f0 !important;
+        text-align: left !important;
+        display: block !important;
+    }
+    .invoices-table td:not(:first-child)::before {
+        content: attr(data-label);
+        font-weight: 600;
+        color: #6c757d;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+        text-align: left;
+        flex-shrink: 0;
+    }
+    .invoices-table td.amount-cell {
+        font-size: 1.05rem;
+        font-weight: 700;
+    }
+    .invoices-table td.overdue-cell.is-overdue {
+        font-weight: 700;
+    }
+    /* Mark-as-Paid action — full-width button at the bottom of each card */
+    .invoices-table td.action-cell {
+        margin-top: 8px;
+        padding-top: 10px !important;
+        border-top: 1px solid #f0f0f0 !important;
+        display: block !important;
+        text-align: center !important;
+    }
+    .invoices-table td.action-cell::before {
+        display: none;
+    }
+    .invoices-table td.action-cell .btn-paid {
+        width: 100%;
+        justify-content: center;
+        padding: 10px 12px;
+        font-size: 14px;
     }
 }
 </style>
@@ -395,7 +585,7 @@ td[style*="font-family: 'Courier New'"] {
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     updateActiveFilters();
-    
+
     // Auto-submit on dropdown filter change
     ['propertySelect', 'tenantSelect'].forEach(id => {
         const element = document.getElementById(id);
@@ -405,7 +595,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
     });
-    
+
     // Clear all filters
     const clearAllBtn = document.getElementById('clearAllBtn');
     if (clearAllBtn) {
@@ -415,13 +605,31 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('filterForm').submit();
         });
     }
+
+    // Auto-expand filter panel on mobile if there are active filters
+    if (checkForActiveFilters()) {
+        const filterContent = document.getElementById('filterContent');
+        const toggleIcon = document.getElementById('filterToggleIcon');
+        const filterPanel = document.getElementById('filterPanel');
+        if (filterContent && !filterContent.classList.contains('show')) {
+            filterContent.classList.add('show');
+            toggleIcon.classList.add('rotated');
+            filterPanel.classList.add('expanded');
+        }
+    }
 });
+
+function checkForActiveFilters() {
+    const propertySelect = document.getElementById('propertySelect');
+    const tenantSelect = document.getElementById('tenantSelect');
+    return (propertySelect && propertySelect.value) || (tenantSelect && tenantSelect.value);
+}
 
 function toggleFilters() {
     const filterContent = document.getElementById('filterContent');
     const toggleIcon = document.getElementById('filterToggleIcon');
     const filterPanel = document.getElementById('filterPanel');
-    
+
     if (filterContent.classList.contains('show')) {
         filterContent.classList.remove('show');
         toggleIcon.classList.remove('rotated');
@@ -438,27 +646,24 @@ function updateActiveFilters() {
     const tenantSelect = document.getElementById('tenantSelect');
     const activeFiltersDiv = document.getElementById('activeFilters');
     const filterTagsDiv = document.getElementById('filterTags');
-    
-    if (!propertySelect || !tenantSelect || !activeFiltersDiv || !filterTagsDiv) {
-        return;
-    }
-    
+
+    if (!propertySelect || !tenantSelect || !activeFiltersDiv || !filterTagsDiv) return;
+
     const property = propertySelect.value;
     const tenant = tenantSelect.value;
-    
+
     filterTagsDiv.innerHTML = '';
     let hasFilters = false;
-    
+
     if (property) {
         filterTagsDiv.innerHTML += `<span class="filter-tag">Property: ${property} <button class="remove-tag" onclick="clearFilter('property')">×</button></span>`;
         hasFilters = true;
     }
-    
     if (tenant) {
         filterTagsDiv.innerHTML += `<span class="filter-tag">Tenant: ${tenant} <button class="remove-tag" onclick="clearFilter('tenant')">×</button></span>`;
         hasFilters = true;
     }
-    
+
     activeFiltersDiv.style.display = hasFilters ? 'flex' : 'none';
 }
 

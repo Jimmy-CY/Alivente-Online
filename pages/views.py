@@ -7323,7 +7323,6 @@ def suppliers_delete(request, supplier_id):
     return redirect('suppliers')
 
 ### INVOICES ###
-
 @permission_required('auth.can_access_invoices', raise_exception=True)
 @login_required
 def invoices_page(request):
