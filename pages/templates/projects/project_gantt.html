@@ -28,14 +28,47 @@ Gantt Chart - {{ project.project_name }}
   </script>
 {% endfor %}
 
-<body>
-  <!-- Action Buttons -->
-  <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 20px;">
-    <button id="printBtn" class="btn btn-info">
+<!-- ============================================================
+     ROTATE-TO-LANDSCAPE PROMPT (mobile portrait only)
+     JS hides the full Gantt content (.gantt-content) in portrait
+     on small screens and shows this prompt instead. When the user
+     rotates, JS swaps automatically without page refresh.
+     ============================================================ -->
+<div class="rotate-prompt" aria-live="polite">
+    <div class="rotate-prompt-inner" style="text-align: center; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border: 1px solid #dee2e6; border-radius: 12px; padding: 40px 24px; max-width: 360px; width: 100%; margin: 0 auto; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); box-sizing: border-box;">
+        <div class="rotate-prompt-icon" aria-hidden="true"
+             style="margin-bottom: 20px !important; line-height: 1 !important; display: inline-block !important; animation: ganttRotateHint 2.5s ease-in-out infinite !important; transform-origin: center center !important; will-change: transform;">
+            <i class="fas fa-mobile-alt" style="font-size: 4rem !important; color: #17a2b8 !important;"></i>
+        </div>
+        <div class="rotate-prompt-title" style="color: #2c3e50; font-size: 1.4rem; margin: 0 0 16px 0; font-weight: 600; line-height: 1.3;">
+            Please Rotate Your Phone
+        </div>
+        <div class="rotate-prompt-message" style="color: #495057; font-size: 1rem; line-height: 1.5; margin: 0 0 12px 0;">
+            The Gantt chart is best viewed in <strong style="color: #17a2b8;">landscape mode</strong>.
+        </div>
+        <div class="rotate-prompt-instruction" style="font-size: 0.95rem; color: #6c757d; font-style: italic; margin: 0 0 24px 0;">
+            Turn your phone sideways to see the full project timeline.
+        </div>
+        <a href="{% url 'projects_detail' project.project_id %}"
+           class="rotate-prompt-back"
+           style="display: inline-flex; align-items: center; gap: 8px; background: #17a2b8; color: white; padding: 10px 24px; border-radius: 6px; text-decoration: none; font-weight: 500; font-size: 14px; border: none; cursor: pointer; margin-top: 12px;">
+            <i class="fas fa-arrow-left"></i> Back to Project
+        </a>
+    </div>
+</div>
+
+<!-- ============================================================
+     FULL GANTT CHART CONTENT (visible on desktop + mobile landscape)
+     ============================================================ -->
+<div class="gantt-content">
+  <!-- Action Buttons: Back+1 (Print primary, Back) -->
+  <div class="action-buttons-wrap">
+    <button id="printBtn" class="action-primary" type="button">
       <i class="fas fa-print"></i> Print
     </button>
-    <a href="{% url 'projects_detail' project.project_id %}" class="btn btn-info">
-      <i class="fas fa-arrow-left"></i> Back to Project
+    <a href="{% url 'projects_detail' project.project_id %}" class="action-back" title="Back to Project">
+      <i class="fas fa-arrow-left"></i>
+      <span class="action-back-label">Back</span>
     </a>
   </div>
 
@@ -51,9 +84,9 @@ Gantt Chart - {{ project.project_name }}
           <i class="fas fa-home"></i> <strong>Property:</strong> {{ project.prop.prop_name }}
         </p>
       </div>
-      <div class="col-md-4 text-right">
+      <div class="col-md-4">
         <div class="project-status-info">
-          <span class="status-badge 
+          <span class="status-badge
             {% if project.get_calculated_status == 'Completed' %}status-completed
             {% elif project.get_calculated_status == 'In Progress' %}status-in-progress
             {% else %}status-pending{% endif %}">
@@ -77,13 +110,13 @@ Gantt Chart - {{ project.project_name }}
         <div class="controls-row">
           <div class="view-controls">
             <label>View Mode:</label>
-            <select id="viewMode" class="form-control form-control-sm d-inline-block ml-2" style="width: auto;">
+            <select id="viewMode" class="form-control form-control-sm view-mode-select">
               <option value="Day">Daily</option>
               <option value="Week" selected>Weekly</option>
               <option value="Month">Monthly</option>
             </select>
           </div>
-          
+
           <div class="column-controls">
             <label class="checkbox-label">
               <input type="checkbox" id="showStartDate"> Start Date
@@ -94,16 +127,16 @@ Gantt Chart - {{ project.project_name }}
           </div>
         </div>
       </div>
-      <div class="col-md-4 text-right">
+      <div class="col-md-4">
         <div class="zoom-controls">
           <button id="zoomOut" class="btn btn-sm btn-outline-secondary">
-            <i class="fas fa-search-minus"></i> Zoom Out
+            <i class="fas fa-search-minus"></i> <span class="zoom-label">Zoom Out</span>
           </button>
           <button id="zoomIn" class="btn btn-sm btn-outline-secondary">
-            <i class="fas fa-search-plus"></i> Zoom In
+            <i class="fas fa-search-plus"></i> <span class="zoom-label">Zoom In</span>
           </button>
           <button id="fitToScreen" class="btn btn-sm btn-outline-primary">
-            <i class="fas fa-expand-arrows-alt"></i> Fit to Screen
+            <i class="fas fa-expand-arrows-alt"></i> <span class="zoom-label">Fit to Screen</span>
           </button>
         </div>
       </div>
@@ -141,21 +174,98 @@ Gantt Chart - {{ project.project_name }}
       </div>
     </div>
   </div>
+</div>
+<!-- /.gantt-content -->
 
-</body>
-
-<!-- Include dhtmlxGantt library with zoom extension -->
+<!-- Include dhtmlxGantt library -->
 <script src="https://cdn.dhtmlx.com/gantt/edge/dhtmlxgantt.js"></script>
 <link rel="stylesheet" href="https://cdn.dhtmlx.com/gantt/edge/dhtmlxgantt.css">
-
-<!-- Additional extensions for zoom functionality -->
 <script src="https://export.dhtmlx.com/gantt/api.js"></script>
-
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
 <style>
-/* Header Styles */
+/* ============================================================
+   ROTATE PROMPT — hidden by default, shown via JS on phone portrait
+   ============================================================ */
+.rotate-prompt {
+    display: none;
+}
+
+.gantt-content {
+    display: block;
+}
+
+@keyframes ganttRotateHint {
+    0%   { transform: rotate(0deg); }
+    25%  { transform: rotate(-90deg); }
+    75%  { transform: rotate(-90deg); }
+    100% { transform: rotate(0deg); }
+}
+
+/* ============================================================
+   ACTION BUTTONS — Back+1
+   ============================================================ */
+.action-buttons-wrap {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-bottom: 20px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.action-primary {
+    background: #17a2b8;
+    border: 1px solid #17a2b8;
+    color: #ffffff;
+    padding: 8px 16px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .action-primary:hover {
+        background: #138496;
+        border-color: #117a8b;
+        color: white;
+        text-decoration: none;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+}
+
+.action-back {
+    background: transparent;
+    border: 1px solid #17a2b8;
+    color: #17a2b8;
+    padding: 8px 14px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .action-back:hover {
+        background: #17a2b8;
+        color: white;
+        text-decoration: none;
+    }
+}
+
+/* ============================================================
+   GANTT HEADER & STYLES
+   ============================================================ */
 .gantt-header {
     background: white;
     border-radius: 8px;
@@ -199,24 +309,11 @@ Gantt Chart - {{ project.project_name }}
     display: inline-block;
 }
 
-.status-completed {
-    background: #d4edda;
-    color: #155724;
-}
+.status-completed { background: #d4edda; color: #155724; }
+.status-in-progress { background: #fff3cd; color: #856404; }
+.status-pending { background: #f8d7da; color: #721c24; }
 
-.status-in-progress {
-    background: #fff3cd;
-    color: #856404;
-}
-
-.status-pending {
-    background: #f8d7da;
-    color: #721c24;
-}
-
-.project-progress {
-    margin-top: 10px;
-}
+.project-progress { margin-top: 10px; }
 
 .progress {
     height: 8px;
@@ -224,11 +321,7 @@ Gantt Chart - {{ project.project_name }}
     border-radius: 4px;
     margin-bottom: 5px;
 }
-
-.progress-bar {
-    border-radius: 4px;
-    transition: width 0.3s ease;
-}
+.progress-bar { border-radius: 4px; transition: width 0.3s ease; }
 
 /* Controls */
 .gantt-controls {
@@ -243,17 +336,30 @@ Gantt Chart - {{ project.project_name }}
     display: flex;
     align-items: center;
     gap: 30px;
+    flex-wrap: wrap;
 }
 
 .view-controls, .zoom-controls {
     display: flex;
     align-items: center;
+    gap: 6px;
 }
 
 .view-controls label {
     margin-bottom: 0;
     font-weight: 500;
     color: #495057;
+}
+
+.view-mode-select {
+    width: auto !important;
+    display: inline-block;
+    margin-left: 8px;
+    font-size: 16px; /* iOS zoom guard */
+}
+
+.zoom-controls {
+    justify-content: flex-end;
 }
 
 .column-controls {
@@ -290,42 +396,24 @@ Gantt Chart - {{ project.project_name }}
     overflow: hidden;
 }
 
-/* Custom Gantt Styling */
-.gantt_task_line.project_task {
-    background: #3498db;
-    border: 1px solid #2980b9;
-}
+/* dhtmlx Gantt task styling */
+.gantt_task_line.project_task { background: #3498db; border: 1px solid #2980b9; }
+.gantt_task_line.main_task { background: #2ecc71; border: 1px solid #27ae60; }
+.gantt_task_line.subtask { background: #f39c12; border: 1px solid #e67e22; }
+.gantt_task_line.completed { background: #95a5a6; border: 1px solid #7f8c8d; }
+.gantt_task_line.overdue { background: #e74c3c; border: 1px solid #c0392b; }
 
-.gantt_task_line.main_task {
-    background: #2ecc71;
-    border: 1px solid #27ae60;
-}
-
-.gantt_task_line.subtask {
-    background: #f39c12;
-    border: 1px solid #e67e22;
-}
-
-.gantt_task_line.completed {
-    background: #95a5a6;
-    border: 1px solid #7f8c8d;
-}
-
-.gantt_task_line.overdue {
-    background: #e74c3c;
-    border: 1px solid #c0392b;
-}
-
-/* Clickable styling for tasks and rows */
 .gantt_task_line.clickable-task {
     cursor: pointer;
     transition: all 0.2s ease;
 }
 
-.gantt_task_line.clickable-task:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-    opacity: 0.9;
+@media (hover: hover) and (pointer: fine) {
+    .gantt_task_line.clickable-task:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+        opacity: 0.9;
+    }
 }
 
 .gantt_grid_data .gantt_row {
@@ -333,15 +421,14 @@ Gantt Chart - {{ project.project_name }}
     transition: background-color 0.2s ease;
 }
 
-.gantt_grid_data .gantt_row:hover {
-    background-color: rgba(23, 162, 184, 0.1) !important;
+@media (hover: hover) and (pointer: fine) {
+    .gantt_grid_data .gantt_row:hover {
+        background-color: rgba(23, 162, 184, 0.1) !important;
+    }
 }
 
-.gantt_tree_content {
-    cursor: pointer;
-}
+.gantt_tree_content { cursor: pointer; }
 
-/* Task text styling for better clickability indication */
 .gantt_task_text {
     cursor: pointer;
     user-select: none;
@@ -350,14 +437,7 @@ Gantt Chart - {{ project.project_name }}
     text-shadow: 1px 1px 1px rgba(0,0,0,0.5);
 }
 
-/* Grid column styling for better hover indication */
-.gantt_grid_data .gantt_cell {
-    transition: background-color 0.2s ease;
-}
-
-.gantt_grid_data .gantt_row:hover .gantt_cell {
-    background-color: rgba(23, 162, 184, 0.05) !important;
-}
+.gantt_grid_data .gantt_cell { transition: background-color 0.2s ease; }
 
 /* Legend */
 .gantt-legend {
@@ -393,12 +473,9 @@ Gantt Chart - {{ project.project_name }}
     border: 1px solid rgba(0,0,0,0.1);
 }
 
-.legend-item span {
-    font-size: 14px;
-    color: #495057;
-}
+.legend-item span { font-size: 14px; color: #495057; }
 
-/* Button Styles */
+/* Buttons */
 .btn-info {
     background-color: #17a2b8;
     color: white;
@@ -408,81 +485,82 @@ Gantt Chart - {{ project.project_name }}
     font-weight: 500;
 }
 
-.btn-info:hover {
-    background-color: #138496;
-    border-color: #117a8b;
-    color: white;
-    text-decoration: none;
-    transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+@media (hover: hover) and (pointer: fine) {
+    .btn-info:hover {
+        background-color: #138496;
+        border-color: #117a8b;
+        color: white;
+        text-decoration: none;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
 }
 
-.btn-success {
-    background-color: #28a745;
-    border-color: #28a745;
-    transition: all 0.3s ease;
-    border-radius: 6px;
-    font-weight: 500;
-}
-
-.btn-success:hover {
-    background-color: #218838;
-    border-color: #1e7e34;
-    transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-}
-
-.btn-secondary {
-    transition: all 0.3s ease;
-    border-radius: 6px;
-}
-
-.btn-secondary:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
+/* ============================================================
+   MOBILE LANDSCAPE — tighten controls so chart fits
+   Trigger: any landscape orientation with height ≤ 500px
+   (catches all phones; excludes tablets which have ≥600px height
+   in landscape)
+   ============================================================ */
+@media (orientation: landscape) and (max-height: 500px) {
     .gantt-header {
-        padding: 15px;
+        padding: 12px;
+        margin-bottom: 12px;
     }
-    
-    .gantt-controls .row {
-        flex-direction: column;
-        gap: 15px;
+    .gantt-header h3 { font-size: 1.05rem; margin-bottom: 6px; }
+    .project-description { font-size: 0.85rem; margin-bottom: 8px; }
+    .project-property { font-size: 0.85rem; }
+
+    .gantt-controls {
+        padding: 10px;
+        margin-bottom: 12px;
     }
-    
-    .gantt-controls .col-md-4, .gantt-controls .col-md-8 {
-        text-align: center;
-    }
-    
     .controls-row {
-        flex-direction: column;
-        gap: 15px;
+        gap: 12px;
     }
-    
-    .legend-items {
-        flex-direction: column;
-        gap: 10px;
+    .view-controls label,
+    .checkbox-label {
+        font-size: 12px;
     }
-    
+
+    /* Compact zoom button labels (icons only) */
+    .zoom-label {
+        display: none;
+    }
+    .zoom-controls .btn {
+        padding: 6px 10px;
+    }
+
+    .gantt-container { padding: 8px; }
+
+    /* Make the Gantt chart taller on landscape phones — they have
+       limited vertical space and we want as much of the chart visible
+       as possible. */
     #gantt_here {
-        height: 400px;
+        height: 380px !important;
     }
+
+    .gantt-legend {
+        padding: 12px;
+    }
+    .legend-items { gap: 12px; }
+    .legend-item span { font-size: 12px; }
 }
 
-/* Print Styles */
+/* ============================================================
+   PRINT
+   ============================================================ */
 @media print {
-    .btn, .gantt-controls {
+    .btn, .gantt-controls, .action-buttons-wrap, .rotate-prompt {
         display: none !important;
     }
-    
+    .gantt-content {
+        display: block !important;
+    }
     .gantt-container {
         box-shadow: none;
         border: 1px solid #000;
     }
-    
     #gantt_here {
         height: 500px !important;
     }
@@ -490,9 +568,55 @@ Gantt Chart - {{ project.project_name }}
 </style>
 
 <script>
-console.log('=== GANTT CHART LOADING ===');
+// ============================================================
+// ROTATE-PROMPT CONTROLLER (mobile portrait detection)
+// Direct DOM manipulation with !important — bypasses base.html
+// CSS overrides on the sidebar layout (proven approach from
+// dashboard_pl.html).
+// ============================================================
+(function() {
+    function applyMobilePortrait() {
+        const w = window.innerWidth;
+        const h = window.innerHeight;
+        const ganttContent = document.querySelector('.gantt-content');
+        const rotatePrompt = document.querySelector('.rotate-prompt');
+        const isPhonePortrait = (w <= 768 && h > w);
 
-// Gantt configuration
+        if (ganttContent) {
+            ganttContent.style.setProperty('display', isPhonePortrait ? 'none' : 'block', 'important');
+        }
+        if (rotatePrompt) {
+            rotatePrompt.style.setProperty('display', isPhonePortrait ? 'flex' : 'none', 'important');
+            if (isPhonePortrait) {
+                rotatePrompt.style.setProperty('align-items', 'center', 'important');
+                rotatePrompt.style.setProperty('justify-content', 'center', 'important');
+                rotatePrompt.style.setProperty('min-height', '60vh', 'important');
+                rotatePrompt.style.setProperty('padding', '20px', 'important');
+            }
+        }
+    }
+
+    applyMobilePortrait();
+    window.addEventListener('resize', applyMobilePortrait);
+    window.addEventListener('orientationchange', function() {
+        setTimeout(function() {
+            applyMobilePortrait();
+            // Also redraw gantt chart on rotation
+            if (typeof gantt !== 'undefined' && gantt.render && !((window.innerWidth <= 768) && (window.innerHeight > window.innerWidth))) {
+                try { gantt.render(); } catch (e) {}
+            }
+        }, 200);
+    });
+    if (document.readyState !== 'complete') {
+        window.addEventListener('load', applyMobilePortrait);
+    }
+})();
+</script>
+
+<script>
+// ============================================================
+// GANTT CHART CONFIGURATION
+// ============================================================
 gantt.config.date_format = "%Y-%m-%d";
 gantt.config.scale_unit = "week";
 gantt.config.date_scale = "%M %d";
@@ -500,176 +624,126 @@ gantt.config.subscales = [
     {unit: "day", step: 1, date: "%d"}
 ];
 
-// Enable grid resize
 gantt.config.grid_resize = true;
 gantt.config.grid_width = 350;
-
-// Enable zoom functionality
 gantt.config.min_column_width = 50;
 gantt.config.max_column_width = 300;
-
-// Enable open tree by default to show subtasks
 gantt.config.open_tree_initially = true;
 
-// Configure columns (will be updated dynamically)
 function updateGanttColumns() {
     const showStartDate = document.getElementById('showStartDate').checked;
     const showDuration = document.getElementById('showDuration').checked;
-    
+
     const columns = [
         {name: "text", label: "Task Name", width: showStartDate || showDuration ? 200 : 350, tree: true}
     ];
-    
+
     if (showStartDate) {
         columns.push({name: "start_date", label: "Start", width: 80, align: "center"});
     }
-    
     if (showDuration) {
         columns.push({name: "duration", label: "Duration", width: 70, align: "center"});
     }
-    
+
     gantt.config.columns = columns;
     gantt.render();
-    
-    console.log('Columns updated:', columns);
 }
 
-// Enable task clicking and double-clicking
-gantt.config.readonly = true; // Prevent editing directly in gantt
-gantt.config.drag_move = false; // Disable dragging
-gantt.config.drag_resize = false; // Disable resizing
+gantt.config.readonly = true;
+gantt.config.drag_move = false;
+gantt.config.drag_resize = false;
 
-// Handle task clicks
 gantt.attachEvent("onTaskClick", function(id, e) {
-    console.log('Task clicked:', id);
     handleTaskClick(id);
     return true;
 });
 
-// Handle double clicks (alternative way to edit)
 gantt.attachEvent("onTaskDblClick", function(id, e) {
-    console.log('Task double-clicked:', id);
     handleTaskClick(id);
-    return false; // Prevent default double-click behavior
+    return false;
 });
 
-// Handle row clicks (clicking on the task name in the grid)
 gantt.attachEvent("onRowClick", function(id, e) {
-    console.log('Row clicked:', id);
     handleTaskClick(id);
     return true;
 });
 
-// Function to handle task/project clicks and navigate to edit pages
 function handleTaskClick(taskId) {
-    console.log('Handling click for task ID:', taskId);
-    
-    // Parse the task ID to determine type and actual ID
     if (taskId.startsWith('project_')) {
         const projectId = taskId.replace('project_', '');
-        console.log('Navigating to project edit:', projectId);
         window.location.href = `{% url 'projects_edit' 0 %}?from_gantt=true`.replace('0', projectId);
-        
     } else if (taskId.startsWith('task_')) {
         const actualTaskId = taskId.replace('task_', '');
-        console.log('Navigating to task edit:', actualTaskId);
         window.location.href = `{% url 'project_tasks_edit' project.project_id 0 %}?from_gantt=true`.replace('0', actualTaskId);
-        
     } else if (taskId.startsWith('subtask_')) {
         const actualSubtaskId = taskId.replace('subtask_', '');
-        console.log('Navigating to subtask edit:', actualSubtaskId);
         window.location.href = `{% url 'project_tasks_edit' project.project_id 0 %}?from_gantt=true`.replace('0', actualSubtaskId);
     }
 }
 
-// Task class template for styling
 gantt.templates.task_class = function(start, end, task) {
     let css = [];
-    
-    if (task.type === 'project') {
-        css.push('project_task');
-    } else if (task.type === 'task') {
-        css.push('main_task');
-    } else if (task.type === 'subtask') {
-        css.push('subtask');
-    }
-    
-    // Add status-based styling
+    if (task.type === 'project') css.push('project_task');
+    else if (task.type === 'task') css.push('main_task');
+    else if (task.type === 'subtask') css.push('subtask');
+
     if (task.status === 'Completed') {
         css.push('completed');
     } else if (task.end_date && new Date(task.end_date) < new Date() && task.status !== 'Completed') {
         css.push('overdue');
     }
-    
-    // Add clickable class
     css.push('clickable-task');
-    
     return css.join(' ');
 };
 
-// Custom task text template - FIXED to show progress percentage in bars
 gantt.templates.task_text = function(start, end, task) {
     if (task.type === 'project') {
         const progressPercent = task.progress ? Math.round(task.progress * 100) : 0;
         return `${progressPercent}%`;
     } else if (task.type === 'task') {
-        // Main task - show calculated progress percentage
-        const progressPercent = task.calculated_progress_percentage !== undefined ? 
-            task.calculated_progress_percentage : 
+        const progressPercent = task.calculated_progress_percentage !== undefined ?
+            task.calculated_progress_percentage :
             (task.progress ? Math.round(task.progress * 100) : 0);
         return `${progressPercent}%`;
     } else if (task.type === 'subtask') {
-        // Subtask - show progress percentage
         const progressPercent = task.progress_percentage !== undefined ? task.progress_percentage : 0;
         return `${progressPercent}%`;
     }
     return '';
 };
 
-// Tooltip template
 gantt.templates.tooltip_text = function(start, end, task) {
     let html = `<b>${task.text}</b><br/>`;
     html += `Type: ${task.type || 'Task'}<br/>`;
     html += `Status: ${task.status || 'Pending'}<br/>`;
-    
-    // Show progress percentage for all task types
+
     if (task.type === 'project') {
         const progressPercent = task.progress ? Math.round(task.progress * 100) : 0;
         html += `Progress: ${progressPercent}%<br/>`;
     } else if (task.type === 'task') {
-        const progressPercent = task.calculated_progress_percentage !== undefined ? 
-            task.calculated_progress_percentage : 
+        const progressPercent = task.calculated_progress_percentage !== undefined ?
+            task.calculated_progress_percentage :
             (task.progress ? Math.round(task.progress * 100) : 0);
         html += `Progress: ${progressPercent}%<br/>`;
     } else if (task.type === 'subtask' && task.progress_percentage !== undefined) {
         html += `Progress: ${task.progress_percentage}%<br/>`;
     }
-    
+
     html += `Start: ${gantt.templates.tooltip_date_format(start)}<br/>`;
     html += `End: ${gantt.templates.tooltip_date_format(end)}<br/>`;
-    
-    if (task.budgeted_cost) {
-        html += `Budgeted: €${task.budgeted_cost}<br/>`;
-    }
-    if (task.actual_cost) {
-        html += `Actual: €${task.actual_cost}<br/>`;
-    }
-    if (task.assigned_to) {
-        html += `Assigned: ${task.assigned_to}<br/>`;
-    }
-    
+
+    if (task.budgeted_cost) html += `Budgeted: €${task.budgeted_cost}<br/>`;
+    if (task.actual_cost) html += `Actual: €${task.actual_cost}<br/>`;
+    if (task.assigned_to) html += `Assigned: ${task.assigned_to}<br/>`;
+
     return html;
 };
 
-// Project data from Django
 const ganttData = {
     data: {{ gantt_data|safe }},
     links: []
 };
 
-console.log('Gantt data loaded:', ganttData);
-
-// Zoom levels configuration
 const zoomLevels = [
     {
         name: "hour",
@@ -717,167 +791,95 @@ const zoomLevels = [
     }
 ];
 
-let currentZoomLevel = 2; // Start with week view
+let currentZoomLevel = 2;
 
 function setZoom(level) {
     if (level < 0 || level >= zoomLevels.length) return;
-    
     const zoomConfig = zoomLevels[level];
-    
     gantt.config.scales = zoomConfig.scales;
     gantt.config.scale_height = zoomConfig.scale_height || 60;
-    
-    // Clear existing scale configuration
     gantt.config.scale_unit = zoomConfig.scales[zoomConfig.scales.length - 1].unit;
     gantt.config.date_scale = zoomConfig.scales[zoomConfig.scales.length - 1].format;
     gantt.config.subscales = zoomConfig.scales.slice(0, -1);
-    
     currentZoomLevel = level;
     gantt.render();
-    
-    console.log(`Zoom level set to: ${zoomConfig.name}`);
 }
 
-// Initialize Gantt
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('Initializing Gantt chart with data:', ganttData);
-    
-    // Set initial columns (without Start Date and Duration)
     updateGanttColumns();
-    
     gantt.init("gantt_here");
     gantt.parse(ganttData);
-    
-    // Set initial zoom
     setZoom(currentZoomLevel);
-    
-    // Expand all tasks to show subtasks
+
     gantt.eachTask(function(task) {
         gantt.open(task.id);
     });
-    
-    // Auto-apply "Fit to Screen" on load
-    setTimeout(() => {
-        autoFitToScreen();
-        console.log('Auto-applied Fit to Screen on page load');
-    }, 500); // Small delay to ensure chart is fully rendered
-    
-    console.log('Gantt chart initialized successfully');
+
+    setTimeout(autoFitToScreen, 500);
 });
 
-// Auto Fit to Screen function (called on page load)
 function autoFitToScreen() {
-    console.log('Auto Fit to Screen initiated');
-    
-    // Get all tasks to find date range
     const tasks = ganttData.data;
     if (tasks.length === 0) return;
-    
+
     let minDate = null;
     let maxDate = null;
-    
+
     tasks.forEach(task => {
         if (task.start_date) {
             const startDate = gantt.date.parseDate(task.start_date, "xml_date");
-            if (!minDate || startDate < minDate) {
-                minDate = startDate;
-            }
+            if (!minDate || startDate < minDate) minDate = startDate;
         }
-        
         if (task.end_date) {
             const endDate = gantt.date.parseDate(task.end_date, "xml_date");
-            if (!maxDate || endDate > maxDate) {
-                maxDate = endDate;
-            }
+            if (!maxDate || endDate > maxDate) maxDate = endDate;
         }
     });
-    
+
     if (minDate && maxDate) {
-        // Add some padding
         minDate = gantt.date.add(minDate, -7, "day");
         maxDate = gantt.date.add(maxDate, 7, "day");
-        
-        // Calculate optimal zoom level based on date range
+
         const daysDiff = Math.ceil((maxDate - minDate) / (1000 * 60 * 60 * 24));
-        
-        let optimalZoom = 2; // Default to week
-        if (daysDiff <= 30) {
-            optimalZoom = 1; // Day view
-        } else if (daysDiff <= 90) {
-            optimalZoom = 2; // Week view
-        } else if (daysDiff <= 365) {
-            optimalZoom = 3; // Month view
-        } else {
-            optimalZoom = 4; // Quarter view
-        }
-        
+
+        let optimalZoom = 2;
+        if (daysDiff <= 30) optimalZoom = 1;
+        else if (daysDiff <= 90) optimalZoom = 2;
+        else if (daysDiff <= 365) optimalZoom = 3;
+        else optimalZoom = 4;
+
         setZoom(optimalZoom);
-        
-        // Scroll to show the full range
         gantt.showDate(minDate);
-        
-        console.log(`Auto-fit applied: ${daysDiff} days range, zoom level ${optimalZoom}`);
     }
 }
 
-// Column checkbox event listeners
 document.addEventListener('DOMContentLoaded', function() {
-    document.getElementById('showStartDate').addEventListener('change', function() {
-        console.log('Start Date checkbox changed:', this.checked);
-        updateGanttColumns();
-    });
-    
-    document.getElementById('showDuration').addEventListener('change', function() {
-        console.log('Duration checkbox changed:', this.checked);
-        updateGanttColumns();
-    });
+    document.getElementById('showStartDate').addEventListener('change', updateGanttColumns);
+    document.getElementById('showDuration').addEventListener('change', updateGanttColumns);
 });
 
-// View mode controls
 document.getElementById('viewMode').addEventListener('change', function() {
     const mode = this.value;
-    console.log('Changing view mode to:', mode);
-    
     switch(mode) {
-        case 'Day':
-            setZoom(1);
-            break;
-        case 'Week':
-            setZoom(2);
-            break;
-        case 'Month':
-            setZoom(3);
-            break;
+        case 'Day': setZoom(1); break;
+        case 'Week': setZoom(2); break;
+        case 'Month': setZoom(3); break;
     }
 });
 
-// Zoom controls
 document.getElementById('zoomIn').addEventListener('click', function() {
-    console.log('Zoom In clicked, current level:', currentZoomLevel);
-    if (currentZoomLevel > 0) {
-        setZoom(currentZoomLevel - 1);
-    }
+    if (currentZoomLevel > 0) setZoom(currentZoomLevel - 1);
 });
 
 document.getElementById('zoomOut').addEventListener('click', function() {
-    console.log('Zoom Out clicked, current level:', currentZoomLevel);
-    if (currentZoomLevel < zoomLevels.length - 1) {
-        setZoom(currentZoomLevel + 1);
-    }
+    if (currentZoomLevel < zoomLevels.length - 1) setZoom(currentZoomLevel + 1);
 });
 
-document.getElementById('fitToScreen').addEventListener('click', function() {
-    console.log('Manual Fit to Screen clicked');
-    autoFitToScreen(); // Use the same function as auto-fit
-});
+document.getElementById('fitToScreen').addEventListener('click', autoFitToScreen);
 
-// Print functionality
 document.getElementById('printBtn').addEventListener('click', function() {
-    console.log('Print clicked');
     window.print();
 });
-
-console.log('🚀 === GANTT CHART SCRIPT COMPLETE ===');
 </script>
 
 {% endblock %}

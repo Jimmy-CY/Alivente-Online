@@ -30,17 +30,39 @@ Projects
 {% endfor %}
 
 <body>
-  <!-- Action Buttons -->
-  <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 20px;">
-    <button type="button" class="btn btn-info" data-toggle="modal" data-target="#projectsHelpModal">
+  <!-- Action Buttons: Back+2+ pattern -->
+  <div class="action-buttons-wrap">
+    {% if perms.auth.can_edit_projects %}
+      <a href="{% url 'projects_add' %}" class="action-primary">
+        <i class="fas fa-plus"></i> Add New Project
+      </a>
+    {% else %}
+      <span class="action-primary action-primary--disabled" title="You do not have permission">
+        <i class="fas fa-plus"></i> Add New Project
+      </span>
+    {% endif %}
+
+    <!-- Desktop: Help button visible. Mobile: hidden, accessed via More menu. -->
+    <button type="button" class="action-secondary" data-toggle="modal" data-target="#projectsHelpModal">
       <i class="fas fa-question-circle"></i> Help
     </button>
-    {% if perms.auth.can_edit_projects %}
-      <a href="{% url 'projects_add' %}" class="btn btn-info">Add New Project</a>
-    {% else %}
-      <span class="btn btn-secondary" style="opacity:0.6; cursor:not-allowed; pointer-events:none;">Add New Project</span>
-    {% endif %}
-    <a href="{% url 'home' %}" class="btn btn-info">Back</a>
+
+    <!-- Mobile: More menu (hidden on desktop) -->
+    <div class="action-more-wrapper">
+      <button type="button" class="action-more-btn" id="actionMoreBtn" aria-label="More actions" aria-expanded="false">
+        <i class="fas fa-ellipsis-v"></i>
+      </button>
+      <div class="action-more-menu" id="actionMoreMenu" role="menu">
+        <button type="button" class="action-more-item" data-toggle="modal" data-target="#projectsHelpModal" role="menuitem">
+          <i class="fas fa-question-circle"></i> Help
+        </button>
+      </div>
+    </div>
+
+    <a href="{% url 'home' %}" class="action-back" title="Back">
+      <i class="fas fa-arrow-left"></i>
+      <span class="action-back-label">Back</span>
+    </a>
   </div>
 
   <!-- Simplified Filter Panel -->
@@ -54,7 +76,7 @@ Projects
         <i class="fas fa-times-circle"></i> Clear All
       </button>
     </div>
-    
+
     <div class="filter-content" id="filterContent">
       <form action="{% url 'projects' %}" method="GET" id="filterForm">
         <div class="filter-grid">
@@ -64,10 +86,10 @@ Projects
               <i class="fas fa-search"></i> Search Project
             </label>
             <div class="search-input-group">
-              <input type="text" 
-                     name="search" 
+              <input type="text"
+                     name="search"
                      id="searchInput"
-                     class="form-control search-input" 
+                     class="form-control search-input"
                      placeholder="Search by project name or description..."
                      value="{{ request.GET.search|default:'' }}">
               <button type="submit" class="search-btn">
@@ -111,7 +133,7 @@ Projects
           <div class="filter-tags" id="filterTags">
             {% if request.GET.search %}
               <span class="filter-tag">
-                Search: "{{ request.GET.search }}" 
+                Search: "{{ request.GET.search }}"
                 <a href="?{% if request.GET.property %}property={{ request.GET.property }}&{% endif %}{% if request.GET.status %}status={{ request.GET.status }}{% endif %}" class="remove-tag">×</a>
               </span>
             {% endif %}
@@ -135,7 +157,7 @@ Projects
 
   <!-- Projects Table -->
   <div class="table-container">
-    <table class="table table-bordered table-striped text-center">
+    <table class="table table-bordered table-striped text-center projects-table">
       <thead>
         <tr>
           <th style="text-align: left; width: 30%">Project Name</th>
@@ -151,7 +173,7 @@ Projects
       <tbody>
         {% for project in projects %}
           <tr>
-            <td style="text-align: left">
+            <td data-label="Project" style="text-align: left">
               <a href="{% url 'projects_detail' project.project_id %}" class="project-name-link">
                 <strong>{{ project.project_name }}</strong>
                 {% if project.project_description %}
@@ -159,64 +181,71 @@ Projects
                 {% endif %}
               </a>
             </td>
-            <td>{{ project.prop.prop_name }}</td>
-            <td>
-              <span class="status-badge 
+            <td data-label="Property">{{ project.prop.prop_name }}</td>
+            <td data-label="Status">
+              <span class="status-badge
                 {% if project.get_calculated_status == 'Completed' %}status-completed
                 {% elif project.get_calculated_status == 'In Progress' %}status-in-progress
                 {% else %}status-pending{% endif %}">
                 {{ project.get_calculated_status }}
               </span>
             </td>
-            <td>
+            <td data-label="Progress">
               <div class="progress-container">
                 <div class="progress">
-                  <div class="progress-bar bg-info" 
-                       role="progressbar" 
+                  <div class="progress-bar bg-info"
+                       role="progressbar"
                        style="width: {{ project.get_progress_percentage }}%"
-                       aria-valuenow="{{ project.get_progress_percentage }}" 
-                       aria-valuemin="0" 
+                       aria-valuenow="{{ project.get_progress_percentage }}"
+                       aria-valuemin="0"
                        aria-valuemax="100">
                   </div>
                 </div>
                 <small>{{ project.get_progress_percentage }}%</small>
               </div>
             </td>
-            <td>
+            <td class="cell-date" data-label="Start Date">
               {% if project.get_calculated_start_date %}
                 {{ project.get_calculated_start_date|date:"M d, Y" }}
               {% else %}
                 <span class="text-muted">Not set</span>
               {% endif %}
             </td>
-            <td>
+            <td class="cell-date" data-label="End Date">
               {% if project.get_calculated_expected_completion %}
                 {{ project.get_calculated_expected_completion|date:"M d, Y" }}
               {% else %}
                 <span class="text-muted">Not set</span>
               {% endif %}
             </td>
-            <td>
+            <td data-label="View" class="cell-action cell-action--view-mobile">
+              <a href="{% url 'projects_detail' project.project_id %}"
+                 class="btn btn-info action-btn action-btn--view"
+                 title="View Project">
+                <i class="fas fa-eye"></i><span class="btn-label-text"> View</span>
+              </a>
+            </td>
+            <td data-label="Edit" class="cell-action">
               {% if perms.auth.can_edit_projects %}
-                <a href="{% url 'projects_edit' project.project_id %}" class="btn btn-light action-btn">
-                  Edit
+                <a href="{% url 'projects_edit' project.project_id %}" class="btn btn-light action-btn action-btn--edit">
+                  <i class="fas fa-edit"></i><span class="btn-label-text"> Edit</span>
                 </a>
               {% else %}
-                <button type="button" class="btn btn-light action-btn" disabled style="opacity: 0.5;">
-                  <span style="color: #6c757d;">Edit</span>
+                <button type="button" class="btn btn-light action-btn action-btn--edit" disabled style="opacity: 0.5;">
+                  <i class="fas fa-edit" style="color: #6c757d;"></i><span class="btn-label-text" style="color: #6c757d;"> Edit</span>
                 </button>
               {% endif %}
             </td>
-            <td>
+            <td data-label="Delete" class="cell-action">
               {% if perms.auth.can_edit_projects %}
-                <a href="{% url 'projects_delete' project.project_id %}" 
+                <a href="{% url 'projects_delete' project.project_id %}"
                    class="btn btn-danger action-btn delete-btn"
                    title="Delete Project">
-                  <i class="fas fa-trash"></i>
+                  <i class="fas fa-trash"></i><span class="btn-label-text"> Delete</span>
                 </a>
               {% else %}
                 <button type="button" class="btn btn-light action-btn" disabled style="opacity: 0.5;">
-                  <i class="fas fa-trash" style="color: #6c757d;"></i>
+                  <i class="fas fa-trash" style="color: #6c757d;"></i><span class="btn-label-text" style="color: #6c757d;"> Delete</span>
                 </button>
               {% endif %}
             </td>
@@ -225,10 +254,10 @@ Projects
           <tr>
             <td colspan="8" class="text-center text-muted">
               {% if request.GET.search or request.GET.property or request.GET.status %}
-                No projects found matching your filters. 
+                No projects found matching your filters.
                 <a href="{% url 'projects' %}">Clear filters</a>
               {% else %}
-                No projects found. 
+                No projects found.
                 {% if perms.auth.can_edit_projects %}
                   <a href="{% url 'projects_add' %}">Add your first project</a>
                 {% endif %}
@@ -252,13 +281,13 @@ Projects
             <a class="page-link" href="?page={{ projects.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.property %}&property={{ request.GET.property }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">Previous</a>
           </li>
         {% endif %}
-        
+
         <li class="page-item active">
           <span class="page-link">
             Page {{ projects.number }} of {{ projects.paginator.num_pages }}
           </span>
         </li>
-        
+
         {% if projects.has_next %}
           <li class="page-item">
             <a class="page-link" href="?page={{ projects.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.property %}&property={{ request.GET.property }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}">Next</a>
@@ -279,7 +308,159 @@ Projects
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
 <style>
-/* Filter Panel Styles */
+/* ============================================================
+   ACTION BUTTONS — Back+2+ standard
+   ============================================================ */
+.action-buttons-wrap {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-bottom: 20px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.action-primary {
+    background: #17a2b8;
+    border: 1px solid #17a2b8;
+    color: #ffffff;
+    padding: 8px 16px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.action-primary--disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    pointer-events: none;
+    background: #6c757d;
+    border-color: #6c757d;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .action-primary:hover {
+        background: #138496;
+        border-color: #117a8b;
+        color: white;
+        text-decoration: none;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+}
+
+.action-secondary {
+    background: #17a2b8;
+    border: 1px solid #17a2b8;
+    color: #ffffff;
+    padding: 8px 16px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .action-secondary:hover {
+        background: #138496;
+        border-color: #117a8b;
+        color: white;
+    }
+}
+
+.action-back {
+    background: transparent;
+    border: 1px solid #17a2b8;
+    color: #17a2b8;
+    padding: 8px 14px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .action-back:hover {
+        background: #17a2b8;
+        color: white;
+        text-decoration: none;
+    }
+}
+
+.action-more-wrapper {
+    position: relative;
+    display: none;
+}
+
+.action-more-btn {
+    background: transparent;
+    border: 1px solid #17a2b8;
+    color: #17a2b8;
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.action-more-menu {
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    min-width: 180px;
+    z-index: 100;
+    display: none;
+    padding: 6px 0;
+}
+
+.action-more-menu.show { display: block; }
+
+.action-more-item {
+    width: 100%;
+    background: none;
+    border: none;
+    text-align: left;
+    padding: 10px 16px;
+    color: #495057;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+}
+
+.action-more-item:hover {
+    background: #f8f9fa;
+    color: #17a2b8;
+}
+
+.action-more-item i {
+    width: 16px;
+    text-align: center;
+}
+
+/* ============================================================
+   FILTER PANEL
+   ============================================================ */
 .filter-panel {
     background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
     border: 1px solid #dee2e6;
@@ -297,13 +478,16 @@ Projects
     margin-bottom: 0;
     cursor: pointer;
     transition: all 0.3s ease;
+    gap: 12px;
 }
 
-.filter-header:hover {
-    background-color: rgba(23, 162, 184, 0.05);
-    border-radius: 8px;
-    margin: -8px;
-    padding: 8px;
+@media (hover: hover) and (pointer: fine) {
+    .filter-header:hover {
+        background-color: rgba(23, 162, 184, 0.05);
+        border-radius: 8px;
+        margin: -8px;
+        padding: 8px;
+    }
 }
 
 .filter-title {
@@ -314,20 +498,18 @@ Projects
     align-items: center;
     gap: 8px;
     user-select: none;
+    flex: 1;
+    min-width: 0;
 }
 
-.filter-title i.fa-filter {
-    color: #17a2b8;
-}
+.filter-title i.fa-filter { color: #17a2b8; }
 
 .filter-toggle-icon {
     transition: transform 0.3s ease;
     margin-left: 8px;
 }
 
-.filter-toggle-icon.rotated {
-    transform: rotate(180deg);
-}
+.filter-toggle-icon.rotated { transform: rotate(180deg); }
 
 .filter-content {
     padding-top: 20px;
@@ -336,9 +518,7 @@ Projects
     display: none;
 }
 
-.filter-content.show {
-    display: block;
-}
+.filter-content.show { display: block; }
 
 .filter-grid {
     display: grid;
@@ -362,16 +542,13 @@ Projects
     gap: 6px;
 }
 
-.filter-label i {
-    color: #6c757d;
-    width: 14px;
-}
+.filter-label i { color: #6c757d; width: 14px; }
 
 .filter-select {
     border: 2px solid #e9ecef;
     border-radius: 8px;
     padding: 10px 14px;
-    font-size: 14px;
+    font-size: 16px; /* iOS zoom guard */
     transition: all 0.3s ease;
     background: white;
     cursor: pointer;
@@ -401,10 +578,11 @@ Projects
     border-radius: 8px 0 0 8px;
     border-right: none;
     padding: 10px 14px;
-    font-size: 14px;
+    font-size: 16px; /* iOS zoom guard */
     transition: all 0.3s ease;
     background: white;
     flex: 1;
+    min-width: 0;
 }
 
 .search-input:focus {
@@ -425,11 +603,14 @@ Projects
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-shrink: 0;
 }
 
-.search-btn:hover {
-    background: #138496;
-    border-color: #138496;
+@media (hover: hover) and (pointer: fine) {
+    .search-btn:hover {
+        background: #138496;
+        border-color: #138496;
+    }
 }
 
 .btn-outline-secondary {
@@ -440,12 +621,15 @@ Projects
     font-size: 13px;
     padding: 6px 12px;
     transition: all 0.3s ease;
+    flex-shrink: 0;
 }
 
-.btn-outline-secondary:hover {
-    background: #6c757d;
-    color: white;
-    transform: translateY(-1px);
+@media (hover: hover) and (pointer: fine) {
+    .btn-outline-secondary:hover {
+        background: #6c757d;
+        color: white;
+        transform: translateY(-1px);
+    }
 }
 
 .active-filters {
@@ -497,13 +681,17 @@ Projects
     font-weight: bold;
 }
 
-.filter-tag .remove-tag:hover {
-    background: rgba(255, 255, 255, 0.5);
-    color: white;
-    text-decoration: none;
+@media (hover: hover) and (pointer: fine) {
+    .filter-tag .remove-tag:hover {
+        background: rgba(255, 255, 255, 0.5);
+        color: white;
+        text-decoration: none;
+    }
 }
 
-/* Table Styles */
+/* ============================================================
+   TABLE — DESKTOP
+   ============================================================ */
 .table-container {
     background: white;
     border-radius: 8px;
@@ -520,13 +708,15 @@ Projects
     transition: all 0.3s ease;
 }
 
-.project-name-link:hover {
-    color: #17a2b8;
-    text-decoration: none;
-    background-color: rgba(23, 162, 184, 0.05);
-    padding: 4px 8px;
-    margin: 0 -8px;
-    transform: translateX(2px);
+@media (hover: hover) and (pointer: fine) {
+    .project-name-link:hover {
+        color: #17a2b8;
+        text-decoration: none;
+        background-color: rgba(23, 162, 184, 0.05);
+        padding: 4px 8px;
+        margin: 0 -8px;
+        transform: translateX(2px);
+    }
 }
 
 .project-name-link strong {
@@ -539,6 +729,7 @@ Projects
     border-radius: 12px;
     font-size: 12px;
     font-weight: 500;
+    display: inline-block;
 }
 
 .status-completed {
@@ -556,9 +747,7 @@ Projects
     color: #721c24;
 }
 
-.progress-container {
-    text-align: center;
-}
+.progress-container { text-align: center; }
 
 .progress {
     height: 8px;
@@ -581,10 +770,14 @@ Projects
     color: #495057;
 }
 
-.action-btn:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    text-decoration: none;
+.btn-label-text { display: none; }
+
+@media (hover: hover) and (pointer: fine) {
+    .action-btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        text-decoration: none;
+    }
 }
 
 .btn-info {
@@ -597,13 +790,15 @@ Projects
     text-decoration: none;
 }
 
-.btn-info:hover {
-    background-color: #138496;
-    border-color: #117a8b;
-    color: white;
-    text-decoration: none;
-    transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+@media (hover: hover) and (pointer: fine) {
+    .btn-info:hover {
+        background-color: #138496;
+        border-color: #117a8b;
+        color: white;
+        text-decoration: none;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
 }
 
 .delete-btn {
@@ -616,34 +811,213 @@ Projects
     text-decoration: none;
 }
 
-.delete-btn:hover {
-    background-color: #c82333;
-    border-color: #bd2130;
-    color: white;
-    transform: translateY(-1px);
-    box-shadow: 0 2px 6px rgba(220, 53, 69, 0.3);
-    text-decoration: none;
+/* Desktop: hide the mobile-only View action cell.
+   On desktop the clickable project name in column 1 serves as the
+   "view" affordance, so we don't need a redundant icon button. */
+.cell-action--view-mobile { display: none; }
+
+@media (hover: hover) and (pointer: fine) {
+    .delete-btn:hover {
+        background-color: #c82333;
+        border-color: #bd2130;
+        color: white;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 6px rgba(220, 53, 69, 0.3);
+        text-decoration: none;
+    }
 }
 
-/* Responsive Design */
+/* ============================================================
+   PAGINATION
+   ============================================================ */
+.pagination .page-link {
+    color: #17a2b8;
+    border-color: #dee2e6;
+}
+.pagination .page-item.active .page-link {
+    background-color: #17a2b8;
+    border-color: #17a2b8;
+}
+
+/* ============================================================
+   MOBILE (≤768px)
+   ============================================================ */
 @media (max-width: 768px) {
-    .filter-grid {
-        grid-template-columns: 1fr;
-        gap: 16px;
+
+    .action-buttons-wrap {
+        gap: 8px;
+        align-items: stretch;
     }
-    
+    .action-primary {
+        flex: 1 1 auto;
+        min-width: 0;
+        justify-content: center;
+        padding: 12px 14px;
+        font-size: 15px;
+    }
+    /* Hide secondary button — moves to More menu */
+    .action-secondary { display: none; }
+    .action-more-wrapper { display: inline-block; flex-shrink: 0; }
+    .action-more-btn {
+        padding: 12px 14px;
+        min-width: 44px;
+        min-height: 44px;
+    }
+    .action-back {
+        flex-shrink: 0;
+        padding: 12px 14px;
+        min-width: 44px;
+        min-height: 44px;
+        justify-content: center;
+    }
+    .action-back-label { display: none; }
+
+    /* Filter header stacks */
     .filter-header {
         flex-direction: column;
         gap: 12px;
         align-items: stretch;
     }
-    
-    .table-container {
-        overflow-x: auto;
+    .filter-title { justify-content: flex-start; }
+    #clearAllBtn { align-self: flex-end; }
+
+    /* Filter grid: single column */
+    .filter-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
     }
-    
-    .table {
-        min-width: 800px;
+
+    /* Table → cards */
+    .projects-table,
+    .projects-table thead,
+    .projects-table tbody,
+    .projects-table tr,
+    .projects-table td,
+    .projects-table th {
+        display: block;
+        width: 100%;
+    }
+    .projects-table thead {
+        position: absolute;
+        top: -9999px;
+        left: -9999px;
+    }
+    .projects-table {
+        border: none;
+        background: transparent;
+    }
+    .table-container {
+        background: transparent;
+        box-shadow: none;
+        overflow: visible;
+    }
+    .projects-table tr {
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 10px;
+        margin-bottom: 14px;
+        padding: 14px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    }
+    .projects-table td {
+        text-align: left !important;
+        border: none;
+        padding: 6px 0;
+        font-size: 14px;
+        position: relative;
+    }
+    .projects-table td[data-label]::before {
+        content: attr(data-label);
+        display: inline-block;
+        font-weight: 600;
+        color: #6c757d;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+        margin-bottom: 2px;
+        width: 100%;
+    }
+    /* Project Name uses card-title style — no label prefix, larger */
+    .projects-table td[data-label="Project"] {
+        padding-bottom: 10px;
+        margin-bottom: 6px;
+        border-bottom: 1px solid #f1f3f5;
+    }
+    .projects-table td[data-label="Project"]::before {
+        display: none;
+    }
+    .projects-table td[data-label="Project"] .project-name-link {
+        font-size: 16px;
+        padding: 0;
+    }
+    .projects-table td[data-label="Project"] .project-name-link strong {
+        font-size: 16px;
+    }
+
+    /* Group Start Date / End Date on one row (50% each) */
+    .projects-table td.cell-date {
+        display: inline-block !important;
+        width: calc(50% - 4px) !important;
+        vertical-align: top;
+        padding: 6px 0;
+    }
+    .projects-table td.cell-date[data-label="Start Date"] { padding-right: 4px; }
+    .projects-table td.cell-date[data-label="End Date"] { padding-left: 4px; }
+
+    /* Action cells: View + Edit + Delete side-by-side as icon-only buttons */
+    .projects-table td.cell-action {
+        display: inline-block !important;
+        width: calc(33.33% - 4px) !important;
+        padding: 8px 0 0 0;
+        margin-top: 4px;
+        vertical-align: top;
+    }
+    .projects-table td.cell-action[data-label="View"]   { padding-right: 4px; }
+    .projects-table td.cell-action[data-label="Edit"]   { padding-left: 2px; padding-right: 2px; }
+    .projects-table td.cell-action[data-label="Delete"] { padding-left: 4px; }
+    .projects-table td.cell-action::before { display: none; }
+
+    /* Icon-only buttons — small, square, icon-centered */
+    .projects-table td.cell-action .action-btn,
+    .projects-table td.cell-action .delete-btn {
+        display: flex;
+        width: 100%;
+        height: 40px;
+        justify-content: center;
+        align-items: center;
+        padding: 0;
+        font-size: 16px;
+        border-radius: 6px;
+        gap: 0;
+    }
+    /* Hide the text labels on mobile — icon-only */
+    .projects-table td.cell-action .btn-label-text { display: none; }
+
+    /* View button: white background with teal icon (mobile) */
+    .projects-table td.cell-action--view-mobile .action-btn--view {
+        background: white;
+        border: 1px solid #17a2b8;
+        color: #17a2b8;
+    }
+    .projects-table td.cell-action--view-mobile .action-btn--view i {
+        color: #17a2b8 !important;
+    }
+
+    /* Empty state */
+    .projects-table tr td[colspan] {
+        padding: 32px 16px;
+        text-align: center !important;
+    }
+    .projects-table tr td[colspan]::before { display: none; }
+
+    /* Pagination — wrap if needed */
+    .pagination {
+        flex-wrap: wrap;
+        gap: 4px;
+    }
+    .pagination .page-link {
+        padding: 8px 12px;
+        font-size: 13px;
     }
 }
 </style>
@@ -655,7 +1029,7 @@ console.log('=== PROJECTS FILTERS LOADING ===');
 function toggleFilters() {
     const filterContent = document.getElementById('filterContent');
     const toggleIcon = document.getElementById('filterToggleIcon');
-    
+
     if (filterContent.classList.contains('show')) {
         filterContent.classList.remove('show');
         toggleIcon.classList.remove('rotated');
@@ -671,20 +1045,46 @@ function clearAllFilters(event) {
     window.location.href = '{% url "projects" %}';
 }
 
+// More menu toggle (mobile)
+function initializeMoreMenu() {
+    const btn = document.getElementById('actionMoreBtn');
+    const menu = document.getElementById('actionMoreMenu');
+    if (!btn || !menu) return;
+
+    btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        const isOpen = menu.classList.toggle('show');
+        btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    });
+    document.addEventListener('click', function(e) {
+        if (!menu.contains(e.target) && e.target !== btn) {
+            menu.classList.remove('show');
+            btn.setAttribute('aria-expanded', 'false');
+        }
+    });
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            menu.classList.remove('show');
+            btn.setAttribute('aria-expanded', 'false');
+        }
+    });
+}
+
 // Auto-expand filters if any are active
 document.addEventListener('DOMContentLoaded', function() {
-    const hasActiveFilters = '{{ request.GET.search|default:"" }}' || 
-                           '{{ request.GET.property|default:"" }}' || 
-                           '{{ request.GET.status|default:"" }}';
-    
+    const hasActiveFilters = '{{ request.GET.search|default:"" }}' ||
+                             '{{ request.GET.property|default:"" }}' ||
+                             '{{ request.GET.status|default:"" }}';
+
     if (hasActiveFilters) {
         const filterContent = document.getElementById('filterContent');
         const toggleIcon = document.getElementById('filterToggleIcon');
-        
         filterContent.classList.add('show');
         toggleIcon.classList.add('rotated');
     }
-    
+
+    initializeMoreMenu();
+
     console.log('Project filters initialized successfully');
 });
 

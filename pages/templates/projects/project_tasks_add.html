@@ -28,23 +28,27 @@ Add Task - {{ project.project_name }}
   </script>
 {% endfor %}
 
-<!-- Action Buttons -->
-<div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 20px;">
-  <a href="{% url 'projects_detail' project.project_id %}" class="btn btn-info">
-    <i class="fas fa-arrow-left"></i> Back to Project
+<!-- Action Buttons: Back+1 -->
+<div class="action-buttons-wrap">
+  <button type="submit" form="taskForm" class="action-primary">
+    <i class="fas fa-save"></i> Add Task
+  </button>
+  <a href="{% url 'projects_detail' project.project_id %}" class="action-back" title="Back to Project">
+    <i class="fas fa-arrow-left"></i>
+    <span class="action-back-label">Back</span>
   </a>
 </div>
 
-<!-- Project Info Card with Calculated Dates -->
-<div style="background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 8px; padding: 15px; margin-bottom: 20px;">
+<!-- Project Info Card -->
+<div class="info-card">
   <h5><i class="fas fa-project-diagram"></i> Project: {{ project.project_name }}</h5>
   <p class="mb-1"><i class="fas fa-home"></i> Property: {{ project.prop.prop_name }}</p>
   {% if project.get_calculated_start_date or project.get_calculated_expected_completion %}
-    <p class="mb-0 text-muted" style="font-size: 0.9em;">
-      <i class="fas fa-info-circle"></i> 
-      Project Timeline: 
+    <p class="mb-0 text-muted info-card__timeline">
+      <i class="fas fa-info-circle"></i>
+      Project Timeline:
       {% if project.get_calculated_start_date %}{{ project.get_calculated_start_date|date:"M d, Y" }}{% else %}Not set{% endif %}
-      to 
+      to
       {% if project.get_calculated_expected_completion %}{{ project.get_calculated_expected_completion|date:"M d, Y" }}{% else %}Not set{% endif %}
     </p>
   {% endif %}
@@ -53,24 +57,22 @@ Add Task - {{ project.project_name }}
 <!-- Add Task Form -->
 <form method="post" id="taskForm">
   {% csrf_token %}
-  
+
   <div class="row">
-    <!-- Task Name -->
     <div class="col-md-8">
       <div class="form-group">
         <label for="task_name">
           <i class="fas fa-tasks"></i> Task Name <span style="color: red;">*</span>
         </label>
-        <input type="text" 
-               class="form-control" 
-               id="task_name" 
-               name="task_name" 
+        <input type="text"
+               class="form-control"
+               id="task_name"
+               name="task_name"
                required
                placeholder="Enter task name...">
       </div>
     </div>
 
-    <!-- Priority -->
     <div class="col-md-4">
       <div class="form-group">
         <label for="task_priority">
@@ -87,23 +89,21 @@ Add Task - {{ project.project_name }}
     </div>
   </div>
 
-  <!-- Description -->
   <div class="row">
     <div class="col-md-12">
       <div class="form-group">
         <label for="task_description">
           <i class="fas fa-align-left"></i> Task Description
         </label>
-        <textarea class="form-control" 
-                  id="task_description" 
-                  name="task_description" 
+        <textarea class="form-control"
+                  id="task_description"
+                  name="task_description"
                   rows="4"
                   placeholder="Enter task description..."></textarea>
       </div>
     </div>
   </div>
 
-  <!-- Information Message -->
   <div class="alert alert-info" role="alert">
     <div class="d-flex align-items-center">
       <i class="fas fa-info-circle mr-2"></i>
@@ -113,12 +113,12 @@ Add Task - {{ project.project_name }}
     </div>
   </div>
 
-  <!-- Form Actions -->
-  <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #dee2e6;">
-    <button type="submit" class="btn btn-info">
+  <!-- Form Footer -->
+  <div class="form-footer-actions">
+    <button type="submit" class="btn btn-info form-footer-primary">
       <i class="fas fa-save"></i> Add Task
     </button>
-    <a href="{% url 'projects_detail' project.project_id %}" class="btn btn-secondary ml-2">
+    <a href="{% url 'projects_detail' project.project_id %}" class="btn btn-secondary form-footer-cancel">
       <i class="fas fa-times"></i> Cancel
     </a>
   </div>
@@ -127,37 +127,164 @@ Add Task - {{ project.project_name }}
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
-<script>
-console.log('=== ADD TASK FORM LOADED ===');
+<style>
+.action-buttons-wrap {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-bottom: 20px;
+    align-items: center;
+    flex-wrap: wrap;
+}
 
+.action-primary {
+    background: #17a2b8;
+    border: 1px solid #17a2b8;
+    color: #ffffff;
+    padding: 8px 16px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .action-primary:hover {
+        background: #138496;
+        border-color: #117a8b;
+        color: white;
+        text-decoration: none;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+}
+
+.action-back {
+    background: transparent;
+    border: 1px solid #17a2b8;
+    color: #17a2b8;
+    padding: 8px 14px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .action-back:hover {
+        background: #17a2b8;
+        color: white;
+        text-decoration: none;
+    }
+}
+
+/* Info card */
+.info-card {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 20px;
+}
+.info-card h5 { margin-bottom: 8px; }
+.info-card i { color: #17a2b8; margin-right: 4px; }
+.info-card__timeline { font-size: 0.9em; }
+
+/* Form fields */
+.form-control { font-size: 16px; /* iOS zoom guard */ }
+
+.form-control:focus {
+    border-color: #17a2b8;
+    box-shadow: 0 0 0 0.2rem rgba(23, 162, 184, 0.25);
+}
+
+label i { color: #6c757d; margin-right: 4px; }
+
+.btn-info {
+    background-color: #17a2b8;
+    border-color: #17a2b8;
+    color: white;
+    transition: all 0.3s ease;
+    border-radius: 6px;
+    font-weight: 500;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .btn-info:hover {
+        background-color: #138496;
+        border-color: #117a8b;
+        color: white;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+}
+
+.alert-info {
+    border-left: 4px solid #17a2b8;
+    background-color: rgba(23, 162, 184, 0.05);
+    border-radius: 6px;
+}
+
+.form-footer-actions {
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid #dee2e6;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+@media (max-width: 768px) {
+    .action-buttons-wrap {
+        gap: 8px;
+        align-items: stretch;
+    }
+    .action-primary {
+        flex: 1 1 auto;
+        min-width: 0;
+        justify-content: center;
+        padding: 12px 14px;
+        font-size: 15px;
+    }
+    .action-back {
+        flex-shrink: 0;
+        padding: 12px 14px;
+        min-width: 44px;
+        min-height: 44px;
+        justify-content: center;
+    }
+    .action-back-label { display: none; }
+
+    .form-footer-actions {
+        flex-direction: column-reverse;
+    }
+    .form-footer-actions .btn {
+        width: 100%;
+        padding: 14px;
+        font-size: 15px;
+        margin: 0 !important;
+    }
+}
+</style>
+
+<script>
 $(document).ready(function() {
-    console.log('Setting up task form validation and interactions');
-    
-    // Form submission validation
     $('#taskForm').on('submit', function(e) {
-        console.log('Task form submission attempted');
-        
-        let isValid = true;
-        
-        // Validate required fields
         if (!$('#task_name').val().trim()) {
             alert('Task name is required');
             $('#task_name').focus();
-            isValid = false;
-        }
-        
-        if (!isValid) {
             e.preventDefault();
-            console.log('Task form validation failed');
-        } else {
-            console.log('Task form validation passed');
         }
     });
-    
-    console.log('Task form setup complete');
 });
-
-console.log('🚀 === ADD TASK FORM SCRIPT COMPLETE ===');
 </script>
 
 {% endblock %}

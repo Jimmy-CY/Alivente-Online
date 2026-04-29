@@ -28,21 +28,26 @@ Edit Task - {{ task.task_name }}
   </script>
 {% endfor %}
 
-<!-- Action Buttons - Updated with Gantt support -->
-<div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 20px;">
+<!-- Action Buttons: Back+1 (Gantt-aware) -->
+<div class="action-buttons-wrap">
+  <button type="submit" form="taskForm" class="action-primary">
+    <i class="fas fa-save"></i> Update Task
+  </button>
   {% if from_gantt %}
-    <a href="{% url 'project_gantt' project.project_id %}" class="btn btn-info">
-      <i class="fas fa-chart-gantt"></i> Back to Gantt Chart
+    <a href="{% url 'project_gantt' project.project_id %}" class="action-back" title="Back to Gantt Chart">
+      <i class="fas fa-arrow-left"></i>
+      <span class="action-back-label">Back</span>
     </a>
   {% else %}
-    <a href="{% url 'projects_detail' project.project_id %}" class="btn btn-info">
-      <i class="fas fa-arrow-left"></i> Back to Project
+    <a href="{% url 'projects_detail' project.project_id %}" class="action-back" title="Back to Project">
+      <i class="fas fa-arrow-left"></i>
+      <span class="action-back-label">Back</span>
     </a>
   {% endif %}
 </div>
 
 <!-- Project Info Card -->
-<div style="background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 8px; padding: 15px; margin-bottom: 20px;">
+<div class="info-card">
   <h5><i class="fas fa-project-diagram"></i> Project: {{ project.project_name }}</h5>
   <p class="mb-0"><i class="fas fa-home"></i> Property: {{ project.prop.prop_name }}</p>
   {% if task.parent_task %}
@@ -51,7 +56,7 @@ Edit Task - {{ task.task_name }}
 </div>
 
 <!-- Language Toggle Tabs -->
-<ul class="nav nav-tabs" id="languageTabs" role="tablist" style="margin-bottom: 20px;">
+<ul class="nav nav-tabs language-tabs" id="languageTabs" role="tablist">
   <li class="nav-item" role="presentation">
     <a class="nav-link active" id="english-tab" data-toggle="tab" href="#english" role="tab" aria-controls="english" aria-selected="true">
       <span class="flag-emoji">🇬🇧</span> English
@@ -64,8 +69,8 @@ Edit Task - {{ task.task_name }}
   </li>
 </ul>
 
-<!-- Edit Task Form - Updated with Gantt support -->
-<form method="post" 
+<!-- Edit Task Form -->
+<form method="post"
       id="taskForm"
       {% if from_gantt %}
         action="{% url 'project_tasks_edit' project.project_id task.task_id %}?from_gantt=true"
@@ -73,39 +78,35 @@ Edit Task - {{ task.task_name }}
         action="{% url 'project_tasks_edit' project.project_id task.task_id %}"
       {% endif %}>
   {% csrf_token %}
-  
-  <!-- Tab Content -->
+
   <div class="tab-content" id="languageTabContent">
-    
+
     <!-- English Tab -->
     <div class="tab-pane fade show active" id="english" role="tabpanel" aria-labelledby="english-tab">
       <div class="row">
-        <!-- Task Name -->
         <div class="col-md-6">
           <div class="form-group">
             <label for="task_name">
               <i class="fas fa-tasks"></i> Task Name <span style="color: red;">*</span>
             </label>
-            <input type="text" 
-                   class="form-control" 
-                   id="task_name" 
-                   name="task_name" 
+            <input type="text"
+                   class="form-control"
+                   id="task_name"
+                   name="task_name"
                    required
                    value="{{ task.task_name }}"
                    placeholder="Enter task name...">
           </div>
         </div>
 
-        <!-- Priority -->
-        <div class="col-md-3">
+        <div class="col-md-3 col-sm-6">
           <div class="form-group">
             <label for="task_priority">
               <i class="fas fa-flag"></i> Priority
             </label>
             <select class="form-control" id="task_priority" name="task_priority">
               {% for priority_value, priority_display in task_priority_choices %}
-                <option value="{{ priority_value }}" 
-                        {% if priority_value == task.task_priority %}selected{% endif %}>
+                <option value="{{ priority_value }}" {% if priority_value == task.task_priority %}selected{% endif %}>
                   {{ priority_display }}
                 </option>
               {% endfor %}
@@ -113,10 +114,8 @@ Edit Task - {{ task.task_name }}
           </div>
         </div>
 
-        <!-- Status - Show different fields based on whether this is a main task or subtask -->
         {% if not task.parent_task %}
-          <!-- Main Task: Status is Auto-calculated and Disabled -->
-          <div class="col-md-3">
+          <div class="col-md-3 col-sm-6">
             <div class="form-group">
               <label for="task_status">
                 <i class="fas fa-info-circle"></i> Status (Auto-calculated)
@@ -128,16 +127,14 @@ Edit Task - {{ task.task_name }}
             </div>
           </div>
         {% else %}
-          <!-- Subtask: Status is Editable -->
-          <div class="col-md-3">
+          <div class="col-md-3 col-sm-6">
             <div class="form-group">
               <label for="task_status">
                 <i class="fas fa-info-circle"></i> Status
               </label>
               <select class="form-control" id="task_status" name="task_status">
                 {% for status_value, status_display in task_status_choices %}
-                  <option value="{{ status_value }}" 
-                          {% if status_value == task.task_status %}selected{% endif %}>
+                  <option value="{{ status_value }}" {% if status_value == task.task_status %}selected{% endif %}>
                     {{ status_display }}
                   </option>
                 {% endfor %}
@@ -147,16 +144,15 @@ Edit Task - {{ task.task_name }}
         {% endif %}
       </div>
 
-      <!-- Description (English) -->
       <div class="row">
         <div class="col-md-12">
           <div class="form-group">
             <label for="task_description">
               <i class="fas fa-align-left"></i> Task Description
             </label>
-            <textarea class="form-control" 
-                      id="task_description" 
-                      name="task_description" 
+            <textarea class="form-control"
+                      id="task_description"
+                      name="task_description"
                       rows="4"
                       placeholder="Enter task description...">{{ task.task_description }}</textarea>
           </div>
@@ -167,15 +163,14 @@ Edit Task - {{ task.task_name }}
     <!-- Greek Tab -->
     <div class="tab-pane fade" id="greek" role="tabpanel" aria-labelledby="greek-tab">
       <div class="row">
-        <!-- Task Name (Greek) -->
         <div class="col-md-12">
           <div class="form-group">
             <label for="task_name_greek">
               <i class="fas fa-tasks"></i> Όνομα Εργασίας (Task Name in Greek)
             </label>
-            <input type="text" 
-                   class="form-control" 
-                   id="task_name_greek" 
+            <input type="text"
+                   class="form-control"
+                   id="task_name_greek"
                    name="task_name_greek"
                    value="{{ task.task_name_greek }}"
                    placeholder="Εισάγετε το όνομα της εργασίας στα ελληνικά...">
@@ -184,16 +179,15 @@ Edit Task - {{ task.task_name }}
         </div>
       </div>
 
-      <!-- Description (Greek) -->
       <div class="row">
         <div class="col-md-12">
           <div class="form-group">
             <label for="task_description_greek">
               <i class="fas fa-align-left"></i> Περιγραφή Εργασίας (Task Description in Greek)
             </label>
-            <textarea class="form-control" 
-                      id="task_description_greek" 
-                      name="task_description_greek" 
+            <textarea class="form-control"
+                      id="task_description_greek"
+                      name="task_description_greek"
                       rows="4"
                       placeholder="Εισάγετε την περιγραφή της εργασίας στα ελληνικά...">{{ task.task_description_greek }}</textarea>
             <small class="form-text text-muted">Greek translation of the task description</small>
@@ -201,17 +195,16 @@ Edit Task - {{ task.task_name }}
         </div>
       </div>
 
-      <!-- Quick Copy Buttons -->
       <div class="row">
         <div class="col-md-12">
           <div class="form-group">
             <label>Quick Actions:</label>
-            <div>
-              <button type="button" class="btn btn-sm btn-outline-info" id="translateNameToGreek">
-                <i class="fas fa-language"></i> Translate English Name to Greek
+            <div class="translation-buttons">
+              <button type="button" class="btn btn-sm btn-outline-info translation-btn" id="translateNameToGreek">
+                <i class="fas fa-language"></i> Translate Name to Greek
               </button>
-              <button type="button" class="btn btn-sm btn-outline-info ml-2" id="translateDescToGreek">
-                <i class="fas fa-language"></i> Translate English Description to Greek
+              <button type="button" class="btn btn-sm btn-outline-info translation-btn" id="translateDescToGreek">
+                <i class="fas fa-language"></i> Translate Description to Greek
               </button>
             </div>
             <small class="form-text text-muted">Use these buttons to automatically translate English text to Greek</small>
@@ -221,18 +214,17 @@ Edit Task - {{ task.task_name }}
     </div>
   </div>
 
-  <!-- The rest of the form fields (dates, costs, etc.) -->
+  <!-- Dates: auto-calculated for main tasks, editable for subtasks -->
   <div class="row">
     {% if not task.parent_task %}
-      <!-- Main Task: Dates are Auto-calculated and Disabled -->
       <div class="col-md-6">
         <div class="form-group">
           <label for="task_start_date">
             <i class="fas fa-calendar-alt"></i> Start Date (Auto-calculated)
           </label>
-          <input type="date" 
-                 class="form-control auto-calculated-field" 
-                 id="task_start_date" 
+          <input type="date"
+                 class="form-control auto-calculated-field"
+                 id="task_start_date"
                  name="task_start_date"
                  disabled
                  value="{% if task.get_calculated_start_date %}{{ task.get_calculated_start_date|date:'Y-m-d' }}{% endif %}">
@@ -245,9 +237,9 @@ Edit Task - {{ task.task_name }}
           <label for="task_expected_completion_date">
             <i class="fas fa-calendar-check"></i> Expected Completion (Auto-calculated)
           </label>
-          <input type="date" 
-                 class="form-control auto-calculated-field" 
-                 id="task_expected_completion_date" 
+          <input type="date"
+                 class="form-control auto-calculated-field"
+                 id="task_expected_completion_date"
                  name="task_expected_completion_date"
                  disabled
                  value="{% if task.get_calculated_expected_completion %}{{ task.get_calculated_expected_completion|date:'Y-m-d' }}{% endif %}">
@@ -255,15 +247,14 @@ Edit Task - {{ task.task_name }}
         </div>
       </div>
     {% else %}
-      <!-- Subtask: Dates are Editable -->
       <div class="col-md-6">
         <div class="form-group">
           <label for="task_start_date">
             <i class="fas fa-calendar-alt"></i> Start Date
           </label>
-          <input type="date" 
-                 class="form-control" 
-                 id="task_start_date" 
+          <input type="date"
+                 class="form-control"
+                 id="task_start_date"
                  name="task_start_date"
                  value="{% if task.task_start_date %}{{ task.task_start_date|date:'Y-m-d' }}{% endif %}">
         </div>
@@ -274,9 +265,9 @@ Edit Task - {{ task.task_name }}
           <label for="task_expected_completion_date">
             <i class="fas fa-calendar-check"></i> Expected Completion Date
           </label>
-          <input type="date" 
-                 class="form-control" 
-                 id="task_expected_completion_date" 
+          <input type="date"
+                 class="form-control"
+                 id="task_expected_completion_date"
                  name="task_expected_completion_date"
                  value="{% if task.task_expected_completion_date %}{{ task.task_expected_completion_date|date:'Y-m-d' }}{% endif %}">
         </div>
@@ -284,17 +275,17 @@ Edit Task - {{ task.task_name }}
     {% endif %}
   </div>
 
+  <!-- Costs: auto-calculated for main tasks, editable for subtasks -->
   <div class="row">
     {% if not task.parent_task %}
-      <!-- Main Task: Costs are Auto-calculated and Disabled -->
       <div class="col-md-6">
         <div class="form-group">
           <label for="task_budgeted_cost">
             <i class="fas fa-euro-sign"></i> Budgeted Cost (Auto-calculated)
           </label>
-          <input type="number" 
-                 class="form-control auto-calculated-field" 
-                 id="task_budgeted_cost" 
+          <input type="number"
+                 class="form-control auto-calculated-field"
+                 id="task_budgeted_cost"
                  name="task_budgeted_cost"
                  disabled
                  value="{{ task.get_calculated_budgeted_cost }}"
@@ -308,9 +299,9 @@ Edit Task - {{ task.task_name }}
           <label for="task_actual_cost">
             <i class="fas fa-euro-sign"></i> Actual Cost (Auto-calculated)
           </label>
-          <input type="number" 
-                 class="form-control auto-calculated-field" 
-                 id="task_actual_cost" 
+          <input type="number"
+                 class="form-control auto-calculated-field"
+                 id="task_actual_cost"
                  name="task_actual_cost"
                  disabled
                  value="{{ task.get_calculated_actual_cost }}"
@@ -319,15 +310,14 @@ Edit Task - {{ task.task_name }}
         </div>
       </div>
     {% else %}
-      <!-- Subtask: Costs are Editable -->
       <div class="col-md-6">
         <div class="form-group">
           <label for="task_budgeted_cost">
             <i class="fas fa-euro-sign"></i> Budgeted Cost
           </label>
-          <input type="number" 
-                 class="form-control" 
-                 id="task_budgeted_cost" 
+          <input type="number"
+                 class="form-control"
+                 id="task_budgeted_cost"
                  name="task_budgeted_cost"
                  value="{{ task.task_budgeted_cost }}"
                  step="0.01"
@@ -340,9 +330,9 @@ Edit Task - {{ task.task_name }}
           <label for="task_actual_cost">
             <i class="fas fa-euro-sign"></i> Actual Cost
           </label>
-          <input type="number" 
-                 class="form-control" 
-                 id="task_actual_cost" 
+          <input type="number"
+                 class="form-control"
+                 id="task_actual_cost"
                  name="task_actual_cost"
                  value="{{ task.task_actual_cost }}"
                  step="0.01"
@@ -352,51 +342,48 @@ Edit Task - {{ task.task_name }}
     {% endif %}
   </div>
 
-  <!-- Actual Completion Date - Only for subtasks or manually editable -->
+  <!-- Subtask-only: actual completion + assignee + progress -->
   {% if task.parent_task %}
-    <div class="row" id="actualCompletionRow" 
+    <div class="row" id="actualCompletionRow"
          {% if task.task_status != 'Completed' %}style="display: none;"{% endif %}>
       <div class="col-md-4">
         <div class="form-group">
           <label for="task_actual_completion_date">
             <i class="fas fa-calendar-times"></i> Actual Completion Date <span style="color: red;">*</span>
           </label>
-          <input type="date" 
-                 class="form-control" 
-                 id="task_actual_completion_date" 
+          <input type="date"
+                 class="form-control"
+                 id="task_actual_completion_date"
                  name="task_actual_completion_date"
                  value="{% if task.task_actual_completion_date %}{{ task.task_actual_completion_date|date:'Y-m-d' }}{% endif %}">
         </div>
       </div>
     </div>
-  {% endif %}
 
-  <!-- Assigned To and Progress - Only for subtasks -->
-  {% if task.parent_task %}
     <div class="row">
       <div class="col-md-4">
         <div class="form-group">
           <label for="task_assigned_to">
             <i class="fas fa-user"></i> Assigned To
           </label>
-          <input type="text" 
-                 class="form-control" 
-                 id="task_assigned_to" 
+          <input type="text"
+                 class="form-control"
+                 id="task_assigned_to"
                  name="task_assigned_to"
                  value="{{ task.task_assigned_to }}"
                  placeholder="Enter assignee name...">
         </div>
       </div>
-      
+
       <div class="col-md-4">
         <div class="form-group">
           <label for="task_progress_percentage">
             <i class="fas fa-percentage"></i> Progress Percentage
           </label>
           <div class="input-group">
-            <input type="number" 
-                   class="form-control" 
-                   id="task_progress_percentage" 
+            <input type="number"
+                   class="form-control"
+                   id="task_progress_percentage"
                    name="task_progress_percentage"
                    value="{{ task.task_progress_percentage|default:0 }}"
                    min="0"
@@ -414,18 +401,17 @@ Edit Task - {{ task.task_name }}
     </div>
   {% endif %}
 
-  <!-- Form Actions - Updated with Gantt support -->
-  <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #dee2e6;">
-    <button type="submit" class="btn btn-info">
+  <!-- Form Footer -->
+  <div class="form-footer-actions">
+    <button type="submit" class="btn btn-info form-footer-primary">
       <i class="fas fa-save"></i> Update Task
     </button>
-    
     {% if from_gantt %}
-      <a href="{% url 'project_gantt' project.project_id %}" class="btn btn-info ml-2">
+      <a href="{% url 'project_gantt' project.project_id %}" class="btn btn-secondary form-footer-cancel">
         <i class="fas fa-times"></i> Cancel
       </a>
     {% else %}
-      <a href="{% url 'projects_detail' project.project_id %}" class="btn btn-secondary ml-2">
+      <a href="{% url 'projects_detail' project.project_id %}" class="btn btn-secondary form-footer-cancel">
         <i class="fas fa-times"></i> Cancel
       </a>
     {% endif %}
@@ -436,30 +422,279 @@ Edit Task - {{ task.task_name }}
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
-<script>
-console.log('=== EDIT TASK FORM LOADED ===');
+<style>
+.action-buttons-wrap {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-bottom: 20px;
+    align-items: center;
+    flex-wrap: wrap;
+}
 
-// Check if coming from Gantt chart
+.action-primary {
+    background: #17a2b8;
+    border: 1px solid #17a2b8;
+    color: #ffffff;
+    padding: 8px 16px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .action-primary:hover {
+        background: #138496;
+        border-color: #117a8b;
+        color: white;
+        text-decoration: none;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+}
+
+.action-back {
+    background: transparent;
+    border: 1px solid #17a2b8;
+    color: #17a2b8;
+    padding: 8px 14px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .action-back:hover {
+        background: #17a2b8;
+        color: white;
+        text-decoration: none;
+    }
+}
+
+.info-card {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 20px;
+}
+.info-card h5 { margin-bottom: 8px; }
+.info-card i { color: #17a2b8; margin-right: 4px; }
+
+.form-control { font-size: 16px; /* iOS zoom guard */ }
+
+.form-control:focus {
+    border-color: #17a2b8;
+    box-shadow: 0 0 0 0.2rem rgba(23, 162, 184, 0.25);
+}
+
+label i { color: #6c757d; margin-right: 4px; }
+
+.auto-calculated-field {
+    background-color: #e9ecef !important;
+    opacity: 1;
+    cursor: not-allowed;
+}
+
+.readonly-field {
+    background-color: #f8f9fa !important;
+    cursor: not-allowed;
+}
+
+#task_progress_percentage {
+    text-align: center;
+    font-weight: 600;
+}
+
+.input-group-text {
+    background-color: #e9ecef;
+    border-color: #ced4da;
+    font-weight: 600;
+    color: #495057;
+}
+
+.text-warning { color: #856404 !important; font-weight: 600; }
+
+/* Language tabs */
+.language-tabs {
+    border-bottom: 2px solid #dee2e6;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.language-tabs .nav-link {
+    border: 1px solid transparent;
+    border-radius: 6px 6px 0 0;
+    font-weight: 500;
+    color: #495057;
+    transition: all 0.3s ease;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    padding: 8px 16px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .language-tabs .nav-link:hover {
+        border-color: #e9ecef #e9ecef #dee2e6;
+        background-color: #f8f9fa;
+    }
+}
+
+.language-tabs .nav-link.active {
+    color: #17a2b8;
+    background-color: #fff;
+    border-color: #dee2e6 #dee2e6 #fff;
+    border-bottom-color: transparent;
+}
+
+.flag-emoji {
+    font-size: 16px;
+    margin-right: 6px;
+    display: inline-block;
+    font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Android Emoji", sans-serif;
+    line-height: 1;
+    vertical-align: middle;
+}
+
+#task_name_greek, #task_description_greek {
+    font-family: Arial, sans-serif;
+}
+
+.tab-content { padding: 20px 0; }
+
+.translation-buttons {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 4px;
+}
+
+.btn-outline-info {
+    color: #17a2b8;
+    border-color: #17a2b8;
+    transition: all 0.3s ease;
+    background: transparent;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .btn-outline-info:hover {
+        background-color: #17a2b8;
+        border-color: #17a2b8;
+        color: #fff;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+}
+
+.btn-info {
+    background-color: #17a2b8;
+    border-color: #17a2b8;
+    color: white;
+    transition: all 0.3s ease;
+    border-radius: 6px;
+    font-weight: 500;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .btn-info:hover {
+        background-color: #138496;
+        border-color: #117a8b;
+        color: white;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+}
+
+.alert { border-radius: 6px; font-weight: 500; }
+.alert-success { border-color: #28a745; }
+.alert-warning { border-color: #ffc107; }
+
+.form-footer-actions {
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid #dee2e6;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+@media (max-width: 768px) {
+    .action-buttons-wrap {
+        gap: 8px;
+        align-items: stretch;
+    }
+    .action-primary {
+        flex: 1 1 auto;
+        min-width: 0;
+        justify-content: center;
+        padding: 12px 14px;
+        font-size: 15px;
+    }
+    .action-back {
+        flex-shrink: 0;
+        padding: 12px 14px;
+        min-width: 44px;
+        min-height: 44px;
+        justify-content: center;
+    }
+    .action-back-label { display: none; }
+
+    /* Language tabs full-width */
+    .language-tabs {
+        display: flex;
+    }
+    .language-tabs .nav-item { flex: 1; }
+    .language-tabs .nav-link {
+        text-align: center;
+        justify-content: center;
+        padding: 10px 8px;
+        font-size: 13px;
+    }
+
+    .translation-buttons {
+        flex-direction: column;
+    }
+    .translation-btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .form-footer-actions {
+        flex-direction: column-reverse;
+    }
+    .form-footer-actions .btn {
+        width: 100%;
+        padding: 14px;
+        font-size: 15px;
+        margin: 0 !important;
+    }
+}
+</style>
+
+<script>
 const fromGantt = {{ from_gantt|yesno:"true,false" }};
-console.log('From Gantt Chart:', fromGantt);
 
 $(document).ready(function() {
-    console.log('Setting up task edit form validation and interactions');
-    
-    // Initialize tracking of original English values on page load
+
     $('#task_name_greek').data('last-english', $('#task_name').val());
     $('#task_description_greek').data('last-english', $('#task_description').val());
-    console.log('Auto-translation tracking initialized');
-    
-    // Auto-update Greek translations when English fields change
+
     $('#task_name').on('blur', function() {
         const englishText = $(this).val().trim();
         const greekField = $('#task_name_greek');
         const currentGreekText = greekField.val().trim();
-        
-        // Only auto-update if Greek translation already exists and English text has changed
         if (englishText && currentGreekText && englishText !== greekField.data('last-english')) {
-            console.log('English task name changed, auto-updating Greek translation');
             autoTranslateField(englishText, 'task_name_greek', 'task name');
         }
         greekField.data('last-english', englishText);
@@ -469,16 +704,12 @@ $(document).ready(function() {
         const englishText = $(this).val().trim();
         const greekField = $('#task_description_greek');
         const currentGreekText = greekField.val().trim();
-        
-        // Only auto-update if Greek translation already exists and English text has changed
         if (englishText && currentGreekText && englishText !== greekField.data('last-english')) {
-            console.log('English task description changed, auto-updating Greek translation');
             autoTranslateField(englishText, 'task_description_greek', 'task description');
         }
         greekField.data('last-english', englishText);
     });
-    
-    // Greek field translation functionality
+
     $('#translateNameToGreek').on('click', function() {
         const englishName = $('#task_name').val();
         if (englishName.trim()) {
@@ -487,7 +718,7 @@ $(document).ready(function() {
             showCopyMessage('No English name to translate', 'warning');
         }
     });
-    
+
     $('#translateDescToGreek').on('click', function() {
         const englishDesc = $('#task_description').val();
         if (englishDesc.trim()) {
@@ -496,193 +727,103 @@ $(document).ready(function() {
             showCopyMessage('No English description to translate', 'warning');
         }
     });
-    
-    // Manual translation function
+
     function translateText(text, targetFieldId, fieldName) {
-        // Show loading state
         const button = event.target.closest('button');
         const originalHtml = button.innerHTML;
         button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Translating...';
         button.disabled = true;
-        
-        console.log('Starting translation for:', text);
-        
-        // Call your existing translation endpoint
+
         fetch('/translate/', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
             },
-            body: JSON.stringify({
-                'text': text,
-                'target_language': 'greek',
-                'source_language': 'english'
-            })
+            body: JSON.stringify({ text, target_language: 'greek', source_language: 'english' })
         })
-        .then(response => {
-            console.log('Response status:', response.status);
-            return response.json();
-        })
+        .then(r => r.json())
         .then(data => {
-            console.log('Translation response:', data);
             if (data.success) {
                 $('#' + targetFieldId).val(data.translated_text);
                 showCopyMessage(fieldName + ' translated successfully to Greek');
             } else {
                 showCopyMessage('Translation failed: ' + (data.error || 'Unknown error'), 'warning');
-                console.error('Translation error:', data.error);
             }
         })
-        .catch(error => {
-            console.error('Translation fetch error:', error);
-            showCopyMessage('Translation failed: Network error', 'warning');
-        })
+        .catch(err => showCopyMessage('Translation failed: Network error', 'warning'))
         .finally(() => {
-            // Restore button state
             button.innerHTML = originalHtml;
             button.disabled = false;
         });
     }
-    
-    // Auto-translation function (different from manual translation)
+
     function autoTranslateField(text, targetFieldId, fieldName) {
-        console.log('Auto-translating:', fieldName, text);
-        
-        // Show subtle indicator that translation is happening
         const targetField = $('#' + targetFieldId);
         const originalBorder = targetField.css('border-color');
-        targetField.css('border-color', '#ffc107'); // Yellow border to indicate updating
-        
-        // Call translation endpoint
+        targetField.css('border-color', '#ffc107');
+
         fetch('/translate/', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
             },
-            body: JSON.stringify({
-                'text': text,
-                'target_language': 'greek',
-                'source_language': 'english'
-            })
+            body: JSON.stringify({ text, target_language: 'greek', source_language: 'english' })
         })
-        .then(response => response.json())
+        .then(r => r.json())
         .then(data => {
             if (data.success) {
                 targetField.val(data.translated_text);
-                console.log('Auto-translation successful for:', fieldName);
-                
-                // Show brief success indicator
-                targetField.css('border-color', '#28a745'); // Green for success
-                setTimeout(() => {
-                    targetField.css('border-color', originalBorder);
-                }, 2000);
-                
-                // Show subtle notification
+                targetField.css('border-color', '#28a745');
+                setTimeout(() => targetField.css('border-color', originalBorder), 2000);
                 showAutoTranslationNotice(`${fieldName} automatically updated in Greek`);
             } else {
-                console.error('Auto-translation failed for:', fieldName, data.error);
-                // Restore original border on failure
                 targetField.css('border-color', originalBorder);
             }
         })
-        .catch(error => {
-            console.error('Auto-translation error for:', fieldName, error);
-            // Restore original border on error
-            targetField.css('border-color', originalBorder);
-        });
+        .catch(() => targetField.css('border-color', originalBorder));
     }
-    
-    // Subtle notification for auto-translations (less intrusive than manual ones)
+
     function showAutoTranslationNotice(message) {
-        // Create a small, unobtrusive notification
-        const notice = $(`
-            <div class="auto-translation-notice" style="
-                position: fixed; 
-                bottom: 20px; 
-                right: 20px; 
-                background: rgba(40, 167, 69, 0.9); 
-                color: white; 
-                padding: 8px 12px; 
-                border-radius: 4px; 
-                font-size: 12px; 
-                z-index: 1000;
-                transition: opacity 0.3s ease;
-            ">
-                <i class="fas fa-language"></i> ${message}
-            </div>
-        `);
-        
+        const notice = $(`<div style="position: fixed; bottom: 20px; right: 20px; background: rgba(40, 167, 69, 0.9); color: white; padding: 8px 12px; border-radius: 4px; font-size: 12px; z-index: 1000;"><i class="fas fa-language"></i> ${message}</div>`);
         $('body').append(notice);
-        
-        // Auto-remove after 3 seconds
-        setTimeout(() => {
-            notice.fadeOut(300, () => notice.remove());
-        }, 3000);
+        setTimeout(() => notice.fadeOut(300, () => notice.remove()), 3000);
     }
-    
+
     function showCopyMessage(message, type = 'success') {
-        // Create a temporary alert
         const alertClass = type === 'success' ? 'alert-success' : 'alert-warning';
-        const alert = $(`
-            <div class="alert ${alertClass} alert-dismissible fade show" role="alert" style="position: fixed; top: 20px; right: 20px; z-index: 9999; min-width: 300px;">
-                <i class="fas fa-${type === 'success' ? 'check' : 'exclamation-triangle'}"></i> ${message}
-                <button type="button" class="close" data-dismiss="alert">
-                    <span>&times;</span>
-                </button>
-            </div>
-        `);
-        
+        const alert = $(`<div class="alert ${alertClass} alert-dismissible fade show" role="alert" style="position: fixed; top: 20px; right: 20px; z-index: 9999; min-width: 280px; max-width: 90vw;"><i class="fas fa-${type === 'success' ? 'check' : 'exclamation-triangle'}"></i> ${message}<button type="button" class="close" data-dismiss="alert"><span>&times;</span></button></div>`);
         $('body').append(alert);
-        
-        // Auto-dismiss after 3 seconds
-        setTimeout(() => {
-            alert.alert('close');
-        }, 3000);
+        setTimeout(() => alert.alert('close'), 3000);
     }
-    
-    // Status change handler - only for subtasks
+
+    // Status change handler (subtasks only)
     $('#task_status').on('change', function() {
         const status = $(this).val();
         const actualCompletionRow = $('#actualCompletionRow');
         const actualCompletionInput = $('#task_actual_completion_date');
         const progressInput = $('#task_progress_percentage');
         const progressHelp = $('#progressHelp');
-        
-        console.log('Status changed to:', status);
-        
+
         if (status === 'Completed') {
             actualCompletionRow.show();
             actualCompletionInput.prop('required', true);
-            // Set today's date as default if no value exists
             if (!actualCompletionInput.val()) {
                 actualCompletionInput.val(new Date().toISOString().split('T')[0]);
             }
-            // Set progress to 100% and disable
-            progressInput.val(100);
-            progressInput.prop('readonly', true);
-            progressInput.addClass('readonly-field');
+            progressInput.val(100).prop('readonly', true).addClass('readonly-field');
             progressHelp.text('Completed tasks are automatically set to 100%');
-            
         } else if (status === 'Pending') {
             actualCompletionRow.hide();
             actualCompletionInput.prop('required', false);
-            // Set progress to 0% and disable
-            progressInput.val(0);
-            progressInput.prop('readonly', true);
-            progressInput.addClass('readonly-field');
+            progressInput.val(0).prop('readonly', true).addClass('readonly-field');
             progressHelp.text('Pending tasks are automatically set to 0%');
-            
         } else if (status === 'In Progress') {
             actualCompletionRow.hide();
             actualCompletionInput.prop('required', false);
-            // Enable progress input for manual entry
-            progressInput.prop('readonly', false);
-            progressInput.removeClass('readonly-field');
-            progressInput.attr('min', 1);
-            progressInput.attr('max', 99);
-            // Set to 1% if currently 0% or 100%
+            progressInput.prop('readonly', false).removeClass('readonly-field');
+            progressInput.attr('min', 1).attr('max', 99);
             const currentProgress = parseInt(progressInput.val()) || 0;
             if (currentProgress === 0 || currentProgress === 100) {
                 progressInput.val(1);
@@ -690,46 +831,22 @@ $(document).ready(function() {
             progressHelp.text('Enter progress between 1% and 99%');
         }
     });
-    
-    // Progress percentage validation - only for subtasks
+
     $('#task_progress_percentage').on('input change', function() {
         const progress = parseInt($(this).val()) || 0;
         const status = $('#task_status').val();
-        
         if (status === 'In Progress') {
-            if (progress < 1) {
-                $(this).val(1);
-                showProgressWarning('In Progress tasks must have at least 1% progress');
-            } else if (progress > 99) {
-                $(this).val(99);
-                showProgressWarning('In Progress tasks cannot exceed 99% progress');
-            }
+            if (progress < 1) $(this).val(1);
+            else if (progress > 99) $(this).val(99);
         }
     });
-    
-    function showProgressWarning(message) {
-        const progressHelp = $('#progressHelp');
-        const originalText = progressHelp.text();
-        progressHelp.text(message).addClass('text-warning');
-        
-        setTimeout(() => {
-            progressHelp.text(originalText).removeClass('text-warning');
-        }, 3000);
-    }
-    
-    // Date validation - only for subtasks
-    $('#task_start_date, #task_expected_completion_date').on('change', function() {
-        validateDates();
-    });
-    
+
     function validateDates() {
         const startDate = $('#task_start_date').val();
         const expectedEndDate = $('#task_expected_completion_date').val();
-        
         if (startDate && expectedEndDate) {
             const start = new Date(startDate);
             const expectedEnd = new Date(expectedEndDate);
-            
             if (expectedEnd <= start) {
                 alert('Expected completion date must be after start date');
                 $('#task_expected_completion_date').val('');
@@ -738,247 +855,61 @@ $(document).ready(function() {
         }
         return true;
     }
-    
-    // Form submission validation
+
+    $('#task_start_date, #task_expected_completion_date').on('change', validateDates);
+
     $('#taskForm').on('submit', function(e) {
-        console.log('Task edit form submission attempted');
-        
         let isValid = true;
-        
-        // Validate required fields
+
         if (!$('#task_name').val().trim()) {
             alert('Task name is required');
             $('#task_name').focus();
-            // Switch to English tab if not already there
             $('#english-tab').tab('show');
             isValid = false;
         }
-        
-        // Validate dates - only for subtasks
+
         {% if task.parent_task %}
-        if (!validateDates()) {
-            isValid = false;
-        }
-        
-        // Validate actual completion date if status is completed
+        if (!validateDates()) isValid = false;
+
         const status = $('#task_status').val();
         const actualCompletionDate = $('#task_actual_completion_date').val();
         const progressPercentage = parseInt($('#task_progress_percentage').val()) || 0;
-        
+
         if (status === 'Completed' && !actualCompletionDate) {
             alert('Actual completion date is required when status is Completed');
             $('#task_actual_completion_date').focus();
             isValid = false;
         }
-        
-        // Validate progress percentage based on status
         if (status === 'In Progress' && (progressPercentage < 1 || progressPercentage > 99)) {
             alert('In Progress tasks must have progress between 1% and 99%');
-            $('#task_progress_percentage').focus();
             isValid = false;
         }
-        
         if (status === 'Pending' && progressPercentage !== 0) {
             alert('Pending tasks must have 0% progress');
-            $('#task_progress_percentage').focus();
             isValid = false;
         }
-        
         if (status === 'Completed' && progressPercentage !== 100) {
             alert('Completed tasks must have 100% progress');
-            $('#task_progress_percentage').focus();
             isValid = false;
         }
         {% endif %}
-        
+
         if (!isValid) {
             e.preventDefault();
-            console.log('Task edit form validation failed');
-        } else {
-            console.log('Task edit form validation passed');
-            
-            // Show loading state if coming from Gantt
-            if (fromGantt) {
-                $(this).find('button[type="submit"]').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Updating...');
-            }
+        } else if (fromGantt) {
+            $(this).find('button[type="submit"]').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> Updating...');
         }
     });
-    
-    // NO DATE CONSTRAINTS for subtasks - they drive the timeline
-    // Only basic validation: expected completion must be after start date
+
     {% if task.parent_task %}
     $('#task_start_date').on('change', function() {
         const startDate = $(this).val();
         if (startDate) {
             $('#task_expected_completion_date').attr('min', startDate);
-            console.log('Updated subtask expected completion minimum to: ' + startDate);
         }
     });
     {% endif %}
-    
-    console.log('Task edit form setup complete');
 });
-
-console.log('🚀 === EDIT TASK FORM SCRIPT COMPLETE ===');
 </script>
-
-<style>
-/* Enhanced styling for Gantt navigation */
-.btn-info {
-    background-color: #17a2b8;
-    border-color: #17a2b8;
-    transition: all 0.3s ease;
-    border-radius: 6px;
-    font-weight: 500;
-}
-
-.btn-info:hover {
-    background-color: #138496;
-    border-color: #117a8b;
-    transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-}
-
-.btn-secondary {
-    transition: all 0.3s ease;
-    border-radius: 6px;
-    font-weight: 500;
-}
-
-.btn-secondary:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-}
-
-/* Auto-calculated field styling */
-.auto-calculated-field {
-    background-color: #e9ecef !important;
-    opacity: 1;
-    cursor: not-allowed;
-}
-
-/* Readonly progress field styling */
-.readonly-field {
-    background-color: #f8f9fa !important;
-    cursor: not-allowed;
-}
-
-/* Progress input styling */
-#task_progress_percentage {
-    text-align: center;
-    font-weight: 600;
-}
-
-#task_progress_percentage:not(.readonly-field):focus {
-    border-color: #28a745;
-    box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
-}
-
-/* Input group styling */
-.input-group-text {
-    background-color: #e9ecef;
-    border-color: #ced4da;
-    font-weight: 600;
-    color: #495057;
-}
-
-/* Warning text styling */
-.text-warning {
-    color: #856404 !important;
-    font-weight: 600;
-}
-
-/* Form enhancements */
-.form-control:focus {
-    border-color: #17a2b8;
-    box-shadow: 0 0 0 0.2rem rgba(23, 162, 184, 0.25);
-}
-
-/* Language tab styling */
-.nav-tabs {
-    border-bottom: 2px solid #dee2e6;
-}
-
-.nav-tabs .nav-link {
-    border: 1px solid transparent;
-    border-radius: 6px 6px 0 0;
-    font-weight: 500;
-    color: #495057;
-    transition: all 0.3s ease;
-}
-
-.nav-tabs .nav-link:hover {
-    border-color: #e9ecef #e9ecef #dee2e6;
-    background-color: #f8f9fa;
-}
-
-.nav-tabs .nav-link.active {
-    color: #17a2b8;
-    background-color: #fff;
-    border-color: #dee2e6 #dee2e6 #fff;
-    border-bottom-color: transparent;
-}
-
-/* Greek field styling */
-#task_name_greek, #task_description_greek {
-    font-family: Arial, sans-serif; /* Ensure Greek characters display properly */
-}
-
-/* Copy button styling */
-.btn-outline-info {
-    color: #17a2b8;
-    border-color: #17a2b8;
-    transition: all 0.3s ease;
-}
-
-.btn-outline-info:hover {
-    background-color: #17a2b8;
-    border-color: #17a2b8;
-    color: #fff;
-    transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-}
-
-/* Tab content padding */
-.tab-content {
-    padding: 20px 0;
-}
-
-/* Flag emoji styling with better support */
-.flag-emoji {
-    font-size: 16px;
-    margin-right: 6px;
-    display: inline-block;
-    font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", "Android Emoji", "EmojiSymbols", sans-serif;
-    line-height: 1;
-    vertical-align: middle;
-}
-
-/* Fallback for systems without emoji support */
-.flag-emoji::before {
-    content: attr(data-fallback);
-}
-
-/* Tab styling adjustments */
-.nav-link {
-    font-size: 14px;
-    display: flex;
-    align-items: center;
-}
-
-/* Alert styling for copy notifications */
-.alert {
-    border-radius: 6px;
-    font-weight: 500;
-}
-
-.alert-success {
-    border-color: #28a745;
-}
-
-.alert-warning {
-    border-color: #ffc107;
-}
-</style>
 
 {% endblock %}

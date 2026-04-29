@@ -28,17 +28,22 @@ Add New Project
   </script>
 {% endfor %}
 
-<!-- Action Buttons -->
-<div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 20px;">
-  <a href="{% url 'projects' %}" class="btn btn-info">
-    <i class="fas fa-arrow-left"></i> Back to Projects
+<!-- Action Buttons: Back+1 standard
+     Save action mirrors the bottom Submit button. -->
+<div class="action-buttons-wrap">
+  <button type="submit" form="projectForm" class="action-primary">
+    <i class="fas fa-save"></i> Create Project
+  </button>
+  <a href="{% url 'projects' %}" class="action-back" title="Back to Projects">
+    <i class="fas fa-arrow-left"></i>
+    <span class="action-back-label">Back</span>
   </a>
 </div>
 
-<!-- Add Project Form - Using standard structure without custom container -->
+<!-- Add Project Form -->
 <form method="post" id="projectForm">
   {% csrf_token %}
-  
+
   <div class="row">
     <!-- Project Name -->
     <div class="col-md-6">
@@ -46,10 +51,10 @@ Add New Project
         <label for="project_name">
           <i class="fas fa-project-diagram"></i> Project Name <span style="color: red;">*</span>
         </label>
-        <input type="text" 
-               class="form-control" 
-               id="project_name" 
-               name="project_name" 
+        <input type="text"
+               class="form-control"
+               id="project_name"
+               name="project_name"
                required
                placeholder="Enter project name...">
       </div>
@@ -78,9 +83,9 @@ Add New Project
         <label for="project_description">
           <i class="fas fa-align-left"></i> Project Description
         </label>
-        <textarea class="form-control" 
-                  id="project_description" 
-                  name="project_description" 
+        <textarea class="form-control"
+                  id="project_description"
+                  name="project_description"
                   rows="4"
                   placeholder="Enter project description..."></textarea>
       </div>
@@ -97,12 +102,12 @@ Add New Project
     </div>
   </div>
 
-  <!-- Form Actions -->
-  <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #dee2e6;">
-    <button type="submit" class="btn btn-info">
+  <!-- Form Actions (footer — keeps Save accessible at end of form too) -->
+  <div class="form-footer-actions">
+    <button type="submit" class="btn btn-info form-footer-primary">
       <i class="fas fa-save"></i> Create Project
     </button>
-    <a href="{% url 'projects' %}" class="btn btn-secondary ml-2">
+    <a href="{% url 'projects' %}" class="btn btn-secondary form-footer-cancel">
       <i class="fas fa-times"></i> Cancel
     </a>
   </div>
@@ -111,19 +116,172 @@ Add New Project
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
+<style>
+/* ============================================================
+   ACTION BUTTONS — Back+1 standard
+   ============================================================ */
+.action-buttons-wrap {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-bottom: 20px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.action-primary {
+    background: #17a2b8;
+    border: 1px solid #17a2b8;
+    color: #ffffff;
+    padding: 8px 16px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .action-primary:hover {
+        background: #138496;
+        border-color: #117a8b;
+        color: white;
+        text-decoration: none;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+}
+
+.action-back {
+    background: transparent;
+    border: 1px solid #17a2b8;
+    color: #17a2b8;
+    padding: 8px 14px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .action-back:hover {
+        background: #17a2b8;
+        color: white;
+        text-decoration: none;
+    }
+}
+
+/* ============================================================
+   FORM FIELDS
+   ============================================================ */
+.form-control {
+    font-size: 16px; /* iOS zoom guard */
+}
+
+.form-control:focus {
+    border-color: #17a2b8;
+    box-shadow: 0 0 0 0.2rem rgba(23, 162, 184, 0.25);
+}
+
+label i {
+    color: #6c757d;
+    margin-right: 4px;
+}
+
+/* Form footer */
+.form-footer-actions {
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid #dee2e6;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.btn-info {
+    background-color: #17a2b8;
+    border-color: #17a2b8;
+    color: white;
+    transition: all 0.3s ease;
+    border-radius: 6px;
+    font-weight: 500;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .btn-info:hover {
+        background-color: #138496;
+        border-color: #117a8b;
+        color: white;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+}
+
+.alert-info {
+    border-left: 4px solid #17a2b8;
+    background-color: rgba(23, 162, 184, 0.05);
+    border-radius: 6px;
+}
+
+/* ============================================================
+   MOBILE (≤768px)
+   ============================================================ */
+@media (max-width: 768px) {
+
+    .action-buttons-wrap {
+        gap: 8px;
+        align-items: stretch;
+    }
+    .action-primary {
+        flex: 1 1 auto;
+        min-width: 0;
+        justify-content: center;
+        padding: 12px 14px;
+        font-size: 15px;
+    }
+    .action-back {
+        flex-shrink: 0;
+        padding: 12px 14px;
+        min-width: 44px;
+        min-height: 44px;
+        justify-content: center;
+    }
+    .action-back-label { display: none; }
+
+    /* Stack form rows */
+    .row > [class*="col-"] {
+        margin-bottom: 4px;
+    }
+
+    /* Form footer: column-reverse so primary stays on top */
+    .form-footer-actions {
+        flex-direction: column-reverse;
+    }
+    .form-footer-actions .btn {
+        width: 100%;
+        padding: 14px;
+        font-size: 15px;
+        margin: 0 !important;
+    }
+}
+</style>
+
 <script>
 console.log('=== ADD PROJECT FORM LOADED ===');
 
 $(document).ready(function() {
     console.log('Setting up form validation and interactions');
-    
-    // Form submission validation
+
     $('#projectForm').on('submit', function(e) {
-        console.log('Form submission attempted');
-        
         let isValid = true;
-        
-        // Validate required fields
+
         if (!$('#project_name').val().trim()) {
             alert('Project name is required');
             $('#project_name').focus();
@@ -133,15 +291,12 @@ $(document).ready(function() {
             $('#prop_id').focus();
             isValid = false;
         }
-        
+
         if (!isValid) {
             e.preventDefault();
-            console.log('Form validation failed');
-        } else {
-            console.log('Form validation passed');
         }
     });
-    
+
     console.log('Form setup complete');
 });
 

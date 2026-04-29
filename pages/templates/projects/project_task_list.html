@@ -29,16 +29,31 @@ Task List - {{ project.project_name }}
 {% endfor %}
 
 <body>
-  <!-- Action Buttons -->
-  <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 20px;">
-    <button id="printBtn" class="btn btn-info">
+  <!-- Action Buttons: Back+2+ pattern -->
+  <div class="action-buttons-wrap">
+    <button id="printBtn" class="action-primary" type="button">
       <i class="fas fa-print"></i> {% if language == 'greek' %}Εκτύπωση{% else %}Print{% endif %}
     </button>
-    <button id="exportBtn" class="btn btn-info">
+
+    <button id="exportBtn" class="action-secondary" type="button">
       <i class="fas fa-file-excel"></i> {% if language == 'greek' %}Εξαγωγή Excel{% else %}Export Excel{% endif %}
     </button>
-    <a href="{% url 'projects_detail' project.project_id %}" class="btn btn-info">
-      <i class="fas fa-arrow-left"></i> {% if language == 'greek' %}Επιστροφή στο Έργο{% else %}Back to Project{% endif %}
+
+    <!-- Mobile: More menu (hidden on desktop) -->
+    <div class="action-more-wrapper">
+      <button type="button" class="action-more-btn" id="actionMoreBtn" aria-label="More actions" aria-expanded="false">
+        <i class="fas fa-ellipsis-v"></i>
+      </button>
+      <div class="action-more-menu" id="actionMoreMenu" role="menu">
+        <button type="button" class="action-more-item" id="exportBtnMobile" role="menuitem">
+          <i class="fas fa-file-excel"></i> {% if language == 'greek' %}Εξαγωγή Excel{% else %}Export Excel{% endif %}
+        </button>
+      </div>
+    </div>
+
+    <a href="{% url 'projects_detail' project.project_id %}" class="action-back" title="{% if language == 'greek' %}Επιστροφή στο Έργο{% else %}Back to Project{% endif %}">
+      <i class="fas fa-arrow-left"></i>
+      <span class="action-back-label">{% if language == 'greek' %}Πίσω{% else %}Back{% endif %}</span>
     </a>
   </div>
 
@@ -64,7 +79,7 @@ Task List - {{ project.project_name }}
           <i class="fas fa-language"></i> <strong>{% if language == 'greek' %}Γλώσσα:{% else %}Language:{% endif %}</strong> {% if language == 'greek' %}Ελληνικά{% else %}English{% endif %}
         </p>
       </div>
-      <div class="col-md-4 text-right">
+      <div class="col-md-4">
         <div class="task-summary">
           <div class="summary-stat">
             <div class="stat-number">{{ total_tasks }}</div>
@@ -99,7 +114,7 @@ Task List - {{ project.project_name }}
       <tbody>
         {% for item in task_list %}
           <tr class="task-row task-type-{{ item.type|lower }}">
-            <td class="task-name-cell">
+            <td class="task-name-cell" data-label="{% if language == 'greek' %}Όνομα{% else %}Name{% endif %}">
               <div class="task-indent-{{ item.indent_level }}">
                 {% if item.type == 'project' %}
                   <i class="fas fa-folder-open project-icon"></i>
@@ -108,7 +123,7 @@ Task List - {{ project.project_name }}
                 {% else %}
                   <i class="fas fa-chevron-right subtask-icon"></i>
                 {% endif %}
-                
+
                 <strong class="task-name">
                   {% if language == 'greek' %}
                     {{ item.name_greek|default:item.name }}
@@ -116,7 +131,7 @@ Task List - {{ project.project_name }}
                     {{ item.name }}
                   {% endif %}
                 </strong>
-                
+
                 {% if item.description or item.description_greek %}
                   <div class="task-description">
                     {% if language == 'greek' %}
@@ -128,7 +143,7 @@ Task List - {{ project.project_name }}
                 {% endif %}
               </div>
             </td>
-            <td>
+            <td class="cell-type" data-label="{% if language == 'greek' %}Τύπος{% else %}Type{% endif %}">
               <span class="type-badge type-{{ item.type|lower }}">
                 {% if language == 'greek' %}
                   {% if item.type == 'project' %}Έργο{% elif item.type == 'task' %}Εργασία{% else %}Υπο-εργασία{% endif %}
@@ -137,7 +152,7 @@ Task List - {{ project.project_name }}
                 {% endif %}
               </span>
             </td>
-            <td>
+            <td class="cell-priority" data-label="{% if language == 'greek' %}Προτεραιότητα{% else %}Priority{% endif %}">
               {% if item.priority %}
                 <span class="priority-badge priority-{{ item.priority|lower }}">
                   {% if language == 'greek' %}
@@ -154,7 +169,7 @@ Task List - {{ project.project_name }}
                 <span class="text-muted">-</span>
               {% endif %}
             </td>
-            <td>
+            <td class="cell-status" data-label="{% if language == 'greek' %}Κατάσταση{% else %}Status{% endif %}">
               <span class="status-badge status-{{ item.status|slugify }}">
                 {% if language == 'greek' %}
                   {% if item.status == 'Completed' %}Ολοκληρωμένη
@@ -167,14 +182,14 @@ Task List - {{ project.project_name }}
                 {% endif %}
               </span>
             </td>
-            <td class="date-cell">
+            <td class="date-cell cell-start-date" data-label="{% if language == 'greek' %}Έναρξη{% else %}Start{% endif %}">
               {% if item.start_date %}
                 <span class="date-value">{{ item.start_date|date:"d/m/Y" }}</span>
               {% else %}
                 <span class="text-muted no-date">{% if language == 'greek' %}Δεν ορίστηκε{% else %}Not set{% endif %}</span>
               {% endif %}
             </td>
-            <td class="date-cell">
+            <td class="date-cell cell-end-date" data-label="{% if language == 'greek' %}Λήξη{% else %}End{% endif %}">
               {% if item.end_date %}
                 <span class="date-value {% if item.is_overdue %}overdue{% endif %}">
                   {{ item.end_date|date:"d/m/Y" }}
@@ -209,8 +224,8 @@ Task List - {{ project.project_name }}
         <div class="summary-info">
           <h6>{% if language == 'greek' %}Περίληψη{% else %}Summary{% endif %}</h6>
           <p>
-            {% if language == 'greek' %}Δημιουργήθηκε στις{% else %}Generated on{% endif %}: {{ current_date|date:"d/m/Y" }} | 
-            {% if language == 'greek' %}Σύνολο εργασιών{% else %}Total tasks{% endif %}: {{ total_tasks }} | 
+            {% if language == 'greek' %}Δημιουργήθηκε στις{% else %}Generated on{% endif %}: {{ current_date|date:"d/m/Y" }} |
+            {% if language == 'greek' %}Σύνολο εργασιών{% else %}Total tasks{% endif %}: {{ total_tasks }} |
             {% if language == 'greek' %}Ποσοστό ολοκλήρωσης{% else %}Completion rate{% endif %}: {{ completion_percentage|floatformat:1 }}%
           </p>
         </div>
@@ -219,9 +234,9 @@ Task List - {{ project.project_name }}
         <div class="legend">
           <h6>{% if language == 'greek' %}Υπόμνημα{% else %}Legend{% endif %}</h6>
           <p>
-            <i class="fas fa-folder-open project-icon"></i> {% if language == 'greek' %}Έργο{% else %}Project{% endif %} | 
-            <i class="fas fa-tasks task-icon"></i> {% if language == 'greek' %}Κύρια Εργασία{% else %}Main Task{% endif %} | 
-            <i class="fas fa-chevron-right subtask-icon"></i> {% if language == 'greek' %}Υπο-εργασία{% else %}Subtask{% endif %} | 
+            <i class="fas fa-folder-open project-icon"></i> {% if language == 'greek' %}Έργο{% else %}Project{% endif %} |
+            <i class="fas fa-tasks task-icon"></i> {% if language == 'greek' %}Κύρια Εργασία{% else %}Main Task{% endif %} |
+            <i class="fas fa-chevron-right subtask-icon"></i> {% if language == 'greek' %}Υπο-εργασία{% else %}Subtask{% endif %} |
             <i class="fas fa-exclamation-triangle overdue-icon"></i> {% if language == 'greek' %}Καθυστέρηση{% else %}Overdue{% endif %}
           </p>
         </div>
@@ -236,7 +251,118 @@ Task List - {{ project.project_name }}
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
 <style>
-/* Task List Header */
+/* ============================================================
+   ACTION BUTTONS — Back+2+
+   ============================================================ */
+.action-buttons-wrap {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-bottom: 20px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.action-primary, .action-secondary {
+    background: #17a2b8;
+    border: 1px solid #17a2b8;
+    color: #ffffff;
+    padding: 8px 16px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .action-primary:hover, .action-secondary:hover {
+        background: #138496;
+        border-color: #117a8b;
+        color: white;
+        text-decoration: none;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+}
+
+.action-back {
+    background: transparent;
+    border: 1px solid #17a2b8;
+    color: #17a2b8;
+    padding: 8px 14px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .action-back:hover {
+        background: #17a2b8;
+        color: white;
+        text-decoration: none;
+    }
+}
+
+.action-more-wrapper { position: relative; display: none; }
+
+.action-more-btn {
+    background: transparent;
+    border: 1px solid #17a2b8;
+    color: #17a2b8;
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.action-more-menu {
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    min-width: 200px;
+    z-index: 100;
+    display: none;
+    padding: 6px 0;
+}
+.action-more-menu.show { display: block; }
+
+.action-more-item {
+    width: 100%;
+    background: none;
+    border: none;
+    text-align: left;
+    padding: 10px 16px;
+    color: #495057;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.action-more-item:hover {
+    background: #f8f9fa;
+    color: #17a2b8;
+}
+.action-more-item i { width: 16px; text-align: center; }
+
+/* ============================================================
+   HEADER
+   ============================================================ */
 .task-list-header {
     background: white;
     border-radius: 8px;
@@ -252,17 +378,13 @@ Task List - {{ project.project_name }}
     font-weight: 600;
 }
 
-/* FIXED: Project description wrapping in header */
 .project-description {
     color: #6c757d;
     margin-bottom: 15px;
     font-style: italic;
-    white-space: normal; /* Allow wrapping */
-    word-wrap: break-word; /* Break long words */
-    overflow-wrap: break-word; /* Modern browsers */
+    word-wrap: break-word;
+    overflow-wrap: break-word;
     line-height: 1.4;
-    max-width: 100%;
-    overflow: visible;
 }
 
 .project-property, .assigned-to-info, .language-info {
@@ -279,26 +401,26 @@ Task List - {{ project.project_name }}
 
 .task-summary {
     display: flex;
-    gap: 20px;
+    gap: 12px;
     justify-content: flex-end;
+    flex-wrap: wrap;
 }
 
 .summary-stat {
     text-align: center;
     background: #f8f9fa;
-    padding: 15px 8px;
+    padding: 14px 8px;
     border-radius: 8px;
     border: 1px solid #e9ecef;
-    min-width: 120px;
-    max-width: 140px;
+    min-width: 100px;
     flex: 1;
 }
 
 .stat-number {
-    font-size: 24px;
+    font-size: 22px;
     font-weight: 700;
     color: #2c3e50;
-    margin-bottom: 5px;
+    margin-bottom: 4px;
 }
 
 .stat-label {
@@ -307,23 +429,23 @@ Task List - {{ project.project_name }}
     font-weight: 500;
     word-wrap: break-word;
     line-height: 1.2;
-    hyphens: auto;
 }
 
-/* Task List Table */
+/* ============================================================
+   TABLE — DESKTOP
+   ============================================================ */
 .task-list-container {
     background: white;
     border-radius: 8px;
-    overflow-x: auto; /* Allow horizontal scrolling */
+    overflow-x: auto;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
     border: 1px solid #dee2e6;
     margin-bottom: 20px;
 }
 
-/* FIXED: Table layout and column control */
 .task-list-table {
     margin-bottom: 0;
-    table-layout: fixed; /* Fixed layout for better column control */
+    table-layout: fixed;
     width: 100%;
 }
 
@@ -332,251 +454,117 @@ Task List - {{ project.project_name }}
     border-bottom: 2px solid #dee2e6;
     font-weight: 600;
     color: #2c3e50;
-    padding: 15px 12px;
+    padding: 14px 10px;
     vertical-align: middle;
-    font-size: 12px; /* Smaller font for Greek headers */
-    line-height: 1.2;
+    font-size: 13px;
 }
 
-/* FIXED: Allow wrapping in all table cells */
 .task-list-table th,
 .task-list-table td {
-    white-space: normal; /* Allow wrapping in all cells */
+    white-space: normal;
     word-wrap: break-word;
     overflow-wrap: break-word;
-    vertical-align: top; /* Align content to top */
-    padding: 12px 8px; /* Add more horizontal padding */
+    vertical-align: top;
+    padding: 12px 8px;
 }
 
-/* FIXED: Adjust column widths for better content display */
 .task-list-table th:nth-child(1),
-.task-list-table td:nth-child(1) {
-    width: 40%; /* Task name - wider for descriptions */
-    min-width: 250px;
-}
-
+.task-list-table td:nth-child(1) { width: 40%; min-width: 250px; }
 .task-list-table th:nth-child(2),
-.task-list-table td:nth-child(2) {
-    width: 12%; /* Type */
-    min-width: 80px;
-}
-
+.task-list-table td:nth-child(2) { width: 12%; min-width: 80px; }
 .task-list-table th:nth-child(3),
-.task-list-table td:nth-child(3) {
-    width: 12%; /* Priority */
-    min-width: 80px;
-}
-
+.task-list-table td:nth-child(3) { width: 12%; min-width: 80px; }
 .task-list-table th:nth-child(4),
-.task-list-table td:nth-child(4) {
-    width: 12%; /* Status */
-    min-width: 90px;
-}
-
+.task-list-table td:nth-child(4) { width: 12%; min-width: 90px; }
 .task-list-table th:nth-child(5),
-.task-list-table td:nth-child(5) {
-    width: 12%; /* Start Date */
-    min-width: 90px;
-}
-
+.task-list-table td:nth-child(5) { width: 12%; min-width: 90px; }
 .task-list-table th:nth-child(6),
-.task-list-table td:nth-child(6) {
-    width: 12%; /* End Date */
-    min-width: 90px;
+.task-list-table td:nth-child(6) { width: 12%; min-width: 90px; }
+
+.task-row { transition: background-color 0.2s ease; }
+
+@media (hover: hover) and (pointer: fine) {
+    .task-row:hover {
+        background-color: rgba(23, 162, 184, 0.05);
+    }
 }
 
-.task-row {
-    transition: background-color 0.2s ease;
-}
-
-.task-row:hover {
-    background-color: rgba(23, 162, 184, 0.05);
-}
-
-/* Task Row Types */
 .task-type-project {
     background-color: rgba(52, 152, 219, 0.03);
     border-left: 4px solid #3498db;
 }
-
 .task-type-task {
     background-color: rgba(46, 204, 113, 0.03);
     border-left: 4px solid #2ecc71;
 }
-
 .task-type-subtask {
     background-color: rgba(243, 156, 18, 0.03);
     border-left: 4px solid #f39c12;
 }
 
-/* FIXED: Task Name Cell with proper wrapping */
 .task-name-cell {
-    padding: 12px;
-    white-space: normal !important; /* Allow wrapping */
-    overflow: visible !important; /* Show all content */
-    text-overflow: initial !important; /* Remove ellipsis */
     word-wrap: break-word;
     overflow-wrap: break-word;
-    max-width: 300px; /* Set a reasonable max width */
 }
 
-.task-indent-0 {
-    padding-left: 0;
-}
+.task-indent-0 { padding-left: 0; }
+.task-indent-1 { padding-left: 25px; }
+.task-indent-2 { padding-left: 50px; }
 
-.task-indent-1 {
-    padding-left: 25px;
-}
-
-.task-indent-2 {
-    padding-left: 50px;
-}
-
-/* FIXED: Task name wrapping */
 .task-name {
-    display: inline;
     margin-left: 8px;
     color: #2c3e50;
     font-size: 14px;
-    white-space: normal; /* Allow wrapping */
     word-wrap: break-word;
-    overflow-wrap: break-word;
 }
 
-/* FIXED: Task description wrapping */
 .task-description {
     margin-top: 4px;
     margin-left: 28px;
     font-size: 12px;
     color: #6c757d;
     font-style: italic;
-    white-space: normal; /* Allow wrapping */
     word-wrap: break-word;
-    overflow-wrap: break-word;
     line-height: 1.3;
 }
 
 /* Icons */
-.project-icon {
-    color: #3498db;
-    font-size: 16px;
-}
-
-.task-icon {
-    color: #2ecc71;
-    font-size: 16px;
-}
-
-.subtask-icon {
-    color: #f39c12;
-    font-size: 12px;
-}
-
-.overdue-icon {
-    color: #e74c3c;
-    font-size: 12px;
-    margin-left: 5px;
-}
+.project-icon { color: #3498db; font-size: 16px; }
+.task-icon { color: #2ecc71; font-size: 16px; }
+.subtask-icon { color: #f39c12; font-size: 12px; }
+.overdue-icon { color: #e74c3c; font-size: 12px; margin-left: 5px; }
 
 /* Badges */
-.type-badge {
+.type-badge, .priority-badge, .status-badge {
     padding: 3px 8px;
     border-radius: 12px;
     font-size: 11px;
     font-weight: 500;
-    text-transform: uppercase;
+    display: inline-block;
 }
 
-.type-project {
-    background: rgba(52, 152, 219, 0.15);
-    color: #2980b9;
-}
+.type-badge { text-transform: uppercase; }
+.type-project { background: rgba(52, 152, 219, 0.15); color: #2980b9; }
+.type-task { background: rgba(46, 204, 113, 0.15); color: #27ae60; }
+.type-subtask { background: rgba(243, 156, 18, 0.15); color: #e67e22; }
 
-.type-task {
-    background: rgba(46, 204, 113, 0.15);
-    color: #27ae60;
-}
+.priority-critical { background: #dc3545; color: white; }
+.priority-high { background: #fd7e14; color: white; }
+.priority-medium { background: #ffc107; color: #212529; }
+.priority-low { background: #6c757d; color: white; }
 
-.type-subtask {
-    background: rgba(243, 156, 18, 0.15);
-    color: #e67e22;
-}
-
-.priority-badge {
-    padding: 3px 8px;
-    border-radius: 12px;
-    font-size: 11px;
-    font-weight: 500;
-}
-
-.priority-critical {
-    background: #dc3545;
-    color: white;
-}
-
-.priority-high {
-    background: #fd7e14;
-    color: white;
-}
-
-.priority-medium {
-    background: #ffc107;
-    color: #212529;
-}
-
-.priority-low {
-    background: #6c757d;
-    color: white;
-}
-
-.status-badge {
-    padding: 3px 8px;
-    border-radius: 12px;
-    font-size: 11px;
-    font-weight: 500;
-}
-
-.status-completed, .status-ολοκληρωμένη {
-    background: #d4edda;
-    color: #155724;
-}
-
-.status-in-progress, .status-σε-εξέλιξη {
-    background: #fff3cd;
-    color: #856404;
-}
-
-.status-on-hold, .status-σε-αναμονή {
-    background: #e2e3e5;
-    color: #383d41;
-}
-
-.status-pending, .status-εκκρεμής {
-    background: #f8d7da;
-    color: #721c24;
-}
-
-/* Date Cells */
-.date-cell {
-    padding: 12px;
-    vertical-align: middle;
-}
+.status-completed, .status-ολοκληρωμένη { background: #d4edda; color: #155724; }
+.status-in-progress, .status-σε-εξέλιξη { background: #fff3cd; color: #856404; }
+.status-on-hold, .status-σε-αναμονή { background: #e2e3e5; color: #383d41; }
+.status-pending, .status-εκκρεμής { background: #f8d7da; color: #721c24; }
 
 .date-value {
     font-family: 'Courier New', monospace;
     font-size: 13px;
     color: #495057;
 }
-
-.date-value.overdue {
-    color: #e74c3c;
-    font-weight: 600;
-}
-
-.no-date {
-    font-style: italic;
-    font-size: 12px;
-}
+.date-value.overdue { color: #e74c3c; font-weight: 600; }
+.no-date { font-style: italic; font-size: 12px; }
 
 /* Footer */
 .task-list-footer {
@@ -593,223 +581,265 @@ Task List - {{ project.project_name }}
     margin-bottom: 10px;
 }
 
-/* FIXED: Greek summary text size for single line display */
-.summary-info p {
+.summary-info p, .legend p {
     margin-bottom: 5px;
-    font-size: 13px; /* Reduced from 14px */
-    color: #495057;
-    line-height: 1.3;
-    word-wrap: break-word;
-    overflow-wrap: break-word;
-}
-
-.legend p {
-    margin-bottom: 5px;
-    font-size: 13px; /* Reduced from default */
-    color: #495057;
-    line-height: 1.3;
-    word-wrap: break-word;
-    overflow-wrap: break-word;
-}
-
-.legend-items {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.legend-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
     font-size: 13px;
     color: #495057;
+    line-height: 1.4;
+    word-wrap: break-word;
 }
 
-/* Button Styles */
-.btn-info {
-    background-color: #17a2b8;
-    color: white;
-    border: 1px solid #17a2b8;
-    transition: all 0.3s ease;
-    border-radius: 6px;
-    font-weight: 500;
-}
-
-.btn-info:hover {
-    background-color: #138496;
-    border-color: #117a8b;
-    color: white;
-    text-decoration: none;
-    transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-}
-
-.btn-success {
-    background-color: #17a2b8;
-    border-color: #17a2b8;
-    color: white;
-    transition: all 0.3s ease;
-    border-radius: 6px;
-    font-weight: 500;
-}
-
-.btn-success:hover {
-    background-color: #138496;
-    border-color: #117a8b;
-    color: white;
-    transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-}
-
-/* Responsive Design */
+/* ============================================================
+   MOBILE (≤768px)
+   ============================================================ */
 @media (max-width: 768px) {
-    .task-list-header {
-        padding: 15px;
+    .action-buttons-wrap {
+        gap: 8px;
+        align-items: stretch;
     }
-    
+    .action-primary {
+        flex: 1 1 auto;
+        min-width: 0;
+        justify-content: center;
+        padding: 12px 14px;
+        font-size: 15px;
+    }
+    .action-secondary { display: none; }
+    .action-more-wrapper { display: inline-block; flex-shrink: 0; }
+    .action-more-btn {
+        padding: 12px 14px;
+        min-width: 44px;
+        min-height: 44px;
+    }
+    .action-back {
+        flex-shrink: 0;
+        padding: 12px 14px;
+        min-width: 44px;
+        min-height: 44px;
+        justify-content: center;
+    }
+    .action-back-label { display: none; }
+
+    .task-list-header { padding: 16px; }
+
+    /* Stack header columns */
+    .task-list-header > .row {
+        flex-direction: column;
+    }
     .task-summary {
-        flex-direction: column;
-        gap: 10px;
-        margin-top: 20px;
+        flex-direction: row;
+        gap: 8px;
+        justify-content: stretch;
+        margin-top: 16px;
     }
-    
     .summary-stat {
-        min-width: 60px;
-        padding: 10px;
+        min-width: 0;
+        padding: 10px 6px;
     }
-    
-    .stat-number {
-        font-size: 18px;
-    }
-    
+    .stat-number { font-size: 18px; }
+    .stat-label { font-size: 10px; }
+
+    /* Table → cards */
     .task-list-container {
-        overflow-x: auto;
+        background: transparent;
+        box-shadow: none;
+        border: none;
+        overflow: visible;
+        padding: 0;
     }
-    
+    .task-list-table,
+    .task-list-table thead,
+    .task-list-table tbody,
+    .task-list-table tr,
+    .task-list-table td {
+        display: block;
+        width: 100%;
+    }
+    .task-list-table thead {
+        position: absolute;
+        top: -9999px;
+        left: -9999px;
+    }
     .task-list-table {
-        min-width: 800px; /* Increase minimum width for mobile */
+        background: transparent;
+        table-layout: auto;
+        min-width: 0;
     }
-    
-    .task-list-footer .row {
-        flex-direction: column;
-        gap: 20px;
+    .task-list-table tr {
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 10px;
+        margin-bottom: 14px;
+        padding: 14px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
     }
-    
-    .summary-info p,
-    .legend p {
-        font-size: 12px; /* Even smaller on mobile */
+    .task-list-table td {
+        text-align: left !important;
+        border: none;
+        padding: 6px 0;
+        font-size: 14px;
+        position: relative;
+        min-width: 0 !important;
+        width: 100% !important;
     }
-    
-    .task-name-cell {
-        max-width: 200px; /* Smaller max width on mobile */
+    .task-list-table td[data-label]::before {
+        content: attr(data-label);
+        display: inline-block;
+        font-weight: 600;
+        color: #6c757d;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+        margin-bottom: 2px;
+        width: 100%;
     }
+    /* Task name cell becomes the card title — no label prefix */
+    .task-list-table td.task-name-cell {
+        padding-bottom: 10px;
+        margin-bottom: 6px;
+        border-bottom: 1px solid #f1f3f5;
+    }
+    .task-list-table td.task-name-cell::before {
+        display: none;
+    }
+    .task-name { font-size: 15px; }
+
+    /* Group Type / Priority / Status on a single row (3 columns) */
+    .task-list-table td.cell-type,
+    .task-list-table td.cell-priority,
+    .task-list-table td.cell-status {
+        display: inline-block !important;
+        width: calc(33.33% - 4px) !important;
+        vertical-align: top;
+        padding: 6px 0 6px 0;
+    }
+    .task-list-table td.cell-priority { padding-left: 4px; padding-right: 4px; }
+    .task-list-table td.cell-status { padding-left: 4px; }
+
+    /* Group Start / End on a single row (2 columns) */
+    .task-list-table td.cell-start-date,
+    .task-list-table td.cell-end-date {
+        display: inline-block !important;
+        width: calc(50% - 4px) !important;
+        vertical-align: top;
+        padding: 6px 0 6px 0;
+    }
+    .task-list-table td.cell-end-date { padding-left: 4px; }
+
+    .task-indent-0 { padding-left: 0; }
+    .task-indent-1 { padding-left: 12px; }
+    .task-indent-2 { padding-left: 24px; }
+
+    /* Empty state row */
+    .task-list-table tr td[colspan] {
+        padding: 24px 16px !important;
+        text-align: center !important;
+    }
+    .task-list-table tr td[colspan]::before { display: none; }
+
+    /* Footer rows stack */
+    .task-list-footer .row { flex-direction: column; gap: 16px; }
+    .summary-info p, .legend p { font-size: 12px; }
 }
 
-/* Print Styles */
+/* ============================================================
+   PRINT
+   ============================================================ */
 @media print {
-    .btn, .action-buttons {
-        display: none !important;
-    }
-    
+    .action-buttons-wrap { display: none !important; }
     .task-list-container, .task-list-header, .task-list-footer {
         box-shadow: none;
         border: 1px solid #000;
         break-inside: avoid;
     }
-    
-    .task-row {
-        break-inside: avoid;
-    }
-    
-    body {
-        font-size: 12px;
-    }
-    
-    .task-list-table th, .task-list-table td {
-        padding: 8px 6px;
-    }
+    .task-row { break-inside: avoid; }
+    body { font-size: 12px; }
+    .task-list-table th, .task-list-table td { padding: 8px 6px; }
 }
 </style>
 
 <script>
-console.log('=== TASK LIST LOADING ===');
+// More menu (mobile)
+function initializeMoreMenu() {
+    const btn = document.getElementById('actionMoreBtn');
+    const menu = document.getElementById('actionMoreMenu');
+    if (!btn || !menu) return;
 
-// Print functionality
+    btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        const isOpen = menu.classList.toggle('show');
+        btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    });
+    document.addEventListener('click', function(e) {
+        if (!menu.contains(e.target) && e.target !== btn && !btn.contains(e.target)) {
+            menu.classList.remove('show');
+            btn.setAttribute('aria-expanded', 'false');
+        }
+    });
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            menu.classList.remove('show');
+            btn.setAttribute('aria-expanded', 'false');
+        }
+    });
+}
+
+// Print
 document.getElementById('printBtn').addEventListener('click', function() {
-    console.log('Print clicked');
     window.print();
 });
 
-// Export to Excel functionality
-document.getElementById('exportBtn').addEventListener('click', function() {
-    console.log('Export Excel clicked');
-    exportToExcel();
-});
-
+// Export to Excel (handles both desktop button and mobile More-menu item)
 function exportToExcel() {
     try {
-        // Get table data
         const table = document.querySelector('.task-list-table');
         const rows = table.querySelectorAll('tr');
-        
         const data = [];
-        
-        // Process each row
-        rows.forEach((row, index) => {
+
+        rows.forEach((row) => {
             const cells = row.querySelectorAll('th, td');
             const rowData = [];
-            
             cells.forEach(cell => {
-                // Get text content and clean it up
                 let text = cell.textContent.trim();
-                // Remove extra whitespace and line breaks
                 text = text.replace(/\s+/g, ' ');
                 rowData.push(text);
             });
-            
             if (rowData.some(cell => cell.length > 0)) {
                 data.push(rowData);
             }
         });
-        
-        // Create workbook
+
         const wb = XLSX.utils.book_new();
         const ws = XLSX.utils.aoa_to_sheet(data);
-        
-        // Set column widths
         ws['!cols'] = [
-            { width: 40 }, // Task Name
-            { width: 12 }, // Type
-            { width: 12 }, // Priority
-            { width: 12 }, // Status
-            { width: 12 }, // Start Date
-            { width: 12 }  // End Date
+            { width: 40 }, { width: 12 }, { width: 12 },
+            { width: 12 }, { width: 12 }, { width: 12 }
         ];
-        
-        // Add worksheet to workbook
         XLSX.utils.book_append_sheet(wb, ws, 'Task List');
-        
-        // Generate filename
+
         const projectName = '{{ project.project_name|escapejs }}';
         const assignedTo = '{{ assigned_to|default:"All"|escapejs }}';
         const language = '{{ language|default:"english"|escapejs }}';
         const date = new Date().toISOString().split('T')[0];
-        
         const filename = `TaskList_${projectName}_${assignedTo}_${language}_${date}.xlsx`;
-        
-        // Save file
         XLSX.writeFile(wb, filename);
-        
-        console.log('Excel file exported successfully');
-        
     } catch (error) {
         console.error('Error exporting to Excel:', error);
         alert('{% if language == "greek" %}Σφάλμα κατά την εξαγωγή του αρχείου Excel{% else %}Error exporting Excel file{% endif %}');
     }
 }
 
-console.log('🚀 === TASK LIST SCRIPT COMPLETE ===');
+document.getElementById('exportBtn').addEventListener('click', exportToExcel);
+const exportBtnMobile = document.getElementById('exportBtnMobile');
+if (exportBtnMobile) {
+    exportBtnMobile.addEventListener('click', function() {
+        // Close the menu before exporting
+        document.getElementById('actionMoreMenu').classList.remove('show');
+        exportToExcel();
+    });
+}
+
+initializeMoreMenu();
 </script>
 
 {% endblock %}
