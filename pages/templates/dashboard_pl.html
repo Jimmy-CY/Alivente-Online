@@ -190,18 +190,19 @@ body .rotate-prompt .rotate-prompt-inner,
 
 body .rotate-prompt .rotate-prompt-icon,
 .main-content .rotate-prompt-icon {
-    font-size: 4rem !important;
-    color: #17a2b8 !important;
     margin-bottom: 20px !important;
+    text-align: center !important;
+    line-height: 1 !important;
     display: inline-block !important;
-    animation: rotateHint 2.5s ease-in-out infinite !important;
-    transform-origin: center !important;
+    animation: plRotateHint 2.5s ease-in-out infinite !important;
+    transform-origin: center center !important;
 }
 
-@keyframes rotateHint {
-    0%, 100% { transform: rotate(0deg); }
-    25%      { transform: rotate(-90deg); }
-    75%      { transform: rotate(-90deg); }
+@keyframes plRotateHint {
+    0%   { transform: rotate(0deg); }
+    25%  { transform: rotate(-90deg); }
+    75%  { transform: rotate(-90deg); }
+    100% { transform: rotate(0deg); }
 }
 
 body .rotate-prompt .rotate-prompt-title,
@@ -329,9 +330,12 @@ body .rotate-prompt .rotate-prompt-back:hover,
 
 /* Mobile landscape — fluid sizing that always fits 100% of the
    available viewport width, regardless of phone size.
-   Uses percentage column widths and viewport-clamped font-size. */
-@media (max-width: 900px) and (orientation: landscape),
-       (max-width: 900px) and (min-aspect-ratio: 13/10) {
+   TRIGGER: any landscape orientation with height ≤ 500px.
+   This catches all phones (including S26 at 932×430, iPhone Pro Max
+   at ~926×428, etc.) without false-firing on tablets which have
+   600+ pixel heights in landscape. */
+@media (orientation: landscape) and (max-height: 500px),
+       (max-aspect-ratio: 1/1) and (max-height: 500px) {
     .container-fluid.mt-4 {
         padding-left: 4px;
         padding-right: 4px;
@@ -428,9 +432,8 @@ body .rotate-prompt .rotate-prompt-back:hover,
     }
 }
 
-/* Very narrow landscape (<640px) — fluid sizing continues, no horizontal scroll */
-@media (max-width: 640px) and (orientation: landscape),
-       (max-width: 640px) and (min-aspect-ratio: 13/10) {
+/* Very narrow landscape (older small phones) — fluid sizing continues, no horizontal scroll */
+@media (orientation: landscape) and (max-height: 380px) {
     .profit-loss-table {
         font-size: clamp(0.42rem, 1.5vw, 0.65rem) !important;
         min-width: 0 !important;
@@ -565,8 +568,9 @@ body .rotate-prompt .rotate-prompt-back:hover,
      ============================================================ -->
 <div class="rotate-prompt" aria-live="polite">
     <div class="rotate-prompt-inner" style="text-align: center; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border: 1px solid #dee2e6; border-radius: 12px; padding: 40px 24px; max-width: 360px; width: 100%; margin: 0 auto; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); box-sizing: border-box;">
-        <div class="rotate-prompt-icon" aria-hidden="true" style="font-size: 4rem; color: #17a2b8; margin-bottom: 20px; display: inline-block; animation: rotateHint 2.5s ease-in-out infinite; transform-origin: center;">
-            <i class="fas fa-mobile-alt"></i>
+        <div class="rotate-prompt-icon" aria-hidden="true"
+             style="margin-bottom: 20px !important; line-height: 1 !important; display: inline-block !important; animation: plRotateHint 2.5s ease-in-out infinite !important; transform-origin: center center !important; will-change: transform;">
+            <i class="fas fa-mobile-alt" style="font-size: 4rem !important; color: #17a2b8 !important;"></i>
         </div>
         <div class="rotate-prompt-title" style="color: #2c3e50; font-size: 1.4rem; margin: 0 0 16px 0; font-weight: 600; line-height: 1.3;">
             Please Rotate Your Phone
