@@ -644,14 +644,24 @@ Home
 
     /* Mobile: full-screen modal + table-as-cards (matches notifications.html) */
     @media (max-width: 768px) {
+        .modal-overlay {
+            /* Use dvh (dynamic viewport height) so the overlay matches
+               the actual visible viewport when the address bar is shown. */
+            height: 100dvh;
+        }
         .modal-overlay .modal-content {
             max-width: 100vw;
-            max-height: 100vh;
+            max-height: 100dvh;
             width: 100vw;
-            height: 100vh;
+            height: 100dvh;
             border-radius: 0;
             display: flex;
             flex-direction: column;
+            /* Respect iOS safe-area inset (notch + status bar) so the
+               modal header isn't hidden under the system UI. */
+            padding-top: env(safe-area-inset-top, 0);
+            padding-bottom: env(safe-area-inset-bottom, 0);
+            box-sizing: border-box;
         }
         .modal-overlay .modal-header {
             padding: 14px 16px;
