@@ -5,123 +5,131 @@
 {% block title %}ALIVENTE ONLINE - FORECASTED CASH OUTFLOWS{% endblock %}
 
 {% block content %}
-<div class="container-fluid">
-    <h2><center>ALIVENTE ONLINE - FORECASTED CASH OUTFLOWS</center></h2>
-    <h5><center>UPCOMING EXPENSE PLANNING DASHBOARD</center></h5>
-    <br/>
 
-    {% for msg in messages %}
-        <div class="alert alert-secondary alert-dismissible fade show auto-dismiss" role="alert">
-            <strong></strong> <center>{{ msg }}</center>
-            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                <span aria-hidden="true">&times;</span>
-            </button>
-        </div>
-        <script>
-            setTimeout(function() {
-                document.querySelectorAll('.auto-dismiss').forEach(alert => {
-                    alert.classList.remove('show');
-                    alert.classList.add('fade');
-                    setTimeout(() => alert.remove(), 500);
-                });
-            }, 2000);
-        </script>
-    {% endfor %}
+<h2><center>ALIVENTE ONLINE - FORECASTED CASH OUTFLOWS</center></h2>
+<h5><center>UPCOMING EXPENSE PLANNING DASHBOARD</center></h5>
+<br/>
 
-    <!-- Action Buttons -->
-    <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 20px;">
-        <button type="button" class="btn btn-info" data-toggle="modal" data-target="#cashflow_forecastHelpModal">
-          <i class="fas fa-question-circle"></i> Help
+{% for msg in messages %}
+    <div class="alert alert-secondary alert-dismissible fade show auto-dismiss" role="alert">
+        <strong></strong> <center>{{ msg }}</center>
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
         </button>
-        <a href="{% url 'finance' %}" class="btn btn-info">Back</a>
     </div>
+    <script>
+        setTimeout(function() {
+            document.querySelectorAll('.auto-dismiss').forEach(alert => {
+                alert.classList.remove('show');
+                alert.classList.add('fade');
+                setTimeout(() => alert.remove(), 500);
+            });
+        }, 2000);
+    </script>
+{% endfor %}
 
-    <!-- Loading Indicator -->
-    <div id="loadingIndicator" class="text-center py-5">
-        <div class="spinner-border text-info" role="status">
-            <span class="sr-only">Loading...</span>
+<!-- Rotate-to-landscape prompt (mobile portrait only) -->
+<div class="rotate-prompt" style="display:none;">
+    <div class="rotate-prompt__inner">
+        <div class="rotate-icon-wrapper">
+            <i class="fas fa-mobile-alt rotate-icon"></i>
         </div>
-        <p class="mt-3">Loading cash flow forecast...</p>
+        <h3>Rotate Your Phone</h3>
+        <p>The 12-month cash flow chart works best in landscape mode. Please rotate your phone to view it.</p>
+        <a href="{% url 'finance' %}" class="rotate-prompt__back">
+            <i class="fas fa-arrow-left"></i> Back to Finance
+        </a>
     </div>
+</div>
 
-    <!-- Main Dashboard Container -->
-    <div id="dashboardContainer" style="display: none;">
-        <!-- Summary Cards -->
-        <div class="row mb-4" id="summaryCardsContainer">
-            <div class="col-md-4">
-                <div class="summary-card current-month">
-                    <div class="card-header">
-                        <h6><i class="fas fa-calendar-day"></i> Current Month</h6>
-                    </div>
-                    <div class="card-body">
-                        <h3 id="currentMonthTotal">€0.00</h3>
-                        <p class="card-subtitle">Immediate expenses</p>
-                    </div>
-                </div>
+<!-- Action Buttons: Back+1 (Help primary, Back) -->
+<div class="action-buttons-wrap">
+    <button type="button" class="action-primary" data-toggle="modal" data-target="#cashflow_forecastHelpModal">
+        <i class="fas fa-question-circle"></i> Help
+    </button>
+    <a href="{% url 'finance' %}" class="action-back" title="Back to Finance">
+        <i class="fas fa-arrow-left"></i>
+        <span class="action-back-label">Back</span>
+    </a>
+</div>
+
+<!-- Loading Indicator -->
+<div id="loadingIndicator" class="text-center py-5">
+    <div class="spinner-border text-info" role="status">
+        <span class="sr-only">Loading...</span>
+    </div>
+    <p class="mt-3">Loading cash flow forecast...</p>
+</div>
+
+<!-- Main Dashboard Container -->
+<div id="dashboardContainer" style="display: none;">
+    <!-- Summary Cards -->
+    <div class="summary-grid" id="summaryCardsContainer">
+        <div class="summary-card current-month">
+            <div class="card-header">
+                <h6><i class="fas fa-calendar-day"></i> Current Month</h6>
             </div>
-            <div class="col-md-4">
-                <div class="summary-card short-term">
-                    <div class="card-header">
-                        <h6><i class="fas fa-calendar-week"></i> Next 3 Months</h6>
-                    </div>
-                    <div class="card-body">
-                        <h3 id="shortTermTotal">€0.00</h3>
-                        <p class="card-subtitle">31-90 days ahead</p>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="summary-card long-term">
-                    <div class="card-header">
-                        <h6><i class="fas fa-calendar-alt"></i> Remaining Months</h6>
-                    </div>
-                    <div class="card-body">
-                        <h3 id="longTermTotal">€0.00</h3>
-                        <p class="card-subtitle">Over 90 days</p>
-                    </div>
-                </div>
+            <div class="card-body">
+                <h3 id="currentMonthTotal">€0.00</h3>
+                <p class="card-subtitle">Immediate expenses</p>
             </div>
         </div>
-
-        <!-- Timeline Visualization Panel -->
-        <div class="chart-panel">
-            <div class="chart-header">
-                <h5 class="chart-title">
-                    <i class="fas fa-chart-line"></i> Forecasted Cash Outflows (12 Months)
-                </h5>
-                <p class="chart-subtitle">Click bars for detailed expense breakdown by month</p>
+        <div class="summary-card short-term">
+            <div class="card-header">
+                <h6><i class="fas fa-calendar-week"></i> Next 3 Months</h6>
             </div>
-            
-            <!-- Legend -->
-            <div class="chart-legend">
-                <div class="legend-item">
-                    <span class="legend-color red"></span>
-                    <span class="legend-text">Current Month</span>
-                </div>
-                <div class="legend-item">
-                    <span class="legend-color orange"></span>
-                    <span class="legend-text">31-90 Days</span>
-                </div>
-                <div class="legend-item">
-                    <span class="legend-color green"></span>
-                    <span class="legend-text">Over 90 Days</span>
-                </div>
+            <div class="card-body">
+                <h3 id="shortTermTotal">€0.00</h3>
+                <p class="card-subtitle">31-90 days ahead</p>
             </div>
-            
-            <div class="chart-container">
-                <div id="timeline" class="timeline-chart">
-                    <!-- Timeline will be rendered here -->
-                </div>
+        </div>
+        <div class="summary-card long-term">
+            <div class="card-header">
+                <h6><i class="fas fa-calendar-alt"></i> Remaining Months</h6>
+            </div>
+            <div class="card-body">
+                <h3 id="longTermTotal">€0.00</h3>
+                <p class="card-subtitle">Over 90 days</p>
             </div>
         </div>
     </div>
 
-    <!-- Error Container -->
-    <div id="errorContainer" class="alert alert-danger" style="display: none;">
-        <h4>Error Loading Cash Flow Forecast</h4>
-        <p id="errorMessage"></p>
-        <button class="btn btn-info" onclick="loadForecast()">Retry</button>
+    <!-- Timeline Visualization Panel -->
+    <div class="chart-panel">
+        <div class="chart-header">
+            <h5 class="chart-title">
+                <i class="fas fa-chart-line"></i> Forecasted Cash Outflows (12 Months)
+            </h5>
+            <p class="chart-subtitle">Click bars for detailed expense breakdown by month</p>
+        </div>
+
+        <!-- Legend -->
+        <div class="chart-legend">
+            <div class="legend-item">
+                <span class="legend-color red"></span>
+                <span class="legend-text">Current Month</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-color orange"></span>
+                <span class="legend-text">31-90 Days</span>
+            </div>
+            <div class="legend-item">
+                <span class="legend-color green"></span>
+                <span class="legend-text">Over 90 Days</span>
+            </div>
+        </div>
+
+        <div class="chart-container">
+            <div id="timeline" class="timeline-chart"></div>
+        </div>
     </div>
+</div>
+
+<!-- Error Container -->
+<div id="errorContainer" class="alert alert-danger" style="display: none;">
+    <h4>Error Loading Cash Flow Forecast</h4>
+    <p id="errorMessage"></p>
+    <button class="btn btn-info" onclick="loadForecast()">Retry</button>
 </div>
 
 <!-- Modal for Monthly Expense Breakdown -->
@@ -136,9 +144,7 @@
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <div class="modal-body" id="monthlyExpenseModalBody" style="max-height: 70vh; overflow-y: auto;">
-                <!-- Content will be loaded here -->
-            </div>
+            <div class="modal-body" id="monthlyExpenseModalBody"></div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
             </div>
@@ -153,7 +159,71 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
 <style>
-/* Summary Cards Styles */
+/* ============================================================
+   ACTION BUTTONS — Back+1
+   ============================================================ */
+.action-buttons-wrap {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-bottom: 20px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.action-primary {
+    background: #17a2b8;
+    border: 1px solid #17a2b8;
+    color: #ffffff;
+    padding: 8px 16px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .action-primary:hover {
+        background: #138496;
+        border-color: #117a8b;
+        color: white;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+}
+
+.action-back {
+    background: transparent;
+    border: 1px solid #17a2b8;
+    color: #17a2b8;
+    padding: 8px 14px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .action-back:hover { background: #17a2b8; color: white; text-decoration: none; }
+}
+
+/* ============================================================
+   SUMMARY CARDS
+   ============================================================ */
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
 .summary-card {
     background: white;
     border-radius: 12px;
@@ -164,9 +234,11 @@
     height: 130px;
 }
 
-.summary-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+@media (hover: hover) and (pointer: fine) {
+    .summary-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+    }
 }
 
 .summary-card .card-header {
@@ -206,15 +278,16 @@
 .summary-card.current-month .card-header {
     background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
 }
-
 .summary-card.short-term .card-header {
     background: linear-gradient(135deg, #fd7e14 0%, #e8630a 100%);
 }
-
 .summary-card.long-term .card-header {
     background: linear-gradient(135deg, #28a745 0%, #218838 100%);
 }
 
+/* ============================================================
+   CHART PANEL
+   ============================================================ */
 .chart-panel {
     background: white;
     border: 1px solid #dee2e6;
@@ -255,11 +328,7 @@
     border: 1px solid #dee2e6;
 }
 
-.legend-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
+.legend-item { display: flex; align-items: center; gap: 8px; }
 
 .legend-color {
     width: 20px;
@@ -268,17 +337,9 @@
     border: 1px solid rgba(0,0,0,0.1);
 }
 
-.legend-color.red {
-    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
-}
-
-.legend-color.orange {
-    background: linear-gradient(135deg, #fd7e14 0%, #e8630a 100%);
-}
-
-.legend-color.green {
-    background: linear-gradient(135deg, #28a745 0%, #218838 100%);
-}
+.legend-color.red { background: linear-gradient(135deg, #dc3545 0%, #c82333 100%); }
+.legend-color.orange { background: linear-gradient(135deg, #fd7e14 0%, #e8630a 100%); }
+.legend-color.green { background: linear-gradient(135deg, #28a745 0%, #218838 100%); }
 
 .legend-text {
     font-size: 14px;
@@ -293,7 +354,6 @@
     padding-bottom: 60px;
 }
 
-/* CORRECTED CSS - Absolute positioning container */
 .timeline-container {
     position: relative;
     height: 100%;
@@ -301,7 +361,6 @@
     width: 100%;
 }
 
-/* CORRECTED CSS - Absolute positioned months */
 .timeline-month {
     position: absolute;
     text-align: center;
@@ -315,60 +374,76 @@
     cursor: pointer;
 }
 
-.timeline-bar.red {
-    background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+.timeline-bar.red { background: linear-gradient(135deg, #dc3545 0%, #c82333 100%); }
+.timeline-bar.orange { background: linear-gradient(135deg, #fd7e14 0%, #e8630a 100%); }
+.timeline-bar.green { background: linear-gradient(135deg, #28a745 0%, #218838 100%); }
+
+@media (hover: hover) and (pointer: fine) {
+    .timeline-bar:hover {
+        transform: scaleY(1.05);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    }
 }
 
-.timeline-bar.orange {
-    background: linear-gradient(135deg, #fd7e14 0%, #e8630a 100%);
-}
-
-.timeline-bar.green {
-    background: linear-gradient(135deg, #28a745 0%, #218838 100%);
-}
-
-.timeline-bar:hover {
-    transform: scaleY(1.05);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-}
-
-.timeline-label {
-    position: absolute;
-    bottom: -55px;
-    width: 100%;
+/* ============================================================
+   ROTATE-TO-LANDSCAPE PROMPT
+   ============================================================ */
+.rotate-prompt {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+    z-index: 9999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    color: white;
     text-align: center;
-    font-size: 10px;
-    color: #6c757d;
-    font-weight: 500;
-    line-height: 1.2;
 }
 
-.grid-line {
-    border-top: 2px solid #000 !important;
-    opacity: 1 !important;
+.rotate-prompt__inner { max-width: 380px; width: 100%; }
+.rotate-icon-wrapper { display: inline-block; margin-bottom: 24px; }
+.rotate-icon {
+    font-size: 64px;
+    color: white;
+    display: block;
 }
 
-.grid-label {
-    background: white;
-    padding: 1px 4px;
-    border-radius: 2px;
-    font-size: 11px;
-    color: #6c757d;
-    font-weight: 500;
-    border: 1px solid #e9ecef;
-    white-space: nowrap;
+.rotate-prompt h3 {
+    color: white;
+    margin: 0 0 12px 0;
+    font-weight: 700;
+    font-size: 22px;
 }
 
-/* Modal Styles */
+.rotate-prompt p {
+    color: rgba(255,255,255,0.92);
+    margin-bottom: 24px;
+    font-size: 15px;
+    line-height: 1.5;
+}
+
+.rotate-prompt__back {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255,255,255,0.2);
+    border: 2px solid white;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.rotate-prompt__back:hover { background: white; color: #17a2b8; text-decoration: none; }
+
+/* ============================================================
+   MODAL STYLING
+   ============================================================ */
 .modal-content {
     border-radius: 8px;
     border: 1px solid #dee2e6;
-    transition: all 0.3s ease;
-}
-
-.modal-dialog {
-    transition: all 0.3s ease;
-    min-height: 500px;
 }
 
 .modal-header {
@@ -377,22 +452,19 @@
     border-radius: 8px 8px 0 0;
 }
 
-.modal-title {
-    color: #2c3e50;
-    font-weight: 600;
-}
+.modal-title { color: #2c3e50; font-weight: 600; }
 
 .modal-body {
     min-height: 400px;
-    transition: all 0.3s ease;
+    max-height: 70vh;
+    overflow-y: auto;
 }
 
 .modal-property-breakdown {
     border-left: 3px solid #17a2b8;
-    padding-left: 15px;
+    padding: 15px;
     margin: 12px 0;
     background: #f8f9fa;
-    padding: 15px;
     border-radius: 6px;
 }
 
@@ -413,24 +485,22 @@
     transition: all 0.2s ease;
 }
 
-.table-hover tbody tr:hover {
-    background-color: #e3f2fd !important;
-    transform: translateX(3px);
-}
-
-.table-hover tbody tr:hover td {
-    border-color: #17a2b8;
+@media (hover: hover) and (pointer: fine) {
+    .table-hover tbody tr:hover {
+        background-color: #e3f2fd !important;
+    }
 }
 
 .clickable-row {
     cursor: pointer;
-    transition: all 0.2s ease;
     border-left: 3px solid transparent;
 }
 
-.clickable-row:hover {
-    background-color: #e3f2fd !important;
-    border-left-color: #17a2b8;
+@media (hover: hover) and (pointer: fine) {
+    .clickable-row:hover {
+        background-color: #e3f2fd !important;
+        border-left-color: #17a2b8;
+    }
 }
 
 .btn-info {
@@ -442,13 +512,15 @@
     font-weight: 500;
 }
 
-.btn-info:hover {
-    background-color: #138496;
-    border-color: #117a8b;
-    color: white;
-    text-decoration: none;
-    transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+@media (hover: hover) and (pointer: fine) {
+    .btn-info:hover {
+        background-color: #138496;
+        border-color: #117a8b;
+        color: white;
+        text-decoration: none;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
 }
 
 .btn-secondary {
@@ -457,11 +529,12 @@
     color: white;
 }
 
-.btn-secondary:hover {
-    background-color: #5a6268;
-    border-color: #545b62;
-    color: white;
-    transform: translateY(-1px);
+@media (hover: hover) and (pointer: fine) {
+    .btn-secondary:hover {
+        background-color: #5a6268;
+        border-color: #545b62;
+        color: white;
+    }
 }
 
 .spinner-border.text-info {
@@ -483,60 +556,206 @@
     color: #6c757d;
 }
 
+/* ============================================================
+   MOBILE (≤768px)
+   ============================================================ */
 @media (max-width: 768px) {
+    .action-buttons-wrap {
+        gap: 8px;
+        align-items: stretch;
+    }
+    .action-primary {
+        flex: 1 1 auto;
+        min-width: 0;
+        justify-content: center;
+        padding: 12px 14px;
+        font-size: 15px;
+    }
+    .action-back {
+        flex-shrink: 0;
+        padding: 12px 14px;
+        min-width: 44px;
+        min-height: 44px;
+        justify-content: center;
+    }
+    .action-back-label { display: none; }
+
+    /* Summary cards stack on mobile */
+    .summary-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+    .summary-card { height: auto; }
+    .summary-card .card-body h3 { font-size: 22px; }
+
+    .chart-panel { padding: 14px; }
+    .chart-header { padding-bottom: 10px; margin-bottom: 12px; }
+    .chart-title { font-size: 15px; }
+    .chart-subtitle { font-size: 12px; }
     .chart-legend {
         flex-direction: column;
-        gap: 15px;
-        align-items: center;
+        gap: 8px;
+        align-items: flex-start;
         margin-left: 0;
+        padding: 10px 12px;
     }
-    
-    .timeline-label {
-        font-size: 9px;
-        bottom: -50px;
+
+    /* Modal full-screen + safe-area */
+    .modal { padding: 0 !important; }
+    .modal-dialog {
+        margin: 0 !important;
+        max-width: 100vw !important;
+        width: 100vw !important;
+        height: 100dvh;
+        height: 100vh;
     }
-    
-    .timeline-month {
-        min-width: 25px;
-        margin: 0 1px;
+    .modal-content {
+        max-width: 100vw;
+        max-height: 100dvh;
+        width: 100vw;
+        height: 100dvh;
+        height: 100vh;
+        border-radius: 0;
+        display: flex;
+        flex-direction: column;
+        padding-top: env(safe-area-inset-top, 0);
+        padding-bottom: env(safe-area-inset-bottom, 0);
+        box-sizing: border-box;
     }
-    
-    .timeline-container {
-        padding: 20px 0 20px 20px;
+    .modal-header {
+        padding: 14px 16px !important;
+        flex-shrink: 0;
     }
-    
-    .summary-card {
-        margin-bottom: 15px;
-        height: auto;
+    .modal-title { font-size: 16px; line-height: 1.3; }
+    .modal-body {
+        flex: 1 1 auto;
+        overflow-y: auto;
+        max-height: none !important;
+        min-height: 0 !important;
     }
-    
-    .summary-card .card-body h3 {
-        font-size: 20px;
+    .modal-footer {
+        flex-shrink: 0;
+        flex-direction: column-reverse;
+        gap: 8px;
+        padding: 12px 16px;
     }
+    .modal-footer .btn {
+        width: 100%;
+        padding: 12px;
+        margin: 0 !important;
+        font-size: 15px;
+        justify-content: center;
+        display: flex;
+    }
+}
+
+/* Phone portrait: hide chart (rotate prompt shown by JS) */
+@media (orientation: portrait) and (max-width: 768px) {
+    #dashboardContainer { display: none !important; }
+    #loadingIndicator { display: none !important; }
+}
+
+/* Phone landscape: tighten chart UI */
+@media (orientation: landscape) and (max-height: 500px) {
+    h2, h5 { font-size: 14px !important; margin-bottom: 4px; }
+    .summary-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+        margin-bottom: 12px;
+    }
+    .summary-card { height: auto; }
+    .summary-card .card-header { padding: 6px 12px; }
+    .summary-card .card-header h6 { font-size: 11px; }
+    .summary-card .card-body { padding: 8px 12px; }
+    .summary-card .card-body h3 { font-size: 16px; margin-bottom: 2px; }
+    .summary-card .card-subtitle { font-size: 10px; }
+
+    .chart-panel { padding: 10px; margin-bottom: 12px; }
+    .chart-header { padding-bottom: 8px; margin-bottom: 10px; }
+    .chart-title { font-size: 13px; }
+    .chart-subtitle { font-size: 11px; }
+    .chart-legend {
+        flex-direction: row;
+        gap: 14px;
+        padding: 6px 10px;
+        margin-left: 0;
+        margin-bottom: 8px;
+    }
+    .legend-text { font-size: 11px; }
+    .timeline-chart { height: 280px; padding-bottom: 50px; }
 }
 </style>
 
 <script>
 let allExpenses = [];
 
+/* ============================================================
+   [Cashflow] Rotate-to-landscape controller
+   ============================================================ */
+(function() {
+    console.log('[Cashflow] Mobile controller loaded');
+
+    function isPhonePortrait() {
+        return window.matchMedia('(orientation: portrait) and (max-width: 768px)').matches;
+    }
+
+    function applyRotateDisplay() {
+        const prompt = document.querySelector('.rotate-prompt');
+        const dashboard = document.getElementById('dashboardContainer');
+        const loading = document.getElementById('loadingIndicator');
+        const actions = document.querySelector('.action-buttons-wrap');
+
+        if (isPhonePortrait()) {
+            if (prompt) prompt.style.setProperty('display', 'flex', 'important');
+            if (dashboard) dashboard.style.setProperty('display', 'none', 'important');
+            if (loading) loading.style.setProperty('display', 'none', 'important');
+            if (actions) actions.style.setProperty('display', 'none', 'important');
+        } else {
+            if (prompt) prompt.style.setProperty('display', 'none', 'important');
+            if (actions) actions.style.removeProperty('display');
+            // Don't force dashboard/loading visibility — loadForecast() controls them
+        }
+    }
+
+    function startIconAnimation() {
+        const wrapper = document.querySelector('.rotate-icon-wrapper');
+        if (!wrapper || !wrapper.animate) return;
+        wrapper.animate([
+            { transform: 'rotate(0deg)' },
+            { transform: 'rotate(0deg)' },
+            { transform: 'rotate(90deg)' },
+            { transform: 'rotate(90deg)' },
+            { transform: 'rotate(0deg)' }
+        ], { duration: 2500, iterations: Infinity, easing: 'ease-in-out' });
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        applyRotateDisplay();
+        startIconAnimation();
+        window.addEventListener('resize', applyRotateDisplay);
+        window.addEventListener('orientationchange', function() {
+            setTimeout(function() {
+                applyRotateDisplay();
+                // Re-render chart after orientation change
+                if (allExpenses.length > 0) renderForecast();
+            }, 200);
+        });
+    });
+})();
+
+/* ============================================================
+   Original cashflow logic preserved
+   ============================================================ */
 function updateSummaryCards(monthlyTotals, monthRange) {
-    let currentMonthTotal = 0;
-    let shortTermTotal = 0; // months 1-3 (31-90 days)
-    let longTermTotal = 0;  // months 4+ (over 90 days)
-    
+    let currentMonthTotal = 0, shortTermTotal = 0, longTermTotal = 0;
+
     monthRange.forEach((month, index) => {
         const amount = monthlyTotals[month.key] || 0;
-        
-        if (index === 0) {
-            currentMonthTotal = amount;
-        } else if (index >= 1 && index <= 3) {
-            shortTermTotal += amount;
-        } else {
-            longTermTotal += amount;
-        }
+        if (index === 0) currentMonthTotal = amount;
+        else if (index >= 1 && index <= 3) shortTermTotal += amount;
+        else longTermTotal += amount;
     });
-    
-    // Update the cards with formatted values
+
     document.getElementById('currentMonthTotal').textContent = `€${currentMonthTotal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
     document.getElementById('shortTermTotal').textContent = `€${shortTermTotal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
     document.getElementById('longTermTotal').textContent = `€${longTermTotal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
@@ -546,7 +765,6 @@ function renderForecast() {
     const horizon = 12;
     const currentDate = new Date();
     const monthRange = [];
-    
     for (let i = 0; i < horizon; i++) {
         const monthDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + i, 1);
         const monthKey = `${monthDate.getFullYear()}-${monthDate.getMonth()}`;
@@ -556,83 +774,65 @@ function renderForecast() {
     }
 
     const expensesByTypeAndMonth = {};
-    
     allExpenses.forEach(exp => {
         const date = new Date(exp.due_date);
         const monthKey = `${date.getFullYear()}-${date.getMonth()}`;
-        
         if (monthRange.some(m => m.key === monthKey)) {
             const expenseLineType = exp.line_type || exp.description || 'Other';
-            
-            if (!expensesByTypeAndMonth[expenseLineType]) {
-                expensesByTypeAndMonth[expenseLineType] = {};
-            }
-            
+            if (!expensesByTypeAndMonth[expenseLineType]) expensesByTypeAndMonth[expenseLineType] = {};
             if (!expensesByTypeAndMonth[expenseLineType][monthKey]) {
-                expensesByTypeAndMonth[expenseLineType][monthKey] = {
-                    total: 0,
-                    properties: {}
-                };
+                expensesByTypeAndMonth[expenseLineType][monthKey] = { total: 0, properties: {} };
             }
-            
             expensesByTypeAndMonth[expenseLineType][monthKey].total += exp.amount;
-            
             if (!expensesByTypeAndMonth[expenseLineType][monthKey].properties[exp.property]) {
                 expensesByTypeAndMonth[expenseLineType][monthKey].properties[exp.property] = 0;
             }
             expensesByTypeAndMonth[expenseLineType][monthKey].properties[exp.property] += exp.amount;
         }
     });
-    
+
     renderTimeline(monthRange, allExpenses, expensesByTypeAndMonth);
 }
 
 function renderTimeline(monthRange, expenses, expensesByTypeAndMonth) {
     const timeline = document.getElementById("timeline");
     timeline.innerHTML = "";
-    
+
     const monthlyTotals = {};
-    monthRange.forEach(month => {
-        monthlyTotals[month.key] = 0;
-    });
-    
+    monthRange.forEach(month => { monthlyTotals[month.key] = 0; });
+
     expenses.forEach(exp => {
         const date = new Date(exp.due_date);
         const monthKey = `${date.getFullYear()}-${date.getMonth()}`;
-        
         if (monthlyTotals[monthKey] !== undefined) {
             monthlyTotals[monthKey] += exp.amount;
         }
     });
-    
-    // Update summary cards
+
     updateSummaryCards(monthlyTotals, monthRange);
-    
+
     const maxAmount = Math.max(...Object.values(monthlyTotals), 1);
-    const chartHeight = 300;
-    const baseOffset = 60;
-    
+
+    // Adjust chart height for landscape mobile
+    const isMobileLandscape = window.matchMedia('(orientation: landscape) and (max-height: 500px)').matches;
+    const chartHeight = isMobileLandscape ? 200 : 300;
+    const baseOffset = isMobileLandscape ? 50 : 60;
+
     let gridInterval;
-    if (maxAmount <= 100) {
-        gridInterval = 20;
-    } else if (maxAmount <= 1000) {
-        gridInterval = 200;
-    } else {
-        gridInterval = 1000;
-    }
-    
+    if (maxAmount <= 100) gridInterval = 20;
+    else if (maxAmount <= 1000) gridInterval = 200;
+    else gridInterval = 1000;
+
     const maxGridValue = Math.ceil(maxAmount / gridInterval) * gridInterval;
-    
+
     const timelineContainer = document.createElement("div");
     timelineContainer.className = "timeline-container";
-    
-    // Render gridlines
+
     for (let i = 1; i * gridInterval <= maxGridValue; i++) {
         const gridValue = i * gridInterval;
         const pixelHeight = Math.round((gridValue / maxGridValue) * chartHeight);
         const bottomPosition = baseOffset + pixelHeight;
-        
-        // Gridline
+
         const gridLine = document.createElement("div");
         gridLine.style.position = "absolute";
         gridLine.style.bottom = `${bottomPosition}px`;
@@ -643,13 +843,12 @@ function renderTimeline(monthRange, expenses, expensesByTypeAndMonth) {
         gridLine.style.backgroundColor = "#000";
         gridLine.style.zIndex = "1";
         gridLine.style.opacity = "0.2";
-        
-        // Label
+
         const gridLabel = document.createElement("div");
         gridLabel.style.position = "absolute";
         gridLabel.style.bottom = `${bottomPosition - 8}px`;
         gridLabel.style.left = "5px";
-        gridLabel.style.fontSize = "11px";
+        gridLabel.style.fontSize = isMobileLandscape ? "9px" : "11px";
         gridLabel.style.color = "#6c757d";
         gridLabel.style.background = "white";
         gridLabel.style.padding = "2px 6px";
@@ -660,50 +859,45 @@ function renderTimeline(monthRange, expenses, expensesByTypeAndMonth) {
         gridLabel.style.whiteSpace = "nowrap";
         gridLabel.style.lineHeight = "1";
         gridLabel.textContent = `€${gridValue.toLocaleString()}`;
-        
+
         timelineContainer.appendChild(gridLine);
         timelineContainer.appendChild(gridLabel);
     }
-    
-    // Render bars with exact same coordinate system - shifted right to avoid covering labels
-    const barWidthPercent = 85 / monthRange.length; // Use 85% of width for bars
-    const leftMargin = 8; // 8% left margin to clear gridline labels
-    
+
+    const barWidthPercent = 85 / monthRange.length;
+    const leftMargin = 8;
+
     monthRange.forEach((month, index) => {
         const value = monthlyTotals[month.key];
         const pixelHeight = Math.round((value / maxGridValue) * chartHeight);
-        const leftPercent = leftMargin + (index * barWidthPercent); // Start after margin
-        
+        const leftPercent = leftMargin + (index * barWidthPercent);
+
         let colorClass = 'green';
-        if (index === 0) {
-            colorClass = 'red';
-        } else if (index >= 1 && index <= 3) {
-            colorClass = 'orange';
-        }
-        
+        if (index === 0) colorClass = 'red';
+        else if (index >= 1 && index <= 3) colorClass = 'orange';
+
         const monthElement = document.createElement("div");
         monthElement.className = "timeline-month";
         monthElement.style.left = `${leftPercent}%`;
-        monthElement.style.width = `${barWidthPercent * 0.9}%`; // 90% of allocated width for each bar
-        
-        const formattedAmount = value.toLocaleString('en-US', {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        });
-        
+        monthElement.style.width = `${barWidthPercent * 0.9}%`;
+
+        const formattedAmount = value.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        const labelFontSize = isMobileLandscape ? '8px' : '10px';
+        const labelBottom = isMobileLandscape ? '-45px' : '-55px';
+
         monthElement.innerHTML = `
             <div class="timeline-bar ${colorClass}" style="height: ${pixelHeight}px; width: 100%; position: absolute; bottom: ${baseOffset}px; z-index: 3;" data-month="${month.key}" data-month-name="${month.name}"></div>
-            <div class="timeline-label" style="position: absolute; bottom: -55px; width: 100%; text-align: center; font-size: 10px; color: #6c757d; font-weight: 500; line-height: 1.2;"><strong>${month.name}</strong><br><strong>€${formattedAmount}</strong></div>
+            <div class="timeline-label" style="position: absolute; bottom: ${labelBottom}; width: 100%; text-align: center; font-size: ${labelFontSize}; color: #6c757d; font-weight: 500; line-height: 1.2;"><strong>${month.name}</strong><br><strong>€${formattedAmount}</strong></div>
         `;
-        
+
         const bar = monthElement.querySelector('.timeline-bar');
         bar.addEventListener('click', () => {
             showMonthlyBreakdown(month.key, month.name, expensesByTypeAndMonth);
         });
-        
+
         timelineContainer.appendChild(monthElement);
     });
-    
+
     timeline.appendChild(timelineContainer);
 }
 
@@ -711,94 +905,69 @@ function showMonthlyBreakdown(monthKey, monthName, expensesByTypeAndMonth) {
     const modalTitle = document.getElementById('monthlyExpenseModalLabel');
     const modalBody = document.getElementById('monthlyExpenseModalBody');
     const modalFooter = document.querySelector('#monthlyExpenseModal .modal-footer');
-    
-    modalTitle.innerHTML = `<i class="fas fa-calendar-alt"></i> Monthly Expense Breakdown - ${monthName}`;
-    
+
+    modalTitle.innerHTML = `<i class="fas fa-calendar-alt"></i> ${monthName}`;
+
     const monthExpenses = [];
     let totalMonth = 0;
-    
     for (const [lineType, typeData] of Object.entries(expensesByTypeAndMonth)) {
         if (typeData[monthKey] && typeData[monthKey].total > 0) {
             monthExpenses.push({
-                lineType,
-                amount: typeData[monthKey].total,
-                properties: typeData[monthKey].properties
+                lineType, amount: typeData[monthKey].total, properties: typeData[monthKey].properties
             });
             totalMonth += typeData[monthKey].total;
         }
     }
-    
-    window.currentModalState = {
-        view: 'monthly',
-        monthKey: monthKey,
-        monthName: monthName,
-        expenses: monthExpenses,
-        expensesByTypeAndMonth: expensesByTypeAndMonth
-    };
-    
+
+    window.currentModalState = { view: 'monthly', monthKey, monthName, expenses: monthExpenses, expensesByTypeAndMonth };
+
     if (monthExpenses.length === 0) {
         modalBody.innerHTML = `
             <div class="no-expenses-message">
-                <div class="no-expenses-icon">
-                    <i class="fas fa-calendar-check"></i>
-                </div>
+                <i class="fas fa-calendar-check fa-3x text-muted mb-3"></i>
                 <p>No expenses scheduled for this month</p>
             </div>
         `;
     } else {
         monthExpenses.sort((a, b) => a.lineType.localeCompare(b.lineType));
-        
         let html = `
             <div class="mb-3" style="text-align: center; background: #f8f9fa; padding: 15px; border-radius: 8px; border: 1px solid #dee2e6;">
                 <h5 style="color: #17a2b8; margin: 0;">Total Month: €${totalMonth.toFixed(2)}</h5>
             </div>
-            
             <table class="table table-hover" style="table-layout: fixed; width: 100%;">
                 <thead style="background: #f8f9fa;">
                     <tr>
-                        <th style="width: 65%; border-top: none; white-space: normal; word-wrap: break-word;">Expense Line Type</th>
-                        <th style="width: 35%; text-align: right; border-top: none; white-space: nowrap;">Total Amount</th>
+                        <th style="width: 65%; border-top: none; word-wrap: break-word;">Expense Line Type</th>
+                        <th style="width: 35%; text-align: right; border-top: none;">Total Amount</th>
                     </tr>
                 </thead>
                 <tbody>
         `;
-        
         monthExpenses.forEach((expense, index) => {
             html += `
                 <tr class="clickable-row expense-line-row" data-index="${index}" style="cursor: pointer;">
                     <td style="white-space: normal; word-wrap: break-word; padding-right: 10px;">
                         <i class="fas fa-receipt" style="color: #17a2b8; margin-right: 8px;"></i>
                         <strong>${expense.lineType}</strong>
-                        <small style="display: block; color: #6c757d; margin-top: 4px;">Click to view property breakdown</small>
+                        <small style="display: block; color: #6c757d; margin-top: 4px;">Tap for property breakdown</small>
                     </td>
-                    <td style="text-align: right; white-space: nowrap; vertical-align: top; padding-top: 12px;">
+                    <td style="text-align: right; vertical-align: top; padding-top: 12px;">
                         <strong style="color: #17a2b8;">€${expense.amount.toFixed(2)}</strong>
                         <i class="fas fa-chevron-right" style="color: #6c757d; margin-left: 8px; font-size: 12px;"></i>
                     </td>
                 </tr>
             `;
         });
-        
-        html += `
-                </tbody>
-            </table>
-            <div class="text-center mt-3">
-                <small class="text-muted"><i class="fas fa-mouse-pointer"></i> Click any row to see property breakdown</small>
-            </div>
-        `;
-        
+        html += `</tbody></table>`;
         modalBody.innerHTML = html;
     }
-    
-    modalFooter.innerHTML = `
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-    `;
-    
+
+    modalFooter.innerHTML = `<button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>`;
+
     $('#monthlyExpenseModal').modal('show');
-    
+
     setTimeout(() => {
-        $('.expense-line-row').off('click').on('click', function(e) {
-            e.preventDefault();
+        $('.expense-line-row').off('click').on('click', function() {
             const index = parseInt($(this).data('index'));
             if (window.currentModalState && window.currentModalState.expenses[index]) {
                 const expense = window.currentModalState.expenses[index];
@@ -809,89 +978,56 @@ function showMonthlyBreakdown(monthKey, monthName, expensesByTypeAndMonth) {
 }
 
 function showExpenseBreakdown(lineType, data) {
-    if (!window.currentModalState) {
-        return;
-    }
-    
+    if (!window.currentModalState) return;
     const modalTitle = document.getElementById('monthlyExpenseModalLabel');
     const modalBody = document.getElementById('monthlyExpenseModalBody');
     const modalFooter = document.querySelector('#monthlyExpenseModal .modal-footer');
-    
+
     window.currentModalState.view = 'property';
     window.currentModalState.currentExpense = { lineType, data };
-    
-    modalTitle.innerHTML = `<i class="fas fa-receipt"></i> ${lineType} Expenses - ${window.currentModalState.monthName}`;
-    
+
+    modalTitle.innerHTML = `<i class="fas fa-receipt"></i> ${lineType}`;
+
     let html = `
-        <div class="mb-4" style="background: #f8f9fa; padding: 20px; border-radius: 8px; border: 1px solid #dee2e6;">
-            <div class="row align-items-center">
-                <div class="col-md-8">
-                    <h4 class="mb-0" style="color: #2c3e50;">Total Amount: <span style="color: #17a2b8;">€${data.amount.toFixed(2)}</span></h4>
-                    <p class="text-muted mb-0">Breakdown by property for ${window.currentModalState.monthName}</p>
-                </div>
-                <div class="col-md-4 text-right">
-                    <div style="background: white; padding: 10px; border-radius: 6px; border: 1px solid #dee2e6;">
-                        <small class="text-muted">Expense Line Type:</small><br>
-                        <strong style="color: #495057;">${lineType}</strong>
-                    </div>
-                </div>
-            </div>
+        <div class="mb-4" style="background: #f8f9fa; padding: 16px; border-radius: 8px; border: 1px solid #dee2e6;">
+            <h4 class="mb-1" style="color: #2c3e50;">Total: <span style="color: #17a2b8;">€${data.amount.toFixed(2)}</span></h4>
+            <p class="text-muted mb-0">${window.currentModalState.monthName} &middot; ${lineType}</p>
         </div>
-        <h5 style="color: #2c3e50; margin-bottom: 20px;"><i class="fas fa-building"></i> Property Breakdown:</h5>
+        <h6 style="color: #2c3e50; margin-bottom: 16px;"><i class="fas fa-building"></i> Property Breakdown</h6>
     `;
-    
+
     if (!data.properties || Object.keys(data.properties).length === 0) {
-        html += `
-            <div class="text-center py-4">
-                <i class="fas fa-exclamation-circle fa-3x text-muted mb-3"></i>
-                <p class="text-muted">No property breakdown available for this expense type.</p>
-            </div>
-            <div style="height: 200px;"></div>
-        `;
+        html += `<div class="text-center py-4"><i class="fas fa-exclamation-circle fa-3x text-muted mb-3"></i><p class="text-muted">No property breakdown available.</p></div>`;
     } else {
         const sortedProperties = Object.entries(data.properties).sort((a, b) => a[0].localeCompare(b[0]));
-        
         sortedProperties.forEach(([property, amount]) => {
             const percentage = ((amount / data.amount) * 100).toFixed(1);
             html += `
                 <div class="modal-property-breakdown">
-                    <div class="row align-items-center">
-                        <div class="col-md-8">
-                            <h6><i class="fas fa-building"></i> ${property}</h6>
-                        </div>
-                        <div class="col-md-4 text-right">
-                            <p><strong style="color: #17a2b8;">€${amount.toFixed(2)}</strong></p>
-                            <small class="text-muted">${percentage}% of total</small>
+                    <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; flex-wrap: wrap;">
+                        <h6 style="margin:0;"><i class="fas fa-building"></i> ${property}</h6>
+                        <div style="text-align:right;">
+                            <strong style="color: #17a2b8;">€${amount.toFixed(2)}</strong>
+                            <small class="text-muted" style="display:block;">${percentage}% of total</small>
                         </div>
                     </div>
                 </div>
             `;
         });
-        
-        const paddingHeight = Math.max(100, 300 - (sortedProperties.length * 80));
-        html += `<div style="height: ${paddingHeight}px;"></div>`;
     }
-    
+
     modalBody.innerHTML = html;
-    
     modalFooter.innerHTML = `
         <button type="button" class="btn btn-info" onclick="showMonthlyView()">
-            <i class="fas fa-arrow-left"></i> Back to Monthly View
+            <i class="fas fa-arrow-left"></i> Back
         </button>
         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
     `;
 }
 
 function showMonthlyView() {
-    if (!window.currentModalState) {
-        return;
-    }
-    
-    showMonthlyBreakdown(
-        window.currentModalState.monthKey,
-        window.currentModalState.monthName,
-        window.currentModalState.expensesByTypeAndMonth
-    );
+    if (!window.currentModalState) return;
+    showMonthlyBreakdown(window.currentModalState.monthKey, window.currentModalState.monthName, window.currentModalState.expensesByTypeAndMonth);
 }
 
 function loadForecast() {
@@ -899,18 +1035,13 @@ function loadForecast() {
     document.getElementById('dashboardContainer').style.display = 'none';
     document.getElementById('errorContainer').style.display = 'none';
 
-    const horizon = 12;
-
-    fetch(`?horizon=${horizon}`, {headers: {"X-Requested-With": "XMLHttpRequest"}})
+    fetch(`?horizon=12`, {headers: {"X-Requested-With": "XMLHttpRequest"}})
         .then(res => {
-            if (!res.ok) {
-                throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-            }
+            if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
             return res.json();
         })
         .then(data => {
             document.getElementById('loadingIndicator').style.display = 'none';
-            
             if (data.error) {
                 document.getElementById('errorMessage').textContent = data.error;
                 document.getElementById('errorContainer').style.display = 'block';
@@ -932,14 +1063,12 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 $(document).on('click', '[data-dismiss="modal"]', function() {
-    const targetModal = $(this).closest('.modal');
-    targetModal.modal('hide');
+    $(this).closest('.modal').modal('hide');
 });
 
 $(document).on('keydown', function(e) {
-    if (e.keyCode === 27) {
-        $('.modal.show').modal('hide');
-    }
+    if (e.keyCode === 27) $('.modal.show').modal('hide');
 });
 </script>
+
 {% endblock %}

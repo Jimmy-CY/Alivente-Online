@@ -1,7 +1,9 @@
 {% extends 'base.html' %}
 {% load static %}
 {% load humanize %}
+
 {% block title %}Edit Property Valuation{% endblock %}
+
 {% block content %}
 
 <h2><center>ALIVENTE ONLINE - PROPERTY VALUATIONS</center></h2>
@@ -10,9 +12,15 @@
 
 {% if perms.auth.can_access_financials %}
 
-<div style="display: flex ; justify-content: flex-end">
-    <button class="btn btn-info" form="valuationForm" style="margin-right:16px" type="submit">Save</button>
-    <a href="{% url 'finance_valuations' %}" class="btn btn-info" style="margin-right:16px" role="button">Back</a>
+<!-- Action Buttons: Back+1 -->
+<div class="action-buttons-wrap">
+  <button class="action-primary" form="valuationForm" type="submit">
+    <i class="fas fa-save"></i> Save
+  </button>
+  <a href="{% url 'finance_valuations' %}" class="action-back" title="Back to Valuations">
+    <i class="fas fa-arrow-left"></i>
+    <span class="action-back-label">Back</span>
+  </a>
 </div>
 
 <form method="POST" action="{% url 'finance_valuations_edit_commit' vresults.prop_values_id %}"
@@ -22,14 +30,13 @@
       data-preview-url="{% url 'preview_valuation_change' vresults.prop_values_id %}"
       data-recalc-url="{% url 'finance_valuations_edit_and_recalc_commit' vresults.prop_values_id %}">
     {% csrf_token %}
-    
+
     <div class="form-row align-items-center">
-        <!-- Property Field -->
-        <div class="col-md-4">
+        <div class="form-group col-md-4 col-sm-12">
             <label for="property"><strong>Property</strong></label>
             <select name="prop_id" id="property" class="form-control" disabled>
                 {% for property in props %}
-                    <option value="{{ property.prop_id }}" 
+                    <option value="{{ property.prop_id }}"
                         {% if property.prop_id == vresults.prop_id %}selected{% endif %}>
                         {{ property.prop_name }}
                     </option>
@@ -37,32 +44,40 @@
             </select>
             <input type="hidden" name="prop" value="{{ vresults.prop_id }}">
         </div>
-        
-        <!-- Purchase Price -->
-        <div class="col-md-3">
+
+        <div class="form-group col-md-3 col-sm-6">
             <label for="purchase_price"><strong>Purchase Price</strong></label>
             <div class="input-group">
                 <div class="input-group-prepend">
                     <span class="input-group-text">€</span>
                 </div>
-                <input type="number" id="purchase_price" name="prop_values_purchase_price" 
-                       class="form-control text-right" 
+                <input type="number" id="purchase_price" name="prop_values_purchase_price"
+                       class="form-control text-right"
                        value="{{ vresults.prop_values_purchase_price|floatformat:'0' }}">
             </div>
         </div>
-        
-        <!-- Current Value -->
-        <div class="col-md-3">
+
+        <div class="form-group col-md-3 col-sm-6">
             <label for="current_value"><strong>Current Value</strong></label>
             <div class="input-group">
                 <div class="input-group-prepend">
                     <span class="input-group-text">€</span>
                 </div>
-                <input type="number" id="current_value" name="prop_values_current_value" 
-                       class="form-control text-right" 
+                <input type="number" id="current_value" name="prop_values_current_value"
+                       class="form-control text-right"
                        value="{{ vresults.prop_values_current_value|floatformat:'0' }}">
             </div>
         </div>
+    </div>
+
+    <!-- Form Footer -->
+    <div class="form-footer-actions">
+      <button type="submit" class="btn btn-info form-footer-primary">
+        <i class="fas fa-save"></i> Save Valuation
+      </button>
+      <a href="{% url 'finance_valuations' %}" class="btn btn-secondary form-footer-cancel">
+        <i class="fas fa-times"></i> Cancel
+      </a>
     </div>
 </form>
 
@@ -72,13 +87,12 @@
   <div class="modal-dialog" role="document" style="max-width: 1000px;">
     <div class="modal-content">
 
-      <!-- Header -->
       <div class="modal-header" style="background: linear-gradient(135deg, #17a2b8 0%, #138496 100%); color: white;">
         <div>
           <h5 class="modal-title" id="valuationChangePreviewModalLabel" style="font-weight:700;">
             <i class="fas fa-balance-scale"></i> Current Value Change &mdash; Preview
           </h5>
-          <small style="opacity:0.85;">This property is in one or more Pro-Rata Expense distributions &mdash; review before confirming</small>
+          <small style="opacity:0.85;">Review before confirming</small>
         </div>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close"
                 style="color:white; opacity:0.9; font-size:28px;">
@@ -86,9 +100,7 @@
         </button>
       </div>
 
-      <!-- Body -->
       <div class="modal-body" style="padding: 0;">
-
         <!-- Loading state -->
         <div id="val-preview-loading" style="padding: 40px; text-align: center;">
           <div class="spinner-border text-info" role="status" style="width: 3rem; height: 3rem;">
@@ -109,57 +121,46 @@
         <!-- Preview content -->
         <div id="val-preview-content" style="display: none;">
 
-          <!-- Summary header -->
-          <div style="padding: 20px 30px; background: #f8f9fa; border-bottom: 1px solid #dee2e6;">
-            <div class="row">
-              <div class="col-md-6">
-                <strong>Property:</strong> <span id="val-preview-prop-name"></span>
-              </div>
-              <div class="col-md-6 text-md-right">
+          <div class="val-preview-summary">
+            <div class="val-preview-summary__row">
+              <div><strong>Property:</strong> <span id="val-preview-prop-name"></span></div>
+              <div class="val-preview-summary__cv">
                 <strong>Current Value:</strong>
                 &euro;<span id="val-preview-old-cv"></span>
                 &nbsp;&rarr;&nbsp;
                 <strong style="color:#17a2b8;">&euro;<span id="val-preview-new-cv"></span></strong>
               </div>
             </div>
-            <div class="row mt-2">
-              <div class="col-md-12">
-                <small class="text-muted">
-                  <i class="fas fa-info-circle"></i>
-                  This property participates in
-                  <strong><span id="val-preview-lt-count">0</span></strong> Pro-Rata distribution(s),
-                  which together span
-                  <strong><span id="val-preview-exp-count">0</span></strong> Expense record(s).
-                  Click each distribution below to expand.
-                </small>
-              </div>
+            <div class="val-preview-summary__hint">
+              <small class="text-muted">
+                <i class="fas fa-info-circle"></i>
+                This property participates in
+                <strong><span id="val-preview-lt-count">0</span></strong> Pro-Rata distribution(s),
+                spanning <strong><span id="val-preview-exp-count">0</span></strong> Expense record(s).
+                Tap each to expand.
+              </small>
             </div>
           </div>
 
-          <!-- Scrollable collapsible line-type groups -->
-          <div id="val-preview-groups" style="max-height: 55vh; overflow-y: auto; padding: 15px 30px;">
+          <div id="val-preview-groups" class="val-preview-groups-container">
             <!-- Populated by JS -->
           </div>
 
-          <!-- Note about historical P&L -->
-          <div style="padding: 15px 30px 20px 30px; border-top: 1px solid #dee2e6;">
+          <div class="val-preview-note-wrap">
             <div class="alert alert-light mb-0" style="border-left:4px solid #6c757d; font-size:0.875rem;">
               <i class="fas fa-info-circle"></i>
-              <strong>Note:</strong> Expense records aren't dated &mdash; they describe an ongoing
-              pattern. Saving will update historical P&amp;L periods too. This is normal for
-              budgeted expenses.
+              <strong>Note:</strong> Saving will update historical P&amp;L periods too. This is normal
+              for budgeted expenses with ongoing patterns.
             </div>
           </div>
         </div>
-
       </div>
 
-      <!-- Footer -->
       <div class="modal-footer" style="background:#f8f9fa; border-top:1px solid #dee2e6;">
-        <button type="button" class="btn btn-secondary" data-dismiss="modal" id="val-preview-cancel-btn">
+        <button type="button" class="btn btn-secondary modal-btn-cancel" data-dismiss="modal" id="val-preview-cancel-btn">
           <i class="fas fa-times"></i> Cancel
         </button>
-        <button type="button" class="btn btn-primary" id="val-preview-confirm-btn"
+        <button type="button" class="btn btn-primary modal-btn-confirm" id="val-preview-confirm-btn"
                 style="background:linear-gradient(135deg,#17a2b8,#138496); border:none; font-weight:600;" disabled>
           <i class="fas fa-check"></i> Save &amp; Recalculate All
         </button>
@@ -173,95 +174,337 @@
 {% endif %}
 
 <style>
-    .text-right {
-        text-align: right !important;
+/* ============================================================
+   ACTION BUTTONS — Back+1
+   ============================================================ */
+.action-buttons-wrap {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-bottom: 20px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.action-primary {
+    background: #17a2b8;
+    border: 1px solid #17a2b8;
+    color: #ffffff;
+    padding: 8px 16px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .action-primary:hover {
+        background: #138496;
+        border-color: #117a8b;
+        color: white;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
     }
-    .form-row {
-        margin-top: 20px;
+}
+
+.action-back {
+    background: transparent;
+    border: 1px solid #17a2b8;
+    color: #17a2b8;
+    padding: 8px 14px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .action-back:hover {
+        background: #17a2b8;
+        color: white;
+        text-decoration: none;
     }
-    
-    /* Collapsible group styling for the preview modal */
-    .val-lt-group {
-        border: 1px solid #dee2e6;
-        border-radius: 6px;
-        margin-bottom: 12px;
-        overflow: hidden;
+}
+
+/* ============================================================
+   FORM
+   ============================================================ */
+.text-right { text-align: right !important; }
+
+.form-control { font-size: 16px; /* iOS zoom guard */ }
+
+.form-control:focus {
+    border-color: #17a2b8;
+    box-shadow: 0 0 0 0.2rem rgba(23, 162, 184, 0.25);
+}
+
+.input-group-text {
+    background-color: #e9ecef;
+    border-color: #ced4da;
+    font-weight: 600;
+}
+
+.form-row {
+    margin-top: 20px;
+}
+
+.btn-info {
+    background-color: #17a2b8;
+    border-color: #17a2b8;
+    color: white;
+    transition: all 0.3s ease;
+    border-radius: 6px;
+    font-weight: 500;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .btn-info:hover {
+        background-color: #138496;
+        border-color: #117a8b;
+        color: white;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
     }
-    .val-lt-header {
-        padding: 10px 15px;
-        background: #e7f5f8;
-        cursor: pointer;
-        user-select: none;
+}
+
+.form-footer-actions {
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid #dee2e6;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+/* ============================================================
+   PREVIEW MODAL
+   ============================================================ */
+.val-preview-summary {
+    padding: 20px 30px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #dee2e6;
+}
+.val-preview-summary__row {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+.val-preview-summary__cv { text-align: right; }
+.val-preview-summary__hint { font-size: 13px; }
+
+.val-preview-groups-container {
+    max-height: 55vh;
+    overflow-y: auto;
+    padding: 15px 30px;
+}
+
+.val-preview-note-wrap {
+    padding: 15px 30px 20px 30px;
+    border-top: 1px solid #dee2e6;
+}
+
+/* Collapsible group styling */
+.val-lt-group {
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    margin-bottom: 12px;
+    overflow: hidden;
+}
+.val-lt-header {
+    padding: 10px 15px;
+    background: #e7f5f8;
+    cursor: pointer;
+    user-select: none;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: background 0.15s;
+    flex-wrap: wrap;
+}
+@media (hover: hover) and (pointer: fine) {
+    .val-lt-header:hover { background: #d4ecf2; }
+}
+.val-lt-chevron {
+    color: #17a2b8;
+    transition: transform 0.2s;
+    font-size: 12px;
+}
+.val-lt-group.expanded .val-lt-chevron { transform: rotate(90deg); }
+.val-lt-title {
+    flex: 1;
+    font-weight: 700;
+    color: #2c3e50;
+    min-width: 0;
+}
+.val-lt-meta {
+    font-size: 0.85rem;
+    color: #6c757d;
+}
+.val-lt-body {
+    display: none;
+    padding: 0;
+    overflow-x: auto;
+}
+.val-lt-group.expanded .val-lt-body { display: block; }
+.val-lt-body table {
+    margin-bottom: 0;
+    font-size: 0.875rem;
+    width: 100%;
+}
+.val-lt-body thead { background: #f8f9fa; }
+.val-lt-body thead th {
+    font-weight: 600;
+    border-top: none;
+    font-size: 0.8rem;
+    white-space: nowrap;
+}
+.val-lt-body tr.edited-row { background: #fff3cd !important; }
+.val-lt-body tr.edited-row td { font-weight: 600; }
+.val-lt-body tfoot tr {
+    background: #f8f9fa;
+    font-weight: 700;
+}
+
+/* ============================================================
+   MOBILE (≤768px)
+   ============================================================ */
+@media (max-width: 768px) {
+
+    .action-buttons-wrap {
+        gap: 8px;
+        align-items: stretch;
+    }
+    .action-primary {
+        flex: 1 1 auto;
+        min-width: 0;
+        justify-content: center;
+        padding: 12px 14px;
+        font-size: 15px;
+    }
+    .action-back {
+        flex-shrink: 0;
+        padding: 12px 14px;
+        min-width: 44px;
+        min-height: 44px;
+        justify-content: center;
+    }
+    .action-back-label { display: none; }
+
+    .form-footer-actions {
+        flex-direction: column-reverse;
+    }
+    .form-footer-actions .btn {
+        width: 100%;
+        padding: 14px;
+        font-size: 15px;
+        margin: 0 !important;
+    }
+
+    /* Preview modal full-screen */
+    .modal { padding: 0 !important; }
+    .modal-dialog {
+        margin: 0 !important;
+        max-width: 100vw !important;
+        width: 100vw !important;
+        height: 100dvh;
+        height: 100vh;
+    }
+    .modal-content {
+        max-width: 100vw;
+        max-height: 100dvh;
+        width: 100vw;
+        height: 100dvh;
+        height: 100vh;
+        border-radius: 0;
         display: flex;
-        align-items: center;
-        gap: 10px;
-        transition: background 0.15s;
+        flex-direction: column;
+        padding-top: env(safe-area-inset-top, 0);
+        padding-bottom: env(safe-area-inset-bottom, 0);
+        box-sizing: border-box;
     }
-    .val-lt-header:hover {
-        background: #d4ecf2;
+    .modal-header {
+        padding: 14px 16px !important;
+        flex-shrink: 0;
     }
-    .val-lt-chevron {
-        color: #17a2b8;
-        transition: transform 0.2s;
-        font-size: 12px;
-    }
-    .val-lt-group.expanded .val-lt-chevron {
-        transform: rotate(90deg);
-    }
-    .val-lt-title {
-        flex: 1;
-        font-weight: 700;
-        color: #2c3e50;
-    }
-    .val-lt-meta {
-        font-size: 0.85rem;
-        color: #6c757d;
-    }
-    .val-lt-body {
-        display: none;
+    .modal-title { font-size: 16px; line-height: 1.3; }
+    .modal-body {
+        flex: 1 1 auto;
+        overflow-y: auto;
         padding: 0;
     }
-    .val-lt-group.expanded .val-lt-body {
-        display: block;
+    .modal-footer {
+        flex-shrink: 0;
+        flex-direction: column-reverse;
+        gap: 8px;
+        padding: 12px 16px;
     }
-    .val-lt-body table {
-        margin-bottom: 0;
-        font-size: 0.875rem;
+    .modal-footer .btn {
+        width: 100%;
+        padding: 12px;
+        margin: 0 !important;
+        font-size: 15px;
+        justify-content: center;
+        display: flex;
     }
-    .val-lt-body thead {
-        background: #f8f9fa;
+
+    /* Tighten preview content padding on mobile */
+    .val-preview-summary {
+        padding: 14px 16px;
     }
-    .val-lt-body thead th {
-        font-weight: 600;
-        border-top: none;
-        font-size: 0.8rem;
+    .val-preview-summary__row {
+        flex-direction: column;
+        gap: 6px;
     }
-    /* Highlight the edited property's row within each group */
-    .val-lt-body tr.edited-row {
-        background: #fff3cd !important;
+    .val-preview-summary__cv { text-align: left; }
+
+    .val-preview-groups-container {
+        padding: 10px 16px;
+        max-height: none; /* let the modal-body handle scrolling */
     }
-    .val-lt-body tr.edited-row td {
-        font-weight: 600;
+
+    .val-preview-note-wrap {
+        padding: 12px 16px;
     }
-    .val-lt-body tfoot tr {
-        background: #f8f9fa;
-        font-weight: 700;
+
+    /* Group cards: header still readable, table scrollable horizontally */
+    .val-lt-header {
+        padding: 12px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
     }
+    .val-lt-header > .val-lt-chevron { align-self: flex-start; }
+    .val-lt-title { font-size: 14px; }
+    .val-lt-meta { font-size: 12px; }
+    .val-lt-body table { font-size: 12px; }
+    .val-lt-body thead th { padding: 6px 8px; }
+    .val-lt-body td { padding: 6px 8px; white-space: nowrap; }
+}
 </style>
 
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    
+
     let lastPreviewData = null;
-    
+
     function formatMoney(value, decimals = 2) {
         return value.toLocaleString('en-US', {
             minimumFractionDigits: decimals,
             maximumFractionDigits: decimals,
         });
     }
-    
+
     function formatDelta(delta) {
         if (delta > 0.005) {
             return `<span style="color:#dc3545;">+&euro;${formatMoney(delta)}</span>`;
@@ -270,52 +513,39 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         return `<span style="color:#6c757d;">&euro;0.00</span>`;
     }
-    
+
     function escapeHtml(s) {
         const div = document.createElement('div');
         div.textContent = s;
         return div.innerHTML;
     }
-    
-    // ---- Intercept form submit ----
+
     const form = document.getElementById('valuationForm');
     form.addEventListener('submit', function(e) {
-        // Skip if user already confirmed via preview modal
-        if (this.dataset.userConfirmed === 'true') {
-            return; // Let the form submit normally
-        }
-        
+        if (this.dataset.userConfirmed === 'true') return;
+
         const originalCv = parseFloat(this.dataset.originalCurrentValue) || 0;
         const currentCvInput = document.getElementById('current_value');
         const newCv = parseFloat(currentCvInput.value) || 0;
-        
         const cvChanged = (originalCv !== newCv);
-        
-        if (!cvChanged) {
-            // CV unchanged → normal save (maybe they only changed Purchase Price)
-            return;
-        }
-        
-        // CV changed → we need to check whether this property is in any
-        // Pro-Rata distributions. The AJAX endpoint tells us: if the response
-        // has affected_line_types_count == 0, we skip the modal and submit normally.
+
+        if (!cvChanged) return;
+
         e.preventDefault();
         showPreviewModal(this, newCv);
     });
-    
-    // ---- Show preview modal + fetch data ----
+
     function showPreviewModal(form, newCv) {
         const previewUrl = form.dataset.previewUrl;
-        
-        // Reset modal state
+
         document.getElementById('val-preview-loading').style.display = 'block';
         document.getElementById('val-preview-content').style.display = 'none';
         document.getElementById('val-preview-error').style.display = 'none';
         document.getElementById('val-preview-confirm-btn').disabled = true;
         lastPreviewData = null;
-        
+
         $('#valuationChangePreviewModal').modal('show');
-        
+
         fetch(`${previewUrl}?new_current_value=${encodeURIComponent(newCv)}`, {
             method: 'GET',
             headers: {
@@ -326,56 +556,43 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(response => response.json())
         .then(data => {
             document.getElementById('val-preview-loading').style.display = 'none';
-            
+
             if (!data.success) {
                 document.getElementById('val-preview-error').style.display = 'block';
-                document.getElementById('val-preview-error-message').textContent =
-                    data.error || 'Unknown error';
+                document.getElementById('val-preview-error-message').textContent = data.error || 'Unknown error';
                 return;
             }
-            
-            // If the property is in zero Pro-Rata distributions, close the modal
-            // and just let the form submit normally.
+
             if (data.affected_line_types_count === 0) {
                 $('#valuationChangePreviewModal').modal('hide');
                 form.dataset.userConfirmed = 'true';
                 setTimeout(function() { form.submit(); }, 150);
                 return;
             }
-            
-            // Store for later
+
             lastPreviewData = data;
             lastPreviewData.form = form;
-            
-            // Header summary
+
             document.getElementById('val-preview-prop-name').textContent = data.prop_name;
-            document.getElementById('val-preview-old-cv').textContent =
-                formatMoney(data.old_current_value, 0);
-            document.getElementById('val-preview-new-cv').textContent =
-                formatMoney(data.new_current_value, 0);
-            document.getElementById('val-preview-lt-count').textContent =
-                data.affected_line_types_count;
-            document.getElementById('val-preview-exp-count').textContent =
-                data.affected_expense_count;
-            
-            // Render each Line Type as a collapsible group
+            document.getElementById('val-preview-old-cv').textContent = formatMoney(data.old_current_value, 0);
+            document.getElementById('val-preview-new-cv').textContent = formatMoney(data.new_current_value, 0);
+            document.getElementById('val-preview-lt-count').textContent = data.affected_line_types_count;
+            document.getElementById('val-preview-exp-count').textContent = data.affected_expense_count;
+
             const groupsContainer = document.getElementById('val-preview-groups');
             groupsContainer.innerHTML = '';
-            
+
             data.line_types.forEach((lt, idx) => {
                 const group = document.createElement('div');
                 group.className = 'val-lt-group' + (idx === 0 ? ' expanded' : '');
-                
-                // Compute group-level totals
-                let totalOldAmt = 0;
-                let totalNewAmt = 0;
+
+                let totalOldAmt = 0, totalNewAmt = 0;
                 lt.properties.forEach(p => {
                     totalOldAmt += p.old_amount;
                     totalNewAmt += p.new_amount;
                 });
                 const groupDelta = totalNewAmt - totalOldAmt;
-                
-                // Header
+
                 const header = document.createElement('div');
                 header.className = 'val-lt-header';
                 header.innerHTML = `
@@ -391,23 +608,22 @@ document.addEventListener('DOMContentLoaded', function() {
                     group.classList.toggle('expanded');
                 });
                 group.appendChild(header);
-                
-                // Body — scrollable table
+
                 const body = document.createElement('div');
                 body.className = 'val-lt-body';
-                
+
                 const table = document.createElement('table');
                 table.className = 'table table-sm table-bordered mb-0';
-                
+
                 table.innerHTML = `
                     <thead>
                         <tr>
-                            <th style="min-width: 160px;">Property</th>
+                            <th style="min-width: 120px;">Property</th>
                             <th class="text-right">CV (old)</th>
                             <th class="text-right">CV (new)</th>
                             <th class="text-right">Share %</th>
-                            <th class="text-right">Old Amount</th>
-                            <th class="text-right">New Amount</th>
+                            <th class="text-right">Old</th>
+                            <th class="text-right">New</th>
                             <th class="text-right">&Delta;</th>
                         </tr>
                     </thead>
@@ -424,18 +640,14 @@ document.addEventListener('DOMContentLoaded', function() {
                         </tr>
                     </tfoot>
                 `;
-                
+
                 const tbody = table.querySelector('tbody');
                 lt.properties.forEach(p => {
                     const row = document.createElement('tr');
-                    if (p.is_edited_property) {
-                        row.className = 'edited-row';
-                    }
-                    // CV column: highlight when it actually changed
+                    if (p.is_edited_property) row.className = 'edited-row';
                     const cvNewDisplay = (p.current_value_old !== p.current_value_new)
                         ? `<strong style="color:#17a2b8;">&euro;${formatMoney(p.current_value_new, 0)}</strong>`
                         : `&euro;${formatMoney(p.current_value_new, 0)}`;
-                    
                     row.innerHTML = `
                         <td>${escapeHtml(p.prop_name)}${p.is_edited_property ? ' <span class="badge badge-warning" style="background:#ffc107; color:#212529;">edited</span>' : ''}</td>
                         <td class="text-right">&euro;${formatMoney(p.current_value_old, 0)}</td>
@@ -447,32 +659,29 @@ document.addEventListener('DOMContentLoaded', function() {
                     `;
                     tbody.appendChild(row);
                 });
-                
+
                 body.appendChild(table);
                 group.appendChild(body);
                 groupsContainer.appendChild(group);
             });
-            
+
             document.getElementById('val-preview-content').style.display = 'block';
             document.getElementById('val-preview-confirm-btn').disabled = false;
         })
         .catch(err => {
             document.getElementById('val-preview-loading').style.display = 'none';
             document.getElementById('val-preview-error').style.display = 'block';
-            document.getElementById('val-preview-error-message').textContent =
-                'Network error — ' + err.message;
+            document.getElementById('val-preview-error-message').textContent = 'Network error — ' + err.message;
         });
     }
-    
-    // ---- Confirm button — repoint form + submit ----
+
     document.getElementById('val-preview-confirm-btn').addEventListener('click', function() {
         if (!lastPreviewData || !lastPreviewData.form) return;
-        
+
         const form = lastPreviewData.form;
         form.dataset.userConfirmed = 'true';
         form.action = form.dataset.recalcUrl;
-        
-        // Add the hidden payload field
+
         let hidden = form.querySelector('input[name="valuation_preview_data"]');
         if (!hidden) {
             hidden = document.createElement('input');
@@ -480,8 +689,7 @@ document.addEventListener('DOMContentLoaded', function() {
             hidden.name = 'valuation_preview_data';
             form.appendChild(hidden);
         }
-        
-        // Strip the non-serialisable form reference
+
         const payload = {
             prop_id: lastPreviewData.prop_id,
             prop_name: lastPreviewData.prop_name,
@@ -492,12 +700,11 @@ document.addEventListener('DOMContentLoaded', function() {
             line_types: lastPreviewData.line_types,
         };
         hidden.value = JSON.stringify(payload);
-        
+
         $('#valuationChangePreviewModal').modal('hide');
         setTimeout(function() { form.submit(); }, 200);
     });
-    
-    // ---- Cancel button ----
+
     document.getElementById('val-preview-cancel-btn').addEventListener('click', function() {
         lastPreviewData = null;
     });

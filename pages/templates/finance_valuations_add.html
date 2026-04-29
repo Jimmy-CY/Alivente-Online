@@ -2,6 +2,7 @@
 {% load static %}
 
 {% block title %}
+Add Property Valuation
 {% endblock %}
 
 {% block content %}
@@ -12,35 +13,204 @@
 
 {% if perms.auth.can_access_financials %}
 
-<form action = "{% url 'finance_valuations_commit' %}" method="post">
+<!-- Action Buttons: Back+1 -->
+<div class="action-buttons-wrap">
+  <button type="submit" form="valuationAddForm" class="action-primary">
+    <i class="fas fa-save"></i> Save
+  </button>
+  <a href="{% url 'finance_valuations' %}" class="action-back" title="Back to Valuations">
+    <i class="fas fa-arrow-left"></i>
+    <span class="action-back-label">Back</span>
+  </a>
+</div>
+
+<form action="{% url 'finance_valuations_commit' %}" method="post" id="valuationAddForm">
   {% csrf_token %}
-  <div style="display: flex ; justify-content: flex-end">
-      <button class="btn btn-info" style="margin-right:16px" type="submit">Save</button>
-      <a href="{% url 'finance_valuations' %}" class="btn btn-info" style="margin-right:16px" role="button">Back</a>
-  </div>
-<br/>
+
   <div class="form-row">
-    <div class="form-group col-md-4">
+    <div class="form-group col-md-4 col-sm-12">
       <label for="prop"><strong>Property</strong></label>
       <select id="prop" class="form-control" name="prop" required>
         <option value="" disabled selected>Select Property</option>
         {% for results in props %}
-          <option value={{results.prop_id}}>{{results.prop_name}}</option>
+          <option value="{{ results.prop_id }}">{{ results.prop_name }}</option>
         {% endfor %}
       </select>
-    </div>  
-    <div class="form-group col-md-2">
-      <label for="prop_values_purchase_price"><strong>Purchase Price</strong></label>
-      <input type="number" class="form-control" id="prop_values_purchase_price" name="prop_values_purchase_price" placeholder="Amount" align="margin-right" step="0.01" required>
     </div>
-    <div class="form-group col-md-2">
+
+    <div class="form-group col-md-3 col-sm-6">
+      <label for="prop_values_purchase_price"><strong>Purchase Price</strong></label>
+      <div class="input-group">
+        <div class="input-group-prepend">
+          <span class="input-group-text">€</span>
+        </div>
+        <input type="number" class="form-control text-right"
+               id="prop_values_purchase_price"
+               name="prop_values_purchase_price"
+               placeholder="Amount"
+               step="0.01" required>
+      </div>
+    </div>
+
+    <div class="form-group col-md-3 col-sm-6">
       <label for="prop_values_current_value"><strong>Current Value</strong></label>
-      <input type="number" class="form-control" id="prop_values_current_value" name="prop_values_current_value" placeholder="Amount" align="margin-right" step="0.01" required>
+      <div class="input-group">
+        <div class="input-group-prepend">
+          <span class="input-group-text">€</span>
+        </div>
+        <input type="number" class="form-control text-right"
+               id="prop_values_current_value"
+               name="prop_values_current_value"
+               placeholder="Amount"
+               step="0.01" required>
+      </div>
     </div>
   </div>
 
+  <!-- Form Footer -->
+  <div class="form-footer-actions">
+    <button type="submit" class="btn btn-info form-footer-primary">
+      <i class="fas fa-save"></i> Save Valuation
+    </button>
+    <a href="{% url 'finance_valuations' %}" class="btn btn-secondary form-footer-cancel">
+      <i class="fas fa-times"></i> Cancel
+    </a>
+  </div>
 </form>
 
 {% endif %}
+
+<style>
+.action-buttons-wrap {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-bottom: 20px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.action-primary {
+    background: #17a2b8;
+    border: 1px solid #17a2b8;
+    color: #ffffff;
+    padding: 8px 16px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .action-primary:hover {
+        background: #138496;
+        border-color: #117a8b;
+        color: white;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+}
+
+.action-back {
+    background: transparent;
+    border: 1px solid #17a2b8;
+    color: #17a2b8;
+    padding: 8px 14px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .action-back:hover {
+        background: #17a2b8;
+        color: white;
+        text-decoration: none;
+    }
+}
+
+.form-control { font-size: 16px; /* iOS zoom guard */ }
+.form-control:focus {
+    border-color: #17a2b8;
+    box-shadow: 0 0 0 0.2rem rgba(23, 162, 184, 0.25);
+}
+
+.text-right { text-align: right !important; }
+
+.input-group-text {
+    background-color: #e9ecef;
+    border-color: #ced4da;
+    font-weight: 600;
+}
+
+.btn-info {
+    background-color: #17a2b8;
+    border-color: #17a2b8;
+    color: white;
+    transition: all 0.3s ease;
+    border-radius: 6px;
+    font-weight: 500;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .btn-info:hover {
+        background-color: #138496;
+        border-color: #117a8b;
+        color: white;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+}
+
+.form-footer-actions {
+    margin-top: 30px;
+    padding-top: 20px;
+    border-top: 1px solid #dee2e6;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+@media (max-width: 768px) {
+    .action-buttons-wrap {
+        gap: 8px;
+        align-items: stretch;
+    }
+    .action-primary {
+        flex: 1 1 auto;
+        min-width: 0;
+        justify-content: center;
+        padding: 12px 14px;
+        font-size: 15px;
+    }
+    .action-back {
+        flex-shrink: 0;
+        padding: 12px 14px;
+        min-width: 44px;
+        min-height: 44px;
+        justify-content: center;
+    }
+    .action-back-label { display: none; }
+
+    .form-footer-actions {
+        flex-direction: column-reverse;
+    }
+    .form-footer-actions .btn {
+        width: 100%;
+        padding: 14px;
+        font-size: 15px;
+        margin: 0 !important;
+    }
+}
+</style>
 
 {% endblock %}

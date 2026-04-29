@@ -29,11 +29,13 @@
     {% endfor %}
 
     <!-- Action Buttons -->
-    <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 20px;">
-        <button type="button" class="btn btn-info" data-toggle="modal" data-target="#financial_indicatorsHelpModal">
-          <i class="fas fa-question-circle"></i> Help
+    <div class="action-row">
+        <button type="button" class="btn btn-info action-primary" data-toggle="modal" data-target="#financial_indicatorsHelpModal">
+          <i class="fas fa-question-circle"></i> <span>Help</span>
         </button>
-        <a href="{% url 'finance' %}" class="btn btn-info">Back</a>
+        <a href="{% url 'finance' %}" class="btn btn-info action-back">
+            <i class="fas fa-arrow-left"></i><span class="action-back-label">Back</span>
+        </a>
     </div>
 
     <!-- Loading Indicator -->
@@ -159,6 +161,23 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
 <style>
+/* === STANDARD ACTION ROW === */
+.action-row {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+.action-primary {
+    flex: 0 0 auto;
+}
+.action-back {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
 /* Main Styles matching your app's design */
 .indicator-panel {
     background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
@@ -167,16 +186,6 @@
     padding: 24px;
     margin-bottom: 30px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-}
-
-@media (max-width: 768px) {
-    .period-buttons {
-        flex-direction: column;
-    }
-    
-    .btn-period {
-        width: 100%;
-    }
 }
 
 .indicator-header {
@@ -191,7 +200,7 @@
 
 .indicator-cards {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);  /* 5 columns for 5 financial indicators */
+    grid-template-columns: repeat(5, 1fr);
     gap: 15px;
     margin-bottom: 20px;
 }
@@ -208,10 +217,12 @@
     position: relative;
 }
 
-.indicator-card:hover {
-    border-color: #17a2b8;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
+@media (hover: hover) and (pointer: fine) {
+    .indicator-card:hover {
+        border-color: #17a2b8;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
+    }
 }
 
 .indicator-card.active {
@@ -220,7 +231,6 @@
     box-shadow: 0 4px 8px rgba(23, 162, 184, 0.2);
 }
 
-/* Add click indicator to cards */
 .indicator-card::after {
     content: "Click for details";
     position: absolute;
@@ -233,8 +243,10 @@
     transition: opacity 0.3s ease;
 }
 
-.indicator-card:hover::after {
-    opacity: 1;
+@media (hover: hover) and (pointer: fine) {
+    .indicator-card:hover::after {
+        opacity: 1;
+    }
 }
 
 .indicator-icon {
@@ -302,9 +314,11 @@
     transition: all 0.2s ease;
 }
 
-.property-checkbox:hover {
-    background: #e9ecef;
-    border-color: #17a2b8;
+@media (hover: hover) and (pointer: fine) {
+    .property-checkbox:hover {
+        background: #e9ecef;
+        border-color: #17a2b8;
+    }
 }
 
 .property-checkbox input[type="checkbox"] {
@@ -449,16 +463,20 @@
     font-weight: 500;
 }
 
-.data-table tbody tr:hover {
-    background: #f8f9fa;
+@media (hover: hover) and (pointer: fine) {
+    .data-table tbody tr:hover {
+        background: #f8f9fa;
+    }
 }
 
 .data-table tbody tr:nth-child(even) {
     background: #fdfdfd;
 }
 
-.data-table tbody tr:nth-child(even):hover {
-    background: #f0f0f0;
+@media (hover: hover) and (pointer: fine) {
+    .data-table tbody tr:nth-child(even):hover {
+        background: #f0f0f0;
+    }
 }
 
 .average-row {
@@ -467,8 +485,10 @@
     font-weight: bold;
 }
 
-.average-row:hover {
-    background: #138496 !important;
+@media (hover: hover) and (pointer: fine) {
+    .average-row:hover {
+        background: #138496 !important;
+    }
 }
 
 .highlighted-column {
@@ -493,9 +513,11 @@
     padding: 12px 25px 12px 15px;
 }
 
-.sortable-header:hover {
-    background-color: #e9ecef !important;
-    color: #17a2b8;
+@media (hover: hover) and (pointer: fine) {
+    .sortable-header:hover {
+        background-color: #e9ecef !important;
+        color: #17a2b8;
+    }
 }
 
 .sortable-header.sorted-asc,
@@ -505,7 +527,6 @@
     font-weight: 700;
 }
 
-/* Sort icon styles */
 .sort-icon {
     position: absolute;
     right: 8px;
@@ -516,8 +537,10 @@
     transition: all 0.2s ease;
 }
 
-.sortable-header:hover .sort-icon {
-    opacity: 0.8;
+@media (hover: hover) and (pointer: fine) {
+    .sortable-header:hover .sort-icon {
+        opacity: 0.8;
+    }
 }
 
 .sortable-header.sorted-asc .sort-icon,
@@ -538,15 +561,10 @@
     content: "\f0dc";
 }
 
-.highlighted-column {
-    background-color: #e3f2fd !important;
-    font-weight: 600;
-    border-left: 3px solid #17a2b8;
-    border-right: 3px solid #17a2b8;
-}
-
-.data-table tbody tr:hover .highlighted-column {
-    background-color: #bbdefb !important;
+@media (hover: hover) and (pointer: fine) {
+    .data-table tbody tr:hover .highlighted-column {
+        background-color: #bbdefb !important;
+    }
 }
 
 .average-row .highlighted-column {
@@ -685,7 +703,7 @@
     font-weight: 500;
 }
 
-/* Button Styles matching your app */
+/* Button Styles */
 .btn-info {
     background-color: #17a2b8;
     color: white;
@@ -695,13 +713,15 @@
     font-weight: 500;
 }
 
-.btn-info:hover {
-    background-color: #138496;
-    border-color: #117a8b;
-    color: white;
-    text-decoration: none;
-    transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+@media (hover: hover) and (pointer: fine) {
+    .btn-info:hover {
+        background-color: #138496;
+        border-color: #117a8b;
+        color: white;
+        text-decoration: none;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
 }
 
 .btn-secondary {
@@ -710,17 +730,19 @@
     color: white;
 }
 
-.btn-secondary:hover {
-    background-color: #5a6268;
-    border-color: #545b62;
-    color: white;
-    transform: translateY(-1px);
+@media (hover: hover) and (pointer: fine) {
+    .btn-secondary:hover {
+        background-color: #5a6268;
+        border-color: #545b62;
+        color: white;
+        transform: translateY(-1px);
+    }
 }
 
 /* Responsive Design */
 @media (max-width: 1200px) {
     .indicator-cards {
-        grid-template-columns: repeat(3, 1fr);  /* 3 columns on medium screens */
+        grid-template-columns: repeat(3, 1fr);
         gap: 10px;
     }
     
@@ -730,38 +752,373 @@
     }
 }
 
+/* ============================================================
+   MOBILE (≤768px) — phone treatment
+   ============================================================ */
 @media (max-width: 768px) {
-    .indicator-cards {
-        grid-template-columns: repeat(2, 1fr);  /* 2 columns on tablets */
-        gap: 10px;
+    /* Inputs need 16px to prevent iOS zoom */
+    input, select, textarea, .form-control {
+        font-size: 16px !important;
     }
     
-    .charts-grid {
-        grid-template-columns: 1fr;
-        gap: 15px;
-    }
-    
-    .property-grid {
-        grid-template-columns: 1fr;
+    /* Action row: primary fills, back is icon-only square */
+    .action-row {
         gap: 8px;
     }
-    
-    .selection-header {
-        flex-direction: column;
-        gap: 15px;
-        align-items: stretch;
+    .action-primary {
+        flex: 1 1 auto;
+        min-height: 44px;
+        font-size: 15px;
+    }
+    .action-back {
+        flex: 0 0 44px;
+        width: 44px;
+        height: 44px;
+        padding: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .action-back-label {
+        display: none;
     }
     
+    /* Indicator cards: 2-up on mobile */
+    .indicator-panel {
+        padding: 15px;
+    }
+    .indicator-cards {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+    }
+    .indicator-card {
+        padding: 12px 8px;
+    }
+    .indicator-icon {
+        font-size: 20px;
+        margin-bottom: 6px;
+    }
+    .indicator-label {
+        font-size: 11px;
+    }
+    .indicator-value {
+        font-size: 16px;
+    }
+    /* Hide the "Click for details" hint on mobile (it's hover-driven) */
+    .indicator-card::after {
+        display: none;
+    }
+    
+    /* Property selection: stack header, narrow padding */
+    .property-selection-panel {
+        padding: 14px;
+    }
+    .selection-header {
+        flex-direction: column;
+        gap: 12px;
+        align-items: stretch;
+    }
+    .selection-title {
+        font-size: 16px;
+        justify-content: center;
+    }
     .selection-buttons {
         justify-content: center;
     }
-    
-    .mini-chart-container {
-        height: 200px;
+    .property-grid {
+        grid-template-columns: 1fr;
+        gap: 6px;
+    }
+    .property-checkbox {
+        padding: 10px 12px;
     }
     
-    .modal-xl {
-        max-width: 95%;
+    /* Charts: stack 1-per-row, slightly shorter */
+    .charts-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+    .chart-panel {
+        padding: 14px;
+    }
+    .chart-header {
+        margin-bottom: 12px;
+        padding-bottom: 10px;
+    }
+    .chart-title {
+        font-size: 15px;
+    }
+    .chart-subtitle {
+        font-size: 13px;
+    }
+    .mini-chart-container {
+        height: 220px;
+    }
+    
+    /* === MAIN DATA TABLE → CARDS === */
+    .table-panel {
+        background: transparent;
+        border: none;
+        box-shadow: none;
+    }
+    .table-header {
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        margin-bottom: 12px;
+        padding: 12px 15px;
+    }
+    .table-title {
+        font-size: 15px;
+        justify-content: center;
+    }
+    .table-container {
+        overflow-x: visible;
+    }
+    .data-table {
+        background: transparent;
+    }
+    .data-table thead {
+        display: none;
+    }
+    .data-table tbody {
+        display: block;
+    }
+    .data-table tbody tr {
+        display: block;
+        background: white !important;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 12px 14px;
+        margin-bottom: 10px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    .data-table tbody tr:nth-child(even) {
+        background: white !important;
+    }
+    .data-table tbody td {
+        display: block;
+        padding: 6px 0;
+        border: none;
+        text-align: left !important;
+        font-size: 13px;
+    }
+    /* First TD = property name (card title) */
+    .data-table tbody td:first-child {
+        font-size: 15px;
+        font-weight: 700;
+        color: #2c3e50;
+        padding: 0 0 8px 0;
+        border-bottom: 1px solid #f1f3f5;
+        margin-bottom: 6px;
+    }
+    /* Remaining TDs use data-label::before for the field name */
+    .data-table tbody td:not(:first-child)::before {
+        content: attr(data-label);
+        display: inline-block;
+        width: 60%;
+        font-size: 11px;
+        font-weight: 600;
+        color: #6c757d;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+    }
+    .data-table tbody td:not(:first-child) {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    /* PORTFOLIO TOTALS row keeps teal background */
+    .data-table tbody tr.average-row {
+        background: #17a2b8 !important;
+        color: white !important;
+    }
+    .data-table tbody tr.average-row td:first-child {
+        color: white;
+        border-bottom-color: rgba(255,255,255,0.3);
+    }
+    .data-table tbody tr.average-row td:not(:first-child)::before {
+        color: rgba(255,255,255,0.85);
+    }
+    .data-table tbody tr.average-row .highlighted-column {
+        background: transparent !important;
+        border: none;
+    }
+    /* Highlighted column on mobile cards: just emphasise the value */
+    .data-table tbody td.highlighted-column {
+        background: #e3f2fd !important;
+        border-left: none;
+        border-right: none;
+        border-radius: 4px;
+        padding: 8px 10px;
+    }
+    .data-table tbody tr.average-row td.highlighted-column {
+        background: rgba(255,255,255,0.15) !important;
+        border-radius: 4px;
+        padding: 8px 10px;
+    }
+    
+    /* === MODAL (modal-xl) → FULL-SCREEN ON MOBILE === */
+    .modal-dialog.modal-xl {
+        max-width: 100% !important;
+        width: 100% !important;
+        margin: 0 !important;
+        height: 100dvh !important;
+        max-height: 100dvh !important;
+    }
+    .modal-dialog.modal-xl .modal-content {
+        height: 100dvh !important;
+        max-height: 100dvh !important;
+        border-radius: 0 !important;
+        border: none !important;
+        display: flex;
+        flex-direction: column;
+        box-sizing: border-box;
+        padding-top: env(safe-area-inset-top);
+        padding-bottom: env(safe-area-inset-bottom);
+    }
+    .modal-dialog.modal-xl .modal-header {
+        flex: 0 0 auto;
+        padding: 14px 16px;
+    }
+    .modal-dialog.modal-xl .modal-title {
+        font-size: 16px;
+    }
+    .modal-dialog.modal-xl .modal-body {
+        flex: 1 1 auto;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        padding: 14px 16px;
+    }
+    .modal-dialog.modal-xl .modal-footer {
+        flex: 0 0 auto;
+        flex-direction: column-reverse;
+        gap: 8px;
+        padding: 12px 16px;
+    }
+    .modal-dialog.modal-xl .modal-footer .btn {
+        width: 100%;
+        margin: 0 !important;
+        min-height: 44px;
+    }
+    
+    /* Modal indicator info: stack columns, smaller text */
+    .modal-indicator-info {
+        padding: 14px;
+    }
+    .modal-indicator-info .row > [class*="col-"] {
+        margin-bottom: 10px;
+    }
+    .modal-indicator-info .text-md-right,
+    .modal-indicator-info .text-right {
+        text-align: left !important;
+    }
+    .modal-portfolio-average {
+        padding: 10px;
+        text-align: left;
+    }
+    
+    /* Modal legend: stack vertically with line breaks */
+    .modal-legend .d-flex {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 6px !important;
+    }
+    
+    /* === MODAL PROPERTY TABLE → CARDS === */
+    #modalPropertyTable {
+        font-size: 13px;
+    }
+    #modalPropertyTable thead {
+        display: none;
+    }
+    #modalPropertyTable tbody {
+        display: block;
+    }
+    #modalPropertyTable tbody tr {
+        display: block;
+        background: white !important;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 12px 14px;
+        margin-bottom: 10px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        position: relative;
+    }
+    /* Performance row tints */
+    #modalPropertyTable tbody tr.performance-excellent {
+        background: rgba(40, 167, 69, 0.08) !important;
+        border-left: 4px solid #28a745;
+    }
+    #modalPropertyTable tbody tr.performance-good {
+        background: rgba(255, 193, 7, 0.08) !important;
+        border-left: 4px solid #ffc107;
+    }
+    #modalPropertyTable tbody tr.performance-poor {
+        background: rgba(220, 53, 69, 0.08) !important;
+        border-left: 4px solid #dc3545;
+    }
+    #modalPropertyTable tbody td {
+        display: block;
+        padding: 5px 0;
+        border: none;
+        text-align: left !important;
+        font-size: 13px;
+    }
+    /* Hide rank cell on mobile (low value, takes a row) */
+    #modalPropertyTable tbody td.cell-rank {
+        display: none;
+    }
+    /* Property name cell: card title */
+    #modalPropertyTable tbody td.cell-prop-name {
+        font-size: 15px;
+        font-weight: 700;
+        color: #2c3e50;
+        padding: 0 0 8px 0;
+        border-bottom: 1px solid #f1f3f5;
+        margin-bottom: 8px;
+    }
+    /* Performance level cell: top-right badge */
+    #modalPropertyTable tbody td.cell-perf-level {
+        position: absolute;
+        top: 12px;
+        right: 14px;
+        padding: 0;
+    }
+    /* Other cells: data-label key, value right-aligned */
+    #modalPropertyTable tbody td.cell-perf-value::before,
+    #modalPropertyTable tbody td.cell-vs-avg::before {
+        content: attr(data-label);
+        display: inline-block;
+        width: 60%;
+        font-size: 11px;
+        font-weight: 600;
+        color: #6c757d;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+    }
+    #modalPropertyTable tbody td.cell-perf-value,
+    #modalPropertyTable tbody td.cell-vs-avg {
+        display: flex !important;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    /* Modal summary stats: stack with smaller padding */
+    .modal-summary {
+        padding: 14px;
+    }
+    .modal-summary .row > [class*="col-"] {
+        margin-bottom: 8px;
+    }
+    .summary-stat {
+        padding: 10px;
+    }
+    .summary-stat .stat-value {
+        font-size: 20px;
+    }
+    .summary-stat .stat-label {
+        font-size: 12px;
     }
     
     .sortable-header {
@@ -775,32 +1132,20 @@
     }
 }
 
-@media (max-width: 576px) {
-    .indicator-cards {
-        grid-template-columns: 1fr;
+/* Very narrow phones (≤380px): tighten indicator cards to single column? No — keep 2-up. */
+@media (max-width: 380px) {
+    .indicator-card {
+        padding: 10px 6px;
     }
-    
-    .data-table {
-        font-size: 12px;
+    .indicator-label {
+        font-size: 10px;
     }
-    
-    .data-table th,
-    .data-table td {
-        padding: 8px 6px;
+    .indicator-value {
+        font-size: 14px;
     }
-    
-    .mini-chart-container {
-        height: 180px;
-    }
-    
-    .sortable-header {
-        padding: 6px 18px 6px 4px;
-        font-size: 11px;
-    }
-    
-    .sort-icon {
-        right: 2px;
-        font-size: 9px;
+    .data-table tbody tr,
+    #modalPropertyTable tbody tr {
+        padding: 10px 12px;
     }
 }
 </style>
@@ -1002,7 +1347,7 @@ class PropertyFinancialDashboard {
                                     <tr>
                                         <td>${property.name}</td>
                                         ${this.indicators.map(indicator => 
-                                            `<td class="${this.sortConfig.column === indicator.key ? 'highlighted-column' : ''}">${indicator.format(property[indicator.key])}</td>`
+                                            `<td data-label="${indicator.label}" class="${this.sortConfig.column === indicator.key ? 'highlighted-column' : ''}">${indicator.format(property[indicator.key])}</td>`
                                         ).join('')}
                                     </tr>
                                 `).join('')}
@@ -1011,7 +1356,7 @@ class PropertyFinancialDashboard {
                                 <tr class="average-row">
                                     <td>PORTFOLIO TOTALS</td>
                                     ${this.indicators.map(indicator => 
-                                        `<td class="${this.sortConfig.column === indicator.key ? 'highlighted-column' : ''}">${indicator.format(this.portfolioIndicators[indicator.key] || 0)}</td>`
+                                        `<td data-label="${indicator.label}" class="${this.sortConfig.column === indicator.key ? 'highlighted-column' : ''}">${indicator.format(this.portfolioIndicators[indicator.key] || 0)}</td>`
                                     ).join('')}
                                 </tr>
                             </tbody>
@@ -1119,7 +1464,6 @@ class PropertyFinancialDashboard {
         const indicator = this.indicators.find(ind => ind.key === indicatorKey);
         if (!indicator) return;
         
-        // Use average for vacancy cost modal comparison, otherwise use the main value
         const portfolioAverage = indicatorKey === 'vacancyCost' 
             ? (this.portfolioIndicators['vacancyCostAverage'] || 0)
             : (this.portfolioIndicators[indicatorKey] || 0);
@@ -1133,7 +1477,8 @@ class PropertyFinancialDashboard {
         `;
         
         let propertiesToShow = this.properties;
-        if (indicatorKey === 'occupancyRate' || indicatorKey === 'avgDaysToFill' || indicatorKey === 'vacancyCost') {propertiesToShow = this.properties.filter(p => p[indicatorKey] !== null && p[indicatorKey] !== undefined);
+        if (indicatorKey === 'occupancyRate' || indicatorKey === 'avgDaysToFill' || indicatorKey === 'vacancyCost') {
+            propertiesToShow = this.properties.filter(p => p[indicatorKey] !== null && p[indicatorKey] !== undefined);
         }
         
         const sortedProperties = [...propertiesToShow].sort((a, b) => {
@@ -1221,13 +1566,14 @@ class PropertyFinancialDashboard {
                 difference = `${difference > 0 ? '+' : ''}${difference}%`;
             }
             
+            // ====== MOBILE-AWARE TABLE ROW: classes + data-label for cards mode ======
             return `
                 <tr class="performance-${performanceClass}">
-                    <td><strong>${index + 1}</strong></td>
-                    <td>${property.name}</td>
-                    <td><strong style="color: ${indicator.color};">${formattedValue}</strong></td>
-                    <td>${difference}</td>
-                    <td>
+                    <td class="cell-rank"><strong>${index + 1}</strong></td>
+                    <td class="cell-prop-name">${property.name}</td>
+                    <td class="cell-perf-value" data-label="Performance"><strong style="color: ${indicator.color};">${formattedValue}</strong></td>
+                    <td class="cell-vs-avg" data-label="vs Avg">${difference}</td>
+                    <td class="cell-perf-level">
                         <span class="performance-badge ${performanceClass}">${performanceLevel}</span>
                     </td>
                 </tr>
@@ -1344,17 +1690,14 @@ class PropertyFinancialDashboard {
     }
     
     renderIndicatorChart(indicator, filteredProperties = null) {
-        // Use filtered properties if provided, otherwise use all properties
         const propertiesToUse = filteredProperties || this.properties;
         
         let data = propertiesToUse.map(p => p[indicator.key]);
         let labels = propertiesToUse.map(p => p.name);
-        // Use average for vacancy cost, otherwise use the main value
         const portfolioAverage = indicator.key === 'vacancyCost' 
             ? this.portfolioIndicators['vacancyCostAverage']
             : this.portfolioIndicators[indicator.key];
         
-        // For occupancy metrics and vacancy cost, filter out properties with null values (excluded properties)
         if (indicator.key === 'occupancyRate' || indicator.key === 'avgDaysToFill' || indicator.key === 'vacancyCost') {
             const validIndices = [];
             data.forEach((value, index) => {
@@ -1363,42 +1706,32 @@ class PropertyFinancialDashboard {
                 }
             });
             
-            // Filter both data and labels
             data = validIndices.map(idx => data[idx]);
             labels = validIndices.map(idx => labels[idx]);
         }
         
-        // If no valid data, don't render chart
         if (data.length === 0) {
             return;
         }
         
-        // SORT DATA FROM BEST TO WORST
         const combined = data.map((value, index) => ({ value, label: labels[index] }));
         
-        // Sort based on whether lower or higher is better
         if (indicator.key === 'expensesToRevenue' || indicator.key === 'avgDaysToFill' || indicator.key === 'vacancyCost') {
-            // Lower is better - sort ascending
             combined.sort((a, b) => a.value - b.value);
         } else {
-            // Higher is better - sort descending
             combined.sort((a, b) => b.value - a.value);
         }
         
-        // Extract sorted data and labels
         data = combined.map(item => item.value);
         labels = combined.map(item => item.label);
         
-        // Color bars based on performance relative to portfolio average
         const backgroundColors = data.map(value => {
-            // For these metrics, LOWER is BETTER
             if (indicator.key === 'expensesToRevenue' || indicator.key === 'avgDaysToFill' || indicator.key === 'vacancyCost') {
                 if ((indicator.key === 'avgDaysToFill' || indicator.key === 'vacancyCost') && value === 0) {
-                    return '#28a745'; // Green - perfect (no vacancy)
+                    return '#28a745';
                 }
                 return value <= portfolioAverage ? '#28a745' : value <= portfolioAverage * 1.2 ? '#ffc107' : '#dc3545';
             } else {
-                // For other indicators, HIGHER is BETTER
                 return value >= portfolioAverage ? '#28a745' : value >= portfolioAverage * 0.8 ? '#ffc107' : '#dc3545';
             }
         });
@@ -1406,7 +1739,6 @@ class PropertyFinancialDashboard {
         const ctx = document.getElementById(`chart-${indicator.key}`);
         if (!ctx) return;
         
-        // Destroy existing chart if it exists
         if (this.charts[indicator.key]) {
             this.charts[indicator.key].destroy();
         }
@@ -1414,10 +1746,10 @@ class PropertyFinancialDashboard {
         this.charts[indicator.key] = new Chart(ctx, {
             type: 'bar',
             data: {
-                labels: labels,  // Use filtered labels
+                labels: labels,
                 datasets: [{
                     label: indicator.label,
-                    data: data,  // Use filtered data
+                    data: data,
                     backgroundColor: backgroundColors,
                     borderColor: backgroundColors,
                     borderWidth: 1
@@ -1537,7 +1869,6 @@ function loadDashboard() {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Load dashboard
     loadDashboard();
 });
 </script>

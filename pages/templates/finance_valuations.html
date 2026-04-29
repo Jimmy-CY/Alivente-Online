@@ -5,142 +5,534 @@
 {% load help_modal_tags %}
 
 {% block title %}
+ALIVENTE ONLINE - PROPERTY VALUATIONS
 {% endblock %}
+
 {% block content %}
+
 <h2><center>ALIVENTE ONLINE - PROPERTY VALUATIONS</center></h2>
 <br/>
-  {% for msg in messages %}
-    <div class="alert alert-secondary alert-dismissible fade show auto-dismiss" role="alert">
-      <strong></strong> <center>{{ msg }}</center>
-      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-        <span aria-hidden="true">&times;</span>
-      </button>
-    </div>
-    <script>
-      // Automatically close the alert after 3 seconds (3000 milliseconds)
-      setTimeout(function() {
-        document.querySelectorAll('.auto-dismiss').forEach(alert => {
-          alert.classList.remove('show'); // Hide alert visually
-          alert.classList.add('fade'); // Add fade effect
-          setTimeout(() => alert.remove(), 500); // Remove from DOM after fade
-        });
-      }, 2000);
-    </script>
-  {% endfor %}
-  
+
+{% for msg in messages %}
+  <div class="alert alert-secondary alert-dismissible fade show auto-dismiss" role="alert">
+    <strong></strong> <center>{{ msg }}</center>
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <script>
+    setTimeout(function() {
+      document.querySelectorAll('.auto-dismiss').forEach(alert => {
+        alert.classList.remove('show');
+        alert.classList.add('fade');
+        setTimeout(() => alert.remove(), 500);
+      });
+    }, 2000);
+  </script>
+{% endfor %}
+
 <body>
 {% if perms.auth.can_access_financials %}
-  <div style="display: flex ; justify-content: flex-end">
-    <button type="button" class="btn btn-info" style="margin-right:16px" data-toggle="modal" data-target="#finance_valuationsHelpModal">
-      <i class="fas fa-question-circle"></i> Help
+
+<!-- Action Buttons: Back+2+ pattern -->
+<div class="action-buttons-wrap">
+  {% if perms.auth.can_edit_financials %}
+    <a href="{% url 'finance_valuations_add' %}" class="action-primary">
+      <i class="fas fa-plus"></i> Add New
+    </a>
+  {% else %}
+    <span class="action-primary action-primary--disabled" title="You do not have permission">
+      <i class="fas fa-plus"></i> Add New
+    </span>
+  {% endif %}
+
+  <button type="button" class="action-secondary" data-toggle="modal" data-target="#finance_valuationsHelpModal">
+    <i class="fas fa-question-circle"></i> Help
+  </button>
+
+  <!-- Mobile: More menu (hidden on desktop) -->
+  <div class="action-more-wrapper">
+    <button type="button" class="action-more-btn" id="actionMoreBtn" aria-label="More actions" aria-expanded="false">
+      <i class="fas fa-ellipsis-v"></i>
     </button>
-    {% if perms.auth.can_edit_financials %}
-      <a href="{% url 'finance_valuations_add' %}" class="btn btn-info" style="margin-right:16px" type="button">Add New</a>
-    {% else %}
-      <span class="btn btn-secondary" style="margin-right:16px; opacity:0.6; cursor:not-allowed; pointer-events:none;">Add New</span>
-    {% endif %}
-    <a href="{% url 'finance' %}" class="btn btn-info" style="margin-right:16px" role="button">Back</a>
+    <div class="action-more-menu" id="actionMoreMenu" role="menu">
+      <button type="button" class="action-more-item" data-toggle="modal" data-target="#finance_valuationsHelpModal" role="menuitem">
+        <i class="fas fa-question-circle"></i> Help
+      </button>
+    </div>
   </div>
-<br>
-<form action="" method="">
-  {% csrf_token %}
-  <div>
-    <table class="table table-bordered table-striped text-center">
-      <thead>
-        <tr>
-          <th style="text-align: left; width: 25%">Property</th>
-          <th style="text-align: center; width: 8%">m²</th>
-          <th style="text-align: right; width: 13%">Purchase Price</th>
-          <th style="text-align: right; width: 11%">Price/m²</th>
-          <th style="text-align: right; width: 13%">Current Value</th>
-          <th style="text-align: right; width: 11%">Value/m²</th>
-          <th style="text-align: right; width: 11%">Gain %</th>
-          <th style="text-align: center; width: 8%">Details</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for property in props %}
-          {% with valuation=prop_values|get_item:property.prop_id %}
-            {% if valuation %}
-              <tr>
-                <td style="text-align: left">{{ property.prop_name }}</td>
-                <td style="text-align: center">
-                  {% if property.prop_floor_area %}
-                    {{ property.prop_floor_area|floatformat:0 }}
-                  {% else %}
-                    <span style="color: #999;">—</span>
-                  {% endif %}
-                </td>
-                <td style="text-align: right">€ {{ valuation.prop_values_purchase_price|floatformat:"0"|intcomma }}</td>
-                <td style="text-align: right">
-                  {% if property.prop_floor_area and valuation.prop_values_purchase_price %}
-                    €{{ valuation.prop_values_purchase_price|divide_by:property.prop_floor_area|floatformat:0|intcomma }}
-                  {% else %}
-                    <span style="color: #999;">—</span>
-                  {% endif %}
-                </td>
-                <td style="text-align: right">€ {{ valuation.prop_values_current_value|floatformat:"0"|intcomma }}</td>
-                <td style="text-align: right">
-                  {% if property.prop_floor_area and valuation.prop_values_current_value %}
-                    €{{ valuation.prop_values_current_value|divide_by:property.prop_floor_area|floatformat:0|intcomma }}
-                  {% else %}
-                    <span style="color: #999;">—</span>
-                  {% endif %}
-                </td>
-                <td style="text-align: right">
-                  {% if valuation.prop_values_purchase_price and valuation.prop_values_current_value %}
-                    {% with gain=valuation.prop_values_current_value|subtract:valuation.prop_values_purchase_price %}
-                      {% with percentage=gain|multiply:100|divide_by:valuation.prop_values_purchase_price %}
-                        <span style="color: {% if percentage >= 0 %}#28a745{% else %}#dc3545{% endif %}; font-weight: 500;">
-                          {% if percentage >= 0 %}+{% endif %}{{ percentage|floatformat:1 }}%
-                        </span>
-                      {% endwith %}
+
+  <a href="{% url 'finance' %}" class="action-back" title="Back to Finance">
+    <i class="fas fa-arrow-left"></i>
+    <span class="action-back-label">Back</span>
+  </a>
+</div>
+
+<div class="valuations-table-container">
+  <table class="table table-bordered table-striped text-center valuations-table">
+    <thead>
+      <tr>
+        <th style="text-align: left; width: 25%">Property</th>
+        <th style="text-align: center; width: 8%">m²</th>
+        <th style="text-align: right; width: 13%">Purchase Price</th>
+        <th style="text-align: right; width: 11%">Price/m²</th>
+        <th style="text-align: right; width: 13%">Current Value</th>
+        <th style="text-align: right; width: 11%">Value/m²</th>
+        <th style="text-align: right; width: 11%">Gain %</th>
+        <th style="text-align: center; width: 8%">Edit</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for property in props %}
+        {% with valuation=prop_values|get_item:property.prop_id %}
+          {% if valuation %}
+            <tr>
+              <td data-label="Property" class="cell-property" style="text-align: left">{{ property.prop_name }}</td>
+              <td data-label="Floor Area" class="cell-area" style="text-align: center">
+                {% if property.prop_floor_area %}
+                  {{ property.prop_floor_area|floatformat:0 }}
+                {% else %}
+                  <span style="color: #999;">—</span>
+                {% endif %}
+              </td>
+              <td data-label="Purchase Price" class="cell-purchase" style="text-align: right">€ {{ valuation.prop_values_purchase_price|floatformat:"0"|intcomma }}</td>
+              <td data-label="Price/m²" class="cell-price-sqm" style="text-align: right">
+                {% if property.prop_floor_area and valuation.prop_values_purchase_price %}
+                  €{{ valuation.prop_values_purchase_price|divide_by:property.prop_floor_area|floatformat:0|intcomma }}
+                {% else %}
+                  <span style="color: #999;">—</span>
+                {% endif %}
+              </td>
+              <td data-label="Current Value" class="cell-current" style="text-align: right">€ {{ valuation.prop_values_current_value|floatformat:"0"|intcomma }}</td>
+              <td data-label="Value/m²" class="cell-value-sqm" style="text-align: right">
+                {% if property.prop_floor_area and valuation.prop_values_current_value %}
+                  €{{ valuation.prop_values_current_value|divide_by:property.prop_floor_area|floatformat:0|intcomma }}
+                {% else %}
+                  <span style="color: #999;">—</span>
+                {% endif %}
+              </td>
+              <td data-label="Gain %" class="cell-gain" style="text-align: right">
+                {% if valuation.prop_values_purchase_price and valuation.prop_values_current_value %}
+                  {% with gain=valuation.prop_values_current_value|subtract:valuation.prop_values_purchase_price %}
+                    {% with percentage=gain|multiply:100|divide_by:valuation.prop_values_purchase_price %}
+                      <span style="color: {% if percentage >= 0 %}#28a745{% else %}#dc3545{% endif %}; font-weight: 500;">
+                        {% if percentage >= 0 %}+{% endif %}{{ percentage|floatformat:1 }}%
+                      </span>
                     {% endwith %}
-                  {% else %}
-                    <span style="color: #999;">—</span>
-                  {% endif %}
-                </td>
-                <td>
-                  {% if perms.auth.can_edit_financials %}
-                    <button type="button" class="btn btn-light" style="border-color:black; width: 100%">
-                      <a href="{% url 'finance_valuations_edit' valuation.prop_values_id %}">Edit</a>
-                    </button>
-                  {% else %}
-                    <button type="button" class="btn btn-light" style="border-color:black; width: 100%; opacity:0.5; cursor:not-allowed; pointer-events:none;" disabled>
-                      <span style="color: #999;">Edit</span>
-                    </button>
-                  {% endif %}
-                </td>
-              </tr>
-            {% endif %}
-          {% endwith %}
-        {% endfor %}
-        <tr>
-          <td style="font-weight:bold" align="right" colspan="2">TOTAL: </td>
-          <td style="font-weight:bold" align="right">€ {{ pur_balance|default:0|floatformat:"0"|intcomma }}</td>
-          <td></td>
-          <td style="font-weight:bold" align="right">€ {{ cur_balance|default:0|floatformat:"0"|intcomma }}</td>
-          <td></td>
-          <td style="font-weight:bold" align="right">
-            {% if pur_balance and cur_balance %}
-              {% with total_gain=cur_balance|subtract:pur_balance %}
-                {% with total_percentage=total_gain|multiply:100|divide_by:pur_balance %}
-                  <span style="color: {% if total_percentage >= 0 %}#28a745{% else %}#dc3545{% endif %};">
-                    {% if total_percentage >= 0 %}+{% endif %}{{ total_percentage|floatformat:1 }}%
-                  </span>
-                {% endwith %}
+                  {% endwith %}
+                {% else %}
+                  <span style="color: #999;">—</span>
+                {% endif %}
+              </td>
+              <td data-label="Edit" class="cell-action">
+                {% if perms.auth.can_edit_financials %}
+                  <a href="{% url 'finance_valuations_edit' valuation.prop_values_id %}" class="btn btn-light val-edit-btn">
+                    <i class="fas fa-edit"></i><span class="btn-label-text"> Edit</span>
+                  </a>
+                {% else %}
+                  <button type="button" class="btn btn-light val-edit-btn" disabled>
+                    <i class="fas fa-edit"></i><span class="btn-label-text"> Edit</span>
+                  </button>
+                {% endif %}
+              </td>
+            </tr>
+          {% endif %}
+        {% endwith %}
+      {% endfor %}
+
+      <!-- Totals row -->
+      <tr class="totals-row">
+        <td data-label="" class="cell-totals-label" style="font-weight:bold" align="right" colspan="2">TOTAL: </td>
+        <td data-label="Total Purchase" class="cell-totals-purchase" style="font-weight:bold" align="right">€ {{ pur_balance|default:0|floatformat:"0"|intcomma }}</td>
+        <td data-label="" class="cell-totals-spacer-1"></td>
+        <td data-label="Total Current" class="cell-totals-current" style="font-weight:bold" align="right">€ {{ cur_balance|default:0|floatformat:"0"|intcomma }}</td>
+        <td data-label="" class="cell-totals-spacer-2"></td>
+        <td data-label="Total Gain %" class="cell-totals-gain" style="font-weight:bold" align="right">
+          {% if pur_balance and cur_balance %}
+            {% with total_gain=cur_balance|subtract:pur_balance %}
+              {% with total_percentage=total_gain|multiply:100|divide_by:pur_balance %}
+                <span style="color: {% if total_percentage >= 0 %}#28a745{% else %}#dc3545{% endif %};">
+                  {% if total_percentage >= 0 %}+{% endif %}{{ total_percentage|floatformat:1 }}%
+                </span>
               {% endwith %}
-            {% endif %}
-          </td>
-          <td></td>
-        </tr>
-      </tbody>
-    </table>    
-  </div>
-</form>
+            {% endwith %}
+          {% endif %}
+        </td>
+        <td data-label="" class="cell-totals-spacer-3"></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
 
 {% render_help_modal "finance_valuations" %}
 
 {% endif %}
 </body>
+
+<style>
+/* ============================================================
+   ACTION BUTTONS — Back+2+
+   ============================================================ */
+.action-buttons-wrap {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-bottom: 20px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.action-primary, .action-secondary {
+    background: #17a2b8;
+    border: 1px solid #17a2b8;
+    color: #ffffff;
+    padding: 8px 16px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.action-primary--disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    pointer-events: none;
+    background: #6c757d;
+    border-color: #6c757d;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .action-primary:hover, .action-secondary:hover {
+        background: #138496;
+        border-color: #117a8b;
+        color: white;
+        text-decoration: none;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+}
+
+.action-back {
+    background: transparent;
+    border: 1px solid #17a2b8;
+    color: #17a2b8;
+    padding: 8px 14px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .action-back:hover {
+        background: #17a2b8;
+        color: white;
+        text-decoration: none;
+    }
+}
+
+.action-more-wrapper { position: relative; display: none; }
+
+.action-more-btn {
+    background: transparent;
+    border: 1px solid #17a2b8;
+    color: #17a2b8;
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.action-more-menu {
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    min-width: 180px;
+    z-index: 100;
+    display: none;
+    padding: 6px 0;
+}
+.action-more-menu.show { display: block; }
+
+.action-more-item {
+    width: 100%;
+    background: none;
+    border: none;
+    text-align: left;
+    padding: 10px 16px;
+    color: #495057;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.action-more-item:hover {
+    background: #f8f9fa;
+    color: #17a2b8;
+}
+
+/* ============================================================
+   TABLE — DESKTOP
+   ============================================================ */
+.valuations-table-container {
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.val-edit-btn {
+    border: 1px solid #dee2e6;
+    color: #495057;
+    text-decoration: none;
+    padding: 6px 12px;
+    width: 100%;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+.val-edit-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.val-edit-btn:disabled i,
+.val-edit-btn:disabled .btn-label-text {
+    color: #6c757d;
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .val-edit-btn:hover:not(:disabled) {
+        background: #17a2b8;
+        color: white;
+        border-color: #17a2b8;
+        text-decoration: none;
+        transform: translateY(-1px);
+    }
+}
+
+.btn-label-text { display: none; } /* default — desktop shows just icon plus inline space */
+
+@media (min-width: 769px) {
+    .val-edit-btn .btn-label-text { display: inline; }
+}
+
+/* ============================================================
+   MOBILE (≤768px) — table → cards
+   ============================================================ */
+@media (max-width: 768px) {
+
+    .action-buttons-wrap {
+        gap: 8px;
+        align-items: stretch;
+    }
+    .action-primary {
+        flex: 1 1 auto;
+        min-width: 0;
+        justify-content: center;
+        padding: 12px 14px;
+        font-size: 15px;
+    }
+    .action-secondary { display: none; }
+    .action-more-wrapper { display: inline-block; flex-shrink: 0; }
+    .action-more-btn {
+        padding: 12px 14px;
+        min-width: 44px;
+        min-height: 44px;
+    }
+    .action-back {
+        flex-shrink: 0;
+        padding: 12px 14px;
+        min-width: 44px;
+        min-height: 44px;
+        justify-content: center;
+    }
+    .action-back-label { display: none; }
+
+    /* Table → cards */
+    .valuations-table-container {
+        background: transparent;
+        box-shadow: none;
+        overflow: visible;
+    }
+    .valuations-table,
+    .valuations-table thead,
+    .valuations-table tbody,
+    .valuations-table tr,
+    .valuations-table td {
+        display: block;
+        width: 100%;
+    }
+    .valuations-table thead {
+        position: absolute;
+        top: -9999px;
+        left: -9999px;
+    }
+    .valuations-table { background: transparent; }
+    .valuations-table tr {
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 10px;
+        margin-bottom: 14px;
+        padding: 14px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    }
+    .valuations-table td {
+        text-align: left !important;
+        border: none;
+        padding: 6px 0;
+        font-size: 14px;
+        position: relative;
+    }
+    .valuations-table td[data-label]::before {
+        content: attr(data-label);
+        display: block;
+        font-weight: 600;
+        color: #6c757d;
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 0.4px;
+        margin-bottom: 2px;
+    }
+    /* Empty data-label cells get no prefix at all */
+    .valuations-table td[data-label=""]::before {
+        display: none;
+    }
+
+    /* Property is the card title (large, no label) */
+    .valuations-table td.cell-property {
+        padding-bottom: 10px;
+        margin-bottom: 6px;
+        border-bottom: 1px solid #f1f3f5;
+        font-size: 16px;
+        font-weight: 600;
+        color: #2c3e50;
+    }
+    .valuations-table td.cell-property::before {
+        display: none;
+    }
+
+    /* Group: Floor area + Purchase + Price/m² in 3 columns */
+    .valuations-table td.cell-area,
+    .valuations-table td.cell-purchase,
+    .valuations-table td.cell-price-sqm {
+        display: inline-block !important;
+        width: calc(33.33% - 4px) !important;
+        vertical-align: top;
+        text-align: left !important;
+    }
+    .valuations-table td.cell-purchase   { padding-left: 4px; padding-right: 4px; }
+    .valuations-table td.cell-price-sqm  { padding-left: 4px; }
+
+    /* Group: Current Value + Value/m² + Gain % in 3 columns */
+    .valuations-table td.cell-current,
+    .valuations-table td.cell-value-sqm,
+    .valuations-table td.cell-gain {
+        display: inline-block !important;
+        width: calc(33.33% - 4px) !important;
+        vertical-align: top;
+        text-align: left !important;
+    }
+    .valuations-table td.cell-value-sqm  { padding-left: 4px; padding-right: 4px; }
+    .valuations-table td.cell-gain       { padding-left: 4px; }
+
+    /* Action cell: full-width Edit button */
+    .valuations-table td.cell-action {
+        padding: 10px 0 0 0;
+        margin-top: 8px;
+        border-top: 1px solid #f1f3f5;
+    }
+    .valuations-table td.cell-action::before { display: none; }
+    .val-edit-btn {
+        display: flex;
+        width: 100%;
+        justify-content: center;
+        align-items: center;
+        gap: 6px;
+        padding: 11px;
+        font-size: 14px;
+    }
+    .valuations-table td.cell-action .btn-label-text { display: inline; }
+
+    /* Totals row card — different layout */
+    .valuations-table tr.totals-row {
+        background: #f8f9fa;
+        border: 1px solid #17a2b8;
+    }
+    .valuations-table tr.totals-row td.cell-totals-label,
+    .valuations-table tr.totals-row td.cell-totals-spacer-1,
+    .valuations-table tr.totals-row td.cell-totals-spacer-2,
+    .valuations-table tr.totals-row td.cell-totals-spacer-3 {
+        display: none !important;
+    }
+    .valuations-table tr.totals-row td.cell-totals-purchase,
+    .valuations-table tr.totals-row td.cell-totals-current,
+    .valuations-table tr.totals-row td.cell-totals-gain {
+        display: block !important;
+        width: 100% !important;
+    }
+    .valuations-table tr.totals-row td::before {
+        display: block !important;
+        font-weight: 700 !important;
+        color: #17a2b8 !important;
+    }
+    .valuations-table tr.totals-row::before {
+        content: 'PORTFOLIO TOTAL';
+        display: block;
+        font-weight: 700;
+        color: #17a2b8;
+        font-size: 14px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 8px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid #d1ecf1;
+    }
+}
+</style>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+// More menu (mobile)
+function initializeMoreMenu() {
+    const btn = document.getElementById('actionMoreBtn');
+    const menu = document.getElementById('actionMoreMenu');
+    if (!btn || !menu) return;
+
+    btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        const isOpen = menu.classList.toggle('show');
+        btn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    });
+    document.addEventListener('click', function(e) {
+        if (!menu.contains(e.target) && e.target !== btn && !btn.contains(e.target)) {
+            menu.classList.remove('show');
+            btn.setAttribute('aria-expanded', 'false');
+        }
+    });
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            menu.classList.remove('show');
+            btn.setAttribute('aria-expanded', 'false');
+        }
+    });
+}
+
+document.addEventListener('DOMContentLoaded', initializeMoreMenu);
+</script>
+
 {% endblock %}
