@@ -940,12 +940,16 @@ body .rotate-prompt .rotate-prompt-back:hover,
 </div>
 </div>
 
-<!-- Inline mobile portrait controller — runs as content loads.
-     Uses setProperty('display', value, 'important') which writes
-     an inline style WITH !important — highest possible specificity,
-     wins against any external CSS rule including base.html. -->
+<!-- Inline controller — handles display swap, icon animation, and
+     table column sizing programmatically via JS. This bypasses all
+     CSS cascade issues including base.html overrides. -->
 <script>
 (function() {
+    // ---- BUILD MARKER so we can verify deployment ----
+    console.log('[P&L] v6 inline controller loaded at ' + new Date().toLocaleTimeString());
+
+    var animationStarted = false;
+
     function applyMobilePortrait() {
         var w = window.innerWidth;
         var h = window.innerHeight;
@@ -954,33 +958,133 @@ body .rotate-prompt .rotate-prompt-back:hover,
         var isPhonePortrait = (w <= 768 && h > w);
 
         if (pl) {
-            if (isPhonePortrait) {
-                pl.style.setProperty('display', 'none', 'important');
-            } else {
-                pl.style.setProperty('display', 'block', 'important');
-            }
+            pl.style.setProperty('display', isPhonePortrait ? 'none' : 'block', 'important');
         }
         if (rp) {
-            if (isPhonePortrait) {
-                rp.style.setProperty('display', 'flex', 'important');
-            } else {
-                rp.style.setProperty('display', 'none', 'important');
-            }
+            rp.style.setProperty('display', isPhonePortrait ? 'flex' : 'none', 'important');
         }
         console.log('[P&L] viewport=' + w + 'x' + h + ' phonePortrait=' + isPhonePortrait);
     }
 
-    // Run as soon as possible
-    applyMobilePortrait();
+    // ---- ANIMATION via Web Animations API (bypasses all CSS) ----
+    function startIconAnimation() {
+        if (animationStarted) return;
+        var iconWrapper = document.querySelector('.rotate-prompt-icon');
+        if (!iconWrapper) return;
 
-    // And on every viewport change
-    window.addEventListener('resize', applyMobilePortrait);
+        try {
+            iconWrapper.style.setProperty('display', 'inline-block', 'important');
+            iconWrapper.style.setProperty('transform-origin', 'center center', 'important');
+
+            iconWrapper.animate(
+                [
+                    { transform: 'rotate(0deg)',   offset: 0    },
+                    { transform: 'rotate(-90deg)', offset: 0.25 },
+                    { transform: 'rotate(-90deg)', offset: 0.75 },
+                    { transform: 'rotate(0deg)',   offset: 1    }
+                ],
+                {
+                    duration: 2500,
+                    iterations: Infinity,
+                    easing: 'ease-in-out'
+                }
+            );
+            animationStarted = true;
+            console.log('[P&L] icon animation started via Web Animations API');
+        } catch (e) {
+            console.warn('[P&L] Web Animations API failed:', e);
+        }
+    }
+
+    // ---- FLUID TABLE COLUMNS via inline styles with !important ----
+    // Forces every table cell to a percentage width that always sums
+    // to 100%, so the table fills its container at any viewport size.
+    function applyFluidTableSizing() {
+        var w = window.innerWidth;
+        var table = document.querySelector('.profit-loss-table');
+        var container = document.querySelector('.table-responsive');
+        var outerContainer = document.querySelector('.profit-loss-table-container');
+        if (!table) return;
+
+        // Only force fluid layout on smaller viewports (phones + small tablets)
+        var isMobileWidth = (w <= 1100);
+
+        if (isMobileWidth) {
+            // 1. Outer wrappers: force 100% width, no horizontal scroll
+            if (container) {
+                container.style.setProperty('overflow-x', 'hidden', 'important');
+                container.style.setProperty('width', '100%', 'important');
+                container.style.setProperty('max-width', '100%', 'important');
+            }
+            if (outerContainer) {
+                outerContainer.style.setProperty('width', '100%', 'important');
+                outerContainer.style.setProperty('max-width', '100%', 'important');
+                outerContainer.style.setProperty('overflow-x', 'hidden', 'important');
+            }
+
+            // 2. Table itself: fixed layout, 100% width, no min-width
+            table.style.setProperty('width', '100%', 'important');
+            table.style.setProperty('max-width', '100%', 'important');
+            table.style.setProperty('min-width', '0', 'important');
+            table.style.setProperty('table-layout', 'fixed', 'important');
+
+            // 3. Fluid font size: scales 8px..13px based on viewport
+            var fontSizePx = Math.max(8, Math.min(13, w * 0.014));
+            table.style.setProperty('font-size', fontSizePx + 'px', 'important');
+
+            // 4. Set every cell width as percentage (label 16%, months 5.5%, totals 9%)
+            //    For 15 columns: 16 + 12*5.5 + 2*9 = 16 + 66 + 18 = 100% ✓
+            var rows = table.querySelectorAll('tr');
+            rows.forEach(function(row) {
+                var cells = row.querySelectorAll('td, th');
+                var n = cells.length;
+                cells.forEach(function(cell, i) {
+                    cell.style.setProperty('min-width', '0', 'important');
+                    cell.style.setProperty('max-width', 'none', 'important');
+                    cell.style.setProperty('padding', '3px 1px', 'important');
+                    cell.style.setProperty('overflow', 'hidden', 'important');
+                    cell.style.setProperty('text-overflow', 'ellipsis', 'important');
+
+                    if (i === 0) {
+                        // First column: label
+                        cell.style.setProperty('width', '16%', 'important');
+                        cell.style.setProperty('white-space', 'normal', 'important');
+                        cell.style.setProperty('line-height', '1.15', 'important');
+                        cell.style.setProperty('text-align', 'left', 'important');
+                    } else if (i >= n - 2) {
+                        // Last two columns: Total + Monthly
+                        cell.style.setProperty('width', '9%', 'important');
+                        cell.style.setProperty('white-space', 'nowrap', 'important');
+                    } else {
+                        // Month columns
+                        cell.style.setProperty('width', '5.5%', 'important');
+                        cell.style.setProperty('white-space', 'nowrap', 'important');
+                    }
+                });
+            });
+
+            console.log('[P&L] fluid table applied at ' + w + 'px wide, font=' + fontSizePx.toFixed(1) + 'px');
+        }
+    }
+
+    // ---- RUN EVERYTHING ----
+    function runAll() {
+        applyMobilePortrait();
+        applyFluidTableSizing();
+        startIconAnimation();
+    }
+
+    runAll();
+    window.addEventListener('resize', runAll);
     window.addEventListener('orientationchange', function() {
-        setTimeout(applyMobilePortrait, 200);
+        setTimeout(runAll, 200);
     });
-    // Run again after DOM fully loaded in case base.html JS adjusts things
     if (document.readyState !== 'complete') {
-        window.addEventListener('load', applyMobilePortrait);
+        window.addEventListener('load', runAll);
+    }
+    // Also run on DOMContentLoaded for safety
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', runAll);
     }
 })();
 </script>
