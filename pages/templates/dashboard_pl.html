@@ -327,17 +327,17 @@ body .rotate-prompt .rotate-prompt-back:hover,
     }
 }
 
-/* Mobile landscape — tighten further so the 15-column table fits
-   into ~700-850px landscape phones without needing horizontal scroll.
-   Combines orientation and aspect-ratio for maximum compatibility. */
+/* Mobile landscape — fluid sizing that always fits 100% of the
+   available viewport width, regardless of phone size.
+   Uses percentage column widths and viewport-clamped font-size. */
 @media (max-width: 900px) and (orientation: landscape),
        (max-width: 900px) and (min-aspect-ratio: 13/10) {
     .container-fluid.mt-4 {
-        padding-left: 8px;
-        padding-right: 8px;
+        padding-left: 4px;
+        padding-right: 4px;
     }
     .card-body {
-        padding: 12px;
+        padding: 8px;
     }
     .profit-loss-section h5 {
         font-size: 1rem;
@@ -346,40 +346,60 @@ body .rotate-prompt .rotate-prompt-back:hover,
         font-size: 1.15rem;
         margin-bottom: 0;
     }
+
+    /* Force the table to fully fill its container */
+    .profit-loss-table-container,
+    .table-responsive {
+        width: 100% !important;
+        overflow-x: hidden !important;
+    }
+
+    /* Fluid font: scales between phones (~360px) and tablets (~900px)
+       — 1.4vw at 400px = 5.6px; at 800px = 11.2px; capped at 11px. */
     .profit-loss-table {
-        font-size: 0.6rem;
+        font-size: clamp(0.5rem, 1.4vw, 0.75rem) !important;
+        width: 100% !important;
+        table-layout: fixed !important;
+        min-width: 0 !important;
     }
     .profit-loss-table thead th {
-        font-size: 0.6rem;
-        padding: 5px 2px;
+        font-size: clamp(0.5rem, 1.4vw, 0.75rem) !important;
+        padding: 4px 1px !important;
     }
-    .profit-loss-table td, .profit-loss-table th {
-        padding: 3px 2px;
+    .profit-loss-table td,
+    .profit-loss-table th {
+        padding: 3px 1px !important;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
-    /* First column (label) — narrower */
+
+    /* Percentage column widths so the table always fills 100%.
+       Total = 15 cols: 1 label + 12 months + Total + Monthly
+       Label 16% + 12 × 5.5% + Total 9% + Monthly 9% = 100% */
     .profit-loss-table th:first-child,
     .profit-loss-table td:first-child {
-        width: 90px;
-        min-width: 90px;
-        max-width: 90px;
-        white-space: normal;  /* allow long labels to wrap onto 2 lines */
-        line-height: 1.2;
+        width: 16% !important;
+        min-width: 0 !important;
+        max-width: none !important;
+        white-space: normal;          /* allow long labels to wrap */
+        line-height: 1.15;
+        text-align: left;
+        padding-left: 4px !important;
     }
-    /* Month columns — tight */
     .profit-loss-table th:not(:first-child),
     .profit-loss-table td:not(:first-child) {
-        width: 48px;
-        min-width: 48px;
-        max-width: 48px;
+        width: 5.5% !important;
+        min-width: 0 !important;
+        max-width: none !important;
     }
-    /* Total + Monthly columns slightly wider */
     .profit-loss-table th:last-child,
     .profit-loss-table td:last-child,
     .profit-loss-table th:nth-last-child(2),
     .profit-loss-table td:nth-last-child(2) {
-        width: 56px;
-        min-width: 56px;
-        max-width: 56px;
+        width: 9% !important;
+        min-width: 0 !important;
+        max-width: none !important;
     }
 
     /* Header row — shrink the property title and stack the year selector neatly */
@@ -408,16 +428,15 @@ body .rotate-prompt .rotate-prompt-back:hover,
     }
 }
 
-/* Very narrow landscape (older phones) — let the table scroll horizontally
-   if absolutely necessary, rather than truncating data */
+/* Very narrow landscape (<640px) — fluid sizing continues, no horizontal scroll */
 @media (max-width: 640px) and (orientation: landscape),
        (max-width: 640px) and (min-aspect-ratio: 13/10) {
     .profit-loss-table {
-        min-width: 700px;
+        font-size: clamp(0.42rem, 1.5vw, 0.65rem) !important;
+        min-width: 0 !important;
     }
     .table-responsive {
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
+        overflow-x: hidden !important;
     }
 }
 
