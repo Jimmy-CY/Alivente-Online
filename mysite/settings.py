@@ -329,6 +329,8 @@ if os.environ.get('RAILWAY_ENVIRONMENT_NAME') == 'production' or os.environ.get(
 # Anthropic API Key (from environment variable)
 ANTHROPIC_API_KEY = os.getenv('ANTHROPIC_API_KEY')
 
+USDA_API_KEY = 'E6ZteWi96O46t6NNHMyGgrKDgIdMr0UP5BG2mGg4'
+
 # Optional: Add connection pooling settings if you want to experiment later
 # (Keep these commented out for now since your middleware works with CONN_MAX_AGE = 0)
 """

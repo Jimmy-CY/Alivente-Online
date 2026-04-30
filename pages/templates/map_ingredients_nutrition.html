@@ -1,0 +1,1517 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Map Ingredients to Nutrition Data{% endblock %}
+{% block content %}
+
+<style>
+.nutrition-wizard {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+/* === Action bar (Back on right) === */
+.action-bar {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    margin-bottom: 18px;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+/* === Page header === */
+.page-header {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+    padding: 28px 32px;
+    border-radius: 12px;
+    margin-bottom: 22px;
+}
+.page-header h1 {
+    font-size: 28px;
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+.page-header p {
+    margin: 0;
+    font-size: 15px;
+    opacity: 0.95;
+}
+.page-header .recipe-scope-pill {
+    margin-top: 14px;
+    padding: 8px 14px;
+    background: rgba(255,255,255,0.2);
+    border: 1px solid rgba(255,255,255,0.35);
+    border-radius: 6px;
+    display: inline-block;
+    font-size: 14px;
+}
+.page-header .recipe-scope-pill i {
+    margin-right: 6px;
+    opacity: 0.9;
+}
+
+/* === Progress bar === */
+.progress-bar-wrap {
+    background: white;
+    padding: 16px 20px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    margin-bottom: 18px;
+}
+.progress-bar-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-size: 14px;
+    color: #2c3e50;
+    margin-bottom: 10px;
+    font-weight: 500;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+.progress-bar-label .progress-main {
+    font-size: 15px;
+}
+.progress-bar-label .progress-main strong {
+    color: #28a745;
+    font-size: 18px;
+    font-weight: 700;
+}
+.progress-bar-label .progress-remaining {
+    color: #6c757d;
+    font-size: 13px;
+}
+.progress-bar-label .progress-percent {
+    color: #28a745;
+    font-weight: 700;
+    font-size: 16px;
+}
+.progress-bar-track {
+    height: 10px;
+    background: #e9ecef;
+    border-radius: 5px;
+    overflow: hidden;
+}
+.progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #28a745 0%, #20c997 100%);
+    border-radius: 5px;
+    transition: width 0.4s ease;
+    width: 0%;
+}
+
+/* === Undo toast === */
+.undo-toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #2c3e50;
+    color: white;
+    padding: 12px 18px;
+    border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    z-index: 9999;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease, transform 0.25s ease;
+    font-size: 14px;
+    max-width: 90%;
+}
+.undo-toast.visible {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(-50%) translateY(0);
+}
+.undo-toast .toast-icon {
+    color: #28d168;
+    font-size: 18px;
+}
+.undo-toast .toast-text strong {
+    color: white;
+}
+.undo-toast .toast-undo-btn {
+    background: transparent;
+    color: #ffc107;
+    border: 1px solid #ffc107;
+    padding: 5px 12px;
+    border-radius: 5px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+.undo-toast .toast-undo-btn:hover {
+    background: #ffc107;
+    color: #2c3e50;
+}
+
+/* === Main wizard card === */
+.wizard-card {
+    background: white;
+    border-radius: 12px;
+    padding: 26px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    margin-bottom: 18px;
+}
+
+.wizard-current {
+    border-bottom: 1px solid #e9ecef;
+    padding-bottom: 16px;
+    margin-bottom: 20px;
+}
+.wizard-current-name {
+    font-size: 22px;
+    font-weight: 700;
+    color: #2c3e50;
+    margin: 0 0 6px 0;
+}
+.wizard-current-meta {
+    font-size: 13px;
+    color: #6c757d;
+}
+.wizard-current-meta .badge {
+    background: #17a2b8;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    margin-left: 6px;
+}
+
+/* === Search box === */
+.search-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 16px;
+}
+.search-row input {
+    flex: 1;
+    padding: 10px 14px;
+    border: 2px solid #dee2e6;
+    border-radius: 8px;
+    font-size: 15px;
+}
+.search-row input:focus {
+    border-color: #28a745;
+    outline: none;
+}
+.search-row button {
+    padding: 10px 18px;
+    background: #28a745;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+.search-row button:hover { background: #218838; }
+.search-row button:disabled {
+    background: #6c757d;
+    cursor: not-allowed;
+}
+
+/* === USDA results list === */
+.usda-results {
+    margin-bottom: 18px;
+}
+.usda-results-empty,
+.usda-results-loading,
+.usda-results-error {
+    padding: 20px;
+    text-align: center;
+    color: #6c757d;
+    background: #f8f9fa;
+    border-radius: 8px;
+    font-size: 14px;
+}
+.usda-results-error {
+    color: #721c24;
+    background: #f8d7da;
+}
+.usda-result {
+    border: 2px solid #dee2e6;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    background: white;
+}
+.usda-result:hover {
+    border-color: #28a745;
+    background: #f0fbf4;
+}
+.usda-result.selected {
+    border-color: #28a745;
+    background: #d4edda;
+    box-shadow: 0 0 0 2px rgba(40, 167, 69, 0.2);
+}
+.usda-result-line1 {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 4px;
+}
+.usda-result-name {
+    font-weight: 600;
+    color: #2c3e50;
+    font-size: 15px;
+    flex: 1;
+}
+.usda-result-cal {
+    font-size: 13px;
+    color: #28a745;
+    font-weight: 600;
+    white-space: nowrap;
+}
+.usda-result-meta {
+    font-size: 12px;
+    color: #6c757d;
+}
+.data-type-badge {
+    display: inline-block;
+    background: #e9ecef;
+    color: #495057;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    margin-right: 6px;
+}
+.data-type-badge.foundation { background: #d4edda; color: #155724; }
+.data-type-badge.sr-legacy  { background: #cce5ff; color: #004085; }
+.data-type-badge.survey     { background: #fff3cd; color: #856404; }
+.data-type-badge.branded    { background: #f8d7da; color: #721c24; }
+
+/* === Manual entry === */
+.manual-entry-toggle {
+    text-align: center;
+    margin: -8px 0 16px 0;
+}
+.link-btn {
+    background: none;
+    border: none;
+    color: #28a745;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 500;
+    padding: 6px 12px;
+    text-decoration: underline;
+    text-decoration-style: dotted;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 4px;
+    transition: color 0.15s;
+}
+.link-btn:hover {
+    color: #1e7e34;
+}
+.manual-entry-panel {
+    background: #e8f4ff;
+    border: 1px solid #b8daff;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 16px;
+}
+.manual-entry-panel.hidden { display: none; }
+.manual-entry-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 10px;
+}
+.manual-entry-field label {
+    display: block;
+    font-size: 12px;
+    color: #495057;
+    font-weight: 600;
+    margin-bottom: 4px;
+}
+.manual-entry-field label .suffix {
+    color: #6c757d;
+    font-weight: 400;
+    margin-left: 4px;
+}
+.manual-entry-field label em {
+    color: #adb5bd;
+    font-style: normal;
+    font-weight: 400;
+    margin-left: 4px;
+}
+.manual-entry-field input {
+    width: 100%;
+    padding: 8px 10px;
+    border: 2px solid #b8daff;
+    border-radius: 6px;
+    font-size: 14px;
+}
+.manual-entry-field input:focus {
+    border-color: #007bff;
+    outline: none;
+}
+
+/* === Preview panel === */
+.preview-panel {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 16px;
+}
+.preview-panel.hidden { display: none; }
+.preview-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #495057;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin: 0 0 10px 0;
+}
+.nutrient-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 8px;
+}
+.nutrient-item {
+    background: white;
+    padding: 8px 10px;
+    border-radius: 6px;
+    border: 1px solid #e9ecef;
+}
+.nutrient-label {
+    font-size: 11px;
+    color: #6c757d;
+    text-transform: uppercase;
+    font-weight: 600;
+    margin-bottom: 2px;
+}
+.nutrient-value {
+    font-size: 16px;
+    font-weight: 700;
+    color: #2c3e50;
+}
+.nutrient-value.muted {
+    color: #adb5bd;
+    font-weight: 400;
+}
+
+/* === Unit conversion prompt === */
+.conversion-panel {
+    background: #fff8e6;
+    border: 1px solid #ffc107;
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin-bottom: 16px;
+}
+.conversion-panel.hidden { display: none; }
+.conversion-panel h6 {
+    font-size: 13px;
+    font-weight: 700;
+    color: #856404;
+    margin: 0 0 8px 0;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+}
+.conversion-explainer {
+    font-size: 13px;
+    color: #856404;
+    margin-bottom: 10px;
+}
+.conversion-form {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+.conversion-form label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #495057;
+    margin: 0;
+}
+.conversion-form input[type="number"] {
+    width: 100px;
+    padding: 6px 10px;
+    border: 2px solid #ffc107;
+    border-radius: 6px;
+    font-size: 14px;
+}
+.conversion-form .preset-buttons {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+.conversion-form .preset-btn {
+    padding: 4px 10px;
+    background: white;
+    border: 1px solid #ffc107;
+    border-radius: 4px;
+    color: #856404;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 500;
+    transition: all 0.15s ease;
+}
+.conversion-form .preset-btn:hover {
+    background: #ffc107;
+    color: white;
+}
+
+/* === Wizard buttons === */
+.wizard-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+}
+.wizard-actions-left {
+    display: flex;
+    gap: 8px;
+}
+.wizard-actions-right {
+    display: flex;
+    gap: 10px;
+}
+.btn-skip {
+    background: white;
+    color: #6c757d;
+    border: 2px solid #dee2e6;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+.btn-skip:hover {
+    background: #f8f9fa;
+    border-color: #adb5bd;
+}
+.btn-prev {
+    background: white;
+    color: #495057;
+    border: 2px solid #dee2e6;
+    padding: 10px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.15s ease;
+}
+.btn-prev:hover {
+    background: #f8f9fa;
+}
+.btn-prev:disabled,
+.btn-skip:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+.btn-save {
+    background: #28a745;
+    color: white;
+    border: 2px solid #28a745;
+    padding: 10px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+.btn-save:hover { background: #218838; border-color: #1e7e34; }
+.btn-save:disabled {
+    background: #6c757d;
+    border-color: #6c757d;
+    cursor: not-allowed;
+}
+
+/* === Done state === */
+.wizard-done {
+    background: white;
+    padding: 50px 30px;
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+.wizard-done .icon {
+    font-size: 64px;
+    color: #28a745;
+    margin-bottom: 16px;
+}
+.wizard-done h2 {
+    color: #2c3e50;
+    margin-bottom: 10px;
+}
+.wizard-done p {
+    color: #6c757d;
+    margin-bottom: 24px;
+}
+
+/* === Mobile === */
+@media (max-width: 768px) {
+    .nutrition-wizard {
+        padding: 0 8px;
+    }
+    .page-header {
+        padding: 20px 18px;
+    }
+    .page-header h1 {
+        font-size: 20px;
+    }
+    .page-header p {
+        font-size: 13px;
+    }
+    .progress-bar-wrap {
+        padding: 14px 16px;
+    }
+    .progress-bar-label {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+    }
+    .undo-toast {
+        flex-wrap: wrap;
+        justify-content: center;
+        text-align: center;
+        bottom: 16px;
+    }
+    .wizard-card {
+        padding: 18px 16px;
+    }
+    .wizard-current-name {
+        font-size: 18px;
+    }
+    .search-row {
+        flex-direction: column;
+    }
+    .search-row input,
+    .search-row button {
+        width: 100%;
+    }
+    .search-row input {
+        font-size: 16px; /* iOS zoom guard */
+    }
+    .usda-result-line1 {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+    }
+    .usda-result-cal {
+        font-size: 12px;
+    }
+    .nutrient-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .conversion-form {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .conversion-form input[type="number"] {
+        width: 100%;
+        font-size: 16px; /* iOS zoom guard */
+    }
+    .wizard-actions {
+        flex-direction: column;
+        gap: 8px;
+    }
+    .wizard-actions-left,
+    .wizard-actions-right {
+        width: 100%;
+    }
+    .btn-skip,
+    .btn-prev,
+    .btn-save {
+        width: 100%;
+        padding: 12px;
+    }
+}
+</style>
+
+<div class="nutrition-wizard">
+    
+    <!-- Action Bar -->
+    <div class="action-bar">
+        {% if return_to == 'recipe' and scoped_recipe %}
+            <button type="button" 
+                    class="btn btn-secondary action-back" 
+                    onclick="goBackToRecipe()">
+                <i class="fas fa-arrow-left"></i> Back to Recipe
+            </button>
+        {% else %}
+            <a href="{% url 'ingredient_base_units_management' %}" class="btn btn-secondary action-back">
+                <i class="fas fa-arrow-left"></i> Back
+            </a>
+        {% endif %}
+    </div>
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <h1><i class="fas fa-leaf"></i> Map Ingredients to Nutrition Data</h1>
+        <p>Each ingredient needs to be matched to a USDA FoodData Central record so we can calculate nutritional values for your recipes.</p>
+        {% if scoped_recipe %}
+        <div class="recipe-scope-pill">
+            <i class="fas fa-utensils"></i>
+            Mapping ingredients for: <strong>{{ scoped_recipe.recipe_name }}</strong>
+        </div>
+        {% endif %}
+    </div>
+
+    {% if total_count == 0 %}
+    
+    <!-- Empty state — nothing to map -->
+    <div class="wizard-done">
+        <div class="icon"><i class="fas fa-check-circle"></i></div>
+        <h2>All ingredients mapped 🎉</h2>
+        <p>
+            {% if scoped_recipe %}
+                Every ingredient in <strong>{{ scoped_recipe.recipe_name }}</strong> is mapped to USDA nutrition data.
+            {% else %}
+                Every ingredient in your database is mapped to USDA nutrition data.
+            {% endif %}
+        </p>
+        {% if return_to == 'recipe' and scoped_recipe %}
+            <a href="{% url 'view_recipe' scoped_recipe.recipe_id %}?reopen_nutrition=1" class="btn btn-info">
+                <i class="fas fa-arrow-left"></i> Back to Recipe
+            </a>
+        {% else %}
+            <a href="{% url 'ingredient_base_units_management' %}" class="btn btn-info">
+                <i class="fas fa-arrow-left"></i> Back to Ingredients
+            </a>
+        {% endif %}
+    </div>
+    
+    {% else %}
+    
+    <!-- Progress Bar -->
+    <div class="progress-bar-wrap">
+        <div class="progress-bar-label">
+            <span class="progress-main">
+                Progress: <strong id="progressMapped">{{ total_mapped }}</strong> of <strong id="progressTotalSet">{{ total_in_set }}</strong> mapped
+                <span class="progress-remaining">— <span id="progressRemaining">{{ total_unmapped }}</span> to go</span>
+            </span>
+            <span class="progress-percent" id="progressPercent">0%</span>
+        </div>
+        <div class="progress-bar-track">
+            <div class="progress-bar-fill" id="progressFill"></div>
+        </div>
+    </div>
+
+    <!-- Wizard Card -->
+    <div class="wizard-card" id="wizardCard">
+        
+        <!-- Current ingredient header -->
+        <div class="wizard-current">
+            <h2 class="wizard-current-name" id="currentIngredientName">—</h2>
+            <div class="wizard-current-meta">
+                <span id="currentIngredientCategory">No category</span>
+                <span class="badge" id="currentIngredientUnit">No default unit</span>
+            </div>
+        </div>
+        
+        <!-- Search row -->
+        <div class="search-row">
+            <input type="text" id="usdaSearchInput" placeholder="Search USDA database..." autocomplete="off">
+            <button type="button" id="usdaSearchBtn">
+                <i class="fas fa-search"></i> Search
+            </button>
+        </div>
+        
+        <!-- USDA results -->
+        <div class="usda-results" id="usdaResults">
+            <div class="usda-results-empty">
+                Press <strong>Search</strong> to find matching USDA foods.
+            </div>
+        </div>
+        
+        <!-- "Can't find it?" link → opens manual entry -->
+        <div class="manual-entry-toggle" id="manualEntryToggle">
+            <button type="button" class="link-btn" id="manualEntryToggleBtn">
+                <i class="fas fa-pencil-alt"></i> Can't find it? Enter nutrition manually
+            </button>
+        </div>
+        
+        <!-- Manual entry panel (hidden by default) -->
+        <div class="manual-entry-panel hidden" id="manualEntryPanel">
+            <h6 class="preview-title"><i class="fas fa-pencil-alt"></i> Manual Nutrition Entry (per 100g)</h6>
+            <p style="font-size:13px; color:#6c757d; margin-bottom:12px;">
+                Enter the nutrition values from the food package label or your best estimate. All fields are per 100g.
+            </p>
+            <div class="manual-entry-grid">
+                <div class="manual-entry-field">
+                    <label>Calories <span class="suffix">kcal</span></label>
+                    <input type="number" step="0.1" id="manualCalories" placeholder="0">
+                </div>
+                <div class="manual-entry-field">
+                    <label>Protein <span class="suffix">g</span></label>
+                    <input type="number" step="0.01" id="manualProtein" placeholder="0">
+                </div>
+                <div class="manual-entry-field">
+                    <label>Carbs <span class="suffix">g</span></label>
+                    <input type="number" step="0.01" id="manualCarbs" placeholder="0">
+                </div>
+                <div class="manual-entry-field">
+                    <label>Fat <span class="suffix">g</span></label>
+                    <input type="number" step="0.01" id="manualFat" placeholder="0">
+                </div>
+                <div class="manual-entry-field">
+                    <label>Fiber <span class="suffix">g</span> <em>(optional)</em></label>
+                    <input type="number" step="0.01" id="manualFiber" placeholder="—">
+                </div>
+                <div class="manual-entry-field">
+                    <label>Sugar <span class="suffix">g</span> <em>(optional)</em></label>
+                    <input type="number" step="0.01" id="manualSugar" placeholder="—">
+                </div>
+                <div class="manual-entry-field">
+                    <label>Sodium <span class="suffix">mg</span> <em>(optional)</em></label>
+                    <input type="number" step="0.1" id="manualSodium" placeholder="—">
+                </div>
+            </div>
+            <div style="margin-top:12px;">
+                <button type="button" class="btn-skip" id="manualEntryCancel" style="font-size:13px; padding:8px 14px;">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+                <button type="button" class="btn-save" id="manualEntryUse" style="font-size:13px; padding:8px 14px;">
+                    <i class="fas fa-check"></i> Use these values
+                </button>
+            </div>
+        </div>
+        
+        <!-- Preview panel (hidden until a match is selected) -->
+        <div class="preview-panel hidden" id="previewPanel">
+            <h6 class="preview-title"><i class="fas fa-eye"></i> Will save this nutrition (per 100g):</h6>
+            <div class="nutrient-grid" id="nutrientGrid">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+        
+        <!-- Unit conversion prompt (hidden unless ingredient has volume/count default unit) -->
+        <div class="conversion-panel hidden" id="conversionPanel">
+            <h6><i class="fas fa-balance-scale"></i> Unit Conversion Needed</h6>
+            <p class="conversion-explainer" id="conversionExplainer">—</p>
+            <div class="conversion-form">
+                <label>Weight:</label>
+                <input type="number" id="conversionInput" step="0.001" placeholder="grams">
+                <span id="conversionUnitDisplay">g</span>
+                <div class="preset-buttons" id="presetButtons">
+                    <!-- Populated by JS based on unit type -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- Action buttons -->
+        <div class="wizard-actions">
+            <div class="wizard-actions-left">
+                <button type="button" class="btn-prev" id="prevBtn">
+                    <i class="fas fa-chevron-left"></i> Previous
+                </button>
+            </div>
+            <div class="wizard-actions-right">
+                <button type="button" class="btn-skip" id="skipBtn" title="Move on without mapping — this ingredient stays in the queue">
+                    Skip for now
+                </button>
+                <button type="button" class="btn-save" id="saveBtn" disabled>
+                    Save & Next <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Undo toast — appears for ~5s after each successful save -->
+    <div class="undo-toast" id="undoToast">
+        <span class="toast-icon"><i class="fas fa-check-circle"></i></span>
+        <span class="toast-text"><strong id="undoToastName">—</strong> mapped</span>
+        <button type="button" class="toast-undo-btn" id="undoToastBtn">Undo</button>
+    </div>
+    
+    {% endif %}
+</div>
+
+<script>
+{% if total_count > 0 %}
+
+// =========================================================================
+// Wizard State
+// =========================================================================
+const ingredients = {{ ingredient_data_json|safe }};
+let currentIndex = 0;
+let currentMatches = [];
+let selectedFdcId = null;
+let selectedDetail = null;  // full nutrition profile from preview endpoint
+
+// Progress tracking — denominator is the full set, numerator counts up as we save
+const TOTAL_IN_SET   = {{ total_in_set }};
+let   mappedCount    = {{ total_mapped }};
+let   remainingCount = {{ total_unmapped }};
+
+// Undo toast state — tracks the most recent save so we can revert it
+let lastSavedSnapshot = null;     // {ingredient_id, ingredient_data_at_save_time, indexAtSave}
+let undoToastTimer = null;
+
+// Recipe-scoped wizard return URL (used by the "All done" state)
+const SCOPED_RETURN_URL = {% if return_to == 'recipe' and scoped_recipe %}"{% url 'view_recipe' scoped_recipe.recipe_id %}?reopen_nutrition=1"{% else %}null{% endif %};
+const SCOPED_RETURN_LABEL = {% if return_to == 'recipe' and scoped_recipe %}"Back to Recipe"{% else %}null{% endif %};
+
+const URLS = {
+    search:  "{% url 'usda_search' %}",
+    preview: "{% url 'usda_select_and_preview' %}",
+    save:    "{% url 'save_ingredient_mapping' %}",
+};
+
+const CSRF_TOKEN = '{{ csrf_token }}';
+
+// Common density presets (g per ml) for quick selection on volume units
+const DENSITY_PRESETS = [
+    { label: 'Water (1.0)', value: 1.0 },
+    { label: 'Oil (0.92)',  value: 0.92 },
+    { label: 'Milk (1.03)', value: 1.03 },
+    { label: 'Honey (1.42)', value: 1.42 },
+    { label: 'Flour (0.53)', value: 0.53 },
+    { label: 'Sugar (0.85)', value: 0.85 },
+];
+
+// Common per-piece presets (g) for count units
+const PIECE_WEIGHT_PRESETS = [
+    { label: 'Small egg (44g)',  value: 44 },
+    { label: 'Large egg (50g)',  value: 50 },
+    { label: 'Lemon (60g)',      value: 60 },
+    { label: 'Onion (110g)',     value: 110 },
+    { label: 'Garlic clove (5g)', value: 5 },
+];
+
+// =========================================================================
+// DOM refs
+// =========================================================================
+const $ = (id) => document.getElementById(id);
+
+const els = {
+    progressMapped: $('progressMapped'),
+    progressTotalSet: $('progressTotalSet'),
+    progressRemaining: $('progressRemaining'),
+    progressPercent: $('progressPercent'),
+    progressFill: $('progressFill'),
+    name: $('currentIngredientName'),
+    category: $('currentIngredientCategory'),
+    unit: $('currentIngredientUnit'),
+    searchInput: $('usdaSearchInput'),
+    searchBtn: $('usdaSearchBtn'),
+    results: $('usdaResults'),
+    previewPanel: $('previewPanel'),
+    nutrientGrid: $('nutrientGrid'),
+    conversionPanel: $('conversionPanel'),
+    conversionExplainer: $('conversionExplainer'),
+    conversionInput: $('conversionInput'),
+    conversionUnitDisplay: $('conversionUnitDisplay'),
+    presetButtons: $('presetButtons'),
+    prevBtn: $('prevBtn'),
+    skipBtn: $('skipBtn'),
+    saveBtn: $('saveBtn'),
+    wizardCard: $('wizardCard'),
+    undoToast: $('undoToast'),
+    undoToastName: $('undoToastName'),
+    undoToastBtn: $('undoToastBtn'),
+};
+
+// =========================================================================
+// Initialization
+// =========================================================================
+document.addEventListener('DOMContentLoaded', () => {
+    if (ingredients.length === 0) return;
+    updateProgressDisplay();
+    renderCurrent();
+    
+    els.searchBtn.addEventListener('click', performSearch);
+    els.searchInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            performSearch();
+        }
+    });
+    els.skipBtn.addEventListener('click', skipCurrent);
+    els.prevBtn.addEventListener('click', goPrevious);
+    els.saveBtn.addEventListener('click', saveCurrent);
+    els.undoToastBtn.addEventListener('click', undoLastSave);
+    
+    // Manual entry toggle
+    document.getElementById('manualEntryToggleBtn').addEventListener('click', toggleManualEntry);
+    document.getElementById('manualEntryCancel').addEventListener('click', cancelManualEntry);
+    document.getElementById('manualEntryUse').addEventListener('click', useManualEntry);
+});
+
+// =========================================================================
+// Manual entry handlers
+// =========================================================================
+function toggleManualEntry() {
+    const panel = document.getElementById('manualEntryPanel');
+    panel.classList.remove('hidden');
+    if (selectedDetail) {
+        document.getElementById('manualCalories').value = selectedDetail.calories_per_100g || '';
+        document.getElementById('manualProtein').value  = selectedDetail.protein_per_100g  || '';
+        document.getElementById('manualCarbs').value    = selectedDetail.carbs_per_100g    || '';
+        document.getElementById('manualFat').value      = selectedDetail.fat_per_100g      || '';
+        document.getElementById('manualFiber').value    = selectedDetail.fiber_per_100g    || '';
+        document.getElementById('manualSugar').value    = selectedDetail.sugar_per_100g    || '';
+        document.getElementById('manualSodium').value   = selectedDetail.sodium_per_100g   || '';
+    }
+    document.getElementById('manualCalories').focus();
+}
+
+function cancelManualEntry() {
+    document.getElementById('manualEntryPanel').classList.add('hidden');
+}
+
+function useManualEntry() {
+    const cal = parseFloat(document.getElementById('manualCalories').value);
+    const protein = parseFloat(document.getElementById('manualProtein').value);
+    const carbs = parseFloat(document.getElementById('manualCarbs').value);
+    const fat = parseFloat(document.getElementById('manualFat').value);
+    
+    if (isNaN(cal) || isNaN(protein) || isNaN(carbs) || isNaN(fat)) {
+        alert('Please enter at least Calories, Protein, Carbs, and Fat.');
+        return;
+    }
+    
+    const fiber = parseFloat(document.getElementById('manualFiber').value);
+    const sugar = parseFloat(document.getElementById('manualSugar').value);
+    const sodium = parseFloat(document.getElementById('manualSodium').value);
+    
+    selectedDetail = {
+        fdc_id: 0,
+        description: ingredients[currentIndex].name + ' (manual entry)',
+        data_type: 'Manual',
+        calories_per_100g: String(cal),
+        protein_per_100g:  String(protein),
+        carbs_per_100g:    String(carbs),
+        fat_per_100g:      String(fat),
+        fiber_per_100g:    isNaN(fiber)  ? null : String(fiber),
+        sugar_per_100g:    isNaN(sugar)  ? null : String(sugar),
+        sodium_per_100g:   isNaN(sodium) ? null : String(sodium),
+    };
+    selectedFdcId = 0;
+    
+    document.getElementById('manualEntryPanel').classList.add('hidden');
+    els.previewPanel.classList.remove('hidden');
+    renderNutrientPreview(selectedDetail);
+    els.saveBtn.disabled = false;
+    
+    els.results.querySelectorAll('.usda-result').forEach(el => el.classList.remove('selected'));
+}
+
+// =========================================================================
+// Render the current ingredient
+// =========================================================================
+function renderCurrent() {
+    if (currentIndex >= ingredients.length) {
+        renderDoneState();
+        return;
+    }
+    
+    const ing = ingredients[currentIndex];
+    
+    // Header
+    els.name.textContent = ing.name;
+    els.category.textContent = ing.category || 'No category';
+    
+    if (ing.default_unit_name) {
+        els.unit.textContent = `${ing.default_unit_name} (${ing.default_unit_type})`;
+        els.unit.style.display = 'inline-block';
+    } else {
+        els.unit.textContent = 'No default unit';
+    }
+    
+    // Reset state
+    selectedFdcId = null;
+    selectedDetail = null;
+    currentMatches = [];
+    els.results.innerHTML = '<div class="usda-results-empty">Press <strong>Search</strong> to find matching USDA foods.</div>';
+    els.previewPanel.classList.add('hidden');
+    els.conversionPanel.classList.add('hidden');
+    els.saveBtn.disabled = true;
+    
+    document.getElementById('manualEntryPanel').classList.add('hidden');
+    ['manualCalories', 'manualProtein', 'manualCarbs', 'manualFat',
+     'manualFiber', 'manualSugar', 'manualSodium'].forEach(id => {
+        document.getElementById(id).value = '';
+    });
+    
+    // Pre-fill search with ingredient name
+    els.searchInput.value = ing.name;
+    
+    // Setup conversion panel for volume/count units
+    setupConversionPanel(ing);
+    
+    // Update Previous button state
+    els.prevBtn.disabled = (currentIndex === 0);
+    
+    // Auto-search to save a click
+    performSearch();
+}
+
+// =========================================================================
+// Progress display
+// =========================================================================
+function updateProgressDisplay() {
+    const pct = TOTAL_IN_SET > 0 ? Math.round((mappedCount / TOTAL_IN_SET) * 100) : 0;
+    els.progressMapped.textContent    = mappedCount;
+    els.progressTotalSet.textContent  = TOTAL_IN_SET;
+    els.progressRemaining.textContent = remainingCount;
+    els.progressPercent.textContent   = `${pct}%`;
+    els.progressFill.style.width      = `${pct}%`;
+}
+
+// =========================================================================
+// Search USDA
+// =========================================================================
+async function performSearch() {
+    const query = els.searchInput.value.trim();
+    if (!query) return;
+    
+    els.results.innerHTML = '<div class="usda-results-loading"><i class="fas fa-spinner fa-spin"></i> Searching USDA...</div>';
+    els.searchBtn.disabled = true;
+    
+    try {
+        const res = await fetch(`${URLS.search}?query=${encodeURIComponent(query)}&page_size=5`);
+        const data = await res.json();
+        
+        if (!data.success) {
+            els.results.innerHTML = `<div class="usda-results-error">${data.error || 'Search failed'}</div>`;
+            return;
+        }
+        
+        currentMatches = data.results;
+        renderResults();
+        
+    } catch (err) {
+        els.results.innerHTML = `<div class="usda-results-error">Network error: ${err.message}</div>`;
+    } finally {
+        els.searchBtn.disabled = false;
+    }
+}
+
+function renderResults() {
+    if (!currentMatches.length) {
+        els.results.innerHTML = '<div class="usda-results-empty">No matches found. Try a different query.</div>';
+        return;
+    }
+    
+    const html = currentMatches.map((m, idx) => {
+        const cal = m.calories_per_100g 
+            ? `${parseFloat(m.calories_per_100g).toFixed(0)} kcal/100g` 
+            : '<em style="color:#adb5bd;">no kcal data</em>';
+        const brand = m.brand_owner ? ` — ${escapeHtml(m.brand_owner)}` : '';
+        const dataTypeClass = m.data_type.toLowerCase().replace(/[^a-z]/g, '-').replace(/-+/g, '-');
+        return `
+            <div class="usda-result" data-index="${idx}" data-fdc-id="${m.fdc_id}">
+                <div class="usda-result-line1">
+                    <div class="usda-result-name">${escapeHtml(m.description)}</div>
+                    <div class="usda-result-cal">${cal}</div>
+                </div>
+                <div class="usda-result-meta">
+                    <span class="data-type-badge ${dataTypeClass}">${escapeHtml(m.data_type)}</span>
+                    fdc_id: ${m.fdc_id}${brand}
+                </div>
+            </div>
+        `;
+    }).join('');
+    
+    els.results.innerHTML = html;
+    
+    els.results.querySelectorAll('.usda-result').forEach(el => {
+        el.addEventListener('click', () => selectMatch(parseInt(el.dataset.index, 10)));
+    });
+}
+
+// =========================================================================
+// Select a match and fetch full details
+// =========================================================================
+async function selectMatch(idx) {
+    const match = currentMatches[idx];
+    if (!match) return;
+    
+    els.results.querySelectorAll('.usda-result').forEach((el, i) => {
+        el.classList.toggle('selected', i === idx);
+    });
+    
+    els.previewPanel.classList.remove('hidden');
+    els.nutrientGrid.innerHTML = '<div style="grid-column: 1 / -1; text-align:center; color:#6c757d; padding:10px;"><i class="fas fa-spinner fa-spin"></i> Loading nutrition data...</div>';
+    els.saveBtn.disabled = true;
+    selectedFdcId = match.fdc_id;
+    selectedDetail = null;
+    
+    try {
+        const res = await fetch(`${URLS.preview}?fdc_id=${match.fdc_id}`);
+        const data = await res.json();
+        
+        if (!data.success) {
+            els.nutrientGrid.innerHTML = `<div style="grid-column: 1 / -1; padding:10px; color:#721c24; background:#f8d7da; border-radius:6px;">${escapeHtml(data.error || 'Could not fetch details')}</div>`;
+            return;
+        }
+        
+        selectedDetail = data;
+        renderNutrientPreview(data);
+        els.saveBtn.disabled = false;
+        
+    } catch (err) {
+        els.nutrientGrid.innerHTML = `<div style="grid-column: 1 / -1; padding:10px; color:#721c24;">Network error: ${escapeHtml(err.message)}</div>`;
+    }
+}
+
+function renderNutrientPreview(d) {
+    const items = [
+        { key: 'calories_per_100g', label: 'Calories', suffix: ' kcal' },
+        { key: 'protein_per_100g',  label: 'Protein',  suffix: ' g' },
+        { key: 'carbs_per_100g',    label: 'Carbs',    suffix: ' g' },
+        { key: 'fat_per_100g',      label: 'Fat',      suffix: ' g' },
+        { key: 'fiber_per_100g',    label: 'Fiber',    suffix: ' g' },
+        { key: 'sugar_per_100g',    label: 'Sugar',    suffix: ' g' },
+        { key: 'sodium_per_100g',   label: 'Sodium',   suffix: ' mg' },
+    ];
+    
+    const html = items.map(item => {
+        const raw = d[item.key];
+        if (raw === null || raw === undefined) {
+            return `
+                <div class="nutrient-item">
+                    <div class="nutrient-label">${item.label}</div>
+                    <div class="nutrient-value muted">—</div>
+                </div>
+            `;
+        }
+        const val = parseFloat(raw).toFixed(1);
+        return `
+            <div class="nutrient-item">
+                <div class="nutrient-label">${item.label}</div>
+                <div class="nutrient-value">${val}${item.suffix}</div>
+            </div>
+        `;
+    }).join('');
+    
+    els.nutrientGrid.innerHTML = html;
+}
+
+// =========================================================================
+// Unit conversion panel (for volume / count default units)
+// =========================================================================
+function setupConversionPanel(ing) {
+    const unitType = ing.default_unit_type;
+    
+    if (ing.existing_conversion_to_g !== null && ing.existing_conversion_to_g !== undefined) {
+        els.conversionPanel.classList.add('hidden');
+        return;
+    }
+    
+    if (unitType === 'volume') {
+        els.conversionPanel.classList.remove('hidden');
+        els.conversionExplainer.innerHTML = `
+            How many <strong>grams</strong> in 1 <strong>${escapeHtml(ing.default_unit_name)}</strong> of ${escapeHtml(ing.name)}?
+            (e.g., 1 ml of olive oil ≈ 0.92 g)
+        `;
+        els.conversionUnitDisplay.textContent = `g per ${ing.default_unit_name}`;
+        els.conversionInput.placeholder = 'g';
+        els.conversionInput.value = '';
+        renderPresets(DENSITY_PRESETS);
+    } else if (unitType === 'count') {
+        els.conversionPanel.classList.remove('hidden');
+        els.conversionExplainer.innerHTML = `
+            How much does 1 <strong>${escapeHtml(ing.default_unit_name)}</strong> of ${escapeHtml(ing.name)} weigh in <strong>grams</strong>?
+        `;
+        els.conversionUnitDisplay.textContent = `g per ${ing.default_unit_name}`;
+        els.conversionInput.placeholder = 'g';
+        els.conversionInput.value = '';
+        renderPresets(PIECE_WEIGHT_PRESETS);
+    } else {
+        els.conversionPanel.classList.add('hidden');
+    }
+}
+
+function renderPresets(presets) {
+    els.presetButtons.innerHTML = presets.map(p => `
+        <button type="button" class="preset-btn" data-value="${p.value}">${escapeHtml(p.label)}</button>
+    `).join('');
+    els.presetButtons.querySelectorAll('.preset-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            els.conversionInput.value = btn.dataset.value;
+        });
+    });
+}
+
+// =========================================================================
+// Save current
+// =========================================================================
+async function saveCurrent() {
+    const ing = ingredients[currentIndex];
+    if (!ing || !selectedDetail) return;
+    
+    const payload = {
+        ingredient_id: ing.ingredient_id,
+        fdc_id: selectedDetail.fdc_id,
+        fdc_description: selectedDetail.description,
+        fdc_data_type: selectedDetail.data_type,
+        calories_per_100g: selectedDetail.calories_per_100g,
+        protein_per_100g:  selectedDetail.protein_per_100g,
+        carbs_per_100g:    selectedDetail.carbs_per_100g,
+        fat_per_100g:      selectedDetail.fat_per_100g,
+        fiber_per_100g:    selectedDetail.fiber_per_100g,
+        sugar_per_100g:    selectedDetail.sugar_per_100g,
+        sodium_per_100g:   selectedDetail.sodium_per_100g,
+    };
+    
+    const unitType = ing.default_unit_type;
+    if ((unitType === 'volume' || unitType === 'count') && ing.default_unit_id) {
+        const conversionVal = parseFloat(els.conversionInput.value);
+        if (!isNaN(conversionVal) && conversionVal > 0) {
+            const gUnitId = await ensureGramUnitId();
+            if (gUnitId) {
+                payload.unit_conversion = {
+                    from_unit_id: ing.default_unit_id,
+                    to_unit_id:   gUnitId,
+                    multiplier:   conversionVal,
+                };
+            }
+        }
+    }
+    
+    els.saveBtn.disabled = true;
+    els.saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving...';
+    
+    try {
+        const res = await fetch(URLS.save, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': CSRF_TOKEN,
+            },
+            body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+        
+        if (!data.success) {
+            alert('Save failed: ' + (data.error || 'Unknown error'));
+            els.saveBtn.disabled = false;
+            els.saveBtn.innerHTML = 'Save & Next <i class="fas fa-chevron-right"></i>';
+            return;
+        }
+        
+        // Snapshot for undo (capture state BEFORE we mutate it)
+        lastSavedSnapshot = {
+            indexAtSave: currentIndex,
+            ingredientName: ingredients[currentIndex].name,
+            wasAlreadyMapped: ingredients[currentIndex].is_mapped,
+            previousState: {
+                is_mapped: ingredients[currentIndex].is_mapped,
+                fdc_id: ingredients[currentIndex].fdc_id,
+                fdc_description: ingredients[currentIndex].fdc_description,
+                fdc_data_type: ingredients[currentIndex].fdc_data_type,
+            },
+        };
+        
+        // Mark as mapped in our local state
+        ingredients[currentIndex].is_mapped = true;
+        ingredients[currentIndex].fdc_id = selectedDetail.fdc_id;
+        ingredients[currentIndex].fdc_description = selectedDetail.description;
+        ingredients[currentIndex].fdc_data_type = selectedDetail.data_type;
+        
+        // Update progress counters (only count it if it wasn't already mapped)
+        if (!lastSavedSnapshot.wasAlreadyMapped) {
+            mappedCount++;
+            remainingCount = Math.max(0, remainingCount - 1);
+            updateProgressDisplay();
+        }
+        
+        // Show undo toast
+        showUndoToast(lastSavedSnapshot.ingredientName);
+        
+        // Move to next
+        currentIndex++;
+        els.saveBtn.innerHTML = 'Save & Next <i class="fas fa-chevron-right"></i>';
+        renderCurrent();
+        
+    } catch (err) {
+        alert('Network error: ' + err.message);
+        els.saveBtn.disabled = false;
+        els.saveBtn.innerHTML = 'Save & Next <i class="fas fa-chevron-right"></i>';
+    }
+}
+
+// =========================================================================
+// Undo toast
+// =========================================================================
+function showUndoToast(ingredientName) {
+    els.undoToastName.textContent = ingredientName;
+    els.undoToast.classList.add('visible');
+    
+    if (undoToastTimer) {
+        clearTimeout(undoToastTimer);
+    }
+    undoToastTimer = setTimeout(hideUndoToast, 5000);
+}
+
+function hideUndoToast() {
+    els.undoToast.classList.remove('visible');
+    if (undoToastTimer) {
+        clearTimeout(undoToastTimer);
+        undoToastTimer = null;
+    }
+}
+
+async function undoLastSave() {
+    if (!lastSavedSnapshot) return;
+    
+    const snap = lastSavedSnapshot;
+    els.undoToastBtn.disabled = true;
+    els.undoToastBtn.textContent = 'Undoing...';
+    
+    try {
+        // Send a clear request to revert the mapping on the server
+        const res = await fetch(URLS.save, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': CSRF_TOKEN,
+            },
+            body: JSON.stringify({
+                ingredient_id: ingredients[snap.indexAtSave].ingredient_id,
+                clear: true,
+            }),
+        });
+        const data = await res.json();
+        
+        if (!data.success) {
+            alert('Undo failed: ' + (data.error || 'Unknown error'));
+            els.undoToastBtn.disabled = false;
+            els.undoToastBtn.textContent = 'Undo';
+            return;
+        }
+        
+        // Revert local state
+        ingredients[snap.indexAtSave].is_mapped       = snap.previousState.is_mapped;
+        ingredients[snap.indexAtSave].fdc_id          = snap.previousState.fdc_id;
+        ingredients[snap.indexAtSave].fdc_description = snap.previousState.fdc_description;
+        ingredients[snap.indexAtSave].fdc_data_type   = snap.previousState.fdc_data_type;
+        
+        // Revert progress counters (only if the save had bumped them)
+        if (!snap.wasAlreadyMapped) {
+            mappedCount = Math.max(0, mappedCount - 1);
+            remainingCount++;
+            updateProgressDisplay();
+        }
+        
+        // Jump back to that ingredient and re-render
+        currentIndex = snap.indexAtSave;
+        lastSavedSnapshot = null;
+        hideUndoToast();
+        els.undoToastBtn.disabled = false;
+        els.undoToastBtn.textContent = 'Undo';
+        renderCurrent();
+        
+    } catch (err) {
+        alert('Network error during undo: ' + err.message);
+        els.undoToastBtn.disabled = false;
+        els.undoToastBtn.textContent = 'Undo';
+    }
+}
+
+// =========================================================================
+// Skip / previous
+// =========================================================================
+function skipCurrent() {
+    // "Skip for now" — move to next ingredient. The skipped one stays in the
+    // queue (it's still unmapped), so it'll appear next time the page loads.
+    currentIndex++;
+    renderCurrent();
+}
+
+function goPrevious() {
+    if (currentIndex > 0) {
+        currentIndex--;
+        renderCurrent();
+    }
+}
+
+// =========================================================================
+// Done state
+// =========================================================================
+function renderDoneState() {
+    if (SCOPED_RETURN_URL) {
+        els.wizardCard.outerHTML = `
+            <div class="wizard-done">
+                <div class="icon"><i class="fas fa-check-circle"></i></div>
+                <h2>All done!</h2>
+                <p>You've finished this batch. Returning to the recipe will reopen the Nutrition Facts label with the updated data.</p>
+                <button type="button" onclick="goBackToRecipe()" class="btn btn-success" style="margin-right:10px;">
+                    <i class="fas fa-arrow-left"></i> ${SCOPED_RETURN_LABEL}
+                </button>
+            </div>
+        `;
+    } else {
+        els.wizardCard.outerHTML = `
+            <div class="wizard-done">
+                <div class="icon"><i class="fas fa-check-circle"></i></div>
+                <h2>All done!</h2>
+                <p>You've reached the end of the queue. Reload the page to pick up any newly-skipped ingredients, or head back to manage everything from the Ingredients page.</p>
+                <a href="?" class="btn btn-info" style="margin-right:10px;">
+                    <i class="fas fa-redo"></i> Reload Queue
+                </a>
+                <a href="{% url 'ingredient_base_units_management' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Ingredients
+                </a>
+            </div>
+        `;
+    }
+}
+
+// =========================================================================
+// Helpers
+// =========================================================================
+function escapeHtml(s) {
+    if (s === null || s === undefined) return '';
+    const div = document.createElement('div');
+    div.textContent = String(s);
+    return div.innerHTML;
+}
+
+let cachedGramUnitId = null;
+async function ensureGramUnitId() {
+    if (cachedGramUnitId !== null) return cachedGramUnitId;
+    if (window._gramUnitId) {
+        cachedGramUnitId = window._gramUnitId;
+        return cachedGramUnitId;
+    }
+    return null;
+}
+
+{% endif %}
+</script>
+
+{# Embed the gram unit ID for the conversion logic #}
+<script>
+window._gramUnitId = {% if gram_unit_id %}{{ gram_unit_id }}{% else %}null{% endif %};
+</script>
+
+{% if return_to == 'recipe' and scoped_recipe %}
+<script>
+// Recipe-scoped Back: pop the wizard entry off history if we came from the recipe;
+// otherwise fall back to a direct navigation. This avoids the recipe ↔ wizard loop.
+const RECIPE_RETURN_URL = "{% url 'view_recipe' scoped_recipe.recipe_id %}?reopen_nutrition=1";
+
+function goBackToRecipe() {
+    // If document.referrer matches the view_recipe page, history.back() will
+    // land us there cleanly without stacking another entry.
+    const referrer = document.referrer || '';
+    const cameFromRecipe = referrer.includes('/view_recipe/{{ scoped_recipe.recipe_id }}/');
+    
+    if (cameFromRecipe && window.history.length > 1) {
+        // Set a flag so the recipe page knows to reopen the modal
+        sessionStorage.setItem('reopen_nutrition_recipe_id', '{{ scoped_recipe.recipe_id }}');
+        window.history.back();
+    } else {
+        // Fallback — direct navigation (e.g., user opened wizard URL directly)
+        window.location.href = RECIPE_RETURN_URL;
+    }
+}
+</script>
+{% endif %}
+
+{% endblock %}

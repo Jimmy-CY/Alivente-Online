@@ -455,7 +455,7 @@ body {
 @media (max-width: 768px) {
 
     /* === TOP ACTION BAR — Back+2+ standard:
-         [Edit Recipe (wide)] [⋮ Shopping List, Print, View Doc, Cooking Times] [← Back] === */
+         [Edit Recipe (wide)] [⋮ Shopping List, Print, View Doc, Cooking Times, Nutrition] [← Back] === */
     .recipe-action-bar {
         flex-direction: row;
         flex-wrap: nowrap;
@@ -830,6 +830,46 @@ body {
         width: 100%;
         margin: 0 !important;
     }
+
+    /* === NUTRITION MODAL — full-screen === */
+    #nutritionModal .modal-dialog {
+        max-width: 100% !important;
+        width: 100% !important;
+        margin: 0 !important;
+        height: 100dvh !important;
+        max-height: 100dvh !important;
+    }
+    #nutritionModal .modal-content {
+        height: 100dvh !important;
+        max-height: 100dvh !important;
+        border-radius: 0 !important;
+        border: none !important;
+        display: flex;
+        flex-direction: column;
+        box-sizing: border-box;
+        padding-top: env(safe-area-inset-top);
+        padding-bottom: env(safe-area-inset-bottom);
+    }
+    #nutritionModal .modal-header {
+        flex: 0 0 auto;
+        padding: 14px 16px;
+    }
+    #nutritionModal .modal-body {
+        flex: 1 1 auto;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    #nutritionModal .modal-footer {
+        flex: 0 0 auto;
+        flex-direction: column-reverse;
+        gap: 8px;
+        padding: 12px 16px;
+    }
+    #nutritionModal .modal-footer .btn {
+        width: 100%;
+        margin: 0 !important;
+        min-height: 44px;
+    }
 }
 
 /* Tablet view - smaller image but still visible */
@@ -1031,6 +1071,200 @@ body {
     }
 }
 
+/* ============================================================
+   FDA-STYLE NUTRITION FACTS LABEL
+   ============================================================ */
+.nutrition-label {
+    width: 100%;
+    max-width: 360px;
+    background: white;
+    border: 2px solid #000;
+    padding: 8px 14px 10px 14px;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    color: #000;
+    box-sizing: border-box;
+}
+.nf-title {
+    font-size: 32px;
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: -0.5px;
+    margin-bottom: 2px;
+}
+.nf-serving {
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.2;
+    padding-bottom: 4px;
+}
+.nf-thick-bar {
+    background: #000;
+    height: 9px;
+    margin: 4px 0;
+}
+.nf-medium-bar {
+    background: #000;
+    height: 4px;
+    margin: 2px 0;
+}
+.nf-hairline {
+    background: #000;
+    height: 1px;
+    margin: 0;
+}
+.nf-calories-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    padding: 2px 0 4px 0;
+}
+.nf-calories-label {
+    font-size: 26px;
+    font-weight: 900;
+    line-height: 1;
+}
+.nf-calories-value {
+    font-size: 38px;
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: -1px;
+}
+.nf-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 4px 0;
+    font-size: 14px;
+    line-height: 1.3;
+}
+.nf-row strong {
+    font-weight: 700;
+}
+.nf-row-bold {
+    font-size: 14px;
+}
+.nf-row-indent {
+    padding-left: 18px;
+    font-size: 13px;
+}
+.nf-footnote {
+    font-size: 10px;
+    line-height: 1.3;
+    color: #444;
+    margin-top: 6px;
+    font-style: italic;
+}
+
+/* ============================================================
+   CONVERSION MINI-MODAL ROWS
+   ============================================================ */
+.conv-row {
+    background: #fff8e6;
+    border: 1px solid #ffc107;
+    border-radius: 8px;
+    padding: 14px 16px;
+    margin-bottom: 12px;
+}
+.conv-row-name {
+    font-size: 15px;
+    font-weight: 700;
+    color: #2c3e50;
+    margin-bottom: 6px;
+}
+.conv-row-explainer {
+    font-size: 13px;
+    color: #856404;
+    margin-bottom: 10px;
+}
+.conv-input-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 8px;
+}
+.conv-input-group input[type="number"] {
+    width: 90px;
+    padding: 6px 10px;
+    border: 2px solid #ffc107;
+    border-radius: 6px;
+    font-size: 14px;
+}
+.conv-input-group input[type="number"]:focus {
+    border-color: #fd7e14;
+    outline: none;
+}
+.conv-input-group .conv-suffix {
+    color: #495057;
+    font-weight: 500;
+    font-size: 13px;
+}
+.conv-presets {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+.conv-preset-btn {
+    padding: 4px 10px;
+    background: white;
+    border: 1px solid #ffc107;
+    border-radius: 4px;
+    color: #856404;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 500;
+    transition: all 0.15s ease;
+}
+.conv-preset-btn:hover {
+    background: #ffc107;
+    color: white;
+}
+
+/* Mobile-friendly conversion modal */
+@media (max-width: 768px) {
+    #conversionMiniModal .modal-dialog {
+        max-width: 100% !important;
+        margin: 0 !important;
+        height: 100dvh !important;
+        max-height: 100dvh !important;
+    }
+    #conversionMiniModal .modal-content {
+        height: 100dvh !important;
+        border-radius: 0 !important;
+        border: none !important;
+        display: flex;
+        flex-direction: column;
+        box-sizing: border-box;
+        padding-top: env(safe-area-inset-top);
+        padding-bottom: env(safe-area-inset-bottom);
+    }
+    #conversionMiniModal .modal-body {
+        flex: 1 1 auto;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    #conversionMiniModal .modal-footer {
+        flex-direction: column-reverse;
+        gap: 8px;
+        padding: 12px 16px;
+    }
+    #conversionMiniModal .modal-footer .btn {
+        width: 100%;
+        margin: 0 !important;
+        min-height: 44px;
+    }
+    #conversionMiniModal input[type="number"] {
+        font-size: 16px; /* iOS zoom guard */
+        width: 100px !important;
+    }
+}
+
+/* Hover guard for nutrition toggle buttons (touch devices won't show hover) */
+@media (hover: hover) and (pointer: fine) {
+    .nutrition-toggle-btn:hover {
+        opacity: 0.9;
+    }
+}
+
 </style>
 
 <div class="recipe-detail-container">
@@ -1050,6 +1284,11 @@ body {
         {% endif %}
 
         <!-- SECONDARIES (desktop visible, mobile hidden) -->
+        {% if show_nutrition_button %}
+        <button onclick="openNutritionModal()" class="btn btn-success action-secondary">
+            <i class="fas fa-leaf"></i> Nutrition
+        </button>
+        {% endif %}
         <button onclick="openShoppingListModal()" class="btn btn-success action-secondary">
             <i class="fas fa-shopping-cart"></i> Shopping List
         </button>
@@ -1074,6 +1313,11 @@ body {
                 <i class="fas fa-ellipsis-v"></i>
             </button>
             <div class="action-more-menu" id="actionMoreMenu" role="menu" hidden>
+                {% if show_nutrition_button %}
+                <button type="button" class="action-more-item" role="menuitem" onclick="openNutritionModal()">
+                    <i class="fas fa-leaf"></i> Nutrition
+                </button>
+                {% endif %}
                 <button type="button" class="action-more-item" role="menuitem" onclick="openShoppingListModal()">
                     <i class="fas fa-shopping-cart"></i> Shopping List
                 </button>
@@ -1284,6 +1528,179 @@ body {
         </div>
     </div>
 
+</div>
+
+<!-- ============================================================
+     CONVERSION MINI-MODAL — fix unconvertible ingredients inline
+     ============================================================ -->
+<div class="modal fade" id="conversionMiniModal" tabindex="-1" role="dialog" aria-labelledby="conversionMiniModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header" style="background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%); color: white;">
+                <h5 class="modal-title" id="conversionMiniModalLabel">
+                    <i class="fas fa-balance-scale"></i> Set Unit Conversions
+                </h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="color:white; opacity:0.9;">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="conversionMiniBody" style="padding: 20px;">
+                <!-- Loading -->
+                <div id="conversionMiniLoading" style="padding: 30px; text-align: center;">
+                    <div class="spinner-border text-warning" role="status">
+                        <span class="sr-only">Loading...</span>
+                    </div>
+                    <p class="mt-3 text-muted">Loading ingredients that need conversion…</p>
+                </div>
+                
+                <!-- Error -->
+                <div id="conversionMiniError" style="display:none;">
+                    <div class="alert alert-danger mb-0">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <span id="conversionMiniErrorMessage"></span>
+                    </div>
+                </div>
+                
+                <!-- Form -->
+                <div id="conversionMiniForm" style="display:none;">
+                    <p style="font-size: 14px; color: #495057; margin-bottom: 16px;">
+                        These ingredients have nutrition data but need a weight conversion so we can calculate per-100g values. Enter weights to enable accurate nutrition.
+                    </p>
+                    <div id="conversionMiniRows">
+                        <!-- Populated by JS -->
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal" id="conversionMiniCancel">Cancel</button>
+                <button type="button" class="btn btn-warning" id="conversionMiniSaveBtn" style="font-weight: 600;" disabled>
+                    <i class="fas fa-save"></i> Save & Recalculate
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ============================================================
+     NUTRITION ANALYSIS MODAL
+     ============================================================ -->
+<div class="modal fade" id="nutritionModal" tabindex="-1" role="dialog" aria-labelledby="nutritionModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white;">
+                <h5 class="modal-title" id="nutritionModalLabel">
+                    <i class="fas fa-leaf"></i> Nutrition Analysis
+                </h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="color:white; opacity:0.9;">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="nutritionModalBody" style="padding: 0;">
+                <!-- Loading state -->
+                <div id="nutritionLoading" style="padding: 40px; text-align: center;">
+                    <div class="spinner-border text-success" role="status">
+                        <span class="sr-only">Calculating...</span>
+                    </div>
+                    <p class="mt-3 text-muted">Calculating nutrition values...</p>
+                </div>
+
+                <!-- Error state -->
+                <div id="nutritionError" style="display:none; padding: 25px;">
+                    <div class="alert alert-danger mb-0">
+                        <i class="fas fa-exclamation-circle"></i>
+                        <span id="nutritionErrorMessage"></span>
+                    </div>
+                </div>
+
+                <!-- Results -->
+                <div id="nutritionResults" style="display:none;">
+                    <!-- Recipe info header -->
+                    <div style="padding: 16px 24px; border-bottom: 1px solid #e9ecef; background: #f8f9fa;">
+                        <strong id="nutritionRecipeName" style="color: #2c3e50; font-size: 17px;"></strong>
+                        <div style="font-size: 13px; color: #6c757d; margin-top: 2px;">
+                            <span id="nutritionMetaInfo"></span>
+                        </div>
+                    </div>
+
+                    <!-- Partial data warning (shown when not complete) -->
+                    <div id="partialDataWarning" style="display:none; padding: 12px 24px; background: #fff8e6; border-bottom: 1px solid #ffc107;">
+                        <div style="display: flex; align-items: flex-start; gap: 10px;">
+                            <i class="fas fa-exclamation-triangle" style="color: #856404; font-size: 16px; margin-top: 2px;"></i>
+                            <div style="flex: 1; font-size: 13px; color: #856404;">
+                                <strong>Partial nutrition data</strong>
+                                <div id="partialDataMessage" style="margin-top: 4px;"></div>
+                                <div id="partialDataAction" style="margin-top: 6px;"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- =====================================================
+                         FDA-STYLE NUTRITION FACTS LABEL
+                         ===================================================== -->
+                    <div style="padding: 24px; display: flex; justify-content: center;">
+                        <div class="nutrition-label">
+                            <div class="nf-title">Nutrition Facts</div>
+                            <div class="nf-serving">Per 100g</div>
+                            <div class="nf-thick-bar"></div>
+
+                            <!-- Calories -->
+                            <div class="nf-calories-row">
+                                <span class="nf-calories-label">Calories</span>
+                                <span class="nf-calories-value" id="caloriesValue">—</span>
+                            </div>
+                            <div class="nf-medium-bar"></div>
+
+                            <!-- Total Fat -->
+                            <div class="nf-row nf-row-bold">
+                                <span><strong>Total Fat</strong></span>
+                                <span><strong id="fatGrams">—</strong>g</span>
+                            </div>
+                            <div class="nf-hairline"></div>
+
+                            <!-- Sodium -->
+                            <div class="nf-row nf-row-bold">
+                                <span><strong>Sodium</strong></span>
+                                <span><strong id="sodiumValue">—</strong>mg</span>
+                            </div>
+                            <div class="nf-hairline"></div>
+
+                            <!-- Total Carbohydrate (with sub-rows) -->
+                            <div class="nf-row nf-row-bold">
+                                <span><strong>Total Carbohydrate</strong></span>
+                                <span><strong id="carbsGrams">—</strong>g</span>
+                            </div>
+                            <div class="nf-hairline"></div>
+                            <div class="nf-row nf-row-indent">
+                                <span>Dietary Fiber</span>
+                                <span><strong id="fiberValue">—</strong>g</span>
+                            </div>
+                            <div class="nf-hairline"></div>
+                            <div class="nf-row nf-row-indent">
+                                <span>Total Sugars</span>
+                                <span><strong id="sugarValue">—</strong>g</span>
+                            </div>
+                            <div class="nf-hairline"></div>
+
+                            <!-- Protein -->
+                            <div class="nf-row nf-row-bold">
+                                <span><strong>Protein</strong></span>
+                                <span><strong id="proteinGrams">—</strong>g</span>
+                            </div>
+                            <div class="nf-thick-bar"></div>
+
+                            <!-- Footer -->
+                            <div class="nf-footnote">
+                                Calculated from USDA FoodData Central nutrition data.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
 </div>
 
 <!-- Cooking Calculator Modal -->
@@ -1818,6 +2235,356 @@ document.addEventListener('change', function(e) {
         }
     }
 });
+
+// ========== NUTRITION ANALYSIS MODAL ==========
+{% if show_nutrition_button %}
+const NUTRITION_DATA_URL = "{% url 'recipe_nutrition_data' recipe.recipe_id %}";
+let _nutritionData = null;
+
+function openNutritionModal() {
+    document.getElementById('nutritionLoading').style.display  = 'block';
+    document.getElementById('nutritionError').style.display    = 'none';
+    document.getElementById('nutritionResults').style.display  = 'none';
+
+    $('#nutritionModal').modal('show');
+
+    fetch(NUTRITION_DATA_URL, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+        .then(r => r.json())
+        .then(data => {
+            document.getElementById('nutritionLoading').style.display = 'none';
+
+            if (!data.success) {
+                document.getElementById('nutritionError').style.display = 'block';
+                document.getElementById('nutritionErrorMessage').textContent = data.error || 'Could not calculate nutrition.';
+                return;
+            }
+
+            _nutritionData = data;
+            renderNutrition();
+            document.getElementById('nutritionResults').style.display = 'block';
+        })
+        .catch(err => {
+            document.getElementById('nutritionLoading').style.display = 'none';
+            document.getElementById('nutritionError').style.display = 'block';
+            document.getElementById('nutritionErrorMessage').textContent = 'Network error: ' + err.message;
+        });
+}
+
+function renderNutrition() {
+    const d = _nutritionData;
+    if (!d) return;
+
+    document.getElementById('nutritionRecipeName').textContent = d.recipe_name;
+
+    const totalKg = (d.total_weight_g / 1000).toFixed(2);
+    let metaParts = [`Serves ${d.servings}`];
+    if (d.total_weight_g > 0) {
+        metaParts.push(`Total weight ${totalKg}kg`);
+    }
+    metaParts.push(`${d.mapped_count} of ${d.total_ingredient_count} ingredients mapped`);
+    document.getElementById('nutritionMetaInfo').textContent = metaParts.join(' · ');
+
+    const warning = document.getElementById('partialDataWarning');
+    if (!d.is_complete) {
+        warning.style.display = 'block';
+        const issues = [];
+        if (d.unmapped_count > 0) {
+            const names = d.ingredient_breakdown.unmapped.map(i => i.name).slice(0, 5).join(', ');
+            const extra = d.unmapped_count > 5 ? ` and ${d.unmapped_count - 5} more` : '';
+            issues.push(`${d.unmapped_count} not mapped: <em>${escapeHtmlNutrition(names)}${extra}</em>`);
+        }
+        if (d.unconvertible_count > 0) {
+            const names = d.ingredient_breakdown.unconvertible.map(i => i.name).slice(0, 5).join(', ');
+            const extra = d.unconvertible_count > 5 ? ` and ${d.unconvertible_count - 5} more` : '';
+            issues.push(`${d.unconvertible_count} need a unit conversion: <em>${escapeHtmlNutrition(names)}${extra}</em>`);
+        }
+        document.getElementById('partialDataMessage').innerHTML = issues.join('<br>');
+        
+        // Smart link: pick destination based on what's actually missing
+        const mapWizardUrl = "{% url 'map_ingredients_wizard' %}?scope=unmapped&recipe_id={{ recipe.recipe_id }}&return_to=recipe";
+        let linkHtml;
+        if (d.unmapped_count > 0 && d.unconvertible_count === 0) {
+            // Only mapping issues
+            linkHtml = `<a href="${mapWizardUrl}" style="color: #856404; text-decoration: underline; font-weight: 600;">Map missing ingredients →</a>`;
+        } else if (d.unmapped_count === 0 && d.unconvertible_count > 0) {
+            // Only conversion issues — open the mini-modal inline
+            linkHtml = `<a href="javascript:void(0)" onclick="openConversionMiniModal()" style="color: #856404; text-decoration: underline; font-weight: 600;">Set unit conversions →</a>`;
+        } else {
+            // Both — show map link first, then conversion mini-modal trigger
+            linkHtml = `
+                <a href="${mapWizardUrl}" style="color: #856404; text-decoration: underline; font-weight: 600; margin-right: 16px;">Map missing ingredients →</a>
+                <a href="javascript:void(0)" onclick="openConversionMiniModal()" style="color: #856404; text-decoration: underline; font-weight: 600;">Set unit conversions →</a>
+            `;
+        }
+        document.getElementById('partialDataAction').innerHTML = linkHtml;
+    } else {
+        warning.style.display = 'none';
+    }
+
+    // Render per-100g values into the FDA-style label
+    const values = d.per_100g;
+    document.getElementById('caloriesValue').textContent = formatNutritionNumber(values.calories, 0);
+
+    document.getElementById('proteinGrams').textContent = formatNutritionNumber(values.protein, 1);
+    document.getElementById('carbsGrams').textContent   = formatNutritionNumber(values.carbs, 1);
+    document.getElementById('fatGrams').textContent     = formatNutritionNumber(values.fat, 1);
+
+    document.getElementById('fiberValue').textContent  = formatNutritionNumber(values.fiber, 1);
+    document.getElementById('sugarValue').textContent  = formatNutritionNumber(values.sugar, 1);
+    document.getElementById('sodiumValue').textContent = formatNutritionNumber(values.sodium, 0);
+}
+
+function formatNutritionNumber(value, decimals) {
+    if (value === null || value === undefined || isNaN(value)) return '—';
+    return Number(value).toFixed(decimals);
+}
+
+function escapeHtmlNutrition(s) {
+    if (s === null || s === undefined) return '';
+    const div = document.createElement('div');
+    div.textContent = String(s);
+    return div.innerHTML;
+}
+
+// Auto-reopen the nutrition modal if the user just returned from the
+// recipe-scoped mapping wizard. Triggered by either:
+//   (a) ?reopen_nutrition=1 in the URL (direct/forward navigation), OR
+//   (b) sessionStorage flag set by the wizard's history.back() path.
+window.addEventListener('pageshow', function(event) {
+    const params = new URLSearchParams(window.location.search);
+    const fromQueryParam = params.get('reopen_nutrition') === '1';
+
+    const sessionFlag = sessionStorage.getItem('reopen_nutrition_recipe_id');
+    const fromSession = sessionFlag === '{{ recipe.recipe_id }}';
+
+    if (!fromQueryParam && !fromSession) return;
+
+    // Clear both triggers so refresh/back doesn't loop
+    if (fromSession) {
+        sessionStorage.removeItem('reopen_nutrition_recipe_id');
+    }
+    if (fromQueryParam) {
+        params.delete('reopen_nutrition');
+        const newQs = params.toString();
+        const cleanUrl = window.location.pathname + (newQs ? '?' + newQs : '') + window.location.hash;
+        window.history.replaceState({}, '', cleanUrl);
+    }
+
+    // Wait a tick so all other on-load handlers run first
+    // (e.g., the ingredient column layout) before opening the modal.
+    setTimeout(() => {
+        openNutritionModal();
+    }, 100);
+});
+
+// =========================================================================
+// CONVERSION MINI-MODAL
+// =========================================================================
+const UNCONVERTIBLE_DATA_URL = "{% url 'recipe_unconvertible_ingredients' recipe.recipe_id %}";
+const SAVE_CONVERSION_URL = "{% url 'save_unit_conversion' %}";
+
+let _miniModalItems = [];
+
+// Density presets for volume → grams
+const _MINI_DENSITY_PRESETS = [
+    { label: 'Water (1.0)',  value: 1.0  },
+    { label: 'Oil (0.92)',   value: 0.92 },
+    { label: 'Milk (1.03)',  value: 1.03 },
+    { label: 'Honey (1.42)', value: 1.42 },
+    { label: 'Flour (0.53)', value: 0.53 },
+    { label: 'Sugar (0.85)', value: 0.85 },
+];
+
+// Common per-piece weight presets for count units
+const _MINI_PIECE_PRESETS = [
+    { label: 'Small egg (44g)',   value: 44  },
+    { label: 'Large egg (50g)',   value: 50  },
+    { label: 'Lemon (60g)',       value: 60  },
+    { label: 'Onion (110g)',      value: 110 },
+    { label: 'Carrot (75g)',      value: 75  },
+    { label: 'Garlic clove (5g)', value: 5   },
+];
+
+function openConversionMiniModal() {
+    // Reset UI
+    document.getElementById('conversionMiniLoading').style.display = 'block';
+    document.getElementById('conversionMiniError').style.display = 'none';
+    document.getElementById('conversionMiniForm').style.display = 'none';
+    document.getElementById('conversionMiniSaveBtn').disabled = true;
+    
+    // Hide the nutrition modal so the conversion modal can take over
+    $('#nutritionModal').modal('hide');
+    
+    // Show the mini-modal
+    $('#conversionMiniModal').modal('show');
+    
+    // Fetch the unconvertible items
+    fetch(UNCONVERTIBLE_DATA_URL, { headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+        .then(r => r.json())
+        .then(data => {
+            document.getElementById('conversionMiniLoading').style.display = 'none';
+            
+            if (!data.success) {
+                document.getElementById('conversionMiniError').style.display = 'block';
+                document.getElementById('conversionMiniErrorMessage').textContent = data.error || 'Could not load ingredients.';
+                return;
+            }
+            
+            if (!data.items || data.items.length === 0) {
+                document.getElementById('conversionMiniError').style.display = 'block';
+                document.getElementById('conversionMiniErrorMessage').textContent = 'No ingredients need a conversion right now.';
+                return;
+            }
+            
+            _miniModalItems = data.items;
+            renderMiniModalForm(data.items);
+            document.getElementById('conversionMiniForm').style.display = 'block';
+            document.getElementById('conversionMiniSaveBtn').disabled = false;
+        })
+        .catch(err => {
+            document.getElementById('conversionMiniLoading').style.display = 'none';
+            document.getElementById('conversionMiniError').style.display = 'block';
+            document.getElementById('conversionMiniErrorMessage').textContent = 'Network error: ' + err.message;
+        });
+}
+
+function renderMiniModalForm(items) {
+    const container = document.getElementById('conversionMiniRows');
+    container.innerHTML = '';
+    
+    items.forEach((item, idx) => {
+        let explainer, presets;
+        if (item.from_unit_type === 'count') {
+            explainer = `How much does <strong>1 ${escapeHtmlNutrition(item.from_unit_name)}</strong> of ${escapeHtmlNutrition(item.ingredient_name)} weigh in <strong>grams</strong>?`;
+            presets = _MINI_PIECE_PRESETS;
+        } else if (item.from_unit_type === 'volume') {
+            explainer = `How many <strong>grams</strong> in <strong>1 ${escapeHtmlNutrition(item.from_unit_name)}</strong> of ${escapeHtmlNutrition(item.ingredient_name)}? (e.g., 1 ml of olive oil ≈ 0.92 g)`;
+            presets = _MINI_DENSITY_PRESETS;
+        } else {
+            explainer = `How many <strong>grams</strong> equal <strong>1 ${escapeHtmlNutrition(item.from_unit_name)}</strong> of ${escapeHtmlNutrition(item.ingredient_name)}?`;
+            presets = [];
+        }
+        
+        const presetButtons = presets.map(p => `
+            <button type="button" class="conv-preset-btn" data-row="${idx}" data-value="${p.value}">${escapeHtmlNutrition(p.label)}</button>
+        `).join('');
+        
+        const row = document.createElement('div');
+        row.className = 'conv-row';
+        row.innerHTML = `
+            <div class="conv-row-name">
+                <i class="fas fa-utensils" style="color: #fd7e14; margin-right: 6px;"></i>
+                ${escapeHtmlNutrition(item.ingredient_name)}
+            </div>
+            <div class="conv-row-explainer">${explainer}</div>
+            <div class="conv-input-group">
+                <input type="number" step="0.001" min="0.001" 
+                       id="convInput_${idx}" 
+                       data-ingredient-id="${item.ingredient_id}"
+                       data-from-unit-id="${item.from_unit_id}"
+                       data-to-unit-id="${item.to_unit_id}"
+                       placeholder="e.g., 75">
+                <span class="conv-suffix">${escapeHtmlNutrition(item.to_unit_name)} per ${escapeHtmlNutrition(item.from_unit_name)}</span>
+            </div>
+            ${presets.length ? `<div class="conv-presets">${presetButtons}</div>` : ''}
+        `;
+        container.appendChild(row);
+    });
+    
+    // Wire up preset clicks
+    container.querySelectorAll('.conv-preset-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const idx = btn.dataset.row;
+            const val = btn.dataset.value;
+            const input = document.getElementById(`convInput_${idx}`);
+            if (input) {
+                input.value = val;
+                input.style.borderColor = '#28a745';
+            }
+        });
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const saveBtn = document.getElementById('conversionMiniSaveBtn');
+    if (!saveBtn) return;
+    
+    saveBtn.addEventListener('click', async function() {
+        // Collect all rows with valid input
+        const rows = _miniModalItems.map((item, idx) => {
+            const input = document.getElementById(`convInput_${idx}`);
+            const val = parseFloat(input.value);
+            return {
+                input: input,
+                ingredient_name: item.ingredient_name,
+                from_unit_id: item.from_unit_id,
+                to_unit_id: item.to_unit_id,
+                multiplier: val,
+            };
+        });
+        
+        // Validate
+        let hasError = false;
+        rows.forEach(r => {
+            if (isNaN(r.multiplier) || r.multiplier <= 0) {
+                r.input.style.borderColor = '#dc3545';
+                hasError = true;
+            } else {
+                r.input.style.borderColor = '#28a745';
+            }
+        });
+        
+        if (hasError) {
+            alert('Please enter a positive weight for every ingredient.');
+            return;
+        }
+        
+        // Save each conversion as INGREDIENT-SPECIFIC (so it doesn't override
+        // generic conversions for other recipes)
+        saveBtn.disabled = true;
+        const originalText = saveBtn.innerHTML;
+        saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving…';
+        
+        let savedCount = 0;
+        for (const r of rows) {
+            try {
+                const res = await fetch(SAVE_CONVERSION_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}',
+                    },
+                    body: JSON.stringify({
+                        from_unit_id: r.from_unit_id,
+                        to_unit_id: r.to_unit_id,
+                        multiplier: r.multiplier,
+                        ingredient_name: r.ingredient_name,  // makes it ingredient-specific
+                    }),
+                });
+                const data = await res.json();
+                if (data.success) savedCount++;
+            } catch (err) {
+                console.error('Save conversion failed:', err);
+            }
+        }
+        
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = originalText;
+        
+        if (savedCount === rows.length) {
+            // All saved — close mini modal, refresh nutrition data, reopen nutrition modal
+            $('#conversionMiniModal').modal('hide');
+            
+            // Wait for the modal hide animation, then refresh nutrition
+            setTimeout(() => {
+                openNutritionModal();
+            }, 350);
+        } else {
+            alert(`Saved ${savedCount} of ${rows.length} conversions. Please try again.`);
+        }
+    });
+});
+{% endif %}
 
 // ========== SHOPPING LIST MODAL ==========
 function openShoppingListModal() {

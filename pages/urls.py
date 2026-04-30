@@ -236,8 +236,8 @@ urlpatterns = [
     # Passports
     path('passport-management/', views.passport_management, name='passport_management'),
 
-    #
-    # Recipe Management URLs
+     #
+     # Recipe Management URLs
     path('recipe_management/', views.recipe_management, name='recipe_management'),
     path('recipes/duplicate/<int:recipe_id>/', views.duplicate_recipe, name='duplicate_recipe'),
     path('view_recipe/<int:recipe_id>/', views.view_recipe, name='view_recipe'),
@@ -285,6 +285,14 @@ urlpatterns = [
     path('check-ingredient-usage/', views.check_ingredient_usage, name='check_ingredient_usage'),
     path('delete-ingredient/', views.delete_ingredient, name='delete_ingredient'),
     path('update-ingredient-full/', views.update_ingredient_full, name='update_ingredient_full'),
+    # Ingredient Nutrition Mapping (USDA FoodData Central)
+    path('recipes/ingredients/map-nutrition/', views.map_ingredients_wizard, name='map_ingredients_wizard'),
+    path('recipes/nutrition/search/', views.usda_search, name='usda_search'),
+    path('recipes/nutrition/preview/', views.usda_select_and_preview, name='usda_select_and_preview'),
+    path('recipes/nutrition/save-mapping/', views.save_ingredient_mapping, name='save_ingredient_mapping'),
+     path('recipe/<int:recipe_id>/nutrition-data/', views.recipe_nutrition_data, name='recipe_nutrition_data'),
+     path('recipe/<int:recipe_id>/unconvertible/', views.recipe_unconvertible_ingredients, name='recipe_unconvertible_ingredients'),
+    # Categories
     path('categories-management/', views.categories_management, name='categories_management'),
     path('add-category/', views.add_category, name='add_category'),
     path('update-category/', views.update_category, name='update_category'),

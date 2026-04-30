@@ -2,6 +2,8 @@
 
 from django import template
 from decimal import Decimal, InvalidOperation
+import json
+from django.utils.safestring import mark_safe
 
 register = template.Library()
 
@@ -306,3 +308,15 @@ def format_amount(value):
         return f"{num:.2f}".rstrip('0').rstrip('.')
     except (ValueError, TypeError):
         return str(value)
+
+@register.filter(name='to_json', is_safe=True)
+def to_json(value):
+    """
+    Serialize a Python value (dict, list, etc.) to JSON for inline use
+    inside a <script type="application/json"> tag.
+    
+    Used by the Ingredients page to embed all ingredient-specific unit
+    conversions in a single JSON blob, which the Nutrition Mapping modal
+    reads when it opens.
+    """
+    return mark_safe(json.dumps(value))

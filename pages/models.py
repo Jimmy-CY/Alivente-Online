@@ -1408,11 +1408,72 @@ class Ingredient(models.Model):
         help_text='Default measurement unit for this ingredient'
     )
     notes = models.TextField(blank=True, null=True, help_text='Storage tips, substitutions, etc.')
+    
+    # === USDA FoodData Central nutrition data ===
+    # All nutrition values are per 100g. The recipe nutrition calculator
+    # scales these by the ingredient amount (after unit conversion).
+    # Set when the ingredient is mapped to a USDA food via the mapping wizard.
+    
+    fdc_id = models.IntegerField(
+        null=True, blank=True,
+        help_text='USDA FoodData Central food ID (set when mapped to nutrition data)'
+    )
+    fdc_description = models.CharField(
+        max_length=300, null=True, blank=True,
+        help_text='USDA description of the matched food (for reference)'
+    )
+    fdc_data_type = models.CharField(
+        max_length=30, null=True, blank=True,
+        help_text='USDA data type: Foundation, SR Legacy, Survey (FNDDS), or Branded'
+    )
+    
+    # Macros — per 100g
+    calories_per_100g = models.DecimalField(
+        max_digits=7, decimal_places=2, null=True, blank=True,
+        help_text='Calories (kcal) per 100g'
+    )
+    protein_per_100g = models.DecimalField(
+        max_digits=6, decimal_places=2, null=True, blank=True,
+        help_text='Protein (g) per 100g'
+    )
+    carbs_per_100g = models.DecimalField(
+        max_digits=6, decimal_places=2, null=True, blank=True,
+        help_text='Carbohydrates (g) per 100g'
+    )
+    fat_per_100g = models.DecimalField(
+        max_digits=6, decimal_places=2, null=True, blank=True,
+        help_text='Total fat (g) per 100g'
+    )
+    
+    # Key micros — per 100g
+    fiber_per_100g = models.DecimalField(
+        max_digits=6, decimal_places=2, null=True, blank=True,
+        help_text='Dietary fiber (g) per 100g'
+    )
+    sugar_per_100g = models.DecimalField(
+        max_digits=6, decimal_places=2, null=True, blank=True,
+        help_text='Total sugars (g) per 100g'
+    )
+    sodium_per_100g = models.DecimalField(
+        max_digits=7, decimal_places=2, null=True, blank=True,
+        help_text='Sodium (mg) per 100g'
+    )
+    
+    # Tracking
+    nutrition_synced_at = models.DateTimeField(
+        null=True, blank=True,
+        help_text='When nutrition data was last fetched from USDA'
+    )
+    
     created_date = models.DateTimeField(auto_now_add=True)
     updated_date = models.DateTimeField(auto_now=True)
     
     def __str__(self):
         return self.name
+    
+    def is_nutrition_mapped(self):
+        """True if this ingredient has been mapped to USDA nutrition data."""
+        return self.fdc_id is not None and self.calories_per_100g is not None
     
     class Meta:
         db_table = "ingredients"

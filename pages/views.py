@@ -1,22 +1,57 @@
+from calendar import monthrange, monthcalendar, month_name
+from collections import defaultdict
+from datetime import date, datetime, timedelta
+from decimal import Decimal, InvalidOperation
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from fractions import Fraction
+from io import BytesIO
+from urllib.parse import urlparse, parse_qs
+import base64
+import calendar
+import decimal
+import io
+import json
+import json as json_module
+import logging
+import os
+import re
+import smtplib
+import string
+import tempfile
+import uuid
+
+import anthropic
+import mysql.connector
+import PyPDF2
+from docx import Document
+from docxtpl import DocxTemplate
+from PIL import Image
+from pypdf import PdfReader, PdfWriter
+from reportlab.lib.pagesizes import A4
+from reportlab.pdfgen import canvas as rl_canvas
+from spellchecker import SpellChecker
+from xhtml2pdf import pisa
+
 from django.conf import settings
-from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
-from django.contrib.auth.decorators import login_required, user_passes_test, permission_required
 from django.contrib import messages
-from django.contrib.auth.forms import UserCreationForm, UserChangeForm, PasswordChangeForm
+from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
+from django.contrib.auth.decorators import login_required, permission_required, user_passes_test
+from django.contrib.auth.forms import PasswordChangeForm, UserChangeForm, UserCreationForm
 from django.contrib.auth.models import User
 from django.core.cache import cache
-from django.core.exceptions import ValidationError, PermissionDenied
+from django.core.exceptions import PermissionDenied, ValidationError
 from django.core.files.base import ContentFile
-from django.core.files.storage import FileSystemStorage, default_storage
+from django.core.files.storage import default_storage, FileSystemStorage
 from django.core.mail import EmailMultiAlternatives
 from django.core.paginator import Paginator
 from django.core.serializers import serialize
-from django.db import connection, transaction, models
-from django.db.models import Q, Prefetch, Subquery, OuterRef, Sum, F, Count, Max, Min
+from django.db import connection, models, transaction
+from django.db.models import Count, F, Max, Min, OuterRef, Prefetch, Q, Subquery, Sum
 from django.db.models.functions import Coalesce
-from django.http import HttpResponse, HttpResponseServerError, FileResponse, Http404, JsonResponse
-from django.shortcuts import render, redirect, get_object_or_404
-from django.template.loader import render_to_string, get_template
+from django.http import FileResponse, Http404, HttpResponse, HttpResponseServerError, JsonResponse
+from django.shortcuts import get_object_or_404, redirect, render
+from django.template.loader import get_template, render_to_string
 from django.templatetags.static import static
 from django.urls import reverse
 from django.utils import timezone
@@ -26,108 +61,99 @@ from django.utils.safestring import mark_safe
 from django.utils.timezone import now
 from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
-from django.views.decorators.http import require_POST, require_http_methods
+from django.views.decorators.http import require_GET, require_http_methods, require_POST
 from django.views.static import serve
-from docxtpl import DocxTemplate
 
+from . import forms
+from .forms import (
+    ActExpenseForm,
+    DetailsForm,
+    ExpenseForm,
+    ExpenseLineForm,
+    ExpenseTypesForm,
+    InvoicesForm,
+    IssuesForm,
+    PettyForm,
+    PropForm,
+    RevenueForm,
+    RevenueLineForm,
+    RevenueTypesForm,
+    SupplierForm,
+    TenantForm,
+    ValuesForm,
+)
+from .models import (
+    act_expense,
+    AssetCategory,
+    AssetMaintenance,
+    AssetSubcategory,
+    AssetSupplier,
+    CelebrationEvent,
+    Contact,
+    CookingCalculation,
+    CustomProtein,
+    EventNotification,
+    expense,
+    expense_line_types,
+    expense_types,
+    Ingredient,
+    IngredientCategory,
+    invoices,
+    issues,
+    issues_details,
+    MealPlan,
+    MealPlanDay,
+    MealPlanRecipe,
+    MeasurementUnit,
+    NotificationRecipient,
+    Passport,
+    petty,
+    PreparationMethod,
+    Project,
+    ProjectDocument,
+    ProjectTask,
+    prop_values,
+    PropertyAsset,
+    props,
+    Recipe,
+    RecipeCategory,
+    RecipeCourse,
+    RecipeFavourite,
+    RecipeIngredient,
+    RecipeIngredientText,
+    RecipeInstruction,
+    revenue,
+    revenue_line_types,
+    revenue_types,
+    supplier,
+    tenant,
+    UnitConversion,
+    UserProfile,
+    VacancyPeriod,
+)
+from .usda_client import get_food_details, search_foods, USDAClientError
+from .nutrition_calc import calculate_recipe_nutrition
+from .utils import convert_to_pdf, is_pdf, merge_pdfs, merge_pdfs_from_bytes
+from pages.management.commands.email_utils import get_email_recipients, format_email_recipients_for_header
 
-#from .translation_service import ensure_project_translations, get_translated_text
-# Temporarily disabled translation
+# --------------------------------------------------------------------------- #
+# Translation service stubs (translation temporarily disabled)
+# --------------------------------------------------------------------------- #
+# from .translation_service import ensure_project_translations, get_translated_text
+
 def ensure_project_translations(request):
     pass
 
 def get_translated_text(text, target_language='en'):
     return text
 
-from . import forms
-from .forms import PropForm, TenantForm, PettyForm, InvoicesForm, IssuesForm, DetailsForm, SupplierForm, ValuesForm, RevenueTypesForm, RevenueLineForm, RevenueForm, ExpenseTypesForm, ExpenseLineForm, ExpenseForm, ActExpenseForm 
-from .models import (
-    props,
-    petty,
-    issues,
-    issues_details, 
-    tenant, 
-    invoices,
-    supplier,
-    prop_values,
-    revenue_types,
-    revenue_line_types,
-    revenue,
-    expense_types,
-    expense_line_types,
-    expense,
-    act_expense,
-    Project, 
-    ProjectTask,
-    ProjectDocument,
-    Passport,
-    Recipe,
-    RecipeIngredient,
-    RecipeIngredientText,
-    RecipeInstruction,
-    RecipeCourse,
-    RecipeCategory,
-    Ingredient,
-    MeasurementUnit,
-    IngredientCategory,
-    CustomProtein,
-    PreparationMethod,
-    MealPlan,
-    MealPlanDay,
-    MealPlanRecipe,
-    UnitConversion,
-    VacancyPeriod,
-    Contact,
-    CelebrationEvent,
-    EventNotification,
-    NotificationRecipient,
-    PropertyAsset,
-    AssetCategory,
-    AssetSubcategory,
-    AssetSupplier,
-    AssetMaintenance,
-    CookingCalculation,
-    RecipeFavourite,
-    UserProfile,  
-
-    )
-from decimal import Decimal
-from fractions import Fraction
-from calendar import monthrange, monthcalendar, month_name
-from collections import defaultdict
-from datetime import date, datetime, timedelta
-from pages.management.commands.email_utils import get_email_recipients, format_email_recipients_for_header
-from spellchecker import SpellChecker
-from urllib.parse import urlparse, parse_qs
-from xhtml2pdf import pisa
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
-from .utils import merge_pdfs, merge_pdfs_from_bytes, is_pdf, convert_to_pdf
-from PIL import Image
-from docx import Document
-from io import BytesIO
-from reportlab.pdfgen import canvas as rl_canvas
-from reportlab.lib.pagesizes import A4
-from pypdf import PdfReader, PdfWriter
-import decimal
-import calendar
-import mysql.connector
-import smtplib
-import io
-import os
-import re
-import uuid
-import logging
-import json
-import json as json_module
-import tempfile
-import base64
-import anthropic
-import PyPDF2
-import string
 
 logger = logging.getLogger(__name__)
 
+
+# --------------------------------------------------------------------------- #
+# Passport management imports (kept here for now; safe to leave duplicated)
+# --------------------------------------------------------------------------- #
 ### PASSPORT MANAGEMENT ###
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
@@ -11695,6 +11721,7 @@ def view_recipe(request, recipe_id):
         'ingredients': ingredients,
         'instructions': instructions,
         'cooking_calculation': cooking_calc,
+        'show_nutrition_button': recipe_has_any_mapped_ingredient(recipe),
     }
     
     return render(request, 'view_recipe.html', context)
@@ -14301,7 +14328,6 @@ def delete_unit_conversion(request):
 # ============================================
 # INGREDIENT BASE UNIT MANAGEMENT
 # ============================================
-
 @login_required
 @permission_required('auth.can_access_personal', raise_exception=True)
 def ingredient_base_units_management(request):
@@ -14326,55 +14352,51 @@ def ingredient_base_units_management(request):
     all_units = MeasurementUnit.objects.all().order_by('name')
     categories = IngredientCategory.objects.all().order_by('name')
     
-    # Simple list - no auto-calculation
-    ingredients_with_base = [{'ingredient': ing} for ing in ingredients]
+    # ----- Pre-fetch ingredient-specific conversions to/from grams -----
+    # The Nutrition Mapping modal uses these to show the user what
+    # conversions already exist for each ingredient (so they can see
+    # at a glance that, e.g., Garlic has both clove→g and tsp→g rules).
     
-    context = {
-        'ingredients_with_base': ingredients_with_base,
-        'categories': categories,
-        'all_units': all_units,
-        'search_query': search_query,
-        'category_filter': category_filter,
-    }
+    # 1. Find the gram unit ID
+    gram_unit_id = None
+    for u in MeasurementUnit.objects.filter(unit_type='weight').values(
+        'measurement_unit_id', 'name', 'abbreviation'
+    ):
+        name = (u.get('name') or '').strip().lower()
+        abbr = (u.get('abbreviation') or '').strip().lower()
+        if name in ('gram', 'grams', 'g') or abbr == 'g':
+            gram_unit_id = u['measurement_unit_id']
+            break
     
-    return render(request, 'ingredient_base_units_management.html', context)
+    # 2. Fetch all specific conversions involving grams in either direction
+    ingredient_ids = [ing.ingredient_id for ing in ingredients]
+    conversions_by_ingredient = {}  # {ingredient_id: [{from, to, multiplier}, ...]}
     
-    # Helper function to calculate auto unit
-    def calculate_auto_unit(ingredient):
-        """Calculate what the auto unit would be based on category"""
-        if ingredient.category:
-            preferred_unit_name = base_unit_map.get(ingredient.category.name, 'gram')
-        else:
-            preferred_unit_name = 'gram'
-        
-        # Look up from our pre-loaded units
-        auto_unit = unit_lookup.get(preferred_unit_name.lower())
-        if not auto_unit:
-            # Fallback
-            auto_unit = unit_lookup.get('gram') or all_units[0] if all_units else None
-        return auto_unit
+    if ingredient_ids and gram_unit_id:
+        conv_qs = (
+            UnitConversion.objects
+            .filter(specific_ingredient_id__in=ingredient_ids)
+            .filter(Q(from_unit_id=gram_unit_id) | Q(to_unit_id=gram_unit_id))
+            .select_related('from_unit', 'to_unit')
+        )
+        for c in conv_qs:
+            ing_id = c.specific_ingredient_id
+            conversions_by_ingredient.setdefault(ing_id, []).append({
+                'from_unit_name': c.from_unit.name,
+                'from_unit_id': c.from_unit_id,
+                'to_unit_name': c.to_unit.name,
+                'to_unit_id': c.to_unit_id,
+                'multiplier': float(c.multiplier),
+            })
     
-    # Compute the effective base unit for each ingredient efficiently
-    ingredients_with_base = []
-    for ingredient in ingredients:
-        # Always calculate what the auto unit would be
-        auto_unit = calculate_auto_unit(ingredient)
-        
-        # Determine effective unit (what's currently being used)
-        if ingredient.default_unit:
-            effective_base_unit = ingredient.default_unit
-        else:
-            effective_base_unit = auto_unit
-        
-        ingredients_with_base.append({
-            'ingredient': ingredient,
-            'effective_base_unit': effective_base_unit,
-            'auto_base_unit': auto_unit,  # NEW: Always include the auto-calculated unit
-            'is_manual': ingredient.default_unit is not None
-        })
-    
-    # Get all categories for filters
-    categories = IngredientCategory.objects.all().order_by('name')
+    # Build the list, attaching conversions to each row
+    ingredients_with_base = [
+        {
+            'ingredient': ing,
+            'conversions': conversions_by_ingredient.get(ing.ingredient_id, []),
+        }
+        for ing in ingredients
+    ]
     
     context = {
         'ingredients_with_base': ingredients_with_base,
@@ -17149,3 +17171,599 @@ def generate_user_manual(request):
     response['X-Manual-Filename'] = filename
     response['Access-Control-Expose-Headers'] = 'X-Manual-Filename'
     return response
+
+
+
+# --------------------------------------------------------------------------- #
+# 1. Wizard page (GET)
+# --------------------------------------------------------------------------- #
+
+@login_required
+@permission_required('auth.can_edit_personal', raise_exception=True)
+def map_ingredients_wizard(request):
+    """
+    Render the bulk mapping wizard page.
+    
+    The page always shows the unmapped queue — there are no tabs. The
+    ingredient page now handles individual edits via clickable badges,
+    so this view is purely a "queue processor" for getting through the
+    unmapped backlog.
+    
+    Query params:
+        recipe_id = optional; if provided, filters the queue to ingredients
+                    used in this specific recipe
+        return_to = optional; 'recipe' means the Back button returns to the
+                    view_recipe page (and auto-reopens the Nutrition modal)
+    """
+    recipe_id = request.GET.get('recipe_id')
+    return_to = request.GET.get('return_to', 'ingredients')
+    
+    # Base queryset: only unmapped ingredients
+    qs = (
+        Ingredient.objects
+        .filter(fdc_id__isnull=True)
+        .select_related('default_unit', 'category')
+        .order_by('name')
+    )
+    
+    # Recipe-scoped filtering: limit to ingredients used in a specific recipe
+    scoped_recipe = None
+    if recipe_id:
+        try:
+            scoped_recipe = Recipe.objects.get(recipe_id=int(recipe_id))
+            ingredient_ids_in_recipe = RecipeIngredient.objects.filter(
+                recipe=scoped_recipe
+            ).values_list('ingredient_id', flat=True).distinct()
+            qs = qs.filter(ingredient_id__in=ingredient_ids_in_recipe)
+        except (Recipe.DoesNotExist, ValueError, TypeError):
+            scoped_recipe = None
+    
+    ingredients = list(qs)
+    
+    # Compute the totals for the progress display.
+    # Scope-aware: if filtered to a recipe, count against that recipe's
+    # ingredient set; otherwise count against the global database.
+    if scoped_recipe:
+        recipe_ingredient_ids = list(RecipeIngredient.objects.filter(
+            recipe=scoped_recipe
+        ).values_list('ingredient_id', flat=True).distinct())
+        
+        total_in_set = len(recipe_ingredient_ids)
+        total_mapped = Ingredient.objects.filter(
+            ingredient_id__in=recipe_ingredient_ids,
+            fdc_id__isnull=False,
+        ).count()
+    else:
+        total_in_set = Ingredient.objects.count()
+        total_mapped = Ingredient.objects.filter(fdc_id__isnull=False).count()
+    
+    total_unmapped = total_in_set - total_mapped
+    
+    # Find the gram unit ID for unit conversions (case-insensitive match on
+    # the unit name or abbreviation).
+    gram_unit_id = None
+    gram_candidates = MeasurementUnit.objects.filter(
+        unit_type='weight'
+    ).values('measurement_unit_id', 'name', 'abbreviation')
+    for u in gram_candidates:
+        name = (u.get('name') or '').strip().lower()
+        abbr = (u.get('abbreviation') or '').strip().lower()
+        if name in ('gram', 'grams', 'g') or abbr == 'g':
+            gram_unit_id = u['measurement_unit_id']
+            break
+    
+    # Pre-compute existing ingredient-specific conversions to grams.
+    # This lets the wizard skip the conversion panel for ingredients that
+    # already have a conversion saved (e.g., from a previous mapping session
+    # or from the Manage Unit Conversions page).
+    existing_conversions = {}
+    if gram_unit_id:
+        ingredient_ids = [ing.ingredient_id for ing in ingredients]
+        if ingredient_ids:
+            conversions_qs = UnitConversion.objects.filter(
+                specific_ingredient_id__in=ingredient_ids,
+                to_unit_id=gram_unit_id,
+            ).values(
+                'specific_ingredient_id', 'from_unit_id', 'multiplier'
+            )
+            for c in conversions_qs:
+                ing_id = c['specific_ingredient_id']
+                existing_conversions.setdefault(ing_id, {})[c['from_unit_id']] = float(c['multiplier'])
+    
+    # Serialise the minimal data the JS needs for each ingredient
+    ingredient_data = []
+    for ing in ingredients:
+        unit_type = ing.default_unit.unit_type if ing.default_unit else 'other'
+        default_unit_id = ing.default_unit.measurement_unit_id if ing.default_unit else None
+        
+        existing_multiplier = None
+        if default_unit_id and gram_unit_id and ing.ingredient_id in existing_conversions:
+            existing_multiplier = existing_conversions[ing.ingredient_id].get(default_unit_id)
+        
+        ingredient_data.append({
+            'ingredient_id': ing.ingredient_id,
+            'name': ing.name,
+            'category': ing.category.name if ing.category else None,
+            'default_unit_id': default_unit_id,
+            'default_unit_name': ing.default_unit.name if ing.default_unit else None,
+            'default_unit_type': unit_type,  # 'volume' / 'weight' / 'count' / 'other'
+            'is_mapped': ing.fdc_id is not None,
+            'fdc_id': ing.fdc_id,
+            'fdc_description': ing.fdc_description,
+            'fdc_data_type': ing.fdc_data_type,
+            'existing_conversion_to_g': existing_multiplier,
+        })
+    
+    context = {
+        'ingredient_data_json': json.dumps(ingredient_data),
+        'total_count': len(ingredients),       # how many are in the queue right now
+        'total_in_set': total_in_set,           # denominator for progress display
+        'total_mapped': total_mapped,           # numerator at page load
+        'total_unmapped': total_unmapped,       # how many still to go
+        'gram_unit_id': gram_unit_id,
+        # Recipe-scoped wizard support:
+        'scoped_recipe': scoped_recipe,
+        'return_to': return_to,
+    }
+    return render(request, 'map_ingredients_nutrition.html', context)
+
+# --------------------------------------------------------------------------- #
+# 2. USDA search (AJAX, GET)
+# --------------------------------------------------------------------------- #
+ 
+@login_required
+@require_GET
+def usda_search(request):
+    """
+    AJAX: search USDA FoodData Central for matches.
+    
+    GET params:
+        query     = search string (required)
+        page_size = how many results (default 5, max 10)
+    
+    Returns JSON:
+        {
+            "success": true,
+            "query": "flour",
+            "results": [
+                {
+                    "fdc_id": 2003586,
+                    "description": "Flour, 00",
+                    "data_type": "Foundation",
+                    "brand_owner": null,
+                    "calories_per_100g": "356.88"
+                },
+                ...
+            ]
+        }
+    """
+    query = request.GET.get('query', '').strip()
+    if not query:
+        return JsonResponse({
+            'success': False,
+            'error': 'Query is required.',
+        }, status=400)
+    
+    try:
+        page_size = int(request.GET.get('page_size', 5))
+    except (TypeError, ValueError):
+        page_size = 5
+    page_size = max(1, min(page_size, 10))
+    
+    try:
+        results = search_foods(query, page_size=page_size)
+    except USDAClientError as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e),
+        }, status=502)
+    
+    # Decimal -> string for JSON
+    serialised = []
+    for r in results:
+        serialised.append({
+            'fdc_id': r['fdc_id'],
+            'description': r['description'],
+            'data_type': r['data_type'],
+            'brand_owner': r['brand_owner'],
+            'calories_per_100g': str(r['calories_per_100g']) if r['calories_per_100g'] is not None else None,
+        })
+    
+    return JsonResponse({
+        'success': True,
+        'query': query,
+        'results': serialised,
+    })
+ 
+ 
+# --------------------------------------------------------------------------- #
+# 3. USDA select + preview (AJAX, GET)
+# --------------------------------------------------------------------------- #
+ 
+@login_required
+@require_GET
+def usda_select_and_preview(request):
+    """
+    AJAX: fetch full nutrient detail for a USDA fdc_id.
+    
+    GET params:
+        fdc_id = USDA food ID (required)
+    
+    Returns JSON:
+        {
+            "success": true,
+            "fdc_id": 2003586,
+            "description": "Flour, 00",
+            "data_type": "Foundation",
+            "calories_per_100g": "357.08",
+            "protein_per_100g":  "11.40",
+            "carbs_per_100g":    "74.45",
+            "fat_per_100g":      "1.52",
+            "fiber_per_100g":    "2.66",
+            "sugar_per_100g":    null,
+            "sodium_per_100g":   "0.00"
+        }
+    
+    On 404 (known USDA quirk for some Foundation foods):
+        {"success": false, "error": "USDA food X not available..."}
+        — JS will tell user to pick a different match.
+    """
+    try:
+        fdc_id = int(request.GET.get('fdc_id'))
+    except (TypeError, ValueError):
+        return JsonResponse({
+            'success': False,
+            'error': 'fdc_id (integer) is required.',
+        }, status=400)
+    
+    try:
+        details = get_food_details(fdc_id)
+    except USDAClientError as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e),
+        }, status=502)
+    
+    # Decimal -> string for JSON
+    payload = {'success': True}
+    for key, value in details.items():
+        if isinstance(value, Decimal):
+            payload[key] = str(value)
+        else:
+            payload[key] = value
+    
+    return JsonResponse(payload)
+ 
+ 
+# --------------------------------------------------------------------------- #
+# 4. Save mapping (AJAX, POST)
+# --------------------------------------------------------------------------- #
+ 
+@login_required
+@permission_required('auth.can_edit_personal', raise_exception=True)
+@require_POST
+@csrf_protect
+def save_ingredient_mapping(request):
+    """
+    AJAX: persist a USDA mapping for one ingredient.
+    
+    POST body (JSON):
+        Standard SAVE:
+        {
+            "ingredient_id": 42,
+            "fdc_id": 2003586,           # 0 = manual, positive int = USDA
+            "fdc_description": "Flour, 00",
+            "fdc_data_type": "Foundation",
+            "calories_per_100g": "357.08",
+            ... (other nutrients)
+            "unit_conversion": {...}     # optional
+        }
+        
+        REMOVE / CLEAR mapping:
+        {
+            "ingredient_id": 42,
+            "clear": true,
+            "fdc_id": null,
+            ... (all nutrient values null)
+        }
+    
+    Returns:
+        {"success": true, "ingredient_id": 42, "is_mapped": true|false}
+        {"success": false, "error": "..."}
+    """
+    try:
+        data = json.loads(request.body.decode('utf-8'))
+    except (ValueError, UnicodeDecodeError):
+        return JsonResponse({
+            'success': False,
+            'error': 'Invalid JSON body.',
+        }, status=400)
+    
+    # --- Required field: ingredient_id ---
+    try:
+        ingredient_id = int(data.get('ingredient_id'))
+    except (TypeError, ValueError):
+        return JsonResponse({
+            'success': False,
+            'error': 'ingredient_id (integer) is required.',
+        }, status=400)
+    
+    ingredient = get_object_or_404(Ingredient, ingredient_id=ingredient_id)
+    
+    # --- Branch: CLEAR / REMOVE mapping ---
+    is_clear = bool(data.get('clear'))
+    if is_clear:
+        ingredient.fdc_id = None
+        ingredient.fdc_description = ''
+        ingredient.fdc_data_type = ''
+        for field_name in (
+            'calories_per_100g', 'protein_per_100g', 'carbs_per_100g',
+            'fat_per_100g', 'fiber_per_100g', 'sugar_per_100g', 'sodium_per_100g',
+        ):
+            setattr(ingredient, field_name, None)
+        ingredient.nutrition_synced_at = timezone.now()
+        ingredient.save()
+        return JsonResponse({
+            'success': True,
+            'ingredient_id': ingredient.ingredient_id,
+            'is_mapped': False,
+        })
+    
+    # --- Standard SAVE branch: fdc_id is required ---
+    try:
+        fdc_id = int(data.get('fdc_id'))
+    except (TypeError, ValueError):
+        return JsonResponse({
+            'success': False,
+            'error': 'fdc_id (integer) is required. Use 0 for manual entry.',
+        }, status=400)
+    
+    # --- Update nutrition fields ---
+    ingredient.fdc_id = fdc_id
+    ingredient.fdc_description = (data.get('fdc_description') or '').strip()[:300]
+    ingredient.fdc_data_type = (data.get('fdc_data_type') or '').strip()[:30]
+    
+    # Sanity caps — protect DecimalField precision (max_digits=8, decimal_places=2
+    # means we can store up to 999999.99). USDA data is occasionally absurd
+    # (e.g., a "Tomato Paste" entry with sodium = 484850 mg/100g, which is
+    # physically impossible). Cap at sane upper bounds — anything higher means
+    # the source data is corrupt.
+    SANITY_CAPS = {
+        'calories_per_100g': Decimal('9999'),     # nothing exceeds 9000 kcal/100g
+        'protein_per_100g':  Decimal('100'),      # can't exceed 100g of protein per 100g
+        'carbs_per_100g':    Decimal('100'),
+        'fat_per_100g':      Decimal('100'),
+        'fiber_per_100g':    Decimal('100'),
+        'sugar_per_100g':    Decimal('100'),
+        'sodium_per_100g':   Decimal('99999'),    # 99g of sodium per 100g is the absolute ceiling
+    }
+    
+    nutrient_field_names = tuple(SANITY_CAPS.keys())
+    for field_name in nutrient_field_names:
+        raw = data.get(field_name)
+        if raw is None or raw == '':
+            setattr(ingredient, field_name, None)
+        else:
+            try:
+                value = Decimal(str(raw))
+            except (InvalidOperation, TypeError, ValueError):
+                return JsonResponse({
+                    'success': False,
+                    'error': f'Invalid decimal for {field_name}: {raw}',
+                }, status=400)
+            
+            # Clamp negative values (USDA sometimes has tiny negatives from
+            # estimation rounding) and absurdly high ones to NULL — better
+            # to show "no data" than save corrupted data.
+            cap = SANITY_CAPS[field_name]
+            if value < 0 or value > cap:
+                # Set to None instead of failing — degrades gracefully
+                setattr(ingredient, field_name, None)
+            else:
+                setattr(ingredient, field_name, value)
+    
+    ingredient.nutrition_synced_at = timezone.now()
+    
+    try:
+        ingredient.save()
+    except Exception as e:  # noqa: BLE001
+        return JsonResponse({
+            'success': False,
+            'error': f'Database error saving ingredient: {str(e)}',
+        }, status=500)
+    
+    # --- Optional: save the unit conversion ---
+    uc_payload = data.get('unit_conversion')
+    if uc_payload:
+        try:
+            from_unit_id = int(uc_payload.get('from_unit_id'))
+            to_unit_id   = int(uc_payload.get('to_unit_id'))
+            multiplier   = Decimal(str(uc_payload.get('multiplier')))
+        except (TypeError, ValueError, InvalidOperation):
+            return JsonResponse({
+                'success': False,
+                'error': 'Invalid unit_conversion payload.',
+            }, status=400)
+        
+        if multiplier <= 0:
+            return JsonResponse({
+                'success': False,
+                'error': 'Unit conversion multiplier must be positive.',
+            }, status=400)
+        
+        from_unit = get_object_or_404(MeasurementUnit, measurement_unit_id=from_unit_id)
+        to_unit   = get_object_or_404(MeasurementUnit, measurement_unit_id=to_unit_id)
+        
+        UnitConversion.objects.update_or_create(
+            from_unit=from_unit,
+            to_unit=to_unit,
+            specific_ingredient=ingredient,
+            defaults={
+                'multiplier': multiplier,
+                'notes': f'Auto-saved during nutrition mapping ({ingredient.name})',
+            },
+        )
+    
+    return JsonResponse({
+        'success': True,
+        'ingredient_id': ingredient.ingredient_id,
+        'is_mapped': True,
+    })
+ 
+ 
+# --------------------------------------------------------------------------- #
+# Helper: list of unit choices for the wizard's "to_unit" dropdown
+# --------------------------------------------------------------------------- #
+# (Not used as a separate view — the data is embedded in the wizard page render.
+#  Kept here as a docstring example for clarity.)
+#
+#     def get_unit_choices_for_wizard():
+#         """Returns [(unit_id, name, unit_type), ...] for the wizard's UI."""
+#         return [
+#             (u.measurement_unit_id, u.name, u.unit_type)
+#             for u in MeasurementUnit.objects.all().order_by('unit_type', 'name')
+#         ]
+
+# ============================================================
+# RECIPE NUTRITION VIEWS — paste at the bottom of views.py
+# (alongside the wizard views you added earlier)
+# ============================================================
+
+
+@login_required
+@require_GET
+def recipe_nutrition_data(request, recipe_id):
+    """
+    AJAX: compute and return the nutrition breakdown for a recipe.
+    Used by the Nutrition button on view_recipe.html.
+    """
+    recipe = get_object_or_404(Recipe, recipe_id=recipe_id)
+    
+    try:
+        result = calculate_recipe_nutrition(recipe)
+    except Exception as e:  # noqa: BLE001
+        return JsonResponse({
+            'success': False,
+            'error': f'Calculator error: {str(e)}',
+        }, status=500)
+    
+    return JsonResponse({
+        'success': True,
+        'recipe_id': recipe.recipe_id,
+        'recipe_name': recipe.recipe_name,
+        **result,
+    })
+
+
+def recipe_has_any_mapped_ingredient(recipe):
+    """
+    Helper: does this recipe have at least one ingredient that has been
+    mapped to nutrition data? Used by view_recipe to decide whether to
+    show the Nutrition button at all.
+    """
+    return RecipeIngredient.objects.filter(
+        recipe=recipe,
+        ingredient__calories_per_100g__isnull=False,
+    ).exists()
+
+# ============================================================
+# STEP D-PREP: Add this view function to pages/views.py
+# (alongside the other nutrition views)
+# ============================================================
+
+@login_required
+@require_GET
+def recipe_unconvertible_ingredients(request, recipe_id):
+    """
+    AJAX: return the list of ingredients in this recipe that have nutrition
+    data mapped but are missing a unit conversion to grams.
+    
+    Used by the "Set unit conversions →" mini-modal on view_recipe.html.
+    
+    Returns:
+    {
+      "success": true,
+      "items": [
+        {
+          "ingredient_id": 42,
+          "ingredient_name": "Carrot/s",
+          "from_unit_id": 7,
+          "from_unit_name": "piece",
+          "from_unit_type": "count",   # 'count' / 'volume' / 'weight' / 'other'
+          "to_unit_id": 12,            # the gram unit id
+          "to_unit_name": "g"
+        },
+        ...
+      ]
+    }
+    """
+    recipe = get_object_or_404(Recipe, recipe_id=recipe_id)
+    
+    # Re-run the calculator just to get the unconvertible list
+    try:
+        result = calculate_recipe_nutrition(recipe)
+    except Exception as e:  # noqa: BLE001
+        return JsonResponse({
+            'success': False,
+            'error': f'Calculator error: {str(e)}',
+        }, status=500)
+    
+    # Find the gram unit
+    gram_unit_id = None
+    gram_unit_name = 'g'
+    gram_candidates = MeasurementUnit.objects.filter(unit_type='weight').values(
+        'measurement_unit_id', 'name', 'abbreviation'
+    )
+    for u in gram_candidates:
+        name = (u.get('name') or '').strip().lower()
+        abbr = (u.get('abbreviation') or '').strip().lower()
+        if name in ('gram', 'grams', 'g') or abbr == 'g':
+            gram_unit_id = u['measurement_unit_id']
+            gram_unit_name = u.get('abbreviation') or u.get('name') or 'g'
+            break
+    
+    if not gram_unit_id:
+        return JsonResponse({
+            'success': False,
+            'error': 'Could not find the gram measurement unit in your database.',
+        }, status=500)
+    
+    # Build a richer payload by joining each unconvertible ingredient with
+    # the recipe's ingredient lines to get the from_unit info.
+    unconvertible_ids = [item['ingredient_id'] for item in result['ingredient_breakdown']['unconvertible']]
+    
+    # Distinct (ingredient, unit) pairs that need conversion
+    seen_pairs = set()
+    items = []
+    
+    recipe_lines = (
+        RecipeIngredient.objects
+        .filter(recipe=recipe, ingredient_id__in=unconvertible_ids)
+        .select_related('ingredient', 'unit')
+    )
+    
+    for line in recipe_lines:
+        if not line.unit:
+            continue  # can't make a conversion without a from_unit
+        
+        pair_key = (line.ingredient.ingredient_id, line.unit.measurement_unit_id)
+        if pair_key in seen_pairs:
+            continue
+        seen_pairs.add(pair_key)
+        
+        items.append({
+            'ingredient_id': line.ingredient.ingredient_id,
+            'ingredient_name': line.ingredient.name,
+            'from_unit_id': line.unit.measurement_unit_id,
+            'from_unit_name': line.unit.name,
+            'from_unit_type': line.unit.unit_type,
+            'to_unit_id': gram_unit_id,
+            'to_unit_name': gram_unit_name,
+        })
+    
+    return JsonResponse({
+        'success': True,
+        'recipe_id': recipe.recipe_id,
+        'recipe_name': recipe.recipe_name,
+        'items': items,
+    })
