@@ -1657,13 +1657,6 @@ body {
                             </div>
                             <div class="nf-hairline"></div>
 
-                            <!-- Sodium -->
-                            <div class="nf-row nf-row-bold">
-                                <span><strong>Sodium</strong></span>
-                                <span><strong id="sodiumValue">—</strong>mg</span>
-                            </div>
-                            <div class="nf-hairline"></div>
-
                             <!-- Total Carbohydrate (with sub-rows) -->
                             <div class="nf-row nf-row-bold">
                                 <span><strong>Total Carbohydrate</strong></span>
@@ -2331,7 +2324,7 @@ function renderNutrition() {
 
     document.getElementById('fiberValue').textContent  = formatNutritionNumber(values.fiber, 1);
     document.getElementById('sugarValue').textContent  = formatNutritionNumber(values.sugar, 1);
-    document.getElementById('sodiumValue').textContent = formatNutritionNumber(values.sodium, 0);
+
 }
 
 function formatNutritionNumber(value, decimals) {

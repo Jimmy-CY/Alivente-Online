@@ -849,6 +849,8 @@ let   remainingCount = {{ total_unmapped }};
 // Undo toast state — tracks the most recent save so we can revert it
 let lastSavedSnapshot = null;     // {ingredient_id, ingredient_data_at_save_time, indexAtSave}
 let undoToastTimer = null;
+let _savedThisSession = 0;
+let _skippedThisSession = 0;
 
 // Recipe-scoped wizard return URL (used by the "All done" state)
 const SCOPED_RETURN_URL = {% if return_to == 'recipe' and scoped_recipe %}"{% url 'view_recipe' scoped_recipe.recipe_id %}?reopen_nutrition=1"{% else %}null{% endif %};
@@ -1322,6 +1324,7 @@ async function saveCurrent() {
         
         // Show undo toast
         showUndoToast(lastSavedSnapshot.ingredientName);
+        _savedThisSession++;
         
         // Move to next
         currentIndex++;
@@ -1394,6 +1397,7 @@ async function undoLastSave() {
         // Revert progress counters (only if the save had bumped them)
         if (!snap.wasAlreadyMapped) {
             mappedCount = Math.max(0, mappedCount - 1);
+            _savedThisSession = Math.max(0, _savedThisSession - 1);
             remainingCount++;
             updateProgressDisplay();
         }
@@ -1419,6 +1423,7 @@ async function undoLastSave() {
 function skipCurrent() {
     // "Skip for now" — move to next ingredient. The skipped one stays in the
     // queue (it's still unmapped), so it'll appear next time the page loads.
+    _skippedThisSession++;
     currentIndex++;
     renderCurrent();
 }
@@ -1434,26 +1439,48 @@ function goPrevious() {
 // Done state
 // =========================================================================
 function renderDoneState() {
+    const mapped = _savedThisSession;
+    const skipped = _skippedThisSession;
+    const stillToGo = remainingCount;  // server-side count of unmapped, minus what we saved
+    
+    let headline, sub;
+    if (stillToGo === 0) {
+        // Genuinely complete
+        headline = 'All done! 🎉';
+        sub = `You mapped all ${mapped} ingredient${mapped === 1 ? '' : 's'} in this batch.`;
+    } else if (mapped > 0 && skipped > 0) {
+        // Mixed — saved some, skipped some
+        headline = 'Batch complete';
+        sub = `You mapped <strong>${mapped}</strong> and skipped <strong>${skipped}</strong>. <strong>${stillToGo}</strong> still need mapping — reload to pick them up.`;
+    } else if (skipped > 0 && mapped === 0) {
+        // Only skipped
+        headline = 'Nothing mapped yet';
+        sub = `You skipped all ${skipped} ingredient${skipped === 1 ? '' : 's'} in this batch. <strong>${stillToGo}</strong> still need mapping.`;
+    } else {
+        // Only mapped (but somehow remaining > 0 — shouldn't happen but be safe)
+        headline = 'Batch complete';
+        sub = `You mapped ${mapped}. <strong>${stillToGo}</strong> still need mapping — reload to pick them up.`;
+    }
+    
     if (SCOPED_RETURN_URL) {
         els.wizardCard.outerHTML = `
             <div class="wizard-done">
                 <div class="icon"><i class="fas fa-check-circle"></i></div>
-                <h2>All done!</h2>
-                <p>You've finished this batch. Returning to the recipe will reopen the Nutrition Facts label with the updated data.</p>
+                <h2>${headline}</h2>
+                <p>${sub}</p>
                 <button type="button" onclick="goBackToRecipe()" class="btn btn-success" style="margin-right:10px;">
                     <i class="fas fa-arrow-left"></i> ${SCOPED_RETURN_LABEL}
                 </button>
+                ${stillToGo > 0 ? `<a href="?recipe_id={{ scoped_recipe.recipe_id|default:'' }}&return_to=recipe" class="btn btn-info"><i class="fas fa-redo"></i> Reload Queue</a>` : ''}
             </div>
         `;
     } else {
         els.wizardCard.outerHTML = `
             <div class="wizard-done">
                 <div class="icon"><i class="fas fa-check-circle"></i></div>
-                <h2>All done!</h2>
-                <p>You've reached the end of the queue. Reload the page to pick up any newly-skipped ingredients, or head back to manage everything from the Ingredients page.</p>
-                <a href="?" class="btn btn-info" style="margin-right:10px;">
-                    <i class="fas fa-redo"></i> Reload Queue
-                </a>
+                <h2>${headline}</h2>
+                <p>${sub}</p>
+                ${stillToGo > 0 ? `<a href="?" class="btn btn-info" style="margin-right:10px;"><i class="fas fa-redo"></i> Reload Queue</a>` : ''}
                 <a href="{% url 'ingredient_base_units_management' %}" class="btn btn-secondary">
                     <i class="fas fa-arrow-left"></i> Back to Ingredients
                 </a>
