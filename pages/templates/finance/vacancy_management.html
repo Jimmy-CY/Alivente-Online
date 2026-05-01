@@ -5,17 +5,25 @@
 {% block title %}ALIVENTE ONLINE - VACANCY MANAGEMENT{% endblock %}
 
 {% block content %}
-<div class="container-fluid">
-    <h2><center>ALIVENTE ONLINE - VACANCY MANAGEMENT</center></h2>
-    <h5><center>PROPERTY PERFORMANCE DASHBOARD</center></h5>
-    <br/>
 
-    <!-- Action Buttons -->
-    <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 20px;">
-        <button type="button" class="btn btn-info" data-toggle="modal" data-target="#vacancy_managementHelpModal">
-          <i class="fas fa-question-circle"></i> Help
+{% if perms.auth.can_access_financials %}
+
+<div class="vacancy-container">
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <h1><i class="fas fa-chart-line"></i> Vacancy Management</h1>
+        <p>Property performance dashboard</p>
+    </div>
+
+    <!-- Action Bar — Help (wide on mobile) + Back (icon on mobile) -->
+    <div class="action-bar">
+        <button type="button" class="btn btn-info action-primary" data-toggle="modal" data-target="#vacancy_managementHelpModal">
+            <i class="fas fa-question-circle"></i> Help
         </button>
-        <a href="{% url 'finance' %}" class="btn btn-info">Back</a>
+        <a href="{% url 'finance' %}" class="btn btn-secondary action-back" aria-label="Back">
+            <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
+        </a>
     </div>
 
     <!-- Time Period Selection -->
@@ -69,9 +77,7 @@
     </div>
 
     <!-- Dashboard Container -->
-    <div id="dashboardContainer" style="display: none;">
-        <!-- This will be populated by the dashboard component -->
-    </div>
+    <div id="dashboardContainer" style="display: none;"></div>
 
     <!-- Error Container -->
     <div id="errorContainer" class="alert alert-danger" style="display: none;">
@@ -79,6 +85,7 @@
         <p id="errorMessage"></p>
         <button class="btn btn-info" onclick="loadDashboard()">Retry</button>
     </div>
+
 </div>
 
 <!-- Property Details Modal -->
@@ -112,10 +119,10 @@
                 <div class="modal-legend mb-3">
                     <div class="d-flex align-items-center gap-3">
                         <span class="legend-item">
-                            <span class="legend-color excellent"></span> Excellent Performance
+                            <span class="legend-color excellent"></span> Excellent
                         </span>
                         <span class="legend-item">
-                            <span class="legend-color good"></span> Good Performance
+                            <span class="legend-color good"></span> Good
                         </span>
                         <span class="legend-item">
                             <span class="legend-color poor"></span> Needs Improvement
@@ -123,7 +130,8 @@
                     </div>
                 </div>
                 
-                <div class="table-responsive">
+                <!-- Desktop: table -->
+                <div class="table-responsive modal-desktop-table">
                     <table class="table table-hover" id="modalPropertyTable">
                         <thead>
                             <tr>
@@ -134,11 +142,12 @@
                                 <th style="width: 15%;">Performance Level</th>
                             </tr>
                         </thead>
-                        <tbody id="modalPropertyTableBody">
-                            <!-- Table rows will be populated by JavaScript -->
-                        </tbody>
+                        <tbody id="modalPropertyTableBody"></tbody>
                     </table>
                 </div>
+                
+                <!-- Mobile: cards -->
+                <div class="modal-mobile-cards" id="modalPropertyCards"></div>
                 
                 <div class="modal-summary mt-4">
                     <div class="row">
@@ -175,6 +184,8 @@
 
 {% render_help_modal "vacancy_management" %}
 
+{% endif %}
+
 <!-- Chart.js Library -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -183,14 +194,36 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
 <style>
-/* Main Styles matching your app's design */
-.indicator-panel {
-    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-    border: 1px solid #dee2e6;
+.vacancy-container {
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.page-header {
+    background: linear-gradient(135deg, #17a2b8 0%, #138496 100%);
+    color: white;
+    padding: 26px 32px;
     border-radius: 12px;
-    padding: 24px;
-    margin-bottom: 30px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    margin-bottom: 22px;
+}
+.page-header h1 {
+    font-size: 26px;
+    font-weight: bold;
+    margin: 0 0 4px 0;
+}
+.page-header p {
+    margin: 0;
+    font-size: 14px;
+    opacity: 0.95;
+}
+
+.action-bar {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    margin-bottom: 18px;
+    gap: 10px;
+    flex-wrap: wrap;
 }
 
 /* Period Selection Panel */
@@ -199,16 +232,14 @@
     border: 1px solid #dee2e6;
     border-radius: 8px;
     padding: 20px;
-    margin-bottom: 30px;
+    margin-bottom: 22px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
-
 .period-header {
     margin-bottom: 15px;
     padding-bottom: 10px;
     border-bottom: 1px solid #dee2e6;
 }
-
 .period-title {
     font-size: 16px;
     font-weight: 600;
@@ -218,14 +249,12 @@
     align-items: center;
     gap: 8px;
 }
-
 .period-buttons {
     display: flex;
     gap: 10px;
     margin-bottom: 15px;
     flex-wrap: wrap;
 }
-
 .btn-period {
     flex: 1;
     min-width: 150px;
@@ -243,27 +272,19 @@
     justify-content: center;
     gap: 8px;
 }
-
-.btn-period:hover {
-    border-color: #17a2b8;
-    background: #e3f2fd;
-    color: #17a2b8;
-    transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+@media (hover: hover) and (pointer: fine) {
+    .btn-period:hover {
+        border-color: #17a2b8;
+        background: #e3f2fd;
+        color: #17a2b8;
+    }
 }
-
 .btn-period.active {
     border-color: #17a2b8;
     background: #17a2b8;
     color: white;
     box-shadow: 0 2px 4px rgba(23, 162, 184, 0.2);
 }
-
-.btn-period.active:hover {
-    background: #138496;
-    border-color: #138496;
-}
-
 .period-display {
     background: #f8f9fa;
     padding: 10px 15px;
@@ -274,21 +295,17 @@
     align-items: center;
     gap: 8px;
 }
+.period-display i { color: #17a2b8; }
 
-.period-display i {
-    color: #17a2b8;
+/* Indicator Cards */
+.indicator-panel {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border: 1px solid #dee2e6;
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 22px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
-
-@media (max-width: 768px) {
-    .period-buttons {
-        flex-direction: column;
-    }
-    
-    .btn-period {
-        width: 100%;
-    }
-}
-
 .indicator-header {
     background-color: #17a2b8;
     color: white;
@@ -298,14 +315,11 @@
     font-weight: 600;
     text-align: center;
 }
-
 .indicator-cards {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);  /* 3 columns for 3 occupancy indicators */
+    grid-template-columns: repeat(3, 1fr);
     gap: 15px;
-    margin-bottom: 20px;
 }
-
 .indicator-card {
     background: white;
     border: 2px solid #e9ecef;
@@ -317,64 +331,56 @@
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
     position: relative;
 }
-
-.indicator-card:hover {
-    border-color: #17a2b8;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
+@media (hover: hover) and (pointer: fine) {
+    .indicator-card:hover {
+        border-color: #17a2b8;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.12);
+    }
+    .indicator-card::after {
+        content: "Click for details";
+        position: absolute;
+        bottom: 5px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 10px;
+        color: #6c757d;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    .indicator-card:hover::after { opacity: 1; }
 }
-
 .indicator-card.active {
     border-color: #17a2b8;
     background-color: #e3f2fd;
     box-shadow: 0 4px 8px rgba(23, 162, 184, 0.2);
 }
-
-/* Add click indicator to cards */
-.indicator-card::after {
-    content: "Click for details";
-    position: absolute;
-    bottom: 5px;
-    left: 50%;
-    transform: translateX(-50%);
-    font-size: 10px;
-    color: #6c757d;
-    opacity: 0;
-    transition: opacity 0.3s ease;
-}
-
-.indicator-card:hover::after {
-    opacity: 1;
-}
-
 .indicator-icon {
     font-size: 24px;
     color: #17a2b8;
     margin-bottom: 8px;
 }
-
 .indicator-label {
     font-size: 12px;
     color: #6c757d;
     font-weight: 500;
     margin-bottom: 5px;
 }
-
 .indicator-value {
     font-size: 18px;
     font-weight: bold;
     color: #2c3e50;
 }
 
+/* Property Selection Panel */
 .property-selection-panel {
     background: white;
     border: 1px solid #dee2e6;
     border-radius: 8px;
     padding: 20px;
-    margin-bottom: 30px;
+    margin-bottom: 22px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
-
 .selection-header {
     display: flex;
     justify-content: space-between;
@@ -382,8 +388,8 @@
     margin-bottom: 20px;
     padding-bottom: 10px;
     border-bottom: 1px solid #dee2e6;
+    cursor: default;
 }
-
 .selection-title {
     font-size: 18px;
     font-weight: 600;
@@ -393,14 +399,22 @@
     align-items: center;
     gap: 8px;
 }
-
+.selection-collapse-icon {
+    display: none;
+    color: #6c757d;
+    font-size: 14px;
+    margin-left: 8px;
+    transition: transform 0.2s ease;
+}
+.property-selection-panel.collapsed .selection-collapse-icon {
+    transform: rotate(-90deg);
+}
 .property-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: 12px;
     margin-bottom: 15px;
 }
-
 .property-checkbox {
     display: flex;
     align-items: center;
@@ -411,18 +425,15 @@
     background: #f8f9fa;
     transition: all 0.2s ease;
 }
-
 .property-checkbox:hover {
     background: #e9ecef;
     border-color: #17a2b8;
 }
-
 .property-checkbox input[type="checkbox"] {
     width: 16px;
     height: 16px;
     accent-color: #17a2b8;
 }
-
 .property-checkbox label {
     margin: 0;
     cursor: pointer;
@@ -430,53 +441,51 @@
     color: #495057;
     flex: 1;
 }
-
 .selection-buttons {
     display: flex;
     gap: 10px;
 }
-
 .btn-sm {
     padding: 6px 12px;
     font-size: 13px;
     border-radius: 6px;
 }
+.selection-counter {
+    font-size: 14px;
+    color: #6c757d;
+    margin-top: 10px;
+}
 
+/* Charts Grid */
+.charts-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-bottom: 22px;
+}
 .chart-panel {
     background: white;
     border: 1px solid #dee2e6;
     border-radius: 8px;
     padding: 20px;
-    margin-bottom: 30px;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
-
 .chart-header {
     margin-bottom: 20px;
     padding-bottom: 15px;
     border-bottom: 1px solid #dee2e6;
 }
-
 .chart-title {
-    font-size: 18px;
+    font-size: 16px;
     font-weight: 600;
     color: #2c3e50;
     margin: 0 0 5px 0;
 }
-
 .chart-subtitle {
-    font-size: 14px;
+    font-size: 13px;
     color: #6c757d;
     margin: 0;
 }
-
-.charts-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-    gap: 20px;
-    margin-bottom: 30px;
-}
-
 .mini-chart-container {
     height: 250px;
     width: 100%;
@@ -488,31 +497,30 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    height: 300px;
+    height: 250px;
     color: #6c757d;
     text-align: center;
 }
-
 .no-data-icon {
     font-size: 48px;
     margin-bottom: 15px;
     opacity: 0.5;
 }
 
+/* Data Table */
 .table-panel {
     background: white;
     border: 1px solid #dee2e6;
     border-radius: 8px;
     overflow: hidden;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    margin-bottom: 22px;
 }
-
 .table-header {
     background: #f8f9fa;
     padding: 15px 20px;
     border-bottom: 1px solid #dee2e6;
 }
-
 .table-title {
     font-size: 18px;
     font-weight: 600;
@@ -522,17 +530,12 @@
     align-items: center;
     gap: 8px;
 }
-
-.table-container {
-    overflow-x: auto;
-}
-
+.table-container { overflow-x: auto; }
 .data-table {
     width: 100%;
     border-collapse: collapse;
     margin: 0;
 }
-
 .data-table th {
     background: #f8f9fa;
     padding: 12px 15px;
@@ -542,44 +545,24 @@
     color: #495057;
     font-size: 14px;
 }
-
-.data-table th:first-child {
-    text-align: left;
-}
-
+.data-table th:first-child { text-align: left; }
 .data-table td {
     padding: 12px 15px;
     border-bottom: 1px solid #dee2e6;
     text-align: center;
     font-size: 14px;
 }
-
-.data-table td:first-child {
-    text-align: left;
-    font-weight: 500;
-}
-
-.data-table tbody tr:hover {
-    background: #f8f9fa;
-}
-
-.data-table tbody tr:nth-child(even) {
-    background: #fdfdfd;
-}
-
-.data-table tbody tr:nth-child(even):hover {
-    background: #f0f0f0;
-}
+.data-table td:first-child { text-align: left; font-weight: 500; }
+.data-table tbody tr:hover { background: #f8f9fa; }
+.data-table tbody tr:nth-child(even) { background: #fdfdfd; }
+.data-table tbody tr:nth-child(even):hover { background: #f0f0f0; }
 
 .average-row {
     background: #17a2b8 !important;
     color: white !important;
     font-weight: bold;
 }
-
-.average-row:hover {
-    background: #138496 !important;
-}
+.average-row:hover { background: #138496 !important; }
 
 .highlighted-column {
     background: #e3f2fd !important;
@@ -587,14 +570,12 @@
     border-left: 3px solid #17a2b8;
     border-right: 3px solid #17a2b8;
 }
-
-.selection-counter {
-    font-size: 14px;
-    color: #6c757d;
-    margin-top: 10px;
+.average-row .highlighted-column {
+    background-color: #138496 !important;
+    border-left: 3px solid #ffffff;
+    border-right: 3px solid #ffffff;
 }
 
-/* Sortable table header styles */
 .sortable-header {
     cursor: pointer;
     position: relative;
@@ -602,20 +583,18 @@
     transition: all 0.2s ease;
     padding: 12px 25px 12px 15px;
 }
-
-.sortable-header:hover {
-    background-color: #e9ecef !important;
-    color: #17a2b8;
+@media (hover: hover) and (pointer: fine) {
+    .sortable-header:hover {
+        background-color: #e9ecef !important;
+        color: #17a2b8;
+    }
 }
-
 .sortable-header.sorted-asc,
 .sortable-header.sorted-desc {
     background-color: #e3f2fd !important;
     color: #17a2b8;
     font-weight: 700;
 }
-
-/* Sort icon styles */
 .sort-icon {
     position: absolute;
     right: 8px;
@@ -625,44 +604,10 @@
     opacity: 0.5;
     transition: all 0.2s ease;
 }
-
-.sortable-header:hover .sort-icon {
-    opacity: 0.8;
-}
-
 .sortable-header.sorted-asc .sort-icon,
 .sortable-header.sorted-desc .sort-icon {
     opacity: 1;
     color: #17a2b8;
-}
-
-.sort-icon.fa-sort-up::before {
-    content: "\f0de";
-}
-
-.sort-icon.fa-sort-down::before {
-    content: "\f0dd";
-}
-
-.sort-icon.fa-sort::before {
-    content: "\f0dc";
-}
-
-.highlighted-column {
-    background-color: #e3f2fd !important;
-    font-weight: 600;
-    border-left: 3px solid #17a2b8;
-    border-right: 3px solid #17a2b8;
-}
-
-.data-table tbody tr:hover .highlighted-column {
-    background-color: #bbdefb !important;
-}
-
-.average-row .highlighted-column {
-    background-color: #138496 !important;
-    border-left: 3px solid #ffffff;
-    border-right: 3px solid #ffffff;
 }
 
 /* Trends Button */
@@ -671,21 +616,17 @@
     border: 1px solid #dee2e6;
     border-radius: 8px;
     padding: 30px;
-    margin-top: 30px;
     text-align: center;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
 }
-
 .trends-button-panel h5 {
     color: #2c3e50;
     margin-bottom: 15px;
 }
-
 .trends-button-panel p {
     color: #6c757d;
     margin-bottom: 20px;
 }
-
 .btn-trends {
     padding: 12px 30px;
     font-size: 16px;
@@ -700,28 +641,21 @@
     gap: 10px;
     transition: all 0.3s ease;
 }
-
 .btn-trends:hover {
     background: #138496;
     border-color: #117a8b;
     color: white;
     text-decoration: none;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
 }
 
 /* Modal Styles */
-.modal-xl {
-    max-width: 1200px;
-}
-
+.modal-xl { max-width: 1200px; }
 .modal-indicator-info {
     background: #f8f9fa;
     border-radius: 8px;
     padding: 20px;
     border: 1px solid #dee2e6;
 }
-
 .modal-portfolio-average {
     text-align: center;
     background: white;
@@ -729,12 +663,7 @@
     border-radius: 8px;
     border: 1px solid #dee2e6;
 }
-
-.modal-legend {
-    display: flex;
-    justify-content: center;
-}
-
+.modal-legend { display: flex; justify-content: center; }
 .legend-item {
     display: inline-flex;
     align-items: center;
@@ -742,38 +671,19 @@
     font-size: 14px;
     color: #495057;
 }
-
 .legend-color {
     width: 16px;
     height: 16px;
     border-radius: 3px;
     display: inline-block;
 }
+.legend-color.excellent { background-color: #28a745; }
+.legend-color.good { background-color: #ffc107; }
+.legend-color.poor { background-color: #dc3545; }
 
-.legend-color.excellent {
-    background-color: #28a745;
-}
-
-.legend-color.good {
-    background-color: #ffc107;
-}
-
-.legend-color.poor {
-    background-color: #dc3545;
-}
-
-/* Performance row colors */
-.performance-excellent {
-    background-color: rgba(40, 167, 69, 0.1) !important;
-}
-
-.performance-good {
-    background-color: rgba(255, 193, 7, 0.1) !important;
-}
-
-.performance-poor {
-    background-color: rgba(220, 53, 69, 0.1) !important;
-}
+.performance-excellent { background-color: rgba(40, 167, 69, 0.1) !important; }
+.performance-good { background-color: rgba(255, 193, 7, 0.1) !important; }
+.performance-poor { background-color: rgba(220, 53, 69, 0.1) !important; }
 
 .performance-badge {
     padding: 4px 8px;
@@ -782,21 +692,9 @@
     font-weight: 500;
     text-transform: uppercase;
 }
-
-.performance-badge.excellent {
-    background-color: #28a745;
-    color: white;
-}
-
-.performance-badge.good {
-    background-color: #ffc107;
-    color: #212529;
-}
-
-.performance-badge.poor {
-    background-color: #dc3545;
-    color: white;
-}
+.performance-badge.excellent { background-color: #28a745; color: white; }
+.performance-badge.good { background-color: #ffc107; color: #212529; }
+.performance-badge.poor { background-color: #dc3545; color: white; }
 
 .modal-summary {
     background: #f8f9fa;
@@ -804,167 +702,301 @@
     padding: 20px;
     border: 1px solid #dee2e6;
 }
-
 .summary-stat {
     text-align: center;
     padding: 15px;
     border-radius: 8px;
     border: 1px solid #e9ecef;
 }
-
-.summary-stat.excellent {
-    background: rgba(40, 167, 69, 0.1);
-    border-color: #28a745;
-}
-
-.summary-stat.good {
-    background: rgba(255, 193, 7, 0.1);
-    border-color: #ffc107;
-}
-
-.summary-stat.poor {
-    background: rgba(220, 53, 69, 0.1);
-    border-color: #dc3545;
-}
-
+.summary-stat.excellent { background: rgba(40, 167, 69, 0.1); border-color: #28a745; }
+.summary-stat.good { background: rgba(255, 193, 7, 0.1); border-color: #ffc107; }
+.summary-stat.poor { background: rgba(220, 53, 69, 0.1); border-color: #dc3545; }
 .summary-stat .stat-value {
     font-size: 24px;
     font-weight: 700;
     color: #2c3e50;
     margin-bottom: 5px;
 }
-
 .summary-stat .stat-label {
     color: #6c757d;
     font-size: 14px;
     font-weight: 500;
 }
 
-/* Button Styles matching your app */
-.btn-info {
-    background-color: #17a2b8;
-    color: white;
-    border: 1px solid #17a2b8;
-    transition: all 0.3s ease;
-    border-radius: 6px;
-    font-weight: 500;
+/* Modal mobile cards (hidden on desktop) */
+.modal-mobile-cards { display: none; }
+
+/* Rotate prompt (portrait phones for the data table) */
+.rotate-prompt {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 40px 20px;
+    color: #495057;
+}
+.rotate-prompt .rotate-icon {
+    font-size: 64px;
+    color: #17a2b8;
+    margin-bottom: 18px;
+    animation: rotate-hint 2.4s ease-in-out infinite;
+}
+.rotate-prompt h3 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #2c3e50;
+    margin: 0 0 8px 0;
+}
+.rotate-prompt p {
+    font-size: 14px;
+    color: #6c757d;
+    margin: 0;
+    max-width: 280px;
+    line-height: 1.5;
+}
+@keyframes rotate-hint {
+    0%, 30%   { transform: rotate(0deg); }
+    50%, 70%  { transform: rotate(-90deg); }
+    100%      { transform: rotate(0deg); }
 }
 
-.btn-info:hover {
-    background-color: #138496;
-    border-color: #117a8b;
-    color: white;
-    text-decoration: none;
-    transform: translateY(-1px);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-}
-
-.btn-secondary {
-    background-color: #6c757d;
-    border-color: #6c757d;
-    color: white;
-}
-
-.btn-secondary:hover {
-    background-color: #5a6268;
-    border-color: #545b62;
-    color: white;
-    transform: translateY(-1px);
-}
-
-/* Responsive Design */
-@media (max-width: 1200px) {
-    .indicator-cards {
-        grid-template-columns: repeat(3, 1fr);
-        gap: 10px;
-    }
-    
-    .charts-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 15px;
-    }
-}
-
+/* ============================================================
+   MOBILE — max-width: 768px
+   ============================================================ */
 @media (max-width: 768px) {
+    .vacancy-container { padding: 0 8px; }
+
+    .page-header {
+        padding: 20px 16px;
+        margin-bottom: 14px;
+        border-radius: 10px;
+    }
+    .page-header h1 { font-size: 20px; }
+    .page-header p { font-size: 13px; }
+
+    /* Action bar — Help wide, Back icon */
+    .action-bar {
+        flex-direction: row;
+        flex-wrap: nowrap;
+        align-items: stretch;
+        gap: 8px;
+        margin-bottom: 14px;
+    }
+    .action-bar .action-primary {
+        flex: 1 1 auto;
+        min-width: 0;
+        height: 38px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 12px;
+        font-size: 13px;
+        white-space: nowrap;
+        margin: 0;
+    }
+    .action-bar .action-back {
+        flex: 0 0 auto;
+        width: 50px;
+        height: 38px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0;
+    }
+    .action-back-label { display: none; }
+
+    /* Period buttons stack */
+    .period-buttons { flex-direction: column; }
+    .btn-period { width: 100%; }
+
+    /* Indicator cards stack */
+    .indicator-panel {
+        padding: 16px;
+        border-radius: 10px;
+    }
     .indicator-cards {
         grid-template-columns: 1fr;
         gap: 10px;
     }
-    
-    .charts-grid {
-        grid-template-columns: 1fr;
-        gap: 15px;
+
+    /* Property selection — collapsible on mobile */
+    .property-selection-panel {
+        padding: 0;
     }
-    
+    .selection-header {
+        padding: 16px 16px 12px 16px;
+        margin-bottom: 0;
+        cursor: pointer;
+        border-bottom: 1px solid #dee2e6;
+    }
+    .property-selection-panel.collapsed .selection-header {
+        border-bottom: none;
+        padding-bottom: 16px;
+    }
+    .selection-title { font-size: 16px; }
+    .selection-collapse-icon { display: inline-block; }
+    .selection-body {
+        padding: 16px;
+        max-height: 1000px;
+        overflow: hidden;
+        transition: max-height 0.3s ease, padding 0.3s ease, opacity 0.2s ease;
+    }
+    .property-selection-panel.collapsed .selection-body {
+        max-height: 0;
+        padding-top: 0;
+        padding-bottom: 0;
+        opacity: 0;
+    }
+    .selection-buttons {
+        flex-direction: row;
+        gap: 8px;
+        margin-bottom: 12px;
+    }
+    .selection-buttons .btn-sm {
+        flex: 1;
+        padding: 9px 12px;
+    }
     .property-grid {
         grid-template-columns: 1fr;
         gap: 8px;
     }
-    
-    .selection-header {
-        flex-direction: column;
-        gap: 15px;
-        align-items: stretch;
+
+    /* Charts stack one per row */
+    .charts-grid {
+        grid-template-columns: 1fr;
+        gap: 14px;
     }
-    
-    .selection-buttons {
+    .chart-panel { padding: 14px; }
+    .mini-chart-container { height: 220px; }
+
+    /* Data table → rotate prompt on portrait */
+    .table-panel.rotate-on-portrait .table-container,
+    .table-panel.rotate-on-portrait .data-table {
+        display: none;
+    }
+    .table-panel.rotate-on-portrait .rotate-prompt {
+        display: flex;
+    }
+
+    /* Trends button */
+    .trends-button-panel { padding: 20px; }
+    .trends-button-panel h5 { font-size: 16px; }
+    .btn-trends {
+        padding: 11px 20px;
+        font-size: 14px;
+        width: 100%;
         justify-content: center;
     }
-    
-    .mini-chart-container {
-        height: 200px;
+
+    /* === Full-screen modal === */
+    #propertyDetailsModal .modal-dialog {
+        max-width: 100% !important;
+        margin: 0 !important;
+        height: 100dvh !important;
+        max-height: 100dvh !important;
     }
-    
-    .modal-xl {
-        max-width: 95%;
+    #propertyDetailsModal .modal-content {
+        height: 100dvh !important;
+        border-radius: 0 !important;
+        display: flex;
+        flex-direction: column;
+        padding-top: env(safe-area-inset-top);
+        padding-bottom: env(safe-area-inset-bottom);
+        box-sizing: border-box;
     }
-    
-    .sortable-header {
-        padding: 8px 20px 8px 6px;
-        font-size: 12px;
+    #propertyDetailsModal .modal-body {
+        flex: 1 1 auto;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
     }
-    
-    .sort-icon {
-        right: 4px;
-        font-size: 10px;
+    #propertyDetailsModal .modal-footer {
+        flex-direction: column-reverse;
+        gap: 8px;
     }
+    #propertyDetailsModal .modal-footer .btn {
+        width: 100%;
+        min-height: 44px;
+    }
+    /* Modal table → cards on mobile */
+    #propertyDetailsModal .modal-desktop-table { display: none; }
+    #propertyDetailsModal .modal-mobile-cards { display: block; }
+    .modal-property-card {
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 12px 14px;
+        margin-bottom: 10px;
+    }
+    .modal-property-card.performance-excellent {
+        background: rgba(40, 167, 69, 0.05);
+        border-color: rgba(40, 167, 69, 0.4);
+    }
+    .modal-property-card.performance-good {
+        background: rgba(255, 193, 7, 0.05);
+        border-color: rgba(255, 193, 7, 0.4);
+    }
+    .modal-property-card.performance-poor {
+        background: rgba(220, 53, 69, 0.05);
+        border-color: rgba(220, 53, 69, 0.4);
+    }
+    .modal-property-card .mpc-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 8px;
+        gap: 10px;
+    }
+    .modal-property-card .mpc-name {
+        font-size: 14px;
+        font-weight: 600;
+        color: #2c3e50;
+        flex: 1;
+    }
+    .modal-property-card .mpc-rank {
+        font-size: 11px;
+        color: #6c757d;
+        font-weight: 700;
+        background: white;
+        padding: 2px 8px;
+        border-radius: 10px;
+        border: 1px solid #dee2e6;
+    }
+    .modal-property-card .mpc-row {
+        display: flex;
+        justify-content: space-between;
+        font-size: 13px;
+        padding: 2px 0;
+    }
+    .modal-property-card .mpc-label {
+        color: #6c757d;
+        font-weight: 500;
+    }
+    .modal-property-card .mpc-value {
+        color: #2c3e50;
+        font-weight: 600;
+    }
+    .modal-property-card .mpc-badge-row {
+        margin-top: 8px;
+        display: flex;
+        justify-content: flex-end;
+    }
+
+    .modal-summary .row { display: flex; flex-direction: column; gap: 8px; }
+    .modal-summary .col-md-4 { width: 100%; padding: 0; }
 }
 
-@media (max-width: 576px) {
-    .indicator-cards {
-        grid-template-columns: 1fr;
-    }
-    
-    .data-table {
-        font-size: 12px;
-    }
-    
-    .data-table th,
-    .data-table td {
-        padding: 8px 6px;
-    }
-    
-    .mini-chart-container {
-        height: 180px;
-    }
-    
-    .sortable-header {
-        padding: 6px 18px 6px 4px;
-        font-size: 11px;
-    }
-    
-    .sort-icon {
-        right: 2px;
-        font-size: 9px;
-    }
+/* Tablet sizing */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .charts-grid { grid-template-columns: repeat(2, 1fr); }
+    .indicator-cards { grid-template-columns: repeat(3, 1fr); }
 }
 </style>
 
 <script>
-// Global variable to store dashboard instance
+// Global variables
 let dashboardInstance = null;
-
-// Global variable to store current period
 let currentPeriod = 'past_year';
 
 // Vacancy Dashboard Component
@@ -976,11 +1008,9 @@ class VacancyDashboard {
         this.selectedProperties = {};
         this.selectedIndicator = null;
         this.charts = {};
+        this.propertyPanelCollapsed = window.matchMedia('(max-width: 768px)').matches;
         
-        this.sortConfig = {
-            column: null,
-            direction: 'asc'
-        };
+        this.sortConfig = { column: null, direction: 'asc' };
         
         this.properties.forEach(prop => {
             this.selectedProperties[prop.id] = true;
@@ -1031,21 +1061,17 @@ class VacancyDashboard {
     
     getHTML() {
         return `
-            <!-- Consolidated Occupancy Indicators -->
             <div class="indicator-panel">
                 <div class="indicator-header">
                     <h5 class="mb-0">CONSOLIDATED OCCUPANCY INDICATORS</h5>
                 </div>
-                
                 <div class="indicator-cards">
                     ${this.indicators.map(indicator => {
                         const portfolioValue = this.portfolioIndicators[indicator.key] || 0;
                         return `
                             <div class="indicator-card ${this.selectedIndicator === indicator.key ? 'active' : ''}" 
                                  data-indicator="${indicator.key}">
-                                <div class="indicator-icon">
-                                    <i class="${indicator.icon}"></i>
-                                </div>
+                                <div class="indicator-icon"><i class="${indicator.icon}"></i></div>
                                 <div class="indicator-label">${indicator.label}</div>
                                 <div class="indicator-value" style="color: ${indicator.color}">
                                     ${indicator.format(portfolioValue)}
@@ -1056,35 +1082,37 @@ class VacancyDashboard {
                 </div>
             </div>
 
-            <!-- Property Selection -->
-            <div class="property-selection-panel">
-                <div class="selection-header">
+            <div class="property-selection-panel ${this.propertyPanelCollapsed ? 'collapsed' : ''}" id="propertyPanel">
+                <div class="selection-header" id="propertyPanelHeader">
                     <h5 class="selection-title">
                         <i class="fas fa-building"></i> Property Selection
+                        <span style="font-size: 12px; color: #6c757d; font-weight: 400; margin-left: 6px;">
+                            (${this.getSelectedCount()} of ${this.properties.length})
+                        </span>
+                        <i class="fas fa-chevron-down selection-collapse-icon"></i>
                     </h5>
-                    <div class="selection-buttons">
+                </div>
+                <div class="selection-body">
+                    <div class="selection-buttons" style="margin-bottom: 12px;">
                         <button class="btn btn-info btn-sm" id="selectAllBtn">Select All</button>
                         <button class="btn btn-secondary btn-sm" id="selectNoneBtn">Select None</button>
                     </div>
-                </div>
-                
-                <div class="property-grid">
-                    ${this.properties.map(property => `
-                        <div class="property-checkbox">
-                            <input type="checkbox" 
-                                   id="prop-${property.id}" 
-                                   ${this.selectedProperties[property.id] ? 'checked' : ''}>
-                            <label for="prop-${property.id}">${property.name}</label>
-                        </div>
-                    `).join('')}
-                </div>
-                
-                <div class="selection-counter">
-                    ${this.getSelectedCount()} of ${this.properties.length} properties selected
+                    <div class="property-grid">
+                        ${this.properties.map(property => `
+                            <div class="property-checkbox">
+                                <input type="checkbox" 
+                                       id="prop-${property.id}" 
+                                       ${this.selectedProperties[property.id] ? 'checked' : ''}>
+                                <label for="prop-${property.id}">${property.name}</label>
+                            </div>
+                        `).join('')}
+                    </div>
+                    <div class="selection-counter">
+                        ${this.getSelectedCount()} of ${this.properties.length} properties selected
+                    </div>
                 </div>
             </div>
 
-            <!-- Charts Grid - All Indicators -->
             <div class="charts-grid">
                 ${this.indicators.map(indicator => `
                     <div class="chart-panel">
@@ -1103,7 +1131,6 @@ class VacancyDashboard {
                                 </strong>
                             </p>
                         </div>
-                        
                         <div class="mini-chart-container">
                             ${this.getSelectedProperties().length > 0 ? 
                                 `<canvas id="chart-${indicator.key}"></canvas>` : 
@@ -1117,12 +1144,18 @@ class VacancyDashboard {
                 `).join('')}
             </div>
 
-            <!-- Data Table -->
-            <div class="table-panel">
+            <div class="table-panel rotate-on-portrait">
                 <div class="table-header">
                     <h5 class="table-title">
                         <i class="fas fa-table"></i> Detailed Property Data
                     </h5>
+                </div>
+                
+                <!-- Portrait phones see this rotate prompt instead of the table -->
+                <div class="rotate-prompt">
+                    <div class="rotate-icon"><i class="fas fa-mobile-alt"></i></div>
+                    <h3>Please rotate your device</h3>
+                    <p>This table fits best in landscape view. Tap an indicator card above for a detailed mobile-friendly breakdown.</p>
                 </div>
                 
                 ${this.getSelectedProperties().length > 0 ? `
@@ -1149,8 +1182,6 @@ class VacancyDashboard {
                                         ).join('')}
                                     </tr>
                                 `).join('')}
-                                
-                                <!-- Portfolio totals row -->
                                 <tr class="average-row">
                                     <td>PORTFOLIO AVERAGE</td>
                                     ${this.indicators.map(indicator => 
@@ -1161,14 +1192,13 @@ class VacancyDashboard {
                         </table>
                     </div>
                 ` : `
-                    <div class="no-data-message">
+                    <div class="no-data-message" style="height: auto; padding: 40px 20px;">
                         <div class="no-data-icon"><i class="fas fa-table"></i></div>
                         <p>No properties selected for detailed view.</p>
                     </div>
                 `}
             </div>
 
-            <!-- Historical Trends Button -->
             <div class="trends-button-panel">
                 <h5><i class="fas fa-chart-line"></i> Want to See Multi-Year Historical Trends?</h5>
                 <p>View occupancy performance trends across multiple years with detailed breakdowns</p>
@@ -1183,31 +1213,20 @@ class VacancyDashboard {
 
     getSortedProperties() {
         const selectedProps = this.getSelectedProperties();
-        
-        if (!this.sortConfig.column) {
-            return selectedProps;
-        }
+        if (!this.sortConfig.column) return selectedProps;
         
         return [...selectedProps].sort((a, b) => {
             const aValue = a[this.sortConfig.column];
             const bValue = b[this.sortConfig.column];
-            
             let comparison = 0;
-            if (aValue < bValue) {
-                comparison = -1;
-            } else if (aValue > bValue) {
-                comparison = 1;
-            }
-            
+            if (aValue < bValue) comparison = -1;
+            else if (aValue > bValue) comparison = 1;
             return this.sortConfig.direction === 'desc' ? comparison * -1 : comparison;
         });
     }
 
     getSortIconClass(column) {
-        if (this.sortConfig.column !== column) {
-            return '';
-        }
-        
+        if (this.sortConfig.column !== column) return '';
         return this.sortConfig.direction === 'asc' ? 'fa-sort-up' : 'fa-sort-down';
     }
 
@@ -1218,7 +1237,6 @@ class VacancyDashboard {
             this.sortConfig.column = column;
             this.sortConfig.direction = 'asc';
         }
-        
         this.render();
     }
     
@@ -1235,7 +1253,10 @@ class VacancyDashboard {
             if (checkbox) {
                 checkbox.addEventListener('change', () => {
                     this.selectedProperties[property.id] = checkbox.checked;
+                    // Re-render but preserve panel collapse state
+                    const wasCollapsed = this.propertyPanelCollapsed;
                     this.render();
+                    this.propertyPanelCollapsed = wasCollapsed;
                 });
             }
         });
@@ -1245,19 +1266,27 @@ class VacancyDashboard {
         
         if (selectAllBtn) {
             selectAllBtn.addEventListener('click', () => {
-                this.properties.forEach(prop => {
-                    this.selectedProperties[prop.id] = true;
-                });
+                this.properties.forEach(prop => this.selectedProperties[prop.id] = true);
                 this.render();
             });
         }
-        
         if (selectNoneBtn) {
             selectNoneBtn.addEventListener('click', () => {
-                this.properties.forEach(prop => {
-                    this.selectedProperties[prop.id] = false;
-                });
+                this.properties.forEach(prop => this.selectedProperties[prop.id] = false);
                 this.render();
+            });
+        }
+
+        // Property panel collapse toggle (mobile only - header is always tappable but only shows chevron on mobile)
+        const panelHeader = document.getElementById('propertyPanelHeader');
+        const panel = document.getElementById('propertyPanel');
+        if (panelHeader && panel) {
+            panelHeader.addEventListener('click', (e) => {
+                // Only toggle on mobile (where the chevron is visible)
+                if (window.matchMedia('(max-width: 768px)').matches) {
+                    panel.classList.toggle('collapsed');
+                    this.propertyPanelCollapsed = panel.classList.contains('collapsed');
+                }
             });
         }
 
@@ -1296,78 +1325,86 @@ class VacancyDashboard {
         });
         
         const tableBody = document.getElementById('modalPropertyTableBody');
+        const cardsContainer = document.getElementById('modalPropertyCards');
         let excellentCount = 0, goodCount = 0, poorCount = 0;
         
-        tableBody.innerHTML = sortedProperties.map((property, index) => {
+        const tableRows = [];
+        const cards = [];
+        
+        sortedProperties.forEach((property, index) => {
             const value = property[indicatorKey];
-            
-            if (value === null || value === undefined) {
-                return '';
-            }
+            if (value === null || value === undefined) return;
             
             const formattedValue = indicator.format(value);
-            
             let performanceLevel, performanceClass, difference;
 
             if (indicatorKey === 'occupancyRate') {
                 if (value === 100) {
-                    performanceLevel = 'Excellent';
-                    performanceClass = 'excellent';
-                    excellentCount++;
-                    difference = 'Perfect';
+                    performanceLevel = 'Excellent'; performanceClass = 'excellent';
+                    excellentCount++; difference = 'Perfect';
                 } else if (value >= 95) {
-                    performanceLevel = 'Good';
-                    performanceClass = 'good';
-                    goodCount++;
+                    performanceLevel = 'Good'; performanceClass = 'good'; goodCount++;
                     difference = ((value - portfolioAverage) / portfolioAverage * 100).toFixed(1);
                     difference = `${difference > 0 ? '+' : ''}${difference}%`;
                 } else {
-                    performanceLevel = 'Needs Improvement';
-                    performanceClass = 'poor';
-                    poorCount++;
+                    performanceLevel = 'Needs Improvement'; performanceClass = 'poor'; poorCount++;
                     difference = ((value - portfolioAverage) / portfolioAverage * 100).toFixed(1);
                     difference = `${difference > 0 ? '+' : ''}${difference}%`;
                 }
-            }
-            else if (indicatorKey === 'avgDaysToFill' || indicatorKey === 'vacancyCost') {
-                if ((indicatorKey === 'avgDaysToFill' && value === 0) || (indicatorKey === 'vacancyCost' && value === 0)) {
-                    performanceLevel = 'Excellent';
-                    performanceClass = 'excellent';
-                    excellentCount++;
-                    difference = 'Perfect';
+            } else {
+                if (value === 0) {
+                    performanceLevel = 'Excellent'; performanceClass = 'excellent';
+                    excellentCount++; difference = 'Perfect';
                 } else if (value <= portfolioAverage * 0.8) {
-                    performanceLevel = 'Excellent';
-                    performanceClass = 'excellent';
-                    excellentCount++;
+                    performanceLevel = 'Excellent'; performanceClass = 'excellent'; excellentCount++;
                     difference = ((value - portfolioAverage) / portfolioAverage * 100).toFixed(1);
                     difference = `${difference > 0 ? '+' : ''}${difference}%`;
                 } else if (value <= portfolioAverage) {
-                    performanceLevel = 'Good';
-                    performanceClass = 'good';
-                    goodCount++;
+                    performanceLevel = 'Good'; performanceClass = 'good'; goodCount++;
                     difference = ((value - portfolioAverage) / portfolioAverage * 100).toFixed(1);
                     difference = `${difference > 0 ? '+' : ''}${difference}%`;
                 } else {
-                    performanceLevel = 'Needs Improvement';
-                    performanceClass = 'poor';
-                    poorCount++;
+                    performanceLevel = 'Needs Improvement'; performanceClass = 'poor'; poorCount++;
                     difference = ((value - portfolioAverage) / portfolioAverage * 100).toFixed(1);
                     difference = `${difference > 0 ? '+' : ''}${difference}%`;
                 }
             }
             
-            return `
+            // Desktop table row
+            tableRows.push(`
                 <tr class="performance-${performanceClass}">
                     <td><strong>${index + 1}</strong></td>
                     <td>${property.name}</td>
                     <td><strong style="color: ${indicator.color};">${formattedValue}</strong></td>
                     <td>${difference}</td>
-                    <td>
-                        <span class="performance-badge ${performanceClass}">${performanceLevel}</span>
-                    </td>
+                    <td><span class="performance-badge ${performanceClass}">${performanceLevel}</span></td>
                 </tr>
-            `;
-        }).join('');
+            `);
+            
+            // Mobile card
+            cards.push(`
+                <div class="modal-property-card performance-${performanceClass}">
+                    <div class="mpc-header">
+                        <div class="mpc-name">${property.name}</div>
+                        <div class="mpc-rank">#${index + 1}</div>
+                    </div>
+                    <div class="mpc-row">
+                        <span class="mpc-label">Performance</span>
+                        <span class="mpc-value" style="color: ${indicator.color};">${formattedValue}</span>
+                    </div>
+                    <div class="mpc-row">
+                        <span class="mpc-label">vs Portfolio</span>
+                        <span class="mpc-value">${difference}</span>
+                    </div>
+                    <div class="mpc-badge-row">
+                        <span class="performance-badge ${performanceClass}">${performanceLevel}</span>
+                    </div>
+                </div>
+            `);
+        });
+        
+        tableBody.innerHTML = tableRows.join('');
+        cardsContainer.innerHTML = cards.join('');
         
         document.getElementById('excellentCount').textContent = excellentCount;
         document.getElementById('goodCount').textContent = goodCount;
@@ -1376,14 +1413,11 @@ class VacancyDashboard {
         const exportBtn = document.getElementById('exportModalBtn');
         exportBtn.onclick = () => this.exportModalData(indicator, sortedProperties);
         
-        this.attachModalCloseHandlers();
-        
         $('#propertyDetailsModal').modal('show');
     }
     
     exportModalData(indicator, sortedProperties) {
         const portfolioAverage = this.portfolioIndicators[indicator.key] || 0;
-        
         const data = [
             ['Property Performance Report - ' + indicator.label],
             ['Generated on: ' + new Date().toLocaleDateString()],
@@ -1395,84 +1429,35 @@ class VacancyDashboard {
         sortedProperties.forEach((property, index) => {
             const value = property[indicator.key];
             const formattedValue = indicator.format(value);
-            
             let performanceLevel, difference;
             
             if (indicator.key === 'avgDaysToFill' || indicator.key === 'vacancyCost') {
-                if (value <= portfolioAverage * 0.8) {
-                    performanceLevel = 'Excellent';
-                } else if (value <= portfolioAverage) {
-                    performanceLevel = 'Good';
-                } else {
-                    performanceLevel = 'Needs Improvement';
-                }
+                if (value <= portfolioAverage * 0.8) performanceLevel = 'Excellent';
+                else if (value <= portfolioAverage) performanceLevel = 'Good';
+                else performanceLevel = 'Needs Improvement';
             } else {
-                if (value >= portfolioAverage * 1.2) {
-                    performanceLevel = 'Excellent';
-                } else if (value >= portfolioAverage * 0.8) {
-                    performanceLevel = 'Good';
-                } else {
-                    performanceLevel = 'Needs Improvement';
-                }
+                if (value >= portfolioAverage * 1.2) performanceLevel = 'Excellent';
+                else if (value >= portfolioAverage * 0.8) performanceLevel = 'Good';
+                else performanceLevel = 'Needs Improvement';
             }
             
             difference = ((value - portfolioAverage) / portfolioAverage * 100).toFixed(1);
             difference = `${difference > 0 ? '+' : ''}${difference}%`;
             
-            data.push([
-                index + 1,
-                property.name,
-                formattedValue,
-                difference,
-                performanceLevel
-            ]);
+            data.push([index + 1, property.name, formattedValue, difference, performanceLevel]);
         });
         
         const wb = XLSX.utils.book_new();
         const ws = XLSX.utils.aoa_to_sheet(data);
-        
-        ws['!cols'] = [
-            { width: 8 },
-            { width: 40 },
-            { width: 15 },
-            { width: 15 },
-            { width: 20 }
-        ];
-        
+        ws['!cols'] = [{ width: 8 }, { width: 40 }, { width: 15 }, { width: 15 }, { width: 20 }];
         XLSX.utils.book_append_sheet(wb, ws, 'Property Performance');
         
         const filename = `VacancyPerformance_${indicator.key}_${new Date().toISOString().split('T')[0]}.xlsx`;
-        
         XLSX.writeFile(wb, filename);
-    }
-    
-    attachModalCloseHandlers() {
-        const modal = $('#propertyDetailsModal');
-        
-        modal.find('.close').off('click').on('click', function() {
-            modal.modal('hide');
-        });
-        
-        modal.find('[data-dismiss="modal"]').off('click').on('click', function() {
-            modal.modal('hide');
-        });
-        
-        $(document).off('keydown.modal').on('keydown.modal', function(e) {
-            if (e.keyCode === 27 && modal.hasClass('show')) {
-                modal.modal('hide');
-            }
-        });
-        
-        modal.off('click.modal').on('click.modal', function(e) {
-            if (e.target === this) {
-                modal.modal('hide');
-            }
-        });
     }
     
     renderChart() {
         const filteredProperties = this.getSelectedProperties();
-        
         this.indicators.forEach(indicator => {
             this.renderIndicatorChart(indicator, filteredProperties);
         });
@@ -1480,7 +1465,6 @@ class VacancyDashboard {
     
     renderIndicatorChart(indicator, filteredProperties = null) {
         const propertiesToUse = filteredProperties || this.properties;
-        
         let data = propertiesToUse.map(p => p[indicator.key]);
         let labels = propertiesToUse.map(p => p.name);
         
@@ -1490,34 +1474,26 @@ class VacancyDashboard {
         
         const validIndices = [];
         data.forEach((value, index) => {
-            if (value !== null && value !== undefined) {
-                validIndices.push(index);
-            }
+            if (value !== null && value !== undefined) validIndices.push(index);
         });
         
         data = validIndices.map(idx => data[idx]);
         labels = validIndices.map(idx => labels[idx]);
         
-        if (data.length === 0) {
-            return;
-        }
+        if (data.length === 0) return;
         
         const combined = data.map((value, index) => ({ value, label: labels[index] }));
-        
         if (indicator.key === 'avgDaysToFill' || indicator.key === 'vacancyCost') {
             combined.sort((a, b) => a.value - b.value);
         } else {
             combined.sort((a, b) => b.value - a.value);
         }
-        
         data = combined.map(item => item.value);
         labels = combined.map(item => item.label);
         
         const backgroundColors = data.map(value => {
             if (indicator.key === 'avgDaysToFill' || indicator.key === 'vacancyCost') {
-                if ((indicator.key === 'avgDaysToFill' || indicator.key === 'vacancyCost') && value === 0) {
-                    return '#28a745';
-                }
+                if (value === 0) return '#28a745';
                 return value <= portfolioAverage ? '#28a745' : value <= portfolioAverage * 1.2 ? '#ffc107' : '#dc3545';
             } else {
                 return value >= portfolioAverage ? '#28a745' : value >= portfolioAverage * 0.8 ? '#ffc107' : '#dc3545';
@@ -1556,26 +1532,25 @@ class VacancyDashboard {
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
-                    legend: {
-                        display: true,
-                        position: 'bottom'
-                    },
-                    title: {
-                        display: false
-                    }
+                    legend: { display: true, position: 'bottom' },
+                    title: { display: false }
                 },
                 scales: {
+                    x: {
+                        ticks: {
+                            autoSkip: false,
+                            maxRotation: 45,
+                            minRotation: 0,
+                            font: { size: window.matchMedia('(max-width: 768px)').matches ? 9 : 11 }
+                        }
+                    },
                     y: {
                         beginAtZero: true,
                         ticks: {
                             callback: function(value) {
-                                if (indicator.key === 'avgDaysToFill') {
-                                    return value.toFixed(0) + ' days';
-                                } else if (indicator.key === 'vacancyCost') {
-                                    return '€' + value.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-                                } else {
-                                    return value.toFixed(1) + '%';
-                                }
+                                if (indicator.key === 'avgDaysToFill') return value.toFixed(0) + ' days';
+                                else if (indicator.key === 'vacancyCost') return '€' + value.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+                                else return value.toFixed(1) + '%';
                             }
                         }
                     }
@@ -1604,9 +1579,7 @@ function loadDashboard(period = 'past_year') {
     url.searchParams.set('period', period);
 
     fetch(url, {
-        headers: {
-            'X-Requested-With': 'XMLHttpRequest'
-        }
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
     })
     .then(response => response.json())
     .then(data => {
@@ -1617,12 +1590,7 @@ function loadDashboard(period = 'past_year') {
             document.getElementById('errorContainer').style.display = 'block';
         } else {
             document.getElementById('dashboardContainer').style.display = 'block';
-            
             updatePeriodDisplay(data.time_period, data.period_start, data.period_end);
-            
-            console.log('Properties loaded:', data.properties.length);
-            console.log('Time period:', data.time_period);
-            console.log('Period range:', data.period_start, 'to', data.period_end);
             
             const container = document.getElementById('dashboardContainer');
             dashboardInstance = new VacancyDashboard(
@@ -1642,25 +1610,13 @@ function loadDashboard(period = 'past_year') {
 
 function updatePeriodDisplay(timePeriod, startDate, endDate) {
     const display = document.getElementById('periodRangeDisplay');
-    const start = new Date(startDate).toLocaleDateString('en-GB', { 
-        day: 'numeric', 
-        month: 'short', 
-        year: 'numeric' 
-    });
-    const end = new Date(endDate).toLocaleDateString('en-GB', { 
-        day: 'numeric', 
-        month: 'short', 
-        year: 'numeric' 
-    });
+    const start = new Date(startDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+    const end = new Date(endDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
     
     let periodName = '';
-    if (timePeriod === 'past_year') {
-        periodName = 'Past Year';
-    } else if (timePeriod === 'last_3_years') {
-        periodName = 'Last 3 Years';
-    } else {
-        periodName = 'All Time';
-    }
+    if (timePeriod === 'past_year') periodName = 'Past Year';
+    else if (timePeriod === 'last_3_years') periodName = 'Last 3 Years';
+    else periodName = 'All Time';
     
     display.textContent = `${periodName}: ${start} - ${end}`;
 }
@@ -1671,14 +1627,21 @@ document.addEventListener('DOMContentLoaded', function() {
     document.querySelectorAll('.btn-period').forEach(button => {
         button.addEventListener('click', function() {
             const period = this.dataset.period;
-            
-            document.querySelectorAll('.btn-period').forEach(btn => {
-                btn.classList.remove('active');
-            });
+            document.querySelectorAll('.btn-period').forEach(btn => btn.classList.remove('active'));
             this.classList.add('active');
-            
             loadDashboard(period);
         });
+    });
+    
+    // Re-render charts on viewport changes (e.g. rotation)
+    let resizeTimer;
+    window.addEventListener('resize', function() {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(function() {
+            if (dashboardInstance) {
+                dashboardInstance.renderChart();
+            }
+        }, 250);
     });
 });
 </script>

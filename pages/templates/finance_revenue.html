@@ -2,107 +2,431 @@
 {% load static %}
 {% load humanize %}
 {% load custom_filters %}
-{% load help_modal_tags %} 
+{% load help_modal_tags %}
 
-{% block title %}
-{% endblock %}
+{% block title %}Revenue{% endblock %}
 
 {% block content %}
 
-<h2><center>ALIVENTE ONLINE - REVENUE</center></h2>
-<br/>
-
-  {% for msg in messages %}
-    <div class="alert alert-secondary alert-dismissible fade show auto-dismiss" role="alert">
-      <strong></strong> <center>{{ msg }}</center>
-      <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+{% for msg in messages %}
+<div class="alert alert-secondary alert-dismissible fade show auto-dismiss" role="alert">
+    <strong></strong> <center>{{ msg }}</center>
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
         <span aria-hidden="true">&times;</span>
-      </button>
-    </div>
-    <script>
-      setTimeout(function() {
+    </button>
+</div>
+<script>
+    setTimeout(function() {
         document.querySelectorAll('.auto-dismiss').forEach(alert => {
-          alert.classList.remove('show');
-          alert.classList.add('fade');
-          setTimeout(() => alert.remove(), 500);
+            alert.classList.remove('show');
+            alert.classList.add('fade');
+            setTimeout(() => alert.remove(), 500);
         });
-      }, 2000);
-    </script>
-  {% endfor %}
+    }, 2000);
+</script>
+{% endfor %}
 
 {% if perms.auth.can_access_financials %}
 
-<body>
-  
-  <div style="display: flex ; justify-content: flex-end">
-    <button type="button" class="btn btn-info" style="margin-right:16px" data-toggle="modal" data-target="#finance_revenueHelpModal">
-      <i class="fas fa-question-circle"></i> Help
-    </button>
-    {% if perms.auth.can_edit_financials %}
-      <a href="{% url 'finance_revenue_add' %}" class="btn btn-info" style="margin-right:16px" type="button">Add New</a>
-    {% else %}
-      <span class="btn btn-secondary" style="margin-right:16px; opacity:0.6; cursor:not-allowed; pointer-events:none;">Add New</span>
-    {% endif %}
-    <a href="{% url 'finance' %}" class="btn btn-info" style="margin-right:16px" role="button">Back</a>
-  </div>
-  <br>
-  
-<form action="" method="">
-  {% csrf_token %}
-  <div style="overflow-x: auto;">
-    <table class="table table-bordered table-striped text-center" style="table-layout: fixed; width: 100%;">
-      <thead>
-        <tr>
-          <th style="box-sizing: border-box;">Property</th>
-          <th style="box-sizing: border-box;">Revenue Line Type</th>
-          <th style="box-sizing: border-box;">Revenue Type</th>
-          <th style="box-sizing: border-box;">Revenue Amount</th>
-          <th style="box-sizing: border-box;">Details</th>
-        </tr>
-      </thead>
-      
-      <tbody>
-        {% for pro in props_data %}
-          {% with revenues=pro.revenue_set.all %}
-            {% if revenues %}
-              <!-- Property Group -->
-              <tbody class="property-group" data-property-id="{{ pro.id }}">
-                <!-- Property Header -->
-                <tr class="property-header" style="cursor: pointer;">
-                  <td colspan="5" style="text-align: left; font-weight: bold;">
-                    <i class="fas fa-chevron-right property-arrow"></i> {{ pro.prop_name }}
-                    <span class="badge badge-info">{{ revenues|length }}</span>
-                  </td>
+<style>
+.revenue-container {
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.page-header {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+    padding: 30px 40px;
+    border-radius: 12px;
+    margin-bottom: 25px;
+}
+.page-header h1 {
+    font-size: 28px;
+    font-weight: bold;
+    margin: 0;
+}
+
+.action-bar {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    margin-bottom: 20px;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+/* === Revenue table === */
+.revenue-card {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.revenue-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+
+.revenue-table thead th {
+    background: #f8f9fa;
+    padding: 12px 14px;
+    text-align: left;
+    font-weight: 600;
+    color: #2c3e50;
+    border-bottom: 2px solid #dee2e6;
+    font-size: 14px;
+}
+
+.revenue-table tbody td {
+    padding: 10px 14px;
+    border-bottom: 1px solid #e9ecef;
+    vertical-align: middle;
+    font-size: 14px;
+}
+
+/* Property header row (clickable accordion) */
+.property-header td {
+    background: #f0fbf4;
+    font-weight: 600;
+    color: #155724;
+    cursor: pointer;
+    user-select: none;
+}
+.property-header:hover td {
+    background: #d4edda;
+}
+.property-arrow {
+    transition: transform 0.2s ease;
+    margin-right: 8px;
+    color: #28a745;
+}
+.property-count-badge {
+    background: #17a2b8;
+    color: white;
+    padding: 2px 10px;
+    border-radius: 10px;
+    font-size: 12px;
+    margin-left: 10px;
+    font-weight: 500;
+}
+.property-details td {
+    background: white;
+}
+.amount-cell {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+/* Edit button */
+.btn-row-edit {
+    background: white;
+    color: #28a745;
+    border: 2px solid #28a745;
+    padding: 5px 14px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.15s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+.btn-row-edit:hover {
+    background: #28a745;
+    color: white;
+    text-decoration: none;
+}
+.btn-row-edit-disabled {
+    background: #f8f9fa;
+    color: #adb5bd;
+    border: 2px solid #dee2e6;
+    padding: 5px 14px;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: not-allowed;
+    pointer-events: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* Hover guard — only on devices that actually support hover */
+@media (hover: hover) and (pointer: fine) {
+    .revenue-table tbody tr:not(.property-header):hover td {
+        background: #f8f9fa;
+    }
+}
+
+/* Empty state */
+.empty-state {
+    text-align: center;
+    padding: 50px 20px;
+    color: #6c757d;
+}
+.empty-state i {
+    font-size: 60px;
+    color: #dee2e6;
+    margin-bottom: 16px;
+}
+
+/* ============================================================
+   MOBILE — max-width: 768px
+   Back+1 action bar, table→cards, accordion preserved
+   ============================================================ */
+@media (max-width: 768px) {
+    .revenue-container {
+        padding: 0 8px;
+    }
+
+    .page-header {
+        padding: 20px 16px;
+        border-radius: 10px;
+        margin-bottom: 16px;
+    }
+    .page-header h1 {
+        font-size: 20px;
+    }
+
+    /* Back+1: [Add New (wide)] [← Back icon] */
+    .action-bar {
+        flex-direction: row;
+        flex-wrap: nowrap;
+        align-items: stretch;
+        gap: 8px;
+        margin-bottom: 14px;
+    }
+    .action-bar .action-help {
+        display: none;  /* Help button hidden on mobile — accessible via app menu */
+    }
+    .action-bar .action-primary {
+        flex: 1 1 auto;
+        min-width: 0;
+        height: 38px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 12px;
+        font-size: 13px;
+        white-space: nowrap;
+        margin: 0;
+    }
+    .action-bar .action-back {
+        flex: 0 0 auto;
+        width: 50px;
+        height: 38px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0;
+    }
+    .action-back-label {
+        display: none;
+    }
+
+    .revenue-card {
+        padding: 12px;
+        border-radius: 10px;
+    }
+
+    /* Table → cards */
+    .revenue-table {
+        table-layout: auto;
+    }
+    .revenue-table thead {
+        display: none;
+    }
+    .revenue-table,
+    .revenue-table tbody,
+    .revenue-table tbody tr {
+        display: block;
+        width: 100%;
+    }
+
+    /* Property-header row: full-width tappable card with arrow + count */
+    .property-header {
+        display: block;
+        margin: 12px 0 0 0;
+    }
+    .property-header td {
+        display: block;
+        background: linear-gradient(135deg, #f0fbf4 0%, #e8f7ee 100%);
+        border-radius: 10px 10px 0 0;
+        border: 1px solid #c3e6cb;
+        border-bottom: none;
+        padding: 14px 16px;
+        font-size: 15px;
+    }
+    /* When details are showing, header connects to them visually */
+    .property-header.expanded td {
+        border-radius: 10px 10px 0 0;
+    }
+    /* When collapsed, header is its own rounded card */
+    .property-header:not(.expanded) td {
+        border-radius: 10px;
+        border-bottom: 1px solid #c3e6cb;
+    }
+
+    /* Detail rows become stacked cards */
+    .property-details {
+        display: block;
+        background: white;
+        border: 1px solid #c3e6cb;
+        border-top: none;
+        margin: 0;
+        padding: 14px 16px;
+        position: relative;
+    }
+    /* Last detail in a group rounds the bottom corners */
+    .property-details.last-detail {
+        border-radius: 0 0 10px 10px;
+        margin-bottom: 4px;
+    }
+    .property-details td {
+        display: block !important;
+        padding: 4px 0 !important;
+        border-bottom: none !important;
+        text-align: left !important;
+        font-size: 14px;
+        background: white !important;
+    }
+    .property-details td::before {
+        display: block;
+        font-weight: 700;
+        font-size: 11px;
+        text-transform: uppercase;
+        color: #6c757d;
+        margin-bottom: 2px;
+        letter-spacing: 0.5px;
+    }
+    /* Hide the redundant property-name cell on mobile (already shown in header) */
+    .property-details td:nth-child(1) {
+        display: none !important;
+    }
+    .property-details td:nth-child(2)::before { content: 'Revenue Line Type'; }
+    .property-details td:nth-child(3)::before { content: 'Revenue Type'; }
+    .property-details td:nth-child(4)::before { content: 'Amount'; }
+    .property-details td:nth-child(5)::before { content: ''; }  /* Edit btn — no label */
+
+    .amount-cell {
+        text-align: left !important;
+        font-size: 16px;
+        font-weight: 600;
+        color: #28a745;
+    }
+
+    .property-details td:nth-child(5) {
+        margin-top: 8px;
+    }
+    .btn-row-edit,
+    .btn-row-edit-disabled {
+        width: 100%;
+        justify-content: center;
+        padding: 9px 14px;
+        font-size: 14px;
+    }
+}
+</style>
+
+<div class="revenue-container">
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <h1><i class="fas fa-coins"></i> Revenue</h1>
+    </div>
+
+    <!-- Action Bar — Back+1: [Add New (primary, wide)] [Help (desktop)] [Back] -->
+    <div class="action-bar">
+        {% if perms.auth.can_edit_financials %}
+            <a href="{% url 'finance_revenue_add' %}" class="btn btn-info action-primary">
+                <i class="fas fa-plus"></i> Add New
+            </a>
+        {% else %}
+            <span class="btn btn-secondary action-primary" style="opacity:0.6; cursor:not-allowed; pointer-events:none;">
+                <i class="fas fa-plus"></i> Add New
+            </span>
+        {% endif %}
+        <button type="button" class="btn btn-info action-help" data-toggle="modal" data-target="#finance_revenueHelpModal">
+            <i class="fas fa-question-circle"></i> Help
+        </button>
+        <a href="{% url 'finance' %}" class="btn btn-secondary action-back" aria-label="Back">
+            <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
+        </a>
+    </div>
+
+    <!-- Revenue Card -->
+    <div class="revenue-card">
+        {% with has_data=False %}{% endwith %}
+        
+        <table class="revenue-table">
+            <thead>
+                <tr>
+                    <th style="width: 22%;">Property</th>
+                    <th style="width: 22%;">Revenue Line Type</th>
+                    <th style="width: 22%;">Revenue Type</th>
+                    <th style="width: 18%; text-align: right;">Revenue Amount</th>
+                    <th style="width: 16%; text-align: center;">Action</th>
                 </tr>
-                
-                <!-- Property Details -->
-                {% for rev in revenues %}
-                  <tr class="property-details" style="display: none;">
-                    <td style="text-align: left;">{{ pro.prop_name }}</td>
-                    <td>{{ rev.revenue_line_types.revenue_line_types_name }}</td>
-                    <td>{{ rev.revenue_types.revenue_types_name }}</td>
-                    <td style="text-align: right;">€ {{ rev.revenue_amount|floatformat:0|intcomma }}</td>
-                    <td>
-                      {% if perms.auth.can_edit_financials %}
-                        <button class="btn btn-light" style="border-color:black; width: auto; padding: 0.25rem 0.5rem;">
-                          <a href="{% url 'finance_revenue_edit' rev.revenue_id %}">Edit</a>
-                        </button>
-                      {% else %}
-                        <button class="btn btn-light" style="border-color:black; width: auto; padding: 0.25rem 0.5rem; opacity:0.5; cursor:not-allowed; pointer-events:none;" disabled>
-                          <span style="color: #999;">Edit</span>
-                        </button>
-                      {% endif %}
+            </thead>
+            
+            {% for pro in props_data %}
+                {% with revenues=pro.revenue_set.all %}
+                    {% if revenues %}
+                        <tbody class="property-group" data-property-id="{{ pro.id }}">
+                            <!-- Property header (clickable) -->
+                            <tr class="property-header">
+                                <td colspan="5">
+                                    <i class="fas fa-chevron-right property-arrow"></i>
+                                    <strong>{{ pro.prop_name }}</strong>
+                                    <span class="property-count-badge">{{ revenues|length }}</span>
+                                </td>
+                            </tr>
+                            
+                            <!-- Detail rows -->
+                            {% for rev in revenues %}
+                                <tr class="property-details {% if forloop.last %}last-detail{% endif %}" style="display: none;">
+                                    <td>{{ pro.prop_name }}</td>
+                                    <td>{{ rev.revenue_line_types.revenue_line_types_name }}</td>
+                                    <td>{{ rev.revenue_types.revenue_types_name }}</td>
+                                    <td class="amount-cell">€ {{ rev.revenue_amount|floatformat:0|intcomma }}</td>
+                                    <td style="text-align: center;">
+                                        {% if perms.auth.can_edit_financials %}
+                                            <a href="{% url 'finance_revenue_edit' rev.revenue_id %}" class="btn-row-edit">
+                                                <i class="fas fa-pencil-alt"></i> Edit
+                                            </a>
+                                        {% else %}
+                                            <span class="btn-row-edit-disabled" title="No permission to edit">
+                                                <i class="fas fa-pencil-alt"></i> Edit
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    {% endif %}
+                {% endwith %}
+            {% endfor %}
+            
+            <!-- Empty state inside the table for consistent layout -->
+            <tbody>
+                <tr id="emptyStateRow" style="display: none;">
+                    <td colspan="5">
+                        <div class="empty-state">
+                            <i class="fas fa-coins"></i>
+                            <h3>No Revenue Entries Yet</h3>
+                            <p>Click <strong>Add New</strong> above to record the first revenue entry.</p>
+                        </div>
                     </td>
-                  </tr>
-                {% endfor %}
-              </tbody>
-            {% endif %}
-          {% endwith %}
-        {% endfor %}
-      </tbody>
-    </table>    
-  </div>
-</form>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+</div>
 
 {% render_help_modal "finance_revenue" %}
 
@@ -110,58 +434,65 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-  const propertyGroups = document.querySelectorAll('.property-group');
-  
-  propertyGroups.forEach(group => {
-    const header = group.querySelector('.property-header');
-    const details = group.querySelectorAll('.property-details');
-    const arrow = group.querySelector('.property-arrow');
+    const propertyGroups = document.querySelectorAll('.property-group');
     
-    header.addEventListener('click', function() {
-      // Check if this group is currently expanded
-      const isExpanded = details[0].style.display === 'table-row';
-      
-      // Collapse all property groups first
-      propertyGroups.forEach(g => {
-        g.querySelectorAll('.property-details').forEach(d => {
-          d.style.display = 'none';
+    // Show empty state if no property groups have data
+    if (propertyGroups.length === 0) {
+        const emptyRow = document.getElementById('emptyStateRow');
+        if (emptyRow) emptyRow.style.display = 'table-row';
+    }
+    
+    propertyGroups.forEach(group => {
+        const header = group.querySelector('.property-header');
+        const details = group.querySelectorAll('.property-details');
+        const arrow = group.querySelector('.property-arrow');
+        
+        header.addEventListener('click', function() {
+            // Detect current state from data-attribute (works on mobile and desktop)
+            const isExpanded = group.classList.contains('is-expanded');
+            
+            // Collapse all groups first
+            propertyGroups.forEach(g => {
+                g.classList.remove('is-expanded');
+                g.querySelector('.property-header').classList.remove('expanded');
+                g.querySelectorAll('.property-details').forEach(d => {
+                    d.style.display = 'none';
+                });
+                const a = g.querySelector('.property-arrow');
+                a.classList.remove('fa-chevron-down');
+                a.classList.add('fa-chevron-right');
+            });
+            
+            // Expand this group if it wasn't already expanded
+            if (!isExpanded) {
+                group.classList.add('is-expanded');
+                header.classList.add('expanded');
+                details.forEach(d => {
+                    // Mobile: cards use display:block via CSS
+                    // Desktop: rows need display:table-row
+                    d.style.display = window.matchMedia('(max-width: 768px)').matches
+                        ? 'block'
+                        : 'table-row';
+                });
+                arrow.classList.remove('fa-chevron-right');
+                arrow.classList.add('fa-chevron-down');
+            }
         });
-        g.querySelector('.property-arrow').classList.remove('fa-chevron-down');
-        g.querySelector('.property-arrow').classList.add('fa-chevron-right');
-      });
-      
-      // If this group wasn't expanded, expand it now
-      if (!isExpanded) {
-        details.forEach(detail => {
-          detail.style.display = 'table-row';
-        });
-        arrow.classList.remove('fa-chevron-right');
-        arrow.classList.add('fa-chevron-down');
-      }
     });
-  });
+    
+    // If the viewport is resized across the breakpoint while a group is expanded,
+    // re-apply the correct display style so the cards/rows render properly.
+    let lastIsMobile = window.matchMedia('(max-width: 768px)').matches;
+    window.addEventListener('resize', function() {
+        const isMobile = window.matchMedia('(max-width: 768px)').matches;
+        if (isMobile === lastIsMobile) return;
+        lastIsMobile = isMobile;
+        
+        document.querySelectorAll('.property-group.is-expanded .property-details').forEach(d => {
+            d.style.display = isMobile ? 'block' : 'table-row';
+        });
+    });
 });
 </script>
 
-<style>
-.property-header:hover {
-  background-color: #f8f9fa;
-}
-
-.property-arrow {
-  transition: transform 0.2s ease;
-  margin-right: 8px;
-}
-
-.badge-info {
-  background-color: #17a2b8;
-  margin-left: 8px;
-}
-
-.property-details {
-  background-color: #f8f9fa;
-}
-</style>
-
-</body>
 {% endblock %}

@@ -1,237 +1,419 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}
-{% endblock %}
+{% block title %}Edit Revenue Type{% endblock %}
 
 {% block content %}
 
-<h2 class="text-center">ALIVENTE ONLINE - REVENUE TYPES</h2>
-<h4 class="text-center">EDIT REVENUE TYPE</h4>
-<br/>
-
 {% if perms.auth.can_access_financials %}
+
+<style>
+.rev-type-form-container {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.page-header {
+    background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+    color: white;
+    padding: 26px 32px;
+    border-radius: 12px;
+    margin-bottom: 22px;
+}
+.page-header h1 {
+    font-size: 26px;
+    font-weight: bold;
+    margin: 0 0 6px 0;
+}
+.page-header p {
+    margin: 0;
+    font-size: 14px;
+    opacity: 0.95;
+}
+.editing-pill {
+    display: inline-block;
+    margin-top: 12px;
+    padding: 6px 14px;
+    background: rgba(255, 255, 255, 0.22);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    border-radius: 20px;
+    font-size: 13px;
+}
+.editing-pill i {
+    margin-right: 6px;
+    opacity: 0.9;
+}
+
+.action-bar {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    margin-bottom: 18px;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.form-card {
+    background: white;
+    border-radius: 12px;
+    padding: 28px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    margin-bottom: 16px;
+}
+
+.form-section-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #495057;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin: 0 0 14px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.form-section-title i {
+    color: #28a745;
+}
+
+.form-section-helper {
+    font-size: 13px;
+    color: #6c757d;
+    margin: -8px 0 16px 0;
+}
+
+.form-field label {
+    display: block;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 6px;
+    font-size: 14px;
+}
+.form-field .form-control {
+    width: 100%;
+    padding: 9px 12px;
+    border: 2px solid #dee2e6;
+    border-radius: 7px;
+    font-size: 14px;
+    background: white;
+    transition: border-color 0.15s ease;
+}
+.form-field .form-control:focus {
+    border-color: #28a745;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.1);
+}
+.required-mark {
+    color: #dc3545;
+    margin-left: 2px;
+}
+
+/* === Month chip picker === */
+.months-picker {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 10px;
+}
+.month-toggle {
+    position: relative;
+}
+.month-toggle input[type="checkbox"] {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+.month-toggle label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 14px 8px;
+    background: #f8f9fa;
+    color: #6c757d;
+    border: 2px solid #dee2e6;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.15s ease;
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+}
+@media (hover: hover) and (pointer: fine) {
+    .month-toggle label:hover {
+        background: #e9f7ef;
+        border-color: #28a745;
+        color: #28a745;
+    }
+}
+.month-toggle input[type="checkbox"]:checked + label {
+    background: #d4edda;
+    border-color: #28a745;
+    color: #155724;
+    box-shadow: 0 1px 3px rgba(40, 167, 69, 0.2);
+}
+.month-toggle input[type="checkbox"]:focus-visible + label {
+    box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.25);
+}
+
+.months-quickset {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+}
+.quickset-btn {
+    background: white;
+    border: 1px solid #dee2e6;
+    color: #495057;
+    padding: 6px 14px;
+    border-radius: 16px;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+.quickset-btn:hover {
+    background: #28a745;
+    color: white;
+    border-color: #28a745;
+}
+
+/* ============================================================
+   MOBILE — max-width: 768px
+   ============================================================ */
+@media (max-width: 768px) {
+    .rev-type-form-container {
+        padding: 0 8px;
+    }
+
+    .page-header {
+        padding: 20px 16px;
+        margin-bottom: 14px;
+        border-radius: 10px;
+    }
+    .page-header h1 {
+        font-size: 20px;
+    }
+    .page-header p {
+        font-size: 13px;
+    }
+    .editing-pill {
+        font-size: 12px;
+        padding: 5px 12px;
+        margin-top: 10px;
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .action-bar {
+        flex-direction: row;
+        flex-wrap: nowrap;
+        align-items: stretch;
+        gap: 8px;
+        margin-bottom: 14px;
+    }
+    .action-bar .action-primary {
+        flex: 1 1 auto;
+        min-width: 0;
+        height: 38px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 12px;
+        font-size: 13px;
+        white-space: nowrap;
+        margin: 0;
+    }
+    .action-bar .action-back {
+        flex: 0 0 auto;
+        width: 50px;
+        height: 38px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0;
+    }
+    .action-back-label {
+        display: none;
+    }
+
+    .form-card {
+        padding: 16px;
+        border-radius: 10px;
+    }
+
+    .form-field .form-control,
+    .form-field input[type="text"] {
+        font-size: 16px !important;
+    }
+
+    .months-picker {
+        gap: 8px;
+    }
+    .month-toggle label {
+        padding: 12px 4px;
+        font-size: 13px;
+    }
+}
+</style>
 
 {% for rev in rtresults %}
 <form action="{% url 'finance_revenue_types_edit_commit' rev.revenue_types_id %}" method="post">
-  {% csrf_token %}
-  <div style="display: flex ; justify-content: flex-end">
-    <button class="btn btn-info" style="margin-right:16px" type="submit">Save</button>
-    <a href="{% url 'finance_revenue_types' %}" class="btn btn-info" style="margin-right:16px" role="button">Back</a>
-  </div>
-  <div class="form-row">
-    <div class="form-group col-md-3">
-      <label for="revenue_types_name"><strong>Revenue Type</strong></label>
-      <input type="text" class="form-control" id="revenue_types_name" name="revenue_types_name" 
-             placeholder="Name" value="{{ rev.revenue_types_name }}" required>
+    {% csrf_token %}
+    
+    <div class="rev-type-form-container">
+        
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1><i class="fas fa-tag"></i> Edit Revenue Type</h1>
+            <p>Update the name or applicable months</p>
+            <div class="editing-pill">
+                <i class="fas fa-pencil-alt"></i>
+                Editing: <strong>{{ rev.revenue_types_name }}</strong>
+            </div>
+        </div>
+        
+        <!-- Action Bar -->
+        <div class="action-bar">
+            <button type="submit" class="btn btn-success action-primary">
+                <i class="fas fa-save"></i> Save
+            </button>
+            <a href="{% url 'finance_revenue_types' %}" class="btn btn-secondary action-back" aria-label="Back">
+                <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
+            </a>
+        </div>
+        
+        <!-- Section: Name -->
+        <div class="form-card">
+            <h6 class="form-section-title">
+                <i class="fas fa-info-circle"></i> Revenue Type Details
+            </h6>
+            <div class="form-field">
+                <label for="revenue_types_name">Revenue Type Name<span class="required-mark">*</span></label>
+                <input type="text" 
+                       class="form-control" 
+                       id="revenue_types_name" 
+                       name="revenue_types_name" 
+                       placeholder="Name" 
+                       value="{{ rev.revenue_types_name }}" 
+                       required>
+            </div>
+        </div>
+        
+        <!-- Section: Months -->
+        <div class="form-card">
+            <h6 class="form-section-title">
+                <i class="fas fa-calendar-alt"></i> Applicable Months
+            </h6>
+            <p class="form-section-helper">
+                Tap a month to toggle it. Selected months will receive this revenue type when entries are recorded.
+            </p>
+            
+            <div class="months-quickset">
+                <button type="button" class="quickset-btn" data-quickset="all">All months</button>
+                <button type="button" class="quickset-btn" data-quickset="none">Clear all</button>
+                <button type="button" class="quickset-btn" data-quickset="summer">Summer (Jun–Sep)</button>
+                <button type="button" class="quickset-btn" data-quickset="winter">Winter (Nov–Mar)</button>
+            </div>
+            
+            <div class="months-picker">
+                <div class="month-toggle">
+                    <input type="hidden" name="revenue_types_jan" value="No">
+                    <input type="checkbox" id="revenue_types_jan" name="revenue_types_jan" value="Yes" {% if rev.revenue_types_jan == 'Yes' %}checked{% endif %}>
+                    <label for="revenue_types_jan">Jan</label>
+                </div>
+                <div class="month-toggle">
+                    <input type="hidden" name="revenue_types_feb" value="No">
+                    <input type="checkbox" id="revenue_types_feb" name="revenue_types_feb" value="Yes" {% if rev.revenue_types_feb == 'Yes' %}checked{% endif %}>
+                    <label for="revenue_types_feb">Feb</label>
+                </div>
+                <div class="month-toggle">
+                    <input type="hidden" name="revenue_types_mar" value="No">
+                    <input type="checkbox" id="revenue_types_mar" name="revenue_types_mar" value="Yes" {% if rev.revenue_types_mar == 'Yes' %}checked{% endif %}>
+                    <label for="revenue_types_mar">Mar</label>
+                </div>
+                <div class="month-toggle">
+                    <input type="hidden" name="revenue_types_apr" value="No">
+                    <input type="checkbox" id="revenue_types_apr" name="revenue_types_apr" value="Yes" {% if rev.revenue_types_apr == 'Yes' %}checked{% endif %}>
+                    <label for="revenue_types_apr">Apr</label>
+                </div>
+                <div class="month-toggle">
+                    <input type="hidden" name="revenue_types_may" value="No">
+                    <input type="checkbox" id="revenue_types_may" name="revenue_types_may" value="Yes" {% if rev.revenue_types_may == 'Yes' %}checked{% endif %}>
+                    <label for="revenue_types_may">May</label>
+                </div>
+                <div class="month-toggle">
+                    <input type="hidden" name="revenue_types_jun" value="No">
+                    <input type="checkbox" id="revenue_types_jun" name="revenue_types_jun" value="Yes" {% if rev.revenue_types_jun == 'Yes' %}checked{% endif %}>
+                    <label for="revenue_types_jun">Jun</label>
+                </div>
+                <div class="month-toggle">
+                    <input type="hidden" name="revenue_types_jul" value="No">
+                    <input type="checkbox" id="revenue_types_jul" name="revenue_types_jul" value="Yes" {% if rev.revenue_types_jul == 'Yes' %}checked{% endif %}>
+                    <label for="revenue_types_jul">Jul</label>
+                </div>
+                <div class="month-toggle">
+                    <input type="hidden" name="revenue_types_aug" value="No">
+                    <input type="checkbox" id="revenue_types_aug" name="revenue_types_aug" value="Yes" {% if rev.revenue_types_aug == 'Yes' %}checked{% endif %}>
+                    <label for="revenue_types_aug">Aug</label>
+                </div>
+                <div class="month-toggle">
+                    <input type="hidden" name="revenue_types_sep" value="No">
+                    <input type="checkbox" id="revenue_types_sep" name="revenue_types_sep" value="Yes" {% if rev.revenue_types_sep == 'Yes' %}checked{% endif %}>
+                    <label for="revenue_types_sep">Sep</label>
+                </div>
+                <div class="month-toggle">
+                    <input type="hidden" name="revenue_types_oct" value="No">
+                    <input type="checkbox" id="revenue_types_oct" name="revenue_types_oct" value="Yes" {% if rev.revenue_types_oct == 'Yes' %}checked{% endif %}>
+                    <label for="revenue_types_oct">Oct</label>
+                </div>
+                <div class="month-toggle">
+                    <input type="hidden" name="revenue_types_nov" value="No">
+                    <input type="checkbox" id="revenue_types_nov" name="revenue_types_nov" value="Yes" {% if rev.revenue_types_nov == 'Yes' %}checked{% endif %}>
+                    <label for="revenue_types_nov">Nov</label>
+                </div>
+                <div class="month-toggle">
+                    <input type="hidden" name="revenue_types_dec" value="No">
+                    <input type="checkbox" id="revenue_types_dec" name="revenue_types_dec" value="Yes" {% if rev.revenue_types_dec == 'Yes' %}checked{% endif %}>
+                    <label for="revenue_types_dec">Dec</label>
+                </div>
+            </div>
+        </div>
+        
     </div>
-    <div class="form-group col-md-9">
-      <!-- Empty space to balance the row -->
-    </div>
-  </div>
-
-  <!-- Months Table -->
-  <div class="form-row">
-    <div class="col-md-12">
-      <table class="table table-bordered">
-        <thead class="bg-info text-white">
-          <tr>
-            <th class="text-center" style="width: 8.33%"><strong>Jan</strong></th>
-            <th class="text-center" style="width: 8.33%"><strong>Feb</strong></th>
-            <th class="text-center" style="width: 8.33%"><strong>Mar</strong></th>
-            <th class="text-center" style="width: 8.33%"><strong>Apr</strong></th>
-            <th class="text-center" style="width: 8.33%"><strong>May</strong></th>
-            <th class="text-center" style="width: 8.33%"><strong>Jun</strong></th>
-            <th class="text-center" style="width: 8.33%"><strong>Jul</strong></th>
-            <th class="text-center" style="width: 8.33%"><strong>Aug</strong></th>
-            <th class="text-center" style="width: 8.33%"><strong>Sep</strong></th>
-            <th class="text-center" style="width: 8.33%"><strong>Oct</strong></th>
-            <th class="text-center" style="width: 8.33%"><strong>Nov</strong></th>
-            <th class="text-center" style="width: 8.33%"><strong>Dec</strong></th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <!-- January -->
-            <td class="text-center">
-              <div class="d-flex justify-content-center">
-                <input type="hidden" name="revenue_types_jan" value="No">
-                <input 
-                  type="checkbox" 
-                  id="revenue_types_jan" 
-                  name="revenue_types_jan" 
-                  value="Yes"
-                  {% if rev.revenue_types_jan == 'Yes' %}checked{% endif %}
-                >
-              </div>
-            </td>
-            
-            <!-- February -->
-            <td class="text-center">
-              <div class="d-flex justify-content-center">
-                <input type="hidden" name="revenue_types_feb" value="No">
-                <input 
-                  type="checkbox" 
-                  id="revenue_types_feb" 
-                  name="revenue_types_feb" 
-                  value="Yes"
-                  {% if rev.revenue_types_feb == 'Yes' %}checked{% endif %}
-                >
-              </div>
-            </td>
-            
-            <!-- March -->
-            <td class="text-center">
-              <div class="d-flex justify-content-center">
-                <input type="hidden" name="revenue_types_mar" value="No">
-                <input 
-                  type="checkbox" 
-                  id="revenue_types_mar" 
-                  name="revenue_types_mar" 
-                  value="Yes"
-                  {% if rev.revenue_types_mar == 'Yes' %}checked{% endif %}
-                >
-              </div>
-            </td>
-            
-            <!-- April -->
-            <td class="text-center">
-              <div class="d-flex justify-content-center">
-                <input type="hidden" name="revenue_types_apr" value="No">
-                <input 
-                  type="checkbox" 
-                  id="revenue_types_apr" 
-                  name="revenue_types_apr" 
-                  value="Yes"
-                  {% if rev.revenue_types_apr == 'Yes' %}checked{% endif %}
-                >
-              </div>
-            </td>
-            
-            <!-- May -->
-            <td class="text-center">
-              <div class="d-flex justify-content-center">
-                <input type="hidden" name="revenue_types_may" value="No">
-                <input 
-                  type="checkbox" 
-                  id="revenue_types_may" 
-                  name="revenue_types_may" 
-                  value="Yes"
-                  {% if rev.revenue_types_may == 'Yes' %}checked{% endif %}
-                >
-              </div>
-            </td>
-            
-            <!-- June -->
-            <td class="text-center">
-              <div class="d-flex justify-content-center">
-                <input type="hidden" name="revenue_types_jun" value="No">
-                <input 
-                  type="checkbox" 
-                  id="revenue_types_jun" 
-                  name="revenue_types_jun" 
-                  value="Yes"
-                  {% if rev.revenue_types_jun == 'Yes' %}checked{% endif %}
-                >
-              </div>
-            </td>
-            
-            <!-- July -->
-            <td class="text-center">
-              <div class="d-flex justify-content-center">
-                <input type="hidden" name="revenue_types_jul" value="No">
-                <input 
-                  type="checkbox" 
-                  id="revenue_types_jul" 
-                  name="revenue_types_jul" 
-                  value="Yes"
-                  {% if rev.revenue_types_jul == 'Yes' %}checked{% endif %}
-                >
-              </div>
-            </td>
-            
-            <!-- August -->
-            <td class="text-center">
-              <div class="d-flex justify-content-center">
-                <input type="hidden" name="revenue_types_aug" value="No">
-                <input 
-                  type="checkbox" 
-                  id="revenue_types_aug" 
-                  name="revenue_types_aug" 
-                  value="Yes"
-                  {% if rev.revenue_types_aug == 'Yes' %}checked{% endif %}
-                >
-              </div>
-            </td>
-            
-            <!-- September -->
-            <td class="text-center">
-              <div class="d-flex justify-content-center">
-                <input type="hidden" name="revenue_types_sep" value="No">
-                <input 
-                  type="checkbox" 
-                  id="revenue_types_sep" 
-                  name="revenue_types_sep" 
-                  value="Yes"
-                  {% if rev.revenue_types_sep == 'Yes' %}checked{% endif %}
-                >
-              </div>
-            </td>
-            
-            <!-- October -->
-            <td class="text-center">
-              <div class="d-flex justify-content-center">
-                <input type="hidden" name="revenue_types_oct" value="No">
-                <input 
-                  type="checkbox" 
-                  id="revenue_types_oct" 
-                  name="revenue_types_oct" 
-                  value="Yes"
-                  {% if rev.revenue_types_oct == 'Yes' %}checked{% endif %}
-                >
-              </div>
-            </td>
-            
-            <!-- November -->
-            <td class="text-center">
-              <div class="d-flex justify-content-center">
-                <input type="hidden" name="revenue_types_nov" value="No">
-                <input 
-                  type="checkbox" 
-                  id="revenue_types_nov" 
-                  name="revenue_types_nov" 
-                  value="Yes"
-                  {% if rev.revenue_types_nov == 'Yes' %}checked{% endif %}
-                >
-              </div>
-            </td>
-            
-            <!-- December -->
-            <td class="text-center">
-              <div class="d-flex justify-content-center">
-                <input type="hidden" name="revenue_types_dec" value="No">
-                <input 
-                  type="checkbox" 
-                  id="revenue_types_dec" 
-                  name="revenue_types_dec" 
-                  value="Yes"
-                  {% if rev.revenue_types_dec == 'Yes' %}checked{% endif %}
-                >
-              </div>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
 </form>
 {% endfor %}
 
-{% endif %}
-
 <script>
-// Remove this JavaScript completely as it's not needed anymore
-// The Django template tags handle the initial state correctly
+document.addEventListener('DOMContentLoaded', function() {
+    const months = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
+    
+    function setMonths(selection) {
+        months.forEach(m => {
+            const cb = document.getElementById('revenue_types_' + m);
+            if (cb) cb.checked = selection.includes(m);
+        });
+    }
+    
+    document.querySelectorAll('.quickset-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const preset = this.dataset.quickset;
+            switch (preset) {
+                case 'all':    setMonths(months); break;
+                case 'none':   setMonths([]); break;
+                case 'summer': setMonths(['jun', 'jul', 'aug', 'sep']); break;
+                case 'winter': setMonths(['nov', 'dec', 'jan', 'feb', 'mar']); break;
+            }
+        });
+    });
+});
 </script>
+
+{% endif %}
 
 {% endblock %}

@@ -1,151 +1,696 @@
 {% extends 'base.html' %}
 {% load static humanize %}
 
-{% block title %}
-{% endblock %}
+{% block title %}Edit Expense{% endblock %}
 
 {% block content %}
 
-<h2><center>ALIVENTE ONLINE - EXPENSES</center></h2>
-<h4><center>EDIT EXPENSE</center></h4>
-<br/>
-
 {% if perms.auth.can_access_financials %}
 
+<style>
+.expense-form-container {
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+.page-header {
+    background: linear-gradient(135deg, #dc3545 0%, #e83e8c 100%);
+    color: white;
+    padding: 26px 32px;
+    border-radius: 12px;
+    margin-bottom: 22px;
+}
+.page-header h1 {
+    font-size: 26px;
+    font-weight: bold;
+    margin: 0 0 6px 0;
+}
+.page-header p {
+    margin: 0;
+    font-size: 14px;
+    opacity: 0.95;
+}
+.editing-pill {
+    display: inline-block;
+    margin-top: 12px;
+    padding: 6px 14px;
+    background: rgba(255, 255, 255, 0.22);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    border-radius: 20px;
+    font-size: 13px;
+}
+.editing-pill i {
+    margin-right: 6px;
+    opacity: 0.9;
+}
+
+.action-bar {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    margin-bottom: 18px;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.form-card {
+    background: white;
+    border-radius: 12px;
+    padding: 28px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    margin-bottom: 16px;
+}
+
+.form-section-title {
+    font-size: 14px;
+    font-weight: 700;
+    color: #495057;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin: 0 0 14px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.form-section-title i {
+    color: #dc3545;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px 22px;
+}
+
+.form-field label {
+    display: block;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 6px;
+    font-size: 14px;
+}
+.form-field .form-control {
+    width: 100%;
+    padding: 9px 12px;
+    border: 2px solid #dee2e6;
+    border-radius: 7px;
+    font-size: 14px;
+    background: white;
+    transition: border-color 0.15s ease;
+}
+.form-field .form-control:focus {
+    border-color: #dc3545;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.1);
+}
+.required-mark {
+    color: #dc3545;
+    margin-left: 2px;
+}
+
+/* === Pro-rata panel === */
+.prorata-panel {
+    background: #fff5f5;
+    border: 2px solid #fed7d7;
+}
+.prorata-panel .form-section-title {
+    color: #721c24;
+}
+.prorata-banner {
+    background: white;
+    border-left: 4px solid #dc3545;
+    padding: 10px 14px;
+    margin-bottom: 14px;
+    font-size: 13px;
+    color: #495057;
+    border-radius: 4px;
+}
+.prorata-banner i {
+    color: #dc3545;
+    margin-right: 6px;
+}
+
+.prorata-controls {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 16px;
+    align-items: start;
+}
+
+.country-filter-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.country-filter-wrap label {
+    font-weight: 600;
+    color: #495057;
+    font-size: 13px;
+    margin: 0;
+}
+
+.checkbox-list {
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 0;
+    max-height: 280px;
+    overflow-y: auto;
+}
+.property-item {
+    display: flex;
+    align-items: center;
+    padding: 10px 14px;
+    border-bottom: 1px solid #f1f3f5;
+    cursor: pointer;
+    transition: background 0.1s ease;
+}
+.property-item:last-child {
+    border-bottom: none;
+}
+@media (hover: hover) and (pointer: fine) {
+    .property-item:hover {
+        background: #f8f9fa;
+    }
+}
+.property-item.is-anchor {
+    background: #fef5e7;
+}
+.property-item input[type="checkbox"] {
+    margin: 0 12px 0 0;
+    width: 18px;
+    height: 18px;
+    accent-color: #dc3545;
+    flex-shrink: 0;
+}
+.property-item input[type="checkbox"]:disabled {
+    accent-color: #adb5bd;
+}
+.property-item label {
+    flex: 1;
+    margin: 0;
+    cursor: pointer;
+    font-size: 14px;
+    color: #2c3e50;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+}
+.property-item .prop-value {
+    color: #6c757d;
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+.anchor-pill {
+    background: #ffc107;
+    color: #212529;
+    font-size: 10px;
+    padding: 1px 6px;
+    border-radius: 8px;
+    font-weight: 600;
+    text-transform: uppercase;
+    margin-left: 6px;
+}
+
+.calculate-btn-wrap {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 14px;
+}
+.btn-calculate {
+    background: #dc3545;
+    color: white;
+    border: 2px solid #dc3545;
+    padding: 10px 20px;
+    border-radius: 7px;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+.btn-calculate:hover {
+    background: #c82333;
+    border-color: #bd2130;
+}
+.btn-calculate:disabled {
+    background: #6c757d;
+    border-color: #6c757d;
+    cursor: not-allowed;
+}
+
+/* === Modal styling — desktop === */
+#prorataPreviewModal .modal-content {
+    border-radius: 12px;
+    border: none;
+    overflow: hidden;
+}
+#prorataPreviewModal .modal-header {
+    background: linear-gradient(135deg, #dc3545 0%, #e83e8c 100%);
+    color: white;
+    border-bottom: none;
+    padding: 16px 22px;
+}
+#prorataPreviewModal .modal-title {
+    color: white;
+    font-weight: 600;
+    font-size: 18px;
+}
+#prorataPreviewModal .modal-header .close {
+    color: white;
+    opacity: 0.9;
+    text-shadow: none;
+}
+#prorataPreviewModal .modal-body {
+    padding: 20px 22px;
+}
+.preview-summary {
+    display: flex;
+    justify-content: space-around;
+    background: #f8f9fa;
+    padding: 14px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+}
+.preview-summary .preview-stat {
+    text-align: center;
+}
+.preview-summary .preview-stat-label {
+    font-size: 11px;
+    color: #6c757d;
+    text-transform: uppercase;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+}
+.preview-summary .preview-stat-value {
+    font-size: 20px;
+    font-weight: 700;
+    color: #2c3e50;
+}
+.preview-summary .preview-stat-value.amount {
+    color: #dc3545;
+}
+.preview-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+.preview-table th {
+    background: #f8f9fa;
+    padding: 10px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    color: #495057;
+    text-align: left;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid #dee2e6;
+}
+.preview-table th.text-right { text-align: right; }
+.preview-table th.text-center { text-align: center; }
+.preview-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid #e9ecef;
+    font-size: 14px;
+    color: #2c3e50;
+    vertical-align: middle;
+}
+.preview-table td.text-right {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+.preview-table td.text-center { text-align: center; }
+.preview-table td.amount-out {
+    font-weight: 600;
+    color: #dc3545;
+}
+
+.preview-cards {
+    display: none;
+}
+
+#prorataPreviewModal .modal-footer {
+    border-top: 1px solid #e9ecef;
+    padding: 14px 22px;
+}
+
+@media (max-width: 768px) {
+    .expense-form-container { padding: 0 8px; }
+
+    .page-header {
+        padding: 20px 16px;
+        margin-bottom: 14px;
+        border-radius: 10px;
+    }
+    .page-header h1 { font-size: 20px; }
+    .page-header p { font-size: 13px; }
+    .editing-pill {
+        font-size: 12px;
+        padding: 5px 12px;
+        margin-top: 10px;
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .action-bar {
+        flex-direction: row;
+        flex-wrap: nowrap;
+        align-items: stretch;
+        gap: 8px;
+        margin-bottom: 14px;
+    }
+    .action-bar .action-primary {
+        flex: 1 1 auto;
+        min-width: 0;
+        height: 38px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 12px;
+        font-size: 13px;
+        white-space: nowrap;
+        margin: 0;
+    }
+    .action-bar .action-back {
+        flex: 0 0 auto;
+        width: 50px;
+        height: 38px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0;
+    }
+    .action-back-label { display: none; }
+
+    .form-card { padding: 16px; border-radius: 10px; }
+    .form-grid { grid-template-columns: 1fr; gap: 14px; }
+
+    .form-field .form-control,
+    .form-field input[type="number"],
+    .form-field input[type="text"],
+    .form-field select {
+        font-size: 16px !important;
+    }
+
+    .prorata-controls { grid-template-columns: 1fr; gap: 12px; }
+    .checkbox-list { max-height: 320px; }
+    .property-item label { font-size: 16px; }
+
+    .calculate-btn-wrap { margin-top: 12px; }
+    .btn-calculate {
+        width: 100%;
+        justify-content: center;
+        padding: 12px 20px;
+        font-size: 15px;
+    }
+
+    #prorataPreviewModal .modal-dialog {
+        max-width: 100% !important;
+        margin: 0 !important;
+        height: 100dvh !important;
+        max-height: 100dvh !important;
+    }
+    #prorataPreviewModal .modal-content {
+        height: 100dvh !important;
+        border-radius: 0 !important;
+        display: flex;
+        flex-direction: column;
+        padding-top: env(safe-area-inset-top);
+        padding-bottom: env(safe-area-inset-bottom);
+        box-sizing: border-box;
+    }
+    #prorataPreviewModal .modal-body {
+        flex: 1 1 auto;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+    #prorataPreviewModal .modal-footer {
+        flex-direction: column-reverse;
+        gap: 8px;
+        border-top: 1px solid #e9ecef;
+    }
+    #prorataPreviewModal .modal-footer .btn {
+        width: 100%;
+        min-height: 44px;
+    }
+
+    .preview-table-wrap { display: none; }
+    .preview-cards { display: block; }
+    .preview-card {
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 12px 14px;
+        margin-bottom: 8px;
+    }
+    .preview-card .pc-name {
+        font-size: 15px;
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 8px;
+    }
+    .preview-card .pc-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 4px 0;
+        font-size: 13px;
+    }
+    .preview-card .pc-label { color: #6c757d; font-weight: 500; }
+    .preview-card .pc-value {
+        color: #2c3e50;
+        font-weight: 500;
+        font-variant-numeric: tabular-nums;
+    }
+    .preview-card .pc-row.pc-amount .pc-value {
+        color: #dc3545;
+        font-weight: 700;
+        font-size: 15px;
+    }
+
+    .preview-summary { flex-direction: column; gap: 10px; }
+    .preview-summary .preview-stat {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        text-align: left;
+    }
+    .preview-summary .preview-stat-label { margin: 0; }
+    .preview-summary .preview-stat-value { font-size: 18px; }
+}
+</style>
+
 <form action="{% url 'finance_expense_edit_commit' existing_expense.expense_id %}" method="post">
-  {% csrf_token %}
-  <div style="display: flex ; justify-content: flex-end">
-      <button class="btn btn-info" style="margin-right:16px" type="submit" id="save-button">Save</button>
-      <a href="{% url 'finance_expense' %}" class="btn btn-info" style="margin-right:16px" role="button">Back</a>
-  </div>
-<br/>
-  <div class="form-row">
-    <div class="form-group col-md-3">
-      <label for="prop"><strong>Property</strong></label>
-      <select id="prop" class="form-control" name="prop" required>
-        <option value="">Select Property</option>
-        {% for prop in props_data %}
-            <option value="{{ prop.prop_id }}" 
-                    data-current-value="{{ prop.current_value|default:0 }}"
-                    {% if prop.prop_id == existing_expense.prop_id %}selected{% endif %}>
-                {{ prop.prop_name }}
-            </option>
-        {% endfor %}
-      </select>
-    </div>
-    <div class="form-group col-md-3">
-      <label for="expense_line_types"><strong>Expense Line Type</strong></label>
-      <select id="expense_line_types" class="form-control" name="expense_line_types" required>
-        <option value="">Select Expense Line Type</option>
-        {% for elt in expense_line_types %}
-            <option value="{{ elt.expense_line_types_id }}" 
-                    data-prorata="{{ elt.expense_line_types_prorata }}"
-                    data-pr-amount="{{ elt.expense_line_types_pr_amount }}"
-                    {% if elt.expense_line_types_id == existing_expense.expense_line_types_id %}selected{% endif %}>
-                {{ elt.expense_line_types_name }}
-            </option>
-        {% endfor %}
-      </select>
-    </div>    
-    <div class="form-group col-md-3">
-      <label for="expense_types"><strong>Expense Type</strong></label>
-      <select id="expense_types" class="form-control" name="expense_types" required>
-        <option value="">Select Expense Type</option>
-        {% for et in expense_types %}
-            <option value="{{ et.expense_types_id }}"
-                    {% if et.expense_types_id == existing_expense.expense_types_id %}selected{% endif %}>
-                {{ et.expense_types_name }}
-            </option>
-        {% endfor %}
-      </select>
-    </div>
-    <div class="form-group col-md-3">
-      <label for="expense_amount"><strong>Expense Amount</strong></label>
-      <input type="number" class="form-control" id="expense_amount" 
-             name="expense_amount" placeholder="Amount" 
-             step="0.01" min="0" maxlength="10" 
-             value="{{ existing_expense.expense_amount }}" required>
-    </div>
-  </div>
-
-  <!-- Property Checkboxes (hidden by default) -->
-  <div class="form-row" id="property-checkbox-container" style="display: none;">
-    <div class="form-group col-md-8">
-      <label><strong>Select Properties for Pro-Rata Distribution</strong></label>
-      <div class="form-group" style="width: 250px; margin-top: 10px; margin-bottom: 10px;">
-        <select id="country-filter" class="form-control">
-          <option value="" selected disabled>Select Based on Country</option>
-          <option value="all">All Properties</option>
-          <option value="Greece">Greece</option>
-          <option value="Cyprus">Cyprus</option>
-          <option value="Spain">Spain</option>
-        </select>
-      </div>
-      <div class="d-flex align-items-start">
-        <div class="checkbox-container" style="max-height: 200px; overflow-y: auto; border: 1px solid #ddd; padding: 15px; flex-grow: 1;">
-          {% for prop in props_data %}
-          <div class="form-check property-item" style="padding-left: 0.0rem;" data-country="{{ prop.prop_country }}">
-            <input class="form-check-input property-checkbox" 
-                   type="checkbox" 
-                   id="prop_{{ prop.prop_id }}" 
-                   value="{{ prop.prop_id }}"
-                   data-current-value="{{ prop.current_value|default:0 }}"
-                   {% if prop.prop_id in linked_property_ids %}checked{% endif %}
-                   {% if prop.prop_id == existing_expense.prop_id %}disabled{% endif %}>
-            <label class="form-check-label" for="prop_{{ prop.prop_id }}" style="margin-left: 0.0rem;">
-              {{ prop.prop_name }} (€{{ prop.current_value|default:0|intcomma }})
-            </label>
-          </div>
-          {% endfor %}
-        </div>
-        <div class="ml-3" style="align-self: center;">
-          <button type="button" class="btn btn-info" id="calculate-prorata">Calculate Pro-Rata Amounts</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Pro-Rata Preview Modal -->
-    <div class="modal fade" id="prorataPreviewModal" tabindex="-1" role="dialog" aria-labelledby="prorataPreviewModalLabel" aria-hidden="true">
-      <div class="modal-dialog modal-lg" role="document">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title text-center w-100" id="prorataPreviewModalLabel">Pro-Rata Expense Preview</h5>
-            <button type="button" class="close" data-dismiss="modal" aria-label="Close" id="modalCloseButton">
-              <span aria-hidden="true">&times;</span>
-            </button>
-          </div>
-          <div class="modal-body">
-            <p class="text-center">Total Pro-Rata Amount: <strong>€<span id="preview-total-amount">0</span></strong></p>
-            <p class="text-center">Selected Properties: <strong><span id="preview-property-count">0</span></strong></p>
-            <div class="table-responsive">
-              <table class="table table-bordered">
-                <thead class="thead-light">
-                  <tr>
-                    <th class="text-center">Property</th>
-                    <th class="text-center">Current Value</th>
-                    <th class="text-center">Share</th>
-                    <th class="text-center">Amount</th>
-                  </tr>
-                </thead>
-                <tbody id="preview-property-list">
-                  <!-- Will be populated by JavaScript -->
-                </tbody>
-              </table>
+    {% csrf_token %}
+    
+    <div class="expense-form-container">
+        
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1><i class="fas fa-receipt"></i> Edit Expense</h1>
+            <p>Update an existing expense entry</p>
+            <div class="editing-pill">
+                <i class="fas fa-pencil-alt"></i>
+                Editing: <strong>{{ existing_expense.prop.prop_name }}</strong> &middot;
+                <strong>{{ existing_expense.expense_types.expense_types_name }}</strong> &middot;
+                € {{ existing_expense.expense_amount|floatformat:0|intcomma }}
             </div>
-          </div>
-          <div class="modal-footer justify-content-center">
-            <button type="button" class="btn btn-secondary" data-dismiss="modal" id="cancelButton">Cancel</button>
-            <button type="button" class="btn btn-primary" id="confirm-prorata-expense">Confirm & Update</button>
-          </div>
         </div>
-      </div>
+        
+        <!-- Action Bar -->
+        <div class="action-bar">
+            <button type="submit" id="save-button" class="btn btn-success action-primary">
+                <i class="fas fa-save"></i> Save
+            </button>
+            <a href="{% url 'finance_expense' %}" class="btn btn-secondary action-back" aria-label="Back">
+                <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
+            </a>
+        </div>
+        
+        <!-- Section: Expense Details -->
+        <div class="form-card">
+            <h6 class="form-section-title">
+                <i class="fas fa-info-circle"></i> Expense Details
+            </h6>
+            <div class="form-grid">
+                
+                <div class="form-field">
+                    <label for="prop">Property<span class="required-mark">*</span></label>
+                    <select id="prop" class="form-control" name="prop" required>
+                        <option value="">Select Property</option>
+                        {% for prop in props_data %}
+                            <option value="{{ prop.prop_id }}" 
+                                    data-current-value="{{ prop.current_value|default:0 }}"
+                                    {% if prop.prop_id == existing_expense.prop_id %}selected{% endif %}>
+                                {{ prop.prop_name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="form-field">
+                    <label for="expense_line_types">Expense Line Type<span class="required-mark">*</span></label>
+                    <select id="expense_line_types" class="form-control" name="expense_line_types" required>
+                        <option value="">Select Expense Line Type</option>
+                        {% for elt in expense_line_types %}
+                            <option value="{{ elt.expense_line_types_id }}" 
+                                    data-prorata="{{ elt.expense_line_types_prorata }}"
+                                    data-pr-amount="{{ elt.expense_line_types_pr_amount }}"
+                                    {% if elt.expense_line_types_id == existing_expense.expense_line_types_id %}selected{% endif %}>
+                                {{ elt.expense_line_types_name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="form-field">
+                    <label for="expense_types">Expense Type<span class="required-mark">*</span></label>
+                    <select id="expense_types" class="form-control" name="expense_types" required>
+                        <option value="">Select Expense Type</option>
+                        {% for et in expense_types %}
+                            <option value="{{ et.expense_types_id }}"
+                                    {% if et.expense_types_id == existing_expense.expense_types_id %}selected{% endif %}>
+                                {{ et.expense_types_name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="form-field">
+                    <label for="expense_amount">Expense Amount (€)<span class="required-mark">*</span></label>
+                    <input type="number" 
+                           class="form-control" 
+                           id="expense_amount" 
+                           name="expense_amount" 
+                           placeholder="0.00" 
+                           step="0.01" 
+                           min="0" 
+                           maxlength="10" 
+                           value="{{ existing_expense.expense_amount }}" 
+                           required>
+                </div>
+                
+            </div>
+        </div>
+        
+        <!-- Section: Pro-Rata Distribution (hidden by default, JS reveals if applicable) -->
+        <div class="form-card prorata-panel" id="property-checkbox-container" style="display: none;">
+            <h6 class="form-section-title">
+                <i class="fas fa-balance-scale"></i> Pro-Rata Distribution
+            </h6>
+            <div class="prorata-banner">
+                <i class="fas fa-info-circle"></i>
+                This expense type distributes a fixed amount across selected properties based on their current value.
+                Properties already in this distribution are pre-selected below.
+            </div>
+            
+            <div class="prorata-controls">
+                <div class="country-filter-wrap">
+                    <label for="country-filter">Filter by Country</label>
+                    <select id="country-filter" class="form-control">
+                        <option value="" selected disabled>Select Based on Country</option>
+                        <option value="all">All Properties</option>
+                        {% if countries %}
+                            {% for c in countries %}
+                                {% if c %}<option value="{{ c }}">{{ c }}</option>{% endif %}
+                            {% endfor %}
+                        {% else %}
+                            <option value="Greece">Greece</option>
+                            <option value="Cyprus">Cyprus</option>
+                            <option value="Spain">Spain</option>
+                        {% endif %}
+                    </select>
+                </div>
+                
+                <div class="checkbox-list">
+                    {% for prop in props_data %}
+                    <div class="property-item {% if prop.prop_id == existing_expense.prop_id %}is-anchor{% endif %}" data-country="{{ prop.prop_country }}" data-prop-name="{{ prop.prop_name }}">
+                        <input class="property-checkbox" 
+                               type="checkbox" 
+                               id="prop_{{ prop.prop_id }}" 
+                               value="{{ prop.prop_id }}"
+                               data-current-value="{{ prop.current_value|default:0 }}"
+                               {% if prop.prop_id in linked_property_ids %}checked{% endif %}
+                               {% if prop.prop_id == existing_expense.prop_id %}disabled{% endif %}>
+                        <label for="prop_{{ prop.prop_id }}">
+                            <span>{{ prop.prop_name }}{% if prop.prop_id == existing_expense.prop_id %}<span class="anchor-pill">Anchor</span>{% else %}<span class="anchor-pill" style="display:none;">Anchor</span>{% endif %}</span>
+                            <span class="prop-value">€{{ prop.current_value|default:0|intcomma }}</span>
+                        </label>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <div class="calculate-btn-wrap">
+                <button type="button" class="btn-calculate" id="calculate-prorata">
+                    <i class="fas fa-calculator"></i> Calculate Pro-Rata Amounts
+                </button>
+            </div>
+        </div>
+        
     </div>
-
-  </div>
-
-  <!-- Hidden field to store calculation details -->
-  <input type="hidden" id="prorata_calculation_data" name="prorata_calculation_data">
+    
+    <input type="hidden" id="prorata_calculation_data" name="prorata_calculation_data">
 </form>
+
+<!-- Pro-Rata Preview Modal -->
+<div class="modal fade" id="prorataPreviewModal" tabindex="-1" role="dialog" aria-labelledby="prorataPreviewModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="prorataPreviewModalLabel">
+                    <i class="fas fa-balance-scale"></i> Pro-Rata Expense Preview
+                </h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" id="modalCloseButton">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="preview-summary">
+                    <div class="preview-stat">
+                        <div class="preview-stat-label">Total Pro-Rata Amount</div>
+                        <div class="preview-stat-value amount">€<span id="preview-total-amount">0</span></div>
+                    </div>
+                    <div class="preview-stat">
+                        <div class="preview-stat-label">Selected Properties</div>
+                        <div class="preview-stat-value"><span id="preview-property-count">0</span></div>
+                    </div>
+                </div>
+                
+                <div class="preview-table-wrap">
+                    <table class="preview-table">
+                        <thead>
+                            <tr>
+                                <th>Property</th>
+                                <th class="text-right">Current Value</th>
+                                <th class="text-center">Share</th>
+                                <th class="text-right">Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody id="preview-property-list"></tbody>
+                    </table>
+                </div>
+                
+                <div class="preview-cards" id="preview-property-cards"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal" id="cancelButton">
+                    Cancel
+                </button>
+                <button type="button" class="btn btn-success" id="confirm-prorata-expense">
+                    <i class="fas fa-check"></i> Confirm &amp; Update
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 
 {% endif %}
 
@@ -162,37 +707,30 @@ $(document).ready(function() {
     const countryFilter = $('#country-filter');
     let mainPropertyCheckbox = null;
 
-    // Wipe-and-reset version: used when user CHANGES the Line Type or Property dropdown.
-    // Unchecks all property checkboxes and re-checks only the anchor.
+    // Wipe-and-reset (used when user CHANGES line type or property)
     function initializeMainProperty() {
         const selectedPropId = propSelect.val();
+        $('.property-checkbox').prop('checked', false);
+        $('.property-item').removeClass('is-anchor');
+        $('.anchor-pill').hide();
         if (selectedPropId) {
-            // Uncheck all checkboxes first
-            $('.property-checkbox').prop('checked', false);
-            
-            // Find and check only the main property checkbox
             mainPropertyCheckbox = $(`.property-checkbox[value="${selectedPropId}"]`);
             if (mainPropertyCheckbox.length) {
-                mainPropertyCheckbox.prop({
-                    checked: true,
-                    disabled: true
-                });
+                mainPropertyCheckbox.prop({ checked: true, disabled: true });
+                mainPropertyCheckbox.closest('.property-item').addClass('is-anchor').find('.anchor-pill').show();
             }
         }
     }
 
-    // Preserve-existing version: used on initial page load only.
-    // Sets up the mainPropertyCheckbox reference WITHOUT wiping the
-    // template-rendered pre-ticked checkboxes for previously-linked properties.
+    // Preserve-existing (used on page load — keeps server-rendered checked state)
     function bindMainPropertyOnLoad() {
         const selectedPropId = propSelect.val();
         if (selectedPropId) {
             mainPropertyCheckbox = $(`.property-checkbox[value="${selectedPropId}"]`);
-            // Anchor's checked + disabled is already set by the template on initial render
+            // Anchor's checked + disabled is already set by the template
         }
     }
 
-    // Handle country filter change
     countryFilter.on('change', function() {
         const selectedCountry = $(this).val();
         if (!selectedCountry) return;
@@ -201,11 +739,9 @@ $(document).ready(function() {
         const mainPropertyId = propSelect.val();
         
         if (selectedCountry === 'all') {
-            // Show all properties and check them (including main property)
             propertyItems.show();
             $('.property-checkbox').prop('checked', true);
         } else {
-            // Show only properties from selected country and check them (except main property which stays checked)
             propertyItems.each(function() {
                 const itemCountry = $(this).data('country');
                 const checkbox = $(this).find('.property-checkbox');
@@ -221,16 +757,11 @@ $(document).ready(function() {
             });
         }
         
-        // Ensure main property stays checked and disabled
         if (mainPropertyCheckbox) {
-            mainPropertyCheckbox.prop({
-                checked: true,
-                disabled: true
-            });
+            mainPropertyCheckbox.prop({ checked: true, disabled: true });
         }
     });
 
-    // Handle expense line type change
     expenseLineTypesSelect.on('change', function() {
         const selectedOption = $(this).find(':selected');
         const isProrata = selectedOption.data('prorata') === 'Yes';
@@ -240,8 +771,7 @@ $(document).ready(function() {
             propertyCheckboxContainer.show();
             expenseAmountInput.val(prAmount).prop('readonly', true).css('background-color', '#e9ecef');
             saveButton.prop('disabled', true);
-            initializeMainProperty();  // user changed line type → wipe and reset
-            // Reset filter
+            initializeMainProperty();
             countryFilter.val('').prop('selectedIndex', 0);
         } else {
             propertyCheckboxContainer.hide();
@@ -251,17 +781,20 @@ $(document).ready(function() {
         }
     });
 
-    // Prevent unchecking the main property
     $(document).on('change', '.property-checkbox', function() {
         if ($(this).prop('disabled')) {
             $(this).prop('checked', true);
         }
     });
 
-    // Calculate pro-rata amounts and show preview
     calculateProrataBtn.on('click', function() {
         const selectedCheckboxes = $('.property-checkbox:checked');
         const totalAmount = parseFloat(expenseAmountInput.val());
+        
+        if (!mainPropertyCheckbox) {
+            alert('Please select an anchor property first');
+            return;
+        }
         const selectedPropValue = parseFloat(mainPropertyCheckbox.data('currentValue')) || 0;
         
         if (selectedCheckboxes.length === 0) {
@@ -279,7 +812,6 @@ $(document).ready(function() {
             return;
         }
 
-        // Prepare calculation data
         const calculationResults = {
             pro_rata_amount: totalAmount,
             selected_property_value: selectedPropValue,
@@ -287,30 +819,25 @@ $(document).ready(function() {
             selected_properties: []
         };
 
-        // Calculate amounts for each property
         selectedCheckboxes.each(function() {
             const propValue = parseFloat($(this).data('currentValue')) || 0;
             const calculatedAmount = (totalAmount * propValue) / totalCurrentValue;
+            const propName = $(this).closest('.property-item').data('propName');
             
             calculationResults.selected_properties.push({
                 prop_id: $(this).val(),
-                prop_name: $(this).next('label').text().split(' (€')[0],
+                prop_name: propName,
                 current_value: propValue,
                 calculated_amount: calculatedAmount,
                 share_percentage: (propValue / totalCurrentValue * 100).toFixed(2)
             });
         });
 
-        // Store the calculation data
         prorataCalculationData.val(JSON.stringify(calculationResults));
-        
-        // Show the preview modal
         showProrataPreview(calculationResults);
     });
 
-    // Show the pro-rata preview modal
     function showProrataPreview(calculationResults) {
-        // Format total amount with thousand separator and no decimals
         const formattedTotalAmount = calculationResults.pro_rata_amount.toLocaleString('en-US', {
             maximumFractionDigits: 0,
             minimumFractionDigits: 0
@@ -319,21 +846,15 @@ $(document).ready(function() {
         $('#preview-total-amount').text(formattedTotalAmount);
         $('#preview-property-count').text(calculationResults.selected_properties.length);
         
-        // Clear previous content
         $('#preview-property-list').empty();
+        $('#preview-property-cards').empty();
         
-        // Add each property to the preview
         calculationResults.selected_properties.forEach(function(property) {
-            // Format current value with thousand separator and no decimals
             const formattedCurrentValue = property.current_value.toLocaleString('en-US', {
-                maximumFractionDigits: 0,
-                minimumFractionDigits: 0
+                maximumFractionDigits: 0, minimumFractionDigits: 0
             });
-            
-            // Format calculated amount with thousand separator and 2 decimals
             const formattedCalculatedAmount = property.calculated_amount.toLocaleString('en-US', {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2
+                minimumFractionDigits: 2, maximumFractionDigits: 2
             });
             
             $('#preview-property-list').append(`
@@ -341,65 +862,41 @@ $(document).ready(function() {
                     <td>${property.prop_name}</td>
                     <td class="text-right">€${formattedCurrentValue}</td>
                     <td class="text-center">${property.share_percentage}%</td>
-                    <td class="text-right">€${formattedCalculatedAmount}</td>
+                    <td class="text-right amount-out">€${formattedCalculatedAmount}</td>
                 </tr>
+            `);
+            
+            $('#preview-property-cards').append(`
+                <div class="preview-card">
+                    <div class="pc-name">${property.prop_name}</div>
+                    <div class="pc-row"><span class="pc-label">Current value</span><span class="pc-value">€${formattedCurrentValue}</span></div>
+                    <div class="pc-row"><span class="pc-label">Share</span><span class="pc-value">${property.share_percentage}%</span></div>
+                    <div class="pc-row pc-amount"><span class="pc-label">Amount</span><span class="pc-value">€${formattedCalculatedAmount}</span></div>
+                </div>
             `);
         });
         
-        // Show the modal
         $('#prorataPreviewModal').modal('show');
     }
 
-    // Handle modal close events (preserve selections when closing)
     $('#cancelButton, #modalCloseButton').on('click', function() {
-        // Just close the modal without resetting anything
         $('#prorataPreviewModal').modal('hide');
     });
 
-    // Handle confirm button click
     $('#confirm-prorata-expense').on('click', function() {
-        // Close the modal
         $('#prorataPreviewModal').modal('hide');
-        
-        // Re-enable the save button
         saveButton.prop('disabled', false);
-        
-        // Hide the property checkboxes
         propertyCheckboxContainer.hide();
     });
 
-    // Also handle when modal is closed by clicking outside or pressing ESC
-    $('#prorataPreviewModal').on('hidden.bs.modal', function() {
-        // No reset needed - selections are preserved
-    });
-
-    // Prevent form submission until preview is confirmed
-    $('form').on('submit', function(e) {
-        if (propertyCheckboxContainer.is(':visible') && saveButton.prop('disabled')) {
-            e.preventDefault();
-            alert('Please calculate and confirm the pro-rata amounts before saving.');
-        }
-    });
-
-    // Initialize main property when the main select changes
-    propSelect.on('change', function() {
-        if (propertyCheckboxContainer.is(':visible')) {
-            initializeMainProperty();  // user changed anchor → wipe and reset
-            countryFilter.val('').prop('selectedIndex', 0);
-        }
-    });
-
-    // Handle form submission for pro-rata expenses
     $('form').on('submit', function(e) {
         if (propertyCheckboxContainer.is(':visible')) {
-            // Check if we have valid prorata data
             const prorataData = prorataCalculationData.val();
             if (!prorataData || prorataData === 'undefined') {
                 e.preventDefault();
                 alert('Please calculate and confirm the pro-rata amounts before saving.');
                 return false;
             }
-            
             try {
                 const data = JSON.parse(prorataData);
                 if (!data.selected_properties || data.selected_properties.length === 0) {
@@ -416,7 +913,14 @@ $(document).ready(function() {
         return true;
     });
 
-    // Initialize form based on existing expense (PAGE LOAD only — preserves pre-ticked checkboxes)
+    propSelect.on('change', function() {
+        if (propertyCheckboxContainer.is(':visible')) {
+            initializeMainProperty();
+            countryFilter.val('').prop('selectedIndex', 0);
+        }
+    });
+
+    // Initialize form on PAGE LOAD — preserves server-rendered pre-ticks
     function initializeForm() {
         const selectedElt = $('#expense_line_types option:selected');
         const isProrata = selectedElt.data('prorata') === 'Yes';
@@ -426,58 +930,12 @@ $(document).ready(function() {
             propertyCheckboxContainer.show();
             expenseAmountInput.val(prAmount).prop('readonly', true).css('background-color', '#e9ecef');
             saveButton.prop('disabled', true);
-            
-            // Use bindMainPropertyOnLoad (preserves pre-ticks) instead of initializeMainProperty (wipes them)
             bindMainPropertyOnLoad();
         }
     }
 
-    // Initialize the form when page loads
     initializeForm();
 });
 </script>
-
-<style>
-.checkbox-container {
-    background-color: #f8f9fa;
-    border-radius: 4px;
-}
-.form-check {
-    padding: 8px 0;
-    border-bottom: 1px solid #eee;
-    position: relative;
-}
-.form-check:last-child {
-    border-bottom: none;
-}
-.form-check-input {
-    position: absolute;
-    left: 10px;
-    margin-top: 0.3rem;
-}
-.form-check-label {
-    display: block;
-    padding-left: 1.5rem;
-}
-#country-filter {
-    margin-bottom: 10px;
-}
-.modal-title {
-    font-weight: bold;
-}
-.table th {
-    font-weight: 600;
-}
-.text-right {
-    text-align: right !important;
-}
-.text-center {
-    text-align: center !important;
-}
-.modal-footer {
-    border-top: none;
-    padding-top: 0;
-}
-</style>
 
 {% endblock %}

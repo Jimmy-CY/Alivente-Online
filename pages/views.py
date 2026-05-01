@@ -5938,10 +5938,13 @@ def finance_expense_add(request):
     )
     expense_types_list = expense_types.objects.all()
     expense_line_types_list = expense_line_types.objects.all().order_by('expense_line_types_name')
+    # Distinct countries from existing properties for the country filter
+    countries = props.objects.values_list('prop_country', flat=True).distinct().order_by('prop_country')
     return render(request, "finance_expense_add.html", {
         "props_data": props_data,
         "expense_types": expense_types_list,
         "expense_line_types": expense_line_types_list,
+        "countries": countries,
     })
 
 @login_required
@@ -6047,7 +6050,8 @@ def finance_expense_edit(request, expense_id):
     
     expense_types_list = expense_types.objects.all()
     expense_line_types_list = expense_line_types.objects.all().order_by('expense_line_types_name')
-    
+    countries = props.objects.values_list('prop_country', flat=True).distinct().order_by('prop_country')
+
     # NEW: Find all properties currently in this pro-rata distribution
     # i.e. all Expense records sharing the same Line Type + Expense Type combo.
     # For non-pro-rata expenses, this list will simply contain the single anchor property.
@@ -6063,7 +6067,8 @@ def finance_expense_edit(request, expense_id):
         "expense_types": expense_types_list,
         "expense_line_types": expense_line_types_list,
         "existing_expense": existing_expense,
-        "linked_property_ids": linked_property_ids,  # NEW
+        "linked_property_ids": linked_property_ids,
+        "countries": countries,
     })
 
 @login_required
