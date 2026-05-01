@@ -1265,6 +1265,193 @@ body {
     }
 }
 
+/* ============================================================
+   NUTRITION BREAKDOWN — TOGGLE + TABLE + CARDS
+   ============================================================ */
+#nutritionBreakdownToggle {
+    background: white;
+    color: #28a745;
+    border: 2px solid #28a745;
+    padding: 9px 22px;
+    border-radius: 7px;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.15s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+@media (hover: hover) and (pointer: fine) {
+    #nutritionBreakdownToggle:hover {
+        background: #28a745;
+        color: white;
+    }
+}
+
+.breakdown-intro {
+    background: #e8f5e9;
+    border-left: 4px solid #28a745;
+    color: #155724;
+    padding: 10px 14px;
+    border-radius: 4px;
+    font-size: 13px;
+    margin-bottom: 14px;
+    line-height: 1.5;
+}
+
+.breakdown-table-wrap {
+    overflow-x: auto;
+}
+.breakdown-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+.breakdown-table thead th {
+    background: #f8f9fa;
+    padding: 10px 12px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #495057;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    border-bottom: 2px solid #28a745;
+    text-align: left;
+}
+.breakdown-table thead th.bt-num { text-align: right; }
+.breakdown-table tbody td {
+    padding: 10px 12px;
+    border-bottom: 1px solid #e9ecef;
+    color: #2c3e50;
+    vertical-align: middle;
+}
+.breakdown-table tbody td.bt-num {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+.breakdown-table tbody td.bt-name {
+    font-weight: 600;
+}
+.breakdown-table tbody td.bt-name .bt-amount {
+    display: block;
+    font-size: 11px;
+    font-weight: 400;
+    color: #6c757d;
+    margin-top: 1px;
+}
+.breakdown-table .bt-na {
+    color: #adb5bd;
+    font-style: italic;
+}
+.breakdown-table tbody tr.unmapped td.bt-name,
+.breakdown-table tbody tr.unconvertible td.bt-name {
+    color: #856404;
+}
+.breakdown-table tbody tr.unmapped .bt-status,
+.breakdown-table tbody tr.unconvertible .bt-status {
+    display: inline-block;
+    background: #fff3cd;
+    color: #856404;
+    font-size: 10px;
+    padding: 1px 7px;
+    border-radius: 8px;
+    margin-left: 6px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    vertical-align: middle;
+}
+.breakdown-table tfoot td {
+    padding: 12px;
+    background: #28a745;
+    color: white;
+    font-weight: 700;
+    border-bottom: none;
+}
+.breakdown-table tfoot td.bt-num {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+/* Cards (mobile only) */
+.breakdown-cards-wrap { display: none; }
+
+@media (max-width: 768px) {
+    .breakdown-table-wrap { display: none; }
+    .breakdown-cards-wrap { display: block; }
+
+    .breakdown-card {
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 12px 14px;
+        margin-bottom: 10px;
+    }
+    .breakdown-card.unmapped,
+    .breakdown-card.unconvertible {
+        background: #fff8e6;
+        border-color: #ffc107;
+    }
+    .breakdown-card.totals {
+        background: #28a745;
+        color: white;
+        border-color: #28a745;
+    }
+    .breakdown-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 10px;
+        margin-bottom: 8px;
+    }
+    .breakdown-card-name {
+        font-size: 14px;
+        font-weight: 600;
+        color: #2c3e50;
+        flex: 1;
+    }
+    .breakdown-card.totals .breakdown-card-name { color: white; }
+    .breakdown-card-amount {
+        font-size: 11px;
+        color: #6c757d;
+        margin-top: 2px;
+        font-weight: 400;
+    }
+    .breakdown-card-status {
+        background: #ffc107;
+        color: #856404;
+        font-size: 10px;
+        padding: 2px 8px;
+        border-radius: 8px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+        flex-shrink: 0;
+    }
+    .breakdown-card-row {
+        display: flex;
+        justify-content: space-between;
+        font-size: 13px;
+        padding: 3px 0;
+    }
+    .breakdown-card-label { color: #6c757d; }
+    .breakdown-card.totals .breakdown-card-label { color: rgba(255,255,255,0.85); }
+    .breakdown-card-value {
+        color: #2c3e50;
+        font-weight: 600;
+        font-variant-numeric: tabular-nums;
+    }
+    .breakdown-card.totals .breakdown-card-value { color: white; }
+    .breakdown-card-value.bt-na {
+        color: #adb5bd;
+        font-style: italic;
+        font-weight: 400;
+    }
+    .breakdown-card.totals .breakdown-card-value.bt-na {
+        color: rgba(255,255,255,0.7);
+    }
+}
+
 </style>
 
 <div class="recipe-detail-container">
@@ -1585,7 +1772,7 @@ body {
      NUTRITION ANALYSIS MODAL
      ============================================================ -->
 <div class="modal fade" id="nutritionModal" tabindex="-1" role="dialog" aria-labelledby="nutritionModalLabel" aria-hidden="true">
-    <div class="modal-dialog" role="document">
+    <div class="modal-dialog modal-lg" role="document">
         <div class="modal-content">
             <div class="modal-header" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white;">
                 <h5 class="modal-title" id="nutritionModalLabel">
@@ -1687,6 +1874,44 @@ body {
                             </div>
                         </div>
                     </div>
+
+                    <!-- =====================================================
+                         BREAKDOWN TOGGLE + CONTENT
+                         ===================================================== -->
+                    <div id="nutritionBreakdownToggleWrap" style="padding: 0 24px 24px 24px; text-align: center;">
+                        <button type="button" id="nutritionBreakdownToggle" style="display: none;">
+                            <i class="fas fa-chevron-down" id="breakdownToggleIcon"></i>
+                            <span id="breakdownToggleText">Show breakdown by ingredient</span>
+                        </button>
+                    </div>
+
+                    <div id="nutritionBreakdownContent" style="display: none; padding: 0 24px 24px 24px;">
+                        <div class="breakdown-intro">
+                            <i class="fas fa-info-circle"></i>
+                            How each ingredient contributes to the per-100g values shown above. Sorted by calorie contribution.
+                        </div>
+
+                        <!-- Desktop table -->
+                        <div class="breakdown-table-wrap">
+                            <table class="breakdown-table">
+                                <thead>
+                                    <tr>
+                                        <th class="bt-name">Ingredient</th>
+                                        <th class="bt-num">Calories</th>
+                                        <th class="bt-num">Carbs (g)</th>
+                                        <th class="bt-num">Fat (g)</th>
+                                        <th class="bt-num">Protein (g)</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="breakdownTableBody"></tbody>
+                                <tfoot id="breakdownTableFoot"></tfoot>
+                            </table>
+                        </div>
+
+                        <!-- Mobile cards -->
+                        <div class="breakdown-cards-wrap" id="breakdownCardsWrap"></div>
+                    </div>
+
                 </div>
             </div>
             <div class="modal-footer">
@@ -2325,6 +2550,172 @@ function renderNutrition() {
     document.getElementById('fiberValue').textContent  = formatNutritionNumber(values.fiber, 1);
     document.getElementById('sugarValue').textContent  = formatNutritionNumber(values.sugar, 1);
 
+    // Render the per-ingredient breakdown
+    renderBreakdown(d);
+}
+
+function renderBreakdown(d) {
+    const toggleBtn = document.getElementById('nutritionBreakdownToggle');
+    const content   = document.getElementById('nutritionBreakdownContent');
+    
+    // Reset to collapsed state every time the modal opens
+    content.style.display = 'none';
+    document.getElementById('breakdownToggleText').textContent = 'Show breakdown by ingredient';
+    document.getElementById('breakdownToggleIcon').classList.remove('fa-chevron-up');
+    document.getElementById('breakdownToggleIcon').classList.add('fa-chevron-down');
+    
+    const contributions = (d.ingredient_breakdown && d.ingredient_breakdown.contributions) || [];
+    
+    if (contributions.length === 0) {
+        toggleBtn.style.display = 'none';
+        return;
+    }
+    
+    toggleBtn.style.display = 'inline-flex';
+    
+    // Scale absolute contributions to per-100g-of-recipe so the breakdown
+    // aligns with the FDA label above. Each ingredient's value × (100 / totalWeight)
+    // gives its share of the per-100g totals. Summing these across ingredients
+    // reproduces what's in the FDA label.
+    const totalWeight = d.total_weight_g || 0;
+    const scaleFactor = totalWeight > 0 ? (100 / totalWeight) : 0;
+    
+    const scaled = contributions.map(c => ({
+        ...c,
+        calories: (c.calories === null || c.calories === undefined) ? null : c.calories * scaleFactor,
+        carbs:    (c.carbs    === null || c.carbs    === undefined) ? null : c.carbs    * scaleFactor,
+        fat:      (c.fat      === null || c.fat      === undefined) ? null : c.fat      * scaleFactor,
+        protein:  (c.protein  === null || c.protein  === undefined) ? null : c.protein  * scaleFactor,
+    }));
+    
+    // Sort: highest calories first; null entries to the bottom
+    const sorted = [...scaled].sort((a, b) => {
+        const aCal = (a.calories === null || a.calories === undefined) ? -Infinity : a.calories;
+        const bCal = (b.calories === null || b.calories === undefined) ? -Infinity : b.calories;
+        return bCal - aCal;
+    });
+    
+    // Build per-100g totals (sum of mapped+convertible only; unmapped contribute nothing knowable)
+    let totalCal = 0, totalCarb = 0, totalFat = 0, totalProtein = 0;
+    sorted.forEach(c => {
+        if (c.calories !== null && c.calories !== undefined) totalCal += c.calories;
+        if (c.carbs    !== null && c.carbs    !== undefined) totalCarb += c.carbs;
+        if (c.fat      !== null && c.fat      !== undefined) totalFat += c.fat;
+        if (c.protein  !== null && c.protein  !== undefined) totalProtein += c.protein;
+    });
+    
+    const cell = (v, decimals = 0) => {
+        if (v === null || v === undefined) return '<span class="bt-na">N/A</span>';
+        return Number(v).toFixed(decimals);
+    };
+    
+    // === Desktop table body + foot ===
+    const tbody = document.getElementById('breakdownTableBody');
+    const tfoot = document.getElementById('breakdownTableFoot');
+    
+    tbody.innerHTML = sorted.map(c => {
+        const rowClass = !c.is_mapped ? 'unmapped' : (!c.is_convertible ? 'unconvertible' : '');
+        const statusBadge = !c.is_mapped 
+            ? '<span class="bt-status">Not mapped</span>' 
+            : (!c.is_convertible ? '<span class="bt-status">Needs conversion</span>' : '');
+        const amountLine = (c.amount_g !== null && c.amount_g !== undefined)
+            ? `<span class="bt-amount">${formatNutritionNumber(c.amount_g, 1)} g</span>`
+            : (c.amount_display ? `<span class="bt-amount">${escapeHtmlNutrition(c.amount_display)}</span>` : '');
+        
+        return `
+            <tr class="${rowClass}">
+                <td class="bt-name">${escapeHtmlNutrition(c.name)}${statusBadge}${amountLine}</td>
+                <td class="bt-num">${cell(c.calories, 0)}</td>
+                <td class="bt-num">${cell(c.carbs, 1)}</td>
+                <td class="bt-num">${cell(c.fat, 1)}</td>
+                <td class="bt-num">${cell(c.protein, 1)}</td>
+            </tr>
+        `;
+    }).join('');
+    
+    tfoot.innerHTML = `
+        <tr>
+            <td>Per 100g total</td>
+            <td class="bt-num">${totalCal.toFixed(0)}</td>
+            <td class="bt-num">${totalCarb.toFixed(1)}</td>
+            <td class="bt-num">${totalFat.toFixed(1)}</td>
+            <td class="bt-num">${totalProtein.toFixed(1)}</td>
+        </tr>
+    `;
+    
+    // === Mobile cards ===
+    const cardsWrap = document.getElementById('breakdownCardsWrap');
+    let cardsHtml = sorted.map(c => {
+        const cardClass = !c.is_mapped ? 'unmapped' : (!c.is_convertible ? 'unconvertible' : '');
+        const statusBadge = !c.is_mapped
+            ? '<span class="breakdown-card-status">Not mapped</span>'
+            : (!c.is_convertible ? '<span class="breakdown-card-status">Needs conversion</span>' : '');
+        const amountLine = (c.amount_g !== null && c.amount_g !== undefined)
+            ? `<div class="breakdown-card-amount">${formatNutritionNumber(c.amount_g, 1)} g</div>`
+            : (c.amount_display ? `<div class="breakdown-card-amount">${escapeHtmlNutrition(c.amount_display)}</div>` : '');
+        
+        const valWithUnit = (v, decimals, suffix) => {
+            if (v === null || v === undefined) return '<span class="bt-na">N/A</span>';
+            return `${Number(v).toFixed(decimals)}${suffix || ''}`;
+        };
+        
+        return `
+            <div class="breakdown-card ${cardClass}">
+                <div class="breakdown-card-header">
+                    <div>
+                        <div class="breakdown-card-name">${escapeHtmlNutrition(c.name)}</div>
+                        ${amountLine}
+                    </div>
+                    ${statusBadge}
+                </div>
+                <div class="breakdown-card-row">
+                    <span class="breakdown-card-label">Calories</span>
+                    <span class="breakdown-card-value">${valWithUnit(c.calories, 0, '')}</span>
+                </div>
+                <div class="breakdown-card-row">
+                    <span class="breakdown-card-label">Carbs</span>
+                    <span class="breakdown-card-value">${valWithUnit(c.carbs, 1, ' g')}</span>
+                </div>
+                <div class="breakdown-card-row">
+                    <span class="breakdown-card-label">Fat</span>
+                    <span class="breakdown-card-value">${valWithUnit(c.fat, 1, ' g')}</span>
+                </div>
+                <div class="breakdown-card-row">
+                    <span class="breakdown-card-label">Protein</span>
+                    <span class="breakdown-card-value">${valWithUnit(c.protein, 1, ' g')}</span>
+                </div>
+            </div>
+        `;
+    }).join('');
+    
+    // Totals card at the end (mobile only)
+    cardsHtml += `
+        <div class="breakdown-card totals">
+            <div class="breakdown-card-header">
+                <div>
+                    <div class="breakdown-card-name">Per 100g total</div>
+                </div>
+            </div>
+            <div class="breakdown-card-row">
+                <span class="breakdown-card-label">Calories</span>
+                <span class="breakdown-card-value">${totalCal.toFixed(0)}</span>
+            </div>
+            <div class="breakdown-card-row">
+                <span class="breakdown-card-label">Carbs</span>
+                <span class="breakdown-card-value">${totalCarb.toFixed(1)} g</span>
+            </div>
+            <div class="breakdown-card-row">
+                <span class="breakdown-card-label">Fat</span>
+                <span class="breakdown-card-value">${totalFat.toFixed(1)} g</span>
+            </div>
+            <div class="breakdown-card-row">
+                <span class="breakdown-card-label">Protein</span>
+                <span class="breakdown-card-value">${totalProtein.toFixed(1)} g</span>
+            </div>
+        </div>
+    `;
+    
+    cardsWrap.innerHTML = cardsHtml;
 }
 
 function formatNutritionNumber(value, decimals) {
@@ -2338,6 +2729,30 @@ function escapeHtmlNutrition(s) {
     div.textContent = String(s);
     return div.innerHTML;
 }
+
+// Wire up the breakdown toggle button (runs once on DOMContentLoaded)
+document.addEventListener('DOMContentLoaded', function() {
+    const toggleBtn = document.getElementById('nutritionBreakdownToggle');
+    if (!toggleBtn) return;
+    
+    toggleBtn.addEventListener('click', function() {
+        const content = document.getElementById('nutritionBreakdownContent');
+        const icon = document.getElementById('breakdownToggleIcon');
+        const text = document.getElementById('breakdownToggleText');
+        
+        if (content.style.display === 'none' || !content.style.display) {
+            content.style.display = 'block';
+            icon.classList.remove('fa-chevron-down');
+            icon.classList.add('fa-chevron-up');
+            text.textContent = 'Hide breakdown';
+        } else {
+            content.style.display = 'none';
+            icon.classList.remove('fa-chevron-up');
+            icon.classList.add('fa-chevron-down');
+            text.textContent = 'Show breakdown by ingredient';
+        }
+    });
+});
 
 // Auto-reopen the nutrition modal if the user just returned from the
 // recipe-scoped mapping wizard. Triggered by either:

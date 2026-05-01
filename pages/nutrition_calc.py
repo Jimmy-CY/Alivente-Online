@@ -13,9 +13,11 @@ Returns a dict with:
     - total_weight_g
     - servings
     - ingredient_breakdown:
-        - mapped: ingredients that contributed to totals
+        - mapped: ingredients that contributed to totals (with per-line nutrients)
         - unmapped: ingredients with no nutrition data
         - unconvertible: ingredients with nutrition but no path to grams
+        - contributions: unified list for the UI breakdown panel
+            (mapped first with values, then unconvertible/unmapped with N/A)
     - is_complete: True if every ingredient contributed
     - macro_split: {protein_pct, carbs_pct, fat_pct} percentage of calories
 
@@ -141,6 +143,9 @@ def calculate_recipe_nutrition(recipe) -> Dict:
             'unit_name': ri.unit.name if ri.unit else None,
             'grams': float(grams),
             'calories': float(line_contrib['calories']),
+            'carbs':    float(line_contrib['carbs']),
+            'fat':      float(line_contrib['fat']),
+            'protein':  float(line_contrib['protein']),
         })
     
     # ----- Step 4: Compute per-serving and per-100g -----
@@ -156,6 +161,12 @@ def calculate_recipe_nutrition(recipe) -> Dict:
     
     is_complete = (len(unmapped) == 0 and len(unconvertible) == 0)
     has_any_data = (len(mapped) > 0)
+    
+    # ----- Step 6: Build a unified contributions list for the UI panel -----
+    # Mapped entries first (with real values), then unconvertible (N/A),
+    # then unmapped (N/A). The UI sorts these by calorie contribution and
+    # shows N/A entries at the bottom.
+    contributions = _build_contributions(mapped, unconvertible, unmapped)
     
     return {
         'has_any_data': has_any_data,
@@ -174,8 +185,68 @@ def calculate_recipe_nutrition(recipe) -> Dict:
             'mapped': mapped,
             'unmapped': unmapped,
             'unconvertible': unconvertible,
+            'contributions': contributions,
         },
     }
+
+
+def _build_contributions(mapped: List[Dict], unconvertible: List[Dict],
+                         unmapped: List[Dict]) -> List[Dict]:
+    """
+    Build a unified list combining mapped + unconvertible + unmapped
+    ingredients in the shape the UI expects:
+    
+        {
+            'name', 'amount_display', 'amount_g',
+            'is_mapped', 'is_convertible',
+            'calories', 'carbs', 'fat', 'protein',
+        }
+    
+    Mapped entries carry real numbers; unconvertible/unmapped carry None
+    for nutrient values so the UI renders them as "N/A".
+    """
+    rows = []
+    
+    for m in mapped:
+        rows.append({
+            'name': m['name'],
+            'amount_display': m.get('amount_display'),
+            'amount_g': m.get('grams'),
+            'is_mapped': True,
+            'is_convertible': True,
+            'calories': m['calories'],
+            'carbs':    m['carbs'],
+            'fat':      m['fat'],
+            'protein':  m['protein'],
+        })
+    
+    for u in unconvertible:
+        rows.append({
+            'name': u['name'],
+            'amount_display': u.get('amount_display'),
+            'amount_g': None,
+            'is_mapped': True,
+            'is_convertible': False,
+            'calories': None,
+            'carbs':    None,
+            'fat':      None,
+            'protein':  None,
+        })
+    
+    for u in unmapped:
+        rows.append({
+            'name': u['name'],
+            'amount_display': u.get('amount_display'),
+            'amount_g': None,
+            'is_mapped': False,
+            'is_convertible': False,
+            'calories': None,
+            'carbs':    None,
+            'fat':      None,
+            'protein':  None,
+        })
+    
+    return rows
 
 
 # --------------------------------------------------------------------------- #
