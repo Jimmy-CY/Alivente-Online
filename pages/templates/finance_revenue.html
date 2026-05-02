@@ -56,6 +56,9 @@
     flex-wrap: wrap;
 }
 
+/* Desktop default: hide the mobile "More" dropdown wrapper */
+.action-bar .action-more-wrapper { display: none; }
+
 /* === Revenue table === */
 .revenue-card {
     background: white;
@@ -175,7 +178,8 @@
 
 /* ============================================================
    MOBILE — max-width: 768px
-   Back+1 action bar, table→cards, accordion preserved
+   Action bar: [Add New (wide)] [⋮ More (icon)] [← Back (icon)]
+   Table → cards, accordion preserved
    ============================================================ */
 @media (max-width: 768px) {
     .revenue-container {
@@ -191,7 +195,7 @@
         font-size: 20px;
     }
 
-    /* Back+1: [Add New (wide)] [← Back icon] */
+    /* Action bar — Add New (wide) + More + Back */
     .action-bar {
         flex-direction: row;
         flex-wrap: nowrap;
@@ -199,8 +203,9 @@
         gap: 8px;
         margin-bottom: 14px;
     }
-    .action-bar .action-help {
-        display: none;  /* Help button hidden on mobile — accessible via app menu */
+    /* Hide the desktop secondary buttons on mobile — accessible via More menu */
+    .action-bar .action-secondary {
+        display: none;
     }
     .action-bar .action-primary {
         flex: 1 1 auto;
@@ -214,6 +219,64 @@
         white-space: nowrap;
         margin: 0;
     }
+
+    /* More dropdown wrapper — visible on mobile only */
+    .action-bar .action-more-wrapper {
+        display: block;
+        position: relative;
+        flex: 0 0 auto;
+    }
+    .action-more-btn {
+        width: 44px;
+        height: 38px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0;
+    }
+    .action-more-menu {
+        position: absolute;
+        top: calc(100% + 6px);
+        right: 0;
+        z-index: 200;
+        background: white;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        min-width: 220px;
+        padding: 6px 0;
+    }
+    .action-more-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        width: 100%;
+        background: none;
+        border: none;
+        text-align: left;
+        padding: 12px 16px;
+        font-size: 14px;
+        color: #2c3e50;
+        cursor: pointer;
+        transition: background 0.15s ease;
+        text-decoration: none;
+    }
+    .action-more-item i {
+        color: #28a745;
+        width: 18px;
+        text-align: center;
+        flex-shrink: 0;
+    }
+    .action-more-item:hover,
+    .action-more-item:active,
+    .action-more-item:focus {
+        background: #f0fbf4;
+        outline: none;
+        color: #2c3e50;
+        text-decoration: none;
+    }
+
     .action-bar .action-back {
         flex: 0 0 auto;
         width: 50px;
@@ -339,7 +402,8 @@
         <h1><i class="fas fa-coins"></i> Revenue</h1>
     </div>
 
-    <!-- Action Bar — Back+1: [Add New (primary, wide)] [Help (desktop)] [Back] -->
+    <!-- Action Bar — Desktop: [Add New] [Help] [Back]
+                     Mobile:  [Add New (wide)] [⋮ More] [← Back] -->
     <div class="action-bar">
         {% if perms.auth.can_edit_financials %}
             <a href="{% url 'finance_revenue_add' %}" class="btn btn-info action-primary">
@@ -350,9 +414,25 @@
                 <i class="fas fa-plus"></i> Add New
             </span>
         {% endif %}
-        <button type="button" class="btn btn-info action-help" data-toggle="modal" data-target="#finance_revenueHelpModal">
+
+        <!-- Desktop-visible Help button (hidden on mobile, accessed via More menu) -->
+        <button type="button" class="btn btn-info action-secondary" data-toggle="modal" data-target="#finance_revenueHelpModal">
             <i class="fas fa-question-circle"></i> Help
         </button>
+
+        <!-- Mobile-only More dropdown -->
+        <div class="action-more-wrapper">
+            <button type="button" class="btn btn-info action-more-btn" id="actionMoreBtn"
+                    aria-label="More actions" aria-expanded="false" aria-haspopup="true">
+                <i class="fas fa-ellipsis-v"></i>
+            </button>
+            <div class="action-more-menu" id="actionMoreMenu" role="menu" hidden>
+                <button type="button" class="action-more-item" role="menuitem" data-toggle="modal" data-target="#finance_revenueHelpModal">
+                    <i class="fas fa-question-circle"></i> Help
+                </button>
+            </div>
+        </div>
+
         <a href="{% url 'finance' %}" class="btn btn-secondary action-back" aria-label="Back">
             <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
         </a>
@@ -492,7 +572,47 @@ document.addEventListener('DOMContentLoaded', function() {
             d.style.display = isMobile ? 'block' : 'table-row';
         });
     });
+
+    // Initialize the mobile More-menu dropdown
+    initializeMoreMenu();
 });
+
+// Mobile-only "More" actions dropdown
+function initializeMoreMenu() {
+    const moreBtn = document.getElementById('actionMoreBtn');
+    const moreMenu = document.getElementById('actionMoreMenu');
+    if (!moreBtn || !moreMenu) return;
+
+    function closeMenu() {
+        moreMenu.setAttribute('hidden', '');
+        moreBtn.setAttribute('aria-expanded', 'false');
+    }
+    function openMenu() {
+        moreMenu.removeAttribute('hidden');
+        moreBtn.setAttribute('aria-expanded', 'true');
+    }
+
+    moreBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        const isOpen = !moreMenu.hasAttribute('hidden');
+        if (isOpen) closeMenu(); else openMenu();
+    });
+
+    document.addEventListener('click', function(e) {
+        if (!moreBtn.contains(e.target) && !moreMenu.contains(e.target)) closeMenu();
+    });
+
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && !moreMenu.hasAttribute('hidden')) {
+            closeMenu();
+            moreBtn.focus();
+        }
+    });
+
+    moreMenu.querySelectorAll('.action-more-item').forEach(item => {
+        item.addEventListener('click', function() { closeMenu(); });
+    });
+}
 </script>
 
 {% endblock %}

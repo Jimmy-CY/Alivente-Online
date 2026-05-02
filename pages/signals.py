@@ -1,7 +1,8 @@
-from django.db.models.signals import post_save, pre_save
+from django.db.models.signals import post_save, post_delete, pre_save
 from django.dispatch import receiver
 from django.utils import timezone
-from .models import tenant, VacancyPeriod
+from .models import tenant, VacancyPeriod, Recipe, RecipeIngredient, Ingredient, UnitConversion, RecipeNutritionCache
+from .nutrition_calc import calculate_recipe_nutrition
 
 @receiver(post_save, sender=tenant)
 def handle_tenant_vacancy(sender, instance, created, **kwargs):
@@ -157,3 +158,199 @@ def sync_all_historical_vacancies():
         print(f"\nCurrently Vacant Properties:")
         for vacancy in VacancyPeriod.objects.filter(status='ACTIVE'):
             print(f"  - {vacancy.prop.prop_name}: {vacancy.days_vacant} days (since {vacancy.start_date})")
+
+# ============================================================================
+# CORE RECALC FUNCTION
+# ============================================================================
+ 
+NUTRITION_FIELDS = {
+    'calories_per_100g', 'protein_per_100g', 'carbs_per_100g', 'fat_per_100g',
+    'fiber_per_100g', 'sugar_per_100g', 'sodium_per_100g',
+    'fdc_id',  # also triggers recalc — covers the "freshly mapped" case
+}
+ 
+ 
+def _recalculate_cache_for_recipe(recipe):
+    """
+    Run the nutrition calculator for a single recipe and upsert the cache row.
+    Safe to call directly from a management command or signal handler.
+    """
+    try:
+        result = calculate_recipe_nutrition(recipe)
+    except Exception as exc:
+        # Don't let a calculator failure cascade and break the user's save.
+        # Log and bail.
+        print(f"[nutrition_cache] Skipping recipe {recipe.recipe_id} ({recipe.recipe_name}) — calculator raised: {exc}")
+        return
+    
+    per_100g    = result.get('per_100g', {})
+    per_serving = result.get('per_serving', {})
+    
+    RecipeNutritionCache.objects.update_or_create(
+        recipe=recipe,
+        defaults={
+            'calories_per_100g': per_100g.get('calories'),
+            'protein_per_100g':  per_100g.get('protein'),
+            'carbs_per_100g':    per_100g.get('carbs'),
+            'fat_per_100g':      per_100g.get('fat'),
+            'fiber_per_100g':    per_100g.get('fiber'),
+            'sugar_per_100g':    per_100g.get('sugar'),
+            'sodium_per_100g':   per_100g.get('sodium'),
+            
+            'calories_per_serving': per_serving.get('calories'),
+            'protein_per_serving':  per_serving.get('protein'),
+            'carbs_per_serving':    per_serving.get('carbs'),
+            'fat_per_serving':      per_serving.get('fat'),
+            'fiber_per_serving':    per_serving.get('fiber'),
+            'sugar_per_serving':    per_serving.get('sugar'),
+            'sodium_per_serving':   per_serving.get('sodium'),
+            
+            'total_weight_g':      result.get('total_weight_g'),
+            'is_complete':         result.get('is_complete', False),
+            'mapped_count':        result.get('mapped_count', 0),
+            'unmapped_count':      result.get('unmapped_count', 0),
+            'unconvertible_count': result.get('unconvertible_count', 0),
+        }
+    )
+ 
+ 
+def _recalculate_caches_for_recipes(recipe_qs):
+    """Recalculate caches for a queryset of recipes (used by Ingredient/UnitConversion handlers)."""
+    for recipe in recipe_qs:
+        _recalculate_cache_for_recipe(recipe)
+ 
+ 
+# ============================================================================
+# RECIPE SIGNALS
+# ============================================================================
+ 
+@receiver(post_save, sender=Recipe)
+def recipe_saved__refresh_nutrition_cache(sender, instance, raw, created, **kwargs):
+    """
+    When a recipe is saved (created or edited), refresh its nutrition cache.
+    Skips fixture loads (raw=True).
+    """
+    if raw:
+        return
+    _recalculate_cache_for_recipe(instance)
+ 
+ 
+# Recipe deletion is handled by CASCADE on the OneToOne — no explicit handler needed.
+ 
+ 
+# ============================================================================
+# RECIPE INGREDIENT SIGNALS
+# ============================================================================
+ 
+@receiver(post_save, sender=RecipeIngredient)
+def recipe_ingredient_saved__refresh_parent_recipe(sender, instance, raw, **kwargs):
+    """
+    When a recipe ingredient is added/changed, refresh the parent recipe's cache.
+    """
+    if raw:
+        return
+    if instance.recipe_id:
+        try:
+            _recalculate_cache_for_recipe(instance.recipe)
+        except Recipe.DoesNotExist:
+            pass
+ 
+ 
+@receiver(post_delete, sender=RecipeIngredient)
+def recipe_ingredient_deleted__refresh_parent_recipe(sender, instance, **kwargs):
+    """
+    When a recipe ingredient is removed, refresh the parent recipe's cache.
+    Wrapped in try/except because the parent Recipe may also be in the process
+    of being deleted (cascade delete).
+    """
+    if not instance.recipe_id:
+        return
+    try:
+        recipe = Recipe.objects.get(pk=instance.recipe_id)
+    except Recipe.DoesNotExist:
+        # Parent recipe is being deleted too — cache row will cascade away.
+        return
+    _recalculate_cache_for_recipe(recipe)
+ 
+ 
+# ============================================================================
+# INGREDIENT SIGNALS — only recalc when NUTRITION changed
+# ============================================================================
+ 
+@receiver(post_save, sender=Ingredient)
+def ingredient_saved__refresh_dependent_recipes(sender, instance, raw, created, update_fields, **kwargs):
+    """
+    When an ingredient's NUTRITION data changes (mapping to USDA, manual edit
+    of per-100g values, etc.), refresh every recipe that uses this ingredient.
+    
+    Skips when only non-nutrition fields changed (notes, category, default_unit).
+    """
+    if raw:
+        return
+    
+    # If `update_fields` was passed, we know exactly what changed.
+    # If it wasn't, we have to assume nutrition might have changed and recalc.
+    if update_fields is not None:
+        if not (set(update_fields) & NUTRITION_FIELDS):
+            return  # nothing nutrition-related changed
+    
+    # Find all recipes that use this ingredient.
+    affected_recipes = Recipe.objects.filter(
+        recipe_ingredients__ingredient=instance
+    ).distinct()
+    
+    _recalculate_caches_for_recipes(affected_recipes)
+ 
+ 
+# Ingredient deletion: handled by CASCADE on RecipeIngredient. When the
+# ingredient is gone, the RecipeIngredient rows go too, which fires the
+# RecipeIngredient post_delete handler above.
+ 
+ 
+# ============================================================================
+# UNIT CONVERSION SIGNALS
+# ============================================================================
+ 
+@receiver(post_save, sender=UnitConversion)
+def unit_conversion_saved__refresh_dependent_recipes(sender, instance, raw, **kwargs):
+    """
+    When a unit conversion is added/changed, find every recipe that uses
+    either the from_unit or to_unit and refresh its cache.
+    
+    For ingredient-specific conversions, we only need to refresh recipes
+    that use that specific ingredient. For generic conversions, we have to
+    refresh anything using the affected units.
+    """
+    if raw:
+        return
+    
+    if instance.specific_ingredient_id:
+        # Ingredient-specific: only recipes using THIS ingredient are affected.
+        affected_recipes = Recipe.objects.filter(
+            recipe_ingredients__ingredient_id=instance.specific_ingredient_id
+        ).distinct()
+    else:
+        # Generic: recipes using either the from_unit or to_unit.
+        affected_recipes = Recipe.objects.filter(
+            recipe_ingredients__unit_id__in=[instance.from_unit_id, instance.to_unit_id]
+        ).distinct()
+    
+    _recalculate_caches_for_recipes(affected_recipes)
+ 
+ 
+@receiver(post_delete, sender=UnitConversion)
+def unit_conversion_deleted__refresh_dependent_recipes(sender, instance, **kwargs):
+    """
+    When a unit conversion is deleted, the affected recipes might no longer
+    be convertible. Refresh them so is_complete reflects reality.
+    """
+    if instance.specific_ingredient_id:
+        affected_recipes = Recipe.objects.filter(
+            recipe_ingredients__ingredient_id=instance.specific_ingredient_id
+        ).distinct()
+    else:
+        affected_recipes = Recipe.objects.filter(
+            recipe_ingredients__unit_id__in=[instance.from_unit_id, instance.to_unit_id]
+        ).distinct()
+    
+    _recalculate_caches_for_recipes(affected_recipes)

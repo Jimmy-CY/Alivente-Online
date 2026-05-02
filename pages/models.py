@@ -1794,6 +1794,65 @@ class CustomProtein(models.Model):
         verbose_name_plural = "Custom Proteins"
         ordering = ['name']
 
+
+class RecipeNutritionCache(models.Model):
+    """
+    Denormalized snapshot of a recipe's calculated nutrition.
+    
+    Populated automatically by signals whenever the recipe, its ingredients,
+    or the underlying ingredient nutrition data change. Used by the recipe
+    list page to sort/filter by nutrition without re-running the calculator
+    for every recipe on every search.
+    
+    Per-100g values are the canonical sortable fields (matches the FDA-style
+    label shown in the nutrition modal). Per-serving values are stored too
+    for future per-serving features.
+    
+    is_complete=True only when every ingredient is mapped AND convertible —
+    i.e., the calculator returned no unmapped or unconvertible items. The
+    sortable search UI filters to is_complete=True so the rankings are
+    trustworthy.
+    """
+    recipe = models.OneToOneField(
+        Recipe,
+        on_delete=models.CASCADE,
+        related_name='nutrition_cache',
+    )
+    
+    # === Per-100g (the canonical sortable fields) ===
+    calories_per_100g = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, db_index=True)
+    protein_per_100g  = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, db_index=True)
+    carbs_per_100g    = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, db_index=True)
+    fat_per_100g      = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, db_index=True)
+    fiber_per_100g    = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    sugar_per_100g    = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    sodium_per_100g   = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    
+    # === Per-serving (for future per-serving features) ===
+    calories_per_serving = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    protein_per_serving  = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    carbs_per_serving    = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    fat_per_serving      = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    fiber_per_serving    = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    sugar_per_serving    = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    sodium_per_serving   = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    
+    # === Metadata ===
+    total_weight_g      = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    is_complete         = models.BooleanField(default=False, db_index=True)
+    mapped_count        = models.IntegerField(default=0)
+    unmapped_count      = models.IntegerField(default=0)
+    unconvertible_count = models.IntegerField(default=0)
+    calculated_at       = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        db_table = 'recipe_nutrition_cache'
+        verbose_name = 'Recipe Nutrition Cache'
+        verbose_name_plural = 'Recipe Nutrition Caches'
+    
+    def __str__(self):
+        return f"Nutrition cache for {self.recipe.recipe_name}"
+
 # ========== MEAL PLANNING MODELS ==========
 
 class MealPlan(models.Model):
