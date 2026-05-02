@@ -56,9 +56,10 @@
     display: block;
 }
 
+/* === Step 3: Filter grid widened from 5 to 6 columns to fit Nutrition cell === */
 .recipe-filter-grid {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(6, 1fr);
     gap: 16px;
     align-items: start;
     margin-bottom: 20px;
@@ -218,6 +219,102 @@
 }
 
 .recipe-remove-tag:hover { background: rgba(255, 255, 255, 0.5); }
+
+/* === STEP 3 — Nutrition sort controls + result badges === */
+.nutrition-sort-row {
+    display: flex;
+    gap: 6px;
+    align-items: stretch;
+}
+.nutrition-sort-row select {
+    flex: 1 1 auto;
+    min-width: 0;
+    height: 44px;
+    padding: 0 30px 0 12px;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    background: white;
+    font-size: 14px;
+    color: #495057;
+    cursor: pointer;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath fill='%236c757d' d='M2 4l4 4 4-4z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 12px;
+}
+.nutrition-sort-row select:focus { border-color: #28a745; outline: none; }
+.nutrition-sort-row .order-toggle {
+    flex: 0 0 auto;
+    height: 44px;
+    width: 44px;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    background: white;
+    color: #495057;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+.nutrition-sort-row .order-toggle:hover { border-color: #28a745; color: #28a745; }
+.nutrition-sort-row .order-toggle.active { border-color: #28a745; background: #f0fff4; color: #28a745; }
+
+/* Nudge banner shown above results when nutrition sort hides incomplete recipes */
+.nutrition-nudge {
+    background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%);
+    border: 1px solid #ffc107;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+.nutrition-nudge i.fa-info-circle { color: #f57c00; font-size: 18px; flex-shrink: 0; }
+.nutrition-nudge .nudge-text { color: #5d4037; font-size: 14px; flex: 1; min-width: 200px; }
+.nutrition-nudge .nudge-link {
+    background: #28a745;
+    color: white;
+    padding: 6px 14px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+}
+.nutrition-nudge .nudge-link:hover { background: #218838; color: white; text-decoration: none; }
+
+/* Inline nutrition badge on each grid/list card when sort is active */
+.nutrition-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    background: #e8f5e9;
+    color: #2e7d32;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    border: 1px solid #c8e6c9;
+}
+.nutrition-badge i { font-size: 11px; }
+.recipe-list-nutrition-badge {
+    font-size: 11px;
+    padding: 3px 8px;
+    margin-top: 4px;
+    margin-bottom: 0;
+}
+/* === End Step 3 nutrition rules === */
 
 /* A-Z Letter Filter Styles */
 .letter-filter-container {
@@ -1359,9 +1456,6 @@
         display: none;
     }
 
-    /* Hide Add Recipe dropdown menu on mobile — primary button still works as link to first option */
-    /* Actually keep dropdown working — the existing mobile-active class handles it */
-
     /* === DROPDOWN MENUS — flow inline below button on mobile via .mobile-active === */
     .dropdown-menu-custom {
         position: static !important;
@@ -1398,6 +1492,13 @@
     .filter-multiselect-menu { max-height: 60vh; }
     .filter-action-buttons { flex-direction: column; gap: 8px; }
     .filter-action-buttons .btn { width: 100%; }
+
+    /* Step 3: nutrition controls on mobile */
+    .nutrition-sort-row select { font-size: 16px; }  /* avoid iOS zoom */
+    .nutrition-nudge { padding: 10px 12px; }
+    .nutrition-nudge .nudge-text { font-size: 13px; }
+    .nutrition-nudge .nudge-link { width: 100%; justify-content: center; }
+    .nutrition-badge { font-size: 11px; padding: 3px 8px; }
 
     /* === A-Z LETTER FILTER === */
     .letter-filter-container { padding: 8px 10px; }
@@ -1809,6 +1910,33 @@
                     </div>
                 </div>
 
+                <!-- Nutrition Sort (Step 3) -->
+                <div class="recipe-filter-group">
+                    <label class="recipe-filter-label">
+                        <i class="fas fa-apple-alt"></i> Sort by Nutrition
+                    </label>
+                    <div class="nutrition-sort-row">
+                        <select name="nutrition_sort" id="nutritionSortSelect">
+                            <option value="" {% if not nutrition_sort %}selected{% endif %}>— None —</option>
+                            <option value="calories" {% if nutrition_sort == 'calories' %}selected{% endif %}>Calories</option>
+                            <option value="protein"  {% if nutrition_sort == 'protein'  %}selected{% endif %}>Protein</option>
+                            <option value="carbs"    {% if nutrition_sort == 'carbs'    %}selected{% endif %}>Carbs</option>
+                            <option value="fat"      {% if nutrition_sort == 'fat'      %}selected{% endif %}>Fat</option>
+                        </select>
+                        <input type="hidden" name="nutrition_order" id="nutritionOrderInput" value="{{ nutrition_order|default:'desc' }}">
+                        <button type="button"
+                                class="order-toggle {% if nutrition_sort %}active{% endif %}"
+                                id="nutritionOrderBtn"
+                                onclick="toggleNutritionOrder()"
+                                title="Toggle ascending/descending">
+                            <i class="fas {% if nutrition_order == 'asc' %}fa-sort-amount-up{% else %}fa-sort-amount-down{% endif %}" id="nutritionOrderIcon"></i>
+                        </button>
+                    </div>
+                    <small style="margin-top: 4px; color: #6c757d; font-size: 11px;">
+                        Per 100g. Only recipes with complete nutrition.
+                    </small>
+                </div>
+
                 <!-- Action Buttons -->
                 <div class="filter-action-buttons">
                     <button type="submit" class="btn btn-success">
@@ -1834,7 +1962,7 @@
         <div class="letter-filter-list">
             {% for letter_info in letter_data %}
                 {% if letter_info.available %}
-                    <a href="?{% if search_query %}search={{ search_query }}&{% endif %}{% for course in selected_courses %}course={{ course }}&{% endfor %}{% for cat in selected_categories %}category={{ cat }}&{% endfor %}{% for prot in selected_proteins %}protein={{ prot }}&{% endfor %}{% for auth in selected_authors %}author={{ auth }}&{% endfor %}letter={{ letter_info.letter }}"
+                    <a href="?{% if search_query %}search={{ search_query }}&search_type={{ search_type }}&{% endif %}{% for course in selected_courses %}course={{ course }}&{% endfor %}{% for cat in selected_categories %}category={{ cat }}&{% endfor %}{% for prot in selected_proteins %}protein={{ prot }}&{% endfor %}{% for auth in selected_authors %}author={{ auth }}&{% endfor %}{% if nutrition_sort %}nutrition_sort={{ nutrition_sort }}&nutrition_order={{ nutrition_order }}&{% endif %}letter={{ letter_info.letter }}"
                        class="letter-filter-item available {% if selected_letter == letter_info.letter %}active{% endif %}"
                        onclick="return handleLetterClick(event, '{{ letter_info.letter }}');">
                         {{ letter_info.letter }}
@@ -1846,6 +1974,23 @@
         </div>
     </div>
 </div>
+
+{% if hidden_by_nutrition_sort > 0 %}
+<!-- Nudge banner: incomplete recipes hidden when nutrition sort active (Step 3) -->
+<div class="nutrition-nudge">
+    <i class="fas fa-info-circle"></i>
+    <div class="nudge-text">
+        <strong>{{ hidden_by_nutrition_sort }}</strong>
+        recipe{{ hidden_by_nutrition_sort|pluralize }} hidden because
+        {{ hidden_by_nutrition_sort|pluralize:"its,their" }}
+        nutrition data {{ hidden_by_nutrition_sort|pluralize:"is,are" }} incomplete.
+        Map ingredients to make {{ hidden_by_nutrition_sort|pluralize:"it,them" }} sortable.
+    </div>
+    <a href="{% url 'map_ingredients_wizard' %}" class="nudge-link">
+        <i class="fas fa-arrow-right"></i> Finish mapping
+    </a>
+</div>
+{% endif %}
 
 <!-- View Toggle -->
 <div class="view-toggle-container">
@@ -1921,6 +2066,23 @@
 
         <div class="recipe-card-body">
             <h5 class="recipe-card-title">{{ recipe.recipe_name }}</h5>
+
+            {# Step 3: nutrition badge below title when sort is active #}
+            {% if nutrition_sort and recipe.nutrition_cache and recipe.nutrition_cache.is_complete %}
+            <div>
+                <span class="nutrition-badge">
+                    {% if nutrition_sort == 'calories' %}
+                        <i class="fas fa-fire"></i> {{ recipe.nutrition_cache.calories_per_100g|floatformat:0 }} cal/100g
+                    {% elif nutrition_sort == 'protein' %}
+                        <i class="fas fa-drumstick-bite"></i> {{ recipe.nutrition_cache.protein_per_100g|floatformat:1 }}g protein/100g
+                    {% elif nutrition_sort == 'carbs' %}
+                        <i class="fas fa-bread-slice"></i> {{ recipe.nutrition_cache.carbs_per_100g|floatformat:1 }}g carbs/100g
+                    {% elif nutrition_sort == 'fat' %}
+                        <i class="fas fa-bacon"></i> {{ recipe.nutrition_cache.fat_per_100g|floatformat:1 }}g fat/100g
+                    {% endif %}
+                </span>
+            </div>
+            {% endif %}
 
             <div class="recipe-card-meta">
                 {% if recipe.prep_time %}
@@ -2042,6 +2204,21 @@
                     <span class="recipe-list-tag author">{{ recipe.author }}</span>
                     {% endif %}
                 </div>
+
+                {# Step 3: list-view nutrition badge #}
+                {% if nutrition_sort and recipe.nutrition_cache and recipe.nutrition_cache.is_complete %}
+                <span class="nutrition-badge recipe-list-nutrition-badge">
+                    {% if nutrition_sort == 'calories' %}
+                        <i class="fas fa-fire"></i> {{ recipe.nutrition_cache.calories_per_100g|floatformat:0 }} cal/100g
+                    {% elif nutrition_sort == 'protein' %}
+                        <i class="fas fa-drumstick-bite"></i> {{ recipe.nutrition_cache.protein_per_100g|floatformat:1 }}g protein/100g
+                    {% elif nutrition_sort == 'carbs' %}
+                        <i class="fas fa-bread-slice"></i> {{ recipe.nutrition_cache.carbs_per_100g|floatformat:1 }}g carbs/100g
+                    {% elif nutrition_sort == 'fat' %}
+                        <i class="fas fa-bacon"></i> {{ recipe.nutrition_cache.fat_per_100g|floatformat:1 }}g fat/100g
+                    {% endif %}
+                </span>
+                {% endif %}
             </div>
 
             <div class="recipe-list-meta-group">
@@ -2400,6 +2577,68 @@ function handleLetterClick(event, letter) {
 // Permission flag for JS-generated cards
 const USER_CAN_EDIT_PERSONAL = {% if perms.auth.can_edit_personal %}true{% else %}false{% endif %};
 
+// === Step 3 — nutrition sort state for JS-generated cards ===
+const NUTRITION_SORT = "{{ nutrition_sort|default:'' }}";
+
+function buildNutritionBadgeHtml(values) {
+    if (!NUTRITION_SORT || !values) return '';
+    let val, label, icon;
+    if (NUTRITION_SORT === 'calories') {
+        val = values.calories;
+        if (val == null) return '';
+        label = `${Math.round(val)} cal/100g`;
+        icon = 'fa-fire';
+    } else if (NUTRITION_SORT === 'protein') {
+        val = values.protein;
+        if (val == null) return '';
+        label = `${val.toFixed(1)}g protein/100g`;
+        icon = 'fa-drumstick-bite';
+    } else if (NUTRITION_SORT === 'carbs') {
+        val = values.carbs;
+        if (val == null) return '';
+        label = `${val.toFixed(1)}g carbs/100g`;
+        icon = 'fa-bread-slice';
+    } else if (NUTRITION_SORT === 'fat') {
+        val = values.fat;
+        if (val == null) return '';
+        label = `${val.toFixed(1)}g fat/100g`;
+        icon = 'fa-bacon';
+    } else {
+        return '';
+    }
+    return `<span class="nutrition-badge"><i class="fas ${icon}"></i> ${label}</span>`;
+}
+
+function buildNutritionBadgeHtmlList(values) {
+    const html = buildNutritionBadgeHtml(values);
+    if (!html) return '';
+    return html.replace('class="nutrition-badge"', 'class="nutrition-badge recipe-list-nutrition-badge"');
+}
+
+function toggleNutritionOrder() {
+    const input = document.getElementById('nutritionOrderInput');
+    const icon = document.getElementById('nutritionOrderIcon');
+    if (input.value === 'desc') {
+        input.value = 'asc';
+        icon.classList.remove('fa-sort-amount-down');
+        icon.classList.add('fa-sort-amount-up');
+    } else {
+        input.value = 'desc';
+        icon.classList.remove('fa-sort-amount-up');
+        icon.classList.add('fa-sort-amount-down');
+    }
+    document.getElementById('recipeFilterForm').submit();
+}
+
+function clearNutritionSort() {
+    sessionStorage.setItem('recipeUserInteracted', 'true');
+    sessionStorage.setItem('recipeJustAppliedFilters', 'true');
+    expandRecipeFilterPanel();
+    const select = document.getElementById('nutritionSortSelect');
+    if (select) select.value = '';
+    document.getElementById('recipeFilterForm').submit();
+}
+
 // ==================== MOBILE DROPDOWN TAP-TOGGLE ====================
 // On mobile, the .dropdown-btn-container :hover trigger doesn't reliably fire on touch.
 // Add tap-to-toggle: tap button -> toggles .mobile-active class; tap outside -> closes.
@@ -2549,6 +2788,9 @@ function createGridRecipeCard(recipe) {
     const difficultyBadge = recipe.difficulty_level ? `<span class="badge badge-secondary"><i class="fas fa-signal"></i> ${recipe.difficulty_level}</span>` : '';
     const authorBadge = recipe.author ? `<span class="badge badge-dark"><i class="fas fa-user-edit"></i> ${recipe.author}</span>` : '';
 
+    // Step 3 — nutrition badge for sorted view
+    const nutritionBadgeHtml = buildNutritionBadgeHtml(recipe.nutrition_values);
+
     const editActions = USER_CAN_EDIT_PERSONAL ? `
                     <a href="/recipe/${recipe.recipe_id}/edit/" class="recipe-image-action-btn recipe-edit-btn" title="Edit Recipe">
                         <i class="fas fa-pencil-alt"></i>
@@ -2590,6 +2832,7 @@ function createGridRecipeCard(recipe) {
             </div>
             <div class="recipe-card-body">
                 <h5 class="recipe-card-title">${recipe.recipe_name}</h5>
+                ${nutritionBadgeHtml ? `<div>${nutritionBadgeHtml}</div>` : ''}
                 <div class="recipe-card-meta">${prepTime}${cookTime}${servings}</div>
                 <div class="recipe-card-tags">${courseBadges}${categoryBadges}${proteinBadges}${difficultyBadge}${authorBadge}</div>
                 <div class="recipe-card-actions-mobile">
@@ -2616,6 +2859,9 @@ function createListRecipeItem(recipe) {
     }
     if (recipe.author) tagsHtml += `<span class="recipe-list-tag author">${recipe.author}</span>`;
     tagsHtml += '</div>';
+
+    // Step 3 — nutrition badge for list view
+    const nutritionBadgeHtml = buildNutritionBadgeHtmlList(recipe.nutrition_values);
 
     let timeHtml = '';
     if (recipe.prep_time || recipe.cook_time) {
@@ -2649,6 +2895,7 @@ function createListRecipeItem(recipe) {
                 <div class="recipe-list-name">
                     <h5 class="recipe-list-title">${recipe.recipe_name}</h5>
                     ${tagsHtml}
+                    ${nutritionBadgeHtml}
                 </div>
                 <div class="recipe-list-meta-group">${timeHtml}${difficultyHtml}</div>
             </div>
@@ -2779,7 +3026,9 @@ function checkForRecipeActiveFilters() {
     const categoryChecked = document.querySelectorAll('input[name="category"]:checked').length > 0;
     const proteinChecked = document.querySelectorAll('input[name="protein"]:checked').length > 0;
     const authorChecked = document.querySelectorAll('input[name="author"]:checked').length > 0;
-    return (searchInput && searchInput.value) || courseChecked || categoryChecked || proteinChecked || authorChecked;
+    // Step 3 — count nutrition sort as an active filter
+    const nutritionSortActive = !!NUTRITION_SORT;
+    return (searchInput && searchInput.value) || courseChecked || categoryChecked || proteinChecked || authorChecked || nutritionSortActive;
 }
 
 function expandRecipeFilterPanel() {
@@ -2819,6 +3068,11 @@ function clearAllRecipeFilters(event) {
     updateFilterDisplay('category');
     updateFilterDisplay('protein');
     updateFilterDisplay('author');
+    // Step 3 — also clear nutrition sort
+    const nutSelect = document.getElementById('nutritionSortSelect');
+    if (nutSelect) nutSelect.value = '';
+    const nutOrderInput = document.getElementById('nutritionOrderInput');
+    if (nutOrderInput) nutOrderInput.value = 'desc';
     window.location.href = '{% url "recipe_management" %}';
 }
 
@@ -2885,6 +3139,16 @@ function updateRecipeActiveFilters() {
             const label = cb.nextElementSibling.textContent;
             filterTagsDiv.innerHTML += `<span class="recipe-filter-tag">Author: ${label} <button class="recipe-remove-tag" onclick="clearSingleFilter('author', '${cb.value}')" type="button">×</button></span>`;
         });
+        hasFilters = true;
+    }
+
+    // Step 3 — nutrition sort chip
+    if (NUTRITION_SORT) {
+        const labelMap = { calories: 'Calories', protein: 'Protein', carbs: 'Carbs', fat: 'Fat' };
+        const orderInput = document.getElementById('nutritionOrderInput');
+        const orderLabel = (orderInput && orderInput.value === 'asc') ? '↑' : '↓';
+        const nutLabel = labelMap[NUTRITION_SORT] || NUTRITION_SORT;
+        filterTagsDiv.innerHTML += `<span class="recipe-filter-tag">Nutrition: ${nutLabel} ${orderLabel} <button class="recipe-remove-tag" onclick="clearNutritionSort()" type="button">×</button></span>`;
         hasFilters = true;
     }
 

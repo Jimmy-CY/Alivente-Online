@@ -11248,7 +11248,7 @@ def recipe_book_detail(request, recipe_id):
 @login_required
 @permission_required('auth.can_access_personal', raise_exception=True)
 def recipe_management(request):
-    """Recipe management page with multi-select filtering, A-Z filter, and pagination"""
+    """Recipe management page with multi-select filtering, A-Z filter, pagination, and nutrition sort."""
     # Handle delete action
     if request.method == 'POST' and request.POST.get('action') == 'delete':
         if not request.user.has_perm('auth.can_edit_personal'):
@@ -11272,17 +11272,31 @@ def recipe_management(request):
     search_query = request.GET.get('search', '')
     search_type = request.GET.get('search_type', 'name')
     show_favourites = request.GET.get('favourites') == '1'
-
+ 
     # Get current user's favourites as a set of recipe IDs for fast lookup
     user_favourites = set(
         RecipeFavourite.objects.filter(user=request.user).values_list('recipe_id', flat=True)
     )
-
+ 
     selected_courses = request.GET.getlist('course')
     selected_categories = request.GET.getlist('category')
     selected_proteins = request.GET.getlist('protein')
     selected_authors = request.GET.getlist('author')
     selected_letter = request.GET.get('letter', '')
+ 
+    # === Nutrition sort params (Step 3) ===
+    NUTRITION_SORT_FIELDS = {
+        'calories': 'nutrition_cache__calories_per_100g',
+        'protein':  'nutrition_cache__protein_per_100g',
+        'carbs':    'nutrition_cache__carbs_per_100g',
+        'fat':      'nutrition_cache__fat_per_100g',
+    }
+    nutrition_sort = request.GET.get('nutrition_sort', '')
+    nutrition_order = request.GET.get('nutrition_order', 'desc')
+    if nutrition_order not in ('asc', 'desc'):
+        nutrition_order = 'desc'
+    if nutrition_sort not in NUTRITION_SORT_FIELDS:
+        nutrition_sort = ''  # ignore unknown values silently
     
     # Apply filters
     if search_query:
@@ -11314,11 +11328,39 @@ def recipe_management(request):
     
     if selected_authors:
         recipes = recipes.filter(author__in=selected_authors)
-
+ 
     if show_favourites:
         recipes = recipes.filter(favourited_by__user=request.user)
     
-    recipes = recipes.distinct().order_by('recipe_name')
+    recipes = recipes.distinct()
+ 
+    # === Nutrition sort branch (Step 3) ===
+    # If a nutrient was picked, switch the queryset over to:
+    #   - join the nutrition_cache table via select_related
+    #   - filter to recipes whose cache is_complete=True (so the ranking is trustworthy)
+    #   - order by the chosen per-100g column
+    # Also count how many recipes were hidden (the "X hidden — finish mapping" nudge).
+    hidden_by_nutrition_sort = 0
+    if nutrition_sort:
+        sort_field = NUTRITION_SORT_FIELDS[nutrition_sort]
+        order_prefix = '' if nutrition_order == 'asc' else '-'
+ 
+        # Count BEFORE narrowing — that's the total of recipes matching all
+        # other filters. The hidden count is total minus complete count.
+        total_for_filter = recipes.count()
+ 
+        recipes = (
+            recipes
+            .select_related('nutrition_cache')
+            .filter(nutrition_cache__is_complete=True)
+            .order_by(f'{order_prefix}{sort_field}', 'recipe_name')
+        )
+ 
+        complete_for_filter = recipes.count()
+        hidden_by_nutrition_sort = max(0, total_for_filter - complete_for_filter)
+    else:
+        # Default ordering when no nutrition sort is active
+        recipes = recipes.order_by('recipe_name')
     
     # Calculate available letters BEFORE applying letter filter
     all_letters = list(string.ascii_uppercase)
@@ -11353,6 +11395,18 @@ def recipe_management(request):
     if is_ajax:
         recipes_data = []
         for recipe in page_obj:
+            # Nutrition values for the inline badge (only when sort is active)
+            nutrition_values = None
+            if nutrition_sort:
+                cache = getattr(recipe, 'nutrition_cache', None)
+                if cache:
+                    nutrition_values = {
+                        'calories': float(cache.calories_per_100g) if cache.calories_per_100g is not None else None,
+                        'protein':  float(cache.protein_per_100g)  if cache.protein_per_100g  is not None else None,
+                        'carbs':    float(cache.carbs_per_100g)    if cache.carbs_per_100g    is not None else None,
+                        'fat':      float(cache.fat_per_100g)      if cache.fat_per_100g      is not None else None,
+                    }
+ 
             recipes_data.append({
                 'recipe_id': recipe.recipe_id,
                 'recipe_name': recipe.recipe_name,
@@ -11367,6 +11421,7 @@ def recipe_management(request):
                 'categories': [{'name': c.name} for c in recipe.categories.all()],
                 'proteins': [{'name': p.name} for p in recipe.proteins.all()],
                 'is_favourite': recipe.recipe_id in user_favourites,
+                'nutrition_values': nutrition_values,
             })
         
         return JsonResponse({
@@ -11392,6 +11447,16 @@ def recipe_management(request):
     import json as json_module
     all_recipes_for_book = []
     for r in recipes:
+        nutrition_values = None
+        if nutrition_sort:
+            cache = getattr(r, 'nutrition_cache', None)
+            if cache:
+                nutrition_values = {
+                    'calories': float(cache.calories_per_100g) if cache.calories_per_100g is not None else None,
+                    'protein':  float(cache.protein_per_100g)  if cache.protein_per_100g  is not None else None,
+                    'carbs':    float(cache.carbs_per_100g)    if cache.carbs_per_100g    is not None else None,
+                    'fat':      float(cache.fat_per_100g)      if cache.fat_per_100g      is not None else None,
+                }
         all_recipes_for_book.append({
             'recipe_id': r.recipe_id,
             'recipe_name': r.recipe_name,
@@ -11405,8 +11470,9 @@ def recipe_management(request):
             'courses': [c.name for c in r.courses.all()],
             'categories': [c.name for c in r.categories.all()],
             'proteins': [p.name for p in r.proteins.all()],
+            'nutrition_values': nutrition_values,
         })
-
+ 
     context = {
         'recipes': page_obj,
         'total_recipe_count': paginator.count,
@@ -11428,6 +11494,10 @@ def recipe_management(request):
         'next_page': page_obj.next_page_number() if page_obj.has_next() else None,
         'ingredient_categories': IngredientCategory.objects.prefetch_related('ingredient_set').all().order_by('name'),
         'all_recipes_for_book': json_module.dumps(all_recipes_for_book),
+        # Step 3 — nutrition sort
+        'nutrition_sort': nutrition_sort,
+        'nutrition_order': nutrition_order,
+        'hidden_by_nutrition_sort': hidden_by_nutrition_sort,
     }
     
     return render(request, 'recipe_management.html', context)
