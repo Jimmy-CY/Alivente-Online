@@ -74,6 +74,11 @@
     color: #2c1810;
 }
 
+/* Action button labels: full version on desktop, short version on mobile.
+   Both variants are in the markup; CSS picks one based on viewport. */
+.action-bar .action-primary .action-label-short { display: none; }
+.action-bar .action-primary .action-label-full { display: inline; }
+
 .filter-bar {
     background: white;
     padding: 20px;
@@ -424,25 +429,37 @@
 
     .action-bar {
         flex-direction: row;
-        flex-wrap: nowrap;
+        flex-wrap: wrap;
         align-items: stretch;
         gap: 8px;
         margin-bottom: 16px;
     }
     .action-bar .action-primary {
-        flex: 1 1 auto;
+        flex: 1 1 calc(50% - 4px);
         min-width: 0;
+        max-width: calc(100% - 58px);
         height: 38px;
         display: flex;
         align-items: center;
         justify-content: center;
-        padding: 0 12px;
+        padding: 0 10px;
         font-size: 13px;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
         margin: 0;
         gap: 6px;
+    }
+    /* Mobile: show the short label, hide the full one */
+    .action-bar .action-primary .action-label-full { display: none; }
+    .action-bar .action-primary .action-label-short { display: inline; }
+    /* Tighten the count badge so it doesn't push the label out */
+    .action-bar .btn .action-count-badge {
+        min-width: 20px;
+        height: 20px;
+        padding: 0 6px;
+        font-size: 11px;
+        margin-left: 6px;
     }
     .action-bar .action-back {
         flex: 0 0 auto;
@@ -936,13 +953,17 @@
         {% if unmapped_count > 0 %}
             <a href="{% url 'map_ingredients_wizard' %}" class="btn btn-info action-primary"
                title="{{ unmapped_count }} ingredient{{ unmapped_count|pluralize }} not yet mapped to nutrition data.">
-                <i class="fas fa-leaf"></i> Map Nutrition Data
+                <i class="fas fa-leaf"></i>
+                <span class="action-label-full">Map Nutrition Data</span>
+                <span class="action-label-short">Map Nutrition</span>
                 <span class="action-count-badge badge-unmapped">{{ unmapped_count }}</span>
             </a>
         {% else %}
             <span class="btn btn-info action-primary action-disabled"
                   title="All ingredients are mapped to nutrition data — nothing outstanding.">
-                <i class="fas fa-leaf"></i> Map Nutrition Data
+                <i class="fas fa-leaf"></i>
+                <span class="action-label-full">Map Nutrition Data</span>
+                <span class="action-label-short">Map Nutrition</span>
                 <span class="action-count-badge"><i class="fas fa-check"></i></span>
             </span>
         {% endif %}
@@ -950,13 +971,17 @@
         {% if unconvertible_count > 0 %}
             <a href="{% url 'unit_conversions_wizard' %}" class="btn btn-info action-primary"
                title="{{ unconvertible_count }} mapped ingredient{{ unconvertible_count|pluralize }} cannot fully convert to grams.">
-                <i class="fas fa-exchange-alt"></i> Manage Unit Conversions
+                <i class="fas fa-exchange-alt"></i>
+                <span class="action-label-full">Manage Unit Conversions</span>
+                <span class="action-label-short">Conversions</span>
                 <span class="action-count-badge badge-unconvertible">{{ unconvertible_count }}</span>
             </a>
         {% else %}
             <span class="btn btn-info action-primary action-disabled"
                   title="Every mapped ingredient has a path to grams — nothing outstanding.">
-                <i class="fas fa-exchange-alt"></i> Manage Unit Conversions
+                <i class="fas fa-exchange-alt"></i>
+                <span class="action-label-full">Manage Unit Conversions</span>
+                <span class="action-label-short">Conversions</span>
                 <span class="action-count-badge"><i class="fas fa-check"></i></span>
             </span>
         {% endif %}
