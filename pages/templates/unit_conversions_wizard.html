@@ -1,0 +1,920 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Set Unit Conversions{% endblock %}
+{% block content %}
+
+<style>
+.conversions-wizard {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+/* === Action bar (Back on right) === */
+.action-bar {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    margin-bottom: 18px;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+/* === Page header === */
+.page-header {
+    background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%);
+    color: white;
+    padding: 28px 32px;
+    border-radius: 12px;
+    margin-bottom: 22px;
+}
+.page-header h1 {
+    font-size: 28px;
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+.page-header p {
+    margin: 0;
+    font-size: 15px;
+    opacity: 0.95;
+}
+.page-header .recipe-scope-pill {
+    margin-top: 14px;
+    padding: 8px 14px;
+    background: rgba(255,255,255,0.2);
+    border: 1px solid rgba(255,255,255,0.35);
+    border-radius: 6px;
+    display: inline-block;
+    font-size: 14px;
+}
+.page-header .recipe-scope-pill i {
+    margin-right: 6px;
+    opacity: 0.9;
+}
+
+/* === Progress bar === */
+.progress-bar-wrap {
+    background: white;
+    padding: 16px 20px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    margin-bottom: 18px;
+}
+.progress-bar-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-size: 14px;
+    color: #2c3e50;
+    margin-bottom: 10px;
+    font-weight: 500;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+.progress-bar-label .progress-main {
+    font-size: 15px;
+}
+.progress-bar-label .progress-main strong {
+    color: #fd7e14;
+    font-size: 18px;
+    font-weight: 700;
+}
+.progress-bar-label .progress-remaining {
+    color: #6c757d;
+    font-size: 13px;
+}
+.progress-bar-label .progress-percent {
+    color: #fd7e14;
+    font-weight: 700;
+    font-size: 16px;
+}
+.progress-bar-track {
+    height: 10px;
+    background: #e9ecef;
+    border-radius: 5px;
+    overflow: hidden;
+}
+.progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #ffc107 0%, #fd7e14 100%);
+    border-radius: 5px;
+    transition: width 0.4s ease;
+    width: 0%;
+}
+
+/* === Undo toast === */
+.undo-toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #2c3e50;
+    color: white;
+    padding: 12px 18px;
+    border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.25);
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    z-index: 9999;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s ease, transform 0.25s ease;
+    font-size: 14px;
+    max-width: 90%;
+}
+.undo-toast.visible {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(-50%) translateY(0);
+}
+.undo-toast .toast-icon {
+    color: #28d168;
+    font-size: 18px;
+}
+.undo-toast .toast-text strong {
+    color: white;
+}
+
+/* === Main wizard card === */
+.wizard-card {
+    background: white;
+    border-radius: 12px;
+    padding: 26px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    margin-bottom: 18px;
+}
+
+.wizard-current {
+    border-bottom: 1px solid #e9ecef;
+    padding-bottom: 16px;
+    margin-bottom: 20px;
+}
+.wizard-current-name {
+    font-size: 22px;
+    font-weight: 700;
+    color: #2c3e50;
+    margin: 0 0 6px 0;
+}
+.wizard-current-meta {
+    font-size: 13px;
+    color: #6c757d;
+}
+.wizard-current-meta .badge {
+    background: #17a2b8;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    margin-left: 6px;
+}
+.wizard-current-meta .fdc-link {
+    color: #fd7e14;
+    margin-left: 6px;
+}
+
+/* === Conversion intro === */
+.conversion-intro {
+    background: #fff8e6;
+    border-left: 4px solid #ffc107;
+    color: #856404;
+    padding: 12px 16px;
+    border-radius: 4px;
+    font-size: 14px;
+    margin-bottom: 20px;
+    line-height: 1.5;
+}
+.conversion-intro i {
+    margin-right: 6px;
+}
+
+/* === Conversion rows === */
+.conv-row {
+    background: #fff8e6;
+    border: 1px solid #ffc107;
+    border-radius: 8px;
+    padding: 16px 18px;
+    margin-bottom: 14px;
+}
+.conv-row-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 6px;
+}
+.conv-row-unit {
+    background: #fd7e14;
+    color: white;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+}
+.conv-row-type {
+    color: #856404;
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: capitalize;
+}
+.conv-row-explainer {
+    font-size: 14px;
+    color: #5d4037;
+    margin-bottom: 12px;
+    line-height: 1.5;
+}
+.conv-input-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+}
+.conv-input-group input[type="number"] {
+    width: 110px;
+    padding: 8px 12px;
+    border: 2px solid #ffc107;
+    border-radius: 6px;
+    font-size: 15px;
+}
+.conv-input-group input[type="number"]:focus {
+    border-color: #fd7e14;
+    outline: none;
+}
+.conv-input-group input[type="number"].invalid {
+    border-color: #dc3545;
+    background: #fff5f5;
+}
+.conv-input-group input[type="number"].valid {
+    border-color: #28a745;
+}
+.conv-input-group .conv-suffix {
+    color: #495057;
+    font-weight: 500;
+    font-size: 14px;
+}
+.conv-presets {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+.conv-preset-btn {
+    padding: 5px 12px;
+    background: white;
+    border: 1px solid #ffc107;
+    border-radius: 4px;
+    color: #856404;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 500;
+    transition: all 0.15s ease;
+}
+@media (hover: hover) and (pointer: fine) {
+    .conv-preset-btn:hover {
+        background: #ffc107;
+        color: white;
+    }
+}
+
+/* "Apply to" radio group */
+.conv-apply-to {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px dashed #ffc107;
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    font-size: 13px;
+    color: #5d4037;
+}
+.conv-apply-to label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    margin: 0;
+}
+.conv-apply-to input[type="radio"] {
+    margin: 0;
+    cursor: pointer;
+}
+
+/* === No-units warning === */
+.no-units-notice {
+    background: #f8d7da;
+    border-left: 4px solid #dc3545;
+    color: #721c24;
+    padding: 14px 18px;
+    border-radius: 6px;
+    font-size: 14px;
+    line-height: 1.5;
+    margin-bottom: 12px;
+}
+.no-units-notice strong {
+    color: #721c24;
+}
+
+/* === Action buttons === */
+.wizard-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-top: 20px;
+}
+.wizard-actions-left,
+.wizard-actions-right {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+.btn-skip {
+    background: white;
+    color: #6c757d;
+    border: 2px solid #dee2e6;
+    padding: 10px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.15s ease;
+}
+.btn-skip:hover {
+    background: #f8f9fa;
+}
+.btn-prev {
+    background: white;
+    color: #6c757d;
+    border: 2px solid #dee2e6;
+    padding: 10px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.15s ease;
+}
+.btn-prev:hover {
+    background: #f8f9fa;
+}
+.btn-prev:disabled,
+.btn-skip:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+.btn-save {
+    background: #fd7e14;
+    color: white;
+    border: 2px solid #fd7e14;
+    padding: 10px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s ease;
+}
+.btn-save:hover { background: #e8590c; border-color: #d04e0a; }
+.btn-save:disabled {
+    background: #6c757d;
+    border-color: #6c757d;
+    cursor: not-allowed;
+}
+
+/* === Done state === */
+.wizard-done {
+    background: white;
+    padding: 50px 30px;
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+.wizard-done .icon {
+    font-size: 64px;
+    color: #28a745;
+    margin-bottom: 16px;
+}
+.wizard-done h2 {
+    color: #2c3e50;
+    margin-bottom: 10px;
+}
+.wizard-done p {
+    color: #6c757d;
+    margin-bottom: 24px;
+}
+
+/* === Mobile === */
+@media (max-width: 768px) {
+    .conversions-wizard {
+        padding: 0 8px;
+    }
+    .page-header {
+        padding: 20px 18px;
+    }
+    .page-header h1 {
+        font-size: 20px;
+    }
+    .page-header p {
+        font-size: 13px;
+    }
+    .progress-bar-wrap {
+        padding: 14px 16px;
+    }
+    .progress-bar-label {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+    }
+    .undo-toast {
+        flex-wrap: wrap;
+        justify-content: center;
+        text-align: center;
+        bottom: 16px;
+    }
+    .wizard-card {
+        padding: 18px 16px;
+    }
+    .wizard-current-name {
+        font-size: 18px;
+    }
+    .conv-row {
+        padding: 14px;
+    }
+    .conv-input-group {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .conv-input-group input[type="number"] {
+        width: 100%;
+        font-size: 16px; /* iOS zoom guard */
+    }
+    .conv-input-group .conv-suffix {
+        text-align: left;
+    }
+    .wizard-actions {
+        flex-direction: column;
+        gap: 8px;
+    }
+    .wizard-actions-left,
+    .wizard-actions-right {
+        width: 100%;
+    }
+    .btn-skip,
+    .btn-prev,
+    .btn-save {
+        width: 100%;
+        padding: 12px;
+    }
+}
+</style>
+
+<div class="conversions-wizard">
+
+    <!-- Action Bar -->
+    <div class="action-bar">
+        {% if return_to == 'recipe' and scoped_recipe %}
+            <a href="{% url 'view_recipe' scoped_recipe.recipe_id %}?reopen_nutrition=1" class="btn btn-secondary action-back">
+                <i class="fas fa-arrow-left"></i> Back to Recipe
+            </a>
+        {% else %}
+            <a href="{% url 'ingredient_base_units_management' %}" class="btn btn-secondary action-back">
+                <i class="fas fa-arrow-left"></i> Back
+            </a>
+        {% endif %}
+    </div>
+
+    <!-- Page Header -->
+    <div class="page-header">
+        <h1><i class="fas fa-balance-scale"></i> Set Unit Conversions</h1>
+        <p>For each mapped ingredient, tell us how its measurement units convert to grams. This lets the calculator work out nutrition values for your recipes.</p>
+        {% if scoped_recipe %}
+        <div class="recipe-scope-pill">
+            <i class="fas fa-utensils"></i>
+            Setting conversions for: <strong>{{ scoped_recipe.recipe_name }}</strong>
+        </div>
+        {% endif %}
+    </div>
+
+    {% if total_count == 0 %}
+
+    <!-- Empty state — nothing to convert -->
+    <div class="wizard-done">
+        <div class="icon"><i class="fas fa-check-circle"></i></div>
+        <h2>All conversions in place 🎉</h2>
+        <p>
+            {% if scoped_recipe %}
+                Every mapped ingredient in <strong>{{ scoped_recipe.recipe_name }}</strong> can be converted to grams.
+            {% else %}
+                Every mapped ingredient in your database can be converted to grams.
+            {% endif %}
+        </p>
+        {% if return_to == 'recipe' and scoped_recipe %}
+            <a href="{% url 'view_recipe' scoped_recipe.recipe_id %}?reopen_nutrition=1" class="btn btn-info">
+                <i class="fas fa-arrow-left"></i> Back to Recipe
+            </a>
+        {% else %}
+            <a href="{% url 'ingredient_base_units_management' %}" class="btn btn-info">
+                <i class="fas fa-arrow-left"></i> Back to Ingredients
+            </a>
+        {% endif %}
+    </div>
+
+    {% else %}
+
+    <!-- Progress Bar -->
+    <div class="progress-bar-wrap">
+        <div class="progress-bar-label">
+            <span class="progress-main">
+                Progress: <strong id="progressDone">{{ total_converted }}</strong> of <strong id="progressTotalSet">{{ total_in_set }}</strong> done
+                <span class="progress-remaining">— <span id="progressRemaining">{{ total_count }}</span> to go</span>
+            </span>
+            <span class="progress-percent" id="progressPercent">0%</span>
+        </div>
+        <div class="progress-bar-track">
+            <div class="progress-bar-fill" id="progressFill"></div>
+        </div>
+    </div>
+
+    <!-- Wizard Card -->
+    <div class="wizard-card" id="wizardCard">
+
+        <!-- Current ingredient header -->
+        <div class="wizard-current">
+            <h2 class="wizard-current-name" id="currentIngredientName">—</h2>
+            <div class="wizard-current-meta">
+                <span id="currentIngredientCategory">No category</span>
+                <span class="fdc-link" id="currentFdcLink"></span>
+            </div>
+        </div>
+
+        <!-- Intro / explanation -->
+        <div class="conversion-intro">
+            <i class="fas fa-info-circle"></i>
+            <span id="conversionIntroText">
+                Enter the weight in grams for each measurement unit below. Use the presets if you're not sure.
+            </span>
+        </div>
+
+        <!-- No-units notice (shown for ingredients with no recipes/default unit) -->
+        <div class="no-units-notice" id="noUnitsNotice" style="display:none;">
+            <strong>This ingredient has no default unit and isn't used in any recipe yet.</strong>
+            <br>
+            Set its shopping unit on the Ingredient Shopping Units page first, or skip for now.
+        </div>
+
+        <!-- Per-unit conversion rows (populated by JS) -->
+        <div id="conversionRows"></div>
+
+        <!-- Action buttons -->
+        <div class="wizard-actions">
+            <div class="wizard-actions-left">
+                <button type="button" class="btn-prev" id="prevBtn">
+                    <i class="fas fa-chevron-left"></i> Previous
+                </button>
+            </div>
+            <div class="wizard-actions-right">
+                <button type="button" class="btn-skip" id="skipBtn" title="Move on without saving — this ingredient stays in the queue">
+                    Skip for now
+                </button>
+                <button type="button" class="btn-save" id="saveBtn" disabled>
+                    Save & Next <i class="fas fa-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Undo toast — appears for ~5s after each successful save -->
+    <div class="undo-toast" id="undoToast">
+        <i class="fas fa-check-circle toast-icon"></i>
+        <div class="toast-text">
+            Saved <strong id="undoToastIngredient">—</strong>
+        </div>
+    </div>
+
+    {% endif %}
+
+</div>
+
+<script>
+(function() {
+    'use strict';
+
+    // ===== Embedded queue data =====
+    const QUEUE = {{ queue_json|safe }};
+    const TOTAL_IN_SET = {{ total_in_set }};
+    const INITIAL_CONVERTED = {{ total_converted }};
+    const SAVE_URL = "{% url 'save_unit_conversion' %}";
+    const CSRF_TOKEN = '{{ csrf_token }}';
+    const GRAM_UNIT_ID = {{ gram_unit_id|default:'null' }};
+
+    // Density presets for volume → grams
+    const DENSITY_PRESETS = [
+        { label: 'Water (1.0)',  value: 1.0  },
+        { label: 'Oil (0.92)',   value: 0.92 },
+        { label: 'Milk (1.03)',  value: 1.03 },
+        { label: 'Honey (1.42)', value: 1.42 },
+        { label: 'Flour (0.53)', value: 0.53 },
+        { label: 'Sugar (0.85)', value: 0.85 },
+    ];
+
+    // Common per-piece weight presets for count units
+    const PIECE_PRESETS = [
+        { label: 'Small egg (44g)',   value: 44  },
+        { label: 'Large egg (50g)',   value: 50  },
+        { label: 'Lemon (60g)',       value: 60  },
+        { label: 'Onion (110g)',      value: 110 },
+        { label: 'Carrot (75g)',      value: 75  },
+        { label: 'Garlic clove (5g)', value: 5   },
+    ];
+
+    // ===== State =====
+    let cursor = 0;             // index into QUEUE
+    let savedCount = 0;         // how many we've successfully saved this session
+    let workingQueue = QUEUE.slice();  // mutable copy — items get removed once saved
+
+    // ===== DOM helpers =====
+    function $(id) { return document.getElementById(id); }
+    function escapeHtml(s) {
+        if (s === null || s === undefined) return '';
+        const div = document.createElement('div');
+        div.textContent = String(s);
+        return div.innerHTML;
+    }
+
+    // ===== Render the current ingredient card =====
+    function renderCurrent() {
+        if (workingQueue.length === 0) {
+            renderDoneState();
+            return;
+        }
+        if (cursor < 0) cursor = 0;
+        if (cursor >= workingQueue.length) cursor = workingQueue.length - 1;
+
+        const ing = workingQueue[cursor];
+
+        $('currentIngredientName').textContent = ing.name;
+        $('currentIngredientCategory').textContent = ing.category || 'No category';
+        $('currentFdcLink').innerHTML = ing.fdc_description
+            ? `· <i class="fas fa-link"></i> ${escapeHtml(ing.fdc_description)}`
+            : '';
+
+        if (ing.has_no_units) {
+            $('noUnitsNotice').style.display = 'block';
+            $('conversionRows').innerHTML = '';
+            $('saveBtn').disabled = true;
+        } else {
+            $('noUnitsNotice').style.display = 'none';
+            $('saveBtn').disabled = false;
+            renderConversionRows(ing);
+        }
+
+        $('prevBtn').disabled = (cursor === 0);
+        updateProgress();
+    }
+
+    function renderConversionRows(ing) {
+        const container = $('conversionRows');
+        container.innerHTML = '';
+
+        ing.missing_units.forEach((u, idx) => {
+            let explainer, presets;
+            const ingName = ing.name;
+            const unitName = u.from_unit_name;
+
+            if (u.from_unit_type === 'count') {
+                explainer = `How much does <strong>1 ${escapeHtml(unitName)}</strong> of ${escapeHtml(ingName)} weigh in <strong>grams</strong>?`;
+                presets = PIECE_PRESETS;
+            } else if (u.from_unit_type === 'volume') {
+                explainer = `How many <strong>grams</strong> in <strong>1 ${escapeHtml(unitName)}</strong> of ${escapeHtml(ingName)}? (e.g., 1 ml of olive oil ≈ 0.92 g)`;
+                presets = DENSITY_PRESETS;
+            } else {
+                explainer = `How many <strong>grams</strong> equal <strong>1 ${escapeHtml(unitName)}</strong> of ${escapeHtml(ingName)}?`;
+                presets = [];
+            }
+
+            const presetButtons = presets.map(p =>
+                `<button type="button" class="conv-preset-btn" data-row="${idx}" data-value="${p.value}">${escapeHtml(p.label)}</button>`
+            ).join('');
+
+            const row = document.createElement('div');
+            row.className = 'conv-row';
+            row.dataset.fromUnitId = u.from_unit_id;
+            row.dataset.rowIdx = idx;
+            row.innerHTML = `
+                <div class="conv-row-header">
+                    <span class="conv-row-unit">${escapeHtml(u.from_unit_name)}</span>
+                    <span class="conv-row-type">${escapeHtml(u.from_unit_type)} unit</span>
+                </div>
+                <div class="conv-row-explainer">${explainer}</div>
+                <div class="conv-input-group">
+                    <input type="number" step="0.001" min="0.001"
+                           id="convInput_${idx}"
+                           data-from-unit-id="${u.from_unit_id}"
+                           placeholder="e.g., 75">
+                    <span class="conv-suffix">grams per ${escapeHtml(u.from_unit_name)}</span>
+                </div>
+                ${presets.length ? `<div class="conv-presets">${presetButtons}</div>` : ''}
+                <div class="conv-apply-to">
+                    <span style="font-weight:600;">Apply to:</span>
+                    <label>
+                        <input type="radio" name="applyTo_${idx}" value="specific" checked>
+                        Just <strong>${escapeHtml(ingName)}</strong>
+                    </label>
+                    <label>
+                        <input type="radio" name="applyTo_${idx}" value="generic">
+                        All ingredients
+                    </label>
+                </div>
+            `;
+            container.appendChild(row);
+        });
+
+        // Wire up preset clicks
+        container.querySelectorAll('.conv-preset-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const idx = btn.dataset.row;
+                const val = btn.dataset.value;
+                const input = $(`convInput_${idx}`);
+                if (input) {
+                    input.value = val;
+                    input.classList.remove('invalid');
+                    input.classList.add('valid');
+                }
+            });
+        });
+
+        // Clear validation styling when the user types
+        container.querySelectorAll('input[type="number"]').forEach(input => {
+            input.addEventListener('input', () => {
+                input.classList.remove('invalid');
+                if (input.value && parseFloat(input.value) > 0) {
+                    input.classList.add('valid');
+                } else {
+                    input.classList.remove('valid');
+                }
+            });
+        });
+    }
+
+    function renderDoneState() {
+        const wizardCard = $('wizardCard');
+        if (!wizardCard) return;
+
+        const totalDone = INITIAL_CONVERTED + savedCount;
+        wizardCard.outerHTML = `
+            <div class="wizard-done">
+                <div class="icon"><i class="fas fa-check-circle"></i></div>
+                <h2>All set 🎉</h2>
+                <p>
+                    You finished the queue.
+                    ${savedCount > 0 ? `Saved <strong>${savedCount}</strong> ingredient${savedCount === 1 ? '' : 's'} this session.` : ''}
+                </p>
+                <a href="{% url 'ingredient_base_units_management' %}" class="btn btn-info">
+                    <i class="fas fa-arrow-left"></i> Back to Ingredients
+                </a>
+            </div>
+        `;
+        // Update progress to 100% if we drained the queue
+        $('progressFill').style.width = '100%';
+        $('progressPercent').textContent = '100%';
+        $('progressRemaining').textContent = '0';
+    }
+
+    function updateProgress() {
+        const totalDone = INITIAL_CONVERTED + savedCount;
+        const remaining = workingQueue.length;
+        $('progressDone').textContent = totalDone;
+        $('progressRemaining').textContent = remaining;
+        const pct = TOTAL_IN_SET > 0
+            ? Math.round((totalDone / TOTAL_IN_SET) * 100)
+            : 100;
+        $('progressFill').style.width = pct + '%';
+        $('progressPercent').textContent = pct + '%';
+    }
+
+    // ===== Save the current card =====
+    async function saveCurrent() {
+        const ing = workingQueue[cursor];
+        if (!ing) return;
+        if (ing.has_no_units) {
+            // Nothing actionable — treat as skip
+            advance();
+            return;
+        }
+
+        // Collect inputs
+        const rows = [];
+        let invalidCount = 0;
+        ing.missing_units.forEach((u, idx) => {
+            const input = $(`convInput_${idx}`);
+            const val = parseFloat(input.value);
+            if (isNaN(val) || val <= 0) {
+                input.classList.add('invalid');
+                input.classList.remove('valid');
+                invalidCount++;
+            } else {
+                const applyTo = document.querySelector(`input[name="applyTo_${idx}"]:checked`).value;
+                rows.push({
+                    from_unit_id: u.from_unit_id,
+                    to_unit_id: GRAM_UNIT_ID,
+                    multiplier: val,
+                    apply_to: applyTo,
+                    ingredient_name: ing.name,
+                });
+            }
+        });
+
+        if (invalidCount > 0) {
+            alert(`Please enter a valid weight for all ${ing.missing_units.length} unit${ing.missing_units.length === 1 ? '' : 's'}.`);
+            return;
+        }
+
+        // Save each row sequentially
+        const saveBtn = $('saveBtn');
+        saveBtn.disabled = true;
+        const originalText = saveBtn.innerHTML;
+        saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving…';
+
+        let allSucceeded = true;
+        for (const r of rows) {
+            try {
+                const payload = {
+                    from_unit_id: r.from_unit_id,
+                    to_unit_id: r.to_unit_id,
+                    multiplier: r.multiplier,
+                };
+                if (r.apply_to === 'specific') {
+                    payload.ingredient_name = r.ingredient_name;
+                }
+                const res = await fetch(SAVE_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': CSRF_TOKEN,
+                    },
+                    body: JSON.stringify(payload),
+                });
+                const data = await res.json();
+                if (!data.success) {
+                    allSucceeded = false;
+                    console.error('Save failed:', data.error || 'Unknown error');
+                }
+            } catch (err) {
+                allSucceeded = false;
+                console.error('Network error during save:', err);
+            }
+        }
+
+        saveBtn.innerHTML = originalText;
+
+        if (!allSucceeded) {
+            saveBtn.disabled = false;
+            alert('One or more conversions failed to save. Please try again.');
+            return;
+        }
+
+        // Success — show toast, remove from queue, advance
+        showSavedToast(ing.name);
+        savedCount++;
+        workingQueue.splice(cursor, 1);
+        if (cursor >= workingQueue.length) {
+            cursor = workingQueue.length - 1;
+        }
+        renderCurrent();
+    }
+
+    function showSavedToast(ingName) {
+        const toast = $('undoToast');
+        if (!toast) return;
+        $('undoToastIngredient').textContent = ingName;
+        toast.classList.add('visible');
+        setTimeout(() => toast.classList.remove('visible'), 3000);
+    }
+
+    function advance() {
+        if (cursor < workingQueue.length - 1) {
+            cursor++;
+        } else {
+            // At end — wrap to 0 if there are still items, otherwise show done
+            cursor = 0;
+        }
+        renderCurrent();
+    }
+
+    function goPrevious() {
+        if (cursor > 0) {
+            cursor--;
+            renderCurrent();
+        }
+    }
+
+    // ===== Wire up buttons =====
+    document.addEventListener('DOMContentLoaded', function() {
+        if (workingQueue.length === 0) return;
+
+        renderCurrent();
+
+        $('saveBtn').addEventListener('click', saveCurrent);
+        $('skipBtn').addEventListener('click', advance);
+        $('prevBtn').addEventListener('click', goPrevious);
+    });
+
+})();
+</script>
+
+{% endblock %}

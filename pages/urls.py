@@ -292,6 +292,7 @@ urlpatterns = [
     path('recipes/nutrition/save-mapping/', views.save_ingredient_mapping, name='save_ingredient_mapping'),
      path('recipe/<int:recipe_id>/nutrition-data/', views.recipe_nutrition_data, name='recipe_nutrition_data'),
      path('recipe/<int:recipe_id>/unconvertible/', views.recipe_unconvertible_ingredients, name='recipe_unconvertible_ingredients'),
+     path('recipes/ingredients/set-conversions/', views.unit_conversions_wizard, name='unit_conversions_wizard'),
     # Categories
     path('categories-management/', views.categories_management, name='categories_management'),
     path('add-category/', views.add_category, name='add_category'),
@@ -303,6 +304,7 @@ urlpatterns = [
     path('update-measurement-unit/', views.update_measurement_unit, name='update_measurement_unit'),
     path('check-unit-usage/', views.check_unit_usage, name='check_unit_usage'),
     path('delete-measurement-unit/', views.delete_measurement_unit, name='delete_measurement_unit'),
+
 
     # Celebration Management
     path('celebrations/', views.celebration_dashboard, name='celebration_dashboard'),
