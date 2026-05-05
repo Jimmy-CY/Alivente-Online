@@ -1397,6 +1397,12 @@ class IngredientCategory(models.Model):
 
 class Ingredient(models.Model):
     """Master list of ingredients"""
+    
+    NUTRITION_SOURCE_CHOICES = [
+        ('usda', 'USDA'),
+        ('manual', 'Manual'),
+    ]
+    
     ingredient_id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=200, unique=True, help_text='e.g., Onion, Chicken Breast')
     category = models.ForeignKey(IngredientCategory, on_delete=models.SET_NULL, null=True, blank=True)
@@ -1465,6 +1471,19 @@ class Ingredient(models.Model):
         help_text='When nutrition data was last fetched from USDA'
     )
     
+    # NEW: where the per-100g values came from. 'usda' = pulled from USDA
+    # FoodData Central via the mapping wizard. 'manual' = entered or
+    # overridden by the user via the manual-entry panel in the mapping
+    # modal. NULL = not set yet (e.g., unmapped ingredients, or rows
+    # created before this field existed and never re-saved).
+    nutrition_source = models.CharField(
+        max_length=10,
+        choices=NUTRITION_SOURCE_CHOICES,
+        null=True,
+        blank=True,
+        help_text='Where the per-100g nutrition values came from. NULL = not set yet.'
+    )
+    
     created_date = models.DateTimeField(auto_now_add=True)
     updated_date = models.DateTimeField(auto_now=True)
     
@@ -1472,15 +1491,18 @@ class Ingredient(models.Model):
         return self.name
     
     def is_nutrition_mapped(self):
-        """True if this ingredient has been mapped to USDA nutrition data."""
-        return self.fdc_id is not None and self.calories_per_100g is not None
+        """
+        True if this ingredient has nutrition data the calculator can use.
+        Covers both USDA-mapped ingredients (fdc_id + calories) and
+        manually-entered ingredients (calories without fdc_id).
+        """
+        return self.calories_per_100g is not None
     
     class Meta:
         db_table = "ingredients"
         verbose_name = "Ingredient"
         verbose_name_plural = "Ingredients"
         ordering = ['name']
-
 
 class RecipeCourse(models.Model):
     """Course types for recipes (Starter, Main, Dessert, etc.)"""
