@@ -11901,6 +11901,11 @@ def create_recipe(request):
                         instruction_group=group
                     )
             
+            # Cache recompute — explicit final call so the cache reflects the
+            # final ingredient set, regardless of signal timing.
+            from .signals import _recalculate_cache_for_recipe
+            _recalculate_cache_for_recipe(recipe)
+
             messages.success(request, f'Recipe "{recipe.recipe_name}" has been created successfully!')
             return redirect('recipe_management')
             
@@ -12214,6 +12219,11 @@ def edit_recipe(request, recipe_id):
                     )
             else:
                 CookingCalculation.objects.filter(recipe=recipe).delete()
+
+            # Cache recompute — explicit because bulk_create above doesn't fire signals,
+            # and the in-flight signal cascade saw transient empty-ingredient state.
+            from .signals import _recalculate_cache_for_recipe
+            _recalculate_cache_for_recipe(recipe)
 
             messages.success(request, f'Recipe "{recipe.recipe_name}" has been updated successfully!')
             return redirect('recipe_management')
