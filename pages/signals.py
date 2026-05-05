@@ -1,3 +1,4 @@
+from django.db import transaction
 from django.db.models.signals import post_save, post_delete, pre_save
 from django.dispatch import receiver
 from django.utils import timezone
@@ -223,16 +224,38 @@ def _recalculate_caches_for_recipes(recipe_qs):
 # ============================================================================
 # RECIPE SIGNALS
 # ============================================================================
+#
+# All cache-recompute signals below defer their work via transaction.on_commit().
+# Why: when Django saves a Recipe via a ModelForm/FormSet, the parent Recipe.save()
+# fires its post_save BEFORE the formset finishes writing child RecipeIngredient
+# changes. If we recompute the cache at that moment, the calculator reads a
+# half-applied state — which on at least two confirmed cases (Lasagne, Pork
+# Belly with Crunchy Crackling) produced 0 cal/100g while the live calc returned
+# the correct value. on_commit() pushes the cache write to AFTER the transaction
+# fully commits, so the calculator reads the final state.
+#
+# Querysets are also materialized to lists of IDs BEFORE being deferred. Querysets
+# are lazy and would re-execute at on_commit time — by then the IDs we want
+# might be different. Materializing now and re-fetching by ID later is safer.
+# ============================================================================
  
 @receiver(post_save, sender=Recipe)
 def recipe_saved__refresh_nutrition_cache(sender, instance, raw, created, **kwargs):
     """
     When a recipe is saved (created or edited), refresh its nutrition cache.
-    Skips fixture loads (raw=True).
+    Skips fixture loads (raw=True). Deferred to on_commit so we read post-
+    transaction state, not mid-save state.
     """
     if raw:
         return
-    _recalculate_cache_for_recipe(instance)
+    recipe_id = instance.pk
+    def _do():
+        try:
+            recipe = Recipe.objects.get(pk=recipe_id)
+        except Recipe.DoesNotExist:
+            return
+        _recalculate_cache_for_recipe(recipe)
+    transaction.on_commit(_do)
  
  
 # Recipe deletion is handled by CASCADE on the OneToOne — no explicit handler needed.
@@ -246,14 +269,20 @@ def recipe_saved__refresh_nutrition_cache(sender, instance, raw, created, **kwar
 def recipe_ingredient_saved__refresh_parent_recipe(sender, instance, raw, **kwargs):
     """
     When a recipe ingredient is added/changed, refresh the parent recipe's cache.
+    Deferred to on_commit so all sibling formset writes have landed first.
     """
     if raw:
         return
-    if instance.recipe_id:
+    if not instance.recipe_id:
+        return
+    recipe_id = instance.recipe_id
+    def _do():
         try:
-            _recalculate_cache_for_recipe(instance.recipe)
+            recipe = Recipe.objects.get(pk=recipe_id)
         except Recipe.DoesNotExist:
-            pass
+            return
+        _recalculate_cache_for_recipe(recipe)
+    transaction.on_commit(_do)
  
  
 @receiver(post_delete, sender=RecipeIngredient)
@@ -261,16 +290,20 @@ def recipe_ingredient_deleted__refresh_parent_recipe(sender, instance, **kwargs)
     """
     When a recipe ingredient is removed, refresh the parent recipe's cache.
     Wrapped in try/except because the parent Recipe may also be in the process
-    of being deleted (cascade delete).
+    of being deleted (cascade delete). Deferred to on_commit so the deletion
+    is fully committed before recalc.
     """
     if not instance.recipe_id:
         return
-    try:
-        recipe = Recipe.objects.get(pk=instance.recipe_id)
-    except Recipe.DoesNotExist:
-        # Parent recipe is being deleted too — cache row will cascade away.
-        return
-    _recalculate_cache_for_recipe(recipe)
+    recipe_id = instance.recipe_id
+    def _do():
+        try:
+            recipe = Recipe.objects.get(pk=recipe_id)
+        except Recipe.DoesNotExist:
+            # Parent recipe is being deleted too — cache row will cascade away.
+            return
+        _recalculate_cache_for_recipe(recipe)
+    transaction.on_commit(_do)
  
  
 # ============================================================================
@@ -284,6 +317,7 @@ def ingredient_saved__refresh_dependent_recipes(sender, instance, raw, created, 
     of per-100g values, etc.), refresh every recipe that uses this ingredient.
     
     Skips when only non-nutrition fields changed (notes, category, default_unit).
+    Deferred to on_commit so the ingredient write is fully committed.
     """
     if raw:
         return
@@ -294,12 +328,22 @@ def ingredient_saved__refresh_dependent_recipes(sender, instance, raw, created, 
         if not (set(update_fields) & NUTRITION_FIELDS):
             return  # nothing nutrition-related changed
     
-    # Find all recipes that use this ingredient.
-    affected_recipes = Recipe.objects.filter(
-        recipe_ingredients__ingredient=instance
-    ).distinct()
+    # Materialize the list of affected recipe IDs NOW, before we defer.
+    # If we passed the queryset itself to on_commit, it would re-evaluate
+    # later and could pick up a different set of rows.
+    affected_ids = list(
+        Recipe.objects
+        .filter(recipe_ingredients__ingredient=instance)
+        .values_list('pk', flat=True)
+        .distinct()
+    )
+    if not affected_ids:
+        return
     
-    _recalculate_caches_for_recipes(affected_recipes)
+    def _do():
+        recipes = Recipe.objects.filter(pk__in=affected_ids)
+        _recalculate_caches_for_recipes(recipes)
+    transaction.on_commit(_do)
  
  
 # Ingredient deletion: handled by CASCADE on RecipeIngredient. When the
@@ -320,22 +364,31 @@ def unit_conversion_saved__refresh_dependent_recipes(sender, instance, raw, **kw
     For ingredient-specific conversions, we only need to refresh recipes
     that use that specific ingredient. For generic conversions, we have to
     refresh anything using the affected units.
+    
+    Deferred to on_commit so the conversion row is fully committed.
     """
     if raw:
         return
     
     if instance.specific_ingredient_id:
         # Ingredient-specific: only recipes using THIS ingredient are affected.
-        affected_recipes = Recipe.objects.filter(
+        affected_qs = Recipe.objects.filter(
             recipe_ingredients__ingredient_id=instance.specific_ingredient_id
-        ).distinct()
+        )
     else:
         # Generic: recipes using either the from_unit or to_unit.
-        affected_recipes = Recipe.objects.filter(
+        affected_qs = Recipe.objects.filter(
             recipe_ingredients__unit_id__in=[instance.from_unit_id, instance.to_unit_id]
-        ).distinct()
+        )
     
-    _recalculate_caches_for_recipes(affected_recipes)
+    affected_ids = list(affected_qs.values_list('pk', flat=True).distinct())
+    if not affected_ids:
+        return
+    
+    def _do():
+        recipes = Recipe.objects.filter(pk__in=affected_ids)
+        _recalculate_caches_for_recipes(recipes)
+    transaction.on_commit(_do)
  
  
 @receiver(post_delete, sender=UnitConversion)
@@ -343,14 +396,23 @@ def unit_conversion_deleted__refresh_dependent_recipes(sender, instance, **kwarg
     """
     When a unit conversion is deleted, the affected recipes might no longer
     be convertible. Refresh them so is_complete reflects reality.
+    
+    Deferred to on_commit so the deletion is fully committed.
     """
     if instance.specific_ingredient_id:
-        affected_recipes = Recipe.objects.filter(
+        affected_qs = Recipe.objects.filter(
             recipe_ingredients__ingredient_id=instance.specific_ingredient_id
-        ).distinct()
+        )
     else:
-        affected_recipes = Recipe.objects.filter(
+        affected_qs = Recipe.objects.filter(
             recipe_ingredients__unit_id__in=[instance.from_unit_id, instance.to_unit_id]
-        ).distinct()
+        )
     
-    _recalculate_caches_for_recipes(affected_recipes)
+    affected_ids = list(affected_qs.values_list('pk', flat=True).distinct())
+    if not affected_ids:
+        return
+    
+    def _do():
+        recipes = Recipe.objects.filter(pk__in=affected_ids)
+        _recalculate_caches_for_recipes(recipes)
+    transaction.on_commit(_do)
