@@ -210,6 +210,112 @@
     box-shadow: none;
 }
 
+/* ============================================================
+   Custom hover tooltips for Conversion + Nutrition badges
+   ============================================================ */
+
+/* The single shared tooltip element, positioned near the cursor.
+   Hidden by default; .visible adds opacity + display. */
+.row-tooltip {
+    position: fixed;
+    z-index: 10000;
+    background: #1f2937;
+    color: white;
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 12px;
+    font-weight: 500;
+    line-height: 1.5;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.25);
+    max-width: 280px;
+    pointer-events: none;
+    opacity: 0;
+    transform: translateY(-4px);
+    transition: opacity 0.12s ease, transform 0.12s ease;
+}
+.row-tooltip.visible {
+    opacity: 1;
+    transform: translateY(0);
+}
+/* Tooltip arrow pointing down (since tooltip sits above the badge) */
+.row-tooltip::after {
+    content: "";
+    position: absolute;
+    bottom: -5px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 6px solid #1f2937;
+}
+/* When tooltip flipped below the badge (near top of viewport), arrow flips */
+.row-tooltip.below::after {
+    bottom: auto;
+    top: -5px;
+    border-top: none;
+    border-bottom: 6px solid #1f2937;
+}
+.row-tooltip h6 {
+    margin: 0 0 6px 0;
+    font-size: 13px;
+    font-weight: 700;
+    color: #ffd166;
+    border-bottom: 1px solid #374151;
+    padding-bottom: 4px;
+}
+.row-tooltip .tip-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 1px 0;
+}
+.row-tooltip .tip-row .tip-label {
+    color: #9ca3af;
+}
+.row-tooltip .tip-row .tip-value {
+    color: white;
+    font-weight: 600;
+}
+.row-tooltip ul.tip-list {
+    margin: 4px 0 0 0;
+    padding: 0 0 0 16px;
+    color: #e5e7eb;
+}
+.row-tooltip ul.tip-list li {
+    margin: 2px 0;
+}
+.row-tooltip .tip-section {
+    margin-top: 8px;
+    padding-top: 6px;
+    border-top: 1px solid #374151;
+}
+.row-tooltip .tip-section:first-of-type {
+    margin-top: 4px;
+    border-top: none;
+    padding-top: 0;
+}
+.row-tooltip .tip-empty {
+    color: #9ca3af;
+    font-style: italic;
+}
+
+/* Source indicator pill on the Mapped badge — distinguishes USDA vs Manual */
+.nutrition-source-pill {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 1px 6px;
+    border-radius: 8px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+    background: rgba(255, 255, 255, 0.4);
+}
+.nutrition-source-pill.source-manual {
+    background: #fde68a;
+    color: #78350f;
+}
+
 .mode-select, .unit-select {
     padding: 6px 10px;
     border: 2px solid #dee2e6;
@@ -1055,7 +1161,15 @@
                 <tr id="ingredient-row-{{ item.ingredient.ingredient_id }}" 
                     data-ingredient-id="{{ item.ingredient.ingredient_id }}"
                     data-fdc-id="{% if item.ingredient.fdc_id is not None %}{{ item.ingredient.fdc_id }}{% endif %}"
-                    data-fdc-description="{{ item.ingredient.fdc_description|default:'' }}">
+                    data-fdc-description="{{ item.ingredient.fdc_description|default:'' }}"
+                    data-nutrition-source="{{ item.nutrition_source|default:'' }}"
+                    data-current-calories="{{ item.nutrition_values.calories|default_if_none:'' }}"
+                    data-current-protein="{{ item.nutrition_values.protein|default_if_none:'' }}"
+                    data-current-carbs="{{ item.nutrition_values.carbs|default_if_none:'' }}"
+                    data-current-fat="{{ item.nutrition_values.fat|default_if_none:'' }}"
+                    data-current-fiber="{{ item.ingredient.fiber_per_100g|default_if_none:'' }}"
+                    data-current-sugar="{{ item.ingredient.sugar_per_100g|default_if_none:'' }}"
+                    data-current-sodium="{{ item.ingredient.sodium_per_100g|default_if_none:'' }}">
                     <!-- Ingredient Name -->
                     <td>
                         <span class="ingredient-name-display">
@@ -1117,24 +1231,33 @@
                     <td>
                         {% if item.conversion_status == 'ready' %}
                             <span class="conversion-badge conversion-ready"
-                                  title="All units this ingredient is used with can be converted to grams.">
+                                  data-tip-type="conversion"
+                                  data-tip-status="ready"
+                                  data-tip-existing="{{ item.conversions_summary|join:'|' }}">
                                 <i class="fas fa-check-circle"></i> Ready
                             </span>
                         {% elif item.conversion_status == 'partial' %}
                             <a href="{% url 'unit_conversions_wizard' %}?ingredient_id={{ item.ingredient.ingredient_id }}"
                                class="conversion-badge conversion-partial"
-                               title="Missing conversions for: {{ item.missing_units|join:', ' }}. Click to fix.">
+                               data-tip-type="conversion"
+                               data-tip-status="partial"
+                               data-tip-existing="{{ item.conversions_summary|join:'|' }}"
+                               data-tip-missing="{{ item.missing_units|join:'|' }}">
                                 <i class="fas fa-exclamation-circle"></i> Partial
                             </a>
                         {% elif item.conversion_status == 'missing' %}
                             <a href="{% url 'unit_conversions_wizard' %}?ingredient_id={{ item.ingredient.ingredient_id }}"
                                class="conversion-badge conversion-missing"
-                               title="No path to grams. Missing: {{ item.missing_units|join:', ' }}. Click to fix.">
+                               data-tip-type="conversion"
+                               data-tip-status="missing"
+                               data-tip-existing="{{ item.conversions_summary|join:'|' }}"
+                               data-tip-missing="{{ item.missing_units|join:'|' }}">
                                 <i class="fas fa-times-circle"></i> Missing
                             </a>
                         {% else %}
                             <span class="conversion-badge conversion-na"
-                                  title="Map nutrition data first to enable conversion checks.">
+                                  data-tip-type="conversion"
+                                  data-tip-status="na">
                                 <i class="fas fa-minus"></i> N/A
                             </span>
                         {% endif %}
@@ -1142,14 +1265,22 @@
                     
                     <!-- Nutrition mapping status -->
                     <td>
-                        {% if item.ingredient.fdc_id is not None %}
-                            <span class="nutrition-badge nutrition-mapped" 
-                                  title="USDA: {{ item.ingredient.fdc_description|default:'Manually entered' }}"
+                        {% if item.ingredient.fdc_id is not None or item.ingredient.calories_per_100g is not None %}
+                            <span class="nutrition-badge nutrition-mapped"
+                                  data-tip-type="nutrition"
+                                  data-tip-source="{{ item.nutrition_source|default:'' }}"
+                                  data-tip-fdc-desc="{{ item.ingredient.fdc_description|default:'' }}"
+                                  data-tip-calories="{{ item.nutrition_values.calories|default_if_none:'' }}"
+                                  data-tip-protein="{{ item.nutrition_values.protein|default_if_none:'' }}"
+                                  data-tip-carbs="{{ item.nutrition_values.carbs|default_if_none:'' }}"
+                                  data-tip-fat="{{ item.nutrition_values.fat|default_if_none:'' }}"
                                   {% if perms.auth.can_edit_personal %}onclick="openNutritionMappingModal({{ item.ingredient.ingredient_id }})" style="cursor: pointer;"{% endif %}>
-                                <i class="fas fa-check-circle"></i> Mapped
+                                <i class="fas fa-check-circle"></i> Mapped{% if item.nutrition_source == 'manual' %}<span class="nutrition-source-pill source-manual">M</span>{% endif %}
                             </span>
                         {% else %}
                             <span class="nutrition-badge nutrition-unmapped"
+                                  data-tip-type="nutrition"
+                                  data-tip-source="none"
                                   {% if perms.auth.can_edit_personal %}onclick="openNutritionMappingModal({{ item.ingredient.ingredient_id }})" style="cursor: pointer;"{% endif %}>
                                 <i class="fas fa-exclamation-triangle"></i> Not mapped
                             </span>
@@ -1217,6 +1348,10 @@
 </div>
 
 
+<!-- Shared tooltip element used by Conversion + Nutrition badges on hover.
+     Available to all viewers — not gated on edit perms. -->
+<div class="row-tooltip" id="rowTooltip"></div>
+
 {% if perms.auth.can_edit_personal %}
 <!-- ============================================================
      SINGLE-INGREDIENT NUTRITION MAPPING MODAL
@@ -1250,8 +1385,19 @@
                     
                     <!-- Existing mapping (only shown when editing) -->
                     <div class="nm-current-mapping" id="nmCurrentMapping" style="display: none;">
-                        <div class="nm-cm-label"><i class="fas fa-link"></i> Currently Mapped To</div>
+                        <div class="nm-cm-label">
+                            <i class="fas fa-link"></i> Currently Mapped To
+                            <span id="nmSourceIndicator" style="margin-left: 8px; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 700; text-transform: uppercase; display: none;"></span>
+                        </div>
                         <div class="nm-cm-value" id="nmCurrentMappingValue">—</div>
+                        <div id="nmResetToUsdaWrap" style="margin-top: 8px; display: none;">
+                            <button type="button" id="nmResetToUsdaBtn" class="nm-btn nm-btn-cancel" style="font-size: 12px; padding: 5px 10px;">
+                                <i class="fas fa-sync-alt"></i> Reset to USDA values
+                            </button>
+                            <span style="font-size: 11px; color: #6c757d; margin-left: 8px;">
+                                Discards manual edits and re-fetches from USDA.
+                            </span>
+                        </div>
                     </div>
                     
                     <!-- Existing conversions for this ingredient -->
@@ -1370,6 +1516,169 @@ window._gramUnitIdNM = (function() {
 window._nmUnitTypes = {
     {% for unit in all_units %}"{{ unit.measurement_unit_id }}": "{{ unit.unit_type }}"{% if not forloop.last %},{% endif %}{% endfor %}
 };
+
+// ============================================================
+// HOVER TOOLTIPS for Conversion + Nutrition badges
+// Available to all users (not gated on edit perms).
+// ============================================================
+(function setupRowTooltips() {
+    const tooltip = document.getElementById('rowTooltip');
+    if (!tooltip) return;
+    
+    function escHtml(s) {
+        if (s === null || s === undefined) return '';
+        const d = document.createElement('div');
+        d.textContent = String(s);
+        return d.innerHTML;
+    }
+    
+    function fmtNum(v, decimals) {
+        // v is a string from data-* (or empty string for None). Convert and format.
+        if (v === '' || v === null || v === undefined) return null;
+        const n = parseFloat(v);
+        if (isNaN(n)) return null;
+        return n.toFixed(decimals);
+    }
+    
+    function buildNutritionTip(badge) {
+        const source = badge.dataset.tipSource || '';
+        if (source === 'none') {
+            return '<div class="tip-empty">No nutrition data yet. Click to map.</div>';
+        }
+        
+        const cal     = fmtNum(badge.dataset.tipCalories, 0);
+        const protein = fmtNum(badge.dataset.tipProtein, 1);
+        const carbs   = fmtNum(badge.dataset.tipCarbs, 1);
+        const fat     = fmtNum(badge.dataset.tipFat, 1);
+        const fdcDesc = badge.dataset.tipFdcDesc || '';
+        
+        let html = '<h6>Nutrition (per 100g)</h6>';
+        const rows = [];
+        if (cal !== null)     rows.push(['Calories', cal + ' kcal']);
+        if (protein !== null) rows.push(['Protein',  protein + ' g']);
+        if (carbs !== null)   rows.push(['Carbs',    carbs + ' g']);
+        if (fat !== null)     rows.push(['Fat',      fat + ' g']);
+        
+        if (rows.length === 0) {
+            html += '<div class="tip-empty">No values stored.</div>';
+        } else {
+            for (const [label, value] of rows) {
+                html += `<div class="tip-row"><span class="tip-label">${escHtml(label)}</span><span class="tip-value">${escHtml(value)}</span></div>`;
+            }
+        }
+        
+        if (source === 'manual') {
+            html += '<div class="tip-section"><span class="tip-label">Source:</span> <span class="tip-value">Manual</span></div>';
+        } else if (source === 'usda') {
+            html += '<div class="tip-section"><span class="tip-label">Source:</span> <span class="tip-value">USDA</span>';
+            if (fdcDesc) {
+                html += `<div style="font-size:11px; color:#9ca3af; margin-top:2px;">${escHtml(fdcDesc)}</div>`;
+            }
+            html += '</div>';
+        }
+        return html;
+    }
+    
+    function buildConversionTip(badge) {
+        const status = badge.dataset.tipStatus || 'na';
+        const existingRaw = badge.dataset.tipExisting || '';
+        const missingRaw  = badge.dataset.tipMissing  || '';
+        const existing = existingRaw ? existingRaw.split('|').filter(s => s) : [];
+        const missing  = missingRaw  ? missingRaw.split('|').filter(s => s)  : [];
+        
+        if (status === 'na') {
+            return '<div class="tip-empty">Map nutrition first to enable conversion checks.</div>';
+        }
+        
+        let html = '<h6>Unit Conversions</h6>';
+        
+        if (existing.length > 0) {
+            html += '<div class="tip-section"><div class="tip-label" style="margin-bottom:3px;">Existing:</div><ul class="tip-list">';
+            for (const e of existing) html += `<li>${escHtml(e)}</li>`;
+            html += '</ul></div>';
+        }
+        
+        if (missing.length > 0) {
+            html += '<div class="tip-section"><div class="tip-label" style="color:#fca5a5; margin-bottom:3px;">Missing:</div><ul class="tip-list">';
+            for (const m of missing) html += `<li>${escHtml(m)}</li>`;
+            html += '</ul></div>';
+        }
+        
+        if (existing.length === 0 && missing.length === 0) {
+            // Ready, but ingredient uses only weight units — no specific conversions stored.
+            html += '<div class="tip-empty">No specific conversions needed (uses weight units that convert generically).</div>';
+        }
+        
+        if (status === 'partial' || status === 'missing') {
+            html += '<div class="tip-section" style="font-size:11px; color:#9ca3af;">Click badge to fix in wizard →</div>';
+        }
+        return html;
+    }
+    
+    function showTooltip(badge, evt) {
+        const type = badge.dataset.tipType;
+        let html = '';
+        if (type === 'nutrition') {
+            html = buildNutritionTip(badge);
+        } else if (type === 'conversion') {
+            html = buildConversionTip(badge);
+        } else {
+            return;
+        }
+        tooltip.innerHTML = html;
+        tooltip.classList.add('visible');
+        positionTooltip(badge);
+    }
+    
+    function positionTooltip(badge) {
+        const rect = badge.getBoundingClientRect();
+        const tipRect = tooltip.getBoundingClientRect();
+        const margin = 8;
+        
+        // Try positioning above the badge first
+        let top = rect.top - tipRect.height - margin;
+        let placedBelow = false;
+        if (top < 8) {
+            // Not enough room above — flip below
+            top = rect.bottom + margin;
+            placedBelow = true;
+        }
+        
+        // Horizontal centering on the badge, clamped to viewport
+        let left = rect.left + (rect.width / 2) - (tipRect.width / 2);
+        const maxLeft = window.innerWidth - tipRect.width - 8;
+        left = Math.max(8, Math.min(left, maxLeft));
+        
+        tooltip.style.top = top + 'px';
+        tooltip.style.left = left + 'px';
+        if (placedBelow) {
+            tooltip.classList.add('below');
+        } else {
+            tooltip.classList.remove('below');
+        }
+    }
+    
+    function hideTooltip() {
+        tooltip.classList.remove('visible');
+    }
+    
+    // Use event delegation on document.body so dynamically-added rows still work.
+    document.body.addEventListener('mouseover', function(evt) {
+        const badge = evt.target.closest('[data-tip-type]');
+        if (!badge) return;
+        showTooltip(badge, evt);
+    });
+    document.body.addEventListener('mouseout', function(evt) {
+        const badge = evt.target.closest('[data-tip-type]');
+        if (!badge) return;
+        // Only hide if we're truly leaving the badge (not just moving to a child)
+        if (badge.contains(evt.relatedTarget)) return;
+        hideTooltip();
+    });
+    // Also hide on scroll/resize so the tooltip doesn't drift away from the badge
+    window.addEventListener('scroll', hideTooltip, true);
+    window.addEventListener('resize', hideTooltip);
+})();
 
 {% if perms.auth.can_edit_personal %}
 // ============================================================
@@ -1642,7 +1951,27 @@ function loadIngredientFromRow(ingredientId) {
         fdc_id: row.dataset.fdcId ? parseInt(row.dataset.fdcId) : null,
         fdc_description: row.dataset.fdcDescription || null,
         existing_conversion_to_g: row.dataset.existingConv ? parseFloat(row.dataset.existingConv) : null,
+        // NEW: currently-stored values + source — used for manual edit pre-fill + reset button
+        nutrition_source: row.dataset.nutritionSource || '',
+        current_calories: row.dataset.currentCalories || '',
+        current_protein:  row.dataset.currentProtein  || '',
+        current_carbs:    row.dataset.currentCarbs    || '',
+        current_fat:      row.dataset.currentFat      || '',
+        current_fiber:    row.dataset.currentFiber    || '',
+        current_sugar:    row.dataset.currentSugar    || '',
+        current_sodium:   row.dataset.currentSodium   || '',
     };
+    
+    // Pre-fill the manual entry form with current values, so clicking
+    // "Enter manually" lets the user edit the existing values rather than
+    // starting from zero.
+    document.getElementById('nmManualCalories').value = _nmCurrentIngredient.current_calories;
+    document.getElementById('nmManualProtein').value  = _nmCurrentIngredient.current_protein;
+    document.getElementById('nmManualCarbs').value    = _nmCurrentIngredient.current_carbs;
+    document.getElementById('nmManualFat').value      = _nmCurrentIngredient.current_fat;
+    document.getElementById('nmManualFiber').value    = _nmCurrentIngredient.current_fiber;
+    document.getElementById('nmManualSugar').value    = _nmCurrentIngredient.current_sugar;
+    document.getElementById('nmManualSodium').value   = _nmCurrentIngredient.current_sodium;
     
     document.getElementById('nmLoading').style.display = 'none';
     document.getElementById('nmFormBody').style.display = 'block';
@@ -1653,10 +1982,54 @@ function loadIngredientFromRow(ingredientId) {
     
     setupNmConversionPanel();
     
-    if (_nmCurrentIngredient.is_mapped && _nmCurrentIngredient.fdc_description) {
-        document.getElementById('nmCurrentMapping').style.display = 'block';
-        document.getElementById('nmCurrentMappingValue').textContent = _nmCurrentIngredient.fdc_description;
-        document.getElementById('nmRemoveBtn').style.display = 'inline-block';
+    // Show the "Currently Mapped To" panel with source indicator + reset button.
+    // Manual-only ingredients (no fdc_id but have values) also benefit from this
+    // panel showing their state.
+    const hasAnyStoredNutrition = _nmCurrentIngredient.is_mapped 
+        || _nmCurrentIngredient.current_calories !== '';
+    
+    if (hasAnyStoredNutrition) {
+        const cmEl = document.getElementById('nmCurrentMapping');
+        const cmValueEl = document.getElementById('nmCurrentMappingValue');
+        const sourceEl = document.getElementById('nmSourceIndicator');
+        const resetWrap = document.getElementById('nmResetToUsdaWrap');
+        
+        cmEl.style.display = 'block';
+        
+        // Mapping description line
+        if (_nmCurrentIngredient.fdc_description) {
+            cmValueEl.textContent = _nmCurrentIngredient.fdc_description;
+        } else if (_nmCurrentIngredient.nutrition_source === 'manual') {
+            cmValueEl.innerHTML = '<em style="color:#6c757d;">Manual entry — no USDA mapping</em>';
+        } else {
+            cmValueEl.textContent = '—';
+        }
+        
+        // Source pill
+        if (_nmCurrentIngredient.nutrition_source === 'manual') {
+            sourceEl.textContent = 'Manual';
+            sourceEl.style.background = '#fde68a';
+            sourceEl.style.color = '#78350f';
+            sourceEl.style.display = 'inline-block';
+        } else if (_nmCurrentIngredient.nutrition_source === 'usda') {
+            sourceEl.textContent = 'USDA';
+            sourceEl.style.background = '#d1fae5';
+            sourceEl.style.color = '#065f46';
+            sourceEl.style.display = 'inline-block';
+        } else {
+            sourceEl.style.display = 'none';
+        }
+        
+        // Reset-to-USDA button: visible only when source is manual AND fdc_id exists.
+        if (_nmCurrentIngredient.nutrition_source === 'manual' && _nmCurrentIngredient.fdc_id) {
+            resetWrap.style.display = 'block';
+        } else {
+            resetWrap.style.display = 'none';
+        }
+        
+        if (_nmCurrentIngredient.is_mapped) {
+            document.getElementById('nmRemoveBtn').style.display = 'inline-block';
+        }
     }
     
     nmPerformSearch();
@@ -1771,6 +2144,7 @@ async function nmSelectMatch(idx) {
         }
         
         _nmSelectedDetail = data;
+        _nmSelectedDetail._source = 'usda';  // tag for nmSaveMapping
         nmRenderPreview(data);
         document.getElementById('nmSaveBtn').disabled = false;
     } catch (err) {
@@ -1838,6 +2212,7 @@ function nmUseManualEntry() {
         fdc_id: 0,
         description: _nmCurrentIngredient.name + ' (manual entry)',
         data_type: 'Manual',
+        _source: 'manual',  // tag for nmSaveMapping
         calories_per_100g: String(cal),
         protein_per_100g:  String(protein),
         carbs_per_100g:    String(carbs),
@@ -1941,6 +2316,11 @@ async function nmSaveMapping() {
     const ing = _nmCurrentIngredient;
     if (!ing || !_nmSelectedDetail) return;
     
+    // Source: if _nmSelectedDetail came from manual entry, fdc_id will be 0
+    // and we set _source='manual' there. If it came from USDA preview, the
+    // selectMatch() flow assigns _source='usda'. Default to USDA for safety.
+    const source = _nmSelectedDetail._source || (_nmSelectedDetail.fdc_id ? 'usda' : 'manual');
+    
     const payload = {
         ingredient_id: ing.ingredient_id,
         fdc_id: _nmSelectedDetail.fdc_id,
@@ -1953,6 +2333,7 @@ async function nmSaveMapping() {
         fiber_per_100g:    _nmSelectedDetail.fiber_per_100g,
         sugar_per_100g:    _nmSelectedDetail.sugar_per_100g,
         sodium_per_100g:   _nmSelectedDetail.sodium_per_100g,
+        nutrition_source:  source,
     };
     
     const unitType = ing.default_unit_type;
@@ -2132,6 +2513,93 @@ function nmEscapeHtml(s) {
     return div.innerHTML;
 }
 
+async function nmResetToUsda() {
+    const ing = _nmCurrentIngredient;
+    if (!ing) return;
+    
+    if (!ing.fdc_id) {
+        alert('This ingredient has no USDA mapping to reset to.');
+        return;
+    }
+    
+    if (!confirm(`Reset "${ing.name}" to USDA values?\n\nYour manual edits will be discarded and replaced with the original USDA values.`)) {
+        return;
+    }
+    
+    const btn = document.getElementById('nmResetToUsdaBtn');
+    const originalText = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Resetting…';
+    
+    try {
+        // Step 1: fetch fresh USDA values via the existing preview endpoint
+        const previewRes = await fetch(`${NM_URLS.preview}?fdc_id=${ing.fdc_id}`);
+        const previewData = await previewRes.json();
+        
+        if (!previewData.success) {
+            alert('Failed to fetch USDA values: ' + (previewData.error || 'Unknown error'));
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+            return;
+        }
+        
+        // Step 2: save them via the same save_ingredient_mapping endpoint, source='usda'
+        const payload = {
+            ingredient_id: ing.ingredient_id,
+            fdc_id: previewData.fdc_id,
+            fdc_description: previewData.description,
+            fdc_data_type: previewData.data_type,
+            calories_per_100g: previewData.calories_per_100g,
+            protein_per_100g:  previewData.protein_per_100g,
+            carbs_per_100g:    previewData.carbs_per_100g,
+            fat_per_100g:      previewData.fat_per_100g,
+            fiber_per_100g:    previewData.fiber_per_100g,
+            sugar_per_100g:    previewData.sugar_per_100g,
+            sodium_per_100g:   previewData.sodium_per_100g,
+            nutrition_source:  'usda',
+        };
+        
+        const saveRes = await fetch(NM_URLS.save, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': NM_CSRF },
+            body: JSON.stringify(payload),
+        });
+        const saveData = await saveRes.json();
+        
+        if (!saveData.success) {
+            alert('Save failed: ' + (saveData.error || 'Unknown error'));
+            btn.disabled = false;
+            btn.innerHTML = originalText;
+            return;
+        }
+        
+        // Update the row's data attributes so subsequent opens show fresh state.
+        const row = document.getElementById(`ingredient-row-${ing.ingredient_id}`);
+        if (row) {
+            row.dataset.nutritionSource = 'usda';
+            row.dataset.currentCalories = previewData.calories_per_100g || '';
+            row.dataset.currentProtein  = previewData.protein_per_100g  || '';
+            row.dataset.currentCarbs    = previewData.carbs_per_100g    || '';
+            row.dataset.currentFat      = previewData.fat_per_100g      || '';
+            row.dataset.currentFiber    = previewData.fiber_per_100g    || '';
+            row.dataset.currentSugar    = previewData.sugar_per_100g    || '';
+            row.dataset.currentSodium   = previewData.sodium_per_100g   || '';
+        }
+        
+        // Use the existing row-update helper to refresh the badge
+        nmUpdateRowAfterSave(ing.ingredient_id, {
+            fdc_id: previewData.fdc_id,
+            description: previewData.description,
+        });
+        
+        $('#nutritionMappingModal').modal('hide');
+    } catch (err) {
+        alert('Network error: ' + err.message);
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     const searchBtn = document.getElementById('nmSearchBtn');
     if (!searchBtn) return;
@@ -2148,6 +2616,13 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('nmManualUseBtn').addEventListener('click', nmUseManualEntry);
     document.getElementById('nmSaveBtn').addEventListener('click', nmSaveMapping);
     document.getElementById('nmRemoveBtn').addEventListener('click', nmRemoveMapping);
+    
+    // Reset-to-USDA button is only in the DOM when a manually-edited ingredient
+    // also has an fdc_id. The button itself is hidden/shown by loadIngredientFromRow.
+    const resetBtn = document.getElementById('nmResetToUsdaBtn');
+    if (resetBtn) {
+        resetBtn.addEventListener('click', nmResetToUsda);
+    }
 });
 {% endif %}
 </script>

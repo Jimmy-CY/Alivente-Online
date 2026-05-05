@@ -14409,8 +14409,6 @@ def delete_unit_conversion(request):
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
-
-
 # ============================================
 # INGREDIENT BASE UNIT MANAGEMENT
 # ============================================
@@ -14419,11 +14417,9 @@ def delete_unit_conversion(request):
 def ingredient_base_units_management(request):
     """Manage ingredient shopping units, with nutrition + conversion status."""
     
-    # Get filter parameters
     search_query = request.GET.get('search', '')
     category_filter = request.GET.get('category', '')
     
-    # Query ingredients
     ingredients = Ingredient.objects.select_related('category', 'default_unit').all()
     
     if search_query:
@@ -14434,7 +14430,6 @@ def ingredient_base_units_management(request):
     
     ingredients = ingredients.order_by('name')
     
-    # Get all units and categories
     all_units = MeasurementUnit.objects.all().order_by('name')
     categories = IngredientCategory.objects.all().order_by('name')
     
@@ -14449,18 +14444,11 @@ def ingredient_base_units_management(request):
             gram_unit_id = u['measurement_unit_id']
             break
     
-    # ----- Pre-fetch ALL specific conversions to grams (any direction) -----
-    # The Nutrition Mapping modal uses the gram-related ones. We also need
-    # to know which (ingredient, unit) pairs CAN reach grams — which means
-    # any specific conversion FROM unit TO grams (only one direction matters
-    # for the calculator's gram-conversion path).
+    # ----- Pre-fetch ALL specific conversions to grams -----
     ingredient_ids = [ing.ingredient_id for ing in ingredients]
     
-    # For the modal: conversions involving grams in either direction
-    conversions_by_ingredient = {}
-    # For the conversion-status calc: a set of from_unit_ids that have a
-    # specific conversion → grams, per ingredient.
-    units_with_path_to_grams = {}  # {ingredient_id: set([unit_id, ...])}
+    conversions_by_ingredient = {}  # for the modal (full list)
+    units_with_path_to_grams = {}   # for the conversion-status calc
     
     if ingredient_ids and gram_unit_id:
         conv_qs = (
@@ -14478,24 +14466,18 @@ def ingredient_base_units_management(request):
                 'to_unit_id': c.to_unit_id,
                 'multiplier': float(c.multiplier),
             })
-            # Record which from_units can reach grams. Only count rows where
-            # to_unit IS grams — those are the ones the calculator uses.
             if c.to_unit_id == gram_unit_id:
                 units_with_path_to_grams.setdefault(ing_id, set()).add(c.from_unit_id)
     
-    # ----- Pre-fetch unit_type for every unit (so we can detect weight units) -----
     unit_types = dict(
         MeasurementUnit.objects.values_list('measurement_unit_id', 'unit_type')
     )
-    # Map of unit_id -> unit_name (for tooltips listing missing units)
     unit_names = dict(
         MeasurementUnit.objects.values_list('measurement_unit_id', 'name')
     )
     
-    # ----- For each ingredient, find every unit it's used with in recipes -----
-    # One query: distinct (ingredient_id, unit_id) pairs from RecipeIngredient.
-    # Filtered to only ingredients we're showing on this page.
-    units_used_per_ingredient = {}  # {ingredient_id: set([unit_id, ...])}
+    # ----- Recipe usage per ingredient -----
+    units_used_per_ingredient = {}
     if ingredient_ids:
         ri_pairs = (
             RecipeIngredient.objects
@@ -14507,43 +14489,27 @@ def ingredient_base_units_management(request):
         for ing_id, unit_id in ri_pairs:
             units_used_per_ingredient.setdefault(ing_id, set()).add(unit_id)
     
-    # ----- Compute conversion status per ingredient -----
+    # ----- Conversion status helpers -----
     def _unit_has_path_to_grams(unit_id, ingredient_id):
-        """Mirror nutrition_calc._convert_to_grams resolution rules."""
         if unit_id is None:
             return False
         if gram_unit_id and unit_id == gram_unit_id:
-            return True  # already grams
-        # Ingredient-specific conversion to grams?
+            return True
         if unit_id in units_with_path_to_grams.get(ingredient_id, set()):
             return True
-        # Generic weight→weight is fine for any weight unit
         if unit_types.get(unit_id) == 'weight':
             return True
         return False
     
     def _compute_conversion_status(ing):
-        """
-        Return (status_string, list_of_missing_unit_names).
-        Status is one of: 'na', 'ready', 'partial', 'missing'.
-        """
         if ing.fdc_id is None:
             return 'na', []
-        
-        # Build the set of units to check for this ingredient.
-        # Recipe usage takes priority. Default unit also counts (so newly-
-        # mapped ingredients with no recipes yet still get evaluated).
         units_to_check = set()
         units_to_check.update(units_used_per_ingredient.get(ing.ingredient_id, set()))
         if ing.default_unit_id:
             units_to_check.add(ing.default_unit_id)
-        
         if not units_to_check:
-            # Mapped, but no default unit and not used in any recipe.
-            # Calculator wouldn't be able to do anything with this — flag
-            # as missing so the user knows to set a unit.
             return 'missing', ['(no unit set, not used in any recipe)']
-        
         ok_units = []
         bad_units = []
         for u_id in units_to_check:
@@ -14551,44 +14517,73 @@ def ingredient_base_units_management(request):
                 ok_units.append(u_id)
             else:
                 bad_units.append(u_id)
-        
         if not bad_units:
             return 'ready', []
         if not ok_units:
             return 'missing', sorted(unit_names.get(u, f'unit#{u}') for u in bad_units)
         return 'partial', sorted(unit_names.get(u, f'unit#{u}') for u in bad_units)
     
-    # ----- Build the final list with status attached -----
+    # ----- Helper: build a human-readable conversions summary for tooltip -----
+    def _summarize_conversions(ing_id):
+        """
+        Return a list of strings like "1 cup → 240 g" describing every
+        ingredient-specific conversion to grams. Used in the Conversion
+        badge tooltip.
+        """
+        rows = conversions_by_ingredient.get(ing_id, [])
+        out = []
+        for r in rows:
+            if r['to_unit_id'] == gram_unit_id:
+                # Format multiplier neatly — drop trailing zeros
+                m = r['multiplier']
+                m_str = f"{m:.4f}".rstrip('0').rstrip('.') if isinstance(m, float) else str(m)
+                out.append(f"1 {r['from_unit_name']} → {m_str} g")
+        return sorted(out)
+    
+    # ----- Build the final list with tooltip data attached -----
     ingredients_with_base = []
     for ing in ingredients:
         status, missing_units = _compute_conversion_status(ing)
+        
+        # Nutrition values for the Nutrition badge tooltip.
+        # Decimal values come back as Decimal — convert to float so the JSON
+        # serializer in data-* attributes doesn't choke. None passes through.
+        def _f(v):
+            return float(v) if v is not None else None
+        
+        nutrition_values = {
+            'calories': _f(ing.calories_per_100g),
+            'protein':  _f(ing.protein_per_100g),
+            'carbs':    _f(ing.carbs_per_100g),
+            'fat':      _f(ing.fat_per_100g),
+        }
+        
+        # Conversion strings for the Conversion badge tooltip
+        conversions_summary = _summarize_conversions(ing.ingredient_id)
+        
+        # Nutrition source — supports the badge's manual/USDA distinction.
+        # Falls back gracefully if the field doesn't exist yet (pre-migration).
+        nutrition_source = getattr(ing, 'nutrition_source', None)
+        
         ingredients_with_base.append({
             'ingredient': ing,
             'conversions': conversions_by_ingredient.get(ing.ingredient_id, []),
             'conversion_status': status,
             'missing_units': missing_units,
+            'nutrition_values': nutrition_values,
+            'conversions_summary': conversions_summary,
+            'nutrition_source': nutrition_source,
         })
     
     # ----- Global outstanding counts for the action-bar buttons -----
-    # These are GLOBAL (not filtered by search/category) so the button
-    # badges always reflect what the user will see when they click into
-    # the wizard or the conversions page. Otherwise filtering this page
-    # would mask outstanding work elsewhere.
-    
-    # Count of ingredients with no nutrition mapping (matches the wizard's queue).
+    page_ingredient_ids = set(ing.ingredient_id for ing in ingredients)
     unmapped_count = Ingredient.objects.filter(fdc_id__isnull=True).count()
     
-    # Count of mapped ingredients whose conversion status is partial or missing.
-    # We have to compute this for ALL mapped ingredients, not just the page's
-    # filtered subset. So we run the same status logic in aggregate, but only
-    # over ingredients we haven't already evaluated.
-    page_ingredient_ids = set(ing.ingredient_id for ing in ingredients)
     unconvertible_count = sum(
         1 for item in ingredients_with_base
         if item['conversion_status'] in ('partial', 'missing')
     )
     
-    # Add ingredients NOT on this page (because of filtering) to the count.
     other_mapped = (
         Ingredient.objects
         .filter(fdc_id__isnull=False)
@@ -14596,10 +14591,8 @@ def ingredient_base_units_management(request):
         .select_related('default_unit')
     )
     if other_mapped.exists():
-        # We need their recipe-usage units and specific conversions too.
         other_ids = [i.ingredient_id for i in other_mapped]
         
-        # Conversions to grams for these ingredients
         other_units_to_grams = {}
         if gram_unit_id:
             for c in (
@@ -14609,7 +14602,6 @@ def ingredient_base_units_management(request):
             ):
                 other_units_to_grams.setdefault(c[0], set()).add(c[1])
         
-        # Recipe usage for these ingredients
         other_units_used = {}
         for ing_id, unit_id in (
             RecipeIngredient.objects
@@ -14620,7 +14612,6 @@ def ingredient_base_units_management(request):
         ):
             other_units_used.setdefault(ing_id, set()).add(unit_id)
         
-        # Apply the same status rules
         for ing in other_mapped:
             units_to_check = set()
             units_to_check.update(other_units_used.get(ing.ingredient_id, set()))
@@ -14628,7 +14619,6 @@ def ingredient_base_units_management(request):
                 units_to_check.add(ing.default_unit_id)
             
             if not units_to_check:
-                # Mapped but no unit info — counts as outstanding (missing)
                 unconvertible_count += 1
                 continue
             
@@ -14643,7 +14633,6 @@ def ingredient_base_units_management(request):
                     bad = True
             
             if bad:
-                # Either 'partial' (ok and bad) or 'missing' (only bad) — both count.
                 unconvertible_count += 1
     
     context = {
@@ -17751,6 +17740,7 @@ def save_ingredient_mapping(request):
             'fat_per_100g', 'fiber_per_100g', 'sugar_per_100g', 'sodium_per_100g',
         ):
             setattr(ingredient, field_name, None)
+        ingredient.nutrition_source = None
         ingredient.nutrition_synced_at = timezone.now()
         ingredient.save()
         return JsonResponse({
@@ -17767,11 +17757,20 @@ def save_ingredient_mapping(request):
             'success': False,
             'error': 'fdc_id (integer) is required. Use 0 for manual entry.',
         }, status=400)
+
+    # Read nutrition_source from payload, with backward-compat fallback.
+    # The frontend now sends 'usda' (from USDA-search saves) or 'manual'
+    # (from the manual-entry panel). Older clients won't send it — for
+    # those, infer from fdc_id (0 = manual, positive = USDA).
+    nutrition_source = data.get('nutrition_source')
+    if nutrition_source not in ('usda', 'manual'):
+        nutrition_source = 'manual' if fdc_id == 0 else 'usda'
     
     # --- Update nutrition fields ---
     ingredient.fdc_id = fdc_id
     ingredient.fdc_description = (data.get('fdc_description') or '').strip()[:300]
     ingredient.fdc_data_type = (data.get('fdc_data_type') or '').strip()[:30]
+    ingredient.nutrition_source = nutrition_source
     
     # Sanity caps — protect DecimalField precision (max_digits=8, decimal_places=2
     # means we can store up to 999999.99). USDA data is occasionally absurd
