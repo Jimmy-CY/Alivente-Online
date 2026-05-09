@@ -1875,6 +1875,47 @@ class RecipeNutritionCache(models.Model):
     def __str__(self):
         return f"Nutrition cache for {self.recipe.recipe_name}"
 
+class RecipeModificationSuggestion(models.Model):
+    """
+    Cache table for AI-generated recipe modification suggestions.
+    """
+    
+    GOAL_CHOICES = [
+        ('reduce_carbs',     'Reduce carbs'),
+        ('reduce_calories',  'Reduce calories'),
+        ('increase_protein', 'Increase protein'),
+        ('reduce_fat',       'Reduce fat'),
+    ]
+    
+    recipe_modification_suggestion_id = models.AutoField(primary_key=True)
+    recipe = models.ForeignKey(
+        Recipe,
+        on_delete=models.CASCADE,
+        related_name='modification_suggestions',
+    )
+    goal_type = models.CharField(max_length=30, choices=GOAL_CHOICES)
+    suggestions_json = models.JSONField(
+        help_text='Validated response from the LLM, matching the schema in recipe_ai.py'
+    )
+    recipe_version_hash = models.CharField(
+        max_length=64,
+        help_text='SHA256 hash of recipe + ingredient nutrition state at generation time'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    class Meta:
+        db_table = 'recipe_modification_suggestions'
+        verbose_name = 'Recipe Modification Suggestion'
+        verbose_name_plural = 'Recipe Modification Suggestions'
+        unique_together = [('recipe', 'goal_type', 'recipe_version_hash')]
+        indexes = [
+            models.Index(fields=['recipe', 'goal_type'], name='rms_recipe_goal_idx'),
+        ]
+        ordering = ['-created_at']
+    
+    def __str__(self):
+        return f"AI suggestion ({self.get_goal_type_display()}) for {self.recipe.recipe_name}"
+
 # ========== MEAL PLANNING MODELS ==========
 
 class MealPlan(models.Model):
