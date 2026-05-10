@@ -217,8 +217,8 @@ All metrics in current_state and estimated_new_state use the exact suffix
       "original": { "name": <str>, "quantity": <number>, "unit": <str> },
       "replacement": { "name": <str>, "quantity": <number>, "unit": <str> } | null,
       "estimated_impact_per_100g": <number>,
-      "rationale": <str, max 500 chars>,
-      "tradeoffs": <str, max 500 chars>
+      "rationale": <str, max 800 chars — aim for ~300, be concise>,
+      "tradeoffs": <str, max 800 chars — aim for ~300, be concise>
     }
   ],
   "estimated_new_state": {
@@ -253,8 +253,8 @@ class _Suggestion(BaseModel):
     original: _Quantity
     replacement: _Quantity | None = None
     estimated_impact_per_100g: float
-    rationale: str = Field(max_length=500)
-    tradeoffs: str = Field(max_length=500)
+    rationale: str = Field(max_length=800)
+    tradeoffs: str = Field(max_length=800)
 
 
 class _CurrentState(BaseModel):
