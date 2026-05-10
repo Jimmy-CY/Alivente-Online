@@ -1,3 +1,46 @@
+<!--
+  ===========================================================================
+  ALIVENTE ONLINE — HELP CONTENT: OPERATIONAL MODULES
+  ===========================================================================
+  This file holds help for the day-to-day operational modules — anything
+  used routinely to manage the portfolio (suppliers, tenants, issues,
+  projects, the expense ledger, the property dashboard).
+ 
+  Parsed by:  pages/services/help_renderer.py
+  Each <section data-module-slug="..."> becomes one help modal.
+  Each <article data-tab-slug="...">    becomes one tab in that modal.
+ 
+  ---------------------------------------------------------------------------
+  MODULES IN THIS FILE
+  ---------------------------------------------------------------------------
+   1. Suppliers                           slug: suppliers
+   2. Open Invoices                       slug: invoices
+   3. Petty Cash                          slug: petty_cash
+   4. Property Dashboard                  slug: dashboard
+   5. Tenants                             slug: tenant
+   6. Issues (FSR)                        slug: fsr
+   7. Projects                            slug: projects
+   8. Actual Expenses                     slug: expenses
+ 
+  ---------------------------------------------------------------------------
+  RELATED FILES
+  ---------------------------------------------------------------------------
+  - Budgeted/recurring expenses live in configuration.html under slug
+    "finance_expense" — NOT here. This file's "expenses" slug is the
+    actual-spend approval-workflow ledger.
+  - Financial reports (P&L, Valuations, etc.) live in reports.html.
+  - The Financials landing page lives in finance.html.
+ 
+  ---------------------------------------------------------------------------
+  EDITING NOTES
+  ---------------------------------------------------------------------------
+  - Permission flags vary per module — see the data-module-permission
+    attribute on each <section>.
+  - DO NOT change the wrapping <section> / <article> attributes without
+    understanding the parser.
+  ===========================================================================
+-->
+
 <!-- Operational modules help content -->
 
 

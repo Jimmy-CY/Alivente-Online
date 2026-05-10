@@ -1,3 +1,47 @@
+<!--
+  ===========================================================================
+  ALIVENTE ONLINE — HELP CONTENT: FINANCIALS > REPORTS MODULES
+  ===========================================================================
+  This file holds help for the Reports sub-menu under Financials — the
+  read-only analytical views that surface what the Configuration data and
+  Actual Expenses data add up to. P&L, valuations, ROI/KPI dashboards,
+  occupancy trends.
+ 
+  Parsed by:  pages/services/help_renderer.py
+  Each <section data-module-slug="..."> becomes one help modal.
+  Each <article data-tab-slug="...">    becomes one tab in that modal.
+ 
+  ---------------------------------------------------------------------------
+  MODULES IN THIS FILE
+  ---------------------------------------------------------------------------
+   1. Property Valuations                 slug: finance_valuations
+   2. Profit & Loss Statement             slug: finance_pl_act
+   3. Forecasted Cash Outflows            slug: cashflow_forecast
+   4. Financial Indicators                slug: financial_indicators
+   5. Vacancy Management                  slug: vacancy_management
+   6. Performance Trends (Occupancy)      slug: occupancy_trends
+ 
+  ---------------------------------------------------------------------------
+  RELATED FILES
+  ---------------------------------------------------------------------------
+  - The data behind these reports is captured in:
+      configuration.html  → Revenue & budgeted Expense records
+      operational.html    → "expenses" (actual approved+paid expenses)
+  - The Financials landing page lives in finance.html.
+ 
+  ---------------------------------------------------------------------------
+  EDITING NOTES
+  ---------------------------------------------------------------------------
+  - All modules in this file are SUPERUSER-ONLY.
+    Permission flag: can_access_financials.
+  - Property Valuations and Vacancy Management both have cascade
+    behaviour worth keeping in mind when editing — see their respective
+    sections for the cascade-preview-modal docs.
+  - DO NOT change the wrapping <section> / <article> attributes without
+    understanding the parser.
+  ===========================================================================
+-->
+
 <!-- ======= PROPERTY VALUATIONS ======= -->
 <section data-module-slug="finance_valuations"
          data-module-group="Financial Management"

@@ -1,4 +1,45 @@
 <!--
+  ===========================================================================
+  ALIVENTE ONLINE — HELP CONTENT: FINANCIALS > CONFIGURATION MODULES
+  ===========================================================================
+  This file holds help for the Configuration sub-menu under Financials —
+  the recurring revenue and expense templates that build the Budget side
+  of the Profit & Loss Statement.
+ 
+  Parsed by:  pages/services/help_renderer.py
+  Each <section data-module-slug="..."> becomes one help modal.
+  Each <article data-tab-slug="...">    becomes one tab in that modal.
+ 
+  ---------------------------------------------------------------------------
+  MODULES IN THIS FILE
+  ---------------------------------------------------------------------------
+   1. Revenue Types                       slug: finance_revenue_types
+   2. Revenue Line Types                  slug: finance_revenue_line_types
+   3. Revenues                            slug: finance_revenue
+   4. Expense Types                       slug: finance_expense_types
+   5. Expense Line Types                  slug: finance_expense_line_types
+   6. Expenses (Budgeted)                 slug: finance_expense
+ 
+  ---------------------------------------------------------------------------
+  RELATED FILES
+  ---------------------------------------------------------------------------
+  - Actual one-off expenses (with approval workflow & invoices) live in
+    operational.html under slug "expenses" — NOT here. This file is for
+    budgeted/recurring expenses only.
+  - The P&L Statement view itself lives in reports.html.
+  - The Financials landing page lives in finance.html.
+ 
+  ---------------------------------------------------------------------------
+  EDITING NOTES
+  ---------------------------------------------------------------------------
+  - All modules in this file are SUPERUSER-ONLY.
+    Permission flag: can_access_financials.
+  - DO NOT change the wrapping <section> / <article> attributes without
+    understanding the parser.
+  ===========================================================================
+-->
+
+<!--
   ============================================================
   ALIVENTE ONLINE — HELP CONTENT: CONFIGURATION MODULES
   ============================================================

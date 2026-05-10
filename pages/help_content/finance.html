@@ -1,3 +1,44 @@
+<!--
+  ===========================================================================
+  ALIVENTE ONLINE — HELP CONTENT: FINANCIALS LANDING PAGE
+  ===========================================================================
+  This file holds help for the single Financials landing page — the
+  navigator that splits Reports (six modules) and Configuration (six
+  modules) and points users to the right submodule.
+ 
+  Each individual financial submodule has its own dedicated help modal
+  in either configuration.html or reports.html — this file is intentionally
+  one section only.
+ 
+  Parsed by:  pages/services/help_renderer.py
+  Each <section data-module-slug="..."> becomes one help modal.
+  Each <article data-tab-slug="...">    becomes one tab in that modal.
+ 
+  ---------------------------------------------------------------------------
+  MODULES IN THIS FILE
+  ---------------------------------------------------------------------------
+   1. Financials (landing page)           slug: finance
+        Tabs: Overview / Reports / Configuration / Getting Started / Tips
+ 
+  ---------------------------------------------------------------------------
+  RELATED FILES
+  ---------------------------------------------------------------------------
+  - Configuration submodules (Revenue Types, Expense Types, etc.) live
+    in configuration.html.
+  - Reports submodules (P&L, Valuations, Vacancy, etc.) live in reports.html.
+ 
+  ---------------------------------------------------------------------------
+  EDITING NOTES
+  ---------------------------------------------------------------------------
+  - SUPERUSER-ONLY. Permission flag: can_access_financials.
+  - This page is a navigator only — keep its tabs at the overview level.
+    Do NOT duplicate detailed instructions that already live in the
+    submodule help modals.
+  - DO NOT change the wrapping <section> / <article> attributes without
+    understanding the parser.
+  ===========================================================================
+-->
+
 <!-- ======= FINANCE LANDING PAGE ======= -->
 <section data-module-slug="finance"
          data-module-group="Financial Management"

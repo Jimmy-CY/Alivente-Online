@@ -1,3 +1,45 @@
+{# =========================================================================
+   1.  administration.html
+   ========================================================================= #}
+ 
+<!--
+  ===========================================================================
+  ALIVENTE ONLINE — HELP CONTENT: ADMINISTRATION & PERSONAL MODULES
+  ===========================================================================
+  Despite the filename, this file holds help for both the "Administration"
+  and the "Personal" sidebar groups — they share many cross-cutting
+  concerns (notifications, profiles, recipe management, etc.).
+ 
+  Parsed by:  pages/services/help_renderer.py
+  Each <section data-module-slug="..."> becomes one help modal.
+  Each <article data-tab-slug="...">    becomes one tab in that modal.
+ 
+  ---------------------------------------------------------------------------
+  MODULES IN THIS FILE
+  ---------------------------------------------------------------------------
+   1. Properties                          slug: properties
+   2. Passport / ID Management            slug: passport_management
+   3. Celebrations                        slug: celebration_dashboard
+   4. Recipe Management                   slug: recipe_management
+   5. Personal Notification Settings      slug: personal_notification_settings
+   6. Administration Notification Settings slug: admin_notification_settings
+   7. Notifications Dashboard             slug: notification
+   8. My Profile                          slug: my_profile
+   9. Administration (landing page)       slug: admin_apms
+  10. Generate Lease Agreement            slug: generate_lease_agreement
+  11. User Administration                 slug: user_administration
+ 
+  ---------------------------------------------------------------------------
+  EDITING NOTES
+  ---------------------------------------------------------------------------
+  - DO NOT change the wrapping <section> / <article> attributes without
+    understanding the parser. Slugs are referenced from templates via
+    {% render_help_modal "slug" %}.
+  - HTML inside <article> tags is rendered verbatim. Bootstrap 4.6 and
+    FontAwesome are available everywhere.
+  ===========================================================================
+-->
+
 <!-- Administration & Personal modules help content -->
 
 <!-- ======= PROPERTIES ======= -->
@@ -647,7 +689,7 @@
          data-module-category="Personal"
          data-module-subtitle="Your complete recipe collection, meal planner, and cooking companion">
 
-  <article data-tab-slug="rec-overview"
+<article data-tab-slug="rec-overview"
            data-tab-name="Overview"
            data-tab-icon="fa-info-circle">
     <div style="display:flex; align-items:flex-start; gap:16px; margin-bottom:24px;">
@@ -656,7 +698,7 @@
       </div>
       <div>
         <h5 style="font-weight:700; color:#2c3e50; margin-bottom:6px;">What is Recipe Management?</h5>
-        <p style="color:#6c757d; font-size:14px; line-height:1.7;">Recipe Management is your complete digital cookbook. Store, browse, and cook from your entire recipe collection. Plan your weekly meals, generate shopping lists, and use smart tools like the ingredient matcher and cooking calculator.</p>
+        <p style="color:#6c757d; font-size:14px; line-height:1.7;">Recipe Management is your complete digital cookbook. Store, browse, and cook from your entire recipe collection. Plan your weekly meals, generate shopping lists, calculate nutrition, and use smart tools like the ingredient matcher, cooking calculator, and AI-powered modification ideas.</p>
       </div>
     </div>
     <h6 style="font-weight:700; color:#2c3e50; margin-bottom:14px; border-bottom:2px solid #28a745; padding-bottom:6px;"><i class="fas fa-star" style="color:#28a745;"></i> Key Features</h6>
@@ -669,10 +711,12 @@
       <div style="background:#f0fff4; border:1px solid #b2dfdb; border-radius:8px; padding:12px;"><div style="font-weight:600; color:#28a745; margin-bottom:3px;"><i class="fas fa-calendar-alt"></i> Meal Plans</div><div style="font-size:12px; color:#6c757d;">Plan up to 7 days of meals and generate a weekly shopping list.</div></div>
       <div style="background:#f0fff4; border:1px solid #b2dfdb; border-radius:8px; padding:12px;"><div style="font-weight:600; color:#28a745; margin-bottom:3px;"><i class="fas fa-robot"></i> AI Import</div><div style="font-size:12px; color:#6c757d;">Paste any recipe and let AI parse it into a structured format automatically.</div></div>
       <div style="background:#f0fff4; border:1px solid #b2dfdb; border-radius:8px; padding:12px;"><div style="font-weight:600; color:#28a745; margin-bottom:3px;"><i class="fas fa-heart"></i> Favourites</div><div style="font-size:12px; color:#6c757d;">Mark recipes as favourites and filter to view only your favourite collection.</div></div>
+      <div style="background:#f0fff4; border:1px solid #b2dfdb; border-radius:8px; padding:12px;"><div style="font-weight:600; color:#28a745; margin-bottom:3px;"><i class="fas fa-leaf"></i> Nutrition Analysis</div><div style="font-size:12px; color:#6c757d;">FDA-style label with per-100g calories, fat, carbs, fibre, sugar and protein, plus per-ingredient breakdown.</div></div>
+      <div style="background:#f3eafa; border:1px solid #d4c5f9; border-radius:8px; padding:12px;"><div style="font-weight:600; color:#6f42c1; margin-bottom:3px;"><i class="fas fa-magic"></i> AI Modification Ideas</div><div style="font-size:12px; color:#6c757d;">Pick a goal (reduce carbs, reduce calories, increase protein, reduce fat) and get AI-generated recipe modification suggestions.</div></div>
     </div>
   </article>
 
-  <article data-tab-slug="rec-browse"
+<article data-tab-slug="rec-browse"
            data-tab-name="Browsing"
            data-tab-icon="fa-th-large">
     <h6 style="font-weight:700; color:#2c3e50; margin-bottom:16px; border-bottom:2px solid #28a745; padding-bottom:6px;"><i class="fas fa-th-large" style="color:#28a745;"></i> Browsing Your Recipe Collection</h6>
@@ -687,7 +731,7 @@
       <div style="background:#f8f9fa; border-radius:8px; padding:12px; border-top:3px solid #17a2b8; text-align:center;">
         <i class="fas fa-list" style="color:#17a2b8; font-size:20px; margin-bottom:6px; display:block;"></i>
         <div style="font-weight:600; color:#2c3e50; font-size:13px; margin-bottom:4px;">List</div>
-        <div style="font-size:11px; color:#6c757d;">Compact rows with thumbnail, name, tags, time and difficulty.</div>
+        <div style="font-size:11px; color:#6c757d;">Compact rows with thumbnail, name, tags, time, difficulty, and sortable per-100g nutrition columns (calories, carbs, fat, protein).</div>
       </div>
       <div style="background:#f8f9fa; border-radius:8px; padding:12px; border-top:3px solid #8d6e63; text-align:center;">
         <i class="fas fa-book-open" style="color:#8d6e63; font-size:20px; margin-bottom:6px; display:block;"></i>
@@ -720,7 +764,7 @@
     </div>
   </article>
 
-  <article data-tab-slug="rec-detail"
+<article data-tab-slug="rec-detail"
            data-tab-name="Recipe Detail"
            data-tab-icon="fa-eye">
     <h6 style="font-weight:700; color:#2c3e50; margin-bottom:16px; border-bottom:2px solid #28a745; padding-bottom:6px;"><i class="fas fa-eye" style="color:#28a745;"></i> Viewing a Recipe</h6>
@@ -734,6 +778,20 @@
           <strong>Step 1 &mdash; Servings:</strong> Set how many servings you need. All ingredient quantities scale automatically.<br>
           <strong>Step 2 &mdash; Pantry review:</strong> Tick any ingredients you already have at home &mdash; they are excluded from the list.<br>
           <strong>Step 3 &mdash; Your list:</strong> Final shopping list grouped by category. Share via <strong>Print</strong>, <strong>Copy</strong>, <strong>Email</strong>, or <strong>WhatsApp</strong>.
+        </div>
+      </div>
+
+      <div style="background:#f8f9fa; border-radius:8px; padding:14px; border-left:4px solid #28a745;">
+        <div style="font-weight:600; color:#2c3e50; margin-bottom:6px;"><i class="fas fa-leaf" style="color:#28a745;"></i> Nutrition Analysis</div>
+        <div style="font-size:13px; color:#6c757d; line-height:1.7;">
+          Click the green <strong>Nutrition</strong> button to open an FDA-style nutrition label showing <strong>per-100g</strong> values: calories, total fat, total carbohydrate (with fibre and sugar sub-rows), and protein. All figures are calculated from USDA FoodData Central nutrition data linked to your ingredients.
+          <div style="margin-top:8px; display:flex; flex-direction:column; gap:4px;">
+            <div><strong>Show breakdown by ingredient</strong> &mdash; toggle below the label. Reveals a per-ingredient table showing how each ingredient contributes to the per-100g totals. Sorted by calorie contribution.</div>
+            <div><strong>Partial data warning</strong> &mdash; if some ingredients aren't yet mapped to nutrition data or need a unit conversion, a yellow warning bar appears with quick links to fix them. The label will still show, but figures will be incomplete.</div>
+          </div>
+          <div style="margin-top:8px; padding:10px; background:#f3eafa; border-left:3px solid #6f42c1; border-radius:4px; font-size:12px; color:#3d2466;">
+            <strong style="color:#6f42c1;"><i class="fas fa-magic"></i> AI Modification Ideas</strong> &mdash; for fully-mapped recipes, a second purple toggle appears below the breakdown: <strong>Show modification ideas</strong>. Tap it, pick a goal (reduce carbs, reduce calories, increase protein, or reduce fat), and the AI generates suggestions for ingredient substitutions or quantity changes that move the recipe toward that goal. Each suggestion shows the original &rarr; replacement, the estimated impact per 100g, and a <em>More details</em> toggle revealing the rationale and tradeoffs. Suggestions are estimates &mdash; adapt them to your taste.
+          </div>
         </div>
       </div>
 
@@ -895,12 +953,12 @@
     </div>
   </article>
 
-  <article data-tab-slug="rec-settings"
+<article data-tab-slug="rec-settings"
            data-tab-name="Settings"
            data-tab-icon="fa-cog">
     <h6 style="font-weight:700; color:#2c3e50; margin-bottom:16px; border-bottom:2px solid #28a745; padding-bottom:6px;"><i class="fas fa-cog" style="color:#28a745;"></i> Settings</h6>
 
-    <p style="font-size:13px; color:#6c757d; margin-bottom:16px;">The <strong>Settings</strong> dropdown contains four management pages that control how the system handles ingredients, units and conversions &mdash; all of which affect shopping list aggregation.</p>
+    <p style="font-size:13px; color:#6c757d; margin-bottom:16px;">The <strong>Settings</strong> dropdown contains five management pages that control how the system handles ingredients, units, conversions and nutrition data &mdash; all of which affect shopping list aggregation and the Nutrition Analysis FDA label.</p>
 
     <div style="display:flex; flex-direction:column; gap:14px;">
 
@@ -935,14 +993,27 @@
         </div>
       </div>
 
+      <div style="background:#f8f9fa; border-radius:8px; padding:14px; border-left:4px solid #28a745;">
+        <div style="font-weight:700; color:#2c3e50; margin-bottom:6px; font-size:13px;"><i class="fas fa-leaf" style="color:#28a745;"></i> Map Ingredients to Nutrition</div>
+        <div style="font-size:12px; color:#6c757d; line-height:1.7;">
+          Links each ingredient to a USDA FoodData Central record so that the <strong>Nutrition Analysis</strong> FDA label can compute calories, fat, carbs, fibre, sugar and protein. Ingredients without a nutrition mapping show a yellow <strong>Not mapped</strong> badge in the recipe nutrition modal.<br><br>
+          <strong>Two ways to provide nutrition data:</strong>
+          <div style="margin-top:6px; display:flex; flex-direction:column; gap:4px;">
+            <div><strong>USDA lookup</strong> &mdash; search the USDA database, preview the nutrition values, and map them to the ingredient. The standard option for common ingredients.</div>
+            <div><strong>Manual entry</strong> &mdash; type in your own per-100g values when an ingredient isn't in the USDA database (or when the USDA values don't match your specific brand or preparation). Manually-entered ingredients display a yellow <strong>"M"</strong> pill on the Mapped badge so you can tell them apart from USDA-sourced data at a glance.</div>
+          </div>
+          A <strong>Reset to USDA values</strong> button is available on any ingredient with manual entries, in case you want to discard your manual values and revert to the original USDA mapping.
+        </div>
+      </div>
+
     </div>
 
     <div style="background:#fff3cd; border:1px solid #ffc107; border-radius:8px; padding:12px; font-size:12px; color:#856404; margin-top:16px;">
-      <i class="fas fa-exclamation-triangle"></i> <strong>Note:</strong> These settings affect how shopping lists are calculated and how units are aggregated. If your shopping list shows unexpected quantities, check Unit Conversions for missing or incorrect conversion rules.
+      <i class="fas fa-exclamation-triangle"></i> <strong>Note:</strong> These settings affect how shopping lists are calculated, how units are aggregated, and how nutrition values are derived. If your shopping list shows unexpected quantities, check Unit Conversions for missing or incorrect rules. If a recipe's Nutrition Analysis label is incomplete, check Map Ingredients to Nutrition for unmapped ingredients.
     </div>
   </article>
 
-  <article data-tab-slug="rec-tips"
+<article data-tab-slug="rec-tips"
            data-tab-name="Tips"
            data-tab-icon="fa-lightbulb">
     <h6 style="font-weight:700; color:#2c3e50; margin-bottom:16px; border-bottom:2px solid #28a745; padding-bottom:6px;"><i class="fas fa-lightbulb" style="color:#28a745;"></i> Tips and Best Practices</h6>
@@ -983,9 +1054,23 @@
         <div><div style="font-weight:600; color:#2c3e50; font-size:14px; margin-bottom:4px;">Use Book View in the kitchen</div><div style="font-size:13px; color:#6c757d;">Switch to Book View for a clean, print-style reading experience. Navigate between recipes with the arrows and read ingredients and instructions side by side &mdash; ideal when cooking.</div></div>
       </div>
 
+      <div style="display:flex; gap:14px; align-items:flex-start;">
+        <div style="width:36px; height:36px; border-radius:50%; background:#28a745; display:flex; align-items:center; justify-content:center; flex-shrink:0;"><i class="fas fa-leaf" style="color:white; font-size:14px;"></i></div>
+        <div><div style="font-weight:600; color:#2c3e50; font-size:14px; margin-bottom:4px;">Map ingredients to nutrition for accurate per-100g values</div><div style="font-size:13px; color:#6c757d;">The Nutrition Analysis label only shows complete data when every ingredient is mapped to a USDA record (or has manual nutrition values entered). Visit Settings &rarr; Map Ingredients to Nutrition occasionally to clean up any unmapped ingredients &mdash; partial mappings produce partial labels.</div></div>
+      </div>
+
+      <div style="display:flex; gap:14px; align-items:flex-start;">
+        <div style="width:36px; height:36px; border-radius:50%; background:#6f42c1; display:flex; align-items:center; justify-content:center; flex-shrink:0;"><i class="fas fa-magic" style="color:white; font-size:14px;"></i></div>
+        <div><div style="font-weight:600; color:#2c3e50; font-size:14px; margin-bottom:4px;">Use AI Modification Ideas to explore recipe variants</div><div style="font-size:13px; color:#6c757d;">Open the Nutrition modal, expand <strong>Show modification ideas</strong>, and pick a goal &mdash; e.g. "reduce carbs" for a lower-carb version of a pasta dish, or "increase protein" to bulk up a vegetarian meal. Suggestions are estimates &mdash; treat them as a starting point for your own creativity.</div></div>
+      </div>
+
+      <div style="display:flex; gap:14px; align-items:flex-start;">
+        <div style="width:36px; height:36px; border-radius:50%; background:#ffc107; display:flex; align-items:center; justify-content:center; flex-shrink:0;"><strong style="color:white; font-size:14px;">M</strong></div>
+        <div><div style="font-weight:600; color:#2c3e50; font-size:14px; margin-bottom:4px;">Watch for the "M" pill on manually-edited ingredients</div><div style="font-size:13px; color:#6c757d;">In the nutrition mapping page, ingredients with manually-entered nutrition values (rather than USDA-sourced data) show a yellow <strong>"M"</strong> pill on their Mapped badge. This is just a marker so you know the data came from you, not a database. Use the <strong>Reset to USDA values</strong> button if you want to revert.</div></div>
+      </div>
+
     </div>
   </article>
-
 </section>
 <!-- ======= END RECIPE MANAGEMENT ======= -->
 
