@@ -11793,12 +11793,20 @@ def view_recipe(request, recipe_id):
     except Exception:
         cooking_calc = None
 
+    show_nutrition_button = recipe_has_any_mapped_ingredient(recipe)
+    show_ai_suggestions = (
+        show_nutrition_button
+        and getattr(recipe, 'nutrition_cache', None) is not None
+        and recipe.nutrition_cache.is_complete
+    )
+    
     context = {
         'recipe': recipe,
         'ingredients': ingredients,
         'instructions': instructions,
         'cooking_calculation': cooking_calc,
-        'show_nutrition_button': recipe_has_any_mapped_ingredient(recipe),
+        'show_nutrition_button': show_nutrition_button,
+        'show_ai_suggestions': show_ai_suggestions,
     }
     
     return render(request, 'view_recipe.html', context)
