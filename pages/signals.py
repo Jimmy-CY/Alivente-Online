@@ -1,4 +1,4 @@
-from django.db import transaction
+from django.db import connection, transaction
 from django.db.models.signals import post_save, post_delete, pre_save
 from django.dispatch import receiver
 from django.utils import timezone
@@ -416,3 +416,37 @@ def unit_conversion_deleted__refresh_dependent_recipes(sender, instance, **kwarg
         recipes = Recipe.objects.filter(pk__in=affected_ids)
         _recalculate_caches_for_recipes(recipes)
     transaction.on_commit(_do)
+
+def _run_wcim_recompute():
+    """Lazy import to avoid circular imports at module load time."""
+    from pages.services.wcim import recompute_recipe_stats
+    try:
+        recompute_recipe_stats()
+    except Exception:
+        # We never want a stats-recompute failure to roll back the original
+        # save. Swallow and log; user can re-run the management command.
+        import logging
+        logging.getLogger(__name__).exception("WCIM stats recompute failed")
+
+
+@receiver(post_save, sender=RecipeIngredient)
+@receiver(post_delete, sender=RecipeIngredient)
+def schedule_wcim_stats_recompute(sender, **kwargs):
+    """
+    Schedule a WCIM stats recompute when a recipe's ingredients change.
+
+    Dedupes within a transaction using a connection-level flag so bulk
+    operations only trigger one recompute at commit time.
+    """
+    # Already scheduled on this connection's current transaction? Skip.
+    if getattr(connection, "_wcim_recompute_pending", False):
+        return
+    connection._wcim_recompute_pending = True
+
+    def _run_then_reset():
+        try:
+            _run_wcim_recompute()
+        finally:
+            connection._wcim_recompute_pending = False
+
+    transaction.on_commit(_run_then_reset)

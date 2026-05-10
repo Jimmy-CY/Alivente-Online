@@ -2,6 +2,7 @@ from django.db import models
 from django.db import connections
 from django.db.models import Min, Max, Sum
 from django.contrib.auth.models import User
+from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.utils.text import slugify
 from django.utils import timezone
@@ -1394,7 +1395,6 @@ class IngredientCategory(models.Model):
         verbose_name_plural = "Ingredient Categories"
         ordering = ['name']
 
-
 class Ingredient(models.Model):
     """Master list of ingredients"""
     
@@ -1482,6 +1482,20 @@ class Ingredient(models.Model):
         null=True,
         blank=True,
         help_text='Where the per-100g nutrition values came from. NULL = not set yet.'
+    )
+    
+    # === WCIM (What Can I Make?) statistics ===
+    # Cached values used by the recipe matching engine. Recomputed by the
+    # rebuild_recipe_stats management command and the post_save / post_delete
+    # signal on RecipeIngredient (see pages/services/wcim.py).
+    
+    document_frequency = models.PositiveIntegerField(
+        default=0,
+        help_text='Number of recipes that use this ingredient. Recomputed by rebuild_recipe_stats.'
+    )
+    idf = models.FloatField(
+        default=0.0,
+        help_text='Inverse document frequency: log(N / df). Higher = more distinctive. Recomputed by rebuild_recipe_stats.'
     )
     
     created_date = models.DateTimeField(auto_now_add=True)
@@ -1615,7 +1629,15 @@ class Recipe(models.Model):
         help_text='Recipe author or source'
     )
     
-
+    # === WCIM (What Can I Make?) statistics ===
+    # Cached value used by the recipe matching engine. Recomputed by the
+    # rebuild_recipe_stats management command and the post_save / post_delete
+    # signal on RecipeIngredient (see pages/services/wcim.py).
+    weighted_total = models.FloatField(
+        default=0.0,
+        help_text='Sum of IDF for all ingredients in this recipe. Used as the denominator in WCIM match scoring. Recomputed by rebuild_recipe_stats.'
+    )
+    
     def save(self, *args, **kwargs):
         # Auto-calculate total_time if not provided
         if not self.total_time and self.prep_time and self.cook_time:
@@ -2153,6 +2175,39 @@ class RecipeFavourite(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.recipe.recipe_name}"
+
+class PantryStaple(models.Model):
+    """
+    A single ingredient that a user always considers themselves to have on
+    hand. The "What Can I Make?" matching engine treats these as silently
+    present, so they don't count against a match.
+
+    Defaults are seeded from DEFAULT_PANTRY_STAPLE_IDS (in pages/services/wcim.py)
+    on a user's first visit to the staples management page.
+    """
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="pantry_staples",
+    )
+    ingredient = models.ForeignKey(
+        "Ingredient",
+        on_delete=models.CASCADE,
+        related_name="users_having_as_staple",
+    )
+    added_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "pantry_staples"
+        unique_together = [("user", "ingredient")]
+        indexes = [models.Index(fields=["user"])]
+        ordering = ["ingredient__name"]
+        verbose_name = "Pantry Staple"
+        verbose_name_plural = "Pantry Staples"
+
+    def __str__(self):
+        return f"{self.user.username}'s staple: {self.ingredient.name}"
 
 # Celebration/Event Management Models
 
