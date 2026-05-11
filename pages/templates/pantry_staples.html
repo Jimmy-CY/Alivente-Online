@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container my-4">
+
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-start mb-3">
+    <div>
+      <h2 class="mb-1" style="color: #2c3e50;">
+        <i class="fas fa-bookmark text-success"></i> Pantry Staples
+      </h2>
+      <p class="text-muted mb-0">
+        Items always assumed to be in your pantry.
+        Silently applied to every <strong>What Can I Make?</strong> search &mdash; they never count as missing.
+      </p>
+    </div>
+    <a href="{% url 'recipe_management' %}" class="btn btn-secondary">
+      <i class="fas fa-arrow-left"></i> Back
+    </a>
+  </div>
+
+  <!-- Flash messages -->
+  {% if messages %}
+    {% for message in messages %}
+      {% if message.tags == 'error' %}
+        {% with bs='danger' %}
+          <div class="alert alert-{{ bs }} alert-dismissible fade show">
+            {{ message }}
+            <button type="button" class="close" data-dismiss="alert">&times;</button>
+          </div>
+        {% endwith %}
+      {% else %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+          {{ message }}
+          <button type="button" class="close" data-dismiss="alert">&times;</button>
+        </div>
+      {% endif %}
+    {% endfor %}
+  {% endif %}
+
+  <!-- Stats -->
+  <div class="alert alert-info">
+    <i class="fas fa-info-circle"></i>
+    You have <strong>{{ staples_count }}</strong> pantry staples.
+  </div>
+
+  <!-- Current staples -->
+  <div class="card mb-4">
+    <div class="card-header bg-success text-white">
+      <h5 class="mb-0"><i class="fas fa-check-circle"></i> Your Staples</h5>
+    </div>
+    <div class="card-body">
+      {% if staples %}
+        <div class="row">
+          {% for staple in staples %}
+            <div class="col-md-4 col-sm-6 mb-2">
+              <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="remove">
+                <input type="hidden" name="staple_id" value="{{ staple.pk }}">
+                <div class="border rounded px-3 py-2 d-flex justify-content-between align-items-center"
+                     style="background: #f0fff4;">
+                  <span style="font-size: 14px;">{{ staple.ingredient.name }}</span>
+                  <button type="submit" class="btn btn-sm btn-link text-danger p-0" title="Remove">
+                    <i class="fas fa-times"></i>
+                  </button>
+                </div>
+              </form>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        <p class="text-muted mb-0">No pantry staples yet.</p>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Add an ingredient -->
+  <div class="card mb-4">
+    <div class="card-header bg-info text-white">
+      <h5 class="mb-0"><i class="fas fa-plus-circle"></i> Add an Ingredient</h5>
+    </div>
+    <div class="card-body">
+      <form method="post" class="form-inline">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="add">
+        <div class="form-group mr-2 flex-grow-1" style="min-width: 300px;">
+          <select name="ingredient_id" class="form-control w-100" required>
+            <option value="">&mdash; Pick an ingredient &mdash;</option>
+            {% for ing in available_ingredients %}
+              <option value="{{ ing.ingredient_id }}">{{ ing.name }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <button type="submit" class="btn btn-success">
+          <i class="fas fa-plus"></i> Add Staple
+        </button>
+      </form>
+      <small class="text-muted d-block mt-2">
+        Scroll the list or click and start typing the ingredient name to jump to it.
+      </small>
+    </div>
+  </div>
+
+  <!-- Reset to defaults -->
+  <div class="card border-danger">
+    <div class="card-body">
+      <form method="post" onsubmit="return confirm('Reset to defaults? This clears ALL your current staples and replaces them with the default 69-item list.');">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="reset">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <strong>Reset to defaults</strong>
+            <p class="mb-0 text-muted small">Clear your current staples and restore the default seed list.</p>
+          </div>
+          <button type="submit" class="btn btn-outline-danger">
+            <i class="fas fa-undo"></i> Reset
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+</div>
+{% endblock %}
