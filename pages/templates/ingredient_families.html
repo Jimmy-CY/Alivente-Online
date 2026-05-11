@@ -14,9 +14,14 @@
         The matcher gives 70% credit when you have a family member but not the exact ingredient.
       </p>
     </div>
-    <a href="{% url 'pantry_staples_management' %}" class="btn btn-secondary">
-      <i class="fas fa-arrow-left"></i> Back
-    </a>
+    <div style="display: flex; gap: 8px;">
+      <button type="button" class="btn btn-success" data-toggle="modal" data-target="#createFamilyModal">
+        <i class="fas fa-plus"></i> Create family
+      </button>
+      <a href="{% url 'pantry_staples_management' %}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Back
+      </a>
+    </div>
   </div>
 
   <!-- Flash messages -->
@@ -46,11 +51,29 @@
   <!-- Families list -->
   {% for family in families %}
     <div class="card mb-3">
-      <div class="card-header bg-success text-white">
+      <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
         <h6 class="mb-0">
           <i class="fas fa-layer-group"></i> {{ family.name }}
           <span class="badge badge-light ml-2">{{ family.members.all|length }}</span>
         </h6>
+        <div style="display: flex; gap: 6px;">
+          <button type="button" class="btn btn-sm btn-outline-light family-edit-btn"
+                  data-family-id="{{ family.family_id }}"
+                  data-family-name="{{ family.name }}"
+                  data-family-description="{{ family.description|default:'' }}"
+                  title="Edit name and description">
+            <i class="fas fa-pencil-alt"></i>
+          </button>
+          <form method="post" class="d-inline mb-0"
+                onsubmit="return confirm('Delete the family &quot;{{ family.name }}&quot;? Its {{ family.members.all|length }} member ingredient(s) will become unassigned. This cannot be undone.');">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="delete_family">
+            <input type="hidden" name="family_id" value="{{ family.family_id }}">
+            <button type="submit" class="btn btn-sm btn-outline-light" title="Delete family">
+              <i class="fas fa-trash"></i>
+            </button>
+          </form>
+        </div>
       </div>
       <div class="card-body">
         {% if family.description %}
@@ -122,6 +145,79 @@
     </div>
   </div>
 
+  <!-- Create family modal -->
+  <div class="modal fade" id="createFamilyModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <form method="post">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="create_family">
+          <div class="modal-header bg-success text-white">
+            <h5 class="modal-title"><i class="fas fa-plus"></i> Create new family</h5>
+            <button type="button" class="close text-white" data-dismiss="modal">
+              <span>&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <div class="form-group">
+              <label for="newFamilyName">Name</label>
+              <input type="text" class="form-control" id="newFamilyName" name="name"
+                     required maxlength="100" placeholder="e.g. Citrus juices">
+            </div>
+            <div class="form-group mb-0">
+              <label for="newFamilyDescription">Description</label>
+              <textarea class="form-control" id="newFamilyDescription" name="description" rows="3"
+                        placeholder="What makes these items substitutable, and any exclusions to watch for"></textarea>
+              <small class="text-muted">Optional but recommended. Future you will thank present you.</small>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-success">
+              <i class="fas fa-plus"></i> Create family
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit family modal (filled via JS when an Edit button is clicked) -->
+  <div class="modal fade" id="editFamilyModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <form method="post">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="update_family">
+          <input type="hidden" name="family_id" id="editFamilyId">
+          <div class="modal-header bg-info text-white">
+            <h5 class="modal-title"><i class="fas fa-pencil-alt"></i> Edit family</h5>
+            <button type="button" class="close text-white" data-dismiss="modal">
+              <span>&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <div class="form-group">
+              <label for="editFamilyName">Name</label>
+              <input type="text" class="form-control" id="editFamilyName" name="name"
+                     required maxlength="100">
+            </div>
+            <div class="form-group mb-0">
+              <label for="editFamilyDescription">Description</label>
+              <textarea class="form-control" id="editFamilyDescription" name="description" rows="4"></textarea>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-info text-white">
+              <i class="fas fa-save"></i> Save changes
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <!-- Select2 stylesheet -->
@@ -166,6 +262,15 @@
       placeholder: '— Add an ingredient —',
       width: '100%',
       allowClear: true
+    });
+
+    // Populate the Edit modal from the clicked button's data attributes
+    $('.family-edit-btn').on('click', function () {
+      var $btn = $(this);
+      $('#editFamilyId').val($btn.data('family-id'));
+      $('#editFamilyName').val($btn.data('family-name'));
+      $('#editFamilyDescription').val($btn.data('family-description'));
+      $('#editFamilyModal').modal('show');
     });
   });
 </script>

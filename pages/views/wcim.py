@@ -370,6 +370,60 @@ def ingredient_families_management(request):
             except (ValueError, TypeError, Ingredient.DoesNotExist):
                 messages.error(request, "Couldn't remove that ingredient.")
 
+        elif action == "create_family":
+            name = request.POST.get("name", "").strip()
+            description = request.POST.get("description", "").strip()
+            if not name:
+                messages.error(request, "Family name is required.")
+            elif IngredientFamily.objects.filter(name=name).exists():
+                messages.warning(request, f"A family called '{name}' already exists.")
+            else:
+                IngredientFamily.objects.create(name=name, description=description)
+                messages.success(request, f"Created family '{name}'.")
+
+        elif action == "update_family":
+            try:
+                family_id = int(request.POST.get("family_id", ""))
+                name = request.POST.get("name", "").strip()
+                description = request.POST.get("description", "").strip()
+                if not name:
+                    messages.error(request, "Family name is required.")
+                else:
+                    family = IngredientFamily.objects.get(family_id=family_id)
+                    conflict = (
+                        IngredientFamily.objects
+                        .filter(name=name)
+                        .exclude(family_id=family_id)
+                        .exists()
+                    )
+                    if conflict:
+                        messages.error(request, f"Another family already uses the name '{name}'.")
+                    else:
+                        family.name = name
+                        family.description = description
+                        family.save()
+                        messages.success(request, f"Updated '{name}'.")
+            except (ValueError, TypeError, IngredientFamily.DoesNotExist):
+                messages.error(request, "Couldn't update that family.")
+
+        elif action == "delete_family":
+            try:
+                family_id = int(request.POST.get("family_id", ""))
+                family = IngredientFamily.objects.get(family_id=family_id)
+                name = family.name
+                member_count = family.members.count()
+                family.delete()  # SET_NULL cascades — members keep, lose family FK
+                if member_count:
+                    s = "" if member_count == 1 else "s"
+                    messages.success(
+                        request,
+                        f"Deleted '{name}'. {member_count} ingredient{s} now unassigned."
+                    )
+                else:
+                    messages.success(request, f"Deleted '{name}'.")
+            except (ValueError, TypeError, IngredientFamily.DoesNotExist):
+                messages.error(request, "Couldn't delete that family.")
+
         elif action == "reset_all":
             out = StringIO()
             try:
