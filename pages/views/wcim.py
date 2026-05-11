@@ -127,7 +127,7 @@ def wcim_landing(request):
     ANCHOR_ICONS = {
         "chicken":    "fa-drumstick-bite",
         "pork":       "fa-bacon",
-        "beef":       "fa-cow",
+        "beef":       "fa-burger",
         "lamb":       "fa-drumstick-bite",
         "fish":       "fa-fish",
         "seafood":    "fa-shrimp",
@@ -148,7 +148,11 @@ def wcim_landing(request):
             return redirect("wcim_results")
         return redirect("wcim_extras")
 
-    selected_anchors = request.session.get("wcim_anchors", [])
+    # Landing always starts fresh — clear any prior selection so the user
+    # gets an unselected anchor row every time they arrive here.
+    request.session.pop("wcim_anchors", None)
+    request.session.pop("wcim_extras", None)
+
     anchors = [
         {**a, "icon": ANCHOR_ICONS.get(a["slug"], "fa-circle")}
         for a in ANCHOR_DEFINITIONS
@@ -156,7 +160,7 @@ def wcim_landing(request):
 
     context = {
         "anchors": anchors,
-        "selected_anchors": selected_anchors,
+        "selected_anchors": [],
     }
     return render(request, "wcim_landing.html", context)
 

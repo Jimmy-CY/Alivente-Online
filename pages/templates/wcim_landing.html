@@ -1,5 +1,4 @@
 {% extends "base.html" %}
-
 {% block content %}
 <div class="container my-4">
 
@@ -17,14 +16,6 @@
       <i class="fas fa-arrow-left"></i> Back
     </a>
   </div>
-
-  {% if selected_anchors %}
-    <div class="alert alert-success">
-      <i class="fas fa-check-circle"></i>
-      Saved your selection: <strong>{{ selected_anchors|join:", " }}</strong>.
-      <small class="text-muted">(Phase 1d step 2 will wire this through to the next page.)</small>
-    </div>
-  {% endif %}
 
   <form method="post">
     {% csrf_token %}
@@ -50,35 +41,36 @@
     </div>
 
     <!-- Actions -->
-    <div class="d-flex justify-content-between">
-      <a href="{% url 'pantry_staples_management' %}" class="text-muted small">
+    <div class="wcim-actions">
+      <a href="{% url 'pantry_staples_management' %}" class="text-muted small wcim-staples-link">
         <i class="fas fa-cog"></i> Manage your pantry staples
       </a>
-      <div>
+      <div class="wcim-actions-buttons">
         <button type="submit" name="action" value="skip" class="btn btn-outline-secondary">
-          Skip extras — show me everything
+          Skip extras &mdash; show me everything
         </button>
-        <button type="submit" name="action" value="continue" class="btn btn-success ml-2">
+        <button type="submit" name="action" value="continue" class="btn btn-success">
           Continue <i class="fas fa-arrow-right"></i>
         </button>
       </div>
     </div>
 
   </form>
-
 </div>
 
 <style>
+  /* Anchor grid: equal-width cells that wrap responsively */
   .anchor-grid {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 10px;
   }
   .anchor-btn {
-    display: inline-flex;
+    display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 12px 22px;
+    justify-content: center;
+    gap: 8px;
+    padding: 14px 12px;
     border: 2px solid #d4e4d4;
     border-radius: 8px;
     cursor: pointer;
@@ -89,6 +81,8 @@
     margin-bottom: 0;
     transition: all 0.15s ease;
     user-select: none;
+    text-align: center;
+    min-height: 56px;
   }
   .anchor-btn:hover {
     border-color: #28a745;
@@ -106,9 +100,39 @@
   .anchor-btn i {
     font-size: 18px;
   }
+
+  /* Action row: side-by-side on desktop, stacked on mobile */
+  .wcim-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .wcim-actions-buttons {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  @media (max-width: 575.98px) {
+    .wcim-actions {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .wcim-actions-buttons {
+      flex-direction: column;
+      width: 100%;
+    }
+    .wcim-actions-buttons .btn {
+      width: 100%;
+    }
+    .wcim-staples-link {
+      text-align: center;
+      padding: 4px 0;
+    }
+  }
 </style>
 {% endblock %}
-
 
 {% block extra_scripts %}
 <script>

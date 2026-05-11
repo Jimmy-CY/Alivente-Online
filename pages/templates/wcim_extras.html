@@ -4,7 +4,7 @@
 <div class="container my-4">
 
   <!-- Header -->
-  <div class="d-flex justify-content-between align-items-start mb-3">
+  <div class="wcim-extras-header mb-3">
     <div>
       <h2 class="mb-1" style="color: #2c3e50;">
         <i class="fas fa-check-double text-success"></i> What else do you have?
@@ -49,7 +49,7 @@
     </div>
 
     <!-- Actions -->
-    <div class="d-flex justify-content-end">
+    <div class="wcim-extras-actions">
       <button type="submit" class="btn btn-success">
         Show recipes <i class="fas fa-arrow-right"></i>
       </button>
@@ -60,16 +60,26 @@
 </div>
 
 <style>
-  .extras-grid {
+  /* Header: side-by-side on desktop, stacked on mobile */
+  .wcim-extras-header {
     display: flex;
-    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  /* Extras grid: uniform cell width that wraps responsively */
+  .extras-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
     gap: 10px;
   }
   .extra-btn {
-    display: inline-flex;
+    display: flex;
     align-items: center;
+    justify-content: center;
     gap: 6px;
-    padding: 8px 14px;
+    padding: 10px 12px;
     border: 2px solid #d4e4d4;
     border-radius: 8px;
     cursor: pointer;
@@ -79,6 +89,8 @@
     margin-bottom: 0;
     transition: all 0.15s ease;
     user-select: none;
+    text-align: center;
+    min-height: 44px;
   }
   .extra-btn:hover {
     border-color: #28a745;
@@ -92,10 +104,30 @@
   .extra-btn input[type="checkbox"] {
     display: none;
   }
+  .extra-name {
+    line-height: 1.2;
+  }
   .extra-count {
     font-size: 11px;
     opacity: 0.75;
     font-weight: 500;
+    flex-shrink: 0;
+  }
+
+  /* Actions: right-aligned on desktop, full width on mobile */
+  .wcim-extras-actions {
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  @media (max-width: 575.98px) {
+    .wcim-extras-header {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .wcim-extras-actions .btn {
+      width: 100%;
+    }
   }
 </style>
 {% endblock %}
