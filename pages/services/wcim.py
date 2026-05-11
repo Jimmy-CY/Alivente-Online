@@ -221,6 +221,10 @@ def filter_by_anchors(queryset, anchor_slugs):
     Multiple anchors combine with OR (union): selecting Chicken + Pork
     returns recipes tagged with either. The 'anything' anchor (or an empty
     list) returns the queryset unchanged.
+
+    Special case: if any savoury anchor is selected without 'dessert' in the
+    mix, desserts are excluded — desserts are almost all vegetarian and
+    would otherwise drown the Vegetarian anchor's savoury results.
     """
     if not anchor_slugs or "anything" in anchor_slugs:
         return queryset
@@ -236,8 +240,15 @@ def filter_by_anchors(queryset, anchor_slugs):
     if not matched_any:
         return queryset
 
-    return queryset.filter(combined).distinct()
+    qs = queryset.filter(combined).distinct()
 
+    # If the user picked savoury anchors but didn't include Dessert, strip
+    # desserts so the savoury intent comes through cleanly (especially for
+    # Vegetarian, where ~109 of 199 vegetarian recipes are desserts).
+    if "dessert" not in anchor_slugs:
+        qs = qs.exclude(courses__name="Dessert")
+
+    return qs
 
 def tier_for(score: float) -> str:
     """Classify a recipe match score into a tier label.
