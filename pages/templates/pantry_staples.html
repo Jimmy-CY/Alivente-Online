@@ -137,17 +137,22 @@
 
 </div>
 
-<!-- Select2 — typeahead for the ingredient picker -->
+<!-- Select2 stylesheet — fine to load from anywhere -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css">
+
+{% endblock %}
+
+
+{% block extra_scripts %}
+<!-- Select2 — typeahead for the ingredient picker. Loaded after jQuery via the base.html extra_scripts block. -->
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
   $(document).ready(function () {
     $('#staple-picker').select2({
       placeholder: '— Pick an ingredient —',
       width: '100%',
-      allowClear: true,
+      allowClear: true
     });
   });
 </script>
-
 {% endblock %}
