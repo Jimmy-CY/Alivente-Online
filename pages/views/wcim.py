@@ -320,3 +320,85 @@ def wcim_recipe_quick_view(request, recipe_id):
         "recipe": recipe,
         "ingredients_data": ingredients_data,
     })
+
+@login_required
+@require_http_methods(["GET", "POST"])
+def ingredient_families_management(request):
+    """Manage WCIM ingredient families.
+
+    GET: render the page with all families and members.
+    POST: handle one of:
+        - add_to_family + family_id + ingredient_id
+        - remove_from_family + ingredient_id
+        - reset_all
+    """
+    from io import StringIO
+    from django.core.management import call_command
+    from pages.models import IngredientFamily
+
+    if request.method == "POST":
+        action = request.POST.get("action")
+
+        if action == "add_to_family":
+            try:
+                family_id = int(request.POST.get("family_id", ""))
+                ing_id = int(request.POST.get("ingredient_id", ""))
+                family = IngredientFamily.objects.get(family_id=family_id)
+                ing = Ingredient.objects.get(ingredient_id=ing_id)
+                old_family_name = ing.family.name if ing.family else None
+                ing.family = family
+                ing.save(update_fields=["family"])
+                if old_family_name and old_family_name != family.name:
+                    messages.success(
+                        request,
+                        f"Moved '{ing.name}' from '{old_family_name}' to '{family.name}'."
+                    )
+                else:
+                    messages.success(request, f"Added '{ing.name}' to '{family.name}'.")
+            except (ValueError, TypeError, IngredientFamily.DoesNotExist, Ingredient.DoesNotExist):
+                messages.error(request, "Couldn't add that ingredient.")
+
+        elif action == "remove_from_family":
+            try:
+                ing_id = int(request.POST.get("ingredient_id", ""))
+                ing = Ingredient.objects.get(ingredient_id=ing_id)
+                family_name = ing.family.name if ing.family else None
+                ing.family = None
+                ing.save(update_fields=["family"])
+                if family_name:
+                    messages.success(request, f"Removed '{ing.name}' from '{family_name}'.")
+            except (ValueError, TypeError, Ingredient.DoesNotExist):
+                messages.error(request, "Couldn't remove that ingredient.")
+
+        elif action == "reset_all":
+            out = StringIO()
+            try:
+                call_command("seed_ingredient_families", stdout=out)
+                messages.success(request, "Re-seeded families from defaults.")
+            except Exception as e:
+                messages.error(request, f"Reset failed: {e}")
+
+        return redirect("ingredient_families_management")
+
+    # GET
+    families = (
+        IngredientFamily.objects
+        .prefetch_related("members")
+        .order_by("name")
+    )
+
+    all_ingredients = (
+        Ingredient.objects
+        .select_related("family")
+        .order_by("name")
+    )
+
+    total_with_family = Ingredient.objects.filter(family__isnull=False).count()
+
+    context = {
+        "families": families,
+        "all_ingredients": all_ingredients,
+        "total_families": families.count(),
+        "total_with_family": total_with_family,
+    }
+    return render(request, "ingredient_families.html", context)

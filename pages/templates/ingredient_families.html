@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container my-4">
+
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-start mb-3">
+    <div>
+      <h2 class="mb-1" style="color: #2c3e50;">
+        <i class="fas fa-sitemap text-success"></i> Ingredient Families
+      </h2>
+      <p class="text-muted mb-0">
+        Items in the same family are partial substitutes when matching recipes.
+        The matcher gives 70% credit when you have a family member but not the exact ingredient.
+      </p>
+    </div>
+    <a href="{% url 'pantry_staples_management' %}" class="btn btn-secondary">
+      <i class="fas fa-arrow-left"></i> Back
+    </a>
+  </div>
+
+  <!-- Flash messages -->
+  {% if messages %}
+    {% for message in messages %}
+      {% if message.tags == 'error' %}
+        <div class="alert alert-danger alert-dismissible fade show">
+          {{ message }}
+          <button type="button" class="close" data-dismiss="alert">&times;</button>
+        </div>
+      {% else %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+          {{ message }}
+          <button type="button" class="close" data-dismiss="alert">&times;</button>
+        </div>
+      {% endif %}
+    {% endfor %}
+  {% endif %}
+
+  <!-- Stats -->
+  <div class="alert alert-info">
+    <i class="fas fa-info-circle"></i>
+    <strong>{{ total_families }}</strong> families &middot;
+    <strong>{{ total_with_family }}</strong> ingredients have a family.
+  </div>
+
+  <!-- Families list -->
+  {% for family in families %}
+    <div class="card mb-3">
+      <div class="card-header bg-success text-white">
+        <h6 class="mb-0">
+          <i class="fas fa-layer-group"></i> {{ family.name }}
+          <span class="badge badge-light ml-2">{{ family.members.all|length }}</span>
+        </h6>
+      </div>
+      <div class="card-body">
+        {% if family.description %}
+          <p class="text-muted small mb-3">{{ family.description }}</p>
+        {% endif %}
+
+        <!-- Members -->
+        {% if family.members.all %}
+          <div class="d-flex flex-wrap mb-3" style="gap: 6px;">
+            {% for member in family.members.all|dictsort:"name" %}
+              <form method="post" class="d-inline mb-0">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="remove_from_family">
+                <input type="hidden" name="ingredient_id" value="{{ member.ingredient_id }}">
+                <span class="family-member-pill">
+                  {{ member.name }}
+                  <button type="submit" class="family-member-remove" title="Remove from family">
+                    <i class="fas fa-times"></i>
+                  </button>
+                </span>
+              </form>
+            {% endfor %}
+          </div>
+        {% else %}
+          <p class="text-muted small mb-3"><em>No members yet.</em></p>
+        {% endif %}
+
+        <!-- Add ingredient -->
+        <form method="post" class="mb-0">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="add_to_family">
+          <input type="hidden" name="family_id" value="{{ family.family_id }}">
+          <div class="d-flex align-items-center" style="gap: 8px;">
+            <select name="ingredient_id" class="form-control form-control-sm family-add-picker" required>
+              <option value="">&mdash; Add an ingredient &mdash;</option>
+              {% for ing in all_ingredients %}
+                <option value="{{ ing.ingredient_id }}">
+                  {{ ing.name }}{% if ing.family %} (currently in: {{ ing.family.name }}){% endif %}
+                </option>
+              {% endfor %}
+            </select>
+            <button type="submit" class="btn btn-success btn-sm" style="white-space: nowrap;">
+              <i class="fas fa-plus"></i> Add
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  {% endfor %}
+
+  <!-- Reset to defaults -->
+  <div class="card border-danger mt-4">
+    <div class="card-body">
+      <form method="post" onsubmit="return confirm('Re-seed all families from the default list? Custom families you have created will be preserved; the seeded 28 families will have their members reset to the curated source-of-truth.');">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="reset_all">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <strong>Reset to defaults</strong>
+            <p class="mb-0 text-muted small">
+              Re-runs the seed command. Memberships for the 28 seeded families return to source-of-truth.
+            </p>
+          </div>
+          <button type="submit" class="btn btn-outline-danger">
+            <i class="fas fa-undo"></i> Reset
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+</div>
+
+<!-- Select2 stylesheet -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css">
+
+<style>
+  .family-member-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 4px 4px 12px;
+    background: #f0fff4;
+    border: 1px solid #c8e8d4;
+    border-radius: 12px;
+    font-size: 13px;
+    color: #2c3e50;
+  }
+  .family-member-remove {
+    background: transparent;
+    border: none;
+    padding: 2px 6px;
+    color: #dc3545;
+    cursor: pointer;
+    font-size: 11px;
+    line-height: 1;
+  }
+  .family-member-remove:hover {
+    color: #a71d2a;
+  }
+  .family-add-picker {
+    flex-grow: 1;
+  }
+</style>
+{% endblock %}
+
+
+{% block extra_scripts %}
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+  $(document).ready(function () {
+    $('.family-add-picker').select2({
+      placeholder: '— Add an ingredient —',
+      width: '100%',
+      allowClear: true
+    });
+  });
+</script>
+{% endblock %}

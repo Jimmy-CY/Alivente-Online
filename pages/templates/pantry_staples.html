@@ -14,9 +14,14 @@
         Silently applied to every <strong>What Can I Make?</strong> search &mdash; they never count as missing.
       </p>
     </div>
-    <a href="{% url 'recipe_management' %}" class="btn btn-secondary">
-      <i class="fas fa-arrow-left"></i> Back
-    </a>
+    <div style="display: flex; gap: 8px;">
+      <a href="{% url 'ingredient_families_management' %}" class="btn btn-outline-success">
+        <i class="fas fa-sitemap"></i> Families
+      </a>
+      <a href="{% url 'recipe_management' %}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Back
+      </a>
+    </div>
   </div>
 
   <!-- Flash messages -->

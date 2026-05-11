@@ -311,6 +311,7 @@ urlpatterns = [
     path('recipes/wcim/results/', views.wcim_results, name='wcim_results'),
      path('recipes/wcim/recipe/<int:recipe_id>/quick-view/', views.wcim_recipe_quick_view, name='wcim_recipe_quick_view'),
      path('recipes/find-matching/', views.wcim_landing, name='find_matching_recipes'),
+     path('recipes/ingredient-families/', views.ingredient_families_management, name='ingredient_families_management'),
 
     # Celebration Management
     path('celebrations/', views.celebration_dashboard, name='celebration_dashboard'),
