@@ -271,32 +271,59 @@ def tier_for(score: float) -> str:
     return "below_threshold"
 
 
-def score_recipe(recipe, available_idfs: dict) -> dict:
+def score_recipe(recipe, available_idfs: dict,
+                 available_family_ids: set = None,
+                 available_by_family: dict = None) -> dict:
     """Score a single recipe against a dict of available ingredients.
 
     Args:
-        recipe: a Recipe instance, ideally with prefetched recipe_ingredients
+        recipe: a Recipe instance, ideally with prefetched recipe_ingredients.
         available_idfs: dict mapping ingredient_id -> idf for every ingredient
-                        the user has on hand (pantry staples + extras)
+                        the user has on hand (pantry staples + extras).
+        available_family_ids: set of family_ids the user has any ingredient in.
+                              If None, no family matching happens.
+        available_by_family: dict mapping family_id -> list of ingredient names
+                             the user has in that family. Used to populate the
+                             "via" hint on substitute matches.
 
     Returns:
         {
-            "score":   float 0..1   weighted match coverage
-            "have":    [str, ...]   names of ingredients the user has
-            "missing": [str, ...]   names of ingredients the user lacks
-            "tier":    str          make_now / almost_there / worth_shopping / below_threshold
+            "score":           float 0..1   weighted match coverage
+            "have_exact":      [str, ...]   names of recipe ingredients the user has exactly
+            "have_substitute": [dict, ...]  {name, via} for recipe ingredients matched via family
+            "missing":         [str, ...]   names of recipe ingredients the user lacks entirely
+            "tier":            str          make_now / almost_there / worth_shopping / below_threshold
         }
     """
+    from django.conf import settings
+    family_weight = getattr(settings, "WCIM_FAMILY_MATCH_WEIGHT", 0.7)
+    available_family_ids = available_family_ids or set()
+    available_by_family = available_by_family or {}
+
     recipe_ings = recipe.recipe_ingredients.all()
 
     total_available_idf = 0.0
-    have = []
+    have_exact = []
+    have_substitute = []
     missing = []
 
     for ri in recipe_ings:
+        ing_idf = ri.ingredient.idf or 0.0
+
         if ri.ingredient_id in available_idfs:
-            total_available_idf += available_idfs[ri.ingredient_id]
-            have.append(ri.ingredient.name)
+            # Exact match — full credit
+            total_available_idf += ing_idf
+            have_exact.append(ri.ingredient.name)
+
+        elif ri.ingredient.family_id and ri.ingredient.family_id in available_family_ids:
+            # Family substitute — partial credit (default 70%)
+            total_available_idf += ing_idf * family_weight
+            substitutes = available_by_family.get(ri.ingredient.family_id, [])
+            have_substitute.append({
+                "name": ri.ingredient.name,
+                "via": substitutes[0] if substitutes else "",
+            })
+
         else:
             missing.append(ri.ingredient.name)
 
@@ -305,7 +332,8 @@ def score_recipe(recipe, available_idfs: dict) -> dict:
 
     return {
         "score": score,
-        "have": have,
+        "have_exact": have_exact,
+        "have_substitute": have_substitute,
         "missing": missing,
         "tier": tier_for(score),
     }
@@ -318,16 +346,16 @@ def run_match(user, anchor_slugs=None, extra_ingredient_ids=None) -> dict:
         user: the requesting User
         anchor_slugs: list of selected anchor slugs (e.g. ['chicken', 'pork'])
         extra_ingredient_ids: list of ingredient_ids the user has on hand
-                              beyond their pantry staples (typically from
-                              the secondary picker after anchor selection)
+                              beyond their pantry staples
 
     Returns:
         {
-            "matched_recipes": list of dicts (recipe + score + have + missing + tier),
+            "matched_recipes": list of dicts (recipe + score + have_exact +
+                              have_substitute + missing + tier),
                               sorted by score desc, tier != below_threshold
             "anchor_slugs":   list, echoed back
-            "total_filtered": int — how many recipes survived the anchor filter
-                                     (before scoring)
+            "total_filtered": int — recipes that survived the anchor filter
+                                    before scoring
         }
     """
     from pages.models import Recipe, PantryStaple, Ingredient
@@ -341,12 +369,21 @@ def run_match(user, anchor_slugs=None, extra_ingredient_ids=None) -> dict:
     )
     available_ids = staple_ids | set(extra_ingredient_ids)
 
-    # Step 2: get IDFs for each available ingredient
-    available_idfs = dict(
+    # Step 2: fetch IDFs + family memberships for each available ingredient
+    available_rows = list(
         Ingredient.objects
         .filter(ingredient_id__in=available_ids)
-        .values_list("ingredient_id", "idf")
+        .values("ingredient_id", "name", "idf", "family_id")
     )
+    available_idfs = {row["ingredient_id"]: row["idf"] for row in available_rows}
+    available_family_ids = {
+        row["family_id"] for row in available_rows if row["family_id"]
+    }
+    # family_id -> list of ingredient names the user has in that family
+    available_by_family = {}
+    for row in available_rows:
+        if row["family_id"]:
+            available_by_family.setdefault(row["family_id"], []).append(row["name"])
 
     # Step 3: hard-filter recipes by anchors, then prefetch for scoring
     qs = filter_by_anchors(Recipe.objects.all(), anchor_slugs)
@@ -357,7 +394,12 @@ def run_match(user, anchor_slugs=None, extra_ingredient_ids=None) -> dict:
     # Step 4: score each surviving recipe
     matched = []
     for recipe in qs:
-        result = score_recipe(recipe, available_idfs)
+        result = score_recipe(
+            recipe,
+            available_idfs,
+            available_family_ids=available_family_ids,
+            available_by_family=available_by_family,
+        )
         if result["tier"] != "below_threshold":
             matched.append({"recipe": recipe, **result})
 
