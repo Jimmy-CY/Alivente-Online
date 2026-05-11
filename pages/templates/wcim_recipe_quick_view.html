@@ -1,0 +1,106 @@
+<div class="modal-header">
+  <h5 class="modal-title">
+    <i class="fas fa-utensils text-success"></i> {{ recipe.recipe_name }}
+  </h5>
+  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+    <span aria-hidden="true">&times;</span>
+  </button>
+</div>
+<div class="modal-body">
+
+  {% if recipe.recipe_image %}
+    <img src="{{ recipe.recipe_image.url }}" class="img-fluid mb-3 rounded"
+         alt="{{ recipe.recipe_name }}" style="max-height: 280px; object-fit: cover; width: 100%;">
+  {% endif %}
+
+  <!-- Quick stats -->
+  <div class="d-flex flex-wrap mb-3" style="gap: 18px; font-size: 13px;">
+    {% if recipe.prep_time %}<div><i class="far fa-clock text-muted"></i> <strong>Prep:</strong> {{ recipe.prep_time }} min</div>{% endif %}
+    {% if recipe.cook_time %}<div><i class="fas fa-fire text-muted"></i> <strong>Cook:</strong> {{ recipe.cook_time }} min</div>{% endif %}
+    {% if recipe.servings %}<div><i class="fas fa-users text-muted"></i> <strong>Serves:</strong> {{ recipe.servings }}</div>{% endif %}
+    {% if recipe.difficulty_level %}<div><i class="fas fa-signal text-muted"></i> <strong>{{ recipe.difficulty_level }}</strong></div>{% endif %}
+  </div>
+
+  {% if recipe.recipe_description %}
+    <p class="text-muted">{{ recipe.recipe_description }}</p>
+  {% endif %}
+
+  <!-- Ingredients with have/missing markers, optionally sectioned by ingredient_group -->
+  <h6 class="mt-4 mb-2" style="color: #2c3e50;">
+    <i class="fas fa-list-ul"></i> Ingredients
+  </h6>
+  {% regroup ingredients_data by ri.ingredient_group as ingredient_groups %}
+  {% for group in ingredient_groups %}
+    {% if group.grouper %}
+      <p class="text-muted small mt-3 mb-1" style="font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">
+        {{ group.grouper }}
+      </p>
+    {% endif %}
+    <ul class="ingredient-list">
+      {% for item in group.list %}
+        <li class="ingredient-item {% if item.is_available %}have{% else %}missing{% endif %}">
+          {% if item.is_available %}
+            <i class="fas fa-check-circle text-success"></i>
+          {% else %}
+            <i class="fas fa-shopping-basket text-warning"></i>
+          {% endif %}
+          {% if item.ri.amount %}<strong>{{ item.ri.get_amount_display }}</strong>{% endif %}
+          {% if item.ri.unit %}{{ item.ri.unit.abbreviation|default:item.ri.unit.name }}{% endif %}
+          {{ item.name }}{% if item.ri.preparation %}, {{ item.ri.preparation.name }}{% endif %}{% if item.ri.preparation_note %}, {{ item.ri.preparation_note }}{% endif %}
+        </li>
+      {% endfor %}
+    </ul>
+  {% endfor %}
+
+  <!-- Instructions (sectioned if instruction_group is set) -->
+  {% if recipe.instructions.all %}
+    <h6 class="mt-4 mb-2" style="color: #2c3e50;">
+      <i class="fas fa-utensils"></i> Method
+    </h6>
+    {% regroup recipe.instructions.all by instruction_group as instruction_groups %}
+    {% for group in instruction_groups %}
+      {% if group.grouper %}
+        <p class="text-muted small mt-3 mb-1" style="font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">
+          {{ group.grouper }}
+        </p>
+      {% endif %}
+      <ol class="instruction-list">
+        {% for step in group.list %}
+          <li class="mb-2">
+            {{ step.instruction_text|linebreaksbr }}
+            {% if step.time_estimate %}<small class="text-muted ml-1"><i class="far fa-clock"></i> {{ step.time_estimate }} min</small>{% endif %}
+          </li>
+        {% endfor %}
+      </ol>
+    {% endfor %}
+  {% endif %}
+
+</div>
+<div class="modal-footer">
+  <a href="{% url 'view_recipe' recipe.recipe_id %}" class="btn btn-outline-success">
+    <i class="fas fa-external-link-alt"></i> Open full recipe
+  </a>
+  <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+</div>
+
+<style>
+  .ingredient-list { list-style: none; padding-left: 0; margin-bottom: 8px; }
+  .ingredient-item {
+    padding: 6px 0;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 14px;
+  }
+  .ingredient-item:last-child { border-bottom: none; }
+  .ingredient-item.missing { color: #6c757d; }
+  .ingredient-item i {
+    width: 22px;
+    text-align: center;
+    margin-right: 4px;
+  }
+  .instruction-list {
+    line-height: 1.6;
+    color: #495057;
+    padding-left: 22px;
+  }
+  .instruction-list li { padding-left: 4px; }
+</style>

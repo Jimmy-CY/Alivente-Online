@@ -250,3 +250,44 @@ def wcim_results(request):
         "tier_groups": tier_groups,
     }
     return render(request, "wcim_results.html", context)
+
+def wcim_recipe_quick_view(request, recipe_id):
+    """Return a recipe detail HTML partial for the WCIM modal.
+
+    Highlights each ingredient as have/missing based on the user's pantry
+    staples + the extras they ticked in the current session.
+    """
+    from django.shortcuts import get_object_or_404
+    from pages.models import Recipe, PantryStaple, RecipeIngredient
+
+    recipe = get_object_or_404(
+        Recipe.objects.prefetch_related("instructions"),
+        recipe_id=recipe_id,
+    )
+
+    staple_ids = set(
+        PantryStaple.objects.filter(user=request.user)
+        .values_list("ingredient_id", flat=True)
+    )
+    extras = request.session.get("wcim_extras", [])
+    available_ids = staple_ids | set(extras)
+
+    recipe_ings = (
+        RecipeIngredient.objects
+        .filter(recipe=recipe)
+        .select_related("ingredient", "unit", "preparation")
+        .order_by("ingredient_group", "ingredient_order")
+    )
+
+    ingredients_data = []
+    for ri in recipe_ings:
+        ingredients_data.append({
+            "ri": ri,
+            "name": ri.ingredient.name,
+            "is_available": ri.ingredient_id in available_ids,
+        })
+
+    return render(request, "wcim_recipe_quick_view.html", {
+        "recipe": recipe,
+        "ingredients_data": ingredients_data,
+    })

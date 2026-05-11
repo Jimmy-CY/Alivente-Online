@@ -56,7 +56,7 @@
               <div class="recipe-card">
                 <span class="recipe-score badge badge-success">{{ r.score_pct }}%</span>
                 <h6 class="recipe-name">
-                  <a href="{% url 'view_recipe' r.recipe.recipe_id %}">{{ r.recipe.recipe_name }}</a>
+                  <a href="#" class="recipe-quick-view-link" data-recipe-id="{{ r.recipe.recipe_id }}">{{ r.recipe.recipe_name }}</a>
                 </h6>
                 <p class="text-success small mb-0">
                   <i class="fas fa-check-double"></i> All ingredients available!
@@ -85,7 +85,7 @@
               <div class="recipe-card">
                 <span class="recipe-score badge badge-warning">{{ r.score_pct }}%</span>
                 <h6 class="recipe-name">
-                  <a href="{% url 'view_recipe' r.recipe.recipe_id %}">{{ r.recipe.recipe_name }}</a>
+                  <a href="#" class="recipe-quick-view-link" data-recipe-id="{{ r.recipe.recipe_id }}">{{ r.recipe.recipe_name }}</a>
                 </h6>
                 <p class="text-muted small mb-0">
                   <strong>Missing:</strong> {{ r.missing_short|join:", " }}{% if r.missing_more %}, <em>+{{ r.missing_more }} more</em>{% endif %}
@@ -114,7 +114,7 @@
               <div class="recipe-card">
                 <span class="recipe-score badge badge-info">{{ r.score_pct }}%</span>
                 <h6 class="recipe-name">
-                  <a href="{% url 'view_recipe' r.recipe.recipe_id %}">{{ r.recipe.recipe_name }}</a>
+                  <a href="#" class="recipe-quick-view-link" data-recipe-id="{{ r.recipe.recipe_id }}">{{ r.recipe.recipe_name }}</a>
                 </h6>
                 <p class="text-muted small mb-0">
                   <strong>Missing:</strong> {{ r.missing_short|join:", " }}{% if r.missing_more %}, <em>+{{ r.missing_more }} more</em>{% endif %}
@@ -126,6 +126,17 @@
       </div>
     </div>
   {% endif %}
+
+  <!-- Quick-view modal (filled via AJAX) -->
+  <div class="modal fade" id="recipeQuickViewModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-scrollable">
+      <div class="modal-content" id="recipeQuickViewContent">
+        <div class="modal-body text-center p-5 text-muted">
+          <i class="fas fa-spinner fa-spin fa-2x"></i>
+        </div>
+      </div>
+    </div>
+  </div>
 
 </div>
 
@@ -159,9 +170,30 @@
   .recipe-name a {
     color: #2c3e50;
     text-decoration: none;
+    cursor: pointer;
   }
   .recipe-name a:hover {
     color: #28a745;
   }
 </style>
+{% endblock %}
+
+
+{% block extra_scripts %}
+<script>
+  $(document).ready(function () {
+    $(document).on('click', '.recipe-quick-view-link', function (e) {
+      e.preventDefault();
+      var recipeId = $(this).data('recipe-id');
+      var $content = $('#recipeQuickViewContent');
+      $content.html('<div class="modal-body text-center p-5 text-muted"><i class="fas fa-spinner fa-spin fa-2x"></i></div>');
+      $('#recipeQuickViewModal').modal('show');
+      $.get('/recipes/wcim/recipe/' + recipeId + '/quick-view/', function (html) {
+        $content.html(html);
+      }).fail(function () {
+        $content.html('<div class="modal-body text-center p-5 text-danger">Couldn\'t load the recipe. Please try again.</div>');
+      });
+    });
+  });
+</script>
 {% endblock %}
