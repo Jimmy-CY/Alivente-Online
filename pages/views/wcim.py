@@ -222,10 +222,13 @@ def wcim_results(request):
 
     # Pre-compute display values + truncate the missing-list so cards stay tidy
     MISSING_VISIBLE = 4
+    SUBSTITUTE_VISIBLE = 2
     for r in matched:
         r["score_pct"] = int(round(r["score"] * 100))
         r["missing_short"] = r["missing"][:MISSING_VISIBLE]
         r["missing_more"] = max(0, len(r["missing"]) - MISSING_VISIBLE)
+        r["substitute_short"] = r["have_substitute"][:SUBSTITUTE_VISIBLE]
+        r["substitute_more"] = max(0, len(r["have_substitute"]) - SUBSTITUTE_VISIBLE)
 
     # Group by tier (preserves the score-desc order from run_match)
     tier_groups = {"make_now": [], "almost_there": [], "worth_shopping": []}
@@ -254,11 +257,11 @@ def wcim_results(request):
 def wcim_recipe_quick_view(request, recipe_id):
     """Return a recipe detail HTML partial for the WCIM modal.
 
-    Highlights each ingredient as have/missing based on the user's pantry
-    staples + the extras they ticked in the current session.
+    Marks each ingredient as have_exact / have_substitute / missing based on
+    the user's pantry staples + ticked extras + ingredient family membership.
     """
     from django.shortcuts import get_object_or_404
-    from pages.models import Recipe, PantryStaple, RecipeIngredient
+    from pages.models import Recipe, PantryStaple, RecipeIngredient, Ingredient
 
     recipe = get_object_or_404(
         Recipe.objects.prefetch_related("instructions"),
@@ -272,19 +275,45 @@ def wcim_recipe_quick_view(request, recipe_id):
     extras = request.session.get("wcim_extras", [])
     available_ids = staple_ids | set(extras)
 
+    # Family info for substitute detection
+    available_family_data = list(
+        Ingredient.objects
+        .filter(ingredient_id__in=available_ids)
+        .values("ingredient_id", "name", "family_id")
+    )
+    available_family_ids = {
+        d["family_id"] for d in available_family_data if d["family_id"]
+    }
+    available_by_family = {}
+    for d in available_family_data:
+        if d["family_id"]:
+            available_by_family.setdefault(d["family_id"], []).append(d["name"])
+
     recipe_ings = (
         RecipeIngredient.objects
         .filter(recipe=recipe)
-        .select_related("ingredient", "unit", "preparation")
+        .select_related("ingredient", "ingredient__family", "unit", "preparation")
         .order_by("ingredient_group", "ingredient_order")
     )
 
     ingredients_data = []
     for ri in recipe_ings:
+        if ri.ingredient_id in available_ids:
+            status = "have_exact"
+            substitute_name = ""
+        elif ri.ingredient.family_id and ri.ingredient.family_id in available_family_ids:
+            status = "have_substitute"
+            subs = available_by_family.get(ri.ingredient.family_id, [])
+            substitute_name = subs[0] if subs else ""
+        else:
+            status = "missing"
+            substitute_name = ""
+
         ingredients_data.append({
             "ri": ri,
             "name": ri.ingredient.name,
-            "is_available": ri.ingredient_id in available_ids,
+            "status": status,
+            "substitute_name": substitute_name,
         })
 
     return render(request, "wcim_recipe_quick_view.html", {

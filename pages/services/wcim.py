@@ -330,6 +330,19 @@ def score_recipe(recipe, available_idfs: dict,
     score = (total_available_idf / recipe.weighted_total
              if recipe.weighted_total > 0 else 0.0)
 
+    # Dedupe display lists (recipes may list an ingredient twice for different
+    # uses; the score handles this correctly but the displayed list shouldn't repeat)
+    have_exact = list(dict.fromkeys(have_exact))
+    missing = list(dict.fromkeys(missing))
+    seen_subs = set()
+    dedup_subs = []
+    for s in have_substitute:
+        key = (s["name"], s["via"])
+        if key not in seen_subs:
+            seen_subs.add(key)
+            dedup_subs.append(s)
+    have_substitute = dedup_subs
+
     return {
         "score": score,
         "have_exact": have_exact,
