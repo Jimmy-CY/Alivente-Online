@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container my-4">
+
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-start mb-3">
+    <div>
+      <h2 class="mb-1" style="color: #2c3e50;">
+        <i class="fas fa-check-double text-success"></i> What else do you have?
+      </h2>
+      <p class="text-muted mb-0">
+        Based on <strong>{{ anchor_labels|join:" + " }}</strong>. Tick anything you have on hand &mdash; this step is optional.
+      </p>
+    </div>
+    <a href="{% url 'wcim_landing' %}" class="btn btn-secondary">
+      <i class="fas fa-arrow-left"></i> Back
+    </a>
+  </div>
+
+  <form method="post">
+    {% csrf_token %}
+
+    <!-- Extras picker -->
+    <div class="card mb-3">
+      <div class="card-header bg-info text-white">
+        <h5 class="mb-0"><i class="fas fa-list-ul"></i> Optional extras</h5>
+      </div>
+      <div class="card-body">
+        {% if extras %}
+          <p class="text-muted small mb-3">
+            Ingredients commonly used in recipes that match your anchor.
+            The number after each is how many recipes use it.
+          </p>
+          <div class="extras-grid">
+            {% for extra in extras %}
+              <label class="extra-btn {% if extra.ingredient_id in selected_extras %}selected{% endif %}">
+                <input type="checkbox" name="extras" value="{{ extra.ingredient_id }}"
+                       {% if extra.ingredient_id in selected_extras %}checked{% endif %}>
+                <span class="extra-name">{{ extra.ingredient__name }}</span>
+                <span class="extra-count">&middot;{{ extra.usage_count }}</span>
+              </label>
+            {% endfor %}
+          </div>
+        {% else %}
+          <p class="text-muted mb-0">No suggestions available for this anchor combination.</p>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="d-flex justify-content-end">
+      <button type="submit" class="btn btn-success">
+        Show recipes <i class="fas fa-arrow-right"></i>
+      </button>
+    </div>
+
+  </form>
+
+</div>
+
+<style>
+  .extras-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .extra-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border: 2px solid #d4e4d4;
+    border-radius: 8px;
+    cursor: pointer;
+    background: #fafafa;
+    color: #2c3e50;
+    font-size: 13px;
+    margin-bottom: 0;
+    transition: all 0.15s ease;
+    user-select: none;
+  }
+  .extra-btn:hover {
+    border-color: #28a745;
+    background: #f0fff4;
+  }
+  .extra-btn.selected {
+    background: #28a745;
+    color: white;
+    border-color: #28a745;
+  }
+  .extra-btn input[type="checkbox"] {
+    display: none;
+  }
+  .extra-count {
+    font-size: 11px;
+    opacity: 0.75;
+    font-weight: 500;
+  }
+</style>
+{% endblock %}
+
+
+{% block extra_scripts %}
+<script>
+  $(document).ready(function () {
+    $('.extra-btn').on('click', function (e) {
+      e.preventDefault();
+      var $btn = $(this);
+      var $cb = $btn.find('input[type="checkbox"]');
+      var nowChecked = !$cb.prop('checked');
+      $cb.prop('checked', nowChecked);
+      $btn.toggleClass('selected', nowChecked);
+    });
+  });
+</script>
+{% endblock %}

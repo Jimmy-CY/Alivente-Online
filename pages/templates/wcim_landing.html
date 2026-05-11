@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container my-4">
+
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-start mb-3">
+    <div>
+      <h2 class="mb-1" style="color: #2c3e50;">
+        <i class="fas fa-utensils text-success"></i> What Can I Make?
+      </h2>
+      <p class="text-muted mb-0">
+        Pick what you're in the mood for. You can select more than one.
+      </p>
+    </div>
+    <a href="{% url 'recipe_management' %}" class="btn btn-secondary">
+      <i class="fas fa-arrow-left"></i> Back
+    </a>
+  </div>
+
+  {% if selected_anchors %}
+    <div class="alert alert-success">
+      <i class="fas fa-check-circle"></i>
+      Saved your selection: <strong>{{ selected_anchors|join:", " }}</strong>.
+      <small class="text-muted">(Phase 1d step 2 will wire this through to the next page.)</small>
+    </div>
+  {% endif %}
+
+  <form method="post">
+    {% csrf_token %}
+
+    <!-- Anchor picker -->
+    <div class="card mb-3">
+      <div class="card-header bg-success text-white">
+        <h5 class="mb-0"><i class="fas fa-bullseye"></i> Pick your anchor(s)</h5>
+      </div>
+      <div class="card-body">
+        <div class="anchor-grid">
+          {% for anchor in anchors %}
+            <label class="anchor-btn {% if anchor.slug in selected_anchors %}selected{% endif %}"
+                   data-slug="{{ anchor.slug }}">
+              <input type="checkbox" name="anchors" value="{{ anchor.slug }}"
+                     {% if anchor.slug in selected_anchors %}checked{% endif %}>
+              <i class="fas {{ anchor.icon }}"></i>
+              <span>{{ anchor.label }}</span>
+            </label>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="d-flex justify-content-between">
+      <a href="{% url 'pantry_staples_management' %}" class="text-muted small">
+        <i class="fas fa-cog"></i> Manage your pantry staples
+      </a>
+      <div>
+        <button type="submit" name="action" value="skip" class="btn btn-outline-secondary">
+          Skip extras — show me everything
+        </button>
+        <button type="submit" name="action" value="continue" class="btn btn-success ml-2">
+          Continue <i class="fas fa-arrow-right"></i>
+        </button>
+      </div>
+    </div>
+
+  </form>
+
+</div>
+
+<style>
+  .anchor-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .anchor-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 22px;
+    border: 2px solid #d4e4d4;
+    border-radius: 8px;
+    cursor: pointer;
+    background: #fafafa;
+    color: #2c3e50;
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 0;
+    transition: all 0.15s ease;
+    user-select: none;
+  }
+  .anchor-btn:hover {
+    border-color: #28a745;
+    background: #f0fff4;
+  }
+  .anchor-btn.selected {
+    background: #28a745;
+    color: white;
+    border-color: #28a745;
+    box-shadow: 0 2px 6px rgba(40, 167, 69, 0.3);
+  }
+  .anchor-btn input[type="checkbox"] {
+    display: none;
+  }
+  .anchor-btn i {
+    font-size: 18px;
+  }
+</style>
+{% endblock %}
+
+
+{% block extra_scripts %}
+<script>
+  $(document).ready(function () {
+    $('.anchor-btn').on('click', function (e) {
+      // Stop the native label-click toggling the hidden checkbox twice
+      e.preventDefault();
+      var $btn = $(this);
+      var $cb = $btn.find('input[type="checkbox"]');
+      var nowChecked = !$cb.prop('checked');
+      $cb.prop('checked', nowChecked);
+      $btn.toggleClass('selected', nowChecked);
+    });
+  });
+</script>
+{% endblock %}

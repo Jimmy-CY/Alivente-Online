@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container my-4">
+
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-start mb-3">
+    <div>
+      <h2 class="mb-1" style="color: #2c3e50;">
+        <i class="fas fa-list text-success"></i> Results
+      </h2>
+      <p class="text-muted mb-0">
+        {% if anchor_labels %}For <strong>{{ anchor_labels|join:" + " }}</strong>{% endif %}
+        {% if extra_names %} + {{ extra_names|join:", " }}{% endif %}
+      </p>
+    </div>
+    <a href="{% url 'wcim_landing' %}" class="btn btn-secondary">
+      <i class="fas fa-redo"></i> Start over
+    </a>
+  </div>
+
+  <!-- Stats -->
+  <div class="alert alert-info">
+    <i class="fas fa-info-circle"></i>
+    Considered {{ total_filtered }} recipe{{ total_filtered|pluralize }};
+    found <strong>{{ total_matched }}</strong> match{{ total_matched|pluralize:"es" }}.
+  </div>
+
+  {% if total_matched == 0 %}
+    <div class="card text-center py-5">
+      <div class="card-body">
+        <i class="fas fa-search fa-3x text-muted mb-3"></i>
+        <h5>No recipes match this combination</h5>
+        <p class="text-muted">
+          Try a different anchor, tick more extras, or expand your
+          <a href="{% url 'pantry_staples_management' %}">pantry staples</a>.
+        </p>
+        <a href="{% url 'wcim_landing' %}" class="btn btn-success">Try again</a>
+      </div>
+    </div>
+  {% endif %}
+
+  <!-- MAKE NOW tier -->
+  {% if tier_groups.make_now %}
+    <div class="card mb-4">
+      <div class="card-header bg-success text-white">
+        <h5 class="mb-0">
+          <i class="fas fa-check-circle"></i> Make Now
+          <span class="badge badge-light ml-2">{{ tier_groups.make_now|length }}</span>
+        </h5>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          {% for r in tier_groups.make_now %}
+            <div class="col-md-4 mb-3">
+              <div class="recipe-card">
+                <span class="recipe-score badge badge-success">{{ r.score_pct }}%</span>
+                <h6 class="recipe-name">
+                  <a href="{% url 'view_recipe' r.recipe.recipe_id %}">{{ r.recipe.recipe_name }}</a>
+                </h6>
+                <p class="text-success small mb-0">
+                  <i class="fas fa-check-double"></i> All ingredients available!
+                </p>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
+  <!-- ALMOST THERE tier -->
+  {% if tier_groups.almost_there %}
+    <div class="card mb-4">
+      <div class="card-header bg-warning text-white">
+        <h5 class="mb-0">
+          <i class="fas fa-hourglass-half"></i> Almost There
+          <span class="badge badge-light ml-2">{{ tier_groups.almost_there|length }}</span>
+        </h5>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          {% for r in tier_groups.almost_there %}
+            <div class="col-md-4 mb-3">
+              <div class="recipe-card">
+                <span class="recipe-score badge badge-warning">{{ r.score_pct }}%</span>
+                <h6 class="recipe-name">
+                  <a href="{% url 'view_recipe' r.recipe.recipe_id %}">{{ r.recipe.recipe_name }}</a>
+                </h6>
+                <p class="text-muted small mb-0">
+                  <strong>Missing:</strong> {{ r.missing_short|join:", " }}{% if r.missing_more %}, <em>+{{ r.missing_more }} more</em>{% endif %}
+                </p>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
+  <!-- WORTH SHOPPING FOR tier -->
+  {% if tier_groups.worth_shopping %}
+    <div class="card mb-4">
+      <div class="card-header bg-info text-white">
+        <h5 class="mb-0">
+          <i class="fas fa-shopping-cart"></i> Worth Shopping For
+          <span class="badge badge-light ml-2">{{ tier_groups.worth_shopping|length }}</span>
+        </h5>
+      </div>
+      <div class="card-body">
+        <div class="row">
+          {% for r in tier_groups.worth_shopping %}
+            <div class="col-md-4 mb-3">
+              <div class="recipe-card">
+                <span class="recipe-score badge badge-info">{{ r.score_pct }}%</span>
+                <h6 class="recipe-name">
+                  <a href="{% url 'view_recipe' r.recipe.recipe_id %}">{{ r.recipe.recipe_name }}</a>
+                </h6>
+                <p class="text-muted small mb-0">
+                  <strong>Missing:</strong> {{ r.missing_short|join:", " }}{% if r.missing_more %}, <em>+{{ r.missing_more }} more</em>{% endif %}
+                </p>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
+</div>
+
+<style>
+  .recipe-card {
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 12px 14px;
+    background: #fafafa;
+    position: relative;
+    height: 100%;
+    transition: all 0.15s ease;
+  }
+  .recipe-card:hover {
+    background: #f0fff4;
+    border-color: #28a745;
+  }
+  .recipe-score {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 11px;
+  }
+  .recipe-name {
+    margin-top: 0;
+    margin-bottom: 8px;
+    padding-right: 60px;
+    font-size: 15px;
+    line-height: 1.3;
+  }
+  .recipe-name a {
+    color: #2c3e50;
+    text-decoration: none;
+  }
+  .recipe-name a:hover {
+    color: #28a745;
+  }
+</style>
+{% endblock %}

@@ -307,6 +307,9 @@ urlpatterns = [
     path('delete-measurement-unit/', views.delete_measurement_unit, name='delete_measurement_unit'),
      # === WCIM (What Can I Make?) URLs ===
     path('recipes/pantry-staples/', views.pantry_staples_management, name='pantry_staples_management'),
+    path('recipes/wcim/', views.wcim_landing, name='wcim_landing'),
+    path('recipes/wcim/extras/', views.wcim_extras, name='wcim_extras'),
+    path('recipes/wcim/results/', views.wcim_results, name='wcim_results'),
 
     # Celebration Management
     path('celebrations/', views.celebration_dashboard, name='celebration_dashboard'),

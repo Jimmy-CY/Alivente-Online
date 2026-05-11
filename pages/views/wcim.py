@@ -114,3 +114,139 @@ def pantry_staples_management(request):
         "staples_count": staples.count(),
     }
     return render(request, "pantry_staples.html", context)
+
+def wcim_landing(request):
+    """The "What Can I Make?" anchor picker.
+
+    GET: render the page with selectable anchor buttons.
+    POST: save selected anchors to session, redirect to extras picker
+          (or directly to results if user picked Skip).
+    """
+    from pages.services.wcim import ANCHOR_DEFINITIONS
+
+    ANCHOR_ICONS = {
+        "chicken":    "fa-drumstick-bite",
+        "pork":       "fa-bacon",
+        "beef":       "fa-cow",
+        "lamb":       "fa-drumstick-bite",
+        "fish":       "fa-fish",
+        "seafood":    "fa-shrimp",
+        "vegetarian": "fa-leaf",
+        "dessert":    "fa-cookie-bite",
+        "anything":   "fa-utensils",
+    }
+
+    if request.method == "POST":
+        selected = request.POST.getlist("anchors")
+        if not selected:
+            selected = ["anything"]
+        request.session["wcim_anchors"] = selected
+        request.session["wcim_extras"] = []  # reset on new search
+
+        action = request.POST.get("action", "continue")
+        if action == "skip":
+            return redirect("wcim_results")
+        return redirect("wcim_extras")
+
+    selected_anchors = request.session.get("wcim_anchors", [])
+    anchors = [
+        {**a, "icon": ANCHOR_ICONS.get(a["slug"], "fa-circle")}
+        for a in ANCHOR_DEFINITIONS
+    ]
+
+    context = {
+        "anchors": anchors,
+        "selected_anchors": selected_anchors,
+    }
+    return render(request, "wcim_landing.html", context)
+
+def wcim_extras(request):
+    """The "what else do you have?" picker, shown after anchor selection.
+
+    GET: read anchors from session, fetch the suggested extras shortlist,
+         render the page.
+    POST: save selected extras to session, redirect to results.
+    """
+    from pages.services.wcim import suggest_extras_for_anchors, ANCHOR_DEFINITIONS
+
+    anchors = request.session.get("wcim_anchors", [])
+    if not anchors:
+        # User hit this page without going through landing first
+        return redirect("wcim_landing")
+
+    if request.method == "POST":
+        try:
+            selected_int_ids = [int(x) for x in request.POST.getlist("extras")]
+        except (ValueError, TypeError):
+            selected_int_ids = []
+        request.session["wcim_extras"] = selected_int_ids
+        return redirect("wcim_results")
+
+    # GET
+    extras = suggest_extras_for_anchors(request.user, anchors, top_n=20)
+    selected_extras = request.session.get("wcim_extras", [])
+    anchor_labels = [
+        a["label"] for a in ANCHOR_DEFINITIONS if a["slug"] in anchors
+    ]
+
+    context = {
+        "anchors": anchors,
+        "anchor_labels": anchor_labels,
+        "extras": extras,
+        "selected_extras": selected_extras,
+    }
+    return render(request, "wcim_extras.html", context)
+
+
+def wcim_results(request):
+    """Tiered, ranked recipe matches based on the user's anchors + extras.
+
+    Reads anchors and extras from session, runs the matching engine, groups
+    results by tier, and renders the page.
+    """
+    from pages.services.wcim import run_match, ANCHOR_DEFINITIONS
+    from pages.models import Ingredient
+
+    anchors = request.session.get("wcim_anchors", [])
+    extras = request.session.get("wcim_extras", [])
+
+    if not anchors:
+        return redirect("wcim_landing")
+
+    result = run_match(
+        request.user,
+        anchor_slugs=anchors,
+        extra_ingredient_ids=extras,
+    )
+    matched = result["matched_recipes"]
+
+    # Pre-compute display values + truncate the missing-list so cards stay tidy
+    MISSING_VISIBLE = 4
+    for r in matched:
+        r["score_pct"] = int(round(r["score"] * 100))
+        r["missing_short"] = r["missing"][:MISSING_VISIBLE]
+        r["missing_more"] = max(0, len(r["missing"]) - MISSING_VISIBLE)
+
+    # Group by tier (preserves the score-desc order from run_match)
+    tier_groups = {"make_now": [], "almost_there": [], "worth_shopping": []}
+    for r in matched:
+        if r["tier"] in tier_groups:
+            tier_groups[r["tier"]].append(r)
+
+    # Display labels for the header
+    anchor_labels = [
+        a["label"] for a in ANCHOR_DEFINITIONS if a["slug"] in anchors
+    ]
+    extra_names = list(
+        Ingredient.objects.filter(ingredient_id__in=extras)
+        .values_list("name", flat=True)
+    )
+
+    context = {
+        "anchor_labels": anchor_labels,
+        "extra_names": extra_names,
+        "total_filtered": result["total_filtered"],
+        "total_matched": len(matched),
+        "tier_groups": tier_groups,
+    }
+    return render(request, "wcim_results.html", context)
