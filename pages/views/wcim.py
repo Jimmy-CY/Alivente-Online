@@ -96,15 +96,17 @@ def pantry_staples_management(request):
                 "Add or remove items below to make it your own.",
             )
 
+    # Order by category then name — drives the {% regroup %} in the template
     staples = (PantryStaple.objects
                .filter(user=request.user)
-               .select_related("ingredient")
-               .order_by("ingredient__name"))
+               .select_related("ingredient", "ingredient__category")
+               .order_by("ingredient__category__name", "ingredient__name"))
 
     staple_ids = list(staples.values_list("ingredient_id", flat=True))
     available_ingredients = (Ingredient.objects
                              .exclude(ingredient_id__in=staple_ids)
-                             .order_by("name"))
+                             .select_related("category")
+                             .order_by("category__name", "name"))
 
     context = {
         "staples": staples,

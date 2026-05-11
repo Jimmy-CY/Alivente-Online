@@ -23,12 +23,10 @@
   {% if messages %}
     {% for message in messages %}
       {% if message.tags == 'error' %}
-        {% with bs='danger' %}
-          <div class="alert alert-{{ bs }} alert-dismissible fade show">
-            {{ message }}
-            <button type="button" class="close" data-dismiss="alert">&times;</button>
-          </div>
-        {% endwith %}
+        <div class="alert alert-danger alert-dismissible fade show">
+          {{ message }}
+          <button type="button" class="close" data-dismiss="alert">&times;</button>
+        </div>
       {% else %}
         <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
           {{ message }}
@@ -44,31 +42,40 @@
     You have <strong>{{ staples_count }}</strong> pantry staples.
   </div>
 
-  <!-- Current staples -->
+  <!-- Current staples, grouped by category -->
   <div class="card mb-4">
     <div class="card-header bg-success text-white">
       <h5 class="mb-0"><i class="fas fa-check-circle"></i> Your Staples</h5>
     </div>
     <div class="card-body">
       {% if staples %}
-        <div class="row">
-          {% for staple in staples %}
-            <div class="col-md-4 col-sm-6 mb-2">
-              <form method="post">
-                {% csrf_token %}
-                <input type="hidden" name="action" value="remove">
-                <input type="hidden" name="staple_id" value="{{ staple.pk }}">
-                <div class="border rounded px-3 py-2 d-flex justify-content-between align-items-center"
-                     style="background: #f0fff4;">
-                  <span style="font-size: 14px;">{{ staple.ingredient.name }}</span>
-                  <button type="submit" class="btn btn-sm btn-link text-danger p-0" title="Remove">
-                    <i class="fas fa-times"></i>
-                  </button>
-                </div>
-              </form>
-            </div>
-          {% endfor %}
-        </div>
+        {% regroup staples by ingredient.category.name as staples_by_category %}
+        {% for group in staples_by_category %}
+          <h6 class="text-uppercase text-muted mt-3 mb-2"
+              style="font-size: 12px; letter-spacing: 0.05em; border-bottom: 1px solid #e9ecef; padding-bottom: 6px;">
+            <i class="fas fa-folder-open" style="color: #28a745;"></i>
+            {{ group.grouper|default:"Uncategorised" }}
+            <span class="text-muted" style="font-weight: normal;">&middot; {{ group.list|length }}</span>
+          </h6>
+          <div class="row">
+            {% for staple in group.list %}
+              <div class="col-md-4 col-sm-6 mb-2">
+                <form method="post">
+                  {% csrf_token %}
+                  <input type="hidden" name="action" value="remove">
+                  <input type="hidden" name="staple_id" value="{{ staple.pk }}">
+                  <div class="border rounded px-3 py-2 d-flex justify-content-between align-items-center"
+                       style="background: #f0fff4;">
+                    <span style="font-size: 14px;">{{ staple.ingredient.name }}</span>
+                    <button type="submit" class="btn btn-sm btn-link text-danger p-0" title="Remove">
+                      <i class="fas fa-times"></i>
+                    </button>
+                  </div>
+                </form>
+              </div>
+            {% endfor %}
+          </div>
+        {% endfor %}
       {% else %}
         <p class="text-muted mb-0">No pantry staples yet.</p>
       {% endif %}
@@ -81,24 +88,31 @@
       <h5 class="mb-0"><i class="fas fa-plus-circle"></i> Add an Ingredient</h5>
     </div>
     <div class="card-body">
-      <form method="post" class="form-inline">
+      <form method="post">
         {% csrf_token %}
         <input type="hidden" name="action" value="add">
-        <div class="form-group mr-2 flex-grow-1" style="min-width: 300px;">
-          <select name="ingredient_id" class="form-control w-100" required>
-            <option value="">&mdash; Pick an ingredient &mdash;</option>
-            {% for ing in available_ingredients %}
-              <option value="{{ ing.ingredient_id }}">{{ ing.name }}</option>
-            {% endfor %}
-          </select>
+        <div class="d-flex align-items-center" style="gap: 10px;">
+          <div class="flex-grow-1">
+            <select id="staple-picker" name="ingredient_id" class="form-control" required>
+              <option value="">&mdash; Pick an ingredient &mdash;</option>
+              {% regroup available_ingredients by category.name as ingredients_by_category %}
+              {% for group in ingredients_by_category %}
+                <optgroup label="{{ group.grouper|default:'Uncategorised' }}">
+                  {% for ing in group.list %}
+                    <option value="{{ ing.ingredient_id }}">{{ ing.name }}</option>
+                  {% endfor %}
+                </optgroup>
+              {% endfor %}
+            </select>
+          </div>
+          <button type="submit" class="btn btn-success" style="white-space: nowrap;">
+            <i class="fas fa-plus"></i> Add Staple
+          </button>
         </div>
-        <button type="submit" class="btn btn-success">
-          <i class="fas fa-plus"></i> Add Staple
-        </button>
+        <small class="text-muted d-block mt-2">
+          Click and start typing to search across {{ available_ingredients|length }} ingredients.
+        </small>
       </form>
-      <small class="text-muted d-block mt-2">
-        Scroll the list or click and start typing the ingredient name to jump to it.
-      </small>
     </div>
   </div>
 
@@ -122,4 +136,18 @@
   </div>
 
 </div>
+
+<!-- Select2 — typeahead for the ingredient picker -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css">
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+  $(document).ready(function () {
+    $('#staple-picker').select2({
+      placeholder: '— Pick an ingredient —',
+      width: '100%',
+      allowClear: true,
+    });
+  });
+</script>
+
 {% endblock %}
