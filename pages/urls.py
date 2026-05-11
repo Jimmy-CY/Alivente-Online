@@ -272,7 +272,6 @@ urlpatterns = [
     path('meal_plans/calendar/', views.meal_plan_calendar, name='meal_plan_calendar'),
     path('meal_plans/add_recipe_to_day/', views.add_recipe_to_meal_plan_day, name='add_recipe_to_meal_plan_day'),
     path('meal_plans/remove_recipe/', views.remove_recipe_from_meal_plan, name='remove_recipe_from_meal_plan'),
-    path('recipes/find-matching/', views.find_matching_recipes, name='find_matching_recipes'),
     path('save_unit_conversion/', views.save_unit_conversion, name='save_unit_conversion'),
     # Unit Conversion Management
     path('unit_conversions/', views.unit_conversions_management, name='unit_conversions_management'),
@@ -311,6 +310,7 @@ urlpatterns = [
     path('recipes/wcim/extras/', views.wcim_extras, name='wcim_extras'),
     path('recipes/wcim/results/', views.wcim_results, name='wcim_results'),
      path('recipes/wcim/recipe/<int:recipe_id>/quick-view/', views.wcim_recipe_quick_view, name='wcim_recipe_quick_view'),
+     path('recipes/find-matching/', views.wcim_landing, name='find_matching_recipes'),
 
     # Celebration Management
     path('celebrations/', views.celebration_dashboard, name='celebration_dashboard'),

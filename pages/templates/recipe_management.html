@@ -1670,9 +1670,9 @@
         </a>
 
         <!-- What Can I Make -->
-        <button type="button" class="btn btn-primary action-secondary" onclick="openIngredientMatcher()">
+        <a href="{% url 'find_matching_recipes' %}" class="btn btn-primary action-secondary">
             <i class="fas fa-search"></i> What Can I Make?
-        </button>
+        </a>
 
         <!-- Favourites Filter -->
         <a href="{% if show_favourites %}{% url 'recipe_management' %}{% else %}?favourites=1{% endif %}"
@@ -1719,9 +1719,9 @@
                 <a href="{% url 'meal_plans' %}" class="action-more-item" role="menuitem">
                     <i class="fas fa-calendar-alt"></i> Meal Plans
                 </a>
-                <button type="button" class="action-more-item" role="menuitem" onclick="openIngredientMatcher()">
+                <a href="{% url 'find_matching_recipes' %}" class="action-more-item" role="menuitem">
                     <i class="fas fa-search"></i> What Can I Make?
-                </button>
+                </a>
                 <a href="{% if show_favourites %}{% url 'recipe_management' %}{% else %}?favourites=1{% endif %}" class="action-more-item" role="menuitem">
                     <i class="fas fa-heart"></i> {% if show_favourites %}Show All Recipes{% else %}Favourites Only{% endif %}
                 </a>
