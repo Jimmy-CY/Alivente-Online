@@ -4,16 +4,15 @@ pages/services/wcim.py
 
 The "What Can I Make?" service module.
 
-Phase 1a (this file's current scope):
-    - recompute_recipe_stats()      → IDF + weighted_total computation
-    - ANCHOR_DEFINITIONS            → list of anchor configs (used by Phase 1c/1d)
-    - DEFAULT_PANTRY_STAPLE_IDS     → seed list (used by Phase 1b)
-
-Phase 1c will add:
-    - score_recipe()
-    - run_match()
-    - tier_for()
-    - filter_by_anchors()
+Phase 1a + 1c (current):
+    - recompute_recipe_stats()       → IDF + weighted_total computation
+    - ANCHOR_DEFINITIONS             → list of anchor configs
+    - DEFAULT_PANTRY_STAPLE_IDS      → seed list for new users
+    - filter_by_anchors()            → hard anchor filter on a Recipe queryset
+    - tier_for()                     → score → tier label
+    - score_recipe()                 → single-recipe match score
+    - run_match()                    → full match pipeline
+    - suggest_extras_for_anchors()   → smart secondary-picker shortlist
 """
 from __future__ import annotations
 
@@ -22,13 +21,13 @@ import math
 import time
 
 from django.db import transaction
-from django.db.models import Q, Sum
+from django.db.models import Count, Q, Sum
 
 logger = logging.getLogger(__name__)
 
 
 # =============================================================================
-# Anchor definitions — used by the UI (Phase 1d) and matching engine (Phase 1c)
+# Anchor definitions — used by the UI (Phase 1d) and matching engine
 # =============================================================================
 # Each anchor has:
 #   slug:    short identifier used in URLs and templates
@@ -56,14 +55,6 @@ ANCHOR_DEFINITIONS = [
 # =============================================================================
 # Default pantry staple seed — locked from §11 of the spec
 # =============================================================================
-# These are the Ingredient PKs (resolved from live data) that are seeded into
-# a new user's PantryStaple list on first visit to the staples management
-# page. The user can edit, remove, or add to this set freely; the seed only
-# applies at first visit.
-#
-# Pulled from the user's stated daily-staples list, matched 1:1 against the
-# 375-ingredient live database. Comments show the canonical name for clarity.
-
 DEFAULT_PANTRY_STAPLE_IDS = [
     # Oils, vinegars, fats
     21,   # Olive Oil
@@ -161,7 +152,7 @@ DEFAULT_PANTRY_STAPLE_IDS = [
 
 
 # =============================================================================
-# IDF and weighted-total recomputation
+# IDF and weighted-total recomputation (Phase 1a)
 # =============================================================================
 @transaction.atomic
 def recompute_recipe_stats() -> dict:
@@ -172,16 +163,7 @@ def recompute_recipe_stats() -> dict:
     Called by:
       - the rebuild_recipe_stats management command (one-off / cron)
       - the post_save/post_delete signal on RecipeIngredient (auto)
-
-    Returns a small stats dict for logging / management-command output.
-
-    Algorithm:
-      N           = total recipes
-      df(i)       = number of recipes containing ingredient i
-      idf(i)      = log(N / df(i))   (0 if df=0)
-      weighted_total(r) = sum of idf(i) for every ingredient i in recipe r
     """
-    # Imported here to avoid circular imports at module load time
     from pages.models import Recipe, Ingredient, RecipeIngredient
 
     started = time.monotonic()
@@ -191,12 +173,7 @@ def recompute_recipe_stats() -> dict:
         logger.info("recompute_recipe_stats: no recipes, skipping")
         return {"recipes": 0, "ingredients_updated": 0, "elapsed_ms": 0}
 
-    # ----- Step 1: document frequencies -----
-    # Distinct count of recipes per ingredient. The distinct=True is critical
-    # since some recipes can list the same ingredient twice (e.g. olive oil
-    # for cooking + drizzling).
-    from django.db.models import Count
-
+    # Step 1: document frequencies
     df_rows = (
         RecipeIngredient.objects
         .values("ingredient_id")
@@ -204,7 +181,7 @@ def recompute_recipe_stats() -> dict:
     )
     df_by_ingredient = {row["ingredient_id"]: row["df"] for row in df_rows}
 
-    # ----- Step 2: bulk-update Ingredient with df + idf -----
+    # Step 2: bulk-update Ingredient with df + idf
     ingredients = list(Ingredient.objects.all().only("ingredient_id"))
     for ing in ingredients:
         df = df_by_ingredient.get(ing.ingredient_id, 0)
@@ -212,10 +189,7 @@ def recompute_recipe_stats() -> dict:
         ing.idf = math.log(N / df) if df > 0 else 0.0
     Ingredient.objects.bulk_update(ingredients, ["document_frequency", "idf"], batch_size=200)
 
-    # ----- Step 3: weighted_total per recipe -----
-    # After step 2, IDFs are fresh. Sum them per recipe via a join through
-    # RecipeIngredient → Ingredient.idf. Single aggregate query per recipe
-    # is fine for a few hundred recipes.
+    # Step 3: weighted_total per recipe
     recipes = list(Recipe.objects.all().only("recipe_id"))
     for recipe in recipes:
         total = (
@@ -236,3 +210,183 @@ def recompute_recipe_stats() -> dict:
     }
     logger.info("recompute_recipe_stats: %s", stats)
     return stats
+
+
+# =============================================================================
+# Matching engine (Phase 1c)
+# =============================================================================
+def filter_by_anchors(queryset, anchor_slugs):
+    """Apply anchor filters to a Recipe queryset.
+
+    Multiple anchors combine with OR (union): selecting Chicken + Pork
+    returns recipes tagged with either. The 'anything' anchor (or an empty
+    list) returns the queryset unchanged.
+    """
+    if not anchor_slugs or "anything" in anchor_slugs:
+        return queryset
+
+    combined = Q()
+    matched_any = False
+    for slug in anchor_slugs:
+        anchor = next((a for a in ANCHOR_DEFINITIONS if a["slug"] == slug), None)
+        if anchor and anchor["filter"] is not None:
+            combined |= anchor["filter"]
+            matched_any = True
+
+    if not matched_any:
+        return queryset
+
+    return queryset.filter(combined).distinct()
+
+
+def tier_for(score: float) -> str:
+    """Classify a recipe match score into a tier label.
+
+    Thresholds default to make_now=0.999 / almost_there=0.70 / worth_shopping=0.40.
+    Tune via settings.WCIM_TIER_THRESHOLDS once you've seen real results.
+    """
+    from django.conf import settings
+    thresholds = getattr(settings, "WCIM_TIER_THRESHOLDS", {
+        "make_now": 0.999,
+        "almost_there": 0.70,
+        "worth_shopping": 0.40,
+    })
+
+    if score >= thresholds["make_now"]:
+        return "make_now"
+    if score >= thresholds["almost_there"]:
+        return "almost_there"
+    if score >= thresholds["worth_shopping"]:
+        return "worth_shopping"
+    return "below_threshold"
+
+
+def score_recipe(recipe, available_idfs: dict) -> dict:
+    """Score a single recipe against a dict of available ingredients.
+
+    Args:
+        recipe: a Recipe instance, ideally with prefetched recipe_ingredients
+        available_idfs: dict mapping ingredient_id -> idf for every ingredient
+                        the user has on hand (pantry staples + extras)
+
+    Returns:
+        {
+            "score":   float 0..1   weighted match coverage
+            "have":    [str, ...]   names of ingredients the user has
+            "missing": [str, ...]   names of ingredients the user lacks
+            "tier":    str          make_now / almost_there / worth_shopping / below_threshold
+        }
+    """
+    recipe_ings = recipe.recipe_ingredients.all()
+
+    total_available_idf = 0.0
+    have = []
+    missing = []
+
+    for ri in recipe_ings:
+        if ri.ingredient_id in available_idfs:
+            total_available_idf += available_idfs[ri.ingredient_id]
+            have.append(ri.ingredient.name)
+        else:
+            missing.append(ri.ingredient.name)
+
+    score = (total_available_idf / recipe.weighted_total
+             if recipe.weighted_total > 0 else 0.0)
+
+    return {
+        "score": score,
+        "have": have,
+        "missing": missing,
+        "tier": tier_for(score),
+    }
+
+
+def run_match(user, anchor_slugs=None, extra_ingredient_ids=None) -> dict:
+    """Run the full WCIM matching pipeline.
+
+    Args:
+        user: the requesting User
+        anchor_slugs: list of selected anchor slugs (e.g. ['chicken', 'pork'])
+        extra_ingredient_ids: list of ingredient_ids the user has on hand
+                              beyond their pantry staples (typically from
+                              the secondary picker after anchor selection)
+
+    Returns:
+        {
+            "matched_recipes": list of dicts (recipe + score + have + missing + tier),
+                              sorted by score desc, tier != below_threshold
+            "anchor_slugs":   list, echoed back
+            "total_filtered": int — how many recipes survived the anchor filter
+                                     (before scoring)
+        }
+    """
+    from pages.models import Recipe, PantryStaple, Ingredient
+
+    anchor_slugs = anchor_slugs or []
+    extra_ingredient_ids = extra_ingredient_ids or []
+
+    # Step 1: build the "available" set — staples + extras
+    staple_ids = set(
+        PantryStaple.objects.filter(user=user).values_list("ingredient_id", flat=True)
+    )
+    available_ids = staple_ids | set(extra_ingredient_ids)
+
+    # Step 2: get IDFs for each available ingredient
+    available_idfs = dict(
+        Ingredient.objects
+        .filter(ingredient_id__in=available_ids)
+        .values_list("ingredient_id", "idf")
+    )
+
+    # Step 3: hard-filter recipes by anchors, then prefetch for scoring
+    qs = filter_by_anchors(Recipe.objects.all(), anchor_slugs)
+    qs = qs.prefetch_related("recipe_ingredients__ingredient")
+
+    total_filtered = qs.count()
+
+    # Step 4: score each surviving recipe
+    matched = []
+    for recipe in qs:
+        result = score_recipe(recipe, available_idfs)
+        if result["tier"] != "below_threshold":
+            matched.append({"recipe": recipe, **result})
+
+    # Step 5: sort by score descending
+    matched.sort(key=lambda r: -r["score"])
+
+    return {
+        "matched_recipes": matched,
+        "anchor_slugs": anchor_slugs,
+        "total_filtered": total_filtered,
+    }
+
+
+def suggest_extras_for_anchors(user, anchor_slugs, top_n: int = 20) -> list:
+    """Suggest the most useful non-staple ingredients to tick after anchor selection.
+
+    Looks at recipes matching the anchor filter, counts how often each
+    non-staple ingredient appears, and returns the top N most common.
+    These become the "what else do you have?" shortlist on the picker page.
+    """
+    from pages.models import Recipe, PantryStaple, RecipeIngredient
+
+    qs = filter_by_anchors(Recipe.objects.all(), anchor_slugs)
+    recipe_ids = list(qs.values_list("recipe_id", flat=True))
+
+    if not recipe_ids:
+        return []
+
+    staple_ids = set(
+        PantryStaple.objects.filter(user=user).values_list("ingredient_id", flat=True)
+    )
+
+    counts = (
+        RecipeIngredient.objects
+        .filter(recipe_id__in=recipe_ids)
+        .exclude(ingredient_id__in=staple_ids)
+        .values("ingredient_id", "ingredient__name")
+        .annotate(usage_count=Count("recipe_id", distinct=True))
+        .order_by("-usage_count")[:top_n]
+    )
+
+    return list(counts)
