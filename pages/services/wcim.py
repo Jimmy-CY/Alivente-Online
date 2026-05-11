@@ -106,7 +106,6 @@ DEFAULT_PANTRY_STAPLE_IDS = [
     229,  # Mayonnaise
     208,  # Olives
     264,  # Nando's Lemon & Herb Sauce
-    154,  # Nando's Lemon And Herb Sauce  (duplicate of 264 — see backlog)
     297,  # Nando's Peri-peri Sauce, Extra Hot
     159,  # Nando's Peri-peri Sauce, Hot
 
@@ -132,7 +131,7 @@ DEFAULT_PANTRY_STAPLE_IDS = [
 
     # Dairy
     8,    # Milk
-    1,    # Eggs
+    172,  # Egg  (was 1 Eggs — merged 2026-05)
 
     # Pantry / grains
     119,  # Rice, White

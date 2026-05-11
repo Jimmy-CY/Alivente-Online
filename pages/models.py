@@ -1497,6 +1497,13 @@ class Ingredient(models.Model):
         default=0.0,
         help_text='Inverse document frequency: log(N / df). Higher = more distinctive. Recomputed by rebuild_recipe_stats.'
     )
+    family = models.ForeignKey(
+        'IngredientFamily',
+        null=True, blank=True,
+        on_delete=models.SET_NULL,
+        related_name='members',
+        help_text='WCIM equivalence family. Items in the same family are partial substitutes when matching recipes.'
+    )
     
     created_date = models.DateTimeField(auto_now_add=True)
     updated_date = models.DateTimeField(auto_now=True)
@@ -1517,6 +1524,40 @@ class Ingredient(models.Model):
         verbose_name = "Ingredient"
         verbose_name_plural = "Ingredients"
         ordering = ['name']
+
+class IngredientFamily(models.Model):
+    """
+    Equivalence family for WCIM substitution matching.
+
+    Ingredients in the same family are treated as partial substitutes by the
+    matching engine — a recipe calling for "Chicken Breasts" will match a
+    user who has "Chicken Thighs" at a reduced score (controlled by
+    settings.WCIM_FAMILY_MATCH_WEIGHT, default 0.7).
+
+    Family assignment is opt-in: most ingredients should have no family.
+    Only assign a family when items are genuinely interchangeable for
+    cooking purposes — over-equating creates bad matches.
+    """
+    family_id = models.AutoField(primary_key=True)
+    name = models.CharField(
+        max_length=100,
+        unique=True,
+        help_text='e.g., "Chicken cuts", "Pork chops", "Beef steaks"'
+    )
+    description = models.TextField(
+        blank=True,
+        help_text='Notes on what belongs and what does NOT. Critical for safe substitutions.'
+    )
+    created_date = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'ingredient_families'
+        verbose_name = 'Ingredient Family'
+        verbose_name_plural = 'Ingredient Families'
+        ordering = ['name']
+
+    def __str__(self):
+        return self.name
 
 class RecipeCourse(models.Model):
     """Course types for recipes (Starter, Main, Dessert, etc.)"""
