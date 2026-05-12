@@ -19,26 +19,6 @@ def divide_by(value, arg):
     except (ValueError, TypeError, InvalidOperation):
         return None
 
-@register.filter(name='multiply')
-def multiply(value, arg):
-    """Multiply value by arg"""
-    try:
-        value = Decimal(str(value)) if value else Decimal('0')
-        arg = Decimal(str(arg)) if arg else Decimal('1')
-        return float(value * arg)
-    except (ValueError, TypeError, InvalidOperation):
-        return None
-
-@register.filter(name='subtract')
-def subtract(value, arg):
-    """Subtract arg from value"""
-    try:
-        value = Decimal(str(value)) if value else Decimal('0')
-        arg = Decimal(str(arg)) if arg else Decimal('0')
-        return float(value - arg)
-    except (ValueError, TypeError, InvalidOperation):
-        return None
-
 @register.filter
 def sort_by_expense_line_type(expenses):
     """
