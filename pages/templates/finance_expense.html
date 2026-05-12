@@ -123,7 +123,19 @@
     font-variant-numeric: tabular-nums;
 }
 
-/* Edit button — red theme */
+/* Row actions wrapper (Edit + Delete) */
+.row-actions {
+    display: inline-flex;
+    gap: 6px;
+    justify-content: center;
+    align-items: center;
+}
+.row-action-form {
+    display: inline-block;
+    margin: 0;
+}
+
+/* Edit button — red theme (outlined) */
 .btn-row-edit {
     background: white;
     color: #dc3545;
@@ -144,6 +156,41 @@
     text-decoration: none;
 }
 .btn-row-edit-disabled {
+    background: #f8f9fa;
+    color: #adb5bd;
+    border: 2px solid #dee2e6;
+    padding: 5px 14px;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: not-allowed;
+    pointer-events: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* Delete button — darker red to read as destructive */
+.btn-row-delete {
+    background: white;
+    color: #a71d2a;
+    border: 2px solid #a71d2a;
+    padding: 5px 14px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.15s ease;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-family: inherit;
+    line-height: 1.5;
+}
+.btn-row-delete:hover {
+    background: #a71d2a;
+    color: white;
+}
+.btn-row-delete-disabled {
     background: #f8f9fa;
     color: #adb5bd;
     border: 2px solid #dee2e6;
@@ -378,8 +425,22 @@
     .property-details td:nth-child(5) {
         margin-top: 8px;
     }
+
+    /* Mobile: stack Edit + Delete vertically, full width */
+    .row-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        width: 100%;
+    }
+    .row-action-form {
+        display: block;
+        width: 100%;
+    }
     .btn-row-edit,
-    .btn-row-edit-disabled {
+    .btn-row-edit-disabled,
+    .btn-row-delete,
+    .btn-row-delete-disabled {
         width: 100%;
         justify-content: center;
         padding: 9px 14px;
@@ -437,11 +498,11 @@
         <table class="expense-table">
             <thead>
                 <tr>
-                    <th style="width: 22%;">Property</th>
-                    <th style="width: 22%;">Expense Line Type</th>
-                    <th style="width: 22%;">Expense Type</th>
-                    <th style="width: 18%; text-align: right;">Expense Amount</th>
-                    <th style="width: 16%; text-align: center;">Action</th>
+                    <th style="width: 20%;">Property</th>
+                    <th style="width: 20%;">Expense Line Type</th>
+                    <th style="width: 20%;">Expense Type</th>
+                    <th style="width: 16%; text-align: right;">Expense Amount</th>
+                    <th style="width: 24%; text-align: center;">Action</th>
                 </tr>
             </thead>
             
@@ -464,15 +525,28 @@
                                     <td>{{ exp.expense_types.expense_types_name }}</td>
                                     <td class="amount-cell">€ {{ exp.expense_amount|floatformat:0|intcomma }}</td>
                                     <td style="text-align: center;">
-                                        {% if perms.auth.can_edit_financials %}
-                                            <a href="{% url 'finance_expense_edit' exp.expense_id %}" class="btn-row-edit">
-                                                <i class="fas fa-pencil-alt"></i> Edit
-                                            </a>
-                                        {% else %}
-                                            <span class="btn-row-edit-disabled" title="No permission to edit">
-                                                <i class="fas fa-pencil-alt"></i> Edit
-                                            </span>
-                                        {% endif %}
+                                        <div class="row-actions">
+                                            {% if perms.auth.can_edit_financials %}
+                                                <a href="{% url 'finance_expense_edit' exp.expense_id %}" class="btn-row-edit">
+                                                    <i class="fas fa-pencil-alt"></i> Edit
+                                                </a>
+                                                <form method="post" action="{% url 'finance_expense_delete' exp.expense_id %}"
+                                                      class="row-action-form"
+                                                      onsubmit="return confirm('Delete this expense?\n\nThis action cannot be undone.');">
+                                                    {% csrf_token %}
+                                                    <button type="submit" class="btn-row-delete">
+                                                        <i class="fas fa-trash-alt"></i> Delete
+                                                    </button>
+                                                </form>
+                                            {% else %}
+                                                <span class="btn-row-edit-disabled" title="No permission to edit">
+                                                    <i class="fas fa-pencil-alt"></i> Edit
+                                                </span>
+                                                <span class="btn-row-delete-disabled" title="No permission to delete">
+                                                    <i class="fas fa-trash-alt"></i> Delete
+                                                </span>
+                                            {% endif %}
+                                        </div>
                                     </td>
                                 </tr>
                             {% endfor %}

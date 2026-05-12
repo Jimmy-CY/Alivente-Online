@@ -156,7 +156,8 @@ urlpatterns = [
     path('finance/valuations/edit-and-recalc/<int:prop_values_id>/',
          views.finance_valuations_edit_and_recalc_commit,
          name='finance_valuations_edit_and_recalc_commit'),
-    
+     path('finance/expense/<int:expense_id>/delete/', views.finance_expense_delete, name='finance_expense_delete'),      
+
     #
     # Lease Agreement Generation
     path('generate-lease-agreement/', views.generate_lease_agreement_view, name='generate_lease_agreement'),
