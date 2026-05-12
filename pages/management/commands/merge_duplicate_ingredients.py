@@ -116,3 +116,14 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS(
             f"\nAll merges complete. {remaining} ingredients remain in DB."
         ))
+
+        # Recompute WCIM stats — bulk .update() bypassed the post_save signal
+        # on RecipeIngredient, so the stored idf and weighted_total values are
+        # now stale relative to the new ingredient relationships.
+        self.stdout.write("\nRecomputing WCIM stats (IDF + weighted_total)...")
+        from pages.services.wcim import recompute_recipe_stats
+        stats = recompute_recipe_stats()
+        self.stdout.write(self.style.SUCCESS(
+            f"  Updated {stats['ingredients_updated']} ingredients, "
+            f"{stats['recipes_updated']} recipes ({stats['elapsed_ms']} ms)."
+        ))

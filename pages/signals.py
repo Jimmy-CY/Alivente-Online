@@ -6,53 +6,132 @@ from .models import tenant, VacancyPeriod, Recipe, RecipeIngredient, Ingredient,
 from .nutrition_calc import calculate_recipe_nutrition
 
 @receiver(post_save, sender=tenant)
-def handle_tenant_vacancy(sender, instance, created, **kwargs):
+def manage_vacancy_periods(sender, instance, created, **kwargs):
     """
-    Automatically create/close vacancy periods when tenants are created or updated.
-    
-    Logic:
-    - When a NEW tenant is created (lease starts): Close any active vacancy
-    - When a tenant's lease ENDS (tenant_current changes to 'No'): Create new vacancy
-    """
-    
-    if created:
-        # NEW TENANT CREATED - Check if there's an active vacancy to close
-        active_vacancy = VacancyPeriod.objects.filter(
-            prop=instance.prop,
-            status='ACTIVE',
-            end_date__isnull=True
-        ).first()
-        
-        if active_vacancy:
-            # Close the vacancy period with the new tenant's start date
-            active_vacancy.end_date = instance.tenant_lease_start_date
-            active_vacancy.next_lease = instance
-            active_vacancy.save()  # Will auto-update days_vacant and status
-            
-            print(f"✓ Closed vacancy for {instance.prop.prop_name} - Vacant for {active_vacancy.days_vacant} days")
-    
-    else:
-        # EXISTING TENANT UPDATED
-        # Check if tenant just became inactive (lease ended)
-        if instance.tenant_current == 'No':
-            # Check if we already created a vacancy for this tenant
-            existing_vacancy = VacancyPeriod.objects.filter(
-                prop=instance.prop,
-                previous_lease=instance
-            ).first()
-            
-            if not existing_vacancy and instance.tenant_lease_end_date:
-                # Create new vacancy period
-                vacancy = VacancyPeriod.objects.create(
-                    prop=instance.prop,
-                    start_date=instance.tenant_lease_end_date,
-                    previous_lease=instance,
-                    reason='BETWEEN_TENANTS',
-                    status='ACTIVE'
-                )
-                
-                print(f"✓ Created vacancy for {instance.prop.prop_name} starting {instance.tenant_lease_end_date}")
+    Manage VacancyPeriod rows when a tenant lease is saved.
 
+    Strategy: full rebuild for the property in three passes:
+      1. Create/update a FILLED vacancy for every gap between consecutive tenants
+      2. Delete obsolete FILLED vacancies (a new tenant slotted into a former gap)
+      3. Maintain at most one ACTIVE vacancy when the property is currently vacant
+
+    Relies on VacancyPeriod.save() to auto-calculate days_vacant and to flip
+    ACTIVE -> FILLED whenever end_date is set, so this handler never sets
+    days_vacant manually and never flips status manually.
+    """
+    from datetime import datetime, timedelta
+
+    # Nothing to manage if this tenant has no lease window
+    if not instance.tenant_lease_start_date or not instance.tenant_lease_end_date:
+        return
+
+    prop = instance.prop
+    today = datetime.now().date()
+
+    tenant_list = list(
+        tenant.objects
+        .filter(prop=prop)
+        .exclude(tenant_lease_start_date__isnull=True)
+        .order_by('tenant_lease_start_date')
+    )
+    if not tenant_list:
+        return
+
+    # ---- Pass 1: upsert FILLED vacancies between consecutive tenants ----
+    for i in range(len(tenant_list) - 1):
+        current = tenant_list[i]
+        next_t = tenant_list[i + 1]
+
+        if not (current.tenant_lease_end_date and next_t.tenant_lease_start_date):
+            continue
+
+        gap_start = current.tenant_lease_end_date + timedelta(days=1)
+        gap_end = next_t.tenant_lease_start_date - timedelta(days=1)
+
+        if gap_start <= gap_end:
+            existing = VacancyPeriod.objects.filter(
+                prop=prop,
+                previous_lease=current,
+                next_lease=next_t,
+            ).first()
+            if existing:
+                existing.start_date = gap_start
+                existing.end_date = gap_end
+                existing.save()  # save() flips status and recomputes days_vacant
+            else:
+                VacancyPeriod.objects.create(
+                    prop=prop,
+                    start_date=gap_start,
+                    end_date=gap_end,
+                    status='FILLED',
+                    reason='BETWEEN_TENANTS',
+                    previous_lease=current,
+                    next_lease=next_t,
+                )
+        else:
+            # No actual gap — wipe any leftover vacancy between this pair
+            VacancyPeriod.objects.filter(
+                prop=prop,
+                previous_lease=current,
+                next_lease=next_t,
+            ).delete()
+
+    # ---- Pass 2: delete FILLED vacancies that no longer represent a real gap ----
+    # (A new tenant may have slotted into a former gap)
+    for v in VacancyPeriod.objects.filter(prop=prop, status='FILLED'):
+        if not (v.previous_lease_id and v.next_lease_id):
+            continue
+        if not (v.previous_lease.tenant_lease_end_date and v.next_lease.tenant_lease_start_date):
+            continue
+        gap_start = v.previous_lease.tenant_lease_end_date + timedelta(days=1)
+        gap_end = v.next_lease.tenant_lease_start_date - timedelta(days=1)
+        overlapping = tenant.objects.filter(
+            prop=prop,
+            tenant_lease_start_date__lte=gap_end,
+            tenant_lease_end_date__gte=gap_start,
+        ).exclude(pk=v.previous_lease_id).exclude(pk=v.next_lease_id).exists()
+        if overlapping:
+            v.delete()
+
+    # ---- Pass 3: maintain ACTIVE vacancy if the property is currently vacant ----
+    is_currently_vacant = True
+    for t in tenant_list:
+        if t.tenant_lease_start_date <= today and (
+            t.tenant_lease_end_date is None or t.tenant_lease_end_date >= today
+        ):
+            is_currently_vacant = False
+            break
+
+    if is_currently_vacant:
+        latest = max(
+            (t for t in tenant_list if t.tenant_lease_end_date),
+            key=lambda t: t.tenant_lease_end_date,
+            default=None,
+        )
+        if latest and latest.tenant_lease_end_date < today:
+            already = VacancyPeriod.objects.filter(
+                prop=prop,
+                previous_lease=latest,
+                next_lease__isnull=True,
+                status='ACTIVE',
+            ).exists()
+            if not already:
+                VacancyPeriod.objects.create(
+                    prop=prop,
+                    start_date=latest.tenant_lease_end_date + timedelta(days=1),
+                    end_date=None,
+                    status='ACTIVE',
+                    reason='BETWEEN_TENANTS',
+                    previous_lease=latest,
+                    next_lease=None,
+                )
+    else:
+        # Not vacant — delete any orphan ACTIVE vacancies
+        VacancyPeriod.objects.filter(
+            prop=prop,
+            status='ACTIVE',
+            next_lease__isnull=True,
+        ).delete()
 
 def sync_all_historical_vacancies():
     """
