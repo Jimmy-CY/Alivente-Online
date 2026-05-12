@@ -5952,31 +5952,36 @@ def finance_expense_add(request):
 @login_required
 @permission_required('auth.can_edit_financials', raise_exception=True)
 def finance_expense_commit(request):
-    if request.method == "POST":
-        # Extract form data
-        prop_id = request.POST.get('prop')
-        elt_id = request.POST.get('expense_line_types')
-        et_id = request.POST.get('expense_types')  # Fix: Changed from 'expense_types' to match your form
-        expense_amount = request.POST.get('expense_amount')
-        prorata_data = request.POST.get('prorata_calculation_data')
+    if request.method != "POST":
+        return redirect('finance_expense_add')
 
-        # Define months list outside the prorata block
-        months = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 
-                 'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
+    # Extract + validate required fields
+    prop_id = request.POST.get('prop')
+    elt_id = request.POST.get('expense_line_types')
+    et_id = request.POST.get('expense_types')
+    expense_amount = request.POST.get('expense_amount')
+    prorata_data = request.POST.get('prorata_calculation_data')
 
-        try:
+    if not all([prop_id, elt_id, et_id, expense_amount]):
+        messages.error(request, "Missing required fields. Please fill in all marked items.")
+        return redirect('finance_expense_add')
+
+    months = ['jan', 'feb', 'mar', 'apr', 'may', 'jun',
+              'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
+
+    try:
+        with transaction.atomic():
             expense_type = expense_types.objects.get(expense_types_id=et_id)
-        except expense_types.DoesNotExist:
-            messages.error(request, "Invalid Expense Type")
-            return redirect('finance_expense_add')
 
-        # Check if this is a pro-rata expense with multiple properties
-        if prorata_data:
-            try:
-                prorata_data = json.loads(prorata_data)
-                selected_properties = prorata_data.get('selected_properties', [])
-                
-                # Create an expense for each selected property
+            # Pro-rata path: multiple properties
+            if prorata_data and prorata_data != 'undefined':
+                parsed = json.loads(prorata_data)
+                selected_properties = parsed.get('selected_properties', [])
+
+                if not selected_properties:
+                    messages.error(request, "No properties selected for pro-rata distribution.")
+                    return redirect('finance_expense_add')
+
                 for property_data in selected_properties:
                     monthly_data = {
                         'prop_id': property_data['prop_id'],
@@ -5984,48 +5989,49 @@ def finance_expense_commit(request):
                         'expense_types_id': et_id,
                         'expense_amount': property_data['calculated_amount'],
                     }
-                    
                     for month in months:
                         if getattr(expense_type, f'expense_types_{month}') == "Yes":
                             monthly_data[f'expense_{month}'] = property_data['calculated_amount']
-                    
                     expense.objects.update_or_create(
                         prop_id=property_data['prop_id'],
                         expense_line_types_id=elt_id,
                         expense_types_id=et_id,
-                        defaults=monthly_data
+                        defaults=monthly_data,
                     )
-                
-                messages.success(request, f"{len(selected_properties)} pro-rata expenses created successfully")
-                return redirect('finance_expense')
-                
-            except json.JSONDecodeError:
-                messages.error(request, "Invalid pro-rata data")
-                return redirect('finance_expense_add')
 
-        # Handle non-pro-rata or single property expense
-        monthly_data = {
-            'prop_id': prop_id,
-            'expense_line_types_id': elt_id,
-            'expense_types_id': et_id,
-            'expense_amount': expense_amount,
-        }
-        
-        for month in months:
-            if getattr(expense_type, f'expense_types_{month}') == "Yes":
-                monthly_data[f'expense_{month}'] = expense_amount
-        
-        expense.objects.update_or_create(
-            prop_id=prop_id,
-            expense_line_types_id=elt_id,
-            expense_types_id=et_id,
-            defaults=monthly_data
-        )
-        
-        messages.success(request, "Expense Updated Successfully")
-        return redirect('finance_expense')
-    
-    return redirect('finance_expense_add')
+                messages.success(request, f"{len(selected_properties)} pro-rata expenses created successfully.")
+                return redirect('finance_expense')
+
+            # Non-pro-rata path: single property
+            monthly_data = {
+                'prop_id': prop_id,
+                'expense_line_types_id': elt_id,
+                'expense_types_id': et_id,
+                'expense_amount': expense_amount,
+            }
+            for month in months:
+                if getattr(expense_type, f'expense_types_{month}') == "Yes":
+                    monthly_data[f'expense_{month}'] = expense_amount
+
+            expense.objects.update_or_create(
+                prop_id=prop_id,
+                expense_line_types_id=elt_id,
+                expense_types_id=et_id,
+                defaults=monthly_data,
+            )
+            messages.success(request, "Expense added successfully.")
+            return redirect('finance_expense')
+
+    except expense_types.DoesNotExist:
+        messages.error(request, "Invalid expense type.")
+        return redirect('finance_expense_add')
+    except json.JSONDecodeError:
+        messages.error(request, "Invalid pro-rata data — please recalculate.")
+        return redirect('finance_expense_add')
+    except Exception as e:
+        logging.getLogger(__name__).exception("finance_expense_commit failed")
+        messages.error(request, f"Couldn't save the expense: {e}")
+        return redirect('finance_expense_add')
 
 @login_required
 @permission_required('auth.can_edit_financials', raise_exception=True)
@@ -6076,52 +6082,49 @@ def finance_expense_edit(request, expense_id):
 @login_required
 @permission_required('auth.can_edit_financials', raise_exception=True)
 def finance_expense_edit_commit(request, expense_id):
-    # Get the existing expense first
+    # Verify the expense exists
     try:
         existing_expense = expense.objects.get(expense_id=expense_id)
     except expense.DoesNotExist:
-        messages.error(request, "Expense not found")
+        messages.error(request, "Expense not found.")
         return redirect('finance_expense')
 
-    if request.method == "POST":
-        # Extract form data
-        prop_id = request.POST.get('prop')
-        elt_id = request.POST.get('expense_line_types')
-        et_id = request.POST.get('expense_types')
-        expense_amount = request.POST.get('expense_amount')
-        prorata_data = request.POST.get('prorata_calculation_data')
+    if request.method != "POST":
+        return redirect('finance_expense_edit', expense_id=expense_id)
 
-        # Define months list outside the prorata block
-        months = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 
-                 'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
+    # Extract + validate required fields
+    prop_id = request.POST.get('prop')
+    elt_id = request.POST.get('expense_line_types')
+    et_id = request.POST.get('expense_types')
+    expense_amount = request.POST.get('expense_amount')
+    prorata_data = request.POST.get('prorata_calculation_data')
 
-        try:
+    if not all([prop_id, elt_id, et_id, expense_amount]):
+        messages.error(request, "Missing required fields. Please fill in all marked items.")
+        return redirect('finance_expense_edit', expense_id=expense_id)
+
+    months = ['jan', 'feb', 'mar', 'apr', 'may', 'jun',
+              'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
+
+    try:
+        with transaction.atomic():
             expense_type = expense_types.objects.get(expense_types_id=et_id)
-        except expense_types.DoesNotExist:
-            messages.error(request, "Invalid Expense Type")
-            return redirect('finance_expense_edit', expense_id=expense_id)
 
-        # Check if this is a pro-rata expense with multiple properties
-        if prorata_data and prorata_data != 'undefined':
-            try:
-                prorata_data = json.loads(prorata_data)
-                selected_properties = prorata_data.get('selected_properties', [])
-                
+            # Pro-rata path: delete the originals, recreate per selected property
+            if prorata_data and prorata_data != 'undefined':
+                parsed = json.loads(prorata_data)
+                selected_properties = parsed.get('selected_properties', [])
+
                 if not selected_properties:
-                    messages.error(request, "No properties selected for pro-rata distribution")
+                    messages.error(request, "No properties selected for pro-rata distribution.")
                     return redirect('finance_expense_edit', expense_id=expense_id)
-                
-                # For pro-rata expenses, we need to handle the original expense differently
-                # First, get all existing expenses with the ORIGINAL line type and expense type
-                original_expenses = expense.objects.filter(
+
+                # Wipe the original pro-rata group, then rebuild
+                expense.objects.filter(
                     expense_line_types_id=existing_expense.expense_line_types_id,
-                    expense_types_id=existing_expense.expense_types_id
-                )
-                
-                # Delete all original pro-rata expenses (they will be recreated)
-                original_expenses.delete()
-                
-                # Create new expenses for each selected property
+                    expense_types_id=existing_expense.expense_types_id,
+                ).delete()
+
                 for property_data in selected_properties:
                     monthly_data = {
                         'prop_id': property_data['prop_id'],
@@ -6129,60 +6132,47 @@ def finance_expense_edit_commit(request, expense_id):
                         'expense_types_id': et_id,
                         'expense_amount': property_data['calculated_amount'],
                     }
-                    
                     for month in months:
                         if getattr(expense_type, f'expense_types_{month}') == "Yes":
                             monthly_data[f'expense_{month}'] = property_data['calculated_amount']
-                    
-                    # Create new expense
                     expense.objects.create(**monthly_data)
-                
-                messages.success(request, f"{len(selected_properties)} pro-rata expenses updated successfully")
-                return redirect('finance_expense')
-                
-            except json.JSONDecodeError:
-                messages.error(request, "Invalid pro-rata data")
-                return redirect('finance_expense_edit', expense_id=expense_id)
-            except Exception as e:
-                messages.error(request, f"Error processing pro-rata expense: {str(e)}")
-                return redirect('finance_expense_edit', expense_id=expense_id)
 
-        # Handle non-pro-rata or single property expense
-        # IMPORTANT: Clear all monthly amounts first, then set only the active ones
-        monthly_data = {
-            'prop_id': prop_id,
-            'expense_line_types_id': elt_id,
-            'expense_types_id': et_id,
-            'expense_amount': expense_amount,
-            # Clear all monthly amounts first
-            'expense_jan': None,
-            'expense_feb': None,
-            'expense_mar': None,
-            'expense_apr': None,
-            'expense_may': None,
-            'expense_jun': None,
-            'expense_jul': None,
-            'expense_aug': None,
-            'expense_sep': None,
-            'expense_oct': None,
-            'expense_nov': None,
-            'expense_dec': None,
-        }
-        
-        # Set only the active months based on the NEW expense type
-        for month in months:
-            if getattr(expense_type, f'expense_types_{month}') == "Yes":
-                monthly_data[f'expense_{month}'] = expense_amount
-        
-        # Update the existing expense directly (don't use update_or_create)
-        for field, value in monthly_data.items():
-            setattr(existing_expense, field, value)
-        existing_expense.save()
-        
-        messages.success(request, "Expense Updated Successfully")
-        return redirect('finance_expense')
-    
-    return redirect('finance_expense_edit', expense_id=expense_id)
+                messages.success(request, f"{len(selected_properties)} pro-rata expenses updated successfully.")
+                return redirect('finance_expense')
+
+            # Non-pro-rata path: update the existing row.
+            # Clear all monthly amounts first, then set only the ones that apply.
+            monthly_data = {
+                'prop_id': prop_id,
+                'expense_line_types_id': elt_id,
+                'expense_types_id': et_id,
+                'expense_amount': expense_amount,
+                'expense_jan': None, 'expense_feb': None, 'expense_mar': None,
+                'expense_apr': None, 'expense_may': None, 'expense_jun': None,
+                'expense_jul': None, 'expense_aug': None, 'expense_sep': None,
+                'expense_oct': None, 'expense_nov': None, 'expense_dec': None,
+            }
+            for month in months:
+                if getattr(expense_type, f'expense_types_{month}') == "Yes":
+                    monthly_data[f'expense_{month}'] = expense_amount
+
+            for field, value in monthly_data.items():
+                setattr(existing_expense, field, value)
+            existing_expense.save()
+
+            messages.success(request, "Expense updated successfully.")
+            return redirect('finance_expense')
+
+    except expense_types.DoesNotExist:
+        messages.error(request, "Invalid expense type.")
+        return redirect('finance_expense_edit', expense_id=expense_id)
+    except json.JSONDecodeError:
+        messages.error(request, "Invalid pro-rata data — please recalculate.")
+        return redirect('finance_expense_edit', expense_id=expense_id)
+    except Exception as e:
+        logging.getLogger(__name__).exception("finance_expense_edit_commit failed")
+        messages.error(request, f"Couldn't update the expense: {e}")
+        return redirect('finance_expense_edit', expense_id=expense_id)
 
 @login_required
 @permission_required('auth.can_access_financials', raise_exception=True)
