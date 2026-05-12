@@ -856,7 +856,6 @@ class ModuleAccessMiddleware(MiddlewareMixin):
             ('finance_expense_line_types_edit', 'auth.can_access_financials'),
             ('finance_expense_line_types_edit_commit', 'auth.can_access_financials'),
             ('finance_expense_line_types_edit_and_recalc_commit', 'auth.can_access_financials'),
-            ('finance_pl', 'auth.can_access_financials'),
             ('finance_pl_act', 'auth.can_access_financials'),
             ('revenue-details', 'auth.can_access_financials'),
             ('budget-expense-details', 'auth.can_access_financials'),
