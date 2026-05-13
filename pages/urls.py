@@ -21,9 +21,6 @@ urlpatterns = [
     path('admin_invoices/', views.admin_invoices, name='admin_invoices'),
     path('upload_title_deed/', views.upload_title_deed, name='upload_title_deed'),
     path('title_deeds_management/', views.title_deeds_management, name='title_deeds_management'),
-#    path('upload_lease_agreement/', views.upload_lease_agreement, name='upload_lease_agreement'),
-#    path('lease_agreement_report/<int:tenant_id>/', views.lease_agreement_report, name='lease_agreement_report'),
-#    path('serve_lease/<str:filename>/', views.serve_lease, name='serve_lease'),
     path('lease/<int:tenant_id>/', views.lease_agreement_report, name='lease_agreement_report'),
     path('lease/<str:filename>/view/', views.serve_lease, name='serve_lease'),
     path('upload_lease_agreement/', views.upload_lease_agreement, name='upload_lease_agreement'),
@@ -51,7 +48,6 @@ urlpatterns = [
     path('lease_agreements/', views.lease_agreements, name='lease_agreements'),
     path('issues_rep/', views.issues_rep, name='issues_rep'),
     path('property/<int:prop_id>/title-deed/', views.title_deed_report, name='title_deed_report'),
-#    path('lease_agreement_report/<int:tenant_id>', views.lease_agreement_report, name='lease_agreement_report'),
     path('property_report/<int:prop_id>', views.property_report, name='property_report'),
     path('supplier_report/<int:supplier_id>', views.supplier_report, name='supplier_report'),
     path('tenant_report/<int:tenant_id>', views.tenant_report, name='tenant_report'),
@@ -231,6 +227,7 @@ urlpatterns = [
     path('comments-report/', views.comments_report, name='comments_report'),
     path('delete-comment/<int:comment_id>/', views.delete_comment, name='delete_comment'),
     path('issue-details/<int:issue_id>/', views.get_issue_details, name='get_issue_details'),
+    path('issues/comments/<int:comment_id>/notify-urgent/', views.notify_comment_urgent, name='notify_comment_urgent'),
 
     #
     # Passports

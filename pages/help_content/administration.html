@@ -1,13 +1,13 @@
-{# =========================================================================
+﻿{# =========================================================================
    1.  administration.html
    ========================================================================= #}
  
 <!--
   ===========================================================================
-  ALIVENTE ONLINE — HELP CONTENT: ADMINISTRATION & PERSONAL MODULES
+  ALIVENTE ONLINE â€” HELP CONTENT: ADMINISTRATION & PERSONAL MODULES
   ===========================================================================
   Despite the filename, this file holds help for both the "Administration"
-  and the "Personal" sidebar groups — they share many cross-cutting
+  and the "Personal" sidebar groups â€” they share many cross-cutting
   concerns (notifications, profiles, recipe management, etc.).
  
   Parsed by:  pages/services/help_renderer.py
@@ -1359,6 +1359,28 @@
       </div>
     </div>
 
+    <div class="card mb-3" style="border:1px solid #dee2e6;">
+      <div class="card-header" style="background:#17a2b8; color:white;">
+        <h6 style="margin:0;"><i class="fas fa-comments"></i> 9. Daily Issue Comments Report</h6>
+      </div>
+      <div class="card-body">
+        <p><strong>What it does:</strong> Daily summary email of every comment added to issues the day before, grouped by issue. Helps catch updates you would otherwise have to hunt for one by one.</p>
+        <p><strong>When it sends:</strong> Once a day &mdash; only if there were comments. Silent on days with no activity.</p>
+        <p class="mb-0"><strong>Typical recipient:</strong> Property managers and supervisors who track issue follow-ups.</p>
+      </div>
+    </div>
+
+    <div class="card mb-3" style="border:1px solid #dee2e6;">
+      <div class="card-header" style="background:#17a2b8; color:white;">
+        <h6 style="margin:0;"><i class="fas fa-bell"></i> 10. Urgent Issue Comment Alert</h6>
+      </div>
+      <div class="card-body">
+        <p><strong>What it does:</strong> Sent immediately when someone clicks the <strong>&#x1F514; Notify Now</strong> button next to a specific comment on an issue's Comments page. Same email format as the daily report, but for a single comment that needs eyes <em>now</em>.</p>
+        <p><strong>When it sends:</strong> On demand, when a user clicks the button. The clicker is automatically excluded from recipients (so each press sends to everyone else on the configured list). A 5-minute cooldown applies per comment &mdash; after a press, the button becomes a "Notified N min ago" badge until the window expires.</p>
+        <p class="mb-0"><strong>Typical recipient:</strong> Property managers and supervisors who need an immediate ping rather than waiting for the next daily summary.</p>
+      </div>
+    </div>
+
   </article>
 
   <article data-tab-slug="an-workflows"
@@ -2020,7 +2042,7 @@
     <div class="card mb-2" style="border-left:4px solid #17a2b8;">
       <div class="card-body" style="padding:12px 15px;">
         <h6 style="margin:0 0 5px 0;"><strong>Lease Terms</strong></h6>
-        <p class="mb-1" style="font-size:13px;">Start Date, End Date, Monthly Rent (€), Security Deposit (€), Communal Expenses (€), Extension Period (months), Extension Date, Rental Increase (%).</p>
+        <p class="mb-1" style="font-size:13px;">Start Date, End Date, Monthly Rent (â‚¬), Security Deposit (â‚¬), Communal Expenses (â‚¬), Extension Period (months), Extension Date, Rental Increase (%).</p>
         <p class="mb-0" style="font-size:13px;"><strong>Extension Date is auto-calculated</strong> from End Date + Extension Period (rounded to end of month). Communal Expenses, Extension Period and Rental Increase default to <code>0</code> &mdash; leave them as zero if not applicable.</p>
       </div>
     </div>

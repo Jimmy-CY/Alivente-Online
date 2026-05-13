@@ -1,4 +1,4 @@
-from django.db import models
+﻿from django.db import models
 from django.db import connections
 from django.db.models import Min, Max, Sum
 from django.contrib.auth.models import User
@@ -773,9 +773,30 @@ class issues_details(models.Model):
     issues_details_comment = models.CharField(max_length=255, blank=True, null=True)
     issues_details_user = models.CharField(max_length=255, blank=True, null=True)
     issues_details_date = models.DateField(blank=True, null=True)
+    issues_details_last_notified_at = models.DateTimeField(null=True, blank=True)    
 
     def __str__(self):
         return self.issues_details_comment
+
+    @property
+    def is_in_urgent_cooldown(self):
+        """True if a 'Notify Now' was pressed within the cooldown window."""
+        if not self.issues_details_last_notified_at:
+            return False
+        from django.utils import timezone
+        from datetime import timedelta
+        from pages.email_utils import URGENT_NOTIFICATION_COOLDOWN_MINUTES
+        delta = timezone.now() - self.issues_details_last_notified_at
+        return delta < timedelta(minutes=URGENT_NOTIFICATION_COOLDOWN_MINUTES)
+
+    @property
+    def urgent_cooldown_minutes_ago(self):
+        """Whole minutes elapsed since last 'Notify Now'. None if never pressed."""
+        if not self.issues_details_last_notified_at:
+            return None
+        from django.utils import timezone
+        delta = timezone.now() - self.issues_details_last_notified_at
+        return int(delta.total_seconds() // 60)
 
     class Meta:
         db_table="issues_details"
@@ -1224,7 +1245,7 @@ class Ingredient(models.Model):
         help_text='USDA data type: Foundation, SR Legacy, Survey (FNDDS), or Branded'
     )
     
-    # Macros — per 100g
+    # Macros â€” per 100g
     calories_per_100g = models.DecimalField(
         max_digits=7, decimal_places=2, null=True, blank=True,
         help_text='Calories (kcal) per 100g'
@@ -1242,7 +1263,7 @@ class Ingredient(models.Model):
         help_text='Total fat (g) per 100g'
     )
     
-    # Key micros — per 100g
+    # Key micros â€” per 100g
     fiber_per_100g = models.DecimalField(
         max_digits=6, decimal_places=2, null=True, blank=True,
         help_text='Dietary fiber (g) per 100g'
@@ -1321,13 +1342,13 @@ class IngredientFamily(models.Model):
     Equivalence family for WCIM substitution matching.
 
     Ingredients in the same family are treated as partial substitutes by the
-    matching engine — a recipe calling for "Chicken Breasts" will match a
+    matching engine â€” a recipe calling for "Chicken Breasts" will match a
     user who has "Chicken Thighs" at a reduced score (controlled by
     settings.WCIM_FAMILY_MATCH_WEIGHT, default 0.7).
 
     Family assignment is opt-in: most ingredients should have no family.
     Only assign a family when items are genuinely interchangeable for
-    cooking purposes — over-equating creates bad matches.
+    cooking purposes â€” over-equating creates bad matches.
     """
     family_id = models.AutoField(primary_key=True)
     name = models.CharField(
@@ -1516,8 +1537,8 @@ class RecipeIngredient(models.Model):
     recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE, related_name='recipe_ingredients')
     ingredient = models.ForeignKey(Ingredient, on_delete=models.CASCADE)
     
-    # Amount stored as decimal (1.5 for 1½)
-    amount = models.DecimalField(max_digits=8, decimal_places=3, help_text='Amount (use decimal: 1.5 for 1½)')
+    # Amount stored as decimal (1.5 for 1Â½)
+    amount = models.DecimalField(max_digits=8, decimal_places=3, help_text='Amount (use decimal: 1.5 for 1Â½)')
     unit = models.ForeignKey(MeasurementUnit, on_delete=models.SET_NULL, null=True, blank=True)
     
     # CHANGED: Use ForeignKey instead of CharField
@@ -1560,15 +1581,15 @@ class RecipeIngredient(models.Model):
         
         # Map of decimal to common fraction symbols
         fraction_map = {
-            0.125: '⅛',
-            0.25: '¼',
-            0.333: '⅓',
-            0.375: '⅜',
-            0.5: '½',
-            0.625: '⅝',
-            0.666: '⅔',
-            0.75: '¾',
-            0.875: '⅞',
+            0.125: 'â…›',
+            0.25: 'Â¼',
+            0.333: 'â…“',
+            0.375: 'â…œ',
+            0.5: 'Â½',
+            0.625: 'â…',
+            0.666: 'â…”',
+            0.75: 'Â¾',
+            0.875: 'â…ž',
         }
 
         whole_part = int(amount_float)
@@ -1684,7 +1705,7 @@ class RecipeNutritionCache(models.Model):
     label shown in the nutrition modal). Per-serving values are stored too
     for future per-serving features.
     
-    is_complete=True only when every ingredient is mapped AND convertible —
+    is_complete=True only when every ingredient is mapped AND convertible â€”
     i.e., the calculator returned no unmapped or unconvertible items. The
     sortable search UI filters to is_complete=True so the rankings are
     trustworthy.
@@ -2230,7 +2251,7 @@ class CelebrationEvent(models.Model):
         }
         
         # Get the celebration notification recipients
-        from pages.management.commands.email_utils import get_email_recipients
+        from pages.email_utils import get_email_recipients
         try:
             recipients = get_email_recipients('celebration_reminder')
             all_notification_emails = recipients['all']  # TO + CC combined
@@ -2284,6 +2305,7 @@ class NotificationRecipient(models.Model):
         ('friday_status_report_staff', 'Friday Status Report (Submitted by Staff)'),
         ('invoice_paid', 'Invoice Marked as Paid'),
         ('issue_comments_daily', 'Daily Issue Comments Report'),
+        ('issue_comment_urgent', 'Urgent Issue Comment Alert'),
     )
     notification_type = models.CharField(max_length=50, choices=NOTIFICATION_TYPES, unique=True)
     to_addresses = models.TextField(help_text="Comma-separated TO email addresses (primary recipients)")

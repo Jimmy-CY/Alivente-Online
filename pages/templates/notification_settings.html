@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+﻿{% extends 'base.html' %}
 {% load static %}
 {% load help_modal_tags %}
 
@@ -114,7 +114,7 @@
     text-decoration: none;
 }
 
-/* ==================== MOBILE STYLES (≤768px) ==================== */
+/* ==================== MOBILE STYLES (â‰¤768px) ==================== */
 @media (max-width: 768px) {
     .settings-header {
         padding: 18px;
@@ -132,8 +132,8 @@
         font-size: 0.9rem;
     }
 
-    /* Action row inside header — Back+1 standard:
-       [Help (wide)] [← Back small icon] */
+    /* Action row inside header â€” Back+1 standard:
+       [Help (wide)] [â† Back small icon] */
     .settings-header-actions {
         width: 100%;
         flex-direction: row;
@@ -176,7 +176,7 @@
         font-size: 13px;
     }
 
-    /* Textarea — 16px font to prevent iOS zoom */
+    /* Textarea â€” 16px font to prevent iOS zoom */
     .notification-card .form-control,
     .notification-card textarea.form-control {
         font-size: 16px;
@@ -551,6 +551,43 @@
             <div class="field-hint">Additional recipients who should be informed</div>
         </div>
         
+        <button type="submit" class="btn btn-info">
+            <i class="fas fa-save"></i> Save
+        </button>
+    </form>
+</div>
+
+<!-- Urgent Issue Comment Alert -->
+<div class="notification-card">
+    <h5><i class="fas fa-bell"></i> Urgent Issue Comment Alert</h5>
+    <p class="text-muted">Sent immediately when a user clicks "Notify Now" next to a comment on an issue. The clicker is excluded from recipients (so DM pressing it sends to Stella, and vice versa). 5-minute cooldown per comment.</p>
+
+    <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="notification_type" value="issue_comment_urgent">
+
+        <div class="form-group">
+            <label><strong>TO:</strong> Primary Recipients</label>
+            <textarea
+                class="form-control"
+                name="to_addresses"
+                rows="2"
+                placeholder="email1@example.com, email2@example.com"
+            >{{ notification_settings.issue_comment_urgent.to_emails }}</textarea>
+            <div class="field-hint">People alerted immediately when a comment is flagged urgent</div>
+        </div>
+
+        <div class="form-group">
+            <label><strong>CC:</strong> Carbon Copy Recipients (optional)</label>
+            <textarea
+                class="form-control"
+                name="cc_addresses"
+                rows="2"
+                placeholder="email1@example.com, email2@example.com"
+            >{{ notification_settings.issue_comment_urgent.cc_emails }}</textarea>
+            <div class="field-hint">Additional recipients who should be informed</div>
+        </div>
+
         <button type="submit" class="btn btn-info">
             <i class="fas fa-save"></i> Save
         </button>

@@ -1,8 +1,8 @@
-<!--
+﻿<!--
   ===========================================================================
-  ALIVENTE ONLINE — HELP CONTENT: OPERATIONAL MODULES
+  ALIVENTE ONLINE â€” HELP CONTENT: OPERATIONAL MODULES
   ===========================================================================
-  This file holds help for the day-to-day operational modules — anything
+  This file holds help for the day-to-day operational modules â€” anything
   used routinely to manage the portfolio (suppliers, tenants, issues,
   projects, the expense ledger, the property dashboard).
  
@@ -26,7 +26,7 @@
   RELATED FILES
   ---------------------------------------------------------------------------
   - Budgeted/recurring expenses live in configuration.html under slug
-    "finance_expense" — NOT here. This file's "expenses" slug is the
+    "finance_expense" â€” NOT here. This file's "expenses" slug is the
     actual-spend approval-workflow ledger.
   - Financial reports (P&L, Valuations, etc.) live in reports.html.
   - The Financials landing page lives in finance.html.
@@ -34,7 +34,7 @@
   ---------------------------------------------------------------------------
   EDITING NOTES
   ---------------------------------------------------------------------------
-  - Permission flags vary per module — see the data-module-permission
+  - Permission flags vary per module â€” see the data-module-permission
     attribute on each <section>.
   - DO NOT change the wrapping <section> / <article> attributes without
     understanding the parser.
@@ -1119,6 +1119,10 @@
 
     <h6 style="color:#17a2b8; font-weight:700; margin-top:20px;"><i class="fas fa-history"></i> Why it's a thread, not an "update" field</h6>
     <p>Every comment is preserved permanently. The issue description doesn't change; the thread grows. This gives you a full audit trail of <em>what was tried, what happened, what was decided</em> &mdash; invaluable when reviewing old issues or handing work to a new staff member.</p>
+
+    <h6 style="color:#17a2b8; font-weight:700; margin-top:20px;"><i class="fas fa-bell"></i> Urgent notifications &mdash; the "Notify Now" button</h6>
+    <p>Next to every comment in the thread there's a yellow <strong>&#x1F514; Notify Now</strong> button. Click it and the system sends an immediate email summarising <em>that single comment</em> &mdash; same format as the daily summary, but for one item that needs attention right now. The clicker is automatically excluded from the recipients, so the alert goes to everyone else configured to receive it.</p>
+    <p>After clicking, the button becomes a grey <strong>"Notified N min ago"</strong> badge for 5 minutes. This prevents accidental repeat-clicks and gives the recipient time to open the email before the next ping. Once the window expires, the button comes back. Recipients are configured in <strong>Admin &rarr; Notifications &rarr; Urgent Issue Comment Alert</strong>.</p>
 
     <div class="alert alert-warning" style="border-left:4px solid #ffc107;">
       <i class="fas fa-exclamation-triangle"></i> <strong>Change Status + Comment in one go:</strong> when you mark an issue Resolved, always add a closing comment explaining what happened. Don't just flip the status silently &mdash; the audit trail suffers.

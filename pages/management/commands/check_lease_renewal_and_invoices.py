@@ -1,8 +1,8 @@
-from django.core.management.base import BaseCommand
+﻿from django.core.management.base import BaseCommand
 from django.conf import settings
 from django.db import connections, connection
 from datetime import date, timedelta, datetime
-from .email_utils import get_email_recipients, format_email_recipients_for_header
+from pages.email_utils import get_email_recipients, format_email_recipients_for_header
 import os
 import sys
 import logging
@@ -37,9 +37,9 @@ class Command(BaseCommand):
         # Test environment variables
         email_password = os.environ.get('EMAIL_PASSWORD')
         if email_password:
-            self.stdout.write('✅ EMAIL_PASSWORD environment variable found')
+            self.stdout.write('âœ… EMAIL_PASSWORD environment variable found')
         else:
-            self.stdout.write('❌ EMAIL_PASSWORD environment variable NOT found')
+            self.stdout.write('âŒ EMAIL_PASSWORD environment variable NOT found')
             if not self.dry_run:
                 return
         
@@ -47,9 +47,9 @@ class Command(BaseCommand):
         try:
             with connection.cursor() as cursor:
                 cursor.execute("SELECT 1")
-                self.stdout.write('✅ Database connection successful')
+                self.stdout.write('âœ… Database connection successful')
         except Exception as e:
-            self.stdout.write(f'❌ Database connection failed: {e}')
+            self.stdout.write(f'âŒ Database connection failed: {e}')
             logger.error(f'Database connection failed: {e}')
             return
         
@@ -164,7 +164,7 @@ class Command(BaseCommand):
                 self.stdout.write('No issue comments from yesterday')
                 
         except Exception as e:
-            self.stdout.write(f'❌ Error during execution: {e}')
+            self.stdout.write(f'âŒ Error during execution: {e}')
             logger.error(f'Error during command execution: {e}', exc_info=True)
             raise
         finally:
@@ -240,14 +240,14 @@ class Command(BaseCommand):
                         self.stdout.write(f'DRY RUN: Would create {created_count} new invoices for {new_invoice_date}')
                     else:
                         # Django handles the commit automatically for management commands
-                        self.stdout.write(f'✅ Created {created_count} new invoices for {new_invoice_date}')
+                        self.stdout.write(f'âœ… Created {created_count} new invoices for {new_invoice_date}')
                 else:
-                    self.stdout.write(f'ℹ️  No new invoices created - they already exist for {new_invoice_date}')
+                    self.stdout.write(f'â„¹ï¸  No new invoices created - they already exist for {new_invoice_date}')
                 
                 return created_count
                 
         except Exception as e:
-            self.stdout.write(f'❌ Error creating invoices: {e}')
+            self.stdout.write(f'âŒ Error creating invoices: {e}')
             logger.error(f'Error creating invoices: {e}', exc_info=True)
             return 0
     
@@ -342,7 +342,7 @@ class Command(BaseCommand):
                 return vacant_properties, expiring_leases, declined_renewals, overdue_invoices
                 
         except Exception as e:
-            self.stdout.write(f'❌ Error getting property details: {e}')
+            self.stdout.write(f'âŒ Error getting property details: {e}')
             logger.error(f'Error getting property details: {e}', exc_info=True)
             return [], [], [], []
     
@@ -409,7 +409,7 @@ class Command(BaseCommand):
             return properties_with_overdue_invoices
             
         except Exception as e:
-            self.stdout.write(f'❌ Error getting outstanding invoices: {e}')
+            self.stdout.write(f'âŒ Error getting outstanding invoices: {e}')
             logger.error(f'Error getting outstanding invoices: {e}', exc_info=True)
             return []
     
@@ -450,7 +450,7 @@ class Command(BaseCommand):
             return passport_list
             
         except Exception as e:
-            self.stdout.write(f'❌ Error getting expiring passports: {e}')
+            self.stdout.write(f'âŒ Error getting expiring passports: {e}')
             logger.error(f'Error getting expiring passports: {e}', exc_info=True)
             return []
     
@@ -486,7 +486,7 @@ class Command(BaseCommand):
                 return leases_to_upload
                 
         except Exception as e:
-            self.stdout.write(f'❌ Error getting new leases to upload: {e}')
+            self.stdout.write(f'âŒ Error getting new leases to upload: {e}')
             logger.error(f'Error getting new leases to upload: {e}', exc_info=True)
             return []
     
@@ -533,7 +533,7 @@ class Command(BaseCommand):
             return celebrations_by_recipient
             
         except Exception as e:
-            self.stdout.write(f'❌ Error getting today\'s celebrations: {e}')
+            self.stdout.write(f'âŒ Error getting today\'s celebrations: {e}')
             logger.error(f'Error getting today\'s celebrations: {e}', exc_info=True)
             return {}
 
@@ -570,7 +570,7 @@ class Command(BaseCommand):
             email_use_tls = os.environ.get('EMAIL_USE_TLS', 'False').lower() == 'true'
             
             if not email_password:
-                self.stdout.write('❌ EMAIL_PASSWORD environment variable not set')
+                self.stdout.write('âŒ EMAIL_PASSWORD environment variable not set')
                 return False
             
             # SMTP setup (reuse connection for all emails)
@@ -591,7 +591,7 @@ class Command(BaseCommand):
             for recipient_email, todays_celebrations in celebrations_by_recipient.items():
                 celebration_count = len(todays_celebrations)
                 
-                self.stdout.write(f'📧 Sending {celebration_count} celebration(s) to {recipient_email}')
+                self.stdout.write(f'ðŸ“§ Sending {celebration_count} celebration(s) to {recipient_email}')
                 
                 # Create message
                 msg = MIMEMultipart('alternative')
@@ -601,7 +601,7 @@ class Command(BaseCommand):
                 # Determine correct grammar
                 celebration_word = "Celebration" if celebration_count == 1 else "Celebrations"
                 
-                msg['Subject'] = f"🎉 {celebration_word} Today - {formatted_date} ({celebration_count})"
+                msg['Subject'] = f"ðŸŽ‰ {celebration_word} Today - {formatted_date} ({celebration_count})"
                 
                 # Build HTML email body
                 html_body = f"""
@@ -632,16 +632,16 @@ class Command(BaseCommand):
                     # Determine CSS class for color coding
                     if 'birthday' in event_type_lower:
                         css_class = 'birthday'
-                        icon = '🎂'
+                        icon = 'ðŸŽ‚'
                     elif 'nameday' in event_type_lower:
                         css_class = 'nameday'
-                        icon = '🎊'
+                        icon = 'ðŸŽŠ'
                     elif 'anniversary' in event_type_lower:
                         css_class = 'anniversary'
-                        icon = '💐'
+                        icon = 'ðŸ’'
                     else:
                         css_class = 'custom'
-                        icon = '🎉'
+                        icon = 'ðŸŽ‰'
                     
                     html_body += f"""
                     <li>
@@ -680,13 +680,13 @@ class Command(BaseCommand):
                     
                     # Determine icon
                     if 'birthday' in event_type_lower:
-                        icon = '🎂'
+                        icon = 'ðŸŽ‚'
                     elif 'nameday' in event_type_lower:
-                        icon = '🎊'
+                        icon = 'ðŸŽŠ'
                     elif 'anniversary' in event_type_lower:
-                        icon = '💐'
+                        icon = 'ðŸ’'
                     else:
-                        icon = '🎉'
+                        icon = 'ðŸŽ‰'
                     
                     text_body += f"\n- {icon} {celebration['contact_name']} - {celebration['event_type']}"
                     
@@ -715,7 +715,7 @@ class Command(BaseCommand):
                 text = msg.as_string()
                 smtp_object.sendmail(email_user, [recipient_email], text)
                 
-                self.stdout.write(f'✅ Celebration email sent to {recipient_email}')
+                self.stdout.write(f'âœ… Celebration email sent to {recipient_email}')
             
             logger.info(f'Celebration notifications sent to {len(celebrations_by_recipient)} recipient(s)')
             return True
@@ -723,17 +723,17 @@ class Command(BaseCommand):
         except smtplib.SMTPAuthenticationError as e:
             error_msg = f"SMTP Authentication Error: {e}"
             logger.error(error_msg)
-            self.stdout.write(f'❌ {error_msg}')
+            self.stdout.write(f'âŒ {error_msg}')
             return False
         except smtplib.SMTPException as e:
             error_msg = f"SMTP Error: {e}"
             logger.error(error_msg)
-            self.stdout.write(f'❌ {error_msg}')
+            self.stdout.write(f'âŒ {error_msg}')
             return False
         except Exception as e:
             error_msg = f"Error sending celebration notification email: {e}"
             logger.error(error_msg, exc_info=True)
-            self.stdout.write(f'❌ {error_msg}')
+            self.stdout.write(f'âŒ {error_msg}')
             return False
         finally:
             if smtp_object:
@@ -742,251 +742,42 @@ class Command(BaseCommand):
                 except:
                     pass
 
+
     def send_issue_comments_notification(self, comments, report_date):
-        """Send email with previous day's issue comments, grouped by Property -> Issue."""
-        import smtplib
-        from email.mime.multipart import MIMEMultipart
-        from email.mime.text import MIMEText
-        from collections import OrderedDict
-        
-        smtp_object = None
-        comment_count = len(comments)
-        
-        if comment_count == 0:
+        """Send daily email with previous day's issue comments. Delegates rendering to email_utils."""
+        from pages.email_utils import get_email_recipients, send_issue_comments_email
+
+        if not comments:
             self.stdout.write('No issue comments from yesterday')
             return True
-        
-        try:
-            self.stdout.write('=== SENDING ISSUE COMMENTS NOTIFICATION ===')
-            
-            # Email settings
-            email_host = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
-            email_port = int(os.environ.get('EMAIL_PORT', 465))
-            email_user = os.environ.get('EMAIL_USER', 'demetrimanias@gmail.com')
-            email_password = os.environ.get('EMAIL_PASSWORD')
-            email_use_ssl = os.environ.get('EMAIL_USE_SSL', 'True').lower() == 'true'
-            email_use_tls = os.environ.get('EMAIL_USE_TLS', 'False').lower() == 'true'
-            
-            # Recipients
-            recipients = get_email_recipients('issue_comments_daily')
-            self.stdout.write(f'📧 Issue Comments Email TO: {", ".join(recipients["to"])}')
-            if recipients['cc']:
-                self.stdout.write(f'📧 Issue Comments Email CC: {", ".join(recipients["cc"])}')
-            
-            if not email_password:
-                self.stdout.write('❌ EMAIL_PASSWORD environment variable not set')
-                return False
-            
-            # Group: prop -> issue -> [comments]
-            grouped = OrderedDict()
-            for c in comments:
-                prop_key = f"{c['prop_name']}{' (' + c['prop_country'] + ')' if c['prop_country'] else ''}"
-                if prop_key not in grouped:
-                    grouped[prop_key] = OrderedDict()
-                issue_key = (c['issue_heading'], c['issue_status'], c['issue_description'])
-                if issue_key not in grouped[prop_key]:
-                    grouped[prop_key][issue_key] = []
-                grouped[prop_key][issue_key].append(c)
-            
-            formatted_date = report_date.strftime('%Y/%m/%d')
-            comment_word = "Comment" if comment_count == 1 else "Comments"
-            
-            # Build message
-            msg = MIMEMultipart('alternative')
-            msg['From'] = email_user
-            msg['To'] = format_email_recipients_for_header(recipients['to'])
-            if recipients['cc']:
-                msg['Cc'] = format_email_recipients_for_header(recipients['cc'])
-            msg['Subject'] = f"Issue {comment_word} - {formatted_date}"
-            
-            # ----- HTML body -----
-            html_body = f"""
-            <html>
-            <head>
-            <style>
-                body {{ font-family: Arial, sans-serif; color: #2c3e50; line-height: 1.5; }}
-                p {{ margin: 0; padding: 0; }}
-                .header-line {{ color: #17a2b8; font-weight: bold; }}
-                .legend {{ margin: 12px 0; font-size: 13px; }}
-                .legend-item {{ display: inline-block; margin-right: 16px; }}
-                .legend-color {{ display: inline-block; width: 14px; height: 14px; vertical-align: middle; margin-right: 6px; border-radius: 3px; }}
-                .legend-admin {{ background-color: #e3f2fd; border: 1px solid #90caf9; }}
-                .legend-user {{ background-color: #fff3e0; border: 1px solid #ffcc80; }}
-                .property-bar {{
-                    background-color: #f0f9fb;
-                    border-left: 4px solid #17a2b8;
-                    padding: 10px 14px;
-                    margin: 24px 0 8px 0;
-                    font-weight: bold;
-                    font-size: 16px;
-                    color: #2c3e50;
-                }}
-                .issue-block {{
-                    margin: 8px 0 16px 12px;
-                    padding: 10px 14px;
-                    background: #ffffff;
-                    border: 1px solid #e9ecef;
-                    border-radius: 6px;
-                }}
-                .issue-heading {{ font-weight: 600; color: #2c3e50; font-size: 14px; }}
-                .issue-description {{ font-style: italic; color: #6c757d; font-size: 13px; margin-top: 2px; }}
-                .status-badge {{
-                    display: inline-block; padding: 2px 10px; border-radius: 10px; font-size: 11px;
-                    font-weight: 600; margin-left: 8px; vertical-align: middle;
-                }}
-                .status-resolved {{ background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }}
-                .status-unresolved {{ background-color: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }}
-                .status-other {{ background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }}
-                .comment-box {{
-                    margin-top: 10px;
-                    padding: 10px 12px;
-                    border-radius: 5px;
-                    border-left: 3px solid #17a2b8;
-                }}
-                .comment-box.admin {{ background-color: #e3f2fd; border-left-color: #1565c0; }}
-                .comment-box.user {{ background-color: #fff3e0; border-left-color: #e65100; }}
-                .comment-text {{ font-size: 14px; color: #2c3e50; }}
-                .comment-meta {{ font-size: 12px; color: #6c757d; margin-top: 4px; }}
-                .user-name.admin {{ color: #1565c0; font-weight: 600; }}
-                .user-name.user {{ color: #e65100; font-weight: 600; }}
-            </style>
-            </head>
-            <body>
-                <p>Dear User,</p>
-                <br>
-                <p><b><u class="header-line">DAILY ISSUE COMMENTS REPORT - {formatted_date}:</u></b></p>
-                <p>The following {comment_count} {comment_word.lower()} {"was" if comment_count == 1 else "were"} added to issues yesterday:</p>
-                <div style="margin: 12px 0; font-size: 13px;">
-                    <span style="margin-right: 16px;">
-                        <span style="background-color: #e3f2fd; border: 1px solid #90caf9; padding: 2px 10px; margin-right: 6px;">&nbsp;&nbsp;</span>Admin Comments
-                    </span>
-                    <span>
-                        <span style="background-color: #fff3e0; border: 1px solid #ffcc80; padding: 2px 10px; margin-right: 6px;">&nbsp;&nbsp;</span>User Comments
-                    </span>
-                </div>
-            """
-            
-            for prop_key, issues_dict in grouped.items():
-                html_body += f'<div class="property-bar">{prop_key}</div>'
-                for (issue_heading, issue_status, issue_description), issue_comments in issues_dict.items():
-                    if issue_status == 'Resolved':
-                        badge_class = 'status-resolved'
-                    elif issue_status in ('Unresolved', 'Open'):
-                        badge_class = 'status-unresolved'
-                    else:
-                        badge_class = 'status-other'
-                    
-                    html_body += f"""
-                    <div class="issue-block">
-                        <div>
-                            <span class="issue-heading">{issue_heading}</span>
-                            <span class="status-badge {badge_class}">{issue_status}</span>
-                        </div>
-                    """
-                    if issue_description:
-                        html_body += f'<div class="issue-description">{issue_description}</div>'
-                    
-                    for c in issue_comments:
-                        if c['is_admin']:
-                            box_style = "background-color: #e3f2fd; border-left: 3px solid #1565c0;"
-                            user_color = "#1565c0"
-                        else:
-                            box_style = "background-color: #fff3e0; border-left: 3px solid #e65100;"
-                            user_color = "#e65100"
-                        html_body += f"""
-                        <div style="margin-top: 10px; padding: 10px 12px; border-radius: 5px; {box_style}">
-                            <div style="font-size: 14px; color: #2c3e50;">"{c['comment']}"</div>
-                            <div style="font-size: 12px; color: #6c757d; margin-top: 4px;">
-                                — <span style="color: {user_color}; font-weight: 600;">{c['user']}</span> on {c['date']}
-                            </div>
-                        </div>
-                        """
-                    
-                    html_body += "</div>"
-            
-            html_body += """
-                <br>
-                <p>Please log into the Alivente Online System at <a href="https://alivente.online">alivente.online</a> for full details and to manage these issues.</p>
-                <br>
-                <p>Best regards,<br>
-                Alivente Property Management System<br>
-                Automated Issue Comments Report</p>
-            </body>
-            </html>
-            """
-            
-            # ----- Plain text body -----
-            text_body = f"""Dear User,
 
-    DAILY ISSUE COMMENTS REPORT - {formatted_date}:
+        formatted_date = report_date.strftime('%Y/%m/%d')
+        comment_count = len(comments)
+        comment_word = "Comment" if comment_count == 1 else "Comments"
 
-    The following {comment_count} {comment_word.lower()} {"was" if comment_count == 1 else "were"} added to issues yesterday:
+        recipients = get_email_recipients('issue_comments_daily')
+        self.stdout.write('=== SENDING ISSUE COMMENTS NOTIFICATION ===')
+        self.stdout.write(f'Issue Comments Email TO: {", ".join(recipients["to"])}')
+        if recipients['cc']:
+            self.stdout.write(f'Issue Comments Email CC: {", ".join(recipients["cc"])}')
 
-    (Legend: [ADMIN] = Admin comment, [USER] = User comment)
-    """
-            for prop_key, issues_dict in grouped.items():
-                text_body += f"\n=== {prop_key} ===\n"
-                for (issue_heading, issue_status, issue_description), issue_comments in issues_dict.items():
-                    text_body += f"\nIssue: {issue_heading} [{issue_status}]\n"
-                    if issue_description:
-                        text_body += f"  Description: {issue_description}\n"
-                    for c in issue_comments:
-                        role = '[ADMIN]' if c['is_admin'] else '[USER]'
-                        text_body += f'  {role} "{c["comment"]}" -- {c["user"]} on {c["date"]}\n'
-            
-            text_body += """
+        ok = send_issue_comments_email(
+            comments=comments,
+            subject=f"Issue {comment_word} - {formatted_date}",
+            header_label=f"DAILY ISSUE COMMENTS REPORT - {formatted_date}",
+            intro_text=(f"The following {comment_count} {comment_word.lower()} "
+                        f"{'was' if comment_count == 1 else 'were'} added to issues yesterday:"),
+            recipients=recipients,
+        )
 
-    Please log into the Alivente Online System at alivente.online for full details and to manage these issues.
-
-    Best regards,
-    Alivente Property Management System
-    Automated Issue Comments Report"""
-            
-            # Attach both
-            part1 = MIMEText(text_body, 'plain')
-            part2 = MIMEText(html_body, 'html')
-            msg.attach(part1)
-            msg.attach(part2)
-            
-            # SMTP
-            if email_use_ssl:
-                smtp_object = smtplib.SMTP_SSL(email_host, email_port, timeout=10)
-            else:
-                smtp_object = smtplib.SMTP(email_host, email_port, timeout=10)
-                smtp_object.ehlo()
-                if email_use_tls:
-                    smtp_object.starttls()
-            
-            smtp_object.login(email_user, email_password)
-            text = msg.as_string()
-            smtp_object.sendmail(email_user, recipients['all'], text)
-            
-            self.stdout.write('✅ Issue comments notification email sent successfully!')
+        if ok:
+            self.stdout.write('Issue comments notification email sent successfully!')
             logger.info('Issue comments notification email sent successfully')
-            return True
-            
-        except smtplib.SMTPAuthenticationError as e:
-            error_msg = f"SMTP Authentication Error: {e}"
-            logger.error(error_msg)
-            self.stdout.write(f'❌ {error_msg}')
-            return False
-        except smtplib.SMTPException as e:
-            error_msg = f"SMTP Error: {e}"
-            logger.error(error_msg)
-            self.stdout.write(f'❌ {error_msg}')
-            return False
-        except Exception as e:
-            error_msg = f"Error sending issue comments notification email: {e}"
-            logger.error(error_msg, exc_info=True)
-            self.stdout.write(f'❌ {error_msg}')
-            return False
-        finally:
-            if smtp_object:
-                try:
-                    smtp_object.quit()
-                except:
-                    pass    
-    
+        else:
+            self.stdout.write('Failed to send issue comments notification email')
+
+        return ok
+
     def send_new_lease_upload_reminder(self, new_leases_to_upload):
         """Send email reminder to upload new lease agreements"""
         import smtplib
@@ -1015,12 +806,12 @@ class Command(BaseCommand):
             recipients = get_email_recipients('new_lease_upload')
 
             # DEBUG: Show who will receive the email
-            self.stdout.write(f'📧 New Lease Upload Email TO: {", ".join(recipients["to"])}')
+            self.stdout.write(f'ðŸ“§ New Lease Upload Email TO: {", ".join(recipients["to"])}')
             if recipients['cc']:
-                self.stdout.write(f'📧 New Lease Upload Email CC: {", ".join(recipients["cc"])}')
+                self.stdout.write(f'ðŸ“§ New Lease Upload Email CC: {", ".join(recipients["cc"])}')
             
             if not email_password:
-                self.stdout.write('❌ EMAIL_PASSWORD environment variable not set')
+                self.stdout.write('âŒ EMAIL_PASSWORD environment variable not set')
                 return False
             
             # Create message
@@ -1065,7 +856,7 @@ class Command(BaseCommand):
                     <b>{lease['prop_name']} ({lease['prop_country']})</b><br>
                     Tenant: {lease['tenant_name']}<br>
                     Previous Lease End Date: {lease['lease_end_date']}<br>
-                    <span class="urgent">⚠️ NEW LEASE AGREEMENT MUST BE UPLOADED TODAY</span>
+                    <span class="urgent">âš ï¸ NEW LEASE AGREEMENT MUST BE UPLOADED TODAY</span>
                 </li>"""
             
             html_body += """
@@ -1105,7 +896,7 @@ The following {"lease has" if lease_count == 1 else "leases have"} ended today a
 - {lease['prop_name']} ({lease['prop_country']})
   Tenant: {lease['tenant_name']}
   Previous Lease End Date: {lease['lease_end_date']}
-  ⚠️ NEW LEASE AGREEMENT MUST BE UPLOADED TODAY
+  âš ï¸ NEW LEASE AGREEMENT MUST BE UPLOADED TODAY
 
 """
             
@@ -1146,24 +937,24 @@ Automated Lease Management"""
             text = msg.as_string()
             smtp_object.sendmail(email_user, recipients['all'], text)
             
-            self.stdout.write('✅ New lease upload reminder email sent successfully!')
+            self.stdout.write('âœ… New lease upload reminder email sent successfully!')
             logger.info('New lease upload reminder email sent successfully')
             return True
             
         except smtplib.SMTPAuthenticationError as e:
             error_msg = f"SMTP Authentication Error: {e}"
             logger.error(error_msg)
-            self.stdout.write(f'❌ {error_msg}')
+            self.stdout.write(f'âŒ {error_msg}')
             return False
         except smtplib.SMTPException as e:
             error_msg = f"SMTP Error: {e}"
             logger.error(error_msg)
-            self.stdout.write(f'❌ {error_msg}')
+            self.stdout.write(f'âŒ {error_msg}')
             return False
         except Exception as e:
             error_msg = f"Error sending new lease upload reminder email: {e}"
             logger.error(error_msg, exc_info=True)
-            self.stdout.write(f'❌ {error_msg}')
+            self.stdout.write(f'âŒ {error_msg}')
             return False
         finally:
             if smtp_object:
@@ -1188,13 +979,13 @@ Automated Lease Management"""
         # Check if today is 1st or 15th of the month
         today = date.today()
         if today.day not in [1, 15]:
-            self.stdout.write(f'📅 Passport notification skipped - only sent on 1st or 15th of month (Today is {today.day}th)')
+            self.stdout.write(f'ðŸ“… Passport notification skipped - only sent on 1st or 15th of month (Today is {today.day}th)')
             self.stdout.write(f'   Found {passport_count} expiring passport(s), but no email will be sent today')
             return True
         
         try:
             self.stdout.write('=== SENDING PASSPORT EXPIRY NOTIFICATION ===')
-            self.stdout.write(f'📅 Today is the {today.day}th - sending passport expiry notification')
+            self.stdout.write(f'ðŸ“… Today is the {today.day}th - sending passport expiry notification')
             
             # Get email settings from environment variables
             email_host = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
@@ -1208,12 +999,12 @@ Automated Lease Management"""
             recipients = get_email_recipients('document_expiry')
 
             # DEBUG: Show who will receive the email
-            self.stdout.write(f'📧 Passport Expiry Email TO: {", ".join(recipients["to"])}')
+            self.stdout.write(f'ðŸ“§ Passport Expiry Email TO: {", ".join(recipients["to"])}')
             if recipients['cc']:
-                self.stdout.write(f'📧 Passport Expiry Email CC: {", ".join(recipients["cc"])}')
+                self.stdout.write(f'ðŸ“§ Passport Expiry Email CC: {", ".join(recipients["cc"])}')
             
             if not email_password:
-                self.stdout.write('❌ EMAIL_PASSWORD environment variable not set')
+                self.stdout.write('âŒ EMAIL_PASSWORD environment variable not set')
                 return False
             
             # Create message
@@ -1352,24 +1143,24 @@ Automated Passport/ID Monitoring"""
             text = msg.as_string()
             smtp_object.sendmail(email_user, recipients['all'], text)
             
-            self.stdout.write('✅ Passport expiry notification email sent successfully!')
+            self.stdout.write('âœ… Passport expiry notification email sent successfully!')
             logger.info('Passport expiry notification email sent successfully')
             return True
             
         except smtplib.SMTPAuthenticationError as e:
             error_msg = f"SMTP Authentication Error: {e}"
             logger.error(error_msg)
-            self.stdout.write(f'❌ {error_msg}')
+            self.stdout.write(f'âŒ {error_msg}')
             return False
         except smtplib.SMTPException as e:
             error_msg = f"SMTP Error: {e}"
             logger.error(error_msg)
-            self.stdout.write(f'❌ {error_msg}')
+            self.stdout.write(f'âŒ {error_msg}')
             return False
         except Exception as e:
             error_msg = f"Error sending passport expiry email: {e}"
             logger.error(error_msg, exc_info=True)
-            self.stdout.write(f'❌ {error_msg}')
+            self.stdout.write(f'âŒ {error_msg}')
             return False
         finally:
             if smtp_object:
@@ -1404,12 +1195,12 @@ Automated Passport/ID Monitoring"""
             recipients = get_email_recipients('daily_report')
 
             # DEBUG: Show who will receive the email
-            self.stdout.write(f'📧 Daily Report Email TO: {", ".join(recipients["to"])}')
+            self.stdout.write(f'ðŸ“§ Daily Report Email TO: {", ".join(recipients["to"])}')
             if recipients['cc']:
-                self.stdout.write(f'📧 Daily Report Email CC: {", ".join(recipients["cc"])}')
+                self.stdout.write(f'ðŸ“§ Daily Report Email CC: {", ".join(recipients["cc"])}')
             
             if not email_password:
-                self.stdout.write('❌ EMAIL_PASSWORD environment variable not set')
+                self.stdout.write('âŒ EMAIL_PASSWORD environment variable not set')
                 return False
             
             # Create message
@@ -1437,15 +1228,15 @@ Automated Passport/ID Monitoring"""
             
             # Only show lines with counts > 0
             if created_invoices_count > 0:
-                html_body += f"• New Invoices Created: {created_invoices_count}<br>"
+                html_body += f"â€¢ New Invoices Created: {created_invoices_count}<br>"
             if vacant_count > 0:
-                html_body += f"• Vacant Properties: {vacant_count}<br>"
+                html_body += f"â€¢ Vacant Properties: {vacant_count}<br>"
             if expiring_count > 0:
-                html_body += f"• Expiring Leases (Pending): {expiring_count}<br>"
+                html_body += f"â€¢ Expiring Leases (Pending): {expiring_count}<br>"
             if declined_count > 0:
-                html_body += f"• Declined Renewals (Need New Tenants): {declined_count}<br>"
+                html_body += f"â€¢ Declined Renewals (Need New Tenants): {declined_count}<br>"
             if overdue_count > 0:
-                html_body += f"• Tenants with Overdue Invoices: {overdue_count}<br>"
+                html_body += f"â€¢ Tenants with Overdue Invoices: {overdue_count}<br>"
             
             html_body += "</p><br>"
             
@@ -1530,7 +1321,7 @@ Automated Passport/ID Monitoring"""
                 for property_invoice in overdue_invoices:
                     html_body += f"<li><b>{property_invoice['prop_name']} ({property_invoice['prop_country']})</b> - Tenant: {property_invoice['tenant_name']}<br>"
                     for invoice in property_invoice['invoices']:
-                        html_body += f"&nbsp;&nbsp;• Due: {invoice['due_date']} - €{property_invoice['tenant_rent']}<br>"
+                        html_body += f"&nbsp;&nbsp;â€¢ Due: {invoice['due_date']} - â‚¬{property_invoice['tenant_rent']}<br>"
                     html_body += "</li>"
                 html_body += """</ul><br>"""
             
@@ -1550,15 +1341,15 @@ REPORT SUMMARY:"""
 
             # Only show lines with counts > 0
             if created_invoices_count > 0:
-                text_body += f"\n • New Invoices Created: {created_invoices_count}"
+                text_body += f"\n â€¢ New Invoices Created: {created_invoices_count}"
             if vacant_count > 0:
-                text_body += f"\n • Vacant Properties: {vacant_count}"
+                text_body += f"\n â€¢ Vacant Properties: {vacant_count}"
             if expiring_count > 0:
-                text_body += f"\n • Expiring Leases (Pending): {expiring_count}"
+                text_body += f"\n â€¢ Expiring Leases (Pending): {expiring_count}"
             if declined_count > 0:
-                text_body += f"\n • Declined Renewals (Need New Tenants): {declined_count}"
+                text_body += f"\n â€¢ Declined Renewals (Need New Tenants): {declined_count}"
             if overdue_count > 0:
-                text_body += f"\n • Tenants with Overdue Invoices: {overdue_count}"
+                text_body += f"\n â€¢ Tenants with Overdue Invoices: {overdue_count}"
 
             text_body += "\n\n"
 
@@ -1595,7 +1386,7 @@ This {property_word} {property_verb} active and available for rent but currently
 These {property_word} {property_verb} active and available for rent but currently have no {tenant_word}. Contact estate agents ASAP."""
                 
                 for prop in vacant_properties:
-                    text_body += f"\n • {prop['prop_name']} ({prop['prop_country']})"
+                    text_body += f"\n â€¢ {prop['prop_name']} ({prop['prop_country']})"
                 text_body += f"\n\n"
 
             # Add detailed expiring leases list (PENDING renewals only)
@@ -1613,7 +1404,7 @@ This {tenant_word} {tenant_verb} {lease_word} expiring soon that requires a rene
 These {tenant_word} {tenant_verb} {lease_word} expiring soon that require renewal discussions. Contact the {tenant_word} ASAP."""
                 
                 for lease in expiring_leases:
-                    text_body += f"\n • {lease['prop_name']} ({lease['prop_country']}) - Tenant: {lease['tenant_name']}"
+                    text_body += f"\n â€¢ {lease['prop_name']} ({lease['prop_country']}) - Tenant: {lease['tenant_name']}"
                     text_body += f"\n   (Lease ends: {lease['lease_end_date']} | Renewal due by: {lease['renewal_date']})"
                 text_body += f"\n\n"
 
@@ -1633,7 +1424,7 @@ This {tenant_word} has declined lease renewal. This {property_word} {property_ve
 These {tenant_word} {tenant_verb} declined lease renewals. These {property_word} {property_verb}. Contact estate agents ASAP."""
                 
                 for declined in declined_renewals:
-                    text_body += f"\n • {declined['prop_name']} ({declined['prop_country']}) - Current Tenant: {declined['tenant_name']}"
+                    text_body += f"\n â€¢ {declined['prop_name']} ({declined['prop_country']}) - Current Tenant: {declined['tenant_name']}"
                     text_body += f"\n   (Lease ends: {declined['lease_end_date']} - {declined['message']})"
                 text_body += f"\n\n"
 
@@ -1652,9 +1443,9 @@ This {tenant_word} {tenant_verb} overdue {invoice_word} that requires immediate 
 These {tenant_word} {tenant_verb} overdue {invoice_word} that require immediate attention. Contact {tenant_word} ASAP."""
                 
                 for property_invoice in overdue_invoices:
-                    text_body += f"\n • {property_invoice['prop_name']} ({property_invoice['prop_country']}) - Tenant: {property_invoice['tenant_name']}"
+                    text_body += f"\n â€¢ {property_invoice['prop_name']} ({property_invoice['prop_country']}) - Tenant: {property_invoice['tenant_name']}"
                     for invoice in property_invoice['invoices']:
-                        text_body += f"\n     - Due: {invoice['due_date']} - €{property_invoice['tenant_rent']}"
+                        text_body += f"\n     - Due: {invoice['due_date']} - â‚¬{property_invoice['tenant_rent']}"
                 text_body += f"\n\n"
 
             text_body += """Please log into the Alivente Online System for additional details.
@@ -1687,24 +1478,24 @@ Automated Report"""
             text = msg.as_string()
             smtp_object.sendmail(email_user, recipients['all'], text)
             
-            self.stdout.write('✅ Property management notification email sent successfully!')
+            self.stdout.write('âœ… Property management notification email sent successfully!')
             logger.info('Property management notification email sent successfully')
             return True
             
         except smtplib.SMTPAuthenticationError as e:
             error_msg = f"SMTP Authentication Error: {e}"
             logger.error(error_msg)
-            self.stdout.write(f'❌ {error_msg}')
+            self.stdout.write(f'âŒ {error_msg}')
             return False
         except smtplib.SMTPException as e:
             error_msg = f"SMTP Error: {e}"
             logger.error(error_msg)
-            self.stdout.write(f'❌ {error_msg}')
+            self.stdout.write(f'âŒ {error_msg}')
             return False
         except Exception as e:
             error_msg = f"Error sending property management email: {e}"
             logger.error(error_msg, exc_info=True)
-            self.stdout.write(f'❌ {error_msg}')
+            self.stdout.write(f'âŒ {error_msg}')
             return False
         finally:
             if smtp_object:
@@ -1719,10 +1510,8 @@ Automated Report"""
         
         yesterday = date.today() - timedelta(days=1)
         
-        # Admin user initials — MUST match the list in pages/views/main.py comments_report view.
-        # TODO: DRY up — move to a shared constant in email_utils.py or similar.
-        admin_users = ['DM']
-        admin_users_upper = [u.upper() for u in admin_users]
+        from pages.email_utils import ADMIN_USER_INITIALS
+        admin_users_upper = [u.upper() for u in ADMIN_USER_INITIALS]
         
         try:
             comments_qs = issues_details.objects.filter(
@@ -1763,6 +1552,6 @@ Automated Report"""
             return comment_list, yesterday
             
         except Exception as e:
-            self.stdout.write(f'❌ Error getting yesterday\'s issue comments: {e}')
+            self.stdout.write(f'âŒ Error getting yesterday\'s issue comments: {e}')
             logger.error(f'Error getting yesterday\'s issue comments: {e}', exc_info=True)
             return [], yesterday

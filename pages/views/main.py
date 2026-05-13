@@ -136,7 +136,7 @@ from ..models import (
 from ..usda_client import get_food_details, search_foods, USDAClientError
 from ..nutrition_calc import calculate_recipe_nutrition
 from ..utils import convert_to_pdf, is_pdf, merge_pdfs, merge_pdfs_from_bytes
-from pages.management.commands.email_utils import get_email_recipients, format_email_recipients_for_header
+from pages.email_utils import get_email_recipients, format_email_recipients_for_header
 
 # --------------------------------------------------------------------------- #
 # Translation service stubs (translation temporarily disabled)
@@ -4702,7 +4702,7 @@ def send_invoices_paid_email(tenant_obj, property_obj, invoice_date):
     Send email notification of an invoice payment for a specific tenant
     """
     from django.db import connection
-    from pages.management.commands.email_utils import get_email_recipients, format_email_recipients_for_header
+    from pages.email_utils import get_email_recipients, format_email_recipients_for_header
     import logging
     import smtplib
     from email.mime.multipart import MIMEMultipart
@@ -5449,7 +5449,7 @@ def send_expense_approved_email(expense_date, property_name, description, amount
     Send email notification of an expense approval for a specific expense
     """
     from django.db import connection
-    from pages.management.commands.email_utils import get_email_recipients, format_email_recipients_for_header
+    from pages.email_utils import get_email_recipients, format_email_recipients_for_header
     import logging
     
     logger = logging.getLogger(__name__)
@@ -5538,7 +5538,7 @@ def send_expense_paid_email(expense_date, property_name, description, amount, pa
     Send email notification of an expense payment for a specific expense
     """
     from django.db import connection
-    from pages.management.commands.email_utils import get_email_recipients, format_email_recipients_for_header
+    from pages.email_utils import get_email_recipients, format_email_recipients_for_header
     import logging
     
     logger = logging.getLogger(__name__)
@@ -5627,7 +5627,7 @@ def send_expense_approval_email_with_link(expense_date, property_name, descripti
     Send email notification for expense approval with enhanced details
     """
     from django.db import connection
-    from pages.management.commands.email_utils import get_email_recipients, format_email_recipients_for_header
+    from pages.email_utils import get_email_recipients, format_email_recipients_for_header
     import logging
     
     logger = logging.getLogger(__name__)
@@ -6197,7 +6197,7 @@ def get_fsr_context_data(request):
 def fsr_notification(request):
     from django.db import connection
     from django.db.utils import OperationalError, InterfaceError
-    from pages.management.commands.email_utils import get_email_recipients, format_email_recipients_for_header
+    from pages.email_utils import get_email_recipients, format_email_recipients_for_header
     import time
     import logging
     
@@ -6420,7 +6420,7 @@ def comments_report(request):
             issue_description = None
         
         # Define admin users (add initials of admin users here)
-        admin_users = ['DM']  # Add other admin initials as needed
+        from pages.email_utils import ADMIN_USER_INITIALS as admin_users  # edit ADMIN_USER_INITIALS in pages/email_utils.py to add admins
         user_initials = comment.issues_details_user or ''
         is_admin = user_initials.upper() in [u.upper() for u in admin_users]
         
@@ -6507,7 +6507,7 @@ def get_issue_details(request, issue_id):
         ).order_by('-issues_details_date', '-issues_details_id')
         
         # Define admin users (same as in comments_report view)
-        admin_users = ['DM']  # Add other admin initials as needed
+        from pages.email_utils import ADMIN_USER_INITIALS as admin_users  # edit ADMIN_USER_INITIALS in pages/email_utils.py to add admins
         
         # Build comments list
         comments_list = []
@@ -12808,6 +12808,7 @@ def notification_settings(request):
         'friday_status_report_supervisor', 
         'friday_status_report_staff',
         'issue_comments_daily',
+        'issue_comment_urgent',
     ]
     
     notification_settings = {}
@@ -14610,3 +14611,109 @@ def unit_conversions_wizard(request):
         'return_to': return_to,
     }
     return render(request, 'unit_conversions_wizard.html', context)
+
+# ============================================================================
+# Urgent issue-comment notification
+# Posted from the "Notify Now" button on the fsr_details comment list.
+# Server-side 5-minute cooldown (URGENT_NOTIFICATION_COOLDOWN_MINUTES) per
+# comment. Recipients = configured 'issue_comment_urgent' list MINUS the
+# user pressing the button.
+# ============================================================================
+
+@login_required
+@permission_required('auth.can_access_issues', raise_exception=True)
+def notify_comment_urgent(request, comment_id):
+    """
+    Fire an immediate "URGENT" email for a single issue comment.
+    Routes to recipients of 'issue_comment_urgent' notification type, excluding
+    the user pressing the button. Server-side cooldown of
+    URGENT_NOTIFICATION_COOLDOWN_MINUTES suppresses repeat presses.
+
+    POST only. Returns JSON for the AJAX caller.
+    """
+    from datetime import timedelta
+    from pages.email_utils import (
+        get_email_recipients,
+        send_issue_comments_email,
+        ADMIN_USER_INITIALS,
+        URGENT_NOTIFICATION_COOLDOWN_MINUTES,
+    )
+
+    if request.method != 'POST':
+        return JsonResponse({'ok': False, 'reason': 'method_not_allowed'}, status=405)
+
+    comment = get_object_or_404(issues_details, pk=comment_id)
+    now = timezone.now()
+
+    # Cooldown check (defense in depth — the UI also blocks)
+    if comment.issues_details_last_notified_at:
+        elapsed = now - comment.issues_details_last_notified_at
+        cooldown = timedelta(minutes=URGENT_NOTIFICATION_COOLDOWN_MINUTES)
+        if elapsed < cooldown:
+            seconds_remaining = int((cooldown - elapsed).total_seconds())
+            return JsonResponse({
+                'ok': False,
+                'reason': 'cooldown',
+                'seconds_remaining': seconds_remaining,
+                'minutes_ago': int(elapsed.total_seconds() // 60),
+            }, status=429)
+
+    # Build the single-comment payload (same shape get_yesterdays_issue_comments returns)
+    issue = comment.issues
+    prop = issue.prop if issue else None
+    user_initials = (comment.issues_details_user or '').strip()
+    is_admin = user_initials.upper() in [u.upper() for u in ADMIN_USER_INITIALS]
+
+    comment_payload = [{
+        'comment': comment.issues_details_comment or '',
+        'user': user_initials or 'Unknown',
+        'is_admin': is_admin,
+        'date': (comment.issues_details_date.strftime('%Y/%m/%d')
+                 if comment.issues_details_date else now.strftime('%Y/%m/%d')),
+        'issue_heading': (issue.issues_heading if issue else None) or 'Untitled Issue',
+        'issue_description': (issue.issues_description if issue else '') or '',
+        'issue_status': (issue.issues_status if issue else None) or 'Unknown',
+        'prop_name': (prop.prop_name if prop else 'Unknown Property'),
+        'prop_country': (getattr(prop, 'prop_country', '') if prop else '') or '',
+    }]
+
+    # Recipients minus the presser
+    presser_email = (request.user.email or '').lower()
+    all_recipients = get_email_recipients('issue_comment_urgent')
+    recipients = {
+        'to':  [r for r in all_recipients['to']  if r.lower() != presser_email],
+        'cc':  [r for r in all_recipients['cc']  if r.lower() != presser_email],
+        'all': [r for r in all_recipients['all'] if r.lower() != presser_email],
+    }
+
+    if not recipients['all']:
+        return JsonResponse({
+            'ok': False,
+            'reason': 'no_recipients',
+            'message': 'No other recipients configured for urgent alerts. '
+                       'Add one in the notification settings.',
+        }, status=400)
+
+    now_label = now.strftime('%Y/%m/%d %H:%M')
+    presser_name = request.user.get_full_name() or request.user.username
+
+    ok = send_issue_comments_email(
+        comments=comment_payload,
+        subject="URGENT - Issue needs attention",
+        header_label=f"URGENT ISSUE COMMENT - {now_label}",
+        intro_text=(f"The following comment was flagged as urgent by {presser_name} "
+                    f"and requires immediate attention:"),
+        recipients=recipients,
+    )
+
+    if not ok:
+        return JsonResponse({'ok': False, 'reason': 'send_failed'}, status=500)
+
+    # Record timestamp so the cooldown blocks the next press for 5 minutes
+    comment.issues_details_last_notified_at = now
+    comment.save(update_fields=['issues_details_last_notified_at'])
+
+    return JsonResponse({
+        'ok': True,
+        'last_notified_at': now.isoformat(),
+    })

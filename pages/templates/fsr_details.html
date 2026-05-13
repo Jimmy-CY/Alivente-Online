@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+﻿{% extends 'base.html' %}
 {% load static %}
 
 {% block title %}
@@ -126,11 +126,18 @@ Issues (Comments)
                             <div class="issue-details">
                                 {% for idresults in issues_details %}
                                     {% if idresults.issues_id == isresults.issues_id %}
-                                    <div class="detail-row {% if idresults.issues_details_user == 'SS' %}ss-comment{% else %}regular-comment{% endif %}">
-                                        <span class="detail-comment">
+                                    <div class="detail-row {% if idresults.issues_details_user == 'SS' %}ss-comment{% else %}regular-comment{% endif %}" style="display: flex; justify-content: space-between; align-items: center; gap: 12px;">
+                                        <span class="detail-comment" style="flex: 1;">
                                             <span class="comment-date">{{ idresults.issues_details_date|date:"Y-m-d" }}</span>
                                             <span class="comment-user">({{ idresults.issues_details_user }})</span>:
                                             <span class="comment-text">{{ idresults.issues_details_comment }}</span>
+                                        </span>
+                                        <span class="notify-urgent-cell" data-comment-id="{{ idresults.issues_details_id }}">
+                                            {% if idresults.is_in_urgent_cooldown %}
+                                                <span class="notified-badge" style="background-color: #6c757d; color: white; padding: 4px 10px; border-radius: 3px; font-size: 12px; white-space: nowrap;">Notified {{ idresults.urgent_cooldown_minutes_ago }} min ago</span>
+                                            {% else %}
+                                                <button type="button" class="notify-urgent-btn" data-comment-id="{{ idresults.issues_details_id }}" style="background-color: #ffc107; border: 1px solid #ffc107; color: #212529; padding: 4px 10px; border-radius: 3px; font-size: 12px; cursor: pointer; white-space: nowrap;">🔔 Notify Now</button>
+                                            {% endif %}
                                         </span>
                                     </div>
                                     {% endif %}
@@ -163,7 +170,7 @@ function handleBackButton() {
 
     if (fromParam === 'property_detail' && propertyId && boxType) {
         targetUrl = `/property_detail/${propertyId}/${boxType}/`;
-        console.log('🏠 Navigating back to Property Detail:', targetUrl);
+        console.log('ðŸ  Navigating back to Property Detail:', targetUrl);
         window.location.href = targetUrl;
         return;
     }
@@ -192,7 +199,7 @@ function handleBackButton() {
             const hasFilters = Object.values(filterData).some(value => value);
 
             if (hasFilters) {
-                console.log('🔄 Restoring FSR filters:', filterData);
+                console.log('ðŸ”„ Restoring FSR filters:', filterData);
 
                 const form = document.createElement('form');
                 form.method = 'POST';
@@ -593,7 +600,7 @@ document.addEventListener('DOMContentLoaded', function() {
     box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 
-/* ==================== MOBILE (≤768px) ==================== */
+/* ==================== MOBILE (â‰¤768px) ==================== */
 @media (max-width: 768px) {
     /* Page title */
     .page-title-center {
@@ -601,7 +608,7 @@ document.addEventListener('DOMContentLoaded', function() {
         padding: 0 8px;
     }
 
-    /* Back button — full-width on mobile */
+    /* Back button â€” full-width on mobile */
     .page-action-bar { margin-bottom: 12px; }
     .page-action-bar-inner {
         flex-direction: column;
@@ -614,7 +621,7 @@ document.addEventListener('DOMContentLoaded', function() {
         text-align: center;
     }
 
-    /* Report container — minimal padding */
+    /* Report container â€” minimal padding */
     .report-container {
         padding: 8px;
     }
@@ -625,7 +632,7 @@ document.addEventListener('DOMContentLoaded', function() {
         border-radius: 6px;
     }
 
-    /* Issue header — tighter, less indentation */
+    /* Issue header â€” tighter, less indentation */
     .issue-header-section {
         padding: 14px;
         margin-bottom: 16px;
@@ -652,13 +659,13 @@ document.addEventListener('DOMContentLoaded', function() {
         margin-bottom: 6px;
     }
 
-    /* Status card — tighter */
+    /* Status card â€” tighter */
     .status-card {
         padding: 14px;
         margin-bottom: 16px;
     }
 
-    /* Add comment form — stacks (already does, just polish) */
+    /* Add comment form â€” stacks (already does, just polish) */
     .add-comment-container-inline {
         padding: 12px;
         margin: 12px 0;
@@ -697,7 +704,7 @@ document.addEventListener('DOMContentLoaded', function() {
         font-size: 16px !important; /* iOS zoom guard */
     }
 
-    /* Comments — tighter */
+    /* Comments â€” tighter */
     .comments-section {
         margin-top: 14px;
     }
@@ -721,4 +728,56 @@ document.addEventListener('DOMContentLoaded', function() {
 }
 </style>
 
+
+<script>
+// Notify Urgent button handler — Stage 3 of urgent issue notifications
+(function() {
+    'use strict';
+    function bindNotifyButtons() {
+        document.querySelectorAll('.notify-urgent-btn').forEach(function(btn) {
+            if (btn.dataset.bound) return;
+            btn.dataset.bound = '1';
+            btn.addEventListener('click', function() { handleNotifyUrgent(btn); });
+        });
+    }
+    function handleNotifyUrgent(btn) {
+        var commentId = btn.dataset.commentId;
+        var cell = btn.closest('.notify-urgent-cell');
+        var csrfToken = (document.querySelector('[name=csrfmiddlewaretoken]') || {}).value
+                     || (document.cookie.split('csrftoken=')[1] || '').split(';')[0];
+        if (!csrfToken) { alert('CSRF token not found.'); return; }
+        btn.disabled = true;
+        var originalLabel = btn.innerHTML;
+        btn.innerHTML = 'Sending...';
+        fetch('/issues/comments/' + commentId + '/notify-urgent/', {
+            method: 'POST',
+            headers: { 'X-CSRFToken': csrfToken, 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(function(r) { return r.json().then(function(j) { return { status: r.status, body: j }; }); })
+        .then(function(res) {
+            var badgeStyle = 'background-color: #6c757d; color: white; padding: 4px 10px; border-radius: 3px; font-size: 12px; white-space: nowrap;';
+            if (res.body.ok) {
+                cell.innerHTML = '<span class="notified-badge" style="' + badgeStyle + '">Notified just now</span>';
+            } else if (res.body.reason === 'cooldown') {
+                cell.innerHTML = '<span class="notified-badge" style="' + badgeStyle + '">Notified ' + res.body.minutes_ago + ' min ago</span>';
+            } else if (res.body.reason === 'no_recipients') {
+                alert(res.body.message || 'No recipients configured for urgent alerts.');
+                btn.disabled = false; btn.innerHTML = originalLabel;
+            } else {
+                alert('Failed to send notification. Status: ' + res.status);
+                btn.disabled = false; btn.innerHTML = originalLabel;
+            }
+        })
+        .catch(function(err) {
+            alert('Network error: ' + err);
+            btn.disabled = false; btn.innerHTML = originalLabel;
+        });
+    }
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', bindNotifyButtons);
+    } else {
+        bindNotifyButtons();
+    }
+})();
+</script>
 {% endblock %}
