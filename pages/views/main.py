@@ -13912,7 +13912,8 @@ def notification_settings(request):
         'expense_approved',
         'expense_paid',
         'friday_status_report_supervisor', 
-        'friday_status_report_staff'
+        'friday_status_report_staff',
+        'issue_comments_daily',
     ]
     
     notification_settings = {}
