@@ -520,6 +520,43 @@
     </form>
 </div>
 
+<!-- Daily Issue Comments Report -->
+<div class="notification-card">
+    <h5><i class="fas fa-comments"></i> Daily Issue Comments Report</h5>
+    <p class="text-muted">Daily summary of comments added to issues the day before. Email only sent if comments were added.</p>
+    
+    <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="notification_type" value="issue_comments_daily">
+        
+        <div class="form-group">
+            <label><strong>TO:</strong> Primary Recipients</label>
+            <textarea 
+                class="form-control" 
+                name="to_addresses" 
+                rows="2" 
+                placeholder="email1@example.com, email2@example.com"
+            >{{ notification_settings.issue_comments_daily.to_emails }}</textarea>
+            <div class="field-hint">Person who tracks issue progress and follow-ups</div>
+        </div>
+        
+        <div class="form-group">
+            <label><strong>CC:</strong> Carbon Copy Recipients (optional)</label>
+            <textarea 
+                class="form-control" 
+                name="cc_addresses" 
+                rows="2" 
+                placeholder="email1@example.com, email2@example.com"
+            >{{ notification_settings.issue_comments_daily.cc_emails }}</textarea>
+            <div class="field-hint">Additional recipients who should be informed</div>
+        </div>
+        
+        <button type="submit" class="btn btn-info">
+            <i class="fas fa-save"></i> Save
+        </button>
+    </form>
+</div>
+
 {% render_help_modal "admin_notification_settings" %}
 
 {% endblock %}

@@ -48,6 +48,7 @@ def get_email_recipients(notification_type):
         'expense_paid': {'to': ['stella.simitopoulos@alivente.com'], 'cc': ['demetrimanias@gmail.com']},
         'friday_status_report_supervisor': {'to': ['stella.simitopoulos@alivente.com'], 'cc': ['angmaniasbakers@gmail.com']},
         'friday_status_report_staff': {'to': ['demetrimanias@gmail.com'], 'cc': ['angmaniasbakers@gmail.com']},
+        'issue_comments_daily': {'to': ['demetrimanias@gmail.com'], 'cc': []},
     }
     
     defaults = default_recipients.get(notification_type, {'to': ['demetrimanias@gmail.com'], 'cc': []})

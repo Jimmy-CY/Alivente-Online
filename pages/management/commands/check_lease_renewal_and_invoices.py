@@ -143,6 +143,25 @@ class Command(BaseCommand):
                 self.stdout.write(f'Celebration notification email function returned: {celebration_result}')
             else:
                 self.stdout.write('No celebrations today')
+
+            # Check for issue comments captured yesterday
+            issue_comments, issue_comments_date = self.get_yesterdays_issue_comments()
+            issue_comment_count = len(issue_comments)
+            self.stdout.write(f'Issue comments from {issue_comments_date}: {issue_comment_count}')
+            
+            # Send issue comments notification if needed
+            if issue_comment_count > 0:
+                self.stdout.write('Issue comments from yesterday found! Sending issue comments notification...')
+                
+                if self.dry_run:
+                    self.stdout.write('DRY RUN: Would send issue comments email here')
+                    issue_comments_result = True
+                else:
+                    issue_comments_result = self.send_issue_comments_notification(issue_comments, issue_comments_date)
+                
+                self.stdout.write(f'Issue comments email function returned: {issue_comments_result}')
+            else:
+                self.stdout.write('No issue comments from yesterday')
                 
         except Exception as e:
             self.stdout.write(f'❌ Error during execution: {e}')
@@ -722,6 +741,251 @@ class Command(BaseCommand):
                     smtp_object.quit()
                 except:
                     pass
+
+    def send_issue_comments_notification(self, comments, report_date):
+        """Send email with previous day's issue comments, grouped by Property -> Issue."""
+        import smtplib
+        from email.mime.multipart import MIMEMultipart
+        from email.mime.text import MIMEText
+        from collections import OrderedDict
+        
+        smtp_object = None
+        comment_count = len(comments)
+        
+        if comment_count == 0:
+            self.stdout.write('No issue comments from yesterday')
+            return True
+        
+        try:
+            self.stdout.write('=== SENDING ISSUE COMMENTS NOTIFICATION ===')
+            
+            # Email settings
+            email_host = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
+            email_port = int(os.environ.get('EMAIL_PORT', 465))
+            email_user = os.environ.get('EMAIL_USER', 'demetrimanias@gmail.com')
+            email_password = os.environ.get('EMAIL_PASSWORD')
+            email_use_ssl = os.environ.get('EMAIL_USE_SSL', 'True').lower() == 'true'
+            email_use_tls = os.environ.get('EMAIL_USE_TLS', 'False').lower() == 'true'
+            
+            # Recipients
+            recipients = get_email_recipients('issue_comments_daily')
+            self.stdout.write(f'📧 Issue Comments Email TO: {", ".join(recipients["to"])}')
+            if recipients['cc']:
+                self.stdout.write(f'📧 Issue Comments Email CC: {", ".join(recipients["cc"])}')
+            
+            if not email_password:
+                self.stdout.write('❌ EMAIL_PASSWORD environment variable not set')
+                return False
+            
+            # Group: prop -> issue -> [comments]
+            grouped = OrderedDict()
+            for c in comments:
+                prop_key = f"{c['prop_name']}{' (' + c['prop_country'] + ')' if c['prop_country'] else ''}"
+                if prop_key not in grouped:
+                    grouped[prop_key] = OrderedDict()
+                issue_key = (c['issue_heading'], c['issue_status'], c['issue_description'])
+                if issue_key not in grouped[prop_key]:
+                    grouped[prop_key][issue_key] = []
+                grouped[prop_key][issue_key].append(c)
+            
+            formatted_date = report_date.strftime('%Y/%m/%d')
+            comment_word = "Comment" if comment_count == 1 else "Comments"
+            
+            # Build message
+            msg = MIMEMultipart('alternative')
+            msg['From'] = email_user
+            msg['To'] = format_email_recipients_for_header(recipients['to'])
+            if recipients['cc']:
+                msg['Cc'] = format_email_recipients_for_header(recipients['cc'])
+            msg['Subject'] = f"Issue {comment_word} - {formatted_date}"
+            
+            # ----- HTML body -----
+            html_body = f"""
+            <html>
+            <head>
+            <style>
+                body {{ font-family: Arial, sans-serif; color: #2c3e50; line-height: 1.5; }}
+                p {{ margin: 0; padding: 0; }}
+                .header-line {{ color: #17a2b8; font-weight: bold; }}
+                .legend {{ margin: 12px 0; font-size: 13px; }}
+                .legend-item {{ display: inline-block; margin-right: 16px; }}
+                .legend-color {{ display: inline-block; width: 14px; height: 14px; vertical-align: middle; margin-right: 6px; border-radius: 3px; }}
+                .legend-admin {{ background-color: #e3f2fd; border: 1px solid #90caf9; }}
+                .legend-user {{ background-color: #fff3e0; border: 1px solid #ffcc80; }}
+                .property-bar {{
+                    background-color: #f0f9fb;
+                    border-left: 4px solid #17a2b8;
+                    padding: 10px 14px;
+                    margin: 24px 0 8px 0;
+                    font-weight: bold;
+                    font-size: 16px;
+                    color: #2c3e50;
+                }}
+                .issue-block {{
+                    margin: 8px 0 16px 12px;
+                    padding: 10px 14px;
+                    background: #ffffff;
+                    border: 1px solid #e9ecef;
+                    border-radius: 6px;
+                }}
+                .issue-heading {{ font-weight: 600; color: #2c3e50; font-size: 14px; }}
+                .issue-description {{ font-style: italic; color: #6c757d; font-size: 13px; margin-top: 2px; }}
+                .status-badge {{
+                    display: inline-block; padding: 2px 10px; border-radius: 10px; font-size: 11px;
+                    font-weight: 600; margin-left: 8px; vertical-align: middle;
+                }}
+                .status-resolved {{ background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }}
+                .status-unresolved {{ background-color: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }}
+                .status-other {{ background-color: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }}
+                .comment-box {{
+                    margin-top: 10px;
+                    padding: 10px 12px;
+                    border-radius: 5px;
+                    border-left: 3px solid #17a2b8;
+                }}
+                .comment-box.admin {{ background-color: #e3f2fd; border-left-color: #1565c0; }}
+                .comment-box.user {{ background-color: #fff3e0; border-left-color: #e65100; }}
+                .comment-text {{ font-size: 14px; color: #2c3e50; }}
+                .comment-meta {{ font-size: 12px; color: #6c757d; margin-top: 4px; }}
+                .user-name.admin {{ color: #1565c0; font-weight: 600; }}
+                .user-name.user {{ color: #e65100; font-weight: 600; }}
+            </style>
+            </head>
+            <body>
+                <p>Dear User,</p>
+                <br>
+                <p><b><u class="header-line">DAILY ISSUE COMMENTS REPORT - {formatted_date}:</u></b></p>
+                <p>The following {comment_count} {comment_word.lower()} {"was" if comment_count == 1 else "were"} added to issues yesterday:</p>
+                <div style="margin: 12px 0; font-size: 13px;">
+                    <span style="margin-right: 16px;">
+                        <span style="background-color: #e3f2fd; border: 1px solid #90caf9; padding: 2px 10px; margin-right: 6px;">&nbsp;&nbsp;</span>Admin Comments
+                    </span>
+                    <span>
+                        <span style="background-color: #fff3e0; border: 1px solid #ffcc80; padding: 2px 10px; margin-right: 6px;">&nbsp;&nbsp;</span>User Comments
+                    </span>
+                </div>
+            """
+            
+            for prop_key, issues_dict in grouped.items():
+                html_body += f'<div class="property-bar">{prop_key}</div>'
+                for (issue_heading, issue_status, issue_description), issue_comments in issues_dict.items():
+                    if issue_status == 'Resolved':
+                        badge_class = 'status-resolved'
+                    elif issue_status in ('Unresolved', 'Open'):
+                        badge_class = 'status-unresolved'
+                    else:
+                        badge_class = 'status-other'
+                    
+                    html_body += f"""
+                    <div class="issue-block">
+                        <div>
+                            <span class="issue-heading">{issue_heading}</span>
+                            <span class="status-badge {badge_class}">{issue_status}</span>
+                        </div>
+                    """
+                    if issue_description:
+                        html_body += f'<div class="issue-description">{issue_description}</div>'
+                    
+                    for c in issue_comments:
+                        if c['is_admin']:
+                            box_style = "background-color: #e3f2fd; border-left: 3px solid #1565c0;"
+                            user_color = "#1565c0"
+                        else:
+                            box_style = "background-color: #fff3e0; border-left: 3px solid #e65100;"
+                            user_color = "#e65100"
+                        html_body += f"""
+                        <div style="margin-top: 10px; padding: 10px 12px; border-radius: 5px; {box_style}">
+                            <div style="font-size: 14px; color: #2c3e50;">"{c['comment']}"</div>
+                            <div style="font-size: 12px; color: #6c757d; margin-top: 4px;">
+                                — <span style="color: {user_color}; font-weight: 600;">{c['user']}</span> on {c['date']}
+                            </div>
+                        </div>
+                        """
+                    
+                    html_body += "</div>"
+            
+            html_body += """
+                <br>
+                <p>Please log into the Alivente Online System at <a href="https://alivente.online">alivente.online</a> for full details and to manage these issues.</p>
+                <br>
+                <p>Best regards,<br>
+                Alivente Property Management System<br>
+                Automated Issue Comments Report</p>
+            </body>
+            </html>
+            """
+            
+            # ----- Plain text body -----
+            text_body = f"""Dear User,
+
+    DAILY ISSUE COMMENTS REPORT - {formatted_date}:
+
+    The following {comment_count} {comment_word.lower()} {"was" if comment_count == 1 else "were"} added to issues yesterday:
+
+    (Legend: [ADMIN] = Admin comment, [USER] = User comment)
+    """
+            for prop_key, issues_dict in grouped.items():
+                text_body += f"\n=== {prop_key} ===\n"
+                for (issue_heading, issue_status, issue_description), issue_comments in issues_dict.items():
+                    text_body += f"\nIssue: {issue_heading} [{issue_status}]\n"
+                    if issue_description:
+                        text_body += f"  Description: {issue_description}\n"
+                    for c in issue_comments:
+                        role = '[ADMIN]' if c['is_admin'] else '[USER]'
+                        text_body += f'  {role} "{c["comment"]}" -- {c["user"]} on {c["date"]}\n'
+            
+            text_body += """
+
+    Please log into the Alivente Online System at alivente.online for full details and to manage these issues.
+
+    Best regards,
+    Alivente Property Management System
+    Automated Issue Comments Report"""
+            
+            # Attach both
+            part1 = MIMEText(text_body, 'plain')
+            part2 = MIMEText(html_body, 'html')
+            msg.attach(part1)
+            msg.attach(part2)
+            
+            # SMTP
+            if email_use_ssl:
+                smtp_object = smtplib.SMTP_SSL(email_host, email_port, timeout=10)
+            else:
+                smtp_object = smtplib.SMTP(email_host, email_port, timeout=10)
+                smtp_object.ehlo()
+                if email_use_tls:
+                    smtp_object.starttls()
+            
+            smtp_object.login(email_user, email_password)
+            text = msg.as_string()
+            smtp_object.sendmail(email_user, recipients['all'], text)
+            
+            self.stdout.write('✅ Issue comments notification email sent successfully!')
+            logger.info('Issue comments notification email sent successfully')
+            return True
+            
+        except smtplib.SMTPAuthenticationError as e:
+            error_msg = f"SMTP Authentication Error: {e}"
+            logger.error(error_msg)
+            self.stdout.write(f'❌ {error_msg}')
+            return False
+        except smtplib.SMTPException as e:
+            error_msg = f"SMTP Error: {e}"
+            logger.error(error_msg)
+            self.stdout.write(f'❌ {error_msg}')
+            return False
+        except Exception as e:
+            error_msg = f"Error sending issue comments notification email: {e}"
+            logger.error(error_msg, exc_info=True)
+            self.stdout.write(f'❌ {error_msg}')
+            return False
+        finally:
+            if smtp_object:
+                try:
+                    smtp_object.quit()
+                except:
+                    pass    
     
     def send_new_lease_upload_reminder(self, new_leases_to_upload):
         """Send email reminder to upload new lease agreements"""
@@ -1448,3 +1712,57 @@ Automated Report"""
                     smtp_object.quit()
                 except:
                     pass
+
+    def get_yesterdays_issue_comments(self):
+        """Get all comments added to issues yesterday, with parent issue and property context."""
+        from pages.models import issues_details
+        
+        yesterday = date.today() - timedelta(days=1)
+        
+        # Admin user initials — MUST match the list in pages/views/main.py comments_report view.
+        # TODO: DRY up — move to a shared constant in email_utils.py or similar.
+        admin_users = ['DM']
+        admin_users_upper = [u.upper() for u in admin_users]
+        
+        try:
+            comments_qs = issues_details.objects.filter(
+                issues_details_date=yesterday
+            ).select_related('issues', 'issues__prop').order_by(
+                'issues__prop__prop_name', 'issues__issues_heading', 'issues_details_id'
+            )
+            
+            comment_list = []
+            for c in comments_qs:
+                issue = c.issues
+                if issue and issue.prop:
+                    property_name = issue.prop.prop_name
+                    property_country = getattr(issue.prop, 'prop_country', '') or ''
+                elif issue:
+                    property_name = 'Unknown Property'
+                    property_country = ''
+                else:
+                    property_name = 'Unknown Property'
+                    property_country = ''
+                
+                user_initials = (c.issues_details_user or '').strip()
+                is_admin = user_initials.upper() in admin_users_upper
+                
+                comment_list.append({
+                    'comment': c.issues_details_comment or '',
+                    'user': user_initials or 'Unknown',
+                    'is_admin': is_admin,
+                    'date': c.issues_details_date.strftime('%Y/%m/%d') if c.issues_details_date else '',
+                    'issue_heading': (issue.issues_heading if issue else None) or 'Untitled Issue',
+                    'issue_description': (issue.issues_description if issue else '') or '',
+                    'issue_status': (issue.issues_status if issue else None) or 'Unknown',
+                    'prop_name': property_name,
+                    'prop_country': property_country,
+                })
+            
+            self.stdout.write(f'Found {len(comment_list)} issue comment(s) from {yesterday}')
+            return comment_list, yesterday
+            
+        except Exception as e:
+            self.stdout.write(f'❌ Error getting yesterday\'s issue comments: {e}')
+            logger.error(f'Error getting yesterday\'s issue comments: {e}', exc_info=True)
+            return [], yesterday
