@@ -1,8 +1,9 @@
 from django.db import connection, transaction
-from django.db.models.signals import post_save, post_delete, pre_save
+from django.db.models.signals import post_save, post_delete, pre_save, pre_delete
 from django.dispatch import receiver
 from django.utils import timezone
-from .models import tenant, VacancyPeriod, Recipe, RecipeIngredient, Ingredient, UnitConversion, RecipeNutritionCache
+from django.contrib.auth.models import User
+from .models import tenant, VacancyPeriod, Recipe, RecipeIngredient, Ingredient, UnitConversion, RecipeNutritionCache, ProjectTask, UserProfile
 from .nutrition_calc import calculate_recipe_nutrition
 
 @receiver(post_save, sender=tenant)
@@ -529,3 +530,108 @@ def schedule_wcim_stats_recompute(sender, **kwargs):
             connection._wcim_recompute_pending = False
 
     transaction.on_commit(_run_then_reset)
+
+# ============================================================================
+# TENANT DELETE SIGNALS
+# ============================================================================
+# Cleanup of VacancyPeriod rows when a tenant is removed. The pre_delete
+# handler runs BEFORE Django cascades NULL out the FKs, so it can still match
+# by the tenant being deleted. The post_delete handler is a belt-and-braces
+# sweep for orphans plus a re-trigger of manage_vacancy_periods (via .save())
+# to recompute gaps for the remaining tenants.
+# ============================================================================
+
+
+@receiver(pre_delete, sender=tenant)
+def cleanup_vacancy_periods_on_delete(sender, instance, **kwargs):
+    """
+    Clean up vacancy periods when a tenant is ABOUT to be deleted.
+    This runs before Django sets foreign keys to NULL.
+    """
+    from django.db import models
+    # Delete vacancy periods where this tenant is involved
+    # This should work because we're in pre_delete
+    VacancyPeriod.objects.filter(
+        models.Q(previous_lease=instance) | models.Q(next_lease=instance)
+    ).delete()
+
+
+@receiver(post_delete, sender=tenant)
+def cleanup_orphaned_vacancies_after_delete(sender, instance, **kwargs):
+    """
+    Clean up any orphaned vacancies after a tenant is deleted.
+    This catches any vacancies that slipped through if on_delete=SET_NULL ran.
+    """
+    from django.db import models
+    # Clean up orphaned vacancies for this property
+    if instance.prop:
+        # Delete vacancies with NULL foreign keys (orphans)
+        VacancyPeriod.objects.filter(
+            prop=instance.prop
+        ).filter(
+            models.Q(previous_lease__isnull=True) | models.Q(next_lease__isnull=True)
+        ).exclude(
+            status='OPEN'  # Keep legitimate OPEN vacancies
+        ).delete()
+        # Re-trigger signal to recalculate gaps
+        remaining_tenants = tenant.objects.filter(
+            prop=instance.prop
+        ).exclude(
+            tenant_lease_start_date__isnull=True
+        ).order_by('tenant_lease_start_date').first()
+        if remaining_tenants:
+            remaining_tenants.save()
+
+
+# ============================================================================
+# PROJECT TASK SIGNALS
+# ============================================================================
+# Keep project totals in sync when individual tasks are added, edited, or
+# removed. Failures are swallowed (printed) so a task save/delete is never
+# blocked by a project-rollup error.
+# ============================================================================
+
+
+@receiver(post_save, sender=ProjectTask)
+def update_project_on_task_save(sender, instance, **kwargs):
+    """Update project totals when a task is saved"""
+    try:
+        instance.project.update_project_from_tasks()
+        instance.project.save(skip_validation=True)
+    except Exception as e:
+        # Log error but don't break the save operation
+        print(f"Error updating project from task save: {e}")
+
+
+@receiver(post_delete, sender=ProjectTask)
+def update_project_on_task_delete(sender, instance, **kwargs):
+    """Update project totals when a task is deleted"""
+    try:
+        instance.project.update_project_from_tasks()
+        instance.project.save(skip_validation=True)
+    except Exception as e:
+        # Log error but don't break the delete operation
+        print(f"Error updating project from task delete: {e}")
+
+
+# ============================================================================
+# USER SIGNALS
+# ============================================================================
+# Auto-create and auto-save the UserProfile that accompanies every Django
+# User. `create_user_profile` fires only on creation; `save_user_profile`
+# fires on every save and keeps the profile in lock-step.
+# ============================================================================
+
+
+@receiver(post_save, sender=User)
+def create_user_profile(sender, instance, created, **kwargs):
+    """Automatically create a UserProfile when a new User is created"""
+    if created:
+        UserProfile.objects.get_or_create(user=instance)
+
+
+@receiver(post_save, sender=User)
+def save_user_profile(sender, instance, **kwargs):
+    """Automatically save the UserProfile when the User is saved"""
+    if hasattr(instance, 'profile'):
+        instance.profile.save()

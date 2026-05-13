@@ -930,26 +930,6 @@ class act_expense(models.Model):
     class Meta:
         db_table="act_expense"
 
-@receiver(post_save, sender=ProjectTask)
-def update_project_on_task_save(sender, instance, **kwargs):
-    """Update project totals when a task is saved"""
-    try:
-        instance.project.update_project_from_tasks()
-        instance.project.save(skip_validation=True)
-    except Exception as e:
-        # Log error but don't break the save operation
-        print(f"Error updating project from task save: {e}")
-
-@receiver(post_delete, sender=ProjectTask)
-def update_project_on_task_delete(sender, instance, **kwargs):
-    """Update project totals when a task is deleted"""
-    try:
-        instance.project.update_project_from_tasks()
-        instance.project.save(skip_validation=True)
-    except Exception as e:
-        # Log error but don't break the delete operation
-        print(f"Error updating project from task delete: {e}")
-
 class VacancyPeriod(models.Model):
     """
     Tracks vacancy periods for properties between leases.
@@ -1118,50 +1098,6 @@ class VacancyPeriod(models.Model):
         Only count 'BETWEEN_TENANTS' and 'FIRST_LISTING' reasons
         """
         return self.reason in ['BETWEEN_TENANTS', 'FIRST_LISTING']
-
-@receiver(pre_delete, sender=tenant)
-def cleanup_vacancy_periods_on_delete(sender, instance, **kwargs):
-    """
-    Clean up vacancy periods when a tenant is ABOUT to be deleted.
-    This runs before Django sets foreign keys to NULL.
-    """
-    from django.db import models
-    
-    # Delete vacancy periods where this tenant is involved
-    # This should work because we're in pre_delete
-    VacancyPeriod.objects.filter(
-        models.Q(previous_lease=instance) | models.Q(next_lease=instance)
-    ).delete()
-
-
-@receiver(post_delete, sender=tenant)
-def cleanup_orphaned_vacancies_after_delete(sender, instance, **kwargs):
-    """
-    Clean up any orphaned vacancies after a tenant is deleted.
-    This catches any vacancies that slipped through if on_delete=SET_NULL ran.
-    """
-    from django.db import models
-    
-    # Clean up orphaned vacancies for this property
-    if instance.prop:
-        # Delete vacancies with NULL foreign keys (orphans)
-        VacancyPeriod.objects.filter(
-            prop=instance.prop
-        ).filter(
-            models.Q(previous_lease__isnull=True) | models.Q(next_lease__isnull=True)
-        ).exclude(
-            status='OPEN'  # Keep legitimate OPEN vacancies
-        ).delete()
-        
-        # Re-trigger signal to recalculate gaps
-        remaining_tenants = tenant.objects.filter(
-            prop=instance.prop
-        ).exclude(
-            tenant_lease_start_date__isnull=True
-        ).order_by('tenant_lease_start_date').first()
-        
-        if remaining_tenants:
-            remaining_tenants.save()
 
 class Passport(models.Model):
     DOCUMENT_TYPE_CHOICES = [
@@ -2642,17 +2578,3 @@ class UserProfile(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - Profile"
-
-
-@receiver(post_save, sender=User)
-def create_user_profile(sender, instance, created, **kwargs):
-    """Automatically create a UserProfile when a new User is created"""
-    if created:
-        UserProfile.objects.get_or_create(user=instance)
-
-
-@receiver(post_save, sender=User)
-def save_user_profile(sender, instance, **kwargs):
-    """Automatically save the UserProfile when the User is saved"""
-    if hasattr(instance, 'profile'):
-        instance.profile.save()
