@@ -1,16 +1,20 @@
-﻿from django.db import models
+﻿from datetime import datetime
+from dateutil.relativedelta import relativedelta
+from decimal import Decimal
+from django.conf import settings
+from django.contrib.auth.models import User
+from django.core.exceptions import ValidationError
+from django.db import models
 from django.db import connections
 from django.db.models import Min, Max, Sum
-from django.contrib.auth.models import User
-from django.conf import settings
-from django.core.exceptions import ValidationError
-from django.utils.text import slugify
-from django.utils import timezone
-from decimal import Decimal
-import os
 from django.db.models.signals import post_save, post_delete, pre_delete
 from django.dispatch import receiver
-from dateutil.relativedelta import relativedelta
+from django.utils import timezone
+from django.utils.text import slugify
+
+import os
+import uuid
+
 
 def project_document_upload_path(instance, filename):
     """Generate upload path for project documents"""
@@ -2357,6 +2361,59 @@ def maintenance_invoice_upload_path(instance, filename):
         date_str = timezone.now().strftime('%Y%m%d')
     new_filename = f"{asset_name_slug}-maintenance-{date_str}.{ext}"
     return os.path.join('maintenance_invoices', new_filename)
+
+def asset_photo_upload_path(instance, filename):
+    """
+    Generate storage path for asset photos:
+    asset_photos/{property-slug}-{asset-slug}-{YYYYMMDD}-{uuid6}.{ext}
+    Matches the existing asset_invoices/ naming convention.
+    """
+    ext = filename.rsplit('.', 1)[-1].lower() if '.' in filename else 'jpg'
+    if ext not in ('jpg', 'jpeg', 'png'):
+        ext = 'jpg'  # defensive fallback; view layer also validates
+    prop_slug = slugify(instance.asset.property.prop_name) or 'property'
+    asset_slug = slugify(instance.asset.name) or 'asset'
+    stamp = datetime.now().strftime('%Y%m%d')
+    uid = uuid.uuid4().hex[:6]
+    return f'asset_photos/{prop_slug}-{asset_slug}-{stamp}-{uid}.{ext}'
+
+
+class AssetPhoto(models.Model):
+    """
+    Photo attached to a PropertyAsset. Max 5 per asset (enforced at view layer).
+    display_order drives sort: lowest = cover photo (shown as thumbnail).
+    """
+    asset = models.ForeignKey(
+        'PropertyAsset',
+        on_delete=models.CASCADE,
+        related_name='photos'
+    )
+    image = models.ImageField(upload_to=asset_photo_upload_path)
+    display_order = models.IntegerField(default=0, db_index=True)
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+    uploaded_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='+'
+    )
+
+    class Meta:
+        ordering = ['display_order', 'uploaded_at']
+
+    def __str__(self):
+        return f"Photo for {self.asset.name} ({self.image.name})"
+
+
+@receiver(post_delete, sender=AssetPhoto)
+def delete_asset_photo_file(sender, instance, **kwargs):
+    """When an AssetPhoto row is deleted, remove the file from disk too."""
+    if instance.image:
+        try:
+            instance.image.delete(save=False)
+        except Exception:
+            pass  # already gone or storage error — don't block deletion
 
 class AssetCategory(models.Model):
     """Main category for assets (e.g., Appliances, Furniture)"""

@@ -167,7 +167,54 @@
                 <small class="form-text text-muted">Upload a new file to replace the existing one</small>
             </div>
 
+            <!-- Photos Section -->
+            <hr>
+            <h5 class="form-section-heading">
+                Photos
+                <small class="text-muted">(up to {{ photo_max_count }} per asset — JPG/PNG, 5MB each)</small>
+            </h5>
+
+            {% if photos %}
+                <div class="photo-manage-grid">
+                    {% for photo in photos %}
+                        <div class="photo-manage-tile">
+                            <img src="{{ photo.image.url }}" alt="">
+                            <div class="photo-manage-actions">
+                                {% if forloop.first %}
+                                    <button type="button" class="btn-photo-star btn-photo-star-active" disabled title="Cover photo">
+                                        <i class="fas fa-star"></i>
+                                    </button>
+                                {% else %}
+                                    <button type="submit" form="setCoverPhotoForm-{{ photo.id }}" class="btn-photo-star" title="Set as cover photo">
+                                        <i class="far fa-star"></i>
+                                    </button>
+                                {% endif %}
+                                <button type="button" class="btn-photo-delete" onclick="confirmDeletePhoto({{ photo.id }})" title="Delete this photo">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+                <div class="photo-limit-note">
+                    {{ photos|length }} of {{ photo_max_count }} photos used. The starred photo appears as the thumbnail in the asset list.
+                </div>
+            {% else %}
+                <p class="text-muted photo-empty-note">No photos yet. Add some below.</p>
+            {% endif %}
+
+            <div class="form-group">
+                <label for="edit_photos">
+                    {% if photos %}Add more photos{% else %}Upload photos{% endif %}
+                </label>
+                <input type="file" name="photos" id="edit_photos" class="form-control-file" accept="image/jpeg,image/png" multiple>
+                <small class="form-text text-muted">
+                    Hold Ctrl/Cmd to select multiple. On mobile you can also take a photo with your camera.
+                </small>
+            </div>
+
             <!-- Notes -->
+            <hr>
             <div class="form-group">
                 <label>Notes</label>
                 <textarea name="notes" class="form-control" rows="4" placeholder="Additional notes...">{{ asset.notes }}</textarea>
@@ -187,6 +234,17 @@
         </form>
     </div>
 </div>
+
+<!-- Hidden per-photo action forms — must live OUTSIDE editAssetForm because HTML
+     doesn't allow nested forms. Star/delete buttons reference these by ID. -->
+{% for photo in photos %}
+    <form method="post" action="{% url 'set_cover_photo' asset.id photo.id %}" id="setCoverPhotoForm-{{ photo.id }}" style="display:none">
+        {% csrf_token %}
+    </form>
+    <form method="post" action="{% url 'delete_asset_photo' asset.id photo.id %}" id="deletePhotoForm-{{ photo.id }}" style="display:none">
+        {% csrf_token %}
+    </form>
+{% endfor %}
 
 <style>
 /* ==================== DESKTOP STYLES ==================== */
@@ -227,11 +285,94 @@
     margin-bottom: 16px;
     font-size: 1.15rem;
 }
+.form-section-heading small {
+    font-weight: 400;
+    font-size: 0.8rem;
+}
 
 /* Current file info banner (when an invoice is already attached) */
 .current-file-info {
     margin-bottom: 8px;
     padding: 10px 14px;
+}
+
+/* Photo management grid (Edit Asset form) */
+.photo-manage-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+.photo-manage-tile {
+    position: relative;
+    width: 140px;
+    height: 140px;
+    border-radius: 8px;
+    overflow: hidden;
+    border: 1px solid #dee2e6;
+    background: #f8f9fa;
+}
+.photo-manage-tile img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+.photo-manage-actions {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    display: flex;
+    gap: 4px;
+}
+.btn-photo-star,
+.btn-photo-delete {
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.25);
+    transition: background 0.15s ease, color 0.15s ease, transform 0.1s ease;
+}
+.btn-photo-star {
+    background: white;
+    color: #6c757d;
+}
+.btn-photo-star:hover {
+    color: #f39c12;
+    transform: scale(1.08);
+}
+.btn-photo-star-active {
+    background: #f39c12;
+    color: white;
+    cursor: default;
+}
+.btn-photo-star-active:hover {
+    transform: none;
+}
+.btn-photo-delete {
+    background: white;
+    color: #dc3545;
+}
+.btn-photo-delete:hover {
+    background: #dc3545;
+    color: white;
+    transform: scale(1.08);
+}
+.photo-limit-note {
+    font-size: 13px;
+    color: #6c757d;
+    margin-bottom: 14px;
+}
+.photo-empty-note {
+    margin-bottom: 14px;
+    font-style: italic;
 }
 
 /* Submit row at bottom of form (Cancel + Save) */
@@ -309,12 +450,30 @@
         margin-top: 4px;
         margin-bottom: 12px;
     }
+    .form-section-heading small {
+        display: block;
+        font-size: 0.75rem;
+        margin-top: 2px;
+    }
 
     /* Current file banner — wrap long filenames */
     .current-file-info {
         font-size: 13px;
         padding: 10px;
         word-break: break-all;
+    }
+
+    /* Photo manage tiles — 2 across on mobile */
+    .photo-manage-tile {
+        width: calc(50% - 6px);
+        height: auto;
+        aspect-ratio: 1 / 1;
+    }
+    .btn-photo-star,
+    .btn-photo-delete {
+        width: 32px;
+        height: 32px;
+        font-size: 13px;
     }
 
     /* Submit buttons — stack with primary (Save) on top */
@@ -335,6 +494,10 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
 <script>
+// Existing-photo count from server (used by client-side photo validation)
+const EXISTING_PHOTO_COUNT = {{ photos|length|default:0 }};
+const PHOTO_MAX_COUNT = {{ photo_max_count|default:5 }};
+
 // Validate Edit Asset form before submission
 document.getElementById('editAssetForm').addEventListener('submit', function(e) {
     const warrantyMonths = parseInt(document.querySelector('input[name="warranty_duration_months"]').value) || 0;
@@ -343,8 +506,43 @@ document.getElementById('editAssetForm').addEventListener('submit', function(e) 
     if (warrantyMonths > 0 && !purchaseDate) {
         e.preventDefault();
         alert('Purchase Date is required when Warranty Duration is entered.');
+        return;
+    }
+
+    // Photo validation: total count <= max, each <= 5MB, JPG/PNG only
+    const photosInput = document.getElementById('edit_photos');
+    if (photosInput && photosInput.files.length > 0) {
+        const total = EXISTING_PHOTO_COUNT + photosInput.files.length;
+        if (total > PHOTO_MAX_COUNT) {
+            e.preventDefault();
+            alert('You currently have ' + EXISTING_PHOTO_COUNT + ' photos and tried to upload '
+                  + photosInput.files.length + '. Total would be ' + total
+                  + ', but the maximum is ' + PHOTO_MAX_COUNT + '. Delete some first or upload fewer.');
+            return;
+        }
+        for (let i = 0; i < photosInput.files.length; i++) {
+            const f = photosInput.files[i];
+            if (f.size > 5 * 1024 * 1024) {
+                e.preventDefault();
+                alert('Photo "' + f.name + '" exceeds 5 MB limit.');
+                return;
+            }
+            if (!/\.(jpe?g|png)$/i.test(f.name)) {
+                e.preventDefault();
+                alert('Photo "' + f.name + '" must be JPG or PNG.');
+                return;
+            }
+        }
     }
 });
+
+// Confirm-and-submit a hidden form to delete a single photo
+function confirmDeletePhoto(photoId) {
+    if (confirm('Delete this photo? This cannot be undone.')) {
+        const form = document.getElementById('deletePhotoForm-' + photoId);
+        if (form) form.submit();
+    }
+}
 
 // Load subcategories when category changes
 function loadSubcategories() {

@@ -1,4 +1,4 @@
-﻿{% extends 'base.html' %}
+{% extends 'base.html' %}
 {% load static %}
 
 {% block title %}Assets - {{ property.prop_name }}{% endblock %}
@@ -109,10 +109,21 @@
                 {% for asset in asset_list %}
                 <tr class="asset-row" data-href="{% url 'asset_detail' asset.id %}?next={{ request.GET.next }}">
                     <td data-label="Asset Name">
-                        <strong>{{ asset.name }}</strong>
-                        {% if asset.brand_manufacturer %}
-                            <br><small class="text-muted">{{ asset.brand_manufacturer }}</small>
-                        {% endif %}
+                        <div class="asset-name-cell">
+                            {% with first_photo=asset.photos.all|first %}
+                                {% if first_photo %}
+                                    <img src="{{ first_photo.image.url }}" alt="" class="asset-thumb">
+                                {% else %}
+                                    <div class="asset-thumb asset-thumb-placeholder"><i class="fas fa-box"></i></div>
+                                {% endif %}
+                            {% endwith %}
+                            <div class="asset-name-text">
+                                <strong>{{ asset.name }}</strong>
+                                {% if asset.brand_manufacturer %}
+                                    <br><small class="text-muted">{{ asset.brand_manufacturer }}</small>
+                                {% endif %}
+                            </div>
+                        </div>
                     </td>
                     <td data-label="Subcategory">{{ asset.subcategory.name }}</td>
                     <td data-label="Location">{{ asset.location_room }}</td>
@@ -322,6 +333,13 @@
                         <input type="file" name="purchase_invoice" class="form-control-file" accept=".pdf,.jpg,.jpeg,.png">
                     </div>
 
+                    <!-- Photos Upload -->
+                    <div class="form-group">
+                        <label>Photos <small class="text-muted">(up to 5 — JPG/PNG, 5MB each)</small></label>
+                        <input type="file" name="photos" id="modal_photos" class="form-control-file" accept="image/jpeg,image/png" multiple>
+                        <small class="form-text text-muted">Hold Ctrl/Cmd to select multiple. On mobile you can also take a photo with your camera.</small>
+                    </div>
+
                     <!-- Notes -->
                     <div class="form-group">
                         <label>Notes</label>
@@ -474,6 +492,33 @@
     background-color: #e9ecef;
 }
 
+/* Asset name cell: thumbnail + name stacked side-by-side */
+.asset-name-cell {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.asset-thumb {
+    width: 50px;
+    height: 50px;
+    border-radius: 6px;
+    object-fit: cover;
+    flex-shrink: 0;
+    border: 1px solid #dee2e6;
+    background: #f8f9fa;
+}
+.asset-thumb-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #adb5bd;
+    font-size: 18px;
+}
+.asset-name-text {
+    flex: 1;
+    min-width: 0;
+}
+
 .warranty-active {
     color: #28a745;
     font-weight: bold;
@@ -574,26 +619,6 @@
         display: none;
     }
 
-    /* View toggle row — stack vertically */
-    .view-toggle-row {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 8px;
-        padding: 12px;
-    }
-    .view-toggle-label {
-        font-size: 12px;
-        color: #6c757d;
-        text-transform: uppercase;
-        letter-spacing: 0.3px;
-    }
-    .view-toggle-group {
-        width: 100%;
-    }
-    .view-toggle-group .btn {
-        flex: 1;
-    }
-
     /* Summary card — stack each row */
     .summary-card .card-body {
         padding: 14px;
@@ -612,6 +637,26 @@
     }
     .summary-value {
         font-size: 14px;
+    }
+
+    /* View toggle row — stack vertically */
+    .view-toggle-row {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+        padding: 12px;
+    }
+    .view-toggle-label {
+        font-size: 12px;
+        color: #6c757d;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+    }
+    .view-toggle-group {
+        width: 100%;
+    }
+    .view-toggle-group .btn {
+        flex: 1;
     }
 
     /* Category section — tighter padding */
@@ -821,6 +866,30 @@ document.querySelector('#addAssetModal form').addEventListener('submit', functio
     if (warrantyMonths > 0 && !purchaseDate) {
         e.preventDefault();
         alert('Purchase Date is required when Warranty Duration is entered.');
+        return;
+    }
+
+    // Photo upload validation: max 5, max 5MB each, JPG/PNG only
+    const photosInput = document.getElementById('modal_photos');
+    if (photosInput && photosInput.files.length > 0) {
+        if (photosInput.files.length > 5) {
+            e.preventDefault();
+            alert('You selected ' + photosInput.files.length + ' photos. Maximum is 5 per asset.');
+            return;
+        }
+        for (let i = 0; i < photosInput.files.length; i++) {
+            const f = photosInput.files[i];
+            if (f.size > 5 * 1024 * 1024) {
+                e.preventDefault();
+                alert('Photo "' + f.name + '" exceeds 5 MB limit.');
+                return;
+            }
+            if (!/\.(jpe?g|png)$/i.test(f.name)) {
+                e.preventDefault();
+                alert('Photo "' + f.name + '" must be JPG or PNG.');
+                return;
+            }
+        }
     }
 });
 

@@ -326,6 +326,8 @@ urlpatterns = [
     path('assets/<int:asset_id>/', views.asset_detail, name='asset_detail'),
     path('assets/<int:asset_id>/edit/', views.edit_asset, name='edit_asset'),
     path('assets/<int:asset_id>/delete/', views.delete_asset, name='delete_asset'),
+    path('assets/<int:asset_id>/photos/<int:photo_id>/delete/', views.delete_asset_photo, name='delete_asset_photo'),
+     path('assets/<int:asset_id>/photos/<int:photo_id>/set-cover/', views.set_cover_photo, name='set_cover_photo'),
 
     # Maintenance URLs
     path('assets/<int:asset_id>/maintenance/add/', views.add_maintenance, name='add_maintenance'),

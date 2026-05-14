@@ -40,7 +40,7 @@ from decimal import Decimal
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
-from django.db.models import Count, Prefetch, Sum
+from django.db.models import Count, Max, Min, Prefetch, Sum
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.csrf import csrf_exempt
@@ -50,6 +50,7 @@ from pages.forms import PropForm
 from pages.models import (
     AssetCategory,
     AssetMaintenance,
+    AssetPhoto,
     AssetSubcategory,
     AssetSupplier,
     PropertyAsset,
@@ -750,7 +751,7 @@ def property_assets(request, prop_id):
     ).select_related(
         'category', 'subcategory', 'supplier'
     ).prefetch_related(
-        'maintenance_records'
+        'maintenance_records', 'photos'
     )
 
     # Order based on grouping mode (drives dict insertion order)
@@ -784,14 +785,68 @@ def property_assets(request, prop_id):
     return render(request, 'property_assets.html', context)
 
 
+# ============================================================================
+# Asset photo helpers — shared between add_asset and edit_asset
+# ============================================================================
+
+# Photo upload constraints (also enforced client-side in templates)
+ASSET_PHOTO_MAX_COUNT = 5
+ASSET_PHOTO_MAX_BYTES = 5 * 1024 * 1024  # 5 MB
+ASSET_PHOTO_ALLOWED_EXTS = ('.jpg', '.jpeg', '.png')
+
+
+def _validate_asset_photos(photo_files, existing_count):
+    """
+    Validate a list of UploadedFile objects intended for an asset.
+    Returns None on success, error message string on failure.
+    """
+    if not photo_files:
+        return None
+    if existing_count + len(photo_files) > ASSET_PHOTO_MAX_COUNT:
+        return (
+            f'Maximum {ASSET_PHOTO_MAX_COUNT} photos per asset. '
+            f'You currently have {existing_count} and tried to upload {len(photo_files)}. '
+            f'Delete some first or upload fewer.'
+        )
+    for f in photo_files:
+        if f.size > ASSET_PHOTO_MAX_BYTES:
+            size_mb = f.size // (1024 * 1024)
+            return f'Photo "{f.name}" is {size_mb} MB. Maximum size is 5 MB per photo.'
+        ext = ('.' + f.name.lower().rsplit('.', 1)[-1]) if '.' in f.name else ''
+        if ext not in ASSET_PHOTO_ALLOWED_EXTS:
+            return f'Photo "{f.name}" must be JPG or PNG.'
+    return None
+
+
+def _save_asset_photos(asset, photo_files, user):
+    """Create AssetPhoto rows, appending to existing photos (display_order = max + 1, +2, ...)."""
+    current_max = AssetPhoto.objects.filter(asset=asset).aggregate(m=Max('display_order'))['m']
+    next_order = (current_max if current_max is not None else -1) + 1
+    for i, f in enumerate(photo_files):
+        AssetPhoto.objects.create(
+            asset=asset,
+            image=f,
+            display_order=next_order + i,
+            uploaded_by=user,
+        )
+
+
 @login_required
 @permission_required('auth.can_edit_properties', raise_exception=True)
 @require_POST
 def add_asset(request, prop_id):
-    """Add a new asset to a property"""
+    """Add a new asset to a property (with optional photos)"""
     property_obj = get_object_or_404(props, prop_id=prop_id)
 
     try:
+        # Validate photos BEFORE saving the asset (atomic-ish: no half-state)
+        photo_files = request.FILES.getlist('photos')
+        if photo_files:
+            err = _validate_asset_photos(photo_files, existing_count=0)
+            if err:
+                messages.error(request, err)
+                return redirect('property_assets', prop_id=prop_id)
+
         category_id = request.POST.get('category')
         subcategory_id = request.POST.get('subcategory')
         supplier_id = request.POST.get('supplier')
@@ -839,6 +894,11 @@ def add_asset(request, prop_id):
             asset.warranty_expiry_date = datetime.strptime(warranty_expiry, '%Y-%m-%d').date()
 
         asset.save()
+
+        # Save photos after asset creation
+        if photo_files:
+            _save_asset_photos(asset, photo_files, request.user)
+
         messages.success(request, f'Asset "{asset.name}" added successfully!')
 
     except Exception as e:
@@ -850,11 +910,20 @@ def add_asset(request, prop_id):
 @login_required
 @permission_required('auth.can_edit_properties', raise_exception=True)
 def edit_asset(request, asset_id):
-    """Edit an existing asset"""
+    """Edit an existing asset (with photo add support)"""
     asset = get_object_or_404(PropertyAsset, pk=asset_id)
 
     if request.method == 'POST':
         try:
+            # Validate new photo uploads first (atomic-ish: no partial save)
+            photo_files = request.FILES.getlist('photos')
+            if photo_files:
+                existing_count = asset.photos.count()
+                err = _validate_asset_photos(photo_files, existing_count)
+                if err:
+                    messages.error(request, err)
+                    return redirect('edit_asset', asset_id=asset_id)
+
             # Supplier is optional
             supplier_id = request.POST.get('supplier')
             asset.supplier = get_object_or_404(AssetSupplier, pk=supplier_id) if supplier_id else None
@@ -887,6 +956,11 @@ def edit_asset(request, asset_id):
             asset.warranty_expiry_date = warranty_expiry if warranty_expiry else None
 
             asset.save()
+
+            # Save any newly uploaded photos
+            if photo_files:
+                _save_asset_photos(asset, photo_files, request.user)
+
             messages.success(request, f'Asset "{asset.name}" updated successfully!')
             return redirect('asset_detail', asset_id=asset.id)
 
@@ -896,12 +970,15 @@ def edit_asset(request, asset_id):
     categories = AssetCategory.objects.all().order_by('name')
     subcategories = AssetSubcategory.objects.filter(category=asset.category).order_by('name')
     suppliers = AssetSupplier.objects.all().order_by('name')
+    photos = list(asset.photos.all())  # uses model Meta.ordering (display_order, uploaded_at)
 
     context = {
         'asset': asset,
         'categories': categories,
         'subcategories': subcategories,
         'suppliers': suppliers,
+        'photos': photos,
+        'photo_max_count': ASSET_PHOTO_MAX_COUNT,
     }
 
     return render(request, 'edit_asset.html', context)
@@ -930,12 +1007,12 @@ def delete_asset(request, asset_id):
 def asset_detail(request, asset_id):
     """
     Display detailed information about an asset
-    Including maintenance history
+    Including maintenance history and photos
     """
     asset = get_object_or_404(
         PropertyAsset.objects.select_related(
             'property', 'category', 'subcategory', 'supplier'
-        ).prefetch_related('maintenance_records'),
+        ).prefetch_related('maintenance_records', 'photos'),
         pk=asset_id
     )
 
@@ -945,13 +1022,51 @@ def asset_detail(request, asset_id):
     # Calculate total maintenance cost
     total_maintenance_cost = asset.get_total_maintenance_cost()
 
+    # Photos (ordered by display_order via Meta.ordering)
+    photos = list(asset.photos.all())
+    first_photo = photos[0] if photos else None
+
     context = {
         'asset': asset,
         'maintenance_records': maintenance_records,
         'total_maintenance_cost': total_maintenance_cost,
+        'photos': photos,
+        'first_photo': first_photo,
     }
 
     return render(request, 'asset_detail.html', context)
+
+
+@login_required
+@permission_required('auth.can_edit_properties', raise_exception=True)
+@require_POST
+def delete_asset_photo(request, asset_id, photo_id):
+    """Delete a single photo from an asset. POST only. Redirects back to edit_asset."""
+    asset = get_object_or_404(PropertyAsset, pk=asset_id)
+    photo = get_object_or_404(AssetPhoto, pk=photo_id, asset=asset)
+    try:
+        photo.delete()  # post_delete signal removes the file from disk
+        messages.success(request, 'Photo deleted.')
+    except Exception as e:
+        messages.error(request, f'Error deleting photo: {str(e)}')
+    return redirect('edit_asset', asset_id=asset_id)
+
+
+@login_required
+@permission_required('auth.can_edit_properties', raise_exception=True)
+@require_POST
+def set_cover_photo(request, asset_id, photo_id):
+    """Promote a photo to first position (cover) by giving it the lowest display_order."""
+    asset = get_object_or_404(PropertyAsset, pk=asset_id)
+    photo = get_object_or_404(AssetPhoto, pk=photo_id, asset=asset)
+    try:
+        current_min = AssetPhoto.objects.filter(asset=asset).aggregate(m=Min('display_order'))['m']
+        photo.display_order = (current_min - 1) if current_min is not None else 0
+        photo.save(update_fields=['display_order'])
+        messages.success(request, 'Cover photo updated.')
+    except Exception as e:
+        messages.error(request, f'Error setting cover photo: {str(e)}')
+    return redirect('edit_asset', asset_id=asset_id)
 
 
 # ============================================================================
