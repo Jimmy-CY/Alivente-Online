@@ -734,10 +734,15 @@ def title_deed_report(request, prop_id):
 @permission_required('auth.can_access_properties', raise_exception=True)
 def property_assets(request, prop_id):
     """
-    Display all assets for a specific property
-    Grouped by category
+    Display all assets for a specific property.
+    Grouped by category (default) or by location/room via ?group_by= GET param.
     """
     property_obj = get_object_or_404(props, prop_id=prop_id)
+
+    # Determine grouping mode from GET param
+    group_by = request.GET.get('group_by', 'category')
+    if group_by not in ('category', 'room'):
+        group_by = 'category'
 
     # Get all assets for this property, prefetch related data
     assets = PropertyAsset.objects.filter(
@@ -746,15 +751,22 @@ def property_assets(request, prop_id):
         'category', 'subcategory', 'supplier'
     ).prefetch_related(
         'maintenance_records'
-    ).order_by('category__name', 'subcategory__name', 'name')
+    )
 
-    # Group assets by category
-    assets_by_category = {}
+    # Order based on grouping mode (drives dict insertion order)
+    if group_by == 'room':
+        assets = assets.order_by('location_room', 'category__name', 'subcategory__name', 'name')
+    else:
+        assets = assets.order_by('category__name', 'subcategory__name', 'name')
+
+    # Build the grouped dict
+    grouped_assets = {}
     for asset in assets:
-        category_name = asset.category.name
-        if category_name not in assets_by_category:
-            assets_by_category[category_name] = []
-        assets_by_category[category_name].append(asset)
+        if group_by == 'room':
+            key = asset.location_room or '(Unspecified)'
+        else:
+            key = asset.category.name
+        grouped_assets.setdefault(key, []).append(asset)
 
     # Get all categories for the add form
     categories = AssetCategory.objects.all().order_by('name')
@@ -762,7 +774,8 @@ def property_assets(request, prop_id):
 
     context = {
         'property': property_obj,
-        'assets_by_category': assets_by_category,
+        'grouped_assets': grouped_assets,
+        'group_by': group_by,
         'total_assets': assets.count(),
         'categories': categories,
         'suppliers': suppliers,

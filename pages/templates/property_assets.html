@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+﻿{% extends 'base.html' %}
 {% load static %}
 
 {% block title %}Assets - {{ property.prop_name }}{% endblock %}
@@ -71,12 +71,26 @@
     </div>
 </div>
 
-<!-- Assets by Category -->
-{% if assets_by_category %}
-    {% for category_name, asset_list in assets_by_category.items %}
+<!-- Assets, grouped by category or by location/room -->
+{% if grouped_assets %}
+    <div class="view-toggle-row">
+        <span class="view-toggle-label">Group by:</span>
+        <div class="btn-group btn-group-sm view-toggle-group" role="group">
+            <a href="?group_by=category{% if request.GET.next %}&next={{ request.GET.next }}{% endif %}"
+               class="btn btn-{% if group_by == 'category' %}info{% else %}outline-info{% endif %}">
+                <i class="fas fa-tag"></i> Category
+            </a>
+            <a href="?group_by=room{% if request.GET.next %}&next={{ request.GET.next }}{% endif %}"
+               class="btn btn-{% if group_by == 'room' %}info{% else %}outline-info{% endif %}">
+                <i class="fas fa-door-open"></i> Location/Room
+            </a>
+        </div>
+    </div>
+
+    {% for group_name, asset_list in grouped_assets.items %}
     <div class="category-section mb-4">
         <h4 class="category-header">
-            <i class="fas fa-tag"></i> <span class="category-name">{{ category_name }}</span>
+            <i class="fas {% if group_by == 'room' %}fa-door-open{% else %}fa-tag{% endif %}"></i> <span class="category-name">{{ group_name }}</span>
             <span class="badge badge-secondary category-count">{{ asset_list|length }}</span>
         </h4>
 
@@ -378,6 +392,29 @@
     color: #495057;
 }
 
+/* View toggle row */
+.view-toggle-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 1rem;
+    padding: 10px 14px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+.view-toggle-label {
+    font-weight: 600;
+    color: #495057;
+    font-size: 14px;
+}
+.view-toggle-group .btn {
+    padding: 6px 14px;
+}
+.view-toggle-group .btn i {
+    margin-right: 4px;
+}
+
 /* Category section */
 .category-section {
     background: white;
@@ -535,6 +572,26 @@
     }
     .action-back-label {
         display: none;
+    }
+
+    /* View toggle row — stack vertically */
+    .view-toggle-row {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+        padding: 12px;
+    }
+    .view-toggle-label {
+        font-size: 12px;
+        color: #6c757d;
+        text-transform: uppercase;
+        letter-spacing: 0.3px;
+    }
+    .view-toggle-group {
+        width: 100%;
+    }
+    .view-toggle-group .btn {
+        flex: 1;
     }
 
     /* Summary card — stack each row */
