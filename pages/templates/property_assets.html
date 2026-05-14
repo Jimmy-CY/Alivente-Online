@@ -336,8 +336,14 @@
                     <!-- Photos Upload -->
                     <div class="form-group">
                         <label>Photos <small class="text-muted">(up to 5 — JPG/PNG, 5MB each)</small></label>
-                        <input type="file" name="photos" id="modal_photos" class="form-control-file" accept="image/*" multiple>
-                        <small class="form-text text-muted">Hold Ctrl/Cmd to select multiple. On mobile you can also take a photo with your camera.</small>
+                        <div class="photo-upload-controls">
+                            <input type="file" name="photos" id="modal_photos" class="form-control-file" accept="image/*" multiple>
+                            <label class="btn btn-outline-info btn-camera-capture">
+                                <i class="fas fa-camera"></i> Take Photo
+                                <input type="file" name="photos" id="modal_photos_camera" accept="image/*" capture="environment" hidden>
+                            </label>
+                        </div>
+                        <small class="form-text text-muted">Choose Files to pick from gallery, or Take Photo (mobile) to capture directly.</small>
                     </div>
 
                     <!-- Notes -->
@@ -561,6 +567,17 @@
     font-weight: 600;
     margin-top: 8px;
     margin-bottom: 12px;
+}
+
+/* Photo upload controls — file input + Take Photo button stacked */
+.photo-upload-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: flex-start;
+}
+.btn-camera-capture {
+    display: none; /* hidden on desktop; mobile media query reveals it */
 }
 
 /* Inline-add row inside the modal */
@@ -824,6 +841,22 @@
         font-size: 14px;
     }
 
+    /* Take Photo button — mobile only, full width below file input */
+    .btn-camera-capture {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        cursor: pointer;
+        width: 100%;
+        padding: 10px 12px;
+        font-size: 14px;
+        margin: 0;
+    }
+    .photo-upload-controls {
+        width: 100%;
+    }
+
     /* Modal footer buttons — stack and full-width */
     .modal-fullscreen-mobile .modal-footer {
         flex-direction: column-reverse;
@@ -869,16 +902,25 @@ document.querySelector('#addAssetModal form').addEventListener('submit', functio
         return;
     }
 
-    // Photo upload validation: max 5, max 5MB each, JPG/PNG only
-    const photosInput = document.getElementById('modal_photos');
-    if (photosInput && photosInput.files.length > 0) {
-        if (photosInput.files.length > 5) {
+    // Photo upload validation: collect from BOTH the gallery input and the camera input
+    const photosInputs = [
+        document.getElementById('modal_photos'),
+        document.getElementById('modal_photos_camera')
+    ];
+    const allPhotos = [];
+    photosInputs.forEach(function(input) {
+        if (input) {
+            for (let i = 0; i < input.files.length; i++) allPhotos.push(input.files[i]);
+        }
+    });
+    if (allPhotos.length > 0) {
+        if (allPhotos.length > 5) {
             e.preventDefault();
-            alert('You selected ' + photosInput.files.length + ' photos. Maximum is 5 per asset.');
+            alert('You selected ' + allPhotos.length + ' photos. Maximum is 5 per asset.');
             return;
         }
-        for (let i = 0; i < photosInput.files.length; i++) {
-            const f = photosInput.files[i];
+        for (let i = 0; i < allPhotos.length; i++) {
+            const f = allPhotos[i];
             if (f.size > 5 * 1024 * 1024) {
                 e.preventDefault();
                 alert('Photo "' + f.name + '" exceeds 5 MB limit.');
