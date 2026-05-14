@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+﻿{% extends 'base.html' %}
 {% load static %}
 
 {% block title %}Edit Asset - {{ asset.name }}{% endblock %}
@@ -207,7 +207,7 @@
                 <label for="edit_photos">
                     {% if photos %}Add more photos{% else %}Upload photos{% endif %}
                 </label>
-                <input type="file" name="photos" id="edit_photos" class="form-control-file" accept="image/jpeg,image/png" multiple>
+                <input type="file" name="photos" id="edit_photos" class="form-control-file" accept="image/*" multiple>
                 <small class="form-text text-muted">
                     Hold Ctrl/Cmd to select multiple. On mobile you can also take a photo with your camera.
                 </small>

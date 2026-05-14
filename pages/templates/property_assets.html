@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+﻿{% extends 'base.html' %}
 {% load static %}
 
 {% block title %}Assets - {{ property.prop_name }}{% endblock %}
@@ -336,7 +336,7 @@
                     <!-- Photos Upload -->
                     <div class="form-group">
                         <label>Photos <small class="text-muted">(up to 5 — JPG/PNG, 5MB each)</small></label>
-                        <input type="file" name="photos" id="modal_photos" class="form-control-file" accept="image/jpeg,image/png" multiple>
+                        <input type="file" name="photos" id="modal_photos" class="form-control-file" accept="image/*" multiple>
                         <small class="form-text text-muted">Hold Ctrl/Cmd to select multiple. On mobile you can also take a photo with your camera.</small>
                     </div>
 
