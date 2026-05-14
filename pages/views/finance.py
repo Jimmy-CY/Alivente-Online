@@ -24,8 +24,10 @@ Commit views follow a consistent pattern:
 
 Report views are read-only and don't need the atomic pattern.
 
-Occupancy/portfolio helper functions live in pages/views/dashboard.py and are
-imported below. They moved out of main.py during the dashboard split.
+Helper functions are imported from two view modules after the dashboard
+and properties splits out of main.py:
+  - dashboard.py: occupancy + portfolio calculations + budgeted expenses
+  - properties.py: calculate_year_metrics, calculate_property_revenue
 """
 import decimal
 import json
@@ -53,10 +55,12 @@ from pages.models import (
     tenant, act_expense, VacancyPeriod,
 )
 
-# Helpers live in dashboard.py (occupancy + portfolio calculations).
-from .dashboard import (
+# Helpers split across two modules after the dashboard / properties splits.
+from .properties import (
     calculate_year_metrics,
     calculate_property_revenue,
+)
+from .dashboard import (
     calculate_property_budgeted_expenses,
     calculate_occupancy_metrics_with_period,
     get_property_first_tenant_date_optimized,
