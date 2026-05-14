@@ -122,7 +122,7 @@ BOTTOM BUTTON LAYOUT:
 <style>
 /* ==================== PDF VIEWER STYLES ==================== */
 
-.pdf-viewer-modal-dialog {
+.modal-dialog.pdf-viewer-modal-dialog {
     max-width: 90vw;
 }
 
@@ -247,8 +247,15 @@ BOTTOM BUTTON LAYOUT:
     flex-shrink: 0;
 }
 
-/* Desktop default state — Share is hidden, Download/Close show full text labels */
-.pdf-action-share { display: none; }
+/* Default state — Share is visible everywhere the Web Share API supports
+   sharing files. JS toggles .pdf-share-unsupported on #pdfViewerModal at
+   open time when the API isn't available, hiding the button. */
+.pdf-action-share {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+.pdf-share-unsupported .pdf-action-share { display: none; }
 .pdf-action-mobile-icon { display: none; }
 
 /* ==================== MOBILE STYLES ==================== */
@@ -265,22 +272,22 @@ BOTTOM BUTTON LAYOUT:
         max-height: 100vh;
     }
 
-    /* On mobile, move the footer (Share/Download/Close) to appear right
-       below the header so the action buttons are always visible without
-       scrolling. The PDF body and page-nav controls stay below.
+    /* On mobile, surface the actions AND the page/zoom controls above the
+       PDF body so they're reachable without scrolling. The body grows to
+       fill what's left.
 
        Visual order on mobile:
          1. Header (title + X)
-         2. Footer  ← actions surfaced at top
-         3. Body    ← PDF content
-         4. Controls (page nav + zoom)
+         2. Footer (Share / Download / Close)
+         3. Controls (page nav + zoom)
+         4. Body (PDF content)
 
        .pdf-viewer-modal-content is already display:flex column, so we
        just reorder the children. */
     .pdf-viewer-modal-content > .pdf-viewer-header   { order: 1; }
     .pdf-viewer-modal-content > .pdf-viewer-footer   { order: 2; }
-    .pdf-viewer-modal-content > .pdf-viewer-body     { order: 3; }
-    .pdf-viewer-modal-content > .pdf-viewer-controls { order: 4; }
+    .pdf-viewer-modal-content > .pdf-viewer-controls { order: 3; }
+    .pdf-viewer-modal-content > .pdf-viewer-body     { order: 4; }
 
     /* Hide the redundant X close button in the header on mobile —
        Close is already in the (now top-positioned) footer */
@@ -333,16 +340,14 @@ BOTTOM BUTTON LAYOUT:
         justify-content: center;
     }
 
-    /* Share — wide primary on mobile (only shown if Web Share API supports files) */
+    /* Share — wide primary on mobile (display/align/gap inherited from default) */
     .pdf-action-share {
-        display: inline-flex;
         flex: 1 1 auto;
         min-width: 0;
         font-size: 13px;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
-        gap: 6px;
     }
 
     /* Download — icon-only square button on mobile */
@@ -369,10 +374,7 @@ BOTTOM BUTTON LAYOUT:
     }
 
     /* === Fallback: Web Share API NOT supported on this device === */
-    /* JS adds .pdf-share-unsupported to the modal; Share hides, Download becomes wide */
-    .pdf-share-unsupported .pdf-action-share {
-        display: none;
-    }
+    /* On mobile, when Share hides, Download grows to fill the row */
     .pdf-share-unsupported .pdf-action-download {
         flex: 1 1 auto;
         width: auto;
