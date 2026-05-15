@@ -7,3 +7,5 @@ from .petty_cash import *
 from .suppliers import *
 from .invoices import *
 from .passports import *
+from .celebrations import *
+from .users import *
