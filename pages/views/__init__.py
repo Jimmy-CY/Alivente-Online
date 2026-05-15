@@ -6,3 +6,4 @@ from .finance import *  # noqa: F401, F403
 from .petty_cash import *
 from .suppliers import *
 from .invoices import *
+from .passports import *
