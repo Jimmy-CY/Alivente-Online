@@ -16,3 +16,5 @@ from .issues import *
 from .expenses import *
 from .tenants import *
 from .auth import *
+from .home import *
+from .notifications_dashboard import *
