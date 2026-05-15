@@ -91,6 +91,16 @@
       <p class="mb-0 mt-2">Filter properties by name, country, and status. Active filters are shown as removable tags. Use Clear All to reset.</p>
     </div>
 
+    <div class="alert" style="background:#e7f5f8; border-left:4px solid #17a2b8;">
+      <strong><i class="fas fa-images"></i> Photo Documentation</strong>
+      <p class="mb-0 mt-2">Attach up to 5 photos per asset (JPG/PNG, 5MB each). On mobile, use the Take Photo button to capture photos on the spot. Cover thumbnails appear in the asset list and detail header.</p>
+    </div>
+
+    <div class="alert" style="background:#e7f5f8; border-left:4px solid #17a2b8;">
+      <strong><i class="fas fa-toggle-on"></i> Category or Room Grouping</strong>
+      <p class="mb-0 mt-2">Switch the Asset Manager between category-grouped and room-grouped views with a single click &mdash; useful for walkthroughs vs maintenance planning.</p>
+    </div>
+
     <div class="alert alert-warning" style="border-left:4px solid #ffc107; margin-top:20px;">
       <i class="fas fa-exclamation-triangle"></i> <strong>Important:</strong> Properties marked as <strong>Active</strong> and <strong>Available for Rent</strong> are included in vacancy calculations across the system. Make sure your property statuses are kept up to date &mdash; stale statuses lead to misleading dashboards.
     </div>
@@ -226,6 +236,66 @@
     </div>
   </article>
 
+  <article data-tab-slug="pr-photos"
+           data-tab-name="Photos &amp; Views"
+           data-tab-icon="fa-images">
+    <h5 style="color:#17a2b8; font-weight:700;"><i class="fas fa-images"></i> Asset Photos &amp; Viewing Options</h5>
+    <p>The Asset Manager supports up to five photos per asset and two different ways of grouping the list. Both features make managing large portfolios with lots of assets much faster.</p>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-toggle-on"></i> Category vs Room grouping</h6>
+    <p>By default, assets are grouped by their <strong>Category</strong> (Appliances, Electronics, Furniture, etc.). Use the toggle buttons at the top of the assets page to switch to <strong>Location / Room</strong> grouping &mdash; useful when you're walking through a property room by room (inventory check, planning a clean, showing a tenant around).</p>
+    <ul>
+      <li><strong>Category view</strong> &mdash; section headers show a tag icon. Best for purchase / maintenance planning.</li>
+      <li><strong>Location / Room view</strong> &mdash; section headers show a door icon. Best for room-by-room walkthroughs.</li>
+    </ul>
+    <p>The toggle is bookmarkable and refresh-safe &mdash; your choice is preserved in the page URL.</p>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-camera"></i> Adding photos</h6>
+    <p>When adding a new asset, the Add Asset form includes a Photos field. When editing an existing asset, a dedicated <strong>Photos</strong> section appears between Purchase Invoice and Notes.</p>
+    <p><strong>Limits per asset:</strong></p>
+    <ul>
+      <li>Up to <strong>5 photos</strong></li>
+      <li>Maximum <strong>5 MB</strong> per photo</li>
+      <li>Format: <strong>JPG or PNG</strong> only</li>
+    </ul>
+    <p>The form enforces these limits before upload &mdash; if you pick too many photos or one that's too large, you'll see an inline error before the form submits.</p>
+
+    <div class="alert alert-info" style="border-left:4px solid #17a2b8;">
+      <i class="fas fa-mobile-alt"></i> <strong>Mobile camera capture:</strong> When using a phone or tablet, a green <strong>Take Photo</strong> button appears next to the file picker. Tap it to open the device camera directly and snap a photo of the asset on the spot &mdash; no need to take photos first and upload them later. Use the regular file picker for selecting existing photos from your camera roll.
+    </div>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-star"></i> The cover photo</h6>
+    <p>The first photo in the list is the asset's <strong>cover photo</strong> &mdash; it's the thumbnail shown on the asset list and at the top of the asset detail page. To promote a different photo to cover, open the asset's Edit page and click the star icon on the photo you want as cover.</p>
+    <ul>
+      <li><i class="fas fa-star" style="color:#ffc107;"></i> <strong>Gold filled star</strong> &mdash; this is the current cover photo.</li>
+      <li><i class="far fa-star" style="color:#6c757d;"></i> <strong>Grey outline star</strong> &mdash; click to make this photo the cover.</li>
+    </ul>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-trash"></i> Deleting photos</h6>
+    <p>On the Edit page, each photo has a red trash icon in its corner. Clicking it shows a confirmation popup before the photo is permanently removed. The deletion is immediate &mdash; you don't need to click Save Changes afterwards.</p>
+
+    <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;"><i class="fas fa-eye"></i> Where photos appear</h6>
+
+    <div class="alert" style="background:#e7f5f8; border-left:4px solid #17a2b8;">
+      <strong><i class="fas fa-list"></i> Asset list rows</strong>
+      <p class="mb-0 mt-2">Each row in the Asset Manager shows a 50&times;50 thumbnail of the cover photo before the asset name. Assets with no photos show a placeholder box icon &mdash; an at-a-glance reminder of which assets still need documentation.</p>
+    </div>
+
+    <div class="alert" style="background:#e7f5f8; border-left:4px solid #17a2b8;">
+      <strong><i class="fas fa-id-card"></i> Asset detail page header</strong>
+      <p class="mb-0 mt-2">A 60&times;60 thumbnail of the cover photo replaces the generic briefcase icon at the top of the detail page. Click the thumbnail to open the photo in a full-size lightbox.</p>
+    </div>
+
+    <div class="alert" style="background:#e7f5f8; border-left:4px solid #17a2b8;">
+      <strong><i class="fas fa-images"></i> Photos card on detail page</strong>
+      <p class="mb-0 mt-2">When an asset has photos, a dedicated <strong>Photos</strong> card appears between Asset Info and Warranty on the detail page. Each photo shows as a 160&times;160 tile (50% width on mobile). Click any tile to open it in a lightbox modal.</p>
+    </div>
+
+    <div class="alert alert-info" style="border-left:4px solid #17a2b8; margin-top:18px;">
+      <i class="fas fa-lightbulb"></i> <strong>Use photos to settle disputes.</strong> At handover, photograph each major asset (appliances, electronics, furniture) and add the photo to its record. If a tenant later disputes the condition of an item, the dated record on the asset is the easiest reference to reach for.
+    </div>
+  </article>
+
   <article data-tab-slug="pr-tips"
            data-tab-name="Tips"
            data-tab-icon="fa-lightbulb">
@@ -249,6 +319,11 @@
       <li><strong>Use meaningful Location/Room values.</strong> "Kitchen" and "Master Bedroom" are much more useful than generic labels when a maintenance engineer needs to know where to go.</li>
 
       <li><strong>Keep supplier info.</strong> When an item fails, knowing where it was bought (and whether it's still under warranty) saves hours of scrolling through emails.</li>
+
+      <li><strong>Photograph at handover and on replacement.</strong> One or two photos per asset is enough to settle most condition disputes &mdash; take them the moment the asset is installed and again when it's replaced. Use the mobile Take Photo button to do this on the spot during a property visit.</li>
+
+      <li><strong>Promote the best shot to cover.</strong> Use the gold star on the Edit page to set the most representative photo as the cover. That's the one tenants and contractors see on the list and the detail header.</li>
+
     </ul>
 
     <h6 style="margin-top:18px; color:#2c3e50; font-weight:700;">Making the module work for you</h6>
