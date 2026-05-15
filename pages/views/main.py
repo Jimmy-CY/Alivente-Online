@@ -1724,28 +1724,6 @@ def home(request):
         "notification_data_json": notification_data_json,
     })
 
-### USER ADMIN AND LOGIN AND LOGOUT ###
-def login_user(request):
-	if request.method =="POST":
-	    username = request.POST["username"]
-	    password = request.POST["password"]
-	    user = authenticate(request, username=username, password=password)
-	    if user is not None:
-	        login(request, user)
-	        messages.success(request, ('You Have Successfully Logged In.'))
-	        return redirect('home')
-	    else:
-	        messages.success(request, ('Error Logging In - Please Try Again !!'))
-	        return redirect('login')
-	else:
-		return render(request, 'login.html', {})
-
-@login_required
-def logout_user(request):
-    logout(request)
-    messages.success(request, ('You Have Succefully Logged Out.'))
-    return redirect('home')
-
 ### RECIPE MANAGEMENT ###
 # HELPER FUNCTION
 

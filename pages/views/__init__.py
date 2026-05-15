@@ -15,3 +15,4 @@ from .projects import *
 from .issues import *
 from .expenses import *
 from .tenants import *
+from .auth import *
