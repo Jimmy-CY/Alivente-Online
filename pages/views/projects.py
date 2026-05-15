@@ -16,8 +16,6 @@ Covers:
     translation stubs (ensure_project_translations, get_translated_text)
     and the on-demand Google Translate AJAX endpoint (translate_text +
     translate_to_greek_service helper).
-  - render_to_pdf — generic xhtml2pdf helper that lived in the PROJECTS
-    section in main.py. Caller analysis pending; may belong elsewhere.
 
 Known issues, preserved verbatim:
   - projects_add has decorators in inverted order (@permission_required
@@ -38,13 +36,11 @@ from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
 from django.db import transaction
 from django.db.models import F, Prefetch, Q
-from django.http import HttpResponse, JsonResponse
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
-from django.template.loader import get_template
 from django.utils import timezone
 from django.views.decorators.http import require_POST, require_http_methods
 
-from xhtml2pdf import pisa
 
 from ..models import Project, ProjectDocument, ProjectTask, props
 
@@ -1444,13 +1440,3 @@ def get_project_assignees(request, project_id):
         'assignees': assignees_list,
         'project_name': project.project_name
     })
-
-
-def render_to_pdf(template_src, context_dict):
-    template = get_template(template_src)
-    html = template.render(context_dict)
-    response = HttpResponse(content_type='application/pdf')
-    pisa_status = pisa.CreatePDF(html, dest=response)
-    if pisa_status.err:
-        return HttpResponse('PDF generation failed', status=500)
-    return response

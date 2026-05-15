@@ -135,18 +135,12 @@ from ..models import (
 )
 from ..usda_client import get_food_details, search_foods, USDAClientError
 from ..nutrition_calc import calculate_recipe_nutrition
-from ..utils import convert_to_pdf, is_pdf, merge_pdfs, merge_pdfs_from_bytes
+from ..utils import convert_to_pdf, is_pdf, merge_pdfs, merge_pdfs_from_bytes, render_to_pdf
 from pages.email_utils import get_email_recipients, format_email_recipients_for_header
-from .projects import render_to_pdf
 
 
 logger = logging.getLogger(__name__)
 
-
-# --------------------------------------------------------------------------- #
-# Passport management imports (kept here for now; safe to leave duplicated)
-# --------------------------------------------------------------------------- #
-### PASSPORT MANAGEMENT ###
 
 ### LEASE TEMPLATE GENERATOR ###
 import re

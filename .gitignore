@@ -36,5 +36,6 @@ static_root/
 .DS_Store
 Thumbs.db
 desktop.ini
+
 # Backup files from view-split sessions
 *.bak

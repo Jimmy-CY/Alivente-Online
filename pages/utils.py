@@ -12,6 +12,9 @@ from reportlab.lib.enums import TA_LEFT, TA_CENTER
 import io
 import os
 import tempfile
+from django.http import HttpResponse
+from django.template.loader import get_template
+from xhtml2pdf import pisa
 
 
 def is_pdf(file):
@@ -374,3 +377,13 @@ def merge_pdfs_from_bytes(existing_bytes, new_pdf_content):
     pdf_writer.write(output)
     output.seek(0)
     return ContentFile(output.read())
+
+
+def render_to_pdf(template_src, context_dict):
+    template = get_template(template_src)
+    html = template.render(context_dict)
+    response = HttpResponse(content_type='application/pdf')
+    pisa_status = pisa.CreatePDF(html, dest=response)
+    if pisa_status.err:
+        return HttpResponse('PDF generation failed', status=500)
+    return response
