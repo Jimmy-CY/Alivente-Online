@@ -1335,3 +1335,109 @@ def lease_renewal(request):
     lease_renewal.lease_renewal(rep_output, check, email, fname)
     messages.success(request, "Report Created Successfully")
     return redirect('home')
+
+# ============================================================================
+# Urgent issue-comment notification
+# Posted from the "Notify Now" button on the fsr_details comment list.
+# Server-side 5-minute cooldown (URGENT_NOTIFICATION_COOLDOWN_MINUTES) per
+# comment. Recipients = configured 'issue_comment_urgent' list MINUS the
+# user pressing the button.
+# ============================================================================
+
+@login_required
+@permission_required('auth.can_access_issues', raise_exception=True)
+def notify_comment_urgent(request, comment_id):
+    """
+    Fire an immediate "URGENT" email for a single issue comment.
+    Routes to recipients of 'issue_comment_urgent' notification type, excluding
+    the user pressing the button. Server-side cooldown of
+    URGENT_NOTIFICATION_COOLDOWN_MINUTES suppresses repeat presses.
+
+    POST only. Returns JSON for the AJAX caller.
+    """
+    from datetime import timedelta
+    from pages.email_utils import (
+        get_email_recipients,
+        send_issue_comments_email,
+        ADMIN_USER_INITIALS,
+        URGENT_NOTIFICATION_COOLDOWN_MINUTES,
+    )
+
+    if request.method != 'POST':
+        return JsonResponse({'ok': False, 'reason': 'method_not_allowed'}, status=405)
+
+    comment = get_object_or_404(issues_details, pk=comment_id)
+    now = timezone.now()
+
+    # Cooldown check (defense in depth — the UI also blocks)
+    if comment.issues_details_last_notified_at:
+        elapsed = now - comment.issues_details_last_notified_at
+        cooldown = timedelta(minutes=URGENT_NOTIFICATION_COOLDOWN_MINUTES)
+        if elapsed < cooldown:
+            seconds_remaining = int((cooldown - elapsed).total_seconds())
+            return JsonResponse({
+                'ok': False,
+                'reason': 'cooldown',
+                'seconds_remaining': seconds_remaining,
+                'minutes_ago': int(elapsed.total_seconds() // 60),
+            }, status=429)
+
+    # Build the single-comment payload (same shape get_yesterdays_issue_comments returns)
+    issue = comment.issues
+    prop = issue.prop if issue else None
+    user_initials = (comment.issues_details_user or '').strip()
+    is_admin = user_initials.upper() in [u.upper() for u in ADMIN_USER_INITIALS]
+
+    comment_payload = [{
+        'comment': comment.issues_details_comment or '',
+        'user': user_initials or 'Unknown',
+        'is_admin': is_admin,
+        'date': (comment.issues_details_date.strftime('%Y/%m/%d')
+                 if comment.issues_details_date else now.strftime('%Y/%m/%d')),
+        'issue_heading': (issue.issues_heading if issue else None) or 'Untitled Issue',
+        'issue_description': (issue.issues_description if issue else '') or '',
+        'issue_status': (issue.issues_status if issue else None) or 'Unknown',
+        'prop_name': (prop.prop_name if prop else 'Unknown Property'),
+        'prop_country': (getattr(prop, 'prop_country', '') if prop else '') or '',
+    }]
+
+    # Recipients minus the presser
+    presser_email = (request.user.email or '').lower()
+    all_recipients = get_email_recipients('issue_comment_urgent')
+    recipients = {
+        'to':  [r for r in all_recipients['to']  if r.lower() != presser_email],
+        'cc':  [r for r in all_recipients['cc']  if r.lower() != presser_email],
+        'all': [r for r in all_recipients['all'] if r.lower() != presser_email],
+    }
+
+    if not recipients['all']:
+        return JsonResponse({
+            'ok': False,
+            'reason': 'no_recipients',
+            'message': 'No other recipients configured for urgent alerts. '
+                       'Add one in the notification settings.',
+        }, status=400)
+
+    now_label = now.strftime('%Y/%m/%d %H:%M')
+    presser_name = request.user.get_full_name() or request.user.username
+
+    ok = send_issue_comments_email(
+        comments=comment_payload,
+        subject="URGENT - Issue needs attention",
+        header_label=f"URGENT ISSUE COMMENT - {now_label}",
+        intro_text=(f"The following comment was flagged as urgent by {presser_name} "
+                    f"and requires immediate attention:"),
+        recipients=recipients,
+    )
+
+    if not ok:
+        return JsonResponse({'ok': False, 'reason': 'send_failed'}, status=500)
+
+    # Record timestamp so the cooldown blocks the next press for 5 minutes
+    comment.issues_details_last_notified_at = now
+    comment.save(update_fields=['issues_details_last_notified_at'])
+
+    return JsonResponse({
+        'ok': True,
+        'last_notified_at': now.isoformat(),
+    })
