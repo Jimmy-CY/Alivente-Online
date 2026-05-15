@@ -19,3 +19,4 @@ from .auth import *
 from .home import *
 from .notifications_dashboard import *
 from .lease_template import *
+from .recipes import *

@@ -4,37 +4,30 @@ Lease template generator views and helpers.
 Extracted from pages/views/main.py as part of the modular views migration
 (section ### LEASE TEMPLATE GENERATOR ###).
 
-Contains 10 functions:
-  Lease-related (8):
-    is_superuser(user)                    - tiny User predicate helper.
-                                            NOTE: appears unused (no callers
-                                            found in views modules), kept
-                                            verbatim in case templates or
-                                            URL patterns reference it.
-    generate_lease_agreement_view         - the main lease generation form
-                                            view and POST handler.
-    get_ordinal_day                        - "1st", "2nd", "3rd" etc.
-    number_to_words_greek                  - integer -> Greek words
-    format_date_greek                      - date -> "1η Ιανουαρίου 2026"
-    translate_to_greek                     - large English->Greek dict
-                                            for property/furniture/keys
-    generate_lease_document                - DocxTemplate-based generator
-    prepare_lease_template_data            - huge field-mapping helper
-    create_basic_lease_document            - python-docx fallback when no
-                                            template file is present
+Contains 9 functions, all lease-related:
+    is_superuser(user)              - tiny User predicate helper.
+                                      NOTE: appears unused (no callers
+                                      found in views modules), kept
+                                      verbatim in case templates or
+                                      URL patterns reference it.
+    generate_lease_agreement_view   - main lease generation form view
+                                      and POST handler.
+    get_ordinal_day                 - "1st", "2nd", "3rd" etc.
+    number_to_words_greek           - integer -> Greek words.
+    format_date_greek               - date -> "1η Ιανουαρίου 2026".
+    translate_to_greek              - large English->Greek dict for
+                                      property/furniture/keys.
+    generate_lease_document         - DocxTemplate-based generator.
+    prepare_lease_template_data     - large field-mapping helper.
+    create_basic_lease_document     - python-docx fallback when no
+                                      template file is present.
 
-  Recipe-related (1) - MISPLACED in source:
-    spell_check_instructions               - AJAX endpoint for spell-checking
-                                            recipe instructions. Historical
-                                            organization drift placed this
-                                            here. Should be moved to a
-                                            future recipes module along with
-                                            the rest of Recipe Management.
+NOTE: a 10th function (spell_check_instructions) was originally extracted
+here but was misplaced - it spell-checks recipe instructions, not lease
+content. It was relocated to the ### RECIPE MANAGEMENT ### section in
+main.py in a follow-up commit.
 
 URL patterns remain registered in pages/urls.py.
-
-Note: this module preserves the legacy `import re` placed mid-file in the
-original source. It has been hoisted to the top imports for cleanliness.
 The `logger` instance is set up at module level (was inherited from main.py).
 """
 
