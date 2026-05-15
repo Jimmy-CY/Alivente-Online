@@ -9,3 +9,4 @@ from .invoices import *
 from .passports import *
 from .celebrations import *
 from .users import *
+from .administration import *
