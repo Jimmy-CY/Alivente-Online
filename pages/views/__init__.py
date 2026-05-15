@@ -13,3 +13,4 @@ from .administration import *
 from .notifications import *
 from .projects import *
 from .issues import *
+from .expenses import *
