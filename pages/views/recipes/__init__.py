@@ -7,3 +7,4 @@ from .units import *
 from .categories import *
 from .ingredients import *
 from .shopping import *
+from .meal_planning import *
