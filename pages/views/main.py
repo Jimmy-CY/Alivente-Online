@@ -216,105 +216,6 @@ def spell_check_instructions(request):
 
 # RECIPE MANAGEMENT
 
-@login_required
-@permission_required('auth.can_edit_personal', raise_exception=True)
-@require_POST
-def send_shopping_list(request):
-    """Generate shopping list with unit conversion - DEBUG VERSION"""
-    
-    try:
-        data = json.loads(request.body)
-        
-        recipe_id = data.get('recipe_id')
-        servings = data.get('servings')
-        original_servings = data.get('original_servings')
-        
-        # Get recipe
-        recipe = Recipe.objects.prefetch_related(
-            'recipe_ingredients__ingredient__category',
-            'recipe_ingredients__ingredient__default_unit',
-            'recipe_ingredients__unit'
-        ).get(recipe_id=recipe_id)
-        
-        servings_multiplier = Decimal(servings) / Decimal(original_servings)
-        
-        # Build shopping list
-        shopping_list_categorized = {}
-        
-        print("\n" + "="*80)
-        print(f"DEBUGGING SHOPPING LIST FOR: {recipe.recipe_name}")
-        print("="*80)
-        
-        for recipe_ingredient in recipe.recipe_ingredients.all():
-            ingredient = recipe_ingredient.ingredient
-            quantity = Decimal(recipe_ingredient.amount or 0) * servings_multiplier
-            from_unit = recipe_ingredient.unit
-            shopping_unit = ingredient.default_unit
-            
-            print(f"\nIngredient: {ingredient.name}")
-            print(f"  Recipe amount: {quantity} {from_unit.name if from_unit else 'None'}")
-            print(f"  Shopping unit: {shopping_unit.name if shopping_unit else 'NOT SET ❌'}")
-            
-            if not from_unit:
-                continue
-            
-            # Determine final unit and amount
-            if not shopping_unit:
-                print(f"  ❌ No shopping unit - using recipe unit")
-                final_unit = from_unit
-                final_amount = quantity
-            elif from_unit.measurement_unit_id == shopping_unit.measurement_unit_id:
-                print(f"  ✅ Same unit - no conversion needed")
-                final_unit = shopping_unit
-                final_amount = quantity
-            else:
-                print(f"  🔄 Trying conversion: {from_unit.name} → {shopping_unit.name}")
-                converted_qty, _ = convert_quantity(quantity, from_unit, shopping_unit)
-                if converted_qty is not None:
-                    print(f"  ✅ Conversion SUCCESS: {quantity} {from_unit.name} = {converted_qty} {shopping_unit.name}")
-                    final_unit = shopping_unit
-                    final_amount = converted_qty
-                else:
-                    print(f"  ❌ Conversion FAILED - using recipe unit")
-                    final_unit = from_unit
-                    final_amount = quantity
-            
-            print(f"  Final: {final_amount} {final_unit.name}")
-            
-            # Format amount
-            qty = float(final_amount)
-            if qty % 1 == 0:
-                qty_str = f"{int(qty)}"
-            else:
-                qty_str = f"{qty:.2f}".rstrip('0').rstrip('.')
-            
-            # Get category
-            category = ingredient.category.name if ingredient.category else 'Other'
-            
-            if category not in shopping_list_categorized:
-                shopping_list_categorized[category] = []
-            
-            shopping_list_categorized[category].append(
-                f"{qty_str} {final_unit.name} {ingredient.name}"
-            )
-        
-        print("\n" + "="*80 + "\n")
-        
-        return JsonResponse({
-            'success': True,
-            'shopping_list_categorized': shopping_list_categorized,
-            'recipe_name': recipe.recipe_name,
-            'servings': servings,
-            'original_servings': original_servings
-        })
-        
-    except Exception as e:
-        import traceback
-        traceback.print_exc()
-        return JsonResponse({
-            'success': False,
-            'error': str(e)
-        }, status=500)
 
 @login_required
 @permission_required('auth.can_access_personal', raise_exception=True)
@@ -481,13 +382,13 @@ def recipe_management(request):
     #   - join the nutrition_cache table via select_related
     #   - filter to recipes whose cache is_complete=True (so the ranking is trustworthy)
     #   - order by the chosen per-100g column
-    # Also count how many recipes were hidden (the "X hidden — finish mapping" nudge).
+    # Also count how many recipes were hidden (the "X hidden ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â finish mapping" nudge).
     hidden_by_nutrition_sort = 0
     if nutrition_sort:
         sort_field = NUTRITION_SORT_FIELDS[nutrition_sort]
         order_prefix = '' if nutrition_order == 'asc' else '-'
  
-        # Count BEFORE narrowing — that's the total of recipes matching all
+        # Count BEFORE narrowing ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â that's the total of recipes matching all
         # other filters. The hidden count is total minus complete count.
         total_for_filter = recipes.count()
  
@@ -636,7 +537,7 @@ def recipe_management(request):
         'next_page': page_obj.next_page_number() if page_obj.has_next() else None,
         'ingredient_categories': IngredientCategory.objects.prefetch_related('ingredient_set').all().order_by('name'),
         'all_recipes_for_book': json_module.dumps(all_recipes_for_book),
-        # Step 3 — nutrition sort
+        # Step 3 ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â nutrition sort
         'nutrition_sort': nutrition_sort,
         'nutrition_order': nutrition_order,
         'hidden_by_nutrition_sort': hidden_by_nutrition_sort,
@@ -688,7 +589,7 @@ def recipe_manage_document(request):
                         return redirect('recipe_management')
 
                     if document_action == 'add_to_existing' and recipe.recipe_document:
-                        # Merge — existing must be PDF
+                        # Merge ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â existing must be PDF
                         if not is_pdf(recipe.recipe_document):
                             messages.error(request, 'Cannot merge: Existing document is not a PDF. Please use Replace instead.')
                             return redirect('recipe_management')
@@ -1051,7 +952,7 @@ def create_recipe(request):
                         instruction_group=group
                     )
             
-            # Cache recompute — explicit final call so the cache reflects the
+            # Cache recompute ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â explicit final call so the cache reflects the
             # final ingredient set, regardless of signal timing.
             from ..signals import _recalculate_cache_for_recipe
             _recalculate_cache_for_recipe(recipe)
@@ -1180,7 +1081,7 @@ def edit_recipe(request, recipe_id):
                         existing_file_name = recipe_fresh.recipe_document.name
                         with recipe_fresh.recipe_document.open('rb') as f:
                             existing_bytes = f.read()
-                        # File handle is now closed — safe to delete on Windows
+                        # File handle is now closed ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â safe to delete on Windows
 
                         if existing_bytes[:4] != b'%PDF':
                             messages.warning(request, 'Cannot merge: existing document is not a PDF. Replaced instead.')
@@ -1370,7 +1271,7 @@ def edit_recipe(request, recipe_id):
             else:
                 CookingCalculation.objects.filter(recipe=recipe).delete()
 
-            # Cache recompute — explicit because bulk_create above doesn't fire signals,
+            # Cache recompute ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â explicit because bulk_create above doesn't fire signals,
             # and the in-flight signal cascade saw transient empty-ingredient state.
             from ..signals import _recalculate_cache_for_recipe
             _recalculate_cache_for_recipe(recipe)
@@ -1671,7 +1572,7 @@ def preview_imported_recipe(request, temp_id):
         return redirect('import_recipe')
     
     if request.method == 'POST':
-        # Edit-level — POST creates the recipe
+        # Edit-level ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â POST creates the recipe
         if not request.user.has_perm('auth.can_edit_personal'):
             messages.error(request, "You don't have permission to save recipes.")
             return redirect('recipe_management')
@@ -1731,7 +1632,7 @@ def preview_imported_recipe(request, temp_id):
                         recipe=recipe,
                         ingredient=ingredient,
                         unit=unit,
-                        amount=convert_to_decimal(quantity_str),  # ← CHANGED
+                        amount=convert_to_decimal(quantity_str),  # ÃƒÂ¢Ã¢â‚¬Â Ã‚Â CHANGED
                         preparation=prep,
                         ingredient_group=ingredient_groups[i] if i < len(ingredient_groups) else '',
                         ingredient_order=i
@@ -1770,7 +1671,7 @@ def preview_imported_recipe(request, temp_id):
     courses = RecipeCourse.objects.all().order_by('name')
     categories = RecipeCategory.objects.all().order_by('name')
     proteins = CustomProtein.objects.all().order_by('name')
-    ingredient_categories = IngredientCategory.objects.all().order_by('name')  # ← ADD THIS LINE
+    ingredient_categories = IngredientCategory.objects.all().order_by('name')  # ÃƒÂ¢Ã¢â‚¬Â Ã‚Â ADD THIS LINE
 
     # Load all units for the modal
     all_units = MeasurementUnit.objects.all().order_by('name')
@@ -1786,7 +1687,7 @@ def preview_imported_recipe(request, temp_id):
         'categories': categories,
         'proteins': proteins,
         'ingredient_categories': ingredient_categories,
-        'all_units': all_units,  # ← ADD THIS
+        'all_units': all_units,  # ÃƒÂ¢Ã¢â‚¬Â Ã‚Â ADD THIS
     }
 
     return render(request, 'preview_imported_recipe.html', context)
@@ -2037,7 +1938,7 @@ def meal_plans(request):
     # Get all meal plans with recipe counts, sorted by most recent first
     meal_plans_list = MealPlan.objects.annotate(
         recipe_count=Count('days__recipes')
-    ).order_by('-start_date')  # ← This orders newest first
+    ).order_by('-start_date')  # ÃƒÂ¢Ã¢â‚¬Â Ã‚Â This orders newest first
     
     context = {
         'meal_plans': meal_plans_list,
@@ -2802,219 +2703,6 @@ def remove_recipe_from_meal_plan(request, meal_plan_id):
         messages.error(request, 'Recipe not found.')
         return redirect('meal_plan_calendar')
 
-def round_shopping_quantity(qty, unit):
-    """
-    Round quantities intelligently based on unit type for shopping lists.
-    NEVER rounds down - always rounds UP to ensure you have enough.
-    - COUNT units: Round UP to whole numbers (min 1)
-    - WEIGHT/VOLUME: Round UP to nearest sensible number
-    - OTHER: Round UP to whole numbers
-    """
-    import math
-    
-    if qty <= 0:
-        return qty
-    
-    unit_type = getattr(unit, 'unit_type', 'other')
-    
-    if unit_type == 'count':
-        # Always round UP to whole number, minimum 1
-        return max(1, math.ceil(qty))
-    
-    elif unit_type == 'weight':
-        # Round UP to sensible numbers based on magnitude
-        if qty < 10:
-            # Small amounts: round UP to nearest 0.5
-            return math.ceil(qty * 2) / 2
-        elif qty < 100:
-            # Medium amounts: round UP to nearest 5
-            return math.ceil(qty / 5) * 5
-        else:
-            # Large amounts: round UP to nearest 10
-            return math.ceil(qty / 10) * 10
-    
-    elif unit_type == 'volume':
-        # Round UP to sensible numbers based on magnitude
-        if qty < 10:
-            # Small amounts (tsp, tbsp): round UP to nearest 0.25
-            return math.ceil(qty * 4) / 4
-        elif qty < 100:
-            # Medium amounts: round UP to nearest 5
-            return math.ceil(qty / 5) * 5
-        else:
-            # Large amounts: round UP to nearest 10
-            return math.ceil(qty / 10) * 10
-    
-    else:
-        # OTHER (dash, pinch, to taste): round UP
-        return max(1, math.ceil(qty))
-
-@login_required
-@permission_required('auth.can_access_personal', raise_exception=True)
-@require_POST
-def generate_recipe_shopping_list(request):
-    """Generate shopping list for a single recipe with unit conversion to shopping units"""
-    try:
-        data = json.loads(request.body)
-        recipe_id = data.get('recipe_id')
-        servings = data.get('servings')
-        
-        recipe = Recipe.objects.select_related().prefetch_related(
-            'recipe_ingredients__ingredient__category',
-            'recipe_ingredients__ingredient__default_unit',
-            'recipe_ingredients__unit'
-        ).get(recipe_id=recipe_id)
-        
-        original_servings = recipe.servings or 4
-        servings_multiplier = Decimal(servings) / Decimal(original_servings)
-        
-        # Track issues
-        missing_conversions = []
-        missing_shopping_units = []
-        seen_missing_conversions = set()
-        seen_missing_units = set()
-
-        # Pre-load all unit conversions for fast lookups
-        conversion_cache = get_conversion_cache()
-        
-        # Aggregate by ingredient ID
-        aggregated = defaultdict(lambda: {
-            'amount': Decimal('0'),
-            'unit': None,
-            'ingredient_obj': None,
-            'unconverted_items': []
-        })
-        
-        for recipe_ingredient in recipe.recipe_ingredients.all():
-            ingredient = recipe_ingredient.ingredient
-            ingredient_id = ingredient.ingredient_id
-            quantity = Decimal(recipe_ingredient.amount or 0) * servings_multiplier
-            from_unit = recipe_ingredient.unit
-            
-            if not from_unit:
-                continue
-            
-            # CRITICAL: Always use shopping unit
-            shopping_unit = ingredient.default_unit
-            
-            # Track ingredients without shopping units
-            if not shopping_unit:
-                if ingredient_id not in seen_missing_units:
-                    seen_missing_units.add(ingredient_id)
-                    missing_shopping_units.append({
-                        'ingredient_id': ingredient_id,
-                        'ingredient_name': ingredient.name
-                    })
-                
-                # Use fallback unit
-                if aggregated[ingredient_id]['unit'] is None:
-                    aggregated[ingredient_id]['unit'] = from_unit
-                    aggregated[ingredient_id]['ingredient_obj'] = ingredient
-                
-                aggregated[ingredient_id]['unconverted_items'].append({
-                    'quantity': float(quantity),
-                    'unit': from_unit.name,
-                    'reason': 'No shopping unit defined'
-                })
-                continue
-            
-            # Initialize
-            if aggregated[ingredient_id]['unit'] is None:
-                aggregated[ingredient_id]['unit'] = shopping_unit
-                aggregated[ingredient_id]['ingredient_obj'] = ingredient
-            
-            shopping_unit = aggregated[ingredient_id]['unit']
-            
-            # Convert to shopping unit
-            if from_unit.measurement_unit_id == shopping_unit.measurement_unit_id:
-                # Same unit - just add
-                aggregated[ingredient_id]['amount'] += quantity
-            else:
-                # Need conversion
-                converted_qty, multiplier = convert_quantity(quantity, from_unit, shopping_unit, ingredient, conversion_cache)
-                
-                if converted_qty is not None:
-                    # Conversion successful
-                    aggregated[ingredient_id]['amount'] += converted_qty
-                else:
-                    # Missing conversion
-                    conversion_key = f"{from_unit.measurement_unit_id}-{shopping_unit.measurement_unit_id}"
-                    if conversion_key not in seen_missing_conversions:
-                        seen_missing_conversions.add(conversion_key)
-                        missing_conversions.append({
-                            'ingredient': ingredient.name,
-                            'from_unit': from_unit.name,
-                            'from_unit_id': from_unit.measurement_unit_id,
-                            'to_unit': shopping_unit.name,
-                            'to_unit_id': shopping_unit.measurement_unit_id,
-                            'quantity': float(quantity)
-                        })
-                    
-                    # Track unconverted
-                    aggregated[ingredient_id]['unconverted_items'].append({
-                        'quantity': float(quantity),
-                        'unit': from_unit.name,
-                        'reason': f'Missing conversion from {from_unit.name} to {shopping_unit.name}'
-                    })
-        
-        # Build categorized shopping list
-        shopping_list_categorized = defaultdict(list)
-        
-        for ingredient_id, agg_data in aggregated.items():
-            ingredient_obj = agg_data['ingredient_obj']
-            category = ingredient_obj.category.name if ingredient_obj.category else 'Other'
-            
-            # Only add if we have a converted amount
-            if agg_data['amount'] > 0:
-                unit = agg_data['unit']
-                raw_qty = float(agg_data['amount'])
-                
-                # Apply smart rounding for shopping
-                qty = round_shopping_quantity(raw_qty, unit)
-                
-                # Format quantity string
-                if qty % 1 == 0:
-                    qty_str = f"{int(qty)}"
-                else:
-                    qty_str = f"{qty:.2f}".rstrip('0').rstrip('.')
-                
-                # Get proper unit display with pluralization
-                if qty == 1:
-                    unit_display = unit.abbreviation or unit.name
-                else:
-                    unit_display = unit.abbreviation_plural or unit.abbreviation or unit.name_plural or unit.name
-                
-                item_str = f"{qty_str} {unit_display} {ingredient_obj.name}"
-                
-                # Add note if there are unconverted items
-                if agg_data['unconverted_items']:
-                    item_str += f" (+ unconverted items)"
-                
-                shopping_list_categorized[category].append(item_str)
-        
-        # Check if we have issues to prompt for
-        has_issues = len(missing_conversions) > 0 or len(missing_shopping_units) > 0
-        
-        if has_issues:
-            return JsonResponse({
-                'success': False,
-                'needs_conversions': True,
-                'missing_conversions': missing_conversions,
-                'missing_shopping_units': missing_shopping_units
-            })
-        
-        return JsonResponse({
-            'success': True,
-            'shopping_list_categorized': dict(shopping_list_categorized),
-            'recipe_name': recipe.recipe_name,
-            'servings': servings,
-            'original_servings': original_servings
-        })
-        
-    except Exception as e:
-        import traceback
-        traceback.print_exc()
-        return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
 @login_required
 @require_POST
@@ -3039,7 +2727,7 @@ def send_meal_plan_shopping_list(request, meal_plan_id):
             return JsonResponse({'success': False, 'error': 'No ingredients to send'}, status=400)
         
         # Build email content
-        subject = f'🛒 Shopping List for {meal_plan_name}'
+        subject = f'ÃƒÂ°Ã…Â¸Ã¢â‚¬ÂºÃ¢â‚¬â„¢ Shopping List for {meal_plan_name}'
         
         # Plain text version
         text_content = f"""Shopping List for {meal_plan_name}
@@ -3059,7 +2747,7 @@ Items to Buy:
                     qty_str = f"{int(qty)}"
                 else:
                     qty_str = f"{qty:.2f}".rstrip('0').rstrip('.')
-                text_content += f"☐ {qty_str} {item['unit']} {item['ingredient']}\n"
+                text_content += f"ÃƒÂ¢Ã‹Å“Ã‚Â {qty_str} {item['unit']} {item['ingredient']}\n"
         
         text_content += "\n---\nGenerated by ALIVENTE ONLINE - Recipe Management"
         
@@ -3143,7 +2831,7 @@ Items to Buy:
 </head>
 <body>
     <div class="header">
-        <h1>🛒 Shopping List</h1>
+        <h1>ÃƒÂ°Ã…Â¸Ã¢â‚¬ÂºÃ¢â‚¬â„¢ Shopping List</h1>
         <p><strong>{meal_plan_name}</strong></p>
         <p>{date_range}</p>
         <p>{total_recipes} recipes</p>
@@ -3154,7 +2842,7 @@ Items to Buy:
         for category in sorted(ingredients_by_category.keys()):
             html_content += f"""
     <div class="category">
-        <div class="category-header">📌 {category}</div>
+        <div class="category-header">ÃƒÂ°Ã…Â¸Ã¢â‚¬Å“Ã…â€™ {category}</div>
         <ul>
 """
             for item in ingredients_by_category[category]:
@@ -3205,301 +2893,6 @@ Items to Buy:
             'error': str(e)
         }, status=500)
 
-@login_required
-@permission_required('auth.can_access_personal', raise_exception=True)
-def check_ingredient_usage(request):
-    """Check if ingredient is used in any recipes"""
-    if request.method == 'POST':
-        data = json.loads(request.body)
-        ingredient_id = data.get('ingredient_id')
-        
-        try:
-            ingredient = Ingredient.objects.get(ingredient_id=ingredient_id)
-            
-            # Count recipes using this ingredient
-            usage_count = RecipeIngredient.objects.filter(ingredient=ingredient).count()
-            
-            # Get recipe names (limit to 5 for display)
-            recipes = RecipeIngredient.objects.filter(ingredient=ingredient).select_related('recipe')[:5]
-            recipe_names = [ri.recipe.recipe_name for ri in recipes]
-            
-            return JsonResponse({
-                'success': True,
-                'usage_count': usage_count,
-                'recipe_names': recipe_names,
-                'can_delete': usage_count == 0
-            })
-            
-        except Ingredient.DoesNotExist:
-            return JsonResponse({'success': False, 'error': 'Ingredient not found'})
-    
-    return JsonResponse({'success': False, 'error': 'Invalid request'})
-
-@login_required
-@permission_required('auth.can_edit_personal', raise_exception=True)
-def delete_ingredient(request):
-    """Delete ingredient if not used in any recipes"""
-    if request.method == 'POST':
-        data = json.loads(request.body)
-        ingredient_id = data.get('ingredient_id')
-        
-        try:
-            ingredient = Ingredient.objects.get(ingredient_id=ingredient_id)
-            
-            # Check if ingredient is used in any recipes
-            usage_count = RecipeIngredient.objects.filter(ingredient=ingredient).count()
-            
-            if usage_count > 0:
-                return JsonResponse({
-                    'success': False,
-                    'error': f'Cannot delete - ingredient is used in {usage_count} recipe(s)'
-                })
-            
-            # Safe to delete
-            ingredient_name = ingredient.name
-            ingredient.delete()
-            
-            return JsonResponse({
-                'success': True,
-                'message': f'Successfully deleted ingredient: {ingredient_name}'
-            })
-            
-        except Ingredient.DoesNotExist:
-            return JsonResponse({'success': False, 'error': 'Ingredient not found'})
-    
-    return JsonResponse({'success': False, 'error': 'Invalid request'})
-
-@login_required
-@permission_required('auth.can_edit_personal', raise_exception=True)
-def update_ingredient_full(request):
-    """Update ingredient name, category, and shopping unit"""
-    if request.method == 'POST':
-        data = json.loads(request.body)
-        ingredient_id = data.get('ingredient_id')
-        new_name = data.get('name', '').strip()
-        category_id = data.get('category_id')
-        unit_id = data.get('unit_id')
-        
-        try:
-            ingredient = Ingredient.objects.get(ingredient_id=ingredient_id)
-            
-            # Validate name is not empty
-            if not new_name:
-                return JsonResponse({'success': False, 'error': 'Ingredient name cannot be empty'})
-            
-            # Check for duplicate names (case-insensitive, excluding current ingredient)
-            duplicate = Ingredient.objects.filter(name__iexact=new_name).exclude(ingredient_id=ingredient_id).first()
-            if duplicate:
-                return JsonResponse({
-                    'success': False,
-                    'error': f'An ingredient named "{new_name}" already exists'
-                })
-            
-            # Validate category
-            if not category_id:
-                return JsonResponse({'success': False, 'error': 'Category must be selected'})
-            
-            try:
-                category = IngredientCategory.objects.get(ingredient_category_id=category_id)
-            except IngredientCategory.DoesNotExist:
-                return JsonResponse({'success': False, 'error': 'Invalid category'})
-            
-            # Validate unit (optional - can be None)
-            unit = None
-            if unit_id:
-                try:
-                    unit = MeasurementUnit.objects.get(measurement_unit_id=unit_id)
-                except MeasurementUnit.DoesNotExist:
-                    return JsonResponse({'success': False, 'error': 'Invalid unit'})
-            
-            # Update ingredient
-            ingredient.name = new_name
-            ingredient.category = category
-            ingredient.default_unit = unit
-            ingredient.save()
-            
-            return JsonResponse({
-                'success': True,
-                'message': 'Ingredient updated successfully',
-                'ingredient': {
-                    'name': ingredient.name,
-                    'category_id': ingredient.category.ingredient_category_id,
-                    'category_name': ingredient.category.name,
-                    'unit_id': ingredient.default_unit.measurement_unit_id if ingredient.default_unit else None,
-                    'unit_name': ingredient.default_unit.name if ingredient.default_unit else None
-                }
-            })
-            
-        except Ingredient.DoesNotExist:
-            return JsonResponse({'success': False, 'error': 'Ingredient not found'})
-    
-    return JsonResponse({'success': False, 'error': 'Invalid request'})
-
-@login_required
-@permission_required('auth.can_access_personal', raise_exception=True)
-def categories_management(request):
-    """Manage ingredient categories"""
-    # Get all categories sorted alphabetically
-    categories = IngredientCategory.objects.all().order_by('name')
-    
-    # Get ingredient count and names for each category
-    categories_with_count = []
-    for category in categories:
-        ingredients = Ingredient.objects.filter(category=category).order_by('name')
-        ingredient_names = list(ingredients.values_list('name', flat=True))
-        
-        categories_with_count.append({
-            'category': category,
-            'ingredient_count': ingredients.count(),
-            'ingredients': ingredient_names,  # List of ingredient names for tooltip
-        })
-    
-    context = {
-        'categories_with_count': categories_with_count
-    }
-    
-    return render(request, 'categories_management.html', context)
-
-@login_required
-@permission_required('auth.can_edit_personal', raise_exception=True)
-def add_category(request):
-    """Add a new ingredient category"""
-    if request.method == 'POST':
-        data = json.loads(request.body)
-        category_name = data.get('name', '').strip()
-        
-        # Validate name is not empty
-        if not category_name:
-            return JsonResponse({'success': False, 'error': 'Category name cannot be empty'})
-        
-        # Check for duplicate names (case-insensitive)
-        duplicate = IngredientCategory.objects.filter(name__iexact=category_name).first()
-        if duplicate:
-            return JsonResponse({
-                'success': False,
-                'error': f'A category named "{category_name}" already exists'
-            })
-        
-        # Create new category
-        category = IngredientCategory.objects.create(name=category_name)
-        
-        return JsonResponse({
-            'success': True,
-            'message': 'Category added successfully',
-            'category': {
-                'id': category.ingredient_category_id,
-                'name': category.name
-            }
-        })
-   
-    return JsonResponse({'success': False, 'error': 'Invalid request'})
-
-@login_required
-@permission_required('auth.can_edit_personal', raise_exception=True)
-def update_category(request):
-    """Update category name"""
-    if request.method == 'POST':
-        data = json.loads(request.body)
-        category_id = data.get('category_id')
-        new_name = data.get('name', '').strip()
-        
-        try:
-            category = IngredientCategory.objects.get(ingredient_category_id=category_id)
-            
-            # Validate name is not empty
-            if not new_name:
-                return JsonResponse({'success': False, 'error': 'Category name cannot be empty'})
-            
-            # Check for duplicate names (case-insensitive, excluding current category)
-            duplicate = IngredientCategory.objects.filter(name__iexact=new_name).exclude(ingredient_category_id=category_id).first()
-            if duplicate:
-                return JsonResponse({
-                    'success': False,
-                    'error': f'A category named "{new_name}" already exists'
-                })
-            
-            # Update category
-            category.name = new_name
-            category.save()
-            
-            return JsonResponse({
-                'success': True,
-                'message': 'Category updated successfully',
-                'category': {
-                    'id': category.ingredient_category_id,
-                    'name': category.name
-                }
-            })
-            
-        except IngredientCategory.DoesNotExist:
-            return JsonResponse({'success': False, 'error': 'Category not found'})
-    
-    return JsonResponse({'success': False, 'error': 'Invalid request'})
-
-@login_required
-@permission_required('auth.can_access_personal', raise_exception=True)
-def check_category_usage(request):
-    """Check if category is used by any ingredients"""
-    if request.method == 'POST':
-        data = json.loads(request.body)
-        category_id = data.get('category_id')
-        
-        try:
-            category = IngredientCategory.objects.get(ingredient_category_id=category_id)
-            
-            # Count ingredients using this category
-            ingredient_count = Ingredient.objects.filter(category=category).count()
-            
-            # Get ingredient names (limit to 5 for display)
-            ingredients = Ingredient.objects.filter(category=category)[:5]
-            ingredient_names = [ing.name for ing in ingredients]
-            
-            return JsonResponse({
-                'success': True,
-                'usage_count': ingredient_count,
-                'ingredient_names': ingredient_names,
-                'can_delete': ingredient_count == 0
-            })
-            
-        except IngredientCategory.DoesNotExist:
-            return JsonResponse({'success': False, 'error': 'Category not found'})
-    
-    return JsonResponse({'success': False, 'error': 'Invalid request'})
-
-@login_required
-@permission_required('auth.can_edit_personal', raise_exception=True)
-def delete_category(request):
-    """Delete category if not used by any ingredients"""
-    if request.method == 'POST':
-        data = json.loads(request.body)
-        category_id = data.get('category_id')
-        
-        try:
-            category = IngredientCategory.objects.get(ingredient_category_id=category_id)
-            
-            # Check if category is used by any ingredients
-            ingredient_count = Ingredient.objects.filter(category=category).count()
-            
-            if ingredient_count > 0:
-                return JsonResponse({
-                    'success': False,
-                    'error': f'Cannot delete - category is used by {ingredient_count} ingredient(s)'
-                })
-            
-            # Safe to delete
-            category_name = category.name
-            category.delete()
-            
-            return JsonResponse({
-                'success': True,
-                'message': f'Successfully deleted category: {category_name}'
-            })
-            
-        except IngredientCategory.DoesNotExist:
-            return JsonResponse({'success': False, 'error': 'Category not found'})
-    
-    return JsonResponse({'success': False, 'error': 'Invalid request'})
-
 
 @login_required
 @permission_required('auth.can_edit_personal', raise_exception=True)
@@ -3513,7 +2906,7 @@ def toggle_recipe_favourite(request, recipe_id):
             recipe=recipe
         )
         if not created:
-            # Already a favourite — remove it
+            # Already a favourite ÃƒÂ¢Ã¢â€šÂ¬Ã¢â‚¬Â remove it
             favourite.delete()
             is_favourite = False
         else:
@@ -3527,41 +2920,4 @@ def toggle_recipe_favourite(request, recipe_id):
     
     return JsonResponse({'success': False}, status=400)
 
-
-# AJAX endpoint to add new ingredient
-@login_required
-@permission_required('auth.can_edit_personal', raise_exception=True)
-@require_POST
-def add_ingredient_ajax(request):
-    try:
-        data = json.loads(request.body)
-        name = data.get('name', '').strip()
-        category_id = data.get('category_id')
-        shopping_unit_id = data.get('shopping_unit_id')  # NEW
-        
-        if not name:
-            return JsonResponse({'success': False, 'message': 'Ingredient name is required'})
-        
-        if not shopping_unit_id:
-            return JsonResponse({'success': False, 'message': 'Shopping unit is required'})
-        
-        # Check if already exists
-        if Ingredient.objects.filter(name__iexact=name).exists():
-            return JsonResponse({'success': False, 'message': 'Ingredient already exists'})
-        
-        # Create ingredient with category AND shopping unit
-        ingredient = Ingredient.objects.create(
-            name=name,
-            category_id=category_id if category_id else None,
-            default_unit_id=shopping_unit_id  # NEW: Set shopping unit
-        )
-        
-        return JsonResponse({
-            'success': True,
-            'ingredient_id': ingredient.ingredient_id,
-            'name': ingredient.name
-        })
-        
-    except Exception as e:
-        return JsonResponse({'success': False, 'message': str(e)})
 

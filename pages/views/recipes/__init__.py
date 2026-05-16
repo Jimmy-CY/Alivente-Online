@@ -4,3 +4,6 @@ from .nutrition import *
 from .ai_extract import *
 from .conversions import *
 from .units import *
+from .categories import *
+from .ingredients import *
+from .shopping import *
