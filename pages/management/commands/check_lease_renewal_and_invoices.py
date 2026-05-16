@@ -575,9 +575,9 @@ class Command(BaseCommand):
             
             # SMTP setup (reuse connection for all emails)
             if email_use_ssl:
-                smtp_object = smtplib.SMTP_SSL(email_host, email_port, timeout=10)
+                smtp_object = smtplib.SMTP_SSL(email_host, email_port, timeout=60)
             else:
-                smtp_object = smtplib.SMTP(email_host, email_port, timeout=10)
+                smtp_object = smtplib.SMTP(email_host, email_port, timeout=60)
                 smtp_object.ehlo()
                 if email_use_tls:
                     smtp_object.starttls()
@@ -924,9 +924,9 @@ Automated Lease Management"""
             
             # SMTP setup
             if email_use_ssl:
-                smtp_object = smtplib.SMTP_SSL(email_host, email_port, timeout=10)
+                smtp_object = smtplib.SMTP_SSL(email_host, email_port, timeout=60)
             else:
-                smtp_object = smtplib.SMTP(email_host, email_port, timeout=10)
+                smtp_object = smtplib.SMTP(email_host, email_port, timeout=60)
                 smtp_object.ehlo()
                 if email_use_tls:
                     smtp_object.starttls()
@@ -1130,9 +1130,9 @@ Automated Passport/ID Monitoring"""
             
             # SMTP setup
             if email_use_ssl:
-                smtp_object = smtplib.SMTP_SSL(email_host, email_port, timeout=10)
+                smtp_object = smtplib.SMTP_SSL(email_host, email_port, timeout=60)
             else:
-                smtp_object = smtplib.SMTP(email_host, email_port, timeout=10)
+                smtp_object = smtplib.SMTP(email_host, email_port, timeout=60)
                 smtp_object.ehlo()
                 if email_use_tls:
                     smtp_object.starttls()
@@ -1169,6 +1169,87 @@ Automated Passport/ID Monitoring"""
                 except:
                     pass
     
+    def _send_email_with_retry(self, msg, from_addr, to_addrs, label='Email',
+                               max_attempts=3, base_delay=5):
+        """Send a MIME message via SMTP with a generous timeout + retry/backoff.
+
+        A fresh connection is opened on every attempt (a timed-out socket
+        cannot be reused). Returns True on success, False if every attempt
+        fails. Authentication errors fail fast because retrying will not help.
+        """
+        import smtplib
+        import socket
+        import time
+
+        email_host = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
+        email_port = int(os.environ.get('EMAIL_PORT', 465))
+        email_user = os.environ.get('EMAIL_USER', 'demetrimanias@gmail.com')
+        email_password = os.environ.get('EMAIL_PASSWORD')
+        email_use_ssl = os.environ.get('EMAIL_USE_SSL', 'True').lower() == 'true'
+        email_use_tls = os.environ.get('EMAIL_USE_TLS', 'False').lower() == 'true'
+
+        if not email_password:
+            self.stdout.write('[X] EMAIL_PASSWORD environment variable not set')
+            return False
+
+        payload = msg.as_string()
+        last_error = None
+
+        for attempt in range(1, max_attempts + 1):
+            smtp_object = None
+            try:
+                if email_use_ssl:
+                    smtp_object = smtplib.SMTP_SSL(email_host, email_port, timeout=60)
+                else:
+                    smtp_object = smtplib.SMTP(email_host, email_port, timeout=60)
+                    smtp_object.ehlo()
+                    if email_use_tls:
+                        smtp_object.starttls()
+                smtp_object.login(email_user, email_password)
+                smtp_object.sendmail(from_addr, to_addrs, payload)
+                self.stdout.write(
+                    '[OK] %s sent successfully (attempt %d/%d)'
+                    % (label, attempt, max_attempts)
+                )
+                logger.info('%s sent successfully on attempt %d' % (label, attempt))
+                return True
+            except smtplib.SMTPAuthenticationError as e:
+                last_error = 'SMTP Authentication Error: %s' % (e,)
+                logger.error(last_error)
+                self.stdout.write('[X] %s' % last_error)
+                return False
+            except (smtplib.SMTPException, socket.timeout, OSError) as e:
+                last_error = '%s: %s' % (type(e).__name__, e)
+                logger.warning(
+                    '%s send attempt %d/%d failed: %s'
+                    % (label, attempt, max_attempts, last_error)
+                )
+                self.stdout.write(
+                    '[!] %s send attempt %d/%d failed: %s'
+                    % (label, attempt, max_attempts, last_error)
+                )
+            finally:
+                if smtp_object is not None:
+                    try:
+                        smtp_object.quit()
+                    except Exception:
+                        pass
+
+            if attempt < max_attempts:
+                delay = base_delay * attempt
+                self.stdout.write('    Retrying in %ds...' % delay)
+                time.sleep(delay)
+
+        self.stdout.write(
+            '[X] %s failed after %d attempts. Last error: %s'
+            % (label, max_attempts, last_error)
+        )
+        logger.error(
+            '%s failed after %d attempts: %s'
+            % (label, max_attempts, last_error)
+        )
+        return False
+
     def run_notification_function(self, vacant_properties, expiring_leases, declined_renewals, overdue_invoices, created_invoices_count):
         """Send email notification for lease renewals, vacant properties, declined renewals, overdue invoices, and invoice creation"""
         import smtplib
@@ -1461,26 +1542,12 @@ Automated Report"""
             msg.attach(part1)
             msg.attach(part2)
             
-            # UPDATED SMTP setup with environment variable configuration
-            if email_use_ssl:
-                # Use SSL connection (typically port 465)
-                smtp_object = smtplib.SMTP_SSL(email_host, email_port, timeout=10)
-            else:
-                # Use regular SMTP connection (typically port 587)
-                smtp_object = smtplib.SMTP(email_host, email_port, timeout=10)
-                smtp_object.ehlo()
-                if email_use_tls:
-                    smtp_object.starttls()
-            
-            smtp_object.login(email_user, email_password)
-            
-            # Send email
-            text = msg.as_string()
-            smtp_object.sendmail(email_user, recipients['all'], text)
-            
-            self.stdout.write('✅ Property management notification email sent successfully!')
-            logger.info('Property management notification email sent successfully')
-            return True
+            # Send with a generous timeout and retry/backoff so a single
+            # transient SMTP timeout does not silently drop the daily report.
+            return self._send_email_with_retry(
+                msg, email_user, recipients['all'],
+                label='Property management notification email',
+            )
             
         except smtplib.SMTPAuthenticationError as e:
             error_msg = f"SMTP Authentication Error: {e}"
