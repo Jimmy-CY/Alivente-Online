@@ -10,3 +10,4 @@ from .shopping import *
 from .meal_planning import *
 from .spellcheck import *
 from .recipe_crud import *
+from .recipe_extras import *
