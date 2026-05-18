@@ -1,12 +1,12 @@
-﻿"""
-Finance views — extracted from pages/views/main.py.
+"""
+Finance views - extracted from pages/views/main.py.
 
-PHASE 1 — Financial-budgeting CRUD:
+PHASE 1 - Financial-budgeting CRUD:
   - Revenue: list / add / edit / commit / types / line types
   - Expense: list / add / edit / commit / delete / types / line types
   - Valuations: list / add / edit / commit (with optional pro-rata cascade)
 
-PHASE 2 — Reports:
+PHASE 2 - Reports:
   - Cash flow: cashflow_forecast
   - Occupancy: occupancy_trends_view
   - Indicators: financial_indicators_view
@@ -20,7 +20,7 @@ Commit views follow a consistent pattern:
   3. Catch specific exceptions (model.DoesNotExist, JSONDecodeError) with
      focused user-facing messages
   4. Catch-all logs the traceback and surfaces a generic error message
-  5. Always redirect/render with a flash message — never leave a 500 white screen
+  5. Always redirect/render with a flash message - never leave a 500 white screen
 
 Report views are read-only and don't need the atomic pattern.
 
@@ -29,9 +29,11 @@ and properties splits out of main.py:
   - dashboard.py: occupancy + portfolio calculations + budgeted expenses
   - properties.py: calculate_year_metrics, calculate_property_revenue
 """
+
 import decimal
 import json
 import logging
+import traceback
 from calendar import monthrange
 from datetime import date, datetime, timedelta
 from decimal import Decimal
@@ -42,7 +44,7 @@ from django.db import transaction
 from django.db.models import Min, OuterRef, Prefetch, Subquery, Sum
 from django.db.models.functions import Coalesce
 from django.http import JsonResponse
-from django.shortcuts import render, redirect, get_object_or_404
+from django.shortcuts import get_object_or_404, redirect, render
 
 from pages.forms import (
     RevenueForm, RevenueTypesForm, RevenueLineForm,
@@ -651,7 +653,7 @@ def finance_expense_delete(request, expense_id):
     """
     Delete a budgeted expense row.
 
-    Hard delete — mirrors the mark_deleted pattern from act_expense. Budgeted
+    Hard delete - mirrors the mark_deleted pattern from act_expense. Budgeted
     expenses are planning data (not financial transactions), so a true
     audit-trail soft delete isn't required here.
 
@@ -1375,8 +1377,9 @@ def finance_valuations_edit_and_recalc_commit(request, prop_values_id):
         messages.error(request, f"Error during recalculation: {e}")
         return redirect('finance_valuations_edit', prop_values_id=prop_values_id)
 
+
 # =============================================================================
-# PHASE 2 — Reports (read-only views; no atomic pattern needed)
+# PHASE 2 - Reports (read-only views; no atomic pattern needed)
 # Cash flow forecast, occupancy trends, financial indicators, vacancy,
 # drill-downs, and P&L statements. Moved from main.py.
 # =============================================================================
@@ -1453,9 +1456,6 @@ def occupancy_trends_view(request):
     """
     Display occupancy, days to fill, and vacancy cost trends over time
     """
-    from datetime import date
-    from django.db.models import Min
-
     # Get the first tenant date across all properties
     first_tenant_date = tenant.objects.filter(
         tenant_lease_start_date__isnull=False
@@ -1497,18 +1497,16 @@ def financial_indicators_view(request):
     """
     Display the Financial Indicators Dashboard - ONLY for Active Properties
     Using Portfolio-Wide Calculations with Occupancy Metrics
-    OPTIMIZED: Reduced queries with prefetch_related
+    Reduced queries with prefetch_related
     """
     if request.method == 'GET' and request.headers.get('X-Requested-With') == 'XMLHttpRequest':
         # AJAX request for property data
         try:
-            from datetime import datetime, timedelta
-
             # Financial indicators show annual data (no time period selection)
             today = datetime.now().date()
             current_year = datetime.now().year
 
-            # OPTIMIZATION: Prefetch related data in one query
+            # Prefetch related data in one query
             properties = props.objects.filter(prop_status='Active').prefetch_related(
                 Prefetch('tenant_set', queryset=tenant.objects.all()),
                 Prefetch('vacancy_periods', queryset=VacancyPeriod.objects.select_related('previous_lease', 'next_lease').all()),
@@ -1613,7 +1611,6 @@ def financial_indicators_view(request):
             })
 
         except Exception as e:
-            import traceback
             print(traceback.format_exc())
             return JsonResponse({'error': str(e)}, status=500)
 
@@ -1635,8 +1632,6 @@ def vacancy_management_view(request):
     if request.method == 'GET' and request.headers.get('X-Requested-With') == 'XMLHttpRequest':
         # AJAX request for property data
         try:
-            from datetime import datetime, timedelta
-
             # GET TIME PERIOD PARAMETER
             time_period = request.GET.get('period', 'past_year')  # Default: past_year
             today = datetime.now().date()
@@ -1654,7 +1649,7 @@ def vacancy_management_view(request):
                 period_start = datetime(2000, 1, 1).date()
                 period_end = today
 
-            # OPTIMIZATION: Prefetch related data in one query
+            # Prefetch related data in one query
             properties = props.objects.filter(
                 prop_status='Active',
                 prop_include_in_occupancy=True  # ONLY properties included in occupancy tracking
@@ -1777,7 +1772,6 @@ def vacancy_management_view(request):
             })
 
         except Exception as e:
-            import traceback
             print(traceback.format_exc())
             return JsonResponse({'error': str(e)}, status=500)
 
@@ -2036,6 +2030,7 @@ def total_expense_details_view(request):
 
     return render(request, 'total_expense_details.html', context)
 
+
 @login_required
 @permission_required('auth.can_access_financials', raise_exception=True)
 def finance_pl_act(request):
@@ -2055,7 +2050,7 @@ def finance_pl_act(request):
         except (ValueError, TypeError):
             selected_year = 'budget'
 
-    # FULLY OPTIMIZED: Single query with comprehensive prefetching
+    # Single query with comprehensive prefetching
     all_properties = props.objects.filter(prop_status="Active").select_related().prefetch_related(
         'prop_values_set',
         Prefetch('revenue_set', queryset=revenue.objects.select_related('revenue_line_types', 'revenue_types')),
@@ -2070,11 +2065,11 @@ def finance_pl_act(request):
     selected_prop_ids = [int(pid) for pid in selected_properties if pid.isdigit()]
     properties = all_properties.filter(prop_id__in=selected_prop_ids)
 
-    # OPTIMIZED: Single queries for line types
+    # Single queries for line types
     revenue_line_types_list = list(revenue_line_types.objects.all())
     expense_line_types_list = list(expense_line_types.objects.all())
 
-    # OPTIMIZED: Use prefetched data instead of separate queries
+    # Use prefetched data instead of separate queries
     revenues = []
     expenses = []
 
@@ -2099,7 +2094,7 @@ def finance_pl_act(request):
     }
     revenue_totals['year'] = sum(revenue_totals.values())
 
-    # OPTIMIZED: Pre-group revenues by line type
+    # Pre-group revenues by line type
     revenues_by_line_type = {}
     for rev in revenues:
         line_type_id = rev.revenue_line_types.revenue_line_types_id
@@ -2128,7 +2123,7 @@ def finance_pl_act(request):
         monthly_totals['total'] = sum(monthly_totals.values())
         revenue_totals_by_line['all'][lt.revenue_line_types_id] = monthly_totals
 
-    # OPTIMIZED: Pre-group revenues by property
+    # Pre-group revenues by property
     revenues_by_property = {}
     for rev in revenues:
         prop_id = rev.prop.prop_id
@@ -2185,11 +2180,9 @@ def finance_pl_act(request):
         'jul': 0, 'aug': 0, 'sep': 0, 'oct': 0, 'nov': 0, 'dec': 0, 'year': 0
     }
 
-    # FULLY OPTIMIZED: Actual expenses with single aggregate query
+    # Actual expenses with single aggregate query
     actual_expense_prop_totals = {}
     if selected_year != 'budget':
-        from django.db.models import Sum
-
         # Single query to get all actual expenses with month grouping
         actual_expenses_aggregated = act_expense.objects.filter(
             act_expense_date__year=selected_year,
@@ -2248,7 +2241,7 @@ def finance_pl_act(request):
     }
     expense_totals['year'] = sum(expense_totals.values())
 
-    # OPTIMIZED: Pre-group expenses by line type
+    # Pre-group expenses by line type
     expenses_by_line_type = {}
     for exp in expenses:
         line_type_id = exp.expense_line_types.expense_line_types_id
@@ -2277,7 +2270,7 @@ def finance_pl_act(request):
         monthly_totals['total'] = sum(monthly_totals.values())
         expense_totals_by_line['all'][elt.expense_line_types_id] = monthly_totals
 
-    # OPTIMIZED: Pre-group expenses by property
+    # Pre-group expenses by property
     expenses_by_property = {}
     for exp in expenses:
         prop_id = exp.prop.prop_id
@@ -2361,7 +2354,7 @@ def finance_pl_act(request):
             'year': revenue_totals['year'] - expense_totals['year'] - actual_expense_totals['year']
         }
 
-    # FULLY OPTIMIZED: Property values using prefetched data - NO additional queries
+    # Property values using prefetched data - NO additional queries
     prop_values_map = {}
     total_current_value = 0
 

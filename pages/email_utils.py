@@ -1,20 +1,35 @@
-﻿import logging
+"""
+Shared email utilities: recipient resolution + issue-comments email.
+
+get_email_recipients() resolves TO/CC/all recipient lists for a notification
+type, with precedence: NotificationRecipient table > environment variables >
+hardcoded defaults.
+
+render_issue_comments_email_html() / _text() build the two MIME alternatives,
+and send_issue_comments_email() groups, renders, and SMTP-sends the message.
+These are shared by the daily cron (check_lease_renewal_and_invoices) and the
+immediate "Notify Urgent" view (pages.views.issues.notify_comment_urgent).
+"""
+
+import logging
 import os
 import smtplib
 from collections import OrderedDict
+from email.header import Header
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
 logger = logging.getLogger(__name__)
 
 
-# Admin user initials. Mirrors the hardcoded list previously duplicated in
-# pages/views/main.py (comments_report view) and the management command's
+# Admin user initials. Centralizes a list that was previously duplicated in
+# the comments-report view and the management command's
 # get_yesterdays_issue_comments fetcher. Both now import from here.
 ADMIN_USER_INITIALS = ['DM']
 
 # How long to suppress repeat "Notify Immediately" presses on the same comment.
 URGENT_NOTIFICATION_COOLDOWN_MINUTES = 5
+
 
 def get_email_recipients(notification_type):
     """
@@ -22,8 +37,10 @@ def get_email_recipients(notification_type):
     Returns a dict with 'to', 'cc', and 'all' lists.
     Priority: Database > Environment Variables > Defaults
     """
+    # Deferred import: email_utils is imported by views/cron at module load;
+    # importing the model here avoids a circular import.
     from pages.models import NotificationRecipient
-    
+
     # Try database first
     try:
         recipient = NotificationRecipient.objects.get(notification_type=notification_type)
@@ -34,7 +51,7 @@ def get_email_recipients(notification_type):
         }
     except NotificationRecipient.DoesNotExist:
         pass
-    
+
     # Map notification types to environment variable names
     env_var_map = {
         'celebration_reminder': 'EMAIL_TO_CELEBRATION',
@@ -43,7 +60,7 @@ def get_email_recipients(notification_type):
         'daily_report': 'EMAIL_TO_DAILY_REPORT',
         'new_lease_upload': 'EMAIL_TO_DAILY_REPORT',
     }
-    
+
     # Try environment variables
     env_var = env_var_map.get(notification_type)
     if env_var:
@@ -51,7 +68,7 @@ def get_email_recipients(notification_type):
         if env_value:
             emails = [e.strip() for e in env_value.split(',') if e.strip()]
             return {'to': emails, 'cc': [], 'all': emails}
-    
+
     # Default recipients with TO/CC distinction
     default_recipients = {
         'daily_report': {'to': ['demetrimanias@gmail.com', 'angmaniasbakers@gmail.com'], 'cc': []},
@@ -67,27 +84,29 @@ def get_email_recipients(notification_type):
         'issue_comments_daily': {'to': ['demetrimanias@gmail.com'], 'cc': []},
         'issue_comment_urgent': {'to': ['demetrimanias@gmail.com', 'stella.simitopoulos@alivente.com'], 'cc': []},
     }
-    
+
     defaults = default_recipients.get(notification_type, {'to': ['demetrimanias@gmail.com'], 'cc': []})
     defaults['all'] = defaults['to'] + defaults['cc']
     return defaults
 
+
 def format_email_recipients_for_header(email_list):
     """
     Format email list for email 'To' header
-    
+
     Args:
         email_list (list): List of email addresses
-        
+
     Returns:
         str: Comma-separated email addresses for email header
     """
     return ', '.join(email_list)
 
+
 # ============================================================================
 # Issue-comments email rendering & sending
 # Used by both the daily cron (check_lease_renewal_and_invoices) and the
-# immediate "Notify Urgent" view (pages.views.main.notify_comment_urgent).
+# immediate "Notify Urgent" view (pages.views.issues.notify_comment_urgent).
 # ============================================================================
 
 def render_issue_comments_email_html(grouped, header_label, intro_text):
@@ -263,7 +282,7 @@ def send_issue_comments_email(comments, subject, header_label, intro_text, recip
         return False
 
     try:
-        # Email settings — same env vars as every other sender in the project
+        # Email settings - same env vars as every other sender in the project
         email_host = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
         email_port = int(os.environ.get('EMAIL_PORT', 465))
         email_user = os.environ.get('EMAIL_USER', 'demetrimanias@gmail.com')
@@ -292,13 +311,16 @@ def send_issue_comments_email(comments, subject, header_label, intro_text, recip
         msg['To'] = format_email_recipients_for_header(recipients['to'])
         if recipients.get('cc'):
             msg['Cc'] = format_email_recipients_for_header(recipients['cc'])
-        msg['Subject'] = subject
+        # RFC 2047: encode the Subject so non-ASCII (e.g. Greek) is not garbled.
+        msg['Subject'] = Header(subject, 'utf-8')
 
         html_body = render_issue_comments_email_html(grouped, header_label, intro_text)
         text_body = render_issue_comments_email_text(grouped, header_label, intro_text)
 
-        msg.attach(MIMEText(text_body, 'plain'))
-        msg.attach(MIMEText(html_body, 'html'))
+        # Explicit utf-8 so non-ASCII body content (Greek property/comment text)
+        # is encoded correctly instead of failing on the default us-ascii.
+        msg.attach(MIMEText(text_body, 'plain', 'utf-8'))
+        msg.attach(MIMEText(html_body, 'html', 'utf-8'))
 
         # Send via SMTP
         if email_use_ssl:
