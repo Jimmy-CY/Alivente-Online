@@ -1,5 +1,5 @@
-﻿"""
-Properties views — extracted from pages/views/main.py and pages/views/dashboard.py.
+"""
+Properties views - extracted from pages/views/main.py and pages/views/dashboard.py.
 
 Covers:
   - Property CRUD: list page, map view, title-deed file management, add /
@@ -65,7 +65,7 @@ logger = logging.getLogger(__name__)
 
 
 # ============================================================================
-# Helpers — shared with finance.py and dashboard.py via explicit imports
+# Helpers - shared with finance.py and dashboard.py via explicit imports
 # ============================================================================
 
 def get_vacant_properties(cursor):
@@ -327,7 +327,7 @@ def calculate_property_revenue(property_obj):
 
 
 # ============================================================================
-# AJAX — lease generation modal data fetcher
+# AJAX - lease generation modal data fetcher
 # ============================================================================
 
 @csrf_exempt
@@ -424,7 +424,7 @@ def get_property_tenant_data(request):
 
 
 # ============================================================================
-# Properties CRUD — list / map / title-deed file mgmt / add / edit pairs
+# Properties CRUD - list / map / title-deed file mgmt / add / edit pairs
 # ============================================================================
 
 @login_required
@@ -534,7 +534,6 @@ def properties_title_deed(request):
                     messages.success(request, f'Title deed deleted for {property_obj.prop_name}!')
                 else:
                     messages.warning(request, 'No title deed found to delete.')
-
 
             elif action == 'upload':
                 if 'title_deed' in request.FILES:
@@ -655,7 +654,7 @@ def properties_edit_commit(request, prop_id):
 
 
 # ============================================================================
-# Property reports — full property report + title-deed file lookup
+# Property reports - full property report + title-deed file lookup
 # ============================================================================
 
 @login_required
@@ -728,7 +727,7 @@ def title_deed_report(request, prop_id):
 
 
 # ============================================================================
-# Asset management — list / add / edit / delete / detail
+# Asset management - list / add / edit / delete / detail
 # ============================================================================
 
 @login_required
@@ -786,7 +785,7 @@ def property_assets(request, prop_id):
 
 
 # ============================================================================
-# Asset photo helpers — shared between add_asset and edit_asset
+# Asset photo helpers - shared between add_asset and edit_asset
 # ============================================================================
 
 # Photo upload constraints (also enforced client-side in templates)
@@ -1070,7 +1069,7 @@ def set_cover_photo(request, asset_id, photo_id):
 
 
 # ============================================================================
-# Asset AJAX helpers — subcategory cascade + on-the-fly creation
+# Asset AJAX helpers - subcategory cascade + on-the-fly creation
 # ============================================================================
 
 @login_required
@@ -1187,7 +1186,7 @@ def add_supplier_ajax(request):
 
 
 # ============================================================================
-# Maintenance records — add / edit / delete
+# Maintenance records - add / edit / delete
 # ============================================================================
 
 @login_required

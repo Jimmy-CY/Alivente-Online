@@ -1,8 +1,9 @@
-﻿"""
+"""
 Projects views for Alivente Online.
 
-Extracted from pages/views/main.py as part of the modular split. The
-largest single split: 19 view functions plus 2 translation stubs.
+Extracted from pages/views/main.py as part of the modular split. One of
+the larger sections: 17 view functions, a Google Translate helper, and
+2 translation stubs.
 
 Covers:
   - Project CRUD (projects_list, projects_add, projects_edit,
@@ -12,19 +13,20 @@ Covers:
   - AJAX endpoints (ajax_update_project_status,
     ajax_update_task_status, ajax_duplicate_project, ajax_delete_task,
     project_task_list, get_project_assignees).
-  - Translation utilities — both the temporarily-disabled persistent
+  - Translation utilities - both the temporarily-disabled persistent
     translation stubs (ensure_project_translations, get_translated_text)
     and the on-demand Google Translate AJAX endpoint (translate_text +
     translate_to_greek_service helper).
 
-Known issues, preserved verbatim:
-  - projects_add has decorators in inverted order (@permission_required
-    above @login_required).
+Known latent issues (preserved verbatim - only manifest when the
+disabled persistent-translation path is re-enabled with language='greek'):
   - get_translated_text stub signature takes 2 args but project_task_list
-    calls it with 3 — only manifests when language='greek' is used.
-  - ensure_project_translations stub takes 'request' but is called with
-    'project' in project_task_list.
+    calls it with 3.
+  - ensure_project_translations stub parameter is named 'request' but it
+    is called with a project in project_task_list (harmless while the
+    body is a no-op; matters once implemented).
 """
+
 import json
 import logging
 from datetime import datetime, timedelta
@@ -39,8 +41,7 @@ from django.db.models import F, Prefetch, Q
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
-from django.views.decorators.http import require_POST, require_http_methods
-
+from django.views.decorators.http import require_http_methods, require_POST
 
 from ..models import Project, ProjectDocument, ProjectTask, props
 
@@ -55,6 +56,7 @@ logger = logging.getLogger(__name__)
 def ensure_project_translations(request):
     pass
 
+
 def get_translated_text(text, target_language='en'):
     return text
 
@@ -62,7 +64,7 @@ def get_translated_text(text, target_language='en'):
 @login_required
 @permission_required('auth.can_access_projects', raise_exception=True)
 def projects_list(request):
-    """Display list of projects with filtering and handle modal-based deletion - FULLY OPTIMIZED"""
+    """Display list of projects with filtering and handle modal-based deletion"""
 
     # Handle POST request for modal-based deletion
     if request.method == 'POST' and 'delete_project_id' in request.POST:
@@ -71,7 +73,7 @@ def projects_list(request):
             return redirect('projects')
 
         project_id = request.POST.get('delete_project_id')
-        # OPTIMIZED: Use select_related and prefetch_related for deletion
+        # Use select_related and prefetch_related for deletion
         project = get_object_or_404(
             Project.objects.select_related('prop').prefetch_related('projecttask_set', 'project_documents'),
             project_id=project_id
@@ -81,7 +83,7 @@ def projects_list(request):
             with transaction.atomic():
                 logger.info(f"User {request.user.username} deleting project via modal: {project.project_name}")
 
-                # OPTIMIZED: Use prefetched data for counts (no additional queries)
+                # Use prefetched data for counts (no additional queries)
                 all_tasks = list(project.projecttask_set.all())
                 main_task_count = sum(1 for task in all_tasks if task.parent_task is None)
                 subtask_count = sum(1 for task in all_tasks if task.parent_task is not None)
@@ -114,7 +116,7 @@ def projects_list(request):
     selected_property = request.GET.get('property', '')
     selected_status = request.GET.get('status', '')
 
-    # FULLY OPTIMIZED: Build the base queryset WITHOUT prefetching unnecessary data
+    # Build the base queryset WITHOUT prefetching unnecessary data
     # Only prefetch what's absolutely needed for the list view
     projects_queryset = Project.objects.select_related('prop')
 
@@ -155,7 +157,7 @@ def projects_list(request):
     # If template only shows basic project info (name, description, dates, status),
     # then DON'T prefetch tasks at all
 
-    # OPTIMIZED: Single query for all properties (only if dropdown is used)
+    # Single query for all properties (only if dropdown is used)
     properties = props.objects.only('prop_id', 'prop_name').order_by('prop_name')
 
     # Pagination with filter preservation
@@ -175,8 +177,8 @@ def projects_list(request):
     return render(request, 'projects/projects.html', context)
 
 
-@permission_required('auth.can_edit_projects', raise_exception=True)
 @login_required
+@permission_required('auth.can_edit_projects', raise_exception=True)
 def projects_add(request):
     """Add new project"""
     if request.method == 'POST':
@@ -193,7 +195,7 @@ def projects_add(request):
             property_obj = get_object_or_404(props, prop_id=prop_id)
 
             # Create the project
-            project = Project(  # Updated model name
+            project = Project(
                 project_name=project_name,
                 prop=property_obj,
                 project_start_date=project_start_date if project_start_date else None,
@@ -215,7 +217,7 @@ def projects_add(request):
 
     context = {
         'properties': properties,
-        'status_choices': Project.PROJECT_STATUS_CHOICES,  # Updated model name
+        'status_choices': Project.PROJECT_STATUS_CHOICES,
     }
 
     return render(request, 'projects/projects_add.html', context)
@@ -277,9 +279,9 @@ def projects_edit(request, project_id):
 @login_required
 @permission_required('auth.can_edit_projects', raise_exception=True)
 def projects_delete(request, project_id):
-    """Delete project with enhanced cascade deletion and warnings - OPTIMIZED"""
+    """Delete project with enhanced cascade deletion and warnings"""
 
-    # OPTIMIZED: Single query with prefetching for counts
+    # Single query with prefetching for counts
     project = get_object_or_404(
         Project.objects.select_related('prop').prefetch_related(
             'projecttask_set', 'project_documents'
@@ -292,7 +294,7 @@ def projects_delete(request, project_id):
             with transaction.atomic():
                 logger.info(f"User {request.user.username} attempting to delete project: {project.project_name} (ID: {project_id})")
 
-                # OPTIMIZED: Use prefetched data for counts (no additional queries)
+                # Use prefetched data for counts (no additional queries)
                 all_tasks = list(project.projecttask_set.all())
                 main_task_count = sum(1 for task in all_tasks if task.parent_task is None)
                 subtask_count = sum(1 for task in all_tasks if task.parent_task is not None)
@@ -328,7 +330,7 @@ def projects_delete(request, project_id):
 
         return redirect('projects')
 
-    # OPTIMIZED: Use prefetched data for confirmation page (no additional queries)
+    # Use prefetched data for confirmation page (no additional queries)
     all_tasks = list(project.projecttask_set.all())
     main_tasks = [task for task in all_tasks if task.parent_task is None]
     subtasks = [task for task in all_tasks if task.parent_task is not None]
@@ -350,8 +352,8 @@ def projects_delete(request, project_id):
 @login_required
 @permission_required('auth.can_access_projects', raise_exception=True)
 def projects_detail(request, project_id):
-    """Display project details with tasks and subtasks - OPTIMIZED"""
-    # OPTIMIZED: Single query with comprehensive prefetching
+    """Display project details with tasks and subtasks"""
+    # Single query with comprehensive prefetching
     project = get_object_or_404(
         Project.objects.select_related('prop').prefetch_related(
             Prefetch('projecttask_set',
@@ -363,7 +365,7 @@ def projects_detail(request, project_id):
         project_id=project_id
     )
 
-    # OPTIMIZED: Use prefetched data (no additional queries)
+    # Use prefetched data (no additional queries)
     main_tasks = list(project.projecttask_set.all())  # These are already filtered and ordered
 
     context = {
@@ -380,7 +382,7 @@ def projects_detail(request, project_id):
 @permission_required('auth.can_edit_projects', raise_exception=True)
 def project_tasks_add(request, project_id):
     """Add new task to project"""
-    project = get_object_or_404(Project, project_id=project_id)  # Updated model name
+    project = get_object_or_404(Project, project_id=project_id)
 
     if request.method == 'POST':
         task_name = request.POST.get('task_name')
@@ -395,7 +397,7 @@ def project_tasks_add(request, project_id):
         task_actual_completion_date = request.POST.get('task_actual_completion_date')
 
         try:
-            task = ProjectTask(  # Updated model name
+            task = ProjectTask(
                 project=project,
                 task_name=task_name,
                 task_description=task_description,
@@ -418,8 +420,8 @@ def project_tasks_add(request, project_id):
 
     context = {
         'project': project,
-        'task_status_choices': ProjectTask.TASK_STATUS_CHOICES,  # Updated model name
-        'task_priority_choices': ProjectTask.TASK_PRIORITY_CHOICES,  # Updated model name
+        'task_status_choices': ProjectTask.TASK_STATUS_CHOICES,
+        'task_priority_choices': ProjectTask.TASK_PRIORITY_CHOICES,
     }
 
     return render(request, 'projects/project_tasks_add.html', context)
@@ -600,6 +602,8 @@ def translate_to_greek_service(text):
     Use Google Translate API to translate English text to Greek
     """
     try:
+        # Lazy import: googletrans is an optional dependency; any failure
+        # (including ImportError) falls back to returning the original text.
         from googletrans import Translator
 
         # Initialize Google Translator
@@ -619,8 +623,8 @@ def translate_to_greek_service(text):
 @permission_required('auth.can_edit_projects', raise_exception=True)
 def project_tasks_delete(request, project_id, task_id):
     """Delete task"""
-    project = get_object_or_404(Project, project_id=project_id)  # Updated model name
-    task = get_object_or_404(ProjectTask, task_id=task_id, project=project)  # Updated model name
+    project = get_object_or_404(Project, project_id=project_id)
+    task = get_object_or_404(ProjectTask, task_id=task_id, project=project)
     task_name = task.task_name
 
     if request.method == 'POST':
@@ -640,8 +644,8 @@ def project_tasks_delete(request, project_id, task_id):
 @permission_required('auth.can_edit_projects', raise_exception=True)
 def project_subtasks_add(request, project_id, parent_task_id):
     """Add subtask to a main task"""
-    project = get_object_or_404(Project, project_id=project_id)  # Updated model name
-    parent_task = get_object_or_404(ProjectTask, task_id=parent_task_id, project=project)  # Updated model name
+    project = get_object_or_404(Project, project_id=project_id)
+    parent_task = get_object_or_404(ProjectTask, task_id=parent_task_id, project=project)
 
     if request.method == 'POST':
         task_name = request.POST.get('task_name')
@@ -656,7 +660,7 @@ def project_subtasks_add(request, project_id, parent_task_id):
         task_actual_completion_date = request.POST.get('task_actual_completion_date')
 
         try:
-            subtask = ProjectTask(  # Updated model name
+            subtask = ProjectTask(
                 project=project,
                 parent_task=parent_task,
                 task_name=task_name,
@@ -681,8 +685,8 @@ def project_subtasks_add(request, project_id, parent_task_id):
     context = {
         'project': project,
         'parent_task': parent_task,
-        'task_status_choices': ProjectTask.TASK_STATUS_CHOICES,  # Updated model name
-        'task_priority_choices': ProjectTask.TASK_PRIORITY_CHOICES,  # Updated model name
+        'task_status_choices': ProjectTask.TASK_STATUS_CHOICES,
+        'task_priority_choices': ProjectTask.TASK_PRIORITY_CHOICES,
     }
 
     return render(request, 'projects/project_subtasks_add.html', context)
@@ -691,8 +695,8 @@ def project_subtasks_add(request, project_id, parent_task_id):
 @login_required
 @permission_required('auth.can_access_projects', raise_exception=True)
 def project_gantt(request, project_id):
-    """Display Gantt chart for project with tasks and subtasks - OPTIMIZED"""
-    # OPTIMIZED: Single query with comprehensive prefetching
+    """Display Gantt chart for project with tasks and subtasks"""
+    # Single query with comprehensive prefetching
     project = get_object_or_404(
         Project.objects.select_related('prop').prefetch_related(
             Prefetch('projecttask_set',
@@ -714,7 +718,7 @@ def project_gantt(request, project_id):
     if from_edit:
         messages.success(request, "Changes saved successfully. Gantt chart has been refreshed.")
 
-    # OPTIMIZED: Use prefetched data (no additional queries)
+    # Use prefetched data (no additional queries)
     main_tasks = list(project.projecttask_set.all())
 
     # Build Gantt data structure using prefetched data
@@ -800,7 +804,6 @@ def project_gantt(request, project_id):
 
     # If no tasks have dates, create a placeholder message
     if not gantt_data:
-        from datetime import datetime
         today = datetime.now().date()
         placeholder_item = {
             'id': 'placeholder_1',
@@ -893,7 +896,7 @@ def ajax_update_task_status(request):
 @require_POST
 def ajax_duplicate_project(request):
     """
-    OPTIMIZED: AJAX view to duplicate a project with all its tasks and subtasks,
+    AJAX view to duplicate a project with all its tasks and subtasks,
     adjusting all dates based on the new project start date and handling budget copy options
     """
     try:
@@ -919,7 +922,6 @@ def ajax_duplicate_project(request):
 
         # Parse the new start date
         try:
-            from datetime import datetime, timedelta
             new_project_start_date = datetime.strptime(new_project_start_date_str, '%Y-%m-%d').date()
         except ValueError:
             return JsonResponse({
@@ -936,7 +938,7 @@ def ajax_duplicate_project(request):
                 'message': f'Invalid project ID: {project_id}'
             })
 
-        # OPTIMIZED: Get the original project with comprehensive prefetching
+        # Get the original project with comprehensive prefetching
         try:
             original_project = Project.objects.select_related('prop').prefetch_related(
                 Prefetch('projecttask_set',
@@ -1007,11 +1009,11 @@ def ajax_duplicate_project(request):
                 project_description_greek=None if clear_greek_translations else getattr(original_project, 'project_description_greek', None),
             )
 
-            # OPTIMIZED: Get all tasks using prefetched data
+            # Get all tasks using prefetched data
             all_original_tasks = list(original_project.projecttask_set.all())
             main_tasks = [task for task in all_original_tasks if task.parent_task_id is None]
 
-            # OPTIMIZED: Prepare bulk data for main tasks
+            # Prepare bulk data for main tasks
             main_tasks_to_create = []
             task_id_mapping = {}  # Map old task ID to new task index
 
@@ -1042,7 +1044,7 @@ def ajax_duplicate_project(request):
                 # Store mapping for later subtask creation
                 task_id_mapping[original_task.task_id] = len(main_tasks_to_create) - 1
 
-            # OPTIMIZED: Bulk create main tasks
+            # Bulk create main tasks
             created_main_tasks = ProjectTask.objects.bulk_create(main_tasks_to_create)
 
             # IMPORTANT: After bulk_create, we need to fetch the tasks with their IDs
@@ -1060,7 +1062,7 @@ def ajax_duplicate_project(request):
                 if i < len(created_main_tasks_with_ids):
                     task_object_mapping[original_task.task_id] = created_main_tasks_with_ids[i]
 
-            # OPTIMIZED: Prepare bulk data for subtasks
+            # Prepare bulk data for subtasks
             subtasks_to_create = []
 
             # Get all subtasks using prefetched data and group by parent
@@ -1095,11 +1097,11 @@ def ajax_duplicate_project(request):
                         )
                         subtasks_to_create.append(new_subtask)
 
-            # OPTIMIZED: Bulk create subtasks
+            # Bulk create subtasks
             if subtasks_to_create:
                 ProjectTask.objects.bulk_create(subtasks_to_create)
 
-            # OPTIMIZED: Copy project documents using prefetched data
+            # Copy project documents using prefetched data
             documents_to_create = []
             try:
                 original_documents = list(original_project.project_documents.all())
@@ -1161,8 +1163,8 @@ def ajax_duplicate_project(request):
 @login_required
 @permission_required('auth.can_access_projects', raise_exception=True)
 def project_task_list(request, project_id):
-    """Display task list for a specific project and assignee - OPTIMIZED"""
-    # OPTIMIZED: Single query with comprehensive prefetching
+    """Display task list for a specific project and assignee"""
+    # Single query with comprehensive prefetching
     project = get_object_or_404(
         Project.objects.select_related('prop').prefetch_related(
             Prefetch('projecttask_set',
@@ -1182,10 +1184,10 @@ def project_task_list(request, project_id):
     if language == 'greek':
         ensure_project_translations(project)
 
-    # OPTIMIZED: Use prefetched data
+    # Use prefetched data
     main_tasks = list(project.projecttask_set.all())
 
-    # OPTIMIZED: Filter in Python using prefetched data instead of additional queries
+    # Filter in Python using prefetched data instead of additional queries
     if assigned_to:
         filtered_main_tasks = []
         for task in main_tasks:
@@ -1418,14 +1420,14 @@ def ajax_delete_task(request):
 @login_required
 @permission_required('auth.can_access_projects', raise_exception=True)
 def get_project_assignees(request, project_id):
-    """AJAX endpoint to get all assignees for a project - OPTIMIZED"""
-    # OPTIMIZED: Single query with prefetching
+    """AJAX endpoint to get all assignees for a project"""
+    # Single query with prefetching
     project = get_object_or_404(
         Project.objects.prefetch_related('projecttask_set'),
         project_id=project_id
     )
 
-    # OPTIMIZED: Use prefetched data to get assignees
+    # Use prefetched data to get assignees
     assignees = set()
 
     for task in project.projecttask_set.all():
