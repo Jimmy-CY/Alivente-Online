@@ -39,3 +39,5 @@ desktop.ini
 
 # Backup files from view-split sessions
 *.bak
+
+*.prebak
