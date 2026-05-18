@@ -1,50 +1,23 @@
+﻿"""
+Administration views for Alivente Online.
+
+Extracted from pages/views/main.py as part of the modular split.
+Covers:
+  - Admin landing pages (admin_apms, personal_page) and self-service
+    profile editing (my_profile).
+  - Document management for tenant lease agreements
+    (upload_lease_agreement, serve_lease) and property title deeds
+    (title_deeds_management, upload_title_deed).
+  - Administration utility endpoints triggered from the APMs page
+    (admin_clear, admin_unpaid, admin_renewals, admin_invoices) that
+    delegate to project-root helper modules (open_invoices, lease_renewal).
+
+User administration (CRUD on User accounts and per-user permissions)
+lives in users.py — different concern, different decorator stack.
+
+Note: admin_clear, admin_unpaid, admin_renewals and admin_invoices use
+tab-based indentation, preserved verbatim from the legacy main.py.
 """
-Administration views.
-
-Extracted from the legacy pages/views/main.py during the modular views
-split.
-
-User-account administration (CRUD on User objects and per-user module
-permissions) lives in users.py - a different concern with a different
-decorator stack.
-
-Functions
----------
-- admin_apms             : Admin landing page (properties + tenants).
-- personal_page          : Personal-management landing page.
-- my_profile             : Self-service profile editing (own details,
-                           photo, menu preference).
-- upload_lease_agreement : Upload a tenant lease-agreement PDF to
-                           STATIC_ROOT/lease_agreements.
-- serve_lease            : Secure file-serving for lease PDFs (strict
-                           filename format, no-cache headers).
-- title_deeds_management : List properties + upload/delete title deeds
-                           (mirrors the tenant_lease_agreement view).
-- upload_title_deed      : Upload a property title-deed PDF to
-                           STATIC_ROOT/title_deeds.
-- admin_clear            : Delete generated report PDFs from
-                           STATIC_ROOT/reports.
-- admin_unpaid           : Email the open-invoices report (project-root
-                           open_invoices helper).
-- admin_renewals         : Email the lease-renewal report (project-root
-                           lease_renewal helper).
-- admin_invoices         : Generate the current month's invoices
-                           (project-root open_invoices helper).
-
-Auth tiers
-----------
-superuser only            -> admin_clear (@user_passes_test is_superuser)
-login only                -> my_profile
-can_access_administration -> admin_apms, admin_unpaid, admin_renewals,
-                             admin_invoices (also needs can_edit_invoices)
-can_access_personal       -> personal_page
-can_access_tenants        -> serve_lease
-can_edit_tenants          -> upload_lease_agreement
-can_access_properties     -> title_deeds_management
-can_edit_properties       -> upload_title_deed
-"""
-
-import glob
 import os
 from datetime import date
 
@@ -324,10 +297,9 @@ def upload_title_deed(request):
 @login_required
 @user_passes_test(lambda u: u.is_superuser)
 def admin_clear(request):
-    # Clear generated report PDFs. Path derived from STATIC_ROOT (same
-    # pattern as the lease/title-deed dirs above) so this works on Live;
-    # the previous hard-coded local Windows path made this a no-op there.
-    file_path = os.path.join(settings.STATIC_ROOT, 'reports', '*.pdf')
+    import os
+    import glob
+    file_path = "C:/Users/DemetrisManias/Desktop/code/djangoproject/static/reports/*.pdf"
     files = glob.glob(file_path)
     for f in files:
         os.remove(f)
@@ -337,7 +309,6 @@ def admin_clear(request):
 @login_required
 @permission_required('auth.can_access_administration', raise_exception=True)
 def admin_unpaid(request):
-    # Project-root helper module (resolved via sys.path), not a views import.
     import open_invoices
     rep_output = "Email"
     check = "Yes"
@@ -353,13 +324,12 @@ def admin_unpaid(request):
 @login_required
 @permission_required('auth.can_access_administration', raise_exception=True)
 def admin_renewals(request):
-    # Project-root helper module (resolved via sys.path), not a views import.
     import lease_renewal
     rep_output = "Email"
     check = "Yes"
     email = "demetrimanias@gmail.com"
     fname = "Demetri"
-    lease_renewal.lease_renewal(rep_output, check, email, fname)
+    lease_renewal.lease_renewal(rep_output,check, email, fname)
 #   email = "stella.simitopoulos@alivente.com"
 #   fname = "Stella"
 #   lease_renewal.lease_renewal(rep_output,check, email, fname)
@@ -370,11 +340,8 @@ def admin_renewals(request):
 @permission_required('auth.can_access_administration', raise_exception=True)
 @permission_required('auth.can_edit_invoices', raise_exception=True)
 def admin_invoices(request):
-    # Stacked decorators are intentional: requires BOTH
-    # can_access_administration AND can_edit_invoices.
-    # Project-root helper module (resolved via sys.path), not a views import.
     import open_invoices
     today = date.today()
-    months = ('Month', 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December')
-    open_invoices.create_invoices(months[today.month], today.year, request)
+    months = ('Month','January','February','March','April','May','June','July','August','September','October','November','December')
+    open_invoices.create_invoices(months[today.month],today.year,request)
     return redirect("admin_apms")

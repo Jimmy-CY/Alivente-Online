@@ -1,35 +1,12 @@
+﻿"""
+Celebrations views for Alivente Online.
+
+Extracted from pages/views/main.py as part of the modular split.
+Covers contact management, celebration event CRUD, the calendar/timeline
+views, the dashboard, the Excel importer, and the AJAX endpoint for
+updating per-event notification preferences.
 """
-Celebrations views.
-
-Extracted from the legacy pages/views/main.py during the modular views
-split. Covers contact management, celebration-event CRUD, the calendar /
-timeline views, the dashboard, the Excel importer, and the AJAX endpoint
-for updating per-event notification preferences.
-
-Functions
----------
-- celebration_management     : Main page; POST handles Contact + Event
-                               CRUD (add/edit/delete each); GET builds
-                               the upcoming-events panel.
-- celebration_calendar       : Month calendar + 365-day timeline of
-                               upcoming celebrations.
-- import_celebrations        : Bulk-import contacts/events from an
-                               uploaded Excel file (pandas).
-- celebration_dashboard      : Next-30-days upcoming celebrations.
-- update_event_notifications : AJAX (POST) - update a single event's
-                               per-recipient notification flags.
-
-Auth tiers
-----------
-can_access_personal -> celebration_management, celebration_calendar,
-                       celebration_dashboard
-can_edit_personal   -> import_celebrations, update_event_notifications
-                       (both also @require_POST)
-"""
-
-import json
-from calendar import month_name, monthcalendar
-from datetime import datetime
+from calendar import monthcalendar, month_name
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
@@ -110,6 +87,7 @@ def celebration_management(request):
 
                 if event_date_str:
                     # Parse the date
+                    from datetime import datetime
                     event_date = datetime.strptime(event_date_str, '%Y-%m-%d').date()
 
                     # For namedays, set year to 1900 (placeholder year)
@@ -158,6 +136,7 @@ def celebration_management(request):
 
                 # Handle date update
                 if event_date_str:
+                    from datetime import datetime
                     event_date = datetime.strptime(event_date_str, '%Y-%m-%d').date()
 
                     # For namedays, set year to 1900 (placeholder year)
@@ -321,9 +300,6 @@ def import_celebrations(request):
     skip_duplicates = request.POST.get('skip_duplicates') == 'on'
 
     try:
-        # pandas is imported lazily (not at module top) on purpose: it is a
-        # heavy dependency and only this rarely-used Excel importer needs it,
-        # so we avoid paying its import cost on every worker startup.
         import pandas as pd
 
         # Read Excel file
@@ -370,7 +346,7 @@ def import_celebrations(request):
             if not name:
                 continue
 
-            # Check if contact exists (shared - any user's contact counts as duplicate)
+            # Check if contact exists (shared — any user's contact counts as duplicate)
             if skip_duplicates and Contact.objects.filter(name__iexact=name).exists():
                 contacts_skipped += 1
                 continue
@@ -495,6 +471,7 @@ def celebration_dashboard(request):
 @require_POST
 def update_event_notifications(request, event_id):
     """Update notification preferences for a specific event via AJAX"""
+    import json
 
     try:
         event = CelebrationEvent.objects.get(id=event_id)

@@ -1,54 +1,21 @@
+﻿"""
+pages/views/wcim.py
+
+Views for the "What Can I Make?" feature.
+
+Phase 1b (current):
+    - pantry_staples_management: manage the user's persistent pantry staples list
+
+Phase 1c will add the matching engine.
+Phase 1d will add the new WCIM landing + results pages.
 """
-"What Can I Make?" (WCIM) views.
-
-The WCIM feature lets a user pick anchor ingredients (and optional
-extras), then surfaces ranked recipe matches based on their pantry
-staples and ingredient families. The matching engine itself lives in
-pages/services/wcim.py; this module is the view / HTTP layer.
-
-Functions
----------
-- _seed_default_staples          : Helper - bulk-create the default
-                                   pantry staples for a user.
-- pantry_staples_management      : Manage the user's persistent pantry
-                                   staples (add / remove / reset;
-                                   auto-seeds defaults on first visit).
-- wcim_landing                   : Anchor picker; saves selection to
-                                   session.
-- wcim_extras                    : "What else do you have?" picker
-                                   (suggested extras shortlist).
-- wcim_results                   : Tiered, ranked recipe matches for the
-                                   chosen anchors + extras.
-- wcim_recipe_quick_view         : Recipe detail HTML partial for the
-                                   WCIM modal (marks each ingredient
-                                   have_exact / have_substitute /
-                                   missing).
-- ingredient_families_management : CRUD for WCIM ingredient families
-                                   (add/remove members, create/update/
-                                   delete families, re-seed).
-"""
-
-from io import StringIO
-
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.core.management import call_command
-from django.shortcuts import get_object_or_404, redirect, render
+from django.shortcuts import render, redirect
 from django.views.decorators.http import require_http_methods
 
-from pages.models import (
-    Ingredient,
-    IngredientFamily,
-    PantryStaple,
-    Recipe,
-    RecipeIngredient,
-)
-from pages.services.wcim import (
-    ANCHOR_DEFINITIONS,
-    DEFAULT_PANTRY_STAPLE_IDS,
-    run_match,
-    suggest_extras_for_anchors,
-)
+from pages.models import Ingredient, PantryStaple
+from pages.services.wcim import DEFAULT_PANTRY_STAPLE_IDS
 
 
 def _seed_default_staples(user):
@@ -129,7 +96,7 @@ def pantry_staples_management(request):
                 "Add or remove items below to make it your own.",
             )
 
-    # Order by category then name - drives the {% regroup %} in the template
+    # Order by category then name — drives the {% regroup %} in the template
     staples = (PantryStaple.objects
                .filter(user=request.user)
                .select_related("ingredient", "ingredient__category")
@@ -148,7 +115,6 @@ def pantry_staples_management(request):
     }
     return render(request, "pantry_staples.html", context)
 
-
 def wcim_landing(request):
     """The "What Can I Make?" anchor picker.
 
@@ -156,6 +122,8 @@ def wcim_landing(request):
     POST: save selected anchors to session, redirect to extras picker
           (or directly to results if user picked Skip).
     """
+    from pages.services.wcim import ANCHOR_DEFINITIONS
+
     ANCHOR_ICONS = {
         "chicken":    "fa-drumstick-bite",
         "pork":       "fa-bacon",
@@ -180,7 +148,7 @@ def wcim_landing(request):
             return redirect("wcim_results")
         return redirect("wcim_extras")
 
-    # Landing always starts fresh - clear any prior selection so the user
+    # Landing always starts fresh — clear any prior selection so the user
     # gets an unselected anchor row every time they arrive here.
     request.session.pop("wcim_anchors", None)
     request.session.pop("wcim_extras", None)
@@ -196,7 +164,6 @@ def wcim_landing(request):
     }
     return render(request, "wcim_landing.html", context)
 
-
 def wcim_extras(request):
     """The "what else do you have?" picker, shown after anchor selection.
 
@@ -204,6 +171,8 @@ def wcim_extras(request):
          render the page.
     POST: save selected extras to session, redirect to results.
     """
+    from pages.services.wcim import suggest_extras_for_anchors, ANCHOR_DEFINITIONS
+
     anchors = request.session.get("wcim_anchors", [])
     if not anchors:
         # User hit this page without going through landing first
@@ -239,6 +208,9 @@ def wcim_results(request):
     Reads anchors and extras from session, runs the matching engine, groups
     results by tier, and renders the page.
     """
+    from pages.services.wcim import run_match, ANCHOR_DEFINITIONS
+    from pages.models import Ingredient
+
     anchors = request.session.get("wcim_anchors", [])
     extras = request.session.get("wcim_extras", [])
 
@@ -286,13 +258,15 @@ def wcim_results(request):
     }
     return render(request, "wcim_results.html", context)
 
-
 def wcim_recipe_quick_view(request, recipe_id):
     """Return a recipe detail HTML partial for the WCIM modal.
 
     Marks each ingredient as have_exact / have_substitute / missing based on
     the user's pantry staples + ticked extras + ingredient family membership.
     """
+    from django.shortcuts import get_object_or_404
+    from pages.models import Recipe, PantryStaple, RecipeIngredient, Ingredient
+
     recipe = get_object_or_404(
         Recipe.objects.prefetch_related("instructions"),
         recipe_id=recipe_id,
@@ -351,7 +325,6 @@ def wcim_recipe_quick_view(request, recipe_id):
         "ingredients_data": ingredients_data,
     })
 
-
 @login_required
 @require_http_methods(["GET", "POST"])
 def ingredient_families_management(request):
@@ -363,6 +336,10 @@ def ingredient_families_management(request):
         - remove_from_family + ingredient_id
         - reset_all
     """
+    from io import StringIO
+    from django.core.management import call_command
+    from pages.models import IngredientFamily
+
     if request.method == "POST":
         action = request.POST.get("action")
 
@@ -439,7 +416,7 @@ def ingredient_families_management(request):
                 family = IngredientFamily.objects.get(family_id=family_id)
                 name = family.name
                 member_count = family.members.count()
-                family.delete()  # SET_NULL cascades - members keep, lose family FK
+                family.delete()  # SET_NULL cascades — members keep, lose family FK
                 if member_count:
                     s = "" if member_count == 1 else "s"
                     messages.success(
