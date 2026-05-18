@@ -1,44 +1,26 @@
-"""
-User administration views.
+﻿"""
+User administration views for Alivente Online.
 
-Extracted from the legacy pages/views/main.py during the modular views
-split. Covers the superuser-only User Administration screens: list,
-add, edit, per-user module permissions, and permanent delete (with
-safety checks).
+Extracted from pages/views/main.py as part of the modular split.
+Covers the superuser-only User Administration screen: list, add, edit,
+per-user module permissions, and permanent delete (with safety checks).
 
-All five views share the same three-decorator stack:
+All five views are protected by the same three-decorator stack:
     @login_required
     @user_passes_test(lambda u: u.is_superuser)
     @permission_required('auth.can_access_administration', raise_exception=True)
 
-Note: self-service profile editing (my_profile) is intentionally NOT
-here - it is a different concern (a regular user updating their own
-details, with a different decorator set) and lives in its own module.
-(The original docstring said it "stays in main.py"; main.py was removed
-during the split, so that reference is obsolete.)
-
-Functions
----------
-- user_administration : List users; POST toggles a user's active flag
-                        (cannot disable yourself).
-- user_add            : Create a user (validates username / email /
-                        password; optional superuser role).
-- user_edit           : Update a user; optional password reset; cannot
-                        strip your own superuser status.
-- user_permissions    : Grant/revoke per-module access & edit
-                        permissions (edit implies access).
-- user_delete         : Permanently delete a user (must be disabled,
-                        not yourself, and not the last superuser).
+Self-service profile editing (my_profile) stays in main.py — it's a
+different concern (a regular user updating their own details) and uses a
+different decorator set.
 """
-
 from django.contrib import messages
 from django.contrib.auth.decorators import (
     login_required,
     permission_required,
     user_passes_test,
 )
-from django.contrib.auth.models import Permission, User
-from django.contrib.contenttypes.models import ContentType
+from django.contrib.auth.models import User
 from django.shortcuts import get_object_or_404, redirect, render
 
 from ..models import UserProfile
@@ -79,10 +61,6 @@ def user_administration(request):
         if not hasattr(user, 'profile'):
             UserProfile.objects.get_or_create(user=user)
 
-    # Re-query after ensuring profiles exist so select_related('profile')
-    # reflects any UserProfile rows just created above (the first queryset
-    # was evaluated before those rows existed). This double query is
-    # intentional - do not collapse it.
     users = User.objects.select_related('profile').order_by('username')
 
     context = {
@@ -241,6 +219,9 @@ def user_permissions(request, user_id):
         {'codename': 'can_access_personal',       'edit_codename': 'can_edit_personal',   'label': 'Personal',         'icon': 'fa-user-circle'},
     ]
 
+    from django.contrib.auth.models import Permission
+    from django.contrib.contenttypes.models import ContentType
+
     # Ensure all permissions exist in the database
     content_type = ContentType.objects.get_for_model(User)
     for perm in all_permissions:
@@ -287,7 +268,7 @@ def user_permissions(request, user_id):
         messages.success(request, f'Permissions updated for "{target_user.username}".')
         return redirect('user_administration')
 
-    # GET - build list with current status
+    # GET — build list with current status
     user_perm_codenames = set(
         target_user.user_permissions.filter(
             content_type=content_type

@@ -1,28 +1,20 @@
-"""
+﻿"""
 Home / landing page view.
 
-Extracted from the legacy pages/views/main.py during the modular views
-split. This is the public landing page: it has NO @login_required and
-renders for anonymous visitors, building the authenticated extras only
-when a user is logged in (so the request.user.is_authenticated checks
-below are genuine guards, not always-true - do not flatten them).
+Extracted from pages/views/main.py as part of the modular views migration
+(section ### HOME ###).
 
-Functions
----------
-- _build_today_items : Helper. Builds the ordered, non-zero "Today"
-                       panel items (urgent -> warning -> info) from the
-                       notification summary.
-- home               : The landing page. Lists properties / current
-                       tenants / suppliers, computes per-area permission
-                       flags, and (for authenticated users with
-                       dashboard access) builds the cached Today panel.
+Contains 2 functions:
+  _build_today_items - helper that builds the ordered list of non-zero
+                        "Today" items for the home page panel
+  home               - the home/landing page view
 
-Cross-module import
--------------------
-get_notification_data is imported from .notifications_dashboard (it was
-extracted there during the modular split; the former "update this import
-when the NOTIFICATIONS section is extracted from main.py" note is now
-obsolete - main.py no longer exists - and has been removed).
+URL patterns remain registered in pages/urls.py.
+
+Cross-module dependency: the home view calls get_notification_data() which
+currently lives in the ### NOTIFICATIONS ### section of main.py. When that
+section is later extracted into its own module, update the import below
+to point at the new module.
 """
 
 import json
@@ -39,13 +31,13 @@ def _build_today_items(notification_data):
     Build the ordered list of non-zero Today items for the home page panel.
 
     Each item is a dict with:
-      - label:      singular/plural human heading
-      - count:      integer count
-      - icon:       Font Awesome class
-      - severity:   'urgent' | 'warning' | 'info' (drives the colour)
-      - category:   matches the data-category strings used by the modal JS
-                    (so we can look up the right detail rows on tap)
-      - permission: perms_map key gating visibility
+      - label    — singular/plural human heading
+      - count    — integer count
+      - icon     — Font Awesome class
+      - severity — 'urgent' | 'warning' | 'info' (drives the colour)
+      - category — matches the data-category strings used by the modal JS
+                   (so we can look up the right detail rows on tap)
+      - permission — perms_map key gating visibility
 
     Returns items in priority order: urgent first, then warning, then info.
     Zero-count items are filtered out so the Today panel only shows
@@ -172,7 +164,7 @@ def home(request):
                 'administration': request.user.has_perm('auth.can_access_administration'),
             }
 
-    # Today panel - build for authenticated users with dashboard access
+    # Today panel — build for authenticated users with dashboard access
     # (same permission gating as the Notifications Dashboard view itself).
     today_items = []
     notification_data_json = '{}'
@@ -182,7 +174,7 @@ def home(request):
         if notification_data is None:
             try:
                 notification_data = get_notification_data()
-                # 30-second TTL - fast page loads, ~minute-fresh counts.
+                # 30-second TTL — fast page loads, ~minute-fresh counts.
                 cache.set(cache_key, notification_data, 30)
             except Exception:
                 notification_data = None

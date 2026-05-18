@@ -1,25 +1,11 @@
+﻿"""
+Passport / Identity Document views for Alivente Online.
+
+Extracted from pages/views/main.py as part of the modular split.
+Contains the single ``passport_management`` view which handles
+list / add / edit / upload / delete operations for personal identity
+documents (passports, IDs, driver's licences, ARC cards, etc.).
 """
-Passport / identity-document views.
-
-Extracted from the legacy pages/views/main.py during the modular views
-split. A single view handles list / add / edit / upload / delete for
-personal identity documents (passports, IDs, driver's licences, ARC
-cards, etc.), plus a 6-month expiry-warning flag on the list.
-
-Functions
----------
-- passport_management : GET lists documents with holder / type /
-                        country / status filters and an expiring-soon
-                        flag; POST dispatches add / edit / upload /
-                        delete by the 'action' field.
-
-Auth tiers
-----------
-read tier -> auth.can_access_personal  (view the list)
-edit tier -> auth.can_edit_personal    (any POST mutation; enforced at
-                                        the top of the POST branch)
-"""
-
 from datetime import date, timedelta
 
 from django.contrib import messages
@@ -33,7 +19,7 @@ from ..models import Passport
 @permission_required('auth.can_access_personal', raise_exception=True)
 def passport_management(request):
     if request.method == 'POST':
-        # Edit-level actions - all POST branches require edit permission
+        # Edit-level actions — all POST branches require edit permission
         if not request.user.has_perm('auth.can_edit_personal'):
             messages.error(request, "You don't have permission to modify passports.")
             return redirect('passport_management')

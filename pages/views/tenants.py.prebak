@@ -1,31 +1,28 @@
-"""
+﻿"""
 Tenants views.
 
-Extracted from the legacy pages/views/main.py during the modular views
-split. Tenant deletion relies on the post_save / post_delete handlers
-in manage_vacancy_periods.py for vacancy-period cleanup.
+Extracted from pages/views/main.py as part of the modular views migration
+(section ### TENANTS ###).
 
-Functions
----------
-- tenant_page            : List view with property / tenant / status
-                           filters.
-- tenant_add             : Add form.
-- tenant_edit            : Edit form.
-- tenant_commit          : Add save (TenantForm).
-- tenant_edit_commit     : Edit save (TenantForm).
-- tenant_lease_agreement : Upload / delete the lease-agreement document.
-- lease_timeline_view    : Per-property tenant lease timeline UI.
-- duplicate_tenant_view  : Duplicate a tenant for renewal / new lease.
-- delete_tenant_view     : Delete a tenant (signals handle vacancy
-                           cleanup).
+Contains 9 functions:
+  tenant_page             - list view with property/tenant/status filters
+  tenant_add              - add form
+  tenant_edit             - edit form
+  tenant_commit           - add save (uses TenantForm)
+  tenant_edit_commit      - edit save (uses TenantForm)
+  tenant_lease_agreement  - upload/delete lease agreement document
+  lease_timeline_view     - lease timeline UI (per-property tenant timeline)
+  duplicate_tenant_view   - duplicate tenant for renewal/new lease
+  delete_tenant_view      - delete tenant (signals handle vacancy cleanup)
 
-Auth tiers
-----------
-read tier -> auth.can_access_tenants  (tenant_page,
-                                       tenant_lease_agreement,
-                                       lease_timeline_view)
-edit tier -> auth.can_edit_tenants    (add, edit, commit, edit_commit,
-                                       duplicate, delete)
+URL patterns remain registered in pages/urls.py.
+Tenant deletion relies on the post_save / post_delete handlers in
+manage_vacancy_periods.py for vacancy period cleanup.
+
+Indentation note: this module preserves the mixed tab/4-space indentation
+of the legacy source. tenant_add, tenant_edit, and tenant_edit_commit use
+TAB indentation; the other 6 use 4 spaces. A future cleanup pass can
+normalize to PEP 8 four-space.
 """
 
 import os
@@ -47,27 +44,27 @@ def tenant_page(request):
     selected_property = request.POST.get('propname', '').strip()
     selected_tenant = request.POST.get('tenantname', '').strip()
     selected_status = request.POST.get('act', '').strip()
-
+    
     # Start with all properties and tenants
     all_properties = props.objects.all().order_by('prop_country', 'prop_name')
     all_tenants = tenant.objects.all().order_by('tenant_name')
-
+    
     # Filter tenants based on the selected criteria
     filtered_tenants = all_tenants
-
+    
     # Apply tenant name filter
     if selected_tenant:
         filtered_tenants = filtered_tenants.filter(tenant_name=selected_tenant)
-
+    
     # Apply status filter
     if selected_status:
         filtered_tenants = filtered_tenants.filter(tenant_current=selected_status)
-
+    
     # Filter properties based on the selected property
     filtered_properties = all_properties
     if selected_property:
         filtered_properties = filtered_properties.filter(prop_name=selected_property)
-
+    
     # Pass filter values back to template for form persistence
     context = {
         'tenant': filtered_tenants,
@@ -76,34 +73,31 @@ def tenant_page(request):
         'selected_tenant': selected_tenant,
         'selected_status': selected_status,
     }
-
+    
     return render(request, "tenant.html", context)
-
 
 @login_required
 @permission_required('auth.can_edit_tenants', raise_exception=True)
 def tenant_add(request):
-    results = props.objects.all().order_by('prop_country', 'prop_name')
+    results = props.objects.all().order_by('prop_country','prop_name')
     tresults = tenant.objects.all().order_by('tenant_name')
-    return render(request, "tenant_add.html", {"props": results, "tenant": tresults})
-
+    return render(request, "tenant_add.html", {"props":results, "tenant":tresults})
 
 @login_required
 @permission_required('auth.can_edit_tenants', raise_exception=True)
 def tenant_edit(request, tenant_id):
     tresults = tenant.objects.filter(pk=tenant_id)
-    results = props.objects.all().order_by('prop_country', 'prop_name')
-    return render(request, "tenant_edit.html", {"props": results, "tenant": tresults})
-
+    results = props.objects.all().order_by('prop_country','prop_name')
+    return render (request, "tenant_edit.html", {"props":results, "tenant":tresults})
 
 @login_required
 @permission_required('auth.can_edit_tenants', raise_exception=True)
 def tenant_commit(request):
-    props_list = props.objects.all().order_by('prop_country', 'prop_name')
-
+    props_list = props.objects.all().order_by('prop_country','prop_name')
+    
     if request.method == "POST":
         form = TenantForm(request.POST)
-
+        
         if form.is_valid():
             try:
                 new_tenant = form.save()
@@ -125,13 +119,12 @@ def tenant_commit(request):
                 for error in errors:
                     clean_error = str(error).replace('__all__: ', '')
                     messages.error(request, clean_error)
-
+    
     return render(request, "tenant_add.html", {
         'form': TenantForm(request.POST if request.method == "POST" else None),
         'props': props_list,
         'form_data': request.POST if request.method == "POST" else None
     })
-
 
 @login_required
 @permission_required('auth.can_edit_tenants', raise_exception=True)
@@ -142,27 +135,26 @@ def tenant_edit_commit(request, tenant_id):
         if form.is_valid():
             form.save()
             messages.success(request, "Tenant Edited Successfully")
-    results = props.objects.all().order_by('prop_country', 'prop_name')
+    results = props.objects.all().order_by('prop_country','prop_name')
     tresults = tenant.objects.all().order_by('tenant_name')
-    return render(request, "tenant.html", {"tenant": tresults, "props": results})
-
+    return render (request, "tenant.html", {"tenant":tresults, "props":results})
 
 @login_required
 @permission_required('auth.can_access_tenants', raise_exception=True)
 def tenant_lease_agreement(request):
     tenants = tenant.objects.all().order_by('prop__prop_country', 'prop__prop_name', 'tenant_name')
-
+    
     if request.method == 'POST':
         action = request.POST.get('action')
         tenant_id = request.POST.get('tenant_id')
-
+        
         if not tenant_id:
             messages.error(request, 'No tenant selected')
             return redirect('tenant_lease_agreement')
-
+        
         try:
             tenant_obj = get_object_or_404(tenant, pk=tenant_id)
-
+            
             if action == 'delete':
                 if tenant_obj.tenant_lease_agreement:
                     # Delete the file from storage
@@ -172,52 +164,52 @@ def tenant_lease_agreement(request):
                     messages.success(request, f'Lease agreement deleted for {tenant_obj.tenant_name}!')
                 else:
                     messages.warning(request, 'No lease agreement found to delete.')
+                    
 
             elif action == 'upload':
                 if 'lease_agreement' in request.FILES:
                     uploaded_file = request.FILES['lease_agreement']
-
+                    
                     # Validate file size (10MB limit)
                     if uploaded_file.size > 10 * 1024 * 1024:
                         messages.error(request, 'File size exceeds 10MB limit')
                         return redirect('tenant_lease_agreement')
-
+                    
                     # Validate file type
                     allowed_extensions = ['.pdf', '.jpg', '.jpeg', '.png']
                     file_extension = os.path.splitext(uploaded_file.name)[1].lower()
-
+                    
                     if file_extension not in allowed_extensions:
                         messages.error(request, 'Invalid file type. Please upload PDF or image files only.')
                         return redirect('tenant_lease_agreement')
-
+                    
                     try:
                         # Ensure directory exists
                         upload_path = os.path.join(settings.MEDIA_ROOT, 'tenants', 'lease_agreements')
                         os.makedirs(upload_path, exist_ok=True)
-
+                        
                         # Delete old file if exists
                         if tenant_obj.tenant_lease_agreement:
                             tenant_obj.tenant_lease_agreement.delete(save=False)
-
+                        
                         # Save new file
                         tenant_obj.tenant_lease_agreement = uploaded_file
                         tenant_obj.tenant_lease_agreement_status = "Lease Agreement Uploaded"
                         tenant_obj.save()
-
+                        
                         messages.success(request, f'Lease agreement uploaded successfully for {tenant_obj.tenant_name}!')
                     except Exception as e:
                         messages.error(request, f'Error saving file: {str(e)}')
                 else:
                     messages.error(request, 'Please select a file to upload')
-
+                    
         except Exception as e:
             messages.error(request, f'Error processing request: {str(e)}')
-
+    
     context = {
         'tenants': tenants,
     }
     return render(request, 'tenant_lease_agreement.html', context)
-
 
 @login_required
 @permission_required('auth.can_access_tenants', raise_exception=True)
@@ -226,13 +218,13 @@ def lease_timeline_view(request):
     properties = props.objects.filter(prop_status='Active').prefetch_related(
         'tenant_set'
     ).order_by('prop_country', 'prop_name')
-
+    
     # Build timeline data
     timeline_data = []
-
+    
     for prop in properties:
         tenants = prop.tenant_set.all().order_by('tenant_lease_start_date')
-
+        
         for t in tenants:
             if t.tenant_lease_start_date:
                 timeline_data.append({
@@ -245,14 +237,13 @@ def lease_timeline_view(request):
                     'is_active': t.tenant_current == 'Yes',
                     'rent': float(t.tenant_rent) if t.tenant_rent else 0,
                 })
-
+    
     context = {
         'properties': properties,
         'timeline_data': timeline_data,
     }
-
+    
     return render(request, 'lease_timeline.html', context)
-
 
 @login_required
 @permission_required('auth.can_edit_tenants', raise_exception=True)
@@ -264,10 +255,10 @@ def duplicate_tenant_view(request, tenant_id):
     try:
         # Get the original tenant
         original_tenant = tenant.objects.get(pk=tenant_id)
-
+        
         # Create a new tenant instance with copied data
         new_tenant = tenant()
-
+        
         # Copy all fields EXCEPT primary key and dates
         new_tenant.prop = original_tenant.prop
         new_tenant.tenant_type = original_tenant.tenant_type
@@ -282,38 +273,37 @@ def duplicate_tenant_view(request, tenant_id):
         new_tenant.tenant_rent = original_tenant.tenant_rent
         new_tenant.tenant_levies = original_tenant.tenant_levies
         new_tenant.tenant_payment_terms = original_tenant.tenant_payment_terms
-
+        
         # Set lease dates to None - user will fill these in
         new_tenant.tenant_lease_start_date = None
         new_tenant.tenant_lease_end_date = None
-
+        
         # Set as inactive initially - user will activate after setting dates
         new_tenant.tenant_current = 'No'
-
+        
         # Reset renewal status
         new_tenant.tenant_renewal_status = 'pending'
-
+        
         # Don't copy lease agreement - user may need to upload new one
         new_tenant.tenant_lease_agreement = None
         new_tenant.tenant_lease_agreement_status = None
-
+        
         # Save the new tenant
         new_tenant.save()
-
+        
         # Redirect to edit page for the new tenant
         messages.success(
-            request,
+            request, 
             f'Tenant duplicated successfully! Please update the lease dates and set to Active when ready.'
         )
         return redirect('tenant_edit', tenant_id=new_tenant.tenant_id)
-
+        
     except tenant.DoesNotExist:
         messages.error(request, 'Tenant not found.')
-        return redirect('tenant')
+        return redirect('tenant')  # ← FIXED
     except Exception as e:
         messages.error(request, f'Error duplicating tenant: {str(e)}')
-        return redirect('tenant')
-
+        return redirect('tenant')  # ← FIXED
 
 @login_required
 @permission_required('auth.can_edit_tenants', raise_exception=True)
@@ -327,16 +317,16 @@ def delete_tenant_view(request, tenant_id):
         tenant_to_delete = tenant.objects.get(pk=tenant_id)
         tenant_name = tenant_to_delete.tenant_name
         property_name = tenant_to_delete.prop.prop_name
-
+        
         # Delete the tenant (signal will handle vacancy cleanup)
         tenant_to_delete.delete()
-
+        
         messages.success(
             request,
             f'Tenant "{tenant_name}" from {property_name} has been deleted. Vacancy periods have been automatically recalculated.'
         )
         return redirect('tenant')
-
+        
     except tenant.DoesNotExist:
         messages.error(request, 'Tenant not found.')
         return redirect('tenant')
