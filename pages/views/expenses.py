@@ -1,41 +1,51 @@
-﻿"""
+"""
 Actual Expenses views.
 
-Extracted from pages/views/main.py as part of the modular views migration
-(section ### ACTUAL EXPENSES ###).
+Extracted from the legacy pages/views/main.py during the modular views
+split (section ### ACTUAL EXPENSES ###).
 
-Contains 13 functions:
-  View functions (10):
-    act_expense_manage_document - document upload/replace/delete/merge
-    act_expense_all             - list view with filters
-    act_expense_view            - approved+paid view with year/month filters
-    act_expense_edit            - edit form
-    act_expense_edit_commit     - edit save
-    mark_approved               - superuser approval + notification email
-    mark_paid                   - superuser mark-paid + notification email
-    mark_deleted                - delete (guarded for non-superusers)
-    act_expense_add             - add form
-    act_expense_commit          - add save + approval-needed email
+Note: this module intentionally contains the Euro sign in the
+notification-email subjects/bodies. That is user-facing content and
+must be preserved byte-for-byte - do NOT "ASCII-ize" it.
 
-  Email helpers (3, not Django views):
-    send_expense_approved_email
-    send_expense_paid_email
-    send_expense_approval_email_with_link
+View functions
+--------------
+- act_expense_manage_document : Document upload / replace / delete /
+                                merge (auto PDF conversion).
+- act_expense_all             : List view with search / property /
+                                status / date-range filters.
+- act_expense_view            : Approved+paid view with year / month /
+                                date-range filters.
+- act_expense_edit            : Edit form.
+- act_expense_edit_commit     : Edit save (non-superusers cannot touch
+                                approved/paid; form-tamper proof).
+- mark_approved               : Superuser approve + notification email.
+- mark_paid                   : Superuser mark-paid + notification
+                                email.
+- mark_deleted                : Delete (guarded for non-superusers).
+- act_expense_add             : Add form.
+- act_expense_commit          : Add save; emails approvers when a
+                                non-superuser creates one.
 
-  Cross-reference verified: all three helpers are called only from within
-  this module (mark_approved, mark_paid, act_expense_commit respectively).
+Email helpers (not Django views)
+--------------------------------
+- send_expense_approved_email
+- send_expense_paid_email
+- send_expense_approval_email_with_link
+  (called only from mark_approved, mark_paid, act_expense_commit
+  respectively; verified single-caller each.)
 
-URL patterns remain registered in pages/urls.py.
-
-Note: this module preserves a mid-file `from datetime import datetime`
-between act_expense_manage_document and act_expense_all -- left over from
-the original source. Functionally fine (module-level imports execute on
-load regardless of position) but a candidate for a future cleanup pass
-that hoists it to the top imports.
+Auth tiers
+----------
+superuser only      -> mark_approved, mark_paid (@user_passes_test)
+can_access_expenses -> act_expense_all, act_expense_view
+can_edit_expenses   -> manage_document, edit, edit_commit,
+                       mark_deleted, add, commit
 """
 
 import os
 import smtplib
+from datetime import date, datetime
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
@@ -46,13 +56,14 @@ from django.contrib.auth.decorators import (
     user_passes_test,
 )
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils.dateparse import parse_date
 
 from ..models import act_expense, props
 from ..utils import convert_to_pdf, is_pdf, merge_pdfs
 
 
-@permission_required('auth.can_edit_expenses', raise_exception=True)
 @login_required
+@permission_required('auth.can_edit_expenses', raise_exception=True)
 def act_expense_manage_document(request):
     """
     Handle document upload, replacement, and deletion within the main expense page
@@ -61,72 +72,72 @@ def act_expense_manage_document(request):
         action = request.POST.get('action')
         document_action = request.POST.get('document_action')  # Get the document action type
         expense_id = request.POST.get('expense_id')
-        
+
         if not expense_id:
             messages.error(request, 'No expense selected')
             return redirect('act_expense_all')
-        
+
         try:
             expense = get_object_or_404(act_expense, pk=expense_id)
-            
+
             if action == 'delete_document':
                 # Handle document deletion only (not the entire expense)
                 if expense.act_expense_document:
                     # Delete the physical file
                     if expense.act_expense_document.storage.exists(expense.act_expense_document.name):
                         expense.act_expense_document.delete(save=False)
-                    
+
                     # Clear the database field
                     expense.act_expense_document = None
                     expense.save()
-                    
+
                     messages.success(request, f'Invoice document deleted successfully for expense on {expense.act_expense_date}!')
                 else:
                     messages.warning(request, 'No document found to delete.')
-                    
+
             elif action == 'upload':
                 # Handle file upload/replacement
                 if 'act_expense_document' in request.FILES:
                     uploaded_file = request.FILES['act_expense_document']
-                    
+
                     # Validate file size (5MB limit)
                     if uploaded_file.size > 5 * 1024 * 1024:
                         messages.error(request, 'File size exceeds 5MB limit')
                         return redirect('act_expense_all')
-                    
+
                     # Validate file type
                     allowed_extensions = ['.pdf', '.jpg', '.jpeg', '.png', '.xlsx', '.xls', '.doc', '.docx']
                     file_extension = os.path.splitext(uploaded_file.name)[1].lower()
-                    
+
                     if file_extension not in allowed_extensions:
                         messages.error(request, 'Invalid file type. Please upload PDF, JPG, PNG, Excel, or Word files only.')
                         return redirect('act_expense_all')
-                    
+
                     # Check if we're adding to existing or replacing
                     if document_action == 'add_to_existing' and expense.act_expense_document:
                         # For merge, existing file must be PDF
                         if not is_pdf(expense.act_expense_document):
                             messages.error(request, 'Cannot merge: Existing document is not a PDF. Please use Replace instead.')
                             return redirect('act_expense_all')
-                        
+
                         # Convert uploaded file to PDF first if necessary
                         try:
                             pdf_content, pdf_filename = convert_to_pdf(uploaded_file)
-                            
+
                             # Merge the PDFs (pdf_content is already a ContentFile)
                             merged_pdf = merge_pdfs(expense.act_expense_document, pdf_content)
-                            
+
                             # Generate a new filename
                             original_name = os.path.splitext(os.path.basename(expense.act_expense_document.name))[0]
                             new_filename = f"{original_name}_merged.pdf"
-                            
+
                             # Delete the old file
                             if expense.act_expense_document.storage.exists(expense.act_expense_document.name):
                                 expense.act_expense_document.delete(save=False)
-                            
+
                             # Save the merged PDF
                             expense.act_expense_document.save(new_filename, merged_pdf, save=True)
-                            
+
                             messages.success(request, f'Documents merged successfully for expense on {expense.act_expense_date}!')
                         except ValueError as e:
                             messages.error(request, f'Error: {str(e)}')
@@ -140,12 +151,12 @@ def act_expense_manage_document(request):
                         if expense.act_expense_document:
                             if expense.act_expense_document.storage.exists(expense.act_expense_document.name):
                                 expense.act_expense_document.delete(save=False)
-                        
+
                         # Convert to PDF if necessary
                         try:
                             pdf_content, pdf_filename = convert_to_pdf(uploaded_file)
                             expense.act_expense_document.save(pdf_filename, pdf_content, save=True)
-                            
+
                             # Show different message if conversion happened
                             if file_extension != '.pdf':
                                 messages.success(request, f'Document uploaded and converted to PDF successfully for expense on {expense.act_expense_date}!')
@@ -156,16 +167,15 @@ def act_expense_manage_document(request):
                             return redirect('act_expense_all')
                 else:
                     messages.error(request, 'Please select a file to upload')
-                    
+
         except Exception as e:
             messages.error(request, f'Error processing request: {str(e)}')
-    
+
     return redirect('act_expense_all')
 
-from datetime import datetime
 
-@permission_required('auth.can_access_expenses', raise_exception=True)
 @login_required
+@permission_required('auth.can_access_expenses', raise_exception=True)
 def act_expense_all(request):
     # Get filter parameters from request
     search_query = request.GET.get('search', '').strip()
@@ -176,15 +186,15 @@ def act_expense_all(request):
 
     # Base queryset - all expenses, ordered by date (most recent first)
     expenses = act_expense.objects.select_related('prop').order_by('-act_expense_date')
-    
+
     # Apply filters one by one
-    
+
     # 1. Search filter - search in description
     if search_query:
         expenses = expenses.filter(
             act_expense_description__icontains=search_query
         )
-    
+
     # 2. Property filter
     if property_filter:
         try:
@@ -192,7 +202,7 @@ def act_expense_all(request):
             expenses = expenses.filter(prop_id=property_id)
         except (ValueError, TypeError):
             pass
-    
+
     # 3. Status filter
     if status_filter:
         if status_filter == 'require_approval':
@@ -201,7 +211,7 @@ def act_expense_all(request):
             expenses = expenses.filter(act_expense_approved='Yes', act_expense_paid='No')
         elif status_filter == 'approved_and_paid':
             expenses = expenses.filter(act_expense_approved='Yes', act_expense_paid='Yes')
-    
+
     # 4. Date range filtering
     if from_date:
         try:
@@ -210,7 +220,7 @@ def act_expense_all(request):
             expenses = expenses.filter(act_expense_date__gte=parsed_from_date)
         except ValueError:
             pass
-    
+
     if to_date:
         try:
             # Ensure proper date format
@@ -218,14 +228,14 @@ def act_expense_all(request):
             expenses = expenses.filter(act_expense_date__lte=parsed_to_date)
         except ValueError:
             pass
-    
+
     # Get properties for filter dropdown
     properties = props.objects.filter(prop_status="Active").order_by('prop_country', 'prop_name')
-    
+
     # Determine navigation context
     came_from = request.GET.get('from', None)
     from_finance_pl_act = request.GET.get('from_finance_pl_act', False)
-    
+
     # Convert string 'True'/'False' to boolean if needed
     if isinstance(from_finance_pl_act, str):
         from_finance_pl_act = from_finance_pl_act.lower() == 'true'
@@ -244,8 +254,9 @@ def act_expense_all(request):
         'selected_to_date': to_date,
     })
 
-@permission_required('auth.can_access_expenses', raise_exception=True)
+
 @login_required
+@permission_required('auth.can_access_expenses', raise_exception=True)
 def act_expense_view(request):
     # Get year/month from request or use current year as default
     selected_year = request.GET.get('year', datetime.now().year)
@@ -253,13 +264,13 @@ def act_expense_view(request):
     from_finance_pl_act = request.GET.get('from_finance_pl_act', False)
     property_id = request.GET.get('property_id')
     properties = request.GET.get('properties', '')  # NEW: Handle comma-separated properties
-    
+
     # Base queryset - only approved and paid expenses, ordered by date
     expenses = act_expense.objects.select_related('prop').filter(
         act_expense_approved="Yes",
         act_expense_paid="Yes"
     ).order_by('-act_expense_date')
-    
+
     # Filter by property - UPDATED LOGIC
     if properties:  # NEW: Handle comma-separated properties
         try:
@@ -272,35 +283,35 @@ def act_expense_view(request):
             expenses = expenses.filter(prop_id=int(property_id))
         except (ValueError, TypeError):
             pass  # Skip if property_id is invalid
-    
+
     # Handle YEAR/MONTH filtering (convert to int safely)
     try:
         year = int(request.GET.get('year', 0)) if request.GET.get('year') else None
         month = int(request.GET.get('month', 0)) if request.GET.get('month') else None
     except (ValueError, TypeError):
         year, month = None, None  # Fallback if invalid input
-    
+
     if year:
         expenses = expenses.filter(act_expense_date__year=year)
         if month:
             expenses = expenses.filter(act_expense_date__month=month)
-    
+
     # Handle DATE RANGE filtering
     from_date = request.GET.get('from_date')
     to_date = request.GET.get('to_date')
-    
+
     if from_date and to_date:
         expenses = expenses.filter(
             act_expense_date__gte=from_date,
             act_expense_date__lte=to_date
         )
-    
+
     # Get available years for filter dropdown
     available_years = act_expense.objects.filter(
         act_expense_approved="Yes",
         act_expense_paid="Yes"
     ).dates('act_expense_date', 'year').order_by('-act_expense_date')
-    
+
     return render(request, 'act_expense.html', {
         'expenses': expenses,
         'selected_year': year if year else int(selected_year),
@@ -311,8 +322,9 @@ def act_expense_view(request):
         'selected_property_id': property_id
     })
 
-@permission_required('auth.can_edit_expenses', raise_exception=True)
+
 @login_required
+@permission_required('auth.can_edit_expenses', raise_exception=True)
 def act_expense_edit(request, expense_id):
     # Get the current expense being edited
     current_expense = get_object_or_404(act_expense, pk=expense_id)
@@ -322,51 +334,52 @@ def act_expense_edit(request, expense_id):
         if current_expense.act_expense_approved == 'Yes' or current_expense.act_expense_paid == 'Yes':
             messages.error(request, 'You cannot edit an expense that has been approved or paid.')
             return redirect('act_expense_all')
-    
+
     # Get property details from props table
-    results = props.objects.filter(prop_status="Active").order_by('prop_country','prop_name')
+    results = props.objects.filter(prop_status="Active").order_by('prop_country', 'prop_name')
 
     return render(request, "act_expense_edit.html", {
         "props": results,
         "current_expense": current_expense,
     })
 
-@permission_required('auth.can_edit_expenses', raise_exception=True)
+
 @login_required
+@permission_required('auth.can_edit_expenses', raise_exception=True)
 def act_expense_edit_commit(request, expense_id):
     if request.method == 'POST':
         try:
             expense = act_expense.objects.get(act_expense_id=expense_id)
-            
+
             # Non-superusers cannot edit approved or paid expenses
             if not request.user.is_superuser:
                 if expense.act_expense_approved == 'Yes' or expense.act_expense_paid == 'Yes':
                     messages.error(request, 'You cannot edit an expense that has been approved or paid.')
                     return redirect('act_expense_all')
-            
+
             # Update expense fields
             expense.act_expense_date = request.POST.get('act_expense_date')
             expense.prop_id = request.POST.get('prop')
             expense.act_expense_description = request.POST.get('act_expense_description')
             expense.act_expense_amount = request.POST.get('act_expense_amount')
-            
+
             if request.user.is_superuser:
                 expense.act_expense_approved = request.POST.get('act_expense_approved')
-                
+
                 # Handle the paid field - check for hidden field if main field is missing
                 paid_value = request.POST.get('act_expense_paid')
                 if not paid_value:  # If main field is empty (disabled)
                     paid_value = request.POST.get('act_expense_paid_hidden')
-                
+
                 expense.act_expense_paid = paid_value
             # Note: for non-superusers, we do NOT read approved/paid from the form.
             # We leave expense.act_expense_approved and expense.act_expense_paid at their
             # DB-loaded values, which blocks any form tampering.
-            
+
             expense.save()
-            
+
             messages.success(request, 'Expense updated successfully!')
-            
+
         except act_expense.DoesNotExist:
             messages.error(request, 'Expense not found.')
         except Exception as e:
@@ -374,19 +387,19 @@ def act_expense_edit_commit(request, expense_id):
 
     return redirect('act_expense_all')
 
-@user_passes_test(lambda u: u.is_superuser, login_url='/', redirect_field_name=None)
+
 @login_required
+@user_passes_test(lambda u: u.is_superuser, login_url='/', redirect_field_name=None)
 def mark_approved(request, expense_id):
     expense = get_object_or_404(act_expense, pk=expense_id)
     if expense.act_expense_approved != 'Yes':  # Only update if not already approved
         expense.act_expense_approved = 'Yes'
         expense.save()
         # Attempt to send the notification email with enhanced details
-        from datetime import date
         if send_expense_approved_email(
-            expense.act_expense_date, 
+            expense.act_expense_date,
             expense.prop.prop_name,  # Access through the foreign key relationship
-            expense.act_expense_description, 
+            expense.act_expense_description,
             expense.act_expense_amount,
             date.today()
         ):
@@ -395,15 +408,15 @@ def mark_approved(request, expense_id):
             messages.warning(request, "Expense approved, but email could not be sent.")
     return redirect('act_expense_all')
 
-@user_passes_test(lambda u: u.is_superuser, login_url='/', redirect_field_name=None)
+
 @login_required
+@user_passes_test(lambda u: u.is_superuser, login_url='/', redirect_field_name=None)
 def mark_paid(request, expense_id):
     expense = get_object_or_404(act_expense, pk=expense_id)
     if expense.act_expense_paid != 'Yes':  # Only update if not already paid
         expense.act_expense_paid = 'Yes'
         expense.save()
         # Attempt to send the notification email with enhanced details
-        from datetime import date
         if send_expense_paid_email(
             expense.act_expense_date,
             expense.prop.prop_name,  # Access through the foreign key relationship
@@ -416,45 +429,51 @@ def mark_paid(request, expense_id):
             messages.warning(request, "Expense marked as paid, but email could not be sent.")
     return redirect('act_expense_all')
 
-@permission_required('auth.can_edit_expenses', raise_exception=True)
+
 @login_required
+@permission_required('auth.can_edit_expenses', raise_exception=True)
 def mark_deleted(request, expense_id):
     try:
         expense = get_object_or_404(act_expense, pk=expense_id)
-        
+
         # Non-superusers cannot delete approved or paid expenses
         if not request.user.is_superuser:
             if expense.act_expense_approved == 'Yes' or expense.act_expense_paid == 'Yes':
                 messages.error(request, 'You cannot delete an expense that has been approved or paid.')
                 return redirect('act_expense_all')
-        
+
         expense.delete()  # Permanently deletes the record
         messages.success(request, "Expense deleted successfully")
     except Exception as e:
         messages.error(request, f"Error deleting expense: {str(e)}")
     return redirect('act_expense_all')
 
-@permission_required('auth.can_edit_expenses', raise_exception=True)
+
 @login_required
+@permission_required('auth.can_edit_expenses', raise_exception=True)
 def act_expense_add(request):
-    results = props.objects.filter(prop_status="Active").order_by('prop_country','prop_name')
+    results = props.objects.filter(prop_status="Active").order_by('prop_country', 'prop_name')
     return render(request, "act_expense_add.html", {'props': results})
+
 
 def send_expense_approved_email(expense_date, property_name, description, amount, approved_date):
     """
     Send email notification of an expense approval for a specific expense
     """
+    # Deferred imports: only needed when actually sending the email.
+    # pages.email_utils is imported here (not at module top) to avoid a
+    # circular import at views package load time.
     from django.db import connection
     from pages.email_utils import get_email_recipients, format_email_recipients_for_header
     import logging
-    
+
     logger = logging.getLogger(__name__)
     smtp_object = None
-    
+
     try:
         # Get recipients with TO/CC split
         recipients = get_email_recipients('expense_approved')
-        
+
         # Create message
         msg = MIMEMultipart()
         msg['From'] = "demetrimanias@gmail.com"
@@ -462,7 +481,7 @@ def send_expense_approved_email(expense_date, property_name, description, amount
         if recipients['cc']:
             msg['Cc'] = format_email_recipients_for_header(recipients['cc'])
         msg['Subject'] = f"Expense Approved - €{amount} for {property_name}"
-        
+
         # Email body with proper formatting
         body = f"""Dear User,
 
@@ -480,20 +499,20 @@ You can view this expense in the Alivente Property Management System.
 Thanks,
 
 Alivente Property Management System"""
-        
+
         msg.attach(MIMEText(body, 'plain'))
-        
+
         # Get email credentials and settings from environment variables
         email_password = os.environ.get('EMAIL_PASSWORD')
         email_host = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
         email_port = int(os.environ.get('EMAIL_PORT', 465))
         email_use_ssl = os.environ.get('EMAIL_USE_SSL', 'True').lower() == 'true'
         email_use_tls = os.environ.get('EMAIL_USE_TLS', 'False').lower() == 'true'
-        
+
         if not email_password:
             logger.error('EMAIL_PASSWORD environment variable not set')
             return False
-        
+
         # SMTP setup with environment variable configuration
         if email_use_ssl:
             smtp_object = smtplib.SMTP_SSL(email_host, email_port, timeout=10)
@@ -502,15 +521,15 @@ Alivente Property Management System"""
             smtp_object.ehlo()
             if email_use_tls:
                 smtp_object.starttls()
-        
+
         email = "demetrimanias@gmail.com"
         smtp_object.login(email, email_password)
-        
+
         # Send email
         text = msg.as_string()
         smtp_object.sendmail(email, recipients['all'], text)
         return True
-        
+
     except smtplib.SMTPAuthenticationError as e:
         logger.error(f"SMTP Authentication Error: {e}")
         return False
@@ -529,21 +548,25 @@ Alivente Property Management System"""
         # Close database connection
         connection.close()
 
+
 def send_expense_paid_email(expense_date, property_name, description, amount, paid_date):
     """
     Send email notification of an expense payment for a specific expense
     """
+    # Deferred imports: only needed when actually sending the email.
+    # pages.email_utils is imported here (not at module top) to avoid a
+    # circular import at views package load time.
     from django.db import connection
     from pages.email_utils import get_email_recipients, format_email_recipients_for_header
     import logging
-    
+
     logger = logging.getLogger(__name__)
     smtp_object = None
-    
+
     try:
         # Get recipients with TO/CC split
         recipients = get_email_recipients('expense_paid')
-        
+
         # Create message
         msg = MIMEMultipart()
         msg['From'] = "demetrimanias@gmail.com"
@@ -551,7 +574,7 @@ def send_expense_paid_email(expense_date, property_name, description, amount, pa
         if recipients['cc']:
             msg['Cc'] = format_email_recipients_for_header(recipients['cc'])
         msg['Subject'] = f"Expense Paid - €{amount} for {property_name}"
-        
+
         # Email body with proper formatting
         body = f"""Dear User,
 
@@ -569,20 +592,20 @@ This expense has been completed and processed.
 Thanks,
 
 Alivente Property Management System"""
-        
+
         msg.attach(MIMEText(body, 'plain'))
-        
+
         # Get email credentials and settings from environment variables
         email_password = os.environ.get('EMAIL_PASSWORD')
         email_host = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
         email_port = int(os.environ.get('EMAIL_PORT', 465))
         email_use_ssl = os.environ.get('EMAIL_USE_SSL', 'True').lower() == 'true'
         email_use_tls = os.environ.get('EMAIL_USE_TLS', 'False').lower() == 'true'
-        
+
         if not email_password:
             logger.error('EMAIL_PASSWORD environment variable not set')
             return False
-        
+
         # SMTP setup with environment variable configuration
         if email_use_ssl:
             smtp_object = smtplib.SMTP_SSL(email_host, email_port, timeout=10)
@@ -591,15 +614,15 @@ Alivente Property Management System"""
             smtp_object.ehlo()
             if email_use_tls:
                 smtp_object.starttls()
-        
+
         email = "demetrimanias@gmail.com"
         smtp_object.login(email, email_password)
-        
+
         # Send email
         text = msg.as_string()
         smtp_object.sendmail(email, recipients['all'], text)
         return True
-        
+
     except smtplib.SMTPAuthenticationError as e:
         logger.error(f"SMTP Authentication Error: {e}")
         return False
@@ -618,21 +641,25 @@ Alivente Property Management System"""
         # Close database connection
         connection.close()
 
+
 def send_expense_approval_email_with_link(expense_date, property_name, description, amount, created_date):
     """
     Send email notification for expense approval with enhanced details
     """
+    # Deferred imports: only needed when actually sending the email.
+    # pages.email_utils is imported here (not at module top) to avoid a
+    # circular import at views package load time.
     from django.db import connection
     from pages.email_utils import get_email_recipients, format_email_recipients_for_header
     import logging
-    
+
     logger = logging.getLogger(__name__)
     smtp_object = None
-    
+
     try:
         # Get recipients with TO/CC split
         recipients = get_email_recipients('expense_needs_approval')
-        
+
         # Create message
         msg = MIMEMultipart()
         msg['From'] = "demetrimanias@gmail.com"
@@ -640,7 +667,7 @@ def send_expense_approval_email_with_link(expense_date, property_name, descripti
         if recipients['cc']:
             msg['Cc'] = format_email_recipients_for_header(recipients['cc'])
         msg['Subject'] = f"New Expense Requires Approval - €{amount} for {property_name}"
-        
+
         # Email body with proper formatting
         body = f"""Dear User,
 
@@ -658,20 +685,20 @@ You can view this expense in the Alivente Property Management System.
 Thanks,
 
 Alivente Property Management System"""
-        
+
         msg.attach(MIMEText(body, 'plain'))
-        
+
         # Get email credentials and settings from environment variables
         email_password = os.environ.get('EMAIL_PASSWORD')
         email_host = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
         email_port = int(os.environ.get('EMAIL_PORT', 465))
         email_use_ssl = os.environ.get('EMAIL_USE_SSL', 'True').lower() == 'true'
         email_use_tls = os.environ.get('EMAIL_USE_TLS', 'False').lower() == 'true'
-        
+
         if not email_password:
             logger.error('EMAIL_PASSWORD environment variable not set')
             return False
-        
+
         # SMTP setup with environment variable configuration
         if email_use_ssl:
             smtp_object = smtplib.SMTP_SSL(email_host, email_port, timeout=10)
@@ -680,15 +707,15 @@ Alivente Property Management System"""
             smtp_object.ehlo()
             if email_use_tls:
                 smtp_object.starttls()
-        
+
         email = "demetrimanias@gmail.com"
         smtp_object.login(email, email_password)
-        
+
         # Send email
         text = msg.as_string()
         smtp_object.sendmail(email, recipients['all'], text)
         return True
-        
+
     except smtplib.SMTPAuthenticationError as e:
         logger.error(f"SMTP Authentication Error: {e}")
         return False
@@ -707,8 +734,9 @@ Alivente Property Management System"""
         # Close database connection
         connection.close()
 
-@permission_required('auth.can_edit_expenses', raise_exception=True)
+
 @login_required
+@permission_required('auth.can_edit_expenses', raise_exception=True)
 def act_expense_commit(request):
     if request.method == 'POST':
         try:
@@ -719,12 +747,12 @@ def act_expense_commit(request):
             expense_amount = request.POST.get('act_expense_amount')
             expense_approved = request.POST.get('act_expense_approved', 'No')
             expense_paid = request.POST.get('act_expense_paid', 'No')
-            
+
             # Validate required fields
             if not expense_date or not expense_description or not expense_amount or not expense_prop:
                 messages.error(request, 'All fields are required.')
                 return redirect('act_expense_add')
-            
+
             # Create and save the expense record
             expense = act_expense(
                 act_expense_date=expense_date,
@@ -735,15 +763,12 @@ def act_expense_commit(request):
                 prop_id=expense_prop
             )
             expense.save()
-            
+
             # Check if user is not a superuser and send email
             if not request.user.is_superuser:
-                from datetime import date
-                from django.utils.dateparse import parse_date
-                
                 # Parse the expense date for email
                 parsed_expense_date = parse_date(expense_date)
-                
+
                 email_sent = send_expense_approval_email_with_link(
                     parsed_expense_date,
                     expense.prop.prop_name,  # Get property name through foreign key
@@ -757,14 +782,14 @@ def act_expense_commit(request):
                     messages.warning(request, 'Expense added successfully but failed to send approval email.')
             else:
                 messages.success(request, 'Expense added successfully!')
-            
+
             return redirect('act_expense_all')
-            
+
         except ValueError as e:
             messages.error(request, 'Please enter a valid amount.')
             return redirect('act_expense_add')
         except Exception as e:
             messages.error(request, f'An error occurred: {str(e)}')
             return redirect('act_expense_add')
-    
+
     return redirect('act_expense_add')

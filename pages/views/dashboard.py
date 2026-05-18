@@ -1,32 +1,45 @@
-﻿"""
-Dashboard views — extracted from pages/views/main.py.
+"""
+Dashboard views.
 
-Views:
-  - property_management_dashboard: spoke-and-wheel landing page with a
-    property selector and tiles that drill into per-property data.
-  - property_detail: dispatcher view; each tile renders a slice of property
-    data (tenant, lease, invoices, issues, valuation, revenues, etc.) gated
-    by the owning module's access permission.
-  - dashboard_pl: dedicated Profit & Loss view (separate URL because it
-    needs a more complex monthly grid than property_detail can render).
+Extracted from the legacy pages/views/main.py during the modular views
+split.
 
-Helpers (also used by finance.py):
-  - get_property_first_tenant_date_optimized
-  - calculate_effective_period
-  - calculate_occupancy_metrics_with_period
-  - calculate_portfolio_occupancy_with_period
-  - calculate_property_budgeted_expenses
+Views
+-----
+- property_management_dashboard : Spoke-and-wheel landing page with a
+                                  property selector and tiles that drill
+                                  into per-property data.
+- property_detail               : Dispatcher view; each tile renders a
+                                  slice of property data (tenant, lease,
+                                  invoices, issues, valuation, revenues,
+                                  etc.) gated by the owning module's
+                                  access permission.
+- dashboard_pl                  : Dedicated Profit & Loss view (separate
+                                  URL because it needs a more complex
+                                  monthly grid than property_detail can
+                                  render).
+
+Helpers (also used by finance.py)
+---------------------------------
+- get_property_first_tenant_date_optimized
+- calculate_effective_period
+- calculate_occupancy_metrics_with_period
+- calculate_portfolio_occupancy_with_period
+- calculate_property_budgeted_expenses
 
 calculate_year_metrics and calculate_property_revenue now live in
-pages/views/properties.py — they're property-scoped rather than
+pages/views/properties.py - they are property-scoped rather than
 dashboard-scoped.
 
-Permission model:
-  - property_management_dashboard: auth.can_access_dashboard
-  - dashboard_pl: auth.can_access_financials
-  - property_detail: login_required at the view level, but each box_type
-    is further gated against the owning module's permission since the
-    dashboard is a cross-module launcher.
+Permission model
+----------------
+- property_management_dashboard : auth.can_access_dashboard
+- dashboard_pl                  : auth.can_access_financials
+- property_detail               : login_required at the view level, but
+                                  each box_type is further gated against
+                                  the owning module's permission since
+                                  the dashboard is a cross-module
+                                  launcher.
 """
 
 import logging
@@ -41,12 +54,18 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 
 from pages.models import (
-    props, prop_values,
-    revenue, revenue_line_types,
-    expense, expense_line_types,
-    tenant, VacancyPeriod,
-    invoices, issues,
-    PropertyAsset, AssetMaintenance,
+    AssetMaintenance,
+    expense,
+    expense_line_types,
+    invoices,
+    issues,
+    PropertyAsset,
+    prop_values,
+    props,
+    revenue,
+    revenue_line_types,
+    tenant,
+    VacancyPeriod,
 )
 
 
@@ -54,7 +73,7 @@ logger = logging.getLogger(__name__)
 
 
 # ============================================================================
-# Helpers — occupancy / portfolio / budgeted expenses
+# Helpers - occupancy / portfolio / budgeted expenses
 # ============================================================================
 
 def get_property_first_tenant_date_optimized(prop):
@@ -99,7 +118,7 @@ def calculate_occupancy_metrics_with_period(prop, period_start, period_end):
     """
     Calculate occupancy metrics for a specific time period.
     Only counts operational days (after first tenant).
-    FIXED: Uses prefetched data and handles OPEN vacancies correctly.
+    Uses prefetched data and handles OPEN vacancies correctly.
     """
     # Get property's first tenant date using PREFETCHED data
     first_tenant_date = get_property_first_tenant_date_optimized(prop)
@@ -152,7 +171,7 @@ def calculate_occupancy_metrics_with_period(prop, period_start, period_end):
         # Calculate overlap with effective period
         vacancy_start = max(vacancy.start_date, effective_start)
 
-        # FIXED: Handle OPEN vacancies correctly
+        # Handle OPEN vacancies correctly
         if vacancy.status == 'OPEN':
             # For OPEN vacancies, use today or effective_end, whichever is earlier
             vacancy_end = min(today, effective_end)
@@ -273,11 +292,11 @@ def calculate_property_budgeted_expenses(property_obj):
 
 
 # ============================================================================
-# Views — dashboard landing + property detail dispatcher + dashboard P&L
+# Views - dashboard landing + property detail dispatcher + dashboard P&L
 # ============================================================================
 
-@permission_required('auth.can_access_dashboard', raise_exception=True)
 @login_required
+@permission_required('auth.can_access_dashboard', raise_exception=True)
 def property_management_dashboard(request):
     """
     Main property dashboard view with spoke-and-wheel interface

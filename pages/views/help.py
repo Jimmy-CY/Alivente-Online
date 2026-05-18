@@ -1,36 +1,38 @@
-﻿"""
+"""
 Help system views.
 
-Two views supporting the user-facing Help page and the downloadable User
-Manual PDF:
+Two views support the user-facing Help page and the downloadable User
+Manual PDF.
 
-    help_page(request)
-        Renders the main Help page - an accordion of all help modules
-        grouped by top-level menu section, with client-side search
-        filtering. Permission-filtered to what the logged-in user can
-        access (superusers see everything; others see only modules
-        whose declared `permission` they hold; modules with no
-        declared permission are always visible).
+Functions
+---------
+- help_page            : Renders the main Help page - an accordion of
+                         all help modules grouped by top-level menu
+                         section, with client-side search filtering.
+                         Permission-filtered to what the logged-in user
+                         can access (superusers see everything; others
+                         see only modules whose declared `permission`
+                         they hold; modules with no declared permission
+                         are always visible).
+- generate_user_manual : Two-pass xhtml2pdf pipeline plus a ReportLab
+                         footer overlay produces a personalised User
+                         Manual PDF. Served inline so the JS preview
+                         modal can render it in an iframe; a custom
+                         X-Manual-Filename header carries the
+                         user-facing filename for the Download button.
 
-    generate_user_manual(request)
-        Two-pass xhtml2pdf pipeline plus a ReportLab footer overlay
-        produces a personalised User Manual PDF. Served inline so the
-        JS preview modal can render it in an iframe; a custom
-        X-Manual-Filename header carries the user-facing filename for
-        the Download button.
+Notes
+-----
+Extracted from the legacy pages/views/main.py - these functions had
+been misplaced in the recipe-management section by historical
+organisation drift; they are not recipe-related.
 
-Extracted from pages/views/main.py - these functions were misplaced in
-the recipe-management section by historical organisation drift. They
-are not recipe-related. Now in their own flat module at
-pages/views/help.py.
-
-Cleanups applied during the move:
+Cleanups applied during the extraction:
   - Consolidated the `_user_can_see_module(user, module)` helper that
     was duplicated (identical logic) inside both views into a single
     module-level private helper.
-  - Hoisted inline imports (`from ..services.help_renderer import ...`,
-    io, reportlab, pypdf) from inside the functions to module-level
-    imports.
+  - Hoisted inline imports (help_renderer, io, reportlab, pypdf) from
+    inside the functions to module-level imports.
 """
 
 import io
@@ -195,13 +197,13 @@ def generate_user_manual(request):
     """
     Generates a personalised User Manual PDF.
 
-    Architecture — the long story short, we had to fight xhtml2pdf on
+    Architecture - the long story short, we had to fight xhtml2pdf on
     several fronts to get this reliable. The shape of the pipeline:
 
-      STEP 1 — Build the hierarchical chapter tree from the user's
+      STEP 1 - Build the hierarchical chapter tree from the user's
                checkbox-tree selection, permission-filtered.
 
-      STEP 2 — FIRST xhtml2pdf PASS: render the body (cover + TOC +
+      STEP 2 - FIRST xhtml2pdf PASS: render the body (cover + TOC +
                chapters) using plain @page margins (NO @frame). The
                TOC page is rendered with EMPTY page-number columns
                because we don't know them yet. We only need this pass
@@ -209,17 +211,17 @@ def generate_user_manual(request):
                -pdf-outline directives) and discover each heading's
                page number.
 
-      STEP 3 — Inject the discovered page numbers back into the
+      STEP 3 - Inject the discovered page numbers back into the
                context tree. Each chapter/nested module now has a
                `page_num` attribute.
 
-      STEP 4 — SECOND xhtml2pdf PASS: re-render the body with the
+      STEP 4 - SECOND xhtml2pdf PASS: re-render the body with the
                TOC now showing real page numbers.
 
-      STEP 5 — Build a footer overlay PDF with ReportLab canvas
+      STEP 5 - Build a footer overlay PDF with ReportLab canvas
                ("Page X of Y" on every page except the cover).
 
-      STEP 6 — pypdf merges the overlay onto every body page.
+      STEP 6 - pypdf merges the overlay onto every body page.
 
     Returns the final PDF as `inline` so the JS preview modal can
     display it in an iframe. A custom `X-Manual-Filename` header
