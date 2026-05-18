@@ -6,11 +6,17 @@ from .views_setup import setup_permissions
 
 
 urlpatterns = [
-    # Home
+
+
+    # ============================================================================
+    # HOME
+    # ============================================================================
     path('', views.home, name='home'),
 
-    #
-    # User Admin
+
+    # ============================================================================
+    # USER ADMIN
+    # ============================================================================
     path('login/', views.login_user, name='login'),
     path('logout/', views.logout_user, name='logout'),
     path('admin_apms/', views.admin_apms, name='admin_apms'),
@@ -32,11 +38,12 @@ urlpatterns = [
     path('user-administration/<int:user_id>/delete/', views.user_delete, name='user_delete'),
     path('my-profile/', views.my_profile, name='my_profile'),
     path('help/', views.help_page, name='help_page'),
-    path('help/', views.help_page, name='help_page'),
     path('help/generate-manual/', views.generate_user_manual, name='generate_user_manual'),
 
-    #
-    #Reports - Dashboard
+
+    # ============================================================================
+    # REPORTS DASHBOARD
+    # ============================================================================
     path('title_deeds/', views.title_deeds, name='title_deeds'),
     path('prop_rep/', views.prop_rep, name='prop_rep'),
     path('tenant_rep/', views.tenant_rep, name='tenant_rep'),
@@ -56,23 +63,38 @@ urlpatterns = [
     path('friday_status_report/', views.friday_status_report, name='friday_status_report'),
     path('resolved_issues_report/', views.resolved_issues_report, name='resolved_issues_report'),
     path('finance_pl_act/', views.finance_pl_act, name='finance_pl_act'),
-    # Property Dashboard
+
+
+    # ============================================================================
+    # PROPERTY DASHBOARD
+    # ============================================================================
     path('property_management_dashboard/', views.property_management_dashboard, name='property_management_dashboard'),
     path('property_detail/<int:property_id>/<str:box_type>/', views.property_detail, name='property_detail'),
-    path('property/<int:property_id>/profit-loss/', views.dashboard_pl, name='dashboard_pl'),    
-    # Occupancy Trends
+    path('property/<int:property_id>/profit-loss/', views.dashboard_pl, name='dashboard_pl'),
+
+
+    # ============================================================================
+    # OCCUPANCY TRENDS
+    # ============================================================================
     path('occupancy-trends/', views.occupancy_trends_view, name='occupancy_trends'),
     path('vacancy-management/', views.vacancy_management_view, name='vacancy_management'),
 
-    #
-    # Cash Flow
+
+    # ============================================================================
+    # CASH FLOW
+    # ============================================================================
     path("forecast/", views.cashflow_forecast, name="cashflow_forecast"),
-    #
-    # Notifications
+
+
+    # ============================================================================
+    # NOTIFICATIONS
+    # ============================================================================
     path('notifications/', views.notifications_dashboard, name='notifications_dashboard'),
-    #
-    # Projects
-    # Projects URLs
+
+
+    # ============================================================================
+    # PROJECTS
+    # ============================================================================
     path('projects/', views.projects_list, name='projects'),
     path('projects/add/', views.projects_add, name='projects_add'),
     path('projects/edit/<int:project_id>/', views.projects_edit, name='projects_edit'),
@@ -88,15 +110,17 @@ urlpatterns = [
     # AJAX URLs for dynamic updates
     path('ajax/projects/update-status/', views.ajax_update_project_status, name='ajax_update_project_status'),
     path('ajax/tasks/update-status/', views.ajax_update_task_status, name='ajax_update_task_status'),
-    path('projects/ajax/duplicate/', views.ajax_duplicate_project, name='ajax_duplicate_project'),    
+    path('projects/ajax/duplicate/', views.ajax_duplicate_project, name='ajax_duplicate_project'),
     path('projects/<int:project_id>/assignees/', views.get_project_assignees, name='project_assignees'),
     path('projects/<int:project_id>/task-list/', views.project_task_list, name='project_task_list'),
     path('translate/', views.translate_text, name='translate_text'),
     path('projects/<int:project_id>/assignees/', views.get_project_assignees, name='get_project_assignees'),
     path('projects/ajax/delete-task/', views.ajax_delete_task, name='ajax_delete_task'),
 
-    #
-    # Finance
+
+    # ============================================================================
+    # FINANCE
+    # ============================================================================
     path('finance/', views.finance, name='finance'),
     path('finance_valuations/', views.finance_valuations, name='finance_valuations'),
     path('finance_valuations_add/', views.finance_valuations_add, name='finance_valuations_add'),
@@ -151,15 +175,19 @@ urlpatterns = [
     path('finance/valuations/edit-and-recalc/<int:prop_values_id>/',
          views.finance_valuations_edit_and_recalc_commit,
          name='finance_valuations_edit_and_recalc_commit'),
-     path('finance/expense/<int:expense_id>/delete/', views.finance_expense_delete, name='finance_expense_delete'),      
+    path('finance/expense/<int:expense_id>/delete/', views.finance_expense_delete, name='finance_expense_delete'),
 
-    #
-    # Lease Agreement Generation
+
+    # ============================================================================
+    # LEASE AGREEMENT GENERATION
+    # ============================================================================
     path('generate-lease-agreement/', views.generate_lease_agreement_view, name='generate_lease_agreement'),
     path('get-property-tenant-data/', views.get_property_tenant_data, name='get_property_tenant_data'),
 
-    #
-    # Tenants
+
+    # ============================================================================
+    # TENANTS
+    # ============================================================================
     path('tenant/', views.tenant_page, name='tenant'),
     path('tenant_add/', views.tenant_add, name='tenant_add'),
     path('tenant_edit/<tenant_id>', views.tenant_edit, name='tenant_edit'),
@@ -170,8 +198,10 @@ urlpatterns = [
     path('tenant/duplicate/<int:tenant_id>/', views.duplicate_tenant_view, name='duplicate_tenant'),
     path('tenant/delete/<int:tenant_id>/', views.delete_tenant_view, name='delete_tenant'),
 
-    #
-    #Properties
+
+    # ============================================================================
+    # PROPERTIES
+    # ============================================================================
     path('properties/', views.properties_page, name='properties'),
     path('properties_add/', views.properties_add, name='properties_add'),
     path('properties_edit/<prop_id>', views.properties_edit, name='properties_edit'),
@@ -179,15 +209,19 @@ urlpatterns = [
     path('properties_edit_commit/<prop_id>', views.properties_edit_commit, name='properties_edit_commit'),
     path('properties_title_deed/', views.properties_title_deed, name='properties_title_deed'),
     path('properties/map/', views.properties_map_view, name='properties_map_view'),
-    
-    #
-    # Petty Cash
+
+
+    # ============================================================================
+    # PETTY CASH
+    # ============================================================================
     path('petty_cash/', views.petty_cash, name='petty_cash'),
     path('petty_cash_add/', views.petty_cash_add, name='petty_cash_add'),
     path('petty_cash_commit/', views.petty_cash_commit, name='petty_cash_commit'),
 
-    #
-    # Actual Expenses
+
+    # ============================================================================
+    # ACTUAL EXPENSES
+    # ============================================================================
     path('act_expense_all/', views.act_expense_all, name='act_expense_all'),
     path('act_expense_view/', views.act_expense_view, name='act_expense_view'),
     path('act_expense_add/', views.act_expense_add, name='act_expense_add'),
@@ -198,23 +232,29 @@ urlpatterns = [
     path('mark_paid/<expense_id>', views.mark_paid, name='mark_paid'),
     path('mark_deleted/<expense_id>', views.mark_deleted, name='mark_deleted'),
     path('act_expense_manage_document/', views.act_expense_manage_document, name='act_expense_manage_document'),
-  
-    #
-    # Invoices
+
+
+    # ============================================================================
+    # INVOICES
+    # ============================================================================
     path('invoices/', views.invoices_page, name='invoices'),
     path('invoices_commit/<invoice_id>', views.invoices_commit, name='invoices_commit'),
-    
-    #
-    # Suppliers
+
+
+    # ============================================================================
+    # SUPPLIERS
+    # ============================================================================
     path('suppliers/', views.suppliers, name='suppliers'),
     path('suppliers_add/', views.suppliers_add, name='suppliers_add'),
     path('suppliers_edit/<supplier_id>', views.suppliers_edit, name='suppliers_edit'),
     path('suppliers_commit/', views.suppliers_commit, name='suppliers_commit'),
     path('suppliers_edit_commit/<supplier_id>', views.suppliers_edit_commit, name='suppliers_edit_commit'),
     path('suppliers/delete/<int:supplier_id>/', views.suppliers_delete, name='suppliers_delete'),
-    
-    #
-    # Friday Status Report Capture
+
+
+    # ============================================================================
+    # FRIDAY STATUS REPORT - ISSUES
+    # ============================================================================
     path('fsr/', views.fsr, name='fsr'),
     path('fsr_add/', views.fsr_add, name='fsr_add'),
     path('fsr_commit/', views.fsr_commit, name='fsr_commit'),
@@ -229,12 +269,16 @@ urlpatterns = [
     path('issue-details/<int:issue_id>/', views.get_issue_details, name='get_issue_details'),
     path('issues/comments/<int:comment_id>/notify-urgent/', views.notify_comment_urgent, name='notify_comment_urgent'),
 
-    #
-    # Passports
+
+    # ============================================================================
+    # PASSPORTS
+    # ============================================================================
     path('passport-management/', views.passport_management, name='passport_management'),
 
-     #
-     # Recipe Management URLs
+
+    # ============================================================================
+    # RECIPE MANAGEMENT
+    # ============================================================================
     path('recipe_management/', views.recipe_management, name='recipe_management'),
     path('recipes/duplicate/<int:recipe_id>/', views.duplicate_recipe, name='duplicate_recipe'),
     path('view_recipe/<int:recipe_id>/', views.view_recipe, name='view_recipe'),
@@ -287,9 +331,9 @@ urlpatterns = [
     path('recipes/nutrition/search/', views.usda_search, name='usda_search'),
     path('recipes/nutrition/preview/', views.usda_select_and_preview, name='usda_select_and_preview'),
     path('recipes/nutrition/save-mapping/', views.save_ingredient_mapping, name='save_ingredient_mapping'),
-     path('recipe/<int:recipe_id>/nutrition-data/', views.recipe_nutrition_data, name='recipe_nutrition_data'),
-     path('recipe/<int:recipe_id>/unconvertible/', views.recipe_unconvertible_ingredients, name='recipe_unconvertible_ingredients'),
-     path('recipes/ingredients/set-conversions/', views.unit_conversions_wizard, name='unit_conversions_wizard'),
+    path('recipe/<int:recipe_id>/nutrition-data/', views.recipe_nutrition_data, name='recipe_nutrition_data'),
+    path('recipe/<int:recipe_id>/unconvertible/', views.recipe_unconvertible_ingredients, name='recipe_unconvertible_ingredients'),
+    path('recipes/ingredients/set-conversions/', views.unit_conversions_wizard, name='unit_conversions_wizard'),
     # Categories
     path('categories-management/', views.categories_management, name='categories_management'),
     path('add-category/', views.add_category, name='add_category'),
@@ -301,16 +345,19 @@ urlpatterns = [
     path('update-measurement-unit/', views.update_measurement_unit, name='update_measurement_unit'),
     path('check-unit-usage/', views.check_unit_usage, name='check_unit_usage'),
     path('delete-measurement-unit/', views.delete_measurement_unit, name='delete_measurement_unit'),
-     # === WCIM (What Can I Make?) URLs ===
+    # === WCIM (What Can I Make?) URLs ===
     path('recipes/pantry-staples/', views.pantry_staples_management, name='pantry_staples_management'),
     path('recipes/wcim/', views.wcim_landing, name='wcim_landing'),
     path('recipes/wcim/extras/', views.wcim_extras, name='wcim_extras'),
     path('recipes/wcim/results/', views.wcim_results, name='wcim_results'),
-     path('recipes/wcim/recipe/<int:recipe_id>/quick-view/', views.wcim_recipe_quick_view, name='wcim_recipe_quick_view'),
-     path('recipes/find-matching/', views.wcim_landing, name='find_matching_recipes'),
-     path('recipes/ingredient-families/', views.ingredient_families_management, name='ingredient_families_management'),
+    path('recipes/wcim/recipe/<int:recipe_id>/quick-view/', views.wcim_recipe_quick_view, name='wcim_recipe_quick_view'),
+    path('recipes/find-matching/', views.wcim_landing, name='find_matching_recipes'),
+    path('recipes/ingredient-families/', views.ingredient_families_management, name='ingredient_families_management'),
 
-    # Celebration Management
+
+    # ============================================================================
+    # CELEBRATION MANAGEMENT
+    # ============================================================================
     path('celebrations/', views.celebration_dashboard, name='celebration_dashboard'),
     path('celebrations/contacts/', views.celebration_management, name='celebration_management'),
     path('celebrations/calendar/', views.celebration_calendar, name='celebration_calendar'),
@@ -320,21 +367,30 @@ urlpatterns = [
     path('notifications/personal/', views.personal_notification_settings, name='personal_notification_settings'),
     path('celebrations/event/<int:event_id>/update-notifications/', views.update_event_notifications, name='update_event_notifications'),
 
-    # Asset Management URLs
+
+    # ============================================================================
+    # ASSET MANAGEMENT
+    # ============================================================================
     path('properties/<int:prop_id>/assets/', views.property_assets, name='property_assets'),
     path('properties/<int:prop_id>/assets/add/', views.add_asset, name='add_asset'),
     path('assets/<int:asset_id>/', views.asset_detail, name='asset_detail'),
     path('assets/<int:asset_id>/edit/', views.edit_asset, name='edit_asset'),
     path('assets/<int:asset_id>/delete/', views.delete_asset, name='delete_asset'),
     path('assets/<int:asset_id>/photos/<int:photo_id>/delete/', views.delete_asset_photo, name='delete_asset_photo'),
-     path('assets/<int:asset_id>/photos/<int:photo_id>/set-cover/', views.set_cover_photo, name='set_cover_photo'),
+    path('assets/<int:asset_id>/photos/<int:photo_id>/set-cover/', views.set_cover_photo, name='set_cover_photo'),
 
-    # Maintenance URLs
+
+    # ============================================================================
+    # MAINTENANCE
+    # ============================================================================
     path('assets/<int:asset_id>/maintenance/add/', views.add_maintenance, name='add_maintenance'),
     path('maintenance/<int:maintenance_id>/delete/', views.delete_maintenance, name='delete_maintenance'),
     path('maintenance/<int:maintenance_id>/edit/', views.edit_maintenance, name='edit_maintenance'),
 
-    # AJAX URLs
+
+    # ============================================================================
+    # AJAX URL's
+    # ============================================================================
     path('ajax/category/<int:category_id>/subcategories/', views.get_subcategories, name='get_subcategories'),
     path('ajax/category/add/', views.add_category_ajax, name='add_category_ajax'),
     path('ajax/subcategory/add/', views.add_subcategory_ajax, name='add_subcategory_ajax'),

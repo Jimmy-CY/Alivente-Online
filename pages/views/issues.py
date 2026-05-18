@@ -155,7 +155,11 @@ def fsr_commit(request):
             form.save()
             messages.success(request, "Issue Added Successfully")
     temp_results = issues.objects.all().order_by('-issues_id')
-    is_id = temp_results[0].issues_id
+    latest_issue = temp_results.first()
+    if latest_issue is None:
+        messages.error(request, "No issue could be found to display.")
+        return redirect("fsr")
+    is_id = latest_issue.issues_id
     return redirect(reverse("fsr_details", args=[is_id]) + "?from=fsr_add&origin=fsr")
 
 
@@ -281,6 +285,7 @@ def fsr_comment_add(request, issues_id):
     return redirect('fsr_details', issues_id=issues_id)
 
 
+@login_required
 @permission_required('auth.can_access_issues', raise_exception=True)
 def fsr_pdf(request):
     """
