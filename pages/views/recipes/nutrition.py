@@ -1,4 +1,4 @@
-﻿"""
+"""
 Nutrition: ingredient->USDA mapping wizard and recipe nutrition data.
 
 Two related concerns live here:

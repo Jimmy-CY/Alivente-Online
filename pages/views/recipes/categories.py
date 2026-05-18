@@ -1,4 +1,4 @@
-﻿"""
+"""
 Ingredient categories — admin UI + AJAX CRUD.
 
 Owns the `IngredientCategory` lookup table: the management list view plus

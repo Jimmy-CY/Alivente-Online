@@ -1,4 +1,4 @@
-﻿"""
+"""
 Measurement units and preparation methods — admin UI + inline-from-recipe AJAX.
 
 This module owns everything related to the `MeasurementUnit` lookup table

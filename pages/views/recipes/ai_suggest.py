@@ -1,4 +1,4 @@
-﻿"""
+"""
 AI-powered recipe modification suggestions.
 
 Exposes ONE view (suggest_recipe_modification) plus two private helpers

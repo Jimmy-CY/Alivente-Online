@@ -1,4 +1,4 @@
-﻿"""
+"""
 Recipe-import helpers: file text extraction + AI structured extraction.
 
 Four pure helper functions (no views, no decorators) supporting the

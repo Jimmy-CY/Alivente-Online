@@ -1,4 +1,4 @@
-﻿"""
+"""
 Meal-plan management for recipes.
 
 Owns the meal-plan CRUD / calendar / shopping-list endpoints plus the shared

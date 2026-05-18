@@ -1,4 +1,4 @@
-﻿"""
+"""
 Recipe-instruction spell checking.
 
 A single AJAX endpoint that spell-checks a list of recipe instruction

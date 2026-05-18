@@ -1,4 +1,4 @@
-﻿"""
+"""
 Recipe CRUD and management views.
 
 The core recipe lifecycle: book-detail JSON, list/manage (filters, A-Z,

@@ -1,4 +1,4 @@
-﻿"""
+"""
 Recipe sub-resource, import, and favourite endpoints.
 
 The lighter tail of the recipe subsystem: AJAX creators for recipe

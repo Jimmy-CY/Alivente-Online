@@ -1,4 +1,4 @@
-﻿"""
+"""
 Shared helpers for the recipes sub-package.
 
 These utilities are used internally by multiple recipes submodules

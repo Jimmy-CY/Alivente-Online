@@ -1,4 +1,4 @@
-﻿"""
+"""
 Ingredients — management AJAX endpoints + inline-from-recipe create.
 
 Owns the `Ingredient` mutation/lookup AJAX surface driven by the ingredients

@@ -1,4 +1,4 @@
-﻿"""
+"""
 Unit conversion management — the largest module in the recipes sub-package.
 
 13 functions covering:
