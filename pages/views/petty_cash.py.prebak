@@ -1,25 +1,10 @@
+﻿"""
+Petty Cash views for Alivente Online.
+
+Extracted from pages/views/main.py as part of the modular split.
+Covers the simple cash-ledger pages (list / add / commit) and the
+report generator.
 """
-Petty cash views.
-
-Extracted from the legacy pages/views/main.py during the modular views
-split. Covers the simple cash-ledger pages and the report generator.
-
-Functions
----------
-- petty_cash        : Ledger list with running balance.
-- petty_cash_commit : POST adds a transaction (PettyForm), then
-                      re-renders the ledger.
-- petty_cash_add    : Renders the add-transaction page.
-- petty_cash_rep    : Generates/e-mails the petty-cash report via the
-                      project-root petty_cash.py helper, then redirects
-                      home.
-
-Auth tiers
-----------
-read tier -> auth.can_access_petty_cash   (petty_cash, petty_cash_rep)
-edit tier -> auth.can_edit_petty_cash     (petty_cash_commit, petty_cash_add)
-"""
-
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
 from django.shortcuts import redirect, render
@@ -28,6 +13,8 @@ from ..forms import PettyForm
 from ..models import petty
 
 
+# NOTE: decorators below assumed to match the pattern used by petty_cash_commit
+# and petty_cash_add. Verify against main.py lines 5395-5400 before deploying.
 @login_required
 @permission_required('auth.can_access_petty_cash', raise_exception=True)
 def petty_cash(request):
@@ -47,6 +34,7 @@ def petty_cash(request):
 def petty_cash_commit(request):
     if request.method == "POST":
         form = PettyForm(request.POST or None)
+        print(form)  # legacy debug print; safe to remove in a future cleanup
         if form.is_valid():
             form.save()
             messages.success(request, "Transaction Added Successfully")
@@ -68,21 +56,19 @@ def petty_cash_add(request):
     return render(request, "petty_cash_add.html", {"petty": presults})
 
 
+# NOTE: decorators below assumed to match. Verify against main.py lines 6165-6167.
 @login_required
 @permission_required('auth.can_access_petty_cash', raise_exception=True)
 def petty_cash_rep(request):
-    # Deliberate inline import (do NOT hoist): this resolves to the
-    # project-root petty_cash.py reporting helper, NOT this views module.
-    # Python's absolute import finds it via sys.path (the project root),
-    # so the name stays unambiguous even though this file is also named
-    # petty_cash.py. Kept inline to make that resolution explicit and local.
+    # NB: this imports the project-root ``petty_cash.py`` reporting helper,
+    # NOT this views file. Absolute imports resolve via sys.path (where the
+    # project root sits) rather than the current package, so the naming stays
+    # unambiguous even with this module file now also called petty_cash.py.
     import petty_cash
     rep_output = request.POST.get('d_e')
-    # @login_required guarantees an authenticated user here, so email/fname
-    # are always available (the former `if request.user.is_authenticated`
-    # guard was always true and left these statically unbound-looking).
-    email = request.user.email
-    fname = request.user.first_name
+    if request.user.is_authenticated:
+        email = request.user.email
+        fname = request.user.first_name
     petty_cash.petty_cash(rep_output, email, fname)
     messages.success(request, "Report Created Successfully")
     return redirect('home')

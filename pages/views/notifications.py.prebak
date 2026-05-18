@@ -1,31 +1,17 @@
+﻿"""
+Notification settings views for Alivente Online.
+
+Extracted from pages/views/main.py as part of the modular split.
+Covers the two screens that manage email notification recipients —
+the admin variant (for administration-area notifications like daily
+reports, lease uploads, invoice/expense events, Friday status report,
+issue comments) and the personal variant (for celebration reminders
+and document expiry alerts).
+
+Both share the NotificationRecipient model and follow the same shape:
+GET renders the form populated with current recipients, POST upserts
+the recipient row for the chosen notification_type.
 """
-Notification recipient settings views.
-
-Extracted from the legacy pages/views/main.py during the modular views
-split. Two screens manage who receives system e-mails, both backed by
-the NotificationRecipient model: GET renders the form populated with the
-current recipients; POST upserts the recipient row for the chosen
-notification_type.
-
-Functions
----------
-- notification_settings          : Administration-area notifications
-                                   (daily report, lease uploads,
-                                   invoice/expense events, Friday status
-                                   report, issue comments).
-- personal_notification_settings : Personal notifications (celebration
-                                   reminders, document-expiry alerts).
-
-Auth tiers
-----------
-notification_settings          -> auth.can_access_administration
-personal_notification_settings -> auth.can_access_personal
-                                  (POST additionally checks
-                                  auth.can_edit_personal; the admin view
-                                  has no separate edit gate - access to
-                                  administration is sufficient there.)
-"""
-
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
 from django.shortcuts import redirect, render
@@ -69,29 +55,26 @@ def notification_settings(request):
         'issue_comment_urgent',
     ]
 
-    # NOTE: local dict (not the enclosing function); named distinctly to
-    # avoid shadowing `notification_settings`. The template context key
-    # stays 'notification_settings' (template contract).
-    settings_by_type = {}
+    notification_settings = {}
 
     for type_code, type_name in NotificationRecipient.NOTIFICATION_TYPES:
         if type_code in admin_types:
             try:
                 recipient = NotificationRecipient.objects.get(notification_type=type_code)
-                settings_by_type[type_code] = {
+                notification_settings[type_code] = {
                     'name': type_name,
                     'to_emails': recipient.to_addresses,
                     'cc_emails': recipient.cc_addresses
                 }
             except NotificationRecipient.DoesNotExist:
-                settings_by_type[type_code] = {
+                notification_settings[type_code] = {
                     'name': type_name,
                     'to_emails': '',
                     'cc_emails': ''
                 }
 
     return render(request, 'notification_settings.html', {
-        'notification_settings': settings_by_type,
+        'notification_settings': notification_settings,
     })
 
 
@@ -125,27 +108,24 @@ def personal_notification_settings(request):
     # Get only personal notification types
     personal_types = ['celebration_reminder', 'document_expiry']
 
-    # NOTE: local dict (not the enclosing function); named distinctly to
-    # avoid shadowing `personal_notification_settings`. The template
-    # context key stays 'notification_settings' (template contract).
-    settings_by_type = {}
+    notification_settings = {}
 
     for type_code, type_name in NotificationRecipient.NOTIFICATION_TYPES:
         if type_code in personal_types:
             try:
                 recipient = NotificationRecipient.objects.get(notification_type=type_code)
-                settings_by_type[type_code] = {
+                notification_settings[type_code] = {
                     'name': type_name,
                     'to_emails': recipient.to_addresses,
                     'cc_emails': recipient.cc_addresses
                 }
             except NotificationRecipient.DoesNotExist:
-                settings_by_type[type_code] = {
+                notification_settings[type_code] = {
                     'name': type_name,
                     'to_emails': '',
                     'cc_emails': ''
                 }
 
     return render(request, 'personal_notification_settings.html', {
-        'notification_settings': settings_by_type,
+        'notification_settings': notification_settings,
     })

@@ -1,32 +1,10 @@
+﻿"""
+Suppliers views for Alivente Online.
+
+Extracted from pages/views/main.py as part of the modular split.
+Covers the suppliers CRUD pages, the per-supplier printable report,
+and the bulk report generator.
 """
-Suppliers views.
-
-Extracted from the legacy pages/views/main.py during the modular views
-split. Covers the suppliers CRUD pages, the per-supplier printable
-report, and the bulk report generator.
-
-Functions
----------
-- suppliers             : List with optional name/country filters.
-- suppliers_add         : Renders the add page.
-- suppliers_edit        : Renders the edit page for one supplier.
-- suppliers_commit      : POST creates a supplier (SupplierForm).
-- suppliers_edit_commit : POST updates an existing supplier.
-- suppliers_delete      : POST deletes a supplier (superuser only).
-- supplier_report       : Per-supplier printable report page.
-- suppliers_rep         : Generates/e-mails the bulk supplier report via
-                          the project-root print_supplier.py helper,
-                          then redirects home.
-
-Auth tiers
-----------
-read tier -> auth.can_access_suppliers  (suppliers, supplier_report,
-                                         suppliers_rep)
-edit tier -> auth.can_edit_suppliers    (add, edit, commit, edit_commit,
-                                         delete; delete additionally
-                                         requires request.user.is_superuser)
-"""
-
 from datetime import date
 
 from django.contrib import messages
@@ -86,6 +64,8 @@ def suppliers_commit(request):
         if form.is_valid():
             form.save()
             messages.success(request, "Supplier Added Successfully")
+        else:
+            print(form.errors.as_data())  # legacy debug; safe to remove in a future cleanup
     sresults = supplier.objects.all().order_by('supplier_country', 'supplier_contact_person')
     return render(request, "suppliers.html", {"supplier": sresults})
 
@@ -141,19 +121,14 @@ def supplier_report(request, supplier_id):
 @login_required
 @permission_required('auth.can_access_suppliers', raise_exception=True)
 def suppliers_rep(request):
-    # Deliberate inline import (do NOT hoist): this resolves to the
-    # project-root print_supplier.py reporting helper, NOT anything in
-    # this views package. Python's absolute import finds it via sys.path
-    # (the project root). Kept inline to make that resolution explicit
-    # and local.
+    # NB: imports the project-root ``print_supplier.py`` reporting helper,
+    # not anything in this views file. Absolute imports resolve via sys.path.
     import print_supplier
     sup = request.POST.get('supname')
     rep_output = request.POST.get('d_e')
-    # @login_required guarantees an authenticated user here, so email/fname
-    # are always available (the former `if request.user.is_authenticated`
-    # guard was always true and left these statically unbound-looking).
-    email = request.user.email
-    fname = request.user.first_name
+    if request.user.is_authenticated:
+        email = request.user.email
+        fname = request.user.first_name
     print_supplier.supplier_report(sup, rep_output, email, fname)
     messages.success(request, "Report Created Successfully")
     return redirect('home')
