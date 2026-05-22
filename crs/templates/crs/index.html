@@ -1,0 +1,213 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}CRS Reporting{% endblock %}
+
+{% block content %}
+
+<h2 class="page-title-h2"><center>ALIVENTE ONLINE - CRS REPORTING</center></h2>
+<br/>
+
+{% for msg in messages %}
+  <div class="alert alert-secondary alert-dismissible fade show auto-dismiss" role="alert">
+    <strong></strong> <center>{{ msg }}</center>
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <script>
+    setTimeout(function() {
+      document.querySelectorAll('.auto-dismiss').forEach(alert => {
+        alert.classList.remove('show');
+        alert.classList.add('fade');
+        setTimeout(() => alert.remove(), 500);
+      });
+    }, 2000);
+  </script>
+{% endfor %}
+
+<!-- Action Buttons (Back to Personal) -->
+<div class="page-action-buttons">
+  <a href="{% url 'personal_page' %}" class="btn btn-success action-back" role="button" aria-label="Back to personal">
+    <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
+  </a>
+</div>
+
+<!-- Single Panel -->
+<div class="crs-panel-container">
+  <div class="crs-panel">
+    <div class="crs-grid">
+
+      <!-- Country Configurations -->
+      <a href="{% url 'crs:country_list' %}" class="crs-btn">
+        <i class="fas fa-cog"></i>
+        <h6>Country Configurations</h6>
+        <span class="crs-count">{{ country_count }} active</span>
+      </a>
+
+      <!-- Reporting Financial Institutions -->
+      <a href="{% url 'crs:fi_list' %}" class="crs-btn">
+        <i class="fas fa-university"></i>
+        <h6>Reporting Financial Institutions</h6>
+        <span class="crs-count">{{ fi_count }} active</span>
+      </a>
+
+      <!-- Submissions -->
+      <a href="{% url 'crs:submission_list' %}" class="crs-btn">
+        <i class="fas fa-file-export"></i>
+        <h6>Submissions</h6>
+        <span class="crs-count">{{ submission_count }} total ({{ draft_count }} draft, {{ closed_count }} closed)</span>
+      </a>
+
+    </div>
+  </div>
+</div>
+
+<style>
+  :root {
+    --crs-dark: #28a745;
+    --crs-light: #d4edda;
+  }
+
+  .page-title-h2 {
+    margin-top: 0.5rem;
+    margin-bottom: 1rem;
+  }
+
+  /* ==================== ACTION BUTTONS (DESKTOP) ==================== */
+  .page-action-buttons {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  /* ==================== PANEL ==================== */
+  .crs-panel-container {
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .crs-panel {
+    padding: 30px;
+    border: 3px solid var(--crs-dark);
+    background-color: var(--crs-light);
+    border-radius: 10px;
+  }
+
+  /* ==================== CARD GRID ==================== */
+  .crs-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+
+  .crs-btn {
+    min-height: 170px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    transition: transform 0.2s, box-shadow 0.2s;
+    color: white;
+    padding: 16px;
+    text-align: center;
+    background-color: #28a745;
+    border: none;
+  }
+
+  .crs-btn:not(.coming-soon):hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+    color: white;
+    text-decoration: none;
+    background-color: #218838;
+  }
+
+  .crs-btn i {
+    font-size: 2.5rem;
+    margin-bottom: 12px;
+  }
+
+  .crs-btn h6 {
+    margin: 0 0 6px 0;
+    font-weight: 600;
+    text-align: center;
+    line-height: 1.2;
+  }
+
+  .crs-count {
+    font-size: 0.85rem;
+    opacity: 0.95;
+    margin-top: 4px;
+  }
+
+  .crs-coming-label {
+    font-size: 0.7rem;
+    opacity: 0.75;
+    margin-top: 8px;
+    font-style: italic;
+  }
+
+  /* Coming-soon cards (current state for all three) — visible but not clickable */
+  .crs-btn.coming-soon {
+    opacity: 0.85;
+    cursor: default;
+  }
+
+  /* ==================== MOBILE STYLES (≤768px) ==================== */
+  @media (max-width: 768px) {
+
+    .page-title-h2 {
+      font-size: 1.25rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .page-action-buttons {
+      display: flex;
+      flex-direction: row;
+      gap: 8px;
+      flex-wrap: nowrap;
+      align-items: stretch;
+      margin-bottom: 14px;
+    }
+    .page-action-buttons .action-back {
+      flex: 0 0 auto;
+      width: 50px;
+      height: 38px;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0;
+    }
+    .action-back-label {
+      display: none;
+    }
+
+    .crs-panel {
+      padding: 16px;
+    }
+
+    .crs-grid {
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+
+    .crs-btn {
+      min-height: 140px;
+    }
+    .crs-btn i {
+      font-size: 2rem;
+      margin-bottom: 8px;
+    }
+    .crs-btn h6 {
+      font-size: 0.95rem;
+    }
+  }
+</style>
+
+{% endblock %}

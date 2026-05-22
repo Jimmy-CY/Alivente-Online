@@ -64,7 +64,7 @@ from ...usda_client import USDAClientError, get_food_details, search_foods
 # --------------------------------------------------------------------------- #
 
 @login_required
-@permission_required('auth.can_edit_personal', raise_exception=True)
+@permission_required('auth.can_edit_recipes', raise_exception=True)
 def map_ingredients_wizard(request):
     """
     Render the bulk mapping wizard page.
@@ -325,7 +325,7 @@ def usda_select_and_preview(request):
 # --------------------------------------------------------------------------- #
 
 @login_required
-@permission_required('auth.can_edit_personal', raise_exception=True)
+@permission_required('auth.can_edit_recipes', raise_exception=True)
 @require_POST
 @csrf_protect
 def save_ingredient_mapping(request):

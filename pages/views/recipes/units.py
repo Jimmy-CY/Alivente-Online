@@ -25,8 +25,8 @@ Notes
   shape as `add_measurement_ajax`. Relocate to a `preparations.py` if a full
   preparations admin UI is ever built.
 - `measurement_units_management` is the only GET/render view here; it is
-  gated at the read tier (`auth.can_access_personal`), matching
-  `check_unit_usage`. The mutating endpoints require `auth.can_edit_personal`.
+  gated at the read tier (`auth.can_access_recipes`), matching
+  `check_unit_usage`. The mutating endpoints require `auth.can_edit_recipes`.
 """
 
 import json
@@ -52,7 +52,7 @@ from pages.models import (
 # =====================================================================
 
 @login_required
-@permission_required('auth.can_access_personal', raise_exception=True)
+@permission_required('auth.can_access_recipes', raise_exception=True)
 def measurement_units_management(request):
     """Admin list view: every MeasurementUnit with usage stats (recipes, ingredients, conversions)."""
     # Simple query - no annotations
@@ -122,7 +122,7 @@ def measurement_units_management(request):
 
 
 @login_required
-@permission_required('auth.can_edit_personal', raise_exception=True)
+@permission_required('auth.can_edit_recipes', raise_exception=True)
 def add_measurement_unit(request):
     """Add a new measurement unit."""
     if request.method == 'POST':
@@ -181,7 +181,7 @@ def add_measurement_unit(request):
 
 
 @login_required
-@permission_required('auth.can_edit_personal', raise_exception=True)
+@permission_required('auth.can_edit_recipes', raise_exception=True)
 def update_measurement_unit(request):
     """Update measurement unit name, abbreviation, and type."""
     if request.method == 'POST':
@@ -246,7 +246,7 @@ def update_measurement_unit(request):
 
 
 @login_required
-@permission_required('auth.can_access_personal', raise_exception=True)
+@permission_required('auth.can_access_recipes', raise_exception=True)
 def check_unit_usage(request):
     """Check if measurement unit is used in recipes, ingredients, or conversions."""
     if request.method == 'POST':
@@ -299,7 +299,7 @@ def check_unit_usage(request):
 
 
 @login_required
-@permission_required('auth.can_edit_personal', raise_exception=True)
+@permission_required('auth.can_edit_recipes', raise_exception=True)
 def delete_measurement_unit(request):
     """Delete measurement unit if not used anywhere."""
     if request.method == 'POST':
@@ -352,7 +352,7 @@ def delete_measurement_unit(request):
 # =====================================================================
 
 @login_required
-@permission_required('auth.can_edit_personal', raise_exception=True)
+@permission_required('auth.can_edit_recipes', raise_exception=True)
 @require_POST
 def add_measurement_ajax(request):
     """Add new measurement unit via AJAX (inline from recipe forms)."""
@@ -397,7 +397,7 @@ def add_measurement_ajax(request):
 
 
 @login_required
-@permission_required('auth.can_edit_personal', raise_exception=True)
+@permission_required('auth.can_edit_recipes', raise_exception=True)
 @require_POST
 def add_preparation_ajax(request):
     """Add new preparation method via AJAX (inline from recipe forms)."""

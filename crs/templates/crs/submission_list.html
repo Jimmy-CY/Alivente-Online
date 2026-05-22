@@ -1,0 +1,298 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}CRS — Submissions{% endblock %}
+
+{% block content %}
+
+<h2 class="page-title-h2"><center>ALIVENTE ONLINE - CRS SUBMISSIONS</center></h2>
+<br/>
+
+{% for msg in messages %}
+  <div class="alert alert-{% if 'success' in msg.tags %}success{% elif 'error' in msg.tags %}danger{% else %}secondary{% endif %} alert-dismissible fade show auto-dismiss" role="alert">
+    <strong></strong> <center>{{ msg }}</center>
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <script>
+    setTimeout(function() {
+      document.querySelectorAll('.auto-dismiss').forEach(alert => {
+        alert.classList.remove('show');
+        alert.classList.add('fade');
+        setTimeout(() => alert.remove(), 500);
+      });
+    }, 2500);
+  </script>
+{% endfor %}
+
+<!-- Action Buttons -->
+<div class="page-action-buttons">
+  {% if perms.auth.can_edit_crs %}
+  <a href="{% url 'crs:submission_start' %}" class="btn btn-info action-primary">
+    <i class="fas fa-plus"></i> Start Submission
+  </a>
+  {% endif %}
+  <a href="{% url 'crs:index' %}" class="btn btn-success action-back" role="button" aria-label="Back to CRS landing">
+    <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
+  </a>
+</div>
+
+<!-- Single Panel -->
+<div class="crs-panel-container">
+  <div class="crs-panel">
+
+    {% if submissions %}
+    <div class="crs-table">
+      <table>
+        <thead>
+          <tr>
+            <th>Year</th>
+            <th>Country</th>
+            <th>FI</th>
+            <th>Status</th>
+            <th>MessageRefID</th>
+            <th>Created</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for sub in submissions %}
+          <tr>
+            <td><strong>{{ sub.year }}</strong></td>
+            <td>{{ sub.country_config.country_code }}</td>
+            <td>{{ sub.reporting_fi.name }}</td>
+            <td>
+              <span class="status-badge status-{{ sub.status }}">{{ sub.get_status_display }}</span>
+            </td>
+            <td class="ref-id" title="{{ sub.message_ref_id }}">
+              <code>{{ sub.message_ref_id|truncatechars:30 }}</code>
+            </td>
+            <td>{{ sub.created_at|date:"d M Y H:i" }}</td>
+            <td>
+              <div class="row-actions">
+                <a href="{% url 'crs:submission_detail' sub.pk %}"
+                   class="action-btn btn-view" title="View">
+                  <i class="fas fa-eye"></i>
+                </a>
+                {% if perms.auth.can_edit_crs %}
+                <button type="button" class="action-btn btn-delete" title="Delete Submission"
+                        onclick="confirmSubmissionDelete({{ sub.pk }}, '{{ sub.message_ref_id|escapejs }}')">
+                  <i class="fas fa-trash"></i>
+                </button>
+                {% endif %}
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="crs-empty">
+      <i class="fas fa-file-export"></i>
+      <p>No submissions yet.</p>
+      <small>Click "Start Submission" to create your first draft.</small>
+    </div>
+    {% endif %}
+
+  </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteSubmissionModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title">
+          <i class="fas fa-exclamation-triangle"></i> Delete Submission
+        </h5>
+        <button type="button" class="close text-white" data-dismiss="modal">
+          <span>&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <p>You are about to delete this submission:</p>
+        <p><code id="deleteSubmissionLabel" style="word-break: break-all;"></code></p>
+        <p class="text-muted">
+          The submission record and all lifecycle history will be permanently
+          removed. If the submission is still in draft, any uploaded Excel and
+          generated XML files will be deleted too. This cannot be undone.
+        </p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+        <form id="deleteSubmissionForm" method="POST">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger">
+            <i class="fas fa-trash"></i> Delete
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  function confirmSubmissionDelete(pk, label) {
+    document.getElementById('deleteSubmissionLabel').textContent = label;
+    document.getElementById('deleteSubmissionForm').action = `/crs/submissions/${pk}/delete/`;
+    $('#deleteSubmissionModal').modal('show');
+  }
+</script>
+
+<style>
+  :root {
+    --crs-dark: #28a745;
+    --crs-light: #d4edda;
+  }
+  .page-title-h2 { margin-top: 0.5rem; margin-bottom: 1rem; }
+  .page-action-buttons {
+    display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 20px;
+  }
+  .crs-panel-container { max-width: 1100px; margin: 0 auto; }
+  .crs-panel {
+    padding: 30px; border: 3px solid var(--crs-dark);
+    background-color: var(--crs-light); border-radius: 10px;
+  }
+
+  .crs-table {
+    background: white; border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08); overflow: hidden;
+  }
+  .crs-table table { width: 100%; margin: 0; }
+  .crs-table thead th {
+    background: #f8f9fa; padding: 12px 14px;
+    font-size: 12px; font-weight: 600; color: #495057;
+    border-bottom: 2px solid #dee2e6;
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .crs-table tbody td {
+    padding: 12px 14px; border-bottom: 1px solid #f0f0f0;
+    font-size: 14px; vertical-align: middle;
+  }
+  .crs-table tbody tr:last-child td { border-bottom: none; }
+  .crs-table tbody tr:hover { background: #f8f9fa; }
+
+  .ref-id code {
+    font-size: 12px;
+    background: #f1f3f5;
+    color: #495057;
+    padding: 2px 6px;
+    border-radius: 3px;
+  }
+
+  /* Status badges */
+  .status-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+  }
+  .status-draft                { background: #e9ecef; color: #495057; }
+  .status-closed               { background: #cce5ff; color: #004085; }
+  .status-submitted_externally { background: #fff3cd; color: #856404; }
+  .status-acknowledged         { background: #d4edda; color: #155724; }
+  .status-rejected             { background: #f8d7da; color: #721c24; }
+
+  /* Row actions */
+  .row-actions { display: flex; gap: 6px; }
+  .action-btn {
+    width: 30px; height: 30px; border-radius: 6px; border: none;
+    display: inline-flex; align-items: center; justify-content: center;
+    cursor: pointer; font-size: 12px; transition: all 0.2s;
+    text-decoration: none;
+  }
+  .action-btn:hover { transform: scale(1.1); }
+  .btn-view   { background: #17a2b8; color: white; }
+  .btn-delete { background: #dc3545; color: white; }
+
+  .crs-empty {
+    text-align: center; padding: 40px 20px; color: #6c757d;
+  }
+  .crs-empty i {
+    font-size: 3rem; color: var(--crs-dark);
+    margin-bottom: 12px; opacity: 0.5;
+  }
+  .crs-empty p { font-size: 1rem; margin-bottom: 4px; font-weight: 600; }
+  .crs-empty small { font-style: italic; }
+
+  /* ==================== MOBILE STYLES (≤768px) ==================== */
+  @media (max-width: 768px) {
+    .page-title-h2 { font-size: 1.25rem; margin-bottom: 0.75rem; }
+    .page-action-buttons {
+      flex-direction: row; gap: 8px; flex-wrap: nowrap;
+      align-items: stretch; margin-bottom: 14px;
+    }
+    .page-action-buttons .action-primary {
+      flex: 1 1 auto; min-width: 0; height: 38px;
+      display: flex; align-items: center; justify-content: center;
+      padding: 0 12px; font-size: 13px; white-space: nowrap;
+      margin: 0; gap: 6px;
+    }
+    .page-action-buttons .action-back {
+      flex: 0 0 auto; width: 50px; height: 38px; padding: 0;
+      display: flex; align-items: center; justify-content: center; margin: 0;
+    }
+    .action-back-label { display: none; }
+    .crs-panel { padding: 16px; }
+
+    .crs-table { background: transparent; box-shadow: none; overflow: visible; }
+    .crs-table table,
+    .crs-table thead,
+    .crs-table tbody,
+    .crs-table tr,
+    .crs-table td { display: block; width: 100%; }
+    .crs-table thead { display: none; }
+    .crs-table tbody tr {
+      background: white; border: 1px solid #e9ecef;
+      border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+      margin-bottom: 12px; padding: 12px;
+    }
+    .crs-table tbody tr:hover { background: white; }
+    .crs-table tbody td {
+      padding: 6px 0 !important; border-bottom: none !important;
+      display: flex !important; justify-content: space-between;
+      align-items: center; gap: 12px; font-size: 13px;
+    }
+    .crs-table tbody td::before {
+      font-weight: 700; font-size: 11px; text-transform: uppercase;
+      color: #6c757d; letter-spacing: 0.4px;
+    }
+    .crs-table tbody td:nth-child(1)::before { content: 'Year'; }
+    .crs-table tbody td:nth-child(2)::before { content: 'Country'; }
+    .crs-table tbody td:nth-child(3)::before { content: 'FI'; }
+    .crs-table tbody td:nth-child(4)::before { content: 'Status'; }
+    .crs-table tbody td:nth-child(5)::before { content: 'Ref ID'; }
+    .crs-table tbody td:nth-child(6)::before { content: 'Created'; }
+
+    .crs-table tbody td:last-child {
+      justify-content: flex-start !important;
+      padding-top: 10px !important; margin-top: 6px;
+      border-top: 1px solid #f0f0f0 !important;
+    }
+    .crs-table tbody td:last-child::before { content: ''; display: none; }
+    .row-actions { gap: 10px; }
+    .action-btn { width: 38px; height: 38px; font-size: 14px; }
+
+    /* Modal — full screen */
+    .modal-dialog { max-width: 100% !important; margin: 0 !important; height: 100vh; }
+    .modal-content {
+      height: 100vh; border-radius: 0;
+      display: flex; flex-direction: column; border: none;
+    }
+    .modal-header { flex-shrink: 0; }
+    .modal-body { flex: 1 1 auto; overflow-y: auto; }
+    .modal-footer {
+      flex-direction: column-reverse !important; gap: 8px; flex-shrink: 0;
+    }
+    .modal-footer .btn,
+    .modal-footer form { width: 100%; margin: 0 !important; }
+    .modal-footer form .btn { width: 100%; }
+  }
+</style>
+
+{% endblock %}

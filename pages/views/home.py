@@ -168,7 +168,16 @@ def home(request):
                 'petty_cash': request.user.has_perm('auth.can_access_petty_cash'),
                 'financials': request.user.has_perm('auth.can_access_financials'),
                 'projects': request.user.has_perm('auth.can_access_projects'),
-                'personal': request.user.has_perm('auth.can_access_personal'),
+                'passports':    request.user.has_perm('auth.can_access_passports'),
+                'recipes':      request.user.has_perm('auth.can_access_recipes'),
+                'celebrations': request.user.has_perm('auth.can_access_celebrations'),
+                'crs':          request.user.has_perm('auth.can_access_crs'),
+                'personal': (
+                    request.user.has_perm('auth.can_access_passports')
+                    or request.user.has_perm('auth.can_access_recipes')
+                    or request.user.has_perm('auth.can_access_celebrations')
+                    or request.user.has_perm('auth.can_access_crs')
+                ),
                 'administration': request.user.has_perm('auth.can_access_administration'),
             }
 

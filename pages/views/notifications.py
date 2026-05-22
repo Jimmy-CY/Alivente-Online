@@ -19,15 +19,21 @@ Functions
 Auth tiers
 ----------
 notification_settings          -> auth.can_access_administration
-personal_notification_settings -> auth.can_access_personal
-                                  (POST additionally checks
-                                  auth.can_edit_personal; the admin view
-                                  has no separate edit gate - access to
-                                  administration is sufficient there.)
+personal_notification_settings -> any of auth.can_access_passports,
+                                  auth.can_access_recipes,
+                                  auth.can_access_celebrations,
+                                  auth.can_access_crs (composite — personal
+                                  notifications cut across all four Personal
+                                  sub-modules, so any sub-module access
+                                  grants visibility). POST additionally
+                                  requires any of the matching can_edit_*
+                                  permissions; the admin view has no
+                                  separate edit gate - access to
+                                  administration is sufficient there.
 """
 
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required, permission_required
+from django.contrib.auth.decorators import login_required, permission_required, user_passes_test
 from django.shortcuts import redirect, render
 
 from ..models import NotificationRecipient
@@ -96,14 +102,24 @@ def notification_settings(request):
 
 
 @login_required
-@permission_required('auth.can_access_personal', raise_exception=True)
+@user_passes_test(lambda u: (
+    u.has_perm('auth.can_access_passports')
+    or u.has_perm('auth.can_access_recipes')
+    or u.has_perm('auth.can_access_celebrations')
+    or u.has_perm('auth.can_access_crs')
+))
 def personal_notification_settings(request):
     """Manage email notification recipients for personal items"""
 
     # Handle form submission
     if request.method == 'POST':
         # Edit-level permission required to change notification settings
-        if not request.user.has_perm('auth.can_edit_personal'):
+        if not any([
+            request.user.has_perm('auth.can_edit_passports'),
+            request.user.has_perm('auth.can_edit_recipes'),
+            request.user.has_perm('auth.can_edit_celebrations'),
+            request.user.has_perm('auth.can_edit_crs'),
+        ]):
             messages.error(request, 'You do not have permission to edit notification settings.')
             return redirect('personal_notification_settings')
 

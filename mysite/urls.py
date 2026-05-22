@@ -11,6 +11,7 @@ def robots_txt(request):
 urlpatterns = [
     path("admin/", admin.site.urls),
     path('', include('pages.urls')),
+    path("crs/", include("crs.urls")),
     path('robots.txt', robots_txt),
     re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}),
 ]

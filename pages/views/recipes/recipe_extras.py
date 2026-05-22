@@ -19,14 +19,14 @@ Functions
 - preview_imported_recipe: Review/edit AI-extracted data; POST saves the
                            recipe (same save logic as create_recipe).
                            Read-tier (POST branch additionally checks
-                           can_edit_personal).
+                           can_edit_recipes).
 - toggle_recipe_favourite: Toggle a recipe favourite for the user (POST).
                            Edit-tier.
 
 Auth tiers
 ----------
-Read-tier -> auth.can_access_personal
-Edit-tier -> auth.can_edit_personal
+Read-tier -> auth.can_access_recipes
+Edit-tier -> auth.can_edit_recipes
 
 Cross-module imports
 --------------------
@@ -98,7 +98,7 @@ from .ai_extract import (
 
 
 @login_required
-@permission_required('auth.can_edit_personal', raise_exception=True)
+@permission_required('auth.can_edit_recipes', raise_exception=True)
 @require_POST
 def add_recipe_course(request):
     """AJAX view to add a new recipe course"""
@@ -131,7 +131,7 @@ def add_recipe_course(request):
 
 
 @login_required
-@permission_required('auth.can_edit_personal', raise_exception=True)
+@permission_required('auth.can_edit_recipes', raise_exception=True)
 @require_POST
 def add_recipe_category(request):
     """AJAX view to add a new recipe category"""
@@ -159,7 +159,7 @@ def add_recipe_category(request):
 
 
 @login_required
-@permission_required('auth.can_access_personal', raise_exception=True)
+@permission_required('auth.can_access_recipes', raise_exception=True)
 def recipe_check_name(request):
     """AJAX endpoint to check if a recipe name already exists"""
     name = request.GET.get('name', '').strip()
@@ -176,7 +176,7 @@ def recipe_check_name(request):
 
 
 @login_required
-@permission_required('auth.can_edit_personal', raise_exception=True)
+@permission_required('auth.can_edit_recipes', raise_exception=True)
 @require_POST
 def add_recipe_ingredient(request):
     """AJAX view to add a new ingredient"""
@@ -209,7 +209,7 @@ def add_recipe_ingredient(request):
 
 
 @login_required
-@permission_required('auth.can_edit_personal', raise_exception=True)
+@permission_required('auth.can_edit_recipes', raise_exception=True)
 @require_POST
 def add_recipe_protein(request):
     """AJAX view to add a new custom protein - UPDATED"""
@@ -248,7 +248,7 @@ class TempRecipeData:
 
 
 @login_required
-@permission_required('auth.can_edit_personal', raise_exception=True)
+@permission_required('auth.can_edit_recipes', raise_exception=True)
 def import_recipe(request):
     """Upload recipe file for AI extraction"""
 
@@ -303,7 +303,7 @@ def import_recipe(request):
 # ============================================
 
 @login_required
-@permission_required('auth.can_access_personal', raise_exception=True)
+@permission_required('auth.can_access_recipes', raise_exception=True)
 def preview_imported_recipe(request, temp_id):
     """Preview and edit AI-extracted recipe data - SAME save logic as create_recipe"""
 
@@ -315,7 +315,7 @@ def preview_imported_recipe(request, temp_id):
 
     if request.method == 'POST':
         # Edit-level - POST creates the recipe
-        if not request.user.has_perm('auth.can_edit_personal'):
+        if not request.user.has_perm('auth.can_edit_recipes'):
             messages.error(request, "You don't have permission to save recipes.")
             return redirect('recipe_management')
 
@@ -436,7 +436,7 @@ def preview_imported_recipe(request, temp_id):
 
 
 @login_required
-@permission_required('auth.can_edit_personal', raise_exception=True)
+@permission_required('auth.can_edit_recipes', raise_exception=True)
 @require_POST
 def toggle_recipe_favourite(request, recipe_id):
     """Toggle a recipe as favourite for the current user"""

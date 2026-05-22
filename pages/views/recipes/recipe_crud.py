@@ -11,7 +11,7 @@ Functions
 - recipe_management      : Recipe list w/ multi-select filters, A-Z,
                            pagination, nutrition sort; also handles the
                            POST delete action. Read-tier (the delete
-                           branch additionally checks can_edit_personal).
+                           branch additionally checks can_edit_recipes).
 - recipe_manage_document : Upload / replace / merge / delete a recipe
                            document (POST). Edit-tier.
 - duplicate_recipe       : Deep-copy a recipe + related rows (POST).
@@ -23,8 +23,8 @@ Functions
 
 Auth tiers
 ----------
-Read-tier -> auth.can_access_personal
-Edit-tier -> auth.can_edit_personal
+Read-tier -> auth.can_access_recipes
+Edit-tier -> auth.can_edit_recipes
 
 Cross-module imports (homes verified via grep + manage.py check)
 ----------------------------------------------------------------
@@ -107,7 +107,7 @@ from .nutrition import recipe_has_any_mapped_ingredient
 
 
 @login_required
-@permission_required('auth.can_access_personal', raise_exception=True)
+@permission_required('auth.can_access_recipes', raise_exception=True)
 def recipe_book_detail(request, recipe_id):
     recipe = get_object_or_404(Recipe, recipe_id=recipe_id)
     ingredients = recipe.recipe_ingredients.select_related(
@@ -179,12 +179,12 @@ def recipe_book_detail(request, recipe_id):
 
 
 @login_required
-@permission_required('auth.can_access_personal', raise_exception=True)
+@permission_required('auth.can_access_recipes', raise_exception=True)
 def recipe_management(request):
     """Recipe management page with multi-select filtering, A-Z filter, pagination, and nutrition sort."""
     # Handle delete action
     if request.method == 'POST' and request.POST.get('action') == 'delete':
-        if not request.user.has_perm('auth.can_edit_personal'):
+        if not request.user.has_perm('auth.can_edit_recipes'):
             messages.error(request, "You don't have permission to delete recipes.")
             return redirect('recipe_management')
 
@@ -436,7 +436,7 @@ def recipe_management(request):
 
 
 @login_required
-@permission_required('auth.can_edit_personal', raise_exception=True)
+@permission_required('auth.can_edit_recipes', raise_exception=True)
 @require_POST
 def recipe_manage_document(request):
     """Handle document upload, replacement, merging and deletion for recipes"""
@@ -533,7 +533,7 @@ def recipe_manage_document(request):
 
 
 @login_required
-@permission_required('auth.can_edit_personal', raise_exception=True)
+@permission_required('auth.can_edit_recipes', raise_exception=True)
 @require_POST
 def duplicate_recipe(request, recipe_id):
     """Duplicate a recipe with all its ingredients and related data"""
@@ -643,7 +643,7 @@ def duplicate_recipe(request, recipe_id):
 # ============================================
 
 @login_required
-@permission_required('auth.can_access_personal', raise_exception=True)
+@permission_required('auth.can_access_recipes', raise_exception=True)
 def view_recipe(request, recipe_id):
     """View recipe detail page"""
 
@@ -747,7 +747,7 @@ def view_recipe(request, recipe_id):
 # ============================================
 
 @login_required
-@permission_required('auth.can_edit_personal', raise_exception=True)
+@permission_required('auth.can_edit_recipes', raise_exception=True)
 def create_recipe(request):
     """Create new recipe - same for manual and AI import"""
 
@@ -904,7 +904,7 @@ def create_recipe(request):
 # ============================================
 
 @login_required
-@permission_required('auth.can_edit_personal', raise_exception=True)
+@permission_required('auth.can_edit_recipes', raise_exception=True)
 def edit_recipe(request, recipe_id):
     """Edit an existing recipe"""
 

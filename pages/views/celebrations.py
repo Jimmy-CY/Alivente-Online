@@ -21,9 +21,9 @@ Functions
 
 Auth tiers
 ----------
-can_access_personal -> celebration_management, celebration_calendar,
+can_access_celebrations -> celebration_management, celebration_calendar,
                        celebration_dashboard
-can_edit_personal   -> import_celebrations, update_event_notifications
+can_edit_celebrations   -> import_celebrations, update_event_notifications
                        (both also @require_POST)
 """
 
@@ -42,7 +42,7 @@ from ..models import CelebrationEvent, Contact
 
 
 @login_required
-@permission_required('auth.can_access_personal', raise_exception=True)
+@permission_required('auth.can_access_celebrations', raise_exception=True)
 def celebration_management(request):
     """Main celebration management page"""
 
@@ -217,7 +217,7 @@ def celebration_management(request):
 
 
 @login_required
-@permission_required('auth.can_access_personal', raise_exception=True)
+@permission_required('auth.can_access_celebrations', raise_exception=True)
 def celebration_calendar(request):
     """Calendar view of all celebrations"""
 
@@ -308,7 +308,7 @@ def celebration_calendar(request):
 
 
 @login_required
-@permission_required('auth.can_edit_personal', raise_exception=True)
+@permission_required('auth.can_edit_celebrations', raise_exception=True)
 @require_POST
 def import_celebrations(request):
     """Import contacts and events from Excel file"""
@@ -458,7 +458,7 @@ def import_celebrations(request):
 
 
 @login_required
-@permission_required('auth.can_access_personal', raise_exception=True)
+@permission_required('auth.can_access_celebrations', raise_exception=True)
 def celebration_dashboard(request):
     """Dashboard showing upcoming celebrations"""
 
@@ -491,7 +491,7 @@ def celebration_dashboard(request):
 
 
 @login_required
-@permission_required('auth.can_edit_personal', raise_exception=True)
+@permission_required('auth.can_edit_celebrations', raise_exception=True)
 @require_POST
 def update_event_notifications(request, event_id):
     """Update notification preferences for a specific event via AJAX"""

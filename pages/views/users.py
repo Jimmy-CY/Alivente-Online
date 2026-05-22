@@ -238,8 +238,12 @@ def user_permissions(request, user_id):
         {'codename': 'can_access_issues',         'edit_codename': 'can_edit_issues',     'label': 'Issues',           'icon': 'fa-exclamation-circle'},
         {'codename': 'can_access_dashboard',      'edit_codename': None,                  'label': 'Dashboard',        'icon': 'fa-tachometer-alt'},
         {'codename': 'can_access_administration', 'edit_codename': None,                  'label': 'Administration',   'icon': 'fa-cogs'},
-        {'codename': 'can_access_personal',       'edit_codename': 'can_edit_personal',   'label': 'Personal',         'icon': 'fa-user-circle'},
-    ]
+        {'codename': 'can_access_passports',      'edit_codename': 'can_edit_passports',      'label': 'Passports / Documents', 'icon': 'fa-passport'},
+        {'codename': 'can_access_recipes',        'edit_codename': 'can_edit_recipes',        'label': 'Recipes',               'icon': 'fa-utensils'},
+        {'codename': 'can_access_celebrations',   'edit_codename': 'can_edit_celebrations',   'label': 'Celebrations',          'icon': 'fa-birthday-cake'},
+        {'codename': 'can_access_crs',            'edit_codename': 'can_edit_crs',            'label': 'CRS Reporting',         'icon': 'fa-landmark'},
+
+        ]
 
     # Ensure all permissions exist in the database
     content_type = ContentType.objects.get_for_model(User)

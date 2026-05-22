@@ -55,29 +55,37 @@
   <div id="personal-panel" class="tab-panel personal-panel active">
     <div class="admin-grid">
 
+      {% if perms_map.passports %}
       <!-- Manage Passports/Documents -->
       <a href="{% url 'passport_management' %}" class="admin-btn btn-personal">
         <i class="fas fa-passport"></i>
         <h6>Passports / Documents</h6>
       </a>
+      {% endif %}
 
+      {% if perms_map.recipes %}
       <!-- Recipes -->
       <a href="{% url 'recipe_management' %}" class="admin-btn btn-personal">
         <i class="fas fa-utensils"></i>
         <h6>Recipes</h6>
       </a>
+      {% endif %}
 
+      {% if perms_map.celebrations %}
       <!-- Celebrations -->
       <a href="{% url 'celebration_dashboard' %}" class="admin-btn btn-personal">
         <i class="fas fa-birthday-cake"></i>
         <h6>Celebrations</h6>
       </a>
+      {% endif %}
 
-      <!-- Coming Soon -->
-      <div class="admin-btn btn-personal coming-soon">
-        <i class="fas fa-clock"></i>
-        <h6>Coming Soon</h6>
-      </div>
+      {% if perms_map.crs %}
+      <!-- CRS Reporting -->
+      <a href="{% url 'crs:index' %}" class="admin-btn btn-personal">
+        <i class="fas fa-landmark"></i>
+        <h6>CRS Reporting</h6>
+      </a>
+      {% endif %}
 
     </div>
   </div>

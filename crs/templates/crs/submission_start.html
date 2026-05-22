@@ -1,0 +1,257 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+
+<h2 class="page-title-h2"><center>ALIVENTE ONLINE - START CRS SUBMISSION</center></h2>
+<br/>
+
+{% for msg in messages %}
+  <div class="alert alert-secondary alert-dismissible fade show auto-dismiss" role="alert">
+    <strong></strong> <center>{{ msg }}</center>
+    <button type="button" class="close" data-dismiss="alert"><span aria-hidden="true">&times;</span></button>
+  </div>
+{% endfor %}
+
+<!-- Action Buttons -->
+<div class="page-action-buttons">
+  <a href="{% url 'crs:submission_list' %}" class="btn btn-success action-back" role="button" aria-label="Back to list">
+    <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
+  </a>
+</div>
+
+<!-- Form Panel -->
+<div class="crs-panel-container">
+  <div class="crs-panel">
+
+    {% if form.non_field_errors %}
+    <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+    {% endif %}
+
+    <form method="post" novalidate id="submissionStartForm">
+      {% csrf_token %}
+
+      <div class="form-section">
+        <div class="form-section-title">Selection</div>
+        <div class="form-section-note">
+          A draft submission is created for one (FI, Country, Year) combination.
+          The MessageRefID is minted automatically from the country's template
+          and is immutable after creation.
+        </div>
+
+        <div class="form-grid">
+          <div class="form-field form-field-full">
+            <label for="id_fi">Reporting FI <span class="req">*</span></label>
+            {{ form.reporting_fi }}
+            {% if form.reporting_fi.errors %}<div class="field-error">{{ form.reporting_fi.errors|join:" " }}</div>{% endif %}
+          </div>
+
+          <div class="form-field">
+            <label for="{{ form.country_config.id_for_label }}">Country <span class="req">*</span></label>
+            {{ form.country_config }}
+            {% if form.country_config.errors %}<div class="field-error">{{ form.country_config.errors|join:" " }}</div>{% endif %}
+          </div>
+
+          <div class="form-field">
+            <label for="id_year_select">Reporting Year <span class="req">*</span></label>
+            <select id="id_year_select" class="form-control">
+              {% for y in year_choices %}
+                <option value="{{ y }}" {% if y == default_year %}selected{% endif %}>{{ y }}</option>
+              {% endfor %}
+              <option value="__custom__">Custom…</option>
+            </select>
+            <input type="number" id="id_year_custom" class="form-control"
+                   min="2014" max="2099" placeholder="Enter year (e.g. 2020)"
+                   style="display: none; margin-top: 6px;">
+            <input type="hidden" name="year" id="id_year" value="{{ default_year }}">
+            {% if form.year.errors %}<div class="field-error">{{ form.year.errors|join:" " }}</div>{% endif %}
+            <small class="field-help">Last day of this year is used as ReportingPeriod (e.g. 2025 → 2025-12-31).</small>
+          </div>
+
+          <div class="form-field form-field-full">
+            <label for="id_sending_in">Sending Company IN — TIN <span class="req">*</span></label>
+            {{ form.sending_company_in }}
+            {% if form.sending_company_in.errors %}<div class="field-error">{{ form.sending_company_in.errors|join:" " }}</div>{% endif %}
+            <small class="field-help" id="in-help">
+              Choose a Reporting FI first to see its registered TINs.
+            </small>
+            <div id="no-tins-warning" class="field-error" style="display: none;">
+              This FI has no TIN registered. CRS requires a TIN —
+              <a href="#" id="edit-fi-link">edit the FI</a> to add one first.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Submit Row -->
+      <div class="form-actions">
+        <a href="{% url 'crs:submission_list' %}" class="btn btn-secondary">Cancel</a>
+        <button type="submit" class="btn btn-success" id="submitBtn">
+          <i class="fas fa-play"></i> Create Draft
+        </button>
+      </div>
+    </form>
+
+  </div>
+</div>
+
+<script id="fi-tins-data" type="application/json">{{ fi_tins_json|safe }}</script>
+
+<script>
+  (function() {
+    const fiTins = JSON.parse(document.getElementById('fi-tins-data').textContent);
+    const fiSelect      = document.getElementById('id_fi');
+    const inSelect      = document.getElementById('id_sending_in');
+    const inHelp        = document.getElementById('in-help');
+    const noTinsWarn    = document.getElementById('no-tins-warning');
+    const editFiLink    = document.getElementById('edit-fi-link');
+    const submitBtn     = document.getElementById('submitBtn');
+
+    function refreshIN() {
+      const fiPk = fiSelect.value;
+      // Clear current options
+      inSelect.innerHTML = '';
+
+      if (!fiPk) {
+        inSelect.innerHTML = '<option value="">— Select FI first —</option>';
+        inSelect.disabled = true;
+        inHelp.style.display = '';
+        noTinsWarn.style.display = 'none';
+        submitBtn.disabled = false;
+        return;
+      }
+
+      const tins = fiTins[fiPk] || [];
+      if (tins.length === 0) {
+        inSelect.innerHTML = '<option value="">— No TINs registered —</option>';
+        inSelect.disabled = true;
+        inHelp.style.display = 'none';
+        noTinsWarn.style.display = '';
+        editFiLink.href = `/crs/fis/${fiPk}/edit/`;
+        submitBtn.disabled = true;
+        return;
+      }
+
+      inSelect.disabled = false;
+      inHelp.style.display = '';
+      noTinsWarn.style.display = 'none';
+      submitBtn.disabled = false;
+
+      // Populate
+      inSelect.innerHTML = '<option value="">— Select TIN —</option>';
+      tins.forEach(tin => {
+        const opt = document.createElement('option');
+        opt.value = tin.value;
+        opt.textContent = tin.issued_by
+          ? `${tin.value}  (issued by ${tin.issued_by})`
+          : tin.value;
+        inSelect.appendChild(opt);
+      });
+    }
+
+    fiSelect.addEventListener('change', refreshIN);
+    refreshIN();  // initial state
+
+    // Year dropdown + custom input plumbing
+    const yearSelect = document.getElementById('id_year_select');
+    const yearCustom = document.getElementById('id_year_custom');
+    const yearHidden = document.getElementById('id_year');
+
+    function refreshYear() {
+      if (yearSelect.value === '__custom__') {
+        yearCustom.style.display = '';
+        yearHidden.value = yearCustom.value || '';
+        yearCustom.focus();
+      } else {
+        yearCustom.style.display = 'none';
+        yearHidden.value = yearSelect.value;
+      }
+    }
+    yearSelect.addEventListener('change', refreshYear);
+    yearCustom.addEventListener('input', function() {
+      if (yearSelect.value === '__custom__') {
+        yearHidden.value = yearCustom.value;
+      }
+    });
+  })();
+</script>
+
+<style>
+  :root {
+    --crs-dark: #28a745;
+    --crs-light: #d4edda;
+  }
+  .page-title-h2 { margin-top: 0.5rem; margin-bottom: 1rem; }
+  .page-action-buttons {
+    display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 20px;
+  }
+  .crs-panel-container { max-width: 900px; margin: 0 auto; }
+  .crs-panel {
+    padding: 30px; border: 3px solid var(--crs-dark);
+    background-color: var(--crs-light); border-radius: 10px;
+  }
+
+  .form-section {
+    background: white; border-radius: 8px;
+    padding: 20px; margin-bottom: 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  }
+  .form-section-title {
+    font-size: 13px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.6px;
+    color: var(--crs-dark);
+    border-bottom: 2px solid var(--crs-light);
+    padding-bottom: 8px; margin-bottom: 14px;
+  }
+  .form-section-note {
+    font-size: 12px; color: #6c757d;
+    margin-bottom: 14px; line-height: 1.6;
+  }
+
+  .form-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px;
+  }
+  .form-field { display: flex; flex-direction: column; gap: 4px; }
+  .form-field-full { grid-column: 1 / -1; }
+  .form-field label {
+    font-size: 12px; font-weight: 600; color: #495057; margin: 0;
+  }
+  .form-field .req { color: #dc3545; }
+  .form-field .form-control {
+    padding: 7px 10px; border: 1px solid #ced4da;
+    border-radius: 5px; font-size: 14px;
+  }
+  .form-field .form-control:disabled {
+    background: #e9ecef; color: #6c757d;
+  }
+  .form-field .field-help {
+    font-size: 11px; color: #6c757d; font-style: italic;
+  }
+  .form-field .field-error {
+    font-size: 12px; color: #dc3545; font-weight: 600;
+  }
+
+  .form-actions {
+    display: flex; justify-content: flex-end; gap: 10px; margin-top: 8px;
+  }
+
+  @media (max-width: 768px) {
+    .page-title-h2 { font-size: 1.25rem; margin-bottom: 0.75rem; }
+    .page-action-buttons { margin-bottom: 14px; }
+    .page-action-buttons .action-back {
+      flex: 0 0 auto; width: 50px; height: 38px; padding: 0;
+      display: flex; align-items: center; justify-content: center; margin: 0;
+    }
+    .action-back-label { display: none; }
+    .crs-panel { padding: 16px; }
+    .form-section { padding: 14px; }
+    .form-grid { grid-template-columns: 1fr; }
+    .form-actions { flex-direction: column-reverse; gap: 8px; }
+    .form-actions .btn { width: 100%; }
+    .form-field .form-control { font-size: 16px !important; }
+  }
+</style>
+
+{% endblock %}

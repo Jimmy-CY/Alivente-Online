@@ -17,8 +17,8 @@ Functions
 Auth tiers
 ----------
 Read views (`categories_management`, `check_category_usage`) require
-`auth.can_access_personal`. Mutating views (`add_category`, `update_category`,
-`delete_category`) require `auth.can_edit_personal`.
+`auth.can_access_recipes`. Mutating views (`add_category`, `update_category`,
+`delete_category`) require `auth.can_edit_recipes`.
 """
 
 import json
@@ -35,7 +35,7 @@ from pages.models import Ingredient, IngredientCategory
 # =====================================================================
 
 @login_required
-@permission_required('auth.can_access_personal', raise_exception=True)
+@permission_required('auth.can_access_recipes', raise_exception=True)
 def categories_management(request):
     """Manage ingredient categories"""
     # Get all categories sorted alphabetically
@@ -61,7 +61,7 @@ def categories_management(request):
 
 
 @login_required
-@permission_required('auth.can_edit_personal', raise_exception=True)
+@permission_required('auth.can_edit_recipes', raise_exception=True)
 def add_category(request):
     """Add a new ingredient category"""
     if request.method == 'POST':
@@ -96,7 +96,7 @@ def add_category(request):
 
 
 @login_required
-@permission_required('auth.can_edit_personal', raise_exception=True)
+@permission_required('auth.can_edit_recipes', raise_exception=True)
 def update_category(request):
     """Update category name"""
     if request.method == 'POST':
@@ -139,7 +139,7 @@ def update_category(request):
 
 
 @login_required
-@permission_required('auth.can_access_personal', raise_exception=True)
+@permission_required('auth.can_access_recipes', raise_exception=True)
 def check_category_usage(request):
     """Check if category is used by any ingredients"""
     if request.method == 'POST':
@@ -170,7 +170,7 @@ def check_category_usage(request):
 
 
 @login_required
-@permission_required('auth.can_edit_personal', raise_exception=True)
+@permission_required('auth.can_edit_recipes', raise_exception=True)
 def delete_category(request):
     """Delete category if not used by any ingredients"""
     if request.method == 'POST':

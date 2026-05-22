@@ -19,8 +19,8 @@ Functions
 
 Auth tiers
 ----------
-`send_shopping_list` requires `auth.can_edit_personal`;
-`generate_recipe_shopping_list` requires `auth.can_access_personal`.
+`send_shopping_list` requires `auth.can_edit_recipes`;
+`generate_recipe_shopping_list` requires `auth.can_access_recipes`.
 `round_shopping_quantity` is an undecorated internal helper (correct - not a view).
 
 Cleanup note
@@ -101,7 +101,7 @@ def round_shopping_quantity(qty, unit):
 # =====================================================================
 
 @login_required
-@permission_required('auth.can_edit_personal', raise_exception=True)
+@permission_required('auth.can_edit_recipes', raise_exception=True)
 @require_POST
 def send_shopping_list(request):
     """Generate shopping list with unit conversion - DEBUG VERSION"""
@@ -201,7 +201,7 @@ def send_shopping_list(request):
 
 
 @login_required
-@permission_required('auth.can_access_personal', raise_exception=True)
+@permission_required('auth.can_access_recipes', raise_exception=True)
 @require_POST
 def generate_recipe_shopping_list(request):
     """Generate shopping list for a single recipe with unit conversion to shopping units"""

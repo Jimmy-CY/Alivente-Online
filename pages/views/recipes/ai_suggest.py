@@ -69,7 +69,7 @@ def _check_rate_limit(user, max_per_hour: int = 10) -> tuple[bool, int]:
 # THE VIEW
 # ============================================================================
 @login_required
-@permission_required('auth.can_access_personal', raise_exception=True)
+@permission_required('auth.can_access_recipes', raise_exception=True)
 @require_POST
 def suggest_recipe_modification(request, recipe_id):
     """

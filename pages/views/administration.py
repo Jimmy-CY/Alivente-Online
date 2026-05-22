@@ -37,7 +37,7 @@ superuser only            -> admin_clear (@user_passes_test is_superuser)
 login only                -> my_profile
 can_access_administration -> admin_apms, admin_unpaid, admin_renewals,
                              admin_invoices (also needs can_edit_invoices)
-can_access_personal       -> personal_page
+login only                -> personal_page (tile-level gating in template)
 can_access_tenants        -> serve_lease
 can_edit_tenants          -> upload_lease_agreement
 can_access_properties     -> title_deeds_management
@@ -74,10 +74,22 @@ def admin_apms(request):
 
 
 @login_required
-@permission_required('auth.can_access_personal', raise_exception=True)
 def personal_page(request):
-    """Personal management page"""
-    return render(request, "personal.html")
+    """Personal management page.
+
+    Visible to any logged-in user; the four tiles (Passports/Documents,
+    Recipes, Celebrations, CRS Reporting) are individually gated in the
+    template based on the corresponding sub-module permission. If the
+    user has none of the four, all tiles are hidden and the page shows
+    empty — that's by design rather than a redirect, since it gives
+    consistent UX even when a user is in transition between roles."""
+    perms_map = {
+        'passports':    request.user.has_perm('auth.can_access_passports'),
+        'recipes':      request.user.has_perm('auth.can_access_recipes'),
+        'celebrations': request.user.has_perm('auth.can_access_celebrations'),
+        'crs':          request.user.has_perm('auth.can_access_crs'),
+    }
+    return render(request, "personal.html", {'perms_map': perms_map})
 
 
 @login_required

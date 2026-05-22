@@ -573,6 +573,8 @@ class ModuleAccessMiddleware(MiddlewareMixin):
         self.LOGIN_ONLY_PATTERNS = [
             'my-profile/',
             'help/',
+            'personal',              # Landing page — per-tile perms enforce sub-module access
+            'notifications/personal',  # Composite — tile/section gates in template
         ]
 
     def process_view(self, request, view_func, view_args, view_kwargs):
@@ -653,7 +655,6 @@ class ModuleAccessMiddleware(MiddlewareMixin):
             # ---------- NOTIFICATIONS (two module-restricted sub-pages) ----------
             # Must come FIRST so these specific sub-URLs match before any
             # broader rule could catch them.
-            ('notifications/personal', 'auth.can_access_personal'),
             ('notifications/settings', 'auth.can_access_administration'),
 
             # ---------- ADMINISTRATION ----------
@@ -665,46 +666,52 @@ class ModuleAccessMiddleware(MiddlewareMixin):
             ('user-administration', 'auth.can_access_administration'),
             ('setup-permissions', 'auth.can_access_administration'),
 
-            # ---------- PERSONAL ----------
-            ('personal', 'auth.can_access_personal'),
-            ('passport-management', 'auth.can_access_personal'),
-            ('recipe_management', 'auth.can_access_personal'),
-            ('recipes/', 'auth.can_access_personal'),
-            ('recipe/', 'auth.can_access_personal'),
-            ('view_recipe', 'auth.can_access_personal'),
-            ('create_recipe', 'auth.can_access_personal'),
-            ('import_recipe', 'auth.can_access_personal'),
-            ('preview_imported_recipe', 'auth.can_access_personal'),
-            ('spell-check-instructions', 'auth.can_access_personal'),
-            ('add-recipe-protein', 'auth.can_access_personal'),
-            ('meal_plans', 'auth.can_access_personal'),
-            ('celebrations', 'auth.can_access_personal'),
-            ('unit_conversions', 'auth.can_access_personal'),
-            ('save_unit_conversion', 'auth.can_access_personal'),
-            ('add_unit_conversion_manual', 'auth.can_access_personal'),
-            ('edit_unit_conversion', 'auth.can_access_personal'),
-            ('delete_unit_conversion', 'auth.can_access_personal'),
-            ('ingredient_base_units', 'auth.can_access_personal'),
-            ('update_ingredient_base_unit', 'auth.can_access_personal'),
-            ('check-ingredient-usage', 'auth.can_access_personal'),
-            ('delete-ingredient', 'auth.can_access_personal'),
-            ('update-ingredient-full', 'auth.can_access_personal'),
-            ('categories-management', 'auth.can_access_personal'),
-            ('add-category', 'auth.can_access_personal'),
-            ('update-category', 'auth.can_access_personal'),
-            ('check-category-usage', 'auth.can_access_personal'),
-            ('delete-category', 'auth.can_access_personal'),
-            ('measurement-units-management', 'auth.can_access_personal'),
-            ('add-measurement-unit', 'auth.can_access_personal'),
-            ('update-measurement-unit', 'auth.can_access_personal'),
-            ('check-unit-usage', 'auth.can_access_personal'),
-            ('delete-measurement-unit', 'auth.can_access_personal'),
-            ('ajax/add_recipe_course', 'auth.can_access_personal'),
-            ('ajax/add_recipe_category', 'auth.can_access_personal'),
-            ('ajax/add_recipe_ingredient', 'auth.can_access_personal'),
-            ('ajax/add_measurement', 'auth.can_access_personal'),
-            ('ajax/add_ingredient', 'auth.can_access_personal'),
-            ('ajax/add_preparation', 'auth.can_access_personal'),
+            # ---------- PASSPORTS / DOCUMENTS ----------
+            ('passport-management', 'auth.can_access_passports'),
+
+            # ---------- CELEBRATIONS ----------
+            ('celebrations', 'auth.can_access_celebrations'),
+
+            # ---------- CRS REPORTING ----------
+            ('crs/', 'auth.can_access_crs'),
+
+            # ---------- RECIPES ----------
+            ('recipe_management', 'auth.can_access_recipes'),
+            ('recipes/', 'auth.can_access_recipes'),
+            ('recipe/', 'auth.can_access_recipes'),
+            ('view_recipe', 'auth.can_access_recipes'),
+            ('create_recipe', 'auth.can_access_recipes'),
+            ('import_recipe', 'auth.can_access_recipes'),
+            ('preview_imported_recipe', 'auth.can_access_recipes'),
+            ('spell-check-instructions', 'auth.can_access_recipes'),
+            ('add-recipe-protein', 'auth.can_access_recipes'),
+            ('meal_plans', 'auth.can_access_recipes'),
+            ('unit_conversions', 'auth.can_access_recipes'),
+            ('save_unit_conversion', 'auth.can_access_recipes'),
+            ('add_unit_conversion_manual', 'auth.can_access_recipes'),
+            ('edit_unit_conversion', 'auth.can_access_recipes'),
+            ('delete_unit_conversion', 'auth.can_access_recipes'),
+            ('ingredient_base_units', 'auth.can_access_recipes'),
+            ('update_ingredient_base_unit', 'auth.can_access_recipes'),
+            ('check-ingredient-usage', 'auth.can_access_recipes'),
+            ('delete-ingredient', 'auth.can_access_recipes'),
+            ('update-ingredient-full', 'auth.can_access_recipes'),
+            ('categories-management', 'auth.can_access_recipes'),
+            ('add-category', 'auth.can_access_recipes'),
+            ('update-category', 'auth.can_access_recipes'),
+            ('check-category-usage', 'auth.can_access_recipes'),
+            ('delete-category', 'auth.can_access_recipes'),
+            ('measurement-units-management', 'auth.can_access_recipes'),
+            ('add-measurement-unit', 'auth.can_access_recipes'),
+            ('update-measurement-unit', 'auth.can_access_recipes'),
+            ('check-unit-usage', 'auth.can_access_recipes'),
+            ('delete-measurement-unit', 'auth.can_access_recipes'),
+            ('ajax/add_recipe_course', 'auth.can_access_recipes'),
+            ('ajax/add_recipe_category', 'auth.can_access_recipes'),
+            ('ajax/add_recipe_ingredient', 'auth.can_access_recipes'),
+            ('ajax/add_measurement', 'auth.can_access_recipes'),
+            ('ajax/add_ingredient', 'auth.can_access_recipes'),
+            ('ajax/add_preparation', 'auth.can_access_recipes'),
 
             # ---------- PROPERTIES ----------
             ('properties', 'auth.can_access_properties'),

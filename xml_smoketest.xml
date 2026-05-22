@@ -1,0 +1,179 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<CRS_OECD xmlns="urn:oecd:ties:crs:v2" xmlns:cfc="urn:oecd:ties:commontypesfatcacrs:v2" xmlns:stf="urn:oecd:ties:crsstf:v5" xmlns:iso="urn:oecd:ties:isocrstypes:v1" version="2.0">
+  <MessageSpec>
+    <SendingCompanyIN>CY12345678X</SendingCompanyIN>
+    <TransmittingCountry>CY</TransmittingCountry>
+    <ReceivingCountry>CY</ReceivingCountry>
+    <MessageType>CRS</MessageType>
+    <Contact>Maria Constantinou, mc@testbank.cy, +357 22 123456</Contact>
+    <MessageRefId>CY12345678X.2025_40729DAE363A</MessageRefId>
+    <MessageTypeIndic>CRS701</MessageTypeIndic>
+    <ReportingPeriod>2025-12-31</ReportingPeriod>
+    <Timestamp>2026-05-21T12:37:42</Timestamp>
+  </MessageSpec>
+  <CrsBody>
+    <ReportingFI>
+      <ResCountryCode>CY</ResCountryCode>
+      <IN issuedBy="CY" INType="TIN">CY12345678X</IN>
+      <Name nameType="OECD207">Test Bank of Cyprus Ltd</Name>
+      <Address legalAddressType="OECD304">
+        <cfc:CountryCode>CY</cfc:CountryCode>
+        <cfc:AddressFree>1 Test Street, Nicosia 1010, Cyprus</cfc:AddressFree>
+      </Address>
+      <DocSpec>
+        <stf:DocTypeIndic>OECD1</stf:DocTypeIndic>
+        <stf:DocRefId>CY12345678X.2025_202605211237_88A6856F7CE7</stf:DocRefId>
+      </DocSpec>
+    </ReportingFI>
+    <ReportingGroup>
+      <AccountReport>
+        <DocSpec>
+          <stf:DocTypeIndic>OECD1</stf:DocTypeIndic>
+          <stf:DocRefId>CY12345678X.2025_202605211237_4086AB337F9A</stf:DocRefId>
+        </DocSpec>
+        <AccountNumber AcctNumberType="OECD601">CY46002001280000001234567890</AccountNumber>
+        <AccountHolder>
+          <Organisation>
+            <ResCountryCode>GB</ResCountryCode>
+            <IN issuedBy="GB" INType="BRN">12345678</IN>
+            <Name nameType="OECD207">Aegean Holdings Limited</Name>
+            <Address>
+              <cfc:CountryCode>GB</cfc:CountryCode>
+              <cfc:AddressFree>25 Bedford Square, London WC1B 3HH, United Kingdom</cfc:AddressFree>
+            </Address>
+          </Organisation>
+          <AcctHolderType>CRS101</AcctHolderType>
+        </AccountHolder>
+        <ControllingPerson>
+          <Individual>
+            <ResCountryCode>GB</ResCountryCode>
+            <TIN issuedBy="GB">AB123456C</TIN>
+            <Name>
+              <FirstName>James</FirstName>
+              <LastName>Whitfield</LastName>
+            </Name>
+            <Address>
+              <cfc:CountryCode>GB</cfc:CountryCode>
+              <cfc:AddressFree>14 Holland Park, London W11 3RS, United Kingdom</cfc:AddressFree>
+            </Address>
+            <BirthInfo>
+              <BirthDate>1965-03-22</BirthDate>
+            </BirthInfo>
+          </Individual>
+          <CtrlgPersonType>CRS801</CtrlgPersonType>
+        </ControllingPerson>
+        <ControllingPerson>
+          <Individual>
+            <ResCountryCode>GB</ResCountryCode>
+            <TIN issuedBy="GB">CD789012E</TIN>
+            <Name>
+              <FirstName>Sophia</FirstName>
+              <LastName>Whitfield</LastName>
+            </Name>
+            <Address>
+              <cfc:CountryCode>GB</cfc:CountryCode>
+              <cfc:AddressFree>14 Holland Park, London W11 3RS, United Kingdom</cfc:AddressFree>
+            </Address>
+            <BirthInfo>
+              <BirthDate>1968-11-08</BirthDate>
+            </BirthInfo>
+          </Individual>
+          <CtrlgPersonType>CRS803</CtrlgPersonType>
+        </ControllingPerson>
+        <AccountBalance currCode="EUR">1250000</AccountBalance>
+        <Payment>
+          <Type>CRS501</Type>
+          <PaymentAmnt currCode="EUR">45000</PaymentAmnt>
+        </Payment>
+        <Payment>
+          <Type>CRS502</Type>
+          <PaymentAmnt currCode="EUR">8500</PaymentAmnt>
+        </Payment>
+      </AccountReport>
+      <AccountReport>
+        <DocSpec>
+          <stf:DocTypeIndic>OECD1</stf:DocTypeIndic>
+          <stf:DocRefId>CY12345678X.2025_202605211237_B2185DEEB5F0</stf:DocRefId>
+        </DocSpec>
+        <AccountNumber AcctNumberType="OECD601">CY29005000010000789012345678</AccountNumber>
+        <AccountHolder>
+          <Organisation>
+            <ResCountryCode>PA</ResCountryCode>
+            <IN issuedBy="PA" INType="TIN">4567890-1-2024</IN>
+            <Name nameType="OECD207">Mediterranean Shipping Corp SA</Name>
+            <Address>
+              <cfc:CountryCode>PA</cfc:CountryCode>
+              <cfc:AddressFree>Plaza Banco General, Calle 50, Panama City, Panama</cfc:AddressFree>
+            </Address>
+          </Organisation>
+          <AcctHolderType>CRS102</AcctHolderType>
+        </AccountHolder>
+        <AccountBalance currCode="USD">875000</AccountBalance>
+        <Payment>
+          <Type>CRS502</Type>
+          <PaymentAmnt currCode="USD">4200</PaymentAmnt>
+        </Payment>
+      </AccountReport>
+      <AccountReport>
+        <DocSpec>
+          <stf:DocTypeIndic>OECD1</stf:DocTypeIndic>
+          <stf:DocRefId>CY12345678X.2025_202605211237_AA3A48F5CC21</stf:DocRefId>
+        </DocSpec>
+        <AccountNumber AcctNumberType="OECD601">CY13002001280000005678901234</AccountNumber>
+        <AccountHolder>
+          <Organisation>
+            <ResCountryCode>VG</ResCountryCode>
+            <IN issuedBy="VG" INType="BRN">1234567</IN>
+            <Name nameType="OECD207">Mariana Trust Foundation</Name>
+            <Address>
+              <cfc:CountryCode>VG</cfc:CountryCode>
+              <cfc:AddressFree>PO Box 957, Offshore Incorporations Centre, Road Town, Tortola, British Virgin Islands</cfc:AddressFree>
+            </Address>
+          </Organisation>
+          <AcctHolderType>CRS103</AcctHolderType>
+        </AccountHolder>
+        <ControllingPerson>
+          <Individual>
+            <ResCountryCode>GR</ResCountryCode>
+            <TIN issuedBy="GR">123456789</TIN>
+            <Name>
+              <FirstName>Helena</FirstName>
+              <LastName>Pavlou</LastName>
+            </Name>
+            <Address>
+              <cfc:CountryCode>GR</cfc:CountryCode>
+              <cfc:AddressFree>Vouliagmenis Avenue 142, Glyfada 16674, Athens, Greece</cfc:AddressFree>
+            </Address>
+            <BirthInfo>
+              <BirthDate>1972-07-15</BirthDate>
+            </BirthInfo>
+          </Individual>
+          <CtrlgPersonType>CRS804</CtrlgPersonType>
+        </ControllingPerson>
+        <ControllingPerson>
+          <Individual>
+            <ResCountryCode>GR</ResCountryCode>
+            <TIN issuedBy="GR">987654321</TIN>
+            <Name>
+              <FirstName>Andreas</FirstName>
+              <LastName>Pavlou</LastName>
+            </Name>
+            <Address>
+              <cfc:CountryCode>GR</cfc:CountryCode>
+              <cfc:AddressFree>Vouliagmenis Avenue 142, Glyfada 16674, Athens, Greece</cfc:AddressFree>
+            </Address>
+            <BirthInfo>
+              <BirthDate>2000-04-10</BirthDate>
+            </BirthInfo>
+          </Individual>
+          <CtrlgPersonType>CRS807</CtrlgPersonType>
+        </ControllingPerson>
+        <AccountBalance currCode="EUR">2500000</AccountBalance>
+        <Payment>
+          <Type>CRS504</Type>
+          <PaymentAmnt currCode="EUR">35000</PaymentAmnt>
+        </Payment>
+      </AccountReport>
+    </ReportingGroup>
+  </CrsBody>
+</CRS_OECD>

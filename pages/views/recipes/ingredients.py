@@ -17,9 +17,9 @@ Functions
 
 Auth tiers
 ----------
-`check_ingredient_usage` is read-tier (`auth.can_access_personal`). The
+`check_ingredient_usage` is read-tier (`auth.can_access_recipes`). The
 mutating endpoints (`delete_ingredient`, `update_ingredient_full`,
-`add_ingredient_ajax`) require `auth.can_edit_personal`.
+`add_ingredient_ajax`) require `auth.can_edit_recipes`.
 """
 
 import json
@@ -41,7 +41,7 @@ from pages.models import (
 # =====================================================================
 
 @login_required
-@permission_required('auth.can_access_personal', raise_exception=True)
+@permission_required('auth.can_access_recipes', raise_exception=True)
 def check_ingredient_usage(request):
     """Check if ingredient is used in any recipes"""
     if request.method == 'POST':
@@ -72,7 +72,7 @@ def check_ingredient_usage(request):
 
 
 @login_required
-@permission_required('auth.can_edit_personal', raise_exception=True)
+@permission_required('auth.can_edit_recipes', raise_exception=True)
 def delete_ingredient(request):
     """Delete ingredient if not used in any recipes"""
     if request.method == 'POST':
@@ -107,7 +107,7 @@ def delete_ingredient(request):
 
 
 @login_required
-@permission_required('auth.can_edit_personal', raise_exception=True)
+@permission_required('auth.can_edit_recipes', raise_exception=True)
 def update_ingredient_full(request):
     """Update ingredient name, category, and shopping unit"""
     if request.method == 'POST':
@@ -178,7 +178,7 @@ def update_ingredient_full(request):
 # =====================================================================
 
 @login_required
-@permission_required('auth.can_edit_personal', raise_exception=True)
+@permission_required('auth.can_edit_recipes', raise_exception=True)
 @require_POST
 def add_ingredient_ajax(request):
     """Add new ingredient via AJAX (inline from recipe forms)."""

@@ -15,8 +15,8 @@ Functions
 
 Auth tiers
 ----------
-read tier -> auth.can_access_personal  (view the list)
-edit tier -> auth.can_edit_personal    (any POST mutation; enforced at
+read tier -> auth.can_access_passports  (view the list)
+edit tier -> auth.can_edit_passports    (any POST mutation; enforced at
                                         the top of the POST branch)
 """
 
@@ -30,11 +30,11 @@ from ..models import Passport
 
 
 @login_required
-@permission_required('auth.can_access_personal', raise_exception=True)
+@permission_required('auth.can_access_passports', raise_exception=True)
 def passport_management(request):
     if request.method == 'POST':
         # Edit-level actions - all POST branches require edit permission
-        if not request.user.has_perm('auth.can_edit_personal'):
+        if not request.user.has_perm('auth.can_edit_passports'):
             messages.error(request, "You don't have permission to modify passports.")
             return redirect('passport_management')
 

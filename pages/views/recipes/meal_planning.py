@@ -27,8 +27,8 @@ Functions
 
 Auth tiers
 ----------
-Read-tier  -> auth.can_access_personal
-Edit-tier  -> auth.can_edit_personal
+Read-tier  -> auth.can_access_recipes
+Edit-tier  -> auth.can_edit_recipes
 aggregate_meal_plan_ingredients is an undecorated internal helper (correct -
 it is not a view).
 
@@ -337,7 +337,7 @@ def aggregate_meal_plan_ingredients(meal_plan):
 # =====================================================================
 
 @login_required
-@permission_required('auth.can_access_personal', raise_exception=True)
+@permission_required('auth.can_access_recipes', raise_exception=True)
 def meal_plans(request):
     """List all meal plans"""
 
@@ -354,7 +354,7 @@ def meal_plans(request):
 
 
 @login_required
-@permission_required('auth.can_edit_personal', raise_exception=True)
+@permission_required('auth.can_edit_recipes', raise_exception=True)
 def create_meal_plan(request):
     """Create a new meal plan"""
 
@@ -470,7 +470,7 @@ def create_meal_plan(request):
 
 
 @login_required
-@permission_required('auth.can_access_personal', raise_exception=True)
+@permission_required('auth.can_access_recipes', raise_exception=True)
 def view_meal_plan(request, meal_plan_id):
     """View a meal plan with all days and recipes"""
 
@@ -507,7 +507,7 @@ def view_meal_plan(request, meal_plan_id):
 
 
 @login_required
-@permission_required('auth.can_edit_personal', raise_exception=True)
+@permission_required('auth.can_edit_recipes', raise_exception=True)
 def delete_meal_plan(request, meal_plan_id):
     """Delete a meal plan"""
 
@@ -536,7 +536,7 @@ def delete_meal_plan(request, meal_plan_id):
 
 
 @login_required
-@permission_required('auth.can_edit_personal', raise_exception=True)
+@permission_required('auth.can_edit_recipes', raise_exception=True)
 def edit_meal_plan(request, meal_plan_id):
     """Edit an existing meal plan"""
 
@@ -729,7 +729,7 @@ def edit_meal_plan(request, meal_plan_id):
 
 
 @login_required
-@permission_required('auth.can_edit_personal', raise_exception=True)
+@permission_required('auth.can_edit_recipes', raise_exception=True)
 def duplicate_meal_plan(request, meal_plan_id):
     """Duplicate a meal plan to new dates"""
 
@@ -821,7 +821,7 @@ def duplicate_meal_plan(request, meal_plan_id):
 # =====================================================================
 
 @login_required
-@permission_required('auth.can_access_personal', raise_exception=True)
+@permission_required('auth.can_access_recipes', raise_exception=True)
 def meal_plan_calendar(request):
     """Calendar view for meal plans"""
 
@@ -992,7 +992,7 @@ def meal_plan_calendar(request):
 # =====================================================================
 
 @login_required
-@permission_required('auth.can_access_personal', raise_exception=True)
+@permission_required('auth.can_access_recipes', raise_exception=True)
 def meal_plan_shopping_list(request, meal_plan_id):
     """Display shopping list with unit conversion and prompt for missing conversions"""
 
@@ -1050,7 +1050,7 @@ def meal_plan_shopping_list(request, meal_plan_id):
 
 @login_required
 @require_POST
-@permission_required('auth.can_edit_personal', raise_exception=True)
+@permission_required('auth.can_edit_recipes', raise_exception=True)
 def add_recipe_to_meal_plan_day(request, meal_plan_id):
     """Add a recipe to a meal plan day"""
     meal_plan_day_id = request.POST.get('meal_plan_day_id')
@@ -1090,7 +1090,7 @@ def add_recipe_to_meal_plan_day(request, meal_plan_id):
 
 @login_required
 @require_POST
-@permission_required('auth.can_edit_personal', raise_exception=True)
+@permission_required('auth.can_edit_recipes', raise_exception=True)
 def remove_recipe_from_meal_plan(request, meal_plan_id):
     """Remove a recipe from a meal plan day"""
     meal_plan_recipe_id = request.POST.get('meal_plan_recipe_id')
@@ -1120,7 +1120,7 @@ def remove_recipe_from_meal_plan(request, meal_plan_id):
 
 @login_required
 @require_POST
-@permission_required('auth.can_edit_personal', raise_exception=True)
+@permission_required('auth.can_edit_recipes', raise_exception=True)
 def send_meal_plan_shopping_list(request, meal_plan_id=None):
     """Send meal plan shopping list via email
     NOTE (Phase 10): meal_plan_id is accepted but unused ... optional (=None)

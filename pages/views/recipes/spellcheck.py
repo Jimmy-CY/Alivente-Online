@@ -7,7 +7,7 @@ with suggestions.
 
 Functions
 ---------
-- spell_check_instructions : POST AJAX. Read-tier (auth.can_access_personal).
+- spell_check_instructions : POST AJAX. Read-tier (auth.can_access_recipes).
                              Returns JSON {success, errors, total_errors}.
 
 Note
@@ -30,7 +30,7 @@ from spellchecker import SpellChecker
 
 
 @login_required
-@permission_required('auth.can_access_personal', raise_exception=True)
+@permission_required('auth.can_access_recipes', raise_exception=True)
 @require_POST
 def spell_check_instructions(request):
     """Spell check recipe instructions"""

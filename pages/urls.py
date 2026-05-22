@@ -87,7 +87,7 @@ urlpatterns = [
 
 
     # ============================================================================
-    # NOTIFICATIONS
+    # NOTIFICATIONS DASHBOARD
     # ============================================================================
     path('notifications/', views.notifications_dashboard, name='notifications_dashboard'),
 
@@ -362,10 +362,14 @@ urlpatterns = [
     path('celebrations/contacts/', views.celebration_management, name='celebration_management'),
     path('celebrations/calendar/', views.celebration_calendar, name='celebration_calendar'),
     path('celebrations/import/', views.import_celebrations, name='import_celebrations'),
+    path('celebrations/event/<int:event_id>/update-notifications/', views.update_event_notifications, name='update_event_notifications'),
 
+
+    # ============================================================================
+    # NOTIFICATION SETTINGS
+    # ============================================================================
     path('notifications/settings/', views.notification_settings, name='notification_settings'),
     path('notifications/personal/', views.personal_notification_settings, name='personal_notification_settings'),
-    path('celebrations/event/<int:event_id>/update-notifications/', views.update_event_notifications, name='update_event_notifications'),
 
 
     # ============================================================================

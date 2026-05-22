@@ -261,7 +261,7 @@ def convert_quantity(amount, from_unit, to_unit, ingredient=None, conversion_cac
     return (None, None)
 
 @login_required
-@permission_required('auth.can_edit_personal', raise_exception=True)
+@permission_required('auth.can_edit_recipes', raise_exception=True)
 @require_POST
 def save_unit_conversion(request):
     """Save a new unit conversion"""
@@ -391,7 +391,7 @@ def scan_for_missing_conversions():
     return missing
 
 @login_required
-@permission_required('auth.can_edit_personal', raise_exception=True)
+@permission_required('auth.can_edit_recipes', raise_exception=True)
 def add_conversion(request):
     """Add a new unit conversion via AJAX"""
 
@@ -441,7 +441,7 @@ def add_conversion(request):
     return JsonResponse({'success': False, 'error': 'Invalid request method'})
 
 @login_required
-@permission_required('auth.can_access_personal', raise_exception=True)
+@permission_required('auth.can_access_recipes', raise_exception=True)
 def unit_conversions_management(request):
     """Manage unit conversions"""
 
@@ -468,7 +468,7 @@ def unit_conversions_management(request):
     return render(request, 'unit_conversions_management.html', context)
 
 @login_required
-@permission_required('auth.can_edit_personal', raise_exception=True)
+@permission_required('auth.can_edit_recipes', raise_exception=True)
 @require_POST
 def add_unit_conversion_manual(request):
     """Add a new unit conversion"""
@@ -539,7 +539,7 @@ def add_unit_conversion_manual(request):
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
 @login_required
-@permission_required('auth.can_edit_personal', raise_exception=True)
+@permission_required('auth.can_edit_recipes', raise_exception=True)
 @require_POST
 def edit_unit_conversion(request):
     """Edit an existing unit conversion"""
@@ -599,7 +599,7 @@ def edit_unit_conversion(request):
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
 @login_required
-@permission_required('auth.can_edit_personal', raise_exception=True)
+@permission_required('auth.can_edit_recipes', raise_exception=True)
 @require_POST
 def delete_unit_conversion(request):
     """Delete a unit conversion"""
@@ -629,7 +629,7 @@ def delete_unit_conversion(request):
 # INGREDIENT BASE UNIT MANAGEMENT
 # ============================================
 @login_required
-@permission_required('auth.can_access_personal', raise_exception=True)
+@permission_required('auth.can_access_recipes', raise_exception=True)
 def ingredient_base_units_management(request):
     """Manage ingredient shopping units, with nutrition + conversion status."""
 
@@ -864,7 +864,7 @@ def ingredient_base_units_management(request):
     return render(request, 'ingredient_base_units_management.html', context)
 
 @login_required
-@permission_required('auth.can_edit_personal', raise_exception=True)
+@permission_required('auth.can_edit_recipes', raise_exception=True)
 @require_POST
 def update_ingredient_base_unit(request):
     """Update an ingredient's default unit"""
@@ -911,7 +911,7 @@ def update_ingredient_base_unit(request):
 # ============================================
 
 @login_required
-@permission_required('auth.can_edit_personal', raise_exception=True)
+@permission_required('auth.can_edit_recipes', raise_exception=True)
 def unit_conversions_wizard(request):
     """
     Render the bulk conversions wizard.
