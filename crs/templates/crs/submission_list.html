@@ -71,11 +71,15 @@
             <td>{{ sub.created_at|date:"d M Y H:i" }}</td>
             <td>
               <div class="row-actions">
-                <a href="{% url 'crs:submission_detail' sub.pk %}"
-                   class="action-btn btn-view" title="View">
+                <button type="button" class="action-btn btn-view" title="View"
+                        onclick="viewSubmission({{ sub.pk }})">
                   <i class="fas fa-eye"></i>
-                </a>
+                </button>
                 {% if perms.auth.can_edit_crs %}
+                <a href="{% url 'crs:submission_detail' sub.pk %}"
+                   class="action-btn btn-edit" title="Edit">
+                  <i class="fas fa-pencil-alt"></i>
+                </a>
                 <button type="button" class="action-btn btn-delete" title="Delete Submission"
                         onclick="confirmSubmissionDelete({{ sub.pk }}, '{{ sub.message_ref_id|escapejs }}')">
                   <i class="fas fa-trash"></i>
@@ -98,6 +102,200 @@
 
   </div>
 </div>
+
+<!-- View Submission Modal -->
+<div class="modal fade" id="viewSubmissionModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header bg-info text-white">
+        <h5 class="modal-title">
+          <i class="fas fa-file-export"></i> Submission
+        </h5>
+        <button type="button" class="close text-white" data-dismiss="modal">
+          <span>&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+
+        <div class="view-section-h">Selection</div>
+        <div class="view-row"><label>Year:</label> <span id="vs_year"></span></div>
+        <div class="view-row"><label>Reporting Period End:</label> <span id="vs_period_end"></span></div>
+        <div class="view-row"><label>Country:</label> <span id="vs_country"></span></div>
+        <div class="view-row"><label>Reporting FI:</label> <span id="vs_fi"></span></div>
+        <div class="view-row"><label>Sending Company IN:</label> <code id="vs_sending_in" class="view-code"></code></div>
+        <div class="view-row"><label>Status:</label> <span id="vs_status"></span></div>
+
+        <div class="view-section-h">Message Header</div>
+        <div class="view-row"><label>Transmitting Country:</label> <span id="vs_tx_country"></span></div>
+        <div class="view-row"><label>Receiving Country:</label> <span id="vs_rx_country"></span></div>
+        <div class="view-row"><label>Document Type:</label> <span id="vs_doc_type"></span></div>
+        <div class="view-row"><label>Message Type:</label> <span id="vs_msg_type"></span></div>
+        <div class="view-row"><label>MessageRefID:</label> <code id="vs_msg_ref" class="view-code"></code></div>
+        <div class="view-row"><label>Warning:</label> <span id="vs_warning"></span></div>
+
+        <div class="view-section-h">Source Excel</div>
+        <div class="view-row"><label>File:</label> <span id="vs_excel_name"></span></div>
+
+        <div class="view-section-h">Generated XML Files (<span id="vs_xml_count">0</span>)</div>
+        <table class="view-files-table" id="vs_xml_table">
+          <thead>
+            <tr><th>Country</th><th>Account Reports</th><th>Size</th><th>Generated</th></tr>
+          </thead>
+          <tbody id="vs_xml_tbody"></tbody>
+        </table>
+        <div id="vs_xml_empty" class="view-empty" style="display:none;">No XML files generated yet.</div>
+
+        <div class="view-section-h">Lifecycle</div>
+        <div class="view-row"><label>Created:</label> <span id="vs_created"></span></div>
+        <div class="view-row"><label>Last Updated:</label> <span id="vs_updated"></span></div>
+        <div class="view-row"><label>XML Generated:</label> <span id="vs_xml_at"></span></div>
+        <div class="view-row"><label>Closed:</label> <span id="vs_closed_at"></span></div>
+        <div class="view-row"><label>Submitted Externally:</label> <span id="vs_ext_at"></span></div>
+        <div class="view-row"><label>Acknowledged:</label> <span id="vs_ack_at"></span></div>
+        <div class="view-row"><label>Acknowledgement Notes:</label></div>
+        <pre id="vs_ack_notes" class="view-block"></pre>
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  window.submissionData = {
+    {% for sub in submissions %}
+    "{{ sub.pk }}": {
+      year:           "{{ sub.year }}",
+      period_end:     "{{ sub.reporting_period|date:'d M Y' }}",
+      country:        "{{ sub.country_config.country_code }} — {{ sub.country_config.country_name|escapejs }}",
+      fi:             "{{ sub.reporting_fi.name|escapejs }}",
+      sending_in:     "{{ sub.sending_company_in|escapejs }}",
+      status:         "{{ sub.get_status_display|escapejs }}",
+      status_key:     "{{ sub.status }}",
+      tx_country:     "{{ sub.transmitting_country }}",
+      rx_country:     "{{ sub.receiving_country|default:'(determined per file)' }}",
+      doc_type:       "{{ sub.get_document_type_display|escapejs }}",
+      msg_type:       "{{ sub.get_message_type_display|escapejs }}",
+      msg_ref:        "{{ sub.message_ref_id|escapejs }}",
+      warning:        "{{ sub.warning|default:''|escapejs }}",
+      excel_name:     "{% if sub.uploaded_excel %}{{ sub.uploaded_excel.name|escapejs }}{% endif %}",
+      created:        "{{ sub.created_at|date:'d M Y H:i' }}",
+      updated:        "{{ sub.updated_at|date:'d M Y H:i' }}",
+      xml_at:         "{{ sub.xml_generated_at|date:'d M Y H:i' }}",
+      closed_at:      "{{ sub.closed_at|date:'d M Y H:i' }}",
+      ext_at:         "{{ sub.submitted_externally_at|date:'d M Y H:i' }}",
+      ack_at:         "{{ sub.acknowledged_at|date:'d M Y H:i' }}",
+      ack_notes:      "{{ sub.acknowledgement_notes|default:''|escapejs }}",
+      xml_files: [
+        {% for xf in sub.xml_files.all %}
+        {
+          country:   "{{ xf.receiving_country }}",
+          records:   {{ xf.account_count|default:0 }},
+          size:      {{ xf.size|default:0 }},
+          generated: "{{ xf.generated_at|date:'d M Y H:i' }}"
+        }{% if not forloop.last %},{% endif %}
+        {% endfor %}
+      ]
+    }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+  };
+
+  function fmtSize(bytes) {
+    if (!bytes) return '0 B';
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / 1024 / 1024).toFixed(2) + ' MB';
+  }
+
+  function viewSubmission(pk) {
+    const s = window.submissionData[pk];
+    if (!s) return;
+
+    // Selection
+    document.getElementById('vs_year').textContent       = s.year;
+    document.getElementById('vs_period_end').textContent = s.period_end;
+    document.getElementById('vs_country').textContent    = s.country;
+    document.getElementById('vs_fi').textContent         = s.fi;
+    document.getElementById('vs_sending_in').textContent = s.sending_in;
+
+    // Status badge — reuse the table's badge styling
+    const statusEl = document.getElementById('vs_status');
+    statusEl.innerHTML = '';
+    const badge = document.createElement('span');
+    badge.className = 'status-badge status-' + s.status_key;
+    badge.textContent = s.status;
+    statusEl.appendChild(badge);
+
+    // Message Header
+    document.getElementById('vs_tx_country').textContent = s.tx_country;
+    document.getElementById('vs_rx_country').textContent = s.rx_country;
+    document.getElementById('vs_doc_type').textContent   = s.doc_type;
+    document.getElementById('vs_msg_type').textContent   = s.msg_type;
+    document.getElementById('vs_msg_ref').textContent    = s.msg_ref;
+    document.getElementById('vs_warning').textContent    = s.warning || '(none)';
+
+    // Source Excel — explain GDPR removal for post-draft submissions
+    const excelEl = document.getElementById('vs_excel_name');
+    if (s.excel_name) {
+      excelEl.textContent = s.excel_name.split('/').pop();
+    } else if (s.status_key === 'draft') {
+      excelEl.textContent = '(no Excel uploaded)';
+    } else {
+      excelEl.textContent = 'Excel was processed and removed at closure for GDPR / data minimisation.';
+    }
+
+    // XML Files — explain GDPR removal for post-draft submissions
+    document.getElementById('vs_xml_count').textContent = s.xml_files.length;
+    const tbody = document.getElementById('vs_xml_tbody');
+    const table = document.getElementById('vs_xml_table');
+    const empty = document.getElementById('vs_xml_empty');
+    tbody.innerHTML = '';
+    if (s.xml_files.length === 0) {
+      table.style.display = 'none';
+      empty.style.display = 'block';
+      empty.textContent = (s.status_key === 'draft')
+        ? 'No XML files generated yet.'
+        : 'XML files were generated for external filing and removed at closure for GDPR / data minimisation.';
+    } else {
+      table.style.display = '';
+      empty.style.display = 'none';
+      s.xml_files.forEach(xf => {
+        const tr = document.createElement('tr');
+
+        const tdCountry = document.createElement('td');
+        tdCountry.textContent = xf.country;
+
+        const tdRecords = document.createElement('td');
+        tdRecords.textContent = xf.records;
+
+        const tdSize = document.createElement('td');
+        tdSize.textContent = fmtSize(xf.size);
+
+        const tdGen = document.createElement('td');
+        tdGen.textContent = xf.generated;
+
+        tr.appendChild(tdCountry);
+        tr.appendChild(tdRecords);
+        tr.appendChild(tdSize);
+        tr.appendChild(tdGen);
+        tbody.appendChild(tr);
+      });
+    }
+
+    // Lifecycle
+    document.getElementById('vs_created').textContent   = s.created;
+    document.getElementById('vs_updated').textContent   = s.updated;
+    document.getElementById('vs_xml_at').textContent    = s.xml_at    || '(not yet)';
+    document.getElementById('vs_closed_at').textContent = s.closed_at || '(not yet)';
+    document.getElementById('vs_ext_at').textContent    = s.ext_at    || '(not yet)';
+    document.getElementById('vs_ack_at').textContent    = s.ack_at    || '(not yet)';
+    document.getElementById('vs_ack_notes').textContent = s.ack_notes || '(none)';
+
+    $('#viewSubmissionModal').modal('show');
+  }
+</script>
 
 <!-- Delete Confirmation Modal -->
 <div class="modal fade" id="deleteSubmissionModal" tabindex="-1" role="dialog">
@@ -208,8 +406,48 @@
   }
   .action-btn:hover { transform: scale(1.1); }
   .btn-view   { background: #17a2b8; color: white; }
+  .btn-edit   { background: #ffc107; color: white; }
   .btn-delete { background: #dc3545; color: white; }
 
+  /* View modal */
+  .view-row { margin-bottom: 8px; line-height: 1.5; }
+  .view-row label { font-weight: 600; color: #495057; margin-right: 8px; margin-bottom: 0; }
+  .view-section-h {
+    margin: 20px 0 10px 0; padding-bottom: 6px;
+    border-bottom: 2px solid #e9ecef;
+    font-size: 13px; font-weight: 700; text-transform: uppercase;
+    color: var(--crs-dark); letter-spacing: 0.5px;
+  }
+  .view-section-h:first-child { margin-top: 0; }
+  .view-code {
+    display: inline-block; padding: 2px 8px;
+    background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 4px;
+    font-family: Consolas, monospace; font-size: 12px;
+    color: #c7254e; word-break: break-all; max-width: 100%;
+  }
+  .view-block {
+    margin: 4px 0 0 0; padding: 10px;
+    background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 4px;
+    font-family: inherit; font-size: 13px;
+    white-space: pre-wrap; word-break: break-word; max-height: 200px; overflow-y: auto;
+  }
+  .view-empty {
+    margin-top: 6px; padding: 12px;
+    background: #f8f9fa; border-radius: 4px;
+    color: #6c757d; font-style: italic; font-size: 13px;
+  }
+  .view-files-table { width: 100%; margin-top: 6px; border-collapse: collapse; }
+  .view-files-table th {
+    background: #f8f9fa; padding: 6px 8px;
+    font-size: 11px; text-transform: uppercase; color: #6c757d;
+    border-bottom: 2px solid #dee2e6; text-align: left; letter-spacing: 0.4px;
+  }
+  .view-files-table td {
+    padding: 6px 8px; font-size: 13px;
+    border-bottom: 1px solid #f0f0f0; vertical-align: middle;
+  }
+  .view-files-table tr:last-child td { border-bottom: none; }
+  
   .crs-empty {
     text-align: center; padding: 40px 20px; color: #6c757d;
   }

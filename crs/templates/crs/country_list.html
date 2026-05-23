@@ -71,6 +71,10 @@
             <td>{{ country.updated_at|date:"d M Y H:i" }}</td>
             <td>
               <div class="row-actions">
+                <button type="button" class="action-btn btn-view" title="View"
+                        onclick="viewCountry({{ country.pk }})">
+                  <i class="fas fa-eye"></i>
+                </button>
                 {% if perms.auth.can_edit_crs %}
                 <a href="{% url 'crs:country_edit' country.pk %}"
                    class="action-btn btn-edit" title="Edit">
@@ -98,6 +102,85 @@
 
   </div>
 </div>
+
+<!-- View Country Modal -->
+<div class="modal fade" id="viewCountryModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header bg-info text-white">
+        <h5 class="modal-title">
+          <i class="fas fa-globe"></i> Country Configuration
+        </h5>
+        <button type="button" class="close text-white" data-dismiss="modal">
+          <span>&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+
+        <div class="view-section-h">Basic</div>
+        <div class="view-row"><label>Code:</label> <span id="vc_code"></span></div>
+        <div class="view-row"><label>Name:</label> <span id="vc_name"></span></div>
+        <div class="view-row"><label>Status:</label> <span id="vc_status"></span></div>
+        <div class="view-row"><label>Schema Version:</label> <span id="vc_schema"></span></div>
+        <div class="view-row"><label>Receiving Country Strategy:</label> <span id="vc_strategy"></span></div>
+        <div class="view-row"><label>Notes:</label> <span id="vc_notes"></span></div>
+        <div class="view-row"><label>Last Updated:</label> <span id="vc_updated"></span></div>
+
+        <div class="view-section-h">Reference ID Templates</div>
+        <div class="view-row"><label>Message Ref ID:</label> <code id="vc_msg_tpl" class="view-code"></code></div>
+        <div class="view-row"><label>FI Doc Ref ID:</label> <code id="vc_fi_doc_tpl" class="view-code"></code></div>
+        <div class="view-row"><label>Account Doc Ref ID:</label> <code id="vc_acc_doc_tpl" class="view-code"></code></div>
+        <div class="view-row"><label>Output Filename:</label> <code id="vc_filename_tpl" class="view-code"></code></div>
+
+        <div class="view-section-h">Validation</div>
+        <div class="view-row"><label>TIN Regex:</label> <code id="vc_tin_regex" class="view-code"></code></div>
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  window.countryData = {
+    {% for country in countries %}
+    "{{ country.pk }}": {
+      code:           "{{ country.country_code }}",
+      name:           "{{ country.country_name|escapejs }}",
+      status:         "{{ country.is_active|yesno:'Active,Inactive' }}",
+      schema:         "{{ country.oecd_version }}",
+      strategy:       "{{ country.get_receiving_country_strategy_display|default:country.receiving_country_strategy|escapejs }}",
+      notes:          "{{ country.notes|default:''|escapejs }}",
+      updated:        "{{ country.updated_at|date:'d M Y H:i' }}",
+      msg_tpl:        "{{ country.message_ref_id_template|default:''|escapejs }}",
+      fi_doc_tpl:     "{{ country.fi_doc_ref_id_template|default:''|escapejs }}",
+      acc_doc_tpl:    "{{ country.account_doc_ref_id_template|default:''|escapejs }}",
+      filename_tpl:   "{{ country.output_filename_template|default:''|escapejs }}",
+      tin_regex:      "{{ country.tin_regex|default:''|escapejs }}"
+    }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+  };
+
+  function viewCountry(pk) {
+    const c = window.countryData[pk];
+    if (!c) return;
+    document.getElementById('vc_code').textContent         = c.code;
+    document.getElementById('vc_name').textContent         = c.name;
+    document.getElementById('vc_status').textContent       = c.status;
+    document.getElementById('vc_schema').textContent       = c.schema;
+    document.getElementById('vc_strategy').textContent     = c.strategy;
+    document.getElementById('vc_notes').textContent        = c.notes || '(none)';
+    document.getElementById('vc_updated').textContent      = c.updated;
+    document.getElementById('vc_msg_tpl').textContent      = c.msg_tpl      || '(none)';
+    document.getElementById('vc_fi_doc_tpl').textContent   = c.fi_doc_tpl   || '(none)';
+    document.getElementById('vc_acc_doc_tpl').textContent  = c.acc_doc_tpl  || '(none)';
+    document.getElementById('vc_filename_tpl').textContent = c.filename_tpl || '(none)';
+    document.getElementById('vc_tin_regex').textContent    = c.tin_regex    || '(none)';
+    $('#viewCountryModal').modal('show');
+  }
+</script>
 
 <!-- Delete Confirmation Modal -->
 <div class="modal fade" id="deleteCountryModal" tabindex="-1" role="dialog">
@@ -192,8 +275,24 @@
     text-decoration: none;
   }
   .action-btn:hover { transform: scale(1.1); }
+  .btn-view { background: #17a2b8; color: white; }
   .btn-edit { background: #ffc107; color: white; }
   .btn-delete { background: #dc3545; color: white; }
+  .view-row { margin-bottom: 8px; line-height: 1.5; }
+  .view-row label { font-weight: 600; color: #495057; margin-right: 8px; margin-bottom: 0; }
+  .view-section-h {
+    margin: 20px 0 10px 0; padding-bottom: 6px;
+    border-bottom: 2px solid #e9ecef;
+    font-size: 13px; font-weight: 700; text-transform: uppercase;
+    color: var(--crs-dark); letter-spacing: 0.5px;
+  }
+  .view-section-h:first-child { margin-top: 0; }
+  .view-code {
+    display: inline-block; padding: 2px 8px;
+    background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 4px;
+    font-family: Consolas, monospace; font-size: 12px;
+    color: #c7254e; word-break: break-all; max-width: 100%;
+  }
 
   .crs-empty {
     text-align: center; padding: 40px 20px; color: #6c757d;

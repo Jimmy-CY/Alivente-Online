@@ -75,6 +75,10 @@
             <td>{{ fi.updated_at|date:"d M Y H:i" }}</td>
             <td>
               <div class="row-actions">
+                <button type="button" class="action-btn btn-view" title="View"
+                        onclick="viewFI({{ fi.pk }})">
+                  <i class="fas fa-eye"></i>
+                </button>
                 {% if perms.auth.can_edit_crs %}
                 <a href="{% url 'crs:fi_edit' fi.pk %}"
                    class="action-btn btn-edit" title="Edit">
@@ -102,6 +106,126 @@
 
   </div>
 </div>
+
+<!-- View FI Modal -->
+<div class="modal fade" id="viewFIModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header bg-info text-white">
+        <h5 class="modal-title">
+          <i class="fas fa-university"></i> Reporting Financial Institution
+        </h5>
+        <button type="button" class="close text-white" data-dismiss="modal">
+          <span>&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+
+        <div class="view-section-h">Identity</div>
+        <div class="view-row"><label>Name:</label> <span id="vf_name"></span></div>
+        <div class="view-row"><label>Name Type:</label> <span id="vf_name_type"></span></div>
+        <div class="view-row"><label>Status:</label> <span id="vf_status"></span></div>
+
+        <div class="view-section-h">Tax Residence &amp; Address</div>
+        <div class="view-row"><label>Residence Country:</label> <span id="vf_residence"></span></div>
+        <div class="view-row"><label>Address Country:</label> <span id="vf_addr_country"></span></div>
+        <div class="view-row"><label>Address Type:</label> <span id="vf_addr_type"></span></div>
+        <div class="view-row"><label>Address:</label></div>
+        <pre id="vf_address" class="view-block"></pre>
+
+        <div class="view-section-h">Contact</div>
+        <div class="view-row"><label>Contact Details:</label></div>
+        <pre id="vf_contact" class="view-block"></pre>
+
+        <div class="view-section-h">Identification Numbers (<span id="vf_in_count"></span>)</div>
+        <table class="view-ins-table" id="vf_ins_table">
+          <thead>
+            <tr><th>Type</th><th>Value</th><th>Issued By</th></tr>
+          </thead>
+          <tbody id="vf_ins_tbody"></tbody>
+        </table>
+        <div id="vf_ins_empty" class="view-empty" style="display:none;">No identification numbers recorded.</div>
+
+        <div class="view-section-h">Meta</div>
+        <div class="view-row"><label>Last Updated:</label> <span id="vf_updated"></span></div>
+
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  window.fiData = {
+    {% for fi in fis %}
+    "{{ fi.pk }}": {
+      name:         "{{ fi.name|escapejs }}",
+      name_type:    "{{ fi.get_name_type_display|default:fi.name_type|escapejs }}",
+      status:       "{{ fi.is_active|yesno:'Active,Inactive' }}",
+      residence:    "{{ fi.res_country_code }}",
+      addr_country: "{{ fi.address_country_code|default:''|escapejs }}",
+      addr_type:    "{{ fi.get_address_type_display|default:fi.address_type|escapejs }}",
+      address:      "{{ fi.address|default:''|escapejs }}",
+      contact:      "{{ fi.contact_details|default:''|escapejs }}",
+      updated:      "{{ fi.updated_at|date:'d M Y H:i' }}",
+      ins: [
+        {% for n in fi.identification_numbers.all %}
+        {
+          type:      "{{ n.get_in_type_display|default:n.in_type|escapejs }}",
+          value:     "{{ n.in_value|escapejs }}",
+          issued_by: "{{ n.issued_by }}"
+        }{% if not forloop.last %},{% endif %}
+        {% endfor %}
+      ]
+    }{% if not forloop.last %},{% endif %}
+    {% endfor %}
+  };
+
+  function viewFI(pk) {
+    const f = window.fiData[pk];
+    if (!f) return;
+
+    document.getElementById('vf_name').textContent         = f.name;
+    document.getElementById('vf_name_type').textContent    = f.name_type    || '(none)';
+    document.getElementById('vf_status').textContent       = f.status;
+    document.getElementById('vf_residence').textContent    = f.residence;
+    document.getElementById('vf_addr_country').textContent = f.addr_country || '(none)';
+    document.getElementById('vf_addr_type').textContent    = f.addr_type    || '(none)';
+    document.getElementById('vf_address').textContent      = f.address      || '(none)';
+    document.getElementById('vf_contact').textContent      = f.contact      || '(none)';
+    document.getElementById('vf_updated').textContent      = f.updated;
+    document.getElementById('vf_in_count').textContent     = f.ins.length;
+
+    const tbody = document.getElementById('vf_ins_tbody');
+    const table = document.getElementById('vf_ins_table');
+    const empty = document.getElementById('vf_ins_empty');
+    tbody.innerHTML = '';
+    if (f.ins.length === 0) {
+      table.style.display = 'none';
+      empty.style.display = 'block';
+    } else {
+      table.style.display = '';
+      empty.style.display = 'none';
+      f.ins.forEach(item => {
+        const tr = document.createElement('tr');
+        const td1 = document.createElement('td');
+        const td2 = document.createElement('td');
+        const td3 = document.createElement('td');
+        td1.textContent = item.type;
+        td2.textContent = item.value;
+        td3.textContent = item.issued_by;
+        tr.appendChild(td1);
+        tr.appendChild(td2);
+        tr.appendChild(td3);
+        tbody.appendChild(tr);
+      });
+    }
+
+    $('#viewFIModal').modal('show');
+  }
+</script>
 
 <!-- Delete Confirmation Modal -->
 <div class="modal fade" id="deleteFIModal" tabindex="-1" role="dialog">
@@ -206,8 +330,40 @@
     text-decoration: none;
   }
   .action-btn:hover { transform: scale(1.1); }
+  .btn-view { background: #17a2b8; color: white; }
   .btn-edit { background: #ffc107; color: white; }
   .btn-delete { background: #dc3545; color: white; }
+  .view-row { margin-bottom: 8px; line-height: 1.5; }
+  .view-row label { font-weight: 600; color: #495057; margin-right: 8px; margin-bottom: 0; }
+  .view-section-h {
+    margin: 20px 0 10px 0; padding-bottom: 6px;
+    border-bottom: 2px solid #e9ecef;
+    font-size: 13px; font-weight: 700; text-transform: uppercase;
+    color: var(--crs-dark); letter-spacing: 0.5px;
+  }
+  .view-section-h:first-child { margin-top: 0; }
+  .view-block {
+    margin: 4px 0 0 0; padding: 10px;
+    background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 4px;
+    font-family: inherit; font-size: 13px;
+    white-space: pre-wrap; word-break: break-word; max-height: 200px; overflow-y: auto;
+  }
+  .view-empty {
+    margin-top: 6px; padding: 12px;
+    background: #f8f9fa; border-radius: 4px;
+    color: #6c757d; font-style: italic; font-size: 13px;
+  }
+  .view-ins-table { width: 100%; margin-top: 6px; border-collapse: collapse; }
+  .view-ins-table th {
+    background: #f8f9fa; padding: 6px 8px;
+    font-size: 11px; text-transform: uppercase; color: #6c757d;
+    border-bottom: 2px solid #dee2e6; text-align: left; letter-spacing: 0.4px;
+  }
+  .view-ins-table td {
+    padding: 6px 8px; font-size: 13px;
+    border-bottom: 1px solid #f0f0f0;
+  }
+  .view-ins-table tr:last-child td { border-bottom: none; }
 
   .crs-empty {
     text-align: center; padding: 40px 20px; color: #6c757d;
