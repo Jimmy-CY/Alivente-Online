@@ -167,11 +167,11 @@
       residence:    "{{ fi.res_country_code }}",
       addr_country: "{{ fi.address_country_code|default:''|escapejs }}",
       addr_type:    "{{ fi.get_address_type_display|default:fi.address_type|escapejs }}",
-      address:      "{{ fi.address|default:''|escapejs }}",
-      contact:      "{{ fi.contact_details|default:''|escapejs }}",
+      address:      "{{ fi.address_free|default:''|escapejs }}",
+      contact:      "{{ fi.contact|default:''|escapejs }}",
       updated:      "{{ fi.updated_at|date:'d M Y H:i' }}",
       ins: [
-        {% for n in fi.identification_numbers.all %}
+        {% for n in fi.ins.all %}
         {
           type:      "{{ n.get_in_type_display|default:n.in_type|escapejs }}",
           value:     "{{ n.in_value|escapejs }}",
