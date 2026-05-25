@@ -35,6 +35,16 @@
     opacity: 0.9;
 }
 
+.workspace-badge {
+    display: inline-block;
+    background: rgba(255, 255, 255, 0.22);
+    padding: 4px 12px;
+    border-radius: 14px;
+    font-size: 13px;
+    font-weight: 500;
+    margin-top: 8px;
+}
+
 /* Action group inside the green header (Help + Back) */
 .settings-header-actions {
     display: flex;
@@ -120,6 +130,21 @@
     pointer-events: none;
 }
 
+.empty-state {
+    background: white;
+    border: 2px dashed #e9ecef;
+    border-radius: 12px;
+    padding: 40px 25px;
+    text-align: center;
+    color: #6c757d;
+}
+
+.empty-state i {
+    font-size: 36px;
+    margin-bottom: 12px;
+    color: #adb5bd;
+}
+
 /* ==================== MOBILE STYLES (≤768px) ==================== */
 @media (max-width: 768px) {
     .settings-header {
@@ -201,6 +226,11 @@
     <div class="settings-header-text">
         <h2><i class="fas fa-envelope"></i> Personal Notification Settings</h2>
         <p>Manage email recipients for celebrations and document expiry notifications</p>
+        {% if workspace %}
+        <span class="workspace-badge">
+            <i class="fas fa-layer-group"></i> {{ workspace.name }}
+        </span>
+        {% endif %}
     </div>
     <div class="settings-header-actions">
         <button type="button" class="help-btn action-primary" data-toggle="modal" data-target="#personal_notification_settingsHelpModal" title="Help">
@@ -230,6 +260,7 @@
 </script>
 {% endfor %}
 
+{% if notification_settings.celebration_reminder %}
 <!-- Celebration Reminders -->
 <div class="notification-card">
     <h5><i class="fas fa-birthday-cake"></i> Celebration Reminders</h5>
@@ -246,7 +277,7 @@
                 name="to_addresses"
                 rows="2"
                 placeholder="email1@example.com, email2@example.com"
-                {% if not perms.auth.can_edit_personal %}readonly{% endif %}
+                {% if not notification_settings.celebration_reminder.can_edit %}readonly{% endif %}
             >{{ notification_settings.celebration_reminder.to_emails }}</textarea>
             <div class="field-hint">Family members who should be reminded</div>
         </div>
@@ -258,12 +289,12 @@
                 name="cc_addresses"
                 rows="2"
                 placeholder="email1@example.com, email2@example.com"
-                {% if not perms.auth.can_edit_personal %}readonly{% endif %}
+                {% if not notification_settings.celebration_reminder.can_edit %}readonly{% endif %}
             >{{ notification_settings.celebration_reminder.cc_emails }}</textarea>
             <div class="field-hint">Additional recipients who should be informed</div>
         </div>
 
-        {% if perms.auth.can_edit_personal %}
+        {% if notification_settings.celebration_reminder.can_edit %}
         <button type="submit" class="btn btn-success">
             <i class="fas fa-save"></i> Save
         </button>
@@ -274,7 +305,9 @@
         {% endif %}
     </form>
 </div>
+{% endif %}
 
+{% if notification_settings.document_expiry %}
 <!-- Document Expiry Alerts -->
 <div class="notification-card">
     <h5><i class="fas fa-passport"></i> Document Expiry Alerts</h5>
@@ -291,7 +324,7 @@
                 name="to_addresses"
                 rows="2"
                 placeholder="email1@example.com, email2@example.com"
-                {% if not perms.auth.can_edit_personal %}readonly{% endif %}
+                {% if not notification_settings.document_expiry.can_edit %}readonly{% endif %}
             >{{ notification_settings.document_expiry.to_emails }}</textarea>
             <div class="field-hint">Family members who manage documents</div>
         </div>
@@ -303,12 +336,12 @@
                 name="cc_addresses"
                 rows="2"
                 placeholder="email1@example.com, email2@example.com"
-                {% if not perms.auth.can_edit_personal %}readonly{% endif %}
+                {% if not notification_settings.document_expiry.can_edit %}readonly{% endif %}
             >{{ notification_settings.document_expiry.cc_emails }}</textarea>
             <div class="field-hint">Additional recipients who should be informed</div>
         </div>
 
-        {% if perms.auth.can_edit_personal %}
+        {% if notification_settings.document_expiry.can_edit %}
         <button type="submit" class="btn btn-success">
             <i class="fas fa-save"></i> Save
         </button>
@@ -319,6 +352,14 @@
         {% endif %}
     </form>
 </div>
+{% endif %}
+
+{% if not notification_settings %}
+<div class="empty-state">
+    <i class="fas fa-lock"></i>
+    <p>You don't currently have access to any notification settings on this page.</p>
+</div>
+{% endif %}
 
 {% render_help_modal "personal_notification_settings" %}
 

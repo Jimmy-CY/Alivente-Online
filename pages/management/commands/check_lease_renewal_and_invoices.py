@@ -6,8 +6,8 @@ Run nightly (also supports --force and --dry-run). In order it:
   2. Gathers vacant properties, expiring/declined lease renewals, and
      overdue invoices, then emails a consolidated property-management report
   3. Emails separate notifications for expiring passports/IDs (1st & 15th
-     only), new leases to upload, today's celebrations, and yesterday's
-     issue comments
+     only, per workspace), new leases to upload, today's celebrations, and
+     yesterday's issue comments
 
 Email sending: most notifications build their MIME message inline and send
 over SMTP directly; the property-management report goes through
@@ -470,7 +470,8 @@ class Command(BaseCommand):
                     'country_of_issue': passport.country_of_issue,
                     'expiry_date': passport.expiry_date.strftime('%Y-%m-%d'),
                     'days_until_expiry': days_until_expiry,
-                    'already_expired': passport.expiry_date < today
+                    'already_expired': passport.expiry_date < today,
+                    'workspace_id': passport.workspace_id,
                 })
 
             self.stdout.write(f'Found {len(passport_list)} active passports with expiry dates expiring within 6 months (or already expired)')
@@ -978,26 +979,98 @@ Automated Lease Management"""
                     pass
 
     def send_passport_expiry_notification(self, expiring_passports):
-        """Send separate email notification for expiring passports - only on 1st or 15th of month"""
-        smtp_object = None
+        """Send passport expiry notifications, one email per workspace.
+
+        Workspace-aware (Phase 4.5): groups expiring passports by their workspace
+        and sends each workspace's documents only to that workspace's configured
+        recipients. Workspaces with no recipients configured are skipped silently
+        — there's no global fallback for personal notifications, because that
+        would leak one household's expiry dates to another household's inboxes.
+        """
+        from collections import defaultdict
+        from pages.models import Workspace
+
         passport_count = len(expiring_passports)
 
         if passport_count == 0:
             self.stdout.write('No expiring passports to notify about')
             return True
 
-        # Check if today is 1st or 15th of the month
+        # Only on 1st or 15th of the month.
         today = date.today()
         if today.day not in [1, 15]:
-            self.stdout.write(f'📅 Passport notification skipped - only sent on 1st or 15th of month (Today is {today.day}th)')
-            self.stdout.write(f'   Found {passport_count} expiring passport(s), but no email will be sent today')
+            self.stdout.write(
+                f'📅 Passport notification skipped - only sent on 1st or 15th of month '
+                f'(Today is {today.day}th)'
+            )
+            self.stdout.write(
+                f'   Found {passport_count} expiring passport(s), but no email will be sent today'
+            )
             return True
 
-        try:
-            self.stdout.write('=== SENDING PASSPORT EXPIRY NOTIFICATION ===')
-            self.stdout.write(f'📅 Today is the {today.day}th - sending passport expiry notification')
+        self.stdout.write('=== SENDING PASSPORT EXPIRY NOTIFICATIONS (per workspace) ===')
+        self.stdout.write(f'📅 Today is the {today.day}th - sending workspace-scoped notifications')
 
-            # Get email settings from environment variables
+        # Group by workspace_id
+        by_workspace_id = defaultdict(list)
+        orphaned = []
+        for p in expiring_passports:
+            if p.get('workspace_id'):
+                by_workspace_id[p['workspace_id']].append(p)
+            else:
+                orphaned.append(p)
+
+        if orphaned:
+            self.stdout.write(
+                f'  ⚠️  {len(orphaned)} passport(s) have no workspace assigned — these will be skipped. '
+                f'Backfill manually if needed.'
+            )
+
+        workspaces_notified = 0
+        workspaces_skipped = 0
+        overall_ok = True
+
+        for workspace_id, passports in by_workspace_id.items():
+            try:
+                workspace = Workspace.objects.get(pk=workspace_id)
+            except Workspace.DoesNotExist:
+                self.stdout.write(f'  ⚠️  Orphan workspace_id={workspace_id} on passport — skipping')
+                continue
+
+            recipients = get_email_recipients('document_expiry', workspace=workspace)
+            if not recipients['all']:
+                self.stdout.write(
+                    f'  ⏭️  Workspace "{workspace.name}": no recipients configured — '
+                    f'skipping {len(passports)} passport(s)'
+                )
+                workspaces_skipped += 1
+                continue
+
+            self.stdout.write(
+                f'  📧 Workspace "{workspace.name}": sending {len(passports)} passport(s)'
+            )
+            self.stdout.write(f'     TO: {", ".join(recipients["to"])}')
+            if recipients['cc']:
+                self.stdout.write(f'     CC: {", ".join(recipients["cc"])}')
+
+            ok = self._send_passport_expiry_email_for_workspace(workspace, passports, recipients)
+            if ok:
+                workspaces_notified += 1
+            else:
+                overall_ok = False
+
+        self.stdout.write(
+            f'Passport notifications complete: {workspaces_notified} sent, '
+            f'{workspaces_skipped} skipped (no recipients)'
+        )
+        return overall_ok
+
+    def _send_passport_expiry_email_for_workspace(self, workspace, passports, recipients):
+        """Build and send one passport-expiry email for a single workspace."""
+        smtp_object = None
+        passport_count = len(passports)
+
+        try:
             email_host = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
             email_port = int(os.environ.get('EMAIL_PORT', 465))
             email_user = os.environ.get('EMAIL_USER', 'demetrimanias@gmail.com')
@@ -1005,31 +1078,20 @@ Automated Lease Management"""
             email_use_ssl = os.environ.get('EMAIL_USE_SSL', 'True').lower() == 'true'
             email_use_tls = os.environ.get('EMAIL_USE_TLS', 'False').lower() == 'true'
 
-            # Use the standard email recipients utility
-            recipients = get_email_recipients('document_expiry')
-
-            # DEBUG: Show who will receive the email
-            self.stdout.write(f'📧 Passport Expiry Email TO: {", ".join(recipients["to"])}')
-            if recipients['cc']:
-                self.stdout.write(f'📧 Passport Expiry Email CC: {", ".join(recipients["cc"])}')
-
             if not email_password:
                 self.stdout.write('❌ EMAIL_PASSWORD environment variable not set')
                 return False
 
-            # Create message
-            # Get recipients with TO/CC split
-            recipients = get_email_recipients('document_expiry')
-
-            # Create message
             msg = MIMEMultipart('alternative')
             msg['From'] = email_user
             msg['To'] = format_email_recipients_for_header(recipients['to'])
             if recipients['cc']:
                 msg['Cc'] = format_email_recipients_for_header(recipients['cc'])
-            msg['Subject'] = f"Alert - Documents Expiring Within 6 Months ({passport_count})"
+            msg['Subject'] = (
+                f"Alert - Documents Expiring Within 6 Months "
+                f"({passport_count}) - {workspace.name}"
+            )
 
-            # Build HTML email body
             html_body = f"""
             <html>
             <head>
@@ -1041,31 +1103,29 @@ Automated Lease Management"""
             .expiring-soon {{ color: orange; font-weight: bold; }}
             .warning {{ color: #cc0000; font-weight: bold; }}
             .normal {{ color: #4a4a4a; font-weight: bold; }}
+            .workspace-name {{ color: #6c757d; font-style: italic; }}
             </style>
             </head>
             <body>
                 <p>Dear User,</p>
                 <br>
                 <p><b><u>DOCUMENT EXPIRY ALERT:</u></b></p>
+                <p class="workspace-name">Workspace: {workspace.name}</p>
+                <br>
                 <p>The following document(s) are expiring within the next 6 months and require renewal action:</p>
                 <br>
                 <ul>"""
 
-            for passport in expiring_passports:
+            for passport in passports:
                 days = passport['days_until_expiry']
 
-                # Color code based on urgency
                 if days < 0:
-                    urgency_class = "expired"
                     urgency_text = f"<span class='expired'>EXPIRED {abs(days)} days ago!</span>"
                 elif days <= 30:
-                    urgency_class = "warning"
                     urgency_text = f"<span class='warning'>URGENT - Expires in {days} days!</span>"
                 elif days <= 90:
-                    urgency_class = "expiring-soon"
                     urgency_text = f"<span class='expiring-soon'>Expires in {days} days</span>"
                 else:
-                    urgency_class = "normal"
                     urgency_text = f"<span class='normal'>Expires in {days} days</span>"
 
                 html_body += f"""
@@ -1092,18 +1152,16 @@ Automated Lease Management"""
             </html>
             """
 
-            # Create plain text version
             text_body = f"""Dear User,
 
 DOCUMENT EXPIRY ALERT:
+Workspace: {workspace.name}
 
 The following document(s) are expiring within the next 6 months and require renewal action:
 
 """
-
-            for passport in expiring_passports:
+            for passport in passports:
                 days = passport['days_until_expiry']
-
                 if days < 0:
                     urgency_text = f"EXPIRED {abs(days)} days ago!"
                 elif days <= 30:
@@ -1131,14 +1189,9 @@ Best regards,
 Alivente Property Management System
 Automated Passport/ID Monitoring"""
 
-            # Attach both HTML and plain text versions
-            part1 = MIMEText(text_body, 'plain')
-            part2 = MIMEText(html_body, 'html')
+            msg.attach(MIMEText(text_body, 'plain', 'utf-8'))
+            msg.attach(MIMEText(html_body, 'html', 'utf-8'))
 
-            msg.attach(part1)
-            msg.attach(part2)
-
-            # SMTP setup
             if email_use_ssl:
                 smtp_object = smtplib.SMTP_SSL(email_host, email_port, timeout=60)
             else:
@@ -1148,29 +1201,23 @@ Automated Passport/ID Monitoring"""
                     smtp_object.starttls()
 
             smtp_object.login(email_user, email_password)
+            smtp_object.sendmail(email_user, recipients['all'], msg.as_string())
 
-            # Send email
-            text = msg.as_string()
-            smtp_object.sendmail(email_user, recipients['all'], text)
-
-            self.stdout.write('✅ Passport expiry notification email sent successfully!')
-            logger.info('Passport expiry notification email sent successfully')
+            self.stdout.write(f'    ✅ Sent to workspace "{workspace.name}"')
+            logger.info(f'Passport expiry email sent for workspace {workspace.name}')
             return True
 
         except smtplib.SMTPAuthenticationError as e:
-            error_msg = f"SMTP Authentication Error: {e}"
-            logger.error(error_msg)
-            self.stdout.write(f'❌ {error_msg}')
+            logger.error(f"SMTP Authentication Error: {e}")
+            self.stdout.write(f'    ❌ SMTP Auth Error: {e}')
             return False
         except smtplib.SMTPException as e:
-            error_msg = f"SMTP Error: {e}"
-            logger.error(error_msg)
-            self.stdout.write(f'❌ {error_msg}')
+            logger.error(f"SMTP Error: {e}")
+            self.stdout.write(f'    ❌ SMTP Error: {e}')
             return False
         except Exception as e:
-            error_msg = f"Error sending passport expiry email: {e}"
-            logger.error(error_msg, exc_info=True)
-            self.stdout.write(f'❌ {error_msg}')
+            logger.error(f"Error sending passport expiry email for workspace {workspace.name}: {e}", exc_info=True)
+            self.stdout.write(f'    ❌ Error: {e}')
             return False
         finally:
             if smtp_object:

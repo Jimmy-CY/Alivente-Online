@@ -78,6 +78,15 @@
     box-shadow: none;
 }
 
+/* Select elements need explicit auto-height to fit our padding cleanly */
+select.form-control {
+    height: auto;
+    line-height: 1.5;
+    padding-top: 8px;
+    padding-bottom: 8px;
+    background-color: white;
+}
+
 .role-selector {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
@@ -424,6 +433,26 @@
                     </label>
                 </div>
             </div>
+
+            <div class="form-group" style="margin-top: 22px; padding-top: 22px; border-top: 1px solid #f0f0f0;">
+                <label>Personal-Module Workspace</label>
+                <select name="workspace_id" class="form-control">
+                    <option value="" {% if not profile.workspace_id %}selected{% endif %}>
+                        — Unassigned (auto-create on first access) —
+                    </option>
+                    {% for ws in workspaces %}
+                    <option value="{{ ws.id }}" {% if profile.workspace_id == ws.id %}selected{% endif %}>
+                        {{ ws.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+                <small class="text-muted" style="font-size: 12px; margin-top: 6px; display: block;">
+                    Determines which Passports, Celebrations, and Recipes this user can access.
+                    Changing the workspace moves the user — they immediately see only the new
+                    workspace's data, never the old.
+                </small>
+            </div>
+        </div>
         </div>
 
         <!-- Action Buttons -->

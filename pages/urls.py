@@ -36,6 +36,11 @@ urlpatterns = [
     path('user-administration/<int:user_id>/edit/', views.user_edit, name='user_edit'),
     path('user-administration/<int:user_id>/permissions/', views.user_permissions, name='user_permissions'),
     path('user-administration/<int:user_id>/delete/', views.user_delete, name='user_delete'),
+    # Workspace Management (Personal-module multi-tenancy)
+    path('workspace-management/', views.workspace_management, name='workspace_management'),
+    path('workspace-management/add/', views.workspace_add, name='workspace_add'),
+    path('workspace-management/<int:workspace_id>/edit/', views.workspace_edit, name='workspace_edit'),
+    path('workspace-management/<int:workspace_id>/delete/', views.workspace_delete, name='workspace_delete'),
     path('my-profile/', views.my_profile, name='my_profile'),
     path('help/', views.help_page, name='help_page'),
     path('help/generate-manual/', views.generate_user_manual, name='generate_user_manual'),

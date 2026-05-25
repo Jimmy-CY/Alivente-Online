@@ -1,0 +1,348 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Workspace Management{% endblock %}
+{% block content %}
+
+<style>
+.workspace-admin-container {
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+.page-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px 25px;
+    border-radius: 10px;
+    margin-bottom: 25px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.page-header h1 {
+    font-size: 24px;
+    font-weight: bold;
+    margin: 0;
+}
+
+.page-header .header-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.workspace-table {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    overflow: hidden;
+}
+
+.workspace-table table {
+    width: 100%;
+    margin: 0;
+}
+
+.workspace-table thead th {
+    background: #f8f9fa;
+    padding: 14px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #495057;
+    border-bottom: 2px solid #dee2e6;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.workspace-table tbody td {
+    padding: 14px 16px;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 14px;
+    vertical-align: middle;
+}
+
+.workspace-table tbody tr:last-child td { border-bottom: none; }
+.workspace-table tbody tr:hover { background: #f8f9fa; }
+
+.ws-name {
+    font-weight: 600;
+    color: #2c3e50;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.ws-name i { color: #667eea; }
+
+.ws-owner-name { font-weight: 500; color: #495057; }
+.ws-owner-username { font-size: 12px; color: #6c757d; margin-top: 2px; }
+
+.ws-members {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #f0f2ff;
+    color: #667eea;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.action-btn {
+    width: 30px;
+    height: 30px;
+    border-radius: 6px;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 12px;
+    transition: all 0.2s;
+    text-decoration: none;
+}
+
+.action-btn:hover { transform: scale(1.1); }
+.btn-edit { background: #ffc107; color: white; }
+.btn-delete { background: #dc3545; color: white; }
+.btn-delete.disabled {
+    background: #e9ecef;
+    color: #adb5bd;
+    cursor: not-allowed;
+}
+.btn-delete.disabled:hover { transform: none; }
+
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #6c757d;
+}
+.empty-state i {
+    font-size: 3.5rem;
+    color: #adb5bd;
+    margin-bottom: 16px;
+    display: block;
+}
+
+@media (max-width: 768px) {
+    .workspace-admin-container { padding: 0 8px; }
+    .page-header {
+        flex-direction: column;
+        align-items: stretch;
+        padding: 16px;
+        margin-bottom: 16px;
+        gap: 12px;
+        border-radius: 8px;
+    }
+    .page-header h1 { font-size: 18px; text-align: center; }
+    .page-header .header-actions {
+        flex-direction: row;
+        gap: 8px;
+        width: 100%;
+    }
+    .page-header .header-actions .action-primary {
+        flex: 1 1 auto;
+        height: 38px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0 12px;
+        font-size: 13px;
+    }
+    .page-header .header-actions .action-back {
+        flex: 0 0 auto;
+        width: 44px;
+        height: 38px;
+        padding: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .action-back-label { display: none; }
+
+    .workspace-table { background: transparent; box-shadow: none; overflow: visible; }
+    .workspace-table table,
+    .workspace-table thead,
+    .workspace-table tbody,
+    .workspace-table tr,
+    .workspace-table td { display: block; width: 100%; }
+    .workspace-table thead { display: none; }
+    .workspace-table tbody tr {
+        background: white;
+        border: 1px solid #e9ecef;
+        border-radius: 10px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        margin-bottom: 12px;
+        padding: 14px;
+    }
+    .workspace-table tbody tr:hover { background: white; }
+    .workspace-table tbody td {
+        padding: 6px 0 !important;
+        border-bottom: none !important;
+        display: flex !important;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        font-size: 13px;
+    }
+    .workspace-table tbody td::before {
+        font-weight: 700;
+        font-size: 11px;
+        text-transform: uppercase;
+        color: #6c757d;
+        letter-spacing: 0.4px;
+    }
+    .workspace-table tbody td:nth-child(1)::before { content: 'Name'; }
+    .workspace-table tbody td:nth-child(2)::before { content: 'Owner'; }
+    .workspace-table tbody td:nth-child(3)::before { content: 'Members'; }
+    .workspace-table tbody td:nth-child(4)::before { content: 'Updated'; }
+    .workspace-table tbody td:last-child {
+        justify-content: flex-start !important;
+        padding-top: 10px !important;
+        margin-top: 6px;
+        border-top: 1px solid #f0f0f0 !important;
+    }
+    .workspace-table tbody td:last-child::before { content: ''; display: none; }
+    .action-btn { width: 38px; height: 38px; font-size: 14px; }
+
+    .modal-dialog { max-width: 100% !important; margin: 0 !important; height: 100vh; }
+    .modal-content { height: 100vh; border-radius: 0; display: flex; flex-direction: column; border: none; }
+    .modal-header { flex-shrink: 0; }
+    .modal-body { flex: 1 1 auto; overflow-y: auto; }
+    .modal-footer { flex-direction: column-reverse !important; gap: 8px; flex-shrink: 0; }
+    .modal-footer .btn, .modal-footer form { width: 100%; margin: 0 !important; }
+    .modal-footer form .btn { width: 100%; }
+}
+</style>
+
+<div class="workspace-admin-container">
+
+    {% for msg in messages %}
+    <div class="alert alert-{% if 'success' in msg.tags %}success{% elif 'error' in msg.tags %}danger{% else %}info{% endif %} alert-dismissible fade show">
+        {{ msg }}
+        <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
+    </div>
+    {% endfor %}
+
+    <div class="page-header">
+        <h1><i class="fas fa-layer-group"></i> Workspace Management</h1>
+        <div class="header-actions">
+            <a href="{% url 'workspace_add' %}" class="btn btn-info btn-sm action-primary">
+                <i class="fas fa-plus"></i> Add Workspace
+            </a>
+            <a href="{% url 'user_administration' %}" class="btn btn-light btn-sm action-back" aria-label="Back">
+                <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
+            </a>
+        </div>
+    </div>
+
+    {% if workspaces %}
+    <div class="workspace-table">
+        <table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Owner</th>
+                    <th>Members</th>
+                    <th>Updated</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for ws in workspaces %}
+                <tr>
+                    <td>
+                        <div class="ws-name">
+                            <i class="fas fa-layer-group"></i>
+                            {{ ws.name }}
+                        </div>
+                    </td>
+                    <td>
+                        <div class="ws-owner-name">{{ ws.owner.get_full_name|default:ws.owner.username }}</div>
+                        {% if ws.owner.get_full_name %}
+                        <div class="ws-owner-username">{{ ws.owner.username }}</div>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="ws-members" title="{% for m in ws.member_list %}{{ m.user.username }}{% if not forloop.last %}, {% endif %}{% endfor %}">
+                            <i class="fas fa-users"></i> {{ ws.member_count }}
+                        </span>
+                    </td>
+                    <td>{{ ws.updated_at|date:"d M Y H:i" }}</td>
+                    <td>
+                        <div style="display:flex; gap:6px;">
+                            <a href="{% url 'workspace_edit' ws.id %}" class="action-btn btn-edit" title="Edit Workspace">
+                                <i class="fas fa-pencil-alt"></i>
+                            </a>
+                            {% if ws.member_count == 0 %}
+                            <button type="button" class="action-btn btn-delete" title="Delete Workspace"
+                                    onclick="confirmDelete({{ ws.id }}, '{{ ws.name|escapejs }}')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                            {% else %}
+                            <span class="action-btn btn-delete disabled" title="Cannot delete: workspace has members">
+                                <i class="fas fa-trash"></i>
+                            </span>
+                            {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <i class="fas fa-layer-group"></i>
+        <p style="font-weight: 600; margin-bottom: 6px;">No workspaces yet.</p>
+        <small>Click "Add Workspace" to create the first one.</small>
+    </div>
+    {% endif %}
+
+</div>
+
+<!-- Delete Workspace Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-exclamation-triangle"></i> Delete Workspace
+                </h5>
+                <button type="button" class="close text-white" data-dismiss="modal">
+                    <span>&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <strong>This action cannot be undone.</strong>
+                </div>
+                <p>You are about to permanently delete workspace <strong id="deleteWorkspaceName"></strong>.</p>
+                <p class="text-muted">All Passports, Celebrations, and Recipes belonging to this workspace will be permanently removed.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <form id="deleteForm" method="POST">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash"></i> Permanently Delete
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function confirmDelete(workspaceId, workspaceName) {
+    document.getElementById('deleteWorkspaceName').textContent = workspaceName;
+    document.getElementById('deleteForm').action = `/workspace-management/${workspaceId}/delete/`;
+    $('#deleteModal').modal('show');
+}
+</script>
+
+{% endblock %}

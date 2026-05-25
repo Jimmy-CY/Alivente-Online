@@ -11,6 +11,7 @@ from django.db.models.signals import post_save, post_delete, pre_delete
 from django.dispatch import receiver
 from django.utils import timezone
 from django.utils.text import slugify
+from pages.workspace import WorkspaceManager
 
 import os
 import uuid
@@ -1132,27 +1133,35 @@ class Passport(models.Model):
         ('visa', 'Visa'),
         ('arc', 'Alien Registration Card'),
     ]
-    
+
     STATUS_CHOICES = [
         ('active', 'Active'),
         ('renewal', 'Applied for Renewal'),
         ('inactive', 'Inactive'),
     ]
-    
+
+    workspace = models.ForeignKey(
+        'pages.Workspace',
+        on_delete=models.CASCADE,
+        related_name='passports',
+        help_text='The workspace this passport belongs to.',
+    )
     holder_name = models.CharField(max_length=200)
     document_type = models.CharField(max_length=20, choices=DOCUMENT_TYPE_CHOICES)
     document_number = models.CharField(max_length=50)
     country_of_issue = models.CharField(max_length=100)
-    date_of_issue = models.DateField(null=True, blank=True)  # ADD null=True, blank=True
-    expiry_date = models.DateField(null=True, blank=True)  # ADD null=True, blank=True
+    date_of_issue = models.DateField(null=True, blank=True)
+    expiry_date = models.DateField(null=True, blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='active')
     document_file = models.FileField(upload_to='passports/', null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    
+
+    objects = WorkspaceManager()
+
     def __str__(self):
         return f"{self.holder_name} - {self.get_document_type_display()}"
-    
+
     class Meta:
         db_table = "passports"
         verbose_name = "Passport/ID Document"
@@ -2076,25 +2085,32 @@ class Contact(models.Model):
         ('colleague', 'Colleague'),
         ('other', 'Other'),
     ]
-    
+
     name = models.CharField(max_length=200)
     relationship = models.CharField(max_length=20, choices=RELATIONSHIP_CHOICES, default='other')
     email = models.EmailField(blank=True, null=True)
     phone = models.CharField(max_length=50, blank=True, null=True)
     photo = models.ImageField(upload_to='contacts/', blank=True, null=True)
     notes = models.TextField(blank=True, null=True)
+    workspace = models.ForeignKey(
+        'pages.Workspace',
+        on_delete=models.CASCADE,
+        related_name='contacts',
+    )
     created_by = models.ForeignKey(User, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    
+
+    objects = WorkspaceManager()
+
     class Meta:
         ordering = ['name']
         verbose_name = 'Contact'
         verbose_name_plural = 'Contacts'
-    
+
     def __str__(self):
         return f"{self.name} ({self.get_relationship_display()})"
-    
+
     def get_upcoming_events(self):
         """Get all upcoming events for this contact in the next 365 days"""
         today = timezone.now().date()
@@ -2242,35 +2258,36 @@ class CelebrationEvent(models.Model):
         return icons.get(self.event_type, 'fa-calendar')
     
     def get_notification_emails(self):
+        """Return emails to notify for this event.
+
+        Intersects this event's per-recipient flags (notify_demetri,
+        notify_angy, notify_erene, notify_alexandra) with the contact's
+        workspace's celebration_reminder NotificationRecipient list.
+
+        Returns empty if the workspace has no celebration_reminder
+        recipients configured — the cron treats empty as "skip", which is
+        the right behaviour: no point sending a celebration email to
+        nobody, or worse, leaking one household's celebrations to another
+        household's recipients if we fell back to global defaults.
         """
-        Return list of email addresses who should be notified about this event.
-        Only includes people who are both checked for this event AND in the TO/CC list.
-        """
-        # Mapping of notification flags to email addresses
+        from pages.email_utils import get_email_recipients
+
+        workspace = self.contact.workspace
+        recipients = get_email_recipients('celebration_reminder', workspace=workspace)
+        workspace_emails = set(recipients['all'])
+
         notification_mapping = {
             'notify_demetri': 'demetrimanias@gmail.com',
             'notify_angy': 'angmaniasbakers@gmail.com',
             'notify_erene': 'erenemanias@gmail.com',
             'notify_alexandra': 'leximanias@gmail.com',
         }
-        
-        # Get the celebration notification recipients
-        from pages.email_utils import get_email_recipients
-        try:
-            recipients = get_email_recipients('celebration_reminder')
-            all_notification_emails = recipients['all']  # TO + CC combined
-        except:
-            # Fallback if database lookup fails
-            all_notification_emails = []
-        
-        # Build list of emails for people who should be notified
-        notify_emails = []
-        for field_name, email in notification_mapping.items():
-            # Person is checked for this event AND their email is in TO/CC list
-            if getattr(self, field_name) and email in all_notification_emails:
-                notify_emails.append(email)
-        
-        return notify_emails
+
+        return [
+            email
+            for field_name, email in notification_mapping.items()
+            if getattr(self, field_name) and email in workspace_emails
+        ]
 
 class EventNotification(models.Model):
     """Track which notifications have been sent"""
@@ -2311,31 +2328,52 @@ class NotificationRecipient(models.Model):
         ('issue_comments_daily', 'Daily Issue Comments Report'),
         ('issue_comment_urgent', 'Urgent Issue Comment Alert'),
     )
-    notification_type = models.CharField(max_length=50, choices=NOTIFICATION_TYPES, unique=True)
+
+    # Notification types that are scoped to a workspace (one recipient row
+    # per workspace). All other types are global (workspace = NULL).
+    PERSONAL_NOTIFICATION_TYPES = frozenset({
+        'celebration_reminder',
+        'document_expiry',
+    })
+
+    notification_type = models.CharField(max_length=50, choices=NOTIFICATION_TYPES)
+    workspace = models.ForeignKey(
+        'pages.Workspace',
+        on_delete=models.CASCADE,
+        related_name='notification_recipients',
+        null=True, blank=True,
+        help_text=(
+            'Required for personal notification types (celebration_reminder, '
+            'document_expiry); NULL for admin types (daily_report, etc.).'
+        ),
+    )
     to_addresses = models.TextField(help_text="Comma-separated TO email addresses (primary recipients)")
     cc_addresses = models.TextField(blank=True, help_text="Comma-separated CC email addresses (optional)")
     created_by = models.ForeignKey(User, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    
+
     def get_to_list(self):
         return [email.strip() for email in self.to_addresses.split(',') if email.strip()]
-    
+
     def get_cc_list(self):
         if not self.cc_addresses:
             return []
         return [email.strip() for email in self.cc_addresses.split(',') if email.strip()]
-    
+
     def get_all_recipients(self):
         """Returns combined list of TO and CC for sending"""
         return self.get_to_list() + self.get_cc_list()
-    
+
     class Meta:
         verbose_name = "Notification Recipient"
         verbose_name_plural = "Notification Recipients"
-    
+        unique_together = [('notification_type', 'workspace')]
+
     def __str__(self):
-        return f"{self.get_notification_type_display()}"
+        ws_label = f" [{self.workspace.name}]" if self.workspace_id else ""
+        return f"{self.get_notification_type_display()}{ws_label}"
+
 
 # ============================================================================
 # ASSET MANAGEMENT MODELS
@@ -2619,6 +2657,54 @@ class AssetMaintenance(models.Model):
     def __str__(self):
         return f"{self.asset.name} - {self.get_maintenance_type_display()} on {self.date}"
 
+
+# ============================================================================
+# WORKSPACE MODEL
+# ============================================================================
+
+
+class Workspace(models.Model):
+    """A tenancy boundary for Personal-module data (Passports, Celebrations,
+    Recipes).
+
+    Every tenanted record (passport, celebration, recipe, ingredient, etc.)
+    references exactly one Workspace; users belong to exactly one Workspace
+    (via UserProfile.workspace) and see only the data within it.
+
+    Lifecycle:
+      - Created either explicitly via User Administration, or auto-created
+        lazily on first access by a user with no workspace assigned.
+      - The owner is the user who can manage workspace settings (initially
+        just rename it). Superusers can do the same regardless of ownership.
+      - Delete is PROTECTed by UserProfile.workspace — you can't drop a
+        workspace while any user still belongs to it. Move users to another
+        workspace first.
+    """
+
+    name = models.CharField(
+        max_length=200,
+        help_text="Display name for the workspace (e.g. \"Demetri's Household\").",
+    )
+    owner = models.ForeignKey(
+        User,
+        on_delete=models.PROTECT,
+        related_name='owned_workspaces',
+        help_text="The user who can manage this workspace's settings. "
+                  "Superusers bypass this restriction.",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'workspaces'
+        ordering = ['name']
+        verbose_name = 'Workspace'
+        verbose_name_plural = 'Workspaces'
+
+    def __str__(self):
+        return self.name
+
+
 # ============================================================================
 # USER PROFILE MODEL
 # ============================================================================
@@ -2647,6 +2733,15 @@ class UserProfile(models.Model):
         upload_to='profile_photos/',
         blank=True,
         null=True
+    )
+    workspace = models.ForeignKey(
+        'pages.Workspace',
+        on_delete=models.PROTECT,
+        related_name='members',
+        null=True,
+        blank=True,
+        help_text="The workspace this user belongs to (for Personal modules). "
+                  "Auto-created on first access if not assigned explicitly.",
     )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

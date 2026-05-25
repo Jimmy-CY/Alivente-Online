@@ -112,6 +112,24 @@
     color: #6c757d;
 }
 
+.user-workspace {
+    font-size: 11px;
+    color: #667eea;
+    margin-top: 3px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.user-workspace i {
+    font-size: 10px;
+}
+
+.user-workspace-none {
+    color: #adb5bd;
+    font-style: italic;
+}
+
 .badge-superuser {
     background: #667eea;
     color: white;
@@ -447,6 +465,9 @@
             </a>
 
             <!-- Desktop-visible secondary buttons (hidden on mobile, accessed via More menu) -->
+            <a href="{% url 'workspace_management' %}" class="btn btn-light btn-sm action-secondary">
+                <i class="fas fa-layer-group"></i> Workspaces
+            </a>
             <button type="button" class="btn btn-light btn-sm action-secondary" data-toggle="modal" data-target="#user_administrationHelpModal">
                 <i class="fas fa-question-circle"></i> Help
             </button>
@@ -458,6 +479,9 @@
                     <i class="fas fa-ellipsis-v"></i>
                 </button>
                 <div class="action-more-menu" id="actionMoreMenu" role="menu" hidden>
+                    <a href="{% url 'workspace_management' %}" class="action-more-item" role="menuitem">
+                        <i class="fas fa-layer-group"></i> Workspaces
+                    </a>
                     <button type="button" class="action-more-item" role="menuitem"
                             data-toggle="modal" data-target="#user_administrationHelpModal">
                         <i class="fas fa-question-circle"></i> Help
@@ -501,6 +525,14 @@
                             <div>
                                 <div class="user-name">{{ user.get_full_name|default:user.username }}</div>
                                 <div class="user-email">{{ user.email|default:"No email" }}</div>
+                                <div class="user-workspace">
+                                    <i class="fas fa-layer-group"></i>
+                                    {% if user.profile.workspace %}
+                                        {{ user.profile.workspace.name }}
+                                    {% else %}
+                                        <span class="user-workspace-none">No workspace</span>
+                                    {% endif %}
+                                </div>
                             </div>
                         </div>
                     </td>

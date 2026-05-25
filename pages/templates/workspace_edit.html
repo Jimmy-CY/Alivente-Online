@@ -1,0 +1,275 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Edit Workspace - {{ workspace.name }}{% endblock %}
+{% block content %}
+
+<style>
+.workspace-form-container {
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+.page-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px 25px;
+    border-radius: 10px;
+    margin-bottom: 25px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.page-header h1 {
+    font-size: 22px;
+    font-weight: bold;
+    margin: 0;
+}
+
+.form-card {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    padding: 30px;
+    margin-bottom: 20px;
+}
+
+.form-card h2 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #667eea;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.form-group label {
+    font-weight: 600;
+    font-size: 13px;
+    color: #495057;
+    margin-bottom: 6px;
+    display: block;
+}
+
+.form-group label span.required {
+    color: #dc3545;
+    margin-left: 2px;
+}
+
+.form-control {
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 14px;
+    transition: border-color 0.2s;
+}
+
+.form-control:focus { border-color: #667eea; box-shadow: none; }
+
+select.form-control {
+    height: auto;
+    line-height: 1.5;
+    padding-top: 8px;
+    padding-bottom: 8px;
+    background-color: white;
+}
+
+.workspace-meta {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 14px 18px;
+    font-size: 13px;
+    color: #6c757d;
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+}
+
+.workspace-meta span {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.member-list {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 12px 16px;
+    min-height: 50px;
+}
+
+.member-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 0;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.member-item:last-child { border-bottom: none; }
+
+.member-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    font-weight: 600;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.member-name { font-weight: 600; font-size: 14px; color: #2c3e50; }
+.member-username { font-size: 12px; color: #6c757d; }
+
+.member-empty {
+    text-align: center;
+    color: #6c757d;
+    font-style: italic;
+    padding: 16px;
+}
+
+.form-action-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 30px;
+}
+
+@media (max-width: 768px) {
+    .workspace-form-container { padding: 0 8px; }
+    .page-header {
+        flex-direction: column;
+        align-items: stretch;
+        padding: 16px;
+        margin-bottom: 16px;
+        gap: 12px;
+        border-radius: 8px;
+    }
+    .page-header h1 { font-size: 17px; text-align: center; word-break: break-word; }
+    .page-header .btn {
+        width: 100%;
+        justify-content: center;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 10px 12px;
+    }
+    .form-control, input[type="text"], select { font-size: 16px !important; }
+    .form-card { padding: 16px; border-radius: 8px; }
+    .form-card h2 { font-size: 15px; margin-bottom: 16px; }
+    .workspace-meta { flex-direction: column; gap: 8px; padding: 12px 14px; }
+    .form-action-row {
+        flex-direction: column-reverse;
+        gap: 8px;
+    }
+    .form-action-row .btn, .form-action-row a.btn {
+        width: 100%;
+        justify-content: center;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 11px 14px;
+    }
+}
+</style>
+
+<div class="workspace-form-container">
+
+    {% for msg in messages %}
+    <div class="alert alert-{% if 'success' in msg.tags %}success{% elif 'error' in msg.tags %}danger{% else %}info{% endif %} alert-dismissible fade show">
+        {{ msg }}
+        <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
+    </div>
+    {% endfor %}
+
+    <div class="page-header">
+        <h1><i class="fas fa-edit"></i> Edit Workspace — {{ workspace.name }}</h1>
+        <a href="{% url 'workspace_management' %}" class="btn btn-light btn-sm">
+            <i class="fas fa-arrow-left"></i> Back
+        </a>
+    </div>
+
+    <div class="workspace-meta">
+        <span><i class="fas fa-calendar-plus"></i> Created: {{ workspace.created_at|date:"d M Y H:i" }}</span>
+        <span><i class="fas fa-clock"></i> Updated: {{ workspace.updated_at|date:"d M Y H:i" }}</span>
+        <span><i class="fas fa-hashtag"></i> ID: {{ workspace.id }}</span>
+    </div>
+
+    <form method="POST" action="{% url 'workspace_edit' workspace.id %}">
+        {% csrf_token %}
+
+        <div class="form-card">
+            <h2><i class="fas fa-info-circle" style="color:#667eea;"></i> Workspace Details</h2>
+
+            <div class="form-group mb-4">
+                <label>Workspace Name <span class="required">*</span></label>
+                <input type="text" name="name" class="form-control"
+                       value="{{ workspace.name }}"
+                       placeholder="e.g. Helen's Household" required>
+            </div>
+
+            <div class="form-group">
+                <label>Owner <span class="required">*</span></label>
+                <select name="owner_id" class="form-control" required>
+                    {% for u in users %}
+                    <option value="{{ u.id }}" {% if workspace.owner_id == u.id %}selected{% endif %}>
+                        {% if u.get_full_name %}{{ u.get_full_name }} ({{ u.username }}){% else %}{{ u.username }}{% endif %}
+                    </option>
+                    {% endfor %}
+                </select>
+                <small class="text-muted" style="font-size: 12px; margin-top: 6px; display: block;">
+                    The user who can manage this workspace's settings. Superusers bypass this restriction regardless.
+                </small>
+            </div>
+        </div>
+
+        <div class="form-card">
+            <h2><i class="fas fa-users" style="color:#667eea;"></i> Members ({{ members|length }})</h2>
+
+            <p class="text-muted" style="font-size: 13px; margin-bottom: 16px;">
+                Workspace membership is managed via User Administration — edit a user to change their workspace assignment.
+            </p>
+
+            <div class="member-list">
+                {% for m in members %}
+                <div class="member-item">
+                    <div class="member-avatar">
+                        {% if m.user.first_name and m.user.last_name %}
+                            {{ m.user.first_name|first|upper }}{{ m.user.last_name|first|upper }}
+                        {% else %}
+                            {{ m.user.username|first|upper }}
+                        {% endif %}
+                    </div>
+                    <div>
+                        <div class="member-name">{{ m.user.get_full_name|default:m.user.username }}</div>
+                        {% if m.user.get_full_name %}
+                        <div class="member-username">{{ m.user.username }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% empty %}
+                <div class="member-empty">
+                    No members in this workspace. Assign users via User Administration.
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="form-action-row">
+            <a href="{% url 'workspace_management' %}" class="btn btn-secondary">
+                <i class="fas fa-times"></i> Cancel
+            </a>
+            <button type="submit" class="btn btn-success">
+                <i class="fas fa-save"></i> Save Changes
+            </button>
+        </div>
+    </form>
+</div>
+
+{% endblock %}

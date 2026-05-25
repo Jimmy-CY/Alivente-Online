@@ -38,10 +38,11 @@ from django.contrib.auth.decorators import (
     user_passes_test,
 )
 from django.contrib.auth.models import Permission, User
+from django.db.models import Count
 from django.contrib.contenttypes.models import ContentType
 from django.shortcuts import get_object_or_404, redirect, render
 
-from ..models import UserProfile
+from ..models import UserProfile, Workspace
 
 
 @login_required
@@ -98,6 +99,8 @@ def user_administration(request):
 def user_add(request):
     """Add a new user"""
 
+    workspaces = Workspace.objects.all().order_by('name')
+
     if request.method == 'POST':
         first_name = request.POST.get('first_name', '').strip()
         last_name = request.POST.get('last_name', '').strip()
@@ -107,6 +110,7 @@ def user_add(request):
         password2 = request.POST.get('password2', '')
         role = request.POST.get('role', 'user')
         is_active = request.POST.get('is_active') == '1'
+        workspace_id = request.POST.get('workspace_id', '').strip()
 
         # Validation
         errors = []
@@ -123,11 +127,20 @@ def user_add(request):
         if email and User.objects.filter(email=email).exists():
             errors.append('A user with this email already exists.')
 
+        # Validate workspace_id (empty string = unassigned, which is allowed)
+        workspace = None
+        if workspace_id:
+            try:
+                workspace = Workspace.objects.get(id=workspace_id)
+            except Workspace.DoesNotExist:
+                errors.append('Selected workspace does not exist.')
+
         if errors:
             for error in errors:
                 messages.error(request, error)
             return render(request, 'user_add.html', {
-                'form_data': request.POST
+                'form_data': request.POST,
+                'workspaces': workspaces,
             })
 
         # Create the user
@@ -144,13 +157,21 @@ def user_add(request):
             new_user.is_staff = True
         new_user.save()
 
-        # Ensure profile exists
-        UserProfile.objects.get_or_create(user=new_user)
+        # Ensure profile exists, and assign workspace if one was selected.
+        # Empty selection means the user gets their own workspace auto-created
+        # the first time they touch a Personal module.
+        profile, _ = UserProfile.objects.get_or_create(user=new_user)
+        if workspace is not None:
+            profile.workspace = workspace
+            profile.save(update_fields=['workspace', 'updated_at'])
 
         messages.success(request, f'User "{username}" created successfully!')
         return redirect('user_administration')
 
-    return render(request, 'user_add.html', {'form_data': {}})
+    return render(request, 'user_add.html', {
+        'form_data': {},
+        'workspaces': workspaces,
+    })
 
 
 @login_required
@@ -161,6 +182,7 @@ def user_edit(request, user_id):
 
     target_user = get_object_or_404(User, id=user_id)
     profile, _ = UserProfile.objects.get_or_create(user=target_user)
+    workspaces = Workspace.objects.all().order_by('name')
 
     if request.method == 'POST':
         first_name = request.POST.get('first_name', '').strip()
@@ -170,6 +192,7 @@ def user_edit(request, user_id):
         is_active = request.POST.get('is_active') == '1'
         new_password = request.POST.get('password1', '').strip()
         confirm_password = request.POST.get('password2', '').strip()
+        workspace_id = request.POST.get('workspace_id', '').strip()
 
         errors = []
         if email and User.objects.filter(email=email).exclude(id=user_id).exists():
@@ -179,19 +202,34 @@ def user_edit(request, user_id):
         if new_password and len(new_password) < 8:
             errors.append('Password must be at least 8 characters.')
 
+        # Validate workspace_id (empty string = unassigned)
+        workspace = None
+        if workspace_id:
+            try:
+                workspace = Workspace.objects.get(id=workspace_id)
+            except Workspace.DoesNotExist:
+                errors.append('Selected workspace does not exist.')
+
         if errors:
             for error in errors:
                 messages.error(request, error)
             return render(request, 'user_edit.html', {
                 'target_user': target_user,
                 'profile': profile,
+                'workspaces': workspaces,
             })
 
         # Update user
         target_user.first_name = first_name
         target_user.last_name = last_name
         target_user.email = email
-        target_user.is_active = is_active
+
+        # Prevent disabling yourself. The "Active" checkbox is disabled in the
+        # UI when target == request.user, which means the browser doesn't
+        # submit it at all; without this guard the view sees is_active=False
+        # and silently locks the user out of their own account.
+        if target_user != request.user:
+            target_user.is_active = is_active
 
         # Prevent removing your own superuser status
         if target_user != request.user:
@@ -206,12 +244,21 @@ def user_edit(request, user_id):
             target_user.set_password(new_password)
 
         target_user.save()
+
+        # Update workspace assignment. Setting workspace=None unassigns the
+        # user (they get their own workspace auto-created on next access).
+        new_workspace_id = workspace.id if workspace else None
+        if profile.workspace_id != new_workspace_id:
+            profile.workspace = workspace
+            profile.save(update_fields=['workspace', 'updated_at'])
+
         messages.success(request, f'User "{target_user.username}" updated successfully!')
         return redirect('user_administration')
 
     return render(request, 'user_edit.html', {
         'target_user': target_user,
         'profile': profile,
+        'workspaces': workspaces,
     })
 
 
@@ -344,3 +391,141 @@ def user_delete(request, user_id):
         return redirect('user_administration')
 
     return redirect('user_administration')
+
+
+# ===========================================================================
+# Workspace Management
+# ===========================================================================
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
+@permission_required('auth.can_access_administration', raise_exception=True)
+def workspace_management(request):
+    """List all workspaces with owner, member count, and actions."""
+    workspaces = (
+        Workspace.objects
+        .select_related('owner')
+        .annotate(member_count=Count('members'))
+        .order_by('name')
+    )
+
+    # Pre-fetch members for the count tooltip and edit-page reuse.
+    for ws in workspaces:
+        ws.member_list = list(ws.members.select_related('user').order_by('user__username'))
+
+    return render(request, 'workspace_management.html', {
+        'workspaces': workspaces,
+    })
+
+
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
+@permission_required('auth.can_access_administration', raise_exception=True)
+def workspace_add(request):
+    """Create a new workspace."""
+    users = User.objects.all().order_by('username')
+
+    if request.method == 'POST':
+        name = request.POST.get('name', '').strip()
+        owner_id = request.POST.get('owner_id', '').strip()
+
+        errors = []
+        if not name:
+            errors.append('Workspace name is required.')
+
+        owner = None
+        if not owner_id:
+            errors.append('Owner is required.')
+        else:
+            try:
+                owner = User.objects.get(id=owner_id)
+            except User.DoesNotExist:
+                errors.append('Selected owner does not exist.')
+
+        if errors:
+            for error in errors:
+                messages.error(request, error)
+            return render(request, 'workspace_add.html', {
+                'form_data': request.POST,
+                'users': users,
+            })
+
+        Workspace.objects.create(name=name, owner=owner)
+        messages.success(request, f'Workspace "{name}" created successfully!')
+        return redirect('workspace_management')
+
+    return render(request, 'workspace_add.html', {
+        'form_data': {},
+        'users': users,
+    })
+
+
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
+@permission_required('auth.can_access_administration', raise_exception=True)
+def workspace_edit(request, workspace_id):
+    """Edit a workspace's name and owner; display read-only member list."""
+    workspace = get_object_or_404(Workspace, id=workspace_id)
+    users = User.objects.all().order_by('username')
+    members = workspace.members.select_related('user').order_by('user__username')
+
+    if request.method == 'POST':
+        name = request.POST.get('name', '').strip()
+        owner_id = request.POST.get('owner_id', '').strip()
+
+        errors = []
+        if not name:
+            errors.append('Workspace name is required.')
+
+        owner = None
+        if not owner_id:
+            errors.append('Owner is required.')
+        else:
+            try:
+                owner = User.objects.get(id=owner_id)
+            except User.DoesNotExist:
+                errors.append('Selected owner does not exist.')
+
+        if errors:
+            for error in errors:
+                messages.error(request, error)
+            return render(request, 'workspace_edit.html', {
+                'workspace': workspace,
+                'users': users,
+                'members': members,
+            })
+
+        workspace.name = name
+        workspace.owner = owner
+        workspace.save()
+        messages.success(request, f'Workspace "{name}" updated successfully!')
+        return redirect('workspace_management')
+
+    return render(request, 'workspace_edit.html', {
+        'workspace': workspace,
+        'users': users,
+        'members': members,
+    })
+
+
+@login_required
+@user_passes_test(lambda u: u.is_superuser)
+@permission_required('auth.can_access_administration', raise_exception=True)
+def workspace_delete(request, workspace_id):
+    """Permanently delete a workspace (only if it has zero members)."""
+    workspace = get_object_or_404(Workspace, id=workspace_id)
+
+    if workspace.members.exists():
+        messages.error(
+            request,
+            f'Cannot delete workspace "{workspace.name}" because it has members. '
+            f'Reassign or remove the members first via User Administration.'
+        )
+        return redirect('workspace_management')
+
+    if request.method == 'POST':
+        name = workspace.name
+        workspace.delete()
+        messages.success(request, f'Workspace "{name}" has been permanently deleted.')
+        return redirect('workspace_management')
+
+    return redirect('workspace_management')

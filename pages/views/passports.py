@@ -1,10 +1,19 @@
 """
 Passport / identity-document views.
 
-Extracted from the legacy pages/views/main.py during the modular views
-split. A single view handles list / add / edit / upload / delete for
-personal identity documents (passports, IDs, driver's licences, ARC
-cards, etc.), plus a 6-month expiry-warning flag on the list.
+Workspace-scoped (Personal-module multi-tenancy, Phase 3). Every database
+operation in this view is filtered to the current user's workspace.
+
+A user with no workspace gets one auto-created on first access via
+ensure_workspace(); the workspace is named after their username and they
+become its owner. The auto-create is silent — users don't see anything
+about workspaces unless an admin explicitly assigns them to a shared one
+via User Administration (Phase 4).
+
+Cross-workspace safety: edit / upload / delete operations look up the
+target passport through Passport.objects.for_user(user), which filters
+to the current workspace. A user manipulating a passport_id from another
+workspace will get a 404, not a successful action.
 
 Functions
 ---------
@@ -27,11 +36,15 @@ from django.contrib.auth.decorators import login_required, permission_required
 from django.shortcuts import get_object_or_404, redirect, render
 
 from ..models import Passport
+from ..workspace import ensure_workspace
 
 
 @login_required
 @permission_required('auth.can_access_passports', raise_exception=True)
 def passport_management(request):
+    # Guarantee the current user has a workspace before any data operation.
+    workspace = ensure_workspace(request.user)
+
     if request.method == 'POST':
         # Edit-level actions - all POST branches require edit permission
         if not request.user.has_perm('auth.can_edit_passports'):
@@ -53,6 +66,7 @@ def passport_management(request):
 
             try:
                 Passport.objects.create(
+                    workspace=workspace,
                     holder_name=holder_name,
                     document_type=document_type,
                     document_number=document_number,
@@ -60,7 +74,7 @@ def passport_management(request):
                     date_of_issue=date_of_issue,
                     expiry_date=expiry_date,
                     status=status,
-                    document_file=document_file
+                    document_file=document_file,
                 )
                 messages.success(request, f'Passport/ID for {holder_name} added successfully!')
             except Exception as e:
@@ -69,7 +83,12 @@ def passport_management(request):
         # EDIT PASSPORT/ID
         elif action == 'edit':
             passport_id = request.POST.get('passport_id')
-            passport = get_object_or_404(Passport, id=passport_id)
+            # for_user() filters to current workspace — cross-workspace
+            # passport_id values 404 here, not silently succeed.
+            passport = get_object_or_404(
+                Passport.objects.for_user(request.user),
+                id=passport_id,
+            )
 
             passport.holder_name = request.POST.get('holder_name')
             passport.document_type = request.POST.get('document_type')
@@ -92,7 +111,10 @@ def passport_management(request):
         # UPLOAD DOCUMENT
         elif action == 'upload':
             passport_id = request.POST.get('passport_id')
-            passport = get_object_or_404(Passport, id=passport_id)
+            passport = get_object_or_404(
+                Passport.objects.for_user(request.user),
+                id=passport_id,
+            )
             document_file = request.FILES.get('document_file')
 
             if document_file:
@@ -108,7 +130,10 @@ def passport_management(request):
         # DELETE PASSPORT/ID
         elif action == 'delete':
             passport_id = request.POST.get('passport_id')
-            passport = get_object_or_404(Passport, id=passport_id)
+            passport = get_object_or_404(
+                Passport.objects.for_user(request.user),
+                id=passport_id,
+            )
             holder_name = passport.holder_name
 
             try:
@@ -122,8 +147,8 @@ def passport_management(request):
 
         return redirect('passport_management')
 
-    # GET request - display all passports with filters
-    passports = Passport.objects.all()
+    # GET request - display passports in the current workspace
+    passports = Passport.objects.for_user(request.user)
 
     # Get filter parameters from request
     selected_holder = request.GET.get('holder', '')

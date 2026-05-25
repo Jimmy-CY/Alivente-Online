@@ -31,37 +31,72 @@ ADMIN_USER_INITIALS = ['DM']
 URGENT_NOTIFICATION_COOLDOWN_MINUTES = 5
 
 
-def get_email_recipients(notification_type):
+def get_email_recipients(notification_type, workspace=None):
     """
     Get email recipients for a notification type with TO/CC distinction.
     Returns a dict with 'to', 'cc', and 'all' lists.
-    Priority: Database > Environment Variables > Defaults
+
+    Personal notification types (celebration_reminder, document_expiry) are
+    workspace-scoped:
+      - The caller MUST pass workspace=<Workspace instance>.
+      - Looks up the row for that specific workspace. If none exists,
+        returns empty lists — callers should treat this as "skip sending
+        for this workspace" (no env-var / hardcoded fallback for personal
+        types, because those fallbacks would leak between households).
+
+    Admin notification types (everything else) are global:
+      - The caller MUST NOT pass workspace.
+      - Looks up the row with workspace=NULL, falls back to env vars,
+        then to hardcoded defaults.
     """
-    # Deferred import: email_utils is imported by views/cron at module load;
-    # importing the model here avoids a circular import.
+    # Deferred import to avoid circular import at module load.
     from pages.models import NotificationRecipient
 
-    # Try database first
+    personal_types = NotificationRecipient.PERSONAL_NOTIFICATION_TYPES
+    is_personal = notification_type in personal_types
+
+    # Argument validation: catch caller bugs early instead of silently
+    # routing to the wrong recipient set.
+    if is_personal and workspace is None:
+        raise ValueError(
+            f"'{notification_type}' is a personal notification type; "
+            f"pass workspace=<Workspace instance>."
+        )
+    if not is_personal and workspace is not None:
+        raise ValueError(
+            f"'{notification_type}' is an admin notification type; "
+            f"do not pass a workspace argument (got {workspace!r})."
+        )
+
+    # 1. Database lookup
     try:
-        recipient = NotificationRecipient.objects.get(notification_type=notification_type)
+        if is_personal:
+            recipient = NotificationRecipient.objects.get(
+                notification_type=notification_type,
+                workspace=workspace,
+            )
+        else:
+            recipient = NotificationRecipient.objects.get(
+                notification_type=notification_type,
+                workspace__isnull=True,
+            )
         return {
             'to': recipient.get_to_list(),
             'cc': recipient.get_cc_list(),
-            'all': recipient.get_all_recipients()
+            'all': recipient.get_all_recipients(),
         }
     except NotificationRecipient.DoesNotExist:
         pass
 
-    # Map notification types to environment variable names
+    # 2. Personal types: no env/hardcoded fallback. Empty = skip sending.
+    if is_personal:
+        return {'to': [], 'cc': [], 'all': []}
+
+    # 3. Admin types: env var fallback
     env_var_map = {
-        'celebration_reminder': 'EMAIL_TO_CELEBRATION',
-        'passport_expiry': 'EMAIL_TO_PASSPORT_EXPIRY',
-        'document_expiry': 'EMAIL_TO_PASSPORT_EXPIRY',
         'daily_report': 'EMAIL_TO_DAILY_REPORT',
         'new_lease_upload': 'EMAIL_TO_DAILY_REPORT',
     }
-
-    # Try environment variables
     env_var = env_var_map.get(notification_type)
     if env_var:
         env_value = os.environ.get(env_var)
@@ -69,12 +104,10 @@ def get_email_recipients(notification_type):
             emails = [e.strip() for e in env_value.split(',') if e.strip()]
             return {'to': emails, 'cc': [], 'all': emails}
 
-    # Default recipients with TO/CC distinction
+    # 4. Admin types: hardcoded defaults (personal types intentionally absent —
+    #    those are workspace-scoped now).
     default_recipients = {
         'daily_report': {'to': ['demetrimanias@gmail.com', 'angmaniasbakers@gmail.com'], 'cc': []},
-        'document_expiry': {'to': ['demetrimanias@gmail.com', 'angmaniasbakers@gmail.com', 'erenemanias@gmail.com', 'leximanias@gmail.com'], 'cc': []},
-        'passport_expiry': {'to': ['demetrimanias@gmail.com', 'angmaniasbakers@gmail.com', 'erenemanias@gmail.com', 'leximanias@gmail.com'], 'cc': []},
-        'celebration_reminder': {'to': ['demetrimanias@gmail.com', 'angmaniasbakers@gmail.com'], 'cc': []},
         'new_lease_upload': {'to': ['demetrimanias@gmail.com'], 'cc': []},
         'expense_needs_approval': {'to': ['demetrimanias@gmail.com'], 'cc': ['stella.simitopoulos@alivente.com']},
         'expense_approved': {'to': ['stella.simitopoulos@alivente.com'], 'cc': ['demetrimanias@gmail.com']},

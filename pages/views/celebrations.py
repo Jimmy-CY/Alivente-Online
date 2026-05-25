@@ -2,9 +2,11 @@
 Celebrations views.
 
 Extracted from the legacy pages/views/main.py during the modular views
-split. Covers contact management, celebration-event CRUD, the calendar /
-timeline views, the dashboard, the Excel importer, and the AJAX endpoint
-for updating per-event notification preferences.
+split. Workspace-scoped in Phase 5.3 of the multi-tenancy rollout —
+every Contact lookup is now filtered to the current user's workspace,
+and every CelebrationEvent lookup is filtered through its parent
+contact's workspace. Two users in different workspaces cannot see,
+edit, or delete each other's contacts or events.
 
 Functions
 ---------
@@ -39,12 +41,14 @@ from django.utils import timezone
 from django.views.decorators.http import require_POST
 
 from ..models import CelebrationEvent, Contact
+from pages.workspace import ensure_workspace
 
 
 @login_required
 @permission_required('auth.can_access_celebrations', raise_exception=True)
 def celebration_management(request):
-    """Main celebration management page"""
+    """Main celebration management page (scoped to current user's workspace)."""
+    workspace = ensure_workspace(request.user)
 
     # Handle Contact CRUD
     if request.method == 'POST':
@@ -64,7 +68,8 @@ def celebration_management(request):
                     email=email,
                     phone=phone,
                     notes=notes,
-                    created_by=request.user
+                    workspace=workspace,
+                    created_by=request.user,
                 )
                 messages.success(request, f'Contact "{name}" added successfully!')
             else:
@@ -73,7 +78,9 @@ def celebration_management(request):
         elif action == 'edit_contact':
             contact_id = request.POST.get('contact_id')
             try:
-                contact = Contact.objects.get(id=contact_id)
+                # Scope to workspace: prevents editing another workspace's contact
+                # via crafted POST.
+                contact = Contact.objects.for_user(request.user).get(id=contact_id)
                 contact.name = request.POST.get('name')
                 contact.relationship = request.POST.get('relationship')
                 contact.email = request.POST.get('email')
@@ -87,7 +94,7 @@ def celebration_management(request):
         elif action == 'delete_contact':
             contact_id = request.POST.get('contact_id')
             try:
-                contact = Contact.objects.get(id=contact_id)
+                contact = Contact.objects.for_user(request.user).get(id=contact_id)
                 name = contact.name
                 contact.delete()
                 messages.success(request, f'Contact "{name}" deleted successfully!')
@@ -97,7 +104,8 @@ def celebration_management(request):
         elif action == 'add_event':
             contact_id = request.POST.get('contact_id')
             try:
-                contact = Contact.objects.get(id=contact_id)
+                # Scope: the parent contact must be in current workspace.
+                contact = Contact.objects.for_user(request.user).get(id=contact_id)
                 event_type = request.POST.get('event_type')
                 event_date_str = request.POST.get('event_date')
                 priority = request.POST.get('priority', 'normal')
@@ -130,7 +138,7 @@ def celebration_management(request):
                         notify_angy=request.POST.get('notify_angy', 'on') == 'on',
                         notify_erene=request.POST.get('notify_erene', 'on') == 'on',
                         notify_alexandra=request.POST.get('notify_alexandra', 'on') == 'on',
-                        created_by=request.user
+                        created_by=request.user,
                     )
                     messages.success(request, f'{event_type.title()} event added for {contact.name}!')
                 else:
@@ -143,7 +151,11 @@ def celebration_management(request):
         elif action == 'edit_event':
             event_id = request.POST.get('event_id')
             try:
-                event = CelebrationEvent.objects.get(id=event_id)
+                # Scope via the parent contact's workspace.
+                event = CelebrationEvent.objects.filter(
+                    contact__workspace=workspace
+                ).get(id=event_id)
+
                 event.event_type = request.POST.get('event_type')
                 event_date_str = request.POST.get('event_date')
                 event.priority = request.POST.get('priority', 'normal')
@@ -176,7 +188,9 @@ def celebration_management(request):
         elif action == 'delete_event':
             event_id = request.POST.get('event_id')
             try:
-                event = CelebrationEvent.objects.get(id=event_id)
+                event = CelebrationEvent.objects.filter(
+                    contact__workspace=workspace
+                ).get(id=event_id)
                 event.delete()
                 messages.success(request, 'Event deleted successfully!')
             except CelebrationEvent.DoesNotExist:
@@ -184,8 +198,8 @@ def celebration_management(request):
 
         return redirect('celebration_management')
 
-    # Get all contacts with their events (shared across users)
-    contacts = Contact.objects.prefetch_related('celebration_events')
+    # Get all contacts with their events — workspace-scoped
+    contacts = Contact.objects.for_user(request.user).prefetch_related('celebration_events')
 
     # Get upcoming events for dashboard
     today = timezone.now().date()
@@ -219,13 +233,15 @@ def celebration_management(request):
 @login_required
 @permission_required('auth.can_access_celebrations', raise_exception=True)
 def celebration_calendar(request):
-    """Calendar view of all celebrations"""
+    """Calendar view of all celebrations (workspace-scoped)."""
+    workspace = ensure_workspace(request.user)
 
-    # Get today's date
     today = timezone.now().date()
 
-    # Get all events (shared across users)
-    events = CelebrationEvent.objects.select_related('contact')
+    # Get all events in the current workspace
+    events = CelebrationEvent.objects.filter(
+        contact__workspace=workspace
+    ).select_related('contact')
 
     # Find first month with events (from today forward)
     first_event_date = None
@@ -260,9 +276,9 @@ def celebration_calendar(request):
                 events_by_day[day] = []
             events_by_day[day].append(event)
 
-    # Get all upcoming events for timeline view (next 365 days)
+    # Get all upcoming events for timeline view (next 365 days) — workspace-scoped
     all_events = []
-    contacts = Contact.objects.prefetch_related('celebration_events')
+    contacts = Contact.objects.for_user(request.user).prefetch_related('celebration_events')
 
     for contact in contacts:
         for event in contact.celebration_events.all():
@@ -311,7 +327,8 @@ def celebration_calendar(request):
 @permission_required('auth.can_edit_celebrations', raise_exception=True)
 @require_POST
 def import_celebrations(request):
-    """Import contacts and events from Excel file"""
+    """Import contacts and events from Excel file into the current workspace."""
+    workspace = ensure_workspace(request.user)
 
     if 'excel_file' not in request.FILES:
         messages.error(request, 'No file uploaded.')
@@ -370,8 +387,9 @@ def import_celebrations(request):
             if not name:
                 continue
 
-            # Check if contact exists (shared - any user's contact counts as duplicate)
-            if skip_duplicates and Contact.objects.filter(name__iexact=name).exists():
+            # Duplicate check is scoped to the current workspace — a name
+            # collision in another workspace doesn't block this import.
+            if skip_duplicates and Contact.objects.for_user(request.user).filter(name__iexact=name).exists():
                 contacts_skipped += 1
                 continue
 
@@ -383,7 +401,8 @@ def import_celebrations(request):
             contact = Contact.objects.create(
                 name=name,
                 relationship=relationship,
-                created_by=request.user
+                workspace=workspace,
+                created_by=request.user,
             )
             contacts_created += 1
 
@@ -431,7 +450,7 @@ def import_celebrations(request):
                     notify_one_day = True
                     notify_same_day = True
 
-                # Create event
+                # Create event — workspace inherited via contact
                 CelebrationEvent.objects.create(
                     contact=contact,
                     event_type=event_type,
@@ -441,7 +460,7 @@ def import_celebrations(request):
                     notify_one_week=notify_one_week,
                     notify_one_day=notify_one_day,
                     notify_same_day=notify_same_day,
-                    created_by=request.user
+                    created_by=request.user,
                 )
                 events_created += 1
 
@@ -460,11 +479,11 @@ def import_celebrations(request):
 @login_required
 @permission_required('auth.can_access_celebrations', raise_exception=True)
 def celebration_dashboard(request):
-    """Dashboard showing upcoming celebrations"""
+    """Dashboard showing upcoming celebrations in the current workspace."""
+    ensure_workspace(request.user)
 
-    # Get all contacts with their events (shared across users)
     today = timezone.now().date()
-    contacts = Contact.objects.prefetch_related('celebration_events')
+    contacts = Contact.objects.for_user(request.user).prefetch_related('celebration_events')
 
     # Get upcoming events for dashboard (next 30 days)
     all_events = []
@@ -494,10 +513,14 @@ def celebration_dashboard(request):
 @permission_required('auth.can_edit_celebrations', raise_exception=True)
 @require_POST
 def update_event_notifications(request, event_id):
-    """Update notification preferences for a specific event via AJAX"""
+    """Update notification preferences for a specific event via AJAX."""
+    workspace = ensure_workspace(request.user)
 
     try:
-        event = CelebrationEvent.objects.get(id=event_id)
+        # Scope: the event's parent contact must be in the current workspace.
+        event = CelebrationEvent.objects.filter(
+            contact__workspace=workspace
+        ).get(id=event_id)
 
         # Get the JSON data from request
         data = json.loads(request.body)
