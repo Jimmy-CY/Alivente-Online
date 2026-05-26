@@ -1,4 +1,4 @@
-﻿from datetime import datetime
+from datetime import datetime
 from dateutil.relativedelta import relativedelta
 from decimal import Decimal
 from django.conf import settings
@@ -1594,15 +1594,15 @@ class RecipeIngredient(models.Model):
         
         # Map of decimal to common fraction symbols
         fraction_map = {
-            0.125: 'â…›',
-            0.25: 'Â¼',
-            0.333: 'â…“',
-            0.375: 'â…œ',
-            0.5: 'Â½',
-            0.625: 'â…',
-            0.666: 'â…”',
-            0.75: 'Â¾',
-            0.875: 'â…ž',
+            0.125: '\u215B',  # one-eighth
+            0.25:  '\u00BC',  # one-quarter
+            0.333: '\u2153',  # one-third
+            0.375: '\u215C',  # three-eighths
+            0.5:   '\u00BD',  # one-half
+            0.625: '\u215D',  # five-eighths
+            0.666: '\u2154',  # two-thirds
+            0.75:  '\u00BE',  # three-quarters
+            0.875: '\u215E',  # seven-eighths
         }
 
         whole_part = int(amount_float)
