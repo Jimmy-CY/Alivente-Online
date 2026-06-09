@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load help_modal_tags %}
 
 {% block title %}Workspace Management{% endblock %}
 {% block content %}
@@ -233,6 +234,9 @@
             <a href="{% url 'workspace_add' %}" class="btn btn-info btn-sm action-primary">
                 <i class="fas fa-plus"></i> Add Workspace
             </a>
+            <button type="button" class="btn btn-light btn-sm action-primary" data-toggle="modal" data-target="#workspacesHelpModal">
+                <i class="fas fa-question-circle"></i> Help
+            </button>
             <a href="{% url 'user_administration' %}" class="btn btn-light btn-sm action-back" aria-label="Back">
                 <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
             </a>
@@ -344,5 +348,7 @@ function confirmDelete(workspaceId, workspaceName) {
     $('#deleteModal').modal('show');
 }
 </script>
+
+{% render_help_modal "workspaces" %}
 
 {% endblock %}

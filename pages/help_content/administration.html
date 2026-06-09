@@ -469,7 +469,7 @@
 <!-- ======= CELEBRATIONS ======= -->
 <section data-module-slug="celebration_dashboard"
          data-module-group="Personal"
-         data-module-permission="can_access_personal"
+         data-module-permission="can_access_celebrations"
          data-module-name="Celebrations"
          data-module-icon="fa-birthday-cake"
          data-module-category="Personal"
@@ -598,8 +598,8 @@
       </div>
     </div>
 
-    <h6 style="font-weight:600; color:#2c3e50; margin-bottom:12px;">Notification Recipients</h6>
-    <p style="font-size:13px; color:#6c757d; margin-bottom:16px;">Each event shows a list of names with checkboxes &mdash; these are the family members who will be notified by email when the event occurs. You can control who gets notified per event.</p>
+    <h6 style="font-weight:600; color:#2c3e50; margin-bottom:12px;">Who the event is about (&ldquo;Relevant to&rdquo;)</h6>
+    <p style="font-size:13px; color:#6c757d; margin-bottom:16px;">Each event shows a tick box for every active household member. Tick the people the event is <strong>about</strong> &mdash; they become eligible to be reminded. The email is then sent only to those ticked people who have also opted in to celebration reminders on the <strong>Household Members</strong> page. Tick boxes on the event card save instantly; you can also set them in the Add / Edit form. See the <strong>Notifications</strong> tab for the full rule.</p>
 
     <h6 style="font-weight:600; color:#2c3e50; margin-bottom:12px;">Event Actions</h6>
     <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:16px;">
@@ -655,18 +655,20 @@
     <h6 style="font-weight:700; color:#2c3e50; margin-bottom:16px; border-bottom:2px solid #667eea; padding-bottom:6px;"><i class="fas fa-bell" style="color:#667eea;"></i> How the Notification System Works</h6>
 
     <p style="font-size:14px; color:#6c757d; line-height:1.7; margin-bottom:20px;">
-      The notification system has <strong>three layers</strong> that all work together to determine who gets notified, about which events, and when.
+      Who gets an email about an event is decided by <strong>two independent choices</strong>, combined with the <strong>timing</strong> you set on the event. A person is emailed only when all three line up.
     </p>
 
     <div style="display:flex; gap:14px; align-items:flex-start; margin-bottom:16px;">
       <div style="width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg,#667eea,#764ba2); display:flex; align-items:center; justify-content:center; flex-shrink:0; font-weight:700; color:white; font-size:16px;">1</div>
       <div style="flex:1;">
-        <div style="font-weight:700; color:#2c3e50; font-size:14px; margin-bottom:6px;">Set up email addresses in Notification Settings</div>
+        <div style="font-weight:700; color:#2c3e50; font-size:14px; margin-bottom:6px;">Who the event is about &mdash; &ldquo;Relevant to&rdquo; (set on the event)</div>
         <div style="background:#f8f9fa; border-radius:8px; padding:14px; font-size:13px; color:#6c757d; border-left:4px solid #667eea;">
-          Go to <strong>Personal &rarr; Notification Settings</strong> to register each family member's email address.<br><br>
-          <i class="fas fa-envelope" style="color:#667eea; width:16px;"></i> <strong>TO:</strong> Primary recipients &mdash; the main people who receive celebration reminders.<br>
-          <i class="fas fa-envelope" style="color:#667eea; width:16px;"></i> <strong>CC:</strong> Carbon copy recipients &mdash; optional additional people to be kept informed.<br><br>
-          <span style="color:#856404;"><i class="fas fa-exclamation-triangle"></i> A family member will <strong>never</strong> receive a notification unless their email is registered here first.</span>
+          Every event has a <strong>Relevant to</strong> list showing each active household member with a tick box. Tick the people the event pertains to. You can do this two ways:
+          <ul style="margin-top:6px; padding-left:18px;">
+            <li>Directly on the event card &mdash; the tick boxes <strong>save instantly</strong>.</li>
+            <li>In the event&rsquo;s <strong>Add / Edit</strong> form, under &ldquo;Relevant to&rdquo;.</li>
+          </ul>
+          The list is drawn from your <strong>Household Members</strong> roster, so adding a person there makes them available on every event automatically.
         </div>
       </div>
     </div>
@@ -674,15 +676,10 @@
     <div style="display:flex; gap:14px; align-items:flex-start; margin-bottom:16px;">
       <div style="width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg,#667eea,#764ba2); display:flex; align-items:center; justify-content:center; flex-shrink:0; font-weight:700; color:white; font-size:16px;">2</div>
       <div style="flex:1;">
-        <div style="font-weight:700; color:#2c3e50; font-size:14px; margin-bottom:6px;">Choose notification timing per event</div>
+        <div style="font-weight:700; color:#2c3e50; font-size:14px; margin-bottom:6px;">Who wants celebration emails &mdash; opt-in (set on the roster)</div>
         <div style="background:#f8f9fa; border-radius:8px; padding:14px; font-size:13px; color:#6c757d; border-left:4px solid #667eea;">
-          When adding or editing an event, you set when reminders should be sent under <strong>Notification Settings</strong>:<br><br>
-          <div style="display:flex; flex-direction:column; gap:6px; margin-top:4px;">
-            <div><i class="fas fa-check-square" style="color:#667eea; width:18px;"></i> <strong>Notify 1 week before</strong> (sent at 9:00 AM)</div>
-            <div><i class="fas fa-check-square" style="color:#667eea; width:18px;"></i> <strong>Notify 1 day before</strong> (sent at 9:00 AM)</div>
-            <div><i class="fas fa-check-square" style="color:#667eea; width:18px;"></i> <strong>Notify same day</strong> (sent at 9:00 AM)</div>
-          </div>
-          <br>You can tick any combination &mdash; for example, tick all three for important events like a parent's birthday.
+          Go to <strong>Personal &rarr; Household Members</strong>. Each person has a <strong>Celebration reminders</strong> tick box &mdash; tick it to opt them in, untick to opt them out. Their email address (also on that page) is where the reminder is sent.<br><br>
+          <span style="color:#856404;"><i class="fas fa-exclamation-triangle"></i> A person with no email, or who is set to <strong>Inactive</strong>, is never emailed &mdash; even if they are marked relevant to an event.</span>
         </div>
       </div>
     </div>
@@ -690,32 +687,34 @@
     <div style="display:flex; gap:14px; align-items:flex-start; margin-bottom:20px;">
       <div style="width:36px; height:36px; border-radius:50%; background:linear-gradient(135deg,#667eea,#764ba2); display:flex; align-items:center; justify-content:center; flex-shrink:0; font-weight:700; color:white; font-size:16px;">3</div>
       <div style="flex:1;">
-        <div style="font-weight:700; color:#2c3e50; font-size:14px; margin-bottom:6px;">Choose who to notify per event ("Notify These People")</div>
+        <div style="font-weight:700; color:#2c3e50; font-size:14px; margin-bottom:6px;">When the reminder is sent &mdash; timing (set on the event)</div>
         <div style="background:#f8f9fa; border-radius:8px; padding:14px; font-size:13px; color:#6c757d; border-left:4px solid #667eea;">
-          Each event has a <strong>Notify These People</strong> section showing all family members with a tick box next to each name. Tick the family members who have a relationship with this contact and care about this specific event.<br><br>
-          For example:
-          <ul style="margin-top:6px; padding-left:18px;">
-            <li>A close family member's Nameday &rarr; all family ticked &rarr; everyone notified</li>
-            <li>A distant colleague's birthday &rarr; only one person ticked &rarr; only that person notified</li>
-          </ul>
+          When adding or editing an event, choose when reminders go out under <strong>Notification Settings</strong>:
+          <div style="display:flex; flex-direction:column; gap:6px; margin-top:6px;">
+            <div><i class="fas fa-check-square" style="color:#667eea; width:18px;"></i> <strong>Notify 1 week before</strong> (9:00 AM)</div>
+            <div><i class="fas fa-check-square" style="color:#667eea; width:18px;"></i> <strong>Notify 1 day before</strong> (9:00 AM)</div>
+            <div><i class="fas fa-check-square" style="color:#667eea; width:18px;"></i> <strong>Notify same day</strong> (9:00 AM)</div>
+          </div>
+          <br>New events default to <strong>same day only</strong> &mdash; tick the earlier reminders as well for events you want more notice on.
         </div>
       </div>
     </div>
 
     <div style="background:#f5f0ff; border:1px solid #d4c5f9; border-radius:8px; padding:16px; margin-bottom:20px;">
-      <div style="font-weight:700; color:#667eea; font-size:14px; margin-bottom:10px;"><i class="fas fa-cogs"></i> The Rule &mdash; all three conditions must be met</div>
+      <div style="font-weight:700; color:#667eea; font-size:14px; margin-bottom:10px;"><i class="fas fa-cogs"></i> The rule &mdash; all three must line up</div>
       <div style="font-size:13px; color:#6c757d; line-height:1.8;">
-        A family member receives an email notification if and only if:<br>
+        A person receives a celebration email if and only if:
         <div style="margin-top:8px; display:flex; flex-direction:column; gap:6px;">
-          <div style="display:flex; align-items:center; gap:8px;"><span style="background:#28a745; color:white; border-radius:50%; width:20px; height:20px; display:inline-flex; align-items:center; justify-content:center; font-size:11px; flex-shrink:0;">&check;</span> Their email is registered in <strong>Notification Settings</strong></div>
-          <div style="display:flex; align-items:center; gap:8px;"><span style="background:#28a745; color:white; border-radius:50%; width:20px; height:20px; display:inline-flex; align-items:center; justify-content:center; font-size:11px; flex-shrink:0;">&check;</span> They are <strong>ticked</strong> in the "Notify These People" section for that event</div>
-          <div style="display:flex; align-items:center; gap:8px;"><span style="background:#28a745; color:white; border-radius:50%; width:20px; height:20px; display:inline-flex; align-items:center; justify-content:center; font-size:11px; flex-shrink:0;">&check;</span> The notification timing matches (1 week before, 1 day before, or same day)</div>
+          <div style="display:flex; align-items:center; gap:8px;"><span style="background:#28a745; color:white; border-radius:50%; width:20px; height:20px; display:inline-flex; align-items:center; justify-content:center; font-size:11px; flex-shrink:0;">&check;</span> They are ticked under <strong>Relevant to</strong> on that event</div>
+          <div style="display:flex; align-items:center; gap:8px;"><span style="background:#28a745; color:white; border-radius:50%; width:20px; height:20px; display:inline-flex; align-items:center; justify-content:center; font-size:11px; flex-shrink:0;">&check;</span> They are opted in to <strong>Celebration reminders</strong> on the roster (and have an email, and are active)</div>
+          <div style="display:flex; align-items:center; gap:8px;"><span style="background:#28a745; color:white; border-radius:50%; width:20px; height:20px; display:inline-flex; align-items:center; justify-content:center; font-size:11px; flex-shrink:0;">&check;</span> Today matches the event&rsquo;s timing (1 week / 1 day / same day)</div>
         </div>
+        <div style="margin-top:10px;">Put simply: <strong>recipients = people the event is about &cap; people who opted in</strong>, sent on the days you chose.</div>
       </div>
     </div>
 
     <div style="background:#d4edda; border:1px solid #c3e6cb; border-radius:8px; padding:14px; font-size:13px; color:#155724;">
-      <i class="fas fa-check-circle"></i> <strong>Fully automatic:</strong> Once set up correctly, all notifications are sent automatically at 9:00 AM. No manual action is required on the day.
+      <i class="fas fa-check-circle"></i> <strong>Fully automatic:</strong> once relevance and opt-ins are set, reminders send themselves at 9:00 AM on the matching days. Nothing to do on the day.
     </div>
   </article>
 
@@ -1150,129 +1149,101 @@
 <!-- ======= END RECIPE MANAGEMENT ======= -->
 
 
-<!-- ======= PERSONAL NOTIFICATION SETTINGS ======= -->
-<section data-module-slug="personal_notification_settings"
+<!-- ======= HOUSEHOLD MEMBERS ======= -->
+<section data-module-slug="household_member_management"
          data-module-group="Personal"
-         data-module-permission="can_access_personal"
-         data-module-name="Personal Notification Settings"
-         data-module-icon="fa-envelope"
+         data-module-permission="can_access_celebrations"
+         data-module-name="Household Members"
+         data-module-icon="fa-users"
          data-module-category="Personal"
-         data-module-subtitle="Manage who receives celebration reminders and document expiry alerts">
+         data-module-subtitle="The people events are about, and who receives each kind of notification">
 
-  <article data-tab-slug="pn-overview"
-           data-tab-name="Overview"
-           data-tab-icon="fa-info-circle">
-    <h6 style="color:#28a745; font-weight:700;"><i class="fas fa-envelope-open-text"></i> What is this page?</h6>
-    <p>Personal Notification Settings is the central place where you decide <strong>who in your family</strong> should receive personal email notifications from the system.</p>
-
-    <p>There are <strong>two types</strong> of personal notifications you can configure here:</p>
+  <article data-tab-slug="hm-overview" data-tab-name="Overview" data-tab-icon="fa-info-circle">
+    <h6 style="color:#28a745; font-weight:700;"><i class="fas fa-users"></i> What is the Household Members page?</h6>
+    <p>Household Members is the single roster of the people in your household. It does two jobs:</p>
     <ul>
-      <li><strong style="color:#28a745;">Celebration Reminders</strong> &mdash; Daily emails that remind you about upcoming birthdays, namedays and anniversaries.</li>
-      <li><strong style="color:#28a745;">Document Expiry Alerts</strong> &mdash; Twice-monthly emails that warn you about passports and IDs that are about to expire.</li>
+      <li><strong style="color:#28a745;">It lists the people events can be about.</strong> Everyone here appears as a tick box on each celebration event&rsquo;s &ldquo;Relevant to&rdquo; list.</li>
+      <li><strong style="color:#28a745;">It controls who receives which notifications.</strong> Each person opts in or out of each notification type using the tick-box columns.</li>
+    </ul>
+    <p>It replaces the old <em>Personal Notification Settings</em> page, which used free-typed email lists. Now each person is a row, with their own email and their own opt-ins.</p>
+
+    <div class="alert alert-success" style="border-left:4px solid #28a745;">
+      <i class="fas fa-link"></i> <strong>Shared across modules.</strong> The same roster feeds <strong>Celebrations</strong> (celebration reminders) and <strong>Passports / IDs</strong> (document-expiry alerts), so you manage your people in one place.
+    </div>
+
+    <div class="alert alert-info" style="border-left:4px solid #17a2b8;">
+      <i class="fas fa-info-circle"></i> A person is emailed only if they have an <strong>email address</strong>, are <strong>Active</strong>, and are <strong>opted in</strong> to that notification type. Inactive or email-less people are simply skipped.
+    </div>
+  </article>
+
+  <article data-tab-slug="hm-roster" data-tab-name="The Roster" data-tab-icon="fa-table">
+    <h6 style="color:#28a745; font-weight:700;"><i class="fas fa-table"></i> Reading the roster</h6>
+    <p>Each row is one person. The columns are:</p>
+    <ul style="line-height:1.8;">
+      <li><strong>Name</strong> &mdash; how the person appears on events and in reminders.</li>
+      <li><strong>Email</strong> &mdash; where their notifications are sent. Shows <em>no email</em> if blank (they then can&rsquo;t be emailed).</li>
+      <li><strong>Linked account</strong> &mdash; the login user this person maps to, if any. People don&rsquo;t have to be logins &mdash; they can be audience-only.</li>
+      <li><strong>Status</strong> &mdash; <span style="background:#d4edda; color:#155724; padding:2px 8px; border-radius:10px; font-size:11px; font-weight:600;">Active</span> or <span style="background:#f1f3f5; color:#868e96; padding:2px 8px; border-radius:10px; font-size:11px; font-weight:600;">Inactive</span>. Inactive people are hidden from events and never emailed.</li>
+      <li><strong>Opt-in columns</strong> &mdash; one tick box per notification type (e.g. <em>Celebration reminders</em>, <em>Document expiry</em>). Tick to opt the person in, untick to opt out. <strong>Changes save instantly.</strong></li>
+      <li><strong>Actions</strong> &mdash; Edit, Activate / Deactivate, and Delete (write access required).</li>
     </ul>
 
     <div class="alert alert-info" style="border-left:4px solid #17a2b8;">
-      <i class="fas fa-info-circle"></i> <strong>Why is this important?</strong><br>
-      Without email addresses configured here, no one will receive these notifications &mdash; even if a celebration or document expiry date matches today.
-    </div>
-
-    <div class="alert alert-success" style="border-left:4px solid #28a745;">
-      <i class="fas fa-link"></i> <strong>Looking for business / property notifications?</strong> Things like Daily Property Reports, Lease Reminders, Invoice and Expense alerts, and the Friday Status Report are configured separately under <strong>Administration &rarr; Notification Settings</strong>.
+      <i class="fas fa-key"></i> The opt-in columns you can change depend on your access &mdash; you see and edit the columns for the modules you have permission to.
     </div>
   </article>
 
-  <article data-tab-slug="pn-how-it-works"
-           data-tab-name="How It Works"
-           data-tab-icon="fa-cogs">
-    <h6 style="color:#28a745; font-weight:700;"><i class="fas fa-cogs"></i> Understanding TO and CC</h6>
-    <p>Each notification type has two recipient fields, just like a normal email:</p>
+  <article data-tab-slug="hm-axes" data-tab-name="Relevance vs Opt-in" data-tab-icon="fa-sliders-h">
+    <h6 style="color:#28a745; font-weight:700;"><i class="fas fa-sliders-h"></i> Two separate choices</h6>
+    <p>It helps to keep two ideas apart:</p>
 
     <div class="card mb-3" style="border-left:4px solid #28a745;">
       <div class="card-body">
-        <h6 style="color:#28a745;"><strong>TO: Primary Recipients</strong></h6>
-        <p class="mb-1">The main people who should receive &mdash; and act on &mdash; the notification.</p>
-        <p class="mb-0"><small class="text-muted">Example: <code>demetri@gmail.com, angy@gmail.com, erene@gmail.com</code></small></p>
+        <h6 style="color:#28a745;"><strong>Relevance &mdash; per event</strong></h6>
+        <p class="mb-0">Set <em>on each celebration event</em> (its &ldquo;Relevant to&rdquo; list): which people that particular event is about. A child&rsquo;s birthday might be relevant to the whole family; a colleague&rsquo;s to one person.</p>
       </div>
     </div>
 
-    <div class="card mb-3" style="border-left:4px solid #6c757d;">
+    <div class="card mb-3" style="border-left:4px solid #28a745;">
       <div class="card-body">
-        <h6 style="color:#6c757d;"><strong>CC: Carbon Copy Recipients (optional)</strong></h6>
-        <p class="mb-1">Additional people who should be kept informed but don't necessarily need to take action. Leave blank if not needed.</p>
-        <p class="mb-0"><small class="text-muted">Example: <code>angmaniasbakery@gmail.com</code></small></p>
-      </div>
-    </div>
-
-    <h6 style="color:#28a745; font-weight:700; margin-top:20px;"><i class="fas fa-keyboard"></i> Email Format</h6>
-    <ul>
-      <li>Enter <strong>one or many</strong> email addresses per field.</li>
-      <li>Separate multiple addresses with a <strong>comma</strong> &mdash; for example <code>email1@example.com, email2@example.com</code>.</li>
-      <li>Spaces after commas are fine and will be ignored.</li>
-    </ul>
-
-    <h6 style="color:#28a745; font-weight:700; margin-top:20px;"><i class="fas fa-save"></i> Saving Changes</h6>
-    <p>Each section (Celebration Reminders, Document Expiry Alerts) has its <strong>own Save button</strong>. After editing a section you must click Save in <em>that</em> section &mdash; changes in one section are independent of the other and are not saved together.</p>
-  </article>
-
-  <article data-tab-slug="pn-types"
-           data-tab-name="Notification Types"
-           data-tab-icon="fa-bell">
-
-    <div class="card mb-3" style="border:1px solid #dee2e6;">
-      <div class="card-header" style="background:#28a745; color:white;">
-        <h6 style="margin:0;"><i class="fas fa-birthday-cake"></i> Celebration Reminders</h6>
-      </div>
-      <div class="card-body">
-        <p><strong>What it does:</strong> Sends email reminders for birthdays, namedays and anniversaries.</p>
-        <p><strong>When it sends:</strong> Every morning at 9:00 AM, but <strong>only on days where there is a matching event</strong> (1 week before, 1 day before, or same-day &mdash; based on each event's settings in the Celebrations module).</p>
-        <p><strong>Who is reminded:</strong> The recipients you list here, but only if the family member is also <strong>ticked on that specific event</strong> in the Celebrations module.</p>
-        <p class="mb-0"><strong>TO field hint:</strong> <em>Family members who should be reminded</em></p>
-      </div>
-    </div>
-
-    <div class="card mb-3" style="border:1px solid #dee2e6;">
-      <div class="card-header" style="background:#28a745; color:white;">
-        <h6 style="margin:0;"><i class="fas fa-id-card"></i> Document Expiry Alerts</h6>
-      </div>
-      <div class="card-body">
-        <p><strong>What it does:</strong> Warns you about passports and IDs that are about to expire (or have already expired).</p>
-        <p><strong>When it sends:</strong> Twice a month &mdash; on the <strong>1st and 15th</strong>.</p>
-        <p><strong>What's included:</strong> Any passport or ID expiring <strong>within the next 6 months</strong>, plus any that have already expired.</p>
-        <p class="mb-0"><strong>TO field hint:</strong> <em>Family members who manage documents</em></p>
+        <h6 style="color:#28a745;"><strong>Opt-in &mdash; per person</strong></h6>
+        <p class="mb-0">Set <em>here on the roster</em>: whether a person wants a given kind of notification at all. Someone can opt out of celebration reminders entirely without being removed from any event.</p>
       </div>
     </div>
 
     <div class="alert alert-success" style="border-left:4px solid #28a745;">
-      <i class="fas fa-link"></i> <strong>Related modules:</strong> Celebrations, Passports / Documents.
+      <i class="fas fa-cogs"></i> <strong>The two combine:</strong> an event&rsquo;s reminder goes to the people who are <strong>both</strong> marked relevant to that event <strong>and</strong> opted in here. Changing one never disturbs the other.
     </div>
   </article>
 
-  <article data-tab-slug="pn-tips"
-           data-tab-name="Tips"
-           data-tab-icon="fa-lightbulb">
-    <h6 style="color:#28a745; font-weight:700;"><i class="fas fa-lightbulb"></i> Best Practices</h6>
-    <ul>
-      <li><strong>Add multiple recipients</strong> &mdash; if one person is on holiday, others will still see the notification.</li>
-      <li><strong>Use CC for awareness</strong> &mdash; keep someone in the loop without making them responsible for action.</li>
-      <li><strong>Save each section separately</strong> &mdash; don't forget to click the Save button in the section you've edited.</li>
-      <li><strong>Test with your own email first</strong> &mdash; before adding others, save with just your address to confirm you receive the next scheduled notification.</li>
-      <li><strong>Keep it tidy</strong> &mdash; remove old or obsolete email addresses to avoid noise.</li>
-      <li><strong>Pair with the Celebrations module</strong> &mdash; adding an email here doesn't automatically tick that person on every event. You must also tick "Notify These People" on each celebration for them to be included.</li>
+  <article data-tab-slug="hm-people" data-tab-name="Adding People" data-tab-icon="fa-user-plus">
+    <h6 style="color:#28a745; font-weight:700;"><i class="fas fa-user-plus"></i> Adding and editing people</h6>
+    <p>Click <strong>Add Person</strong> (or the pencil on a row) to open the form:</p>
+    <ul style="line-height:1.8;">
+      <li><strong>Name</strong> (required) &mdash; the display name used on events and reminders.</li>
+      <li><strong>Linked login account</strong> (optional) &mdash; pick a system user to link this person to. Choosing one auto-fills the email below if it&rsquo;s empty. Leave as <em>None</em> for someone who isn&rsquo;t a login.</li>
+      <li><strong>Email</strong> (required) &mdash; where this person&rsquo;s notifications go.</li>
+      <li><strong>Active</strong> &mdash; untick to retire a person without deleting them (keeps their history; removes them from events and emails).</li>
     </ul>
 
     <div class="alert alert-warning" style="border-left:4px solid #ffc107;">
-      <i class="fas fa-exclamation-triangle"></i> <strong>Not receiving a celebration notification?</strong> Check three things:
-      <ol class="mb-0 mt-2">
-        <li>Is the email address registered <strong>here</strong> (in Notification Settings)?</li>
-        <li>Is the person <strong>ticked</strong> on the specific event in Celebrations?</li>
-        <li>Is the timing (1 week / 1 day / same day) <strong>enabled</strong> on that event?</li>
-      </ol>
-      All three conditions must be true for the email to be sent.
+      <i class="fas fa-exclamation-triangle"></i> <strong>Deactivate rather than delete</strong> when someone should simply stop receiving notifications. Delete is permanent and removes the person from the roster entirely.
     </div>
   </article>
 
+  <article data-tab-slug="hm-tips" data-tab-name="Tips" data-tab-icon="fa-lightbulb">
+    <h6 style="color:#28a745; font-weight:700;"><i class="fas fa-lightbulb"></i> Best practices</h6>
+    <ul style="line-height:1.8;">
+      <li><strong>Add everyone once.</strong> Build the roster first &mdash; then every celebration event can reference the same people.</li>
+      <li><strong>Set the email carefully.</strong> No email means no notifications, however the opt-ins are set.</li>
+      <li><strong>Use opt-in as a &ldquo;mute&rdquo;.</strong> To stop someone&rsquo;s celebration emails without editing every event, just untick their <em>Celebration reminders</em> column here.</li>
+      <li><strong>Not receiving an expected reminder?</strong> Check three things: the person is ticked <em>Relevant to</em> on the event, opted in here, and the event&rsquo;s timing matches today.</li>
+      <li><strong>Deactivate people who leave</strong> rather than deleting &mdash; it keeps past context intact and is reversible.</li>
+    </ul>
+  </article>
+
 </section>
-<!-- ======= END PERSONAL NOTIFICATION SETTINGS ======= -->
+<!-- ======= END HOUSEHOLD MEMBERS ======= -->
 
 
 <!-- ======= ADMINISTRATION NOTIFICATION SETTINGS ======= -->
@@ -2232,13 +2203,14 @@
            data-tab-icon="fa-info-circle">
     <h6 style="color:#667eea; font-weight:700;"><i class="fas fa-users-cog"></i> What is User Administration?</h6>
     <p>User Administration is the central place to manage <strong>everyone who can log into Alivente Online</strong>. From this single screen you can:</p>
-    <ul>
+    <<ul>
       <li><strong>Add</strong> new users</li>
-      <li><strong>Edit</strong> existing user details (name, email, role, password)</li>
+      <li><strong>Edit</strong> existing user details (name, email, role, password, and workspace)</li>
       <li><strong>Manage permissions</strong> &mdash; grant or revoke access to individual modules</li>
       <li><strong>Disable</strong> users so they can no longer log in (without losing their data)</li>
       <li><strong>Re-enable</strong> previously disabled users</li>
       <li><strong>Delete</strong> users permanently (only available once disabled)</li>
+      <li><strong>Manage workspaces</strong> &mdash; open Workspace Management (the <em>Workspaces</em> button) to create and edit the workspaces users belong to</li>
     </ul>
 
     <h6 style="color:#667eea; font-weight:700; margin-top:20px;"><i class="fas fa-route"></i> How to get here</h6>
@@ -2258,7 +2230,7 @@
     <div class="card mb-2" style="border-left:4px solid #667eea;">
       <div class="card-body" style="padding:12px 15px;">
         <h6 style="margin:0 0 5px 0;"><strong>User</strong></h6>
-        <p class="mb-0" style="font-size:13px;">A circular avatar (uploaded photo if available, otherwise the user's initials, or as a final fallback the first letter of the username), the user's full name, and their email address. "No email" is shown if none was set.</p>
+        <p class="mb-0" style="font-size:13px;">A circular avatar (uploaded photo if available, otherwise the user's initials, or as a final fallback the first letter of the username), the user's full name, and their email address. "No email" is shown if none was set. Beneath the email, the user's assigned <strong>workspace</strong> is shown (e.g. Demetri's Household).</p>
       </div>
     </div>
 
@@ -2346,7 +2318,14 @@
     <div class="card mb-2" style="border-left:4px solid #ffc107;">
       <div class="card-body" style="padding:12px 15px;">
         <h6 style="margin:0 0 5px 0; color:#856404;"><i class="fas fa-pencil-alt"></i> <strong>Edit</strong> <small class="text-muted">(yellow)</small></h6>
-        <p class="mb-0" style="font-size:13px;">Update the user's name, email, role or password. Always available regardless of status.</p>
+        <p class="mb-0" style="font-size:13px;">Update the user's name, email, role, password, and the <strong>workspace</strong> they belong to. Changing a user's workspace is how you move them between households &mdash; it's also the only place workspace membership is set. Always available regardless of status.</p>
+      </div>
+    </div>
+
+    <div class="card mb-3" style="border-left:4px solid #17a2b8;">
+      <div class="card-body">
+        <h6 style="color:#17a2b8;"><i class="fas fa-layer-group"></i> <strong>Workspaces</strong> <small class="text-muted">(top-right)</small></h6>
+        <p class="mb-0">Opens <strong>Workspace Management</strong>, where you create, rename and delete the separate workspaces (households / tenants) that users belong to. See the <strong>Workspaces</strong> help topic for the full detail.</p>
       </div>
     </div>
 
@@ -2407,5 +2386,95 @@
 
 </section>
 <!-- ======= END USER ADMINISTRATION ======= -->
+
+
+<!-- ======= WORKSPACES ======= -->
+<section data-module-slug="workspaces"
+         data-module-group="Administration"
+         data-module-parent="Administration"
+         data-module-permission="can_access_administration"
+         data-module-name="Workspaces"
+         data-module-icon="fa-layer-group"
+         data-module-category="System"
+         data-module-subtitle="Separate households or tenants, each with its own private Passports, Celebrations and Recipes">
+
+  <article data-tab-slug="ws-overview" data-tab-name="Overview" data-tab-icon="fa-info-circle">
+    <h6 style="color:#667eea; font-weight:700;"><i class="fas fa-layer-group"></i> What is a Workspace?</h6>
+    <p>A <strong>workspace</strong> is a self-contained space for one household (or tenant). Each workspace keeps its own <strong>personal data</strong> &mdash; Passports / IDs, Celebrations, Household Members and Recipes &mdash; completely separate from every other workspace. Users in one workspace can&rsquo;t see or touch another&rsquo;s.</p>
+
+    <p>Every user belongs to <strong>one workspace</strong>, and each workspace has an <strong>owner</strong>:</p>
+    <ul>
+      <li><strong style="color:#667eea;">Owner</strong> &mdash; the user allowed to manage that workspace&rsquo;s settings. (Superusers can manage any workspace regardless of who owns it.)</li>
+      <li><strong style="color:#667eea;">Members</strong> &mdash; the users assigned to the workspace. Their personal data lives inside it.</li>
+    </ul>
+
+    <h6 style="color:#667eea; font-weight:700; margin-top:20px;"><i class="fas fa-route"></i> How to get here</h6>
+    <p>Administration <i class="fas fa-arrow-right"></i> User Administration <i class="fas fa-arrow-right"></i> <strong>Workspaces</strong> button (top-right).</p>
+
+    <div class="alert alert-warning" style="border-left:4px solid #ffc107;">
+      <i class="fas fa-shield-alt"></i> <strong>Superuser area:</strong> Workspace Management lives inside User Administration, which is Superuser-only.
+    </div>
+  </article>
+
+  <article data-tab-slug="ws-list" data-tab-name="The List" data-tab-icon="fa-table">
+    <h6 style="color:#667eea; font-weight:700;"><i class="fas fa-table"></i> The Workspace Management table</h6>
+    <p>Each row is one workspace, with five columns:</p>
+    <ul style="line-height:1.8;">
+      <li><strong>Name</strong> &mdash; the workspace&rsquo;s display label (e.g. "Demetri&rsquo;s Household").</li>
+      <li><strong>Owner</strong> &mdash; the user who manages the workspace&rsquo;s settings, shown with their username beneath.</li>
+      <li><strong>Members</strong> &mdash; a pill showing the member count. Hover it to see the member usernames.</li>
+      <li><strong>Updated</strong> &mdash; when the workspace was last changed.</li>
+      <li><strong>Actions</strong> &mdash; <span style="background:#ffc107; color:white; padding:2px 7px; border-radius:4px; font-size:12px;"><i class="fas fa-pencil-alt"></i></span> Edit and <span style="background:#dc3545; color:white; padding:2px 7px; border-radius:4px; font-size:12px;"><i class="fas fa-trash"></i></span> Delete.</li>
+    </ul>
+
+    <div class="alert alert-danger" style="border-left:4px solid #dc3545;">
+      <i class="fas fa-exclamation-triangle"></i> <strong>Delete is only allowed when a workspace has no members.</strong> If members are still assigned, the trash icon is greyed out. Deleting a workspace <strong>permanently removes everything that belongs to it</strong> &mdash; its Passports, Celebrations and Recipes. Reassign or remove its members first (in User Administration), then delete.
+    </div>
+  </article>
+
+  <article data-tab-slug="ws-addedit" data-tab-name="Add / Edit" data-tab-icon="fa-edit">
+    <h6 style="color:#667eea; font-weight:700;"><i class="fas fa-edit"></i> Creating and editing a workspace</h6>
+    <p>Click <strong>Add Workspace</strong> (or the pencil on a row). Both forms collect the same two fields:</p>
+    <ul style="line-height:1.8;">
+      <li><strong>Workspace Name</strong> (required) &mdash; the display label members see on their account.</li>
+      <li><strong>Owner</strong> (required) &mdash; the user who can manage this workspace&rsquo;s settings. Superusers can manage it regardless of this choice.</li>
+    </ul>
+
+    <p style="margin-top:14px;">The <strong>Edit</strong> screen also shows read-only details &mdash; Created date, Updated date and the workspace ID &mdash; plus a <strong>Members</strong> list (see the next tab).</p>
+
+    <div class="alert alert-info" style="border-left:4px solid #667eea;">
+      <i class="fas fa-info-circle"></i> Creating a workspace makes an empty space. Populate it by assigning users to it (in User Administration) and by adding that workspace&rsquo;s own Passports, Celebrations and Recipes once a member logs in.
+    </div>
+  </article>
+
+  <article data-tab-slug="ws-members" data-tab-name="Members &amp; Assignment" data-tab-icon="fa-users">
+    <h6 style="color:#667eea; font-weight:700;"><i class="fas fa-users"></i> How users join a workspace</h6>
+    <p>The Edit screen lists a workspace&rsquo;s current members, but you <strong>don&rsquo;t add or remove members here</strong>. Membership is set per user:</p>
+
+    <div class="card mb-3" style="border-left:4px solid #667eea;">
+      <div class="card-body">
+        <h6 style="color:#667eea;"><i class="fas fa-arrow-right"></i> <strong>Assign in User Administration</strong></h6>
+        <p class="mb-0">Go to <strong>User Administration</strong>, edit the user, and set their <strong>Workspace</strong>. That moves the user (and the data they create) into the chosen workspace.</p>
+      </div>
+    </div>
+
+    <div class="alert alert-warning" style="border-left:4px solid #ffc107;">
+      <i class="fas fa-exclamation-triangle"></i> Because deletion needs an empty workspace, the way to retire a workspace is: reassign each member to another workspace in User Administration, then delete the now-empty workspace.
+    </div>
+  </article>
+
+  <article data-tab-slug="ws-tips" data-tab-name="Tips" data-tab-icon="fa-lightbulb">
+    <h6 style="color:#667eea; font-weight:700;"><i class="fas fa-lightbulb"></i> Best practices</h6>
+    <ul style="line-height:1.8;">
+      <li><strong>Name workspaces clearly</strong> &mdash; the name appears against every user and on their account, so "Helen&rsquo;s Household" beats "Workspace 2".</li>
+      <li><strong>Pick a real owner</strong> &mdash; set the owner to the person who actually runs that household, even though superusers can manage it too.</li>
+      <li><strong>One workspace per user</strong> &mdash; each user belongs to exactly one. Move them by editing the user in User Administration.</li>
+      <li><strong>Empty before delete</strong> &mdash; reassign members out first; only then can you delete, and deletion is permanent and takes the workspace&rsquo;s Passports, Celebrations and Recipes with it.</li>
+      <li><strong>Superusers see across workspaces</strong> &mdash; ordinary members are confined to their own; keep the superuser count small.</li>
+    </ul>
+  </article>
+
+</section>
+<!-- ======= END WORKSPACES ======= -->
 
 

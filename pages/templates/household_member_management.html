@@ -1,0 +1,258 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load help_modal_tags %}
+
+{% block title %}Household Members{% endblock %}
+
+{% block content %}
+<style>
+.hm-header { background: linear-gradient(135deg, #28a745 0%, #218838 100%); color:#fff; padding:30px; border-radius:12px; margin-bottom:30px; box-shadow:0 4px 12px rgba(0,0,0,.15); display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:15px; }
+.hm-header h2 { margin:0 0 8px 0; font-weight:600; }
+.hm-header p { margin:0; opacity:.9; }
+.hm-badge { display:inline-block; background:rgba(255,255,255,.22); padding:4px 12px; border-radius:14px; font-size:13px; font-weight:500; margin-top:8px; }
+.hm-actions { display:flex; gap:8px; flex-shrink:0; }
+.hm-btn-white { background:#fff; color:#28a745; border:none; padding:10px 18px; border-radius:8px; font-weight:600; display:inline-flex; align-items:center; gap:6px; text-decoration:none; }
+.hm-btn-white:hover { color:#1e7e34; text-decoration:none; }
+.hm-card { background:#fff; border:2px solid #e9ecef; border-radius:12px; padding:0; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,.08); }
+.hm-table { margin:0; }
+.hm-table th { background:#f8f9fa; border-top:none; font-size:13px; text-transform:uppercase; letter-spacing:.03em; color:#6c757d; }
+.hm-table td { vertical-align:middle; }
+.status-pill { padding:2px 10px; border-radius:10px; font-size:12px; font-weight:600; }
+.status-active { background:#d4edda; color:#155724; }
+.status-inactive { background:#f1f3f5; color:#868e96; }
+.linked-pill { font-size:12px; color:#1565c0; }
+.unlinked { font-size:12px; color:#adb5bd; font-style:italic; }
+.empty-state { background:#fff; border:2px dashed #e9ecef; border-radius:12px; padding:40px; text-align:center; color:#6c757d; }
+.empty-state i { font-size:36px; margin-bottom:12px; color:#adb5bd; }
+.sub-check { width:18px; height:18px; cursor:pointer; vertical-align:middle; accent-color:#28a745; }
+.sub-check:disabled { cursor:default; opacity:.5; }
+.sub-note { font-size:12px; color:#6c757d; margin:14px 2px 0; }
+@media (max-width:768px){ .hm-header{padding:18px; flex-direction:column; align-items:stretch; text-align:center;} .hm-actions{width:100%;} .hm-btn-white{flex:1; justify-content:center;} .hm-table .hide-sm{display:none;} }
+</style>
+
+<div class="hm-header">
+  <div>
+    <h2><i class="fas fa-users"></i> Household Members</h2>
+    <p>The people events are relevant to, and who receives each kind of notification.</p>
+    {% if workspace %}<span class="hm-badge"><i class="fas fa-layer-group"></i> {{ workspace.name }}</span>{% endif %}
+  </div>
+  <div class="hm-actions">
+    {% if can_edit %}
+    <button type="button" class="hm-btn-white" data-toggle="modal" data-target="#addMemberModal">
+      <i class="fas fa-plus"></i> Add Person
+    </button>
+    {% endif %}
+    <button type="button" class="hm-btn-white" data-toggle="modal" data-target="#household_member_managementHelpModal">
+      <i class="fas fa-question-circle"></i> Help
+    </button>
+    <a href="{% url 'personal_page' %}" class="hm-btn-white" aria-label="Back">
+      <i class="fas fa-arrow-left"></i> Back
+    </a>
+    <a href="{% url 'personal_page' %}" class="hm-btn-white" aria-label="Back">
+      <i class="fas fa-arrow-left"></i> Back
+    </a>
+  </div>
+</div>
+
+{% for msg in messages %}
+<div class="alert alert-{% if msg.tags %}{{ msg.tags }}{% else %}success{% endif %} alert-dismissible fade show" role="alert">
+  <center>{{ msg }}</center>
+  <button type="button" class="close" data-dismiss="alert"><span>&times;</span></button>
+</div>
+{% endfor %}
+
+{% if members %}
+<div class="hm-card">
+  <table class="table hm-table">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Email</th>
+        <th class="hide-sm">Linked account</th>
+        <th>Status</th>
+        {% for col in sub_columns %}<th class="text-center">{{ col.label }}</th>{% endfor %}
+        {% if can_edit %}<th class="text-right">Actions</th>{% endif %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for m in members %}
+      <tr>
+        <td><strong>{{ m.name }}</strong></td>
+        <td>{% if m.email %}{{ m.email }}{% else %}<span class="unlinked">no email</span>{% endif %}</td>
+        <td class="hide-sm">
+          {% if m.user %}<span class="linked-pill"><i class="fas fa-user"></i> {{ m.user.get_full_name|default:m.user.username }}</span>
+          {% else %}<span class="unlinked">not a login</span>{% endif %}
+        </td>
+        <td>
+          {% if m.is_active %}<span class="status-pill status-active">Active</span>
+          {% else %}<span class="status-pill status-inactive">Inactive</span>{% endif %}
+        </td>
+        {% for cell in m.sub_cells %}
+        <td class="text-center">
+          <form method="post" style="display:inline;">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="toggle_subscription">
+            <input type="hidden" name="member_id" value="{{ m.id }}">
+            <input type="hidden" name="notification_type" value="{{ cell.code }}">
+            <input type="checkbox" class="sub-check" id="sub_{{ m.id }}_{{ cell.code }}"
+                   name="subscribe" {% if cell.on %}checked{% endif %}
+                   {% if not cell.can_edit %}disabled{% endif %}
+                   onchange="this.form.submit()">
+          </form>
+        </td>
+        {% endfor %}
+        {% if can_edit %}
+        <td class="text-right" style="white-space:nowrap;">
+          <button type="button" class="btn btn-sm btn-outline-secondary edit-member-btn"
+                  data-id="{{ m.id }}" data-name="{{ m.name }}" data-email="{{ m.email|default:'' }}"
+                  data-user="{{ m.user_id|default:'' }}" data-active="{{ m.is_active|yesno:'1,0' }}"
+                  data-toggle="modal" data-target="#editMemberModal" title="Edit">
+            <i class="fas fa-pen"></i>
+          </button>
+          <form method="post" style="display:inline;">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="toggle_active">
+            <input type="hidden" name="member_id" value="{{ m.id }}">
+            <button type="submit" class="btn btn-sm btn-outline-{% if m.is_active %}warning{% else %}success{% endif %}"
+                    title="{% if m.is_active %}Deactivate{% else %}Activate{% endif %}">
+              <i class="fas fa-{% if m.is_active %}pause{% else %}play{% endif %}"></i>
+            </button>
+          </form>
+          <form method="post" style="display:inline;" onsubmit="return confirm('Delete {{ m.name|escapejs }}? This cannot be undone.');">
+            {% csrf_token %}
+            <input type="hidden" name="action" value="delete_member">
+            <input type="hidden" name="member_id" value="{{ m.id }}">
+            <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete"><i class="fas fa-trash"></i></button>
+          </form>
+        </td>
+        {% endif %}
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+<p class="sub-note"><i class="fas fa-info-circle"></i> Toggle a tickbox to opt a member in or out of that notification. Changes save immediately.</p>
+{% else %}
+<div class="empty-state">
+  <i class="fas fa-users"></i>
+  <p>No household members yet.{% if can_edit %} Click &quot;Add Person&quot; to create the first one.{% endif %}</p>
+</div>
+{% endif %}
+
+{% if can_edit %}
+<!-- Add modal -->
+<div class="modal fade" id="addMemberModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <form method="post" class="modal-content">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="add_member">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="fas fa-user-plus"></i> Add Person</h5>
+        <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Name <span class="text-danger">*</span></label>
+          <input type="text" name="name" id="add_name" class="form-control" required>
+        </div>
+        <div class="form-group">
+          <label>Linked login account</label>
+          <select name="user_id" id="add_user_id" class="form-control">
+            <option value="" data-email="">&mdash; None (not a login) &mdash;</option>
+            {% for u in workspace_users %}<option value="{{ u.id }}" data-email="{{ u.email }}">{{ u.label }}</option>{% endfor %}
+          </select>
+          <small class="text-muted">Optional. Pick an account and its email fills in below.</small>
+        </div>
+        <div class="form-group">
+          <label>Email <span class="text-danger">*</span></label>
+          <input type="email" name="email" id="add_email" class="form-control" required>
+          <small class="text-muted">Required &mdash; where this person's notifications are sent.</small>
+        </div>
+        <div class="form-check">
+          <input type="checkbox" name="is_active" class="form-check-input" id="add_is_active" checked>
+          <label class="form-check-label" for="add_is_active">Active</label>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+        <button type="submit" class="btn btn-success"><i class="fas fa-save"></i> Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Edit modal -->
+<div class="modal fade" id="editMemberModal" tabindex="-1" role="dialog">
+  <div class="modal-dialog" role="document">
+    <form method="post" class="modal-content">
+      {% csrf_token %}
+      <input type="hidden" name="action" value="edit_member">
+      <input type="hidden" name="member_id" id="edit_member_id">
+      <div class="modal-header">
+        <h5 class="modal-title"><i class="fas fa-user-edit"></i> Edit Person</h5>
+        <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label>Name <span class="text-danger">*</span></label>
+          <input type="text" name="name" id="edit_name" class="form-control" required>
+        </div>
+        <div class="form-group">
+          <label>Linked login account</label>
+          <select name="user_id" id="edit_user_id" class="form-control">
+            <option value="" data-email="">&mdash; None (not a login) &mdash;</option>
+            {% for u in workspace_users %}<option value="{{ u.id }}" data-email="{{ u.email }}">{{ u.label }}</option>{% endfor %}
+          </select>
+          <small class="text-muted">Pick an account and its email fills in below (if empty).</small>
+        </div>
+        <div class="form-group">
+          <label>Email <span class="text-danger">*</span></label>
+          <input type="email" name="email" id="edit_email" class="form-control" required>
+          <small class="text-muted">Required &mdash; where this person's notifications are sent.</small>
+        </div>
+        <div class="form-check">
+          <input type="checkbox" name="is_active" class="form-check-input" id="edit_is_active">
+          <label class="form-check-label" for="edit_is_active">Active</label>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+        <button type="submit" class="btn btn-success"><i class="fas fa-save"></i> Save</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+// Auto-fill the email field from the selected login account (only when the
+// email field is empty, so a manually typed address is never clobbered).
+function wireLoginEmailAutofill(selectId, emailId) {
+  var sel = document.getElementById(selectId);
+  var email = document.getElementById(emailId);
+  if (!sel || !email) return;
+  sel.addEventListener('change', function () {
+    var opt = sel.options[sel.selectedIndex];
+    var e = opt ? (opt.getAttribute('data-email') || '') : '';
+    if (e && !email.value.trim()) {
+      email.value = e;
+    }
+  });
+}
+wireLoginEmailAutofill('add_user_id', 'add_email');
+wireLoginEmailAutofill('edit_user_id', 'edit_email');
+
+document.querySelectorAll('.edit-member-btn').forEach(function (btn) {
+  btn.addEventListener('click', function () {
+    document.getElementById('edit_member_id').value = this.dataset.id;
+    document.getElementById('edit_name').value = this.dataset.name;
+    document.getElementById('edit_email').value = this.dataset.email;
+    document.getElementById('edit_user_id').value = this.dataset.user;
+    document.getElementById('edit_is_active').checked = this.dataset.active === '1';
+  });
+});
+</script>
+{% endif %}
+
+{% render_help_modal "household_member_management" %}
+
+{% endblock %}

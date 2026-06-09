@@ -737,7 +737,7 @@
 <div class="celebration-toolbar">
     <div class="toolbar-actions">
         <!-- PRIMARY action (wide on mobile) -->
-        {% if perms.auth.can_edit_personal %}
+        {% if perms.auth.can_edit_celebrations %}
         <button class="btn btn-primary action-primary" onclick="addContact()">
             <i class="fas fa-user-plus"></i> Add Contact
         </button>
@@ -748,7 +748,7 @@
         {% endif %}
 
         <!-- SECONDARY actions: visible on desktop, hidden on mobile (moved to More menu) -->
-        {% if perms.auth.can_edit_personal %}
+        {% if perms.auth.can_edit_celebrations %}
         <button class="btn btn-success action-secondary" onclick="$('#importModal').modal('show')">
             <i class="fas fa-file-upload"></i> Import from Excel
         </button>
@@ -769,7 +769,7 @@
                 <i class="fas fa-ellipsis-v"></i>
             </button>
             <div class="action-more-menu" id="actionMoreMenu" role="menu" hidden>
-                {% if perms.auth.can_edit_personal %}
+                {% if perms.auth.can_edit_celebrations %}
                 <button type="button" class="action-more-item" role="menuitem" onclick="$('#importModal').modal('show')">
                     <i class="fas fa-file-upload"></i> Import from Excel
                 </button>
@@ -827,7 +827,7 @@
                 </div>
                 <!-- Desktop contact actions (hidden on mobile via CSS) -->
                 <div class="contact-actions">
-                    {% if perms.auth.can_edit_personal %}
+                    {% if perms.auth.can_edit_celebrations %}
                     <button class="btn btn-sm btn-success" onclick="addEvent({{ contact.id }}, '{{ contact.name }}')" title="Add Event">
                         <i class="fas fa-calendar-plus"></i>
                     </button>
@@ -884,52 +884,24 @@
 
                             <!-- Notification Checkboxes — 2×2 grid on mobile, single row on desktop -->
                             <div class="event-notify-row">
+                                {% for member in household_members %}
                                 <label class="event-notify-label">
                                     <input type="checkbox"
                                            class="notify-checkbox"
                                            data-event-id="{{ event.id }}"
-                                           data-person="demetri"
-                                           {% if event.notify_demetri %}checked{% endif %}
-                                           {% if not perms.auth.can_edit_personal %}disabled{% endif %}
+                                           data-member-id="{{ member.id }}"
+                                           {% if member.id in event.relevant_member_ids %}checked{% endif %}
+                                           {% if not perms.auth.can_edit_celebrations %}disabled{% endif %}
                                            onchange="updateNotification(this)">
-                                    <span style="margin-left: 4px;">Demetri</span>
+                                    <span style="margin-left: 4px;">{{ member.name }}</span>
                                 </label>
-                                <label class="event-notify-label">
-                                    <input type="checkbox"
-                                           class="notify-checkbox"
-                                           data-event-id="{{ event.id }}"
-                                           data-person="angy"
-                                           {% if event.notify_angy %}checked{% endif %}
-                                           {% if not perms.auth.can_edit_personal %}disabled{% endif %}
-                                           onchange="updateNotification(this)">
-                                    <span style="margin-left: 4px;">Angy</span>
-                                </label>
-                                <label class="event-notify-label">
-                                    <input type="checkbox"
-                                           class="notify-checkbox"
-                                           data-event-id="{{ event.id }}"
-                                           data-person="erene"
-                                           {% if event.notify_erene %}checked{% endif %}
-                                           {% if not perms.auth.can_edit_personal %}disabled{% endif %}
-                                           onchange="updateNotification(this)">
-                                    <span style="margin-left: 4px;">Erene</span>
-                                </label>
-                                <label class="event-notify-label">
-                                    <input type="checkbox"
-                                           class="notify-checkbox"
-                                           data-event-id="{{ event.id }}"
-                                           data-person="alexandra"
-                                           {% if event.notify_alexandra %}checked{% endif %}
-                                           {% if not perms.auth.can_edit_personal %}disabled{% endif %}
-                                           onchange="updateNotification(this)">
-                                    <span style="margin-left: 4px;">Alexandra</span>
-                                </label>
+                                {% endfor %}
                             </div>
                         </div>
                         <!-- Desktop event actions (hidden on mobile via CSS) -->
                         <div class="event-actions">
-                            {% if perms.auth.can_edit_personal %}
-                            <button class="btn btn-sm btn-warning" onclick="editEvent({{ event.id }}, {{ contact.id }}, '{{ contact.name }}', '{{ event.event_type }}', '{{ event.event_date|date:'Y-m-d' }}', '{{ event.priority }}', `{{ event.notes|escapejs }}`, {{ event.notify_one_week|lower }}, {{ event.notify_one_day|lower }}, {{ event.notify_same_day|lower }}, {{ event.notify_demetri|lower }}, {{ event.notify_angy|lower }}, {{ event.notify_erene|lower }}, {{ event.notify_alexandra|lower }})" title="Edit Event">
+                            {% if perms.auth.can_edit_celebrations %}
+                            <button class="btn btn-sm btn-warning" onclick="editEvent({{ event.id }}, {{ contact.id }}, '{{ contact.name }}', '{{ event.event_type }}', '{{ event.event_date|date:'Y-m-d' }}', '{{ event.priority }}', `{{ event.notes|escapejs }}`, {{ event.notify_one_week|lower }}, {{ event.notify_one_day|lower }}, {{ event.notify_same_day|lower }}, [{% for mid in event.relevant_member_ids %}{{ mid }}{% if not forloop.last %},{% endif %}{% endfor %}])" title="Edit Event">
                                 <i class="fas fa-edit"></i>
                             </button>
                             <button class="btn btn-sm btn-danger" onclick="deleteEvent({{ event.id }}, '{{ contact.name }}', '{{ event.get_event_type_display }}')" title="Delete Event">
@@ -947,8 +919,8 @@
 
                         <!-- Mobile-only event action bar (hidden on desktop) -->
                         <div class="event-action-bar-mobile">
-                            {% if perms.auth.can_edit_personal %}
-                            <button type="button" class="mobile-action-btn" onclick="editEvent({{ event.id }}, {{ contact.id }}, '{{ contact.name }}', '{{ event.event_type }}', '{{ event.event_date|date:'Y-m-d' }}', '{{ event.priority }}', `{{ event.notes|escapejs }}`, {{ event.notify_one_week|lower }}, {{ event.notify_one_day|lower }}, {{ event.notify_same_day|lower }}, {{ event.notify_demetri|lower }}, {{ event.notify_angy|lower }}, {{ event.notify_erene|lower }}, {{ event.notify_alexandra|lower }})">
+                            {% if perms.auth.can_edit_celebrations %}
+                            <button type="button" class="mobile-action-btn" onclick="editEvent({{ event.id }}, {{ contact.id }}, '{{ contact.name }}', '{{ event.event_type }}', '{{ event.event_date|date:'Y-m-d' }}', '{{ event.priority }}', `{{ event.notes|escapejs }}`, {{ event.notify_one_week|lower }}, {{ event.notify_one_day|lower }}, {{ event.notify_same_day|lower }}, [{% for mid in event.relevant_member_ids %}{{ mid }}{% if not forloop.last %},{% endif %}{% endfor %}])">
                                 <i class="fas fa-edit mobile-action-icon icon-color-edit"></i>
                                 <span>Edit</span>
                             </button>
@@ -971,14 +943,14 @@
                     {% endfor %}
                 {% else %}
                     <div class="no-events">
-                        <i class="fas fa-calendar-times"></i> No events yet.{% if perms.auth.can_edit_personal %} Click the + button to add one.{% endif %}
+                        <i class="fas fa-calendar-times"></i> No events yet.{% if perms.auth.can_edit_celebrations %} Click the + button to add one.{% endif %}
                     </div>
                 {% endif %}
             </div>
 
             <!-- Mobile-only contact action bar (hidden on desktop) -->
             <div class="contact-action-bar-mobile">
-                {% if perms.auth.can_edit_personal %}
+                {% if perms.auth.can_edit_celebrations %}
                 <button type="button" class="mobile-action-btn" onclick="addEvent({{ contact.id }}, '{{ contact.name }}')">
                     <i class="fas fa-calendar-plus mobile-action-icon icon-color-add"></i>
                     <span>Add Event</span>
@@ -1012,7 +984,7 @@
         <div class="no-contacts">
             <i class="fas fa-user-friends"></i>
             <h4>No Contacts Yet</h4>
-            {% if perms.auth.can_edit_personal %}
+            {% if perms.auth.can_edit_celebrations %}
             <p>Click "Add Contact" to start tracking celebrations!</p>
             {% else %}
             <p>No contacts have been added yet.</p>
@@ -1021,7 +993,7 @@
     {% endif %}
 </div>
 
-{% if perms.auth.can_edit_personal %}
+{% if perms.auth.can_edit_celebrations %}
 <!-- Add/Edit Contact Modal -->
 <div class="modal fade" id="contactModal" tabindex="-1" role="dialog">
     <div class="modal-dialog modal-fullscreen-mobile" role="document">
@@ -1129,11 +1101,11 @@
                     <div class="form-group">
                         <label><strong>Notification Settings</strong></label>
                         <div class="custom-control custom-checkbox">
-                            <input type="checkbox" class="custom-control-input" id="notify_one_week" name="notify_one_week" checked>
+                            <input type="checkbox" class="custom-control-input" id="notify_one_week" name="notify_one_week">
                             <label class="custom-control-label" for="notify_one_week">Notify 1 week before (9:00 AM)</label>
                         </div>
                         <div class="custom-control custom-checkbox">
-                            <input type="checkbox" class="custom-control-input" id="notify_one_day" name="notify_one_day" checked>
+                            <input type="checkbox" class="custom-control-input" id="notify_one_day" name="notify_one_day">
                             <label class="custom-control-label" for="notify_one_day">Notify 1 day before (9:00 AM)</label>
                         </div>
                         <div class="custom-control custom-checkbox">
@@ -1145,24 +1117,14 @@
                     <hr>
 
                     <div class="form-group">
-                        <label><strong>Notify These People</strong></label>
-                        <small class="form-text text-muted mb-2">Select who should receive notifications for this event</small>
+                        <label><strong>Relevant to</strong></label>
+                        <small class="form-text text-muted mb-2">Which household members this event is about. Recipients are those of these people who are also opted in to celebration emails.</small>
+                        {% for member in household_members %}
                         <div class="custom-control custom-checkbox">
-                            <input type="checkbox" class="custom-control-input" id="notify_demetri" name="notify_demetri" checked>
-                            <label class="custom-control-label" for="notify_demetri">Demetri (demetrimanias@gmail.com)</label>
+                            <input type="checkbox" class="custom-control-input relevant-member-check" id="relmember_{{ member.id }}" name="relevant_to" value="{{ member.id }}" checked>
+                            <label class="custom-control-label" for="relmember_{{ member.id }}">{{ member.name }}{% if member.email %} ({{ member.email }}){% endif %}</label>
                         </div>
-                        <div class="custom-control custom-checkbox">
-                            <input type="checkbox" class="custom-control-input" id="notify_angy" name="notify_angy" checked>
-                            <label class="custom-control-label" for="notify_angy">Angy (angmaniasbakers@gmail.com)</label>
-                        </div>
-                        <div class="custom-control custom-checkbox">
-                            <input type="checkbox" class="custom-control-input" id="notify_erene" name="notify_erene" checked>
-                            <label class="custom-control-label" for="notify_erene">Erene (erenemanias@gmail.com)</label>
-                        </div>
-                        <div class="custom-control custom-checkbox">
-                            <input type="checkbox" class="custom-control-input" id="notify_alexandra" name="notify_alexandra" checked>
-                            <label class="custom-control-label" for="notify_alexandra">Alexandra (leximanias@gmail.com)</label>
-                        </div>
+                        {% endfor %}
                     </div>
                 </div>
                 <div class="modal-footer modal-footer-stack-mobile">
@@ -1440,7 +1402,7 @@ document.addEventListener('DOMContentLoaded', function() {
     initializeMoreMenu();
 });
 
-{% if perms.auth.can_edit_personal %}
+{% if perms.auth.can_edit_celebrations %}
 // Update event type handler to show/hide year for namedays
 function handleEventTypeChange() {
     const eventType = document.getElementById('event_type').value;
@@ -1503,13 +1465,10 @@ function addEvent(contactId, contactName) {
     document.getElementById('event_action').value = 'add_event';
     document.getElementById('event_contact_name').textContent = 'Adding event for: ' + contactName;
     document.getElementById('eventModalLabel').textContent = 'Add Event';
-    document.getElementById('notify_one_week').checked = true;
-    document.getElementById('notify_one_day').checked = true;
+    document.getElementById('notify_one_week').checked = false;
+    document.getElementById('notify_one_day').checked = false;
     document.getElementById('notify_same_day').checked = true;
-    document.getElementById('notify_demetri').checked = true;
-    document.getElementById('notify_angy').checked = true;
-    document.getElementById('notify_erene').checked = true;
-    document.getElementById('notify_alexandra').checked = true;
+    document.querySelectorAll('.relevant-member-check').forEach(function(cb){ cb.checked = true; });
 
     // Set default date format based on event type
     handleEventTypeChange();
@@ -1518,7 +1477,7 @@ function addEvent(contactId, contactName) {
 }
 
 // Edit Event
-function editEvent(id, contactId, contactName, eventType, eventDate, priority, notes, notifyWeek, notifyDay, notifySame, notifyDemetri, notifyAngy, notifyErene, notifyAlexandra) {
+function editEvent(id, contactId, contactName, eventType, eventDate, priority, notes, notifyWeek, notifyDay, notifySame, relevantIds) {
     document.getElementById('event_id').value = id;
     document.getElementById('event_contact_id').value = contactId;
     document.getElementById('event_action').value = 'edit_event';
@@ -1531,10 +1490,10 @@ function editEvent(id, contactId, contactName, eventType, eventDate, priority, n
     document.getElementById('notify_one_week').checked = notifyWeek;
     document.getElementById('notify_one_day').checked = notifyDay;
     document.getElementById('notify_same_day').checked = notifySame;
-    document.getElementById('notify_demetri').checked = notifyDemetri;
-    document.getElementById('notify_angy').checked = notifyAngy;
-    document.getElementById('notify_erene').checked = notifyErene;
-    document.getElementById('notify_alexandra').checked = notifyAlexandra;
+    var relSet = new Set((relevantIds || []).map(String));
+    document.querySelectorAll('.relevant-member-check').forEach(function(cb){
+        cb.checked = relSet.has(String(cb.value));
+    });
 
     handleEventTypeChange();
 
@@ -1552,39 +1511,33 @@ function deleteEvent(id, contactName, eventType) {
 // AJAX function to update notification preferences
 function updateNotification(checkbox) {
     const eventId = checkbox.dataset.eventId;
-    const person = checkbox.dataset.person;
     const isChecked = checkbox.checked;
 
-    // Get current state of all checkboxes for this event
-    const checkboxes = document.querySelectorAll(`input[data-event-id="${eventId}"]`);
-    const data = {
-        notify_demetri: false,
-        notify_angy: false,
-        notify_erene: false,
-        notify_alexandra: false
-    };
-
+    // Collect the member ids of all checked relevance boxes for this event.
+    const checkboxes = document.querySelectorAll(`input.notify-checkbox[data-event-id="${eventId}"]`);
+    const relevantIds = [];
     checkboxes.forEach(cb => {
-        const personName = cb.dataset.person;
-        data[`notify_${personName}`] = cb.checked;
+        if (cb.checked) {
+            relevantIds.push(parseInt(cb.dataset.memberId, 10));
+        }
     });
 
     // Get CSRF token
     const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
 
-    // Send AJAX request
+    // Send AJAX request — sets this event's relevant_to to the checked members.
     fetch(`/celebrations/event/${eventId}/update-notifications/`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
             'X-CSRFToken': csrftoken
         },
-        body: JSON.stringify(data)
+        body: JSON.stringify({ relevant_to: relevantIds })
     })
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            console.log('Notification preferences updated');
+            console.log('Relevance updated');
         } else {
             alert('Error updating notification preferences: ' + data.error);
             checkbox.checked = !isChecked; // Revert checkbox

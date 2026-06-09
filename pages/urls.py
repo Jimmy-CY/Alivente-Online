@@ -375,7 +375,7 @@ urlpatterns = [
     # ============================================================================
     path('notifications/settings/', views.notification_settings, name='notification_settings'),
     path('notifications/personal/', views.personal_notification_settings, name='personal_notification_settings'),
-
+    path('personal/household-members/', views.household_member_management, name='household_member_management'),
 
     # ============================================================================
     # ASSET MANAGEMENT

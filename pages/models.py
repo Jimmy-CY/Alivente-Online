@@ -2125,6 +2125,80 @@ class Contact(models.Model):
                 })
         return sorted(events, key=lambda x: x['days_until'])
 
+class HouseholdMember(models.Model):
+    """A person within a workspace who can be linked to celebration events
+    (relevance) and, from Phase 2, to notification delivery.
+
+    Members are an AUDIENCE, not necessarily logins — the user FK is
+    optional and null for people who never sign in. Replaces the hardcoded
+    notify_demetri / notify_angy / notify_erene / notify_alexandra flags.
+    """
+    workspace = models.ForeignKey(
+        'pages.Workspace',
+        on_delete=models.CASCADE,
+        related_name='household_members',
+    )
+    name = models.CharField(max_length=200)
+    email = models.EmailField(blank=True, null=True)
+    user = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name='household_memberships',
+        help_text='Optional link to a login account. NULL for members who never sign in.',
+    )
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    objects = WorkspaceManager()
+
+    class Meta:
+        db_table = 'household_members'
+        ordering = ['name']
+        unique_together = [('workspace', 'name')]
+        verbose_name = 'Household Member'
+        verbose_name_plural = 'Household Members'
+
+    def __str__(self):
+        return f"{self.name} ({self.workspace.name})"
+
+class MemberNotificationSubscription(models.Model):
+    """Per-member opt-in to a personal notification type (celebration
+    reminders, document expiry). Replaces the comma-separated address lists
+    on NotificationRecipient for personal types: a member receives a given
+    type iff an active subscription row exists for them.
+
+    Workspace is inherited via member.workspace, so there is no direct
+    workspace FK — reach these through HouseholdMember.subscriptions.
+    """
+
+    # Mirrors NotificationRecipient.PERSONAL_NOTIFICATION_TYPES.
+    NOTIFICATION_TYPE_CHOICES = [
+        ('celebration_reminder', 'Celebration Reminders'),
+        ('document_expiry', 'Document Expiry Alerts'),
+    ]
+
+    member = models.ForeignKey(
+        'pages.HouseholdMember',
+        on_delete=models.CASCADE,
+        related_name='subscriptions',
+    )
+    notification_type = models.CharField(max_length=50, choices=NOTIFICATION_TYPE_CHOICES)
+    is_active = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'member_notification_subscriptions'
+        unique_together = [('member', 'notification_type')]
+        ordering = ['member__name', 'notification_type']
+        verbose_name = 'Member Notification Subscription'
+        verbose_name_plural = 'Member Notification Subscriptions'
+
+    def __str__(self):
+        return f"{self.member.name} · {self.get_notification_type_display()} ({'on' if self.is_active else 'off'})"
+
 class CelebrationEvent(models.Model):
     """Events to celebrate (birthdays, namedays, anniversaries, etc.)"""
     EVENT_TYPE_CHOICES = [
@@ -2155,27 +2229,16 @@ class CelebrationEvent(models.Model):
     notify_one_day = models.BooleanField(default=True, verbose_name="Notify 1 day before")
     notify_same_day = models.BooleanField(default=True, verbose_name="Notify same day")
     notify_time = models.TimeField(default='09:00:00', help_text="Time to send same-day notification")
-    
-    # Individual notification preferences - who should be notified about this event
-    notify_demetri = models.BooleanField(
-        default=True,
-        verbose_name="Notify Demetri",
-        help_text="Send notification to Demetri (demetrimanias@gmail.com)"
-    )
-    notify_angy = models.BooleanField(
-        default=True,
-        verbose_name="Notify Angy",
-        help_text="Send notification to Angy (angmaniasbakers@gmail.com)"
-    )
-    notify_erene = models.BooleanField(
-        default=True,
-        verbose_name="Notify Erene",
-        help_text="Send notification to Erene (erenemanias@gmail.com)"
-    )
-    notify_alexandra = models.BooleanField(
-        default=True,
-        verbose_name="Notify Alexandra",
-        help_text="Send notification to Alexandra (leximanias@gmail.com)"
+
+    # Relevance axis (Phase 3): which household members this event pertains to.
+    # Replaces the four notify_* booleans above. Final recipients are these
+    # members intersected with their per-type notification opt-ins
+    # (MemberNotificationSubscription), resolved in get_notification_emails().
+    relevant_to = models.ManyToManyField(
+        'pages.HouseholdMember',
+        blank=True,
+        related_name='relevant_events',
+        help_text='Household members this event pertains to (the relevance axis).',
     )
     
     class Meta:
@@ -2260,34 +2323,36 @@ class CelebrationEvent(models.Model):
     def get_notification_emails(self):
         """Return emails to notify for this event.
 
-        Intersects this event's per-recipient flags (notify_demetri,
-        notify_angy, notify_erene, notify_alexandra) with the contact's
-        workspace's celebration_reminder NotificationRecipient list.
+        Composes the two axes:
+          - relevance: the household members this event pertains to
+            (self.relevant_to), and
+          - delivery:  those members who are active and hold an active
+            celebration_reminder subscription, with an email.
 
-        Returns empty if the workspace has no celebration_reminder
-        recipients configured — the cron treats empty as "skip", which is
-        the right behaviour: no point sending a celebration email to
-        nobody, or worse, leaking one household's celebrations to another
-        household's recipients if we fell back to global defaults.
+        Final recipients = relevant members who are opted in. Returns empty
+        if no relevant member is subscribed — the cron treats empty as
+        "skip", which is correct (no point emailing nobody, and no
+        cross-workspace leakage since everything is scoped through the
+        members' own workspace).
         """
-        from pages.email_utils import get_email_recipients
-
-        workspace = self.contact.workspace
-        recipients = get_email_recipients('celebration_reminder', workspace=workspace)
-        workspace_emails = set(recipients['all'])
-
-        notification_mapping = {
-            'notify_demetri': 'demetrimanias@gmail.com',
-            'notify_angy': 'angmaniasbakers@gmail.com',
-            'notify_erene': 'erenemanias@gmail.com',
-            'notify_alexandra': 'leximanias@gmail.com',
-        }
-
-        return [
-            email
-            for field_name, email in notification_mapping.items()
-            if getattr(self, field_name) and email in workspace_emails
-        ]
+        emails, seen = [], set()
+        members = (
+            self.relevant_to
+            .filter(
+                is_active=True,
+                subscriptions__notification_type='celebration_reminder',
+                subscriptions__is_active=True,
+            )
+            .order_by('name')
+        )
+        for m in members:
+            if not m.email:
+                continue
+            key = m.email.strip().lower()
+            if key and key not in seen:
+                seen.add(key)
+                emails.append(m.email.strip())
+        return emails
 
 class EventNotification(models.Model):
     """Track which notifications have been sent"""

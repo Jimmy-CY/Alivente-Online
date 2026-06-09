@@ -68,18 +68,36 @@ def get_email_recipients(notification_type, workspace=None):
             f"do not pass a workspace argument (got {workspace!r})."
         )
 
-    # 1. Database lookup
+    # 1. Personal types: resolve from per-member subscriptions (the household
+    #    roster), NOT the legacy comma-separated NotificationRecipient row.
+    #    A member receives the type iff their roster entry is active, they
+    #    hold an active subscription for it, and they have an email. TO/CC is
+    #    not distinguished for personal types — everyone subscribed is a
+    #    direct recipient. Empty list = skip sending for this workspace.
+    if is_personal:
+        from pages.models import HouseholdMember
+        emails, seen = [], set()
+        members = HouseholdMember.objects.filter(
+            workspace=workspace,
+            is_active=True,
+            subscriptions__notification_type=notification_type,
+            subscriptions__is_active=True,
+        ).order_by('name')
+        for m in members:
+            if not m.email:
+                continue
+            key = m.email.strip().lower()
+            if key and key not in seen:
+                seen.add(key)
+                emails.append(m.email.strip())
+        return {'to': emails, 'cc': [], 'all': emails}
+
+    # 2. Admin types (global): DB row with workspace=NULL.
     try:
-        if is_personal:
-            recipient = NotificationRecipient.objects.get(
-                notification_type=notification_type,
-                workspace=workspace,
-            )
-        else:
-            recipient = NotificationRecipient.objects.get(
-                notification_type=notification_type,
-                workspace__isnull=True,
-            )
+        recipient = NotificationRecipient.objects.get(
+            notification_type=notification_type,
+            workspace__isnull=True,
+        )
         return {
             'to': recipient.get_to_list(),
             'cc': recipient.get_cc_list(),
@@ -87,10 +105,6 @@ def get_email_recipients(notification_type, workspace=None):
         }
     except NotificationRecipient.DoesNotExist:
         pass
-
-    # 2. Personal types: no env/hardcoded fallback. Empty = skip sending.
-    if is_personal:
-        return {'to': [], 'cc': [], 'all': []}
 
     # 3. Admin types: env var fallback
     env_var_map = {

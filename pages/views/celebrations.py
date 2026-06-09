@@ -8,18 +8,27 @@ and every CelebrationEvent lookup is filtered through its parent
 contact's workspace. Two users in different workspaces cannot see,
 edit, or delete each other's contacts or events.
 
+Phase 3 of the configurable-celebration-notifications redesign replaced
+the four hardcoded per-recipient booleans (notify_demetri/angy/erene/
+alexandra) with a relevance M2M (CelebrationEvent.relevant_to ->
+HouseholdMember). Event create/edit and the inline AJAX toggle now write
+that M2M; final recipients are computed in
+CelebrationEvent.get_notification_emails() as the relevant members
+intersected with their per-type notification opt-ins.
+
 Functions
 ---------
 - celebration_management     : Main page; POST handles Contact + Event
                                CRUD (add/edit/delete each); GET builds
-                               the upcoming-events panel.
+                               the upcoming-events panel and the roster
+                               used for the relevance pickers.
 - celebration_calendar       : Month calendar + 365-day timeline of
                                upcoming celebrations.
 - import_celebrations        : Bulk-import contacts/events from an
                                uploaded Excel file (pandas).
 - celebration_dashboard      : Next-30-days upcoming celebrations.
-- update_event_notifications : AJAX (POST) - update a single event's
-                               per-recipient notification flags.
+- update_event_notifications : AJAX (POST) - set a single event's
+                               relevant_to membership (relevance axis).
 
 Auth tiers
 ----------
@@ -40,7 +49,7 @@ from django.shortcuts import redirect, render
 from django.utils import timezone
 from django.views.decorators.http import require_POST
 
-from ..models import CelebrationEvent, Contact
+from ..models import CelebrationEvent, Contact, HouseholdMember
 from pages.workspace import ensure_workspace
 
 
@@ -111,7 +120,8 @@ def celebration_management(request):
                 priority = request.POST.get('priority', 'normal')
                 notes = request.POST.get('event_notes')
 
-                # Notification settings
+                # Notification timing settings (kept — these are the
+                # when-to-send flags, not the who-to-send-to relevance axis).
                 notify_one_week = request.POST.get('notify_one_week') == 'on'
                 notify_one_day = request.POST.get('notify_one_day') == 'on'
                 notify_same_day = request.POST.get('notify_same_day') == 'on'
@@ -124,7 +134,7 @@ def celebration_management(request):
                     if event_type == 'nameday':
                         event_date = event_date.replace(year=1900)
 
-                    CelebrationEvent.objects.create(
+                    event = CelebrationEvent.objects.create(
                         contact=contact,
                         event_type=event_type,
                         event_date=event_date,
@@ -134,12 +144,18 @@ def celebration_management(request):
                         notify_one_week=notify_one_week,
                         notify_one_day=notify_one_day,
                         notify_same_day=notify_same_day,
-                        notify_demetri=request.POST.get('notify_demetri', 'on') == 'on',
-                        notify_angy=request.POST.get('notify_angy', 'on') == 'on',
-                        notify_erene=request.POST.get('notify_erene', 'on') == 'on',
-                        notify_alexandra=request.POST.get('notify_alexandra', 'on') == 'on',
                         created_by=request.user,
                     )
+
+                    # Relevance axis: which household members this event is
+                    # about. Scoped to the workspace so a crafted POST can't
+                    # attach another household's members.
+                    member_ids = request.POST.getlist('relevant_to')
+                    members = HouseholdMember.objects.for_user(request.user).filter(
+                        id__in=member_ids
+                    )
+                    event.relevant_to.set(members)
+
                     messages.success(request, f'{event_type.title()} event added for {contact.name}!')
                 else:
                     messages.error(request, 'Event date is required.')
@@ -163,10 +179,6 @@ def celebration_management(request):
                 event.notify_one_week = request.POST.get('notify_one_week') == 'on'
                 event.notify_one_day = request.POST.get('notify_one_day') == 'on'
                 event.notify_same_day = request.POST.get('notify_same_day') == 'on'
-                event.notify_demetri = request.POST.get('notify_demetri', 'on') == 'on'
-                event.notify_angy = request.POST.get('notify_angy', 'on') == 'on'
-                event.notify_erene = request.POST.get('notify_erene', 'on') == 'on'
-                event.notify_alexandra = request.POST.get('notify_alexandra', 'on') == 'on'
 
                 # Handle date update
                 if event_date_str:
@@ -179,6 +191,14 @@ def celebration_management(request):
                     event.event_date = event_date
 
                 event.save()
+
+                # Relevance axis: replace membership with the posted set.
+                member_ids = request.POST.getlist('relevant_to')
+                members = HouseholdMember.objects.for_user(request.user).filter(
+                    id__in=member_ids
+                )
+                event.relevant_to.set(members)
+
                 messages.success(request, 'Event updated successfully!')
             except CelebrationEvent.DoesNotExist:
                 messages.error(request, 'Event not found.')
@@ -198,8 +218,16 @@ def celebration_management(request):
 
         return redirect('celebration_management')
 
-    # Get all contacts with their events — workspace-scoped
-    contacts = Contact.objects.for_user(request.user).prefetch_related('celebration_events')
+    # Get all contacts with their events — workspace-scoped. Prefetch the
+    # relevance M2M so per-event member-id sets cost no extra queries.
+    contacts = Contact.objects.for_user(request.user).prefetch_related(
+        'celebration_events__relevant_to'
+    )
+
+    # Active roster drives the relevance pickers (inline toggles + modal).
+    household_members = HouseholdMember.objects.for_user(request.user).filter(
+        is_active=True
+    ).order_by('name')
 
     # Get upcoming events for dashboard
     today = timezone.now().date()
@@ -207,6 +235,12 @@ def celebration_management(request):
 
     for contact in contacts:
         for event in contact.celebration_events.all():
+            # Precompute the relevant-member id set for template checkbox state
+            # (uses the prefetched M2M — no extra query per event).
+            event.relevant_member_ids = set(
+                m.id for m in event.relevant_to.all()
+            )
+
             next_date = event.get_next_occurrence()
             if next_date:
                 days_until = (next_date - today).days
@@ -224,6 +258,7 @@ def celebration_management(request):
     return render(request, 'celebration_management.html', {
         'contacts': contacts,
         'upcoming_events': all_events[:10],  # Top 10 upcoming
+        'household_members': household_members,
         'relationship_choices': Contact.RELATIONSHIP_CHOICES,
         'event_type_choices': CelebrationEvent.EVENT_TYPE_CHOICES,
         'priority_choices': CelebrationEvent.PRIORITY_CHOICES,
@@ -513,7 +548,12 @@ def celebration_dashboard(request):
 @permission_required('auth.can_edit_celebrations', raise_exception=True)
 @require_POST
 def update_event_notifications(request, event_id):
-    """Update notification preferences for a specific event via AJAX."""
+    """Set an event's relevance membership (relevant_to) via AJAX.
+
+    Body: {"relevant_to": [<member_id>, ...]}. Members are resolved within
+    the current workspace, so a crafted id list cannot attach another
+    household's members. Replaces the legacy per-recipient boolean toggle.
+    """
     workspace = ensure_workspace(request.user)
 
     try:
@@ -522,20 +562,17 @@ def update_event_notifications(request, event_id):
             contact__workspace=workspace
         ).get(id=event_id)
 
-        # Get the JSON data from request
         data = json.loads(request.body)
+        member_ids = data.get('relevant_to', []) or []
 
-        # Update the notification preferences
-        event.notify_demetri = data.get('notify_demetri', False)
-        event.notify_angy = data.get('notify_angy', False)
-        event.notify_erene = data.get('notify_erene', False)
-        event.notify_alexandra = data.get('notify_alexandra', False)
-
-        event.save()
+        members = HouseholdMember.objects.for_user(request.user).filter(
+            id__in=member_ids
+        )
+        event.relevant_to.set(members)
 
         return JsonResponse({
             'success': True,
-            'message': 'Notification preferences updated'
+            'message': 'Relevance updated'
         })
 
     except CelebrationEvent.DoesNotExist:
