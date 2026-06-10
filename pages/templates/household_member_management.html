@@ -12,7 +12,6 @@
 .hm-badge { display:inline-block; background:rgba(255,255,255,.22); padding:4px 12px; border-radius:14px; font-size:13px; font-weight:500; margin-top:8px; }
 .hm-actions { display:flex; gap:8px; flex-shrink:0; }
 .hm-btn-white { background:#fff; color:#28a745; border:none; padding:10px 18px; border-radius:8px; font-weight:600; display:inline-flex; align-items:center; gap:6px; text-decoration:none; }
-.hm-btn-white:hover { color:#1e7e34; text-decoration:none; }
 .hm-card { background:#fff; border:2px solid #e9ecef; border-radius:12px; padding:0; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,.08); }
 .hm-table { margin:0; }
 .hm-table th { background:#f8f9fa; border-top:none; font-size:13px; text-transform:uppercase; letter-spacing:.03em; color:#6c757d; }
@@ -27,7 +26,59 @@
 .sub-check { width:18px; height:18px; cursor:pointer; vertical-align:middle; accent-color:#28a745; }
 .sub-check:disabled { cursor:default; opacity:.5; }
 .sub-note { font-size:12px; color:#6c757d; margin:14px 2px 0; }
-@media (max-width:768px){ .hm-header{padding:18px; flex-direction:column; align-items:stretch; text-align:center;} .hm-actions{width:100%;} .hm-btn-white{flex:1; justify-content:center;} .hm-table .hide-sm{display:none;} }
+
+/* Hover effects guarded so they don't stick on touch devices */
+@media (hover:hover) {
+  .hm-btn-white:hover { color:#1e7e34; text-decoration:none; }
+}
+
+/* ==================== MOBILE (≤768px) ==================== */
+@media (max-width:768px) {
+
+  /* Header stacks; action buttons become a Back+1 row:
+     [Add Person (wide)] [Help (icon)] [← Back (icon)] */
+  .hm-header { padding:18px; flex-direction:column; align-items:stretch; text-align:center; }
+  .hm-actions { width:100%; flex-wrap:nowrap; gap:8px; }
+  .hm-btn-white { padding:10px 12px; }
+  .hm-actions .hm-btn-primary { flex:1 1 auto; min-width:0; justify-content:center; }
+  .hm-actions .hm-btn-icon { flex:0 0 auto; width:48px; padding:10px 0; justify-content:center; }
+  .hm-actions .hm-btn-icon .hm-btn-label { display:none; }
+
+  /* iOS zoom guard on modal inputs */
+  .modal .form-control { font-size:16px; }
+
+  /* Table -> stacked cards */
+  .hm-table thead { display:none; }
+  .hm-card { border:none; box-shadow:none; background:transparent; overflow:visible; }
+  .hm-table, .hm-table tbody, .hm-table tr, .hm-table td { display:block; width:100%; }
+  .hm-table tr {
+    background:#fff; border:1px solid #e9ecef; border-radius:12px;
+    margin-bottom:14px; padding:12px 14px; box-shadow:0 2px 8px rgba(0,0,0,.08);
+  }
+  .hm-table td {
+    border:none; padding:7px 0; display:flex; align-items:center;
+    justify-content:space-between; gap:12px; text-align:right;
+  }
+  .hm-table td::before {
+    content:attr(data-label); flex:0 0 auto; text-align:left;
+    font-size:12px; text-transform:uppercase; letter-spacing:.03em;
+    color:#6c757d; font-weight:600;
+  }
+  /* Name as card heading */
+  .hm-table td.hm-name-cell {
+    justify-content:flex-start; border-bottom:1px solid #f1f3f5;
+    margin-bottom:6px; padding-bottom:10px; font-size:16px;
+  }
+  .hm-table td.hm-name-cell::before { display:none; }
+  /* Keep "Linked account" hidden on mobile, as before */
+  .hm-table .hide-sm { display:none; }
+  /* Actions: label above, buttons in a left-aligned row below */
+  .hm-table td.hm-actions-cell {
+    display:block; text-align:left; padding-top:10px;
+    border-top:1px solid #f1f3f5; margin-top:4px;
+  }
+  .hm-table td.hm-actions-cell::before { display:block; margin-bottom:8px; }
+}
 </style>
 
 <div class="hm-header">
@@ -38,18 +89,15 @@
   </div>
   <div class="hm-actions">
     {% if can_edit %}
-    <button type="button" class="hm-btn-white" data-toggle="modal" data-target="#addMemberModal">
-      <i class="fas fa-plus"></i> Add Person
+    <button type="button" class="hm-btn-white hm-btn-primary" data-toggle="modal" data-target="#addMemberModal">
+      <i class="fas fa-plus"></i> <span class="hm-btn-label">Add Person</span>
     </button>
     {% endif %}
-    <button type="button" class="hm-btn-white" data-toggle="modal" data-target="#household_member_managementHelpModal">
-      <i class="fas fa-question-circle"></i> Help
+    <button type="button" class="hm-btn-white hm-btn-icon" data-toggle="modal" data-target="#household_member_managementHelpModal" aria-label="Help">
+      <i class="fas fa-question-circle"></i> <span class="hm-btn-label">Help</span>
     </button>
-    <a href="{% url 'personal_page' %}" class="hm-btn-white" aria-label="Back">
-      <i class="fas fa-arrow-left"></i> Back
-    </a>
-    <a href="{% url 'personal_page' %}" class="hm-btn-white" aria-label="Back">
-      <i class="fas fa-arrow-left"></i> Back
+    <a href="{% url 'personal_page' %}" class="hm-btn-white hm-btn-icon" aria-label="Back to Personal">
+      <i class="fas fa-arrow-left"></i> <span class="hm-btn-label">Back</span>
     </a>
   </div>
 </div>
@@ -77,18 +125,18 @@
     <tbody>
       {% for m in members %}
       <tr>
-        <td><strong>{{ m.name }}</strong></td>
-        <td>{% if m.email %}{{ m.email }}{% else %}<span class="unlinked">no email</span>{% endif %}</td>
-        <td class="hide-sm">
+        <td class="hm-name-cell"><strong>{{ m.name }}</strong></td>
+        <td data-label="Email">{% if m.email %}{{ m.email }}{% else %}<span class="unlinked">no email</span>{% endif %}</td>
+        <td class="hide-sm" data-label="Linked account">
           {% if m.user %}<span class="linked-pill"><i class="fas fa-user"></i> {{ m.user.get_full_name|default:m.user.username }}</span>
           {% else %}<span class="unlinked">not a login</span>{% endif %}
         </td>
-        <td>
+        <td data-label="Status">
           {% if m.is_active %}<span class="status-pill status-active">Active</span>
           {% else %}<span class="status-pill status-inactive">Inactive</span>{% endif %}
         </td>
         {% for cell in m.sub_cells %}
-        <td class="text-center">
+        <td class="text-center" data-label="{{ cell.label|default:cell.code }}">
           <form method="post" style="display:inline;">
             {% csrf_token %}
             <input type="hidden" name="action" value="toggle_subscription">
@@ -102,7 +150,7 @@
         </td>
         {% endfor %}
         {% if can_edit %}
-        <td class="text-right" style="white-space:nowrap;">
+        <td class="text-right hm-actions-cell" data-label="Actions" style="white-space:nowrap;">
           <button type="button" class="btn btn-sm btn-outline-secondary edit-member-btn"
                   data-id="{{ m.id }}" data-name="{{ m.name }}" data-email="{{ m.email|default:'' }}"
                   data-user="{{ m.user_id|default:'' }}" data-active="{{ m.is_active|yesno:'1,0' }}"
