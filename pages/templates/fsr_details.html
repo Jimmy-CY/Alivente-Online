@@ -1,4 +1,4 @@
-﻿{% extends 'base.html' %}
+{% extends 'base.html' %}
 {% load static %}
 
 {% block title %}
@@ -103,6 +103,8 @@ Issues (Comments)
                                            class="form-control comment-input-full"
                                            name="issues_details_comment"
                                            maxlength="250"
+                                           spellcheck="true"
+                                           autocorrect="off"
                                            required>
                                     <button class="btn btn-info comment-submit" type="submit">Save Comment</button>
 
@@ -170,7 +172,7 @@ function handleBackButton() {
 
     if (fromParam === 'property_detail' && propertyId && boxType) {
         targetUrl = `/property_detail/${propertyId}/${boxType}/`;
-        console.log('ðŸ  Navigating back to Property Detail:', targetUrl);
+        console.log('🏠 Navigating back to Property Detail:', targetUrl);
         window.location.href = targetUrl;
         return;
     }
@@ -199,7 +201,7 @@ function handleBackButton() {
             const hasFilters = Object.values(filterData).some(value => value);
 
             if (hasFilters) {
-                console.log('ðŸ”„ Restoring FSR filters:', filterData);
+                console.log('🔄 Restoring FSR filters:', filterData);
 
                 const form = document.createElement('form');
                 form.method = 'POST';
@@ -600,7 +602,7 @@ document.addEventListener('DOMContentLoaded', function() {
     box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 
-/* ==================== MOBILE (â‰¤768px) ==================== */
+/* ==================== MOBILE (≤768px) ==================== */
 @media (max-width: 768px) {
     /* Page title */
     .page-title-center {
@@ -608,7 +610,7 @@ document.addEventListener('DOMContentLoaded', function() {
         padding: 0 8px;
     }
 
-    /* Back button â€” full-width on mobile */
+    /* Back button — full-width on mobile */
     .page-action-bar { margin-bottom: 12px; }
     .page-action-bar-inner {
         flex-direction: column;
@@ -621,7 +623,7 @@ document.addEventListener('DOMContentLoaded', function() {
         text-align: center;
     }
 
-    /* Report container â€” minimal padding */
+    /* Report container — minimal padding */
     .report-container {
         padding: 8px;
     }
@@ -632,7 +634,7 @@ document.addEventListener('DOMContentLoaded', function() {
         border-radius: 6px;
     }
 
-    /* Issue header â€” tighter, less indentation */
+    /* Issue header — tighter, less indentation */
     .issue-header-section {
         padding: 14px;
         margin-bottom: 16px;
@@ -659,13 +661,13 @@ document.addEventListener('DOMContentLoaded', function() {
         margin-bottom: 6px;
     }
 
-    /* Status card â€” tighter */
+    /* Status card — tighter */
     .status-card {
         padding: 14px;
         margin-bottom: 16px;
     }
 
-    /* Add comment form â€” stacks (already does, just polish) */
+    /* Add comment form — stacks (already does, just polish) */
     .add-comment-container-inline {
         padding: 12px;
         margin: 12px 0;
@@ -704,7 +706,7 @@ document.addEventListener('DOMContentLoaded', function() {
         font-size: 16px !important; /* iOS zoom guard */
     }
 
-    /* Comments â€” tighter */
+    /* Comments — tighter */
     .comments-section {
         margin-top: 14px;
     }
