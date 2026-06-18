@@ -1768,6 +1768,50 @@
     </div>
   </article>
 
+  <article data-tab-slug="expReport"
+           data-tab-name="Report"
+           data-tab-icon="fa-chart-bar">
+    <h6 style="color:#17a2b8; font-weight:700;"><i class="fas fa-chart-bar"></i> The Expenses by Property report</h6>
+    <p>The <strong>Report</strong> button (top-right, next to <em>Add New</em> &mdash; on a phone it lives in the <i class="fas fa-ellipsis-v"></i> <em>More</em> menu) opens a pop-up that ranks every property by how much has actually been spent on it. It's the quick way to answer <em>"which properties are costing me the most?"</em> and then drill straight into the expenses behind any number.</p>
+
+    <div class="alert alert-info" style="border-left:4px solid #17a2b8;">
+      <i class="fas fa-info-circle"></i> <strong>Approved &amp; Paid only.</strong> The report counts only expenses that are both <strong>Approved</strong> and <strong>Paid</strong> &mdash; the same money that feeds <em>P&amp;L Actual</em>. Anything still awaiting approval or payment is deliberately excluded, so the totals reflect real cash that has left the bank.
+    </div>
+
+    <div class="card mb-3" style="border-left:4px solid #17a2b8;">
+      <div class="card-body">
+        <h6 style="color:#17a2b8;"><i class="fas fa-calendar-alt"></i> <strong>Choosing the year(s)</strong></h6>
+        <p class="mb-0" style="font-size:13px;">A row of year checkboxes sits at the top of the report. <strong>All years</strong> is ticked by default. Untick it to pick a <strong>single year</strong>, or tick <strong>several years</strong> to combine them. The chart and table refresh automatically as you change the selection &mdash; only years that actually have approved-and-paid expenses show up as options.</p>
+      </div>
+    </div>
+
+    <div class="card mb-3" style="border-left:4px solid #17a2b8;">
+      <div class="card-body">
+        <h6 style="color:#17a2b8;"><i class="fas fa-chart-bar"></i> <strong>The chart</strong></h6>
+        <p class="mb-0" style="font-size:13px;">A horizontal bar chart, one bar per property, <strong>sorted from highest spend to lowest</strong>. The longest bar at the top is your biggest-cost property for the chosen period. Hover a bar to see its exact total in &euro;.</p>
+      </div>
+    </div>
+
+    <div class="card mb-3" style="border-left:4px solid #17a2b8;">
+      <div class="card-body">
+        <h6 style="color:#17a2b8;"><i class="fas fa-table"></i> <strong>The table</strong></h6>
+        <p class="mb-0" style="font-size:13px;">Below the chart the same figures appear as a table &mdash; <strong>Property</strong>, total <strong>Expenses</strong>, and <strong># Items</strong> (how many individual expenses make up that total) &mdash; also ordered highest-first, with a grand total for the whole selection shown above it.</p>
+      </div>
+    </div>
+
+    <div class="card mb-3" style="border-left:4px solid #17a2b8;">
+      <div class="card-body">
+        <h6 style="color:#17a2b8;"><i class="fas fa-mouse-pointer"></i> <strong>Drilling into a property</strong></h6>
+        <p class="mb-1" style="font-size:13px;"><strong>Click any bar &mdash; or any table row</strong> &mdash; to drop into that property's detail. You'll see every approved-and-paid expense that makes up its total for the selected year(s): Date, Description, Amount, Approved, Paid, and an <strong>Invoice</strong> column.</p>
+        <p class="mb-0" style="font-size:13px;">Click the green <i class="fas fa-file-alt" style="color:#28a745;"></i> invoice icon on any row to open the attached document in the same viewer used everywhere else &mdash; PDF/image preview with a Download option. The <strong>&larr; Back to overview</strong> button returns you to the chart without closing the report.</p>
+      </div>
+    </div>
+
+    <div class="alert alert-warning" style="border-left:4px solid #ffc107;">
+      <i class="fas fa-exclamation-triangle"></i> <strong>A property missing from the chart?</strong> It simply has no Approved &amp; Paid expenses in the selected year(s). Widen the year selection (or check the expense is actually marked Paid) and it will appear.
+    </div>
+  </article>
+
   <article data-tab-slug="expTips"
            data-tab-name="Tips"
            data-tab-icon="fa-lightbulb">

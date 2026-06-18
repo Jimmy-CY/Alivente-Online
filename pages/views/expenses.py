@@ -27,6 +27,18 @@ View functions
 - act_expense_commit          : Add save; emails approvers when a
                                 non-superuser creates one.
 
+Report endpoints (AJAX / JSON)
+------------------------------
+- act_expense_report_data     : Per-property totals of approved+paid
+                                expenses for the "Expenses by Property"
+                                report modal, filtered by year(s) and
+                                sorted descending by total. Also returns
+                                the list of years that have data.
+- act_expense_report_property : Drill-down for the report modal - one
+                                property's approved+paid expenses for the
+                                selected year(s), each with its attached
+                                document URL for the shared PDF viewer.
+
 Email helpers (not Django views)
 --------------------------------
 - send_expense_approved_email
@@ -38,7 +50,9 @@ Email helpers (not Django views)
 Auth tiers
 ----------
 superuser only      -> mark_approved, mark_paid (@user_passes_test)
-can_access_expenses -> act_expense_all, act_expense_view
+can_access_expenses -> act_expense_all, act_expense_view,
+                       act_expense_report_data,
+                       act_expense_report_property
 can_edit_expenses   -> manage_document, edit, edit_commit,
                        mark_deleted, add, commit
 """
