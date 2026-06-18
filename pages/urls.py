@@ -237,7 +237,8 @@ urlpatterns = [
     path('mark_paid/<expense_id>', views.mark_paid, name='mark_paid'),
     path('mark_deleted/<expense_id>', views.mark_deleted, name='mark_deleted'),
     path('act_expense_manage_document/', views.act_expense_manage_document, name='act_expense_manage_document'),
-
+    path('act_expense_report_data/', views.act_expense_report_data, name='act_expense_report_data'),
+    path('act_expense_report_property/', views.act_expense_report_property, name='act_expense_report_property'),
 
     # ============================================================================
     # INVOICES

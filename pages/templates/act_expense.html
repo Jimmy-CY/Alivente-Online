@@ -617,6 +617,11 @@
     {% endif %}
 
     {% if not from_finance_pl_act %}
+        <!-- Desktop Report (hidden on mobile, accessed via More menu) -->
+        <button type="button" class="btn btn-info action-secondary" data-toggle="modal" data-target="#expenseReportModal">
+            <i class="fas fa-chart-bar"></i> Report
+        </button>
+
         <!-- Desktop Help (hidden on mobile, accessed via More menu) -->
         <button type="button" class="btn btn-info action-secondary" data-toggle="modal" data-target="#expensesHelpModal">
             <i class="fas fa-question-circle"></i> Help
@@ -629,6 +634,10 @@
                 <i class="fas fa-ellipsis-v"></i>
             </button>
             <div class="action-more-menu" id="actionMoreMenu" role="menu" hidden>
+                <button type="button" class="action-more-item" role="menuitem"
+                        data-toggle="modal" data-target="#expenseReportModal">
+                    <i class="fas fa-chart-bar"></i> Report
+                </button>
                 <button type="button" class="action-more-item" role="menuitem"
                         data-toggle="modal" data-target="#expensesHelpModal">
                     <i class="fas fa-question-circle"></i> Help
@@ -910,6 +919,103 @@
   </div>
 </div>
 
+<style>
+/* ==================== EXPENSES REPORT MODAL ==================== */
+.expense-report-dialog { max-width: 900px; }
+.expense-report-dialog .modal-body { max-height: 75vh; overflow-y: auto; }
+.report-year-bar {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 14px;
+    padding: 10px 14px; margin-bottom: 16px;
+    background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 8px;
+}
+.report-year-label { font-weight: 600; color: #495057; }
+.report-year-label i { color: #17a2b8; }
+.report-year-chk { margin: 0; font-size: 14px; cursor: pointer; user-select: none; }
+.report-year-chk input { margin-right: 5px; vertical-align: middle; }
+.report-year-list { display: flex; flex-wrap: wrap; gap: 12px; }
+.report-chart-wrap { position: relative; width: 100%; margin-bottom: 18px; }
+.report-grand-total { text-align: right; font-weight: 700; color: #2c3e50; margin-bottom: 12px; font-size: 1.05rem; }
+.report-table tbody tr { cursor: pointer; }
+.report-table tbody tr:hover { background: #e8f4f8; }
+.report-drill-title { font-weight: 600; color: #2c3e50; margin-bottom: 12px; }
+.report-drill-total { text-align: right; font-weight: 700; color: #2c3e50; margin-top: 8px; }
+.report-invoice-icon { cursor: pointer; color: #28a745; }
+.report-invoice-none { color: #adb5bd; }
+@media (max-width: 768px) {
+    .expense-report-dialog { max-width: 100%; margin: 0; height: 100vh; }
+    .expense-report-dialog .modal-content { height: 100vh; border-radius: 0; border: none; display: flex; flex-direction: column; }
+    .expense-report-dialog .modal-header { flex-shrink: 0; }
+    .expense-report-dialog .modal-body { flex: 1 1 auto; max-height: none; overflow-y: auto; }
+}
+</style>
+
+<!-- ==================== EXPENSES REPORT MODAL ==================== -->
+<div class="modal fade" id="expenseReportModal" tabindex="-1" role="dialog" aria-labelledby="expenseReportLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg expense-report-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="expenseReportLabel">
+          <i class="fas fa-chart-bar" style="color:#17a2b8;"></i> Expenses by Property
+        </h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+
+        <div class="report-year-bar">
+          <span class="report-year-label"><i class="fas fa-calendar-alt"></i> Years:</span>
+          <label class="report-year-chk"><input type="checkbox" id="reportYearAll" checked> All years</label>
+          <span id="reportYearList" class="report-year-list"></span>
+        </div>
+
+        <div id="reportOverview">
+          <div id="reportLoading" class="text-center text-muted" style="padding:30px;">
+            <i class="fas fa-spinner fa-spin"></i> Loading...
+          </div>
+          <div id="reportEmpty" class="text-center text-muted" style="display:none; padding:30px;">
+            No expenses found for the selected year(s).
+          </div>
+          <div id="reportContent" style="display:none;">
+            <div class="report-chart-wrap"><canvas id="reportChart"></canvas></div>
+            <div class="report-grand-total" id="reportGrandTotal"></div>
+            <div class="table-responsive">
+              <table class="table table-sm table-hover report-table">
+                <thead>
+                  <tr><th>Property</th><th class="text-right">Expenses</th><th class="text-center"># Items</th></tr>
+                </thead>
+                <tbody id="reportTableBody"></tbody>
+              </table>
+            </div>
+            <p class="text-muted small mb-0"><i class="fas fa-hand-pointer"></i> Click a bar or a row to see that property's expenses.</p>
+          </div>
+        </div>
+
+        <div id="reportDrill" style="display:none;">
+          <button type="button" class="btn btn-sm btn-outline-secondary mb-3" id="reportDrillBack">
+            <i class="fas fa-arrow-left"></i> Back to overview
+          </button>
+          <h6 id="reportDrillTitle" class="report-drill-title"></h6>
+          <div class="table-responsive">
+            <table class="table table-sm table-bordered report-drill-table">
+              <thead>
+                <tr>
+                  <th>Date</th><th>Description</th><th class="text-right">Amount</th>
+                  <th class="text-center">Approved</th><th class="text-center">Paid</th><th class="text-center">Invoice</th>
+                </tr>
+              </thead>
+              <tbody id="reportDrillBody"></tbody>
+            </table>
+          </div>
+          <div class="report-drill-total" id="reportDrillTotal"></div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+
 <!-- Standard PDF Viewer component (powers both quick-view tap on the table icon
      and the "View Document" launcher inside the Manage modal Invoice tab) -->
 {% include 'components/pdf_viewer.html' %}
@@ -919,6 +1025,7 @@
 <!-- JavaScript -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -1535,5 +1642,203 @@ $('#manageModal').on('hidden.bs.modal', function () {
     hideAddToExisting();
 });
 </script>
+
+<script>
+(function() {
+    'use strict';
+
+    var REPORT_DATA_URL = "{% url 'act_expense_report_data' %}";
+    var REPORT_PROP_URL = "{% url 'act_expense_report_property' %}";
+
+    var chartInstance = null;
+    var loaded = false;
+    var currentRows = [];
+
+    function euro(n) {
+        return '\u20ac' + Number(n || 0).toLocaleString('en-IE', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    }
+
+    function selectedYearsParam() {
+        var all = document.getElementById('reportYearAll');
+        if (all && all.checked) return 'all';
+        var picked = [];
+        document.querySelectorAll('#reportYearList input[type=checkbox]:checked').forEach(function(cb) {
+            picked.push(cb.value);
+        });
+        return picked.length ? picked.join(',') : 'all';
+    }
+
+    function showOverview() {
+        document.getElementById('reportDrill').style.display = 'none';
+        document.getElementById('reportOverview').style.display = 'block';
+    }
+
+    function buildYearCheckboxes(years) {
+        var list = document.getElementById('reportYearList');
+        if (list.dataset.built === '1') return;
+        list.innerHTML = '';
+        years.forEach(function(y) {
+            var lbl = document.createElement('label');
+            lbl.className = 'report-year-chk';
+            lbl.innerHTML = '<input type="checkbox" value="' + y + '"> ' + y;
+            list.appendChild(lbl);
+        });
+        list.dataset.built = '1';
+
+        var allCb = document.getElementById('reportYearAll');
+        allCb.addEventListener('change', function() {
+            if (allCb.checked) {
+                list.querySelectorAll('input[type=checkbox]').forEach(function(cb){ cb.checked = false; });
+            } else if (list.querySelectorAll('input[type=checkbox]:checked').length === 0) {
+                allCb.checked = true;
+                return;
+            }
+            loadData();
+        });
+        list.querySelectorAll('input[type=checkbox]').forEach(function(cb) {
+            cb.addEventListener('change', function() {
+                if (cb.checked) { allCb.checked = false; }
+                if (list.querySelectorAll('input[type=checkbox]:checked').length === 0) { allCb.checked = true; }
+                loadData();
+            });
+        });
+    }
+
+    function loadData() {
+        var loading = document.getElementById('reportLoading');
+        var empty = document.getElementById('reportEmpty');
+        var content = document.getElementById('reportContent');
+        loading.style.display = 'block';
+        empty.style.display = 'none';
+        content.style.display = 'none';
+        showOverview();
+
+        fetch(REPORT_DATA_URL + '?years=' + encodeURIComponent(selectedYearsParam()), {headers: {'X-Requested-With': 'XMLHttpRequest'}})
+            .then(function(r){ return r.json(); })
+            .then(function(data) {
+                buildYearCheckboxes(data.available_years || []);
+                currentRows = data.rows || [];
+                loading.style.display = 'none';
+                if (!currentRows.length) {
+                    empty.style.display = 'block';
+                    if (chartInstance) { chartInstance.destroy(); chartInstance = null; }
+                    document.getElementById('reportTableBody').innerHTML = '';
+                    document.getElementById('reportGrandTotal').textContent = '';
+                    return;
+                }
+                content.style.display = 'block';
+                document.getElementById('reportGrandTotal').textContent = 'Total: ' + euro(data.grand_total);
+                renderChart(currentRows);
+                renderTable(currentRows);
+            })
+            .catch(function(err) {
+                loading.innerHTML = '<span class="text-danger">Failed to load report.</span>';
+                console.error('Report load error:', err);
+            });
+    }
+
+    function renderChart(rows) {
+        var wrap = document.querySelector('.report-chart-wrap');
+        wrap.style.height = Math.max(160, rows.length * 30 + 40) + 'px';
+        var labels = rows.map(function(r){ return r.prop_name; });
+        var values = rows.map(function(r){ return r.total; });
+        if (chartInstance) { chartInstance.destroy(); }
+        var ctx = document.getElementById('reportChart').getContext('2d');
+        chartInstance = new Chart(ctx, {
+            type: 'bar',
+            data: { labels: labels, datasets: [{ label: 'Expenses', data: values, backgroundColor: '#17a2b8', borderColor: '#117a8b', borderWidth: 1, maxBarThickness: 22 }] },
+            options: {
+                indexAxis: 'y', responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { display: false }, tooltip: { callbacks: { label: function(c){ return euro(c.parsed.x); } } } },
+                scales: { x: { beginAtZero: true, ticks: { callback: function(v){ return euro(v); } } } },
+                onClick: function(evt, elements) {
+                    if (elements && elements.length) {
+                        var row = rows[elements[0].index];
+                        if (row) openDrill(row.prop_id, row.prop_name);
+                    }
+                }
+            }
+        });
+    }
+
+    function renderTable(rows) {
+        var body = document.getElementById('reportTableBody');
+        body.innerHTML = '';
+        rows.forEach(function(r) {
+            var tr = document.createElement('tr');
+            tr.innerHTML = '<td>' + escapeHtml(r.prop_name) + '</td><td class="text-right">' + euro(r.total) + '</td><td class="text-center">' + r.count + '</td>';
+            tr.addEventListener('click', function(){ openDrill(r.prop_id, r.prop_name); });
+            body.appendChild(tr);
+        });
+    }
+
+    function openDrill(propId, propName) {
+        document.getElementById('reportDrillTitle').textContent = propName;
+        document.getElementById('reportDrillBody').innerHTML = '<tr><td colspan="6" class="text-center text-muted"><i class="fas fa-spinner fa-spin"></i> Loading...</td></tr>';
+        document.getElementById('reportDrillTotal').textContent = '';
+        document.getElementById('reportOverview').style.display = 'none';
+        document.getElementById('reportDrill').style.display = 'block';
+
+        fetch(REPORT_PROP_URL + '?prop=' + encodeURIComponent(propId) + '&years=' + encodeURIComponent(selectedYearsParam()), {headers: {'X-Requested-With': 'XMLHttpRequest'}})
+            .then(function(r){ return r.json(); })
+            .then(function(data) {
+                var body = document.getElementById('reportDrillBody');
+                body.innerHTML = '';
+                if (!data.rows || !data.rows.length) {
+                    body.innerHTML = '<tr><td colspan="6" class="text-center text-muted">No expenses for this property in the selected year(s).</td></tr>';
+                } else {
+                    data.rows.forEach(function(e) {
+                        var inv = e.doc_url
+                            ? '<i class="fas fa-file-alt report-invoice-icon" title="View invoice" onclick="reportViewInvoice(\'' + e.doc_url + '\', \'' + (e.doc_name || 'invoice') + '\')"></i>'
+                            : '<span class="report-invoice-none">\u2014</span>';
+                        var tr = document.createElement('tr');
+                        tr.innerHTML = '<td>' + e.date + '</td><td>' + escapeHtml(e.description) + '</td><td class="text-right">' + euro(e.amount) + '</td><td class="text-center">' + statusBadge(e.approved) + '</td><td class="text-center">' + statusBadge(e.paid) + '</td><td class="text-center">' + inv + '</td>';
+                        body.appendChild(tr);
+                    });
+                }
+                document.getElementById('reportDrillTotal').textContent = 'Total: ' + euro(data.total);
+            })
+            .catch(function(err) {
+                document.getElementById('reportDrillBody').innerHTML = '<tr><td colspan="6" class="text-center text-danger">Failed to load.</td></tr>';
+                console.error('Drill load error:', err);
+            });
+    }
+
+    function statusBadge(v) {
+        var yes = (v === 'Yes');
+        return '<span style="color:' + (yes ? '#28a745' : '#dc3545') + ';font-weight:600;">' + (yes ? 'Yes' : 'No') + '</span>';
+    }
+
+    function escapeHtml(s) {
+        return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+
+    window.reportViewInvoice = function(url, name) {
+        if (typeof openPdfViewer === 'function') {
+            openPdfViewer(url, 'Expense Invoice', (name || '').split('/').pop() || 'invoice');
+        } else {
+            window.open(url, '_blank');
+        }
+    };
+
+    document.getElementById('reportDrillBack').addEventListener('click', showOverview);
+
+    // Trigger the load on the click that opens the modal, in vanilla JS rather
+    // than via Bootstrap's 'shown.bs.modal'. This page loads jQuery twice (base
+    // template + this template), and Bootstrap's modal events fire on a different
+    // jQuery instance than an inline handler binds to — so the event never lands.
+    document.querySelectorAll('[data-target="#expenseReportModal"]').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            if (!loaded) {
+                loaded = true;
+                loadData();
+            } else if (chartInstance) {
+                setTimeout(function() { chartInstance.resize(); }, 250);
+            }
+        });
+    });
+})();
+</script>
+
 
 {% endblock %}

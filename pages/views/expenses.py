@@ -55,6 +55,8 @@ from django.contrib.auth.decorators import (
     permission_required,
     user_passes_test,
 )
+from django.db.models import Count, Sum
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.dateparse import parse_date
 
@@ -793,3 +795,125 @@ def act_expense_commit(request):
             return redirect('act_expense_add')
 
     return redirect('act_expense_add')
+
+@login_required
+@permission_required('auth.can_access_expenses', raise_exception=True)
+def act_expense_report_data(request):
+    """
+    JSON for the Expenses Report modal: per-property total of
+    act_expense_amount for the selected year(s), descending by total.
+    Aggregates ALL expense rows (same population as act_expense_all),
+    regardless of approved/paid status.
+
+    Query params:
+      years : 'all' (default) or comma-separated years, e.g. '2025,2026'.
+    """
+    years_param = (request.GET.get('years', 'all') or 'all').strip()
+
+    base = act_expense.objects.filter(act_expense_approved='Yes', act_expense_paid='Yes')
+
+    years_applied = 'all'
+    if years_param and years_param.lower() != 'all':
+        try:
+            year_list = [int(y) for y in years_param.split(',') if y.strip()]
+        except ValueError:
+            year_list = []
+        if year_list:
+            base = base.filter(act_expense_date__year__in=year_list)
+            years_applied = sorted(set(year_list), reverse=True)
+
+    agg = (
+        base.values('prop_id', 'prop__prop_name')
+            .annotate(total=Sum('act_expense_amount'), count=Count('act_expense_id'))
+            .order_by('-total')
+    )
+
+    rows = [
+        {
+            'prop_id': r['prop_id'],
+            'prop_name': r['prop__prop_name'] or '(Unnamed property)',
+            'total': float(r['total'] or 0),
+            'count': r['count'],
+        }
+        for r in agg
+        if r['total'] is not None
+    ]
+
+    grand_total = sum(r['total'] for r in rows)
+
+    available_years = [
+        d.year for d in act_expense.objects
+            .exclude(act_expense_date__isnull=True)
+            .dates('act_expense_date', 'year', order='DESC')
+    ]
+
+    return JsonResponse({
+        'available_years': available_years,
+        'years_applied': years_applied,
+        'rows': rows,
+        'grand_total': grand_total,
+    })
+
+
+@login_required
+@permission_required('auth.can_access_expenses', raise_exception=True)
+def act_expense_report_property(request):
+    """
+    JSON for the report drill-down: individual expenses for one property
+    across the selected year(s), most recent first, with the attached
+    document URL/name so the front-end can open it in the shared viewer.
+
+    Query params:
+      prop  : prop_id to drill into (required).
+      years : 'all' (default) or comma-separated years.
+    """
+    prop_param = (request.GET.get('prop', '') or '').strip()
+    years_param = (request.GET.get('years', 'all') or 'all').strip()
+
+    try:
+        prop_id = int(prop_param)
+    except (ValueError, TypeError):
+        return JsonResponse({'error': 'invalid property'}, status=400)
+
+    qs = (
+        act_expense.objects.select_related('prop')
+        .filter(prop_id=prop_id, act_expense_approved='Yes', act_expense_paid='Yes')
+        .order_by('-act_expense_date')
+    )
+
+    if years_param and years_param.lower() != 'all':
+        try:
+            year_list = [int(y) for y in years_param.split(',') if y.strip()]
+        except ValueError:
+            year_list = []
+        if year_list:
+            qs = qs.filter(act_expense_date__year__in=year_list)
+
+    prop_name = ''
+    rows = []
+    total = 0.0
+    for e in qs:
+        if not prop_name:
+            prop_name = e.prop.prop_name
+        amount = float(e.act_expense_amount or 0)
+        total += amount
+        rows.append({
+            'id': e.act_expense_id,
+            'date': e.act_expense_date.strftime('%Y-%m-%d') if e.act_expense_date else '',
+            'description': e.act_expense_description or '',
+            'amount': amount,
+            'approved': e.act_expense_approved or 'No',
+            'paid': e.act_expense_paid or 'No',
+            'doc_url': e.act_expense_document.url if e.act_expense_document else '',
+            'doc_name': (e.act_expense_document.name.split('/')[-1] if e.act_expense_document else ''),
+        })
+
+    if not prop_name:
+        p = props.objects.filter(pk=prop_id).first()
+        prop_name = p.prop_name if p else '(Unknown property)'
+
+    return JsonResponse({
+        'prop_name': prop_name,
+        'rows': rows,
+        'total': total,
+    })
