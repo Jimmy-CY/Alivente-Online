@@ -4343,8 +4343,12 @@ function viewRecipeDoc(url, filename) {
 function decimalToFraction(decimal) {
     if (decimal === null || decimal === undefined || isNaN(decimal)) return decimal;
 
-    const wholePart = Math.floor(decimal);
-    const fracPart = Math.round((decimal - wholePart) * 1000) / 1000;
+    // Snap to the nearest 1/24 first so near-whole values carry up
+    // (1.995 -> 2.000 instead of flooring to 1) while still landing cleanly
+    // on halves, thirds, quarters, sixths and eighths. Fixes 1⅓ x 1.5 = "1".
+    const snapped = Math.round(decimal * 24) / 24;
+    const wholePart = Math.floor(snapped + 1e-9);
+    const fracPart = Math.round((snapped - wholePart) * 1000) / 1000;
 
     const fractionMap = {
         0.125: '⅛',
