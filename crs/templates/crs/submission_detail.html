@@ -54,6 +54,10 @@
         <dd>{{ submission.year }} <small>(ReportingPeriod: {{ submission.reporting_period|date:"Y-m-d" }})</small></dd>
         <dt>Sending Company IN</dt>
         <dd><code>{{ submission.sending_company_in }}</code></dd>
+        {% if submission.is_nil_return %}
+        <dt>Submission Type</dt>
+        <dd><span class="status-badge" style="background:#fff3cd;color:#856404;">Nil Return (CRS703)</span></dd>
+        {% endif %}
       </dl>
     </div>
 
@@ -152,7 +156,8 @@
       {% endif %}
     </div>
 
-    <!-- Customer Data Excel — hidden after closure (Excel is purged) -->
+    <!-- Customer Data Excel — hidden after closure (Excel purged) and for nil returns -->
+    {% if not submission.is_nil_return %}
     {% if is_draft or submission.uploaded_excel %}
     <div class="detail-section">
       <div class="detail-section-title">Customer Data Excel</div>
@@ -212,6 +217,9 @@
       {% endif %}
     </div>
     {% endif %}
+    {% endif %}
+    
+    <!-- Excel Validation -->
     
     <!-- Excel Validation -->
     {% if parse_result %}
@@ -380,7 +388,17 @@
       {% elif is_draft %}
       <div class="xml-empty">
         <p>No XML generated yet.</p>
-        {% if submission.uploaded_excel and parse_result and parse_result.is_valid %}
+        {% if submission.is_nil_return %}
+        <form method="post" action="{% url 'crs:submission_generate_xml' submission.pk %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-primary">
+            <i class="fas fa-cogs"></i> Generate Nil XML
+          </button>
+          <small class="field-help" style="display: block; margin-top: 8px;">
+            Produces a single CRS703 nil return for {{ submission.transmitting_country }} — no account data.
+          </small>
+        </form>
+        {% elif submission.uploaded_excel and parse_result and parse_result.is_valid %}
         <form method="post" action="{% url 'crs:submission_generate_xml' submission.pk %}">
           {% csrf_token %}
           <button type="submit" class="btn btn-primary">

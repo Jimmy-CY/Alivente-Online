@@ -322,6 +322,27 @@ def build_all(submission, parse_result):
         for rc, slices in slices_by_rc.items()
     }
 
+def build_nil(submission):
+    """Build a single OECD CRS703 nil return for a submission.
+
+    A nil return declares the FI has done its due-diligence checks and has no
+    reportable accounts. Per the OECD CRS XML User Guide: MessageTypeIndic =
+    CRS703, a present CrsBody + ReportingFI, and an empty ReportingGroup (no
+    AccountReport). Always one file, addressed to the FI's own residence
+    (ReceivingCountry == TransmittingCountry == FI residence). No parse_result
+    — there is nothing to ingest.
+
+    Returns {fi_residence: xml_bytes}, mirroring build_all's shape so the view
+    can treat both paths uniformly.
+    """
+    fi_residence = submission.reporting_fi.res_country_code
+    xml = _build_xml_doc(
+        submission, [], fi_residence,
+        message_type_indic_override="CRS703",
+        append_rc_suffix=False,
+    )
+    return {fi_residence: xml}
+
 
 # ---------------------------------------------------------------------------
 # Small helpers
@@ -346,16 +367,21 @@ def _format_amount(amount):
 # ---------------------------------------------------------------------------
 # Internal: build one XML file from a list of slices
 # ---------------------------------------------------------------------------
-def _build_xml_doc(submission, slices, receiving_country):
+def _build_xml_doc(submission, slices, receiving_country,
+                   message_type_indic_override=None, append_rc_suffix=True):
     """Build a single CRS XML file containing the supplied slices.
-    receiving_country is what goes in MessageSpec; TC always = FI residence."""
+    receiving_country is what goes in MessageSpec; TC always = FI residence.
+    message_type_indic_override forces MessageTypeIndic — nil returns pass
+    CRS703 regardless of submission.message_type."""
     now = datetime.now(timezone.utc)
 
     root = etree.Element(_CRS + "CRS_OECD", nsmap=NSMAP)
     root.set(_XSI + "schemaLocation", SCHEMA_LOCATION)
     root.set("version", str(submission.country_config.oecd_version))
 
-    _build_message_spec(root, submission, receiving_country, now)
+    _build_message_spec(root, submission, receiving_country, now,
+                        message_type_indic_override=message_type_indic_override,
+                        append_rc_suffix=append_rc_suffix)
     _build_crs_body(root, submission, slices)
 
     return etree.tostring(
@@ -366,7 +392,8 @@ def _build_xml_doc(submission, slices, receiving_country):
 # ---------------------------------------------------------------------------
 # MessageSpec — RC now comes from the per-file context, not submission directly
 # ---------------------------------------------------------------------------
-def _build_message_spec(parent, submission, receiving_country, now):
+def _build_message_spec(parent, submission, receiving_country, now,
+                        message_type_indic_override=None, append_rc_suffix=True):
     spec = etree.SubElement(parent, _CRS + "MessageSpec")
 
     _ce(spec, _CRS + "SendingCompanyIN",    submission.sending_company_in)
@@ -382,12 +409,17 @@ def _build_message_spec(parent, submission, receiving_country, now):
 
     # MessageRefId per OECD spec must be unique in time AND space. For split
     # files the same base submission produces N files, so we append the RC
-    # to disambiguate. For combined (one file), the appended RC equals
-    # FI residence and the resulting id is still unique vs. other submissions.
-    per_file_ref_id = f"{submission.message_ref_id}_{receiving_country}"
-    _ce(spec, _CRS + "MessageRefId", per_file_ref_id)
+    # to disambiguate. A nil return is a single file with no disambiguation
+    # need, and the accepted Cyprus format carries no suffix — so the nil
+    # path passes append_rc_suffix=False and emits the bare minted id.
+    if append_rc_suffix:
+        ref_id = f"{submission.message_ref_id}_{receiving_country}"
+    else:
+        ref_id = submission.message_ref_id
+    _ce(spec, _CRS + "MessageRefId", ref_id)
 
-    _ce(spec, _CRS + "MessageTypeIndic", submission.message_type)
+    indic = message_type_indic_override or submission.message_type
+    _ce(spec, _CRS + "MessageTypeIndic", indic)
 
     if submission.corr_message_ref_id:
         _ce(spec, _CRS + "CorrMessageRefId", submission.corr_message_ref_id)

@@ -155,6 +155,12 @@ class SubmissionStartForm(forms.Form):
         widget=forms.Select(attrs={**_INPUT, "id": "id_sending_in"}),
         label="Sending Company IN (TIN)",
     )
+    is_nil_return = forms.BooleanField(
+        required=False,
+        label="Nil return — no accounts to report",
+        widget=forms.CheckboxInput(attrs={"class": "form-check-input",
+                                          "id": "id_is_nil_return"}),
+    )
 
     def clean(self):
         cleaned = super().clean()
@@ -253,6 +259,13 @@ class SubmissionHeaderForm(forms.ModelForm):
             del self.fields["receiving_country"]
         else:
             self.fields["receiving_country"].disabled = True
+        # Nil returns are CRS703 by definition — lock the indicator so it can't
+        # be switched away from the value set at draft creation. Disabled
+        # ModelForm fields keep their initial (model) value, so save() won't
+        # clobber it.
+        if self.instance and self.instance.is_nil_return:
+            self.fields["message_type"].disabled = True
+            self.fields["document_type"].disabled = True   # nil is always OECD1
 
     def clean_transmitting_country(self):
         return self.cleaned_data.get("transmitting_country", "").upper().strip()

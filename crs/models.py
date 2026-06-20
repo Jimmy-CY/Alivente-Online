@@ -384,6 +384,13 @@ class Submission(models.Model):
         related_name="crs_submissions",
         help_text="User who created this submission.",
     )
+    is_nil_return = models.BooleanField(
+        default=False,
+        help_text="When True, this is a CRS703 nil return: the FI has carried "
+                  "out its due-diligence checks and has no reportable accounts. "
+                  "No Excel upload is required; a single empty-ReportingGroup "
+                  "XML file is generated for the FI's own jurisdiction.",
+    )
 
     # ===== Message Header (§I) =============================================
     transmitting_country = models.CharField(

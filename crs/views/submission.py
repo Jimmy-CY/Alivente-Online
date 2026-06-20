@@ -62,6 +62,7 @@ def submission_start(request):
                 country    = form.cleaned_data["country_config"]
                 year       = form.cleaned_data["year"]
                 sending_in = form.cleaned_data["sending_company_in"]
+                is_nil     = form.cleaned_data["is_nil_return"]
 
                 ref_id = resolve_strict(
                     country.message_ref_id_template,
@@ -80,7 +81,8 @@ def submission_start(request):
                     # ignored; XML generator sets RC per file at output time.
                     receiving_country=fi_obj.res_country_code,
                     document_type="OECD1",
-                    message_type="CRS701",
+                    message_type="CRS703" if is_nil else "CRS701",
+                    is_nil_return=is_nil,
                     message_ref_id=ref_id,
                     status="draft",
                     created_by=request.user,
@@ -417,38 +419,46 @@ def submission_generate_xml(request, pk):
         messages.error(request, "Cannot regenerate XML — submission is not in draft state.")
         return redirect("crs:submission_detail", pk=pk)
 
-    if not submission.uploaded_excel:
-        messages.error(request, "Upload an Excel file first.")
-        return redirect("crs:submission_detail", pk=pk)
+    # Nil return: no Excel, no parse — build a single CRS703 file directly.
+    if submission.is_nil_return:
+        try:
+            files_by_rc = xml_builder.build_nil(submission)
+        except Exception as exc:
+            messages.error(request, f"XML build failed: {exc}")
+            return redirect("crs:submission_detail", pk=pk)
+    else:
+        if not submission.uploaded_excel:
+            messages.error(request, "Upload an Excel file first.")
+            return redirect("crs:submission_detail", pk=pk)
 
-    # Re-parse so we always work from the workbook's current state
-    try:
-        parse_result = parser.parse(submission.uploaded_excel.path)
-    except Exception as exc:
-        messages.error(request, f"Parse failed: {exc}")
-        return redirect("crs:submission_detail", pk=pk)
+        # Re-parse so we always work from the workbook's current state
+        try:
+            parse_result = parser.parse(submission.uploaded_excel.path)
+        except Exception as exc:
+            messages.error(request, f"Parse failed: {exc}")
+            return redirect("crs:submission_detail", pk=pk)
 
-    if not parse_result.is_valid:
-        messages.error(
-            request,
-            f"Cannot generate XML — Excel parser reported "
-            f"{len(parse_result.errors)} error(s). Fix the workbook and retry."
-        )
-        return redirect("crs:submission_detail", pk=pk)
+        if not parse_result.is_valid:
+            messages.error(
+                request,
+                f"Cannot generate XML — Excel parser reported "
+                f"{len(parse_result.errors)} error(s). Fix the workbook and retry."
+            )
+            return redirect("crs:submission_detail", pk=pk)
 
-    try:
-        files_by_rc = xml_builder.build_all(submission, parse_result)
-    except Exception as exc:
-        messages.error(request, f"XML build failed: {exc}")
-        return redirect("crs:submission_detail", pk=pk)
+        try:
+            files_by_rc = xml_builder.build_all(submission, parse_result)
+        except Exception as exc:
+            messages.error(request, f"XML build failed: {exc}")
+            return redirect("crs:submission_detail", pk=pk)
 
-    if not files_by_rc:
-        messages.error(
-            request,
-            "No reportable accounts in the workbook — nothing to generate. "
-            "Check that holders aren't all US or domestic residents."
-        )
-        return redirect("crs:submission_detail", pk=pk)
+        if not files_by_rc:
+            messages.error(
+                request,
+                "No reportable accounts in the workbook — nothing to generate. "
+                "Check that holders aren't all US or domestic residents."
+            )
+            return redirect("crs:submission_detail", pk=pk)
 
     # Filename template handling. For split mode, ensure [RECEIVING_COUNTRY]
     # appears in the template so split files don't collide. Auto-prepend if
