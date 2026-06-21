@@ -8,6 +8,8 @@ Functions:
             "coming-soon" until each section's list view is built.
 """
 from django.contrib.auth.decorators import login_required, permission_required
+from django.contrib.staticfiles import finders
+from django.http import FileResponse, Http404
 from django.shortcuts import render
 
 from crs.models import CountryConfiguration, ReportingFI, Submission
@@ -25,3 +27,15 @@ def index(request):
         "closed_count":     Submission.objects.filter(status="closed").count(),
     }
     return render(request, "crs/index.html", context)
+
+
+@permission_required("auth.can_access_crs", raise_exception=True)
+def download_template(request):
+    path = finders.find("crs/templates/crs_template.xlsx")
+    if not path:
+        raise Http404("CRS template not found")
+    return FileResponse(
+        open(path, "rb"),
+        as_attachment=True,
+        filename="crs_template.xlsx",
+    )

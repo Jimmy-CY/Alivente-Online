@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load help_modal_tags %}
 
 {% block title %}CRS — Submission {{ submission.message_ref_id|truncatechars:30 }}{% endblock %}
 
@@ -25,6 +26,10 @@
 
 <!-- Action Buttons -->
 <div class="page-action-buttons">
+  <button type="button" class="btn btn-success btn-sm action-icon"
+        data-toggle="modal" data-target="#crs_submissionsHelpModal" aria-label="Help">
+    <i class="fas fa-question-circle"></i><span class="action-back-label"> Help</span>
+  </button>
   <a href="{% url 'crs:submission_list' %}" class="btn btn-success action-back" role="button" aria-label="Back to list">
     <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
   </a>
@@ -212,7 +217,7 @@
         {% endif %}
         <small class="field-help">
           .xlsx or .xls, max 25 MB. Format: two sheets (Individuals, Organisations)
-          per the <a href="{% static 'crs/templates/crs_template.xlsx' %}" download><strong>downloadable template</strong></a>.
+          per the <a href="{% url 'crs:download_template' %}"><strong>downloadable template</strong></a>.
         </small>
       </form>
       {% endif %}
@@ -1162,5 +1167,7 @@
     .modal-footer form .btn { width: 100%; }
   }
 </style>
+
+{% render_help_modal "crs_submissions" %}
 
 {% endblock %}

@@ -1,0 +1,666 @@
+﻿<!--
+  ===========================================================================
+  ALIVENTE ONLINE — HELP CONTENT: CRS REPORTING MODULE
+  ===========================================================================
+  Help for the CRS (Common Reporting Standard) module's four pages:
+
+    1. CRS Landing / Summary           slug: crs
+    2. Country Configurations          slug: crs_country_configurations
+    3. Reporting Financial Institutions slug: crs_reporting_fis
+    4. Submissions                     slug: crs_submissions
+
+  Parsed by:  pages/services/help_renderer.py
+  Each <section data-module-slug="..."> becomes one help modal.
+  Each <article data-tab-slug="...">    becomes one tab in that modal.
+
+  Wired into templates with {% render_help_modal "slug" %} +
+  a Help button targeting #<slug>HelpModal.
+
+  REMINDER: help content is cached at module level — restart Django (not just
+  a browser refresh) to pick up changes to this file.
+  ===========================================================================
+-->
+
+<!-- ======= CRS LANDING / SUMMARY ======= -->
+<section data-module-slug="crs"
+         data-module-group="Personal"
+         data-module-permission="can_access_crs"
+         data-module-name="CRS Reporting"
+         data-module-icon="fa-globe"
+         data-module-category="Personal"
+         data-module-subtitle="Produce Common Reporting Standard XML for the OECD automatic exchange of information">
+
+  <article data-tab-slug="crs-overview"
+           data-tab-name="Overview"
+           data-tab-icon="fa-info-circle">
+    <div style="display:flex; align-items:flex-start; gap:16px; margin-bottom:24px;">
+      <div style="width:50px; height:50px; border-radius:12px; background:#2b6cb0; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+        <i class="fas fa-globe" style="color:white; font-size:22px;"></i>
+      </div>
+      <div>
+        <h5 style="font-weight:700; color:#2c3e50; margin-bottom:6px;">What is the CRS Reporting module?</h5>
+        <p style="color:#6c757d; font-size:14px; line-height:1.7;">The CRS module produces <strong>Common Reporting Standard (CRS)</strong> XML files for the OECD's <strong>Automatic Exchange of Information (AEOI)</strong> regime. It takes your account data from an Excel workbook, validates and cleans it, builds jurisdiction-specific XML that conforms to the OECD CRS schema, and tracks each annual filing from draft right through to acknowledgement by the receiving authority.</p>
+      </div>
+    </div>
+
+    <p style="font-size:14px; color:#6c757d; line-height:1.7;">CRS is the OECD framework under which financial institutions report the accounts of foreign tax residents, so that information can be exchanged automatically between tax authorities. A Financial Institution does not file directly with each receiving country &mdash; it files with its own home tax authority (in your case the Cyprus Tax Department's AEOI portal), which then routes the data internationally. This module produces the XML the FI uploads to that portal.</p>
+
+    <h6 style="font-weight:700; color:#2c3e50; margin:20px 0 14px; border-bottom:2px solid #2b6cb0; padding-bottom:6px;"><i class="fas fa-star" style="color:#2b6cb0;"></i> What it does</h6>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:20px;">
+      <div style="background:#eef4fb; border:1px solid #bcd4ee; border-radius:8px; padding:14px;"><div style="font-weight:600; color:#2b6cb0; margin-bottom:4px;"><i class="fas fa-database"></i> Master data</div><div style="font-size:13px; color:#6c757d;">Configure the receiving jurisdictions you report into, and the Financial Institution(s) that lodge the filings.</div></div>
+      <div style="background:#eef4fb; border:1px solid #bcd4ee; border-radius:8px; padding:14px;"><div style="font-weight:600; color:#2b6cb0; margin-bottom:4px;"><i class="fas fa-file-excel"></i> Excel ingest</div><div style="font-size:13px; color:#6c757d;">Download a bundled template, fill one row per reportable account, and upload it. The system parses, normalises and validates every row.</div></div>
+      <div style="background:#eef4fb; border:1px solid #bcd4ee; border-radius:8px; padding:14px;"><div style="font-weight:600; color:#2b6cb0; margin-bottom:4px;"><i class="fas fa-code"></i> XML generation</div><div style="font-size:13px; color:#6c757d;">Build OECD-conformant CRS XML &mdash; one file per receiving country, or a single combined file where a jurisdiction is configured for it.</div></div>
+      <div style="background:#eef4fb; border:1px solid #bcd4ee; border-radius:8px; padding:14px;"><div style="font-weight:600; color:#2b6cb0; margin-bottom:4px;"><i class="fas fa-check-double"></i> Schema validation</div><div style="font-size:13px; color:#6c757d;">Every generated file is validated against the bundled OECD XSDs before it is made available for download.</div></div>
+      <div style="background:#eef4fb; border:1px solid #bcd4ee; border-radius:8px; padding:14px;"><div style="font-weight:600; color:#2b6cb0; margin-bottom:4px;"><i class="fas fa-stream"></i> Lifecycle tracking</div><div style="font-size:13px; color:#6c757d;">Each submission moves through draft &rarr; closed &rarr; submitted &rarr; acknowledged / rejected, with the status recorded for audit.</div></div>
+      <div style="background:#eef4fb; border:1px solid #bcd4ee; border-radius:8px; padding:14px;"><div style="font-weight:600; color:#2b6cb0; margin-bottom:4px;"><i class="fas fa-download"></i> Download &amp; view</div><div style="font-size:13px; color:#6c757d;">Download files individually or as a ZIP, and view any generated XML inline before you submit it.</div></div>
+    </div>
+
+    <div style="background:#fff3cd; border:1px solid #ffc107; border-radius:8px; padding:14px; font-size:13px;">
+      <i class="fas fa-exclamation-triangle" style="color:#856404;"></i>
+      <strong style="color:#856404;"> Current schema:</strong>
+      <span style="color:#856404;"> The module targets OECD CRS XML schema <strong>version 2.0</strong>, accepted by all CRS jurisdictions for calendar-year 2025 data filed by 31 May 2026. A schema upgrade (informally "CRS 2.0", schema v4.0) becomes mandatory for 2026 data filed in 2027 &mdash; that is a planned future change.</span>
+    </div>
+  </article>
+
+  <article data-tab-slug="crs-how"
+           data-tab-name="How It Works"
+           data-tab-icon="fa-project-diagram">
+    <h6 style="font-weight:700; color:#2c3e50; margin-bottom:16px; border-bottom:2px solid #2b6cb0; padding-bottom:6px;"><i class="fas fa-project-diagram" style="color:#2b6cb0;"></i> The end-to-end flow</h6>
+    <p style="font-size:14px; color:#6c757d; margin-bottom:18px;">Two one-time setup steps, then an annual filing cycle you repeat each reporting period.</p>
+
+    <h6 style="font-weight:600; color:#2c3e50; margin-bottom:10px;"><i class="fas fa-tools" style="color:#2b6cb0;"></i> One-time setup</h6>
+    <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:20px;">
+      <div style="background:#f8f9fa; border-radius:8px; padding:12px; border-left:4px solid #2b6cb0; font-size:13px; color:#6c757d;"><strong style="color:#2c3e50;">1. Country Configurations</strong> &mdash; one row per receiving jurisdiction you report into, each with its schema version, output strategy, reference-ID templates and TIN validation. A baseline of 30 countries (Cyprus plus 29 seeded) ships ready to use.</div>
+      <div style="background:#f8f9fa; border-radius:8px; padding:12px; border-left:4px solid #2b6cb0; font-size:13px; color:#6c757d;"><strong style="color:#2c3e50;">2. Reporting Financial Institution(s)</strong> &mdash; the entity that lodges the return, with its address, contact details, and one or more Identification Numbers.</div>
+    </div>
+
+    <h6 style="font-weight:600; color:#2c3e50; margin-bottom:10px;"><i class="fas fa-redo" style="color:#2b6cb0;"></i> Annual filing cycle</h6>
+    <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:18px;">
+      <div style="background:#eef4fb; border-radius:8px; padding:10px 14px; font-size:13px; color:#2c3e50;"><span style="background:#2b6cb0; color:white; border-radius:50%; padding:1px 7px; margin-right:8px; font-size:11px;">1</span> <strong>Start submission</strong> &mdash; pick the FI and the period end. A draft is created and a unique MessageRefId is generated.</div>
+      <div style="background:#eef4fb; border-radius:8px; padding:10px 14px; font-size:13px; color:#2c3e50;"><span style="background:#2b6cb0; color:white; border-radius:50%; padding:1px 7px; margin-right:8px; font-size:11px;">2</span> <strong>Download the Excel template</strong> and fill one row per reportable account.</div>
+      <div style="background:#eef4fb; border-radius:8px; padding:10px 14px; font-size:13px; color:#2c3e50;"><span style="background:#2b6cb0; color:white; border-radius:50%; padding:1px 7px; margin-right:8px; font-size:11px;">3</span> <strong>Upload the workbook</strong> &mdash; it is parsed, normalised and validated synchronously, with a diagnostic summary.</div>
+      <div style="background:#eef4fb; border-radius:8px; padding:10px 14px; font-size:13px; color:#2c3e50;"><span style="background:#2b6cb0; color:white; border-radius:50%; padding:1px 7px; margin-right:8px; font-size:11px;">4</span> <strong>Generate XML</strong> &mdash; one file per receiving country (or a single combined file where configured), each validated against the OECD schema.</div>
+      <div style="background:#eef4fb; border-radius:8px; padding:10px 14px; font-size:13px; color:#2c3e50;"><span style="background:#2b6cb0; color:white; border-radius:50%; padding:1px 7px; margin-right:8px; font-size:11px;">5</span> <strong>Review &amp; close</strong> &mdash; once every file is valid, close the submission to freeze it.</div>
+      <div style="background:#eef4fb; border-radius:8px; padding:10px 14px; font-size:13px; color:#2c3e50;"><span style="background:#2b6cb0; color:white; border-radius:50%; padding:1px 7px; margin-right:8px; font-size:11px;">6</span> <strong>Submit externally</strong> &mdash; upload the XML to the tax authority's portal, then mark it submitted here.</div>
+      <div style="background:#eef4fb; border-radius:8px; padding:10px 14px; font-size:13px; color:#2c3e50;"><span style="background:#2b6cb0; color:white; border-radius:50%; padding:1px 7px; margin-right:8px; font-size:11px;">7</span> <strong>Record the outcome</strong> &mdash; mark the filing acknowledged or rejected when the authority responds.</div>
+    </div>
+
+    <div class="alert alert-info" style="border-left:4px solid #2b6cb0;">
+      <i class="fas fa-info-circle"></i> The full detail of each step &mdash; the Excel layout, what the parser does, every validation rule, and how the XML is built &mdash; lives in the <strong>Submissions</strong> help.
+    </div>
+  </article>
+
+  <article data-tab-slug="crs-permissions"
+           data-tab-name="Permissions"
+           data-tab-icon="fa-key">
+    <h6 style="font-weight:700; color:#2c3e50; margin-bottom:16px; border-bottom:2px solid #2b6cb0; padding-bottom:6px;"><i class="fas fa-key" style="color:#2b6cb0;"></i> Who can do what</h6>
+    <p style="font-size:14px; color:#6c757d; margin-bottom:18px;">CRS access is governed by two permissions, granted per user in <strong>User Administration &rarr; Permissions</strong>.</p>
+
+    <div class="card mb-3" style="border-left:4px solid #17a2b8;">
+      <div class="card-body">
+        <h6 style="color:#17a2b8;"><i class="fas fa-eye"></i> <strong>can_access_crs &mdash; read</strong></h6>
+        <p class="mb-0">Lets a user open the CRS pages and view, download and inspect everything &mdash; country configs, FIs, submissions and generated XML &mdash; but not change anything.</p>
+      </div>
+    </div>
+
+    <div class="card mb-3" style="border-left:4px solid #28a745;">
+      <div class="card-body">
+        <h6 style="color:#28a745;"><i class="fas fa-edit"></i> <strong>can_edit_crs &mdash; write</strong></h6>
+        <p class="mb-0">Required for any state-changing action: starting a submission, uploading Excel, generating XML, closing, marking lifecycle states, deleting, and adding or editing countries and FIs.</p>
+      </div>
+    </div>
+
+    <h6 style="font-weight:600; color:#2c3e50; margin:18px 0 10px;">How it's enforced</h6>
+    <ul style="line-height:1.8; font-size:13px; color:#6c757d;">
+      <li><strong>URL gate</strong> &mdash; any request to a CRS page by a user without <code>can_access_crs</code> is rejected before the page even runs.</li>
+      <li><strong>Per-action checks</strong> &mdash; every CRS action independently re-checks the right permission, so the URL gate is a safety net rather than the only line of defence.</li>
+      <li><strong>UI consistency</strong> &mdash; write buttons are simply hidden from read-only users, so they aren't shown actions they can't perform.</li>
+    </ul>
+
+    <div class="alert alert-warning" style="border-left:4px solid #ffc107;">
+      <i class="fas fa-crown"></i> <strong>Superusers</strong> bypass these checks and can perform any CRS action regardless of the two grants &mdash; the same as everywhere else in Alivente.
+    </div>
+  </article>
+
+  <article data-tab-slug="crs-scope"
+           data-tab-name="Scope &amp; Limits"
+           data-tab-icon="fa-ban">
+    <h6 style="font-weight:700; color:#2c3e50; margin-bottom:16px; border-bottom:2px solid #2b6cb0; padding-bottom:6px;"><i class="fas fa-ban" style="color:#2b6cb0;"></i> What the module deliberately does <em>not</em> do</h6>
+    <p style="font-size:14px; color:#6c757d; margin-bottom:18px;">Knowing the boundaries avoids surprises. These are intentional design decisions, not gaps.</p>
+
+    <div style="display:flex; flex-direction:column; gap:12px;">
+      <div style="background:#f8f9fa; border-radius:8px; padding:14px; border-left:4px solid #6c757d;">
+        <div style="font-weight:600; color:#2c3e50; margin-bottom:4px;"><i class="fas fa-paper-plane" style="color:#6c757d;"></i> No automatic transmission</div>
+        <div style="font-size:13px; color:#6c757d;">The module produces the XML; <strong>you</strong> upload it to the tax authority's portal manually. The submission status is then tracked here by hand.</div>
+      </div>
+      <div style="background:#f8f9fa; border-radius:8px; padding:14px; border-left:4px solid #6c757d;">
+        <div style="font-weight:600; color:#2c3e50; margin-bottom:4px;"><i class="fas fa-flag-usa" style="color:#6c757d;"></i> No FATCA</div>
+        <div style="font-size:13px; color:#6c757d;">This is CRS-only. US reporting uses a separate IRS FATCA schema and is out of scope. US-resident accounts are automatically excluded from CRS files.</div>
+      </div>
+      <div style="background:#f8f9fa; border-radius:8px; padding:14px; border-left:4px solid #6c757d;">
+        <div style="font-weight:600; color:#2c3e50; margin-bottom:4px;"><i class="fab fa-bitcoin" style="color:#6c757d;"></i> No CARF / DAC8 crypto reporting</div>
+        <div style="font-size:13px; color:#6c757d;">Crypto-asset reporting uses distinct schemas and would be a separate module.</div>
+      </div>
+      <div style="background:#f8f9fa; border-radius:8px; padding:14px; border-left:4px solid #6c757d;">
+        <div style="font-weight:600; color:#2c3e50; margin-bottom:4px;"><i class="fas fa-crown" style="color:#6c757d;"></i> No UK HMRC reporting (yet)</div>
+        <div style="font-size:13px; color:#6c757d;">For 2026, the UK still uses HMRC's bespoke combined CRS/FATCA schema, which this module doesn't implement. The UK becomes supportable once the schema is upgraded for the 2026 reporting year (filed in 2027).</div>
+      </div>
+    </div>
+
+    <div class="alert alert-info" style="border-left:4px solid #2b6cb0; margin-top:18px;">
+      <i class="fas fa-lightbulb"></i> The module's job stops at a validated XML file you can trust. Getting it into the portal &mdash; and any FATCA, crypto or UK obligations &mdash; remain separate, manual responsibilities.
+    </div>
+  </article>
+
+  <article data-tab-slug="crs-tips"
+           data-tab-name="Tips"
+           data-tab-icon="fa-lightbulb">
+    <h6 style="font-weight:700; color:#2c3e50; margin-bottom:16px; border-bottom:2px solid #2b6cb0; padding-bottom:6px;"><i class="fas fa-lightbulb" style="color:#2b6cb0;"></i> Best practices</h6>
+    <ul style="line-height:1.8;">
+      <li><strong>Set up master data once, reuse it every year.</strong> Countries and FIs are configured once and referenced by every submission &mdash; get them right and the annual cycle is mostly Excel work.</li>
+      <li><strong>Let the parser do the cleaning.</strong> Many formatting issues (negatives, thousand separators, accents, date formats) are auto-corrected on upload &mdash; don't waste time pre-formatting the spreadsheet by hand.</li>
+      <li><strong>Never submit a file that isn't valid.</strong> A submission can only be closed when every generated XML passes XSD validation, which is exactly what the portal expects. Trust the green check.</li>
+      <li><strong>Keep the MessageRefId unique.</strong> The system generates it for you from the country's template; never reuse one across filings &mdash; the portal will reject a duplicate identifier.</li>
+      <li><strong>If something's wrong after close, delete and redo.</strong> There is no in-place edit of a closed submission &mdash; deleting and re-creating keeps the audit trail unambiguous and issues a fresh MessageRefId.</li>
+    </ul>
+  </article>
+
+</section>
+<!-- ======= END CRS LANDING / SUMMARY ======= -->
+
+
+<!-- ======= CRS COUNTRY CONFIGURATIONS ======= -->
+<section data-module-slug="crs_country_configurations"
+         data-module-group="Personal"
+         data-module-parent="crs"
+         data-module-permission="can_access_crs"
+         data-module-name="CRS Country Configurations"
+         data-module-icon="fa-globe-americas"
+         data-module-category="CRS Reporting"
+         data-module-subtitle="One row per receiving jurisdiction — drives validation, identifiers and how output files are split">
+
+  <article data-tab-slug="cc-overview"
+           data-tab-name="Overview"
+           data-tab-icon="fa-info-circle">
+    <h6 style="font-weight:700; color:#2c3e50; margin-bottom:16px; border-bottom:2px solid #2b6cb0; padding-bottom:6px;"><i class="fas fa-globe-americas" style="color:#2b6cb0;"></i> What is a Country Configuration?</h6>
+    <p style="font-size:14px; color:#6c757d; line-height:1.7; margin-bottom:16px;">A Country Configuration is one row per <strong>receiving jurisdiction</strong> &mdash; the destination a CRS report is ultimately routed to. Each row controls whether the country is available when starting a submission, which schema version applies, how accounts are grouped into output files, the templates used to build the OECD reference identifiers and the output filename, and how TINs are validated for that jurisdiction.</p>
+
+    <div class="alert alert-info" style="border-left:4px solid #2b6cb0;">
+      <i class="fas fa-seedling"></i> <strong>Already seeded for you.</strong> A baseline of 30 jurisdictions ships ready to use &mdash; Cyprus plus 29 others. You only need to add or edit rows if you report into a jurisdiction outside that baseline, or want to change a strategy, template or flag.
+    </div>
+
+    <h6 style="font-weight:600; color:#2c3e50; margin:18px 0 10px;">Where to find it</h6>
+    <p style="font-size:13px; color:#6c757d;">From the CRS landing page, open <strong>Country Configurations</strong>. The table lists every configured jurisdiction; the eye icon opens a read-only detail view of all its settings, and add / edit / delete actions require write access.</p>
+  </article>
+
+  <article data-tab-slug="cc-fields"
+           data-tab-name="The Fields"
+           data-tab-icon="fa-list">
+    <h6 style="font-weight:700; color:#2c3e50; margin-bottom:16px; border-bottom:2px solid #2b6cb0; padding-bottom:6px;"><i class="fas fa-list" style="color:#2b6cb0;"></i> Each field explained</h6>
+    <p style="font-size:13px; color:#6c757d; margin-bottom:16px;">The detail view groups the fields into three sections &mdash; Basic, Reference ID Templates, and Validation.</p>
+
+    <h6 style="font-weight:600; color:#2b6cb0; margin-bottom:10px;"><i class="fas fa-info-circle"></i> Basic</h6>
+    <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:20px;">
+      <div style="background:#f8f9fa; border-radius:8px; padding:14px; border-left:4px solid #2b6cb0;">
+        <div style="font-weight:700; color:#2c3e50; margin-bottom:4px; font-size:13px;">Code</div>
+        <div style="font-size:12px; color:#6c757d;">The ISO-3166 alpha-2 code (e.g. <code>CY</code>, <code>DE</code>, <code>FR</code>). This is the primary lookup key, so it must be a valid two-letter code recognised by the OECD.</div>
+      </div>
+      <div style="background:#f8f9fa; border-radius:8px; padding:14px; border-left:4px solid #2b6cb0;">
+        <div style="font-weight:700; color:#2c3e50; margin-bottom:4px; font-size:13px;">Name</div>
+        <div style="font-size:12px; color:#6c757d;">The display name shown throughout the UI. Cosmetic &mdash; the code is what drives behaviour.</div>
+      </div>
+      <div style="background:#f8f9fa; border-radius:8px; padding:14px; border-left:4px solid #2b6cb0;">
+        <div style="font-weight:700; color:#2c3e50; margin-bottom:4px; font-size:13px;">Status (Active)</div>
+        <div style="font-size:12px; color:#6c757d;">When inactive, the country is excluded from new submissions. Use this to retire a jurisdiction without deleting its configuration.</div>
+      </div>
+      <div style="background:#f8f9fa; border-radius:8px; padding:14px; border-left:4px solid #2b6cb0;">
+        <div style="font-weight:700; color:#2c3e50; margin-bottom:4px; font-size:13px;">Schema Version</div>
+        <div style="font-size:12px; color:#6c757d;">The OECD schema version in force for this jurisdiction &mdash; currently <code>2.0</code> for all rows. This will be bumped jurisdiction-by-jurisdiction when the schema upgrade lands.</div>
+      </div>
+      <div style="background:#f8f9fa; border-radius:8px; padding:14px; border-left:4px solid #2b6cb0;">
+        <div style="font-weight:700; color:#2c3e50; margin-bottom:4px; font-size:13px;">Receiving Country Strategy</div>
+        <div style="font-size:12px; color:#6c757d;">Either <code>Split by Residence</code> (the default &mdash; and what <strong>Cyprus</strong> uses) or <code>Combined Domestic</code>. This decides how accounts are grouped into output files &mdash; see the <strong>Strategies</strong> tab.</div>
+      </div>
+      <div style="background:#f8f9fa; border-radius:8px; padding:14px; border-left:4px solid #2b6cb0;">
+        <div style="font-weight:700; color:#2c3e50; margin-bottom:4px; font-size:13px;">Notes</div>
+        <div style="font-size:12px; color:#6c757d;">Free-text operational notes for your own reference &mdash; not used by the system.</div>
+      </div>
+      <div style="background:#f8f9fa; border-radius:8px; padding:14px; border-left:4px solid #2b6cb0;">
+        <div style="font-weight:700; color:#2c3e50; margin-bottom:4px; font-size:13px;">Last Updated</div>
+        <div style="font-size:12px; color:#6c757d;">Timestamp of the most recent change to this configuration &mdash; informational.</div>
+      </div>
+    </div>
+
+    <h6 style="font-weight:600; color:#2b6cb0; margin-bottom:10px;"><i class="fas fa-fingerprint"></i> Reference ID Templates</h6>
+    <p style="font-size:13px; color:#6c757d; margin-bottom:10px;">These templates control the OECD identifiers and the output filename the builder generates for this jurisdiction, so each one matches the receiving authority's conventions. They use placeholder tokens that expand at generation time.</p>
+    <div style="background:#eef4fb; border:1px solid #bcd4ee; border-radius:8px; padding:12px 14px; font-size:12px; color:#2c3e50; margin-bottom:12px;">
+      <strong>Placeholders:</strong>
+      <span style="display:block; margin-top:6px;"><code>[SENDING_FI_IN]</code> &mdash; the sending FI's Identification Number &nbsp;&middot;&nbsp; <code>[YEAR]</code> &mdash; the reporting year &nbsp;&middot;&nbsp; <code>[UUID]</code> &mdash; a generated unique component for global uniqueness &nbsp;&middot;&nbsp; <code>[YYYYMMDDHHMM]</code> &mdash; a timestamp to the minute &nbsp;&middot;&nbsp; <code>[CURRENT_DATE]</code> &mdash; the file generation date.</span>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:20px;">
+      <div style="background:#f8f9fa; border-radius:8px; padding:14px; border-left:4px solid #2b6cb0;">
+        <div style="font-weight:700; color:#2c3e50; margin-bottom:4px; font-size:13px;">Message Ref ID</div>
+        <div style="font-size:12px; color:#6c757d;">Template for the file-level <strong>MessageRefId</strong> &mdash; the unique identifier for the whole submission. Must be unique across all filings, or the portal rejects it. Example: <code>[SENDING_FI_IN].[YEAR]_[UUID]</code>.</div>
+      </div>
+      <div style="background:#f8f9fa; border-radius:8px; padding:14px; border-left:4px solid #2b6cb0;">
+        <div style="font-weight:700; color:#2c3e50; margin-bottom:4px; font-size:13px;">FI Doc Ref ID</div>
+        <div style="font-size:12px; color:#6c757d;">Template for the <strong>DocRefId</strong> of the reporting-FI element. Example: <code>[SENDING_FI_IN].[YEAR]_[YYYYMMDDHHMM]_[UUID]</code>.</div>
+      </div>
+      <div style="background:#f8f9fa; border-radius:8px; padding:14px; border-left:4px solid #2b6cb0;">
+        <div style="font-weight:700; color:#2c3e50; margin-bottom:4px; font-size:13px;">Account Doc Ref ID</div>
+        <div style="font-size:12px; color:#6c757d;">Template for the <strong>DocRefId</strong> of each account / controlling-person record. Each record gets its own unique value. Example: <code>[SENDING_FI_IN].[YEAR]_[YYYYMMDDHHMM]_[UUID]</code>.</div>
+      </div>
+      <div style="background:#f8f9fa; border-radius:8px; padding:14px; border-left:4px solid #2b6cb0;">
+        <div style="font-weight:700; color:#2c3e50; margin-bottom:4px; font-size:13px;">Output Filename</div>
+        <div style="font-size:12px; color:#6c757d;">Template for the generated XML filename. Example: <code>[SENDING_FI_IN]_[CURRENT_DATE].xml</code>.</div>
+      </div>
+    </div>
+
+    <h6 style="font-weight:600; color:#2b6cb0; margin-bottom:10px;"><i class="fas fa-clipboard-check"></i> Validation</h6>
+    <div style="display:flex; flex-direction:column; gap:10px;">
+      <div style="background:#f8f9fa; border-radius:8px; padding:14px; border-left:4px solid #2b6cb0;">
+        <div style="font-weight:700; color:#2c3e50; margin-bottom:4px; font-size:13px;">TIN Regex</div>
+        <div style="font-size:12px; color:#6c757d;">A regular expression used to validate Tax Identification Numbers for accounts reported into this jurisdiction. The default <code>[a-zA-Z0-9]*</code> accepts any alphanumeric TIN. Tighten it for a jurisdiction with a stricter TIN format.</div>
+      </div>
+    </div>
+  </article>
+
+  <article data-tab-slug="cc-strategies"
+           data-tab-name="Strategies"
+           data-tab-icon="fa-sitemap">
+    <h6 style="font-weight:700; color:#2c3e50; margin-bottom:16px; border-bottom:2px solid #2b6cb0; padding-bottom:6px;"><i class="fas fa-sitemap" style="color:#2b6cb0;"></i> How accounts become files</h6>
+    <p style="font-size:14px; color:#6c757d; margin-bottom:18px;">The receiving-country strategy is the most consequential setting on the row. It answers one question: <em>how should reportable accounts be grouped into the XML files you submit?</em></p>
+
+    <div class="card mb-3" style="border-left:4px solid #2b6cb0;">
+      <div class="card-body">
+        <h6 style="color:#2b6cb0;"><i class="fas fa-columns"></i> <strong>Split by Residence</strong> <small class="text-muted">(default &mdash; used by Cyprus)</small></h6>
+        <p class="mb-1">One XML file per receiving country, each containing only the accounts of <strong>tax residents of that country</strong>. This is standard OECD behaviour and the right strategy for most jurisdictions, including Cyprus.</p>
+        <p class="mb-0"><small class="text-muted">Example: an FI with accounts across France (5), Spain (4) and Italy (3) produces three files &mdash; one FR, one ES, one IT &mdash; each holding only that country's residents.</small></p>
+      </div>
+    </div>
+
+    <div class="card mb-3" style="border-left:4px solid #28a745;">
+      <div class="card-body">
+        <h6 style="color:#28a745;"><i class="fas fa-compress-arrows-alt"></i> <strong>Combined Domestic</strong></h6>
+        <p class="mb-1">A <strong>single file</strong> for the FI's home jurisdiction, containing foreign-resident accounts <strong>together with</strong> domestic-resident accounts. This suits an authority that prefers one ingestion file with domestic accounts included.</p>
+        <p class="mb-0"><small class="text-muted">In combined mode the builder also groups multiple controlling persons under a single account element rather than over-decomposing, keeping the record count compact without changing its meaning.</small></p>
+      </div>
+    </div>
+
+    <h6 style="font-weight:600; color:#2c3e50; margin:20px 0 10px;"><i class="fas fa-filter" style="color:#2b6cb0;"></i> Two automatic exclusions</h6>
+    <p style="font-size:13px; color:#6c757d; margin-bottom:12px;">Regardless of strategy, the builder applies two rules so you never accidentally over-report:</p>
+    <div style="display:flex; flex-direction:column; gap:10px;">
+      <div style="background:#fdecea; border:1px solid #f5c6cb; border-radius:8px; padding:12px; font-size:13px; color:#721c24;">
+        <strong><i class="fas fa-flag-usa"></i> US residents are always dropped.</strong> They are out of scope for CRS (reportable under FATCA instead). The parser flags them and the builder excludes them with an informational message.
+      </div>
+      <div style="background:#fff3cd; border:1px solid #ffc107; border-radius:8px; padding:12px; font-size:13px; color:#856404;">
+        <strong><i class="fas fa-home"></i> Domestic residents are dropped in split mode.</strong> For split-by-residence jurisdictions, accounts of the FI's own residence-country residents are excluded (they fall under domestic tax rules). Combined-domestic jurisdictions are exempt &mdash; they intentionally include domestic accounts.
+      </div>
+    </div>
+  </article>
+
+  <article data-tab-slug="cc-tips"
+           data-tab-name="Tips"
+           data-tab-icon="fa-lightbulb">
+    <h6 style="font-weight:700; color:#2c3e50; margin-bottom:16px; border-bottom:2px solid #2b6cb0; padding-bottom:6px;"><i class="fas fa-lightbulb" style="color:#2b6cb0;"></i> Best practices</h6>
+    <ul style="line-height:1.8;">
+      <li><strong>Leave the seeded baseline alone unless you have a reason.</strong> The 30 shipped jurisdictions cover the common cases. Add a row only when you report into something outside it.</li>
+      <li><strong>Use the right strategy.</strong> Most jurisdictions &mdash; including Cyprus &mdash; use <code>Split by Residence</code>. Switch a row to <code>Combined Domestic</code> only when that authority asks for a single combined file that includes domestic accounts.</li>
+      <li><strong>Match the reference-ID templates to the portal.</strong> The MessageRefId, DocRefId and filename templates exist so each jurisdiction's output matches what its portal expects &mdash; only change them if the portal's conventions differ.</li>
+      <li><strong>Deactivate, don't delete.</strong> To stop using a jurisdiction, set it inactive. That removes it from new submissions while preserving the configuration.</li>
+      <li><strong>Get the ISO code exactly right.</strong> It's the primary key and drives validation. A wrong or non-OECD code will cause downstream XSD failures.</li>
+      <li><strong>Trust the exclusions.</strong> If a count looks lower than your raw data, the US and domestic exclusions are usually why &mdash; that's correct behaviour, not a missing record.</li>
+    </ul>
+  </article>
+
+</section>
+<!-- ======= END CRS COUNTRY CONFIGURATIONS ======= -->
+
+
+<!-- ======= CRS REPORTING FINANCIAL INSTITUTIONS ======= -->
+<section data-module-slug="crs_reporting_fis"
+         data-module-group="Personal"
+         data-module-parent="crs"
+         data-module-permission="can_access_crs"
+         data-module-name="CRS Reporting Financial Institutions"
+         data-module-icon="fa-university"
+         data-module-category="CRS Reporting"
+         data-module-subtitle="The institution that lodges the return, plus its identification numbers">
+
+  <article data-tab-slug="fi-overview"
+           data-tab-name="Overview"
+           data-tab-icon="fa-info-circle">
+    <h6 style="font-weight:700; color:#2c3e50; margin-bottom:16px; border-bottom:2px solid #2b6cb0; padding-bottom:6px;"><i class="fas fa-university" style="color:#2b6cb0;"></i> What is a Reporting FI?</h6>
+    <p style="font-size:14px; color:#6c757d; line-height:1.7; margin-bottom:16px;">A <strong>Reporting Financial Institution</strong> is the entity that lodges the CRS return. Its details flow into the OECD <em>MessageHeader</em> of every XML file it produces &mdash; legal name, residence country, address and contact information. You can configure more than one FI if you report on behalf of several entities (group-level reporting).</p>
+
+    <div class="alert alert-info" style="border-left:4px solid #2b6cb0;">
+      <i class="fas fa-link"></i> Each submission references exactly one Reporting FI. The FI is master data &mdash; set it up once and select it whenever you start a new submission.
+    </div>
+
+    <h6 style="font-weight:600; color:#2c3e50; margin:18px 0 10px;">Where to find it</h6>
+    <p style="font-size:13px; color:#6c757d;">From the CRS landing page, open <strong>Reporting Financial Institutions</strong>. Click <strong>Add Reporting FI</strong> to create one, or Edit to update it. Adding and editing require write access.</p>
+  </article>
+
+  <article data-tab-slug="fi-details"
+           data-tab-name="FI Details"
+           data-tab-icon="fa-id-card">
+    <h6 style="font-weight:700; color:#2c3e50; margin-bottom:16px; border-bottom:2px solid #2b6cb0; padding-bottom:6px;"><i class="fas fa-id-card" style="color:#2b6cb0;"></i> The institution record</h6>
+    <div style="display:flex; flex-direction:column; gap:12px;">
+      <div style="background:#f8f9fa; border-radius:8px; padding:14px; border-left:4px solid #2b6cb0;">
+        <div style="font-weight:700; color:#2c3e50; margin-bottom:4px; font-size:13px;">Legal name</div>
+        <div style="font-size:12px; color:#6c757d;">The institution's legal name exactly as it should appear in the OECD MessageHeader.</div>
+      </div>
+      <div style="background:#f8f9fa; border-radius:8px; padding:14px; border-left:4px solid #2b6cb0;">
+        <div style="font-weight:700; color:#2c3e50; margin-bottom:4px; font-size:13px;">Residence country code</div>
+        <div style="font-size:12px; color:#6c757d;">The ISO-3166 alpha-2 residence country of the FI (e.g. <code>CY</code>). This also determines which accounts count as "domestic" for the exclusion rules.</div>
+      </div>
+      <div style="background:#f8f9fa; border-radius:8px; padding:14px; border-left:4px solid #2b6cb0;">
+        <div style="font-weight:700; color:#2c3e50; margin-bottom:4px; font-size:13px;">Structured address</div>
+        <div style="font-size:12px; color:#6c757d;">The multi-field address that populates the OECD CRS address element.</div>
+      </div>
+      <div style="background:#f8f9fa; border-radius:8px; padding:14px; border-left:4px solid #2b6cb0;">
+        <div style="font-weight:700; color:#2c3e50; margin-bottom:4px; font-size:13px;">Contact name, email &amp; phone</div>
+        <div style="font-size:12px; color:#6c757d;">Contact details echoed into the MessageHeader.</div>
+      </div>
+      <div style="background:#f8f9fa; border-radius:8px; padding:14px; border-left:4px solid #2b6cb0;">
+        <div style="font-weight:700; color:#2c3e50; margin-bottom:4px; font-size:13px;">Active</div>
+        <div style="font-size:12px; color:#6c757d;">When unticked, the FI is hidden from the start-submission workflow without being deleted.</div>
+      </div>
+    </div>
+  </article>
+
+  <article data-tab-slug="fi-ins"
+           data-tab-name="Identification Numbers"
+           data-tab-icon="fa-hashtag">
+    <h6 style="font-weight:700; color:#2c3e50; margin-bottom:16px; border-bottom:2px solid #2b6cb0; padding-bottom:6px;"><i class="fas fa-hashtag" style="color:#2b6cb0;"></i> One FI, several Identification Numbers</h6>
+    <p style="font-size:14px; color:#6c757d; line-height:1.7; margin-bottom:16px;">The OECD schema allows a Financial Institution to carry <strong>multiple Identification Numbers</strong> &mdash; for example, a different IN per receiving jurisdiction. On the FI edit form you add one or more IN rows, each describing a single identifier. The IN also feeds the <code>[SENDING_FI_IN]</code> placeholder used in the country reference-ID templates.</p>
+
+    <div style="display:flex; flex-direction:column; gap:12px; margin-bottom:16px;">
+      <div style="background:#f8f9fa; border-radius:8px; padding:14px; border-left:4px solid #2b6cb0;">
+        <div style="font-weight:700; color:#2c3e50; margin-bottom:4px; font-size:13px;">IN value</div>
+        <div style="font-size:12px; color:#6c757d;">The identification number itself.</div>
+      </div>
+      <div style="background:#f8f9fa; border-radius:8px; padding:14px; border-left:4px solid #2b6cb0;">
+        <div style="font-weight:700; color:#2c3e50; margin-bottom:4px; font-size:13px;">Issued by</div>
+        <div style="font-size:12px; color:#6c757d;">The ISO country code of the authority that issued the number.</div>
+      </div>
+      <div style="background:#f8f9fa; border-radius:8px; padding:14px; border-left:4px solid #2b6cb0;">
+        <div style="font-weight:700; color:#2c3e50; margin-bottom:4px; font-size:13px;">IN type</div>
+        <div style="font-size:12px; color:#6c757d;">The OECD IN-type code &mdash; e.g. <code>TIN</code> (Tax Identification Number) or <code>GIIN</code> (Global Intermediary Identification Number).</div>
+      </div>
+    </div>
+
+    <div class="alert alert-info" style="border-left:4px solid #2b6cb0;">
+      <i class="fas fa-info-circle"></i> Add an IN for each jurisdiction the FI needs to identify itself to. Each is scoped by its issuing country and type, so the same FI can present the right identifier in each file.
+    </div>
+  </article>
+
+  <article data-tab-slug="fi-tips"
+           data-tab-name="Tips"
+           data-tab-icon="fa-lightbulb">
+    <h6 style="font-weight:700; color:#2c3e50; margin-bottom:16px; border-bottom:2px solid #2b6cb0; padding-bottom:6px;"><i class="fas fa-lightbulb" style="color:#2b6cb0;"></i> Best practices</h6>
+    <ul style="line-height:1.8;">
+      <li><strong>Match the legal name precisely.</strong> It goes straight into the MessageHeader the authority reads &mdash; use the exact registered name, not an informal one.</li>
+      <li><strong>Add every IN you need up front.</strong> If you report into several jurisdictions, set up the matching INs once so each generated file carries the correct identifier.</li>
+      <li><strong>Keep contact details current.</strong> They are echoed into every filing's header and are what an authority uses to reach you about a return.</li>
+      <li><strong>Deactivate rather than delete</strong> an FI you've stopped using &mdash; it keeps the historical submissions intact and reversible.</li>
+    </ul>
+  </article>
+
+</section>
+<!-- ======= END CRS REPORTING FINANCIAL INSTITUTIONS ======= -->
+
+
+<!-- ======= CRS SUBMISSIONS ======= -->
+<section data-module-slug="crs_submissions"
+         data-module-group="Personal"
+         data-module-parent="crs"
+         data-module-permission="can_access_crs"
+         data-module-name="CRS Submissions"
+         data-module-icon="fa-file-export"
+         data-module-category="CRS Reporting"
+         data-module-subtitle="The annual filing — Excel ingest, validation, XML generation and lifecycle">
+
+  <article data-tab-slug="sub-overview"
+           data-tab-name="Overview"
+           data-tab-icon="fa-info-circle">
+    <h6 style="font-weight:700; color:#2c3e50; margin-bottom:16px; border-bottom:2px solid #2b6cb0; padding-bottom:6px;"><i class="fas fa-file-export" style="color:#2b6cb0;"></i> What is a Submission?</h6>
+    <p style="font-size:14px; color:#6c757d; line-height:1.7; margin-bottom:16px;">A <strong>Submission</strong> is one annual filing &mdash; it anchors the whole reporting cycle for a Financial Institution and a reporting period. It carries the period, the FI, the uploaded Excel, the generated XML files, the validation outcome, and the external-submission status. This is where the day-to-day work happens.</p>
+
+    <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:16px;">
+      <div style="background:#eef4fb; border-radius:8px; padding:10px 14px; font-size:13px; color:#2c3e50;"><i class="fas fa-fingerprint" style="color:#2b6cb0; width:18px;"></i> A unique <strong>MessageRefId</strong> is generated when you start the submission and stays with it for life.</div>
+      <div style="background:#eef4fb; border-radius:8px; padding:10px 14px; font-size:13px; color:#2c3e50;"><i class="fas fa-file-excel" style="color:#2b6cb0; width:18px;"></i> The uploaded <strong>Excel workbook</strong> is the data source for that filing.</div>
+      <div style="background:#eef4fb; border-radius:8px; padding:10px 14px; font-size:13px; color:#2c3e50;"><i class="fas fa-code" style="color:#2b6cb0; width:18px;"></i> One or more <strong>XML files</strong> are generated from it, each with its own validation result and record count.</div>
+    </div>
+
+    <p style="font-size:13px; color:#6c757d;">The tabs in this help cover, in order: the <strong>lifecycle</strong>, the <strong>Excel template</strong>, what happens on <strong>upload &amp; parsing</strong>, every <strong>validation rule</strong>, how to <strong>fix problems</strong>, how the <strong>XML is generated</strong>, and the <strong>nil-return</strong> path.</p>
+  </article>
+
+  <article data-tab-slug="sub-lifecycle"
+           data-tab-name="Lifecycle"
+           data-tab-icon="fa-stream">
+    <h6 style="font-weight:700; color:#2c3e50; margin-bottom:16px; border-bottom:2px solid #2b6cb0; padding-bottom:6px;"><i class="fas fa-stream" style="color:#2b6cb0;"></i> The five states</h6>
+    <p style="font-size:14px; color:#6c757d; margin-bottom:18px;">A submission moves forward through a fixed set of states. Transitions are <strong>linear with no rollback</strong> &mdash; there is deliberately no "re-open", so the audit trail stays unambiguous.</p>
+
+    <div style="background:#eef4fb; border:1px solid #bcd4ee; border-radius:8px; padding:12px 14px; font-size:13px; color:#2b6cb0; font-weight:600; text-align:center; margin-bottom:18px;">
+      draft &rarr; closed &rarr; submitted externally &rarr; acknowledged / rejected
+    </div>
+
+    <div class="card mb-2" style="border-left:4px solid #6c757d;">
+      <div class="card-body" style="padding:12px 15px;">
+        <h6 style="margin:0 0 5px 0;"><span style="background:#6c757d; color:white; padding:2px 8px; border-radius:10px; font-size:11px;">DRAFT</span></h6>
+        <p class="mb-0" style="font-size:13px;">Submission created, header set, Excel may be uploaded, XML not yet finalised. <strong>Allowed:</strong> edit header, upload / remove / replace Excel, generate or regenerate XML, close (once valid), delete.</p>
+      </div>
+    </div>
+    <div class="card mb-2" style="border-left:4px solid #2b6cb0;">
+      <div class="card-body" style="padding:12px 15px;">
+        <h6 style="margin:0 0 5px 0;"><span style="background:#2b6cb0; color:white; padding:2px 8px; border-radius:10px; font-size:11px;">CLOSED</span></h6>
+        <p class="mb-0" style="font-size:13px;">Internally finalised &mdash; validation passed and XML files frozen, awaiting upload to the portal. <strong>Allowed:</strong> mark submitted externally, delete. Excel upload and regeneration are no longer available.</p>
+      </div>
+    </div>
+    <div class="card mb-2" style="border-left:4px solid #17a2b8;">
+      <div class="card-body" style="padding:12px 15px;">
+        <h6 style="margin:0 0 5px 0;"><span style="background:#17a2b8; color:white; padding:2px 8px; border-radius:10px; font-size:11px;">SUBMITTED EXTERNALLY</span></h6>
+        <p class="mb-0" style="font-size:13px;">Files uploaded to the authority's portal, awaiting their response. <strong>Allowed:</strong> mark acknowledged, mark rejected, delete.</p>
+      </div>
+    </div>
+    <div class="card mb-2" style="border-left:4px solid #28a745;">
+      <div class="card-body" style="padding:12px 15px;">
+        <h6 style="margin:0 0 5px 0;"><span style="background:#28a745; color:white; padding:2px 8px; border-radius:10px; font-size:11px;">ACKNOWLEDGED</span></h6>
+        <p class="mb-0" style="font-size:13px;">Terminal positive state &mdash; the portal confirmed acceptance. <strong>Allowed:</strong> delete (audit cleanup).</p>
+      </div>
+    </div>
+    <div class="card mb-3" style="border-left:4px solid #dc3545;">
+      <div class="card-body" style="padding:12px 15px;">
+        <h6 style="margin:0 0 5px 0;"><span style="background:#dc3545; color:white; padding:2px 8px; border-radius:10px; font-size:11px;">REJECTED</span></h6>
+        <p class="mb-0" style="font-size:13px;">Terminal negative state &mdash; the portal returned a rejection. <strong>Allowed:</strong> delete.</p>
+      </div>
+    </div>
+
+    <div class="alert alert-warning" style="border-left:4px solid #ffc107;">
+      <i class="fas fa-trash"></i> <strong>Delete works in every state.</strong> Discovering a problem late (e.g. a misclassified account in a closed submission) is common &mdash; rather than amend, you delete and re-create. Deleting removes the Excel and every generated XML file from storage before removing the submission, then a fresh submission gets a new MessageRefId.
+    </div>
+  </article>
+
+  <article data-tab-slug="sub-excel"
+           data-tab-name="Excel Template"
+           data-tab-icon="fa-file-excel">
+    <h6 style="font-weight:700; color:#2c3e50; margin-bottom:16px; border-bottom:2px solid #2b6cb0; padding-bottom:6px;"><i class="fas fa-file-excel" style="color:#2b6cb0;"></i> The data template</h6>
+    <p style="font-size:14px; color:#6c757d; line-height:1.7; margin-bottom:16px;">From the submission detail page, click <strong>Download Excel Template</strong>. You'll get the bundled workbook with the exact column layout, header naming and dropdown validation the parser expects. Fill in <strong>one row per reportable account</strong>, then upload it back.</p>
+
+    <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:16px;">
+      <div style="background:#f8f9fa; border-radius:8px; padding:12px; border-left:4px solid #28a745; font-size:13px; color:#6c757d;">
+        <strong style="color:#2c3e50;">Use the template as-is.</strong> Column positions and header names matter &mdash; the parser validates them. Don't rearrange columns, rename headers, or delete the header row.
+      </div>
+      <div style="background:#f8f9fa; border-radius:8px; padding:12px; border-left:4px solid #17a2b8; font-size:13px; color:#6c757d;">
+        <strong style="color:#2c3e50;">Respect the dropdowns.</strong> Where the template offers a dropdown (e.g. holder-type and code fields), pick from it. Free-typing values that aren't recognised will surface as validation errors on upload.
+      </div>
+      <div style="background:#f8f9fa; border-radius:8px; padding:12px; border-left:4px solid #2b6cb0; font-size:13px; color:#6c757d;">
+        <strong style="color:#2c3e50;">Account holder types matter.</strong> The holder type drives how each account is built in XML &mdash; an individual, a passive entity reported with its controlling persons inline, or an entity whose controlling persons are reported separately. The <strong>Validation Rules</strong> tab explains the rules the parser enforces here.
+      </div>
+    </div>
+
+    <div class="alert alert-info" style="border-left:4px solid #2b6cb0;">
+      <i class="fas fa-magic"></i> <strong>You don't need to pre-format values.</strong> The upload step cleans a lot for you &mdash; currency amounts, date formats, accents, spacing and codes. Concentrate on getting the <em>facts</em> right; the system handles presentation. See <strong>Validation Rules</strong> for exactly what's auto-corrected versus what blocks.
+    </div>
+  </article>
+
+  <article data-tab-slug="sub-upload"
+           data-tab-name="Upload &amp; Parsing"
+           data-tab-icon="fa-upload">
+    <h6 style="font-weight:700; color:#2c3e50; margin-bottom:16px; border-bottom:2px solid #2b6cb0; padding-bottom:6px;"><i class="fas fa-upload" style="color:#2b6cb0;"></i> What happens when you upload</h6>
+    <p style="font-size:14px; color:#6c757d; line-height:1.7; margin-bottom:18px;">Upload runs <strong>synchronously</strong> &mdash; you get the result immediately. Behind the scenes the workbook passes through a pipeline. Here's what each stage does, in plain language.</p>
+
+    <div style="display:flex; flex-direction:column; gap:12px;">
+      <div style="background:#f8f9fa; border-radius:8px; padding:14px; border-left:4px solid #2b6cb0;">
+        <div style="font-weight:700; color:#2c3e50; margin-bottom:4px; font-size:13px;"><span style="background:#2b6cb0; color:white; border-radius:50%; padding:1px 7px; margin-right:6px; font-size:11px;">1</span> Read &amp; type-check</div>
+        <div style="font-size:12px; color:#6c757d;">Every row is read and validated for required fields, code formats, and inter-field consistency (for example, controlling persons are only allowed on holder types that can carry them).</div>
+      </div>
+      <div style="background:#f8f9fa; border-radius:8px; padding:14px; border-left:4px solid #2b6cb0;">
+        <div style="font-weight:700; color:#2c3e50; margin-bottom:4px; font-size:13px;"><span style="background:#2b6cb0; color:white; border-radius:50%; padding:1px 7px; margin-right:6px; font-size:11px;">2</span> Normalise</div>
+        <div style="font-size:12px; color:#6c757d;">A consistent set of cleanups is applied: trimming whitespace, uppercasing ISO codes, emptying blanks, and reformatting amounts, dates and text. This is the auto-correction layer detailed in the next tab.</div>
+      </div>
+      <div style="background:#f8f9fa; border-radius:8px; padding:14px; border-left:4px solid #2b6cb0;">
+        <div style="font-weight:700; color:#2c3e50; margin-bottom:4px; font-size:13px;"><span style="background:#2b6cb0; color:white; border-radius:50%; padding:1px 7px; margin-right:6px; font-size:11px;">3</span> Cross-check reference data</div>
+        <div style="font-size:12px; color:#6c757d;">Cleaned values are checked against the OECD-recognised lists &mdash; ISO country codes, ISO currency codes, holder-type and IN-type enumerations &mdash; and TINs against the jurisdiction's TIN regex, so anything that would later fail the schema is caught now.</div>
+      </div>
+    </div>
+
+    <div class="alert alert-success" style="border-left:4px solid #28a745; margin-top:18px;">
+      <i class="fas fa-check-circle"></i> <strong>On success</strong> the file is attached to the submission and a parse summary is shown.
+    </div>
+    <div class="alert alert-danger" style="border-left:4px solid #dc3545;">
+      <i class="fas fa-times-circle"></i> <strong>On error</strong> the upload is rejected with a diagnostic and the submission stays in draft, awaiting a corrected workbook. Nothing partial is saved.
+    </div>
+  </article>
+
+  <article data-tab-slug="sub-validation"
+           data-tab-name="Validation Rules"
+           data-tab-icon="fa-clipboard-check">
+    <h6 style="font-weight:700; color:#2c3e50; margin-bottom:16px; border-bottom:2px solid #2b6cb0; padding-bottom:6px;"><i class="fas fa-clipboard-check" style="color:#2b6cb0;"></i> What's auto-fixed vs what blocks</h6>
+    <p style="font-size:14px; color:#6c757d; line-height:1.7; margin-bottom:18px;">There are two kinds of rule. <strong>Auto-corrections</strong> quietly clean your data so it conforms. <strong>Blocking errors</strong> stop the upload because the system can't safely guess your intent.</p>
+
+    <h6 style="font-weight:600; color:#28a745; margin-bottom:10px;"><i class="fas fa-magic"></i> Auto-corrections (applied for you)</h6>
+    <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:20px;">
+      <div style="background:#f0fff4; border:1px solid #c3e6cb; border-radius:8px; padding:11px 14px; font-size:13px; color:#155724;"><strong>Monetary amounts</strong> &mdash; negatives are clamped to zero, thousand separators are stripped, and values are reduced to whole integers.</div>
+      <div style="background:#f0fff4; border:1px solid #c3e6cb; border-radius:8px; padding:11px 14px; font-size:13px; color:#155724;"><strong>Dates</strong> &mdash; reformatted to <code>YYYY-MM-DD</code>. For ambiguous input the day-first (DD/MM/YYYY) reading is assumed.</div>
+      <div style="background:#f0fff4; border:1px solid #c3e6cb; border-radius:8px; padding:11px 14px; font-size:13px; color:#155724;"><strong>Names &amp; addresses</strong> &mdash; restricted to letters, digits and a safe punctuation set <code>' . , / - ( ) #</code>. Accented characters are transliterated (e.g. <code>&oslash;&rarr;o</code>, <code>&szlig;&rarr;ss</code>); anything with no mapping is dropped, and runs of whitespace are collapsed.</div>
+      <div style="background:#f0fff4; border:1px solid #c3e6cb; border-radius:8px; padding:11px 14px; font-size:13px; color:#155724;"><strong>Codes</strong> &mdash; ISO country and currency codes are uppercased and trimmed; empty cells are emptied to null rather than left as blank strings.</div>
+    </div>
+
+    <h6 style="font-weight:600; color:#dc3545; margin-bottom:10px;"><i class="fas fa-hand-paper"></i> Blocking errors (you must fix these)</h6>
+    <div style="display:flex; flex-direction:column; gap:8px; margin-bottom:18px;">
+      <div style="background:#fdecea; border:1px solid #f5c6cb; border-radius:8px; padding:11px 14px; font-size:13px; color:#721c24;"><strong>Invalid currency code</strong> &mdash; must be a recognised ISO 4217 code.</div>
+      <div style="background:#fdecea; border:1px solid #f5c6cb; border-radius:8px; padding:11px 14px; font-size:13px; color:#721c24;"><strong>Invalid country code</strong> &mdash; must be a recognised ISO 3166-1 alpha-2 code.</div>
+      <div style="background:#fdecea; border:1px solid #f5c6cb; border-radius:8px; padding:11px 14px; font-size:13px; color:#721c24;"><strong>Unparseable date</strong> &mdash; if a date can't be read at all, it can't be reformatted, so it stops.</div>
+      <div style="background:#fdecea; border:1px solid #f5c6cb; border-radius:8px; padding:11px 14px; font-size:13px; color:#721c24;"><strong>Missing required field</strong> &mdash; a row that omits a mandatory value can't be reported.</div>
+      <div style="background:#fdecea; border:1px solid #f5c6cb; border-radius:8px; padding:11px 14px; font-size:13px; color:#721c24;"><strong>Holder-type / controlling-person mismatch</strong> &mdash; the holder type and the presence (or absence) of controlling persons must be consistent. A passive entity reported as an individual-style holder, or controlling persons attached to a holder type that can't carry them, is rejected.</div>
+    </div>
+
+    <h6 style="font-weight:600; color:#2c3e50; margin-bottom:10px;"><i class="fas fa-filter" style="color:#2b6cb0;"></i> Reportability rules (applied at build time)</h6>
+    <p style="font-size:13px; color:#6c757d; margin-bottom:10px;">Beyond cleaning and validating, two rules decide whether a row is reported at all:</p>
+    <ul style="line-height:1.8; font-size:13px; color:#6c757d; margin-bottom:18px;">
+      <li><strong>US residents</strong> are excluded (FATCA, not CRS), with an informational message.</li>
+      <li><strong>Domestic residents</strong> are excluded for split-by-residence jurisdictions; combined-domestic mode intentionally keeps them.</li>
+    </ul>
+
+    <h6 style="font-weight:600; color:#2c3e50; margin-bottom:10px;"><i class="fas fa-cubes" style="color:#2b6cb0;"></i> Entity decomposition (CRS101 / CRS102 / CRS103)</h6>
+    <p style="font-size:13px; color:#6c757d; margin-bottom:10px;">Account-holder types are handled per the OECD rules when the XML is built:</p>
+    <div style="display:flex; flex-direction:column; gap:8px;">
+      <div style="background:#f8f9fa; border-radius:8px; padding:11px 14px; font-size:13px; color:#6c757d; border-left:3px solid #2b6cb0;"><strong style="color:#2c3e50;">CRS102</strong> &mdash; a passive entity whose controlling persons are carried <em>inline</em> within the same element.</div>
+      <div style="background:#f8f9fa; border-radius:8px; padding:11px 14px; font-size:13px; color:#6c757d; border-left:3px solid #2b6cb0;"><strong style="color:#2c3e50;">CRS103</strong> &mdash; an entity reported on its own. Its controlling persons are split out into <em>separate</em> CRS101 elements, because the OECD validation rules say controlling persons don't belong on a CRS103 element.</div>
+      <div style="background:#f8f9fa; border-radius:8px; padding:11px 14px; font-size:13px; color:#6c757d; border-left:3px solid #2b6cb0;"><strong style="color:#2c3e50;">CRS101</strong> &mdash; a controlling person (natural person) reported against an underlying entity holder.</div>
+      <div style="background:#eef4fb; border-radius:8px; padding:11px 14px; font-size:13px; color:#2b6cb0; border-left:3px solid #2b6cb0;"><strong>Combined-domestic mode</strong> &mdash; multiple controlling persons are grouped under a single CRS101 element keyed on the account, avoiding record inflation without losing any information.</div>
+    </div>
+  </article>
+
+  <article data-tab-slug="sub-fixing"
+           data-tab-name="Fixing Problems"
+           data-tab-icon="fa-wrench">
+    <h6 style="font-weight:700; color:#2c3e50; margin-bottom:16px; border-bottom:2px solid #2b6cb0; padding-bottom:6px;"><i class="fas fa-wrench" style="color:#2b6cb0;"></i> When the upload reports a problem</h6>
+    <p style="font-size:14px; color:#6c757d; line-height:1.7; margin-bottom:18px;">The diagnostic tells you which rows and fields need attention. The fix depends on the kind of message.</p>
+
+    <div class="card mb-3" style="border-left:4px solid #28a745;">
+      <div class="card-body">
+        <h6 style="color:#28a745;"><i class="fas fa-check"></i> Informational messages &mdash; no action needed</h6>
+        <p class="mb-0">Notices such as "US-resident account excluded" or "domestic account excluded" are telling you the system did the right thing. They explain why a count is lower than your raw row count &mdash; they're not errors.</p>
+      </div>
+    </div>
+
+    <div class="card mb-3" style="border-left:4px solid #dc3545;">
+      <div class="card-body">
+        <h6 style="color:#dc3545;"><i class="fas fa-edit"></i> Blocking errors &mdash; fix in Excel and re-upload</h6>
+        <p class="mb-1">Invalid codes, unparseable dates, missing required fields and holder-type mismatches all need correcting in the spreadsheet. Edit the flagged rows, save the workbook, and upload it again.</p>
+        <p class="mb-0"><small class="text-muted">The submission stays in draft until a clean workbook is accepted, so you can iterate as many times as you need.</small></p>
+      </div>
+    </div>
+
+    <div class="alert alert-warning" style="border-left:4px solid #ffc107;">
+      <i class="fas fa-exclamation-triangle"></i> <strong>Why some things can only be fixed in Excel:</strong> the system can clean formatting it can interpret (a stray comma, an accent, a date in the wrong order). It will <em>not</em> guess at meaning &mdash; if it can't tell which country <code>XZ</code> is, or what a blank required field should contain, only you can supply the right value.
+    </div>
+  </article>
+
+  <article data-tab-slug="sub-generate"
+           data-tab-name="Generating XML"
+           data-tab-icon="fa-code">
+    <h6 style="font-weight:700; color:#2c3e50; margin-bottom:16px; border-bottom:2px solid #2b6cb0; padding-bottom:6px;"><i class="fas fa-code" style="color:#2b6cb0;"></i> From accounts to validated XML</h6>
+    <p style="font-size:14px; color:#6c757d; line-height:1.7; margin-bottom:18px;">Once a workbook is accepted, click <strong>Generate XML</strong>. The builder turns your parsed accounts into OECD CRS XML and immediately validates each file.</p>
+
+    <div style="display:flex; flex-direction:column; gap:12px; margin-bottom:18px;">
+      <div style="background:#f8f9fa; border-radius:8px; padding:14px; border-left:4px solid #2b6cb0;">
+        <div style="font-weight:700; color:#2c3e50; margin-bottom:4px; font-size:13px;"><i class="fas fa-folder-open" style="color:#2b6cb0;"></i> Output file set</div>
+        <div style="font-size:12px; color:#6c757d;">Each receiving country's strategy decides the files: <strong>split-by-residence</strong> produces one file per country (residents of that country only); <strong>combined-domestic</strong> produces a single file with foreign and domestic accounts together. The filename follows that country's Output Filename template.</div>
+      </div>
+      <div style="background:#f8f9fa; border-radius:8px; padding:14px; border-left:4px solid #2b6cb0;">
+        <div style="font-weight:700; color:#2c3e50; margin-bottom:4px; font-size:13px;"><i class="fas fa-filter" style="color:#2b6cb0;"></i> Exclusions &amp; decomposition</div>
+        <div style="font-size:12px; color:#6c757d;">US and (where applicable) domestic accounts are dropped, and entity holder types are decomposed into the correct CRS101 / CRS102 / CRS103 structure &mdash; as described in the Validation Rules tab.</div>
+      </div>
+      <div style="background:#f8f9fa; border-radius:8px; padding:14px; border-left:4px solid #2b6cb0;">
+        <div style="font-weight:700; color:#2c3e50; margin-bottom:4px; font-size:13px;"><i class="fas fa-fingerprint" style="color:#2b6cb0;"></i> Header &amp; identifiers</div>
+        <div style="font-size:12px; color:#6c757d;">The MessageHeader (MessageRefId, type, reporting period, timestamp) and per-record DocRefId values are built from the country's reference-ID templates, so each file and each record is uniquely identified as the OECD User Guide requires.</div>
+      </div>
+      <div style="background:#f8f9fa; border-radius:8px; padding:14px; border-left:4px solid #28a745;">
+        <div style="font-weight:700; color:#2c3e50; margin-bottom:4px; font-size:13px;"><i class="fas fa-check-double" style="color:#28a745;"></i> XSD validation</div>
+        <div style="font-size:12px; color:#6c757d;">Every generated file is validated against the bundled OECD schema. The per-file result (valid or not, plus any schema errors) is shown on the submission detail page.</div>
+      </div>
+    </div>
+
+    <h6 style="font-weight:600; color:#2c3e50; margin-bottom:10px;"><i class="fas fa-eye" style="color:#2b6cb0;"></i> Review, then close</h6>
+    <p style="font-size:13px; color:#6c757d; margin-bottom:14px;">Inspect files with the inline XML viewer (the eye icon), or download them individually or as a ZIP. When you're satisfied, click <strong>Close Submission</strong>.</p>
+
+    <div class="alert alert-info" style="border-left:4px solid #2b6cb0;">
+      <i class="fas fa-lock"></i> <strong>Close is gated.</strong> It's only available when the submission is in draft, at least one XML file has been generated, and <strong>every</strong> file is valid. If a file fails, fix the Excel, re-upload and regenerate &mdash; you can't close on a failing file.
+    </div>
+  </article>
+
+  <article data-tab-slug="sub-nil"
+           data-tab-name="Nil Returns"
+           data-tab-icon="fa-file">
+    <h6 style="font-weight:700; color:#2c3e50; margin-bottom:16px; border-bottom:2px solid #2b6cb0; padding-bottom:6px;"><i class="fas fa-file" style="color:#2b6cb0;"></i> When there's nothing to report</h6>
+    <p style="font-size:14px; color:#6c757d; line-height:1.7; margin-bottom:16px;">Some jurisdictions require a <strong>nil return</strong> &mdash; a filing that confirms there were no reportable accounts for the period. The module produces a valid nil-return XML for this case, so you can satisfy the obligation without any account data.</p>
+
+    <div class="alert alert-info" style="border-left:4px solid #2b6cb0;">
+      <i class="fas fa-info-circle"></i> A nil return is a complete, schema-valid file in its own right &mdash; it carries the FI and period header with no account records. It moves through the same lifecycle (close, submit, acknowledge) as a normal filing.
+    </div>
+
+    <div class="alert alert-warning" style="border-left:4px solid #ffc107;">
+      <i class="fas fa-exclamation-triangle"></i> <strong>Check first whether you need one.</strong> Not every jurisdiction requires a nil return, and some require it only in certain circumstances. Confirm the obligation with the receiving authority before filing one.
+    </div>
+  </article>
+
+  <article data-tab-slug="sub-tips"
+           data-tab-name="Tips"
+           data-tab-icon="fa-lightbulb">
+    <h6 style="font-weight:700; color:#2c3e50; margin-bottom:16px; border-bottom:2px solid #2b6cb0; padding-bottom:6px;"><i class="fas fa-lightbulb" style="color:#2b6cb0;"></i> Best practices</h6>
+    <ul style="line-height:1.8;">
+      <li><strong>Always start from a freshly downloaded template.</strong> It guarantees the column positions, headers and dropdowns the parser expects &mdash; an old or hand-built workbook is the most common source of upload errors.</li>
+      <li><strong>Read the parse summary, not just the row count.</strong> Informational exclusion messages explain why the reported count differs from your spreadsheet &mdash; that difference is usually correct.</li>
+      <li><strong>Fix once, regenerate, re-validate.</strong> After correcting Excel, re-upload and regenerate; the per-file validation tells you immediately whether you're clear to close.</li>
+      <li><strong>Don't fight the auto-corrections.</strong> Negatives, separators, accents and date formats are cleaned for you. Focus your effort on the facts and the holder-type rules, which only you can get right.</li>
+      <li><strong>Close only when every file is green</strong> &mdash; that's the same bar the portal applies, so a clean close means a clean upload.</li>
+      <li><strong>To correct a closed filing, delete and redo.</strong> There's no re-open by design; a fresh submission gets a new MessageRefId and keeps the audit trail clean.</li>
+    </ul>
+  </article>
+
+</section>
+<!-- ======= END CRS SUBMISSIONS ======= -->

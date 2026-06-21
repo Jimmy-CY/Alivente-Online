@@ -42,4 +42,7 @@ urlpatterns = [
     path("submissions/<int:pk>/mark-rejected/",      submission.submission_mark_rejected,      name="submission_mark_rejected"),
     path("submissions/<int:pk>/delete/",             submission.submission_delete,             name="submission_delete"),
 
+    # Template Download
+    path("template/download/", main.download_template, name="download_template"),
+
     ]

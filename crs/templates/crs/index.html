@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load help_modal_tags %}
 
 {% block title %}CRS Reporting{% endblock %}
 
@@ -28,6 +29,10 @@
 
 <!-- Action Buttons (Back to Personal) -->
 <div class="page-action-buttons">
+  <button type="button" class="btn btn-success btn-sm action-icon"
+          data-toggle="modal" data-target="#crsHelpModal" aria-label="Help">
+      <i class="fas fa-question-circle"></i><span class="action-back-label"> Help</span>
+  </button>
   <a href="{% url 'personal_page' %}" class="btn btn-success action-back" role="button" aria-label="Back to personal">
     <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
   </a>
@@ -174,6 +179,7 @@
       align-items: stretch;
       margin-bottom: 14px;
     }
+    .page-action-buttons .action-icon,
     .page-action-buttons .action-back {
       flex: 0 0 auto;
       width: 50px;
@@ -209,5 +215,7 @@
     }
   }
 </style>
+
+{% render_help_modal "crs" %}
 
 {% endblock %}
