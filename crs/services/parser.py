@@ -359,14 +359,14 @@ def _parse_individual_row(row, row_num, result):
     is_closed   = e( 4, "Closed",             row[ 3], normalize_boolean)
     is_dormant  = e( 5, "Dormant",            row[ 4], normalize_boolean)
     is_undoc    = e( 6, "Undocumented",       row[ 5], normalize_boolean)
-    first_name  = e( 7, "First Name",         row[ 6], normalize_string)
-    last_name   = e( 8, "Last Name",          row[ 7], normalize_string)
+    first_name  = e( 7, "First Name",         row[ 6], normalize_string, restrict_charset=True)
+    last_name   = e( 8, "Last Name",          row[ 7], normalize_string, restrict_charset=True)
     tax_res     = e( 9, "Tax Residence",      row[ 8], normalize_country)
     tin         = e(10, "TIN",                row[ 9], normalize_string)
     tin_issuer  = e(11, "TIN Issued By",      row[10], normalize_country, required=False)
     birth       = e(12, "Birth Date",         row[11], normalize_date)
     addr_cc     = e(13, "Address Country",    row[12], normalize_country)
-    addr_free   = e(14, "Free Address",       row[13], normalize_string, max_length=4000)
+    addr_free   = e(14, "Free Address",       row[13], normalize_string, max_length=4000, restrict_charset=True)
     balance     = e(15, "Account Balance",    row[14], normalize_amount)
     bal_curr    = e(16, "Balance Currency",   row[15], normalize_currency)
 
@@ -547,16 +547,15 @@ def _parse_organisation_primary_row(row, row_num, result):
     is_closed   = e( 4, "Closed",             row[ 3], normalize_boolean)
     is_dormant  = e( 5, "Dormant",            row[ 4], normalize_boolean)
     is_undoc    = e( 6, "Undocumented",       row[ 5], normalize_boolean)
-    name        = e( 7, "Name",               row[ 6], normalize_string)
-    holder_type = e( 8, "Account Holder Type", row[ 7], normalize_choice,
-                     valid_set=ref.ACCT_HOLDER_TYPES, label="Account Holder Type")
+    name        = e( 7, "Name",               row[ 6], normalize_string, restrict_charset=True)
+    holder_type = e( 8, "Account Holder Type", row[ 7], normalize_choice, valid_set=ref.ACCT_HOLDER_TYPES, label="Account Holder Type")
     tax_res     = e( 9, "Tax Residence",      row[ 8], normalize_country)
     in_value    = e(10, "IN",                 row[ 9], normalize_string)
     in_issuer   = e(11, "IN Issued By",       row[10], normalize_country, required=False)
     in_type     = e(12, "IN Type",            row[11], normalize_choice,
                      valid_set=ref.IN_TYPES, label="IN Type", required=False)
     addr_cc     = e(13, "Address Country",    row[12], normalize_country)
-    addr_free   = e(14, "Free Address",       row[13], normalize_string, max_length=4000)
+    addr_free   = e(14, "Free Address",       row[13], normalize_string, max_length=4000, restrict_charset=True)
     balance     = e(15, "Account Balance",    row[14], normalize_amount)
     bal_curr    = e(16, "Balance Currency",   row[15], normalize_currency)
 
@@ -584,16 +583,15 @@ def _parse_organisation_primary_row(row, row_num, result):
 def _parse_cp_row(row, row_num, result):
     e = _make_extractor(result, "Organisation", row_num)
 
-    first_name  = e(25, "CP First Name",        row[24], normalize_string)
-    last_name   = e(26, "CP Last Name",         row[25], normalize_string)
-    cp_type     = e(27, "Ctrl. Person Type",    row[26], normalize_choice,
-                    valid_set=ref.CTRL_PERSON_TYPES, label="Ctrl. Person Type")
+    first_name  = e(25, "CP First Name",        row[24], normalize_string, restrict_charset=True)
+    last_name   = e(26, "CP Last Name",         row[25], normalize_string, restrict_charset=True)
+    cp_type     = e(27, "Ctrl. Person Type",    row[26], normalize_choice, valid_set=ref.CTRL_PERSON_TYPES, label="Ctrl. Person Type")
     tax_res     = e(28, "CP Tax Residence",     row[27], normalize_country)
     tin         = e(29, "CP TIN",               row[28], normalize_string)
     tin_issuer  = e(30, "CP TIN Issued By",     row[29], normalize_country, required=False)
     birth       = e(31, "CP Birth Date",        row[30], normalize_date)
     addr_cc     = e(32, "CP Address Country",   row[31], normalize_country)
-    addr_free   = e(33, "CP Free Address",      row[32], normalize_string, max_length=4000)
+    addr_free   = e(33, "CP Free Address",      row[32], normalize_string, max_length=4000, restrict_charset=True)
 
     required = [first_name, last_name, cp_type, tax_res, tin, birth, addr_cc, addr_free]
     if any(v is None for v in required):

@@ -76,7 +76,7 @@ Enum mappings (parser/model values → XML schema codes):
 from collections import defaultdict
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
-from decimal import Decimal
+from decimal import Decimal, ROUND_HALF_UP
 
 from lxml import etree
 
@@ -356,12 +356,13 @@ def _ce(parent, qname, text):
 
 
 def _format_amount(amount):
-    """Monetary values rendered with exactly 2 fraction digits."""
+    """Monetary values rendered as whole integers (CRS reports rounded whole
+    currency units; the parser has already rounded)."""
     if amount is None:
         return ""
     if not isinstance(amount, Decimal):
         amount = Decimal(str(amount))
-    return format(amount.quantize(Decimal("0.01")), "f")
+    return format(amount.quantize(Decimal("1"), rounding=ROUND_HALF_UP), "f")
 
 
 # ---------------------------------------------------------------------------
