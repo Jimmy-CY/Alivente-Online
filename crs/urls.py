@@ -28,6 +28,7 @@ urlpatterns = [
     path("submissions/start/",                  submission.submission_start,           name="submission_start"),
     path("submissions/<int:pk>/",               submission.submission_detail,          name="submission_detail"),
     path("submissions/<int:pk>/save/",          submission.submission_save,            name="submission_save"),
+    path("submissions/<int:pk>/fix-cell/",      submission.submission_fix_cell,        name="submission_fix_cell"),
     path("submissions/<int:pk>/upload-excel/",  submission.submission_upload_excel,    name="submission_upload_excel"),
     path("submissions/<int:pk>/remove-excel/",  submission.submission_remove_excel,    name="submission_remove_excel"),
     path("submissions/<int:pk>/excel/",         submission.submission_excel_download,  name="submission_excel_download"),

@@ -197,7 +197,8 @@
 
       {% if is_draft and perms.auth.can_edit_crs %}
       <form method="post" action="{% url 'crs:submission_upload_excel' submission.pk %}"
-            enctype="multipart/form-data" class="excel-upload-form">
+            enctype="multipart/form-data" class="excel-upload-form"
+            {% if submission.uploaded_excel %}onsubmit="return confirm('Replacing the workbook discards any in-system fixes you have applied. Download the current version first if you need it. Continue?');"{% endif %}>
         {% csrf_token %}
         <div class="excel-upload-row">
           {{ excel_form.uploaded_excel }}
@@ -218,8 +219,6 @@
     </div>
     {% endif %}
     {% endif %}
-    
-    <!-- Excel Validation -->
     
     <!-- Excel Validation -->
     {% if parse_result %}
@@ -254,7 +253,7 @@
           </div>
           <table class="validation-table">
             <thead>
-              <tr><th>Cell</th><th>Field</th><th>Value</th><th>Reason</th></tr>
+              <tr><th>Cell</th><th>Field</th><th>Value</th><th>Reason</th>{% if is_draft and perms.auth.can_edit_crs %}<th>Fix</th>{% endif %}</tr>
             </thead>
             <tbody>
               {% for e in errors %}
@@ -263,6 +262,21 @@
                 <td>{{ e.field }}</td>
                 <td><code>{{ e.value|truncatechars:40 }}</code></td>
                 <td>{{ e.reason }}</td>
+                {% if is_draft and perms.auth.can_edit_crs %}
+                <td class="fix-cell">
+                  {% if e.fixable %}
+                  <form method="post" action="{% url 'crs:submission_fix_cell' submission.pk %}" class="fix-form">
+                    {% csrf_token %}
+                    <input type="hidden" name="sheet" value="{{ e.sheet }}">
+                    <input type="hidden" name="cell" value="{{ e.col }}{{ e.row }}">
+                    <input type="text" name="value" class="fix-input" placeholder="new value" autocomplete="off">
+                    <button type="submit" class="btn btn-success fix-btn">Apply</button>
+                  </form>
+                  {% else %}
+                  <span class="fix-na">fix in Excel</span>
+                  {% endif %}
+                </td>
+                {% endif %}
               </tr>
               {% endfor %}
             </tbody>
@@ -270,6 +284,14 @@
         </div>
         {% endfor %}
       </details>
+      {% endif %}
+
+      {% if any_structural_errors and is_draft and perms.auth.can_edit_crs %}
+      <div class="field-help" style="margin-top: 6px;">
+        Some errors can't be fixed here —
+        <a href="{% url 'crs:submission_excel_download' submission.pk %}">download the workbook</a>
+        (it includes any in-system fixes you've applied), correct them in Excel, and re-upload.
+      </div>
       {% endif %}
 
       {% if parse_result.corrections %}
@@ -911,6 +933,13 @@
   }
   .row-error td      { background: #fff5f5; }
   .row-correction td { background: #fffbeb; }
+
+  /* Inline error-fix controls */
+  .fix-cell { white-space: nowrap; }
+  .fix-form { display: flex; gap: 4px; align-items: center; }
+  .fix-input { width: 110px; padding: 3px 6px; font-size: 12px; border: 1px solid #ced4da; border-radius: 4px; }
+  .fix-btn { padding: 3px 8px; font-size: 11px; }
+  .fix-na { font-size: 11px; color: #adb5bd; font-style: italic; }
 
   .validation-group { margin-top: 12px; }
   .validation-group:first-of-type { margin-top: 4px; }

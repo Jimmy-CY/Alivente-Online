@@ -11,7 +11,9 @@ Functions:
     submission_excel_download  — GET:  authenticated download of the uploaded Excel.
     submission_delete          — POST: delete a draft submission.
 """
+import io
 import json
+import re
 from collections import OrderedDict
 from datetime import datetime
 
@@ -22,6 +24,8 @@ from django.db import transaction
 from django.http import FileResponse, Http404, HttpResponseNotAllowed, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
+
+from openpyxl import load_workbook
 
 from crs.forms import (
     SubmissionExcelUploadForm,
@@ -165,6 +169,23 @@ def _group_by_account(items, account_label_map, row_context):
     return list(groups.items())
 
 
+def _error_is_fixable(e):
+    """True if an error can be corrected with a single-cell value edit.
+    Structural problems (holder-type rules, header mismatches, orphan CP
+    rows, workbook-level failures) must be fixed in Excel instead."""
+    if e.sheet not in ("Individual", "Organisation"):
+        return False
+    if e.row <= 3:
+        return False
+    if e.field in ("(header)", "Account Holder Type"):
+        return False
+    if not e.col or not e.col.isalpha():
+        return False
+    if e.field == "Account Number" and "no Account Number" in e.reason:
+        return False
+    return True
+
+
 def _render_detail(request, submission, header_form=None, excel_form=None):
     """Shared renderer for submission_detail and POST handlers that need to
     re-render with form errors. Re-parses the uploaded Excel on every render
@@ -199,6 +220,12 @@ def _render_detail(request, submission, header_form=None, excel_form=None):
             "result":            result,
         })
 
+    any_structural_errors = False
+    if parse_result:
+        for e in parse_result.errors:
+            e.fixable = _error_is_fixable(e)
+        any_structural_errors = any(not e.fixable for e in parse_result.errors)
+
     return render(request, "crs/submission_detail.html", {
         "submission":   submission,
         "header_form":  header_form or SubmissionHeaderForm(instance=submission),
@@ -214,6 +241,7 @@ def _render_detail(request, submission, header_form=None, excel_form=None):
         "parse_result":      parse_result,
         "error_groups":      _group_by_account(parse_result.errors, _row_to_account_label(parse_result.accounts), parse_result.row_context) if parse_result else [],
         "correction_groups": _group_by_account(parse_result.corrections, _row_to_account_label(parse_result.accounts), parse_result.row_context) if parse_result else [],
+        "any_structural_errors": any_structural_errors,
     })
 
 @login_required
@@ -355,6 +383,92 @@ def submission_excel_download(request, pk):
         as_attachment=True,
         filename=filename,
     )
+
+
+@login_required
+@permission_required('auth.can_edit_crs', raise_exception=True)
+def submission_fix_cell(request, pk):
+    """POST: apply a single-cell value fix to the uploaded workbook.
+
+    Reads the workbook through the storage API (works on local and remote
+    storage), writes one cell, saves it back, and purges any now-stale
+    generated XML. Re-parse-on-render then reflects the fix. Scoped to
+    single-cell value fixes; structural errors are corrected in Excel."""
+    if request.method != "POST":
+        return HttpResponseNotAllowed(["POST"])
+    submission = get_object_or_404(Submission, pk=pk)
+
+    if submission.status != "draft":
+        messages.error(request, "Only draft submissions can be edited.")
+        return redirect("crs:submission_detail", pk=pk)
+    if submission.is_nil_return or not submission.uploaded_excel:
+        messages.error(request, "No uploaded workbook to edit.")
+        return redirect("crs:submission_detail", pk=pk)
+
+    sheet = (request.POST.get("sheet") or "").strip()
+    cell  = (request.POST.get("cell") or "").strip().upper()
+    value = (request.POST.get("value") or "").strip()
+
+    if sheet not in ("Individual", "Organisation"):
+        messages.error(request, "Invalid sheet reference.")
+        return redirect("crs:submission_detail", pk=pk)
+
+    m = re.fullmatch(r"([A-Z]{1,3})([0-9]+)", cell)
+    if not m:
+        messages.error(request, "Invalid cell reference.")
+        return redirect("crs:submission_detail", pk=pk)
+    col_letters, row_num = m.group(1), int(m.group(2))
+    if row_num <= 3:
+        messages.error(request, "Header rows cannot be edited here.")
+        return redirect("crs:submission_detail", pk=pk)
+
+    # Read -> modify -> write back through the storage API (storage-agnostic).
+    try:
+        with submission.uploaded_excel.open("rb") as fh:
+            data = fh.read()
+        wb = load_workbook(io.BytesIO(data))
+        if sheet not in wb.sheetnames:
+            messages.error(request, f"Sheet '{sheet}' not found in the workbook.")
+            return redirect("crs:submission_detail", pk=pk)
+        ws = wb[sheet]
+        target = ws[f"{col_letters}{row_num}"]
+        target.value = value or None
+        # Force text so a fixed code/date isn't re-coerced by Excel on open.
+        target.number_format = "@"
+        out = io.BytesIO()
+        wb.save(out)
+        out.seek(0)
+    except Exception as exc:
+        messages.error(request, f"Could not apply fix: {exc}")
+        return redirect("crs:submission_detail", pk=pk)
+
+    old_name = submission.uploaded_excel.name
+    base_name = old_name.rsplit("/", 1)[-1]
+    submission.uploaded_excel.save(base_name, ContentFile(out.read()), save=False)
+    submission.save(update_fields=["uploaded_excel", "updated_at"])
+    if old_name and old_name != submission.uploaded_excel.name:
+        try:
+            submission.uploaded_excel.storage.delete(old_name)
+        except Exception:
+            pass
+
+    # A cell change invalidates any previously-generated XML — purge it.
+    if submission.xml_files.exists():
+        for xf in submission.xml_files.all():
+            try:
+                xf.file.delete(save=False)
+            except Exception:
+                pass
+            xf.delete()
+        submission.xml_generated_at = None
+        submission.save(update_fields=["xml_generated_at", "updated_at"])
+
+    messages.success(
+        request,
+        f"{sheet} {col_letters}{row_num} updated"
+        + (f" to '{value}'." if value else " (cleared).")
+    )
+    return redirect("crs:submission_detail", pk=pk)
 
 
 # ===========================================================================
