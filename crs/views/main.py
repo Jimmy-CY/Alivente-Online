@@ -20,11 +20,14 @@ from crs.models import CountryConfiguration, ReportingFI, Submission
 def index(request):
     """CRS module landing page."""
     context = {
-        "country_count":    CountryConfiguration.objects.filter(is_active=True).count(),
-        "fi_count":         ReportingFI.objects.filter(is_active=True).count(),
-        "submission_count": Submission.objects.count(),
-        "draft_count":      Submission.objects.filter(status="draft").count(),
-        "closed_count":     Submission.objects.filter(status="closed").count(),
+        "country_count":      CountryConfiguration.objects.filter(is_active=True).count(),
+        "fi_count":           ReportingFI.objects.filter(is_active=True).count(),
+        "submission_count":   Submission.objects.count(),
+        "draft_count":        Submission.objects.filter(status="draft").count(),
+        "closed_count":       Submission.objects.filter(status="closed").count(),
+        "submitted_count":    Submission.objects.filter(status="submitted_externally").count(),
+        "acknowledged_count": Submission.objects.filter(status="acknowledged").count(),
+        "rejected_count":     Submission.objects.filter(status="rejected").count(),
     }
     return render(request, "crs/index.html", context)
 

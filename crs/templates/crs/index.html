@@ -61,7 +61,7 @@
       <a href="{% url 'crs:submission_list' %}" class="crs-btn">
         <i class="fas fa-file-export"></i>
         <h6>Submissions</h6>
-        <span class="crs-count">{{ submission_count }} total ({{ draft_count }} draft, {{ closed_count }} closed)</span>
+        <span class="crs-count">{{ submission_count }} total{% if draft_count %} &middot; {{ draft_count }} draft{% endif %}{% if closed_count %} &middot; {{ closed_count }} closed{% endif %}{% if submitted_count %} &middot; {{ submitted_count }} submitted{% endif %}{% if acknowledged_count %} &middot; {{ acknowledged_count }} acknowledged{% endif %}{% if rejected_count %} &middot; {{ rejected_count }} rejected{% endif %}</span>
       </a>
 
     </div>
