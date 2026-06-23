@@ -281,11 +281,16 @@ def open_invoices_report(request):
             due_date = invoice_obj.invoice_date + timedelta(days=payment_terms)
             days_overdue = (today - due_date).days if today > due_date else 0
 
+            invoice_amount = invoice_obj.invoice_amount
+            if invoice_amount is None:
+                invoice_amount = tenant_obj.tenant_rent or 0
+
             tenant_invoices.append({
                 'invoice_id': invoice_obj.invoice_id,
                 'invoice_date': invoice_obj.invoice_date.strftime('%Y-%m-%d'),
                 'due_date': due_date.strftime('%Y-%m-%d'),
                 'days_overdue': days_overdue,
+                'amount': float(invoice_amount),
                 'overdue': days_overdue > 0
             })
 
@@ -333,7 +338,10 @@ def open_invoices_report(request):
             payment_terms = tenant_obj.tenant_payment_terms or 0
             due_date = invoice_obj.invoice_date + timedelta(days=payment_terms)
             days_overdue = (today - due_date).days if today > due_date else 0
-            amount = float(tenant_obj.tenant_rent or 0)
+            invoice_amount = invoice_obj.invoice_amount
+            if invoice_amount is None:
+                invoice_amount = tenant_obj.tenant_rent or 0
+            amount = float(invoice_amount)
 
             tenant_analysis['total_outstanding'] += amount
 

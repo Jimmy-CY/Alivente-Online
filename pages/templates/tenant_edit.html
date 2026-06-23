@@ -246,6 +246,104 @@
       </div>
     </div>
   </div>
+
+  <!-- ============ PHYSICAL INVOICE ============ -->
+  <hr class="pi-divider"/>
+  <h5 class="pi-section-title"><i class="fas fa-file-invoice"></i> Physical Invoice</h5>
+
+  <div class="form-row">
+    <div class="col-md-6">
+      <div class="form-group pi-check">
+        <label class="pi-check-label">
+          <input type="checkbox" id="tenant_physical_invoice_required" name="tenant_physical_invoice_required"
+                 {% if tresults.tenant_physical_invoice_required %}checked{% endif %}>
+          <strong>Generate Physical Invoice</strong> &mdash; also produce &amp; email a PDF VAT invoice each month
+        </label>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="form-group pi-check">
+        <label class="pi-check-label">
+          <input type="checkbox" id="tenant_bill_levies" name="tenant_bill_levies"
+                 {% if tresults.tenant_bill_levies %}checked{% endif %}>
+          <strong>Bill Communal Fees (Levies)</strong> &mdash; add the levy as a communal line
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <div id="physicalInvoiceDetails" class="pi-details">
+    <div class="form-row">
+      <div class="col-md-4">
+        <div class="form-group">
+          <label for="customer_id_label"><strong>Customer ID Label</strong></label>
+          <input type="text" class="form-control" id="customer_id_label" name="customer_id_label"
+                 value="{{ tresults.physical_invoice_profile.customer_id_label }}" placeholder="Defaults to tenant name">
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="form-group">
+          <label for="billing_name"><strong>Billing Name</strong></label>
+          <input type="text" class="form-control" id="billing_name" name="billing_name"
+                 value="{{ tresults.physical_invoice_profile.billing_name }}" placeholder="Defaults to tenant name">
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="form-group">
+          <label for="billing_tel"><strong>Billing Tel</strong></label>
+          <input type="text" class="form-control" id="billing_tel" name="billing_tel"
+                 value="{{ tresults.physical_invoice_profile.billing_tel }}" placeholder="Defaults to contact number">
+        </div>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="col-md-12">
+        <div class="form-group">
+          <label for="billing_address"><strong>Billing Address</strong></label>
+          <textarea class="form-control" id="billing_address" name="billing_address" rows="3"
+                    placeholder="Customer address &mdash; one line per row">{{ tresults.physical_invoice_profile.billing_address }}</textarea>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="col-md-4">
+        <div class="form-group pi-check">
+          <label class="pi-check-label">
+            <input type="checkbox" id="water_enabled" name="water_enabled"
+                   {% if tresults.physical_invoice_profile.water_enabled %}checked{% endif %}>
+            <strong>Water line</strong> (VAT-free) on scheduled months
+          </label>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="form-group">
+          <label for="water_cycle_anchor"><strong>Water Cycle Anchor</strong></label>
+          <input type="date" class="form-control" id="water_cycle_anchor" name="water_cycle_anchor"
+                 value="{{ tresults.physical_invoice_profile.water_cycle_anchor|date:'Y-m-d' }}">
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="form-group">
+          <label for="water_cycle_interval_months"><strong>Water Cycle Interval (months)</strong></label>
+          <input type="number" class="form-control" id="water_cycle_interval_months" name="water_cycle_interval_months"
+                 value="{{ tresults.physical_invoice_profile.water_cycle_interval_months|default:2 }}" min="1">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    .pi-divider { margin: 1.5rem 0 1rem; border-top: 2px solid #e9ecef; }
+    .pi-section-title { color: #2c3e50; font-weight: 600; margin-bottom: 1rem; }
+    .pi-section-title i { color: #17a2b8; margin-right: 6px; }
+    .pi-check { display: flex; align-items: flex-start; }
+    .pi-check-label { font-weight: 400; margin: 0; cursor: pointer; }
+    .pi-check-label input { margin-right: 8px; transform: translateY(2px); }
+    .pi-details { border-left: 3px solid #e9ecef; padding-left: 16px; margin-top: 4px; }
+  </style>
+
 </form>
 {% endfor %}
 
@@ -460,6 +558,22 @@ function initializeMoreMenu() {
 document.addEventListener('DOMContentLoaded', function() {
     initializeMoreMenu();
 });
+</script>
+
+<script>
+(function () {
+  function syncPiDetails() {
+    var cb = document.getElementById('tenant_physical_invoice_required');
+    var box = document.getElementById('physicalInvoiceDetails');
+    if (!cb || !box) return;
+    box.style.display = cb.checked ? '' : 'none';
+  }
+  document.addEventListener('DOMContentLoaded', function () {
+    var cb = document.getElementById('tenant_physical_invoice_required');
+    if (cb) cb.addEventListener('change', syncPiDetails);
+    syncPiDetails();
+  });
+})();
 </script>
 
 {% endblock %}

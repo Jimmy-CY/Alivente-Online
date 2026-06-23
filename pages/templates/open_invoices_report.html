@@ -79,6 +79,7 @@ var tenantDataList = [
                 invoice_date: '{{ invoice.invoice_date|default_if_none:""|escapejs }}',
                 due_date: '{{ invoice.due_date|default_if_none:""|escapejs }}',
                 days_overdue: {{ invoice.days_overdue|default_if_none:"0" }},
+                amount: {{ invoice.amount|default_if_none:"0" }},
                 overdue: {% if invoice.overdue %}true{% else %}false{% endif %}
             }{% if not forloop.last %},{% endif %}
             {% endfor %}
@@ -99,6 +100,11 @@ function findTenantData(tenantName, tenantId) {
         }
     }
     return null;
+}
+
+function formatAmount(value) {
+    var n = parseFloat(value) || 0;
+    return n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 function generateTenantHTML(tenant, showTenantLine) {
@@ -141,7 +147,7 @@ function generateTenantHTML(tenant, showTenantLine) {
             html += '<td data-label="Invoice Date">' + (invoice.invoice_date || '-') + '</td>';
             html += '<td data-label="Due Date">' + (invoice.due_date || '-') + '</td>';
             html += '<td data-label="Days Overdue">' + (invoice.days_overdue !== undefined ? invoice.days_overdue : '-') + '</td>';
-            html += '<td data-label="Amount">€' + (tenant.tenant_rent || 0) + '</td>';
+            html += '<td data-label="Amount">€' + formatAmount(invoice.amount != null ? invoice.amount : (tenant.tenant_rent || 0)) + '</td>';
             html += '</tr>';
         }
 
@@ -152,7 +158,7 @@ function generateTenantHTML(tenant, showTenantLine) {
         for (var j = 0; j < invoices.length; j++) {
             var inv = invoices[j];
             if (!inv) continue;
-            var amount = (tenant.tenant_rent || 0).toLocaleString('en-US');
+            var amount = formatAmount(inv.amount != null ? inv.amount : (tenant.tenant_rent || 0));
             var daysOverdue = inv.days_overdue !== undefined ? inv.days_overdue : 0;
             var daysClass = daysOverdue > 90 ? 'days-pill-severe' :
                             daysOverdue > 60 ? 'days-pill-high' :

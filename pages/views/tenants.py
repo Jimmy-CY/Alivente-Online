@@ -19,6 +19,14 @@ Functions
 - delete_tenant_view     : Delete a tenant (signals handle vacancy
                            cleanup).
 
+Physical invoice
+----------------
+The two physical-invoice flags live on the tenant model, but the
+PhysicalInvoiceProfile (customer id / billing block / water cycle) is a
+separate OneToOne, so TenantForm cannot carry it. _apply_physical_invoice_fields
+upserts both after the form has saved, and duplicate_tenant_view copies them
+across to a renewal.
+
 Auth tiers
 ----------
 read tier -> auth.can_access_tenants  (tenant_page,
@@ -29,6 +37,7 @@ edit tier -> auth.can_edit_tenants    (add, edit, commit, edit_commit,
 """
 
 import os
+from datetime import datetime
 
 from django.conf import settings
 from django.contrib import messages
@@ -37,7 +46,57 @@ from django.core.exceptions import ValidationError
 from django.shortcuts import get_object_or_404, redirect, render
 
 from ..forms import TenantForm
-from ..models import props, tenant
+from ..models import PhysicalInvoiceProfile, props, tenant
+
+
+def _apply_physical_invoice_fields(request, tenant_obj):
+    """Persist the two physical-invoice flags and the PhysicalInvoiceProfile
+    from a submitted tenant form.
+
+    The flags are model fields on the tenant; the profile is a separate
+    OneToOne and so is read straight from request.POST here. A profile row is
+    only created when physical invoicing is switched on (or one already
+    exists, so that turning it back off still records the change).
+    """
+    tenant_obj.tenant_physical_invoice_required = (
+        'tenant_physical_invoice_required' in request.POST
+    )
+    tenant_obj.tenant_bill_levies = 'tenant_bill_levies' in request.POST
+    tenant_obj.save(update_fields=[
+        'tenant_physical_invoice_required', 'tenant_bill_levies',
+    ])
+
+    required = tenant_obj.tenant_physical_invoice_required
+    if not required and not PhysicalInvoiceProfile.objects.filter(tenant=tenant_obj).exists():
+        return  # nothing to store, and no existing profile to update
+
+    # Water cycle interval (months) — default 2 if blank/invalid.
+    raw_interval = request.POST.get('water_cycle_interval_months') or 2
+    try:
+        interval = int(raw_interval)
+    except (TypeError, ValueError):
+        interval = 2
+    if interval < 1:
+        interval = 1
+
+    # Water cycle anchor — optional ISO date from the date input.
+    raw_anchor = request.POST.get('water_cycle_anchor')
+    anchor = None
+    if raw_anchor:
+        try:
+            anchor = datetime.strptime(raw_anchor, '%Y-%m-%d').date()
+        except ValueError:
+            anchor = None
+
+    profile, _ = PhysicalInvoiceProfile.objects.get_or_create(tenant=tenant_obj)
+    profile.customer_id_label = (request.POST.get('customer_id_label') or '').strip()
+    profile.billing_name = (request.POST.get('billing_name') or '').strip()
+    profile.billing_address = (request.POST.get('billing_address') or '').strip()
+    profile.billing_tel = (request.POST.get('billing_tel') or '').strip()
+    profile.water_enabled = 'water_enabled' in request.POST
+    profile.water_cycle_anchor = anchor
+    profile.water_cycle_interval_months = interval
+    profile.save()
 
 
 @login_required
@@ -107,6 +166,7 @@ def tenant_commit(request):
         if form.is_valid():
             try:
                 new_tenant = form.save()
+                _apply_physical_invoice_fields(request, new_tenant)
                 messages.success(request, f"Tenant {new_tenant.tenant_name} added successfully")
                 return redirect('tenant')
             except ValidationError as e:
@@ -140,7 +200,8 @@ def tenant_edit_commit(request, tenant_id):
     if request.method == "POST":
         form = TenantForm(request.POST or None, instance=ten)
         if form.is_valid():
-            form.save()
+            ten = form.save()
+            _apply_physical_invoice_fields(request, ten)
             messages.success(request, "Tenant Edited Successfully")
     results = props.objects.all().order_by('prop_country', 'prop_name')
     tresults = tenant.objects.all().order_by('tenant_name')
@@ -283,6 +344,10 @@ def duplicate_tenant_view(request, tenant_id):
         new_tenant.tenant_levies = original_tenant.tenant_levies
         new_tenant.tenant_payment_terms = original_tenant.tenant_payment_terms
 
+        # Carry the physical-invoice flags across to the renewal
+        new_tenant.tenant_physical_invoice_required = original_tenant.tenant_physical_invoice_required
+        new_tenant.tenant_bill_levies = original_tenant.tenant_bill_levies
+
         # Set lease dates to None - user will fill these in
         new_tenant.tenant_lease_start_date = None
         new_tenant.tenant_lease_end_date = None
@@ -299,6 +364,23 @@ def duplicate_tenant_view(request, tenant_id):
 
         # Save the new tenant
         new_tenant.save()
+
+        # Copy the physical-invoice profile (OneToOne) if the original has one
+        try:
+            src_profile = original_tenant.physical_invoice_profile
+        except PhysicalInvoiceProfile.DoesNotExist:
+            src_profile = None
+        if src_profile is not None:
+            PhysicalInvoiceProfile.objects.create(
+                tenant=new_tenant,
+                customer_id_label=src_profile.customer_id_label,
+                billing_name=src_profile.billing_name,
+                billing_address=src_profile.billing_address,
+                billing_tel=src_profile.billing_tel,
+                water_enabled=src_profile.water_enabled,
+                water_cycle_anchor=src_profile.water_cycle_anchor,
+                water_cycle_interval_months=src_profile.water_cycle_interval_months,
+            )
 
         # Redirect to edit page for the new tenant
         messages.success(

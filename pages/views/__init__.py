@@ -46,3 +46,4 @@ from .lease_template import *  # noqa: F401, F403
 from .recipes import *  # noqa: F401, F403
 from .help import *  # noqa: F401, F403
 from .household import *
+from .physical_invoices import *

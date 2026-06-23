@@ -94,6 +94,9 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "mysite.wsgi.application"
 
+# Physcial Invoice (PDF) for Tenants - Lead Time (Optional - defaults to 5 if missing)
+PHYSICAL_INVOICE_PREPARE_LEAD_DAYS = 5
+
 
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases

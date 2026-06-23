@@ -245,7 +245,8 @@ urlpatterns = [
     # ============================================================================
     path('invoices/', views.invoices_page, name='invoices'),
     path('invoices_commit/<invoice_id>', views.invoices_commit, name='invoices_commit'),
-
+    path("physical-invoices/preview/", views.render_invoice_preview, name="physical_invoice_preview"),
+    path("physical-invoices/<int:physical_invoice_id>/pdf/", views.render_stored_invoice_pdf, name="physical_invoice_pdf"),
 
     # ============================================================================
     # SUPPLIERS

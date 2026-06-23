@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+    @page {
+        size: a4 portrait;
+        margin: 1.3cm 1.3cm 1.1cm 1.3cm;
+    }
+    body {
+        font-family: Helvetica;
+        font-size: 9pt;
+        color: #1a1a1a;
+        line-height: 1.3;
+    }
+    .company-name { font-size: 16pt; color: #2f5496; font-weight: bold; }
+    .doc-title { font-size: 18pt; color: #2f5496; font-weight: bold; text-align: right; }
+    .muted { color: #555555; }
+    .link  { color: #2f5496; }
+
+    table.layout { width: 100%; }
+    table.layout td { vertical-align: top; }
+
+    .band {
+        background-color: #2f5496;
+        color: #ffffff;
+        font-weight: bold;
+        padding: 4pt 7pt;
+        font-size: 10pt;
+    }
+
+    table.meta { border-collapse: collapse; }
+    table.meta td { border: 0.75pt solid #2f5496; padding: 2pt 5pt; font-size: 8.5pt; }
+    table.meta td.k { font-weight: bold; }
+
+    table.items { width: 100%; border-collapse: collapse; margin-top: 3pt; }
+    table.items th {
+        background-color: #2f5496;
+        color: #ffffff;
+        font-size: 8pt;
+        font-weight: bold;
+        padding: 5pt 5pt;
+        text-align: left;
+        border: 0.5pt solid #2f5496;
+    }
+    table.items td {
+        font-size: 9pt;
+        padding: 4pt 5pt;
+        border-left: 0.5pt solid #c9c9c9;
+        border-right: 0.5pt solid #c9c9c9;
+    }
+    td.num, th.num { text-align: right; }
+
+    table.totals { width: 100%; border-collapse: collapse; }
+    table.totals td { padding: 4pt 6pt; font-size: 9pt; }
+    td.tk { text-align: right; font-weight: bold; }
+    td.tv { text-align: right; border: 0.5pt solid #c9c9c9; }
+
+    table.terms { width: 100%; border-collapse: collapse; }
+    table.terms td { border: 0.5pt solid #c9c9c9; border-top: none; padding: 7pt; font-size: 9pt; }
+
+    .footer-bar { background-color: #2f5496; height: 9pt; }
+</style>
+</head>
+<body>
+
+    <!-- ===================== LOGO (raised, centred) ===================== -->
+    {% if company.logo_path %}
+    <div style="position: absolute; top: -22pt; left: 0; width: 100%; text-align: center;">
+        <img src="{{ company.logo_path }}" style="width: 118pt;">
+    </div>
+    {% endif %}
+
+    <!-- ===================== HEADER ===================== -->
+    <table class="layout">
+        <tr>
+            <td width="34%">
+                <div class="company-name">{{ company.name }}</div>
+                <div class="muted">VAT Number: {{ company.vat_number }}</div>
+                <div style="height: 7pt;"></div>
+                <div>{% for line in company.address_lines %}{{ line }}<br>{% endfor %}Phone: {{ company.phone }}<br><span class="link">{{ company.website }}</span></div>
+            </td>
+            <td width="32%">&nbsp;</td>
+            <td width="34%">
+                <div class="doc-title">INVOICE</div>
+                <table class="meta" width="100%" style="margin-top: 8pt;">
+                    <tr><td class="k" width="46%">Date</td><td>{{ invoice.date_display }}</td></tr>
+                    <tr><td class="k">Invoice #</td><td>{{ invoice.number }}</td></tr>
+                    <tr><td class="k">Customer ID</td><td>{{ invoice.customer_id }}</td></tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+
+    <!-- ===================== CUSTOMER ===================== -->
+    <div style="height: 9pt;"></div>
+    <div class="band">CUSTOMER</div>
+    <div style="padding: 6pt 2pt 2pt 2pt;">
+        <div style="font-weight: bold;">{{ customer.name }}</div>
+        <div>{% for line in customer.address_lines %}{{ line }}<br>{% endfor %}{% if customer.tel %}Tel: {{ customer.tel }}{% endif %}</div>
+    </div>
+
+    <!-- ===================== LINE ITEMS ===================== -->
+    <table class="items">
+        <thead>
+            <tr>
+                <th width="13%">SERVICE</th>
+                <th width="14%">UNIT OF MEASURE</th>
+                <th width="39%">DESCRIPTION</th>
+                <th width="7%" class="num">QTY</th>
+                <th width="13%" class="num">UNIT PRICE</th>
+                <th width="14%" class="num">TOTAL AMOUNT</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for line in lines %}
+            <tr>
+                <td>{{ line.service }}</td>
+                <td>{{ line.uom }}</td>
+                <td>{{ line.description }}</td>
+                <td class="num">{{ line.qty }}</td>
+                <td class="num">{{ currency_symbol }} {{ line.unit_price_display }}</td>
+                <td class="num">{{ currency_symbol }} {{ line.total_display }}</td>
+            </tr>
+            {% endfor %}
+            <tr>
+                <td colspan="6" style="height: 84pt; border-bottom: 0.5pt solid #c9c9c9;"></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <!-- ===================== SUBTOTAL ===================== -->
+    <table class="layout">
+        <tr>
+            <td width="60%"></td>
+            <td width="40%">
+                <table width="100%" style="border-collapse: collapse;">
+                    <tr>
+                        <td style="text-align: right; padding: 4pt 6pt; font-weight: bold;">Subtotal</td>
+                        <td width="50%" style="text-align: right; padding: 4pt 6pt; border: 0.5pt solid #c9c9c9;">{{ currency_symbol }} {{ totals.subtotal_display }}</td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+
+    <!-- ===================== TERMS + TOTALS ===================== -->
+    <table class="layout" style="margin-top: 8pt;">
+        <tr>
+            <td width="58%">
+                <div class="band">TERMS OF SALE AND OTHER COMMENTS</div>
+                <table class="terms">
+                    <tr><td>
+                        {{ bank.payment_terms }}<br>
+                        Bank: {{ bank.bank_name }}<br>
+                        <br>
+                        Account Name: {{ bank.account_name }}<br>
+                        Account Number: {{ bank.account_number }}<br>
+                        IBAN Number: {{ bank.iban }}<br>
+                        SWIFT CODE: {{ bank.swift }}
+                    </td></tr>
+                </table>
+            </td>
+            <td width="4%"></td>
+            <td width="38%">
+                <table class="totals">
+                    <tr><td class="tk">VAT Rate</td><td class="tv" width="50%">{{ totals.vat_rate_display }}</td></tr>
+                    <tr><td class="tk">VAT</td><td class="tv">{{ currency_symbol }} {{ totals.vat_display }}</td></tr>
+                    <tr><td class="tk" style="background-color: #eaeef7; padding: 6pt;">TOTAL</td><td class="tv" style="background-color: #eaeef7; padding: 6pt; font-weight: bold;">{{ currency_symbol }} {{ totals.total_display }}</td></tr>
+                    <tr><td class="tk" style="font-weight: normal;">Currency</td><td style="text-align: right; padding: 4pt 6pt; font-weight: bold;">{{ totals.currency }}</td></tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+
+    <!-- ===================== FOOTER ===================== -->
+    <div style="height: 14pt;"></div>
+    <div class="footer-bar">&nbsp;</div>
+
+</body>
+</html>

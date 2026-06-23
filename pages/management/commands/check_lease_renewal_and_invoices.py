@@ -22,9 +22,11 @@ import socket
 import sys
 import time
 from datetime import date, datetime, timedelta
+from decimal import Decimal, ROUND_HALF_UP
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
+from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.db import connection, connections
 
@@ -205,6 +207,30 @@ class Command(BaseCommand):
 
         self.stdout.write('=== LEASE RENEWAL, INVOICE CHECK, PASSPORT CHECK, AND INVOICE CREATION COMPLETED ===')
 
+    def _collection_amount(self, rent, levies, bill_levies, physical_invoice):
+        """Stored collection amount for a tenant's monthly invoice.
+
+        rent (+levies when Bill Communal Fees is on) (+19% VAT on RENT ONLY
+        when Generate Physical Invoice is on -- communal is never VAT-rated),
+        so the amount equals the physical invoice total for those tenants.
+        VAT follows settings.PHYSICAL_INVOICE_VAT_RATE (default 0.19), the same
+        source the physical invoice uses.
+
+        NOTE: this arithmetic equals the physical invoice total for the seeded
+        rent/communal lines. Once the send cron + water line land, that cron
+        overwrites physical-invoice tenants' amounts with the exact pi.total
+        (which also covers water and any manual draft edits).
+        """
+        vat_rate = Decimal(str(getattr(settings, "PHYSICAL_INVOICE_VAT_RATE", "0.19")))
+        rent = Decimal(rent or 0)
+        levies = Decimal(levies or 0)
+        amount = rent
+        if bill_levies:
+            amount += levies
+        if physical_invoice:
+            amount += rent * vat_rate
+        return amount.quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+
     def create_invoices(self):
         """Create invoices for current month if they don't already exist"""
         today = date.today()
@@ -220,7 +246,9 @@ class Command(BaseCommand):
             with connection.cursor() as cursor:
                 # Get all current active tenants
                 cursor.execute("""
-                    SELECT prop.prop_id, prop.prop_name, prop.prop_country, prop.prop_status, tenant.tenant_id
+                    SELECT prop.prop_id, prop.prop_name, prop.prop_country, prop.prop_status, tenant.tenant_id,
+                           tenant.tenant_rent, tenant.tenant_levies,
+                           tenant.tenant_bill_levies, tenant.tenant_physical_invoice_required
                     FROM railway.tenant
                     JOIN railway.prop ON prop.prop_id = tenant.prop_id
                     WHERE tenant.tenant_current = 'Yes' AND prop.prop_status = 'Active'
@@ -257,10 +285,14 @@ class Command(BaseCommand):
                     already_exists = any(inv[1] == tenant_id and inv[2] == new_invoice_date for inv in existing_invoices)
 
                     if not already_exists:
+                        # rent (+levies if billed) (+VAT on rent if physical invoice)
+                        invoice_amount = self._collection_amount(
+                            tenant[5], tenant[6], bool(tenant[7]), bool(tenant[8])
+                        )
                         if not self.dry_run:
                             cursor.execute(
-                                "INSERT INTO invoice (tenant_id, invoice_date, invoice_paid) VALUES (%s, %s, %s)",
-                                [tenant_id, new_invoice_date, 'No']
+                                "INSERT INTO invoice (tenant_id, invoice_date, invoice_paid, invoice_amount) VALUES (%s, %s, %s, %s)",
+                                [tenant_id, new_invoice_date, 'No', invoice_amount]
                             )
                         created_count += 1
 
@@ -382,7 +414,8 @@ class Command(BaseCommand):
             cursor.execute("""
                 SELECT DISTINCT prop.prop_name, prop.prop_country, tenant.tenant_name,
                        tenant.tenant_payment_terms, tenant.tenant_rent,
-                       invoice.invoice_date
+                       invoice.invoice_date,
+                       COALESCE(invoice.invoice_amount, tenant.tenant_rent) AS invoice_amount
                 FROM railway.invoice
                 JOIN railway.tenant ON invoice.tenant_id = tenant.tenant_id
                 JOIN railway.prop ON tenant.prop_id = prop.prop_id
@@ -403,6 +436,7 @@ class Command(BaseCommand):
                 payment_terms = int(row[3]) if row[3] else 0
                 tenant_rent = row[4]
                 invoice_date = row[5]
+                invoice_amount = row[6]
 
                 # Calculate due date based on invoice date and payment terms
                 due_date = invoice_date + timedelta(days=payment_terms)
@@ -429,6 +463,7 @@ class Command(BaseCommand):
                         'invoice_date': invoice_date.strftime('%Y-%m-%d'),
                         'due_date': due_date.strftime('%Y-%m-%d'),
                         'days_overdue': days_overdue,
+                        'amount': invoice_amount,
                         'overdue': True
                     })
 
@@ -1451,7 +1486,7 @@ Automated Passport/ID Monitoring"""
                 for property_invoice in overdue_invoices:
                     html_body += f"<li><b>{property_invoice['prop_name']} ({property_invoice['prop_country']})</b> - Tenant: {property_invoice['tenant_name']}<br>"
                     for invoice in property_invoice['invoices']:
-                        html_body += f"&nbsp;&nbsp;• Due: {invoice['due_date']} - €{property_invoice['tenant_rent']}<br>"
+                        html_body += f"&nbsp;&nbsp;• Due: {invoice['due_date']} - €{invoice['amount']}<br>"
                     html_body += "</li>"
                 html_body += """</ul><br>"""
 
@@ -1575,7 +1610,7 @@ These {tenant_word} {tenant_verb} overdue {invoice_word} that require immediate 
                 for property_invoice in overdue_invoices:
                     text_body += f"\n • {property_invoice['prop_name']} ({property_invoice['prop_country']}) - Tenant: {property_invoice['tenant_name']}"
                     for invoice in property_invoice['invoices']:
-                        text_body += f"\n     - Due: {invoice['due_date']} - €{property_invoice['tenant_rent']}"
+                        text_body += f"\n     - Due: {invoice['due_date']} - €{invoice['amount']}"
                 text_body += f"\n\n"
 
             text_body += """Please log into the Alivente Online System for additional details.

@@ -6,13 +6,13 @@ from .models import (
     # Recipe Keeper Models
     MeasurementUnit, IngredientCategory, Ingredient,
     RecipeCourse, RecipeCategory, Recipe, CustomProtein,
-    RecipeIngredient, RecipeInstruction
+    RecipeIngredient, RecipeInstruction,
+    PhysicalInvoiceProfile, PhysicalInvoice, PhysicalInvoiceLine, PhysicalInvoiceNumbering,
 )
 
 # Register your existing models
 admin.site.register(props)
 admin.site.register(petty)
-admin.site.register(tenant)
 admin.site.register(invoices)
 admin.site.register(issues)
 admin.site.register(issues_details)
@@ -211,3 +211,72 @@ class RecipeInstructionAdmin(admin.ModelAdmin):
     def instruction_text_short(self, obj):
         return obj.instruction_text[:100] + '...' if len(obj.instruction_text) > 100 else obj.instruction_text
     instruction_text_short.short_description = 'Instruction'
+
+
+class PhysicalInvoiceProfileInline(admin.StackedInline):
+    model = PhysicalInvoiceProfile
+    can_delete = True
+    extra = 1
+    max_num = 1
+    verbose_name_plural = "Physical Invoice Profile"
+
+
+@admin.register(tenant)
+class TenantAdmin(admin.ModelAdmin):
+    inlines = [PhysicalInvoiceProfileInline]
+    list_display = [
+        'tenant_name', 'prop', 'tenant_current',
+        'tenant_physical_invoice_required', 'tenant_bill_levies',
+    ]
+    list_filter = [
+        'tenant_current', 'tenant_physical_invoice_required', 'tenant_bill_levies',
+    ]
+    search_fields = ['tenant_name']
+
+
+class PhysicalInvoiceLineInline(admin.TabularInline):
+    model = PhysicalInvoiceLine
+    extra = 0
+    fields = ['sort_order', 'service', 'unit_of_measure', 'description', 'qty', 'unit_price', 'vatable', 'line_total']
+    readonly_fields = ['line_total']
+
+
+@admin.register(PhysicalInvoice)
+class PhysicalInvoiceAdmin(admin.ModelAdmin):
+    inlines = [PhysicalInvoiceLineInline]
+    list_display = ['__str__', 'tenant', 'period_year', 'period_month', 'status', 'total', 'invoice_number', 'sent_at']
+    list_filter = ['status', 'period_year', 'period_month']
+    search_fields = ['tenant__tenant_name', 'invoice_number']
+    readonly_fields = ['subtotal', 'vat', 'total', 'approved_at', 'approved_by', 'sent_at', 'created_at', 'updated_at']
+    actions = ['action_approve', 'action_unapprove']
+
+    def get_readonly_fields(self, request, obj=None):
+        ro = list(self.readonly_fields)
+        if obj and not obj.is_editable:
+            ro += ['tenant', 'period_year', 'period_month', 'invoice_date', 'invoice_number', 'vat_rate', 'currency', 'status']
+        return ro
+
+    def save_related(self, request, form, formsets, change):
+        super().save_related(request, form, formsets, change)
+        form.instance.recalc_totals()  # keep totals in step after inline line edits
+
+    @admin.action(description="Approve selected (draft only)")
+    def action_approve(self, request, queryset):
+        done = sum(1 for pi in queryset if pi.status == PhysicalInvoice.STATUS_DRAFT and (pi.approve(request.user) or True))
+        self.message_user(request, f"Approved {done} draft invoice(s).")
+
+    @admin.action(description="Un-approve selected (back to draft)")
+    def action_unapprove(self, request, queryset):
+        done = sum(1 for pi in queryset if pi.status == PhysicalInvoice.STATUS_APPROVED and (pi.unapprove() or True))
+        self.message_user(request, f"Un-approved {done} invoice(s).")
+
+@admin.register(PhysicalInvoiceNumbering)
+class PhysicalInvoiceNumberingAdmin(admin.ModelAdmin):
+    list_display = ["__str__", "prefix", "pad_width", "next_number", "updated_at"]
+
+    def has_add_permission(self, request):
+        return not PhysicalInvoiceNumbering.objects.exists()  # singleton
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+

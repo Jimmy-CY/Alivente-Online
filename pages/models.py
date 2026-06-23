@@ -696,6 +696,16 @@ class tenant(models.Model):
         null=True,
         verbose_name="Renewal Status"
     )
+    tenant_physical_invoice_required = models.BooleanField(
+        default=False,
+        verbose_name="Generate Physical Invoice",
+        help_text="Also generate and email a PDF VAT invoice for this tenant each month.",
+    )
+    tenant_bill_levies = models.BooleanField(
+        default=False,
+        verbose_name="Bill Communal Fees (Levies)",
+        help_text="Include tenant_levies as a communal line — on the physical invoice and in the collection amount. Off = today's rent-only behaviour.",
+    )
 
     def clean(self):
         """Validate lease dates and check for ACTIVE tenant overlaps only"""
@@ -752,9 +762,212 @@ class invoices(models.Model):
     tenant = models.ForeignKey(tenant, on_delete=models.CASCADE)
     invoice_date = models.DateField(blank=True, null=True)
     invoice_paid = models.CharField(max_length=255, blank=True, null=True)
+    invoice_amount = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     
     class Meta:
         db_table="invoice"
+
+class PhysicalInvoiceProfile(models.Model):
+    tenant = models.OneToOneField(
+        tenant, on_delete=models.CASCADE, related_name="physical_invoice_profile",
+    )
+    # Customer block on the invoice. Blank fields fall back to tenant values at render time.
+    customer_id_label = models.CharField(max_length=255, blank=True,
+        help_text="Shown in the 'Customer ID' box. Defaults to the tenant name if blank.")
+    billing_name = models.CharField(max_length=255, blank=True,
+        help_text="Customer name on the invoice. Defaults to the tenant name if blank.")
+    billing_address = models.TextField(blank=True,
+        help_text="Customer address — one line per row.")
+    billing_tel = models.CharField(max_length=64, blank=True,
+        help_text="Defaults to the tenant contact number if blank.")
+    # Water Consumed line: variable amount entered at confirmation; this is just the schedule.
+    water_enabled = models.BooleanField(default=False,
+        help_text="Prompt for a (VAT-free) Water Consumed line on the scheduled months.")
+    water_cycle_anchor = models.DateField(null=True, blank=True,
+        help_text="Any month this tenant's water cycle lands on; the interval counts from here.")
+    water_cycle_interval_months = models.PositiveSmallIntegerField(default=2,
+        help_text="Months between water lines (2 = every second month).")
+
+    def __str__(self):
+        return f"Physical invoice profile — {self.tenant}"
+
+    class Meta:
+        db_table = "physical_invoice_profile"
+        verbose_name = "Physical Invoice Profile"
+        verbose_name_plural = "Physical Invoice Profiles"
+
+def physical_invoice_pdf_upload_path(instance, filename):
+    """Storage path for a rendered physical-invoice PDF."""
+    ext = (filename.rsplit('.', 1)[-1] or 'pdf').lower()
+    tenant_slug = slugify(getattr(instance.tenant, 'tenant_name', '') or 'tenant')
+    period = f"{instance.period_year:04d}{instance.period_month:02d}"
+    number = slugify(instance.invoice_number or 'draft')
+    return os.path.join('physical_invoices', f"{tenant_slug}-{period}-{number}.{ext}")
+
+
+class PhysicalInvoice(models.Model):
+    """A physical (PDF) VAT invoice for one tenant for one month.
+
+    Lifecycle: draft -> approved -> sent (linear; un-approve drops an approved
+    invoice back to draft). Editable only while draft; approving locks it,
+    sending freezes it. Created by the prepare cron ~5 days before month-end,
+    dated for the UPCOMING month; emailed to the customer by the send cron on
+    the 1st.
+    """
+
+    STATUS_DRAFT = 'draft'
+    STATUS_APPROVED = 'approved'
+    STATUS_SENT = 'sent'
+    STATUS_CHOICES = [
+        (STATUS_DRAFT, 'Draft'),
+        (STATUS_APPROVED, 'Approved'),
+        (STATUS_SENT, 'Sent'),
+    ]
+
+    physical_invoice_id = models.AutoField(primary_key=True)
+    tenant = models.ForeignKey(tenant, on_delete=models.PROTECT, related_name='physical_invoices')
+    # Collections invoice for the same month (created on the 1st). Linked later
+    # for the balancing step; null until then.
+    collection_invoice = models.ForeignKey(
+        invoices, on_delete=models.SET_NULL, null=True, blank=True, related_name='physical_invoice')
+
+    period_year = models.PositiveSmallIntegerField()
+    period_month = models.PositiveSmallIntegerField(help_text='1-12')
+    invoice_date = models.DateField(help_text='Printed on the invoice (1st of the period month).')
+    invoice_number = models.CharField(max_length=32, blank=True, null=True,
+        help_text='PR-#### — assigned when the invoice is sent.')
+
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=STATUS_DRAFT)
+
+    vat_rate = models.DecimalField(max_digits=5, decimal_places=4, default=Decimal('0.1900'),
+        help_text='VAT rate applied to vatable lines, frozen on this invoice.')
+    subtotal = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'))
+    vat = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'))
+    total = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'))
+    currency = models.CharField(max_length=3, default='EUR')
+
+    pdf_file = models.FileField(upload_to=physical_invoice_pdf_upload_path, blank=True, null=True)
+
+    approved_at = models.DateTimeField(null=True, blank=True)
+    approved_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True,
+        related_name='approved_physical_invoices')
+    sent_at = models.DateTimeField(null=True, blank=True)
+    email_status = models.CharField(max_length=20, blank=True, null=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'physical_invoices'
+        verbose_name = 'Physical Invoice'
+        verbose_name_plural = 'Physical Invoices'
+        ordering = ['-period_year', '-period_month', 'tenant_id']
+        unique_together = [('tenant', 'period_year', 'period_month')]
+
+    def __str__(self):
+        return f"{self.invoice_number or 'DRAFT'} — {self.tenant} — {self.period_month:02d}/{self.period_year}"
+
+    @property
+    def is_editable(self):
+        return self.status == self.STATUS_DRAFT
+
+    def assert_editable(self):
+        if not self.is_editable:
+            raise ValidationError(
+                f"Invoice {self.invoice_number or self.pk} is {self.get_status_display()} "
+                f"and can no longer be edited. Un-approve it first.")
+
+    def recalc_totals(self, save=True):
+        """Recompute subtotal/vat/total from the current line rows."""
+        lines = list(self.lines.all())
+        subtotal = sum((ln.line_total or Decimal('0.00')) for ln in lines) or Decimal('0.00')
+        vatable_base = sum((ln.line_total or Decimal('0.00')) for ln in lines if ln.vatable) or Decimal('0.00')
+        self.subtotal = Decimal(subtotal).quantize(Decimal('0.01'))
+        self.vat = (Decimal(vatable_base) * self.vat_rate).quantize(Decimal('0.01'))
+        self.total = (self.subtotal + self.vat).quantize(Decimal('0.01'))
+        if save:
+            self.save(update_fields=['subtotal', 'vat', 'total', 'updated_at'])
+        return self.total
+
+    def approve(self, user=None):
+        if self.status != self.STATUS_DRAFT:
+            raise ValidationError("Only a draft invoice can be approved.")
+        self.status = self.STATUS_APPROVED
+        self.approved_at = timezone.now()
+        self.approved_by = user
+        self.save(update_fields=['status', 'approved_at', 'approved_by', 'updated_at'])
+
+    def unapprove(self):
+        if self.status != self.STATUS_APPROVED:
+            raise ValidationError("Only an approved (not yet sent) invoice can be un-approved.")
+        self.status = self.STATUS_DRAFT
+        self.approved_at = None
+        self.approved_by = None
+        self.save(update_fields=['status', 'approved_at', 'approved_by', 'updated_at'])
+
+    def mark_sent(self):
+        if self.status != self.STATUS_APPROVED:
+            raise ValidationError("Only an approved invoice can be marked as sent.")
+        self.status = self.STATUS_SENT
+        self.sent_at = timezone.now()
+        self.save(update_fields=['status', 'sent_at', 'updated_at'])
+
+
+class PhysicalInvoiceLine(models.Model):
+    physical_invoice_line_id = models.AutoField(primary_key=True)
+    physical_invoice = models.ForeignKey(PhysicalInvoice, on_delete=models.CASCADE, related_name='lines')
+    service = models.CharField(max_length=50, blank=True)
+    unit_of_measure = models.CharField(max_length=50, blank=True)
+    description = models.CharField(max_length=255, blank=True)
+    qty = models.DecimalField(max_digits=8, decimal_places=2, default=Decimal('1.00'))
+    unit_price = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'))
+    line_total = models.DecimalField(max_digits=10, decimal_places=2, default=Decimal('0.00'))
+    vatable = models.BooleanField(default=False)
+    sort_order = models.IntegerField(default=0)
+
+    class Meta:
+        db_table = 'physical_invoice_lines'
+        verbose_name = 'Physical Invoice Line'
+        verbose_name_plural = 'Physical Invoice Lines'
+        ordering = ['sort_order', 'physical_invoice_line_id']
+
+    def save(self, *args, **kwargs):
+        self.line_total = (Decimal(self.qty or 0) * Decimal(self.unit_price or 0)).quantize(Decimal('0.01'))
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"{self.service} {self.description} = {self.line_total}"
+
+class PhysicalInvoiceNumbering(models.Model):
+    """Singleton: the running counter for physical-invoice (PR) numbers.
+
+    Numbers are <prefix><zero-padded>, e.g. PR-0170. `next_number` is the next
+    value the system will issue; it advances automatically as invoices are
+    sent, and can be bumped up by hand when an external invoice has consumed a
+    number in between.
+    """
+    prefix = models.CharField(max_length=10, default="PR-")
+    pad_width = models.PositiveSmallIntegerField(default=4,
+        help_text="Zero-padding width (4 -> PR-0170).")
+    next_number = models.PositiveIntegerField(default=1,
+        help_text="The next PR number the system will issue.")
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "physical_invoice_numbering"
+        verbose_name = "Physical Invoice Numbering"
+        verbose_name_plural = "Physical Invoice Numbering"
+
+    def __str__(self):
+        return f"Numbering — next {self.format(self.next_number)}"
+
+    def format(self, n):
+        return f"{self.prefix}{int(n):0{self.pad_width}d}"
+
+    @classmethod
+    def get_solo(cls):
+        obj = cls.objects.first()
+        return obj or cls.objects.create()
 
 class issues(models.Model):
     issues_id = models.AutoField(primary_key=True)
@@ -2392,6 +2605,7 @@ class NotificationRecipient(models.Model):
         ('invoice_paid', 'Invoice Marked as Paid'),
         ('issue_comments_daily', 'Daily Issue Comments Report'),
         ('issue_comment_urgent', 'Urgent Issue Comment Alert'),
+        ('physical_invoice_review', 'Physical Invoices Awaiting Approval'),
     )
 
     # Notification types that are scoped to a workspace (one recipient row
