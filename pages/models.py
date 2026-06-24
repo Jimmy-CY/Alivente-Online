@@ -780,6 +780,11 @@ class PhysicalInvoiceProfile(models.Model):
         help_text="Customer address — one line per row.")
     billing_tel = models.CharField(max_length=64, blank=True,
         help_text="Defaults to the tenant contact number if blank.")
+    client_email_body = models.TextField(blank=True,
+        help_text="Saved greeting and body for the monthly invoice e-mail. "
+                  "Use {month} where the period should appear; the send cron "
+                  "replaces it with the month and year (e.g. 'June 2026'). "
+                  "Leave blank to use a generic default.")
     # Water Consumed line: variable amount entered at confirmation; this is just the schedule.
     water_enabled = models.BooleanField(default=False,
         help_text="Prompt for a (VAT-free) Water Consumed line on the scheduled months.")
@@ -2606,6 +2611,7 @@ class NotificationRecipient(models.Model):
         ('issue_comments_daily', 'Daily Issue Comments Report'),
         ('issue_comment_urgent', 'Urgent Issue Comment Alert'),
         ('physical_invoice_review', 'Physical Invoices Awaiting Approval'),
+        ('physical_invoice_client', 'Physical Invoice to Client'),
     )
 
     # Notification types that are scoped to a workspace (one recipient row

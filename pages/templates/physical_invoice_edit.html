@@ -1,0 +1,260 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+Edit Physical Invoice
+{% endblock %}
+
+{% block content %}
+
+<h2 class="page-title-h2"><center>ALIVENTE ONLINE - PHYSICAL INVOICE</center></h2>
+<h4 class="page-subtitle-h4"><center>{{ number }} &mdash; {{ pi.tenant.tenant_name }}</center></h4>
+<br/>
+
+{% for msg in messages %}
+  <div class="alert alert-secondary alert-dismissible fade show auto-dismiss" role="alert">
+    <strong></strong> <center>{{ msg }}</center>
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <script>
+    setTimeout(function() {
+      document.querySelectorAll('.auto-dismiss').forEach(alert => {
+        alert.classList.remove('show'); alert.classList.add('fade');
+        setTimeout(() => alert.remove(), 2500);
+      });
+    }, 2500);
+  </script>
+{% endfor %}
+
+{% if not is_editable %}
+  <div class="lock-banner">
+    <i class="fas fa-lock"></i>
+    This invoice is <strong>{{ pi.get_status_display }}</strong> and is read-only.
+    Un-approve it first to make changes.
+  </div>
+{% endif %}
+
+<form action="{% url 'physical_invoice_edit' pi.pk %}" method="post" id="invoiceForm">
+  {% csrf_token %}
+
+  <!-- Action Buttons -->
+  <div class="page-action-buttons page-action-buttons-form">
+    {% if is_editable %}
+      <button class="btn btn-info action-primary" type="submit">
+        <i class="fas fa-save"></i> Save
+      </button>
+    {% endif %}
+    <a href="{% url 'physical_invoice_list' %}?period={{ pi.period_year }}-{{ pi.period_month|stringformat:'02d' }}"
+       class="btn btn-info action-back" role="button" aria-label="Back to list">
+      <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
+    </a>
+  </div>
+
+  <!-- Header summary -->
+  <div class="summary-card">
+    <div class="summary-grid">
+      <div class="summary-item"><span class="summary-label">Tenant</span><span class="summary-value">{{ pi.tenant.tenant_name }}</span></div>
+      <div class="summary-item"><span class="summary-label">Property</span><span class="summary-value">{{ property_name }}</span></div>
+      <div class="summary-item"><span class="summary-label">Period</span><span class="summary-value">{{ period_label }}</span></div>
+      <div class="summary-item"><span class="summary-label">Number</span><span class="summary-value">{{ number }}</span></div>
+      <div class="summary-item"><span class="summary-label">Status</span><span class="summary-value"><span class="status-badge status-{{ pi.status }}">{{ pi.get_status_display }}</span></span></div>
+      <div class="summary-item"><span class="summary-label">VAT Rate</span><span class="summary-value">{{ vat_rate_display }}</span></div>
+    </div>
+  </div>
+
+  <!-- Lines -->
+  <h5 class="lines-title"><i class="fas fa-list"></i> Invoice Lines</h5>
+  <div class="lines-scroll">
+    <table class="table table-bordered lines-table">
+      <thead>
+        <tr>
+          <th style="width: 12%">Service</th>
+          <th style="width: 12%">Unit</th>
+          <th style="width: 34%">Description</th>
+          <th style="width: 9%">Qty</th>
+          <th style="width: 14%">Unit Price</th>
+          <th style="width: 9%">VAT</th>
+          {% if is_editable %}<th style="width: 6%"></th>{% endif %}
+        </tr>
+      </thead>
+      <tbody id="linesBody">
+        {% for ln in lines %}
+          <tr class="line-row">
+            <td><input type="text" name="line_service" value="{{ ln.service }}" class="form-control line-input" {% if not is_editable %}readonly{% endif %}></td>
+            <td><input type="text" name="line_uom" value="{{ ln.unit_of_measure }}" class="form-control line-input" {% if not is_editable %}readonly{% endif %}></td>
+            <td><input type="text" name="line_description" value="{{ ln.description }}" class="form-control line-input" {% if not is_editable %}readonly{% endif %}></td>
+            <td><input type="number" step="0.01" name="line_qty" value="{{ ln.qty }}" class="form-control line-input line-qty" {% if not is_editable %}readonly{% endif %}></td>
+            <td><input type="number" step="0.01" name="line_unit_price" value="{{ ln.unit_price }}" class="form-control line-input line-price" {% if not is_editable %}readonly{% endif %}></td>
+            <td>
+              <select name="line_vatable" class="form-control line-input line-vat" {% if not is_editable %}disabled{% endif %}>
+                <option value="1" {% if ln.vatable %}selected{% endif %}>Yes</option>
+                <option value="0" {% if not ln.vatable %}selected{% endif %}>No</option>
+              </select>
+              {% if not is_editable %}<input type="hidden" name="line_vatable" value="{% if ln.vatable %}1{% else %}0{% endif %}">{% endif %}
+            </td>
+            {% if is_editable %}
+              <td class="line-remove-cell">
+                <button type="button" class="icon-action-btn icon-delete" title="Remove line" onclick="removeLineRow(this)">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </td>
+            {% endif %}
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% if is_editable %}
+    <div class="add-line-wrap">
+      <button type="button" class="btn btn-outline-secondary" onclick="addLineRow()">
+        <i class="fas fa-plus"></i> Add Line
+      </button>
+    </div>
+  {% endif %}
+
+  <!-- Totals (recomputed on Save) -->
+  <div class="totals-card">
+    <div class="totals-row"><span>Subtotal</span><span>{{ pi.currency }} {{ subtotal_display }}</span></div>
+    <div class="totals-row"><span>VAT ({{ vat_rate_display }})</span><span>{{ pi.currency }} {{ vat_display }}</span></div>
+    <div class="totals-row totals-total"><span>Total</span><span>{{ pi.currency }} {{ total_display }}</span></div>
+    {% if is_editable %}<div class="totals-note">Totals refresh when you Save.</div>{% endif %}
+  </div>
+</form>
+
+<!-- Approve / Un-approve (separate forms, outside the line-editing form) -->
+{% if perms.auth.can_edit_tenants %}
+  <div class="status-action-row">
+    {% if pi.status == 'draft' %}
+      <form method="post" action="{% url 'physical_invoice_approve' pi.pk %}" class="status-action-form">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{% url 'physical_invoice_edit' pi.pk %}">
+        <button type="submit" class="btn btn-approve">
+          <i class="fas fa-check"></i> Approve Invoice
+        </button>
+      </form>
+    {% elif pi.status == 'approved' %}
+      <form method="post" action="{% url 'physical_invoice_unapprove' pi.pk %}" class="status-action-form"
+            onsubmit="return confirm('Move this invoice back to draft?');">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{% url 'physical_invoice_edit' pi.pk %}">
+        <button type="submit" class="btn btn-unapprove">
+          <i class="fas fa-undo"></i> Un-approve (back to draft)
+        </button>
+      </form>
+    {% endif %}
+  </div>
+{% endif %}
+
+<!-- Template row for "Add Line" (does not submit) -->
+<template id="lineTemplate">
+  <tr class="line-row">
+    <td><input type="text" name="line_service" value="" class="form-control line-input"></td>
+    <td><input type="text" name="line_uom" value="" class="form-control line-input"></td>
+    <td><input type="text" name="line_description" value="" class="form-control line-input"></td>
+    <td><input type="number" step="0.01" name="line_qty" value="1" class="form-control line-input line-qty"></td>
+    <td><input type="number" step="0.01" name="line_unit_price" value="0.00" class="form-control line-input line-price"></td>
+    <td>
+      <select name="line_vatable" class="form-control line-input line-vat">
+        <option value="1">Yes</option>
+        <option value="0" selected>No</option>
+      </select>
+    </td>
+    <td class="line-remove-cell">
+      <button type="button" class="icon-action-btn icon-delete" title="Remove line" onclick="removeLineRow(this)">
+        <i class="fas fa-trash"></i>
+      </button>
+    </td>
+  </tr>
+</template>
+
+<style>
+.page-title-h2 { margin-top: 0.5rem; margin-bottom: 0; }
+.page-subtitle-h4 { margin-top: 0.25rem; margin-bottom: 1rem; color: #6c757d; }
+
+.btn-info { background-color: #17a2b8; color: white; border: 1px solid #17a2b8; transition: all 0.3s ease; border-radius: 6px; font-weight: 500; }
+.btn-info:hover { background-color: #138496; border-color: #117a8b; color: white; text-decoration: none; transform: translateY(-1px); box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+.btn-outline-secondary { border: 2px solid #6c757d; color: #6c757d; background: transparent; border-radius: 6px; font-weight: 500; transition: all 0.2s ease; }
+.btn-outline-secondary:hover { background: #6c757d; color: white; }
+
+.btn-approve { background-color: #28a745; color: white; border: 1px solid #28a745; border-radius: 6px; font-weight: 500; padding: 8px 18px; transition: all 0.2s ease; }
+.btn-approve:hover { background-color: #218838; border-color: #1e7e34; color: white; transform: translateY(-1px); box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+.btn-unapprove { background-color: #fd7e14; color: white; border: 1px solid #fd7e14; border-radius: 6px; font-weight: 500; padding: 8px 18px; transition: all 0.2s ease; }
+.btn-unapprove:hover { background-color: #e8690b; border-color: #d9610a; color: white; transform: translateY(-1px); box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+
+.page-action-buttons { display: flex; gap: 12px; margin-bottom: 1.5rem; }
+.page-action-buttons-form { justify-content: flex-end; }
+
+.status-action-row { display: flex; justify-content: flex-end; margin-top: 20px; }
+.status-action-form { margin: 0; }
+
+.lock-banner { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; font-weight: 500; }
+.lock-banner i { margin-right: 6px; }
+
+.summary-card { background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border: 1px solid #dee2e6; border-radius: 12px; padding: 18px 24px; margin-bottom: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
+.summary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.summary-item { display: flex; flex-direction: column; gap: 2px; }
+.summary-label { font-size: 12px; font-weight: 600; color: #6c757d; text-transform: uppercase; letter-spacing: 0.03em; }
+.summary-value { font-size: 15px; color: #2c3e50; font-weight: 500; }
+.summary-input { font-size: 14px; padding: 6px 10px; height: auto; max-width: 220px; border: 2px solid #ced4da; border-radius: 6px; }
+.summary-input:focus { border-color: #17a2b8; box-shadow: 0 0 0 3px rgba(23,162,184,0.1); outline: none; }
+.summary-hint { font-size: 11px; color: #adb5bd; margin-top: 2px; }
+
+.status-badge { padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 500; }
+.status-draft { background: #fff3cd; color: #856404; }
+.status-approved { background: #cce5ff; color: #004085; }
+.status-sent { background: #d4edda; color: #155724; }
+
+.lines-title { color: #2c3e50; font-weight: 600; margin-bottom: 12px; }
+.lines-title i { color: #17a2b8; margin-right: 6px; }
+.lines-scroll { overflow-x: auto; background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+.lines-table { margin-bottom: 0; min-width: 720px; }
+.lines-table thead th { background-color: #343a40; color: white; font-weight: 600; font-size: 13px; vertical-align: middle; }
+.line-input { font-size: 14px; padding: 6px 8px; height: auto; }
+.line-qty, .line-price { text-align: right; }
+.line-remove-cell { text-align: center; vertical-align: middle; }
+
+.icon-action-btn { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 6px; border: 2px solid; background: white; text-decoration: none; transition: all 0.2s ease; font-size: 13px; cursor: pointer; }
+.icon-delete { color: #dc3545; border-color: #dc3545; }
+.icon-delete:hover { background-color: #dc3545; color: white; }
+
+.add-line-wrap { margin: 14px 0 24px; }
+
+.totals-card { background: white; border: 1px solid #dee2e6; border-radius: 8px; padding: 16px 20px; max-width: 360px; margin-left: auto; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+.totals-row { display: flex; justify-content: space-between; padding: 4px 0; color: #495057; }
+.totals-total { border-top: 2px solid #dee2e6; margin-top: 6px; padding-top: 10px; font-weight: 700; font-size: 18px; color: #2c3e50; }
+.totals-note { font-size: 12px; color: #adb5bd; text-align: right; margin-top: 8px; font-style: italic; }
+
+/* ==================== MOBILE ==================== */
+@media (max-width: 768px) {
+  .page-title-h2 { font-size: 1.25rem; }
+  .page-action-buttons-form { flex-direction: row; gap: 8px; width: 100%; flex-wrap: nowrap; align-items: stretch; }
+  .action-primary { flex: 1 1 auto; min-width: 0; height: 38px; display: flex; align-items: center; justify-content: center; padding: 0 12px; font-size: 13px; margin: 0; }
+  .action-back { flex: 0 0 auto; width: 44px; height: 38px; padding: 0; display: flex; align-items: center; justify-content: center; margin: 0; }
+  .action-back-label { display: none; }
+  .summary-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
+  .summary-input { max-width: none; }
+  .totals-card { max-width: none; }
+  .status-action-row { justify-content: stretch; }
+  .status-action-form, .status-action-form .btn { width: 100%; }
+  .line-input, .form-control { font-size: 16px; } /* prevent iOS zoom */
+}
+</style>
+
+<script>
+function addLineRow() {
+  var tpl = document.getElementById('lineTemplate');
+  var body = document.getElementById('linesBody');
+  if (!tpl || !body) return;
+  var clone = tpl.content.cloneNode(true);
+  body.appendChild(clone);
+}
+function removeLineRow(btn) {
+  var row = btn.closest('tr');
+  if (row) row.remove();
+}
+</script>
+
+{% endblock %}

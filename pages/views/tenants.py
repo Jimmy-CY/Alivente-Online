@@ -93,6 +93,7 @@ def _apply_physical_invoice_fields(request, tenant_obj):
     profile.billing_name = (request.POST.get('billing_name') or '').strip()
     profile.billing_address = (request.POST.get('billing_address') or '').strip()
     profile.billing_tel = (request.POST.get('billing_tel') or '').strip()
+    profile.client_email_body = (request.POST.get('client_email_body') or '').strip()
     profile.water_enabled = 'water_enabled' in request.POST
     profile.water_cycle_anchor = anchor
     profile.water_cycle_interval_months = interval
@@ -377,6 +378,7 @@ def duplicate_tenant_view(request, tenant_id):
                 billing_name=src_profile.billing_name,
                 billing_address=src_profile.billing_address,
                 billing_tel=src_profile.billing_tel,
+                client_email_body=src_profile.client_email_body,
                 water_enabled=src_profile.water_enabled,
                 water_cycle_anchor=src_profile.water_cycle_anchor,
                 water_cycle_interval_months=src_profile.water_cycle_interval_months,

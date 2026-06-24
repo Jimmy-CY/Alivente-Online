@@ -335,6 +335,76 @@
     </form>
 </div>
 
+<!-- Physical Invoices Awaiting Approval -->
+<div class="notification-card">
+    <h5><i class="fas fa-file-invoice-dollar"></i> Physical Invoices Awaiting Approval</h5>
+    <p class="text-muted">Daily reminder listing the physical invoice drafts that still need approving before the 1st. Sent only while drafts are pending.</p>
+
+    <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="notification_type" value="physical_invoice_review">
+
+        <div class="form-group">
+            <label><strong>TO:</strong> Primary Recipients</label>
+            <textarea
+                class="form-control"
+                name="to_addresses"
+                rows="2"
+                placeholder="email1@example.com, email2@example.com"
+            >{{ notification_settings.physical_invoice_review.to_emails }}</textarea>
+            <div class="field-hint">People who approve the physical invoice drafts</div>
+        </div>
+
+        <div class="form-group">
+            <label><strong>CC:</strong> Carbon Copy Recipients (optional)</label>
+            <textarea
+                class="form-control"
+                name="cc_addresses"
+                rows="2"
+                placeholder="email1@example.com, email2@example.com"
+            >{{ notification_settings.physical_invoice_review.cc_emails }}</textarea>
+            <div class="field-hint">Additional recipients who should be informed</div>
+        </div>
+
+        <button type="submit" class="btn btn-info">
+            <i class="fas fa-save"></i> Save
+        </button>
+    </form>
+</div>
+
+<!-- Physical Invoice to Client -->
+<div class="notification-card">
+    <h5><i class="fas fa-paper-plane"></i> Physical Invoice to Client</h5>
+    <p class="text-muted">The monthly physical invoice PDF emailed to each tenant on the 1st. The recipient is the tenant's own email from their record; set any addresses to copy on every client invoice below.</p>
+
+    <form method="post">
+        {% csrf_token %}
+        <input type="hidden" name="notification_type" value="physical_invoice_client">
+
+        <div class="form-group">
+            <label><strong>TO:</strong> Primary Recipient</label>
+            <div class="field-hint" style="font-style: normal; margin-top: 0;">
+                <i class="fas fa-info-circle"></i> Sent automatically to each tenant's email address (from the tenant record). Not configurable here.
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label><strong>CC:</strong> Carbon Copy Recipients (optional)</label>
+            <textarea
+                class="form-control"
+                name="cc_addresses"
+                rows="2"
+                placeholder="email1@example.com, email2@example.com"
+            >{{ notification_settings.physical_invoice_client.cc_emails }}</textarea>
+            <div class="field-hint">Copied on every client invoice (e.g. your accounts mailbox)</div>
+        </div>
+
+        <button type="submit" class="btn btn-info">
+            <i class="fas fa-save"></i> Save
+        </button>
+    </form>
+</div>
+
 <!-- Expense Needs Approval -->
 <div class="notification-card">
     <h5><i class="fas fa-clipboard-check"></i> Expense Needs Approval</h5>

@@ -61,6 +61,8 @@ def notification_settings(request):
         'daily_report',
         'new_lease_upload',
         'invoice_paid',
+        'physical_invoice_review',
+        'physical_invoice_client',
         'expense_needs_approval',
         'expense_approved',
         'expense_paid',

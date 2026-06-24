@@ -247,6 +247,11 @@ urlpatterns = [
     path('invoices_commit/<invoice_id>', views.invoices_commit, name='invoices_commit'),
     path("physical-invoices/preview/", views.render_invoice_preview, name="physical_invoice_preview"),
     path("physical-invoices/<int:physical_invoice_id>/pdf/", views.render_stored_invoice_pdf, name="physical_invoice_pdf"),
+    path("physical-invoices/list/", views.physical_invoice_list, name="physical_invoice_list"),
+    path("physical-invoices/<int:physical_invoice_id>/edit/", views.physical_invoice_edit, name="physical_invoice_edit"),
+    path("physical-invoices/<int:physical_invoice_id>/approve/", views.physical_invoice_approve, name="physical_invoice_approve"),
+    path("physical-invoices/<int:physical_invoice_id>/unapprove/", views.physical_invoice_unapprove, name="physical_invoice_unapprove"),
+    path("physical-invoices/set-next-number/", views.physical_invoice_set_next_number, name="physical_invoice_set_next_number"),
 
     # ============================================================================
     # SUPPLIERS

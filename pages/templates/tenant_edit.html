@@ -308,6 +308,17 @@
     </div>
 
     <div class="form-row">
+      <div class="col-md-12">
+        <div class="form-group">
+          <label for="client_email_body"><strong>Client Email Body</strong></label>
+          <textarea class="form-control" id="client_email_body" name="client_email_body" rows="5"
+                    placeholder="Dear ...,&#10;&#10;Please find attached the rental invoice for {month}.">{{ tresults.physical_invoice_profile.client_email_body }}</textarea>
+          <small class="form-text text-muted">The greeting and body of the monthly invoice e-mail. Type <code>{month}</code> where the period should appear &mdash; it becomes e.g. &ldquo;June 2026&rdquo; when sent. The signature and contact footer are added automatically. Leave blank to use a generic message.</small>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-row">
       <div class="col-md-4">
         <div class="form-group pi-check">
           <label class="pi-check-label">
