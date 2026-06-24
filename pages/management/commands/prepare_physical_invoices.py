@@ -7,11 +7,15 @@ UPCOMING month, seeds the rent (+communal) lines, and emails the daily
 "these drafts need approving" reminder listing whatever is still in draft.
 Idempotent: safe to run every day.
 """
+import os
+import smtplib
 from datetime import date, timedelta
 from decimal import Decimal
+from email.header import Header
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 
 from django.conf import settings
-from django.core.mail import EmailMessage
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 
@@ -129,11 +133,61 @@ class Command(BaseCommand):
         if not rows:
             self.stdout.write("No drafts awaiting approval; no reminder sent.")
             return
-        body_lines = [f"{r['number']}  {r['tenant']} ({r['property']})  €{r['total']}" for r in rows]
-        body = ("The following physical invoices for {0} are still in DRAFT and need "
-                "approving:\n\n{1}\n\nApprove them in Alivente before the 1st.").format(
-                    period_first.strftime("%B %Y"), "\n".join(body_lines))
-        subject = f"Physical invoices to approve — {period_first:%B %Y} ({len(rows)} pending)"
+        month_label = period_first.strftime("%B %Y")
+        count = len(rows)
+        invoice_word = "invoice" if count == 1 else "invoices"
+        is_are = "is" if count == 1 else "are"
+        needs = "needs" if count == 1 else "need"
+        them = "it" if count == 1 else "them"
+        subject = f"Physical invoices to approve — {month_label} ({count} pending)"
+
+        html_items = "".join(
+            f"<li><b>{r['number']}</b> — {r['tenant']} ({r['property']}) "
+            f"— €{r['total']:,.2f}</li>"
+            for r in rows)
+        text_items = "".join(
+            f"\n \u2022 {r['number']}  {r['tenant']} ({r['property']})  €{r['total']:,.2f}"
+            for r in rows)
+
+        html_body = f"""
+        <html>
+        <head>
+        <style>
+        p {{ margin: 0; padding: 0; }}
+        ul {{ margin: 0; padding: 0; padding-left: 20px; }}
+        li {{ margin: 0; padding: 0; margin-bottom: 8px; }}
+        .header {{ color: #cc0000; font-weight: bold; }}
+        </style>
+        </head>
+        <body>
+            <p>Dear User,</p>
+            <br>
+            <p><b><u class="header">PHYSICAL INVOICES TO APPROVE \u2014 {month_label.upper()} ({count}):</u></b></p>
+            <p>The following physical {invoice_word} for {month_label} {is_are} still in DRAFT and {needs} approving:</p>
+            <br>
+            <ul>{html_items}</ul>
+            <br>
+            <p>Please log into the Alivente Online System to approve {them} before the 1st.</p>
+            <br>
+            <p>Best regards,<br>
+            Alivente Property Management System<br>
+            Automated Report</p>
+        </body>
+        </html>
+        """
+
+        text_body = (
+            "Dear User,\n\n"
+            f"PHYSICAL INVOICES TO APPROVE \u2014 {month_label.upper()} ({count}):\n"
+            f"The following physical {invoice_word} for {month_label} {is_are} "
+            f"still in DRAFT and {needs} approving:\n"
+            f"{text_items}\n\n"
+            f"Please log into the Alivente Online System to approve {them} "
+            "before the 1st.\n\n"
+            "Best regards,\n"
+            "Alivente Property Management System\n"
+            "Automated Report"
+        )
 
         try:
             rec = NotificationRecipient.objects.get(notification_type=REMINDER_TYPE)
@@ -145,13 +199,49 @@ class Command(BaseCommand):
             self.stdout.write(self.style.WARNING(
                 f"No recipients configured for '{REMINDER_TYPE}'; reminder not sent."))
             return
+
+        # Raw smtplib via the EMAIL_* env vars, matching the project's other
+        # cron mailers (check_lease_renewal_and_invoices) so this uses the same
+        # proven path as everything else rather than Django's mail backend.
+        email_host = os.environ.get('EMAIL_HOST', 'smtp.gmail.com')
+        email_port = int(os.environ.get('EMAIL_PORT', 465))
+        email_user = os.environ.get('EMAIL_USER', 'demetrimanias@gmail.com')
+        email_password = os.environ.get('EMAIL_PASSWORD')
+        email_use_ssl = os.environ.get('EMAIL_USE_SSL', 'True').lower() == 'true'
+        email_use_tls = os.environ.get('EMAIL_USE_TLS', 'False').lower() == 'true'
+
+        if not email_password:
+            self.stderr.write(self.style.ERROR(
+                "EMAIL_PASSWORD not set; reminder not sent."))
+            return
+
+        msg = MIMEMultipart('alternative')
+        msg['From'] = email_user
+        msg['To'] = ", ".join(to_list)
+        if cc_list:
+            msg['Cc'] = ", ".join(cc_list)
+        msg['Subject'] = Header(subject, 'utf-8')
+        msg.attach(MIMEText(text_body, 'plain', 'utf-8'))
+        msg.attach(MIMEText(html_body, 'html', 'utf-8'))
+
+        smtp_object = None
         try:
-            EmailMessage(
-                subject=subject, body=body,
-                from_email=getattr(settings, "DEFAULT_FROM_EMAIL", None),
-                to=to_list, cc=cc_list,
-            ).send(fail_silently=False)
+            if email_use_ssl:
+                smtp_object = smtplib.SMTP_SSL(email_host, email_port, timeout=60)
+            else:
+                smtp_object = smtplib.SMTP(email_host, email_port, timeout=60)
+                smtp_object.ehlo()
+                if email_use_tls:
+                    smtp_object.starttls()
+            smtp_object.login(email_user, email_password)
+            smtp_object.sendmail(email_user, to_list + cc_list, msg.as_string())
             self.stdout.write(self.style.SUCCESS(
                 f"Reminder sent to {len(to_list)} recipient(s) ({len(rows)} draft(s))."))
         except Exception as exc:  # don't let a mail failure abort the cron
             self.stderr.write(self.style.ERROR(f"Reminder send failed: {exc}"))
+        finally:
+            if smtp_object is not None:
+                try:
+                    smtp_object.quit()
+                except Exception:
+                    pass

@@ -27,6 +27,7 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
 from django.conf import settings
+from django.core.management import call_command
 from django.core.management.base import BaseCommand
 from django.db import connection, connections
 
@@ -89,6 +90,24 @@ class Command(BaseCommand):
         try:
             # First, create invoices if needed
             created_invoices_count = self.create_invoices()
+
+            # Prepare upcoming-month physical-invoice drafts + approval reminder.
+            # (prepare has no --dry-run; skip it entirely on a dry run.)
+            if not self.dry_run:
+                try:
+                    call_command('prepare_physical_invoices')
+                except Exception as e:
+                    self.stdout.write(f'\u26a0\ufe0f  prepare_physical_invoices failed: {e}')
+                    logger.error(f'prepare_physical_invoices failed: {e}', exc_info=True)
+
+            # Send approved physical invoices (numbers, emails PDF, links/stamps
+            # the collection rows just created above). Runs AFTER create_invoices()
+            # on purpose, so the collection rows exist to link.
+            try:
+                call_command('send_physical_invoices', dry_run=self.dry_run)
+            except Exception as e:
+                self.stdout.write(f'\u26a0\ufe0f  send_physical_invoices failed: {e}')
+                logger.error(f'send_physical_invoices failed: {e}', exc_info=True)
 
             # Then get all the data with property details
             vacant_properties, expiring_leases, declined_renewals, overdue_invoices = self.get_all_property_details()
