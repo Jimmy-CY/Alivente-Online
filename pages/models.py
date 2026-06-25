@@ -767,6 +767,34 @@ class invoices(models.Model):
     class Meta:
         db_table="invoice"
 
+class InvoiceCustomer(models.Model):
+    """A non-tenant customer for ad-hoc (customer) invoices. The invoice freezes
+    its own copy of these fields (bill_*), so editing or deleting a customer
+    never rewrites an already-issued invoice. PROTECT on the invoice FK means a
+    customer with invoices cannot be deleted."""
+    name = models.CharField(max_length=255)
+    customer_id_label = models.CharField(max_length=255, blank=True,
+        help_text="Shown in the 'Customer ID' box on the invoice.")
+    billing_address = models.TextField(blank=True, help_text="One line per row.")
+    billing_tel = models.CharField(max_length=64, blank=True)
+    email_to = models.TextField(blank=True, help_text="Comma-separated To addresses.")
+    email_cc = models.TextField(blank=True, help_text="Comma-separated CC addresses.")
+    email_body = models.TextField(blank=True,
+        help_text="Optional saved greeting/body for this customer's invoice e-mail. "
+                  "Blank uses a generic default.")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "invoice_customers"
+        verbose_name = "Invoice Customer"
+        verbose_name_plural = "Invoice Customers"
+        ordering = ["name"]
+
+    def __str__(self):
+        return self.name
+
+
 class PhysicalInvoiceProfile(models.Model):
     tenant = models.OneToOneField(
         tenant, on_delete=models.CASCADE, related_name="physical_invoice_profile",
@@ -804,7 +832,11 @@ class PhysicalInvoiceProfile(models.Model):
 def physical_invoice_pdf_upload_path(instance, filename):
     """Storage path for a rendered physical-invoice PDF."""
     ext = (filename.rsplit('.', 1)[-1] or 'pdf').lower()
-    tenant_slug = slugify(getattr(instance.tenant, 'tenant_name', '') or 'tenant')
+    if getattr(instance, 'tenant_id', None):
+        name = getattr(instance.tenant, 'tenant_name', '') or 'tenant'
+    else:
+        name = getattr(instance, 'bill_name', '') or 'customer'
+    tenant_slug = slugify(name)
     period = f"{instance.period_year:04d}{instance.period_month:02d}"
     number = slugify(instance.invoice_number or 'draft')
     return os.path.join('physical_invoices', f"{tenant_slug}-{period}-{number}.{ext}")
@@ -830,7 +862,20 @@ class PhysicalInvoice(models.Model):
     ]
 
     physical_invoice_id = models.AutoField(primary_key=True)
-    tenant = models.ForeignKey(tenant, on_delete=models.PROTECT, related_name='physical_invoices')
+    tenant = models.ForeignKey(tenant, on_delete=models.PROTECT, null=True, blank=True,
+                               related_name='physical_invoices')
+    # Customer (non-tenant) invoices: tenant is NULL, customer + bill_* snapshot are used.
+    customer = models.ForeignKey('InvoiceCustomer', on_delete=models.PROTECT,
+                                 null=True, blank=True, related_name='invoices')
+    bill_name = models.CharField(max_length=255, blank=True)
+    bill_customer_label = models.CharField(max_length=255, blank=True)
+    bill_address = models.TextField(blank=True)
+    bill_tel = models.CharField(max_length=64, blank=True)
+    bill_email_to = models.TextField(blank=True,
+        help_text='Comma-separated To addresses for a customer invoice.')
+    bill_email_cc = models.TextField(blank=True,
+        help_text='Comma-separated CC addresses for a customer invoice.')
+    bill_email_body = models.TextField(blank=True)
     # Collections invoice for the same month (created on the 1st). Linked later
     # for the balancing step; null until then.
     collection_invoice = models.ForeignKey(
@@ -870,7 +915,8 @@ class PhysicalInvoice(models.Model):
         unique_together = [('tenant', 'period_year', 'period_month')]
 
     def __str__(self):
-        return f"{self.invoice_number or 'DRAFT'} — {self.tenant} — {self.period_month:02d}/{self.period_year}"
+        who = self.tenant if self.tenant_id else (self.bill_name or 'Customer')
+        return f"{self.invoice_number or 'DRAFT'} — {who} — {self.period_month:02d}/{self.period_year}"
 
     @property
     def is_editable(self):

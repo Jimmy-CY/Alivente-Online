@@ -38,7 +38,10 @@ from django.views.decorators.http import require_POST
 from xhtml2pdf import pisa
 
 from pages.models import tenant as Tenant
-from pages.models import PhysicalInvoice, PhysicalInvoiceLine, PhysicalInvoiceNumbering
+from django.db.models import ProtectedError
+from pages.models import (
+    InvoiceCustomer, PhysicalInvoice, PhysicalInvoiceLine, PhysicalInvoiceNumbering,
+)
 from pages.services.physical_invoice_numbering import preview_batch_numbers
 
 __all__ = [
@@ -54,6 +57,10 @@ __all__ = [
     "physical_invoice_approve",
     "physical_invoice_unapprove",
     "physical_invoice_set_next_number",
+    "customer_list",
+    "customer_add",
+    "customer_edit",
+    "customer_delete",
 ]
 
 TEMPLATE_NAME = "invoices/physical_invoice.html"
@@ -563,6 +570,92 @@ def physical_invoice_set_next_number(request):
             nxt, allowed_hosts={request.get_host()}, require_https=request.is_secure()):
         return redirect(nxt)
     return redirect(reverse("physical_invoice_list"))
+
+
+# ------------------------------------------------------------------ #
+# Invoice customers (non-tenant billing book)
+# ------------------------------------------------------------------ #
+def _customer_post(request, obj):
+    """Copy the submitted customer fields onto obj (unsaved). Shared by add/edit."""
+    obj.name = (request.POST.get("name") or "").strip()[:255]
+    obj.customer_id_label = (request.POST.get("customer_id_label") or "").strip()[:255]
+    obj.billing_address = (request.POST.get("billing_address") or "").strip()
+    obj.billing_tel = (request.POST.get("billing_tel") or "").strip()[:64]
+    obj.email_to = (request.POST.get("email_to") or "").strip()
+    obj.email_cc = (request.POST.get("email_cc") or "").strip()
+    obj.email_body = (request.POST.get("email_body") or "").strip()
+    return obj
+
+
+@login_required
+@permission_required('auth.can_access_tenants', raise_exception=True)
+def customer_list(request):
+    """The saved invoice-customer book."""
+    customers = InvoiceCustomer.objects.all().order_by("name")
+    rows = []
+    for c in customers:
+        rows.append({
+            "pk": c.pk,
+            "name": c.name,
+            "customer_id_label": c.customer_id_label,
+            "email_to": c.email_to,
+            "invoice_count": c.invoices.count(),
+        })
+    return render(request, "customer_list.html", {"rows": rows})
+
+
+@login_required
+@permission_required('auth.can_edit_tenants', raise_exception=True)
+def customer_add(request):
+    """Create a new invoice customer."""
+    if request.method == "POST":
+        obj = _customer_post(request, InvoiceCustomer())
+        if not obj.name:
+            messages.error(request, "A customer name is required.")
+            return render(request, "customer_form.html",
+                          {"mode": "add", "form_data": request.POST})
+        obj.save()
+        messages.success(request, f"Customer '{obj.name}' added.")
+        return redirect("customer_list")
+    return render(request, "customer_form.html", {"mode": "add", "form_data": {}})
+
+
+@login_required
+@permission_required('auth.can_edit_tenants', raise_exception=True)
+def customer_edit(request, customer_id):
+    """Edit an existing invoice customer."""
+    obj = get_object_or_404(InvoiceCustomer, pk=customer_id)
+    if request.method == "POST":
+        _customer_post(request, obj)
+        if not obj.name:
+            messages.error(request, "A customer name is required.")
+            return render(request, "customer_form.html",
+                          {"mode": "edit", "customer": obj, "form_data": request.POST})
+        obj.save()
+        messages.success(request, f"Customer '{obj.name}' updated.")
+        return redirect("customer_list")
+    return render(request, "customer_form.html",
+                  {"mode": "edit", "customer": obj, "form_data": obj})
+
+
+@login_required
+@permission_required('auth.can_edit_tenants', raise_exception=True)
+@require_POST
+def customer_delete(request, customer_id):
+    """Delete a customer. PROTECT blocks deletion if any invoice references it."""
+    obj = get_object_or_404(InvoiceCustomer, pk=customer_id)
+    name = obj.name
+    try:
+        obj.delete()
+        messages.success(request, f"Customer '{name}' deleted.")
+    except ProtectedError:
+        n = obj.invoices.count()
+        messages.error(
+            request,
+            f"'{name}' has {n} invoice{'' if n == 1 else 's'} and can't be deleted. "
+            f"Customers with invoices are kept so the invoices stay intact.")
+    return redirect("customer_list")
+
 
 
 
