@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load help_modal_tags %}
 
 {% block title %}
 Physical Invoices
@@ -31,6 +32,9 @@ Physical Invoices
 <body>
     <!-- Action Buttons -->
     <div class="page-action-buttons">
+      <button type="button" class="btn btn-info action-secondary" data-toggle="modal" data-target="#physical_invoicesHelpModal">
+        <i class="fas fa-question-circle"></i> Help
+      </button>
       {% if perms.auth.can_edit_tenants %}
         <a href="{% url 'customer_invoice_create' %}" class="btn btn-info action-secondary">
           <i class="fas fa-file-invoice-dollar"></i> New Customer Invoice
@@ -475,6 +479,8 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 </script>
+
+{% render_help_modal "physical_invoices" %}
 
 {% include 'components/pdf_viewer.html' %}
 
