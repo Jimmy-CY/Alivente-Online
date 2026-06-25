@@ -68,49 +68,22 @@ from django.utils.text import slugify
 from pages.email_utils import get_email_recipients
 from pages.models import PhysicalInvoiceNumbering, invoices as Invoices
 from pages.services.physical_invoice_numbering import month_batch, suggested_next_number
+
+
+def _tenant_batch(year, month, statuses=None):
+    """month_batch filtered to TENANT invoices only. Customer (non-tenant)
+    invoices are sent on demand, never by this monthly cron."""
+    return [pi for pi in month_batch(year, month, statuses=statuses)
+            if pi.tenant_id is not None]
+from pages.services.invoice_email import (
+    LOGO_PATH, assemble_bodies, load_logo, send_invoice_email,
+)
 from pages.views.physical_invoices import (
     build_context_from_invoice,
     render_physical_invoice_pdf,
 )
 
 CLIENT_NOTIFICATION_TYPE = "physical_invoice_client"
-
-# Inline signature logo (PNG). Set PHYSICAL_INVOICE_EMAIL_LOGO in settings.py to
-# the absolute path of your Alivente logo, or adjust the fallback below. If the
-# file is not found the e-mail still sends, just without the logo.
-LOGO_PATH = getattr(settings, "PHYSICAL_INVOICE_EMAIL_LOGO", "") or os.path.join(
-    getattr(settings, "BASE_DIR", ""), "pages", "static", "images", "alivente_logo.png"
-)
-
-# Fixed signature / contact footer. One place to change it.
-FOOTER_TEXT = (
-    "Kind Regards,\n\n"
-    "Demetris Manias\n"
-    "Executive Director\n\n"
-    "Address: Alivente House, Dikaiosynis 13A, Engomi, 2412, Nicosia, Cyprus\n"
-    "Tel: +357-22-222202 | Mobile: +357-96-668557\n"
-    "Email: demetri.manias@alivente.com | Website: www.alivente.com"
-)
-
-
-def _footer_html(include_logo):
-    logo = ('<p><img src="cid:alivente_logo" alt="Alivente Limited" '
-            'style="height: 90px;"></p>\n') if include_logo else ""
-    return (
-        '<p>&nbsp;</p>\n'
-        '<p>Kind Regards,</p>\n'
-        '<p>&nbsp;</p>\n'
-        '<p>Demetris Manias<br>\n<em>Executive Director</em></p>\n'
-        + logo +
-        '<p><strong>Address:</strong> Alivente House, Dikaiosynis 13A, Engomi, '
-        '2412, Nicosia, Cyprus<br>\n'
-        '<strong>Tel:</strong> +357-22-222202 | '
-        '<strong>Mobile:</strong> +357-96-668557<br>\n'
-        '<strong>Email:</strong> '
-        '<a href="mailto:demetri.manias@alivente.com">demetri.manias@alivente.com</a> '
-        '| <strong>Website:</strong> '
-        '<a href="https://www.alivente.com">www.alivente.com</a></p>'
-    )
 
 
 class Command(BaseCommand):
@@ -146,7 +119,7 @@ class Command(BaseCommand):
     # ------------------------------------------------------------------ #
     def _number_unnumbered_approved(self, year, month, dry_run):
         cfg = PhysicalInvoiceNumbering.get_solo()
-        approved = month_batch(year, month, statuses=("approved",))  # A->Z, then tenant_id
+        approved = _tenant_batch(year, month, statuses=("approved",))  # A->Z, then tenant_id
         to_number = [pi for pi in approved if not pi.invoice_number]
         if not to_number:
             return []
@@ -213,96 +186,15 @@ class Command(BaseCommand):
             return ""
 
     def _assemble_bodies(self, saved_body, tenant_name, period_label, include_logo):
-        """Return (text_body, html_body). {month} -> period_label in the saved
-        body; a blank saved body falls back to a generic default."""
+        """Resolve the per-tenant core (token + generic default), then delegate
+        to the shared assembler for footer + HTML wrap."""
         saved_body = (saved_body or "").strip()
         if saved_body:
             core = saved_body.replace("{month}", period_label)
         else:
             core = (f"Dear {tenant_name},\n\n"
                     f"Please find attached the rental invoice for {period_label}.")
-
-        text_body = core + "\n\n" + FOOTER_TEXT
-        html_core = escape(core).replace("\n", "<br>\n")
-        html_body = (
-            "<!DOCTYPE html>\n<html>\n"
-            '<body style="font-family: Calibri, Arial, sans-serif; '
-            'font-size: 11pt; color: #000;">\n'
-            f"<div>{html_core}</div>\n"
-            f"{_footer_html(include_logo)}\n"
-            "</body>\n</html>"
-        )
-        return text_body, html_body
-
-    def _load_logo(self):
-        """Logo bytes for inline embedding, or None if the file is absent."""
-        try:
-            if LOGO_PATH and os.path.exists(LOGO_PATH):
-                with open(LOGO_PATH, "rb") as fh:
-                    return fh.read()
-        except OSError:
-            pass
-        return None
-
-    # ------------------------------------------------------------------ #
-    # e-mail (raw smtplib via EMAIL_* env vars)
-    #
-    # NOTE: confirm this block against email_utils.send_issue_comments_email.
-    # If your SMTP wiring differs, THIS is the only method to align.
-    # ------------------------------------------------------------------ #
-    def _send_invoice_email(self, to_addr, cc_list, subject, text_body, html_body,
-                            pdf_bytes, filename, logo_bytes):
-        host = os.environ.get("EMAIL_HOST", "smtp.gmail.com")
-        port = int(os.environ.get("EMAIL_PORT", 465))
-        user = os.environ.get("EMAIL_USER", "demetrimanias@gmail.com")
-        password = os.environ.get("EMAIL_PASSWORD")
-        use_ssl = os.environ.get("EMAIL_USE_SSL", "True").lower() == "true"
-        use_tls = os.environ.get("EMAIL_USE_TLS", "False").lower() == "true"
-
-        # related: the HTML/text alternative + the inline logo it references.
-        related = MIMEMultipart("related")
-        alt = MIMEMultipart("alternative")
-        alt.attach(MIMEText(text_body, "plain", "utf-8"))
-        alt.attach(MIMEText(html_body, "html", "utf-8"))
-        related.attach(alt)
-        if logo_bytes:
-            img = MIMEImage(logo_bytes)
-            img.add_header("Content-ID", "<alivente_logo>")
-            img.add_header("Content-Disposition", "inline", filename="alivente_logo.png")
-            related.attach(img)
-
-        # mixed: the related body + the PDF attachment.
-        msg = MIMEMultipart("mixed")
-        msg["From"] = user
-        msg["To"] = to_addr
-        if cc_list:
-            msg["Cc"] = ", ".join(cc_list)
-        msg["Subject"] = Header(subject, "utf-8")
-        msg.attach(related)
-
-        part = MIMEApplication(pdf_bytes, _subtype="pdf")
-        part.add_header("Content-Disposition", "attachment", filename=filename)
-        msg.attach(part)
-
-        recipients = [to_addr] + list(cc_list or [])
-
-        server = None
-        try:
-            if use_ssl:
-                server = smtplib.SMTP_SSL(host, port, timeout=10)
-            else:
-                server = smtplib.SMTP(host, port, timeout=10)
-                server.ehlo()
-                if use_tls:
-                    server.starttls()
-            server.login(user, password)
-            server.sendmail(user, recipients, msg.as_string())
-        finally:
-            if server is not None:
-                try:
-                    server.quit()
-                except Exception:
-                    pass
+        return assemble_bodies(core, include_logo)
 
     # ------------------------------------------------------------------ #
     # handle
@@ -332,7 +224,7 @@ class Command(BaseCommand):
             self.stderr.write(f"  warning: could not load CC recipients: {exc}")
 
         # Inline logo, loaded once for the whole run.
-        logo_bytes = self._load_logo()
+        logo_bytes = load_logo()
         if logo_bytes is None:
             self.stderr.write(
                 f"  note: signature logo not found at {LOGO_PATH}; "
@@ -340,7 +232,7 @@ class Command(BaseCommand):
             )
 
         # 2) Send approved-not-sent invoices (A->Z within the period).
-        approved = month_batch(year, month, statuses=("approved",))
+        approved = _tenant_batch(year, month, statuses=("approved",))
         sent_count = failed_count = 0
         for pi in approved:
             tenant = pi.tenant
@@ -379,8 +271,8 @@ class Command(BaseCommand):
                 # but we do NOT mark the invoice sent.
             else:
                 try:
-                    self._send_invoice_email(to_addr, cc_list, subject, text_body,
-                                             html_body, pdf_bytes, filename, logo_bytes)
+                    send_invoice_email(to_addr, cc_list, subject, text_body,
+                                       html_body, pdf_bytes, filename, logo_bytes)
                 except Exception as exc:
                     failed_count += 1
                     if hasattr(pi, "email_status"):
@@ -408,7 +300,7 @@ class Command(BaseCommand):
 
         # 3) Back-fill links for already-SENT invoices still unlinked (no re-send).
         backfilled = 0
-        for pi in month_batch(year, month, statuses=("sent",)):
+        for pi in _tenant_batch(year, month, statuses=("sent",)):
             if pi.collection_invoice_id:
                 continue
             if self._link_collection(pi, year, month, dry_run) == "linked":

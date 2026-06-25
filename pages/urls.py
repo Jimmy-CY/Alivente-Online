@@ -256,6 +256,11 @@ urlpatterns = [
     path("invoice-customers/add/", views.customer_add, name="customer_add"),
     path("invoice-customers/<int:customer_id>/edit/", views.customer_edit, name="customer_edit"),
     path("invoice-customers/<int:customer_id>/delete/", views.customer_delete, name="customer_delete"),
+    path("invoice-customers/new-invoice/", views.customer_invoice_create, name="customer_invoice_create"),
+    path("invoice-customers/invoice/<int:physical_invoice_id>/edit/", views.customer_invoice_edit, name="customer_invoice_edit"),
+    path("invoice-customers/invoice/<int:physical_invoice_id>/send/", views.customer_invoice_send, name="customer_invoice_send"),
+    path("invoice-customers/invoice/<int:physical_invoice_id>/duplicate/", views.customer_invoice_duplicate, name="customer_invoice_duplicate"),
+    path("physical-invoices/<int:physical_invoice_id>/delete/", views.physical_invoice_delete, name="physical_invoice_delete"),
 
     # ============================================================================
     # SUPPLIERS

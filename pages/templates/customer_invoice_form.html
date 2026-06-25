@@ -1,0 +1,472 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+{% if mode == 'edit' %}Edit Customer Invoice{% else %}New Customer Invoice{% endif %}
+{% endblock %}
+
+{% block content %}
+
+<h2 class="page-title-h2"><center>ALIVENTE ONLINE - CUSTOMER INVOICE</center></h2>
+<h4 class="page-subtitle-h4"><center>
+  {% if mode == 'edit' %}{{ number }} &mdash; {{ pi.bill_name }}{% else %}New invoice{% endif %}
+</center></h4>
+<br/>
+
+{% for msg in messages %}
+  <div class="alert alert-secondary alert-dismissible fade show auto-dismiss" role="alert">
+    <strong></strong> <center>{{ msg }}</center>
+    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <script>
+    setTimeout(function() {
+      document.querySelectorAll('.auto-dismiss').forEach(alert => {
+        alert.classList.remove('show'); alert.classList.add('fade');
+        setTimeout(() => alert.remove(), 2500);
+      });
+    }, 2500);
+  </script>
+{% endfor %}
+
+{% if mode == 'edit' and not is_editable %}
+  <div class="lock-banner">
+    <i class="fas fa-lock"></i>
+    This invoice is <strong>{{ pi.get_status_display }}</strong> and is read-only.
+    {% if pi.status == 'approved' %}Un-approve it first to make changes.{% else %}Sent invoices are final and cannot be changed.{% endif %}
+  </div>
+{% endif %}
+
+<form action="{% if mode == 'edit' %}{% url 'customer_invoice_edit' pi.pk %}{% else %}{% url 'customer_invoice_create' %}{% endif %}"
+      method="post" id="invoiceForm">
+  {% csrf_token %}
+
+  <!-- Action Buttons -->
+  <div class="page-action-buttons page-action-buttons-form">
+    {% if mode != 'edit' or is_editable %}
+      <button class="btn btn-info action-primary" type="submit">
+        <i class="fas fa-save"></i> {% if mode == 'edit' %}Save{% else %}Save as Draft{% endif %}
+      </button>
+    {% endif %}
+    <a href="{% url 'physical_invoice_list' %}" class="btn btn-info action-back" role="button" aria-label="Back to list">
+      <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
+    </a>
+  </div>
+
+  {% with editable=is_editable|default_if_none:True %}
+  <!-- Customer panel -->
+  <div class="cust-panel">
+    <h5 class="panel-title"><i class="fas fa-user"></i> Customer</h5>
+
+    {% if editable %}
+    <div class="form-row">
+      <div class="col-7">
+        <div class="form-group">
+          <label for="customerSelect"><strong>Pick a saved customer</strong></label>
+          <select id="customerSelect" name="customer_id" class="form-control">
+            <option value="">&mdash; New / one-off customer &mdash;</option>
+            {% for c in all_customers %}
+              <option value="{{ c.pk }}"
+                {% if pi and pi.customer_id == c.pk %}selected{% endif %}
+                data-name="{{ c.name }}"
+                data-label="{{ c.customer_id_label }}"
+                data-address="{{ c.billing_address }}"
+                data-tel="{{ c.billing_tel }}"
+                data-emailto="{{ c.email_to }}"
+                data-emailcc="{{ c.email_cc }}"
+                data-emailbody="{{ c.email_body }}">{{ c.name }}</option>
+            {% endfor %}
+          </select>
+          <small class="form-text text-muted">Picking one fills the fields below. Edits here apply only to this invoice &mdash; the saved customer is never changed.</small>
+        </div>
+      </div>
+      <div class="col-5">
+        <div class="form-group save-new-group">
+          <label class="save-new-label">
+            <input type="checkbox" id="saveCustomer" name="save_customer" value="1">
+            <strong>Save as a new customer</strong>
+          </label>
+          <small class="form-text text-muted">Tick to add a typed (one-off) customer to the book on save. Ignored when a saved customer is picked.</small>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+
+    <div class="form-row">
+      <div class="col-6">
+        <div class="form-group">
+          <label for="bill_name"><strong>Customer Name</strong> <span class="req">*</span></label>
+          <input type="text" id="bill_name" name="bill_name" class="form-control"
+                 value="{% if form_data %}{{ form_data.bill_name }}{% else %}{{ pi.bill_name }}{% endif %}"
+                 maxlength="255" {% if not editable %}readonly{% endif %}>
+        </div>
+      </div>
+      <div class="col-6">
+        <div class="form-group">
+          <label for="bill_customer_label"><strong>Customer ID</strong></label>
+          <input type="text" id="bill_customer_label" name="bill_customer_label" class="form-control"
+                 value="{% if form_data %}{{ form_data.bill_customer_label }}{% else %}{{ pi.bill_customer_label }}{% endif %}"
+                 maxlength="255" {% if not editable %}readonly{% endif %}>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="col-8">
+        <div class="form-group">
+          <label for="bill_address"><strong>Billing Address</strong></label>
+          <textarea id="bill_address" name="bill_address" class="form-control" rows="3"
+                    {% if not editable %}readonly{% endif %}
+                    placeholder="One line per row">{% if form_data %}{{ form_data.bill_address }}{% else %}{{ pi.bill_address }}{% endif %}</textarea>
+        </div>
+      </div>
+      <div class="col-4">
+        <div class="form-group">
+          <label for="bill_tel"><strong>Billing Tel</strong></label>
+          <input type="text" id="bill_tel" name="bill_tel" class="form-control"
+                 value="{% if form_data %}{{ form_data.bill_tel }}{% else %}{{ pi.bill_tel }}{% endif %}"
+                 maxlength="64" {% if not editable %}readonly{% endif %}>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="col-6">
+        <div class="form-group">
+          <label for="bill_email_to"><strong>Email To</strong></label>
+          <textarea id="bill_email_to" name="bill_email_to" class="form-control" rows="2"
+                    {% if not editable %}readonly{% endif %}
+                    placeholder="email1@example.com, email2@example.com">{% if form_data %}{{ form_data.bill_email_to }}{% else %}{{ pi.bill_email_to }}{% endif %}</textarea>
+          <small class="form-text text-muted">Comma-separated.</small>
+        </div>
+      </div>
+      <div class="col-6">
+        <div class="form-group">
+          <label for="bill_email_cc"><strong>Email CC</strong> (optional)</label>
+          <textarea id="bill_email_cc" name="bill_email_cc" class="form-control" rows="2"
+                    {% if not editable %}readonly{% endif %}
+                    placeholder="email1@example.com, email2@example.com">{% if form_data %}{{ form_data.bill_email_cc }}{% else %}{{ pi.bill_email_cc }}{% endif %}</textarea>
+          <small class="form-text text-muted">Comma-separated.</small>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="col-12">
+        <div class="form-group">
+          <label for="bill_email_body"><strong>Email Body</strong> (optional)</label>
+          <textarea id="bill_email_body" name="bill_email_body" class="form-control" rows="4"
+                    {% if not editable %}readonly{% endif %}
+                    placeholder="To Whom It May Concern,&#10;&#10;Please find attached our latest invoice.">{% if form_data %}{{ form_data.bill_email_body }}{% else %}{{ pi.bill_email_body }}{% endif %}</textarea>
+          <small class="form-text text-muted">The signature and contact footer are added automatically. Blank uses a generic default.</small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Invoice settings: date + VAT -->
+  <div class="settings-row">
+    <div class="form-group settings-field">
+      <label for="invoice_date"><strong>Invoice Date</strong></label>
+      <input type="date" id="invoice_date" name="invoice_date" class="form-control"
+             value="{{ invoice_date_value }}" {% if not editable %}readonly{% endif %}>
+      <small class="form-text text-muted">The invoice's month is taken from this date.</small>
+    </div>
+    <div class="form-group settings-field">
+      <label for="vat_rate_percent"><strong>VAT Rate (%)</strong></label>
+      <div class="vat-input-wrap">
+        <input type="number" step="0.01" min="0" max="100" id="vat_rate_percent" name="vat_rate_percent"
+               class="form-control" value="{{ vat_percent_value }}" {% if not editable %}readonly{% endif %}>
+        <span class="vat-suffix">%</span>
+      </div>
+      <small class="form-text text-muted">Applied to VAT-able lines. Default 19.</small>
+    </div>
+  </div>
+
+  <!-- Lines (same editor as tenant invoices) -->
+  <h5 class="lines-title"><i class="fas fa-list"></i> Invoice Lines</h5>
+  <div class="lines-scroll">
+    <table class="table table-bordered lines-table">
+      <thead>
+        <tr>
+          <th style="width: 12%">Service</th>
+          <th style="width: 12%">Unit</th>
+          <th style="width: 34%">Description</th>
+          <th style="width: 9%">Qty</th>
+          <th style="width: 14%">Unit Price</th>
+          <th style="width: 9%">VAT</th>
+          {% if editable %}<th style="width: 6%"></th>{% endif %}
+        </tr>
+      </thead>
+      <tbody id="linesBody">
+        {% for ln in lines %}
+          <tr class="line-row">
+            <td><input type="text" name="line_service" value="{{ ln.service }}" class="form-control line-input" {% if not editable %}readonly{% endif %}></td>
+            <td><input type="text" name="line_uom" value="{{ ln.unit_of_measure }}" class="form-control line-input" {% if not editable %}readonly{% endif %}></td>
+            <td><input type="text" name="line_description" value="{{ ln.description }}" class="form-control line-input" {% if not editable %}readonly{% endif %}></td>
+            <td><input type="number" step="0.01" name="line_qty" value="{{ ln.qty }}" class="form-control line-input line-qty" {% if not editable %}readonly{% endif %}></td>
+            <td><input type="number" step="0.01" name="line_unit_price" value="{{ ln.unit_price }}" class="form-control line-input line-price" {% if not editable %}readonly{% endif %}></td>
+            <td>
+              <select name="line_vatable" class="form-control line-input line-vat" {% if not editable %}disabled{% endif %}>
+                <option value="1" {% if ln.vatable %}selected{% endif %}>Yes</option>
+                <option value="0" {% if not ln.vatable %}selected{% endif %}>No</option>
+              </select>
+              {% if not editable %}<input type="hidden" name="line_vatable" value="{% if ln.vatable %}1{% else %}0{% endif %}">{% endif %}
+            </td>
+            {% if editable %}
+              <td class="line-remove-cell">
+                <button type="button" class="icon-action-btn icon-delete" title="Remove line" onclick="removeLineRow(this)">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </td>
+            {% endif %}
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% if editable %}
+    <div class="add-line-wrap">
+      <button type="button" class="btn btn-outline-secondary" onclick="addLineRow()">
+        <i class="fas fa-plus"></i> Add Line
+      </button>
+    </div>
+  {% endif %}
+
+  {% if mode == 'edit' %}
+  <!-- Totals (recomputed on Save) -->
+  <div class="totals-card">
+    <div class="totals-row"><span>Subtotal</span><span>{{ pi.currency }} {{ subtotal_display }}</span></div>
+    <div class="totals-row"><span>VAT ({{ vat_rate_display }})</span><span>{{ pi.currency }} {{ vat_display }}</span></div>
+    <div class="totals-row totals-total"><span>Total</span><span>{{ pi.currency }} {{ total_display }}</span></div>
+    {% if is_editable %}<div class="totals-note">Totals refresh when you Save.</div>{% endif %}
+  </div>
+  {% endif %}
+  {% endwith %}
+</form>
+
+{% if mode == 'edit' and perms.auth.can_edit_tenants %}
+  <div class="status-action-row">
+    {% if pi.status == 'draft' %}
+    <form method="post" action="{% url 'physical_invoice_delete' pi.pk %}" class="status-action-form"
+          onsubmit="return confirm('Delete this draft invoice? This cannot be undone.');">
+      {% csrf_token %}
+      <input type="hidden" name="next" value="{% url 'physical_invoice_list' %}">
+      <button type="submit" class="btn btn-delete">
+        <i class="fas fa-trash"></i> Delete
+      </button>
+    </form>
+    {% endif %}
+    {% if pi.status != 'draft' %}
+    <form method="post" action="{% url 'customer_invoice_duplicate' pi.pk %}" class="status-action-form"
+          onsubmit="return confirm('Create a new draft copy of this invoice, dated today?');">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-duplicate">
+        <i class="fas fa-copy"></i> Duplicate
+      </button>
+    </form>
+    {% endif %}
+    {% if pi.status == 'draft' %}
+      <form method="post" action="{% url 'physical_invoice_approve' pi.pk %}" class="status-action-form">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{% url 'customer_invoice_edit' pi.pk %}">
+        <button type="submit" class="btn btn-approve">
+          <i class="fas fa-check"></i> Approve Invoice
+        </button>
+      </form>
+    {% elif pi.status == 'approved' %}
+      <form method="post" action="{% url 'customer_invoice_send' pi.pk %}" class="status-action-form"
+            onsubmit="return confirm('Send this invoice now? It will be numbered and e-mailed to the customer.');">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{% url 'customer_invoice_edit' pi.pk %}">
+        <button type="submit" class="btn btn-send">
+          <i class="fas fa-paper-plane"></i> Send now
+        </button>
+      </form>
+      <form method="post" action="{% url 'physical_invoice_unapprove' pi.pk %}" class="status-action-form"
+            onsubmit="return confirm('Move this invoice back to draft?');">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{% url 'customer_invoice_edit' pi.pk %}">
+        <button type="submit" class="btn btn-unapprove">
+          <i class="fas fa-undo"></i> Un-approve (back to draft)
+        </button>
+      </form>
+    {% endif %}
+  </div>
+{% endif %}
+
+<!-- Template row for "Add Line" -->
+<template id="lineTemplate">
+  <tr class="line-row">
+    <td><input type="text" name="line_service" value="" class="form-control line-input"></td>
+    <td><input type="text" name="line_uom" value="" class="form-control line-input"></td>
+    <td><input type="text" name="line_description" value="" class="form-control line-input"></td>
+    <td><input type="number" step="0.01" name="line_qty" value="1" class="form-control line-input line-qty"></td>
+    <td><input type="number" step="0.01" name="line_unit_price" value="0.00" class="form-control line-input line-price"></td>
+    <td>
+      <select name="line_vatable" class="form-control line-input line-vat">
+        <option value="1" selected>Yes</option>
+        <option value="0">No</option>
+      </select>
+    </td>
+    <td class="line-remove-cell">
+      <button type="button" class="icon-action-btn icon-delete" title="Remove line" onclick="removeLineRow(this)">
+        <i class="fas fa-trash"></i>
+      </button>
+    </td>
+  </tr>
+</template>
+
+<style>
+.page-title-h2 { margin-top: 0.5rem; margin-bottom: 0; }
+.page-subtitle-h4 { margin-top: 0.25rem; margin-bottom: 1rem; color: #6c757d; }
+
+.btn-info { background-color: #17a2b8; color: white; border: 1px solid #17a2b8; transition: all 0.3s ease; border-radius: 6px; font-weight: 500; }
+.btn-info:hover { background-color: #138496; border-color: #117a8b; color: white; text-decoration: none; transform: translateY(-1px); box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+.btn-outline-secondary { border: 2px solid #6c757d; color: #6c757d; background: transparent; border-radius: 6px; font-weight: 500; transition: all 0.2s ease; }
+.btn-outline-secondary:hover { background: #6c757d; color: white; }
+.btn-approve { background-color: #28a745; color: white; border: 1px solid #28a745; border-radius: 6px; font-weight: 500; padding: 8px 18px; transition: all 0.2s ease; }
+.btn-approve:hover { background-color: #218838; border-color: #1e7e34; color: white; transform: translateY(-1px); box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+.btn-unapprove { background-color: #fd7e14; color: white; border: 1px solid #fd7e14; border-radius: 6px; font-weight: 500; padding: 8px 18px; transition: all 0.2s ease; }
+.btn-unapprove:hover { background-color: #e8690b; border-color: #d9610a; color: white; transform: translateY(-1px); box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+.btn-send { background-color: #007bff; color: white; border: 1px solid #007bff; border-radius: 6px; font-weight: 500; padding: 8px 18px; transition: all 0.2s ease; }
+.btn-send:hover { background-color: #0069d9; border-color: #0062cc; color: white; transform: translateY(-1px); box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+.btn-duplicate { background-color: #6f42c1; color: white; border: 1px solid #6f42c1; border-radius: 6px; font-weight: 500; padding: 8px 18px; transition: all 0.2s ease; }
+.btn-duplicate:hover { background-color: #5e37a6; border-color: #563098; color: white; transform: translateY(-1px); box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+.btn-delete { background-color: #dc3545; color: white; border: 1px solid #dc3545; border-radius: 6px; font-weight: 500; padding: 8px 18px; transition: all 0.2s ease; }
+.btn-delete:hover { background-color: #c82333; border-color: #bd2130; color: white; transform: translateY(-1px); box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+
+.page-action-buttons { display: flex; gap: 12px; margin-bottom: 1.5rem; }
+.page-action-buttons-form { justify-content: flex-end; }
+.status-action-row { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
+.status-action-form { margin: 0; }
+
+.lock-banner { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; font-weight: 500; }
+.lock-banner i { margin-right: 6px; }
+
+.cust-panel { background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border: 1px solid #dee2e6; border-radius: 12px; padding: 20px 24px; margin-bottom: 22px; box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
+.panel-title { color: #2c3e50; font-weight: 600; margin: 0 0 16px; }
+.panel-title i { color: #17a2b8; margin-right: 6px; }
+
+.form-row { display: flex; flex-wrap: wrap; gap: 20px; }
+.form-row > [class^="col-"] { flex: 1 1 0; min-width: 0; }
+.col-4 { flex: 0 0 calc(33.333% - 14px); }
+.col-5 { flex: 0 0 calc(41.666% - 12px); }
+.col-6 { flex: 0 0 calc(50% - 10px); }
+.col-7 { flex: 0 0 calc(58.333% - 8px); }
+.col-8 { flex: 0 0 calc(66.666% - 7px); }
+.col-12 { flex: 0 0 100%; }
+.form-group { display: flex; flex-direction: column; margin-bottom: 16px; }
+.form-group label { font-weight: 500; color: #2c3e50; margin-bottom: 6px; font-size: 14px; }
+.req { color: #dc3545; }
+.form-control { border: 2px solid #e9ecef; border-radius: 8px; padding: 9px 12px; font-size: 14px; transition: all 0.3s ease; background: white; width: 100%; }
+.form-control:focus { border-color: #17a2b8; box-shadow: 0 0 0 3px rgba(23,162,184,0.1); outline: none; }
+textarea.form-control { resize: vertical; }
+.form-control[readonly], .form-control:disabled,
+.line-input[readonly], .line-input:disabled {
+  background-color: #e9ecef; color: #6c757d; cursor: not-allowed; opacity: 1;
+}
+.form-text { font-size: 12px; color: #6c757d; margin-top: 4px; }
+.save-new-group { background: #ffffff; border: 1px dashed #ced4da; border-radius: 8px; padding: 12px; height: 100%; }
+.save-new-label { display: flex; align-items: center; gap: 8px; cursor: pointer; margin-bottom: 4px; }
+.save-new-label input { width: 16px; height: 16px; }
+.save-new-label input:disabled { cursor: not-allowed; }
+.save-new-group:has(input:disabled) { opacity: 0.5; }
+.save-new-group:has(input:disabled) .save-new-label { cursor: not-allowed; }
+
+.settings-row { display: flex; gap: 20px; margin-bottom: 22px; flex-wrap: wrap; }
+.settings-field { flex: 0 0 240px; margin-bottom: 0; }
+.vat-input-wrap { position: relative; }
+.vat-input-wrap .vat-suffix { position: absolute; right: 14px; top: 50%; transform: translateY(-50%); color: #6c757d; font-weight: 600; pointer-events: none; }
+.vat-input-wrap .form-control { padding-right: 32px; }
+
+.lines-title { color: #2c3e50; font-weight: 600; margin-bottom: 12px; }
+.lines-title i { color: #17a2b8; margin-right: 6px; }
+.lines-scroll { overflow-x: auto; background: white; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+.lines-table { margin-bottom: 0; min-width: 720px; }
+.lines-table thead th { background-color: #343a40; color: white; font-weight: 600; font-size: 13px; vertical-align: middle; }
+.line-input { font-size: 14px; padding: 6px 8px; height: auto; }
+.line-qty, .line-price { text-align: right; }
+.line-remove-cell { text-align: center; vertical-align: middle; }
+
+.icon-action-btn { display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 6px; border: 2px solid; background: white; text-decoration: none; transition: all 0.2s ease; font-size: 13px; cursor: pointer; }
+.icon-delete { color: #dc3545; border-color: #dc3545; }
+.icon-delete:hover { background-color: #dc3545; color: white; }
+
+.add-line-wrap { margin: 14px 0 24px; }
+
+.totals-card { background: white; border: 1px solid #dee2e6; border-radius: 8px; padding: 16px 20px; max-width: 360px; margin-left: auto; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+.totals-row { display: flex; justify-content: space-between; padding: 4px 0; color: #495057; }
+.totals-total { border-top: 2px solid #dee2e6; margin-top: 6px; padding-top: 10px; font-weight: 700; font-size: 18px; color: #2c3e50; }
+.totals-note { font-size: 12px; color: #adb5bd; text-align: right; margin-top: 8px; font-style: italic; }
+
+.status-badge { padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 500; }
+.status-draft { background: #fff3cd; color: #856404; }
+.status-approved { background: #cce5ff; color: #004085; }
+.status-sent { background: #d4edda; color: #155724; }
+
+@media (max-width: 768px) {
+  .page-title-h2 { font-size: 1.25rem; }
+  .page-action-buttons-form { flex-direction: row; gap: 8px; width: 100%; flex-wrap: nowrap; align-items: stretch; }
+  .action-primary { flex: 1 1 auto; min-width: 0; height: 38px; display: flex; align-items: center; justify-content: center; padding: 0 12px; font-size: 13px; margin: 0; }
+  .action-back { flex: 0 0 auto; width: 44px; height: 38px; padding: 0; display: flex; align-items: center; justify-content: center; margin: 0; }
+  .action-back-label { display: none; }
+  .form-row { flex-direction: column; gap: 0; }
+  .col-4, .col-5, .col-6, .col-7, .col-8, .col-12 { flex: 0 0 100%; }
+  .settings-row { flex-direction: column; gap: 0; }
+  .settings-field { flex: 0 0 100%; margin-bottom: 16px; }
+  .totals-card { max-width: none; }
+  .status-action-row { justify-content: stretch; }
+  .status-action-form, .status-action-form .btn { width: 100%; }
+  .line-input, .form-control { font-size: 16px; }
+}
+</style>
+
+<script>
+function addLineRow() {
+  var tpl = document.getElementById('lineTemplate');
+  var body = document.getElementById('linesBody');
+  if (!tpl || !body) return;
+  body.appendChild(tpl.content.cloneNode(true));
+}
+function removeLineRow(btn) {
+  var row = btn.closest('tr');
+  if (row) row.remove();
+}
+
+// Picking a saved customer fills the (editable) fields. Edits stay on this invoice.
+document.addEventListener('DOMContentLoaded', function () {
+  var sel = document.getElementById('customerSelect');
+  if (!sel) return;
+  function syncSaveNewState() {
+    var sc = document.getElementById('saveCustomer');
+    if (!sc) return;
+    var picked = !!sel.value;  // a real saved customer is selected
+    if (picked) { sc.checked = false; sc.disabled = true; }
+    else { sc.disabled = false; }
+  }
+
+  sel.addEventListener('change', function () {
+    var opt = sel.options[sel.selectedIndex];
+    if (opt && opt.value) {
+      var map = {
+        bill_name: 'name', bill_customer_label: 'label', bill_address: 'address',
+        bill_tel: 'tel', bill_email_to: 'emailto', bill_email_cc: 'emailcc', bill_email_body: 'emailbody'
+      };
+      Object.keys(map).forEach(function (fieldId) {
+        var el = document.getElementById(fieldId);
+        if (el) el.value = opt.getAttribute('data-' + map[fieldId]) || '';
+      });
+    }
+    // Grey out / untick "save as new" whenever a saved customer is picked.
+    syncSaveNewState();
+  });
+
+  // Reflect the correct state on initial load (e.g. edit screen with a linked customer).
+  syncSaveNewState();
+});
+</script>
+
+{% endblock %}

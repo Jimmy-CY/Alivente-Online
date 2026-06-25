@@ -20,29 +20,32 @@ PDF engine: xhtml2pdf (pisa), the same pure-Python stack used by pages/views/hel
 import io
 import os
 from datetime import date
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib import messages
 from django.contrib.staticfiles import finders
 from django.core.exceptions import ObjectDoesNotExist, ValidationError
+from django.core.files.base import ContentFile
 from django.db import transaction
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils.http import url_has_allowed_host_and_scheme
+from django.utils.text import slugify
 from django.views.decorators.http import require_POST
 
 from xhtml2pdf import pisa
 
 from pages.models import tenant as Tenant
-from django.db.models import ProtectedError
+from django.db.models import ExpressionWrapper, F, IntegerField, ProtectedError
 from pages.models import (
     InvoiceCustomer, PhysicalInvoice, PhysicalInvoiceLine, PhysicalInvoiceNumbering,
 )
-from pages.services.physical_invoice_numbering import preview_batch_numbers
+from pages.services.invoice_email import assemble_bodies, load_logo, send_invoice_email
+from pages.services.physical_invoice_numbering import preview_batch_numbers, suggested_next_number
 
 __all__ = [
     "render_invoice_preview",
@@ -61,6 +64,11 @@ __all__ = [
     "customer_add",
     "customer_edit",
     "customer_delete",
+    "customer_invoice_create",
+    "customer_invoice_edit",
+    "customer_invoice_send",
+    "customer_invoice_duplicate",
+    "physical_invoice_delete",
 ]
 
 TEMPLATE_NAME = "invoices/physical_invoice.html"
@@ -237,7 +245,18 @@ def build_context_from_invoice(physical_invoice):
     (the authoritative, frozen figures) rather than recomputed.
     """
     pi = physical_invoice
-    customer, customer_id = _billing_block(pi.tenant)
+    if pi.tenant_id is not None:
+        customer, customer_id = _billing_block(pi.tenant)
+    else:
+        # Customer (non-tenant) invoice: build the billing block from the frozen
+        # bill_* snapshot stored on the invoice (never from a live record).
+        address_lines = [ln.strip() for ln in (pi.bill_address or "").splitlines() if ln.strip()]
+        customer = {
+            "name": pi.bill_name or "",
+            "address_lines": address_lines,
+            "tel": pi.bill_tel or "",
+        }
+        customer_id = pi.bill_customer_label or pi.bill_name or ""
 
     line_dicts = [{
         "service": ln.service,
@@ -368,19 +387,35 @@ def physical_invoice_list(request):
     accepts ?period=YYYY-MM and ?status=draft|approved|sent. Draft and approved
     rows show their provisional PR number; sent rows show the assigned number.
     """
-    raw = (request.GET.get("period") or "").strip()
-    period_first = None
-    if raw:
+    def _parse_ym(value):
+        value = (value or "").strip()
+        if not value:
+            return None
         try:
-            y, m = raw.split("-")
-            period_first = date(int(y), int(m), 1)
+            yy, mm = value.split("-")
+            yy, mm = int(yy), int(mm)
+            if 1 <= mm <= 12:
+                return date(yy, mm, 1)
         except (ValueError, TypeError):
-            period_first = None
-    if period_first is None:
-        period_first = _upcoming_period()
-    y, m = period_first.year, period_first.month
+            pass
+        return None
 
-    base = PhysicalInvoice.objects.filter(period_year=y, period_month=m)
+    # From / To month range. Default both to the upcoming period (single month),
+    # so the screen behaves exactly as before until the range is widened.
+    default_first = _upcoming_period()
+    from_first = _parse_ym(request.GET.get("from")) or default_first
+    to_first = _parse_ym(request.GET.get("to")) or from_first
+    if to_first < from_first:
+        from_first, to_first = to_first, from_first
+
+    from_idx = from_first.year * 12 + from_first.month
+    to_idx = to_first.year * 12 + to_first.month
+    single_month = (from_idx == to_idx)
+
+    base = PhysicalInvoice.objects.annotate(
+        _pidx=ExpressionWrapper(F("period_year") * 12 + F("period_month"),
+                                output_field=IntegerField())
+    ).filter(_pidx__gte=from_idx, _pidx__lte=to_idx)
     counts = {
         "draft": base.filter(status=PhysicalInvoice.STATUS_DRAFT).count(),
         "approved": base.filter(status=PhysicalInvoice.STATUS_APPROVED).count(),
@@ -388,21 +423,63 @@ def physical_invoice_list(request):
     }
 
     status = (request.GET.get("status") or "").strip()
-    qs = base.select_related("tenant", "tenant__prop").order_by("tenant__tenant_name")
+    inv_type = (request.GET.get("type") or "").strip()  # "tenant" | "customer" | "" (all)
+    qs = base.select_related("tenant", "tenant__prop", "customer")
     if status in (PhysicalInvoice.STATUS_DRAFT, PhysicalInvoice.STATUS_APPROVED,
                   PhysicalInvoice.STATUS_SENT):
         qs = qs.filter(status=status)
+    if inv_type == "tenant":
+        qs = qs.filter(tenant__isnull=False)
+    elif inv_type == "customer":
+        qs = qs.filter(tenant__isnull=True)
+    # Group by status (Draft -> Approved -> Sent); sort within each group.
+    #   Draft / Approved : newest date first, then name A->Z
+    #   Sent             : PR number descending (highest first)
+    # Single composite key, all ascending, with descending parts negated.
+    _status_rank = {
+        PhysicalInvoice.STATUS_DRAFT: 0,
+        PhysicalInvoice.STATUS_APPROVED: 1,
+        PhysicalInvoice.STATUS_SENT: 2,
+    }
 
-    provisional = preview_batch_numbers(
-        y, m, statuses=(PhysicalInvoice.STATUS_DRAFT, PhysicalInvoice.STATUS_APPROVED))
+    def _trailing_int(value):
+        digits = ""
+        for ch in reversed((value or "").strip()):
+            if ch.isdigit():
+                digits = ch + digits
+            elif digits:
+                break
+        return int(digits) if digits else 0
+
+    def _sort_key(pi):
+        grp = _status_rank.get(pi.status, 99)
+        name = (pi.tenant.tenant_name if pi.tenant_id else (pi.bill_name or "")).lower()
+        if pi.status == PhysicalInvoice.STATUS_SENT:
+            # PR number descending; date/name not needed (numbers are unique).
+            return (grp, -_trailing_int(pi.invoice_number), 0, "")
+        # Draft / Approved: date descending, then name ascending.
+        idx = pi.period_year * 12 + pi.period_month
+        day = (pi.invoice_date or date.min).toordinal()
+        return (grp, 0, -(idx * 1000 + day), name)
+
+    qs = sorted(qs, key=_sort_key)
 
     rows = []
     for pi in qs:
+        is_customer = pi.tenant_id is None
+        if is_customer:
+            who = pi.bill_name or "(unnamed customer)"
+            prop_name = "\u2014"
+        else:
+            who = pi.tenant.tenant_name
+            prop_name = getattr(pi.tenant.prop, "prop_name", "") or ""
         rows.append({
             "pk": pi.pk,
-            "number": pi.invoice_number or provisional.get(pi.pk, "\u2014"),
-            "tenant": pi.tenant.tenant_name,
-            "property": getattr(pi.tenant.prop, "prop_name", "") or "",
+            "number": pi.invoice_number or "(on send)",
+            "tenant": who,
+            "property": prop_name,
+            "kind": "Customer" if is_customer else "Tenant",
+            "is_customer": is_customer,
             "total_display": _money(pi.total),
             "currency": pi.currency or "EUR",
             "status": pi.status,
@@ -414,9 +491,12 @@ def physical_invoice_list(request):
     context = {
         "rows": rows,
         "counts": counts,
-        "period_value": f"{y:04d}-{m:02d}",
-        "period_label": period_first.strftime("%B %Y"),
+        "from_value": f"{from_first.year:04d}-{from_first.month:02d}",
+        "to_value": f"{to_first.year:04d}-{to_first.month:02d}",
+        "period_label": (from_first.strftime("%B %Y") if single_month
+                         else from_first.strftime("%B %Y") + " \u2013 " + to_first.strftime("%B %Y")),
         "status": status,
+        "inv_type": inv_type,
         "next_number_value": cfg.next_number,
         "next_number_display": cfg.format(cfg.next_number),
     }
@@ -491,13 +571,10 @@ def physical_invoice_edit(request, physical_invoice_id):
             f"({pi.currency} {_money(pi.total)}).")
         return redirect("physical_invoice_edit", physical_invoice_id=pi.pk)
 
-    provisional = preview_batch_numbers(
-        pi.period_year, pi.period_month,
-        statuses=(PhysicalInvoice.STATUS_DRAFT, PhysicalInvoice.STATUS_APPROVED))
     context = {
         "pi": pi,
         "lines": pi.lines.all(),
-        "number": pi.invoice_number or provisional.get(pi.pk, "\u2014"),
+        "number": pi.invoice_number or "(on send)",
         "property_name": getattr(pi.tenant.prop, "prop_name", "") or "",
         "period_label": date(pi.period_year, pi.period_month, 1).strftime("%B %Y"),
         "vat_rate_display": f"{float(pi.vat_rate) * 100:.2f}%",
@@ -507,6 +584,14 @@ def physical_invoice_edit(request, physical_invoice_id):
         "is_editable": pi.is_editable,
     }
     return render(request, "physical_invoice_edit.html", context)
+
+def _pi_who(pi):
+    """Display name for an invoice: the tenant's name, or the customer snapshot
+    name for a customer (non-tenant) invoice."""
+    if getattr(pi, "tenant_id", None):
+        return pi.tenant.tenant_name
+    return pi.bill_name or "customer"
+
 
 def _redirect_after_pi_action(request, pi):
     """Return to ?next= if it is a safe in-site path, else the list for the
@@ -527,7 +612,7 @@ def physical_invoice_approve(request, physical_invoice_id):
     pi = get_object_or_404(PhysicalInvoice, pk=physical_invoice_id)
     try:
         pi.approve(user=request.user)
-        messages.success(request, f"Invoice for {pi.tenant.tenant_name} approved.")
+        messages.success(request, f"Invoice for {_pi_who(pi)} approved.")
     except ValidationError as exc:
         messages.error(request, "; ".join(exc.messages) if hasattr(exc, "messages") else str(exc))
     return _redirect_after_pi_action(request, pi)
@@ -541,7 +626,7 @@ def physical_invoice_unapprove(request, physical_invoice_id):
     pi = get_object_or_404(PhysicalInvoice, pk=physical_invoice_id)
     try:
         pi.unapprove()
-        messages.success(request, f"Invoice for {pi.tenant.tenant_name} moved back to draft.")
+        messages.success(request, f"Invoice for {_pi_who(pi)} moved back to draft.")
     except ValidationError as exc:
         messages.error(request, "; ".join(exc.messages) if hasattr(exc, "messages") else str(exc))
     return _redirect_after_pi_action(request, pi)
@@ -655,6 +740,427 @@ def customer_delete(request, customer_id):
             f"'{name}' has {n} invoice{'' if n == 1 else 's'} and can't be deleted. "
             f"Customers with invoices are kept so the invoices stay intact.")
     return redirect("customer_list")
+
+
+# ------------------------------------------------------------------ #
+# Customer invoices: create / edit (non-tenant)
+# ------------------------------------------------------------------ #
+def _apply_customer_panel(request, pi):
+    """Write the seven bill_* snapshot fields from the panel, set the customer FK
+    per the pick / new / save rule, and optionally create a saved customer.
+
+      - existing picked        -> snapshot + link to that customer
+      - new typed, save ticked -> create InvoiceCustomer, snapshot + link
+      - new typed, not ticked  -> snapshot only, link null (one-off)
+
+    Editing fields after picking never changes the saved customer record.
+    """
+    picked_id = (request.POST.get("customer_id") or "").strip()
+    save_new = (request.POST.get("save_customer") or "").strip() in ("1", "true", "on", "yes")
+
+    name = (request.POST.get("bill_name") or "").strip()
+    label = (request.POST.get("bill_customer_label") or "").strip()
+    address = (request.POST.get("bill_address") or "").strip()
+    tel = (request.POST.get("bill_tel") or "").strip()
+    email_to = (request.POST.get("bill_email_to") or "").strip()
+    email_cc = (request.POST.get("bill_email_cc") or "").strip()
+    email_body = (request.POST.get("bill_email_body") or "").strip()
+
+    linked = None
+    if picked_id:
+        linked = InvoiceCustomer.objects.filter(pk=picked_id).first()
+    elif save_new and name:
+        linked = InvoiceCustomer.objects.create(
+            name=name[:255], customer_id_label=label[:255], billing_address=address,
+            billing_tel=tel[:64], email_to=email_to, email_cc=email_cc, email_body=email_body)
+
+    pi.customer = linked
+    pi.bill_name = name[:255]
+    pi.bill_customer_label = label[:255]
+    pi.bill_address = address
+    pi.bill_tel = tel[:64]
+    pi.bill_email_to = email_to
+    pi.bill_email_cc = email_cc
+    pi.bill_email_body = email_body
+
+
+def _save_customer_lines(request, pi):
+    """Replace the line rows from the submitted parallel arrays (same parsing as
+    physical_invoice_edit), then recompute totals."""
+    services = request.POST.getlist("line_service")
+    uoms = request.POST.getlist("line_uom")
+    descriptions = request.POST.getlist("line_description")
+    qtys = request.POST.getlist("line_qty")
+    prices = request.POST.getlist("line_unit_price")
+    vatables = request.POST.getlist("line_vatable")
+
+    def _at(seq, i):
+        return seq[i] if i < len(seq) else ""
+
+    def _dec(raw, default):
+        try:
+            return Decimal(str(raw).strip() or default)
+        except (ArithmeticError, ValueError, TypeError):
+            return Decimal(default)
+
+    rows = []
+    count = max(len(services), len(uoms), len(descriptions),
+                len(qtys), len(prices), len(vatables))
+    for i in range(count):
+        service = (_at(services, i) or "").strip()
+        description = (_at(descriptions, i) or "").strip()
+        if not service and not description:
+            continue
+        rows.append({
+            "service": service[:50],
+            "uom": (_at(uoms, i) or "").strip()[:50],
+            "description": description[:255],
+            "qty": _dec(_at(qtys, i), "1"),
+            "unit_price": _dec(_at(prices, i), "0"),
+            "vatable": str(_at(vatables, i)).strip() in ("1", "true", "True", "yes", "Yes", "on"),
+        })
+
+    with transaction.atomic():
+        pi.lines.all().delete()
+        for idx, r in enumerate(rows):
+            PhysicalInvoiceLine.objects.create(
+                physical_invoice=pi, service=r["service"], unit_of_measure=r["uom"],
+                description=r["description"], qty=r["qty"], unit_price=r["unit_price"],
+                vatable=r["vatable"], sort_order=idx)
+        pi.recalc_totals()
+
+
+def _parse_vat_percent(raw, default=Decimal("0.19")):
+    """'19' -> Decimal('0.1900'); blank/invalid -> default. Clamped 0..100%."""
+    raw = (raw or "").strip()
+    if not raw:
+        return default
+    try:
+        pct = Decimal(raw)
+    except (InvalidOperation, ValueError, TypeError):
+        return default
+    if pct < 0:
+        pct = Decimal("0")
+    if pct > 100:
+        pct = Decimal("100")
+    return (pct / Decimal("100")).quantize(Decimal("0.0001"))
+
+
+def _parse_invoice_date(raw):
+    raw = (raw or "").strip()
+    if raw:
+        try:
+            y, m, d = raw.split("-")
+            return date(int(y), int(m), int(d))
+        except (ValueError, TypeError):
+            pass
+    return date.today()
+
+
+def _customer_panel_context(pi=None):
+    return {"all_customers": InvoiceCustomer.objects.all().order_by("name")}
+
+
+@login_required
+@permission_required('auth.can_edit_tenants', raise_exception=True)
+def customer_invoice_create(request):
+    """Create a new customer (non-tenant) invoice as a draft, then land on edit."""
+    if request.method == "POST":
+        inv_date = _parse_invoice_date(request.POST.get("invoice_date"))
+        vat_rate = _parse_vat_percent(request.POST.get("vat_rate_percent"))
+        pi = PhysicalInvoice(
+            tenant=None,
+            period_year=inv_date.year,
+            period_month=inv_date.month,
+            invoice_date=inv_date,
+            status=PhysicalInvoice.STATUS_DRAFT,
+            vat_rate=vat_rate,
+            currency="EUR",
+        )
+        _apply_customer_panel(request, pi)
+        if not pi.bill_name:
+            messages.error(request, "A customer name is required.")
+            ctx = _customer_panel_context()
+            ctx.update({"mode": "create", "form_data": request.POST,
+                        "invoice_date_value": inv_date.strftime("%Y-%m-%d"),
+                        "vat_percent_value": (request.POST.get("vat_rate_percent") or "19"),
+                        "lines": [], "is_editable": True})
+            return render(request, "customer_invoice_form.html", ctx)
+        pi.save()
+        _save_customer_lines(request, pi)
+        messages.success(request, f"Draft invoice for {pi.bill_name} created.")
+        return redirect("customer_invoice_edit", physical_invoice_id=pi.pk)
+
+    inv_date = date.today()
+    ctx = _customer_panel_context()
+    ctx.update({
+        "mode": "create",
+        "invoice_date_value": inv_date.strftime("%Y-%m-%d"),
+        "vat_percent_value": "19",
+        "lines": [],
+        "is_editable": True,
+    })
+    return render(request, "customer_invoice_form.html", ctx)
+
+
+@login_required
+@permission_required('auth.can_edit_tenants', raise_exception=True)
+def customer_invoice_edit(request, physical_invoice_id):
+    """Edit a draft customer invoice (customer panel + date + VAT + lines)."""
+    pi = get_object_or_404(
+        PhysicalInvoice.objects.select_related("customer"), pk=physical_invoice_id)
+    if pi.tenant_id is not None:
+        messages.error(request, "That is a tenant invoice; edit it from the tenant flow.")
+        return redirect("physical_invoice_edit", physical_invoice_id=pi.pk)
+
+    if request.method == "POST":
+        if not pi.is_editable:
+            messages.error(
+                request,
+                f"Invoice {pi.invoice_number or pi.pk} is {pi.get_status_display()} "
+                f"and cannot be edited. Un-approve it first.")
+            return redirect("customer_invoice_edit", physical_invoice_id=pi.pk)
+
+        inv_date = _parse_invoice_date(request.POST.get("invoice_date"))
+        pi.invoice_date = inv_date
+        pi.period_year = inv_date.year
+        pi.period_month = inv_date.month
+        pi.vat_rate = _parse_vat_percent(request.POST.get("vat_rate_percent"), pi.vat_rate)
+        _apply_customer_panel(request, pi)
+        if not pi.bill_name:
+            messages.error(request, "A customer name is required.")
+            return redirect("customer_invoice_edit", physical_invoice_id=pi.pk)
+        pi.save()
+        _save_customer_lines(request, pi)
+        messages.success(
+            request,
+            f"Invoice for {pi.bill_name} saved ({pi.currency} {_money(pi.total)}).")
+        return redirect("customer_invoice_edit", physical_invoice_id=pi.pk)
+
+    ctx = _customer_panel_context(pi)
+    ctx.update({
+        "mode": "edit",
+        "pi": pi,
+        "lines": pi.lines.all(),
+        "invoice_date_value": (pi.invoice_date.strftime("%Y-%m-%d")
+                               if pi.invoice_date else date.today().strftime("%Y-%m-%d")),
+        "vat_percent_value": f"{float(pi.vat_rate) * 100:.0f}",
+        "vat_rate_display": f"{float(pi.vat_rate) * 100:.2f}%",
+        "number": pi.invoice_number or "(assigned at send)",
+        "subtotal_display": _money(pi.subtotal),
+        "vat_display": _money(pi.vat),
+        "total_display": _money(pi.total),
+        "is_editable": pi.is_editable,
+    })
+    return render(request, "customer_invoice_form.html", ctx)
+
+
+# ------------------------------------------------------------------ #
+# Customer invoice: Send now (on-demand, customer-only)
+# ------------------------------------------------------------------ #
+GENERIC_CUSTOMER_BODY = (
+    "To Whom It May Concern,\n\n"
+    "Please find attached our latest invoice."
+)
+
+
+def _split_addrs(raw):
+    """Comma/semicolon-separated address text -> clean de-duped list (order kept)."""
+    if not raw:
+        return []
+    out, seen = [], set()
+    for part in raw.replace(";", ",").split(","):
+        p = part.strip()
+        if p and p.lower() not in seen:
+            seen.add(p.lower())
+            out.append(p)
+    return out
+
+
+@login_required
+@permission_required('auth.can_edit_tenants', raise_exception=True)
+@require_POST
+def customer_invoice_send(request, physical_invoice_id):
+    """Send one APPROVED customer (non-tenant) invoice on demand: number it at
+    send (atomic, shared counter), render + store the PDF, e-mail it via the
+    shared invoice-email service to the bill_* snapshot To/CC, and mark it sent
+    only on a successful e-mail."""
+    pi = get_object_or_404(PhysicalInvoice, pk=physical_invoice_id)
+
+    def _back():
+        nxt = request.POST.get("next") or ""
+        if nxt and url_has_allowed_host_and_scheme(
+                nxt, allowed_hosts={request.get_host()}, require_https=request.is_secure()):
+            return redirect(nxt)
+        return redirect(reverse("physical_invoice_list"))
+
+    if pi.tenant_id is not None:
+        messages.error(request, "Send-now is only for customer invoices.")
+        return _back()
+    if pi.status != PhysicalInvoice.STATUS_APPROVED:
+        messages.error(request, "Only an approved customer invoice can be sent. Approve it first.")
+        return _back()
+
+    to_list = _split_addrs(pi.bill_email_to)
+    cc_list = _split_addrs(pi.bill_email_cc)
+    if not pi.lines.exists():
+        messages.error(request, "This invoice has no lines to send.")
+        return _back()
+    if not to_list:
+        messages.error(request, "This customer has no 'Email To' address; add one before sending.")
+        return _back()
+
+    # 1) Number at send: atomic read-and-advance of the shared counter.
+    if not pi.invoice_number:
+        with transaction.atomic():
+            cfg = (PhysicalInvoiceNumbering.objects
+                   .select_for_update().get(pk=PhysicalInvoiceNumbering.get_solo().pk))
+            n = suggested_next_number(cfg)
+            pi.invoice_number = cfg.format(n)
+            pi.save(update_fields=["invoice_number", "updated_at"])
+            cfg.next_number = n + 1
+            cfg.save(update_fields=["next_number", "updated_at"])
+
+    # 2) Render + store the PDF (same path as the preview).
+    try:
+        context = build_context_from_invoice(pi)
+        pdf_bytes = render_physical_invoice_pdf(context)
+        base = slugify(pi.invoice_number or f"draft-{pi.pk}")
+        pi.pdf_file.save(f"{base}.pdf", ContentFile(pdf_bytes), save=True)
+    except Exception as exc:
+        messages.error(request, f"Could not render the invoice PDF: {exc}")
+        return _back()
+
+    # 3) E-mail via the shared service. The first To is the visible recipient;
+    #    any further To addresses are delivered alongside the CC list.
+    core = (pi.bill_email_body or "").strip() or GENERIC_CUSTOMER_BODY
+    logo_bytes = load_logo()
+    text_body, html_body = assemble_bodies(core, include_logo=logo_bytes is not None)
+    subject = f"Alivente Limited (Invoice {pi.invoice_number})"
+    filename = f"{pi.invoice_number} - {(pi.bill_name or 'customer')}.pdf"
+    extra_recipients = to_list[1:] + cc_list
+
+    try:
+        send_invoice_email(to_list[0], extra_recipients, subject,
+                           text_body, html_body, pdf_bytes, filename, logo_bytes)
+    except Exception as exc:
+        if hasattr(pi, "email_status"):
+            pi.email_status = "failed"
+            pi.save(update_fields=["email_status", "updated_at"])
+        messages.error(
+            request,
+            f"Invoice {pi.invoice_number} could not be e-mailed ({exc}); it stays "
+            f"approved (and numbered) so you can retry.")
+        return _back()
+
+    if hasattr(pi, "email_status"):
+        pi.email_status = "sent"
+    pi.mark_sent()
+    messages.success(
+        request,
+        f"Invoice {pi.invoice_number} sent to {to_list[0]}"
+        + (f" (+{len(extra_recipients)} more)" if extra_recipients else "") + ".")
+    return _back()
+
+
+# ------------------------------------------------------------------ #
+# Customer invoice: Duplicate (clone into a fresh draft)
+# ------------------------------------------------------------------ #
+@login_required
+@permission_required('auth.can_edit_tenants', raise_exception=True)
+@require_POST
+def customer_invoice_duplicate(request, physical_invoice_id):
+    """Clone a customer (non-tenant) invoice into a fresh DRAFT: copies the
+    bill_* snapshot, the customer link, the VAT rate and all line rows; resets
+    the date to today (period re-derives), clears the number, and starts in
+    draft. Lands on the new draft's edit screen."""
+    src = get_object_or_404(
+        PhysicalInvoice.objects.prefetch_related("lines"), pk=physical_invoice_id)
+
+    if src.tenant_id is not None:
+        messages.error(request, "Duplicate is only for customer invoices.")
+        return redirect("physical_invoice_list")
+
+    today = date.today()
+    with transaction.atomic():
+        new_pi = PhysicalInvoice.objects.create(
+            tenant=None,
+            customer=src.customer,
+            period_year=today.year,
+            period_month=today.month,
+            invoice_date=today,
+            invoice_number=None,
+            status=PhysicalInvoice.STATUS_DRAFT,
+            vat_rate=src.vat_rate,
+            currency=src.currency or "EUR",
+            bill_name=src.bill_name,
+            bill_customer_label=src.bill_customer_label,
+            bill_address=src.bill_address,
+            bill_tel=src.bill_tel,
+            bill_email_to=src.bill_email_to,
+            bill_email_cc=src.bill_email_cc,
+            bill_email_body=src.bill_email_body,
+        )
+        for ln in src.lines.all():
+            PhysicalInvoiceLine.objects.create(
+                physical_invoice=new_pi,
+                service=ln.service,
+                unit_of_measure=ln.unit_of_measure,
+                description=ln.description,
+                qty=ln.qty,
+                unit_price=ln.unit_price,
+                vatable=ln.vatable,
+                sort_order=ln.sort_order,
+            )
+        new_pi.recalc_totals()
+
+    messages.success(
+        request,
+        f"Created a new draft from {src.invoice_number or 'the previous invoice'} "
+        f"for {new_pi.bill_name or 'this customer'}. Adjust and finalise below.")
+    return redirect("customer_invoice_edit", physical_invoice_id=new_pi.pk)
+
+
+# ------------------------------------------------------------------ #
+# Delete a DRAFT invoice (tenant or customer)
+# ------------------------------------------------------------------ #
+@login_required
+@permission_required('auth.can_edit_tenants', raise_exception=True)
+@require_POST
+def physical_invoice_delete(request, physical_invoice_id):
+    """Delete a DRAFT invoice (tenant or customer). Removes the line rows and the
+    stored PDF (if any) along with the invoice. Only drafts are deletable; an
+    approved/sent invoice must be un-approved back to draft first. Drafts hold no
+    PR number, so deleting one never leaves a gap in the sequence."""
+    pi = get_object_or_404(PhysicalInvoice, pk=physical_invoice_id)
+
+    def _back():
+        nxt = request.POST.get("next") or ""
+        if nxt and url_has_allowed_host_and_scheme(
+                nxt, allowed_hosts={request.get_host()}, require_https=request.is_secure()):
+            return redirect(nxt)
+        return redirect(reverse("physical_invoice_list"))
+
+    if pi.status != PhysicalInvoice.STATUS_DRAFT:
+        messages.error(
+            request,
+            f"Only a draft invoice can be deleted. {_pi_who(pi)}'s invoice is "
+            f"{pi.get_status_display()} \u2014 un-approve it back to draft first.")
+        return _back()
+
+    who = _pi_who(pi)
+    with transaction.atomic():
+        try:
+            if pi.pdf_file:
+                pi.pdf_file.delete(save=False)
+        except Exception:
+            pass
+        pi.lines.all().delete()
+        pi.delete()
+
+    messages.success(request, f"Draft invoice for {who or 'the customer'} deleted.")
+    return _back()
+
 
 
 

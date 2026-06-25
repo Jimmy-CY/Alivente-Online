@@ -128,6 +128,14 @@ Edit Physical Invoice
 {% if perms.auth.can_edit_tenants %}
   <div class="status-action-row">
     {% if pi.status == 'draft' %}
+      <form method="post" action="{% url 'physical_invoice_delete' pi.pk %}" class="status-action-form"
+            onsubmit="return confirm('Delete this draft invoice? This cannot be undone.');">
+        {% csrf_token %}
+        <input type="hidden" name="next" value="{% url 'physical_invoice_list' %}">
+        <button type="submit" class="btn btn-delete">
+          <i class="fas fa-trash"></i> Delete
+        </button>
+      </form>
       <form method="post" action="{% url 'physical_invoice_approve' pi.pk %}" class="status-action-form">
         {% csrf_token %}
         <input type="hidden" name="next" value="{% url 'physical_invoice_edit' pi.pk %}">
@@ -183,11 +191,13 @@ Edit Physical Invoice
 .btn-approve:hover { background-color: #218838; border-color: #1e7e34; color: white; transform: translateY(-1px); box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
 .btn-unapprove { background-color: #fd7e14; color: white; border: 1px solid #fd7e14; border-radius: 6px; font-weight: 500; padding: 8px 18px; transition: all 0.2s ease; }
 .btn-unapprove:hover { background-color: #e8690b; border-color: #d9610a; color: white; transform: translateY(-1px); box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+.btn-delete { background-color: #dc3545; color: white; border: 1px solid #dc3545; border-radius: 6px; font-weight: 500; padding: 8px 18px; transition: all 0.2s ease; }
+.btn-delete:hover { background-color: #c82333; border-color: #bd2130; color: white; transform: translateY(-1px); box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
 
 .page-action-buttons { display: flex; gap: 12px; margin-bottom: 1.5rem; }
 .page-action-buttons-form { justify-content: flex-end; }
 
-.status-action-row { display: flex; justify-content: flex-end; margin-top: 20px; }
+.status-action-row { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
 .status-action-form { margin: 0; }
 
 .lock-banner { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; border-radius: 8px; padding: 12px 16px; margin-bottom: 16px; font-weight: 500; }
