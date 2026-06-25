@@ -448,9 +448,13 @@ document.addEventListener('DOMContentLoaded', function () {
     else { sc.disabled = false; }
   }
 
+  var billFieldIds = ['bill_name', 'bill_customer_label', 'bill_address',
+                      'bill_tel', 'bill_email_to', 'bill_email_cc', 'bill_email_body'];
+
   sel.addEventListener('change', function () {
     var opt = sel.options[sel.selectedIndex];
     if (opt && opt.value) {
+      // Picked a saved customer: fill the fields from its data-* attributes.
       var map = {
         bill_name: 'name', bill_customer_label: 'label', bill_address: 'address',
         bill_tel: 'tel', bill_email_to: 'emailto', bill_email_cc: 'emailcc', bill_email_body: 'emailbody'
@@ -458,6 +462,12 @@ document.addEventListener('DOMContentLoaded', function () {
       Object.keys(map).forEach(function (fieldId) {
         var el = document.getElementById(fieldId);
         if (el) el.value = opt.getAttribute('data-' + map[fieldId]) || '';
+      });
+    } else {
+      // Switched back to "New / one-off": clear the fields for a fresh start.
+      billFieldIds.forEach(function (fieldId) {
+        var el = document.getElementById(fieldId);
+        if (el) el.value = '';
       });
     }
     // Grey out / untick "save as new" whenever a saved customer is picked.
