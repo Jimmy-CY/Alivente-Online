@@ -226,10 +226,6 @@
     </ul>
 
     <div class="alert alert-info" style="border-left:4px solid #17a2b8;">
-      <i class="fas fa-file-invoice-dollar"></i> <strong>Physical Invoices live here too:</strong> the <strong>Physical Invoices</strong> button (top-right; in the <i class="fas fa-ellipsis-v"></i> <em>More</em> menu on a phone) opens the screen where the formal PR-numbered VAT invoices are produced, approved, sent and tracked as PDFs &mdash; both the automatic monthly tenant rent invoices and ad-hoc customer invoices. It's a full management screen with its own Help button, separate from this open-invoice worklist.
-    </div>
-
-    <div class="alert alert-info" style="border-left:4px solid #17a2b8;">
       <i class="fas fa-link"></i> <strong>Related screens:</strong> the <strong>Notifications Dashboard</strong> shows the count of overdue invoices at a glance, and <strong>Administration &rarr; Notification Settings</strong> controls who is emailed when an invoice is marked paid.
     </div>
 
@@ -748,7 +744,7 @@
       <li><strong>Delete</strong> a tenant (superuser only, with a strong confirmation prompt)</li>
       <li><strong>View</strong> a full Tenant Details Report as a print-friendly summary</li>
       <li><strong>View</strong> the scanned lease agreement PDF inline in a popup</li>
-      <li><strong>Jump</strong> to related screens: Lease Timeline, Open Invoices, Lease Renewals</li>
+      <li><strong>Jump</strong> to related screens: Lease Timeline, Open Invoices, Physical Invoices, Lease Renewals</li>
     </ul>
 
     <div class="alert alert-warning" style="border-left:4px solid #ffc107;">
@@ -899,7 +895,7 @@
            data-tab-name="Reports"
            data-tab-icon="fa-chart-bar">
     <h6 style="color:#17a2b8; font-weight:700;"><i class="fas fa-chart-bar"></i> Reports &amp; related screens</h6>
-    <p>The top-right buttons and per-row buttons open several different views and tools &mdash; all read-only reports.</p>
+    <p>The top-right buttons and per-row buttons open several different views and tools. Most are read-only reports; the Physical Invoices button opens a full management screen.</p>
 
     <div class="card mb-3" style="border-left:4px solid #17a2b8;">
       <div class="card-body">
@@ -939,6 +935,13 @@
       <div class="card-body">
         <h6 style="color:#17a2b8;"><i class="fas fa-sync-alt"></i> <strong>Lease Renewals Report</strong> <small class="text-muted">(top-right button)</small></h6>
         <p class="mb-0">Portfolio-wide list of upcoming lease expirations requiring renewal action, and any currently vacant properties. When nothing needs attention, shows a clean empty state: <em>"No lease renewals or vacant properties to report at this time."</em></p>
+      </div>
+    </div>
+
+    <div class="card mb-3" style="border-left:4px solid #17a2b8;">
+      <div class="card-body">
+        <h6 style="color:#17a2b8;"><i class="fas fa-file-invoice-dollar"></i> <strong>Physical Invoices</strong> <small class="text-muted">(top-right button)</small></h6>
+        <p class="mb-0">Opens the <strong>Physical Invoices</strong> screen &mdash; where the formal PR-numbered VAT invoices are produced, approved, sent and tracked as PDF documents. It covers both the automatic monthly <strong>tenant</strong> rent invoices and ad-hoc <strong>customer</strong> invoices. Unlike the items above, this is a full management screen rather than a read-only report &mdash; open its own Help button there for the complete workflow.</p>
       </div>
     </div>
   </article>
@@ -1847,7 +1850,7 @@
 <!-- ======= PHYSICAL INVOICES ======= -->
 <section data-module-slug="physical_invoices"
          data-module-group="Financial Management"
-         data-module-permission="can_access_invoices"
+         data-module-permission="can_access_tenants"
          data-module-name="Physical Invoices"
          data-module-icon="fa-file-invoice-dollar"
          data-module-category="Operational"
@@ -1881,7 +1884,7 @@
     </div>
 
     <div class="alert alert-info" style="border-left:4px solid #17a2b8;">
-      <i class="fas fa-link"></i> <strong>Where to find it:</strong> the Physical Invoices list is reached from the <strong>Open Invoices</strong> screen (under Financial Management). The <strong>Back</strong> button on this screen returns you there.
+      <i class="fas fa-link"></i> <strong>Where to find it:</strong> the Physical Invoices list is reached from the <strong>Tenants</strong> area. The <strong>Back</strong> button on this screen returns you there.
     </div>
   </article>
 

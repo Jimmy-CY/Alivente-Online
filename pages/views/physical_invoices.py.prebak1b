@@ -348,7 +348,6 @@ def _parse_period_param(request):
 
 
 @login_required
-@permission_required('auth.can_access_invoices', raise_exception=True)
 def render_invoice_preview(request):
     """Preview the layout from the hard-coded Assetworth sample."""
     pdf_bytes = render_physical_invoice_pdf(_sample_context())
@@ -358,7 +357,6 @@ def render_invoice_preview(request):
 
 
 @login_required
-@permission_required('auth.can_access_invoices', raise_exception=True)
 def render_invoice_for_tenant(request, tenant_id):
     """Preview a real tenant's invoice for the upcoming month (or ?period=YYYY-MM)."""
     tenant_obj = get_object_or_404(Tenant, pk=tenant_id)
@@ -370,7 +368,6 @@ def render_invoice_for_tenant(request, tenant_id):
 
 
 @login_required
-@permission_required('auth.can_access_invoices', raise_exception=True)
 def render_stored_invoice_pdf(request, physical_invoice_id):
     """Render a stored PhysicalInvoice (saved lines + frozen totals) to PDF."""
     pi = get_object_or_404(PhysicalInvoice, pk=physical_invoice_id)

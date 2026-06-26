@@ -31,7 +31,7 @@ Invoice Customers
 <body>
     <!-- Action Buttons -->
     <div class="page-action-buttons">
-      {% if perms.auth.can_edit_tenants %}
+      {% if perms.auth.can_edit_invoices %}
         <a href="{% url 'customer_add' %}" class="btn btn-info action-add-new">
           <i class="fas fa-plus"></i> Add New
         </a>
@@ -66,7 +66,7 @@ Invoice Customers
             <td data-label="Email To">{{ row.email_to }}</td>
             <td data-label="Invoices">{{ row.invoice_count }}</td>
             <td data-label="Edit" class="desktop-action-cell">
-              {% if perms.auth.can_edit_tenants %}
+              {% if perms.auth.can_edit_invoices %}
                 <a href="{% url 'customer_edit' row.pk %}" class="icon-action-btn icon-edit" title="Edit Customer">
                   <i class="fas fa-pencil-alt"></i>
                 </a>
@@ -77,7 +77,7 @@ Invoice Customers
               {% endif %}
             </td>
             <td data-label="Delete" class="desktop-action-cell">
-              {% if perms.auth.can_edit_tenants %}
+              {% if perms.auth.can_edit_invoices %}
                 <form method="post" action="{% url 'customer_delete' row.pk %}" class="cust-inline-form"
                       onsubmit="return confirm('Delete customer: {{ row.name|escapejs }}?\n\nThis is only possible if the customer has no invoices.');">
                   {% csrf_token %}
@@ -94,7 +94,7 @@ Invoice Customers
 
             <!-- Mobile-only action bar -->
             <td class="mobile-action-bar">
-              {% if perms.auth.can_edit_tenants %}
+              {% if perms.auth.can_edit_invoices %}
                 <a href="{% url 'customer_edit' row.pk %}" class="mobile-action-btn">
                   <i class="fas fa-pencil-alt mobile-action-icon icon-color-edit"></i>
                   <span class="mobile-action-label">Edit</span>

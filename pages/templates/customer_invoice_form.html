@@ -247,7 +247,7 @@
   {% endwith %}
 </form>
 
-{% if mode == 'edit' and perms.auth.can_edit_tenants %}
+{% if mode == 'edit' and perms.auth.can_edit_invoices %}
   <div class="status-action-row">
     {% if pi.status == 'draft' %}
     <form method="post" action="{% url 'physical_invoice_delete' pi.pk %}" class="status-action-form"

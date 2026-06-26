@@ -65,7 +65,7 @@ Physical Invoices
         </div>
       </div>
 
-      <a href="{% url 'invoices' %}" class="btn btn-info action-back" aria-label="Back to invoices">
+      <a href="{% url 'tenant' %}" class="btn btn-info action-back" aria-label="Back to tenants">
         <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
       </a>
     </div>

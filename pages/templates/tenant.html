@@ -48,7 +48,6 @@ Tenants
       </button>
       <a href="{% url 'lease_timeline' %}" class="btn btn-info action-secondary">📅 Lease Timeline</a>
       <a href="{% url 'open_invoices_report' %}" class="btn btn-info action-secondary">Open Invoices</a>
-      <a href="{% url 'physical_invoice_list' %}" class="btn btn-info action-secondary">Physical Invoices</a>
       <a href="{% url 'lease_renewal_report' %}" class="btn btn-info action-secondary">Lease Renewals</a>
 
       <!-- Mobile-only "More" dropdown -->
@@ -65,9 +64,6 @@ Tenants
           </a>
           <a href="{% url 'open_invoices_report' %}" class="action-more-item" role="menuitem">
             <i class="fas fa-file-invoice-dollar"></i> Open Invoices
-          </a>
-          <a href="{% url 'physical_invoice_list' %}" class="action-more-item" role="menuitem">
-            <i class="fas fa-file-invoice"></i> Physical Invoices
           </a>
           <a href="{% url 'lease_renewal_report' %}" class="action-more-item" role="menuitem">
             <i class="fas fa-sync-alt"></i> Lease Renewals

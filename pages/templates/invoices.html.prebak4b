@@ -29,29 +29,11 @@ Invoices
   </script>
 {% endfor %}
 
-  <!-- Action Buttons - Desktop: [Physical Invoices] [Help] [Back]
-                         Mobile:  [Physical Invoices (wide)] [More] [Back] -->
+  <!-- Action Buttons (Help + Back, Back+1 standard on mobile) -->
   <div class="invoices-action-buttons">
-    <a href="{% url 'physical_invoice_list' %}" class="btn btn-info action-primary">
-      <i class="fas fa-file-invoice"></i> Physical Invoices
-    </a>
-    <button type="button" class="btn btn-info action-secondary" data-toggle="modal" data-target="#invoicesHelpModal">
+    <button type="button" class="btn btn-info action-primary" data-toggle="modal" data-target="#invoicesHelpModal">
       <i class="fas fa-question-circle"></i> Help
     </button>
-
-    <!-- Mobile-only More dropdown (holds the secondary actions) -->
-    <div class="action-more-wrapper">
-      <button type="button" class="btn btn-info action-more-btn" id="actionMoreBtn"
-              aria-label="More actions" aria-expanded="false" aria-haspopup="true">
-        <i class="fas fa-ellipsis-v"></i>
-      </button>
-      <div class="action-more-menu" id="actionMoreMenu" role="menu" hidden>
-        <button type="button" class="action-more-item" role="menuitem" data-toggle="modal" data-target="#invoicesHelpModal">
-          <i class="fas fa-question-circle"></i> Help
-        </button>
-      </div>
-    </div>
-
     <a href="{% url 'home' %}" class="btn btn-info action-back" aria-label="Back to home">
       <i class="fas fa-arrow-left"></i><span class="action-back-label"> Back</span>
     </a>
@@ -182,8 +164,6 @@ Invoices
     gap: 10px;
     margin-bottom: 20px;
 }
-/* The More dropdown is a mobile-only component; hidden on desktop. */
-.action-more-wrapper { display: none; }
 
 /* ==================== FILTER PANEL ==================== */
 .filter-panel {
@@ -483,29 +463,6 @@ td.overdue-cell.is-overdue {
         display: none;
     }
 
-    /* Secondary actions live in the More menu on mobile */
-    .invoices-action-buttons .action-secondary { display: none; }
-    .action-more-wrapper { display: block; position: relative; flex: 0 0 auto; }
-    .action-more-btn {
-        width: 44px; height: 38px; padding: 0; margin: 0;
-        display: flex; align-items: center; justify-content: center;
-    }
-    .action-more-menu {
-        position: absolute; top: calc(100% + 6px); right: 0; z-index: 200;
-        background: white; border: 1px solid #dee2e6; border-radius: 8px;
-        box-shadow: 0 6px 20px rgba(0,0,0,0.15); min-width: 220px; padding: 6px 0;
-    }
-    .action-more-menu[hidden] { display: none; }
-    .action-more-item {
-        display: flex; align-items: center; gap: 12px; width: 100%;
-        background: none; border: none; text-align: left; cursor: pointer;
-        padding: 12px 16px; font-size: 14px; color: #2c3e50; text-decoration: none;
-    }
-    .action-more-item i { color: #17a2b8; width: 18px; text-align: center; flex-shrink: 0; }
-    .action-more-item:hover, .action-more-item:active, .action-more-item:focus {
-        background: #f0f8ff; outline: none; color: #2c3e50; text-decoration: none;
-    }
-
     /* Filter panel — tighter on mobile */
     .filter-panel {
         padding: 12px;
@@ -628,26 +585,6 @@ td.overdue-cell.is-overdue {
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     updateActiveFilters();
-
-    // Mobile More-menu (Help lives here on phones)
-    (function () {
-        var moreBtn = document.getElementById('actionMoreBtn');
-        var moreMenu = document.getElementById('actionMoreMenu');
-        if (!moreBtn || !moreMenu) return;
-        function closeMenu() { moreMenu.hidden = true; moreBtn.setAttribute('aria-expanded', 'false'); }
-        function openMenu() { moreMenu.hidden = false; moreBtn.setAttribute('aria-expanded', 'true'); }
-        moreBtn.addEventListener('click', function (e) {
-            e.stopPropagation();
-            if (moreMenu.hidden) { openMenu(); } else { closeMenu(); }
-        });
-        document.addEventListener('click', function (e) {
-            if (!moreMenu.hidden && !moreMenu.contains(e.target) && e.target !== moreBtn) { closeMenu(); }
-        });
-        document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { closeMenu(); } });
-        moreMenu.querySelectorAll('.action-more-item').forEach(function (item) {
-            item.addEventListener('click', function () { closeMenu(); });
-        });
-    })();
 
     // Auto-submit on dropdown filter change
     ['propertySelect', 'tenantSelect'].forEach(id => {

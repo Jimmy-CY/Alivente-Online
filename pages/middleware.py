@@ -806,6 +806,10 @@ class ModuleAccessMiddleware(MiddlewareMixin):
             ('invoices', 'auth.can_access_invoices'),
             ('invoices_commit', 'auth.can_access_invoices'),
             ('open_invoices', 'auth.can_access_invoices'),
+            # Physical Invoices + Invoice Customers (re-homed from Tenants).
+            # All routes live under these two prefixes (see urls.py).
+            ('physical-invoices', 'auth.can_access_invoices'),
+            ('invoice-customers', 'auth.can_access_invoices'),
 
             # ---------- EXPENSES ----------
             ('act_expense_all', 'auth.can_access_expenses'),

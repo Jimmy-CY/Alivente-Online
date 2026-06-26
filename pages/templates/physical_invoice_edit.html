@@ -125,7 +125,7 @@ Edit Physical Invoice
 </form>
 
 <!-- Approve / Un-approve (separate forms, outside the line-editing form) -->
-{% if perms.auth.can_edit_tenants %}
+{% if perms.auth.can_edit_invoices %}
   <div class="status-action-row">
     {% if pi.status == 'draft' %}
       <form method="post" action="{% url 'physical_invoice_delete' pi.pk %}" class="status-action-form"
