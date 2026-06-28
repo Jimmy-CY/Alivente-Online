@@ -98,23 +98,25 @@ Issues (Comments)
                                 {% endif %}
 
                                 <div class="comment-input-group-inline">
-                                    <input placeholder="Enter New Comment"
-                                           type="text"
-                                           class="form-control comment-input-full"
-                                           name="issues_details_comment"
-                                           maxlength="250"
-                                           spellcheck="true"
-                                           autocorrect="off"
-                                           required>
-                                    <button class="btn btn-info comment-submit" type="submit">Save Comment</button>
+                                    <textarea placeholder="Enter New Comment"
+                                              class="form-control comment-input-full"
+                                              name="issues_details_comment"
+                                              rows="4"
+                                              maxlength="250"
+                                              spellcheck="true"
+                                              autocorrect="off"
+                                              required></textarea>
 
-                                    <div class="status-actions-inline">
-                                        <label for="status_dropdown_{{ isresults.issues_id }}" class="status-label">Change Status:</label>
-                                        <select name="issues_status" class="status-dropdown" id="status_dropdown_{{ isresults.issues_id }}" onchange="updateStatus({{ isresults.issues_id }}, this.value)">
-                                            <option value="Resolved" {% if isresults.issues_status == "Resolved" %}selected{% endif %}>Resolved</option>
-                                            <option value="Unresolved" {% if isresults.issues_status == "Unresolved" %}selected{% endif %}>Unresolved</option>
-                                            <option value="Issue" {% if isresults.issues_status == "Issue" %}selected{% endif %}>Issue</option>
-                                        </select>
+                                    <div class="comment-right-col">
+                                        <div class="status-actions-inline">
+                                            <label for="status_dropdown_{{ isresults.issues_id }}" class="status-label">Change Status:</label>
+                                            <select name="issues_status" class="status-dropdown" id="status_dropdown_{{ isresults.issues_id }}" onchange="updateStatus({{ isresults.issues_id }}, this.value)">
+                                                <option value="Resolved" {% if isresults.issues_status == "Resolved" %}selected{% endif %}>Resolved</option>
+                                                <option value="Unresolved" {% if isresults.issues_status == "Unresolved" %}selected{% endif %}>Unresolved</option>
+                                                <option value="Issue" {% if isresults.issues_status == "Issue" %}selected{% endif %}>Issue</option>
+                                            </select>
+                                        </div>
+                                        <button class="btn btn-info comment-submit" type="submit">Save Comment</button>
                                     </div>
                                 </div>
                             </form>
@@ -477,13 +479,16 @@ document.addEventListener('DOMContentLoaded', function() {
 }
 
 .comment-input-full {
-    flex: 1.5;
+    flex: 1;
     border: 2px solid #e9ecef;
     border-radius: 4px;
     padding: 8px 12px;
     font-size: 14px;
     transition: all 0.3s ease;
     min-width: 0;
+    resize: vertical;
+    font-family: inherit;
+    line-height: 1.4;
 }
 
 .status-actions-inline {
@@ -491,7 +496,13 @@ document.addEventListener('DOMContentLoaded', function() {
     align-items: center;
     gap: 8px;
     white-space: nowrap;
-    margin-left: 10px;
+}
+
+.comment-right-col {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex-shrink: 0;
 }
 
 .comment-input-full:focus {
@@ -681,6 +692,10 @@ document.addEventListener('DOMContentLoaded', function() {
     .comment-input-full {
         width: 100%;
         font-size: 16px !important; /* iOS zoom guard */
+    }
+
+    .comment-right-col {
+        width: 100%;
     }
 
     .comment-submit {
