@@ -128,9 +128,34 @@ def tenant_page(request):
     if selected_property:
         filtered_properties = filtered_properties.filter(prop_name=selected_property)
 
+    # Build the table rows: secondary sort by lease end date (newest first,
+    # oldest last) WITHIN each property group, and attach a colour class for
+    # the new Lease End Date column.
+    #   - Inactive tenant       -> red  (regardless of the date)
+    #   - Active, end < today   -> red  (lease has passed)
+    #   - Active, end >= today  -> green (today still counts as valid)
+    #   - No end date           -> no colour
+    # The property grouping itself is driven by the template's outer props
+    # loop, so this ordering only sequences tenants inside each group.
+    today = datetime.now().date()
+    tenant_rows = list(
+        filtered_tenants.order_by('-tenant_lease_end_date', 'tenant_name')
+    )
+    for _t in tenant_rows:
+        _end = _t.tenant_lease_end_date
+        if _t.tenant_current != 'Yes':
+            _t.lease_class = 'lease-end-red'
+        elif _end and _end < today:
+            _t.lease_class = 'lease-end-red'
+        elif _end:
+            _t.lease_class = 'lease-end-green'
+        else:
+            _t.lease_class = ''
+
     # Pass filter values back to template for form persistence
     context = {
         'tenant': filtered_tenants,
+        'tenant_rows': tenant_rows,
         'props': filtered_properties,
         'selected_property': selected_property,
         'selected_tenant': selected_tenant,

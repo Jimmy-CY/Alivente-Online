@@ -147,18 +147,19 @@ Tenants
     <table class="table table-bordered table-striped text-center tenants-table">
       <thead>
         <tr>
-          <th style="text-align: left; width: 35%">Tenant</th>
-          <th style="width: 25%">Property</th>
-          <th style="width: 12%">Active</th>
-          <th style="width: 8%">Edit</th>
-          <th style="width: 8%">Delete</th>
-          <th style="width: 6%">Report</th>
-          <th style="width: 6%">Agreement</th>
+          <th style="text-align: left; width: 26%">Tenant</th>
+          <th style="width: 20%">Property</th>
+          <th style="width: 10%">Active</th>
+          <th style="width: 14%">Lease End Date</th>
+          <th style="width: 7.5%">Edit</th>
+          <th style="width: 7.5%">Delete</th>
+          <th style="width: 7.5%">Report</th>
+          <th style="width: 7.5%">Agreement</th>
         </tr>
       </thead>
       <tbody>
         {% for results in props %}
-          {% for tresults in tenant %}
+          {% for tresults in tenant_rows %}
             {% if tresults.prop_id == results.prop_id %}
               <tr>
                 <td data-label="Tenant" style="text-align: left">{{tresults.tenant_name}}</td>
@@ -167,6 +168,9 @@ Tenants
                   <span class="status-badge {% if tresults.tenant_current == 'Yes' %}status-active{% else %}status-inactive{% endif %}">
                     {% if tresults.tenant_current == 'Yes' %}Active{% else %}Inactive{% endif %}
                   </span>
+                </td>
+                <td data-label="Lease End Date" class="lease-end-cell {{ tresults.lease_class }}">
+                  {% if tresults.tenant_lease_end_date %}{{ tresults.tenant_lease_end_date|date:"d M Y" }}{% else %}&mdash;{% endif %}
                 </td>
                 <td data-label="Edit" class="desktop-action-cell">
                   {% if perms.auth.can_edit_tenants %}
@@ -331,6 +335,9 @@ Tenants
 .status-badge { padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 500; }
 .status-active { background: #d4edda; color: #155724; }
 .status-inactive { background: #f8d7da; color: #721c24; }
+.lease-end-cell { font-weight: 600; }
+.lease-end-red { color: #dc3545; }
+.lease-end-green { color: #1e7e34; }
 .btn-info { background-color: #17a2b8; color: white; border: 1px solid #17a2b8; transition: all 0.3s ease; border-radius: 6px; font-weight: 500; }
 .btn-info:hover { background-color: #138496; border-color: #117a8b; color: white; text-decoration: none; transform: translateY(-1px); box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
 
