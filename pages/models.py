@@ -767,6 +767,20 @@ class invoices(models.Model):
     class Meta:
         db_table="invoice"
 
+    @property
+    def effective_amount(self):
+        """Amount to bill/collect for this invoice.
+
+        Returns the per-invoice override (invoice_amount) when set -- what the
+        physical-invoice send cron writes for flagged tenants -- and falls back
+        to the tenant's base rent otherwise. Single source of truth for the
+        Open Invoices list and the Debtors Age Analysis report so the two
+        can no longer drift.
+        """
+        if self.invoice_amount is not None:
+            return self.invoice_amount
+        return self.tenant.tenant_rent or 0
+
 class InvoiceCustomer(models.Model):
     """A non-tenant customer for ad-hoc (customer) invoices. The invoice freezes
     its own copy of these fields (bill_*), so editing or deleting a customer

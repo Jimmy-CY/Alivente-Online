@@ -52,7 +52,7 @@ def invoices_page(request):
     all_tenants = tenant.objects.all().order_by('tenant_name')
 
     # Get unpaid invoices
-    iresults = invoices.objects.filter(invoice_paid="No").order_by('invoice_date')
+    iresults = invoices.objects.filter(invoice_paid="No").select_related('tenant').order_by('invoice_date')
 
     # Filter props based on selection
     if prop_output and prop_output != "All":
@@ -281,9 +281,7 @@ def open_invoices_report(request):
             due_date = invoice_obj.invoice_date + timedelta(days=payment_terms)
             days_overdue = (today - due_date).days if today > due_date else 0
 
-            invoice_amount = invoice_obj.invoice_amount
-            if invoice_amount is None:
-                invoice_amount = tenant_obj.tenant_rent or 0
+            invoice_amount = invoice_obj.effective_amount
 
             tenant_invoices.append({
                 'invoice_id': invoice_obj.invoice_id,
@@ -338,10 +336,7 @@ def open_invoices_report(request):
             payment_terms = tenant_obj.tenant_payment_terms or 0
             due_date = invoice_obj.invoice_date + timedelta(days=payment_terms)
             days_overdue = (today - due_date).days if today > due_date else 0
-            invoice_amount = invoice_obj.invoice_amount
-            if invoice_amount is None:
-                invoice_amount = tenant_obj.tenant_rent or 0
-            amount = float(invoice_amount)
+            amount = float(invoice_obj.effective_amount)
 
             tenant_analysis['total_outstanding'] += amount
 

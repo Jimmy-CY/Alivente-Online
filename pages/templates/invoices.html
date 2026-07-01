@@ -140,7 +140,7 @@ Invoices
                   <td data-label="Property" style="text-align: left">{{ results.prop_name }}</td>
                   <td data-label="Country" style="text-align: center">{{ results.prop_country }}</td>
                   <td data-label="Tenant" style="text-align: left">{{ tresults.tenant_name }}</td>
-                  <td data-label="Amount" style="text-align: right; font-family: 'Courier New', monospace;" class="amount-cell">€{{ tresults.tenant_rent|floatformat:0 }}</td>
+                  <td data-label="Amount" style="text-align: right; font-family: 'Courier New', monospace;" class="amount-cell">€{{ iresults.effective_amount|floatformat:0 }}</td>
                   <td data-label="Invoice Date" style="text-align: center">{{ iresults.invoice_date|date:"Y-m-d" }}</td>
                   <td data-label="Due Date" style="text-align: center">{{ due_date|date:"Y-m-d" }}</td>
                   <td data-label="Days Overdue" style="text-align: center;" class="overdue-cell {% if days_overdue > 0 %}is-overdue{% endif %}">{{ days_overdue }}</td>
