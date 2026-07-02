@@ -325,7 +325,7 @@ def get_overdue_invoices(cursor, today):
     cursor.execute("""
         SELECT prop.prop_name, prop.prop_country, tenant.tenant_name,
                tenant.tenant_payment_terms, tenant.tenant_rent,
-               invoice.invoice_date, invoice.invoice_id
+               invoice.invoice_date, invoice.invoice_id, invoice.invoice_amount
         FROM railway.invoice
         JOIN railway.tenant ON invoice.tenant_id = tenant.tenant_id
         JOIN railway.prop ON tenant.prop_id = prop.prop_id
@@ -347,6 +347,12 @@ def get_overdue_invoices(cursor, today):
         tenant_rent = row[4]
         invoice_date = row[5]
         invoice_id = row[6]
+        # Effective billed amount: prefer the stored per-invoice amount (the
+        # physical-invoice total, or rent + communal fees when Bill Communal
+        # Fees is on) and fall back to bare rent only when nothing was stored.
+        # Mirrors invoices.effective_amount and the daily report's COALESCE.
+        invoice_amount = row[7]
+        effective_amount = invoice_amount if invoice_amount is not None else tenant_rent
 
         # Calculate due date based on invoice date and payment terms
         due_date = invoice_date + timedelta(days=payment_terms)
@@ -360,7 +366,7 @@ def get_overdue_invoices(cursor, today):
                 'prop_name': prop_name,
                 'prop_country': prop_country,
                 'tenant_name': tenant_name,
-                'tenant_rent': tenant_rent,
+                'tenant_rent': effective_amount,
                 'invoice_date': invoice_date.strftime('%Y-%m-%d'),
                 'due_date': due_date.strftime('%Y-%m-%d'),
                 'days_overdue': days_overdue,
