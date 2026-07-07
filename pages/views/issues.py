@@ -193,6 +193,17 @@ def fsr_details(request, issues_id):
         # Default to the main FSR page
         redirect_url = reverse('fsr')
 
+    user_initials = ''
+    if request.user.is_authenticated:
+        user_initials = f"{request.user.first_name[:1]}{request.user.last_name[:1]}"
+    edited_comment_ids = set(
+        IssueAuditLog.objects.filter(
+            issue_id=issues_id,
+            field_name='issues_details_comment',
+            comment__isnull=False,
+        ).values_list('comment_id', flat=True)
+    )
+
     context = {
         "props": results,
         "issues": isresults,
@@ -201,6 +212,8 @@ def fsr_details(request, issues_id):
         "audit_log": IssueAuditLog.objects.filter(
             issue_id=issues_id
         ).select_related('user'),
+        "user_initials": user_initials,
+        "edited_comment_ids": edited_comment_ids,
     }
 
     return render(request, "fsr_details.html", context)
@@ -378,6 +391,75 @@ def fsr_edit_commit(request, issues_id):
         return redirect(detail_url)
 
     messages.success(request, "Issue updated.")
+    return redirect(detail_url)
+
+
+@login_required
+@permission_required('auth.can_edit_issues', raise_exception=True)
+@require_POST
+def fsr_comment_edit_commit(request):
+    """Edit a comment's text, author-only and only while it has never been
+    notified, writing an IssueAuditLog row (comment FK set) for the change.
+
+    Guards:
+      - Author-only: the editor's initials (first_name[:1]+last_name[:1], the
+        same formula fsr_comment_add uses) must match issues_details_user. Not
+        even a superuser may edit someone else's comment.
+      - Notify-lock: once issues_details_last_notified_at is set, the comment
+        has been sent via "Notify Now" and can no longer be edited -- it lives
+        in someone's inbox and the record must stay truthful.
+    """
+    comment_id = request.POST.get('comment_id')
+    comment = get_object_or_404(issues_details, pk=comment_id)
+    issue = comment.issues
+
+    from_param = request.POST.get('from', 'fsr')
+    detail_url = reverse('fsr_details', args=[issue.issues_id]) + f"?from={from_param}"
+
+    # Author-only (initials); no superuser bypass.
+    editor_initials = ''
+    if request.user.is_authenticated:
+        editor_initials = f"{request.user.first_name[:1]}{request.user.last_name[:1]}"
+    if not editor_initials or comment.issues_details_user != editor_initials:
+        messages.error(request, "You can only edit your own comments.")
+        return redirect(detail_url)
+
+    # Notify-lock: a comment that has been sent cannot be edited.
+    if comment.issues_details_last_notified_at is not None:
+        messages.error(request, "This comment has already been sent and can no longer be edited.")
+        return redirect(detail_url)
+
+    new_text = (request.POST.get('issues_details_comment') or '').strip()
+    if not new_text:
+        messages.error(request, "Comment cannot be empty.")
+        return redirect(detail_url)
+    if len(new_text) > 255:
+        messages.error(request, "Comment must be 255 characters or fewer.")
+        return redirect(detail_url)
+
+    old_text = comment.issues_details_comment or ''
+    if new_text == old_text:
+        messages.info(request, "No changes were made.")
+        return redirect(detail_url)
+
+    user = request.user if request.user.is_authenticated else None
+    try:
+        with transaction.atomic():
+            comment.issues_details_comment = new_text
+            comment.save(update_fields=['issues_details_comment'])
+            IssueAuditLog.objects.create(
+                issue=issue,
+                comment=comment,
+                user=user,
+                field_name='issues_details_comment',
+                old_value=old_text,
+                new_value=new_text,
+            )
+    except Exception as exc:
+        messages.error(request, f"Could not save changes: {exc}")
+        return redirect(detail_url)
+
+    messages.success(request, "Comment updated.")
     return redirect(detail_url)
 
 

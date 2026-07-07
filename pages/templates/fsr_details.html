@@ -32,11 +32,14 @@ Issues (Comments)
 <!-- Back button section -->
 <div class="page-action-bar">
     <div class="page-action-bar-inner">
+        {% if perms.auth.can_edit_issues %}
+        <button type="button" class="btn btn-info" onclick="openEditIssueModal()">
+            <i class="fas fa-edit"></i> Edit Issue
+        </button>
+        {% endif %}
         <a href="#" onclick="handleBackButton(); return false;" class="btn btn-info">Back</a>
     </div>
 </div>
-
-<br/>
 
 <!-- Issue Details in Friday Status Report Style -->
 {% for results in props %}
@@ -77,11 +80,6 @@ Issues (Comments)
                         <h4 class="date-logged-display">Date Logged: {{ isresults.issues_date_logged|date:"M d, Y" }}</h4>
                         <h4 class="property-display">Property: {{ results.prop_name|upper }}</h4>
                         <h4 class="status-display">Status: {{ isresults.issues_status|upper }}</h4>
-                        {% if perms.auth.can_edit_issues %}
-                        <button type="button" class="btn btn-info ei-edit-btn" onclick="openEditIssueModal()">
-                            <i class="fas fa-edit"></i> Edit Issue
-                        </button>
-                        {% endif %}
                     </div>
 
                     <!-- Comments and Status Change Section -->
@@ -140,7 +138,17 @@ Issues (Comments)
                                             <span class="comment-date">{{ idresults.issues_details_date|date:"Y-m-d" }}</span>
                                             <span class="comment-user">({{ idresults.issues_details_user }})</span>:
                                             <span class="comment-text">{{ idresults.issues_details_comment }}</span>
+                                            {% if idresults.issues_details_id in edited_comment_ids %}<span class="comment-edited-tag">(edited)</span>{% endif %}
                                         </span>
+                                        {% if idresults.issues_details_user == user_initials and not idresults.issues_details_last_notified_at %}
+                                        <button type="button" class="comment-edit-btn"
+                                                data-comment-id="{{ idresults.issues_details_id }}"
+                                                data-comment-text="{{ idresults.issues_details_comment|default:'' }}"
+                                                onclick="openEditCommentModal(this)"
+                                                title="Edit your comment">
+                                            <i class="fas fa-pencil-alt"></i> Edit
+                                        </button>
+                                        {% endif %}
                                         <span class="notify-urgent-cell" data-comment-id="{{ idresults.issues_details_id }}">
                                             {% if idresults.is_in_urgent_cooldown %}
                                                 <span class="notified-badge" style="background-color: #6c757d; color: white; padding: 4px 10px; border-radius: 3px; font-size: 12px; white-space: nowrap;">Notified {{ idresults.urgent_cooldown_minutes_ago }} min ago</span>
@@ -169,7 +177,7 @@ Issues (Comments)
                                 {{ entry.changed_at|date:"Y-m-d H:i" }} &mdash;
                                 {{ entry.user.get_full_name|default:entry.user.username|default:"Unknown user" }}
                                 changed
-                                {% if entry.field_name == 'issues_heading' %}Heading{% elif entry.field_name == 'issues_description' %}Description{% elif entry.field_name == 'prop' %}Property{% else %}{{ entry.field_name }}{% endif %}
+                                {% if entry.field_name == 'issues_heading' %}Heading{% elif entry.field_name == 'issues_description' %}Description{% elif entry.field_name == 'prop' %}Property{% elif entry.field_name == 'issues_details_comment' %}Comment{% else %}{{ entry.field_name }}{% endif %}
                             </div>
                             <div class="history-diff">
                                 <span class="history-old">{{ entry.old_value|default:"(empty)" }}</span>
@@ -213,6 +221,33 @@ Issues (Comments)
                             <div class="ei-modal-footer">
                                 <button type="button" class="btn btn-secondary" onclick="closeEditIssueModal()">Cancel</button>
                                 <button type="submit" class="btn btn-info">Save Changes</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            {% if perms.auth.can_edit_issues %}
+            <div id="editCommentModal" class="ei-modal">
+                <div class="ei-modal-dialog">
+                    <div class="ei-modal-content">
+                        <div class="ei-modal-header">
+                            <h2>Edit Comment</h2>
+                            <button type="button" class="ei-modal-close" onclick="closeEditCommentModal()">&times;</button>
+                        </div>
+                        <form method="post" action="{% url 'fsr_comment_edit_commit' %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="from" value="{{ request.GET.from|default:'fsr' }}">
+                            <input type="hidden" name="comment_id" id="ec_comment_id" value="">
+                            <div class="ei-modal-body">
+                                <label class="ei-label" for="ec_text">Comment</label>
+                                <textarea id="ec_text" name="issues_details_comment" class="ei-input" rows="4" maxlength="255" required></textarea>
+                                <p class="ec-note">You can edit only your own comments, and only until they&rsquo;ve been sent via &ldquo;Notify Now&rdquo;.</p>
+                            </div>
+                            <div class="ei-modal-footer">
+                                <button type="button" class="btn btn-secondary" onclick="closeEditCommentModal()">Cancel</button>
+                                <button type="submit" class="btn btn-info">Save Comment</button>
                             </div>
                         </form>
                     </div>
@@ -841,6 +876,33 @@ document.addEventListener('DOMContentLoaded', function() {
     .ei-modal-dialog { margin: 0; max-width: 100%; padding: 0; }
     .ei-modal-content { min-height: 100vh; border-radius: 0; }
 }
+/* ===== Comment edit (added) ===== */
+.comment-edit-btn { background: #e9ecef; border: 1px solid #ced4da; color: #495057; padding: 4px 9px; border-radius: 3px; font-size: 12px; cursor: pointer; white-space: nowrap; }
+.comment-edit-btn:hover { background: #dde2e6; }
+.comment-edited-tag { color: #6c757d; font-style: italic; font-size: 12px; margin-left: 6px; }
+.ec-note { color: #6c757d; font-size: 12px; margin: 10px 0 0; }
+/* ===== Header polish (added) ===== */
+.page-action-bar { margin-bottom: 10px; }
+.report-container { padding-top: 8px; min-height: auto; }
+.issue-header-section { margin-bottom: 12px; padding: 16px 20px; }
+.issue-header-section .issue-title { margin-bottom: 6px; }
+.status-card { padding-top: 14px; }
+.issue-header-section .date-logged-display,
+.issue-header-section .property-display,
+.issue-header-section .status-display {
+    display: inline-block;
+    margin: 6px 26px 0 0;
+    font-size: 1.05rem;
+    vertical-align: baseline;
+}
+@media (max-width: 768px) {
+    .issue-header-section .date-logged-display,
+    .issue-header-section .property-display,
+    .issue-header-section .status-display {
+        display: block;
+        margin: 0 0 6px 0;
+    }
+}
 </style>
 
 
@@ -873,8 +935,12 @@ document.addEventListener('DOMContentLoaded', function() {
             var badgeStyle = 'background-color: #6c757d; color: white; padding: 4px 10px; border-radius: 3px; font-size: 12px; white-space: nowrap;';
             if (res.body.ok) {
                 cell.innerHTML = '<span class="notified-badge" style="' + badgeStyle + '">Notified just now</span>';
+                var _eb1 = document.querySelector('.comment-edit-btn[data-comment-id="' + commentId + '"]');
+                if (_eb1) _eb1.remove();
             } else if (res.body.reason === 'cooldown') {
                 cell.innerHTML = '<span class="notified-badge" style="' + badgeStyle + '">Notified ' + res.body.minutes_ago + ' min ago</span>';
+                var _eb2 = document.querySelector('.comment-edit-btn[data-comment-id="' + commentId + '"]');
+                if (_eb2) _eb2.remove();
             } else if (res.body.reason === 'no_recipients') {
                 alert(res.body.message || 'No recipients configured for urgent alerts.');
                 btn.disabled = false; btn.innerHTML = originalLabel;
@@ -912,6 +978,31 @@ document.addEventListener('click', function(e) {
 });
 document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') closeEditIssueModal();
+});
+</script>
+
+<script>
+// Edit Comment modal controls (self-contained; not Bootstrap)
+function openEditCommentModal(btn) {
+    var id = btn.getAttribute('data-comment-id');
+    var text = btn.getAttribute('data-comment-text') || '';
+    var idEl = document.getElementById('ec_comment_id');
+    var textEl = document.getElementById('ec_text');
+    if (idEl) idEl.value = id;
+    if (textEl) textEl.value = text;
+    var m = document.getElementById('editCommentModal');
+    if (m) m.classList.add('show');
+}
+function closeEditCommentModal() {
+    var m = document.getElementById('editCommentModal');
+    if (m) m.classList.remove('show');
+}
+document.addEventListener('click', function(e) {
+    var m = document.getElementById('editCommentModal');
+    if (m && e.target === m) closeEditCommentModal();
+});
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeEditCommentModal();
 });
 </script>
 {% endblock %}
